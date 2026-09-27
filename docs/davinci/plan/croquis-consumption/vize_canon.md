@@ -10,20 +10,20 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 | product                        | kind  | module              | files | sites |
 | ------------------------------ | ----- | ------------------- | ----: | ----: |
-| `Analyzer`                     | type  | `analyzer`          |    42 |   160 |
-| `AnalyzerOptions`              | type  | `analyzer`          |    42 |   156 |
+| `Analyzer`                     | type  | `analyzer`          |    43 |   161 |
+| `AnalyzerOptions`              | type  | `analyzer`          |    43 |   157 |
 | `ComponentUsage`               | type  | `croquis::template` |    20 |    44 |
-| `Croquis`                      | type  | `croquis`           |    92 |   216 |
+| `Croquis`                      | type  | `croquis`           |    92 |   219 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
 | `EventListener`                | type  | `croquis::template` |     2 |     3 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     1 |
 | `NonScriptSetupScopeData`      | type  | `scope`             |     1 |     3 |
 | `OptionGroup`                  | type  | `croquis`           |     2 |     7 |
-| `PassedProp`                   | type  | `croquis::template` |    10 |    23 |
+| `PassedProp`                   | type  | `croquis::template` |    10 |    24 |
 | `Scope`                        | type  | `scope`             |    14 |    25 |
 | `ScopeChain`                   | type  | `scope`             |     2 |     7 |
 | `ScopeData`                    | type  | `scope`             |    19 |    35 |
-| `ScopeId`                      | type  | `scope`             |     8 |    23 |
+| `ScopeId`                      | type  | `scope`             |     8 |    26 |
 | `ScopeKind`                    | type  | `scope`             |    17 |    59 |
 | `SlotUsage`                    | type  | `croquis::template` |     1 |     1 |
 | `SpreadProp`                   | type  | `croquis::template` |     4 |     6 |
@@ -102,21 +102,21 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 | product                   | resolved | grep |
 | ------------------------- | -------: | ---: |
-| `Analyzer`                |      160 |  242 |
-| `AnalyzerOptions`         |      156 |  238 |
+| `Analyzer`                |      161 |  243 |
+| `AnalyzerOptions`         |      157 |  239 |
 | `COMPILER_MACRO_NAMES`    |        0 |    1 |
 | `ComponentUsage`          |       44 |   64 |
-| `Croquis`                 |      216 |  321 |
+| `Croquis`                 |      219 |  324 |
 | `Drawer`                  |        0 |    1 |
 | `EventHandlerScopeData`   |        9 |   16 |
 | `EventListener`           |        3 |    5 |
 | `NonScriptSetupScopeData` |        3 |    4 |
 | `OptionGroup`             |        7 |    9 |
-| `PassedProp`              |       23 |   34 |
+| `PassedProp`              |       24 |   35 |
 | `Scope`                   |       25 |   58 |
 | `ScopeChain`              |        7 |    9 |
 | `ScopeData`               |       35 |   53 |
-| `ScopeId`                 |       23 |   31 |
+| `ScopeId`                 |       26 |   34 |
 | `ScopeKind`               |       59 |   76 |
 | `SlotUsage`               |        1 |    3 |
 | `Span`                    |        0 |   62 |
