@@ -11,8 +11,8 @@ use vize_atelier_sfc::{
     compile_sfc, compile_sfc_for_adapter_with_experimental_options, parse_sfc,
 };
 
-#[path = "support/fix_history_options.rs"]
-mod fixture_options;
+mod support;
+use support::fix_history_options as fixture_options;
 
 const RENDER_SOURCE: &str =
     include_str!("fixtures/fix-history/separate-template-authored-render-binding.input.txt");

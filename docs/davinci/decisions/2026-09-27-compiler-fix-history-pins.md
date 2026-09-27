@@ -83,3 +83,11 @@ coverage: the earlier structured source-map profile originates in `feat`
 #6365, and the definePage macro-artifact profile originates in `feat` #209.
 The ten prepared profiles link eight fix commits and two feature commits;
 feature controls do not count against the compiler fix-history obligation.
+
+The first publication head's Actions Rust build and all four test shards pass.
+Tooling exposed two source policy requirements: gated test modules use ordinary
+module discovery, and the observational consumer shard includes new helper
+references. The tests now share the existing ordinary `support` module, with
+unused-helper allowances limited to independent test support modules. The
+consumer generator updates only the SFC shard. All fixture bytes stay fixed;
+fresh Actions must pass again on this corrected head.

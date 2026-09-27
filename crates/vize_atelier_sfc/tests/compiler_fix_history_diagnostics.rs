@@ -4,8 +4,8 @@ use serde_json::Value;
 use vize_atelier_core::{CodegenOptions, options::CustomElementMatcher};
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 
-#[path = "support/fix_history_options.rs"]
-mod fixture_options;
+mod support;
+use support::fix_history_options as fixture_options;
 
 const SOURCE: &str =
     include_str!("fixtures/fix-history/invalid-template-expression-diagnostic.input.txt");
