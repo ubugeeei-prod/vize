@@ -337,3 +337,6 @@ The [first formatter path](./2026-09-27-differential-formatter.md) records the
 two exact regression fixtures, source-build receipt, raw comparison, deliberate
 corpus membership and remaining product/T1/T2 work. Native formatter is
 unsupported; this first legacy path receives zero native acceptance credit.
+
+[CI stack replay after publication](./2026-09-27-ci-stack-resume.md) records
+the main replay, preserved corpus rows and remaining exact-head CI evidence.
