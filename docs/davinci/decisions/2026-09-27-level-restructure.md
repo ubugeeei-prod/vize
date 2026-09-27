@@ -115,6 +115,8 @@ See the [l4: emission decisions](./2026-09-27-level-restructure-designs.md#l4-em
 
 [SFC map and diagnostic history references](./2026-09-27-sfc-map-diagnostic-history.md) records two original #3604/#750 inputs and three repeated source/executable-bound Results, with a populated map and distinct relative/document diagnostic locations. The complete test and strict Clippy pass locally; fresh Actions, whole history and native acceptance remain TODO. Its reviewed frozen source is preserved on a provenance branch, and the bounded SFC consumer shard records the new helper references.
 
+[Existing compiler stack acceptance](./2026-09-27-sfc-map-diagnostic-history.md#existing-stack-merge-acceptance) records actual CI4 main, the sole inspector binding, fresh exact-head checks and native queue/actual-merge requirements for the existing five PRs; 23 compiler inputs and 15 fix links leave whole history/native acceptance unfinished.
+
 ## Script side
 
 See the [script side decisions](./2026-09-27-level-restructure-designs.md#script-side) in the companion record.

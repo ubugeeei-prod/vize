@@ -83,3 +83,39 @@ Across the existing compiler cohorts, that prepares 23 inputs linked to 15
 concrete fixes, without pretending that the issue's 609-fix snapshot denominator
 has been reconciled. Fresh Actions, parent main/full queue proof, whole-history
 coverage and native compiler acceptance remain TODO. Do not close #6880.
+
+## Existing stack merge acceptance
+
+CI4 reached actual main `42014675678684165b8cd4bb992bb9db747e74ee`.
+Its tree matches the frozen CI4 source, and every preceding CI merge SHA is
+an ancestor. The sole inspector owner published #6955 at
+`96dff355b431a1ee321d9616d0eeaf4b09aed1fb` on that main. The approved
+compiler suffix is transported coherently behind it, keeping the inspector
+record under Toolchain practice and all compiler pointers under L4: emission.
+Each member preserves the actual-main text and its complete owned prefix.
+
+The existing group is #6955 → #6930 → #6933 → #6937 → #6954. New PR
+publication remains frozen. The four compiler cohorts retain all 91 fixed
+fixture/capture files and their original source/executable/archive receipts.
+The reviewed compiler crate bytes and provenance refs remain unchanged;
+transport does not turn historical measurements into current-head execution.
+
+Fresh completed Actions on every exact new head are required before queueing.
+Require generated successful Check/source reports, the Rust executor and all
+four test shards, every required check, source caps, archive exclusions and
+bounded consumer inventories. An empty pending/failure list is insufficient.
+The [earlier SSR Check](https://github.com/ubugeeei-prod/vize/actions/runs/36308996672)
+failed first on the inspector pipe race, then on the failed-only retry's
+archive mismatch; it remains a historical failure.
+
+After every latest head passes, link the existing PR numbers with
+`gh stack link --base main 6955 6930 6933 6937 6954`, mark eligible drafts
+ready and run `gh stack merge <stack> --yes --squash`. The official command
+uses the native merge queue. Verify every real full queue prefix and the
+historical test execution, then all five actual merged states and main merge
+SHAs. Enqueueing or an individual successful PR Check is not final merge proof.
+
+The published compiler cohorts contain 23 authored inputs and 15 distinct
+genuine fix links. The private extra two-case capture is not counted. The
+609-fix snapshot denominator is unreconciled, whole history and native
+acceptance remain unfinished, and #6880 stays open.
