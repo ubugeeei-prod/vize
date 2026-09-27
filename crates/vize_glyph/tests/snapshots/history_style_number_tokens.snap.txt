@@ -1,0 +1,8 @@
+.foo {
+  opacity: 0.5;
+  margin: -0.25em 0.75px;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  content: ".5";
+  background: url("https://example.test/.5/icon.svg");
+}
+/* .5 */

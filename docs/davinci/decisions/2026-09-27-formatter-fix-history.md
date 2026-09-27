@@ -60,6 +60,24 @@ regressions and all golden bytes remain unchanged. Capture hashes continue to
 bind the original measured test source; latest Actions validates the edited
 test source. Shared corpus registration remains pending.
 
+## CSS slice
+
+`fix_history_style.rs` prepares twelve complete public `format_style` outputs
+for top-level comments, comment-like strings/URLs/imports, charset removal,
+fractional numbers after Unicode, legacy keyframes and the float-max sentinel.
+Every successful output is checked through three real calls. Existing helper
+call-count assertions remain separate and receive no new output credit.
+
+The historical helper input containing `--élément.5` is invalid CSS: the public
+API returns `StyleFormatError`. Keep that actual typed error in a separate
+snapshot rather than changing the authored input or pretending it formatted.
+The helper's own numeric-token equality remains required.
+
+Five narrow tests passed capture, updates-disabled replay and frozen executable
+replay. Strict Clippy also passed. The receipt binds the actual test source,
+executable, toolchain and local logs. These are prepared public observations;
+shared registration, Actions and native acceptance remain pending.
+
 ## Remaining work
 
 - Finish the commit-by-commit audit of all 56 original fix-title commits and
