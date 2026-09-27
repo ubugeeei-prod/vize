@@ -194,6 +194,8 @@ test("onTypeFormatting preserves complete CRLF fix-history edit responses", asyn
     ch: string;
     result: TextEdit[] | null;
   }>;
+  assert.ok(Array.isArray(responses), "CRLF response fixture must be an array");
+  assert.equal(responses.length, 4, "CRLF fixture must exercise both edits, the no-op and null");
   await withDocument(async (ask) => {
     for (const response of responses) {
       assert.deepEqual(

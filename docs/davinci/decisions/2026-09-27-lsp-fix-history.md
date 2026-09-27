@@ -85,6 +85,8 @@ A production stdio fixture now checks the original script indent deletion and
 the existing LF regression's CSS, already-indented and out-of-range controls on
 that same CRLF document. The four complete `TextEdit[]`/null responses retain
 authored line/character positions, edit order, empty text and absent extra fields.
+The fixture must retain exactly four responses before opening the session; an
+empty expectation cannot silently skip every runtime request.
 The helper also requires the entry URI's exact version-1 diagnostics publication.
 All three on-type tests passed against the same pinned historical f59 artifact,
 with zero failures/skips/cancellations. Fresh-source Actions and full-wire/shared
