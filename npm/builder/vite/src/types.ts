@@ -193,11 +193,10 @@ export interface VizeOptions extends ExperimentalPluginOptions {
   /** Vue whitespace strategy, or Vize's narrow Vue 2 line-break migration mode. @default "condense" */
   whitespace?: "condense" | "preserve" | "vue2-line-breaks";
 
-  /**
-   * Root directory to scan for .vue files
-   * @default Vite's root
-   */
+  /** Root directory to scan for .vue files; defaults to Vite's root. */
   root?: string;
+  /** Framework manifest root; registers relative IDs, including external SFCs. */
+  ssrModuleIdRoot?: string;
 
   /**
    * Glob patterns to scan for .vue files during pre-compilation

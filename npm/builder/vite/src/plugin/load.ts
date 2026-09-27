@@ -11,7 +11,7 @@ import {
   type VizePluginState,
 } from "./state.ts";
 import { getLoadableVueSfcPath, shouldLoadCompiledVueSfcPath } from "./load-sfc.ts";
-import { appendSsrModuleRegistration, normalizeVueServerRendererImport } from "./ssr-modules.ts";
+import { registerSfcModule, normalizeVueServerRendererImport } from "./ssr-modules.ts";
 import { compileFile, compileJsxModule } from "../compiler.ts";
 import { embedsInlineCss, generateOutputWithMap, hasDelegatedStyles } from "../utils/index.ts";
 import { MappedModule, type SourceMapV3 } from "../utils/source-map.ts";
@@ -147,7 +147,7 @@ function loadCompiledSfcModule(
   rewritten.edit(rewriteDynamicTemplateImports(rewritten.code, state.dynamicImportAliasRules));
   rewritten.edit(rewriteStaticAssetUrls(rewritten.code, state.dynamicImportAliasRules));
   rewritten.edit(rewriteImportMetaGlobBase(rewritten.code, realPath, state.root));
-  rewritten.edit(appendSsrModuleRegistration(rewritten.code, realPath, state.root, isSsr));
+  rewritten.edit(registerSfcModule(state, rewritten.code, realPath, isSsr));
   return { code: rewritten.code, map: rewritten.map };
 }
 
@@ -433,7 +433,7 @@ export async function transformHook(
   id: string,
   options?: { ssr?: boolean },
 ): Promise<TransformResult | null> {
-  if (!id.startsWith("\0") && !id.includes(".vue.ts") && !isJsxComponentPath(id)) return null;
+  if (!id.startsWith("\0") && !id.includes(".vue") && !isJsxComponentPath(id)) return null;
 
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
 

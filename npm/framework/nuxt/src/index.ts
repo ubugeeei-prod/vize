@@ -324,11 +324,14 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
   );
   await setupLintInspector(options.lint, nuxt, compilerOptions, lintGeneration, nuxt.options.dev);
   const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
+
   if (compilerOptions !== false && compilerOptions.compatibility?.hostCompiler !== true) {
     const { default: vize } = await import("@vizejs/vite-plugin");
     nuxt.options.vite ||= {};
     nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
-    nuxt.options.vite.plugins.push(vize(compilerOptions));
+    nuxt.options.vite.plugins.push(
+      vize({ ...compilerOptions, ssrModuleIdRoot: nuxt.options.srcDir }),
+    );
   }
 
   let isNuxtBuild = false;
@@ -468,12 +471,8 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
       name: "vizejs:nuxt-transform-bridge",
       enforce: "post" as const,
       async transform(code: string, id: string, ...args: unknown[]) {
-        // Only process Vize-compiled component modules. In dev, Vite can call
-        // transform hooks with the plugin-visible `.vue.ts?vue&vize` ID
-        // rather than Rollup's internal `\0` virtual ID. Raw `.jsx`/`.tsx`
-        // Vue components are compiled in place (no `.vue.ts[x]` virtual id), so
-        // they are matched separately and still receive Nuxt's auto-import,
-        // component, and i18n bridging.
+        // Bridge owned Vue query IDs and in-place JSX/TSX components.
+        // Legacy null-byte and .vue.ts[x] IDs remain supported.
         if (!isVizeGeneratedVueModuleId(id) && !isVizeJsxModuleId(id)) return;
 
         let result = code;

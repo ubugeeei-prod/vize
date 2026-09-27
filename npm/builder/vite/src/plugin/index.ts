@@ -40,6 +40,7 @@ import { resolveVueFeatureDefines } from "./vue-feature-defines.ts";
 import {
   aliasSortKey,
   resolveCompatibilityOptions,
+  resolveHookSsr,
   shouldExtractCssForBuild,
 } from "./index-helpers.ts";
 
@@ -264,18 +265,25 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     },
 
     resolveId(id, importer, options) {
-      return resolveIdHook(this, state, id, importer, options);
+      return resolveIdHook(this, state, id, importer, {
+        ...options,
+        ssr: resolveHookSsr(this, options),
+      });
     },
 
     load(id, loadOptions) {
       return loadHook(state, id, {
         ...loadOptions,
+        ssr: resolveHookSsr(this, loadOptions),
         addWatchFile: this.addWatchFile.bind(this),
       });
     },
 
     async transform(code, id, transformOptions) {
-      return transformHook(state, code, id, transformOptions);
+      return transformHook(state, code, id, {
+        ...transformOptions,
+        ssr: resolveHookSsr(this, transformOptions),
+      });
     },
 
     async hotUpdate(options) {

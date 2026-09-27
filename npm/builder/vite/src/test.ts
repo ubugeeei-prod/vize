@@ -52,4 +52,5 @@ import "./plugin/ssr-modules-load.test.ts";
 import "./plugin/state.test.ts";
 import "./plugin/unocss.test.ts";
 import "./plugin/vite-transform.test.ts";
+import "./plugin/vue-identity.test.ts";
 import "./virtual.test.ts";

@@ -651,7 +651,7 @@ assert.ok(
 );
 assert.match(
   cssModuleLoad.code,
-  /import buttonStyles from "\/src\/ModuleButton\.vue\.__vize_style_0\.module\.css\?vue=&type=style&index=0&lang=css&module=buttonStyles&vize-file=%2Fsrc%2FModuleButton.vue";/,
+  /import buttonStyles from "\/src\/ModuleButton\.vue\.__vize_style_0\.module\.css\?vue=&type=style&index=0&lang=css&module=buttonStyles&vize-file=%2Fsrc%2FModuleButton%2Evue";/,
   "CSS module virtual loads should emit delegated style imports",
 );
 assert.match(
@@ -712,7 +712,7 @@ assert.ok(
 );
 assert.match(
   applyCssLoad.code,
-  /import "\/src\/ApplyStyles\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&scoped=data-v-applycss&lang=css&vize-file=%2Fsrc%2FApplyStyles.vue";/,
+  /import "\/src\/ApplyStyles\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&scoped=data-v-applycss&lang=css&vize-file=%2Fsrc%2FApplyStyles%2Evue";/,
   "CSS with @apply should be delegated so PostCSS and UnoCSS transformers can run",
 );
 assert.doesNotMatch(
@@ -787,7 +787,7 @@ assert.ok(
 );
 assert.match(
   nestedCssComponentLoad.code,
-  /import "\/src\/NestedStyles\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&scoped=data-v-nestedcss&lang=css&vize-file=%2Fsrc%2FNestedStyles.vue";/,
+  /import "\/src\/NestedStyles\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&scoped=data-v-nestedcss&lang=css&vize-file=%2Fsrc%2FNestedStyles%2Evue";/,
   "Development and test modules should send scoped CSS through Vite's transformer",
 );
 assert.doesNotMatch(

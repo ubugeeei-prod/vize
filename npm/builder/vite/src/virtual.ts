@@ -43,27 +43,29 @@ export function toVirtualId(realPath: string, ssr = false): string {
   return createViteVirtualId(realPath, ssr);
 }
 
-export function toPluginVisibleVirtualId(realPath: string, ssr = false, querySuffix = ""): string {
+export function toPluginVisibleVirtualId(realPath: string, _ssr = false, querySuffix = ""): string {
   const params = new URLSearchParams(querySuffix.startsWith("?") ? querySuffix.slice(1) : "");
   params.delete("vue");
   params.delete("vize");
   params.delete("vize-ssr");
   const rest = params.toString();
-  return `${realPath}.ts?vue&${ssr ? "vize-ssr" : "vize"}${rest ? `&${rest}` : ""}`;
+  // Nuxt collects client CSS by exact module ID and recognizes .vue after removing queries.
+  // SSR routing belongs to Vite's environment; keep the same identity in both graphs.
+  return `${realPath}?vue&vize${rest ? `&${rest}` : ""}`;
 }
 
 /**
  * String pre-gate for {@link fromPluginVisibleVirtualId}, so ordinary module IDs
  * never cross the native boundary (#3427).
  *
- * A non-null result requires `request.path` to end with `.vue.ts` or `.vue.tsx`
+ * A non-null result requires `request.path` to end with `.vue`, `.vue.ts` or `.vue.tsx`
  * and `request.querySuffix` to be non-empty. `request.path` is `id` up to the
  * first `?` and `querySuffix` is non-empty exactly when that `?` exists, so both
  * conditions imply these two substring tests. The tests are strictly weaker, so
  * everything the old code accepted still reaches the classifier.
  */
 function mayBePluginVisibleVirtualId(id: string): boolean {
-  return !id.startsWith("\0") && id.includes(".vue.ts") && id.includes("?");
+  return !id.startsWith("\0") && id.includes(".vue") && id.includes("?");
 }
 
 export function fromPluginVisibleVirtualId(id: string): string | null {
@@ -96,7 +98,7 @@ function stripFsPrefix(path: string): string {
 }
 
 function isPluginVisibleVueVirtualPath(path: string): boolean {
-  return path.endsWith(".vue.ts") || path.endsWith(".vue.tsx");
+  return path.endsWith(".vue") || path.endsWith(".vue.ts") || path.endsWith(".vue.tsx");
 }
 
 function stripPluginVisibleVueVirtualSuffix(path: string): string {

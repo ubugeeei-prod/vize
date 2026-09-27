@@ -55,13 +55,13 @@ const visibleTsxVirtualId = "/repo/app/components/Foo.vue.tsx?vue&vize";
 
 assert.equal(
   visibleVirtualId,
-  "/repo/app/components/Foo.vue.ts?vue&vize",
+  "/repo/app/components/Foo.vue?vue&vize",
   "Plugin-visible virtual IDs should keep the Vue query without using a null-byte prefix",
 );
 assert.equal(
   visibleSsrVirtualId,
-  "/repo/app/components/Foo.vue.ts?vue&vize-ssr&used=true",
-  "SSR plugin-visible virtual IDs should preserve non-Vize query parameters",
+  "/repo/app/components/Foo.vue?vue&vize&used=true",
+  "Client and SSR graphs must share Vue identity and preserve non-Vize query parameters",
 );
 assert.equal(
   fromPluginVisibleVirtualId(visibleVirtualId),
@@ -75,8 +75,8 @@ assert.equal(
 );
 assert.equal(
   isPluginVisibleSsrVirtualId(visibleSsrVirtualId),
-  true,
-  "SSR plugin-visible virtual IDs should keep an explicit SSR marker",
+  false,
+  "Canonical IDs use environment SSR routing instead of a different CSS graph identity",
 );
 
 console.log("✅ vite-plugin-vize virtual module tests passed!");

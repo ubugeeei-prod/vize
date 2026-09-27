@@ -41,3 +41,13 @@ export function resolveCompatibilityOptions(
 export function aliasSortKey(find: string | RegExp): number {
   return typeof find === "string" ? find.length : find.source.length;
 }
+
+/** Vite 8 supplies SSR identity through the environment instead of hook arguments. */
+export function resolveHookSsr(
+  context: { environment?: { name?: string } },
+  options?: { ssr?: boolean },
+): boolean {
+  return (
+    options?.ssr ?? (context.environment?.name === "ssr" || context.environment?.name === "server")
+  );
+}

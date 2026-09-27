@@ -1,3 +1,4 @@
+import { isVizeGeneratedVueModuleId } from "./module-id.ts";
 import type { VizeNuxtCompilerOptions } from "./compiler-options.ts";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -67,15 +68,7 @@ export function isVizeVirtualVueModuleId(id: string): boolean {
   return id.startsWith("\0") && /\.vue\.tsx?(?:\?|$)/.test(id);
 }
 
-export function isVizeGeneratedVueModuleId(id: string): boolean {
-  let normalized = id;
-  if (normalized.startsWith("/@id/__x00__")) {
-    normalized = normalized.slice("/@id/__x00__".length);
-  } else if (normalized.startsWith("__x00__")) {
-    normalized = normalized.slice("__x00__".length);
-  }
-  return /\.vue\.tsx?(?:\?|$)/.test(normalized);
-}
+export { isVizeGeneratedVueModuleId };
 
 /**
  * Recognize raw `.jsx`/`.tsx` Vue component modules compiled by Vize.

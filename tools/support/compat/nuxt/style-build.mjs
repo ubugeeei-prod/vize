@@ -10,6 +10,8 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const fixture = path.join(root, "tests/_fixtures/_projects/nuxt-scoped-style-build");
 const candidate = path.join(root, "npm/builder/vite/dist");
+const nuxtPackageRoot = path.join(fixture, "node_modules/@vizejs/nuxt");
+const candidateNuxt = path.join(root, "npm/framework/nuxt/dist");
 const artifacts = path.resolve(process.argv[2] ?? path.join(os.tmpdir(), "vize-nuxt-style-build"));
 fs.mkdirSync(artifacts, { recursive: true });
 const packageRoot = path.join(fixture, "node_modules/@vizejs/vite-plugin");
@@ -31,6 +33,8 @@ assert.equal(
 );
 const published = path.join(artifacts, "published-vite-plugin-dist");
 fs.cpSync(path.join(packageRoot, "dist"), published, { recursive: true });
+const publishedNuxt = path.join(artifacts, "published-nuxt-dist");
+fs.cpSync(path.join(nuxtPackageRoot, "dist"), publishedNuxt, { recursive: true });
 
 function build(label) {
   for (const name of [".nuxt", ".output"])
@@ -65,6 +69,8 @@ try {
 
   fs.rmSync(path.join(packageRoot, "dist"), { recursive: true });
   fs.cpSync(candidate, path.join(packageRoot, "dist"), { recursive: true });
+  fs.rmSync(path.join(nuxtPackageRoot, "dist"), { recursive: true });
+  fs.cpSync(candidateNuxt, path.join(nuxtPackageRoot, "dist"), { recursive: true });
   const fixed = build("candidate");
   assert.equal(fixed.status, 0, `candidate Nuxt build failed; see ${artifacts}/candidate.log`);
   console.log("Candidate client and SSR builds passed (compiler enabled)");
@@ -102,11 +108,21 @@ try {
     const stylesheets = [...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*>/g)].map(
       ([tag]) => tag.match(/href="([^"]+)"/)[1],
     );
-    assert.equal(stylesheets.length, 1);
-    const cssResponse = await fetch(new URL(stylesheets[0], origin));
-    assert.equal(cssResponse.status, 200);
-    const css = await cssResponse.text();
-    assert.equal(css.trim(), `p[${paragraph[1]}]{color:red}`);
+    const inlineStyles = [...html.matchAll(/<style\b[^>]*>([^<]*)<\/style>/g)].map(
+      ([_, css]) => css,
+    );
+    assert.equal(stylesheets.length + inlineStyles.length, 1);
+    const delivered = [...inlineStyles];
+    for (const stylesheet of stylesheets) {
+      const cssResponse = await fetch(new URL(stylesheet, origin));
+      assert.equal(cssResponse.status, 200);
+      delivered.push(await cssResponse.text());
+    }
+    assert.deepEqual(
+      delivered.map((css) => css.trim()),
+      [`p[${paragraph[1]}]{color:red}`],
+    );
+    const css = delivered[0];
     fs.writeFileSync(path.join(artifacts, "scoped.css"), css);
     fs.writeFileSync(
       path.join(artifacts, "proof.json"),
@@ -121,6 +137,7 @@ try {
           candidateExit: fixed.status,
           scope: paragraph[1],
           stylesheets,
+          inlineStyles,
         },
         null,
         2,
@@ -135,4 +152,6 @@ try {
 } finally {
   fs.rmSync(path.join(packageRoot, "dist"), { recursive: true, force: true });
   fs.cpSync(published, path.join(packageRoot, "dist"), { recursive: true });
+  fs.rmSync(path.join(nuxtPackageRoot, "dist"), { recursive: true, force: true });
+  fs.cpSync(publishedNuxt, path.join(nuxtPackageRoot, "dist"), { recursive: true });
 }

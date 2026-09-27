@@ -80,7 +80,23 @@ void test("Nuxt repeated inline style resolution loads the original scoped SFC b
         imported.slice(0, imported.indexOf("?")),
         `${filename}.__vize_style_${index}${index === 1 ? ".module" : ""}.${expectedLang}`,
       );
+      assert.equal(
+        /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/.test(imported),
+        true,
+        "Nuxt must recognize the complete CSS module ID",
+      );
       const id = `${imported}&inline&used`;
+      const relativeEntry = path.relative(root, imported);
+      assert.equal(
+        await resolveIdHook(
+          { resolve: async () => null },
+          state,
+          `${relativeEntry}&inline&used`,
+          undefined,
+          { ssr: true },
+        ),
+        id,
+      );
       for (let round = 0; round < 5; round++) {
         assert.equal(
           await resolveIdHook({ resolve: async () => null }, state, id, filename, { ssr: true }),
@@ -110,7 +126,7 @@ void test("Nuxt repeated inline style resolution loads the original scoped SFC b
       `aside[data-v-${compiled.scopeId}]{color: green;}`,
     ]);
     const raw = `${filename}?vue=&type=style&index=0&scoped=data-v-${compiled.scopeId}&lang=css&inline&used`;
-    const expected = `${filename}.__vize_style_0.css?${raw.split("?")[1]}&${new URLSearchParams({ "vize-file": filename }).toString()}`;
+    const expected = `${filename}.__vize_style_0.css?${raw.split("?")[1]}&${new URLSearchParams({ "vize-file": filename }).toString().replaceAll(".", "%2E")}`;
     assert.equal(
       await resolveIdHook({ resolve: async () => null }, state, raw, filename, undefined),
       expected,

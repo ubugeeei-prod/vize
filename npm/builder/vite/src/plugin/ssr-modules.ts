@@ -1,4 +1,5 @@
 import path from "node:path";
+import type { VizePluginState } from "./state.ts";
 
 /**
  * Point a compiled SSR module at the `vue/server-renderer` subpath.
@@ -46,8 +47,13 @@ export function ssrModuleRegistrationCode(
   filePath: string,
   root: string,
   helpers: { useSSRContext?: string; sfcSetup?: string } = {},
+  frameworkRoot?: string,
 ): { prologue: string; epilogue: string } {
-  const moduleId = JSON.stringify(toManifestModuleId(filePath, root));
+  const moduleId = JSON.stringify(
+    frameworkRoot === undefined
+      ? toManifestModuleId(filePath, root)
+      : path.relative(frameworkRoot, filePath).replace(/\\/g, "/"),
+  );
   const useSSRContext = helpers.useSSRContext ?? "__vize_useSSRContext";
   const sfcSetup = helpers.sfcSetup ?? "__vize_sfc_setup";
   return {
@@ -100,6 +106,7 @@ export function appendSsrModuleRegistration(
   filePath: string,
   root: string,
   isSsr: boolean,
+  frameworkRoot?: string,
 ): string {
   if (!isSsr || !SFC_MAIN_DECLARATION.test(code)) {
     return code;
@@ -107,10 +114,15 @@ export function appendSsrModuleRegistration(
   if (code.includes(REGISTRATION_MARKER)) {
     return code;
   }
-  const { prologue, epilogue } = ssrModuleRegistrationCode(filePath, root, {
-    useSSRContext: freeIdentifier("__vize_useSSRContext", code),
-    sfcSetup: freeIdentifier("__vize_sfc_setup", code),
-  });
+  const { prologue, epilogue } = ssrModuleRegistrationCode(
+    filePath,
+    root,
+    {
+      useSSRContext: freeIdentifier("__vize_useSSRContext", code),
+      sfcSetup: freeIdentifier("__vize_sfc_setup", code),
+    },
+    frameworkRoot,
+  );
   return `${prologue}\n${code}\n${epilogue}`;
 }
 
@@ -130,4 +142,20 @@ function freeIdentifier(base: string, code: string): string {
       return candidate;
     }
   }
+}
+
+/** Keep compiler/config root separate from Nuxt's source-relative manifest IDs. */
+export function registerSfcModule(
+  state: Pick<VizePluginState, "root" | "mergedOptions">,
+  code: string,
+  filePath: string,
+  isSsr: boolean,
+): string {
+  return appendSsrModuleRegistration(
+    code,
+    filePath,
+    state.root,
+    isSsr,
+    state.mergedOptions.ssrModuleIdRoot,
+  );
 }

@@ -29,6 +29,9 @@ export function getVueModuleFileCandidates(vueFile: string): string[] {
     toPluginVisibleVirtualId(vueFile, true),
     toPluginVisibleVirtualId(vueFile).split("?")[0],
     vueFile,
+    `${vueFile}.ts`,
+    `${vueFile}.ts?vue&vize`,
+    `${vueFile}.ts?vue&vize-ssr`,
   ];
   const viteFsCandidates = candidates.flatMap((candidate) => {
     const viteFsId = toViteFsFileId(candidate);

@@ -312,3 +312,5 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and
 
 See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work)
 in the companion record.
+
+[Nuxt critical CSS module identity](./2026-09-27-nuxt-critical-css.md) records [#6897](https://github.com/ubugeeei-prod/vize/issues/6897); compiler migration and SSR slot scope remain separate.

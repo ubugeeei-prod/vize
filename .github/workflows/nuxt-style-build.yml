@@ -36,15 +36,29 @@ jobs:
       - name: Build the candidate JavaScript adapter
         working-directory: npm/builder/vite
         run: vp pack
+      - name: Build the candidate Nuxt integration
+        working-directory: npm/framework/nuxt
+        run: vp pack
       - name: Install the exact published Nuxt reproduction
         working-directory: tests/_fixtures/_projects/nuxt-scoped-style-build
         run: npm ci --no-audit --no-fund
       - name: Verify released failure and candidate build and scoped SSR CSS
         run: vp exec node tools/support/compat/nuxt/style-build.mjs "$RUNNER_TEMP/nuxt-style-proof"
+      - name: Install the exact critical CSS reproduction
+        working-directory: tests/_fixtures/_projects/nuxt-critical-css-build
+        run: npm ci --no-audit --no-fund
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Install Chromium
+        working-directory: tests
+        run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
+      - name: Verify stock, released failure, and candidate critical CSS without JavaScript
+        run: vp exec node tools/support/compat/nuxt/critical-css-build.mjs "$RUNNER_TEMP/nuxt-critical-css-proof"
       - name: Upload build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nuxt-style-proof-${{ github.sha }}
-          path: ${{ runner.temp }}/nuxt-style-proof
+          path: |
+            ${{ runner.temp }}/nuxt-style-proof
+            ${{ runner.temp }}/nuxt-critical-css-proof
           if-no-files-found: ignore

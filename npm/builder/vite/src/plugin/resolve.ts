@@ -672,7 +672,7 @@ function isPotentialVizeResolveId(id: string): boolean {
     isProjectVueRuntimeRequest(id) ||
     id === VIRTUAL_CSS_MODULE ||
     id.endsWith(".vue") ||
-    id.includes(".vue?") ||
+    /\.vue(?:\?|\.__vize_style_)/.test(id) ||
     /\.vue\.tsx?\?/.test(id) ||
     id.includes("?macro=true") ||
     id.includes("?definePage")

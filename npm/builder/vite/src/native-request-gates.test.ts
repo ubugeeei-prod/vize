@@ -82,10 +82,22 @@ function fromPluginVisibleVirtualIdBefore(id: string): string | null {
   return normalizedPath.endsWith(".vue.ts") ? normalizedPath.slice(0, -3) : normalizedPath;
 }
 
+// #6897 deliberately adds these eight canonical IDs; all legacy results remain exact.
+const canonicalAdditions = new Map([
+  ["/repo/app/Foo.vue?vue&vize", "/repo/app/Foo.vue"],
+  ["/repo/app/Foo.vue?vue&vize-ssr", "/repo/app/Foo.vue"],
+  ["/repo/app/Foo.vue?vue&vize&used=true", "/repo/app/Foo.vue"],
+  ["/repo/app/Foo.vue?vue&vize&t=1700000000000", "/repo/app/Foo.vue"],
+  ["/@fs/repo/app/Foo.vue?vue&vize", "/repo/app/Foo.vue"],
+  ["/@fs/repo/app/Foo.vue?vue&vize-ssr", "/repo/app/Foo.vue"],
+  ["/@fs/repo/app/Foo.vue?vue&vize&used=true", "/repo/app/Foo.vue"],
+  ["/@fs/repo/app/Foo.vue?vue&vize&t=1700000000000", "/repo/app/Foo.vue"],
+]);
+
 assert.deepEqual(
   MATRIX.map((id) => [id, fromPluginVisibleVirtualId(id)]),
-  MATRIX.map((id) => [id, fromPluginVisibleVirtualIdBefore(id)]),
-  "dropping the second classify and adding the `.vue.ts`/`?` pre-gate must not change any result",
+  MATRIX.map((id) => [id, canonicalAdditions.get(id) ?? fromPluginVisibleVirtualIdBefore(id)]),
+  "legacy classifier results remain exact; only the eight canonical Vue IDs are added",
 );
 
 // The pre-gate must not be the only thing standing between an id and a non-null

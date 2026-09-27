@@ -114,7 +114,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
   assert.equal(
     expectResolvedId(resolved),
-    `${source}.__vize_style_0.css?vue=&type=style&index=0&scoped=data-v-resolve&lang=css&vize-file=${encodeURIComponent(source)}`,
+    `${source}.__vize_style_0.css?vue=&type=style&index=0&scoped=data-v-resolve&lang=css&vize-file=${encodeURIComponent(source).replaceAll(".", "%2E")}`,
     "Vue style queries should resolve to CSS-visible virtual style IDs in build mode",
   );
 }
@@ -1414,7 +1414,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
   assert.equal(
     expectResolvedId(resolved),
-    `${source}.__vize_style_0.css?vue=&type=style&index=0&lang=css&vize-file=${encodeURIComponent(source)}`,
+    `${source}.__vize_style_0.css?vue=&type=style&index=0&lang=css&vize-file=${encodeURIComponent(source).replaceAll(".", "%2E")}`,
     "Vue style queries should stay CSS-visible so Vite extracts them",
   );
 }
