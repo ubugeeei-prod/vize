@@ -90,3 +90,12 @@ are unchanged; historical API names are not presented as current exports.
 
 The prepared decisions and explicit remaining scope are mirrored in the
 [#6832 issue record](https://github.com/ubugeeei-prod/vize/issues/6832#issuecomment-5854097689).
+
+## Exact-head Actions repair
+
+Actions run 36308939041 compiled the CLI, then found the Phase2 live law link
+still pointing at the moved `repro_folio.rs`. The bounded
+`rename-current-dump-links.py` follows that href and the current format-law
+reference to `repro_dump.rs`. Completed report counts, PRs, link labels and
+archived records remain byte exact. The existing current-link contract is
+rerun; Actions and queue acceptance remain required at the new head.
