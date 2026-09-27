@@ -4,6 +4,7 @@
 // davinci-storage-policy.test.ts.
 
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
@@ -31,7 +32,11 @@ const expectedRows = parseStorageInventory(
 );
 
 test("the storage aggregates are derived from the exact inventory, never hand-copied", () => {
-  const summary = fs.readFileSync(path.join(repoRoot, STORAGE_SUMMARY_REL), "utf8");
+  const summary = execFileSync(
+    process.execPath,
+    ["tools/support/compat/davinci/storage-summary.mjs", "--summary"],
+    { cwd: repoRoot, encoding: "utf8" },
+  );
   assert.equal(
     summary,
     renderStorageSummary(expectedRows),

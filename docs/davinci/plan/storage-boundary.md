@@ -27,9 +27,9 @@ constructor, and method path reached through a direct `Vec` import or alias.
 The executable ledger requires strict equality, so both growth and reduction
 must update the file row in the same change. The aggregates (retained
 `alloc::vec::Vec` totals, per category and per scope) are derived from those
-rows into the generated [storage summary](./storage-summary.md) by
-`rust-script tools/commands/davinci/storage-summary.rs --write`, never copied
-by hand; the regenerated page shows the aggregate movement of every change.
+rows into the [storage summary run artifact](./storage-summary.md) by
+`node tools/support/compat/davinci/generated-ledgers.mjs --write`, never copied
+by hand or committed; full CI and release publish the validated checkout’s totals.
 
 | Category | Reason                                                                                                                    |
 | -------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -41,7 +41,7 @@ by hand; the regenerated page shows the aggregate movement of every change.
 
 This is not an endorsement of every retained allocation. A focused change may
 replace a site with `SmallVec` after measuring a bound; that change lowers the
-exact ledger row in the same commit (the regenerated summary lowers with it),
+exact ledger row in the same commit (the next run artifact lowers with it),
 making reintroduction fail.
 Mechanical conversion of source-sized buffers is not a goal because it can
 move large payloads onto the stack or add spill bookkeeping without reducing
@@ -76,3 +76,5 @@ or count and fails the gate instead of becoming a `no_std` escape from L0.
 checks every production file, category, scope, and owned-storage type for exact
 equality with the TSV; `tests/tooling/davinci-storage-summary.test.ts` checks
 the generated summary for byte equality with the aggregates of the TSV rows.
+The artifact staleness test additionally rejects missing and edited output in
+an isolated directory.

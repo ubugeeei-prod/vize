@@ -8,10 +8,9 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-// Davinci plan matrices are generated artifacts committed to the repo
-// (docs/davinci/plan/*.md, and since P2-15 the fixture plane under
-// tests/fixtures/). Each generator supports `--check`, which regenerates
-// in memory and byte-compares against the committed artifact.
+// Fixture and ratchet inventories remain committed; whole-repository rule and
+// storage aggregates are generated run artifacts (tested below in scratch dirs).
+// Each --check regenerates and compares bytes against its actual saved output.
 // Add one entry per matrix (P0-8 rule-parity joins this list).
 //
 // The croquis consumption matrix and the consumer migration surfaces are
@@ -27,11 +26,6 @@ const matrices = [
     artifact: "docs/davinci/plan/croquis-consumption.md + croquis-consumption/<crate>.md",
   },
   {
-    name: "rule-parity matrix (SFC × JSX)",
-    generator: "tools/commands/davinci/rule-parity.rs",
-    artifact: "docs/davinci/plan/rule-parity.md",
-  },
-  {
     name: "SourceLocation consumer inventory",
     generator: "tools/commands/davinci/sourcelocation-inventory.rs",
     artifact: "docs/davinci/plan/sourcelocation-inventory.md",
@@ -41,11 +35,6 @@ const matrices = [
     generator: "tools/commands/davinci/consumer-migration-surfaces.rs",
     artifact:
       "docs/davinci/plan/consumer-migration-surfaces.md + consumer-migration-surfaces/<consumer>/<crate>.tsv",
-  },
-  {
-    name: "storage summary (aggregates of the per-file storage ledger)",
-    generator: "tools/commands/davinci/storage-summary.rs",
-    artifact: "docs/davinci/plan/storage-summary.md",
   },
   {
     name: "natural v-on corpus inventory (evidence for the inline v-on buckets)",
@@ -81,6 +70,35 @@ for (const matrix of matrices) {
         `  rust-script ${matrix.generator} --write\n\n` +
         `${result.stdout}${result.stderr}`.trim(),
     );
+  });
+}
+
+for (const name of ["rule-parity", "storage-summary"]) {
+  test(`${name} run artifact is deterministic and rejects missing or edited output`, () => {
+    const scratch = fs.mkdtempSync(path.join(os.tmpdir(), `davinci-${name}-`));
+    const generator = path.join(repoRoot, `tools/support/compat/davinci/${name}.mjs`);
+    const run = (mode: string) =>
+      spawnSync(process.execPath, [generator, mode, "--out-dir", scratch], {
+        cwd: repoRoot,
+        encoding: "utf8",
+      });
+    try {
+      assert.equal(run("--check").status, 1, "missing run artifact was accepted");
+      const write = run("--write");
+      assert.equal(write.status, 0, `${write.stdout}${write.stderr}`);
+      const clean = run("--check");
+      assert.equal(clean.status, 0, `${clean.stdout}${clean.stderr}`);
+      const artifact = path.join(scratch, `${name}.md`);
+      const first = fs.readFileSync(artifact, "utf8");
+      fs.appendFileSync(artifact, "<!-- injected edit -->\n");
+      const stale = run("--check");
+      assert.equal(stale.status, 1, "edited run artifact was accepted");
+      assert.match(stale.stderr, /drifted from the current sources/u);
+      assert.equal(run("--write").status, 0);
+      assert.equal(fs.readFileSync(artifact, "utf8"), first);
+    } finally {
+      fs.rmSync(scratch, { recursive: true, force: true });
+    }
   });
 }
 

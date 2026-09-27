@@ -14,7 +14,7 @@ use std::{env, process::ExitCode};
 mod artifact_command;
 
 const USAGE: &str =
-    "usage: rust-script tools/commands/davinci/storage-summary.rs --write | --check";
+    "usage: rust-script tools/commands/davinci/storage-summary.rs --write | --check | --summary [--out-dir <dir>]";
 const LEGACY_GENERATOR: &str = "tools/support/compat/davinci/storage-summary.mjs";
 
 fn main() -> ExitCode {

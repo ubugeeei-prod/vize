@@ -308,6 +308,11 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and
 - VRT, tsgo-required tests and ledger checks leave the PR tier.
 - Whole-repo generated ledgers stop being committed.
 
+The [generated-ledger decision](./2026-09-27-generated-ledgers.md) records
+[#6867](https://github.com/ubugeeei-prod/vize/issues/6867): current rule/storage
+tables and cross-crate summaries are CI/release artifacts; authored guides,
+per-crate evidence, corpus scope witnesses and reviewed ratchets stay committed.
+
 ## Order of work
 
 See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work)

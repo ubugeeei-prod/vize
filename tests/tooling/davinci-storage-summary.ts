@@ -16,7 +16,7 @@ import {
 import { storageKinds, type StorageKind } from "./davinci-storage-scan.ts";
 
 export const STORAGE_INVENTORY_REL = "docs/davinci/plan/storage-inventory.tsv";
-export const STORAGE_SUMMARY_REL = "docs/davinci/plan/storage-summary.md";
+export const STORAGE_SUMMARY_REL = "artifacts/davinci-ledgers/storage-summary.md";
 export const STORAGE_SUMMARY_REGEN =
   "rust-script tools/commands/davinci/storage-summary.rs --write";
 
@@ -57,10 +57,10 @@ export function renderStorageSummary(rows: readonly InventoryRow[]): string {
 
 # Davinci storage summary
 
-Aggregates of the per-file [\`storage-inventory.tsv\`](./storage-inventory.tsv)
-ledger behind the [storage boundary](./storage-boundary.md). Every number here
+Aggregates of the per-file \`${STORAGE_INVENTORY_REL}\`
+ledger behind \`docs/davinci/plan/storage-boundary.md\`. Every number here
 is derived from the ledger rows, so a change that moves a count updates its
-file row and regenerates this page; the storage policy test holds the rows to
+file row and regenerates this run artifact; the storage policy test holds the rows to
 strict equality with the sources and this page to byte equality with the rows.
 
 ## Retained \`alloc::vec::Vec\`

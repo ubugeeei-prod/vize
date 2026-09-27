@@ -5,6 +5,9 @@ target/
 # Davinci bench harness run output (committed baselines live under baseline/)
 tools/benchmarks/results/davinci/*.json
 
+# Whole-repository Davinci count reports are CI/release artifacts.
+/artifacts/davinci-ledgers/
+
 # Node.js
 node_modules/
 .mooncakes/

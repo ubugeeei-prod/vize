@@ -105,6 +105,7 @@ fn run_node_generator_result(
     let status = Command::new("node")
         .arg(&generator)
         .arg(mode)
+        .args(std::env::args().skip(2))
         .current_dir(&root)
         .status()
         .map_err(|error| format!("failed to run node {} {mode}: {error}", generator.display()))?;
