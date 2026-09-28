@@ -38,10 +38,16 @@ fn repeated_lenses_share_a_parse_with_links_and_hover() {
     let first = CodeLensService::get_lenses(&state, SFC, &uri);
     same(&first, &clean(SFC, &uri));
     assert_eq!(first.len(), 2);
-    assert_eq!(first[0].command.as_ref().unwrap().title, "2 references");
-    assert_eq!(first[0].range.start.line, 2);
-    assert_eq!(first[1].command.as_ref().unwrap().title, "1 reference");
-    assert_eq!(first[1].range.start.line, 3);
+    assert_eq!(
+        first[0].command.as_ref().unwrap().title,
+        "2 template/style references"
+    );
+    assert_eq!(first[0].range.start.line, 1);
+    assert_eq!(
+        first[1].command.as_ref().unwrap().title,
+        "1 template/style reference"
+    );
+    assert_eq!(first[1].range.start.line, 2);
     assert_stats(&state, 1, 1);
     same(&CodeLensService::get_lenses(&state, SFC, &uri), &first);
     assert_stats(&state, 1, 0);
@@ -63,8 +69,11 @@ fn an_edit_changes_reference_counts_without_stale_ranges() {
         .replace("<script setup>", "\r\n<script setup>");
     let lenses = CodeLensService::get_lenses(&state, &edited, &uri);
     same(&lenses, &clean(&edited, &uri));
-    assert_eq!(lenses[0].command.as_ref().unwrap().title, "1 reference");
-    assert_eq!(lenses[0].range.start.line, 3);
+    assert_eq!(
+        lenses[0].command.as_ref().unwrap().title,
+        "1 template/style reference"
+    );
+    assert_eq!(lenses[0].range.start.line, 2);
     assert_stats(&state, 1, 1);
 }
 
@@ -104,6 +113,21 @@ fn regular_script_lenses_preserve_their_locations() {
     let lenses = CodeLensService::get_lenses(&state, text, &uri);
     same(&lenses, &clean(text, &uri));
     assert_eq!(lenses.len(), 1);
-    assert_eq!(lenses[0].range.start.line, 2);
+    assert_eq!(lenses[0].range.start.line, 1);
     assert_stats(&state, 1, 1);
+}
+
+#[test]
+fn lens_title_identifies_template_scope_when_script_also_uses_binding() {
+    let state = ServerState::new();
+    let uri = uri();
+    let text =
+        "<script setup>\nconst count = 0\ncount + 1\n</script>\n<template>{{ count }}</template>";
+    let lenses = CodeLensService::get_lenses(&state, text, &uri);
+    assert_eq!(lenses.len(), 1);
+    assert_eq!(lenses[0].range.start.line, 1);
+    assert_eq!(
+        lenses[0].command.as_ref().unwrap().title,
+        "1 template/style reference"
+    );
 }

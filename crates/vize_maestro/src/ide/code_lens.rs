@@ -66,7 +66,7 @@ impl CodeLensService {
         let declarations = Self::find_declarations(script);
 
         for (name, line, _col) in declarations {
-            // Count references in template
+            // Count matches in template and style; script references are not included.
             let template_refs = descriptor
                 .template
                 .as_ref()
@@ -86,18 +86,18 @@ impl CodeLensService {
                 lenses.push(CodeLens {
                     range: Range {
                         start: Position {
-                            line: base_line + line - 1,
+                            line: base_line + line - 2,
                             character: 0,
                         },
                         end: Position {
-                            line: base_line + line - 1,
+                            line: base_line + line - 2,
                             character: 0,
                         },
                     },
                     #[expect(clippy::disallowed_macros, reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!")]
                     command: Some(Command {
                         title: format!(
-                            "{} reference{}",
+                            "{} template/style reference{}",
                             total_refs,
                             if total_refs == 1 { "" } else { "s" }
                         ),
