@@ -121,7 +121,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .any(|segment| segment.kind == Kind::SlotOutlet);
         let mut slots = ComponentSlots {
             own: None,
-            default: std::vec::Vec::new(),
+            default: std::vec::Vec::with_capacity(children.len()),
             named: std::vec::Vec::new(),
             forwards,
             dynamic: std::vec::Vec::new(),
@@ -130,7 +130,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             let (name, pattern) = slot_head(self.ctx.source, content)?;
             // The walker puts every child in this one slot. A nested
             // `<template v-slot>` is transparent there, not a second slot.
-            let mut ranges = std::vec::Vec::new();
+            let mut ranges = std::vec::Vec::with_capacity(children.len());
             for child in children {
                 ranges.push((child, self.child_end(child)?));
             }

@@ -11,3 +11,7 @@ The maintainer placed [#7043](https://github.com/ubugeeei-prod/vize/pull/7043) i
 - Use squash merge and verify both terminal merge-queue checks and the resulting commit on fresh `main` before marking the PR delivered.
 
 The package alias resolves to physical `vize_l0`, which currently re-exports Carton's public storage API. The independent storage carve-out remains [#6834](https://github.com/ubugeeei-prod/vize/issues/6834). The rest of the substrate move and deletion remain [#6833](https://github.com/ubugeeei-prod/vize/issues/6833).
+
+## Instruction-count recovery
+
+The exact #7043 head `6e6570af4` exceeded three ceilings in [run 36401449923](https://github.com/ubugeeei-prod/vize/actions/runs/36401449923): DOM large by 2 instructions, SSR medium by 108, and SSR large by 4. All three repeats agreed. The same workflow on main `b4bed2e` [passed](https://github.com/ubugeeei-prod/vize/actions/runs/36401828737). Callgrind attributed the SSR medium difference to repeated growth of slot-child ranges; the other two differences appeared in string-copy library calls. Pre-size the known slot-child and captured-piece ranges so those compiler paths avoid repeated growth. Keep the budgets unchanged and require a new exact-head measurement before re-entering the queue.
