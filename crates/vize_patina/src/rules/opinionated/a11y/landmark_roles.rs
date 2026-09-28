@@ -116,10 +116,10 @@ fn has_bound_attribute(element: &ElementNode, name: &str) -> bool {
 
 fn get_label(element: &ElementNode) -> Option<LandmarkLabel> {
     for name in ["aria-label", "aria-labelledby", "title"] {
-        if let Some(value) = get_static_or_bound_literal_attribute_value(element, name) {
-            if !value.trim().is_empty() {
-                return Some(LandmarkLabel::Static(value.to_compact_string()));
-            }
+        if let Some(value) = get_static_or_bound_literal_attribute_value(element, name)
+            && !value.trim().is_empty()
+        {
+            return Some(LandmarkLabel::Static(value.to_compact_string()));
         }
 
         if has_bound_attribute(element, name) {
