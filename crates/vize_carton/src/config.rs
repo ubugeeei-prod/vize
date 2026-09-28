@@ -3,7 +3,8 @@
 mod loader;
 mod model;
 mod normalize;
-
+mod project;
+pub use crate::dialect::VueDialect;
 pub use loader::{
     LoadedConfig, LoadedConfigEntryFiles, LoadedConfigEntryIgnores,
     LoadedConfigExperimentalVueFlags, LoadedConfigWithFeatures, LoadedLibConfig,
@@ -37,5 +38,4 @@ pub use model::{
     TypeCheckerConfig, VizeConfig, VueVersion,
 };
 pub use normalize::normalize_public_config_value;
-
-pub use crate::dialect::VueDialect;
+pub use project::ProjectModel;

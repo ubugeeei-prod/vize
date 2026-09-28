@@ -80,15 +80,9 @@ impl ServerState {
         // Try to initialize
         let config = self.get_type_checker_config();
         let corsa_path = config.runtime_path().map(PathBuf::from);
+        let project = vize_l0::config::ProjectModel::new(Some(&workspace_root), None, &config);
         let options = BatchTypeCheckerOptions {
-            tsconfig_path: config.tsconfig.as_ref().map(|path| {
-                let path = PathBuf::from(path);
-                if path.is_absolute() {
-                    path
-                } else {
-                    workspace_root.join(path)
-                }
-            }),
+            tsconfig_path: project.tsconfig().map(PathBuf::from),
             virtual_ts_options: self.virtual_ts_options(),
         };
 
