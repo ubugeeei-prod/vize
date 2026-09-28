@@ -114,28 +114,24 @@ pub(super) fn artifact_macro_import_removal_spans(
     }
     let named: Vec<_> = specifiers
         .iter()
-        .enumerate()
-        .filter_map(|(index, specifier)| {
-            matches!(specifier, ImportDeclarationSpecifier::ImportSpecifier(_)).then_some(index)
+        .filter_map(|specifier| {
+            matches!(specifier, ImportDeclarationSpecifier::ImportSpecifier(_)).then_some((
+                specifier.span(),
+                artifact_macro_import_local_name(specifier, import_decl.source.value.as_str())
+                    .is_some(),
+            ))
         })
         .collect();
-    let runtime_named: Vec<_> = named
-        .iter()
-        .copied()
-        .filter(|&index| {
-            artifact_macro_import_local_name(&specifiers[index], import_decl.source.value.as_str())
-                .is_none()
-        })
-        .collect();
-    if runtime_named.len() == named.len() {
+    if named.iter().all(|(_, is_macro)| !is_macro) {
         return Vec::new();
     }
-    if runtime_named.is_empty() {
-        let Some(first) = named.first() else {
+    if named.iter().all(|(_, is_macro)| *is_macro) {
+        let Some((first_span, _)) = named.first() else {
             return Vec::new();
         };
-        let first_span = specifiers[*first].span();
-        let last_span = specifiers[*named.last().unwrap_or(first)].span();
+        let Some((last_span, _)) = named.last() else {
+            return Vec::new();
+        };
         let Some(before) = content.get(import_decl.span.start as usize..first_span.start as usize)
         else {
             return Vec::new();
@@ -160,26 +156,25 @@ pub(super) fn artifact_macro_import_removal_spans(
     let mut removals = Vec::new();
     let mut index = 0;
     while index < named.len() {
-        if runtime_named.contains(&named[index]) {
+        let Some((_, is_macro)) = named.get(index) else {
+            break;
+        };
+        if !is_macro {
             index += 1;
             continue;
         }
         let first = index;
-        while index < named.len() && !runtime_named.contains(&named[index]) {
+        while named.get(index).is_some_and(|(_, is_macro)| *is_macro) {
             index += 1;
         }
-        if index < named.len() {
-            removals.push((
-                specifiers[named[first]].span().start as usize,
-                specifiers[named[index]].span().start as usize,
-            ));
-        } else if first > 0 {
-            removals.push((
-                specifiers[named[first - 1]].span().end as usize,
-                specifiers[*named.last().unwrap_or(&named[first])]
-                    .span()
-                    .end as usize,
-            ));
+        if let (Some((first_span, _)), Some((next_span, _))) = (named.get(first), named.get(index))
+        {
+            removals.push((first_span.start as usize, next_span.start as usize));
+        } else if let (Some((previous_span, _)), Some((last_span, _))) = (
+            first.checked_sub(1).and_then(|i| named.get(i)),
+            named.last(),
+        ) {
+            removals.push((previous_span.end as usize, last_span.end as usize));
         }
     }
     removals
