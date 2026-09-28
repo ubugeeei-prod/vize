@@ -7,6 +7,7 @@ mod entry;
 mod expression;
 mod expression_retained;
 mod helpers;
+mod names;
 mod operations;
 mod setup;
 pub(crate) mod spans;

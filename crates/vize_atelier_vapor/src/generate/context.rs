@@ -3,6 +3,7 @@
 use super::{
     destructure::{parse_destructure_bindings, resolve_props_binding},
     expression,
+    names::NameSet,
 };
 use vize_atelier_core::codegen::document::EmitDocument;
 
@@ -26,7 +27,7 @@ pub(crate) struct GenerateContext<'a> {
     /// Used helpers for import generation
     pub(crate) used_helpers: FxHashSet<&'static str>,
     /// Events that need delegation (event names)
-    pub(crate) delegate_events: FxHashSet<String>,
+    pub(crate) delegate_events: NameSet,
     /// Text node references (element_id -> text_node_var)
     pub(crate) text_nodes: FxHashMap<usize, String>,
     /// Position of every node reached by a `ChildRef`/`NextRef` operation
@@ -50,7 +51,7 @@ pub(crate) struct GenerateContext<'a> {
     /// Counter for slot scope variable names
     pub(crate) slot_scope_count: usize,
     /// Components that have already been resolved (to avoid duplicate resolveComponent calls)
-    pub(crate) resolved_components: FxHashSet<String>,
+    pub(crate) resolved_components: NameSet,
     /// Component resolutions created inside callback scopes and removed on exit.
     resolved_component_scopes: std::vec::Vec<std::vec::Vec<String>>,
     /// Element IDs that are standalone text nodes (no _txt needed)
@@ -83,7 +84,7 @@ impl<'a> GenerateContext<'a> {
             element_template_map,
             temp_count: 0,
             used_helpers: FxHashSet::default(),
-            delegate_events: FxHashSet::default(),
+            delegate_events: NameSet::default(),
             text_nodes: FxHashMap::default(),
             node_positions: FxHashMap::default(),
             is_fragment: false,
@@ -93,7 +94,7 @@ impl<'a> GenerateContext<'a> {
             for_scopes: std::vec::Vec::new(),
             slot_scopes: std::vec::Vec::new(),
             slot_scope_count: 0,
-            resolved_components: FxHashSet::default(),
+            resolved_components: NameSet::default(),
             resolved_component_scopes: std::vec::Vec::new(),
             standalone_text_elements,
             binding_metadata,
