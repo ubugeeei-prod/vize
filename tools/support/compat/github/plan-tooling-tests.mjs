@@ -14,6 +14,7 @@ import {
   toolingTestScopes,
 } from "../../../config/vite-plus/tooling-test-scopes.ts";
 import { changedPaths } from "./plan-source-checks.mjs";
+import { toolingShardIds } from "./tooling-merge-shards.mjs";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const globalInputs = [...cacheInputs.workspace, "pnpm-workspace.yaml"];
@@ -112,6 +113,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   writeToolingPlan(plan, output);
   if (githubOutput && process.env.GITHUB_OUTPUT) {
     appendFileSync(process.env.GITHUB_OUTPUT, `tooling=${plan.tests.length > 0}\n`);
+    appendFileSync(
+      process.env.GITHUB_OUTPUT,
+      `tooling-shards=${JSON.stringify(toolingShardIds(tier))}\n`,
+    );
   }
   const message = `Tooling tests: ${plan.tests.length}/${plan.totalTests}; ${plan.deferredTests} deferred to T1; ${plan.reason}.\n`;
   process.stdout.write(message);

@@ -327,6 +327,8 @@ with the formatter's always-upload corpus evidence without changing build setup;
 
 [Tooling tier wiring](./2026-09-27-ci-tooling-tier-core.md) records the shared comparison base, queue-only VRT and preserved complete tooling task.
 
+[Complete tooling merge shards](./2026-09-28-tooling-merge-shards.md) records #6830's four isolated T1 jobs, exact-once inventory, serial in-job tests and unchanged required report.
+
 [Heavy tooling inputs](./2026-09-27-heavy-tooling-inputs.md) records corpus, Moon, benchmark, queue and stacked-PR source limits;
 [release tooling inputs](./2026-09-28-release-tooling-inputs.md) records audited release-contract selection for #6863.
 
