@@ -13,9 +13,10 @@ Tracked in [#6837](https://github.com/ubugeeei-prod/vize/issues/6837).
   matching where the legacy parser returns an error.
 - The exact-head instruction-count gate exposed a cross-crate cost after the scanner
   moved from Croquis to L1: 20 pinned Croquis and atelier cases exceeded their
-  unchanged ceilings on head `576baa9b3`. Keep the scanner API available for
-  cross-crate inlining and verify the effect with the exact-head instruction
-  workflow before re-entering the queue. The ceilings must not increase.
+  unchanged ceilings on head `576baa9b3`. A plain `#[inline]` hint gave
+  byte-identical counts on head `a05640f2a`; a control run on `main` passed all
+  ceilings. Force cross-crate inlining of the moved parser and measure it on the
+  exact PR head before re-entering the queue. The ceilings must not increase.
 
 TODO: line/column tracking still lives inside the scanner for the legacy
 descriptor; drop it once Croquis is replaced and positions come from the L0

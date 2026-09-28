@@ -154,7 +154,7 @@ pub(super) fn find_closing_tag_end(
 /// - `Ok(Some(...))` — successfully parsed block.
 /// - `Ok(None)` — no SFC block starts at this position.
 /// - `Err(...)` — a block starts here but is incomplete or malformed.
-#[inline]
+#[inline(always)]
 pub fn parse_block_fast<'a>(
     bytes: &'a [u8],
     source: &'a str,
