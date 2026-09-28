@@ -2,7 +2,7 @@
 source: crates/vize_atelier_sfc/src/style/tests.rs
 expression: result.as_str()
 ---
-#pages-store[data-v-123]{
+#pages-store{
   display: grid;
   row-gap: 1.5rem;
   @media (--mobile) {
