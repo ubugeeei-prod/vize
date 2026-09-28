@@ -26,7 +26,7 @@ void test("generateOutput ignores export default text inside template literals",
 
   assert.match(output, /export default fake/);
   assert.doesNotMatch(output, /const _sfc_main = fake/);
-  assert.match(output, /const _sfc_main = \{\};/);
+  assert.match(output, /const _sfc_main = \{ render \};/);
   assert.match(output, /export default _sfc_main;/);
 });
 

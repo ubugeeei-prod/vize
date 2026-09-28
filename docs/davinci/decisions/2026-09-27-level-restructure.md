@@ -291,7 +291,7 @@ Vize follows language-toolchain practice, not compiler-only practice. It stays l
 - **Edits have one representation.** Diagnostic fixes, code actions and lint autofixes are all L1 span edits tagged with a document version ([#6876](https://github.com/ubugeeei-prod/vize/issues/6876)).
 
 [Inspector comparison transport](./2026-09-27-inspector-compare-transport.md) preserves authoritative child failures when Node exits before input delivery.
-[Shared differential contract](./2026-09-28-differential-harness.md) fixes case/target coordinates and whole-product provenance for #6891; [native-only acceptance rates](./2026-09-28-native-acceptance-rates.md) count every registered coordinate for #6853 and separate unsupported, legacy-backed and unverified rows. The formatter fixture pack is 0/5; other products and complete dialect/T1/T2 coverage remain unfinished.
+[Shared differential contract and compiler SSR adapter preparation](./2026-09-28-differential-harness.md) fix case/target coordinates and whole-product provenance for #6891; [native-only acceptance rates](./2026-09-28-native-acceptance-rates.md) count every registered coordinate for #6853 and separate unsupported, legacy-backed and unverified rows. The formatter fixture pack is 0/5; compiler SSR native credit is 0; complete dialect/T1/T2 coverage remains unfinished.
 
 ## CI tiers
 
