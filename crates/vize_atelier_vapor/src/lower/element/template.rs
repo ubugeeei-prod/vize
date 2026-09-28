@@ -9,6 +9,7 @@ use vize_carton::Span;
 use vize_carton::ensure_sufficient_stack;
 
 /// Generate element template string (recursively includes static children)
+#[inline(always)]
 pub(crate) fn generate_element_template(el: &ElementNode<'_>, scope_id: Option<&str>) -> String {
     let mut template = EmitDocument::new(false);
     write_element_template(&mut template, el, scope_id);
