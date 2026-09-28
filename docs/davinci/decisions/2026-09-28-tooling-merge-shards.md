@@ -39,11 +39,24 @@ bounded first split, not proof of a two-minute merge queue: even a perfectly
 balanced quarter of the #7113 Node time is about 212 seconds before each
 shard's setup. The #7113 job also spent 111 seconds before its test step and
 the task rebuilt the native binding for about 55 seconds before Node tests
-started. At those timings, even zero tests would exceed two minutes. Test
-distribution and cross-job effects require an actual Actions run. Ordinary
-PR latency remains a separate #6830 input/setup problem. This local change
-is unmerged until Actions confirms complete coverage, evidence upload and
-the required aggregate on an exact head.
+started. At those timings, even zero tests would exceed two minutes. The
+diagnostic below measures the actual distribution and cross-job effects.
+Ordinary PR latency remains a separate #6830 input/setup problem. This local
+change is unmerged; the diagnostic result is not a protected queue run.
+
+The [exact diagnostic branch run 36444784514](https://github.com/ubugeeei-prod/vize/actions/runs/36444784514)
+finished successfully. Its four isolated shards ran 163/163/163/162 files,
+with 5,322 passes, zero failures and 12 skips combined. The four Node times
+were 299.52, 228.28, 146.68 and 177.60 seconds, totaling 852.07 seconds;
+the serial #7113 Node time was 847.70 seconds. The tooling steps took 348,
+274, 192 and 223 seconds, and the slowest job took 7m47s from runner start.
+The diagnostic aggregate succeeded after all four jobs, and shard 1 alone
+uploaded the unchanged formatter API evidence artifact. The run took 8m37s
+from creation to final status, still far above two minutes. An earlier
+diagnostic run failed two workflow contract tests tied to the former command
+name; those contracts now assert the per-shard CLI receipt and matrix wiring.
+The actual required `test-report` context and protected merge queue still
+need an exact-head PR run before this change can merge.
 
 ## Next measured choice
 
