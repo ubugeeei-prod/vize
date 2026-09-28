@@ -76,9 +76,11 @@ parent's head, create each PR with the parent branch as its base, and register
 all existing PRs with `gh stack link --remote origin <bottom> ... <top>`.
 Verify GitHub reports the same Stack number and ordered positions for every
 PR. Parent-base links or prose alone do not establish a native Stack.
-Do not auto-merge an individual layer. Once every layer's exact-head Actions
-passes, run `gh stack merge <top> --yes` to enter the protected merge queue.
-Track each queue candidate, actual merge and fresh `main` before completion.
+Do not auto-merge an individual layer. Once a contiguous prefix's exact-head
+Actions passes, run `gh stack merge <highest-ready-PR> --yes --squash` to enter
+the protected merge queue. After that prefix actually merges, rebase and
+retarget remaining children onto fresh `main`, rerun Actions, and verify their
+Stack membership. Track each queue candidate and actual merge before completion.
 
 For an independent PR, enable auto-merge (squash) once its PR checks pass.
 The merge queue runs the full suites. If a queue candidate fails, remove its

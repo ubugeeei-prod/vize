@@ -142,6 +142,9 @@ names with a dump extension; historical fixture bytes remain unchanged.
 Dependent product capture slices are registered as one GitHub native Stack
 after each conventional PR has the true parent branch as its base. Check the
 Stack number and ordered positions through the GitHub API. Individual layers
-do not use auto-merge. After every layer passes exact-head Actions, merge the
-top Stack through the protected queue and verify each actual merge on fresh
-main. Independent PRs use ordinary squash auto-merge after their checks pass.
+do not use auto-merge. Merge a contiguous exact-head-green prefix through the
+protected queue with `gh stack merge <highest-ready-PR> --yes --squash`; a red
+later layer stays out. Verify the prefix's actual merge, then rebase and
+retarget remaining layers on fresh main, rerun Actions, and verify Stack
+membership before the next prefix. Independent PRs use ordinary squash
+auto-merge after their checks pass.
