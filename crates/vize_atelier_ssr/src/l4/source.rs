@@ -6,6 +6,8 @@ use super::{
     bridge_supported, croquis, drops_directive, emission_supported, emit, profile,
     record_selection, select, surface_gate,
 };
+#[cfg(any(test, feature = "legacy-differential"))]
+use vize_l0::dump::capture::NoCapture;
 
 /// Lower `source` through L1->L2->L3, build the SSR string plan from the
 /// shared partition facts, and emit from it when the surface is admitted.

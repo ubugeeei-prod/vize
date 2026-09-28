@@ -120,6 +120,9 @@ pub trait CaptureSink {
 
     fn page<F: FnOnce() -> String>(&mut self, level: Level, step: &'static str, render: F);
 
+    /// Record an effective host option only for an observed compile.
+    fn effective_option<F: FnOnce() -> String>(&mut self, name: &'static str, value: F);
+
     /// Record a measured host-clock window. No clock is read by this trait.
     fn timing<F: FnOnce() -> u64>(&mut self, level: Level, step: &'static str, nanos: F);
 
@@ -142,6 +145,9 @@ impl CaptureSink for NoCapture {
 
     #[inline(always)]
     fn page<F: FnOnce() -> String>(&mut self, _: Level, _: &'static str, _: F) {}
+
+    #[inline(always)]
+    fn effective_option<F: FnOnce() -> String>(&mut self, _: &'static str, _: F) {}
 
     #[inline(always)]
     fn timing<F: FnOnce() -> u64>(&mut self, _: Level, _: &'static str, _: F) {}
@@ -168,6 +174,10 @@ impl CaptureSink for StageCapture {
             step,
             text: render(),
         });
+    }
+
+    fn effective_option<F: FnOnce() -> String>(&mut self, name: &'static str, value: F) {
+        self.option(name, value());
     }
 
     fn timing<F: FnOnce() -> u64>(&mut self, level: Level, step: &'static str, nanos: F) {
