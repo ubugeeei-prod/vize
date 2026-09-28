@@ -29,8 +29,12 @@ comparison against a fresh-main control measurement.
 | Small dynamic-prop deduplication without a hash table | [36448073726](https://github.com/ubugeeei-prod/vize/actions/runs/36448073726) | 25 | Output parity passed, but fused compile misses remained. |
 | Common HTML tags before the PHF lookup | [36448889203](https://github.com/ubugeeei-prod/vize/actions/runs/36448889203) | 23 | Fused compile improved, but independent codegen and generate probes exceeded ceilings. |
 | Common HTML tags with an out-of-line helper on then-fresh `371489b9` | [36449943926](https://github.com/ubugeeei-prod/vize/actions/runs/36449943926) | 10 | All fused compile probes passed; six DOM codegen and four Vapor generate probes still exceeded ceilings. |
+| Inline generated-name sets and small prop deduplication | [36451342550](https://github.com/ubugeeei-prod/vize/actions/runs/36451342550) | 2 | Only Vapor generate stress-wide +28 and stress-interp +44 remained. |
+| Lazy `Option<NameSet>` plus bounded large-prop capacity | [36452840301](https://github.com/ubugeeei-prod/vize/actions/runs/36452840301) | 4 | New Vapor lower misses appeared. |
+| Lazy `Option<NameSet>` alone | [36453809416](https://github.com/ubugeeei-prod/vize/actions/runs/36453809416) | 4 | The same four misses proved the lazy layout caused the regression. |
+| Best inline set plus bounded capacity, rebased after #7147 merge | [36457549037](https://github.com/ubugeeei-prod/vize/actions/runs/36457549037) | 2 | The same exact wide +28 and interp +44 Vapor generate ceilings remained. |
 
-The final experiment failed DOM compile in five fixtures and SSR/Vapor compile
+The packageable snapshot failed DOM compile in five fixtures and SSR/Vapor compile
 in six each, up to 13,837 instructions above a pinned ceiling. It matched the
 earlier compile-host experiment in 98 of 100 measurements. Callgrind showed
 unchanged exclusive tokenizer and L1 Recorder counts in the first queue run;
@@ -61,12 +65,22 @@ then-fresh `main` eliminated every fused compile miss, but DOM codegen still
 exceeded ceilings by 3–1,194 instructions and Vapor generate by 6–132. Three
 repeats agreed. It was kept off #7136; the global result is still red.
 
+The later inline generated-name-set implementation removed eight of those ten
+misses while preserving output parity. Lazily wrapping the sets in `Option`
+made Vapor lower regress in three fixtures, independently of the bounded
+large-prop capacity; do not include that layout. The best source candidate
+with the bounded 128-entry initial capacity was rebased on #7147's actual
+merge commit `b801e023` and measured again. It still missed exactly two Vapor
+generate ceilings: stress-wide 710,672 > 710,644 and stress-interp 1,856,542
+> 1,856,498. Three repeats agreed. Main may advance again before any PR
+change, and neither 98/100 run is merge acceptance.
+
 ## Next bounded work
 
-The bounded PHF/SipHash and out-of-line experiments did not pass. Stop
-variants. Keep #7136 dequeued while independent Davinci changes merge, and
+The bounded source experiments still did not pass. Stop variants. Keep #7136
+dequeued while independent Davinci changes merge, and
 bring the measured tradeoff to the maintainer: defer the source move, or
-authorize a separately reviewed codegen/generate optimization tied to the ten
+authorize a separately reviewed codegen/generate optimization tied to the two
 remaining probes. Either path keeps immutable ceilings, byte/error-recovery
 parity and the Cargo package check. Only after an exact-head candidate
 passes should #7136 and its native Stack descendants be rebased and sent
