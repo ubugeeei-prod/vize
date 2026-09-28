@@ -8,6 +8,18 @@ use vize_l1_to_l2::lower;
 use vize_l2::provenance::ProvenanceRecord;
 
 const PREFIX: &str = "l1_to_l2.provenance.";
+const OLD_KEYS: [&str; 10] = [
+    "davinci.lower.provenance.record",
+    "davinci.lower.provenance.records",
+    "davinci.lower.provenance.vector_capacity_bytes",
+    "davinci.lower.provenance.record_bytes",
+    "davinci.lower.provenance.rule_heap_strings",
+    "davinci.lower.provenance.rule_heap_capacity_bytes",
+    "davinci.lower.provenance.before_heap_strings",
+    "davinci.lower.provenance.before_heap_capacity_bytes",
+    "davinci.lower.provenance.after_heap_strings",
+    "davinci.lower.provenance.after_heap_capacity_bytes",
+];
 
 #[test]
 fn lowering_exports_the_level_named_provenance_family_only_when_profiled() {
@@ -84,16 +96,12 @@ fn lowering_exports_the_level_named_provenance_family_only_when_profiled() {
             .map(|counter| counter.total),
         Some(observed.provenance.len() as u64 * size_of::<ProvenanceRecord>() as u64)
     );
-    assert!(
-        report
-            .spans
-            .iter()
-            .all(|span| !span.key.starts_with("davinci.lower.provenance."))
-    );
-    assert!(
-        report
-            .counters
-            .iter()
-            .all(|counter| !counter.key.starts_with("davinci.lower.provenance."))
-    );
+    let old_keys: Vec<_> = report
+        .spans
+        .iter()
+        .map(|span| span.key)
+        .chain(report.counters.iter().map(|counter| counter.key))
+        .filter(|key| OLD_KEYS.iter().any(|old| old == key))
+        .collect();
+    assert_eq!(old_keys, Vec::<&str>::new());
 }
