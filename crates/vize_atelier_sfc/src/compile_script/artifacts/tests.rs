@@ -232,6 +232,36 @@ fn retains_runtime_binding_in_mixed_nuxt_import() {
 }
 
 #[test]
+fn removes_all_macros_from_mixed_typed_router_import() {
+    for import in [
+        "import { definePage, definePageMeta, useRoute } from '@typed-router'",
+        "import { useRoute, definePage, definePageMeta } from '@typed-router'",
+        "import { definePage, useRoute, definePageMeta } from '@typed-router'",
+    ] {
+        let content = format!(
+            "{import}\ndefinePage({{ name: 'docs' }})\ndefinePageMeta({{ title: 'Docs' }})\nconst route = useRoute()\n"
+        );
+        let artifacts = extract_macro_artifacts(&content, 0);
+        assert_eq!(artifacts.len(), 2, "{import}");
+        for artifact in &artifacts {
+            let module = artifact.module_code.as_deref().expect("artifact module");
+            assert!(
+                module.contains("import { useRoute } from '@typed-router'"),
+                "{module}"
+            );
+            assert!(!module.contains("import { definePage"), "{module}");
+        }
+        let erased = erase_artifact_macro_statements(&content).expect("macro erasure");
+        assert!(
+            erased.contains("import { useRoute } from '@typed-router'"),
+            "{erased}"
+        );
+        assert!(!erased.contains("definePage"), "{erased}");
+        assert!(erased.contains("const route = useRoute()"), "{erased}");
+    }
+}
+
+#[test]
 fn erases_define_route_rules_top_level_statement() {
     let content = r#"defineRouteRules({ prerender: true })
 const msg = 'ready'

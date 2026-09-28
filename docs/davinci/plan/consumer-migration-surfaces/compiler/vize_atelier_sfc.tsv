@@ -27,6 +27,9 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/artifacts.rs
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/artifacts.rs	7	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/artifacts.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/artifacts.rs	7	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/artifacts/imports.rs	3	l0	L0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/artifacts/imports.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/artifacts/imports.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/function_mode/compiler.rs	7	l0	L0	stage	vize_carton	compat	8
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/function_mode/compiler.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/function_mode/helpers.rs	6	l0	L0	stage	vize_carton	compat	1

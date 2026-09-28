@@ -5,16 +5,22 @@
 //! returning a loadable artifact for tools such as file-based routers.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, CallExpression, Expression, ImportDeclarationSpecifier, Statement};
+use oxc_ast::ast::{Argument, CallExpression, Expression, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_carton::{String, ToCompactString};
 use vize_croquis::macros::{artifact_macro_names, macro_artifact_kind};
 
 use crate::module_map::{Runs, apply_edits};
 use crate::types::SfcMacroArtifact;
 
+use self::imports::{
+    artifact_macro_import_removal_spans, collect_artifact_macro_import_bindings,
+    collect_static_imports, is_artifact_macro_only_import,
+};
 use super::runtime_bindings::collect_runtime_bindings;
+
+mod imports;
 
 pub(crate) fn extract_macro_artifacts(
     content: &str,
@@ -116,8 +122,9 @@ pub(crate) fn erase_artifact_macro_statements_traced(content: &str) -> Option<(S
             continue;
         }
 
-        if let Some((start, end)) = artifact_macro_import_removal_span(stmt, content) {
-            ranges.push((start, end));
+        let import_removals = artifact_macro_import_removal_spans(stmt, content);
+        if !import_removals.is_empty() {
+            ranges.extend(import_removals);
             continue;
         }
 
@@ -190,167 +197,6 @@ fn argument_source(arg: &Argument<'_>, source: &str) -> String {
         .get(start..end)
         .map(ToCompactString::to_compact_string)
         .unwrap_or_default()
-}
-
-fn collect_static_imports<'a>(
-    statements: impl Iterator<Item = &'a Statement<'a>>,
-    content: &str,
-) -> String {
-    let mut imports = String::default();
-
-    for stmt in statements {
-        if !matches!(stmt, Statement::ImportDeclaration(_)) {
-            continue;
-        }
-        if is_artifact_macro_only_import(stmt) {
-            continue;
-        }
-
-        let span = stmt.span();
-        let start = span.start as usize;
-        let end = span.end as usize;
-        let Some(import) = content.get(start..end) else {
-            continue;
-        };
-
-        if let Some((remove_start, remove_end)) = artifact_macro_import_removal_span(stmt, content)
-        {
-            let mut cleaned = String::default();
-            cleaned.push_str(content.get(start..remove_start).unwrap_or_default());
-            cleaned.push_str(content.get(remove_end..end).unwrap_or_default());
-            imports.push_str(cleaned.trim());
-        } else {
-            imports.push_str(import.trim());
-        }
-        imports.push('\n');
-    }
-
-    imports
-}
-
-fn collect_artifact_macro_import_bindings<'a>(
-    statements: impl Iterator<Item = &'a Statement<'a>>,
-) -> FxHashSet<String> {
-    let mut bindings = FxHashSet::default();
-
-    for stmt in statements {
-        let Statement::ImportDeclaration(import_decl) = stmt else {
-            continue;
-        };
-        if import_decl.import_kind.is_type()
-            || !is_known_artifact_macro_import_source(import_decl.source.value.as_str())
-        {
-            continue;
-        }
-        let Some(specifiers) = import_decl.specifiers.as_ref() else {
-            continue;
-        };
-        for specifier in specifiers {
-            if let Some(local) =
-                artifact_macro_import_local_name(specifier, import_decl.source.value.as_str())
-            {
-                bindings.insert(local.into());
-            }
-        }
-    }
-
-    bindings
-}
-
-fn is_artifact_macro_only_import(stmt: &Statement<'_>) -> bool {
-    let Statement::ImportDeclaration(import_decl) = stmt else {
-        return false;
-    };
-    if import_decl.import_kind.is_type()
-        || !is_known_artifact_macro_import_source(import_decl.source.value.as_str())
-    {
-        return false;
-    }
-    let Some(specifiers) = import_decl.specifiers.as_ref() else {
-        return false;
-    };
-    !specifiers.is_empty()
-        && specifiers.iter().all(|specifier| {
-            artifact_macro_import_local_name(specifier, import_decl.source.value.as_str()).is_some()
-        })
-}
-
-/// Remove a compile-time macro from an import that also carries runtime bindings.
-/// The source spans keep the remaining import and its provenance byte-identical.
-fn artifact_macro_import_removal_span(
-    stmt: &Statement<'_>,
-    content: &str,
-) -> Option<(usize, usize)> {
-    let Statement::ImportDeclaration(import_decl) = stmt else {
-        return None;
-    };
-    if import_decl.import_kind.is_type()
-        || !is_known_artifact_macro_import_source(import_decl.source.value.as_str())
-    {
-        return None;
-    }
-    let specifiers = import_decl.specifiers.as_ref()?;
-    if specifiers.len() < 2 {
-        return None;
-    }
-    let macro_indices: Vec<_> = specifiers
-        .iter()
-        .enumerate()
-        .filter_map(|(index, specifier)| {
-            artifact_macro_import_local_name(specifier, import_decl.source.value.as_str())
-                .map(|_| index)
-        })
-        .collect();
-    if macro_indices.len() != 1 {
-        return None;
-    }
-    let index = *macro_indices.first()?;
-    let macro_span = specifiers.get(index)?.span();
-    let other_named: Vec<_> = specifiers
-        .iter()
-        .enumerate()
-        .filter(|(other, specifier)| {
-            *other != index && matches!(specifier, ImportDeclarationSpecifier::ImportSpecifier(_))
-        })
-        .collect();
-    if other_named.is_empty() {
-        let before = content.get(import_decl.span.start as usize..macro_span.start as usize)?;
-        let open = before.rfind('{')? + import_decl.span.start as usize;
-        let after = content.get(macro_span.end as usize..import_decl.span.end as usize)?;
-        let close = after.find('}')? + macro_span.end as usize + 1;
-        let default_end = specifiers.first()?.span().end as usize;
-        return Some((default_end.min(open), close));
-    }
-    if let Some(next) = other_named.iter().find(|(other, _)| *other > index) {
-        return Some((macro_span.start as usize, next.1.span().start as usize));
-    }
-    let previous = other_named.last()?.1.span();
-    Some((previous.end as usize, macro_span.end as usize))
-}
-
-fn artifact_macro_import_local_name<'a>(
-    specifier: &'a ImportDeclarationSpecifier<'a>,
-    source: &str,
-) -> Option<&'a str> {
-    let ImportDeclarationSpecifier::ImportSpecifier(spec) = specifier else {
-        return None;
-    };
-    if spec.import_kind.is_type() {
-        return None;
-    }
-    let imported = spec.imported.name().as_str();
-    let local = spec.local.name.as_str();
-    if imported != local
-        || macro_artifact_kind(imported).is_none()
-        || (source == "#imports" && imported != "definePageMeta")
-    {
-        return None;
-    }
-    Some(local)
-}
-
-fn is_known_artifact_macro_import_source(source: &str) -> bool {
-    matches!(source, "@typed-router" | "#imports")
 }
 
 fn build_artifact_module(kind: &str, payload: &str, static_imports: &str) -> String {
