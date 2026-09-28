@@ -2,11 +2,14 @@
 
 use super::{
     Allocator, CaptureOutcome, CaptureSink, CompilerError, CustomElementMatcher, ErrorCode, Level,
-    NoCapture, RootNode, SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions,
+    RootNode, SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions,
     SsrCompilerOptions, SsrL4Request, SsrL4Selection, String, TemplateSyntaxMode, cstr, l4,
     parse_with_options_custom_elements_and_template_syntax, profile,
     transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
 };
+
+mod plain;
+pub(crate) use plain::compile_ssr_on_lane;
 
 pub(super) fn compile_ssr_inner<'a>(
     allocator: &'a Allocator,
@@ -17,7 +20,11 @@ pub(super) fn compile_ssr_inner<'a>(
     experimental_options: SsrCompilerExperimentalOptions,
     slotted: bool,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_inner_captured(
+    #[cfg(feature = "legacy-differential")]
+    let lane = crate::differential::production_lane();
+    #[cfg(not(feature = "legacy-differential"))]
+    let lane = SsrLane::Selected;
+    compile_ssr_on_lane(
         allocator,
         source,
         options,
@@ -25,7 +32,7 @@ pub(super) fn compile_ssr_inner<'a>(
         custom_elements,
         experimental_options,
         slotted,
-        &mut NoCapture,
+        lane,
     )
 }
 
@@ -67,34 +74,6 @@ pub(crate) enum SsrLane {
     Selected,
     #[cfg(any(test, feature = "legacy-differential"))]
     LegacyOnly,
-}
-
-#[expect(
-    clippy::too_many_arguments,
-    reason = "private SFC metadata is separate from public options"
-)]
-#[cfg(any(test, feature = "legacy-differential"))]
-pub(crate) fn compile_ssr_on_lane<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: SsrCompilerOptions,
-    template_syntax: TemplateSyntaxMode,
-    custom_elements: CustomElementMatcher,
-    experimental_options: SsrCompilerExperimentalOptions,
-    slotted: bool,
-    lane: SsrLane,
-) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    compile_ssr_on_lane_captured(
-        allocator,
-        source,
-        options,
-        template_syntax,
-        custom_elements,
-        experimental_options,
-        slotted,
-        lane,
-        &mut NoCapture,
-    )
 }
 
 #[expect(

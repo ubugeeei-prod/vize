@@ -4,12 +4,12 @@
 //! off because JSX render functions close over their setup scope.
 
 use vize_davinci::side_table::SideTable;
-use vize_l0::{Allocator, dump::capture::NoCapture};
+use vize_l0::Allocator;
 use vize_l1_to_l2::TransformExpressions;
 use vize_l2::op::Region;
 
 use super::emit::PlanFacts;
-use super::select::{L2Artifact, select_from_l2};
+use super::select::{L2Artifact, select_from_l2_plain};
 use super::{LegacyReason, SsrL4Selection, record_selection};
 use crate::codegen::SsrCodegenResult;
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
@@ -57,18 +57,10 @@ pub(super) fn select_l2_lane<'a>(
         diagnostics: 0,
     };
     let experimental = SsrCompilerExperimentalOptions::default();
-    select_from_l2(
-        allocator,
-        &artifact,
-        options,
-        &experimental,
-        true,
-        &mut NoCapture,
-        || {
-            if options.croquis.is_some() || options.binding_metadata.is_some() || options.inline {
-                return Err(LegacyReason::Options);
-            }
-            Ok(TransformExpressions::unprefixed(source, false))
-        },
-    )
+    select_from_l2_plain(allocator, &artifact, options, &experimental, true, || {
+        if options.croquis.is_some() || options.binding_metadata.is_some() || options.inline {
+            return Err(LegacyReason::Options);
+        }
+        Ok(TransformExpressions::unprefixed(source, false))
+    })
 }

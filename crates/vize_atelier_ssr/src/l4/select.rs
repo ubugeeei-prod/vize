@@ -101,3 +101,71 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
         )]),
     }
 }
+
+/// Preserve the ordinary no-sink L2 to L4 ABI. Opt-in capture uses the sibling above.
+pub(super) fn select_from_l2_plain<'a, 'e>(
+    allocator: &'a Allocator,
+    artifact: &L2Artifact<'_, 'a>,
+    options: &SsrCompilerOptions,
+    experimental: &SsrCompilerExperimentalOptions,
+    slotted: bool,
+    admit: impl FnOnce() -> Result<TransformExpressions<'e>, LegacyReason>,
+) -> SsrL4Selection {
+    let s3 = vize_l2_to_l3::lower(allocator, artifact.root);
+    let violations = verify(&s3.program);
+    if !violations.is_empty() {
+        return SsrL4Selection::Rejected(
+            violations
+                .into_iter()
+                .map(|violation| {
+                    cstr!("Davinci L4 verifier rejected SSR bridge input: {violation}")
+                })
+                .collect(),
+        );
+    }
+    if s3.partition.ops.len() != s3.program.ops.len() {
+        return SsrL4Selection::Rejected(std::vec![cstr!(
+            "Davinci L4 verifier rejected SSR bridge input: partition facts {} did not match ops {}",
+            s3.partition.ops.len(),
+            s3.program.ops.len()
+        )]);
+    }
+    let lowered = lower_l2_to_string_plan(allocator, artifact.root, &s3.partition);
+    if !lowered.errors.is_empty() {
+        return SsrL4Selection::Rejected(
+            lowered
+                .errors
+                .iter()
+                .map(|error| cstr!("Davinci L4 string-plan rejected SSR bridge input: {error:?}"))
+                .collect::<std::vec::Vec<String>>(),
+        );
+    }
+    record_bridge_counters(
+        lowered.plan.segments.len() as u64,
+        lowered.plan.partition.static_segments as u64,
+        lowered.plan.partition.dynamic_segments as u64,
+        s3.partition.ops.len() as u64,
+        artifact.diagnostics,
+    );
+
+    let mut exprs = match admit() {
+        Ok(exprs) => exprs,
+        Err(reason) => return SsrL4Selection::Legacy(reason),
+    };
+    let mut ctx = SsrCodegenContext::new_with_experimental_options(
+        allocator,
+        options,
+        artifact.source,
+        experimental.clone(),
+    );
+    ctx.slotted = slotted;
+    // The L2 program covers the whole template source, which starts at 0.
+    ctx.begin_render(0);
+    match emit::emit_plan(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {
+        Ok(()) => SsrL4Selection::Emitted(ctx.finish_render()),
+        Err(AdmissionFailure::Unsupported(reason)) => SsrL4Selection::Legacy(reason),
+        Err(AdmissionFailure::Invalid(message)) => SsrL4Selection::Rejected(std::vec![cstr!(
+            "Davinci L4 string-plan emitter rejected SSR artifact: {message}"
+        )]),
+    }
+}

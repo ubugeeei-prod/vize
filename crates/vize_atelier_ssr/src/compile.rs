@@ -10,7 +10,7 @@ use vize_atelier_core::{
 };
 use vize_l0::{
     Allocator, String, cstr,
-    dump::capture::{CaptureOutcome, CaptureSink, NoCapture},
+    dump::capture::{CaptureOutcome, CaptureSink},
     level::Level,
     profile,
 };

@@ -153,7 +153,6 @@ const ADMITTED_RULES: &[&str] = &[
 ];
 
 mod source;
-#[cfg(any(test, feature = "legacy-differential"))]
 pub(crate) use source::select_ssr_lane;
 pub(crate) use source::select_ssr_lane_captured;
 
