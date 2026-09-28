@@ -9,8 +9,8 @@
 //! `vue` is the only format today. Svelte, Analog and TSRX containers join as
 //! further [`ContainerFormat`] implementors with their own block rules.
 //!
-//! Status: skeleton. SFC splitting still lives in the legacy SFC parser and moves here
-//! under #6837; nothing in a product path calls this module yet.
+//! The opt-in stage-capture CLI uses this container's authored byte spans.
+//! Full product SFC descriptor migration remains #6837.
 
 pub mod vue;
 
@@ -73,6 +73,11 @@ pub struct ContainerError {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ContainerErrorCode {
+    /// L1 spans cannot address a source larger than u32::MAX bytes.
+    SourceTooLarge,
+    /// An interpolation did not close.
+    /// Consumers must not attribute the resulting block span to compilation.
+    UncertainInterpolation,
     /// An open tag reaches the end of the file.
     UnterminatedOpenTag,
     /// A block has no close tag.
