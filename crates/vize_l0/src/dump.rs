@@ -7,6 +7,7 @@
 use alloc::boxed::Box;
 use core::fmt;
 
+pub mod capture;
 pub mod runtime;
 pub mod value;
 

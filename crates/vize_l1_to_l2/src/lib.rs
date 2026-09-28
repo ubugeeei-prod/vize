@@ -80,9 +80,10 @@ pub use emit::{
     TransformRefusal, TransformScopeMark, TransformedExpr, UnsupportedReason, UnsupportedRefusal,
     decode_ssr_static_text, decode_template_entities, emit_dom, emit_dom_source,
     emit_dom_source_observed, emit_dom_source_observed_with_options,
-    emit_dom_source_sfc_observed_with_options, emit_dom_source_sfc_with_options,
-    emit_dom_source_with_caps, emit_dom_source_with_caps_observed, emit_dom_source_with_options,
-    emit_dom_with_options,
+    emit_dom_source_observed_with_options_captured, emit_dom_source_sfc_observed_with_options,
+    emit_dom_source_sfc_with_options, emit_dom_source_with_caps,
+    emit_dom_source_with_caps_observed, emit_dom_source_with_options,
+    emit_dom_source_with_options_captured, emit_dom_with_options,
 };
 #[cfg(any(test, feature = "legacy-differential"))]
 pub use emit::{

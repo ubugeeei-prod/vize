@@ -9,6 +9,7 @@ use vize_atelier_core::options::{
     TemplateSyntaxMode, TransformOptions, WhitespaceStrategy,
 };
 use vize_atelier_core::walk_probe::WalkCounts;
+use vize_l0::dump::capture::CaptureSink;
 use vize_l0::profiler::global_profiler;
 use vize_l0::{Allocator, profile};
 use vize_l1_to_l2::{
@@ -211,8 +212,11 @@ pub(super) fn l2_binding_table(metadata: Option<&BindingMetadata>) -> Option<Bin
     })
 }
 
-#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
-pub(super) fn try_emit_l2(
+#[expect(
+    clippy::too_many_arguments,
+    reason = "independent compile inputs and capture"
+)]
+pub(super) fn try_emit_l2_captured<C: CaptureSink>(
     allocator: &Allocator,
     source: &str,
     options: &DomCompilerOptions,
@@ -221,6 +225,7 @@ pub(super) fn try_emit_l2(
     hoisted_scope_id: Option<&str>,
     experimental_component_name: Option<&str>,
     pre_s2_walks: Option<WalkCounts>,
+    capture: &mut C,
 ) -> Option<CodegenResultWithSections> {
     let binding_table = l2_binding_table_for(options);
     let emit_options = l2_emit_options(
@@ -233,37 +238,41 @@ pub(super) fn try_emit_l2(
     )?;
     profile!(
         "atelier.dom.template.s2_codegen",
-        emit_l2(
+        emit_l2_captured(
             allocator,
             source,
             options.dialect,
             &emit_options,
             pre_s2_walks,
             false,
+            capture,
         )
     )
     .ok()
 }
 
 /// Emit one DOM module through L2, with the SFC-only slot check when requested.
-pub(super) fn emit_l2(
+/// The product L2 emitter with a compile-time selected stage capture sink.
+pub(super) fn emit_l2_captured<C: CaptureSink>(
     allocator: &Allocator,
     source: &str,
     dialect: vize_l0::config::VueVersion,
     options: &DomEmitOptions<'_>,
     pre_s2_walks: Option<WalkCounts>,
     strict_slot_params: bool,
+    capture: &mut C,
 ) -> Result<CodegenResultWithSections, EmitError> {
     let caps = LegacyCaps::for_version(dialect);
     let profiler = global_profiler();
     let emit = if profiler.is_enabled() {
-        let observed = if strict_slot_params {
-            vize_l1_to_l2::emit_dom_source_sfc_observed_with_options(
-                allocator, source, caps, options,
-            )?
-        } else {
-            vize_l1_to_l2::emit_dom_source_observed_with_options(allocator, source, caps, options)?
-        };
+        let observed = vize_l1_to_l2::emit_dom_source_observed_with_options_captured(
+            allocator,
+            source,
+            caps,
+            options,
+            strict_slot_params,
+            capture,
+        )?;
         let budget = observed.budget;
         // P2-12b observes the compiler path that actually produced this DOM
         // module. The regular entry point keeps the observer uninstantiated,
@@ -295,11 +304,14 @@ pub(super) fn emit_l2(
         );
         observed.emit
     } else {
-        if strict_slot_params {
-            vize_l1_to_l2::emit_dom_source_sfc_with_options(allocator, source, caps, options)?
-        } else {
-            vize_l1_to_l2::emit_dom_source_with_options(allocator, source, caps, options)?
-        }
+        vize_l1_to_l2::emit_dom_source_with_options_captured(
+            allocator,
+            source,
+            caps,
+            options,
+            strict_slot_params,
+            capture,
+        )?
     };
     Ok(CodegenResultWithSections {
         result: CodegenResult {

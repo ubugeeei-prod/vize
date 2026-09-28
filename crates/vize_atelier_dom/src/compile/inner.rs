@@ -9,6 +9,7 @@ use vize_atelier_core::{
     walk_probe::WalkCounts,
 };
 use vize_croquis::Croquis;
+use vize_l0::dump::capture::{CaptureOutcome, CaptureSink, NoCapture};
 use vize_l0::{Allocator, String, profile, profiler::global_profiler};
 
 use super::selection::{self, DomLegacyReason};
@@ -43,6 +44,26 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     hoisted_scope_id: Option<String>,
     pipeline_options: DomCompilePipelineOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResultWithSections) {
+    compile_template_inner_with_sections_captured(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        hoisted_scope_id,
+        pipeline_options,
+        &mut NoCapture,
+    )
+}
+
+pub(super) fn compile_template_inner_with_sections_captured<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+    pipeline_options: DomCompilePipelineOptions,
+    capture: &mut C,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResultWithSections) {
     let DomCompilePipelineOptions {
         custom_elements,
         codegen_options,
@@ -71,6 +92,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     let fatal_count = errors.iter().filter(|e| !e.is_recoverable()).count();
     if fatal_count > 0 {
         selection::record(Err(DomLegacyReason::ParseError));
+        capture.finish(|| CaptureOutcome::Rejected(String::from("parse-error")));
         let codegen_result = CodegenResult {
             code: String::default(),
             preamble: String::default(),
@@ -109,7 +131,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     let use_l2_emit = l2_refusal.is_none();
     let l2_custom_elements = custom_elements.clone();
     if use_l2_emit && !codegen_opts.source_map {
-        if let Some(result) = stage_options::try_emit_l2(
+        if let Some(result) = stage_options::try_emit_l2_captured(
             allocator,
             source,
             &options,
@@ -118,8 +140,10 @@ pub(super) fn compile_template_inner_with_sections<'a>(
             hoisted_scope_id.as_deref(),
             codegen_experimental_options.component_name.as_deref(),
             None,
+            capture,
         ) {
             selection::record(Ok(()));
+            capture.finish(|| CaptureOutcome::Accepted);
             return (root, errors.to_vec(), result);
         }
         selection::record(Err(DomLegacyReason::EmitRefused));
@@ -156,7 +180,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     errors.extend(transform_errors);
 
     let l2_emit = l2_emit_after_transform.and_then(|(options, hoisted_scope_id)| {
-        stage_options::try_emit_l2(
+        stage_options::try_emit_l2_captured(
             allocator,
             source,
             &options,
@@ -165,6 +189,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
             hoisted_scope_id.as_deref(),
             experimental_component_name.as_deref(),
             template_walks,
+            capture,
         )
     });
     if use_l2_emit && codegen_opts.source_map {
@@ -174,15 +199,25 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         });
     }
     let codegen_result = match l2_emit {
-        Some(result) => source_map::attach_compat_map(&root, &codegen_opts, result),
-        None => profile!(
-            "atelier.dom.template.codegen_compat",
-            generate_with_sections_and_experimental_options(
-                &root,
-                codegen_opts,
-                codegen_experimental_options
+        Some(result) => {
+            capture.finish(|| CaptureOutcome::Accepted);
+            source_map::attach_compat_map(&root, &codegen_opts, result)
+        }
+        None => {
+            capture.finish(|| {
+                CaptureOutcome::Legacy(String::from(
+                    l2_refusal.unwrap_or(DomLegacyReason::EmitRefused).id(),
+                ))
+            });
+            profile!(
+                "atelier.dom.template.codegen_compat",
+                generate_with_sections_and_experimental_options(
+                    &root,
+                    codegen_opts,
+                    codegen_experimental_options
+                )
             )
-        ),
+        }
     };
 
     (root, errors, codegen_result)

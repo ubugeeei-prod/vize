@@ -53,6 +53,27 @@ pub(super) enum DomLegacyReason {
 }
 
 impl DomLegacyReason {
+    /// A stable target-neutral capture reason, without profiler key prefixes.
+    pub(super) const fn id(self) -> &'static str {
+        match self {
+            Self::ParseError => "parse-error",
+            Self::Entry => "entry",
+            Self::EmitRefused => "emit-refused",
+            Self::Ssr => "ssr",
+            Self::PatternedTemplate => "patterned-template",
+            Self::SelfComponent => "self-component",
+            Self::CustomRenderer => "custom-renderer",
+            Self::Whitespace => "whitespace",
+            Self::Dialect => "dialect",
+            Self::TemplateSyntax => "template-syntax",
+            Self::Croquis => "analysis-context",
+            Self::PatternedSource => "patterned-source",
+            Self::DirectiveComment => "directive-comment",
+            #[cfg(feature = "legacy-differential")]
+            Self::Forced => "forced",
+        }
+    }
+
     /// The profiler counter this reason records.
     pub(super) const fn counter(self) -> &'static str {
         match self {

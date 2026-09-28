@@ -125,8 +125,9 @@ use crate::pass::walk::PageWalk;
 
 pub use self::budget::{
     DomEmitBudget, ObservedDomEmit, emit_dom_source_observed,
-    emit_dom_source_observed_with_options, emit_dom_source_sfc_observed_with_options,
-    emit_dom_source_with_caps_observed,
+    emit_dom_source_observed_with_options, emit_dom_source_observed_with_options_captured,
+    emit_dom_source_sfc_observed_with_options, emit_dom_source_with_caps_observed,
+    emit_dom_source_with_options_captured,
 };
 #[cfg(any(test, feature = "legacy-differential"))]
 pub use self::budget::{

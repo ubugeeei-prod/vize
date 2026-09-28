@@ -1,7 +1,10 @@
 use super::{
     compile_template_inner, compile_template_inner_with_sections,
     pipeline::DomCompilePipelineOptions,
-    sfc::{compile_template_inner_for_sfc, compile_template_inner_for_sfc_with_sections},
+    sfc::{
+        compile_template_inner_for_sfc, compile_template_inner_for_sfc_with_sections,
+        compile_template_inner_for_sfc_with_sections_captured,
+    },
 };
 use crate::DomCompilerOptions;
 use vize_atelier_core::{
@@ -11,6 +14,7 @@ use vize_atelier_core::{
         CodegenExperimentalOptions, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
     },
 };
+use vize_l0::dump::capture::StageCapture;
 use vize_l0::{Allocator, String};
 
 /// Compile with declarative custom-element patterns without growing public options.
@@ -59,6 +63,44 @@ pub fn compile_template_with_custom_elements_template_syntax_codegen_and_experim
             codegen_options,
             codegen_experimental_options,
         ),
+    );
+    (root, errors, result.into_result())
+}
+
+/// Compile one raw template and capture only the native stages used to emit
+/// its returned render function. The ordinary entry has no capture cost.
+#[doc(hidden)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "independent compile inputs and capture"
+)]
+pub fn compile_template_with_custom_elements_template_syntax_codegen_and_experimental_options_with_stage_capture<
+    'a,
+>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+    capture: &mut StageCapture,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    capture.option("source-map", options.source_map.to_string());
+    capture.option("hoist-static", options.hoist_static.to_string());
+    capture.option("inline", options.inline.to_string());
+    let (root, errors, result) = super::inner::compile_template_inner_with_sections_captured(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        None,
+        DomCompilePipelineOptions::allow_l2_with_experimental_options(
+            custom_elements,
+            codegen_options,
+            codegen_experimental_options,
+        ),
+        capture,
     );
     (root, errors, result.into_result())
 }
@@ -195,5 +237,41 @@ pub fn compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_i
         custom_elements,
         codegen_options,
         codegen_experimental_options,
+    )
+}
+
+/// Compile the SFC template with stage pages from the native backend that
+/// actually emitted the returned code. A compatibility selection clears them.
+#[doc(hidden)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "independent compile inputs and capture"
+)]
+pub fn compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options_with_stage_capture<
+    'a,
+>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+    capture: &mut StageCapture,
+) -> (Vec<CompilerError>, CodegenResultWithSections) {
+    capture.option("source-map", options.source_map.to_string());
+    capture.option("hoist-static", options.hoist_static.to_string());
+    capture.option("inline", options.inline.to_string());
+    compile_template_inner_for_sfc_with_sections_captured(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        hoisted_scope_id,
+        custom_elements,
+        codegen_options,
+        codegen_experimental_options,
+        capture,
     )
 }

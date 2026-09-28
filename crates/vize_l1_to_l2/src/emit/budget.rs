@@ -1,6 +1,10 @@
-use vize_davinci::pass::{BudgetObserver, PassObserver};
-use vize_l0::{Allocator, ensure_sufficient_stack};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_davinci::pass::{BudgetObserver, NoObserver, PassObserver};
+use vize_l0::dump::capture::{CaptureSink, NoCapture};
+use vize_l0::level::Level;
+use vize_l0::{Allocator, String, ensure_sufficient_stack};
 use vize_l1::{SurfaceParseOptions, parse_with_options};
+use vize_l2::dump::Page as L2Page;
 
 use crate::lower::{LegacyCaps, lower_with_caps_and_comment_policy};
 use crate::pass::{TransformProfile, run_dom_transform_with_profile};
@@ -86,14 +90,33 @@ fn emit_dom_source_observed_with_slot_policy(
     options: &DomEmitOptions<'_>,
     strict_slot_params: bool,
 ) -> Result<ObservedDomEmit, EmitError> {
+    emit_dom_source_observed_with_slot_policy_captured(
+        allocator,
+        source,
+        caps,
+        options,
+        strict_slot_params,
+        &mut NoCapture,
+    )
+}
+
+fn emit_dom_source_observed_with_slot_policy_captured<C: CaptureSink>(
+    allocator: &Allocator,
+    source: &str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    strict_slot_params: bool,
+    capture: &mut C,
+) -> Result<ObservedDomEmit, EmitError> {
     let mut transform = BudgetObserver::new();
-    let observed = emit_dom_source_with_options_and_observer(
+    let observed = emit_dom_source_with_options_and_observer_captured(
         allocator,
         source,
         caps,
         options,
         &mut transform,
         strict_slot_params,
+        capture,
     )?;
     Ok(ObservedDomEmit {
         emit: observed.emit,
@@ -103,6 +126,26 @@ fn emit_dom_source_observed_with_slot_policy(
             emit_visits: observed.emit_visits,
         },
     })
+}
+
+/// Observe the instruction budget and the executed stages in the same native
+/// DOM emission. The caller still decides whether the product accepted it.
+pub fn emit_dom_source_observed_with_options_captured<C: CaptureSink>(
+    allocator: &Allocator,
+    source: &str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    strict_slot_params: bool,
+    capture: &mut C,
+) -> Result<ObservedDomEmit, EmitError> {
+    emit_dom_source_observed_with_slot_policy_captured(
+        allocator,
+        source,
+        caps,
+        options,
+        strict_slot_params,
+        capture,
+    )
 }
 
 #[cfg(any(test, feature = "legacy-differential"))]
@@ -150,6 +193,32 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
     observer: &mut O,
     strict_slot_params: bool,
 ) -> Result<DomEmitObservation, EmitError> {
+    emit_dom_source_with_options_and_observer_captured(
+        allocator,
+        source,
+        caps,
+        options,
+        observer,
+        strict_slot_params,
+        &mut NoCapture,
+    )
+}
+
+/// The same native emission as the ordinary entry, with an optional compile-
+/// time selected stage sink. Page rendering is inside sink closures.
+pub(super) fn emit_dom_source_with_options_and_observer_captured<
+    'a,
+    O: PassObserver,
+    C: CaptureSink,
+>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    observer: &mut O,
+    strict_slot_params: bool,
+    capture: &mut C,
+) -> Result<DomEmitObservation, EmitError> {
     ensure_sufficient_stack(|| {
         let (tree, errors) = parse_with_options(
             allocator,
@@ -158,6 +227,11 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
                 experimental_in_tag_comments: options.experimental_in_tag_comments,
             },
         );
+        capture.page(Level::L1, "parse", || {
+            let mut text = String::default();
+            vize_l1::render::render(&tree, &mut |slice| text.push_str(slice));
+            text
+        });
         let mut lowered = lower_with_caps_and_comment_policy(
             allocator,
             &tree,
@@ -167,11 +241,41 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
             options.custom_element_patterns,
             options.custom_element_predicate,
         );
+        capture.page(Level::L2, "lower", || {
+            L2Page::of(&lowered.root.ops).print_to_string(DumpMode::Full)
+        });
         let mut profile = TransformProfile::DEFAULT;
         if !options.hoist_static {
             profile = profile.without_static_analysis();
         }
         let facts = run_dom_transform_with_profile(&mut lowered, observer, profile);
-        emit_dom_observed(&lowered, &facts, options, strict_slot_params)
+        capture.page(Level::L2, "transform", || {
+            L2Page::of(&lowered.root.ops).print_to_string(DumpMode::Full)
+        });
+        let emitted = emit_dom_observed(&lowered, &facts, options, strict_slot_params)?;
+        capture.page(Level::L4, "emit", || emitted.emit.assembled());
+        Ok(emitted)
     })
+}
+
+/// Capture pages from the exact source-to-DOM emission that returns `emit`.
+/// The caller commits or discards them once the product lane is selected.
+pub fn emit_dom_source_with_options_captured<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    strict_slot_params: bool,
+    capture: &mut C,
+) -> Result<DomEmit, EmitError> {
+    emit_dom_source_with_options_and_observer_captured(
+        allocator,
+        source,
+        caps,
+        options,
+        &mut NoObserver,
+        strict_slot_params,
+        capture,
+    )
+    .map(|observed| observed.emit)
 }

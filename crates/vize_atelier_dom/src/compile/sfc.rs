@@ -11,6 +11,7 @@ use vize_atelier_core::{
         CodegenExperimentalOptions, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
     },
 };
+use vize_l0::dump::capture::{CaptureOutcome, CaptureSink, NoCapture};
 use vize_l0::{Allocator, String, profile};
 
 mod p_end;
@@ -26,6 +27,34 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     custom_elements: CustomElementMatcher,
     codegen_options: CodegenOptions,
     codegen_experimental_options: CodegenExperimentalOptions,
+) -> (Vec<CompilerError>, CodegenResultWithSections) {
+    compile_template_inner_for_sfc_with_sections_captured(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        hoisted_scope_id,
+        custom_elements,
+        codegen_options,
+        codegen_experimental_options,
+        &mut NoCapture,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "independent compile inputs and capture"
+)]
+pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+    capture: &mut C,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
     let codegen_opts = stage_options::codegen_options(&options, codegen_options.clone());
     let experimental_self_component = codegen_experimental_options.self_component;
@@ -59,10 +88,19 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
         if let Some(l2_options) = l2_options
             && let Ok(result) = profile!(
                 "atelier.dom.template.s2_codegen_sfc_fast",
-                stage_options::emit_l2(allocator, source, options.dialect, &l2_options, None, true)
+                stage_options::emit_l2_captured(
+                    allocator,
+                    source,
+                    options.dialect,
+                    &l2_options,
+                    None,
+                    true,
+                    capture,
+                )
             )
         {
             selection::record(Ok(()));
+            capture.finish(|| CaptureOutcome::Accepted);
             return (Vec::new(), result);
         }
         force_compat_sections = true;
@@ -82,13 +120,14 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
         )
     };
 
-    let (_, errors, result) = compile_template_inner_with_sections(
+    let (_, errors, result) = super::inner::compile_template_inner_with_sections_captured(
         allocator,
         source,
         options,
         template_syntax,
         hoisted_scope_id,
         pipeline_options,
+        capture,
     );
     (errors, result)
 }
