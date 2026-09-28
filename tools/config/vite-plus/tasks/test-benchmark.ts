@@ -114,10 +114,10 @@ export const testAndBenchmarkTasks = defineTasks({
     `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 ${toolingTestFiles}`,
   ),
   "test:scripts:pr": noCacheTask(
-    `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && node tools/support/compat/github/run-tooling-tests.mjs`,
+    `${runTask("build:native:tooling")} && rust-script tools/commands/ci/verify-tool-layout.rs && node tools/support/compat/github/run-tooling-tests.mjs`,
   ),
   "test:scripts:merge-shard": noCacheTask(
-    `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && VIZE_TEST_REQUIRE_TSGO=1 node tools/support/compat/github/run-tooling-tests.mjs --merge-shard`,
+    `${runTask("build:native:tooling")} && rust-script tools/commands/ci/verify-tool-layout.rs && VIZE_TEST_REQUIRE_TSGO=1 node tools/support/compat/github/run-tooling-tests.mjs --merge-shard`,
   ),
   "test:vscode-extension:vsix": noCacheTask(
     runInVscodeExtension(packageVscodeExtension, assertVscodePackage),

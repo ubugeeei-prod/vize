@@ -35,6 +35,7 @@
     "build": "node ./scripts/build-local.mjs --release",
     "build:ci": "napi build --platform --profile ci --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi,legacy --output-dir . && node ./scripts/sync-entrypoint.mjs",
     "build:debug": "node ./scripts/build-local.mjs",
+    "build:tooling": "node ./scripts/build-local.mjs --profile-ci",
     "prepublishOnly": "napi pre-publish -t npm --no-gh-release --skip-optional-publish && node ./scripts/sync-entrypoint.mjs"
   },
   "devDependencies": {

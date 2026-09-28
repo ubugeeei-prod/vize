@@ -7,6 +7,10 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const packageDir = path.resolve(scriptDir, "..");
 const outputDir = path.join(packageDir, ".artifacts", "native");
 const isRelease = process.argv.includes("--release");
+const isCiProfile = process.argv.includes("--profile-ci");
+if (isRelease && isCiProfile) {
+  throw new Error("native build cannot use release and ci profiles together");
+}
 
 const resolveMacOsSdkRoot = () => {
   if (process.env.SDKROOT?.trim()) {
@@ -77,6 +81,8 @@ const buildArgs = [
 
 if (isRelease) {
   buildArgs.splice(4, 0, "--release");
+} else if (isCiProfile) {
+  buildArgs.splice(4, 0, "--profile", "ci");
 }
 
 const buildResult = spawnSync("pnpm", buildArgs, {

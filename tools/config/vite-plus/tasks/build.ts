@@ -63,6 +63,9 @@ export const buildTasks = defineTasks({
   // matches the profile that vite-plugin-vize uses for standalone tests.
   // test:js reuses this successful build instead of invoking Cargo again.
   "build:native:test": noCacheTask(runPackageScriptDirectly("build:debug", ["./npm/native"])),
+  // Tooling already builds the source CLI in Cargo's ci profile. Keep the
+  // no-JS local wrapper while testing whether the same profile reuses outputs.
+  "build:native:tooling": noCacheTask(runPackageScriptDirectly("build:tooling", ["./npm/native"])),
   "build:wasm": task(moonScript("build_vitrine_wasm", "nodejs", "npm/builder/vite/wasm")),
   "build:wasm-web": task(moonScript("build_vitrine_wasm", "web", "playground/src/wasm")),
   "build:vite-plugin": noCacheTask(
