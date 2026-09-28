@@ -94,6 +94,7 @@ impl DiagnosticService {
 mod tests {
     use super::*;
     use tower_lsp::lsp_types::NumberOrString;
+    use vize_l0::cstr;
 
     #[test]
     fn only_authored_plain_scripts_take_the_corsa_script_path() {
@@ -106,12 +107,12 @@ mod tests {
             "plain.cjs",
         ] {
             assert!(is_script_uri(
-                &Url::parse(&format!("file:///src/{path}")).unwrap()
+                &Url::parse(&cstr!("file:///src/{path}")).unwrap()
             ));
         }
         for path in ["App.vue", "plain.tsx", "plain.jsx", "config.json"] {
             assert!(!is_script_uri(
-                &Url::parse(&format!("file:///src/{path}")).unwrap()
+                &Url::parse(&cstr!("file:///src/{path}")).unwrap()
             ));
         }
     }
