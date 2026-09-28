@@ -679,6 +679,15 @@ jobs:
         if: steps.vrt.outcome == 'failure'
         run: exit 1
 
+  test-inventory:
+    name: test-inventory
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    if: ${{ always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/report-test-inventory
+
   test-report:
     name: test-report
     runs-on: ubuntu-24.04
@@ -693,12 +702,14 @@ jobs:
       - pr-source-checks
       - instruction-counts
       - level-dependency-direction
+      - test-inventory
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: ./.github/actions/report-test-inventory
-      # Runs last so the inventory is collected and uploaded either way.
+        with:
+          sparse-checkout: tools/support/compat/github/require-needs-success.mjs
+          sparse-checkout-cone-mode: false
       - name: Require every needed job to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
         run: node tools/support/compat/github/require-needs-success.mjs

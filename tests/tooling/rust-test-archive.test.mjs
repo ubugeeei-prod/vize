@@ -130,8 +130,7 @@ void test("Rust tier gate rejects failed, cancelled, absent, and skipped require
   for (const job of ["pr-rust-fast-clippy", "pr-rust-fast-tests"]) {
     for (const result of ["failure", "cancelled", "skipped"]) {
       assert.equal(
-        requireRustTier("pull_request", "true", { ...needs, [job]: { result } }, "true")
-          .exitCode,
+        requireRustTier("pull_request", "true", { ...needs, [job]: { result } }, "true").exitCode,
         1,
       );
     }

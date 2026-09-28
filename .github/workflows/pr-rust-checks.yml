@@ -345,7 +345,8 @@ jobs:
   rust-source-report:
     name: Rust source report
     if: ${{ always() }}
-    needs: [merge-rust-source, pr-rust-build, pr-rust-shard, pr-rust-fast-clippy, pr-rust-fast-tests]
+    needs:
+      [merge-rust-source, pr-rust-build, pr-rust-shard, pr-rust-fast-clippy, pr-rust-fast-tests]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

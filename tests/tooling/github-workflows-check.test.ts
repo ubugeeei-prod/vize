@@ -34,6 +34,7 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
     ["source-coverage", 40],
     ["branch-coverage", 45],
     ["playground-test", 30],
+    ["test-inventory", 5],
     ["test-report", 5],
     ["test-report-comment", 5],
   ] as const) {
@@ -99,6 +100,7 @@ test("SemVer checks run on exact-SHA release dispatches", () => {
 test("check workflow gates PRs and merge groups, and comments on PRs", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const reportJob = workflowJobBody(workflow, "test-report");
+  const inventoryJob = workflowJobBody(workflow, "test-inventory");
   const commentJob = workflowJobBody(workflow, "test-report-comment");
 
   assert.match(
@@ -119,7 +121,8 @@ test("check workflow gates PRs and merge groups, and comments on PRs", () => {
     assert.match(reportJob, new RegExp(`- ${jobName}\\b`));
   }
 
-  assert.match(reportJob, /uses:\s*\.\/\.github\/actions\/report-test-inventory/);
+  assert.match(inventoryJob, /uses:\s*\.\/\.github\/actions\/report-test-inventory/);
+  assert.match(reportJob, /- test-inventory\b/);
   const inventoryAction = readRepoFile(".github", "actions", "report-test-inventory", "action.yml");
   assert.match(
     inventoryAction,

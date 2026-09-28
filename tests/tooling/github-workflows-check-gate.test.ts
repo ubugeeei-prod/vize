@@ -18,6 +18,7 @@ const PR_JOBS = [
   "pr-source-checks",
   "instruction-counts",
   "level-dependency-direction",
+  "test-inventory",
 ];
 const FULL_SUITE_JOBS = [
   "nix-flake",
@@ -256,6 +257,45 @@ test("report fails closed when any PR check fails or skips", () => {
     /level-dependency-direction reported no result/,
   );
   assert.throws(() => aggregateNeedsResults({}), /needs context is empty/);
+});
+
+test("inventory is an earlier required producer and both reports use the same sparse gate script", () => {
+  const inventory = workflow.jobs?.["test-inventory"];
+  const report = workflow.jobs?.["test-report"];
+  assert.equal(inventory?.if, report?.if);
+  assert.equal(inventory?.steps?.at(-1)?.uses, "./.github/actions/report-test-inventory");
+  assert.ok(report?.needs?.includes("test-inventory"));
+  for (const job of [report]) {
+    const checkout = job?.steps?.[0];
+    assert.equal(
+      checkout?.with?.["sparse-checkout"],
+      "tools/support/compat/github/require-needs-success.mjs",
+    );
+    assert.equal(checkout?.with?.["sparse-checkout-cone-mode"], false);
+    assert.equal(
+      job?.steps?.at(-1)?.run,
+      "node tools/support/compat/github/require-needs-success.mjs",
+    );
+  }
+  const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
+    jobs: Record<string, Job>;
+  };
+  const sourceReport = source.jobs["source-report"];
+  assert.equal(
+    sourceReport.steps?.[0]?.with?.["sparse-checkout"],
+    "tools/support/compat/github/require-needs-success.mjs",
+  );
+  assert.equal(sourceReport.steps?.[0]?.with?.["sparse-checkout-cone-mode"], false);
+  assert.equal(
+    sourceReport.steps?.at(-1)?.run,
+    "node tools/support/compat/github/require-needs-success.mjs",
+  );
+  assert.equal(
+    source.jobs["pr-js-packages"].steps?.find(
+      (step) => step.uses === "./.github/actions/setup-moonbit",
+    )?.if,
+    "${{ needs.pr-source-plan.outputs.js == 'true' && needs.pr-source-plan.outputs.js-browser-tier == 'full' }}",
+  );
 });
 
 test("report command exits nonzero for a failed dependency", () => {
