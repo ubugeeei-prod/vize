@@ -117,7 +117,6 @@ and the actual queue remain required before closing the issue.
 - The [markup and container skeleton](./2026-09-28-l1-markup-skeleton.md) records the `Profile`, `Sink`, lex error and directive-hook shapes.
 - The [Vue container](./2026-09-28-l1-container.md) records its native block scanner and ordered attribute sink. Croquis retains its byte-exact scanner until #6880 closes; the consumer switch must pass the unchanged instruction ceilings.
 - Two decisions from the same design comment belong to the next section: the `const` pattern table of `fn` pointers, and parsing each expression once (L4 rewrites from the L2 identifier-resolution table).
-
 [The explicit L1 embed source skeleton](./2026-09-28-l1-embed-source-skeleton.md) records the maintainer's code-first request for #6836; source preparation remains `todo!()`, with typed trees, language resolution and dialect hooks unfinished.
 
 ## L1→L2 and L2
