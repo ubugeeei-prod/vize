@@ -545,6 +545,15 @@ function resolveProjectNuxtVuePeerRuntimeEntryWithNode(
     return null;
   }
 
+  // Nuxt's generated pages module resolves from the app root. If the app
+  // declares vue-router itself, route Nuxt's imports through that same copy.
+  const projectEntry = resolveVuePeerRuntimeEntryFromBaseWithNode(
+    state,
+    id,
+    path.join(state.root, "package.json"),
+  );
+  if (projectEntry) return projectEntry;
+
   return resolveVuePeerRuntimeEntryFromBaseWithNode(
     state,
     id,

@@ -533,6 +533,27 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
       "Nuxt project Vue Router imports should share Nuxt's runtime peer package instead of a project hoist or parent workspace runtime",
     );
   }
+
+  const appRouterLink = path.join(projectRoot, "node_modules", "vue-router");
+  fs.symlinkSync(projectHoistedRouterPackage, appRouterLink, "dir");
+  for (const importer of [
+    appImporter,
+    nuxtVirtualImporter,
+    path.join(nuxtPackage, "dist", "pages", "runtime", "page.js"),
+  ]) {
+    const resolved = await resolveIdHook(
+      nullResolveContext,
+      createState(projectRoot),
+      "vue-router",
+      importer,
+      undefined,
+    );
+    assert.equal(
+      expectResolvedId(resolved),
+      projectHoistedRouterEntry,
+      "An app-owned vue-router dependency must be shared by Nuxt and generated pages imports",
+    );
+  }
 }
 
 {
