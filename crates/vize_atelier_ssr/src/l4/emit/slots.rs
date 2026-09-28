@@ -117,7 +117,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .any(|segment| segment.kind == Kind::SlotOutlet);
         let child_count = children.len();
         let default_capacity =
-            if (2..=4).contains(&child_count) && self.template_slot(children[0]).is_none() {
+            if (1..=4).contains(&child_count) && self.template_slot(children[0]).is_none() {
                 child_count
             } else {
                 0
