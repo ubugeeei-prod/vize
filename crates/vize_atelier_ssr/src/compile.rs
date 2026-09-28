@@ -11,6 +11,7 @@ use vize_atelier_core::{
 use vize_l0::{
     Allocator, String, cstr,
     dump::capture::{CaptureOutcome, CaptureSink, NoCapture},
+    level::Level,
     profile,
 };
 
@@ -361,7 +362,26 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
     errors.extend(transform_errors);
     let codegen_result = match selection {
         SsrL4Selection::Emitted(result) => {
-            capture.finish(|| CaptureOutcome::Accepted);
+            if !result.code.is_empty() {
+                // Match SFC render-chunk assembly. Later SFC script
+                // composition is a separate product step.
+                capture.page(Level::L4, "emit", || {
+                    let mut module =
+                        String::with_capacity(result.preamble.len() + result.code.len() + 2);
+                    module.push_str(&result.preamble);
+                    module.push('\n');
+                    module.push_str(&result.code);
+                    module.push('\n');
+                    module
+                });
+            }
+            capture.finish(|| {
+                if result.code.is_empty() {
+                    CaptureOutcome::Rejected(String::from("SSR emitter returned empty render code"))
+                } else {
+                    CaptureOutcome::Accepted
+                }
+            });
             result
         }
         other => {

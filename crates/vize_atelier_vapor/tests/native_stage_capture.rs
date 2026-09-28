@@ -59,12 +59,17 @@ fn accepted_vapor_pages_describe_the_checked_emitter_input() {
             Level::L2,
             Level::L3,
             Level::L3,
-            Level::L3
+            Level::L3,
+            Level::L4
         ]
     );
     assert_eq!(capture.pages[0].text.as_str(), "<div>hello</div>");
     assert!(capture.pages[1].text.contains("[l2-"));
     assert!(capture.pages[3].text.contains("[l3-"));
+    // Vapor returns a complete backend module. The SFC adapter may later
+    // rewrite its imports and render function as it composes the SFC script.
+    assert_eq!(capture.pages[6].step, "emit");
+    assert_eq!(capture.pages[6].text, code);
 }
 
 #[test]
