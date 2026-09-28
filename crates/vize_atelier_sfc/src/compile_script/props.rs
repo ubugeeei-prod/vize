@@ -22,8 +22,11 @@ pub use types::PropTypeInfo;
 pub use validation::script_setup_has_semantic_validator_candidates;
 pub use validation::{validate_script_setup_semantics, validate_script_setup_semantics_located};
 
+#[cfg(test)]
+pub(crate) use defaults::normalize_destructure_default_value;
 pub(crate) use defaults::{
-    WithDefaultsValues, extract_with_defaults_values, normalize_destructure_default_value,
+    WithDefaultsValues, extract_with_defaults_values,
+    normalize_destructure_default_value_with_factory,
 };
 pub(crate) use runtime_type::{runtime_prop_key, ts_type_to_js_type};
 pub(crate) use text_resolve::extract_prop_types_from_type_with_context;
