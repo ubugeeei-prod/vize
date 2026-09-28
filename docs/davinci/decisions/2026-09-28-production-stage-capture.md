@@ -187,7 +187,7 @@ presented as an L4 backend decision. A rejected DOM target does not suppress
 independent SSR or Vapor results. The stage view observes the same adapter
 compile that supplies its displayed assembled module. The WASM result still
 also computes a separate legacy `template` field; this duplicate work is an
-unresolved #6832/#6868 performance follow-up, not another native stage or
+unresolved #6832 performance follow-up, not another native stage or
 evidence for the displayed module.
 
 ## Merge sequence
