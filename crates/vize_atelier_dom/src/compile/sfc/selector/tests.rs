@@ -1,4 +1,3 @@
-
 use super::l2_sfc_fast_path_supported_source;
 
 #[test]
