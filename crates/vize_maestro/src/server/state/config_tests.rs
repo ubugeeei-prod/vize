@@ -3,6 +3,26 @@ use vize_l0::cstr;
 use super::ServerState;
 
 #[test]
+fn lsp_corsa_request_bound_uses_workspace_config() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("vize.config.json"),
+        r#"{"typeChecker":{"lspRequestTimeoutMs":90000}}"#,
+    )
+    .unwrap();
+    let state = ServerState::new();
+    assert_eq!(
+        state.get_type_checker_config().lsp_request_timeout_ms(),
+        60_000
+    );
+    state.load_lsp_config(dir.path());
+    assert_eq!(
+        state.get_type_checker_config().lsp_request_timeout_ms(),
+        90_000
+    );
+}
+
+#[test]
 fn patterned_template_opt_in_is_reloaded_by_both_config_loaders() {
     let dir = tempfile::tempdir().unwrap();
     for load in [

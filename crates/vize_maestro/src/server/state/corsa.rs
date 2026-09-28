@@ -9,16 +9,6 @@ use vize_canon::{CorsaBridge, CorsaBridgeConfig, CorsaBridgeError};
 
 use super::ServerState;
 
-/// Hard bound on every Corsa request the editor makes, enforced by the bridge
-/// worker thread (#3376).
-///
-/// It matches the 10s the diagnostics pass already documents. That pass wraps
-/// the collection in `runtime::timeout`, but nothing on the bridge path yields,
-/// so the combinator can never fire and this is the bound that actually
-/// applies. It is per request: a diagnostics pass makes a small fixed number of
-/// them, and the first one to breach the bound short-circuits the rest.
-const CORSA_REQUEST_TIMEOUT_MS: u64 = 10_000;
-
 impl ServerState {
     /// Try to claim the right to fire the "type checking unavailable"
     /// message. Returns true the first time it is called, false thereafter
@@ -73,6 +63,7 @@ impl ServerState {
         // Get workspace root for Corsa configuration.
         let workspace_root = self.get_workspace_root();
         let type_checker_config = self.get_type_checker_config();
+        let request_timeout_ms = type_checker_config.lsp_request_timeout_ms();
         let project = vize_l0::config::ProjectModel::new(
             workspace_root.as_deref(),
             None,
@@ -84,7 +75,7 @@ impl ServerState {
             corsa_path: type_checker_config.runtime_path().map(PathBuf::from),
             working_dir: workspace_root,
             tsconfig_path,
-            timeout_ms: CORSA_REQUEST_TIMEOUT_MS,
+            timeout_ms: request_timeout_ms,
             ..Default::default()
         };
         let working_dir = config.working_dir.clone();
@@ -111,7 +102,7 @@ impl ServerState {
             }
             Err(CorsaBridgeError::Timeout) => {
                 let reason = vize_l0::cstr!(
-                    "spawn timed out after {CORSA_REQUEST_TIMEOUT_MS}ms (working_dir={working_dir:?}, corsa_path={corsa_path:?})"
+                    "spawn timed out after {request_timeout_ms}ms (working_dir={working_dir:?}, corsa_path={corsa_path:?})"
                 );
                 tracing::warn!("corsa bridge {}", reason);
                 self.record_corsa_init_failure(reason.as_str());

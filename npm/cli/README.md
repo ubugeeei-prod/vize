@@ -135,6 +135,8 @@ export default defineConfig({
   typeChecker: {
     enabled: true,
     strict: true,
+    // Large cold LSP projects can raise the default 60-second Corsa request bound.
+    lspRequestTimeoutMs: 90000,
   },
 });
 ```

@@ -535,6 +535,11 @@
         "servers": {
           "description": "Reserved Corsa server count. The direct project-session runner currently supports only 1.",
           "type": "integer"
+        },
+        "lspRequestTimeoutMs": {
+          "description": "Hard bound in milliseconds for each editor Corsa request. Defaults to 60000; use a larger value for large cold projects.",
+          "type": "integer",
+          "minimum": 1
         }
       },
       "additionalProperties": false
