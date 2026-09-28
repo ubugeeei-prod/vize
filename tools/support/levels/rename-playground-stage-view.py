@@ -56,7 +56,7 @@ def main() -> None:
     ]
     paths.append(ROOT / "docs/davinci/plan/v-on-corpus/playground--src.tsv")
     for path in paths:
-        content = path.read_text()
+        content = path.read_text(encoding="utf-8")
         updated = content
         for old, new in REPLACEMENTS.items():
             updated = updated.replace(old, new)
@@ -66,7 +66,7 @@ def main() -> None:
                 'describe("Stage ladder from the real compiler"',
             )
         if args.phase == "references" and updated != content:
-            path.write_text(updated)
+            path.write_text(updated, encoding="utf-8")
         if args.phase == "check" and updated != content:
             stale.append(str(path.relative_to(ROOT)))
 
