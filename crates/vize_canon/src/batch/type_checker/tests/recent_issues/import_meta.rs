@@ -11,16 +11,16 @@ fn script_setup_import_meta_uses_project_import_meta_type() {
             (
                 "src/env.d.ts",
                 r#"interface ImportMeta {
-  readonly env: { readonly MODE: string }
-  glob<T>(pattern: string): Record<string, () => Promise<T>>
+  readonly __vizeTestEnv: { readonly MODE: string }
+  __vizeTestGlob<T>(pattern: string): Record<string, () => Promise<T>>
 }
 "#,
             ),
             (
                 "src/App.vue",
                 r#"<script setup lang="ts">
-const modules = import.meta.glob<{ default: object }>("./*.vue")
-const mode: number = import.meta.env.MODE
+const modules = import.meta.__vizeTestGlob<{ default: object }>("./*.vue")
+const mode: number = import.meta.__vizeTestEnv.MODE
 </script>
 <template><p>{{ Object.keys(modules).length }} {{ mode }}</p></template>
 "#,
