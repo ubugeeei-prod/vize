@@ -50,3 +50,9 @@ Finish this already-started tokenizer move through its checks and squash merge;
 keep #6832 open and its remaining rename work separately tracked. This scoped
 delivery exception does not change the issue order for new Stage 1 work. The
 merge queue's instruction-count budget remains strict and must pass before merge.
+
+For coordinated delivery, the GitHub PR base of #7038 is #7037
+(`feat/l4-document-move`), whose base is #7043. Keep the child out of the
+queue until its parent actually merges, then retarget it to fresh `main`,
+rebase, and run ordinary and merge-group checks again. This is tracked in
+[#6835](https://github.com/ubugeeei-prod/vize/issues/6835#issuecomment-5867058001).
