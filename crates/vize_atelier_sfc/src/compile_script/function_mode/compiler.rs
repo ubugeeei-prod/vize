@@ -19,8 +19,9 @@ use super::super::import_utils::extract_import_identifiers;
 use super::super::lazy_hydration::transform_lazy_hydration_macros;
 use super::super::props::{
     PropTypeInfo, add_null_to_runtime_type, extract_emit_names_from_type,
-    extract_prop_types_from_type_with_context, normalize_destructure_default_value,
-    resolve_prop_js_type, runtime_prop_key, validate_macro_scope_and_props,
+    extract_prop_types_from_type_with_context,
+    normalize_destructure_default_value_with_factory as normalize_default, resolve_prop_js_type,
+    runtime_prop_key, validate_macro_scope_and_props,
 };
 use super::super::typescript::transform_typescript_to_js;
 use super::helpers::{collect_runtime_identifier_references, is_reserved_word};
@@ -355,13 +356,12 @@ fn emit_props_definition(
             output.extend_from_slice(original_props.as_bytes());
             output.extend_from_slice(b", {\n");
 
-            // Add defaults
             for (key, binding) in &destructure.bindings {
                 if let Some(ref default_val) = binding.default {
                     output.extend_from_slice(b"  ");
                     output.extend_from_slice(key.as_bytes());
                     output.extend_from_slice(b": ");
-                    let default_val = normalize_destructure_default_value(default_val);
+                    let default_val = normalize_default(default_val, binding.default_needs_factory);
                     output.extend_from_slice(default_val.as_bytes());
                     output.push(b'\n');
                 }
