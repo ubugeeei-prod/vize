@@ -148,6 +148,7 @@ unchanged. The fresh source and merge-queue checks remain required.
 See the [l4: emission decisions](./2026-09-27-level-restructure-designs.md#l4-emission) in the companion record.
 
 [The `vize_l4` skeleton](./2026-09-28-l4-skeleton.md) records the crate layout (`write`, `expr`, `runtime`, `module`, `targets/{dom,ssr,vapor,ts}`), the compile-time link sink, and the L4 codename Stesura; target, expression and module bodies remain `todo!()`.
+For [#6840](https://github.com/ubugeeei-prod/vize/issues/6840), L4 owns emission documents, span links, source maps and rewritten identifier spans; atelier core re-exports the moved API while the recording writer produces the same document. Publish L4 before atelier core, after #6832 closes.
 
 [Compiler fix-history byte references](./2026-09-27-compiler-fix-history-pins.md) records [#6880](https://github.com/ubugeeei-prod/vize/issues/6880): three immutable complete SFC Results, including #1416 diagnostics. The earlier ten-profile archive has eight fixes and two feature controls; whole history/native acceptance remain unfinished and fresh Actions are required. Publication uses ordinary shared test modules, a documented unused-helper expectation verified by strict Clippy, and a generated SFC consumer shard after Actions found policy drift.
 
