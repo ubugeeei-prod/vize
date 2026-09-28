@@ -198,8 +198,8 @@ impl<'a> SsrCodegenContext<'a> {
             self.indent_level += 1;
 
             let needs_fragment = !disable_nested_fragments
-                && (rendered_child_count(&branch.children) > 1
-                    || branch_fragment::single_text_branch(&branch.children));
+                && (branch_fragment::single_text_branch(&branch.children)
+                    || rendered_child_count(&branch.children) > 1);
 
             self.process_children_with_fallthrough_attrs(
                 &branch.children,
