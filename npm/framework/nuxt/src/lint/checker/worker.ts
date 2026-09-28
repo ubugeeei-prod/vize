@@ -1,8 +1,8 @@
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { glob } from "node:fs/promises";
-import { createRequire } from "node:module";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { isMainThread, parentPort, Worker } from "node:worker_threads";
 
 export interface NuxtLintCheckerTask {
@@ -50,7 +50,7 @@ type WorkerResponse =
 
 function resolveOxlintEntrypoint(): string {
   try {
-    const plugin = createRequire(import.meta.url).resolve("oxlint-plugin-vize");
+    const plugin = fileURLToPath(import.meta.resolve("oxlint-plugin-vize"));
     return path.resolve(path.dirname(plugin), "..", "bin", "oxlint-vize");
   } catch (error) {
     throw new Error(
