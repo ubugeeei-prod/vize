@@ -82,12 +82,17 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
     /--tier pr --output "\$RUNNER_TEMP\/tooling-plan\.json"/,
   );
   assert.equal(steps[selected].env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
+  assert.equal(
+    steps[selected].env?.SOURCE_LENGTH_BASE_REF,
+    "${{ needs.pr-source-plan.outputs.comparison-base }}",
+  );
   assert.equal(steps[selected].run, "vp run --workspace-root test:scripts:pr");
   assert.equal(
     steps[full].if,
     "${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}",
   );
   assert.equal(steps[full].run, "vp run --workspace-root test:scripts");
+  assert.equal(steps[full].env?.SOURCE_LENGTH_BASE_REF, undefined);
   assert.match(
     steps[build].run ?? "",
     /cargo build --profile ci -p vize && vp exec node tests\/differential\/build-receipt\.mjs/,

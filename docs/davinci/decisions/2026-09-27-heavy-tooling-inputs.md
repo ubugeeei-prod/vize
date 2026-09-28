@@ -93,8 +93,10 @@ The source-length gate previously returned no comparison base when
 `GITHUB_BASE_REF` was empty. Merge-group events have that empty variable, so
 `--check` completed an inventory without enforcing the growth ratchet. The
 gate now fetches and compares the immutable `merge_group.base_sha` from the
-event. PR checks retain `pull_request.base.sha`; an explicit local
-`SOURCE_LENGTH_BASE_REF` retains precedence. Scheduled/local inventory checks
+event. Full merge-group tooling retains that base. Selected PR tooling passes
+the source planner's verified merge parent as `SOURCE_LENGTH_BASE_REF`, so a
+stacked PR cannot compare against a stale `pull_request.base.sha`. The tooling
+plan step already fetches that exact parent. Scheduled/local inventory checks
 without a PR or merge-group event retain their existing behavior.
 
 Missing event paths, unreadable JSON, malformed commit SHAs and failed fetches
@@ -107,3 +109,9 @@ checker, which rejects the growth. Comparing to the newer branch tip would pass.
 Additional tests cover invalid queue metadata, failed fetches and override
 precedence. This proves enforcement locally; fresh exact-head Actions and the
 actual merge-group result remain required before claiming queue validation.
+
+In #7091 Check 36409506219, the PR planner verified parent `52654f75`, but
+the source-length test read stale event base `eafa74df`. The Nuxt index was 667
+lines on parent and child versus 644 on that old main commit. A temporary-repo
+regression now passes the verified parent over stale PR metadata without
+changing the 350-line ratchet or merge-group comparison.

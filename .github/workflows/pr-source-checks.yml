@@ -183,6 +183,7 @@ jobs:
       - name: Test selected PR tooling scripts
         if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
         env:
+          SOURCE_LENGTH_BASE_REF: ${{ needs.pr-source-plan.outputs.comparison-base }}
           VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
         run: vp run --workspace-root test:scripts:pr
       - name: Test tooling scripts

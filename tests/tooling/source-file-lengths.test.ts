@@ -106,6 +106,19 @@ test("source length comparison keeps the event base when the branch advances", (
     assert.equal(result.status, 1, `${kind}: ${result.stderr}\n${result.stdout}`);
     assert.match(result.stdout, /crossed limit/);
   }
+  // A stacked PR checks a verified merge parent even if its event still
+  // carries the older base SHA. The parent already contains the longer file.
+  fs.writeFileSync(eventPath, JSON.stringify({ pull_request: { base: { sha: eventBaseSha } } }));
+  const stackParent = resolveBaseRef(checkout, {
+    GITHUB_EVENT_NAME: "pull_request",
+    GITHUB_BASE_REF: "stack-parent",
+    GITHUB_EVENT_PATH: eventPath,
+    SOURCE_LENGTH_BASE_REF: advancedSha,
+  });
+  assert.equal(stackParent, advancedSha);
+  const stacked = runSourceLengthScript(["--check", "--base-ref", stackParent], checkout);
+  assert.equal(stacked.status, 0, stacked.stdout);
+
   const incorrectBase = runSourceLengthScript(["--check", "--base-ref", advancedSha], checkout);
   assert.equal(incorrectBase.status, 0, incorrectBase.stdout);
   fs.rmSync(root, { recursive: true, force: true });
