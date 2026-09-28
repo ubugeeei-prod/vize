@@ -58,8 +58,6 @@ pub(super) struct LocalImportContext<'a> {
     pub(super) cwd: &'a Path,
     pub(super) tsconfig_path: Option<&'a Path>,
     pub(super) import_options: ImportFileOptions,
-    pub(super) explicit_input_root: Option<&'a Path>,
-    pub(super) validate_inputs: bool,
 }
 
 impl<'a> ExplicitAmbientImportContext<'a> {
@@ -104,8 +102,6 @@ pub(super) fn collect_default_run_files(
             cwd: context.cwd,
             tsconfig_path: context.tsconfig_path,
             import_options: context.import_options,
-            explicit_input_root: None,
-            validate_inputs: false,
         },
         canonical_paths,
         resolver,
@@ -127,8 +123,6 @@ pub(super) fn collect_default_run_files(
             cwd: context.cwd,
             tsconfig_path: context.tsconfig_path,
             import_options: context.import_options,
-            explicit_input_root: None,
-            validate_inputs: false,
         },
         canonical_paths,
         resolver,
@@ -314,12 +308,7 @@ pub(super) fn register_transitive_local_imports_with_session(
         authored,
         package_routes,
     } = discovered;
-    append_local_imports(
-        files,
-        registrations,
-        context.explicit_input_root,
-        context.validate_inputs,
-    );
+    append_local_imports(files, registrations);
     RegisteredLocalImports {
         authored,
         package_routes,
@@ -347,18 +336,11 @@ fn collect_local_imports_with_session(
     )
 }
 
-fn append_local_imports(
-    files: &mut Vec<PathBuf>,
-    discovered: Vec<PathBuf>,
-    explicit_input_root: Option<&Path>,
-    validate_inputs: bool,
-) -> Vec<PathBuf> {
+fn append_local_imports(files: &mut Vec<PathBuf>, discovered: Vec<PathBuf>) -> Vec<PathBuf> {
     let mut appended = Vec::new();
     let mut known: FxHashSet<PathBuf> = files.iter().cloned().collect();
     for path in discovered {
-        if local_import_is_allowed(&path, explicit_input_root, validate_inputs)
-            && known.insert(path.clone())
-        {
+        if known.insert(path.clone()) {
             files.push(path.clone());
             appended.push(path);
         }
