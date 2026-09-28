@@ -153,3 +153,15 @@ fn shared_lexer_adapter_preserves_parser_ast_and_diagnostics() {
         },
     );
 }
+
+#[test]
+fn native_v_pre_mode_preserves_parser_ast_and_diagnostics() {
+    for source in [
+        "<div v-pre>{{ x }}<span @click='go'>{{ y }}</span></div>{{ z }}",
+        "<div v-pre><br>{{ literal }}<i v-pre>{{ nested }}</i></div>",
+        "<x v-pre>{{ text }}</x><p>{{ expr }}</p>",
+    ] {
+        assert_parser_parity(source, false);
+    }
+    assert_parser_parity("<!DOCTYPE html><main v-pre>{{ raw }}</main>", true);
+}

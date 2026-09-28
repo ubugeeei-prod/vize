@@ -88,11 +88,12 @@ lexical mode. Differential tests compare 42 fixture ASTs and diagnostics,
 event/error parity with UTF-8 truncations, Document mode, Vue 1 raw
 interpolation, custom delimiters, and experimental in-tag comments. PR and
 merge-queue Actions run these feature-enabled tests; default archives do not.
-The #6836 child verifies `v-pre` callbacks. The production parser still uses
-the moved compatibility tokenizer. TODO (#6835): run the full legacy output
-corpus and instruction-count gate before switching production to the shared
-lexer, then remove the duplicate state machine after the #6880 product-route
-prerequisite closes. TODO (#6835):
+The #6836 child verifies `v-pre` callbacks with complete parser AST and
+diagnostics in component and document profiles. Production still uses the
+moved compatibility tokenizer. TODO (#6835): run the full legacy output corpus
+and instruction-count gate before switching to the shared lexer, then remove
+the duplicate state machine after the #6880 product-route prerequisite closes.
+TODO (#6835):
 move the remaining `Namespace`/`ErrorCode`
 vocabulary out of Relief to remove L1's other direct legacy dependency. The
 compiler product route remains gated by #6880.

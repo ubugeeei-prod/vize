@@ -105,6 +105,7 @@ Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835), [#6836](h
   - Embedding works in both directions and nests (markup inside script for JSX, TSRX and Angular inline templates).
 - **Entity decoding** happens when an embed is built. The embed carries the decoded text and a decode map, so language providers never see HTML.
 - **`v-pre`** is handled in L1, because it switches the lexing mode of its children.
+- The #6836 native `v-pre` child compares the Armature parser's complete AST and diagnostics against the L1 lexer plus compatibility callback adapter in both component and document profiles. The compiler still uses its old production tokenizer until #6880.
 - **Language providers** are bundles of optional capabilities, one per level (like MLIR interfaces):
   - L1 syntax entry points
   - L2 semantics (today's `ExprDialect`)
