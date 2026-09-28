@@ -32,8 +32,7 @@ pub(super) fn resolve_expression_node(
     node: &SimpleExpressionNode<'_>,
 ) -> String {
     let expr = node.content;
-    let leading_trimmed = expr.trim_start();
-    let trimmed = leading_trimmed.trim_end();
+    let trimmed = expr.trim();
     if trimmed.is_empty() {
         return String::default();
     }
@@ -52,7 +51,7 @@ pub(super) fn resolve_expression_node(
         // Retained spans are content-relative; the resolver rewrites the
         // trimmed text, so shift by the leading whitespace (tokens never
         // live in the surrounding whitespace).
-        let lead = expr.len() - leading_trimmed.len();
+        let lead = expr.len() - expr.trim_start().len();
         let mut collector = ExpressionRewriteCollector::new(ctx);
         collector.visit_expression(js.ast);
         let resolved = apply_rewrites(trimmed, collector.rewrites, lead);
