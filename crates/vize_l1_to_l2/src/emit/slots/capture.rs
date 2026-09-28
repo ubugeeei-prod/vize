@@ -50,9 +50,6 @@ pub(in crate::emit) fn emit_template_pieces(
         })?);
         return Ok(());
     }
-    if children.ops.len() > 1 {
-        bucket.reserve(children.ops.len());
-    }
     for op in children.ops.iter() {
         bucket.push(capture_child(cx, op)?);
     }

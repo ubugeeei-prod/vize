@@ -121,7 +121,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .any(|segment| segment.kind == Kind::SlotOutlet);
         let mut slots = ComponentSlots {
             own: None,
-            default: std::vec::Vec::with_capacity(children.len()),
+            default: std::vec::Vec::new(),
             named: std::vec::Vec::new(),
             forwards,
             dynamic: std::vec::Vec::new(),
@@ -145,6 +145,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             });
             return Ok(slots);
         }
+        let child_count = children.len();
         for child in children {
             let child_end = self.child_end(child)?;
             if let Some(dynamic) = self.dynamic_slot_source(child)? {
@@ -171,6 +172,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 // `createSlots` entry shape the plan emitter reproduces.
                 return Err(LegacyReason::Operation.into());
             } else {
+                if slots.default.is_empty() && child_count > 1 {
+                    slots.default.reserve(child_count.min(8));
+                }
                 slots.default.push((child, child_end));
             }
         }
