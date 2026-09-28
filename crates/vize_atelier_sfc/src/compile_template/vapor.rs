@@ -16,6 +16,10 @@ use crate::{
 };
 
 /// Compile template block using Vapor mode
+#[expect(
+    clippy::too_many_arguments,
+    reason = "template context and optional stage capture"
+)]
 pub(crate) fn compile_template_block_vapor(
     allocator: &Allocator,
     template: &SfcTemplateBlock,

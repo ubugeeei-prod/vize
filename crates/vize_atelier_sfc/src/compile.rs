@@ -62,6 +62,10 @@ pub use entry::{
 use vize_carton::{String, ToCompactString, profile};
 use vize_l0::dump::capture::{CaptureOutcome, CaptureSink, StageCapture};
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "adapter inputs with optional stage capture"
+)]
 fn compile_sfc_inner(
     descriptor: &SfcDescriptor,
     mut options: SfcCompileOptions,
@@ -725,7 +729,7 @@ fn compile_sfc_inner(
         }
         Some(Err(e)) => {
             errors.push(e.clone());
-            if let Some(capture) = capture.as_deref_mut() {
+            if let Some(capture) = capture {
                 capture.finish(|| CaptureOutcome::Unavailable(String::from("template-error")));
             }
             (

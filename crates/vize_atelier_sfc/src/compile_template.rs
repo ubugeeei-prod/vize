@@ -73,6 +73,10 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
 }
 
 /// Compile template block
+#[expect(
+    clippy::too_many_arguments,
+    reason = "template context and optional stage capture"
+)]
 pub(crate) fn compile_template_block(
     allocator: &Allocator,
     template: &SfcTemplateBlock,

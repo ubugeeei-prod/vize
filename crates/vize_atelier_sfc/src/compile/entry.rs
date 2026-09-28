@@ -185,7 +185,6 @@ pub fn compile_sfc_for_adapter_with_experimental_options(
 /// Compile once and return the stages observed by the backend that produced
 /// the SFC module. The ordinary entry points keep their existing result shape.
 #[doc(hidden)]
-#[expect(clippy::too_many_arguments, reason = "independent adapter inputs")]
 pub fn compile_sfc_for_adapter_with_stage_capture(
     descriptor: &SfcDescriptor,
     options: SfcCompileOptions,

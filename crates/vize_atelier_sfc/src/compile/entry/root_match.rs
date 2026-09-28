@@ -13,6 +13,10 @@ use vize_atelier_core::{
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_l0::{String, dump::capture::StageCapture};
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "adapter inputs with optional stage capture"
+)]
 pub(super) fn compile_sfc_inner(
     descriptor: &SfcDescriptor,
     options: SfcCompileOptions,
