@@ -13,11 +13,28 @@ impl<'a> Parser<'a> {
         if directive.name == "on" || (directive.name == "bind" && directive.arg.is_none()) {
             return;
         }
-        if !self.current_element.as_ref().is_some_and(|current| {
-            current.props.iter().any(|prop| {
-                matches!(prop, PropNode::Directive(existing) if existing.raw_name == Some(directive.raw_name))
-            })
-        }) {
+        let repeated_name = self.current_element.as_mut().is_some_and(|current| {
+            if let Some(names) = current.seen_directive_names.as_mut() {
+                return !names.insert(directive.raw_name);
+            }
+            if current.props.len() < 8 {
+                return current.props.iter().any(|prop| {
+                    matches!(prop, PropNode::Directive(existing) if existing.raw_name == Some(directive.raw_name))
+                });
+            }
+            let mut names = std::collections::HashSet::with_capacity(current.props.len() + 1);
+            for prop in &current.props {
+                if let PropNode::Directive(existing) = prop {
+                    if let Some(raw_name) = existing.raw_name {
+                        names.insert(raw_name);
+                    }
+                }
+            }
+            let repeated = !names.insert(directive.raw_name);
+            current.seen_directive_names = Some(names);
+            repeated
+        });
+        if !repeated_name {
             return;
         }
         let argument = directive

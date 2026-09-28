@@ -90,3 +90,19 @@ fn duplicate_attribute_in_wide_tag_is_case_insensitive() {
         1
     );
 }
+
+#[test]
+fn duplicate_directive_after_many_distinct_props_is_reported_once() {
+    let allocator = Allocator::new();
+    let (_, errors) = parse(
+        &allocator,
+        r#"<p :a1="x" :a2="x" :a3="x" :a4="x" :a5="x" :a6="x" :a7="x" :a8="x" :a9="x" :a9="y" />"#,
+    );
+    assert_eq!(
+        errors
+            .iter()
+            .filter(|error| error.code == ErrorCode::DuplicateAttribute)
+            .count(),
+        1
+    );
+}

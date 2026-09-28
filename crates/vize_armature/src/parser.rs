@@ -134,6 +134,7 @@ pub(super) struct CurrentElement<'a> {
     pub(super) ns: Namespace,
     pub(super) is_self_closing: bool,
     pub(super) props: Vec<'a, PropNode<'a>>,
+    pub(super) seen_directive_names: Option<std::collections::HashSet<&'a str>>,
 }
 
 /// Current attribute being parsed
