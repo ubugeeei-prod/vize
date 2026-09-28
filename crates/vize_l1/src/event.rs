@@ -9,8 +9,10 @@
 use crate::markup::lex::compat::{Callbacks, QuoteType};
 use vize_l0::{Allocator, Vec};
 use vize_relief::ErrorCode;
+use vize_relief::Namespace;
 
 use crate::parse::SurfaceError;
+use crate::tree_rules::{element_namespace, is_interactive_html_tree_tag};
 
 /// What a tokenizer callback reported. Directive name pieces
 /// (`on_dir_name` / `on_dir_arg` / `on_dir_modifier`) all record as
@@ -83,6 +85,7 @@ impl Event {
 #[derive(Clone, Copy)]
 struct LexFrame<'a> {
     tag: &'a str,
+    ns: Namespace,
     in_v_pre: bool,
 }
 
@@ -153,9 +156,26 @@ impl Callbacks for Recorder<'_, '_> {
         if let Some(pending) = self.pending_tag.take()
             && !vize_l0::is_void_tag(pending.tag)
         {
+            let ns = element_namespace(
+                pending.tag,
+                self.frames.last().map(|frame| (frame.ns, frame.tag)),
+            );
+            if ns == Namespace::Html
+                && is_interactive_html_tree_tag(pending.tag)
+                && let Some(depth) = self.frames.iter().rposition(|frame| {
+                    frame.ns == Namespace::Html
+                        && is_interactive_html_tree_tag(frame.tag)
+                        && frame.tag.eq_ignore_ascii_case(pending.tag)
+                })
+            {
+                // The surface builder implicitly closes that interactive
+                // element and every child above it at this same start tag.
+                self.frames.truncate(depth);
+            }
             let inherited = self.frames.last().is_some_and(|frame| frame.in_v_pre);
             self.frames.push(LexFrame {
                 tag: pending.tag,
+                ns,
                 in_v_pre: inherited || pending.has_v_pre,
             });
         }

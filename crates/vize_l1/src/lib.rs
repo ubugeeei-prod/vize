@@ -75,6 +75,7 @@ pub mod surface;
 mod build;
 mod event;
 mod slice;
+mod tree_rules;
 
 pub use parse::{
     SurfaceError, SurfaceParseOptions, parse, parse_with_authored, parse_with_options,

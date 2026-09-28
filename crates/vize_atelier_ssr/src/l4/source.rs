@@ -78,7 +78,7 @@ fn lower_and_emit_plain(
                     .provenance
                     .iter()
                     .any(|record| !admitted_rule(record) || drops_directive(record))
-                || surface_gate::slot_v_pre_interpolates(source, &s2.root.ops)
+                || surface_gate::slot_v_pre_has_fallback(source, &s2.root.ops)
             {
                 return Err(LegacyReason::SurfaceSemantics);
             }
@@ -175,7 +175,7 @@ fn lower_and_emit<C: CaptureSink>(
                     .provenance
                     .iter()
                     .any(|record| !admitted_rule(record) || drops_directive(record))
-                || surface_gate::slot_v_pre_interpolates(source, &s2.root.ops)
+                || surface_gate::slot_v_pre_has_fallback(source, &s2.root.ops)
             {
                 return Err(LegacyReason::SurfaceSemantics);
             }

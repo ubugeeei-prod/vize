@@ -1,11 +1,12 @@
 //! Open and close tags: the element half of the builder.
 
-use vize_l0::{Box, Vec, is_html_tag, is_math_ml_tag, is_svg_tag, is_void_tag};
+use vize_l0::{Box, Vec, is_void_tag};
 use vize_relief::Namespace;
 
 use super::{Builder, Frame, ImplicitlyClosedTag};
 use crate::event::{Event, EventKind};
 use crate::surface::{Attribute, CloseTag, Element, ElementClose, OpenTag, SurfaceChild, Token};
+use crate::tree_rules::{element_namespace, is_interactive_html_tree_tag};
 
 impl<'a> Builder<'a, '_> {
     pub(super) fn element(&mut self, ev: Event) {
@@ -58,7 +59,7 @@ impl<'a> Builder<'a, '_> {
             }
         }
         let self_closing = slash.is_some();
-        let ns = self.enter_ns(tag);
+        let ns = element_namespace(tag, self.stack.last().map(|frame| (frame.ns, frame.tag())));
         let open = OpenTag {
             lt_name,
             attrs,
@@ -187,18 +188,6 @@ impl<'a> Builder<'a, '_> {
         self.push_child(SurfaceChild::Unexpected(token));
     }
 
-    fn enter_ns(&self, tag: &str) -> Namespace {
-        if is_svg_tag(tag) {
-            Namespace::Svg
-        } else if is_math_ml_tag(tag) {
-            Namespace::MathMl
-        } else {
-            self.stack
-                .last()
-                .map_or(Namespace::Html, |frame| children_ns(frame.ns, frame.tag()))
-        }
-    }
-
     fn handle_nested_interactive_start_tag(&mut self, tag: &'a str, ns: Namespace) {
         if !self.repair_interactive || ns != Namespace::Html {
             return;
@@ -259,17 +248,5 @@ impl<'a> Builder<'a, '_> {
         if let Some(element) = child {
             self.attach(element);
         }
-    }
-}
-
-fn is_interactive_html_tree_tag(tag: &str) -> bool {
-    is_html_tag(tag) && (tag.eq_ignore_ascii_case("a") || tag.eq_ignore_ascii_case("button"))
-}
-
-fn children_ns(ns: Namespace, tag: &str) -> Namespace {
-    match ns {
-        Namespace::Svg if matches!(tag, "foreignObject" | "desc" | "title") => Namespace::Html,
-        Namespace::MathMl if matches!(tag, "mi" | "mo" | "mn" | "ms" | "mtext") => Namespace::Html,
-        other => other,
     }
 }

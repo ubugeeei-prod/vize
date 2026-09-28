@@ -234,6 +234,7 @@ pub(super) const REFUSED: &[(&str, &str)] = &[
         "outlet-v-pre",
         "<slot v-pre>{{ not }} an interpolation</slot>",
     ),
+    ("outlet-v-pre-plain", "<slot v-pre>plain</slot>"),
     ("invalid-expression", "<div>{{ a &amp;&amp; b }}</div>"),
     ("invalid-bind", r#"<div :title="a +"></div>"#),
     ("script", "<div><script>var a = 1 < 2</script></div>"),

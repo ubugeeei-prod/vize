@@ -159,8 +159,8 @@ pub(crate) use source::select_ssr_lane_captured;
 /// Whether one L2 lowering rule is reproduced by the plan emitter.
 ///
 /// `defer.slot-directive` is the Info recorded for a directive the legacy
-/// slot walker does not render. `v-pre` is the exception: it freezes the
-/// outlet fallback as text, which the plan still interpolates.
+/// slot walker does not render. An outlet `v-pre` with nonempty fallback
+/// remains on the legacy route while the plan cannot prove its frozen text.
 fn admitted_rule(record: &vize_l2::provenance::ProvenanceRecord) -> bool {
     record.rule.as_str() == "defer.slot-directive" || ADMITTED_RULES.contains(&record.rule.as_str())
 }

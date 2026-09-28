@@ -200,3 +200,20 @@ fn unowned_shapes_name_their_legacy_reason() {
         );
     }
 }
+
+#[test]
+fn nonempty_v_pre_outlet_stays_on_legacy_route() {
+    for source in [
+        "<slot v-pre>{{ not }} an interpolation</slot>",
+        "<slot v-pre>plain</slot>",
+    ] {
+        let selected = select(source, &SsrCompilerOptions::default());
+        assert!(
+            matches!(
+                selected,
+                SsrL4Selection::Legacy(LegacyReason::SurfaceSemantics)
+            ),
+            "{source}: got {selected:?}"
+        );
+    }
+}

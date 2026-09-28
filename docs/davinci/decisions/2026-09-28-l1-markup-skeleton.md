@@ -11,9 +11,10 @@ Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835),
 - Profile differences are associated constants on `Profile`, one list for
   the lexer and the tree builder. Only `TOLERATE_DECLARATIONS` is a lexer rule.
 - The lexer pushes events into a statically dispatched `Sink`; there is no
-  token array. `Sink::mode` exposes `LexMode::Verbatim` for `v-pre` to its
-  consumer. Armature's parser currently answers it; the L1 surface tree does
-  not yet use the mode.
+  token array. `Sink::mode` exposes `LexMode::Verbatim` for `v-pre`. The L1
+  surface recorder now tracks that lexical scope for its moved compatibility
+  tokenizer; the opt-in native lexer reads the same mode through `CompatSink`.
+  Armature's production parser still answers its own callback mode.
 - Lex errors are an L1 enum (`LexErrorCode`) for the new lexer. Existing
   surface-tree and compiler consumers retain legacy `ErrorCode` until #6880.
 - Directive-name decomposition is the dialect hook `DirectiveSyntax`. It
@@ -38,17 +39,23 @@ Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835),
 - The new lexer uses L1 `LexErrorCode`. Document and component profiles,
   including Vue 1 raw interpolation, are capabilities of the new lexer only.
   Existing products retain their own error codes and parsing behavior.
-- The native lexer's `v-pre` mode still needs a consumer in the #6836 child;
-  replacing the existing production tokenizer requires compiler fix-history
-  issue #6880 to close. These are unfinished parts of #6835, which stays open.
+- The #6836 child exercises native `v-pre` through the opt-in parser callback
+  adapter and L1 surface recorder. Their scope follows the same HTML
+  interactive-element implicit-close and namespace rules as the surface builder.
+  Replacing the production tokenizer still requires compiler fix-history
+  issue #6880 to close; #6835 remains open.
 - The opt-in feature is required while thin-LTO layout changes from the
   otherwise-unused implementation exceed current strict instruction ceilings
   in Atelier fused compile benchmarks. Main at `75b87e7a` passes the same-base
   control run, and no instruction budget is raised.
 
-TODO: implement `VueDirectives` (#6836) and the SFC split (#6837). The
-`v-pre` switch is still answered by armature's parser on the product route; the
-native lexer is not used by the L1 surface tree yet.
+TODO: implement `VueDirectives` (#6836) and the SFC split (#6837). The L1
+surface tree uses the moved compatibility tokenizer with its own `v-pre` scope;
+the compiler product uses Armature's callback scope. Neither product path uses
+the opt-in native generic lexer yet. SSR explicitly retains the legacy route
+for a nonempty `v-pre` outlet fallback because L1 freezes mustaches to text
+before L2 and the current string plan cannot prove that case. An empty
+fallback remains eligible for the plan; #6880 gates a product-route change.
 
 ## Delivery order for the existing tokenizer PR
 

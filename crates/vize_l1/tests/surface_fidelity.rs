@@ -170,6 +170,37 @@ fn direct_nested_interactive_end_tag_closes_live_inner_before_redundant_outer() 
     );
 }
 
+#[test]
+fn v_pre_scope_follows_implicit_interactive_closure() {
+    for source in [
+        "<a v-pre><a>{{ inner }}</a>{{ after }}",
+        "<button v-pre><button>{{ inner }}</button>{{ after }}",
+        "<a v-pre><span><a>{{ inner }}</a>{{ after }}",
+    ] {
+        let allocator = Allocator::new();
+        let (tree, _errors) = parse(&allocator, source);
+        assert_eq!(rendered(&tree), source);
+        assert_eq!(check_fidelity(&tree), Ok(()));
+        assert!(
+            matches!(tree.children.last(), Some(SurfaceChild::Interpolation(_))),
+            "{source}"
+        );
+    }
+
+    // SVG anchors do not follow the HTML interactive close rule.
+    let source = "<svg><a v-pre><a>{{ inner }}</a>{{ after }}</a></svg>";
+    let allocator = Allocator::new();
+    let (tree, _errors) = parse(&allocator, source);
+    assert_eq!(rendered(&tree), source);
+    let SurfaceChild::Element(svg) = &tree.children[0] else {
+        panic!("root is svg");
+    };
+    let SurfaceChild::Element(outer) = &svg.children[0] else {
+        panic!("svg child is outer a");
+    };
+    assert!(matches!(outer.children.last(), Some(SurfaceChild::Text(_))));
+}
+
 fn assert_direct_nested_interactive_close_order(
     source: &str,
     tag: &str,

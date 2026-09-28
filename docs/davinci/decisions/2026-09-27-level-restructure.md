@@ -106,6 +106,7 @@ Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835), [#6836](h
 - **Entity decoding** happens when an embed is built. The embed carries the decoded text and a decode map, so language providers never see HTML.
 - **`v-pre`** is handled in L1, because it switches the lexing mode of its children.
 - The #6836 native `v-pre` child compares the Armature parser's complete AST and diagnostics against the L1 lexer plus compatibility callback adapter in both component and document profiles. The compiler still uses its old production tokenizer until #6880.
+- L1's surface recorder and builder share HTML namespace and interactive-element implicit-close rules. A nested HTML anchor or button closes its prior `v-pre` lexical scope at the same start tag as tree recovery; SVG anchors retain authored nesting. The native lexer adapter uses the parser's live callback mode for the same boundary. SSR keeps nonempty `v-pre` outlet fallbacks on its legacy route until #6880, including when L1 correctly classifies a mustache as text.
 - **Language providers** are bundles of optional capabilities, one per level (like MLIR interfaces):
   - L1 syntax entry points
   - L2 semantics (today's `ExprDialect`)
