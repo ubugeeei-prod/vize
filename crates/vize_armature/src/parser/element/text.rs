@@ -162,10 +162,11 @@ impl<'a> Parser<'a> {
 
     fn build_interpolation(&mut self, start: usize, end: usize, raw: bool) {
         let raw_content = self.get_source_retained(start, end);
-        let content = raw_content.trim();
+        let after_leading_ws = raw_content.trim_start();
+        let leading_ws = raw_content.len() - after_leading_ws.len();
+        let content = after_leading_ws.trim_end();
 
         // Calculate trimmed positions for accurate source mapping
-        let leading_ws = raw_content.len() - raw_content.trim_start().len();
         let trimmed_start = start + leading_ws;
         let trimmed_end = trimmed_start + content.len();
 
@@ -186,7 +187,12 @@ impl<'a> Parser<'a> {
         let inner_loc = self.create_loc(trimmed_start, trimmed_end);
 
         // Create expression node
-        let mut expr = SimpleExpressionNode::new(content, false, inner_loc);
+        let expression_content = if self.has_ampersand && content.as_bytes().contains(&b'&') {
+            self.decode_interpolation_entities(content)
+        } else {
+            content
+        };
+        let mut expr = SimpleExpressionNode::new(expression_content, false, inner_loc);
         self.retain_expression_ast(&mut expr, trimmed_start, trimmed_end);
         let expr_boxed = Box::new_in(expr, &self.allocator);
 
@@ -200,5 +206,16 @@ impl<'a> Parser<'a> {
         };
         let boxed = Box::new_in(interp, &self.allocator);
         self.add_child(TemplateChildNode::Interpolation(boxed));
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn decode_interpolation_entities(&self, content: &'a str) -> &'a str {
+        let decoded = htmlize::unescape(content);
+        if decoded.as_ref() == content {
+            content
+        } else {
+            self.allocator.alloc_str(decoded.as_ref())
+        }
     }
 }

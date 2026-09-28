@@ -1,5 +1,13 @@
+#[path = "selector/expressions.rs"]
+mod expressions;
+pub(super) fn source_contains_expression_ampersand(source: &str) -> bool {
+    expressions::source_contains_expression_ampersand(source)
+}
+
 pub(super) fn l2_sfc_fast_path_supported_source(source: &str) -> bool {
-    !source_contains_parser_recovery(source) && !super::p_end::source_has_invalid_p_end_tag(source)
+    !source_contains_parser_recovery(source)
+        && !source_contains_expression_ampersand(source)
+        && !super::p_end::source_has_invalid_p_end_tag(source)
 }
 
 /// The SFC fast path skips the shipped parser, so it cannot return its HTML
@@ -56,10 +64,9 @@ fn source_contains_parser_recovery(source: &str) -> bool {
         let name = source.get(name_start..name_end).unwrap_or_default();
         let namespace = tag_namespace(name, tags.last().copied());
         let tag_end = scan_tag_end(bytes, name_end);
-        // The direct L2 path does not run the shipped parser, which reports
-        // repeated static attributes as recoverable SFC warnings. Parse only
-        // these tags through the shared path so the warning is retained.
-        if tag_has_duplicate_attribute(bytes, name_end, tag_end) {
+        // The direct L2 path skips parser diagnostics and expression entity
+        // decoding, so those tags must use the shared parser.
+        if tag_needs_shipped_parser(bytes, name_end, tag_end) {
             return true;
         }
         let self_closing = tag_closes_self_closing(bytes, name_end, tag_end);
@@ -106,44 +113,8 @@ fn source_contains_parser_recovery(source: &str) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::l2_sfc_fast_path_supported_source;
-
-    #[test]
-    fn html_void_element_does_not_keep_parent_open_after_close() {
-        for source in [
-            r#"<a><img src="x"></a><a>next</a>"#,
-            r#"<a><IMG src="x"></a><a>next</a>"#,
-        ] {
-            assert!(
-                l2_sfc_fast_path_supported_source(source),
-                "{source} should keep the direct L2 SFC fast path"
-            );
-        }
-    }
-
-    #[test]
-    fn stray_end_tag_requires_parser_diagnostics() {
-        assert!(!l2_sfc_fast_path_supported_source("<div></div></div>"));
-        assert!(l2_sfc_fast_path_supported_source("<div></div>"));
-    }
-
-    #[test]
-    fn duplicate_attributes_require_parser_warnings() {
-        for source in [
-            r#"<h4 :class="premium" class="" class="shop_title">Shop</h4>"#,
-            r#"<div CLASS="first" class="second" />"#,
-        ] {
-            assert!(!l2_sfc_fast_path_supported_source(source), "{source}");
-        }
-        for source in [
-            r#"<div class="first" title="class='second'">Shop</div>"#,
-            r#"<div :class="first" class="second">Shop</div>"#,
-        ] {
-            assert!(l2_sfc_fast_path_supported_source(source), "{source}");
-        }
-    }
-}
+#[path = "selector/tests.rs"]
+mod tests;
 
 fn find_byte(bytes: &[u8], start: usize, needle: u8) -> Option<usize> {
     bytes
@@ -356,7 +327,7 @@ fn scan_tag_end(bytes: &[u8], start: usize) -> usize {
 /// A cheap warning gate for the SFC direct path. A duplicate (or a tag with
 /// too many attributes for this fixed-size probe) gets the shipped parser;
 /// it can still use L2 for codegen after collecting diagnostics.
-fn tag_has_duplicate_attribute(bytes: &[u8], start: usize, end: usize) -> bool {
+fn tag_needs_shipped_parser(bytes: &[u8], start: usize, end: usize) -> bool {
     let mut names: [&[u8]; 16] = [&[]; 16];
     let mut count = 0;
     let mut index = start;
