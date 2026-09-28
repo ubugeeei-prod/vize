@@ -1,7 +1,7 @@
 //! Duplicate attribute and directive detection before transform lowering.
 
 use vize_relief::{
-    ExpressionNode, PropNode, SourceLocation,
+    ExpressionNode, PropNode,
     errors::{CompilerError, ErrorCode},
 };
 
@@ -20,11 +20,7 @@ impl<'a> Parser<'a> {
         })
     }
 
-    pub(super) fn report_duplicate_directive(
-        &mut self,
-        directive: &CurrentDirective<'a>,
-        loc: SourceLocation,
-    ) {
+    pub(super) fn report_duplicate_directive(&mut self, directive: &CurrentDirective<'a>) {
         // Event listeners and argumentless object spreads may repeat.
         if directive.name == "on" || (directive.name == "bind" && directive.arg.is_none()) {
             return;
@@ -61,6 +57,7 @@ impl<'a> Parser<'a> {
             })
         });
         if duplicate {
+            let loc = self.create_loc(directive.name_start, directive.name_end);
             self.errors
                 .push(CompilerError::new(ErrorCode::DuplicateAttribute, Some(loc)));
         }

@@ -254,7 +254,7 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        self.report_duplicate_directive(&dir, self.create_loc(dir.name_start, dir.name_end));
+        self.report_duplicate_directive(&dir);
 
         // The `.foo` shorthand is equivalent to `v-bind:foo.prop`: detect it
         // before `raw_name` is moved so we can synthesize a `prop` modifier.
