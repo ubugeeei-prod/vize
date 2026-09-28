@@ -71,8 +71,17 @@ issues are all closed.
 
 ## Merging
 
-Enable auto-merge (squash) once PR checks pass. The merge queue runs the
-full suites.
+For dependent slices, use GitHub stacked PRs: branch each child from its
+parent's head and set the child's PR base to that parent branch, so the
+reviewed diff contains only the child. Link parent and child in their PR
+descriptions. Keep a child out of the merge queue while its parent is open.
+After the parent actually squash-merges, rebase the child onto fresh `main`,
+change its PR base to `main`, and rerun Actions before queuing it.
+
+For PRs targeting `main`, enable auto-merge (squash) once PR checks pass.
+The merge queue runs the full suites. If a queue candidate fails, remove its
+PR from the queue until the failure is fixed; do not leave a known-red
+candidate blocking later PRs.
 
 ## Vue Fes Japan (2026-10-24)
 
