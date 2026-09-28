@@ -31,6 +31,21 @@ with a `NoCapture` argument. The ordinary DOM root now keeps its original
 signature and direct compile body; the opt-in captured root is a sibling.
 The next exact-candidate instruction run must verify all 100 probes before
 the PR is updated.
+
+The same cost law applies to SSR and Vapor. Protected #7132 candidate
+`93c71ca` exceeded unchanged ceilings on four SSR full-compile, five Vapor
+lowering and two Vapor full-compile probes. Three Callgrind repetitions
+matched exactly:
+SSR paid two instructions in the ordinary compile call and four in its L4
+lower/emit call for `NoCapture` argument setup; a seventh argument to the
+L2-to-L3 selector spilled beyond the x86-64 integer registers. The ordinary
+SSR compile, source selector and L2-to-L3 selector therefore retain their
+no-sink signatures and bodies, with captured siblings only for observation.
+Vapor's lowerer was unchanged, but its existing element-template helper was
+outlined by the changed compile layout, adding 15 instructions per dynamic
+element; that helper is forced inline at its existing call sites. These are
+code generation remedies, not new stages or budget changes. A fresh 100-probe
+diagnostic must pass before #7132 is updated.
 Each product records only boundaries it actually executed. Provisional pages
 are committed only after final product selection, including DOM source-map
 parity. A compatibility map mismatch returns the compatibility module and
