@@ -221,6 +221,16 @@ fn skip_interpolation(bytes: &[u8], from: usize) -> Option<usize> {
                 pos += 1;
                 can_start_regex = false;
             }
+            (None, b'!') => {
+                // Prefix JS negation keeps an operand pending; after an
+                // operand, Vue+TS also permits a postfix non-null assertion.
+                pos += 1;
+            }
+            (None, b'+' | b'-') if bytes[pos + 1] == bytes[pos] => {
+                // JS increment/decrement can be prefix or postfix. Either
+                // form preserves whether an operand was already present.
+                pos += 2;
+            }
             (None, byte) if byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$') => {
                 let start = pos;
                 while bytes

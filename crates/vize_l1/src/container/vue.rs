@@ -200,6 +200,28 @@ mod tests {
     }
 
     #[test]
+    fn ts_non_null_assertion_before_division_keeps_the_template_close() {
+        let source = "<template>{{ value! / 2 }}</template><style>.ok {}</style>";
+        let allocator = Allocator::default();
+        let result = Vue.split(&allocator, source);
+        assert!(result.errors.is_empty(), "{:?}", result.errors);
+        assert_eq!(result.blocks.len(), 2);
+        assert_eq!(result.blocks[0].content.slice(source), "{{ value! / 2 }}");
+        assert_eq!(result.blocks[1].content.slice(source), ".ok {}");
+    }
+
+    #[test]
+    fn js_postfix_increment_before_division_keeps_the_template_close() {
+        let source = "<template>{{ count++ / 2 }}</template><style>.ok {}</style>";
+        let allocator = Allocator::default();
+        let result = Vue.split(&allocator, source);
+        assert!(result.errors.is_empty(), "{:?}", result.errors);
+        assert_eq!(result.blocks.len(), 2);
+        assert_eq!(result.blocks[0].content.slice(source), "{{ count++ / 2 }}");
+        assert_eq!(result.blocks[1].content.slice(source), ".ok {}");
+    }
+
+    #[test]
     fn nested_template_expression_is_reported_as_uncertain() {
         let source = "<template>{{ `value ${name}` }}</template>";
         let allocator = Allocator::default();

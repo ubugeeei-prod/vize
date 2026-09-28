@@ -91,8 +91,10 @@ Compatibility parser work that produces the existing public AST/diagnostics is
 outside these native module-producing pages and remains separately reported.
 The opt-in native Vue container splitter keeps authored byte spans. Its
 interpolation boundary scan balances nested JS braces and skips quoted text,
-comments and regex so their `}}` and `</template>` bytes cannot become a
-false root close. A nested template-literal expression remains explicitly
+comments and recognizable regex literals so their `}}` and
+`</template>` bytes cannot become a false root close. Prefix versus postfix
+`!`, `++` and `--` retain operand state so a following `/` is scanned as
+division when Vue+TS or JS grammar makes it one. A nested template-literal expression remains explicitly
 uncertain and supplies no trusted close span. SFC tests compare the observed
 result with the ordinary compile for both script plus template and template
 errors; fallback discards all provisional pages. The full container grammar
