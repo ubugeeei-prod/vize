@@ -20,6 +20,13 @@ pub(super) fn event_key(piece: &Piece<'_>, is_plain_element: bool) -> Option<Str
     }
 }
 
+pub(super) fn count(visible: &[&Piece<'_>], key: &str, is_plain_element: bool) -> usize {
+    visible
+        .iter()
+        .filter(|piece| event_key(piece, is_plain_element).as_deref() == Some(key))
+        .count()
+}
+
 /// Each keyed visible piece's index and key hash, so the merge check for
 /// one piece spells its peers' keys only on a hash match instead of for
 /// every piece (which made props objects quadratic in their `v-on` count).
