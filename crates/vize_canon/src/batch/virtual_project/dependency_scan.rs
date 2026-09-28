@@ -99,6 +99,7 @@ impl VirtualProject {
         workspace_package_specifiers: &[CompactString],
         mut package_resolver: Option<PackageResolver<'_>>,
     ) -> CorsaResult<()> {
+        let perf_started = std::time::Instant::now();
         let aliases = self.dependency_alias_map();
         let alias_prefixes: Vec<CompactString> = aliases
             .iter()
@@ -236,6 +237,12 @@ impl VirtualProject {
             }
             let released = self.replace_dependency_edges(&importer, dependency_targets);
             self.prune_unowned_sources(released);
+        }
+        if self.project_root.to_string_lossy().contains("misskey") {
+            eprintln!(
+                "canon-perf dependency_scan={}ms",
+                perf_started.elapsed().as_millis()
+            );
         }
         Ok(())
     }

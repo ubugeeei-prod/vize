@@ -184,7 +184,9 @@ pub(super) fn collect_project_paths(
     source_policy: SourceFilePolicy,
 ) -> CorsaResult<Vec<PathBuf>> {
     let project_root = project.project_root();
+    let started = std::time::Instant::now();
     let explicit_hidden_dirs = hidden::explicit_hidden_source_dirs(project);
+    let config_ms = started.elapsed().as_millis();
     let mut paths = Vec::new();
     for entry in walkdir::WalkDir::new(project_root)
         .into_iter()
@@ -202,6 +204,13 @@ pub(super) fn collect_project_paths(
         if path.is_file() && source_policy.accepts_project_source(path) {
             paths.push(path.to_path_buf());
         }
+    }
+    if project_root.to_string_lossy().contains("misskey") {
+        eprintln!(
+            "canon-perf collect_project_paths config={config_ms}ms total={}ms paths={}",
+            started.elapsed().as_millis(),
+            paths.len()
+        );
     }
     Ok(paths)
 }

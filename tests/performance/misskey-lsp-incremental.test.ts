@@ -173,6 +173,7 @@ test(
           session.notify("textDocument/didClose", { textDocument: { uri: dependencyUri } });
         } catch (error) {
           failure = error;
+          console.error(session.stderrText);
         }
         try {
           await session.shutdown();

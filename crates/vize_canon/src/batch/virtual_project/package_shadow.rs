@@ -19,6 +19,7 @@ pub(super) struct PackageShadowTopology {
 
 impl VirtualProject {
     pub(super) fn rebuild_package_shadows(&mut self) -> CorsaResult<()> {
+        let perf_started = std::time::Instant::now();
         if !self.package_shadows_initialized {
             self.package_shadow_files.clear();
             self.package_shadow_manifests.clear();
@@ -36,9 +37,16 @@ impl VirtualProject {
             .into_iter()
             .collect::<Vec<_>>();
         dirty.sort();
-        self.incremental_shadow_bindings_rebuilt += dirty.len();
+        let dirty_count = dirty.len();
+        self.incremental_shadow_bindings_rebuilt += dirty_count;
         for key in dirty {
             self.refresh_package_shadow(&key)?;
+        }
+        if self.project_root.to_string_lossy().contains("misskey") {
+            eprintln!(
+                "canon-perf package_shadows={}ms dirty={dirty_count}",
+                perf_started.elapsed().as_millis()
+            );
         }
         Ok(())
     }
