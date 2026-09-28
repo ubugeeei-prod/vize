@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -9,6 +9,14 @@ import {
   toolingTestFiles,
 } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 import { toolingTestCommand } from "../../tools/support/compat/github/run-tooling-tests.mjs";
+import {
+  formatterEvidenceTest,
+  mergeToolingShardCount,
+  mergeToolingShardTests,
+  partitionMergeToolingTests,
+  toolingShardIds,
+} from "../../tools/support/compat/github/tooling-merge-shards.mjs";
+import { parse } from "yaml";
 
 function fixture() {
   const cwd = mkdtempSync(join(tmpdir(), "vize-tooling-inputs-"));
@@ -95,6 +103,62 @@ void test("merge planning restores every scenario, including directly changed de
   } finally {
     f.cleanup();
   }
+});
+
+void test("merge tooling shards cover every test once with isolated serial runners", () => {
+  const files = toolingTestFiles();
+  const shards = partitionMergeToolingTests(files);
+  assert.equal(shards.length, mergeToolingShardCount);
+  assert.deepEqual(shards.flat().sort(), files);
+  assert.equal(new Set(shards.flat()).size, files.length);
+  assert.ok(shards[0].includes(formatterEvidenceTest));
+  assert.ok(shards.every((shard) => shard.length > 0));
+  assert.ok(
+    Math.max(...shards.map((shard) => shard.length)) -
+      Math.min(...shards.map((shard) => shard.length)) <=
+      1,
+  );
+  for (const shardId of toolingShardIds("merge")) {
+    assert.deepEqual(mergeToolingShardTests(files, shardId), shards[shardId - 1]);
+  }
+  assert.deepEqual(toolingShardIds("pr"), [1]);
+  for (const id of [0, mergeToolingShardCount + 1, 1.5, NaN]) {
+    assert.throws(() => mergeToolingShardTests(files, id), /shard must/);
+  }
+  assert.throws(
+    () => partitionMergeToolingTests(files.filter((f) => f !== formatterEvidenceTest)),
+    /evidence test/,
+  );
+  assert.throws(() => partitionMergeToolingTests([...files, files[0]]), /unique/);
+});
+
+void test("merge matrix uses the planner's complete shards and the required report", () => {
+  const workflow = parse(
+    readFileSync(new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url), "utf8"),
+  );
+  const job = workflow.jobs["pr-tooling-scripts"];
+  assert.equal(
+    workflow.jobs["pr-source-plan"].outputs["tooling-shards"],
+    "${{ steps.tooling-plan.outputs.tooling-shards }}",
+  );
+  assert.equal(
+    job.strategy.matrix.shard,
+    "${{ fromJSON(needs.pr-source-plan.outputs.tooling-shards) }}",
+  );
+  assert.equal(job.strategy["fail-fast"], false);
+  const mergeStep = job.steps.find((step) => step.name === "Test tooling scripts");
+  assert.equal(mergeStep.run, "vp run --workspace-root test:scripts:merge-shard");
+  assert.equal(mergeStep.env.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
+  assert.equal(mergeStep.env.VIZE_TOOLING_MERGE_SHARD, "${{ matrix.shard }}");
+  assert.match(
+    job.steps.find((step) => step.uses === "./.github/actions/upload-formatter-api-corpus-evidence")
+      .if,
+    /matrix\.shard == 1/u,
+  );
+  const check = parse(
+    readFileSync(new URL("../../.github/workflows/check.yml", import.meta.url), "utf8"),
+  );
+  assert.ok(check.jobs["test-report"].needs.includes("pr-source-checks"));
 });
 
 void test("pure typecheck and LSP helper contracts remain in T0; explicit runtime inventory exists", () => {
