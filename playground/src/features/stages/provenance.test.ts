@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 import { isPassRecord, parseProvenance, recordsForNode } from "./provenance";
-import { folioLines, folioTokens } from "./folioLines";
+import { dumpLines, dumpTokens } from "./dumpLines";
 
 // Byte-for-byte what the compiler prints for `<div :class="cls">{{ msg }}</div>`
 // with a trailing comment (see the Rust `spolvero_ladder` pins).
@@ -59,7 +59,7 @@ describe("parseProvenance", () => {
   });
 
   it("links provenance lines to their spans and colors the rule", () => {
-    const lines = folioLines("provenance", PAGE);
+    const lines = dumpLines("provenance", PAGE);
     expect(lines.map((line) => line.span)).toEqual([
       null,
       null,
@@ -70,7 +70,7 @@ describe("parseProvenance", () => {
       { start: 3, end: 36 },
       null,
     ]);
-    expect(folioTokens('rule=drop.comment node=- before="" after="" @0:1').slice(0, 4)).toEqual([
+    expect(dumpTokens('rule=drop.comment node=- before="" after="" @0:1').slice(0, 4)).toEqual([
       { type: "key", text: "rule=" },
       { type: "mnemonic", text: "drop.comment" },
       { type: "text", text: " " },
@@ -89,7 +89,7 @@ ui.element div @3:36
   ui.interpolation js("msg" @24:27) @21:30
 
 `;
-    expect(folioLines("disegno", s2).map((line) => line.node)).toEqual([
+    expect(dumpLines("disegno", s2).map((line) => line.node)).toEqual([
       null,
       null,
       null,

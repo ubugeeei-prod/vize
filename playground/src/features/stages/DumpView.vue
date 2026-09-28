@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { nextTick, useTemplateRef, watch } from "vue";
-import type { FolioLine, PageKind } from "./folioLines";
+import type { DumpLine, PageKind } from "./dumpLines";
 import { withTokenOffsets } from "../../utils/withTokenOffsets";
 
 const props = defineProps<{
-  lines: FolioLine[];
+  lines: DumpLine[];
   kind: PageKind;
   selected: number | null;
   /** Lines covering the source cursor (reverse provenance). */
@@ -29,7 +29,7 @@ watch(
   },
 );
 
-function spanTitle(line: FolioLine): string | undefined {
+function spanTitle(line: DumpLine): string | undefined {
   return line.span ? `Authored bytes ${line.span.start}–${line.span.end}` : undefined;
 }
 

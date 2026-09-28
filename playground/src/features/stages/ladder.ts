@@ -4,7 +4,7 @@
 // every fact shown comes from a page the compiler printed.
 
 import { layerId, type StageFeed, type StagePage } from "../../wasm/types/stages";
-import type { PageKind } from "./folioLines";
+import type { PageKind } from "./dumpLines";
 import type { StageRemark } from "./remarks";
 import { parseFusionPlan, planWalks, type TimelineWalk } from "./fusion";
 

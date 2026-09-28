@@ -166,8 +166,8 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
     const n46 = _createComponentWithFallback(_component_GlyphPlayground, { compiler: () => (_ctx.compiler) }, null, true)
     return n46
   }, () => _createIf(() => (_ctx.mainTab === 'davinci'), () => {
-    const _component_DavinciPlayground = _ctx.DavinciPlayground
-    const n49 = _createComponentWithFallback(_component_DavinciPlayground, { compiler: () => (_ctx.compiler) }, null, true)
+    const _component_StagePlayground = _ctx.StagePlayground
+    const n49 = _createComponentWithFallback(_component_StagePlayground, { compiler: () => (_ctx.compiler) }, null, true)
     return n49
   }, () => {
     const _component_AtelierPlayground = _ctx.AtelierPlayground
@@ -208,7 +208,7 @@ import CroquisPlayground from "./features/croquis/CroquisPlayground.vue";
 import CrossFilePlayground from "./features/cross-file/CrossFilePlayground.vue";
 import TypeCheckPlayground from "./features/canon/TypeCheckPlayground.vue";
 import InspectorPlayground from "./features/inspector/InspectorPlayground.vue";
-import DavinciPlayground from "./features/stages/DavinciPlayground.vue";
+import StagePlayground from "./features/stages/StagePlayground.vue";
 import { getPlaygroundEnvironmentInfo } from "./utils/environment";
 import { useClipboard } from "./utils/useClipboard";
 
@@ -290,7 +290,7 @@ onMounted(async () => {
   }
 });
 
-const __returned__ = { currentTheme, mainTab, watch, mdiClipboardTextOutline, AtelierPlayground, getPlaygroundEnvironmentInfo, useClipboard, updateVersionLabel, MuseaPlayground, loadWasm, validTabs, CrossFilePlayground, TypeCheckPlayground, DavinciPlayground, shallowRef, provide, CroquisPlayground, InspectorPlayground, copyToClipboard, ref, wasmStatus, copyEnvironmentInfo, isDark, toggleTheme, vizeVersionLabel, PatinaPlayground, GlyphPlayground, computed, onMounted, getInitialTab, compiler }
+const __returned__ = { currentTheme, mainTab, watch, mdiClipboardTextOutline, AtelierPlayground, getPlaygroundEnvironmentInfo, useClipboard, updateVersionLabel, MuseaPlayground, loadWasm, validTabs, CrossFilePlayground, TypeCheckPlayground, StagePlayground, shallowRef, provide, CroquisPlayground, InspectorPlayground, copyToClipboard, ref, wasmStatus, copyEnvironmentInfo, isDark, toggleTheme, vizeVersionLabel, PatinaPlayground, GlyphPlayground, computed, onMounted, getInitialTab, compiler }
 Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
 const __instance = _getCurrentInstance()
 const __ctx = _proxyRefs(__returned__)

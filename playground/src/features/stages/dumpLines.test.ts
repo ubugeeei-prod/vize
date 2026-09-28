@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { folioLines, folioTokens, lineSpan, linesCovering, surfaceTokens } from "./folioLines";
+import { dumpLines, dumpTokens, lineSpan, linesCovering, surfaceTokens } from "./dumpLines";
 
 // Page texts as the compiler prints them (pinned byte-for-byte by the Rust
 // TS-52 `spolvero_ladder` suite for this template).
@@ -14,10 +14,10 @@ ui.element div @3:36
 
 `;
 
-describe("folioTokens", () => {
+describe("dumpTokens", () => {
   it("colors an L2 op line by role, keeping every byte", () => {
     const line = '  ui.bind name="class" value=js("cls" @16:19) @8:20';
-    const tokens = folioTokens(line);
+    const tokens = dumpTokens(line);
     expect(tokens.map((token) => token.text).join("")).toBe(line);
     expect(tokens).toEqual([
       { type: "text", text: "  " },
@@ -38,17 +38,17 @@ describe("folioTokens", () => {
   });
 
   it("marks element names, sections, absent ids and partition kinds", () => {
-    expect(folioTokens("ui.element div @3:36")).toEqual([
+    expect(dumpTokens("ui.element div @3:36")).toEqual([
       { type: "mnemonic", text: "ui.element" },
       { type: "text", text: " " },
       { type: "tag", text: "div" },
       { type: "text", text: " " },
       { type: "span", text: "@3:36" },
     ]);
-    expect(folioTokens("[l3-dump-v2.ops]")).toEqual([
+    expect(dumpTokens("[l3-dump-v2.ops]")).toEqual([
       { type: "section", text: "[l3-dump-v2.ops]" },
     ]);
-    expect(folioTokens("id=0 parent=- owner=- span=3:36").map((token) => token.type)).toEqual([
+    expect(dumpTokens("id=0 parent=- owner=- span=3:36").map((token) => token.type)).toEqual([
       "key",
       "number",
       "text",
@@ -61,7 +61,7 @@ describe("folioTokens", () => {
       "key",
       "span",
     ]);
-    expect(folioTokens("op=1 kind=dynamic span=8:20")[4]).toEqual({
+    expect(dumpTokens("op=1 kind=dynamic span=8:20")[4]).toEqual({
       type: "dynamic",
       text: "dynamic",
     });
@@ -98,13 +98,13 @@ describe("spans", () => {
   });
 
   it("gives each L1 line its own byte range in the template", () => {
-    const lines = folioLines("surface", TEMPLATE);
+    const lines = dumpLines("surface", TEMPLATE);
     expect(lines.map((line) => line.span)).toEqual([null, { start: 1, end: 36 }]);
     expect(TEMPLATE.slice(3, 36)).toBe('<div :class="cls">{{ msg }}</div>');
   });
 
   it("answers the reverse query narrowest-first", () => {
-    const lines = folioLines("disegno", L2);
+    const lines = dumpLines("disegno", L2);
     expect(lines.map((line) => line.depth)).toEqual([0, 0, 0, 0, 0, 1, 1, 0]);
     // Byte 25 sits inside `msg`: the interpolation, then its element.
     expect(linesCovering(lines, 25)).toEqual([6, 4]);

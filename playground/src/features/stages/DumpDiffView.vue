@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { InspectorDiff } from "../../wasm/types/inspector";
-import { folioTokens } from "./folioLines";
+import { dumpTokens } from "./dumpLines";
 import { withTokenOffsets } from "../../utils/withTokenOffsets";
 
 defineProps<{
@@ -36,7 +36,7 @@ defineProps<{
         }}</span>
         <span class="davinci-code"
           ><span
-            v-for="token in withTokenOffsets(folioTokens(line.text))"
+            v-for="token in withTokenOffsets(dumpTokens(line.text))"
             :key="token.offset"
             :class="`tk-${token.type}`"
             >{{ token.text }}</span

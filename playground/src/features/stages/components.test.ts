@@ -2,8 +2,8 @@ import { describe, expect, it } from "vite-plus/test";
 import { mount } from "@vue/test-utils";
 import StageRail from "./StageRail.vue";
 import PassTimeline from "./PassTimeline.vue";
-import FolioView from "./FolioView.vue";
-import { folioLines } from "./folioLines";
+import DumpView from "./DumpView.vue";
+import { dumpLines } from "./dumpLines";
 import type { Rung, TimelineStep } from "./ladder";
 
 const rungs: Rung[] = [
@@ -90,14 +90,14 @@ describe("PassTimeline", () => {
   });
 });
 
-describe("FolioView", () => {
-  const lines = folioLines(
+describe("DumpView", () => {
+  const lines = dumpLines(
     "disegno",
     '[l2-dump-v2]\nops=2\n\n[l2-dump-v2.ops]\nui.element div @3:23\n  ui.interpolation js("msg" @11:14) @8:17\n\n',
   );
 
   it("renders tokens and links only lines that carry a span", async () => {
-    const wrapper = mount(FolioView, {
+    const wrapper = mount(DumpView, {
       props: { lines, kind: "disegno", selected: 5, linked: [4] },
     });
     const rows = wrapper.findAll(".davinci-line");
@@ -137,7 +137,7 @@ describe("FolioView", () => {
   });
 
   it("marks the lines it is given in the gutter", () => {
-    const wrapper = mount(FolioView, {
+    const wrapper = mount(DumpView, {
       props: {
         lines,
         kind: "disegno",

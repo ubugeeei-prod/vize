@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Rung } from "./ladder";
-import type { StageId } from "./useDavinciLadder";
+import type { StageId } from "./useStageLadder";
 
 defineProps<{
   rungs: Rung[];

@@ -25,7 +25,7 @@ import {
   type CodeOutputs,
 } from "../atelier/codeOutputs";
 import { buildLadder, type RungId, type StageLadder } from "./ladder";
-import { folioLines, linesCovering } from "./folioLines";
+import { dumpLines, linesCovering } from "./dumpLines";
 import {
   sfcOffsetToTemplateBytes,
   templateBytesToSfcRange,
@@ -48,7 +48,7 @@ const FILENAME = "Component.vue";
  * compiler (the Spolvero feed from `analyzeSfc`, the emitted code from
  * `compileSfc`), plus the selection that links stage lines to source spans.
  */
-export function useDavinciLadder(getCompiler: () => WasmModule | null) {
+export function useStageLadder(getCompiler: () => WasmModule | null) {
   const injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");
   const theme = computed<"dark" | "light">(() => injectedTheme?.value ?? "light");
 
@@ -89,7 +89,7 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
     const key = pageKeys.value[current.id];
     return current.pages.find((p) => p.key === key) ?? current.pages[0];
   });
-  const lines = computed(() => (page.value ? folioLines(page.value.kind, page.value.text) : []));
+  const lines = computed(() => (page.value ? dumpLines(page.value.kind, page.value.text) : []));
   /** On the L3 graph page, each op line's exported static/dynamic partition. */
   const lineMarks = computed(() => {
     const shown = page.value;

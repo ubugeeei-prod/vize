@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import CodeHighlight from "../../shared/CodeHighlight.vue";
 import type { CodeOutputs } from "../atelier/codeOutputs";
-import type { OutputTarget } from "./useDavinciLadder";
+import type { OutputTarget } from "./useStageLadder";
 
 const props = defineProps<{
   outputs: CodeOutputs;
