@@ -46,6 +46,12 @@ pub use crate::dump::owned::{
 };
 pub use crate::dump::provenance::{Page as ProvenancePage, Record as DumpProvenance};
 
+/// Render any existing stage page in its canonical full form for opt-in capture.
+#[must_use]
+pub fn render_full_page<P: Dump>(page: &P) -> vize_l0::String {
+    page.print_to_string(DumpMode::Full)
+}
+
 /// Document model of an L2 op-tree dump.
 ///
 /// The root region's ops, in document order. Everything else - the `ops=`

@@ -3,6 +3,7 @@ use vize_atelier_ssr::{
     Allocator, SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions,
     compile_ssr_with_sfc_slotted_context, compile_ssr_with_sfc_slotted_context_and_capture,
 };
+use vize_davinci::dump::{Dump, Mode};
 use vize_l0::{
     dump::capture::{CaptureOutcome, StageCapture},
     level::Level,
@@ -83,8 +84,10 @@ fn accepted_ssr_pages_describe_the_module_emitter_input() {
         ]
     );
     assert_eq!(capture.pages[0].text.as_str(), "<div>hello</div>");
-    assert!(capture.pages[1].text.contains("[l2-"));
-    assert!(capture.pages[3].text.contains("[l3-"));
+    let l2 = vize_l2::dump::Page::parse(&capture.pages[1].text).expect("L2 page parses");
+    assert_eq!(l2.print_to_string(Mode::Full), capture.pages[1].text);
+    let l3 = vize_l3::dump::Page::parse(&capture.pages[3].text).expect("L3 page parses");
+    assert_eq!(l3.print_to_string(Mode::Full), capture.pages[3].text);
     // The SSR backend returns two chunks; this is the exact SFC render
     // module assembly, before the SFC script is composed around it.
     let mut render_module = vize_l0::String::default();
@@ -104,6 +107,17 @@ fn retained_ssr_module_has_no_native_pages() {
             comments: true,
             ..Default::default()
         },
+    );
+    assert!(!result.code.is_empty());
+    assert!(matches!(capture.outcome, CaptureOutcome::Legacy(_)));
+    assert!(capture.pages.is_empty());
+}
+
+#[test]
+fn v_pre_slot_selects_retained_ssr_without_native_pages() {
+    let (result, capture) = compile(
+        "<slot v-pre>{{ not }} an interpolation</slot>",
+        SsrCompilerOptions::default(),
     );
     assert!(!result.code.is_empty());
     assert!(matches!(capture.outcome, CaptureOutcome::Legacy(_)));

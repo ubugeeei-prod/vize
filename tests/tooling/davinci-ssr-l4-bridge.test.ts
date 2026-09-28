@@ -26,14 +26,19 @@ test("Davinci SSR compile path imports the L4 string-plan bridge", () => {
   }
 
   const compile = readRepoFile("crates", "vize_atelier_ssr", "src", "compile.rs");
+  const compileInner = readRepoFile("crates", "vize_atelier_ssr", "src", "compile", "inner.rs");
   const bridge = readRepoFile("crates", "vize_atelier_ssr", "src", "l4.rs");
+  const source = readRepoFile("crates", "vize_atelier_ssr", "src", "l4", "source.rs");
   const select = readRepoFile("crates", "vize_atelier_ssr", "src", "l4", "select.rs");
   const plan = readRepoFile("crates", "vize_atelier_ssr", "src", "l4", "string_plan.rs");
-  assert.match(compile, /select_ssr_lane/u);
-  assert.match(compile, /SsrL4Selection::Emitted/u);
-  assert.match(bridge, /vize_l1::parse_with_options/u);
-  assert.match(bridge, /vize_l1_to_l2::lower/u);
-  assert.match(bridge, /select::select_from_l2/u);
+  assert.match(compile, /mod inner;/u);
+  assert.match(compileInner, /l4::select_ssr_lane_captured\(/u);
+  assert.match(compileInner, /SsrL4Selection::Emitted/u);
+  assert.match(bridge, /mod source;/u);
+  assert.match(bridge, /pub\(crate\) use source::select_ssr_lane_captured/u);
+  assert.match(source, /vize_l1::parse_with_options/u);
+  assert.match(source, /vize_l1_to_l2::lower/u);
+  assert.match(source, /select::select_from_l2/u);
   assert.match(select, /vize_l2_to_l3::lower/u);
   assert.match(select, /vize_l3::verify::verify/u);
   assert.match(plan, /PartitionFacts/u);

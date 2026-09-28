@@ -10,7 +10,6 @@ metadata.vize.stability = "experimental"
 
 [dependencies]
 vize_l0 = { workspace = true }
-vize_davinci = { workspace = true }
 vize_carton = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_croquis = { workspace = true }
@@ -41,6 +40,7 @@ davinci-benchmark-profile = ["davinci-benchmark", "vize_l1_to_l2/davinci-benchma
 legacy-differential = ["vize_atelier_core/legacy-differential"]
 
 [dev-dependencies]
+vize_davinci = { workspace = true }
 oxc_semantic = { workspace = true }
 criterion = { workspace = true }
 davinci_harness = { workspace = true }
