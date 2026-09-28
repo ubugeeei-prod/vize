@@ -20,16 +20,16 @@ Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (res
 - **Codenames are aliases only.** Davinci, Sinopia, Disegno, Ricalco, Impeto, Folio, Spolvero and the rest may appear in crate docs (`//! L3 — reactivity IR (codename: Impeto)`) and in `docs/`. They never appear in crate, directory, file, module or type names, or in serialized strings. Ordinary terms such as `lattice` and `ledger` are not codenames.
 - Examples of the mapping ([#6832](https://github.com/ubugeeei-prod/vize/issues/6832)):
 
-  | Now                                   | After                                                                     |
-  | ------------------------------------- | ------------------------------------------------------------------------- |
-  | `folio`, `trait Folio`, `FolioValue`  | `dump`, `trait Dump`, `DumpValue`                                         |
-  | `FolioOp`, `FolioIf`, …               | `vize_l2::dump::{Op, If, …}`                                              |
-  | `vize_impeto`                         | `vize_l3`                                                                 |
-  | `impeto.set-prop`                     | `l3.set-prop`                                                             |
-  | `davinci.s2_dom.*` counters           | `l2.dom.*`                                                                |
-  | `SpolveroFeed`, `inspector::spolvero` | `StageFeed`, `inspector::stages`                                          |
-  | feature `davinci-differential`        | `legacy-differential`                                                     |
-  | `davinci-opt`                         | `vize dump` options (one generator shared with the playground stage view) |
+  | Now                                                          | After                                                                     |
+  | ------------------------------------------------------------ | ------------------------------------------------------------------------- |
+  | `folio`, `trait Folio`, `FolioValue`                         | `dump`, `trait Dump`, `DumpValue`                                         |
+  | `FolioOp`, `FolioIf`, …                                      | `vize_l2::dump::{Op, If, …}`                                              |
+  | `vize_impeto`                                                | `vize_l3`                                                                 |
+  | `impeto.set-prop`                                            | `l3.set-prop`                                                             |
+  | `davinci.s2_dom.*` counters                                  | `l2.dom.*`                                                                |
+  | `SpolveroFeed`, `inspector::spolvero`                        | `StageFeed`, `inspector::stages`                                          |
+  | features `davinci-differential` / `davinci-dom-differential` | `legacy-differential` / `legacy-dom-differential`                         |
+  | `davinci-opt`                                                | `vize dump` options (one generator shared with the playground stage view) |
 
 - Davinci has no external users yet, so its crates, APIs, dump formats, serialized strings and feature names change without a compatibility period. Legacy products keep strict output compatibility; the [#6898 SSR slot scope correction](./2026-09-27-ssr-slot-scope.md) adds its own regression corpus.
 - Product crates with art names (croquis, patina, glyph, maestro, canon, carton, …) keep their names. `docs/davinci/` keeps its name as the program name.
@@ -48,7 +48,8 @@ Decided by the maintainer on 2026-09-28 ([#6826 comment](https://github.com/ubug
 
 ## Level dump naming
 
-The L3 package identity, stage feed types, level dump API, versioned dump protocols, `vize dump --roundtrip` and the differential feature selector migration are recorded in [level dump naming](./2026-09-28-level-dump-naming.md). The native stage ladder now collects pages, remarks and timings from one pass execution for the playground; CLI export and product compilation integration remain open in #6832. For [#6832](https://github.com/ubugeeei-prod/vize/issues/6832), L2's 13 auto-discovered `folio_*` test targets move to `dump_*` in a move-only commit; source references and live documentation links follow in a separate commit, while `.folio` fixture bytes and extensions remain unchanged.
+The L3 package identity, stage feed types, level dump API, versioned dump protocols and `vize dump --roundtrip` are recorded in [level dump naming](./2026-09-28-level-dump-naming.md). The native stage ladder now collects pages, remarks and timings from one pass execution for the playground; CLI export and product compilation integration remain open in #6832.
+For [#6832](https://github.com/ubugeeei-prod/vize/issues/6832), L2's 13 auto-discovered `folio_*` test targets move to `dump_*` in a move-only commit; source references and live documentation links follow in a separate commit, while `.folio` fixture bytes and extensions remain unchanged.
 
 ## Rust verification for L3 (2026-09-28)
 
