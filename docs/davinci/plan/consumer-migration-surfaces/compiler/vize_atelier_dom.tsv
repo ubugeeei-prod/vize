@@ -13,6 +13,8 @@ compiler	Compiler	test/dev	crates/vize_atelier_dom/src/compile/croquis_facts.rs	
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/custom_elements.rs	17	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/inner.rs	11	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/inner.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile/inner/capture.rs	11	l0	L0	stage	vize_l0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile/inner/capture.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/legacy.rs	11	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/selection.rs	12	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/sfc.rs	14	l0	L0	stage	vize_l0	preferred	2

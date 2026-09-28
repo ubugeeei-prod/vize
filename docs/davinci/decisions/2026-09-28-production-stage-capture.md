@@ -22,7 +22,15 @@ changed LLVM's optimization of the ordinary DOM emitter despite lazy page
 builders. Restoring the L1→L2 body alone left only the small (+28) and wide
 (+48) probes above their ceilings; Callgrind showed the remaining ordinary
 host calls still passed through the generic captured wrappers. No instruction
-ceiling is raised.
+ceiling is raised. After restoring the host's direct ordinary calls, a
+fresh-main diagnostic `f707e07c9` left four full DOM compile probes exactly
+three instructions above their ceilings; all other 96 passed. Callgrind
+showed identical ordinary host and L1→L2 emitter calls, with the remaining
+three instructions at the benchmark closure's call to the generic DOM root
+with a `NoCapture` argument. The ordinary DOM root now keeps its original
+signature and direct compile body; the opt-in captured root is a sibling.
+The next exact-candidate instruction run must verify all 100 probes before
+the PR is updated.
 Each product records only boundaries it actually executed. Provisional pages
 are committed only after final product selection, including DOM source-map
 parity. A compatibility map mismatch returns the compatibility module and
