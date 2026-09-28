@@ -28,6 +28,7 @@ comparison against a fresh-main control measurement.
 | Packageable Armature source snapshot, optional L1 edge | [36445737713](https://github.com/ubugeeei-prod/vize/actions/runs/36445737713) | 17 | Local package, byte parity, tests and Clippy passed; fused compiler probes still failed. |
 | Small dynamic-prop deduplication without a hash table | [36448073726](https://github.com/ubugeeei-prod/vize/actions/runs/36448073726) | 25 | Output parity passed, but fused compile misses remained. |
 | Common HTML tags before the PHF lookup | [36448889203](https://github.com/ubugeeei-prod/vize/actions/runs/36448889203) | 23 | Fused compile improved, but independent codegen and generate probes exceeded ceilings. |
+| Common HTML tags with an out-of-line helper on then-fresh `371489b9` | [36449943926](https://github.com/ubugeeei-prod/vize/actions/runs/36449943926) | 10 | All fused compile probes passed; six DOM codegen and four Vapor generate probes still exceeded ceilings. |
 
 The final experiment failed DOM compile in five fixtures and SSR/Vapor compile
 in six each, up to 13,837 instructions above a pinned ceiling. It matched the
@@ -53,14 +54,21 @@ generate stress-interp rose 22,294. Neither passes the global gate. These
 cross-stage movements show that local hot-path savings alone are insufficient
 under the current ThinLTO layout.
 
+Callgrind attributed the HTML fast path's prebuilt-AST codegen change to
+`CompactString::Repr::push_str` becoming out of line more often even though
+the tag helper was never called. The bounded out-of-line helper experiment on
+then-fresh `main` eliminated every fused compile miss, but DOM codegen still
+exceeded ceilings by 3–1,194 instructions and Vapor generate by 6–132. Three
+repeats agreed. It was kept off #7136; the global result is still red.
+
 ## Next bounded work
 
-The bounded PHF/SipHash source experiment did not pass. Stop speculative
-variants. On the current fresh `main`, attribute the remaining prebuilt-AST
-codegen/generate and fused-compile differences to concrete functions before
-proposing another source change. Keep byte/error-recovery parity and the
-published package check. Only after an exact-head candidate passes should
-#7136 and its native Stack descendants be rebased and sent through PR Actions
-and the protected queue. Meanwhile bring these measured alternatives to the
-maintainer; do not merge a temporary duplicate production tokenizer or mark
-#6835 complete.
+The bounded PHF/SipHash and out-of-line experiments did not pass. Stop
+variants. Keep #7136 dequeued while independent Davinci changes merge, and
+bring the measured tradeoff to the maintainer: defer the source move, or
+authorize a separately reviewed codegen/generate optimization tied to the ten
+remaining probes. Either path keeps immutable ceilings, byte/error-recovery
+parity and the Cargo package check. Only after an exact-head candidate
+passes should #7136 and its native Stack descendants be rebased and sent
+through PR Actions and the protected queue. Do not merge a temporary duplicate
+production tokenizer or mark #6835 complete.
