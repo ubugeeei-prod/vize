@@ -20,8 +20,8 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/compile/entry.rs	7	l0	L0	
 compiler	Compiler	source	crates/vize_atelier_vapor/src/compile/inner.rs	66	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/compile/native.rs	7	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/compile/result.rs	3	l0	L0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_vapor/src/generate.rs	15	l0	L0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/context.rs	14	l0	L0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/generate.rs	16	l0	L0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/context.rs	15	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/context/component_resolution.rs	1	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/context/scopes.rs	3	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/destructure.rs	2	l0	L0	stage	vize_carton	compat	1
@@ -38,6 +38,8 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression.rs	1	
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression.rs	1	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/helpers.rs	5	l0	L0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/names.rs	3	l0	L0	stage	vize_carton	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/generate/names.rs	76	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations.rs	24	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/component_props.rs	3	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/operations/component_slots.rs	2	l0	L0	stage	vize_carton	compat	1
