@@ -5,6 +5,7 @@
 mod children;
 mod component_binding;
 mod context;
+pub mod document;
 mod element;
 mod emit;
 mod entry;
@@ -14,15 +15,13 @@ mod helpers;
 mod node;
 mod patch_flag;
 mod props;
+pub mod rewrite_spans;
 mod root;
 mod slots;
+pub mod source_map;
 pub mod source_map_anchor;
 mod v_for;
 mod v_if;
-
-/// The L4 emission document, source maps and rewritten-identifier spans,
-/// owned by `vize_l4` and re-exported here for legacy codegen (#6840).
-pub use vize_l4::write::{document, rewrite_spans, source_map};
 
 #[cfg(test)]
 #[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]

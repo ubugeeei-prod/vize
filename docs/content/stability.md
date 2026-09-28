@@ -114,7 +114,6 @@ details are not compatibility surfaces.
 | `vize_l1_to_l2`       | Experimental          | Vue lowering and compiler backend authors | `vize_l1_to_l2::{lower, emit_dom}`              | No minimum; note breaks when practical |
 | `vize_l2`             | Experimental          | Dialect-neutral compiler IR authors       | `vize_l2::{dump::Page, op, verify}`             | No minimum; note breaks when practical |
 | `vize_l2_to_l3`       | Experimental          | Impeto lowering and backend authors       | `vize_l2_to_l3::{lower, PartitionFacts}`        | No minimum; note breaks when practical |
-| `vize_l4`             | Experimental          | Emission and source-map authors           | `vize_l4::write::{Writer, EmitDocument}`        | No minimum; note breaks when practical |
 
 <!-- rust-crate-support:end -->
 

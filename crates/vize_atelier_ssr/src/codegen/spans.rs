@@ -15,13 +15,11 @@ use super::{SsrCodegenContext, TemplatePart};
 
 impl SsrCodegenContext<'_> {
     /// Whether this compile records a source map.
-    #[inline(always)]
     pub(crate) fn spans_enabled(&self) -> bool {
         self.out.is_recording()
     }
 
     /// Write `text` directly, anchored at the authored byte `source`.
-    #[inline(always)]
     pub(crate) fn push_mapped(&mut self, text: &str, source: u32) {
         self.out.push_mapped(text, source);
     }
@@ -41,13 +39,11 @@ impl SsrCodegenContext<'_> {
     }
 
     /// Write a spanned piece directly, rebasing its anchors.
-    #[inline(always)]
     pub(crate) fn push_spanned(&mut self, piece: &EmitDocument) {
         self.out.push_spanned(piece);
     }
 
     /// Write an emitted expression authored at `span` directly.
-    #[inline(always)]
     pub(crate) fn push_expression_text(&mut self, code: &str, span: Span) {
         self.out.push_expression(code, span, self.source);
     }

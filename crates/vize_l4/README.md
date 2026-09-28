@@ -7,7 +7,8 @@ Preambles are joined after the body, so nothing is inserted mid-text.
 
 `write::EmitDocument` and `write::SpanLink` are the finished document and its
 generated-to-authored links; `write::source_map` serializes them as Source
-Map v3. Legacy codegen re-exports these from `vize_atelier_core::codegen`.
+Map v3. The production compiler keeps its own document until its fix-history
+fixture gate closes ([#6880](https://github.com/ubugeeei-prod/vize/issues/6880)).
 
 Expression rewriting (`expr`), module assembly (`module`), the runtime helper
 tables (`runtime`) and the DOM, SSR, Vapor and type-check targets (`targets`)
@@ -15,8 +16,8 @@ are unfinished skeletons tracked in
 [#6840](https://github.com/ubugeeei-prod/vize/issues/6840); no product selects
 them yet.
 
-Support and deprecation guarantees are defined in the
-[Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+The crate remains unpublished while its targets and consumer migration are
+unfinished.
 
 ## License
 

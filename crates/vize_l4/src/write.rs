@@ -15,8 +15,8 @@
 //! copy of each part. Nothing is ever `insert_str`-ed mid-text.
 //!
 //! [`EmitDocument`] and [`SpanLink`] are the finished form of a recording
-//! writer. Legacy codegen re-exports [`document`], [`source_map`] and
-//! [`rewrite_spans`] from `vize_atelier_core::codegen`.
+//! writer. The production compiler retains its independent document until
+//! its fix-history gate closes (#6880).
 
 use alloc::vec::Vec;
 

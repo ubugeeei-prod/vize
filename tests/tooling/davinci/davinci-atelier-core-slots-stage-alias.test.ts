@@ -158,8 +158,14 @@ const laneTraverseModule = path.join(
   "lane",
   "traverse.rs",
 );
-// Moved to L4 (#6840); `vize_atelier_core::codegen` re-exports it.
-const sourceMapModule = path.join(repoRoot, "crates", "vize_l4", "src", "write", "source_map.rs");
+const sourceMapModule = path.join(
+  repoRoot,
+  "crates",
+  "vize_atelier_core",
+  "src",
+  "codegen",
+  "source_map.rs",
+);
 const helpersModule = path.join(
   repoRoot,
   "crates",

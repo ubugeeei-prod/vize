@@ -35,20 +35,20 @@ impl CodegenContext {
     /// Used for tokens that are copies of authored bytes (tag names, static
     /// text, slot names) and for constructs that open an authored structural
     /// unit (a block, a branch, a slot function), anchored at the unit's `<`.
-    #[inline(always)]
+    #[inline]
     pub(in crate::codegen) fn push_mapped(&mut self, code: &str, source_offset: u32) {
         self.out.push_mapped(code, source_offset);
     }
 
     /// Push `code` generated from the authored range `span`.
-    #[inline(always)]
+    #[inline]
     pub(in crate::codegen) fn push_linked(&mut self, code: &str, span: Span) {
         self.out.push_linked(code, span);
     }
 
     /// Push `code` generated from the authored range `span`, which spells the
     /// symbol `name` (a prop key, a static attribute name, an event name).
-    #[inline(always)]
+    #[inline]
     pub(in crate::codegen) fn push_named(&mut self, code: &str, span: Span, name: &str) {
         self.out.push_named(code, span, name);
     }
@@ -63,7 +63,7 @@ impl CodegenContext {
 
     /// Push a text node's content as JavaScript string contents, anchored at
     /// the authored text.
-    #[inline(always)]
+    #[inline]
     pub(in crate::codegen) fn push_text(&mut self, text: &TextNode<'_>) {
         self.push_linked(&escape_js_string(text.content), text.loc.span);
     }
@@ -105,7 +105,6 @@ impl CodegenContext {
     /// An expression without an authored span (a synthesized node carrying the
     /// empty stub location) is emitted unanchored rather than mapped to the
     /// template start.
-    #[inline(always)]
     pub(in crate::codegen) fn push_expression(&mut self, code: &str, span: Span) {
         self.out.push_expression(code, span, &self.source);
     }

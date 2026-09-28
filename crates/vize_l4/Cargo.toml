@@ -5,9 +5,8 @@
 # SFC module assembly and the DOM / SSR / Vapor / type-check targets.
 # Design: https://github.com/ubugeeei-prod/vize/issues/6840#issuecomment-5847908963
 #
-# Level crates never depend on legacy crates; legacy codegen depends on this
-# crate instead (it re-exports `write::{document, source_map, rewrite_spans}`).
-# The writer, targets and module assembly are not selected by any product yet.
+# Level crates never depend on legacy crates. The L4 writer and targets are
+# independent of the production compiler until its fix history is pinned.
 [package]
 name = "vize_l4"
 version.workspace = true
@@ -18,6 +17,7 @@ repository.workspace = true
 description = "L4 - the Davinci emission level (codename Stesura): writer, expression rewriting, module assembly and targets"
 metadata.vize.stability = "experimental"
 readme = "README.md"
+publish = false
 
 [dependencies]
 vize_l0 = { workspace = true }
