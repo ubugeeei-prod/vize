@@ -227,8 +227,7 @@ and the [LSP fix-history response-fixture installment](./2026-09-27-lsp-fix-hist
 for the pinned review ledger, complete document-link and CRLF on-type response contracts and
 unfinished history obligations in #6883.
 The same installment preserves dated source-runtime receipts separately from
-historical binary evidence; later heads still require their own Actions proof.
-The compiler fixture reach sweep counts all planned `.vue` inputs per target and gives no native-only credit to a Croquis-backed SFC descriptor.
+historical binary evidence; later heads still require their own Actions proof. The compiler fixture sweep counts all planned `.vue` inputs per target and gives no native-only credit to a Croquis-backed SFC descriptor.
 
 ## Multi-framework
 
