@@ -65,7 +65,42 @@ fn accepted_dom_capture_is_from_the_emitting_run() {
         [Level::L1, Level::L2, Level::L2, Level::L4],
     );
     assert_eq!(capture.pages[2].step, "facts");
-    assert!(capture.pages[2].text.contains("static_facts"));
+    assert_eq!(
+        capture.pages[2].text.as_str(),
+        r#"L2Facts {
+    legacy: LegacyFacts {
+        filters: [],
+        filter_helper_precedes_components: false,
+    },
+    if_facts: SideTable {
+        entries: {},
+    },
+    for_facts: SideTable {
+        entries: {},
+    },
+    slot_facts: SideTable {
+        entries: {},
+    },
+    text_facts: SideTable {
+        entries: {},
+    },
+    model_faults: SideTable {
+        entries: {},
+    },
+    static_facts: SideTable {
+        entries: {
+            NodeId(0): StaticFacts {
+                level: HasDynamicText,
+                props_hoistable: false,
+                nested_static: true,
+                native_descendants: true,
+                foreign: false,
+            },
+        },
+    },
+    complexity: None,
+}"#
+    );
     assert_ne!(capture.pages[1].text, capture.pages[2].text);
 }
 
