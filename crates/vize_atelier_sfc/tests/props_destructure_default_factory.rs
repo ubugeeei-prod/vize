@@ -1,3 +1,8 @@
+#![expect(
+    clippy::disallowed_macros,
+    reason = "`insta::assert_snapshot!` expands to `format!`"
+)]
+
 use vize_atelier_sfc::{SfcCompileOptions, compile_sfc, parse_sfc};
 
 #[test]
@@ -16,18 +21,10 @@ const { start = new Date().toISOString(), id = crypto.randomUUID(), items = [] }
         let mut options = SfcCompileOptions::default();
         options.script.inline_template = inline_template;
         let result = compile_sfc(&descriptor, options).unwrap();
-        assert!(
-            result
-                .code
-                .contains("default: () => new Date().toISOString()"),
-            "{}",
-            result.code
-        );
-        assert!(
-            result.code.contains("default: () => crypto.randomUUID()"),
-            "{}",
-            result.code
-        );
-        assert!(result.code.contains("default: () => []"), "{}", result.code);
+        if inline_template {
+            insta::assert_snapshot!("inline", result.code.as_str());
+        } else {
+            insta::assert_snapshot!("separate", result.code.as_str());
+        }
     }
 }
