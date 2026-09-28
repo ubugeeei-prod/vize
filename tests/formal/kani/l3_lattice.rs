@@ -1,5 +1,7 @@
 //! Kani checks the production L3 lattice implementation directly.
 
+extern crate core;
+
 #[path = "../../../crates/vize_l3/src/lattice/class.rs"]
 mod class;
 #[path = "../../../crates/vize_l3/src/lattice/effect.rs"]
