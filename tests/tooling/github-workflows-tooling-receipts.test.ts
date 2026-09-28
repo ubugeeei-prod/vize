@@ -23,9 +23,8 @@ for (const { file, job } of callers) {
     const build = steps.findIndex((step) =>
       /cargo build --profile ci -p vize/.test(step.run ?? ""),
     );
-    const tests = steps.findIndex((step) =>
-      /(?:^| )vp run --workspace-root test:scripts$/.test(step.run ?? ""),
-    );
+    const command = file === "pr-source-checks.yml" ? "test:scripts:merge-shard" : "test:scripts";
+    const tests = steps.findIndex((step) => step.run === `vp run --workspace-root ${command}`);
     assert.ok(build >= 0 && tests > build);
     assert.match(
       steps[build].run ?? "",
@@ -47,6 +46,7 @@ for (const { file, job } of callers) {
     assert.equal(steps[tests].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
     assert.equal(steps[tests].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
     if (file === "pr-source-checks.yml") {
+      assert.equal(steps[tests].env?.VIZE_TOOLING_MERGE_SHARD, "${{ matrix.shard }}");
       const selected = steps.findIndex((step) =>
         /vp run --workspace-root test:scripts:pr/.test(step.run ?? ""),
       );
