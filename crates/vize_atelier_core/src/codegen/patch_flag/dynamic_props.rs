@@ -2,6 +2,12 @@
 
 use vize_l0::{FxHashSet, String};
 
+const MAX_INITIAL_HASH_CAPACITY: usize = 128;
+
+fn initial_hash_capacity(prop_count: usize) -> usize {
+    prop_count.min(MAX_INITIAL_HASH_CAPACITY)
+}
+
 /// Preserve the first occurrence of each name, including when duplicates are separated.
 /// Small lists use the existing Vec as their scratch space; large lists retain the hash path.
 pub(super) fn dedupe_dynamic_props(props: &mut Vec<String>) {
@@ -20,7 +26,10 @@ pub(super) fn dedupe_dynamic_props(props: &mut Vec<String>) {
             }
         }
     } else {
-        let mut seen = FxHashSet::with_capacity_and_hasher(props.len(), Default::default());
+        let mut seen = FxHashSet::with_capacity_and_hasher(
+            initial_hash_capacity(props.len()),
+            Default::default(),
+        );
         props.retain(|prop| seen.insert(prop.clone()));
     }
 }
@@ -65,6 +74,21 @@ mod tests {
             .collect();
         let expected = props.clone();
         props.push(String::from("key-7"));
+        dedupe_dynamic_props(&mut props);
+        assert_eq!(props, expected);
+    }
+
+    #[test]
+    fn duplicate_heavy_large_list_keeps_order_with_bounded_initial_capacity() {
+        assert_eq!(initial_hash_capacity(100), 100);
+        assert_eq!(initial_hash_capacity(10_000), MAX_INITIAL_HASH_CAPACITY);
+
+        let mut props: Vec<String> = (0..10_000)
+            .map(|index| vize_l0::cstr!("key-{}", index % 16))
+            .collect();
+        let mut expected = props.clone();
+        let mut seen = FxHashSet::default();
+        expected.retain(|prop| seen.insert(prop.clone()));
         dedupe_dynamic_props(&mut props);
         assert_eq!(props, expected);
     }
