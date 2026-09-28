@@ -151,9 +151,8 @@ fn generate_if_branch_slot(
             }
             generate_node(ctx, child);
         }
-        ctx.push("]");
     }
-    ctx.push(")");
+    ctx.finish_slot_outlet(!el.children.is_empty(), true);
 }
 
 /// Generate component for if branch.

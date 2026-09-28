@@ -194,6 +194,7 @@ fn test_compile_experimental_self_component_resolves_current_component() {
     let codegen_experimental_options = CodegenExperimentalOptions {
         component_name: Some("TreeNode".into()),
         self_component: true,
+        ..Default::default()
     };
 
     let (_, errors, result) =
