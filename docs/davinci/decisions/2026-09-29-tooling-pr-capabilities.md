@@ -42,7 +42,14 @@ conservative import-closure check. On the current branch, replaying the
 `Cargo.lock` input selects 496 tests: 7 pure and 489 full. Their prior
 Actions file times sum to 37.82 and 376.08 seconds. Thus this first cohort
 proves a preparation boundary but does not materially shorten the full
-job or meet the two-minute T0 target. It needs an exact-head Actions
-diagnostic, wider audited cohorts and likely further full-cohort
-partitioning before any latency claim. The complete protected queue and
-required contexts remain the release gate.
+job or meet the two-minute T0 target. The
+[push-only exact-head diagnostic 36452518335](https://github.com/ubugeeei-prod/vize/actions/runs/36452518335)
+validated the replay's 7/489 exact-once partition and ran the seven pure
+files without Rust, native, CLI or fixture preparation: 48 tests passed,
+none failed or skipped. Pure-job preparation took about 12 seconds, its
+Node tests 38.14 seconds, the job 56 seconds and the diagnostic aggregate
+80 seconds from run creation. The required PR `test-report` and protected
+merge queue have not run on this unpublished change. Wider audited cohorts
+and likely further full-cohort partitioning are needed before any overall
+latency claim. The complete protected queue and required contexts remain
+the release gate.
