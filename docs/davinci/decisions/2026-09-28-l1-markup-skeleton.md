@@ -29,24 +29,26 @@ Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835),
   them. Default builds retain the prior skeleton API and do not link the new
   lexer into product compiler binaries. No existing surface tree or product
   parser calls the new implementation yet.
-- `vize_l1::parse` still drives `vize_armature::tokenizer`, because Atelier's
-  production L2 emitter calls it. Armature, relief, resident findings and all
-  compiler/parser consumers stay on their original path. L1's two legacy
-  dependency allowlist entries therefore remain until the later cutover.
+- In the #6835 source-relocation slice, `vize_l1::parse` calls the moved
+  L1-owned compatibility tokenizer. Armature re-exports that same code for
+  Atelier's production parser. The normal L1→Armature edge is gone, so the
+  #6831 dependency allowlist drops its corresponding permission for both
+  `vize_l1` and `vize_l1_to_l2`. The L1→Relief vocabulary permission remains.
+  No product parser uses the native lexer yet.
 - The new lexer uses L1 `LexErrorCode`. Document and component profiles,
   including Vue 1 raw interpolation, are capabilities of the new lexer only.
   Existing products retain their own error codes and parsing behavior.
-- The native lexer's `v-pre` mode still needs a consumer, and replacing the
-  existing tokenizer requires compiler fix-history issue #6880 to close.
-  These are unfinished parts of #6835, which stays open.
+- The native lexer's `v-pre` mode still needs a consumer in the #6836 child;
+  replacing the existing production tokenizer requires compiler fix-history
+  issue #6880 to close. These are unfinished parts of #6835, which stays open.
 - The opt-in feature is required while thin-LTO layout changes from the
   otherwise-unused implementation exceed current strict instruction ceilings
   in Atelier fused compile benchmarks. Main at `75b87e7a` passes the same-base
   control run, and no instruction budget is raised.
 
 TODO: implement `VueDirectives` (#6836) and the SFC split (#6837). The
-`v-pre` switch is still answered by armature's parser; the new lexer is not
-used by the L1 surface tree yet.
+`v-pre` switch is still answered by armature's parser on the product route; the
+native lexer is not used by the L1 surface tree yet.
 
 ## Delivery order for the existing tokenizer PR
 
