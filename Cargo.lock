@@ -4259,6 +4259,7 @@ dependencies = [
  "serde",
  "thiserror 2.0.20",
  "vize_l0",
+ "vize_l1",
  "vize_relief",
 ]
 
@@ -4764,7 +4765,6 @@ version = "0.429.1"
 dependencies = [
  "davinci_test_support",
  "htmlize",
- "vize_armature",
  "vize_l0",
  "vize_relief",
 ]

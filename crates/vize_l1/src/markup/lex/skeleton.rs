@@ -79,7 +79,8 @@ impl<'a, P: Profile, S: Sink> Lexer<'a, P, S> {
     ///
     /// # Panics
     ///
-    /// Always, until the tokenizer moves here from `vize_armature` (#6835).
+    /// Always, until the generic lexer replaces the moved compatibility
+    /// tokenizer after parity validation (#6835).
     pub fn run(&mut self) {
         todo!("#6835: move the template tokenizer into vize_l1::markup::lex")
     }

@@ -5,7 +5,7 @@
 
 pub mod char_codes;
 mod dynamic_arg;
-pub(crate) mod entity_decode;
+pub mod entity_decode;
 mod in_tag_comment;
 mod sequences;
 mod states;
