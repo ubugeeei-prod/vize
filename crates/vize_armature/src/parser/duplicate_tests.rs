@@ -30,6 +30,17 @@ fn distinct_directive_arguments_are_not_duplicates() {
 }
 
 #[test]
+fn static_and_computed_arguments_are_distinct() {
+    let allocator = Allocator::new();
+    let (_, errors) = parse(&allocator, r#"<slot :name="selected" :[name]="value" />"#);
+    assert!(
+        errors
+            .iter()
+            .all(|error| error.code != ErrorCode::DuplicateAttribute)
+    );
+}
+
+#[test]
 fn repeated_directive_argument_is_a_duplicate() {
     let allocator = Allocator::new();
     let (_, errors) = parse(&allocator, r#"<p :title="a" :title="b" />"#);

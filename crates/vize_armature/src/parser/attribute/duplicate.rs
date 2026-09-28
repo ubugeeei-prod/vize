@@ -25,7 +25,9 @@ impl<'a> Parser<'a> {
         directive: &CurrentDirective<'a>,
         loc: SourceLocation,
     ) {
-        let argument = directive.arg.map(|(content, _, _, _)| content);
+        let argument = directive
+            .arg
+            .map(|(content, _, _, is_dynamic)| (content, !is_dynamic));
         let synthetic_prop = directive.raw_name.starts_with('.')
             && !directive
                 .modifiers
@@ -37,7 +39,9 @@ impl<'a> Parser<'a> {
                     return false;
                 };
                 let existing_argument = match existing.arg.as_ref() {
-                    Some(ExpressionNode::Simple(argument)) => Some(argument.content),
+                    Some(ExpressionNode::Simple(argument)) => {
+                        Some((argument.content, argument.is_static))
+                    }
                     _ => None,
                 };
                 existing.raw_name == Some(directive.raw_name)
