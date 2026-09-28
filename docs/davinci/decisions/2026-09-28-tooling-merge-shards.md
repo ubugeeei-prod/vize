@@ -86,13 +86,29 @@ needed separately.
 
 ## Next measured choice
 
-If four shards leave an excessive queue tail, compare eight and sixteen
-isolated shards on the same exact head. Their ideal shares of the observed
-#7113 Node time are about 106 and 53 seconds, respectively, before setup,
-native build, scheduling and imbalance; neither proves a two-minute total.
-An independent setup slice must audit which selected tests need the native
-binding, source-built CLI, rust-script, MoonBit and fixture hydration. Keep
-each necessary receipt and fail-closed selection, but prepare a shared
-artifact or separate CLI-independent partition only after measuring the
-transfer and critical path in Actions. The complete merge inventory and
-required aggregate remain conditions for either option.
+The [ordinary #7136 PR run 36436934899](https://github.com/ubugeeei-prod/vize/actions/runs/36436934899)
+selected 504 of 651 tooling files, with 107 explicit T1 deferrals. Its
+tooling job took 9m43s. The test step started after 117 seconds of setup,
+including 27 seconds to install `rust-script`, 10 seconds to hydrate fixtures
+and dependencies, and 56 seconds to build and receipt the source CLI. The
+462-second test step included a 47.56-second native build, a subsecond tool
+layout check and 412.16 seconds of Node tests. Even ideal eight- or
+sixteen-way Node shares would be about 52 or 26 seconds; the current 117
+seconds of setup plus 48 seconds of native preparation already exceed two
+minutes before any test runs.
+
+Next bounded experiment: audit selected tests' actual preparation needs and
+declare capability cohorts for pure scripts, native binding, source-built CLI
+and their overlap. Unknown or dynamic requirements must retain the complete
+setup. Keep exact-once selected input coverage, move the tool layout check
+to a separate required parallel job only if its receipt remains enforced,
+and run each cohort in an isolated job with just its proven prerequisites.
+The CLI cohort keeps the source-built receipt, the native cohort keeps its
+binding build, and the required aggregate waits for every cohort and the
+layout check. Merge groups still cover the complete tooling inventory.
+Skipping the repeated `rust-script` install on tooling shards would save
+about 25–27 seconds but cannot meet two minutes by itself. Compare eight
+and sixteen shards only after the setup split is measured in Actions; a
+prepared runner or cache improvement may still be required. This is a
+proposal for a separate unpublished slice, not a demonstrated two-minute
+gate.
