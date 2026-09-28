@@ -62,10 +62,21 @@ pub(super) fn append_slot_outlet_literal(
                 append!(*ts, "{expr_indent}  ");
                 let entry_gen_start = ts.len();
                 let camel_prop_name = to_camel_case(prop.name.as_str());
+                // Vue forwards `key` to the slot. A declared slot may omit it,
+                // so emit it through a spread to avoid an excess-property
+                // error while retaining its type for declared/inferred slots.
+                let optional_key = camel_prop_name == "key";
+                if optional_key {
+                    ts.push_str("...({ ");
+                }
+                let key_gen_start = ts.len();
                 append!(*ts, "\"{camel_prop_name}\"");
                 let key_gen_end = ts.len();
                 ts.push_str(": ");
                 let value_gen_range = append_prop_value(ts, generated_value.as_str());
+                if optional_key {
+                    ts.push_str(" })");
+                }
                 let entry_gen_end = ts.len();
                 ts.push_str(",\n");
                 mappings.push(VizeMapping {
@@ -74,7 +85,7 @@ pub(super) fn append_slot_outlet_literal(
                     sub_spans: entry_sub_spans(
                         source_context,
                         prop,
-                        entry_gen_start..key_gen_end,
+                        key_gen_start..key_gen_end,
                         value_gen_range,
                     ),
                 });
