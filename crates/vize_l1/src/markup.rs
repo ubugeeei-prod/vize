@@ -11,14 +11,24 @@
 //! is a dialect syntax hook ([`directive::DirectiveSyntax`]), like an MLIR
 //! custom assembly format.
 //!
-//! L1 now owns this lexer, but the existing surface tree and compiler still
-//! drive `vize_armature::tokenizer`. Wiring consumers to this lexer waits for
-//! compiler fix-history gate #6880. The directive hook is still a skeleton.
+//! The implementation is compiled in L1 unit tests and with the
+//! `native-markup-lex` feature. Default builds retain the skeleton API while
+//! the existing surface tree and compiler drive `vize_armature::tokenizer`.
+//! Wiring consumers to this lexer waits for compiler fix-history gate #6880.
+//! The directive hook is still a skeleton.
 //! Design: <https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929>.
 
 pub mod directive;
+#[cfg(any(test, feature = "native-markup-lex"))]
+pub mod entity;
+#[cfg(not(any(test, feature = "native-markup-lex")))]
+#[path = "markup/entity/skeleton.rs"]
 pub mod entity;
 pub mod grammar;
+#[cfg(any(test, feature = "native-markup-lex"))]
+pub mod lex;
+#[cfg(not(any(test, feature = "native-markup-lex")))]
+#[path = "markup/lex/skeleton.rs"]
 pub mod lex;
 pub mod profile;
 pub mod token;

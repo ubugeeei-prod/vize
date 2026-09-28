@@ -62,66 +62,6 @@ pub enum LexErrorCode {
     UnexpectedSolidusInTag,
 }
 
-impl LexErrorCode {
-    /// Every code, in declaration order.
-    pub const ALL: [Self; 21] = [
-        Self::AbruptClosingOfEmptyComment,
-        Self::EndTagWithAttributes,
-        Self::EndTagWithTrailingSolidus,
-        Self::EofBeforeTagName,
-        Self::EofInCdata,
-        Self::EofInComment,
-        Self::EofInTag,
-        Self::IncorrectlyClosedComment,
-        Self::IncorrectlyOpenedComment,
-        Self::InvalidFirstCharacterOfTagName,
-        Self::MissingAttributeValue,
-        Self::MissingDynamicDirectiveArgumentEnd,
-        Self::MissingEndTagName,
-        Self::MissingInterpolationEnd,
-        Self::MissingWhitespaceBetweenAttributes,
-        Self::NestedComment,
-        Self::UnexpectedCharacterInAttributeName,
-        Self::UnexpectedCharacterInUnquotedAttributeValue,
-        Self::UnexpectedEqualsSignBeforeAttributeName,
-        Self::UnexpectedQuestionMarkInsteadOfTagName,
-        Self::UnexpectedSolidusInTag,
-    ];
-
-    /// The user-facing message (Vue compiler-core wording).
-    pub fn message(self) -> &'static str {
-        match self {
-            Self::AbruptClosingOfEmptyComment => "Illegal comment.",
-            Self::EndTagWithAttributes => "End tag cannot have attributes.",
-            Self::EndTagWithTrailingSolidus => "Trailing solidus not allowed in end tags.",
-            Self::EofBeforeTagName => "Unexpected EOF in tag.",
-            Self::EofInCdata => "EOF in CDATA section.",
-            Self::EofInComment => "EOF in comment.",
-            Self::EofInTag => "EOF in tag.",
-            Self::IncorrectlyClosedComment => "Incorrectly closed comment.",
-            Self::IncorrectlyOpenedComment => "Incorrectly opened comment.",
-            Self::InvalidFirstCharacterOfTagName => "Invalid first character of tag name.",
-            Self::MissingAttributeValue => "Attribute value expected.",
-            Self::MissingDynamicDirectiveArgumentEnd => {
-                "End bracket for dynamic directive argument was not found."
-            }
-            Self::MissingEndTagName => "End tag name expected.",
-            Self::MissingInterpolationEnd => "Interpolation end sign was not found.",
-            Self::MissingWhitespaceBetweenAttributes => "Whitespace expected between attributes.",
-            Self::NestedComment => "Nested comments are not allowed.",
-            Self::UnexpectedCharacterInAttributeName => "Unexpected character in attribute name.",
-            Self::UnexpectedCharacterInUnquotedAttributeValue => {
-                "Unexpected character in unquoted attribute value."
-            }
-            Self::UnexpectedEqualsSignBeforeAttributeName => {
-                "Unexpected equals sign before attribute name."
-            }
-            Self::UnexpectedQuestionMarkInsteadOfTagName => "Invalid tag name.",
-            Self::UnexpectedSolidusInTag => "Unexpected solidus in tag.",
-        }
-    }
-}
-
 /// Receiver of lexer events. `start..end` ranges are half-open byte ranges.
 pub trait Sink {
     fn on_text(&mut self, start: usize, end: usize);
