@@ -222,6 +222,22 @@ mod tests {
     }
 
     #[test]
+    fn adjacent_prefix_and_postfix_operators_keep_division_distinct_from_regex() {
+        for (source, content) in [
+            ("<template>{{ x + +y / 2 }}</template>", "{{ x + +y / 2 }}"),
+            ("<template>{{ x+++y / 2 }}</template>", "{{ x+++y / 2 }}"),
+            ("<template>{{ ++x / 2 }}</template>", "{{ ++x / 2 }}"),
+            ("<template>{{ x-- / 2 }}</template>", "{{ x-- / 2 }}"),
+        ] {
+            let allocator = Allocator::default();
+            let result = Vue.split(&allocator, source);
+            assert!(result.errors.is_empty(), "{source}: {:?}", result.errors);
+            assert_eq!(result.blocks.len(), 1);
+            assert_eq!(result.blocks[0].content.slice(source), content);
+        }
+    }
+
+    #[test]
     fn nested_template_expression_is_reported_as_uncertain() {
         let source = "<template>{{ `value ${name}` }}</template>";
         let allocator = Allocator::default();
