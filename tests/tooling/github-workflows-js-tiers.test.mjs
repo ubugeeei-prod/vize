@@ -21,7 +21,10 @@ import { aggregateNeedsResults } from "../../tools/support/compat/github/require
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const workflow = parse(readFileSync(join(root, ".github/workflows/pr-source-checks.yml"), "utf8"));
-const selectedJs = "${{ needs.pr-source-plan.outputs.js == 'true' }}";
+const selectedFull =
+  "${{ needs.pr-source-plan.outputs.js == 'true' && needs.pr-source-plan.outputs.js-browser-tier == 'full' }}";
+const selectedSource =
+  "${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.js == 'true' && needs.pr-source-plan.outputs.js-browser-tier == 'source' }}";
 const selectedMerge =
   "${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.js == 'true' }}";
 
@@ -53,7 +56,7 @@ void test("PR keeps native declaration/type checks; merge queue preserves the co
   );
   assert.deepEqual(
     steps.map((step) => step.if),
-    [selectedJs, selectedJs, selectedMerge],
+    [selectedFull, selectedFull, selectedMerge],
   );
   assert.ok(workflow.jobs["source-report"].needs.includes("pr-js-packages"));
   for (const result of ["failure", "cancelled", "skipped"]) {
@@ -99,6 +102,36 @@ void test("PR keeps native declaration/type checks; merge queue preserves the co
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }
+});
+
+void test("focused PR JS route packs source CLI before testing Vite and stays out of merge groups", () => {
+  const names = [
+    "Build source native addon for focused JS tests",
+    "Pack source CLI config and test it",
+    "Test focused Vite compiler with source binding",
+  ];
+  const steps = workflow.jobs["pr-js-packages"].steps.filter((step) => names.includes(step.name));
+  assert.deepEqual(
+    steps.map((step) => step.name),
+    names,
+  );
+  assert.deepEqual(
+    steps.map((step) => step.if),
+    [selectedSource, selectedSource, selectedSource],
+  );
+  assert.deepEqual(
+    steps.map((step) => step.run),
+    [
+      "vp run --workspace-root build:native:test",
+      "vp run --filter './npm/cli' test",
+      "VP_RUN_CONCURRENCY_LIMIT=1 node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test",
+    ],
+  );
+  assert.equal(
+    workflow.jobs["pr-source-plan"].outputs["js-browser-tier"],
+    "${{ steps.plan.outputs.js-browser-tier }}",
+  );
+  assert.ok(workflow.jobs["source-report"].needs.includes("pr-js-packages"));
 });
 
 void test("Fresco checks generate declarations and invoke static TypeScript without executing the loader", () => {

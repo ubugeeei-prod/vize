@@ -20,6 +20,7 @@ jobs:
       rust: ${{ steps.plan.outputs.rust }}
       rust-plan: ${{ steps.rust-plan.outputs.rust-plan }}
       js: ${{ steps.plan.outputs.js }}
+      js-browser-tier: ${{ steps.plan.outputs.js-browser-tier }}
       tooling: ${{ steps.tooling-plan.outputs.tooling }}
       playground: ${{ steps.plan.outputs.playground }}
     steps:
@@ -118,10 +119,19 @@ jobs:
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
         run: vp install --frozen-lockfile --prefer-offline
       - name: Test JS packages
-        if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
+        if: ${{ needs.pr-source-plan.outputs.js == 'true' && needs.pr-source-plan.outputs.js-browser-tier == 'full' }}
         run: vp run --workspace-root test:js
+      - name: Build source native addon for focused JS tests
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.js == 'true' && needs.pr-source-plan.outputs.js-browser-tier == 'source' }}
+        run: vp run --workspace-root build:native:test
+      - name: Pack source CLI config and test it
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.js == 'true' && needs.pr-source-plan.outputs.js-browser-tier == 'source' }}
+        run: vp run --filter './npm/cli' test
+      - name: Test focused Vite compiler with source binding
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.js == 'true' && needs.pr-source-plan.outputs.js-browser-tier == 'source' }}
+        run: VP_RUN_CONCURRENCY_LIMIT=1 node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test
       - name: Check Fresco native declarations and consumer types
-        if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
+        if: ${{ needs.pr-source-plan.outputs.js == 'true' && needs.pr-source-plan.outputs.js-browser-tier == 'full' }}
         run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types
       - name: Check UI package conformance in merge queue
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.js == 'true' }}
