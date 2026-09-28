@@ -40,13 +40,14 @@ function createOxlintDiagnostic(
     ? createOriginalSfcLoc(diagnostic)
     : mapToScriptLoc(diagnostic, scriptMap);
   const block = loc === null ? getDiagnosticBlock(diagnostic, getSfcBlocks(state)) : null;
+  const fallbackColumn = state.extractedScript.length === 0 ? 0 : 1;
 
   return {
     loc: loc ?? {
-      // An empty extracted <script> has no offset 1. Anchor an unmappable
-      // template diagnostic at the valid zero-width start of that program.
-      start: { line: 1, column: 0 },
-      end: { line: 1, column: 0 },
+      // An empty extracted <script> has no offset 1. Keep the established
+      // fallback for nonempty programs and anchor empty ones at offset zero.
+      start: { line: 1, column: fallbackColumn },
+      end: { line: 1, column: fallbackColumn },
     },
     message: formatPatinaMessage(diagnostic, {
       hasMappedLocation: loc !== null,
