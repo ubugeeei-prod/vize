@@ -50,6 +50,13 @@ Decided by the maintainer on 2026-09-28 ([#6826 comment](https://github.com/ubug
 
 The L3 package identity, stage feed types, level dump API, versioned dump protocols and `vize dump --roundtrip` are recorded in [level dump naming](./2026-09-28-level-dump-naming.md).
 
+The formal L3 reference uses `tests/formal/l3`, Lean modules under `L3`, and
+`lake exe l3Ref`. The move and namespace edits are replayed by
+`tests/tooling/rename-l3-formal.py`; fixture payloads remain byte-identical.
+The dedicated Lean Actions workflow must build and run the reference checks
+before this slice of [#6832](https://github.com/ubugeeei-prod/vize/issues/6832) merges.
+Remaining naming and the shared CLI/playground production capture keep #6832 open.
+
 ## `vize_davinci` is deleted
 
 Tracked in [#6833](https://github.com/ubugeeei-prod/vize/issues/6833) and [#6834](https://github.com/ubugeeei-prod/vize/issues/6834).

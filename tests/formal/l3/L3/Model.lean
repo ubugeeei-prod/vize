@@ -1,4 +1,4 @@
-import Impeto.Iteration
+import L3.Iteration
 
 /-!
 Native `v-model` reference semantics for P3-4 (`ui.model` in L3). A model
@@ -12,7 +12,7 @@ selected, composing) belongs to the element and survives re-renders. Directive
 hooks rewrite it only as the contract says. Anything else fails closed.
 -/
 
-namespace Impeto.Model
+namespace L3.Model
 open Lean
 
 inductive Kind where
@@ -200,4 +200,4 @@ def displayValue (control : Control) (live : Live) : String :=
   | .checkbox | .radio => control.domValue
   | .select => ((control.options.zip live.selected).find? (·.2)).elim "" (·.1)
 
-end Impeto.Model
+end L3.Model

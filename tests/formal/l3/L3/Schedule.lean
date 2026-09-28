@@ -1,4 +1,4 @@
-import Impeto.Semantics
+import L3.Semantics
 
 /-!
 P3-15 scheduling contract. L3 has no separate effect-grouping pass yet. The
@@ -10,7 +10,7 @@ Rust code. It then proves that acceptance implies the ordering property in the
 P3-4 small-step semantics, for both backends.
 -/
 
-namespace Impeto.Schedule
+namespace L3.Schedule
 
 /-- First position of an id, as the verifier's `op_index` computes it. -/
 def indexOf? : List Nat -> Nat -> Option Nat
@@ -79,4 +79,4 @@ def Precedes (trace : List TraceEvent) (source target : Nat) : Prop :=
   ∀ i j : Nat, (trace[i]?).map TraceEvent.opId = some source ->
     (trace[j]?).map TraceEvent.opId = some target -> i < j
 
-end Impeto.Schedule
+end L3.Schedule

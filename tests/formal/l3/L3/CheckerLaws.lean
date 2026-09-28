@@ -1,4 +1,4 @@
-import Impeto.Checker
+import L3.Checker
 
 /-!
 Exactness of the C-23 checker: zero false positives and zero false negatives
@@ -7,7 +7,7 @@ against the declarative `WellFormed` specification. Because the checker is total
 verdict.
 -/
 
-namespace Impeto.Checker
+namespace L3.Checker
 
 theorem code_nil {holds : Bool} {name : String} : code holds name = [] ↔ holds = true := by
   cases holds <;> simp [code]
@@ -31,4 +31,4 @@ theorem wellFormed_ordered {p : Program} (wf : WellFormed p) (scheduled : p.phas
     {edge : StateEdge} (mem : edge ∈ p.edges) : forward p edge = true :=
   wf.2.2.2.2.2.2.2 scheduled edge mem
 
-end Impeto.Checker
+end L3.Checker

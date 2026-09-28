@@ -1,7 +1,7 @@
-import Impeto.Behavior
-import Impeto.Incremental
+import L3.Behavior
+import L3.Incremental
 
-namespace Impeto.LoopBehavior
+namespace L3.LoopBehavior
 open Lean
 
 def snapshot (state : Incremental.State) (events : List Json) : Json :=
@@ -64,4 +64,4 @@ def check (stem : String) : IO UInt32 := do
   | .ok () => pure 0
   | .error message => IO.eprintln s!"{stem}: {message}"; pure 1
 
-end Impeto.LoopBehavior
+end L3.LoopBehavior

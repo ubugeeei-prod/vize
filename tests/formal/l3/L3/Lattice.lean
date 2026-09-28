@@ -1,4 +1,4 @@
-namespace Impeto.Lattice
+namespace L3.Lattice
 
 /-!
 Independent model of the P3-2 reactivity lattice. It is written from the
@@ -192,4 +192,4 @@ structure Weaker (i j : Input) : Prop where
 def fires (input : Input) (value : Class) : Bool :=
   input.verdict == .proven && classify input == value
 
-end Impeto.Lattice
+end L3.Lattice

@@ -1,5 +1,5 @@
-import Impeto.LoopBehavior
-import Impeto.Model
+import L3.LoopBehavior
+import L3.Model
 
 /-!
 Stateful runner for native `v-model` scenarios. Rendering and element identity
@@ -10,7 +10,7 @@ runner performs. Observations add the live `value`, `checked` and `selected`
 properties exactly where the mounted observer reads them.
 -/
 
-namespace Impeto.ModelBehavior
+namespace L3.ModelBehavior
 open Lean
 
 structure Runner where
@@ -278,4 +278,4 @@ def run (program : Program) (rows : List Operand) (script : Json) (identities : 
   let final := [("tree", Json.arr #[]), ("events", .arr #[])]
   pure (.arr (trace ++ [Json.mkObj (if identities then final ++ [("identities", .arr #[])] else final)]).toArray)
 
-end Impeto.ModelBehavior
+end L3.ModelBehavior

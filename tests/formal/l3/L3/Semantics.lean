@@ -1,6 +1,6 @@
-import Impeto.Syntax
+import L3.Syntax
 
-namespace Impeto
+namespace L3
 
 inductive Backend where
   | vdom
@@ -88,4 +88,4 @@ def run (backend : Backend) (program : Program) : List TraceEvent :=
 def referenceTrace (program : Program) : List String :=
   ((run .vdom program) ++ (run .vapor program)).map TraceEvent.format
 
-end Impeto
+end L3

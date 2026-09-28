@@ -1,4 +1,4 @@
-import Impeto.Lattice
+import L3.Lattice
 
 /-!
 P3-15 lattice laws. The value axis is a four-point chain, `join` is its least
@@ -7,7 +7,7 @@ the declarative rule spec, and classification is monotone: more effects, a
 weaker origin or a wider escape never make a binding more stable.
 -/
 
-namespace Impeto.Lattice
+namespace L3.Lattice
 namespace Class
 
 theorem le_refl (a : Class) : a ≤ a := Nat.le_refl a.rank
@@ -240,4 +240,4 @@ theorem classify_static_iff (input : Input) : classify input = .static ↔
     rw [provideInject_cap_redundant, base, origin, effects, escape]
     rfl
 
-end Impeto.Lattice
+end L3.Lattice

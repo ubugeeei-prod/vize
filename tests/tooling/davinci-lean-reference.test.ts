@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { traceCompiledBackend } from "./support/davinci-runtime-trace.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const formalRoot = path.join(repoRoot, "tests", "formal", "impeto");
+const formalRoot = path.join(repoRoot, "tests", "formal", "l3");
 const fixtureRoot = path.join(formalRoot, "fixtures");
 
 function readRepoFile(...segments: string[]): string {
@@ -14,7 +14,7 @@ function readRepoFile(...segments: string[]): string {
 }
 
 test("TS-28 fixture ladder is declared and non-vacuous", () => {
-  const main = readRepoFile("tests", "formal", "impeto", "Main.lean");
+  const main = readRepoFile("tests", "formal", "l3", "Main.lean");
   const folios = fs
     .readdirSync(fixtureRoot)
     .filter((file) => file.endsWith(".s3.folio"))
@@ -43,8 +43,8 @@ test("TS-28 fixture ladder is declared and non-vacuous", () => {
 test("TS-28 Rust lowering bridge is covered by an ordinary cargo test", () => {
   const bridge = readRepoFile("crates", "vize_l2_to_l3", "tests", "lean_reference_fixture.rs");
   assert.match(bridge, /rust_lowered_fixtures_match_impeto_reference_inputs/u);
-  assert.match(bridge, /tests\/formal\/impeto\/fixtures\/rust-lowered-static-dynamic\.s3\.folio/u);
-  assert.match(bridge, /tests\/formal\/impeto\/fixtures\/rust-lowered-control-slots\.s3\.folio/u);
+  assert.match(bridge, /tests\/formal\/l3\/fixtures\/rust-lowered-static-dynamic\.s3\.folio/u);
+  assert.match(bridge, /tests\/formal\/l3\/fixtures\/rust-lowered-control-slots\.s3\.folio/u);
   assert.match(bridge, /L3Page::of\(&lowered\.program\)\.print_to_string\(DumpMode::Full\)/u);
   assert.match(bridge, /reference_trace_text\(&lowered\.program\)/u);
   assert.match(bridge, /backend_trace_text\(TraceBackend::Vdom, &lowered\.program\)/u);
@@ -93,7 +93,7 @@ test("TS-28 stateful reference and mounted backends share full observations and 
   assert.match(mounted, /rust-lowered-static-dynamic\.scenario\.json/u);
   assert.match(mounted, /rust-lowered-static-dynamic\.behavior\.json/u);
   assert.match(mounted, /assert_eq!\(\s*trace, expected,/u);
-  const main = readRepoFile("tests", "formal", "impeto", "Main.lean");
+  const main = readRepoFile("tests", "formal", "l3", "Main.lean");
   assert.match(main, /BehaviorTests\.check/u);
   assert.match(main, /Behavior\.check "fixtures\/rust-lowered-static-dynamic"/u);
 });
@@ -137,7 +137,7 @@ test("TS-28 control and slot stateful observations share one authored template",
       ["restored"],
     ],
   );
-  const main = readRepoFile("tests", "formal", "impeto", "Main.lean");
+  const main = readRepoFile("tests", "formal", "l3", "Main.lean");
   assert.match(main, /ControlTests\.check/u);
   assert.match(main, /Behavior\.check "fixtures\/rust-lowered-control-slots"/u);
 });
@@ -224,7 +224,7 @@ test("TS-28 command in the suite registry names the executable runner", () => {
     [
       "TS-28",
       "Lean reference differential",
-      "`cd tests/formal/impeto && lake exe impetoRef --check-fixtures && lake exe impetoRef --check-backend-fixtures && lake exe impetoRef --check-stateful-fixtures && cd ../../.. && cargo test -p vize_l2_to_l3 --test lean_reference_fixture && cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace --test davinci_mounted_behavior`",
+      "`cd tests/formal/l3 && lake exe l3Ref --check-fixtures && lake exe l3Ref --check-backend-fixtures && lake exe l3Ref --check-stateful-fixtures && cd ../../.. && cargo test -p vize_l2_to_l3 --test lean_reference_fixture && cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace --test davinci_mounted_behavior`",
       "exact agreement on observable semantics; stateful subset and remaining operation-order gaps are explicit",
       "P3-4",
     ],

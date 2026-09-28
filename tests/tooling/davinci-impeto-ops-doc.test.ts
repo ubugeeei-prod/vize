@@ -18,7 +18,7 @@ function rustMnemonics(): string[] {
 }
 
 function leanParserMnemonics(): string[] {
-  const syntax = readRepoFile("tests", "formal", "impeto", "Impeto", "Syntax.lean");
+  const syntax = readRepoFile("tests", "formal", "l3", "L3", "Syntax.lean");
   return [...syntax.matchAll(/\| "(l3\.[^"]+)" => some \.[A-Za-z]+/gu)].map((match) => match[1]);
 }
 
@@ -44,7 +44,7 @@ function tableRows(): Map<string, { vapor: string; vdom: string }> {
 }
 
 function leanTraceLabels(functionName: "interpretVDom" | "interpretVapor"): string[] {
-  const semantics = readRepoFile("tests", "formal", "impeto", "Impeto", "Semantics.lean");
+  const semantics = readRepoFile("tests", "formal", "l3", "L3", "Semantics.lean");
   const start = semantics.indexOf(`def ${functionName}`);
   assert.notEqual(start, -1, `${functionName} is missing`);
   const end = semantics.indexOf("\ndef ", start + 1);

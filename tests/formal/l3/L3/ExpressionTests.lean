@@ -1,4 +1,4 @@
-import Impeto.Expression
+import L3.Expression
 
 /-!
 Pins the TS-29 expression subset against `fixtures/expression-cases.json`.
@@ -7,7 +7,7 @@ Every supported case must evaluate to exactly the recorded JSON value.
 Node's JavaScript engine. Every unsupported case must fail closed here.
 -/
 
-namespace Impeto.ExpressionTests
+namespace L3.ExpressionTests
 open Lean
 
 def run (text : String) : Except String (Nat × Nat) := do
@@ -36,4 +36,4 @@ def check : IO UInt32 := do
   | .ok _ => pure 0
   | .error message => IO.eprintln s!"fixtures/expression-cases.json: {message}"; pure 1
 
-end Impeto.ExpressionTests
+end L3.ExpressionTests

@@ -8,10 +8,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 
 test("the active Rust and Lean graph readers bind the new explicit protocol", () => {
   const rust = fs.readFileSync(path.join(repoRoot, "crates/vize_l3/src/dump.rs"), "utf8");
-  const lean = fs.readFileSync(
-    path.join(repoRoot, "tests/formal/impeto/Impeto/Folio.lean"),
-    "utf8",
-  );
+  const lean = fs.readFileSync(path.join(repoRoot, "tests/formal/l3/L3/Folio.lean"), "utf8");
   assert.match(rust, /#\[dump\(name = "l3-dump-v2"\)\]/u);
   for (const section of ["", ".regions", ".ops", ".edges", ".effects"]) {
     assert.ok(lean.includes(`"[l3-dump-v2${section}]"`));
@@ -32,7 +29,7 @@ test("the canonical printer and parser each cover exactly sixteen opcode names",
 });
 
 test("all active generated formal graph fixtures use the current protocol and known opcodes", () => {
-  const fixtureRoot = path.join(repoRoot, "tests/formal/impeto/fixtures");
+  const fixtureRoot = path.join(repoRoot, "tests/formal/l3/fixtures");
   const rust = fs.readFileSync(path.join(repoRoot, "crates/vize_l3/src/op/kind.rs"), "utf8");
   const names = new Set(
     [...rust.matchAll(/Self::[A-Za-z]+ => "(l3\.[^"]+)"/gu)].map((match) => match[1]),

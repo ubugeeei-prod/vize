@@ -1,6 +1,6 @@
-import Impeto.ModelBehavior
-import Impeto.IvmMatrix
-import Impeto.BehaviorTests
+import L3.ModelBehavior
+import L3.IvmMatrix
+import L3.BehaviorTests
 
 /-!
 Fail-closed witnesses for the native `v-model` reference. Each damages one
@@ -8,7 +8,7 @@ committed model case (scenario, state or L3 operands) so that it leaves the
 modelled contract, and requires a reference error rather than a guess.
 -/
 
-namespace Impeto.ModelTests
+namespace L3.ModelTests
 open Lean BehaviorTests
 
 structure Case where
@@ -93,4 +93,4 @@ def check : IO UInt32 := do
   | .ok () => pure 0
   | .error message => IO.eprintln s!"model reference: {message}"; pure 1
 
-end Impeto.ModelTests
+end L3.ModelTests

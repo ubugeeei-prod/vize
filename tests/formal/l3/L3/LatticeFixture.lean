@@ -1,4 +1,4 @@
-import Impeto.Lattice
+import L3.Lattice
 
 /-!
 Differential between the Rust P3-2 evaluator and the Lean classifier. The
@@ -9,7 +9,7 @@ inert local binding, then every origin × escape pair with no effect and with
 each single effect, which reaches every combination of rule floors.
 -/
 
-namespace Impeto.LatticeFixture
+namespace L3.LatticeFixture
 open Lattice
 
 structure Row where
@@ -160,4 +160,4 @@ def checkFile (path : String) : IO UInt32 := do
       IO.eprintln s!"{path}: {message}"
       pure 1
 
-end Impeto.LatticeFixture
+end L3.LatticeFixture

@@ -1,4 +1,4 @@
-namespace Impeto
+namespace L3
 
 inductive Phase where
   | built
@@ -110,4 +110,4 @@ deriving Repr, DecidableEq
 def Program.empty : Program :=
   { phase := .built, regions := [], ops := [], edges := [], effects := [] }
 
-end Impeto
+end L3

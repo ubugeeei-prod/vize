@@ -6,10 +6,7 @@ import { validateLoopScenario } from "./support/davinci-mounted-trace.mjs";
 function fixture(name: string, extension: string) {
   return JSON.parse(
     fs.readFileSync(
-      new URL(
-        `../formal/impeto/fixtures/rust-lowered-loop-${name}.${extension}.json`,
-        import.meta.url,
-      ),
+      new URL(`../formal/l3/fixtures/rust-lowered-loop-${name}.${extension}.json`, import.meta.url),
       "utf8",
     ),
   );

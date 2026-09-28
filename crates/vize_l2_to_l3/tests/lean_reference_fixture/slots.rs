@@ -6,7 +6,7 @@
 //! case and commits the exact graph/value Dumps. The Lean reference computes
 //! the expected observations and both mounted Vue runtimes must reproduce them.
 //! Regenerate with `VIZE_UPDATE_SLOT_REFERENCE=1`, then
-//! `lake exe impetoRef --write-slot-reference`.
+//! `lake exe l3Ref --write-slot-reference`.
 
 #![allow(
     clippy::disallowed_macros,
@@ -152,7 +152,7 @@ fn slot_reference_cases_are_rust_lowered() {
         }));
         graphs.push(json!({ "name": name, "graph": graph, "values": values }));
     }
-    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/impeto/fixtures");
+    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/l3/fixtures");
     check_lines(&fixtures.join("slot-reference.cases.jsonl"), &rows);
     check_lines(&fixtures.join("slot-reference.lowered.jsonl"), &graphs);
 }

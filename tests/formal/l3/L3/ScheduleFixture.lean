@@ -1,5 +1,5 @@
-import Impeto.Folio
-import Impeto.Schedule
+import L3.Folio
+import L3.Schedule
 
 /-!
 Differential for the scheduling contract. Rust lowers each reference
@@ -10,7 +10,7 @@ Accepted scheduled programs are also executed to observe the ordering that
 `accepted_schedule_orders_edges` proves.
 -/
 
-namespace Impeto.ScheduleFixture
+namespace L3.ScheduleFixture
 open Schedule
 
 def stems : List String := [
@@ -96,4 +96,4 @@ def check : IO UInt32 := do
   IO.println s!"fixtures/schedule-contract.txt: {(actual.splitOn "\n").length - 1} scheduling verdicts agree"
   pure 0
 
-end Impeto.ScheduleFixture
+end L3.ScheduleFixture

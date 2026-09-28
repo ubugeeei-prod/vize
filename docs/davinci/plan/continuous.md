@@ -90,7 +90,7 @@
 
 - [ ] C-22 Lean CI lane maintenance (CI-lenient dependency lane per charter #39)
 - [ ] C-23 Independent Lean folio checker, expanded stage-by-stage (starts: P2 folios stable)
-  - _S3 stage 2026-09-22:_ `Impeto.Checker` re-checks the TS-27 graph contract
+  - _S3 stage 2026-09-22:_ `L3.Checker` re-checks the TS-27 graph contract
     (unique ids, root, region resolution, span nesting, finite parent chains,
     effect scoping, edge resolution, scheduled order) over all 60 committed L3
     graphs. The checker is total and proved exact against its declarative

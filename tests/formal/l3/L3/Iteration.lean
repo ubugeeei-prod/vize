@@ -1,7 +1,7 @@
-import Impeto.Values
-import Impeto.Expression
+import L3.Values
+import L3.Expression
 
-namespace Impeto.Iteration
+namespace L3.Iteration
 open Lean
 
 def identifier (text : String) : Bool :=
@@ -194,4 +194,4 @@ def contexts (program : Program) (rows : List Operand) (op : Op)
     result := result ++ [(Json.arr #[toJson op.id, identity], scope)]
   pure result
 
-end Impeto.Iteration
+end L3.Iteration

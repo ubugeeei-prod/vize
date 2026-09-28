@@ -1,6 +1,6 @@
 import Lean.Data.Json
 
-namespace Impeto
+namespace L3
 open Lean
 
 -- Addresses encode L3 operation ownership and keyed/positional loop scopes.
@@ -29,4 +29,4 @@ def append (nodes : List View) (node : View) : List View :=
 def tree (nodes : List View) : Json := .arr (nodes.map json).toArray
 
 end View
-end Impeto
+end L3

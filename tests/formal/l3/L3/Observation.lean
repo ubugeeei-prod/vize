@@ -1,7 +1,7 @@
-import Impeto.Model
-import Impeto.View
+import L3.Model
+import L3.View
 
-namespace Impeto.Observation
+namespace L3.Observation
 open Lean
 
 abbrev identifier := Iteration.identifier
@@ -286,4 +286,4 @@ def observe (program : Program) (rows : List Operand) (context : Json) (slots : 
 def render (program : Program) (rows : List Operand) (context : Json) : Except String Json := do
   pure (View.tree (<- observe program rows context).nodes)
 
-end Impeto.Observation
+end L3.Observation

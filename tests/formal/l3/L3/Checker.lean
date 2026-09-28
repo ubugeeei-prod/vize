@@ -1,4 +1,4 @@
-import Impeto.Schedule
+import L3.Schedule
 
 /-!
 C-23: independent L3 Folio checker (Lean4Lean discipline). It re-checks the
@@ -10,7 +10,7 @@ no violation exactly when the program is well formed. Every definition here is
 structurally recursive or fuel-bounded, hence total.
 -/
 
-namespace Impeto.Checker
+namespace L3.Checker
 open Schedule
 
 def contains (outer inner : Span) : Bool := outer.start ≤ inner.start && inner.stop ≤ outer.stop
@@ -96,4 +96,4 @@ def violations (p : Program) : List String :=
     code (decide (OpsResolved p)) "L3V003" ++ code (decide (Scoped p)) "L3V007" ++
     code (decide (EdgesResolved p)) "L3V004" ++ code (decide (Ordered p)) "L3V008"
 
-end Impeto.Checker
+end L3.Checker

@@ -1,5 +1,5 @@
-import Impeto.Checker
-import Impeto.IvmMatrix
+import L3.Checker
+import L3.IvmMatrix
 
 /-!
 Runs the C-23 checker over every committed L3 graph: the hand-written and
@@ -8,7 +8,7 @@ references. Every graph must be well formed. Seven targeted damages of a
 Rust-lowered graph must each produce exactly the expected invariant codes.
 -/
 
-namespace Impeto.CheckerTests
+namespace L3.CheckerTests
 open Lean Checker
 
 def graphFiles : List String := [
@@ -74,4 +74,4 @@ def check : IO UInt32 := do
       pure 0
   | .error message => IO.eprintln s!"folio checker: {message}"; pure 1
 
-end Impeto.CheckerTests
+end L3.CheckerTests

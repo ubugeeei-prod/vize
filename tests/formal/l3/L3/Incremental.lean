@@ -1,6 +1,6 @@
-import Impeto.View
+import L3.View
 
-namespace Impeto.Incremental
+namespace L3.Incremental
 open Lean
 
 inductive Node where
@@ -108,4 +108,4 @@ def click (state : State) (name : String) : Except String (Option Json) := do
   if target.tag != "button" then throw "expected a native button"
   pure (if target.disabled then none else target.event)
 
-end Impeto.Incremental
+end L3.Incremental

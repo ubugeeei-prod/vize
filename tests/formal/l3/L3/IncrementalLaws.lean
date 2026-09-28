@@ -1,4 +1,4 @@
-import Impeto.Incremental
+import L3.Incremental
 
 /-!
 P3-15 IVM theorems for the reference update machine that TS-29 executes.
@@ -14,7 +14,7 @@ reconciliation:
   allocates nothing and work is linear in the inserted delta.
 -/
 
-namespace Impeto.Incremental
+namespace L3.Incremental
 
 /-- Identity of the first previous sibling carrying this L3 address. -/
 def retainedIdentity? (previous : List Node) (owner : String) : Option Nat :=
@@ -275,4 +275,4 @@ theorem update_without_insertions {fuel : Nat} {state result : State} {view : Li
       simp [this, survives]
     · contradiction
 
-end Impeto.Incremental
+end L3.Incremental

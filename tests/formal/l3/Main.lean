@@ -1,18 +1,18 @@
-import Impeto
-import Impeto.BehaviorTests
-import Impeto.ControlTests
-import Impeto.LoopTests
-import Impeto.ExpressionTests
-import Impeto.IvmMatrix
-import Impeto.ModelBehavior
-import Impeto.ModelTests
-import Impeto.SlotTests
-import Impeto.LatticeFixture
-import Impeto.ScheduleFixture
-import Impeto.Theorems
-import Impeto.CheckerTests
+import L3
+import L3.BehaviorTests
+import L3.ControlTests
+import L3.LoopTests
+import L3.ExpressionTests
+import L3.IvmMatrix
+import L3.ModelBehavior
+import L3.ModelTests
+import L3.SlotTests
+import L3.LatticeFixture
+import L3.ScheduleFixture
+import L3.Theorems
+import L3.CheckerTests
 
-open Impeto
+open L3
 
 structure Fixture where
   folio : String
@@ -155,7 +155,7 @@ def printBackendTrace (backend : Backend) (folioPath : String) : IO UInt32 := do
       pure 0
 
 def usage : String :=
-  "usage: impetoRef --check-fixtures | --check-backend-fixtures | --check-stateful-fixtures | " ++
+  "usage: l3Ref --check-fixtures | --check-backend-fixtures | --check-stateful-fixtures | " ++
     "--check-lattice-fixtures | --check-schedule-fixtures | --write-ivm-matrix | --write-model-reference | " ++
     "--write-slot-reference | --write-model-loop-reference | " ++
     "--check <s3.folio> <trace> | --trace <s3.folio> | " ++

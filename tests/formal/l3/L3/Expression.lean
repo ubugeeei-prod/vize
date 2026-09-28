@@ -12,7 +12,7 @@ string or strict-equality positions, and integers beyond 2^53 - 1. Only the
 selected operand of `&&`, `||` and `?:` is evaluated, as in JavaScript.
 -/
 
-namespace Impeto.Expression
+namespace L3.Expression
 open Lean
 
 inductive Token where
@@ -252,4 +252,4 @@ def eval (context : Json) : Expr -> Except String Json
 def evaluate (context : Json) (text : String) : Except String Json := do
   eval context (<- parse text)
 
-end Impeto.Expression
+end L3.Expression

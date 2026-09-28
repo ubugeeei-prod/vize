@@ -1,6 +1,6 @@
-import Impeto.Syntax
+import L3.Syntax
 
-namespace Impeto
+namespace L3
 namespace Folio
 
 inductive Section where
@@ -146,4 +146,4 @@ def parseProgram (text : String) : Except String Program := do
   pure state.program
 
 end Folio
-end Impeto
+end L3

@@ -1,6 +1,6 @@
-import Impeto.Observation
+import L3.Observation
 
-namespace Impeto.Behavior
+namespace L3.Behavior
 open Lean
 
 def keys (value : Json) : Except String (List String) := do
@@ -73,4 +73,4 @@ def check (stem : String) : IO UInt32 := do
       IO.eprintln s!"{stem}: {message}"
       pure 2
 
-end Impeto.Behavior
+end L3.Behavior

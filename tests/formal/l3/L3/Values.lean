@@ -1,7 +1,7 @@
-import Impeto.Folio
+import L3.Folio
 import Lean.Data.Json
 
-namespace Impeto
+namespace L3
 open Lean
 
 structure Operand where
@@ -89,4 +89,4 @@ def literal (row : Operand) : Except String String :=
   if row.kind == "literal" then pure row.text else throw s!"expected literal {row.role}"
 
 end Values
-end Impeto
+end L3

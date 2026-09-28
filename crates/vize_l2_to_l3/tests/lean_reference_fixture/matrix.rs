@@ -7,7 +7,7 @@
 //! authored template/scenario and exact graph/value Dumps are committed as
 //! JSON lines. The Lean reference computes the expected observations and both
 //! mounted runtimes must reproduce them. Regenerate with
-//! `VIZE_UPDATE_IVM_MATRIX=1`, then `lake exe impetoRef --write-ivm-matrix`.
+//! `VIZE_UPDATE_IVM_MATRIX=1`, then `lake exe l3Ref --write-ivm-matrix`.
 
 #![allow(
     clippy::disallowed_macros,
@@ -216,7 +216,7 @@ fn ivm_matrix_cases_are_rust_lowered() {
         }
     }
     assert_eq!(cases.len(), 32);
-    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/impeto/fixtures");
+    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/l3/fixtures");
     check_lines(&fixtures.join("ivm-matrix.cases.jsonl"), &cases);
     check_lines(&fixtures.join("ivm-matrix.lowered.jsonl"), &graphs);
 }

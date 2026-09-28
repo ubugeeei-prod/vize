@@ -1,6 +1,6 @@
-import Impeto.Behavior
+import L3.Behavior
 
-namespace Impeto.BehaviorTests
+namespace L3.BehaviorTests
 open Lean
 
 def expectError {α : Type} (label : String) (result : Except String α) : Except String Unit :=
@@ -110,4 +110,4 @@ def check : IO UInt32 := do
       IO.eprintln message
       pure 1
 
-end Impeto.BehaviorTests
+end L3.BehaviorTests

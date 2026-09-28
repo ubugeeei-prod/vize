@@ -1,4 +1,4 @@
-import Impeto.Schedule
+import L3.Schedule
 
 /-!
 P3-15 effect-grouping theorem. Acceptance by the scheduled-phase validator
@@ -8,7 +8,7 @@ its scope. Any regrouping of ops that the validator accepts therefore
 preserves the whole dependency edge set of the original program.
 -/
 
-namespace Impeto.Schedule
+namespace L3.Schedule
 
 theorem getElem?_of_indexOf? : ∀ {ids : List Nat} {id i : Nat},
     indexOf? ids id = some i -> ids[i]? = some id
@@ -144,4 +144,4 @@ theorem accepted_regrouping_preserves_edges {original grouped : Program}
     exact sameOps.map _
   · exact accepted_schedule_orders_edges accepted scheduled backend (sameEdges ▸ mem)
 
-end Impeto.Schedule
+end L3.Schedule

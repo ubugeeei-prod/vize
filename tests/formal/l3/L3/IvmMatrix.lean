@@ -1,4 +1,4 @@
-import Impeto.LoopBehavior
+import L3.LoopBehavior
 
 /-!
 TS-29 IVM matrix. `ivm-matrix.cases.jsonl` holds generated templates and
@@ -6,11 +6,11 @@ scenarios; `ivm-matrix.lowered.jsonl` holds their Rust-checked graph and
 value Folios. For every case this module runs the reference update machine,
 whose accepted updates are proved equal to fresh rendering, and the result must
 match `ivm-matrix.behavior.jsonl` exactly. Both mounted Vue runtimes are gated
-on the same file. Regenerate it with `lake exe impetoRef --write-ivm-matrix`
+on the same file. Regenerate it with `lake exe l3Ref --write-ivm-matrix`
 only after a deliberate semantics change.
 -/
 
-namespace Impeto.IvmMatrix
+namespace L3.IvmMatrix
 open Lean
 
 def jsonLines (text : String) : Except String (List Json) :=
@@ -58,4 +58,4 @@ def runMatrix (stem : String) (runner : Program -> List Operand -> Json -> Excep
 
 def run (write : Bool) : IO UInt32 := runMatrix "ivm-matrix" LoopBehavior.run 30 write
 
-end Impeto.IvmMatrix
+end L3.IvmMatrix

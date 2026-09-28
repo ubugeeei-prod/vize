@@ -1,7 +1,7 @@
-import Impeto.LoopBehavior
-import Impeto.BehaviorTests
+import L3.LoopBehavior
+import L3.BehaviorTests
 
-namespace Impeto.LoopTests
+namespace L3.LoopTests
 open Lean BehaviorTests
 
 def negativeTests (program : Program) (rows : List Operand) (script : Json) : Except String Unit := do
@@ -134,4 +134,4 @@ def check : IO UInt32 := do
   | .ok () => pure 0
   | .error message => IO.eprintln message; pure 1
 
-end Impeto.LoopTests
+end L3.LoopTests

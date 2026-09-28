@@ -1,6 +1,6 @@
-import Impeto.BehaviorTests
+import L3.BehaviorTests
 
-namespace Impeto.ControlTests
+namespace L3.ControlTests
 open Lean BehaviorTests
 
 def expectValue {α : Type} [BEq α] (label : String) (expected : α)
@@ -236,4 +236,4 @@ def check : IO UInt32 := do
       IO.eprintln message
       pure 1
 
-end Impeto.ControlTests
+end L3.ControlTests

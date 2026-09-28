@@ -1,11 +1,11 @@
 import Lake
 open Lake DSL
 
-package impeto where
+package l3 where
   version := v!"0.1.0"
 
-lean_lib Impeto where
+lean_lib L3 where
 
 @[default_target]
-lean_exe impetoRef where
+lean_exe l3Ref where
   root := `Main

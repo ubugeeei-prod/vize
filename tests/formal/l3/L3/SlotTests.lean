@@ -1,4 +1,4 @@
-import Impeto.ModelTests
+import L3.ModelTests
 
 /-!
 Fail-closed witnesses for supplied slots. A caller may supply a named slot
@@ -6,7 +6,7 @@ as static text or as one displayed slot prop. Any other supplied shape, name
 or missing prop must be rejected instead of approximated.
 -/
 
-namespace Impeto.SlotTests
+namespace L3.SlotTests
 open Lean BehaviorTests ModelTests
 
 def negativeTests (cases lowered : String) : Except String Unit := do
@@ -29,4 +29,4 @@ def check : IO UInt32 := do
   | .ok () => pure 0
   | .error message => IO.eprintln s!"slot reference: {message}"; pure 1
 
-end Impeto.SlotTests
+end L3.SlotTests

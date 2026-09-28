@@ -7,7 +7,7 @@
 //! exact graph/value Dumps. The Lean model reference computes the expected
 //! observations and both mounted Vue runtimes must reproduce them. Regenerate
 //! with `VIZE_UPDATE_MODEL_REFERENCE=1`, then
-//! `lake exe impetoRef --write-model-reference`.
+//! `lake exe l3Ref --write-model-reference`.
 
 #![allow(
     clippy::disallowed_macros,
@@ -282,7 +282,7 @@ fn emit(stem: &str, cases: Vec<Case>) {
         }));
         graphs.push(json!({ "name": name, "graph": graph, "values": values }));
     }
-    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/impeto/fixtures");
+    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/l3/fixtures");
     check_lines(&fixtures.join(format!("{stem}.cases.jsonl")), &rows);
     check_lines(&fixtures.join(format!("{stem}.lowered.jsonl")), &graphs);
 }
