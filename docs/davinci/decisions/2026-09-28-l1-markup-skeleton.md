@@ -82,12 +82,17 @@ self-closing whitespace (`<x / >`). A separate `&fjlig;` fixture records that
 the preserved tokenizer emits only `f`, while L1 emits the complete `fj`
 expansion. L1 `Sink` receives the complete decoded value and authored byte
 span in one callback; its scalar callback defaults retain existing native
-consumers. PR and merge-queue Actions run feature-enabled Armature library
-and event-parity tests; default test archives do not compile this contract.
-TODO (#6835): make Armature adapt the
-shared L1 lexer while
-preserving that first-scalar legacy behavior, then prove byte and error
-recovery parity before switching its production tokenizer. TODO (#6835):
+consumers. The feature-gated `CompatSink` maps L1 lexer events into Armature
+callbacks, including the first-scalar legacy entity rule and parser-selected
+lexical mode. Differential tests compare 42 fixture ASTs and diagnostics,
+event/error parity with UTF-8 truncations, Document mode, Vue 1 raw
+interpolation, custom delimiters, and experimental in-tag comments. PR and
+merge-queue Actions run these feature-enabled tests; default archives do not.
+The #6836 child verifies `v-pre` callbacks. The production parser still uses
+the moved compatibility tokenizer. TODO (#6835): run the full legacy output
+corpus and instruction-count gate before switching production to the shared
+lexer, then remove the duplicate state machine after the #6880 product-route
+prerequisite closes. TODO (#6835):
 move the remaining `Namespace`/`ErrorCode`
 vocabulary out of Relief to remove L1's other direct legacy dependency. The
 compiler product route remains gated by #6880.

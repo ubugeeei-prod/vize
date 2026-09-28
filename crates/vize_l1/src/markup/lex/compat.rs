@@ -3,6 +3,8 @@
 //! This tokenizer is adapted from htmlparser2 and Vue's compiler-core.
 //! It uses a state machine to tokenize HTML/Vue templates.
 
+#[cfg(feature = "native-markup-lex")]
+pub mod adapter;
 pub mod char_codes;
 mod dynamic_arg;
 pub mod entity_decode;

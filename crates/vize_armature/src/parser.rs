@@ -18,6 +18,8 @@ mod experimental_tests;
 mod expression;
 #[cfg(all(test, feature = "legacy"))]
 mod legacy_tests;
+#[cfg(all(test, feature = "native-lex-parity"))]
+mod native_adapter_tests;
 mod pending_text;
 mod whitespace;
 mod whitespace_context;

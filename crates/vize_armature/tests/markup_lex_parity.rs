@@ -5,6 +5,7 @@
 
 use vize_armature::tokenizer::{Callbacks, QuoteType as CompatQuote, Tokenizer};
 use vize_l0::{SmallVec, String, cstr};
+use vize_l1::markup::lex::compat::adapter::CompatSink;
 use vize_l1::markup::token::{LexErrorCode, QuoteType as NativeQuote, Sink};
 use vize_l1::markup::{Component, Document, LexOptions, Lexer, Profile};
 use vize_relief::ErrorCode;
@@ -131,6 +132,20 @@ fn traces(source: &str) -> (Trace, Trace) {
     traces_with::<Component>(source, false)
 }
 
+fn adapted_trace_with<P: Profile>(source: &str, raw_interpolation: bool) -> Trace {
+    let mut trace = Trace::default();
+    let mut lexer = Lexer::<P, _>::new(
+        source,
+        CompatSink::new(CompatTrace(&mut trace)),
+        LexOptions {
+            raw_interpolation,
+            ..LexOptions::default()
+        },
+    );
+    lexer.run();
+    trace
+}
+
 #[test]
 fn component_lexer_events_and_recovery_match_moved_tokenizer() {
     for source in [
@@ -227,4 +242,40 @@ fn multi_scalar_entity_marks_the_legacy_adapter_boundary() {
             cstr!("text-entity:'j':{text_start}..{text_end}"),
         ]
     );
+    let adapted = adapted_trace_with::<Component>(source, false);
+    assert_eq!(adapted, compat, "adapter must retain the old first scalar");
+}
+
+#[test]
+fn native_adapter_keeps_moved_tokenizer_events_and_recovery() {
+    for fixture in davinci_test_support::surface_fixture::WELL_FORMED
+        .iter()
+        .chain(davinci_test_support::surface_fixture::MALFORMED)
+    {
+        let (compat, _) = traces(fixture.source);
+        let adapted = adapted_trace_with::<Component>(fixture.source, false);
+        assert_eq!(adapted, compat, "{}: {}", fixture.name, fixture.source);
+        for (index, _) in fixture.source.char_indices() {
+            let prefix = fixture.source.get(..index).expect("UTF-8 boundary");
+            let suffix = fixture.source.get(index..).expect("UTF-8 boundary");
+            for source in [prefix, suffix] {
+                let (compat, _) = traces(source);
+                let adapted = adapted_trace_with::<Component>(source, false);
+                assert_eq!(adapted, compat, "{} at {index}: {source}", fixture.name);
+            }
+        }
+    }
+
+    for source in [
+        "<!DOCTYPE html><main id='x'>{{ value }}</main>",
+        "<!bogus><table><tr><td>x</td></tr></table>",
+        "<title>a &amp; {{ title }}</title>",
+    ] {
+        let (compat, _) = traces_with::<Document>(source, false);
+        assert_eq!(adapted_trace_with::<Document>(source, false), compat);
+    }
+    for source in ["{{{ raw }}}", "before {{{ raw }}} after {{ escaped }}"] {
+        let (compat, _) = traces_with::<Component>(source, true);
+        assert_eq!(adapted_trace_with::<Component>(source, true), compat);
+    }
 }
