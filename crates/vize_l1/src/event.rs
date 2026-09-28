@@ -1,12 +1,12 @@
 //! The tokenizer-event stream the tree is built from.
 //!
-//! Construction is two-phase: a [`Recorder`] implements armature's
+//! Construction is two-phase: a [`Recorder`] implements the moved lexer's
 //! [`Callbacks`] and flattens the token events into an arena `Vec` of
 //! plain [`Event`]s (12 bytes, `Copy`), then `build` walks that slice
 //! with lookahead. The split keeps the tree builder a straight-line
 //! function over data instead of a callback state machine.
 
-use vize_armature::tokenizer::{Callbacks, QuoteType};
+use crate::markup::lex::compat::{Callbacks, QuoteType};
 use vize_l0::Vec;
 use vize_relief::ErrorCode;
 
