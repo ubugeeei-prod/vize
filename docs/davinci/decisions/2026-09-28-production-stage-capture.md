@@ -38,6 +38,9 @@ discards native pages; selection accounting reports that final lane. A legacy
 selection, no-template result or rejected compile likewise discards pages. The sidecar
 records the target, effective options and explicit outcome so an empty feed
 cannot be mistaken for a native run with no changes.
+`timings_observed` and `remarks_observed` are false until a producer observes
+the entire respective channel; an empty unobserved channel is unavailable,
+not a claim that zero events occurred.
 
 DOM records its actual surface parse, lowering, resulting fact tables and render
 emission. These facts describe the current transitional DOM emitter; static

@@ -82,6 +82,10 @@ pub struct StageCapture {
     pub pages: Vec<StageCapturePage>,
     pub timings: Vec<StageTiming>,
     pub remarks: Vec<CaptureRemark>,
+    /// Whether the producer observed every eligible timing in this run.
+    pub timings_observed: bool,
+    /// Whether the producer observed every eligible remark in this run.
+    pub remarks_observed: bool,
 }
 
 impl StageCapture {
@@ -94,6 +98,8 @@ impl StageCapture {
             pages: Vec::new(),
             timings: Vec::new(),
             remarks: Vec::new(),
+            timings_observed: false,
+            remarks_observed: false,
         }
     }
 
@@ -119,6 +125,10 @@ pub trait CaptureSink {
 
     fn remark<F: FnOnce() -> CaptureRemark>(&mut self, render: F);
 
+    /// Mark a fully instrumented channel, including the case of zero events.
+    fn timing_channel_observed(&mut self);
+    fn remark_channel_observed(&mut self);
+
     /// Commit pages only when the native backend emitted the returned module.
     fn finish<F: FnOnce() -> CaptureOutcome>(&mut self, outcome: F);
 }
@@ -138,6 +148,12 @@ impl CaptureSink for NoCapture {
 
     #[inline(always)]
     fn remark<F: FnOnce() -> CaptureRemark>(&mut self, _: F) {}
+
+    #[inline(always)]
+    fn timing_channel_observed(&mut self) {}
+
+    #[inline(always)]
+    fn remark_channel_observed(&mut self) {}
 
     #[inline(always)]
     fn finish<F: FnOnce() -> CaptureOutcome>(&mut self, _: F) {}
@@ -166,12 +182,22 @@ impl CaptureSink for StageCapture {
         self.remarks.push(render());
     }
 
+    fn timing_channel_observed(&mut self) {
+        self.timings_observed = true;
+    }
+
+    fn remark_channel_observed(&mut self) {
+        self.remarks_observed = true;
+    }
+
     fn finish<F: FnOnce() -> CaptureOutcome>(&mut self, outcome: F) {
         let outcome = outcome();
         if !matches!(outcome, CaptureOutcome::Accepted) {
             self.pages.clear();
             self.timings.clear();
             self.remarks.clear();
+            self.timings_observed = false;
+            self.remarks_observed = false;
         }
         self.outcome = outcome;
     }
