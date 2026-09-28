@@ -2,9 +2,24 @@
 
 use phf::phf_set;
 
-/// HTML tags
-/// https://developer.mozilla.org/en-US/docs/Web/HTML/Element
-pub static HTML_TAGS: phf::Set<&'static str> = phf_set! {
+// Keep the public perfect-hash set and the hot-path matcher generated from one list.
+// Match dispatch avoids SipHash for the repeated namespace and tag checks in compilation.
+macro_rules! direct_tag_set {
+    ($(#[$attr:meta])* $set:ident, $check:ident { $($tag:literal),* $(,)? }) => {
+        $(#[$attr])*
+        pub static $set: phf::Set<&'static str> = phf_set! { $($tag),* };
+
+        #[inline]
+        pub fn $check(tag: &str) -> bool {
+            matches!(tag, $($tag)|*)
+        }
+    };
+}
+
+direct_tag_set! {
+    /// HTML tags
+    /// https://developer.mozilla.org/en-US/docs/Web/HTML/Element
+    HTML_TAGS, is_html_tag {
     "html", "body", "base", "head", "link", "meta", "style", "title",
     "address", "article", "aside", "footer", "header", "hgroup",
     "h1", "h2", "h3", "h4", "h5", "h6", "nav", "section",
@@ -20,11 +35,13 @@ pub static HTML_TAGS: phf::Set<&'static str> = phf_set! {
     "meter", "optgroup", "option", "output", "progress", "select", "textarea",
     "details", "dialog", "menu", "search", "summary", "template", "blockquote",
     "iframe", "tfoot"
-};
+    }
+}
 
-/// SVG tags
-/// https://developer.mozilla.org/en-US/docs/Web/SVG/Element
-pub static SVG_TAGS: phf::Set<&'static str> = phf_set! {
+direct_tag_set! {
+    /// SVG tags
+    /// https://developer.mozilla.org/en-US/docs/Web/SVG/Element
+    SVG_TAGS, is_svg_tag {
     "svg", "animate", "animateMotion", "animateTransform", "circle",
     "clipPath", "color-profile", "defs", "desc", "discard", "ellipse",
     "feBlend", "feColorMatrix", "feComponentTransfer", "feComposite",
@@ -39,11 +56,13 @@ pub static SVG_TAGS: phf::Set<&'static str> = phf_set! {
     "polygon", "polyline", "radialGradient", "rect", "set", "solidcolor",
     "stop", "switch", "symbol", "text", "textPath", "title", "tspan",
     "unknown", "use", "view"
-};
+    }
+}
 
-/// MathML tags
-/// https://www.w3.org/TR/mathml4/ (content elements excluded)
-pub static MATH_TAGS: phf::Set<&'static str> = phf_set! {
+direct_tag_set! {
+    /// MathML tags
+    /// https://www.w3.org/TR/mathml4/ (content elements excluded)
+    MATH_TAGS, is_math_ml_tag {
     "annotation", "annotation-xml", "maction", "maligngroup", "malignmark",
     "math", "menclose", "merror", "mfenced", "mfrac", "mfraction", "mglyph",
     "mi", "mlabeledtr", "mlongdiv", "mmultiscripts", "mn", "mo", "mover",
@@ -51,7 +70,8 @@ pub static MATH_TAGS: phf::Set<&'static str> = phf_set! {
     "mscarry", "msgroup", "msline", "mspace", "msqrt", "msrow", "mstack",
     "mstyle", "msub", "msubsup", "msup", "mtable", "mtd", "mtext", "mtr",
     "munder", "munderover", "none", "semantics"
-};
+    }
+}
 
 /// Void (self-closing) tags
 pub static VOID_TAGS: phf::Set<&'static str> = phf_set! {
@@ -95,24 +115,6 @@ pub static BOOLEAN_ATTRS: phf::Set<&'static str> = phf_set! {
     "webkitdirectory"
 };
 
-/// Check if tag is a valid HTML tag
-#[inline]
-pub fn is_html_tag(tag: &str) -> bool {
-    HTML_TAGS.contains(tag)
-}
-
-/// Check if tag is a valid SVG tag
-#[inline]
-pub fn is_svg_tag(tag: &str) -> bool {
-    SVG_TAGS.contains(tag)
-}
-
-/// Check if tag is a valid MathML tag
-#[inline]
-pub fn is_math_ml_tag(tag: &str) -> bool {
-    MATH_TAGS.contains(tag)
-}
-
 /// Check if tag is a void (self-closing) tag
 #[inline]
 pub fn is_void_tag(tag: &str) -> bool {
@@ -155,7 +157,39 @@ pub fn is_rcdata_tag(tag: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{is_boolean_attr, is_html_tag, is_raw_text_tag, is_svg_tag, is_void_tag};
+    use super::{
+        HTML_TAGS, MATH_TAGS, SVG_TAGS, is_boolean_attr, is_html_tag, is_math_ml_tag,
+        is_raw_text_tag, is_svg_tag, is_void_tag,
+    };
+
+    #[test]
+    fn direct_tag_matchers_agree_with_the_exported_sets() {
+        let pairs = [
+            (&HTML_TAGS, is_html_tag as fn(&str) -> bool),
+            (&SVG_TAGS, is_svg_tag as fn(&str) -> bool),
+            (&MATH_TAGS, is_math_ml_tag as fn(&str) -> bool),
+        ];
+
+        for (set, check) in pairs {
+            for name in set.iter() {
+                assert!(check(name), "missing {name}");
+                let upper = name.to_ascii_uppercase();
+                assert_eq!(check(&upper), set.contains(upper.as_str()), "{upper}");
+                let suffixed = format!("{name}-unknown");
+                assert_eq!(check(&suffixed), set.contains(suffixed.as_str()));
+            }
+            for first in b'a'..=b'z' {
+                for second in b'a'..=b'z' {
+                    let probe = [first, second];
+                    let probe = std::str::from_utf8(&probe).unwrap();
+                    assert_eq!(check(probe), set.contains(probe), "{probe}");
+                }
+            }
+            for probe in ["", "é", "🚀", "\0", "div\0", "svg:circle", "Annotation"] {
+                assert_eq!(check(probe), set.contains(probe), "{probe:?}");
+            }
+        }
+    }
 
     #[test]
     fn test_html_tags() {
