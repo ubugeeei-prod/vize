@@ -1,0 +1,54 @@
+name: Tooling PR capabilities diagnostic
+on:
+  push:
+    branches:
+      - ci/tooling-pr-capabilities-6830-diagnostic
+
+permissions:
+  contents: read
+
+jobs:
+  audited-pure:
+    name: Audited pure PR cohort
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - name: Install pure JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Plan broad Rust-lock input and validate exact-once cohorts
+        run: |
+          node --input-type=module - <<'NODE'
+          import assert from 'node:assert/strict';
+          import { planToolingTests, writeToolingPlan } from './tools/support/compat/github/plan-tooling-tests.mjs';
+          import { prToolingCohortCommand } from './tools/support/compat/github/run-tooling-tests.mjs';
+          const plan = planToolingTests(['Cargo.lock']);
+          const pure = prToolingCohortCommand(plan, 'pure').slice(2);
+          const full = prToolingCohortCommand(plan, 'full').slice(2);
+          assert.equal(pure.length, 7);
+          assert.equal(new Set([...pure, ...full]).size, plan.tests.length);
+          assert.deepEqual([...pure, ...full].sort(), plan.tests);
+          writeToolingPlan(plan, `${process.env.RUNNER_TEMP}/tooling-plan.json`);
+          console.log(`PR selected ${plan.tests.length}/${plan.totalTests}; pure ${pure.length}; full ${full.length}`);
+          NODE
+      - name: Test pure cohort without Rust, native, CLI or fixture preparation
+        env:
+          VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
+        run: vp run --workspace-root test:scripts:pr-pure
+
+  require-pure:
+    name: Require audited pure cohort
+    if: ${{ always() }}
+    needs: audited-pure
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Require cohort success
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: node tools/support/compat/github/require-needs-success.mjs
