@@ -251,7 +251,7 @@ fn modified_prior_page_is_preserved_and_blocks_reuse() {
 }
 
 #[test]
-fn scoped_sfc_uses_real_filename_for_the_product_compile() {
+fn scoped_sfc_capture_matches_filename_configured_product_compile() {
     let temp = tempfile::tempdir().unwrap();
     let source = "<template><p>hi</p></template><style scoped>p { color: red }</style>";
     let mut outputs = Vec::new();
@@ -272,7 +272,7 @@ fn scoped_sfc_uses_real_filename_for_the_product_compile() {
         .unwrap();
         let mut options = SfcCompileOptions::default();
         options.parse.filename = filename.into();
-        let (_, capture) = compile_sfc_for_adapter_with_stage_capture(
+        let (compiled, capture) = compile_sfc_for_adapter_with_stage_capture(
             &descriptor,
             options,
             TemplateSyntaxMode::Standard,
@@ -297,11 +297,12 @@ fn scoped_sfc_uses_real_filename_for_the_product_compile() {
             &capture,
         );
         assert_eq!(actual, expected);
-        outputs.push(actual["pages"].clone());
+        // Scoped CSS is assembled by the SFC host after the L4 render page.
+        outputs.push(compiled.css.unwrap());
     }
     assert_ne!(
         outputs[0], outputs[1],
-        "scoped output ignored source filename"
+        "product scoped CSS ignored source filename"
     );
 }
 

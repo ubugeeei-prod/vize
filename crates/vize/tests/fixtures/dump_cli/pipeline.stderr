@@ -1,7 +1,4 @@
-error: unexpected argument '--pipeline' found
-
-  tip: to pass '--pipeline' as a value, use '-- --pipeline'
-
-Usage: vize dump --level <LEVEL> <--roundtrip <FILE>|--all-levels> [FILE]
+error: invalid value 'l2()' for '--pipeline <PIPELINE>'
+  [possible values: dom, ssr, vapor]
 
 For more information, try '--help'.
