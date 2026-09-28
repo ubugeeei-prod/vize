@@ -5,9 +5,7 @@ use super::{
 use vize_l0::SmallVec;
 use vize_relief::ErrorCode;
 
-// ========================================================================
 // Test callback infrastructure
-// ========================================================================
 
 #[derive(Debug, PartialEq)]
 pub(super) enum TokenEvent {
