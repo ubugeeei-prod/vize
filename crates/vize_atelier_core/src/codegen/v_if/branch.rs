@@ -138,7 +138,8 @@ fn generate_if_branch_slot(
     let generate_key = |ctx: &mut CodegenContext| generate_if_branch_key(ctx, branch, branch_index);
     generate_slot_outlet_props_with_key(ctx, el, &generate_key);
 
-    if !el.children.is_empty() {
+    let has_fallback = !el.children.is_empty();
+    if has_fallback {
         ctx.push(", () => [");
         let filtered: Vec<_> = el
             .children
@@ -151,9 +152,8 @@ fn generate_if_branch_slot(
             }
             generate_node(ctx, child);
         }
-        ctx.push("]");
     }
-    ctx.push(")");
+    ctx.finish_slot_outlet(if has_fallback { "])" } else { ")" }, has_fallback, true);
 }
 
 /// Generate component for if branch.

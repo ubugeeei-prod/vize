@@ -31,6 +31,7 @@ use super::item_props::{
     unwrap_template_single_element,
 };
 use super::slot_outlet::generate_for_slot_outlet;
+use super::template_children::generate_template_for_children;
 use vize_l0::ToCompactString;
 
 /// Generate item for v-for (as block, not regular vnode)
@@ -115,18 +116,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     push_null_props_if_missing(ctx, emitted_props);
                     ctx.push(", ");
                     if gen_is_template {
-                        ctx.push("[");
-                        ctx.indent();
-                        for (i, child) in children_el.children.iter().enumerate() {
-                            if i > 0 {
-                                ctx.push(",");
-                            }
-                            ctx.newline();
-                            generate_node(ctx, child);
-                        }
-                        ctx.deindent();
-                        ctx.newline();
-                        ctx.push("]");
+                        generate_template_for_children(ctx, &children_el.children);
                     } else {
                         ctx.with_parent_namespace(child_namespace(children_el), |ctx| {
                             generate_children(ctx, &children_el.children);
@@ -272,19 +262,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         // "Non-function value encountered for default slot"
                         generate_slots(ctx, children_el);
                     } else if gen_is_template {
-                        // Template children are array
-                        ctx.push("[");
-                        ctx.indent();
-                        for (i, child) in children_el.children.iter().enumerate() {
-                            if i > 0 {
-                                ctx.push(",");
-                            }
-                            ctx.newline();
-                            generate_node(ctx, child);
-                        }
-                        ctx.deindent();
-                        ctx.newline();
-                        ctx.push("]");
+                        generate_template_for_children(ctx, &children_el.children);
                     } else if ctx.skip_v_memo {
                         // v-for + v-memo: force array form for children
                         if children_el.tag_type == ElementType::Element {

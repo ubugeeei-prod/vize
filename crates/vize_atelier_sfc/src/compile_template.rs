@@ -231,6 +231,7 @@ pub(crate) fn compile_template_block_with_capture(
     let codegen_experimental_options = CodegenExperimentalOptions {
         component_name: component_name.map(|name| name.to_compact_string()),
         self_component: experimental_self_component,
+        no_slotted: has_scoped && !slotted,
     };
 
     // For script setup, use inline mode to match Vue's actual compiler behavior

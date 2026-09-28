@@ -1,5 +1,6 @@
 //! Code generation context and result types.
 
+mod slot_outlet;
 mod spans;
 mod vnode_factory;
 
@@ -39,6 +40,7 @@ pub struct CodegenContext {
     pub(super) component_name: Option<String>,
     /// Whether the reserved `<Self>` tag resolves to the current component.
     pub(super) experimental_self_component: bool,
+    pub(super) no_slotted: bool,
     /// Pure annotation for tree-shaking
     pub(super) pure: bool,
     /// Helpers used during codegen

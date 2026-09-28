@@ -118,13 +118,13 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             }
             ctx.deindent();
             ctx.newline();
-            ctx.push("])");
+            ctx.finish_slot_outlet("])", true, true);
         } else if has_slot_outlet_props(el) {
             ctx.push(", ");
             generate_slot_outlet_props(ctx, el);
-            ctx.push(")");
+            ctx.finish_slot_outlet(")", false, true);
         } else {
-            ctx.push(")");
+            ctx.finish_slot_outlet(")", false, false);
         }
 
         // Close withMemo wrapper if v-memo was present (unlikely but safe)
@@ -470,13 +470,13 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 }
                 ctx.deindent();
                 ctx.newline();
-                ctx.push("])");
+                ctx.finish_slot_outlet("])", true, true);
             } else if has_slot_props {
                 ctx.push(", ");
                 generate_slot_outlet_props(ctx, el);
-                ctx.push(")");
+                ctx.finish_slot_outlet(")", false, true);
             } else {
-                ctx.push(")");
+                ctx.finish_slot_outlet(")", false, false);
             }
         }
         ElementType::Template => {

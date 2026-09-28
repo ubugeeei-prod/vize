@@ -8,6 +8,7 @@ pub(crate) mod helpers;
 mod item_props;
 pub(crate) mod match_scope;
 mod slot_outlet;
+mod template_children;
 
 use crate::steps::v_memo::{get_memo_exp, has_v_memo};
 use crate::{ForNode, RuntimeHelper, TemplateChildNode};

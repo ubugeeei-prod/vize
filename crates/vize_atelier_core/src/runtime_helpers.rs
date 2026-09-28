@@ -17,10 +17,15 @@ impl RuntimeHelpers {
 
     /// Register a helper usage
     pub fn add(&mut self, helper: RuntimeHelper) {
-        if !self.helpers.contains_key(&helper) {
-            self.order.push(helper);
+        match self.helpers.entry(helper) {
+            std::collections::hash_map::Entry::Occupied(mut entry) => {
+                *entry.get_mut() += 1;
+            }
+            std::collections::hash_map::Entry::Vacant(entry) => {
+                self.order.push(helper);
+                entry.insert(1);
+            }
         }
-        *self.helpers.entry(helper).or_insert(0) += 1;
     }
 
     /// Remove a helper usage
@@ -41,10 +46,9 @@ impl RuntimeHelpers {
 
     /// Get all used helpers
     pub fn iter(&self) -> impl Iterator<Item = RuntimeHelper> + '_ {
-        self.order
-            .iter()
-            .copied()
-            .filter(|helper| self.helpers.contains_key(helper))
+        // `remove` evicts the last use from both collections, so `order`
+        // already contains exactly the active helpers.
+        self.order.iter().copied()
     }
 
     /// Get the count of a helper usage

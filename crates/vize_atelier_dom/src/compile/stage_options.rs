@@ -20,7 +20,6 @@ use crate::options::DomCompilerOptions;
 
 mod capture;
 pub(super) use capture::{emit_l2_captured, try_emit_l2_captured};
-
 /// Parser options with DOM-specific settings.
 pub(super) fn parser_options(options: &DomCompilerOptions) -> ParserOptions {
     ParserOptions {
@@ -185,6 +184,7 @@ pub(super) fn l2_emit_options<'a>(
         cache_handlers: options.cache_handlers,
         hoisted_scope_id,
         scope_id: options.scope_id.as_deref(),
+        no_slotted: false,
         is_ts: options.is_ts,
         comments: options.comments,
         experimental_in_tag_comments: options.experimental_in_tag_comments,

@@ -37,7 +37,7 @@ pub(super) fn generate_with_sections_and_options(
         Some(text) => vize_l0::String::new(text),
         None => root.source.into(),
     };
-    ctx.static_cache = ctx.options.inline || !root.hoists.is_empty();
+    ctx.static_cache = ctx.options.inline | !root.hoists.is_empty();
     let root_children: std::vec::Vec<&TemplateChildNode<'_>> = root
         .children
         .iter()

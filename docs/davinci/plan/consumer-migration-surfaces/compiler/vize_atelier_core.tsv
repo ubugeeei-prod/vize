@@ -17,7 +17,7 @@ compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	raw_oxc	raw OX
 compiler	Compiler	manifest	crates/vize_atelier_core/Cargo.toml	17	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/children.rs	14	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/component_binding.rs	3	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/context.rs	11	l0	L0	stage	vize_l0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/context.rs	12	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/context/spans.rs	10	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/context/vnode_factory.rs	1	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/document.rs	16	l0	L0	stage	vize_l0	preferred	1
@@ -95,8 +95,8 @@ compiler	Compiler	source	crates/vize_atelier_core/src/codegen/source_map_anchor.
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/source_map.rs	35	l0	L0	stage	vize_l0	preferred	3
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/tests.rs	5	l0	L0	stage	vize_l0	preferred	20
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/tests.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for.rs	22	l0	L0	stage	vize_l0	preferred	2
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for/generate.rs	34	l0	L0	stage	vize_l0	preferred	3
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for.rs	23	l0	L0	stage	vize_l0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for/generate.rs	35	l0	L0	stage	vize_l0	preferred	3
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for/helpers.rs	7	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/v_for/helpers.rs	250	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for/item_props.rs	13	l0	L0	stage	vize_l0	preferred	1

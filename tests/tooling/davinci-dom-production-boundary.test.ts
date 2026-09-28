@@ -44,6 +44,7 @@ const s2EmitOptionFields = [
   "cache_handlers",
   "hoisted_scope_id",
   "scope_id",
+  "no_slotted",
   "is_ts",
   "comments",
   "experimental_in_tag_comments",
@@ -207,7 +208,7 @@ test("DOM SFC parser-backed sections do not force legacy codegen", () => {
 
   assert.match(
     source,
-    /if use_l2_emit && fast_path_supported && !codegen_opts\.source_map/u,
+    /if use_l2_emit\s*&& !codegen_opts\.source_map\s*&& selector::l2_sfc_fast_path_supported_source\(source\)/u,
     "the direct SFC fast path guard must stay explicit",
   );
   assert.doesNotMatch(
