@@ -186,7 +186,20 @@ impl<'a> Parser<'a> {
         let inner_loc = self.create_loc(trimmed_start, trimmed_end);
 
         // Create expression node
-        let expression_content = if self.has_ampersand && content.as_bytes().contains(&b'&') {
+        let may_have_entity = if self.entity_scan_state < 32 {
+            self.entity_scan_state += 1;
+            true
+        } else {
+            if self.entity_scan_state == 32 {
+                self.entity_scan_state = if self.source.as_bytes().contains(&b'&') {
+                    34
+                } else {
+                    33
+                };
+            }
+            self.entity_scan_state == 34
+        };
+        let expression_content = if may_have_entity && content.as_bytes().contains(&b'&') {
             let decoded = htmlize::unescape(content);
             if decoded.as_ref() == content {
                 content

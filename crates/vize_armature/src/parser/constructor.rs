@@ -63,7 +63,7 @@ impl<'a> Parser<'a> {
             allocator,
             oxc_allocator: allocator.as_oxc(),
             source,
-            has_ampersand: source.as_bytes().contains(&b'&'),
+            entity_scan_state: 0,
             options,
             custom_elements,
             template_syntax,
