@@ -37,6 +37,7 @@ fn workspace_build_shadow_mirrors_source_dependency_tree() {
     }
   }
 }
+
 "#;
     fs::write(package_root.join("package.json"), manifest).unwrap();
     let index_contents = "export * as entities from \"./entities.js\";\n";
@@ -134,4 +135,92 @@ fn workspace_build_shadow_mirrors_source_dependency_tree() {
 
     let _ = fs::remove_dir_all(&project_root);
     let _ = fs::remove_dir_all(&package_root);
+}
+
+#[test]
+fn nested_workspace_package_shadow_tracks_late_relative_dependencies() {
+    let root = unique_case_dir("nested-workspace-shadow-deps");
+    let _ = fs::remove_dir_all(&root);
+    for name in ["a", "b", "c"] {
+        fs::create_dir_all(root.join(format!("packages/{name}/src"))).unwrap();
+        fs::write(
+            root.join(format!("packages/{name}/package.json")),
+            format!(r#"{{"name":"@x/{name}","type":"module","exports":"./src/index.ts"}}"#),
+        )
+        .unwrap();
+    }
+    fs::create_dir_all(root.join("src")).unwrap();
+    fs::write(root.join("src/main.ts"), "export * from '@x/a';\n").unwrap();
+    fs::write(
+        root.join("packages/a/src/index.ts"),
+        "export * from '@x/b';\n",
+    )
+    .unwrap();
+    fs::write(
+        root.join("packages/b/src/index.ts"),
+        "export * from '@x/c';\n",
+    )
+    .unwrap();
+    fs::write(
+        root.join("packages/c/src/index.ts"),
+        "export * from './util';\n",
+    )
+    .unwrap();
+    fs::write(
+        root.join("packages/c/src/util.ts"),
+        "export { default as Btn } from './Btn.vue';\n",
+    )
+    .unwrap();
+    fs::write(
+        root.join("packages/c/src/Btn.vue"),
+        "<template><button /></template>\n",
+    )
+    .unwrap();
+
+    let route = |name: &str, nested_routes: Vec<PackageRoute>| {
+        let package_root = root.join(format!("packages/{name}"));
+        let entry = package_root.join("src/index.ts");
+        PackageRoute {
+            source_paths: vec![entry.clone()],
+            dependency_paths: Vec::new(),
+            source_targets: vec![crate::PackageRouteSource {
+                target_path: entry.clone(),
+                source_path: entry.clone(),
+                native_probe_path: entry,
+            }],
+            manifest_path: package_root.join("package.json"),
+            package_root: package_root.clone(),
+            package_link_root: package_root,
+            package_name: Some(format!("@x/{name}").into()),
+            workspace_source: true,
+            nested_routes,
+        }
+    };
+    let c = route("c", Vec::new());
+    let b = route("b", vec![c]);
+    let a = route("a", vec![b]);
+    let importer = root.join("src/main.ts");
+    let mut project = VirtualProject::new(&root).unwrap();
+    project.set_package_routes([PackageRouteBinding {
+        importer_path: importer.clone(),
+        specifier: "@x/a".into(),
+        occurrence_mode: crate::PackageResolutionMode::Import,
+        context: PackageResolutionContext::default(),
+        route: Some(a),
+        invalidation_paths: Vec::new(),
+    }]);
+    project.register_path(&importer).unwrap();
+    project.register_package_route_targets().unwrap();
+    project.register_reachable_dependencies().unwrap();
+    project.finalize_package_routes().unwrap();
+
+    let paths = project.topology_shadow_paths();
+    for relative in ["src/util.ts", "src/Btn.vue.ts"] {
+        let suffix = format!("node_modules/@x/a/node_modules/@x/b/node_modules/@x/c/{relative}");
+        assert!(
+            paths.iter().any(|path| path.ends_with(&suffix)),
+            "nested shadow is missing {suffix}: {paths:#?}"
+        );
+    }
+    let _ = fs::remove_dir_all(&root);
 }
