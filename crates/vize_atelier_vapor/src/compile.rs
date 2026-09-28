@@ -23,7 +23,10 @@ use vize_atelier_core::{
 };
 use vize_carton::cstr;
 use vize_carton::{Allocator, String};
-use vize_l0::dump::capture::{CaptureOutcome, CaptureSink, NoCapture};
+use vize_l0::{
+    dump::capture::{CaptureOutcome, CaptureSink, NoCapture},
+    level::Level,
+};
 
 pub use entry::{
     compile_vapor, compile_vapor_with_custom_elements_and_template_syntax,
@@ -219,6 +222,11 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
             source_map,
             |ir, spans| emit(ir, Vec::new(), spans),
         );
+        if result.error_messages.is_empty() && !result.code.is_empty() {
+            // This is the Vapor backend module before the SFC adapter's
+            // import/render rewrite, not the whole SFC script module.
+            capture.page(Level::L4, "emit", || result.code.clone());
+        }
         capture.finish(|| {
             if result.error_messages.is_empty() && !result.code.is_empty() {
                 CaptureOutcome::Accepted
