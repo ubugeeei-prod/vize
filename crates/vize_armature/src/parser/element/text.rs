@@ -162,10 +162,10 @@ impl<'a> Parser<'a> {
 
     fn build_interpolation(&mut self, start: usize, end: usize, raw: bool) {
         let raw_content = self.get_source_retained(start, end);
-        let content = raw_content.trim();
+        let leading_ws = raw_content.len() - raw_content.trim_start().len();
+        let content = raw_content[leading_ws..].trim_end();
 
         // Calculate trimmed positions for accurate source mapping
-        let leading_ws = raw_content.len() - raw_content.trim_start().len();
         let trimmed_start = start + leading_ws;
         let trimmed_end = trimmed_start + content.len();
 
