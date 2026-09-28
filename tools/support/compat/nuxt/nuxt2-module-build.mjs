@@ -8,7 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
-const fixture = path.join(root, "tests/_fixtures/_projects/nuxt2-module-build");
+const fixture = path.join(root, "tools/support/compat/nuxt/fixtures/nuxt2-module-build");
 const packageRoot = path.join(fixture, "node_modules/@vizejs/nuxt");
 const installedDist = path.join(packageRoot, "dist");
 const candidateDist = path.join(root, "npm/framework/nuxt/dist");
