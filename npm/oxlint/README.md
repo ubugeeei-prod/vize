@@ -6,7 +6,7 @@ This package lets Oxlint execute Patina through Vize's native binding while stil
 
 > [!IMPORTANT]
 > `oxlint-plugin-vize` is a terminal-first Vue SFC linting package.
-> Until upstream Vue support in Oxlint matures, prefer `oxlint-vize -f stylish` for day-to-day output and treat machine-readable / full-fidelity original-SFC reporting as best-effort.
+> Until upstream Vue support in Oxlint matures, use `oxlint-vize` for original SFC locations in terminal and JSON output. Direct `oxlint` still has JS plugin location limits.
 
 ## Main Features
 
@@ -15,7 +15,7 @@ This package lets Oxlint execute Patina through Vize's native binding while stil
 - Ships preset rule maps for JS/TS Oxlint configs: `configs.recommended`, `configs.happyPath`, `configs.essential`, `configs.ecosystem`, `configs.opinionated`, `configs.nuxt`, `configs.all`, and type-aware opt-in variants.
 - Ships `createVizeLintConfig()`, `flatConfigs`, and `defineVizeLintConfig()` for the Vite+ `lint` block in `vite.config.ts`, which is the only Oxlint configuration `vp lint` and `vp check` read.
 - Supports runtime settings through `settings.vize`, including `locale`, `preset`, and `helpLevel`.
-- Provides the `oxlint-vize` CLI wrapper, which runs Oxlint with a scriptless-SFC workaround and rewrites temporary paths back to the original `.vue` files.
+- Provides the `oxlint-vize` CLI wrapper, which runs Oxlint with a temporary location bridge for Vue and HTML files and reports their original paths and Patina locations.
 - Resolves Vize native bindings through platform-specific optional dependencies, so published installs do not need a separate `@vizejs/native` package.
 - Caches file contents and native rule results for the lifetime of the Oxlint process, reducing duplicate work when several Vize rules are enabled for the same file.
 
@@ -229,20 +229,18 @@ For day-to-day terminal runs, the recommended command today is:
 vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 ```
 
-`oxlint-vize` is a thin wrapper around `oxlint`. Until upstream JS plugin coverage improves, it appends a temporary `<script setup>` block only for scriptless `.vue` files so Oxlint's JS plugin pipeline still invokes Vize, then rewrites reported paths back to the original files.
-`stylish` is currently the most usable compromise for mixed Oxlint + Vize output because the Patina summary can inline the original SFC location even though Oxlint still anchors JS plugin diagnostics to the extracted script program.
+`oxlint-vize` appends a temporary `<script setup>` location bridge for Vue and HTML files, including files with existing scripts. This lets Patina report the original SFC line and column through Oxlint's JS plugin pipeline. The wrapper rewrites temporary paths back to the original files; `-f json` retains those original positions for machine-readable diagnostics.
 
 ## Limitations
 
-- Raw `oxlint` still misses files without `<script>` or `<script setup>`. The temporary `oxlint-vize` wrapper works around this by generating a transient script block for scriptless `.vue` files before invoking `oxlint`.
-- Oxlint JS plugins only accept ranges inside the extracted Vue script program. For template diagnostics, Vize now inlines the original SFC block and `line:column` into the summary, while the formatter anchor still points at the script block.
-- Formatter parity is not there yet. `stylish` is recommended for human-readable terminal output, while `json` and other machine-readable outputs are best treated as debugging aids for original template/style positions.
+- Raw `oxlint` still misses files without `<script>` or `<script setup>`. It also anchors template diagnostics to an extracted script instead of the original template location. Use `oxlint-vize` when linting Vue and HTML files.
+- The wrapper's temporary files are not copied back when Oxlint fix flags are used; it warns when `--fix` or `--fix-suggestions` is passed.
 - Oxlint core rules that need JavaScript bindings extracted from Vue templates, such as template-aware unused-variable checks, still depend on upstream work in [Oxc's Better Vue Support](https://github.com/oxc-project/oxc/issues/15761).
-- Vize's own SFC diagnostics can run through the plugin, but precise original-SFC ranges across all Oxlint formatters depend on the JS plugin reporting work tracked in [oxc-project/oxc#20465](https://github.com/oxc-project/oxc/issues/20465).
+- Direct `oxlint` original-SFC ranges depend on the JS plugin reporting work tracked in [oxc-project/oxc#20465](https://github.com/oxc-project/oxc/issues/20465).
 - Type-aware Vize rules are experimental and excluded from the default exported configs. Opt into them explicitly with `configs.recommendedWithTypeAware`, `configs.opinionatedWithTypeAware`, or `createVizeRuleConfig({ includeTypeAware: true, preset: ... })`, and use `settings.vize.typeAware: true` when you want the shared full-file pass to run them eagerly.
 
 ## Current expectations
 
 - This release is meant for terminal-first workflows.
-- It is not yet a promise of precise original-SFC spans across every Oxlint formatter.
-- Once Oxlint can preserve original Vue positions for JS plugins reliably, Vize can improve formatter parity and machine-readable reporting without relying on summary fallbacks.
+- The `oxlint-vize` wrapper reports original Patina positions in `stylish` and `json`; direct `oxlint` remains limited by its extracted-script JS plugin input.
+- Once Oxlint preserves original Vue positions for JS plugins, the temporary location bridge can be removed.

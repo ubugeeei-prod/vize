@@ -99,6 +99,7 @@ mod provider_reactivity;
 mod tree;
 mod tree_cycle;
 mod tree_diamond;
+mod tree_diamond_reactivity;
 mod tree_partial;
 mod tree_shared;
 mod tree_typed;

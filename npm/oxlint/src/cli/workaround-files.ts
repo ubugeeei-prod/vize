@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { isStandaloneHtmlFile } from "../file-kinds.js";
-import { hasScriptLikeBlock, appendScriptlessWorkaround } from "../workaround.js";
+import { appendScriptlessWorkaround } from "../workaround.js";
 
 export interface PreparedWorkaroundFiles {
   appendedArgs: string[];
@@ -27,10 +27,6 @@ export function prepareScriptlessWorkaroundFiles(
   for (const filename of filenames) {
     const source = fs.readFileSync(filename, "utf8");
     const isStandaloneHtml = isStandaloneHtmlFile(filename);
-    if (!isStandaloneHtml && hasScriptLikeBlock(source)) {
-      continue;
-    }
-
     const relativeFilename = path.relative(cwd, filename);
     if (tempDir == null) {
       const created = createWorkaroundTempDir(nodeModulesDir, tempRoot);

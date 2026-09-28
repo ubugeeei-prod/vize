@@ -175,6 +175,7 @@ class TypeCheckerConfig {
   tsgoPath: String? = null
   globalsFile: String? = null
   servers: Int? = null
+  lspRequestTimeoutMs: Int? = null
 }
 
 class FormatterConfig {

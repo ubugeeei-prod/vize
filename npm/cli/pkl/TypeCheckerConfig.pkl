@@ -58,4 +58,7 @@ class TypeCheckerConfig {
 
   /// Reserved Corsa server count. The direct project-session runner currently supports only 1.
   servers: Int? = null
+
+  /// Hard bound in milliseconds for each editor Corsa request (default 60000).
+  lspRequestTimeoutMs: Int? = null
 }

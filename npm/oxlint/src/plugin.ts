@@ -26,6 +26,8 @@ import type {
 } from "./model.js";
 import { formatBlockLabel, getDiagnosticBlock } from "./sfc-blocks.js";
 import { mapToScriptLoc } from "./script-map.js";
+import { isLocationBridgeProgram } from "./workaround.js";
+import { isScriptLikeFile } from "./file-kinds.js";
 import { getActivePreset, getVizeSettings, isIncrementalPreset, isPatinaFile } from "./settings.js";
 
 function createOxlintDiagnostic(
@@ -57,7 +59,10 @@ function shouldReportForCurrentProgram(
   state: FileState,
   scriptMap: SingleScriptMap | null,
 ): boolean {
-  if (state.usesOriginalLocations || scriptMap == null) {
+  if (state.usesOriginalLocations) {
+    return isScriptLikeFile(state.filename) || isLocationBridgeProgram(state.extractedScript);
+  }
+  if (scriptMap == null) {
     return true;
   }
 

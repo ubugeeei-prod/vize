@@ -1,5 +1,4 @@
 /// Generates secondary JSON Schema compatibility output from the primary Pkl definitions.
-/// Usage: pkl eval -f json pkl/jsonschema/generate.pkl
 module vize.jsonschema.generate
 import "@json_schema/JsonSchema.pkl"
 import "ConfigArtifactDefinitions.pkl"
@@ -185,6 +184,7 @@ local typeCheckerConfigDef: JsonSchema = new JsonSchema {
       type = "integer"
       description = "Reserved Corsa server count. The direct project-session runner currently supports only 1."
     }
+    ["lspRequestTimeoutMs"] = new JsonSchema { type = "integer"; description = "Hard bound in milliseconds for each editor Corsa request. Defaults to 60000; use a larger value for large cold projects."; minimum = 1 }
   }
   additionalProperties = false
 }
