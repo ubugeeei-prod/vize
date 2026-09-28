@@ -136,13 +136,14 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/typescript.r
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/typescript.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/typescript.rs	5	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_template.rs	6	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_template.rs	23	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_template.rs	23	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_template.rs	23	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_template/extraction.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_template/section_offsets_tests.rs	53	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_template/vapor.rs	8	l0	L0	stage	vize_l0	preferred	6
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile.rs	60	l0	L0	stage	vize_carton	compat	3
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile.rs	60	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_template/vapor.rs	8	l0	L0	stage	vize_l0	preferred	7
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile.rs	64	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile.rs	64	l0	L0	stage	vize_carton	compat	3
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile.rs	64	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/bindings.rs	6	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/bindings.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	3
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/bindings.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
@@ -150,6 +151,7 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/bindings.rs	6	raw_o
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/bindings.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/diagnostics.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/empty_component.rs	3	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/entry.rs	9	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/entry/pug.rs	28	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/entry/pug.rs	28	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/entry/root_match.rs	14	l0	L0	stage	vize_l0	preferred	1
@@ -166,7 +168,10 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile/normal_script.rs	
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile/normal_script.rs	58	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile/normal_script.rs	58	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/output_module.rs	6	l0	L0	stage	vize_carton	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile/stage_capture_tests.rs	7	l0	L0	stage	vize_l0	preferred	3
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/stage_capture.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/styles.rs	8	l0	L0	stage	vize_carton	compat	3
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/template_only.rs	7	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile/template_only.rs	7	l0	L0	stage	vize_carton	compat	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile/tests.rs	13	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile/tests/define_props_regressions.rs	13	l0	L0	stage	vize_carton	compat	2
