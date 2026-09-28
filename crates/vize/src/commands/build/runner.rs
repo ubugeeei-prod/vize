@@ -13,6 +13,7 @@ mod fallback;
 mod output;
 mod profile_facts;
 mod settings;
+mod stats_run;
 
 use std::{
     sync::{Mutex, atomic::Ordering},
@@ -32,14 +33,13 @@ use super::{
     config::{CompileError, CompileOutput, CompileStats, ErrorPhase, FileProfile},
 };
 
-use cache::StatsCompileCache;
+use capture::compile_planned_file;
 use collect::{CollectedFiles, collect_files_or_exit};
-use compile::compile_file_with_profile;
-use compile_stats::compile_file_stats_with_cache;
 use output::{
     CompiledBuildOutput, PlannedInput, WrittenFormat, plan_inputs, preflight_outputs, write_outputs,
 };
 use settings::{CompileFileSettings, load_build_config};
+use stats_run::StatsRun;
 
 /// Main entry point for the build command.
 pub(crate) fn run(args: BuildArgs) {
@@ -132,69 +132,18 @@ pub(crate) fn run(args: BuildArgs) {
     let compile_settings = CompileFileSettings::resolve(&args, build_config);
 
     let results: Vec<_> = if stats_only {
-        if args.dump_dir.is_some() {
-            // Capture requires the exact compile for each file. Reusing a
-            // content-addressed stats entry would invent a run that did not
-            // happen for the second source path.
-            planned_inputs.par_iter().for_each(|input| {
-                match compile_planned_file(input, &compile_settings, &stats) {
-                    Ok((output, profile)) => {
-                        stats.success.fetch_add(1, Ordering::Relaxed);
-                        stats
-                            .output_bytes
-                            .fetch_add(output.code.len(), Ordering::Relaxed);
-                        if profile.is_slow(slow_threshold)
-                            && let Ok(mut slow) = slow_files.lock()
-                        {
-                            slow.push(profile.clone());
-                        }
-                        if args.profile
-                            && let Ok(mut p) = profiles.lock()
-                        {
-                            p.push(profile);
-                        }
-                    }
-                    Err(err) => {
-                        stats.failed.fetch_add(1, Ordering::Relaxed);
-                        if let Ok(mut errs) = errors.lock() {
-                            errs.push(err);
-                        }
-                    }
-                }
-            });
-        } else {
-            let compile_cache = StatsCompileCache::default();
-            files.par_iter().for_each(|path| {
-                match compile_file_stats_with_cache(path, &compile_settings, &stats, &compile_cache)
-                {
-                    Ok((output_bytes, profile)) => {
-                        stats.success.fetch_add(1, Ordering::Relaxed);
-                        stats
-                            .output_bytes
-                            .fetch_add(output_bytes, Ordering::Relaxed);
-
-                        if profile.is_slow(slow_threshold)
-                            && let Ok(mut slow) = slow_files.lock()
-                        {
-                            slow.push(profile.clone());
-                        }
-
-                        if args.profile
-                            && let Ok(mut p) = profiles.lock()
-                        {
-                            p.push(profile);
-                        }
-                    }
-                    Err(err) => {
-                        stats.failed.fetch_add(1, Ordering::Relaxed);
-
-                        if let Ok(mut errs) = errors.lock() {
-                            errs.push(err);
-                        }
-                    }
-                }
-            });
+        StatsRun {
+            planned_inputs: &planned_inputs,
+            files: &files,
+            settings: &compile_settings,
+            stats: &stats,
+            slow_threshold,
+            slow_files: &slow_files,
+            profiles: &profiles,
+            errors: &errors,
+            profile: args.profile,
         }
+        .run();
         Vec::new()
     } else {
         planned_inputs
@@ -448,31 +397,4 @@ pub(crate) fn run(args: BuildArgs) {
     if args.declaration {
         declarations::emit(&args, &planned_inputs);
     }
-}
-
-fn compile_planned_file(
-    input: &PlannedInput,
-    settings: &CompileFileSettings,
-    stats: &CompileStats,
-) -> Result<(CompileOutput, FileProfile), CompileError> {
-    let (output, profile, capture) = compile_file_with_profile(&input.source, settings, stats)?;
-    if let Some(dir) = settings.davinci.dump_dir.as_deref() {
-        let capture = capture.ok_or_else(|| CompileError {
-            path: input.source.clone(),
-            error: cstr!("--dump-dir: observed compile did not return a stage capture"),
-            phase: ErrorPhase::Dump,
-        })?;
-        capture::write(
-            dir,
-            &input.relative_source,
-            capture,
-            settings.davinci.dump_after_change,
-        )
-        .map_err(|error| CompileError {
-            path: input.source.clone(),
-            error,
-            phase: ErrorPhase::Dump,
-        })?;
-    }
-    Ok((output, profile))
 }

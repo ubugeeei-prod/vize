@@ -39,10 +39,9 @@ use vize_atelier_sfc::{
     compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options, parse_sfc,
 };
 use vize_l0::cstr;
-use vize_l0::dump::capture::StageCapture;
 use vize_l0::profile;
 use vize_l0::profiler::global_profiler;
-use vize_l0::{Span, String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 use crate::commands::build::ScriptExtension;
 use crate::commands::build::config::{
@@ -50,16 +49,9 @@ use crate::commands::build::config::{
 };
 use crate::commands::davinci_ice;
 
+use super::capture::BuildCapture;
 use super::profile_facts::{self, FileProfileFacts, StatsCacheStatus};
 use super::settings::CompileFileSettings;
-
-/// Metadata from the same parsed descriptor as the emitted build output.
-pub(super) struct BuildCapture {
-    pub(super) stages: StageCapture,
-    pub(super) authored_syntax: String,
-    pub(super) compiled_syntax: String,
-    pub(super) template_span: Option<Span>,
-}
 
 /// The ICE-guarded per-file compile (P2-13, charter #30): an injected panic
 /// or a panic caught around the real compile fails **this file** - with a
@@ -280,29 +272,9 @@ fn compile_file_inner(
                 experimental,
             )
             .map(|(result, stages)| {
-                let template = descriptor.template.as_ref();
-                let authored_syntax = template
-                    .and_then(|template| template.lang.as_deref())
-                    .unwrap_or("html");
-                let compiled_syntax = if matches!(authored_syntax, "pug" | "jade") {
-                    "html"
-                } else {
-                    authored_syntax
-                };
-                let template_span = template.and_then(|template| {
-                    Some(Span::new(
-                        template.loc.start.try_into().ok()?,
-                        template.loc.end.try_into().ok()?,
-                    ))
-                });
                 (
                     result,
-                    Some(BuildCapture {
-                        stages,
-                        authored_syntax: String::from(authored_syntax),
-                        compiled_syntax: String::from(compiled_syntax),
-                        template_span,
-                    }),
+                    Some(BuildCapture::from_descriptor(stages, &descriptor)),
                 )
             })
         } else {

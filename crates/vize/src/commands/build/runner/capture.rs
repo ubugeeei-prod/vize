@@ -2,13 +2,78 @@
 
 use std::path::Path;
 
+use vize_atelier_sfc::SfcDescriptor;
 use vize_curator::inspector::{ProductCaptureSource, product_capture_value};
-use vize_l0::String;
 use vize_l0::cstr;
-use vize_l0::dump::capture::CaptureOutcome;
+use vize_l0::dump::capture::{CaptureOutcome, StageCapture};
 use vize_l0::hash::hash_str;
+use vize_l0::{Span, String};
 
-use super::compile::BuildCapture;
+use super::super::config::{CompileError, CompileOutput, CompileStats, ErrorPhase, FileProfile};
+use super::compile::compile_file_with_profile;
+use super::output::PlannedInput;
+use super::settings::CompileFileSettings;
+
+/// Metadata from the same parsed descriptor as the emitted build output.
+pub(super) struct BuildCapture {
+    pub(super) stages: StageCapture,
+    pub(super) authored_syntax: String,
+    pub(super) compiled_syntax: String,
+    pub(super) template_span: Option<Span>,
+}
+
+impl BuildCapture {
+    pub(super) fn from_descriptor(stages: StageCapture, descriptor: &SfcDescriptor<'_>) -> Self {
+        let template = descriptor.template.as_ref();
+        let authored_syntax = template
+            .and_then(|template| template.lang.as_deref())
+            .unwrap_or("html");
+        let compiled_syntax = if matches!(authored_syntax, "pug" | "jade") {
+            "html"
+        } else {
+            authored_syntax
+        };
+        let template_span = template.and_then(|template| {
+            Some(Span::new(
+                template.loc.start.try_into().ok()?,
+                template.loc.end.try_into().ok()?,
+            ))
+        });
+        Self {
+            stages,
+            authored_syntax: String::from(authored_syntax),
+            compiled_syntax: String::from(compiled_syntax),
+            template_span,
+        }
+    }
+}
+
+pub(super) fn compile_planned_file(
+    input: &PlannedInput,
+    settings: &CompileFileSettings,
+    stats: &CompileStats,
+) -> Result<(CompileOutput, FileProfile), CompileError> {
+    let (output, profile, capture) = compile_file_with_profile(&input.source, settings, stats)?;
+    if let Some(dir) = settings.davinci.dump_dir.as_deref() {
+        let capture = capture.ok_or_else(|| CompileError {
+            path: input.source.clone(),
+            error: cstr!("--dump-dir: observed compile did not return a stage capture"),
+            phase: ErrorPhase::Dump,
+        })?;
+        write(
+            dir,
+            &input.relative_source,
+            capture,
+            settings.davinci.dump_after_change,
+        )
+        .map_err(|error| CompileError {
+            path: input.source.clone(),
+            error,
+            phase: ErrorPhase::Dump,
+        })?;
+    }
+    Ok((output, profile))
+}
 
 pub(super) fn write(
     root: &Path,
