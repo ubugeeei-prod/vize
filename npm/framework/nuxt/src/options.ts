@@ -1,12 +1,8 @@
 import type { VizeNuxtComposablesOptions, VizeNuxtUiOptions } from "./libraries";
 import type { MuseaOptions } from "@vizejs/vite-plugin-musea";
-import type {
-  VizeNuxtCompilerCompatibilityOptions,
-  VizeNuxtCompilerOptions,
-  VizeNuxtVueVersion,
-} from "./compiler-options.ts";
+import type { VizeNuxtCompilerOptions, VizeNuxtVueVersion } from "./compiler-options.ts";
 import type { VizeNuxtLintCheckerOptions, VizeNuxtLintOptions } from "./lint/options.ts";
-import { NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE, buildNuxtCompilerOptions } from "./utils.ts";
+import { NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE } from "./utils.ts";
 
 export type {
   VizeNuxtCompilerCompatibilityOptions,
@@ -15,6 +11,10 @@ export type {
 } from "./compiler-options.ts";
 export type { VizeNuxtLintCheckerOptions, VizeNuxtLintOptions } from "./lint/options.ts";
 export { NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE };
+export {
+  resolveNuxtCompilerOptions,
+  unsupportedNuxtVueCompilerOptions,
+} from "./compiler-option-bridge.ts";
 
 export type VizeNuxtMajorVersion = 2 | 3 | 4;
 
@@ -241,67 +241,6 @@ export const DEFAULT_NUXT_UNOCSS_OPTIONS: ResolvedVizeNuxtUnoCssOptions = {
 export const DEFAULT_NUXT_DEV_OPTIONS: Required<VizeNuxtDevOptions> = {
   stylesheetLinks: true,
 };
-
-function isLegacyVueVersion(version: VizeNuxtVueVersion | undefined): boolean {
-  return (
-    version === 0.11 || version === 1 || version === 2 || version === "2.7" || version === "legacy"
-  );
-}
-
-function normalizeNuxtCompilerCompatibilityOptions(
-  compatibility: VizeNuxtCompatibilityOptions,
-): VizeNuxtCompilerCompatibilityOptions {
-  const normalized: VizeNuxtCompilerCompatibilityOptions = {};
-  const legacyHost =
-    isLegacyVueVersion(compatibility.vueVersion) || compatibility.nuxtVersion === 2;
-
-  if (compatibility.vueVersion !== undefined) {
-    normalized.vueVersion = compatibility.vueVersion;
-  }
-  if (compatibility.hostCompiler !== undefined || legacyHost) {
-    normalized.hostCompiler = compatibility.hostCompiler ?? true;
-  }
-  if (compatibility.scriptSetupInStandalone !== undefined) {
-    normalized.scriptSetupInStandalone = compatibility.scriptSetupInStandalone;
-  }
-  if (compatibility.optionsApiVapor !== undefined) {
-    normalized.optionsApiVapor = compatibility.optionsApiVapor;
-  }
-  if (compatibility.nuxtVersion !== undefined) {
-    normalized.nuxtVersion = compatibility.nuxtVersion;
-  }
-  if (compatibility.webpackVersion !== undefined) {
-    normalized.webpackVersion = compatibility.webpackVersion;
-  }
-
-  return normalized;
-}
-
-export function resolveNuxtCompilerOptions(
-  rootDir: string,
-  baseURL: string | undefined,
-  buildAssetsDir: string | undefined,
-  compiler: VizeNuxtOptions["compiler"],
-  compatibility: VizeNuxtCompatibilityOptions & { supportsViteCompiler?: boolean } = {},
-): VizeNuxtCompilerOptions | false {
-  if (compiler === false) {
-    return false;
-  }
-
-  if (compatibility.supportsViteCompiler === false && compatibility.forceViteCompiler !== true) {
-    return false;
-  }
-
-  const compatibilityOptions = normalizeNuxtCompilerCompatibilityOptions(compatibility);
-  const hasCompatibilityOptions = Object.keys(compatibilityOptions).length > 0;
-  const overrides = typeof compiler === "object" && compiler != null ? compiler : {};
-  return buildNuxtCompilerOptions(rootDir, baseURL, buildAssetsDir, {
-    vueVersion: compatibility.vueVersion,
-    ...(hasCompatibilityOptions ? { compatibility: compatibilityOptions } : {}),
-    mode: compatibility.scriptSetupInStandalone === true ? "function" : undefined,
-    ...overrides,
-  });
-}
 
 export function resolveNuxtBridgeOptions(
   bridge: VizeNuxtOptions["bridge"],

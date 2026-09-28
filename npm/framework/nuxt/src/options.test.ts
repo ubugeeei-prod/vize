@@ -7,7 +7,61 @@ import {
   resolveNuxtDevOptions,
   resolveNuxtMuseaOptions,
   resolveNuxtUnoCssOptions,
+  unsupportedNuxtVueCompilerOptions,
 } from "./options.ts";
+
+assert.deepEqual(
+  resolveNuxtCompilerOptions(
+    "/repo/app",
+    "/",
+    "/_nuxt/",
+    true,
+    {},
+    {
+      whitespace: "preserve",
+    },
+  ),
+  {
+    devUrlBase: "/_nuxt/",
+    exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
+    handleNodeModulesVue: true,
+    root: "/repo/app",
+    scanPatterns: [],
+    whitespace: "preserve",
+  },
+  "Nuxt Vue whitespace settings should reach Vize",
+);
+
+assert.deepEqual(
+  resolveNuxtCompilerOptions(
+    "/repo/app",
+    "/",
+    "/_nuxt/",
+    { compatibility: { hostCompiler: false } },
+    {},
+    { whitespace: "preserve", isCustomElement: (tag: string) => tag.startsWith("my-") },
+  ),
+  {
+    compatibility: { hostCompiler: true },
+    devUrlBase: "/_nuxt/",
+    exclude: NUXT_OG_IMAGE_RENDERER_SFC_EXCLUDE,
+    handleNodeModulesVue: true,
+    root: "/repo/app",
+    scanPatterns: [],
+    whitespace: "preserve",
+  },
+  "An arbitrary custom-element predicate should keep Nuxt's Vue compiler active",
+);
+
+assert.deepEqual(
+  unsupportedNuxtVueCompilerOptions({
+    whitespace: "preserve",
+    isCustomElement: () => true,
+    nodeTransforms: [],
+    comments: undefined,
+  }),
+  ["isCustomElement", "nodeTransforms"],
+);
 
 assert.deepEqual(
   resolveNuxtCompilerOptions("/repo/app", "/docs/", "_assets", true),

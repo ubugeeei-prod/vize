@@ -17,6 +17,7 @@ import {
   resolveNuxtDevOptions,
   resolveNuxtMuseaOptions,
   resolveNuxtUnoCssOptions,
+  unsupportedNuxtVueCompilerOptions,
 } from "./options";
 import { createNuxtModuleResolver } from "./resolver";
 import { setupVizeLibraries } from "./libraries";
@@ -31,15 +32,8 @@ import {
   stabilizeNuxtInjectedKeysForVizeVirtualModule,
 } from "./utils";
 import { appendOriginalVueSourceForUnoCss } from "./unocss";
-import { externalizeVueRuntimeForNuxtSsr } from "./ssr-runtime";
+import { dedupeVueRuntimePackages, externalizeVueRuntimeForNuxtSsr } from "./ssr-runtime";
 const VIZE_NUXT_AUTO_IMPORT_PATCHED = "__vizeNuxtAutoImportPatched";
-const VUE_RUNTIME_DEDUPE = [
-  "vue",
-  "@vue/reactivity",
-  "@vue/runtime-core",
-  "@vue/runtime-dom",
-  "@vue/shared",
-];
 type VitePluginWithTransform = {
   name?: string;
   transform?: unknown;
@@ -68,6 +62,7 @@ type NuxtWithBuilderOptions = {
       base?: string;
     };
     vite?: { plugins?: unknown[]; resolve?: { dedupe?: string[] } };
+    vue?: { compilerOptions?: Record<string, unknown> };
     nitro?: { virtual?: Record<string, string>; publicAssets?: unknown[] };
     vize?: Partial<VizeNuxtOptions>;
     _requiredModules?: Record<string, boolean>;
@@ -167,15 +162,6 @@ function shouldUseVizeCompiler(
     compilerOptions.compatibility?.hostCompiler !== true &&
     (compilerOptions.vueVersion ?? 3) === 3
   );
-}
-
-function dedupeVueRuntimePackages(vite: NonNullable<NuxtWithBuilderOptions["options"]["vite"]>) {
-  vite.resolve ||= {};
-  const dedupe = new Set(vite.resolve.dedupe ?? []);
-  for (const packageName of VUE_RUNTIME_DEDUPE) {
-    dedupe.add(packageName);
-  }
-  vite.resolve.dedupe = [...dedupe];
 }
 
 function isViteSsrTransform(args: unknown[]): boolean {
@@ -298,7 +284,16 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
       supportsViteCompiler,
       vueVersion,
     },
+    nuxt.options.vue?.compilerOptions,
   );
+  if (compilerOptions !== false && compilerOptions.compatibility?.hostCompiler === true) {
+    const unsupported = unsupportedNuxtVueCompilerOptions(nuxt.options.vue?.compilerOptions);
+    if (unsupported.length > 0) {
+      console.warn(
+        `@vizejs/nuxt: vue.compilerOptions.${unsupported.join(", ")} cannot be forwarded to the native compiler; keeping Nuxt's Vue compiler.`,
+      );
+    }
+  }
   await setupLintInspector(options.lint, nuxt, compilerOptions, lintGeneration, nuxt.options.dev);
   const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
 
