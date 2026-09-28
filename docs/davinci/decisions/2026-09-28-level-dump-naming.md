@@ -31,5 +31,16 @@ reads its rule name once and pre-sizes the content-model fact maps.
 
 Dropped from the stack: one-shot rename/replay scripts under
 `tools/support/levels/` and their tests, and the per-slice evidence records.
-Legacy products stay byte-exact. Remaining #6832 work: formal/Lean namespaces,
-shared production capture for CLI and playground.
+Legacy products stay byte-exact. The proposed formal/Lean namespace move was
+closed in favor of Kani on production Rust (see the central decision record).
+Remaining #6832 work is shared production capture for CLI and playground.
+
+## One native stage capture
+
+The stage ladder now collects pages, optimization remarks, steps and walks in
+one L1 → L2 → L3 execution. Its L2 remark observer shares the executed pass
+plan with the page collector; `analyzeSfc` consumes those remarks instead of
+running a second L2 transform solely for the feed. This keeps the existing
+feed schema and the inline HTML remark filter. The CLI all-level export and
+integration with product compilation remain separate work; this capture does
+not establish that legacy product compilation runs through the levels.

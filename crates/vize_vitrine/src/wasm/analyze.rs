@@ -226,21 +226,20 @@ pub(super) fn analyze_sfc_json_with_clock(
     // pages, the L3 graph/partition/value pages, and (P3-13) the inline HTML
     // template's optimization remarks in the pages' byte frame - and the same
     // run's step timings as a P0-11 profile document (C-3), from `vize_curator`.
-    let spolvero_remarks = descriptor
+    let include_spolvero_remarks = descriptor
         .template
         .as_ref()
         .filter(|template| {
             template.src.is_none() && template.lang.as_deref().is_none_or(|lang| lang == "html")
         })
-        .map(|template| vize_curator::inspector::template_remarks(filename, &template.content))
-        .unwrap_or_default();
+        .is_some();
     let (spolvero, spolvero_profile) = stages::spolvero_members(
         filename,
         descriptor
             .template
             .as_ref()
             .map(|template| template.content.as_ref()),
-        spolvero_remarks,
+        include_spolvero_remarks,
         clock,
     );
 
