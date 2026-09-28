@@ -100,6 +100,9 @@ impl VirtualProject {
         mut package_resolver: Option<PackageResolver<'_>>,
     ) -> CorsaResult<()> {
         let perf_started = std::time::Instant::now();
+        let mut perf_reference_count = 0usize;
+        let mut perf_node_module_references = 0usize;
+        let mut perf_registered = 0usize;
         let aliases = self.dependency_alias_map();
         let alias_prefixes: Vec<CompactString> = aliases
             .iter()
@@ -183,6 +186,9 @@ impl VirtualProject {
                 .collect::<Vec<_>>();
 
             for (specifier, mode, is_reference) in specifiers {
+                if is_reference {
+                    perf_reference_count += 1;
+                }
                 let native_target =
                     resolve_dependency(&specifier, &importer_dir, &self.project_root, &aliases);
                 let Some(target) = native_target else {
@@ -202,6 +208,12 @@ impl VirtualProject {
                 // package imports still use the resolver's package shadow.
                 if inside_node_modules(&key) && !package_local && !is_reference {
                     continue;
+                }
+                if is_reference && inside_node_modules(&key) {
+                    perf_node_module_references += 1;
+                    if self.project_root.to_string_lossy().contains("misskey") {
+                        eprintln!("canon-perf reference target={}", key.display());
+                    }
                 }
                 // TypeScript follows imports from declarations itself. Mirroring
                 // their targets here can load the same ambient module twice.
@@ -232,6 +244,7 @@ impl VirtualProject {
                     None => self.register_path(&key),
                 };
                 if registered.is_ok() {
+                    perf_registered += 1;
                     queue.push(key);
                 }
             }
@@ -240,8 +253,8 @@ impl VirtualProject {
         }
         if self.project_root.to_string_lossy().contains("misskey") {
             eprintln!(
-                "canon-perf dependency_scan={}ms",
-                perf_started.elapsed().as_millis()
+                "canon-perf dependency_scan={}ms references={perf_reference_count} node_module_references={perf_node_module_references} registered={perf_registered}",
+                perf_started.elapsed().as_millis(),
             );
         }
         Ok(())
