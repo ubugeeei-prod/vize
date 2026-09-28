@@ -228,6 +228,8 @@ async function compileSfcVariant(
   source: string,
   options: CompilerOptions,
   target: SfcSecondaryCodeOutputTarget,
+  onSfcResult?: (target: "ssr" | "vapor", result: SfcCompileResult) => void,
+  assembledModule = false,
 ): Promise<CodeOutputVariant> {
   try {
     const outputMode = target === "ssr" ? "vdom" : "vapor";
@@ -236,7 +238,8 @@ async function compileSfcVariant(
       ssr: target === "ssr",
       outputMode,
     });
-    return await buildSfcTemplateVariant(result);
+    onSfcResult?.(target, result);
+    return await (assembledModule ? buildSfcScriptVariant(result) : buildSfcTemplateVariant(result));
   } catch (error) {
     return {
       ...createEmptyCodeOutputVariant(),
@@ -252,6 +255,10 @@ interface CompileCodeOutputsParams {
   options: CompilerOptions;
   baseOutput: CompileResult | null;
   baseSfcResult: SfcCompileResult | null;
+  /** Observe each already compiled SFC result without starting another run. */
+  onSfcResult?: (target: "dom" | "ssr" | "vapor", result: SfcCompileResult) => void;
+  /** Stage view shows the module assembled by the captured adapter call. */
+  assembledModule?: boolean;
 }
 
 export async function compileCodeOutputs({
@@ -261,17 +268,20 @@ export async function compileCodeOutputs({
   options,
   baseOutput,
   baseSfcResult,
+  onSfcResult,
+  assembledModule = false,
 }: CompileCodeOutputsParams): Promise<CodeOutputs> {
   const outputs = createEmptyCodeOutputs();
 
   if (inputMode === "sfc") {
     if (baseSfcResult) {
+      onSfcResult?.("dom", baseSfcResult);
       outputs.dom = await buildSfcScriptVariant(baseSfcResult);
     }
 
     const [ssr, vapor] = await Promise.all([
-      compileSfcVariant(compiler, source, options, "ssr"),
-      compileSfcVariant(compiler, source, options, "vapor"),
+      compileSfcVariant(compiler, source, options, "ssr", onSfcResult, assembledModule),
+      compileSfcVariant(compiler, source, options, "vapor", onSfcResult, assembledModule),
     ]);
 
     outputs.ssr = ssr;

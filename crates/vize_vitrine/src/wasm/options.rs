@@ -48,6 +48,7 @@ define_compiler_option_inventory! {
     RuntimeModuleName => ("runtimeModuleName", "string"),
     RuntimeGlobalName => ("runtimeGlobalName", "string"),
     ScriptExt => ("scriptExt", r#""preserve" | "downcompile""#),
+    CaptureStages => ("captureStages", "boolean"),
     BindingMetadata => ("bindingMetadata", "BindingMetadata"),
     VueParserQuirks => ("vueParserQuirks", "boolean"),
 }
@@ -55,6 +56,7 @@ define_compiler_option_inventory! {
 pub(crate) struct ParsedCompilerOptions {
     pub(crate) options: CompilerOptions,
     pub(crate) binding_metadata: Option<vize_atelier_core::options::BindingMetadata>,
+    pub(crate) capture_stages: bool,
 }
 
 pub(super) fn resolve_template_syntax_compat(
@@ -115,6 +117,7 @@ pub(crate) fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions
     let template_syntax = resolve_template_syntax_compat(template_syntax, vue_parser_quirks);
 
     ParsedCompilerOptions {
+        capture_stages: get_bool(CompilerOption::CaptureStages).unwrap_or(false),
         options: CompilerOptions {
             mode: get_string(CompilerOption::Mode),
             whitespace: get_string(CompilerOption::Whitespace),

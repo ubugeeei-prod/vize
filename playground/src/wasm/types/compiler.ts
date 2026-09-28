@@ -13,6 +13,7 @@ export interface CompilerOptions {
   isTs?: boolean;
   // Script extension: 'preserve' keeps TypeScript, 'downcompile' (default) transpiles to JS
   scriptExt?: "preserve" | "downcompile";
+  captureStages?: boolean;
   customRenderer?: boolean;
   templateSyntax?: "standard" | "strict" | "quirks";
   experimentalInTagComments?: boolean;
@@ -68,6 +69,7 @@ export interface SfcCompileResult {
   errors?: string[];
   warnings?: string[];
   bindingMetadata?: Record<string, string | number>;
+  stageCapture?: unknown;
 }
 
 export interface SfcBindingMetadata {

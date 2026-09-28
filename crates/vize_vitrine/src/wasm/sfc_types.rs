@@ -22,6 +22,8 @@ pub struct SfcWasmResult {
     pub binding_metadata: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Vec::is_empty", rename = "macroArtifacts")]
     pub macro_artifacts: Vec<SfcMacroArtifactWasm>,
+    #[serde(skip_serializing_if = "Option::is_none", rename = "stageCapture")]
+    pub stage_capture: Option<serde_json::Value>,
 }
 
 /// Script compilation result
