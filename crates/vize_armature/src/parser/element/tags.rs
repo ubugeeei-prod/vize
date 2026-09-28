@@ -41,7 +41,8 @@ impl<'a> Parser<'a> {
             ns,
             is_self_closing: false,
             props: vize_l0::Vec::new_in(&self.allocator),
-            has_directive: false,
+            directive_names: [None; 4],
+            directive_name_count: 0,
             seen_directive_names: None,
         });
     }

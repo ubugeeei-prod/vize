@@ -137,7 +137,8 @@ pub(super) struct CurrentElement<'a> {
     pub(super) ns: Namespace,
     pub(super) is_self_closing: bool,
     pub(super) props: Vec<'a, PropNode<'a>>,
-    pub(super) has_directive: bool,
+    pub(super) directive_names: [Option<&'a str>; 4],
+    pub(super) directive_name_count: usize,
     pub(super) seen_directive_names: Option<FxHashSet<&'a str>>,
 }
 

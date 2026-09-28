@@ -254,11 +254,16 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        if self
-            .current_element
-            .as_ref()
-            .is_some_and(|current| current.has_directive)
-        {
+        let first_directive = self.current_element.as_mut().is_some_and(|current| {
+            if current.directive_name_count == 0 {
+                current.directive_names[0] = Some(dir.raw_name);
+                current.directive_name_count = 1;
+                true
+            } else {
+                false
+            }
+        });
+        if !first_directive {
             self.report_duplicate_directive(&dir);
         }
 
@@ -340,7 +345,6 @@ impl<'a> Parser<'a> {
         if let Some(ref mut current) = self.current_element {
             let boxed = Box::new_in(dir_node, &self.allocator);
             current.props.push(PropNode::Directive(boxed));
-            current.has_directive = true;
         }
     }
 }
