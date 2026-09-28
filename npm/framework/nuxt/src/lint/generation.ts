@@ -13,6 +13,7 @@ import {
 } from "@vizejs/nuxt-lint-config";
 
 import type { VizeNuxtLintOptions } from "../options.ts";
+import { getDetectedNuxtMajor } from "../builder.ts";
 import { setupNuxtLintConfigAddons, type NuxtLintConfigAddonNuxt } from "./addons.ts";
 import { renderNuxtOxlintConfig } from "./emitter.ts";
 import { toNuxtLintProjectState, type NuxtLintSourceOptions } from "./nuxt-state.ts";
@@ -227,6 +228,11 @@ export async function setupNuxtLintConfigGeneration(
 
   await regenerate();
   nuxt.hook("builder:generateApp", regenerate);
+  if (getDetectedNuxtMajor(nuxt) === 2) {
+    // Nuxt 2 clears its build directory after module setup. Regenerate once
+    // template generation begins so the root loader never points to ENOENT.
+    nuxt.hook("build:templates", regenerate);
+  }
   if (autoInit) await initRootOxlintConfig(nuxtRoot, configFile);
 
   return { configFile, root: planRoot, regenerate, resolvePlan };

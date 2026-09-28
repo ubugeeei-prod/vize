@@ -8,7 +8,7 @@ import { patchNuxtClientManifestCloseBundlePlugin } from "./client-manifest-brid
 import { patchNuxtHostVuePluginForCompilerExcludes } from "./host-vue-bridge";
 import { patchNuxtKeyedFunctionsPlugin, type ViteTransformResult } from "./keyed-functions-bridge";
 import "./schema";
-import { isViteNuxtBuilder } from "./builder";
+import { getDetectedNuxtMajor, isViteNuxtBuilder } from "./builder";
 import * as bridgeFastPath from "./bridge-fast-path";
 import type { VizeNuxtCompilerOptions, VizeNuxtOptions } from "./options";
 import {
@@ -149,19 +149,6 @@ function registerNuxt2CompatibilityHooks(nuxt: NuxtWithBuilderOptions): void {
   nuxt.hook("close", () => {});
   nuxt.hook("builder:prepared", () => {});
   nuxt.hook("build:templates", () => {});
-}
-
-function getDetectedNuxtMajor(nuxt: unknown): 2 | 3 | 4 | null {
-  const nuxtLike = nuxt as Partial<NuxtWithBuilderOptions> | undefined;
-  const version =
-    nuxtLike?._version ??
-    nuxtLike?.version ??
-    (typeof nuxtLike?.options?._nuxtVersion === "string" ? nuxtLike.options._nuxtVersion : null);
-  if (!version) {
-    return null;
-  }
-  const major = Number.parseInt(version.split(".")[0] ?? "", 10);
-  return major === 2 || major === 3 || major === 4 ? major : null;
 }
 
 function hasNuxtViteCompilerSupport(nuxt: NuxtWithBuilderOptions): boolean {
