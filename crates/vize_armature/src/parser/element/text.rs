@@ -187,7 +187,7 @@ impl<'a> Parser<'a> {
         let inner_loc = self.create_loc(trimmed_start, trimmed_end);
 
         // Create expression node
-        let expression_content = if self.has_ampersand && content.as_bytes().contains(&b'&') {
+        let expression_content = if content.as_bytes().contains(&b'&') {
             self.decode_interpolation_entities(content)
         } else {
             content
