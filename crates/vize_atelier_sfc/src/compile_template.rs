@@ -276,7 +276,11 @@ pub(crate) fn recoverable_template_warnings(
 ) -> std::vec::Vec<SfcError> {
     errors
         .iter()
-        .filter(|error| error.is_recoverable())
+        .filter(|error| {
+            error.is_recoverable()
+                && error.message
+                    != "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag."
+        })
         .cloned()
         .map(Into::into)
         .collect()

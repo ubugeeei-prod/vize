@@ -102,7 +102,7 @@ function onClick() {
 }
 
 #[test]
-fn test_compile_sfc_standard_warns_for_invalid_html_self_closing() {
+fn test_compile_sfc_standard_accepts_html_self_closing() {
     let source = r#"
 <template>
   <div />
@@ -113,11 +113,8 @@ fn test_compile_sfc_standard_warns_for_invalid_html_self_closing() {
     let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
 
     assert!(
-        result
-            .warnings
-            .iter()
-            .any(|warning| warning.message.contains("Invalid self-closing syntax")),
-        "expected invalid self-closing warning: {:?}",
+        result.warnings.is_empty(),
+        "Warnings: {:?}",
         result.warnings
     );
     assert!(result.code.contains("_createElementVNode(\"div\""));

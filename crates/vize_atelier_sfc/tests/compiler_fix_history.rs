@@ -57,9 +57,14 @@ fn separate_template_render_collision_keeps_complete_module_result() {
         SfcScriptOutputMode::SeparateTemplate,
         SfcCompileExperimentalOptions::default(),
     );
+    let mut expected =
+        serde_json::from_str::<Value>(RENDER_EXPECTED).expect("valid immutable Result reference");
+    // Standard mode now accepts authored HTML self-closing tags without a warning.
+    // Keep the archived reference exact for every other public result field.
+    expected["Ok"]["warnings"] = Value::Array(vec![]);
     assert_eq!(
         serde_json::to_value(actual).expect("serialize complete public Result"),
-        serde_json::from_str::<Value>(RENDER_EXPECTED).expect("valid immutable Result reference"),
+        expected,
         "complete SFC result changed for fix fe724476c"
     );
 }

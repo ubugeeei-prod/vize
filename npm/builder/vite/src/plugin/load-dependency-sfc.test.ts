@@ -148,9 +148,10 @@ const includedDependencyWarnings = captureWarnings(() => {
   );
 });
 
-assert.ok(
-  includedDependencyWarnings.length > 0,
-  "Dependency SFC rewrite warnings should still log when node_modules SFCs are explicitly included",
+assert.deepEqual(
+  includedDependencyWarnings,
+  [],
+  "Vue-compatible self-closing tags in explicitly included dependencies should not warn",
 );
 
 const componentState = createState(projectRoot);
