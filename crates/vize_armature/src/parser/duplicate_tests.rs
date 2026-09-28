@@ -52,3 +52,14 @@ fn repeated_directive_argument_is_a_duplicate() {
         1
     );
 }
+
+#[test]
+fn repeated_event_listeners_are_merged_without_parse_errors() {
+    let allocator = Allocator::new();
+    let (_, errors) = parse(&allocator, r#"<button @click="first" @click="second" />"#);
+    assert!(
+        errors
+            .iter()
+            .all(|error| error.code != ErrorCode::DuplicateAttribute)
+    );
+}
