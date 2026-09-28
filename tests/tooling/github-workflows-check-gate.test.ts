@@ -259,6 +259,10 @@ test("slow suites use schedules or explicit dispatch without starting on PRs", (
     assert.equal(Object.hasOwn(events, "pull_request"), false, name);
     assert.equal(Object.hasOwn(events, "workflow_dispatch"), true, name);
     if (pushOrDispatch.includes(name)) assert.equal(Object.hasOwn(events, "push"), true, name);
+    if (name === "level-moonbit.yml") {
+      const push = events.push as { paths?: string[] };
+      assert.equal(push.paths?.includes(".github/workflows/level-moonbit.yml"), true, name);
+    }
     if (scheduledOrDispatch.includes(name))
       assert.equal(Object.hasOwn(events, "schedule"), true, name);
     if (scheduledOrDispatch.includes(name) || name === "pkg-pr-new.yml")
