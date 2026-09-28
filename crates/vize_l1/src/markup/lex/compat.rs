@@ -3,12 +3,19 @@
 //! This tokenizer is adapted from htmlparser2 and Vue's compiler-core.
 //! It uses a state machine to tokenize HTML/Vue templates.
 
+#[path = "compat/char_codes.rs"]
 pub mod char_codes;
+#[path = "compat/dynamic_arg.rs"]
 mod dynamic_arg;
+#[path = "compat/entity_decode.rs"]
 pub mod entity_decode;
+#[path = "compat/in_tag_comment.rs"]
 mod in_tag_comment;
+#[path = "compat/sequences.rs"]
 mod sequences;
+#[path = "compat/states.rs"]
 mod states;
+#[path = "compat/types.rs"]
 mod types;
 
 pub use types::*;
@@ -208,6 +215,8 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 }
 
 #[cfg(test)]
+#[path = "compat/empty_delimiter_tests.rs"]
 mod empty_delimiter_tests;
 #[cfg(test)]
+#[path = "compat/tests.rs"]
 mod tests;

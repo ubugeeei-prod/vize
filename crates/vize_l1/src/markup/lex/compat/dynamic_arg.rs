@@ -92,4 +92,5 @@ fn scan_argument(input: &[u8], start: usize) -> (usize, bool) {
 
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
+#[path = "dynamic_arg/tests.rs"]
 mod tests;
