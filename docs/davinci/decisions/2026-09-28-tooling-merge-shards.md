@@ -58,6 +58,21 @@ name; those contracts now assert the per-shard CLI receipt and matrix wiring.
 The actual required `test-report` context and protected merge queue still
 need an exact-head PR run before this change can merge.
 
+The [second successful diagnostic run 36445933394](https://github.com/ubugeeei-prod/vize/actions/runs/36445933394)
+measured all 651 unique file durations while retaining the same complete
+suite. The four equal-count shards consumed 296.05, 217.00, 135.25 and
+165.69 seconds of measured file time, so round-robin file counts hid a
+large cost skew. Pin rounded durations for the 50 files that took at least
+four seconds in this run. Assign the formatter evidence test to shard 1,
+then place descending measured-cost files on the lightest estimated shard;
+new and faster files use a one-second estimate. This stable planning hint
+does not filter any file. Replaying those 651 measured durations through the
+new partition projects 209.45, 190.82, 209.18 and 204.52 seconds per shard,
+an 86.60-second reduction in the slowest file-time shard. The projection
+comes from one run and must be validated by another Actions diagnostic.
+Even if it holds, the measured setup and native build keep the protected
+queue far above two minutes.
+
 ## Next measured choice
 
 If four shards leave an excessive queue tail, compare eight and sixteen
