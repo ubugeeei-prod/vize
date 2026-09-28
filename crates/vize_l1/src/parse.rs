@@ -35,9 +35,8 @@ pub struct SurfaceError {
 /// survey (SwiftSyntax import).
 ///
 /// v1 scope, recorded in the P2-7 record: the tokenizer's default
-/// `{{`/`}}` delimiters, and no `v-pre` interpolation suppression (a
-/// `v-pre` subtree's `{{ x }}` is an [`Interpolation`] node here; byte
-/// fidelity is unaffected and the semantic decision is L1→L2's).
+/// `{{`/`}}` delimiters. `v-pre` changes L1's lexing mode for its subtree,
+/// so its mustaches remain text rather than [`Interpolation`] nodes.
 ///
 /// [`Interpolation`]: crate::surface::Interpolation
 pub fn parse<'a>(
@@ -92,10 +91,7 @@ fn parse_projection<'a>(
         return (SurfaceTree { source, children }, None, errors);
     }
     {
-        let recorder = Recorder {
-            events: &mut events,
-            errors: &mut errors,
-        };
+        let recorder = Recorder::new(allocator, source, &mut events, &mut errors);
         let mut tokenizer = Tokenizer::new(source, recorder);
         tokenizer.set_in_tag_comments(options.experimental_in_tag_comments);
         tokenizer.tokenize();

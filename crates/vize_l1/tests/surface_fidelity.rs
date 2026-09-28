@@ -246,6 +246,85 @@ fn interpolation_tokens_are_delimited() {
 }
 
 #[test]
+fn v_pre_lexes_mustaches_as_text_until_its_element_closes() {
+    let source = "<div v-pre>{{ a }}<span>{{ b }}</span></div>{{ c }}";
+    let allocator = Allocator::new();
+    let (tree, errors) = parse(&allocator, source);
+    assert!(errors.is_empty());
+    assert_eq!(rendered(&tree), source);
+    let SurfaceChild::Element(div) = &tree.children[0] else {
+        panic!("first child is the v-pre element");
+    };
+    assert!(matches!(&div.children[0], SurfaceChild::Text(text) if text.text == "{{ a }}"));
+    let SurfaceChild::Element(span) = &div.children[1] else {
+        panic!("nested span stays structural");
+    };
+    assert!(matches!(&span.children[0], SurfaceChild::Text(text) if text.text == "{{ b }}"));
+    assert!(
+        matches!(&tree.children[1], SurfaceChild::Interpolation(node) if node.content.text == " c ")
+    );
+}
+
+#[test]
+fn v_pre_lexical_scope_excludes_void_and_self_closing_tags() {
+    for source in [
+        "<br v-pre>{{ after }}",
+        "<div v-pre/>{{ after }}",
+        "<div v-pre><br>{{ inside }}</div>{{ after }}",
+    ] {
+        let allocator = Allocator::new();
+        let (tree, errors) = parse(&allocator, source);
+        assert!(errors.is_empty(), "{source}");
+        assert_eq!(rendered(&tree), source);
+        assert!(
+            matches!(tree.children.last(), Some(SurfaceChild::Interpolation(node)) if node.content.text == " after "),
+            "{source}"
+        );
+        if source.starts_with("<div v-pre><br") {
+            let SurfaceChild::Element(div) = &tree.children[0] else {
+                panic!("first child is the div");
+            };
+            assert!(
+                matches!(&div.children[1], SurfaceChild::Text(text) if text.text == "{{ inside }}")
+            );
+        }
+    }
+}
+
+#[test]
+fn only_the_exact_v_pre_attribute_switches_lexing_mode() {
+    let allocator = Allocator::new();
+    let (tree, errors) = parse(&allocator, "<div v-pre.foo>{{ expression }}</div>");
+    assert!(errors.is_empty());
+    let SurfaceChild::Element(div) = &tree.children[0] else {
+        panic!("first child is the div");
+    };
+    assert!(
+        matches!(&div.children[0], SurfaceChild::Interpolation(node) if node.content.text == " expression ")
+    );
+}
+
+#[test]
+fn v_pre_scope_recovers_at_a_matching_ancestor_close() {
+    let source = "<section v-pre><p>{{ inside }}</section>{{ after }}";
+    let allocator = Allocator::new();
+    let (tree, _errors) = parse(&allocator, source);
+    assert_eq!(rendered(&tree), source);
+    assert!(
+        matches!(tree.children.last(), Some(SurfaceChild::Interpolation(node)) if node.content.text == " after ")
+    );
+    let SurfaceChild::Element(section) = &tree.children[0] else {
+        panic!("first child is section");
+    };
+    let SurfaceChild::Element(paragraph) = &section.children[0] else {
+        panic!("paragraph remains in section");
+    };
+    assert!(
+        matches!(&paragraph.children[0], SurfaceChild::Text(text) if text.text == "{{ inside }}")
+    );
+}
+
+#[test]
 fn attribute_tokens_split_exactly() {
     let allocator = Allocator::new();
     let (tree, _errors) = parse(&allocator, "<a b=\"1\" c='2' d=3 e>t</a>");

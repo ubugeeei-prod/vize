@@ -7,7 +7,7 @@
 //! function over data instead of a callback state machine.
 
 use crate::markup::lex::compat::{Callbacks, QuoteType};
-use vize_l0::Vec;
+use vize_l0::{Allocator, Vec};
 use vize_relief::ErrorCode;
 
 use crate::parse::SurfaceError;
@@ -79,13 +79,46 @@ impl Event {
     }
 }
 
-/// The `Callbacks` impl: pushes events and errors, decides nothing.
-pub(crate) struct Recorder<'a, 'v> {
-    pub events: &'v mut Vec<'a, Event>,
-    pub errors: &'v mut Vec<'a, SurfaceError>,
+/// Lexical scope for `v-pre`. The flag includes inherited raw mode.
+#[derive(Clone, Copy)]
+struct LexFrame<'a> {
+    tag: &'a str,
+    in_v_pre: bool,
 }
 
-impl Recorder<'_, '_> {
+#[derive(Clone, Copy)]
+struct PendingTag<'a> {
+    tag: &'a str,
+    has_v_pre: bool,
+}
+
+/// The `Callbacks` impl: records syntax and owns the `v-pre` lexing mode.
+pub(crate) struct Recorder<'a, 'v> {
+    source: &'a str,
+    frames: Vec<'a, LexFrame<'a>>,
+    pending_tag: Option<PendingTag<'a>>,
+    attr_name_start: Option<usize>,
+    events: &'v mut Vec<'a, Event>,
+    errors: &'v mut Vec<'a, SurfaceError>,
+}
+
+impl<'a, 'v> Recorder<'a, 'v> {
+    pub(crate) fn new(
+        allocator: &'a Allocator,
+        source: &'a str,
+        events: &'v mut Vec<'a, Event>,
+        errors: &'v mut Vec<'a, SurfaceError>,
+    ) -> Self {
+        Self {
+            source,
+            frames: Vec::new_in(&allocator),
+            pending_tag: None,
+            attr_name_start: None,
+            events,
+            errors,
+        }
+    }
+
     fn push(&mut self, kind: EventKind, start: usize, end: usize) {
         self.events.push(Event::new(kind, start, end));
     }
@@ -106,19 +139,44 @@ impl Callbacks for Recorder<'_, '_> {
     }
 
     fn on_open_tag_name(&mut self, start: usize, end: usize) {
+        self.attr_name_start = None;
+        self.pending_tag = self.source.get(start..end).map(|tag| PendingTag {
+            tag,
+            has_v_pre: false,
+        });
         self.push(EventKind::OpenTagName, start, end);
     }
 
     fn on_open_tag_end(&mut self, end: usize) {
         self.push(EventKind::OpenTagEnd, end, end);
+        self.attr_name_start = None;
+        if let Some(pending) = self.pending_tag.take()
+            && !vize_l0::is_void_tag(pending.tag)
+        {
+            let inherited = self.frames.last().is_some_and(|frame| frame.in_v_pre);
+            self.frames.push(LexFrame {
+                tag: pending.tag,
+                in_v_pre: inherited || pending.has_v_pre,
+            });
+        }
     }
 
     fn on_self_closing_tag(&mut self, end: usize) {
         self.push(EventKind::SelfClosingTag, end, end);
+        self.pending_tag = None;
+        self.attr_name_start = None;
     }
 
     fn on_close_tag(&mut self, start: usize, end: usize) {
         self.push(EventKind::CloseTag, start, end);
+        if let Some(tag) = self.source.get(start..end)
+            && let Some(index) = self
+                .frames
+                .iter()
+                .rposition(|frame| frame.tag.eq_ignore_ascii_case(tag))
+        {
+            self.frames.truncate(index);
+        }
     }
 
     fn on_attrib_data(&mut self, start: usize, end: usize) {
@@ -139,22 +197,32 @@ impl Callbacks for Recorder<'_, '_> {
     }
 
     fn on_attrib_name(&mut self, start: usize, end: usize) {
+        self.attr_name_start.get_or_insert(start);
         self.push(EventKind::AttrName, start, end);
     }
 
     fn on_attrib_name_end(&mut self, end: usize) {
+        if let Some(start) = self.attr_name_start.take()
+            && self.source.get(start..end) == Some("v-pre")
+            && let Some(pending) = self.pending_tag.as_mut()
+        {
+            pending.has_v_pre = true;
+        }
         self.push(EventKind::AttrNameEnd, end, end);
     }
 
     fn on_dir_name(&mut self, start: usize, end: usize) {
+        self.attr_name_start.get_or_insert(start);
         self.push(EventKind::AttrName, start, end);
     }
 
     fn on_dir_arg(&mut self, start: usize, end: usize) {
+        self.attr_name_start.get_or_insert(start);
         self.push(EventKind::AttrName, start, end);
     }
 
     fn on_dir_modifier(&mut self, start: usize, end: usize) {
+        self.attr_name_start.get_or_insert(start);
         self.push(EventKind::AttrName, start, end);
     }
 
@@ -181,5 +249,10 @@ impl Callbacks for Recorder<'_, '_> {
             code,
             offset: index as u32,
         });
+    }
+
+    fn is_in_v_pre(&self) -> bool {
+        self.pending_tag.is_some_and(|tag| tag.has_v_pre)
+            || self.frames.last().is_some_and(|frame| frame.in_v_pre)
     }
 }
