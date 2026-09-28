@@ -11,6 +11,11 @@ use super::context::TransformContext;
 use crate::ir::{BlockIRNode, IRProp, MergedPropsSource, OperationNode, SetMergedPropsIRNode};
 
 pub(super) fn uses_computed_props(el: &ElementNode<'_>) -> bool {
+    // A single authored attribute cannot contain a computed v-bind key.
+    // Deep static templates hit this path once per element.
+    if let [PropNode::Attribute(_)] = el.props.as_slice() {
+        return false;
+    }
     let mut computed = false;
     for prop in &el.props {
         if let PropNode::Directive(dir) = prop
