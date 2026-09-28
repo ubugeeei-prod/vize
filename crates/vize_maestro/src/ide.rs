@@ -42,6 +42,7 @@ pub mod semantic_tokens;
 pub(crate) mod sfc_region;
 pub mod signature_help;
 pub(crate) mod tag_pair;
+pub(crate) mod template_excerpt;
 mod template_expression;
 pub(crate) mod template_ref;
 pub(crate) mod template_scope;

@@ -4,10 +4,10 @@ use vize_croquis::{Drawer, DrawerOptions};
 
 mod items;
 
-use super::template_excerpt::opening_tag_at;
 use super::{HoverBuilder, HoverService};
 use crate::ide::completion::template::component_metadata;
 use crate::ide::definition::helpers;
+use crate::ide::template_excerpt::opening_tag_at;
 use crate::ide::{IdeContext, is_component_tag};
 use crate::virtual_code::{ArtCursorPosition, BlockType};
 use items::{event_items, prop_items, slot_items};
@@ -200,11 +200,10 @@ mod tests {
         let source_path = dir.path().join("Parent.vue");
         let source = r#"<script setup lang="ts">
 const msg = 'hello'
-function save() {}
 </script>
 
 <template>
-  <Child :message="msg" @save.once="save">
+  <Child :message="msg" title="save > once">
     <template #item="{ row, index }">
       <span>{{ row }}</span>
     </template>
@@ -231,11 +230,11 @@ function save() {}
 
         assert!(value.contains("Component usage"), "got {value:?}");
         assert!(
-            value.contains("```vue\n<Child :message=\"msg\" @save.once=\"save\">\n```"),
+            value.contains("```vue\n<Child :message=\"msg\" title=\"save > once\">\n```"),
             "got {value:?}"
         );
         assert!(value.contains(":message=\"msg\""), "got {value:?}");
-        assert!(value.contains("@save.once=\"save\""), "got {value:?}");
+        assert!(value.contains("title=\"save > once\""), "got {value:?}");
         assert!(value.contains("#item { row, index }"), "got {value:?}");
         assert!(value.contains("#default"), "got {value:?}");
     }

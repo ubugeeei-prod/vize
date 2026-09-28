@@ -20,7 +20,7 @@ mod tests;
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Hover, Location, Position, Range};
 
-use super::hover::template_excerpt::opening_tag_at;
+use super::template_excerpt::opening_tag_at;
 use super::{HoverBuilder, IdeContext, offset_to_position};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -1,8 +1,8 @@
 use tower_lsp::lsp_types::Hover;
 
-use super::super::template_excerpt::opening_tag_at;
 use super::HoverBuilder;
 use crate::ide::IdeContext;
+use crate::ide::template_excerpt::opening_tag_at;
 
 pub(crate) fn hover_static_template_ref(ctx: &IdeContext<'_>) -> Option<Hover> {
     let target = crate::ide::template_ref::target_at_offset(ctx)?;
