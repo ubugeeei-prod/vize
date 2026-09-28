@@ -14,9 +14,19 @@
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;
-use vize_curator::inspector::{StagePage, ladder_pages, spolvero_value};
+use vize_curator::inspector::{
+    StagePage, ladder_pages, ladder_run, spolvero_value, template_remarks,
+};
 
 const TEMPLATE: &str = "\n  <div :class=\"cls\">{{ msg }}</div>\n  <Comp v-model=\"x\"><template #a>hi</template></Comp>\n";
+
+#[test]
+fn the_ladder_collects_remarks_during_its_only_transform_run() {
+    let path = "src/App.vue";
+    let run = ladder_run(path, TEMPLATE, &|| 0);
+    assert_eq!(run.remarks, template_remarks(path, TEMPLATE));
+    assert!(!run.remarks.is_empty());
+}
 
 const L2_PAGE: &str = r#"[l2-dump-v2]
 ops=8

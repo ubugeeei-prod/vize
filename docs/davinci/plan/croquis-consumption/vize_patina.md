@@ -56,7 +56,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `is_kebab_case_loose`                     |     1 |     1 |
 | `is_pascal_case`                          |     2 |     2 |
 | `names_match`                             |     3 |     3 |
-| `parse_script_setup`                      |     3 |     3 |
+| `parse_script_setup`                      |     4 |     4 |
 | `parse_script_setup_with_generic_and_jsx` |     1 |     1 |
 | `parse_script_with_options`               |     1 |     1 |
 | `parse_v_for_expression`                  |     1 |     1 |
@@ -81,7 +81,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Symbol`                |        0 |   15 |
 | `SymbolId`              |        0 |    3 |
 | `UnusedVarContext`      |        4 |    5 |
-| `Croquis.bindings`      |        0 |   10 |
+| `Croquis.bindings`      |        0 |   11 |
 | `Croquis.macros`        |       22 |   31 |
 | `Croquis.reactivity`    |        0 |    3 |
 | `Croquis.scopes`        |        4 |   27 |

@@ -1,6 +1,10 @@
 use oxc_syntax::identifier::is_identifier_part;
 
 pub(super) fn helper_call_position(text: &str, alias: &str) -> Option<usize> {
+    debug_assert!(
+        alias.starts_with('_'),
+        "helper aliases start with underscore"
+    );
     let bytes = text.as_bytes();
     let alias = alias.as_bytes();
     let mut position = 0;
@@ -25,7 +29,7 @@ pub(super) fn helper_call_position(text: &str, alias: &str) -> Option<usize> {
             }
             // `alias` is UTF-8, so a match starts on a char boundary and
             // `text.get(..position)` is present.
-            _ if bytes
+            b'_' if bytes
                 .get(position..)
                 .is_some_and(|tail| tail.starts_with(alias))
                 && text.get(..position).is_some_and(|before| {
@@ -66,4 +70,29 @@ fn quoted_end(bytes: &[u8], start: usize) -> usize {
         }
     }
     bytes.len()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::helper_call_position;
+
+    #[test]
+    fn scans_helper_calls_without_picking_up_strings_comments_or_members() {
+        for (code, expected) in [
+            ("abc _createVNode()", Some(4)),
+            ("a._createVNode(); _createVNode (x)", Some(18)),
+            (
+                "'_createVNode()' /* _createVNode() */ _createVNode()",
+                Some(38),
+            ),
+            ("a_createVNode(); _createVNode\n(x)", Some(17)),
+            ("_createVNodeExtra(); // _createVNode()", None),
+        ] {
+            assert_eq!(
+                helper_call_position(code, "_createVNode"),
+                expected,
+                "{code}"
+            );
+        }
+    }
 }

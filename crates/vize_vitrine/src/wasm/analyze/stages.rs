@@ -12,13 +12,24 @@ pub(crate) type HostClock<'c> = &'c dyn Fn() -> u64;
 pub(super) fn spolvero_members(
     filename: &str,
     template: Option<&str>,
-    remarks: Vec<vize_curator::inspector::StageRemark>,
+    include_remarks: bool,
     clock: HostClock<'_>,
 ) -> (serde_json::Value, serde_json::Value) {
     let run =
         template.map(|template| vize_curator::inspector::ladder_run(filename, template, clock));
-    let (pages, steps, walks) = run
-        .map(|run| (run.pages, run.steps, run.walks))
+    let (pages, remarks, steps, walks) = run
+        .map(|run| {
+            (
+                run.pages,
+                if include_remarks {
+                    run.remarks
+                } else {
+                    Vec::new()
+                },
+                run.steps,
+                run.walks,
+            )
+        })
         .unwrap_or_default();
     (
         vize_curator::inspector::spolvero_value_with_remarks("analyze-sfc", pages, remarks),

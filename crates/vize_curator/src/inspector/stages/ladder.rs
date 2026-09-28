@@ -39,7 +39,7 @@ use core::cell::Cell;
 use vize_davinci::dump::collector::Collector;
 use vize_davinci::dump::plan::Page as PlanPage;
 use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::pass::{PassEvent, PassObserver, Pipeline};
+use vize_davinci::pass::{Pair, PassEvent, PassObserver, Pipeline, RemarkCollector};
 use vize_l0::{Allocator, String};
 use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_pass_hook};
 use vize_l2::dump::Page as L2Page;
@@ -48,7 +48,7 @@ use vize_l2_to_l3::partition::dump::Page as PartitionPage;
 use vize_l3::dump::Page as L3Page;
 use vize_l3::values_dump::Page as ValuesPage;
 
-use super::StagePage;
+use super::{StagePage, StageRemark};
 
 /// A monotonic clock in nanoseconds, supplied by the host. The library takes
 /// no clock of its own: native hosts can pass `Instant`, the browser build
@@ -74,6 +74,8 @@ pub struct LadderStep {
 pub struct LadderRun {
     /// Every stage page, in pipeline order (see the module table).
     pub pages: Vec<StagePage>,
+    /// Optimization decisions collected during the same L2 pass execution.
+    pub remarks: Vec<StageRemark>,
     /// Every step, in run order.
     pub steps: Vec<LadderStep>,
     /// Every walk of the transform plan, in run order; `pass` names the
@@ -169,11 +171,14 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
     let mut dump = Collector::new(false);
     let mut walks = Vec::new();
     let windows = PassWindows::default();
-    let mut observer = PassStart {
-        clock,
-        windows: &windows,
-        pipeline: None,
-    };
+    let mut observer = Pair(
+        PassStart {
+            clock,
+            windows: &windows,
+            pipeline: None,
+        },
+        RemarkCollector::new(),
+    );
     run_transform_with_pass_hook(
         &mut lowered,
         &mut observer,
@@ -185,7 +190,7 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
             dump.after_pass(event, l2_text(&lowered.root.ops).as_str());
         },
     );
-    if let Some(pipeline) = observer.pipeline {
+    if let Some(pipeline) = observer.0.pipeline {
         let plan = PlanPage::of(&pipeline);
         pages.push(page(
             "s2-plan",
@@ -225,8 +230,18 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
         "lower",
         values.print_to_string(DumpMode::Full),
     ));
+    let remarks = observer
+        .1
+        .finish()
+        .into_iter()
+        .map(|remark| StageRemark {
+            path: Some(String::from(path)),
+            remark,
+        })
+        .collect();
     LadderRun {
         pages,
+        remarks,
         steps,
         walks,
     }
