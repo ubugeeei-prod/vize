@@ -215,8 +215,15 @@ impl EmitDocument {
 
     #[inline(always)]
     fn push_recorded(&mut self, text: &str, authored: Span, name: Option<&str>) {
-        let start = self.cursor();
-        self.record(Span::new(start, start + text.len() as u32), authored, name);
+        if self.recording {
+            let start = self.cursor();
+            self.links.push(SpanLink {
+                generated: Span::new(start, start + text.len() as u32),
+                authored,
+                name: name.map(String::new),
+                segment: true,
+            });
+        }
         self.text.push_str(text);
     }
 
@@ -276,7 +283,7 @@ impl EmitDocument {
     /// pattern replaced, rebasing its links onto the escaped output. Patterns
     /// are ASCII and tried in order at each byte; a link boundary at an
     /// escaped byte lands before its replacement.
-    #[inline]
+    #[inline(always)]
     pub fn push_escaped(&mut self, other: &EmitDocument, escapes: &[(&str, &str)]) {
         let base = self.text.len();
         let bytes = other.text.as_bytes();
