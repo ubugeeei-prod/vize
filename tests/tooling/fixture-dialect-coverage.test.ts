@@ -30,7 +30,13 @@ test("pinned project dialect presence stays distinct from per-file coverage", ()
     "tests/_fixtures/_git/wave-ui",
   ]);
   assert.deepEqual(coverage.presentInFixtures["jsx-vapor"], ["tests/_fixtures/_git/vue-jsx-vapor"]);
-  for (const dialect of ["vue0-sfc", "vue1-sfc", "vue2.7-sfc", "jsx-babel", "vue-quirks"]) {
+  for (const dialect of [
+    "vue0-template",
+    "vue1-template",
+    "vue2.7-sfc",
+    "jsx-babel",
+    "vue-quirks",
+  ]) {
     assert.deepEqual(coverage.presentInFixtures[dialect], []);
   }
 });

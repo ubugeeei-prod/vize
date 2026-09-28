@@ -15,8 +15,8 @@ import {
 // These are presence claims about a pinned project, not classifications of
 // every source file in it. Per-case manifests must carry their own dialects.
 export const dialectLabels = [
-  "vue0-sfc",
-  "vue1-sfc",
+  "vue0-template",
+  "vue1-template",
   "vue2-sfc",
   "vue2.7-sfc",
   "vue3-sfc",

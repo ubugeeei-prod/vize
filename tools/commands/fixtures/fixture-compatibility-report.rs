@@ -48,8 +48,8 @@ const ORACLE_KINDS: &[&str] = &[
     "real-vite-hmr",
 ];
 const DIALECT_LABELS: &[&str] = &[
-    "vue0-sfc",
-    "vue1-sfc",
+    "vue0-template",
+    "vue1-template",
     "vue2-sfc",
     "vue2.7-sfc",
     "vue3-sfc",
