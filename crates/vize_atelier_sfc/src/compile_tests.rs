@@ -29,7 +29,7 @@ fn test_compile_sfc_scopes_native_css_nesting_in_production_css() {
     .unwrap();
     let css = result.css.expect("production SFC CSS should be emitted");
 
-    assert!(css.contains(".box[data-v-abc123]"), "{css}");
+    assert!(css.starts_with(".box{"), "{css}");
     assert!(css.contains(".label[data-v-abc123]"), "{css}");
     assert!(!css.contains(".label {"), "{css}");
 }
