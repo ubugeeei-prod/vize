@@ -209,25 +209,45 @@ jobs:
           node-version-file: "package.json"
           cache: true
           run-install: false
+      - name: Plan source-only Apps PR tier
+        id: apps-tier
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          node tools/support/compat/github/plan-source-checks.mjs "$BASE_SHA" "$GITHUB_SHA" pull_request
+      - name: Explain focused source Apps gate
+        if: ${{ github.event_name == 'pull_request' && steps.apps-tier.outputs.js-browser-tier == 'source' }}
+        run: echo 'The source JS lane loads the same-checkout Vize app config; complete app fixtures run in the protected merge tier.' >> "$GITHUB_STEP_SUMMARY"
       - uses: ./.github/actions/setup-moonbit
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
         with:
           key: check-vize-apps
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install JS dependencies
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check generated reference docs
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
         run: vp node --test tests/tooling/lib-reference-docs.test.ts
       - name: Build native addon for source Vize config
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
         run: vp run --workspace-root build:native:test
       - name: Pack source Vize config package
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
         working-directory: npm/cli
         run: vp pack
       - name: Require the app to load source Vize config
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
         working-directory: examples/vite-musea
         run: |
           vp exec node --input-type=module -e "
@@ -238,16 +258,21 @@ jobs:
             }
           "
       - name: Build vize CLI
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
         run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs
       - name: Install vize CLI
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
         run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
       # Use this commit-built CLI without waiting for npm or building a second binary.
       - name: Lint authored source with the opinionated preset
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
         run: vp node tools/commands/ci/opinionated-source-lint.mjs
       - name: Test gallery Markdown renderer
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
         working-directory: npm/builder/vite-musea
         run: vp exec tsx --test gallery/components/MarkdownContent.test.ts
       - name: Check Vize app fixtures
+        if: ${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}
         run: |
           set -o pipefail
           vp run --workspace-root check:ci:vize-apps 2>&1 | tee "$RUNNER_TEMP/vize-apps.log"

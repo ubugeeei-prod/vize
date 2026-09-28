@@ -212,6 +212,28 @@ test("source gates cover PRs and merge groups while extra checks require schedul
   assert.deepEqual(workflow.jobs?.["playground-test"]?.needs, ["build-js-packages"]);
 });
 
+test("focused source Apps deferral keeps the full app gate on merge groups and main", () => {
+  const steps = workflow.jobs?.["check-vize-apps"]?.steps ?? [];
+  const plan = steps.findIndex((step) => step.name === "Plan source-only Apps PR tier");
+  const explain = steps.findIndex((step) => step.name === "Explain focused source Apps gate");
+  const full = steps.findIndex((step) => step.uses === "./.github/actions/setup-moonbit");
+  assert.ok(plan > 0 && explain > plan && full > explain);
+  assert.equal(steps[plan]?.if, "${{ github.event_name == 'pull_request' }}");
+  assert.match(steps[plan]?.run ?? "", /plan-source-checks\.mjs .* pull_request/);
+  assert.equal(
+    steps[explain]?.if,
+    "${{ github.event_name == 'pull_request' && steps.apps-tier.outputs.js-browser-tier == 'source' }}",
+  );
+  for (const step of steps.slice(full)) {
+    assert.equal(
+      step.if,
+      "${{ github.event_name != 'pull_request' || steps.apps-tier.outputs.js-browser-tier != 'source' }}",
+      step.name ?? step.uses,
+    );
+  }
+  assert.ok(workflow.jobs?.["test-report"]?.needs?.includes("check-vize-apps"));
+});
+
 test("report fails closed when any PR check fails or skips", () => {
   assert.equal(aggregateNeedsResults(needs()).exitCode, 0);
   for (const result of ["failure", "cancelled", "skipped"] as const) {

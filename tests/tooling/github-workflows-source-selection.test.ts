@@ -60,17 +60,45 @@ test("source planning installs the declared Node runtime before TypeScript impor
 });
 
 test("selected PR tooling regenerates its plan while merge tooling retains the full receipt path", () => {
-  const steps = source.jobs["pr-tooling-scripts"].steps ?? [];
+  const job = source.jobs["pr-tooling-scripts"];
+  const steps = job.steps ?? [];
   const regenerate = steps.findIndex((step) => step.name === "Regenerate PR tooling plan");
   const build = steps.findIndex((step) => step.name === "Build and install vize CLI");
+  const focused = steps.findIndex((step) => step.name === "Test focused PR source tooling");
   const selected = steps.findIndex((step) => step.name === "Test selected PR tooling scripts");
   const full = steps.findIndex((step) => step.name === "Test tooling scripts");
-  assert.ok(regenerate >= 0 && regenerate < build && build < selected && selected < full);
+  assert.ok(
+    regenerate >= 0 &&
+      regenerate < build &&
+      build < focused &&
+      focused < selected &&
+      selected < full,
+  );
+  assert.equal(
+    (job as Job & { env?: Record<string, string> }).env?.TOOLING_SOURCE,
+    "${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.js-browser-tier == 'source' }}",
+  );
   for (const step of [steps[regenerate], steps[selected]]) {
     assert.equal(
       step.if,
-      "${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}",
+      "${{ github.event_name == 'pull_request' && env.TOOLING_SOURCE != 'true' && needs.pr-source-plan.outputs.tooling == 'true' }}",
     );
+  }
+  assert.equal(steps[focused].if, "${{ env.TOOLING_SOURCE == 'true' }}");
+  assert.match(steps[focused].run ?? "", /target\/ci\/vize --version/);
+  assert.match(steps[focused].run ?? "", /davinci-stage-dependencies\.test\.ts/);
+  assert.equal(steps[focused].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
+  assert.equal(steps[build].if, "${{ env.RUN_TOOLING == 'true' }}");
+  for (const step of steps) {
+    if (step.name === "Test tooling scripts") continue;
+    if (
+      step.uses === "./.github/actions/setup-moonbit" ||
+      step.uses === "./.github/actions/setup-rust-script" ||
+      step.name === "Install fixture and JS dependencies" ||
+      step.name === "Prepare the pinned plugin isolation runtime"
+    ) {
+      assert.match(step.if ?? "", /TOOLING_SOURCE != 'true'/);
+    }
   }
   assert.equal(
     steps[regenerate].env?.BASE_SHA,

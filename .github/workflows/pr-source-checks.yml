@@ -127,6 +127,17 @@ jobs:
       - name: Pack source CLI config and test it
         if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.js == 'true' && needs.pr-source-plan.outputs.js-browser-tier == 'source' }}
         run: vp run --filter './npm/cli' test
+      - name: Require source Vize app config in focused JS gate
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.js == 'true' && needs.pr-source-plan.outputs.js-browser-tier == 'source' }}
+        working-directory: examples/vite-musea
+        run: |
+          vp exec node --input-type=module -e "
+            import { loadConfig } from 'vize';
+            const config = await loadConfig(process.cwd());
+            if (config?.vite?.scanPatterns?.[0] !== 'src/**/*.vue') {
+              throw new Error('Vize app config was not loaded from source');
+            }
+          "
       - name: Test focused Vite compiler with source binding
         if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.js == 'true' && needs.pr-source-plan.outputs.js-browser-tier == 'source' }}
         run: VP_RUN_CONCURRENCY_LIMIT=1 node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test
@@ -146,52 +157,70 @@ jobs:
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       CARGO_BUILD_JOBS: "12"
+      TOOLING_SOURCE: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.js-browser-tier == 'source' }}
+      RUN_TOOLING: ${{ needs.pr-source-plan.outputs.tooling == 'true' || github.event_name == 'pull_request' && needs.pr-source-plan.outputs.js-browser-tier == 'source' }}
     steps:
+      - name: Explain focused PR source tooling
+        if: ${{ env.TOOLING_SOURCE == 'true' }}
+        run: echo 'The source CLI and structural contracts run here; all tooling files run in the protected merge tier.' >> "$GITHUB_STEP_SUMMARY"
       - name: Explain unrelated skip
-        if: ${{ needs.pr-source-plan.outputs.tooling != 'true' }}
+        if: ${{ env.RUN_TOOLING != 'true' }}
         run: echo 'Tooling scripts skipped because this PR changes no release scripts, tooling tests, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ env.RUN_TOOLING == 'true' }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ env.RUN_TOOLING == 'true' }}
         with:
           node-version-file: "package.json"
           cache: true
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ env.RUN_TOOLING == 'true' && env.TOOLING_SOURCE != 'true' }}
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ env.RUN_TOOLING == 'true' }}
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ env.RUN_TOOLING == 'true' }}
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ env.RUN_TOOLING == 'true' }}
         with:
           cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
           key: test-scripts
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ env.RUN_TOOLING == 'true' && env.TOOLING_SOURCE != 'true' }}
       - name: Regenerate PR tooling plan
-        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ github.event_name == 'pull_request' && env.TOOLING_SOURCE != 'true' && needs.pr-source-plan.outputs.tooling == 'true' }}
         env:
           BASE_SHA: ${{ needs.pr-source-plan.outputs.comparison-base }}
         run: |
           if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags --depth=1 origin "$BASE_SHA"; fi
           node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json"
       - name: Install fixture and JS dependencies
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ env.RUN_TOOLING == 'true' && env.TOOLING_SOURCE != 'true' }}
         run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select && vp install --frozen-lockfile --prefer-offline
+      - name: Install focused tooling JS dependencies
+        if: ${{ env.TOOLING_SOURCE == 'true' }}
+        run: vp install --frozen-lockfile --prefer-offline
       - name: Build and install vize CLI
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ env.RUN_TOOLING == 'true' }}
         run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && cat target/ci/vize.differential-build.json && sudo install -m 0755 target/ci/vize /usr/local/bin/vize
       - name: Prepare the pinned plugin isolation runtime
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ env.RUN_TOOLING == 'true' && env.TOOLING_SOURCE != 'true' }}
         run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
+      - name: Test focused PR source tooling
+        if: ${{ env.TOOLING_SOURCE == 'true' }}
+        env:
+          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+          VIZE_TEST_REQUIRE_TSGO: "1"
+        run: |
+          test -s target/ci/vize.differential-build.json
+          target/ci/vize --version
+          node --test --test-concurrency=1 tests/tooling/davinci-ssr-l4-bridge.test.ts tests/tooling/davinci-stage-dependencies.test.ts
       - name: Test selected PR tooling scripts
-        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ github.event_name == 'pull_request' && env.TOOLING_SOURCE != 'true' && needs.pr-source-plan.outputs.tooling == 'true' }}
         env:
           SOURCE_LENGTH_BASE_REF: ${{ needs.pr-source-plan.outputs.comparison-base }}
           VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json

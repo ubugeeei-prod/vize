@@ -108,6 +108,7 @@ void test("focused PR JS route packs source CLI before testing Vite and stays ou
   const names = [
     "Build source native addon for focused JS tests",
     "Pack source CLI config and test it",
+    "Require source Vize app config in focused JS gate",
     "Test focused Vite compiler with source binding",
   ];
   const steps = workflow.jobs["pr-js-packages"].steps.filter((step) => names.includes(step.name));
@@ -117,15 +118,16 @@ void test("focused PR JS route packs source CLI before testing Vite and stays ou
   );
   assert.deepEqual(
     steps.map((step) => step.if),
-    [selectedSource, selectedSource, selectedSource],
+    [selectedSource, selectedSource, selectedSource, selectedSource],
   );
-  assert.deepEqual(
-    steps.map((step) => step.run),
-    [
-      "vp run --workspace-root build:native:test",
-      "vp run --filter './npm/cli' test",
-      "VP_RUN_CONCURRENCY_LIMIT=1 node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test",
-    ],
+  assert.equal(steps[0].run, "vp run --workspace-root build:native:test");
+  assert.equal(steps[1].run, "vp run --filter './npm/cli' test");
+  assert.equal(steps[2]["working-directory"], "examples/vite-musea");
+  assert.match(steps[2].run, /loadConfig\(process\.cwd\(\)\)/);
+  assert.match(steps[2].run, /src\/\*\*\/\*\.vue/);
+  assert.equal(
+    steps[3].run,
+    "VP_RUN_CONCURRENCY_LIMIT=1 node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test",
   );
   assert.equal(
     workflow.jobs["pr-source-plan"].outputs["js-browser-tier"],
