@@ -166,7 +166,8 @@ mod tests {
     #[test]
     fn html_tag_fast_path_preserves_the_exported_set() {
         for tag in ["div", "span", "p", "button", "section", "input", "template"] {
-            assert!(HTML_TAGS.contains(tag), "fast-path tag left the set: {tag}");
+            let in_set = HTML_TAGS.contains(tag);
+            assert!(in_set, "fast-path tag left the set: {tag}");
         }
         for tag in HTML_TAGS.iter() {
             assert!(is_html_tag(tag), "missing {tag}");
@@ -181,7 +182,8 @@ mod tests {
             "div\0",
             "template:slot",
         ] {
-            assert_eq!(is_html_tag(tag), HTML_TAGS.contains(tag), "{tag:?}");
+            let expected = HTML_TAGS.contains(tag);
+            assert_eq!(is_html_tag(tag), expected, "{tag:?}");
         }
     }
 

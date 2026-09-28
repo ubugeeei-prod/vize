@@ -82,7 +82,9 @@ mod tests {
         for index in 0..40 {
             let name = cstr!("event-{index}");
             assert_eq!(names.insert(name.clone()), expected.insert(name.clone()));
-            assert_eq!(names.contains(&name), expected.contains(name.as_str()));
+            let actual_member = names.contains(&name);
+            let expected_member = expected.contains(name.as_str());
+            assert_eq!(actual_member, expected_member);
         }
         for name in ["event-0", "event-4", "event-39", "event-4", "missing"] {
             assert_eq!(names.remove(name), expected.remove(name), "{name}");
@@ -101,10 +103,10 @@ mod tests {
         assert!(names.insert(String::from("$event")));
         assert!(!names.insert(String::from("$event")));
         assert!(names.insert(String::from("$Event")));
-        assert!(names.contains("$event"));
-        assert!(names.contains("$Event"));
-        assert!(!names.contains("event"));
+        let membership = ["$event", "$Event", "event"].map(|name| names.contains(name));
+        assert_eq!(membership, [true, true, false]);
         assert!(names.remove("$event"));
-        assert!(!names.contains("$event"));
+        let removed_member = names.contains("$event");
+        assert!(!removed_member);
     }
 }
