@@ -3,12 +3,18 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { mergeOnlyToolingTests } from "../../tools/config/vite-plus/tooling-test-scopes.ts";
+import {
+  mergeOnlyToolingTests,
+  pureToolingTests,
+} from "../../tools/config/vite-plus/tooling-test-scopes.ts";
 import {
   planToolingTests,
   toolingTestFiles,
 } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
-import { toolingTestCommand } from "../../tools/support/compat/github/run-tooling-tests.mjs";
+import {
+  prToolingCohortCommand,
+  toolingTestCommand,
+} from "../../tools/support/compat/github/run-tooling-tests.mjs";
 import {
   formatterEvidenceTest,
   mergeToolingShardCount,
@@ -105,6 +111,33 @@ void test("merge planning restores every scenario, including directly changed de
   }
 });
 
+void test("audited pure PR tests run once while changed or unknown capabilities stay full", () => {
+  const plan = planToolingTests(["Cargo.lock"]);
+  const pure = prToolingCohortCommand(plan, "pure").slice(2);
+  const full = prToolingCohortCommand(plan, "full").slice(2);
+  assert.deepEqual(pure, plan.pureTests);
+  assert.ok(pure.length > 0);
+  assert.ok(pure.every((file) => pureToolingTests.includes(file)));
+  assert.deepEqual([...pure, ...full].sort(), plan.tests);
+  assert.equal(new Set([...pure, ...full]).size, plan.tests.length);
+  for (const path of [
+    "tests/tooling/davinci-generated-ledgers.test.ts",
+    "tools/support/compat/davinci/generated-ledgers.mjs",
+    "pnpm-lock.yaml",
+    "new-root/unknown-file.ts",
+  ]) {
+    const changed = planToolingTests([path]);
+    assert.deepEqual(changed.pureTests, [], path);
+    assert.deepEqual(prToolingCohortCommand(changed, "full").slice(2), changed.tests);
+  }
+  assert.deepEqual(planToolingTests(["Cargo.lock"], { tier: "merge" }).pureTests, []);
+  assert.throws(
+    () => prToolingCohortCommand({ ...plan, pureTests: ["tests/tooling/unknown.test.ts"] }, "pure"),
+    /invalid pure/,
+  );
+  assert.throws(() => prToolingCohortCommand(plan, "other"), /cohort must/);
+});
+
 void test("merge tooling shards cover every test once with isolated serial runners", () => {
   const files = toolingTestFiles();
   const shards = partitionMergeToolingTests(files);
@@ -172,6 +205,7 @@ void test("merge matrix uses the planner's complete shards and the required repo
     readFileSync(new URL("../../.github/workflows/check.yml", import.meta.url), "utf8"),
   );
   assert.ok(check.jobs["test-report"].needs.includes("pr-source-checks"));
+  assert.ok(workflow.jobs["source-report"].needs.includes("pr-tooling-pure"));
 });
 
 void test("pure typecheck and LSP helper contracts remain in T0; explicit runtime inventory exists", () => {

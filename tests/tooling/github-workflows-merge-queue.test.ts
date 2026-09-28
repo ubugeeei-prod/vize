@@ -40,6 +40,7 @@ const lanes = [
   "pr-rust-source",
   "pr-js-packages",
   "pr-tooling-scripts",
+  "pr-tooling-pure",
   "pr-playground-test",
 ];
 const tailCommands = [
@@ -79,6 +80,7 @@ test("queue scope reaches the planner and every full source lane remains require
   assert.match(commands(source.jobs["pr-js-packages"]), /vp run --workspace-root test:js/);
   assert.match(commands(source.jobs["pr-tooling-scripts"]), /vp run --workspace-root test:scripts/);
   assert.match(commands(source.jobs["pr-tooling-scripts"]), /cargo build --profile ci -p vize/);
+  assert.match(commands(source.jobs["pr-tooling-pure"]), /test:scripts:pr-pure/);
   assert.match(commands(source.jobs["pr-playground-test"]), /test:browser/);
   assert.match(commands(source.jobs["pr-playground-test"]), /test:vrt/);
   const vrtFailure = source.jobs["pr-playground-test"].steps?.find(

@@ -8,6 +8,7 @@ const SOURCE_PR_JOBS = [
   "pr-rust-source",
   "pr-js-packages",
   "pr-tooling-scripts",
+  "pr-tooling-pure",
   "pr-playground-test",
 ];
 
@@ -51,6 +52,7 @@ test("PR and merge-group source checks are included in the required report", () 
     ["pr-source-plan", 5],
     ["pr-js-packages", 35],
     ["pr-tooling-scripts", 35],
+    ["pr-tooling-pure", 15],
     ["pr-playground-test", 60],
     ["source-report", 5],
   ] as const) {
@@ -75,6 +77,7 @@ test("PR and merge-group source checks are included in the required report", () 
   assert.deepEqual(sourceWorkflow.jobs?.["pr-rust-source"]?.needs, "pr-source-plan");
   assert.deepEqual(sourceWorkflow.jobs?.["pr-js-packages"]?.needs, "pr-source-plan");
   assert.deepEqual(sourceWorkflow.jobs?.["pr-tooling-scripts"]?.needs, "pr-source-plan");
+  assert.deepEqual(sourceWorkflow.jobs?.["pr-tooling-pure"]?.needs, "pr-source-plan");
   assert.deepEqual(sourceWorkflow.jobs?.["pr-playground-test"]?.needs, "pr-source-plan");
   const commands = (job: string) =>
     (sourceWorkflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
@@ -124,7 +127,7 @@ test("untrusted source checks cannot write trusted sticky disks", () => {
   const prefix =
     "${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}";
   for (const job of SOURCE_PR_JOBS.filter(
-    (name) => !["pr-source-plan", "pr-rust-source"].includes(name),
+    (name) => !["pr-source-plan", "pr-rust-source", "pr-tooling-pure"].includes(name),
   )) {
     const cacheStep = sourceWorkflow.jobs?.[job]?.steps?.find(
       (step) => step.uses === "./.github/actions/setup-rust-sticky-cache",

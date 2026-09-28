@@ -111,6 +111,20 @@ export const mergeOnlyToolingTests = [
   "tests/tooling/typecheck-baseline-project.test.ts",
 ] as const;
 
+// These tests use Node, Git, Bash and installed JS packages only. Their
+// transitive scripts were audited without a native binding, source CLI,
+// Rust compiler, MoonBit, fixture submodule or plugin isolation dependency.
+// Every other selected PR test retains the complete tooling preparation.
+export const pureToolingTests = [
+  "tests/tooling/davinci-consumer-migration-surfaces.test.mjs",
+  "tests/tooling/davinci-generated-ledgers.test.ts",
+  "tests/tooling/github-workflows-source-selection.test.ts",
+  "tests/tooling/github-workflows-tooling-receipts.test.ts",
+  "tests/tooling/rust-cache-backend-policy.test.mjs",
+  "tests/tooling/rust-cache-large-targets.test.mjs",
+  "tests/tooling/rust-cache-nested-post.test.mjs",
+] as const;
+
 // Audited contracts read plan/ledger files or synthetic fixture trees. Their
 // imported modules are added by the selector, including transitive helpers.
 // Unlisted tests retain the broad tooling inputs until separately audited.

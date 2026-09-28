@@ -21,6 +21,8 @@ jobs:
       rust-plan: ${{ steps.rust-plan.outputs.rust-plan }}
       js: ${{ steps.plan.outputs.js }}
       tooling: ${{ steps.tooling-plan.outputs.tooling }}
+      tooling-pure: ${{ steps.tooling-plan.outputs.tooling-pure }}
+      tooling-full: ${{ steps.tooling-plan.outputs.tooling-full }}
       tooling-shards: ${{ steps.tooling-plan.outputs.tooling-shards }}
       playground: ${{ steps.plan.outputs.playground }}
     steps:
@@ -143,63 +145,102 @@ jobs:
       CARGO_BUILD_JOBS: "12"
     steps:
       - name: Explain unrelated skip
-        if: ${{ needs.pr-source-plan.outputs.tooling != 'true' }}
-        run: echo 'Tooling scripts skipped because this PR changes no release scripts, tooling tests, or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
+        if: ${{ needs.pr-source-plan.outputs.tooling-full != 'true' }}
+        run: echo 'Full tooling preparation skipped because no selected test needs it.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ needs.pr-source-plan.outputs.tooling-full == 'true' }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ needs.pr-source-plan.outputs.tooling-full == 'true' }}
         with:
           node-version-file: "package.json"
           cache: true
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ needs.pr-source-plan.outputs.tooling-full == 'true' }}
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ needs.pr-source-plan.outputs.tooling-full == 'true' }}
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ needs.pr-source-plan.outputs.tooling-full == 'true' }}
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ needs.pr-source-plan.outputs.tooling-full == 'true' }}
         with:
           cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
           key: test-scripts
           cache-key-suffix: ${{ github.event_name == 'merge_group' && format('{0}-{1}-shard-{2}', runner.os, runner.arch, matrix.shard) || format('{0}-{1}', runner.os, runner.arch) }}
       - uses: ./.github/actions/setup-rust-script
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ needs.pr-source-plan.outputs.tooling-full == 'true' }}
       - name: Regenerate PR tooling plan
-        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling-full == 'true' }}
         env:
           BASE_SHA: ${{ needs.pr-source-plan.outputs.comparison-base }}
         run: |
           if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags --depth=1 origin "$BASE_SHA"; fi
           node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json"
       - name: Install fixture and JS dependencies
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ needs.pr-source-plan.outputs.tooling-full == 'true' }}
         run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select && vp install --frozen-lockfile --prefer-offline
       - name: Build and install vize CLI
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ needs.pr-source-plan.outputs.tooling-full == 'true' }}
         run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && cat target/ci/vize.differential-build.json && sudo install -m 0755 target/ci/vize /usr/local/bin/vize
       - name: Prepare the pinned plugin isolation runtime
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ needs.pr-source-plan.outputs.tooling-full == 'true' }}
         run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
       - name: Test selected PR tooling scripts
-        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling-full == 'true' }}
         env:
           SOURCE_LENGTH_BASE_REF: ${{ needs.pr-source-plan.outputs.comparison-base }}
           VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
+          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
         run: vp run --workspace-root test:scripts:pr
       - name: Test tooling scripts
-        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling-full == 'true' }}
         env:
           VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
           VIZE_TOOLING_MERGE_SHARD: ${{ matrix.shard }}
         run: vp run --workspace-root test:scripts:merge-shard
       - uses: ./.github/actions/upload-formatter-api-corpus-evidence
-        if: ${{ always() && github.event_name == 'merge_group' && matrix.shard == 1 && needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ always() && github.event_name == 'merge_group' && matrix.shard == 1 && needs.pr-source-plan.outputs.tooling-full == 'true' }}
+
+  pr-tooling-pure:
+    name: PR tooling pure scripts
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    needs: pr-source-plan
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - name: Explain empty pure cohort
+        if: ${{ github.event_name != 'pull_request' || needs.pr-source-plan.outputs.tooling-pure != 'true' }}
+        run: echo 'No audited pure PR tooling tests selected.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling-pure == 'true' }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling-pure == 'true' }}
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - name: Regenerate pure PR tooling plan
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling-pure == 'true' }}
+        env:
+          BASE_SHA: ${{ needs.pr-source-plan.outputs.comparison-base }}
+        run: |
+          if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags --depth=1 origin "$BASE_SHA"; fi
+          node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json"
+      - name: Install pure JS dependencies
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling-pure == 'true' }}
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Test audited pure PR tooling scripts
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling-pure == 'true' }}
+        env:
+          SOURCE_LENGTH_BASE_REF: ${{ needs.pr-source-plan.outputs.comparison-base }}
+          VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
+        run: vp run --workspace-root test:scripts:pr-pure
 
   pr-playground-test:
     name: PR playground browser tests
@@ -306,6 +347,7 @@ jobs:
       - pr-rust-source
       - pr-js-packages
       - pr-tooling-scripts
+      - pr-tooling-pure
       - pr-playground-test
     runs-on: ubuntu-24.04
     timeout-minutes: 5

@@ -44,6 +44,8 @@ test("source planning installs the declared Node runtime before TypeScript impor
   }
   assert.equal(steps[toolchain].with?.toolchain, "1.98.0");
   assert.equal(plan.outputs?.tooling, "${{ steps.tooling-plan.outputs.tooling }}");
+  assert.equal(plan.outputs?.["tooling-pure"], "${{ steps.tooling-plan.outputs.tooling-pure }}");
+  assert.equal(plan.outputs?.["tooling-full"], "${{ steps.tooling-plan.outputs.tooling-full }}");
   assert.equal(
     plan.outputs?.["tooling-shards"],
     "${{ steps.tooling-plan.outputs.tooling-shards }}",
@@ -79,7 +81,7 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
   for (const step of [steps[regenerate], steps[selected]]) {
     assert.equal(
       step.if,
-      "${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}",
+      "${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling-full == 'true' }}",
     );
   }
   assert.equal(
@@ -97,9 +99,11 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
     "${{ needs.pr-source-plan.outputs.comparison-base }}",
   );
   assert.equal(steps[selected].run, "vp run --workspace-root test:scripts:pr");
+  assert.equal(steps[selected].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
+  assert.equal(steps[selected].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
   assert.equal(
     steps[full].if,
-    "${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}",
+    "${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling-full == 'true' }}",
   );
   assert.equal(steps[full].run, "vp run --workspace-root test:scripts:merge-shard");
   assert.equal(steps[full].env?.VIZE_TOOLING_MERGE_SHARD, "${{ matrix.shard }}");
@@ -108,6 +112,17 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
   assert.match(
     steps[build].run ?? "",
     /cargo build --profile ci -p vize && vp exec node tests\/differential\/build-receipt\.mjs/,
+  );
+  const pure = source.jobs["pr-tooling-pure"];
+  const pureSteps = pure.steps ?? [];
+  const pureRun = pureSteps.find((step) => step.name === "Test audited pure PR tooling scripts");
+  assert.equal(pure.needs, "pr-source-plan");
+  assert.equal(pureRun?.run, "vp run --workspace-root test:scripts:pr-pure");
+  assert.equal(pureRun?.env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
+  assert.ok(
+    !pureSteps.some((step) =>
+      /cargo build|build:native:test|setup-rust-script/.test(step.run ?? ""),
+    ),
   );
 });
 
