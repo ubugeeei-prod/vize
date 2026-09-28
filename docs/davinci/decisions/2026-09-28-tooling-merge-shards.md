@@ -97,7 +97,15 @@ sixteen-way Node shares would be about 52 or 26 seconds; the current 117
 seconds of setup plus 48 seconds of native preparation already exceed two
 minutes before any test runs.
 
-Next bounded experiment: audit selected tests' actual preparation needs and
+The smallest setup experiment is to let the tooling-only native wrapper use
+Cargo `--profile ci`, as the source CLI already does, while preserving its
+no-JavaScript package loading behavior. The current native `build:debug`
+uses the separate `dev` profile. Compare exact-head Actions times and tests
+before claiming any artifact reuse or speedup; leave manual and JS-package
+builds on their current task. This profile experiment alone cannot establish
+a two-minute gate.
+
+Next broader experiment: audit selected tests' actual preparation needs and
 declare capability cohorts for pure scripts, native binding, source-built CLI
 and their overlap. Unknown or dynamic requirements must retain the complete
 setup. Keep exact-once selected input coverage, move the tool layout check
