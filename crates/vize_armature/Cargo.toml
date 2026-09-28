@@ -14,6 +14,7 @@ metadata.vize.stability = "alpha-supported"
 # `vize_relief/_legacy` so legacy-only AST surface (e.g. the Vue 1 raw-HTML
 # `InterpolationNode::raw` flag this parser sets) is available.
 legacy = ["vize_relief/_legacy", "vize_l1/legacy"]
+native-lex-parity = ["vize_l1/native-markup-lex"]
 
 [dependencies]
 vize_l0 = { workspace = true }
@@ -34,10 +35,15 @@ htmlize = { workspace = true }
 insta = { workspace = true }
 criterion = { workspace = true }
 davinci_harness = { workspace = true }
+davinci_test_support = { workspace = true }
 
 [[bench]]
 name = "davinci"
 harness = false
+
+[[test]]
+name = "markup_lex_parity"
+required-features = ["native-lex-parity"]
 
 [package.metadata.cargo-semver-checks.lints]
 # `LegacyDialectCapabilities` (in the `legacy`-gated module) lists one `bool`

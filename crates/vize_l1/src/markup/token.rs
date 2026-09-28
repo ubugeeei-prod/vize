@@ -5,6 +5,8 @@
 //! that wants a token stream records one itself (as the surface tree does).
 //! All offsets are byte offsets into the lexed source.
 
+use super::entity::DecodedEntity;
+
 /// How an attribute value was written.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -67,6 +69,12 @@ pub trait Sink {
     fn on_text(&mut self, start: usize, end: usize);
     /// A decoded character reference inside text (`&amp;` → `&`).
     fn on_text_entity(&mut self, ch: char, start: usize, end: usize);
+    /// The complete decoded value of one reference. `start..end` covers the
+    /// authored reference, including its `&`; the decoded value may contain
+    /// multiple scalars. Legacy scalar sinks receive each scalar by default.
+    fn on_text_entity_value(&mut self, value: DecodedEntity, start: usize, end: usize) {
+        value.for_each(|ch| self.on_text_entity(ch, start, end));
+    }
 
     fn on_interpolation(&mut self, start: usize, end: usize);
     /// A Vue 1.x raw-HTML interpolation, `{{{ expr }}}`. Only emitted when
@@ -82,6 +90,10 @@ pub trait Sink {
 
     fn on_attrib_data(&mut self, start: usize, end: usize);
     fn on_attrib_entity(&mut self, ch: char, start: usize, end: usize);
+    /// The complete decoded attribute reference, with its authored byte span.
+    fn on_attrib_entity_value(&mut self, value: DecodedEntity, start: usize, end: usize) {
+        value.for_each(|ch| self.on_attrib_entity(ch, start, end));
+    }
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize);
     fn on_attrib_name(&mut self, start: usize, end: usize);
     fn on_attrib_name_end(&mut self, end: usize);

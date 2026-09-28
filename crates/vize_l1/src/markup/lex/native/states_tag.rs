@@ -54,7 +54,7 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             self.sequence_index = 0;
             self.state = State::Text;
             self.section_start = self.index + 1;
-        } else {
+        } else if !is_whitespace(c) {
             self.sink
                 .on_error(LexErrorCode::UnexpectedSolidusInTag, self.section_start);
             self.state = State::BeforeAttrName;

@@ -1,6 +1,7 @@
 use vize_l0::SmallVec;
 
 use super::{LexOptions, Lexer};
+use crate::markup::entity::DecodedEntity;
 use crate::markup::profile::Component;
 use crate::markup::token::{LexErrorCode, QuoteType, Sink};
 
@@ -41,6 +42,8 @@ pub(super) enum TokenEvent {
 pub(super) struct TestCallbacks {
     pub(super) events: SmallVec<[TokenEvent; 16]>,
     pub(super) errors: SmallVec<[(LexErrorCode, usize); 4]>,
+    pub(super) text_entity_values: SmallVec<[(DecodedEntity, usize, usize); 4]>,
+    pub(super) attrib_entity_values: SmallVec<[(DecodedEntity, usize, usize); 4]>,
 }
 
 impl Sink for TestCallbacks {
@@ -49,6 +52,10 @@ impl Sink for TestCallbacks {
     }
     fn on_text_entity(&mut self, _char: char, start: usize, end: usize) {
         self.events.push(TokenEvent::TextEntity(_char, start, end));
+    }
+    fn on_text_entity_value(&mut self, value: DecodedEntity, start: usize, end: usize) {
+        self.text_entity_values.push((value, start, end));
+        value.for_each(|ch| self.on_text_entity(ch, start, end));
     }
     fn on_interpolation(&mut self, start: usize, end: usize) {
         self.events.push(TokenEvent::Interpolation(start, end));
@@ -77,6 +84,10 @@ impl Sink for TestCallbacks {
     }
     fn on_attrib_entity(&mut self, ch: char, start: usize, end: usize) {
         self.events.push(TokenEvent::AttribEntity(ch, start, end));
+    }
+    fn on_attrib_entity_value(&mut self, value: DecodedEntity, start: usize, end: usize) {
+        self.attrib_entity_values.push((value, start, end));
+        value.for_each(|ch| self.on_attrib_entity(ch, start, end));
     }
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {
         self.events.push(TokenEvent::AttribEnd(quote, end));

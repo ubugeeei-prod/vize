@@ -75,9 +75,16 @@ neither this move nor the crate edge counts as a native product route switch.
 The `compat` module preserves the existing tokenizer's events, diagnostics,
 entity behavior and recovery while the profile-generic `Lexer<P, S>` remains
 opt-in. A source move is distinct from replacing the parser or claiming native
-acceptance. TODO (#6835): compare the generic lexer event stream against the
-preserved tokenizer for both profiles, including self-closing whitespace and
-malformed input, then converge the implementations without changing the legacy
-parser's byte output. TODO (#6835): move the remaining `Namespace`/`ErrorCode`
+acceptance. The opt-in `native-lex-parity` test compares every event and error
+for 42 surface fixtures, their UTF-8 truncations, and targeted component and
+document inputs. The generic lexer now matches the preserved tokenizer for
+self-closing whitespace (`<x / >`). A separate `&fjlig;` fixture records that
+the preserved tokenizer emits only `f`, while L1 emits the complete `fj`
+expansion. L1 `Sink` receives the complete decoded value and authored byte
+span in one callback; its scalar callback defaults retain existing native
+consumers. TODO (#6835): make Armature adapt the shared L1 lexer while
+preserving that first-scalar legacy behavior, then prove byte and error
+recovery parity before switching its production tokenizer. TODO (#6835):
+move the remaining `Namespace`/`ErrorCode`
 vocabulary out of Relief to remove L1's other direct legacy dependency. The
 compiler product route remains gated by #6880.

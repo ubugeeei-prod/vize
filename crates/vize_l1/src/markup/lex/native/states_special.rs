@@ -6,7 +6,7 @@ use super::{
     sequences::Sequence,
     types::{State, is_end_of_tag_section, is_whitespace},
 };
-use crate::markup::entity::decode::try_decode_entity;
+use crate::markup::entity::{DecodedEntity, decode::try_decode_entity};
 use crate::markup::profile::Profile;
 use crate::markup::token::{LexErrorCode, LexMode, Sink};
 
@@ -261,7 +261,7 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
     }
 
     /// Vue `stateInEntity` (non-browser): `entityDecoder.write` uses signed length (`>0` done,
-    /// `0` rewind, `<0` wait for more buffer). Here: `Some` → emit every scalar; `None` → rewind
+    /// `0` rewind, `<0` wait for more buffer). Here: `Some` → emit decoded value; `None` → rewind
     /// (like `0`); no `<0` path. `Context` follows `base_state` for htmlize attribute rules.
     pub(super) fn state_in_entity(&mut self) {
         let raw = self.input.get(self.entity_start..).unwrap_or_default();
@@ -271,14 +271,14 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
         };
 
         if let Some((decoded, consumed)) = try_decode_entity(raw, context) {
-            decoded.for_each(|ch| self.emit_entity_char(ch, consumed));
+            self.emit_entity_value(decoded, consumed);
         } else {
             self.index = self.entity_start;
         }
         self.state = self.base_state;
     }
 
-    pub(super) fn emit_entity_char(&mut self, ch: char, consumed: usize) {
+    pub(super) fn emit_entity_value(&mut self, value: DecodedEntity, consumed: usize) {
         if self.base_state != State::Text && self.base_state != State::InRCDATA {
             if self.section_start < self.entity_start {
                 self.sink
@@ -287,7 +287,7 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             self.section_start = self.entity_start + consumed;
             self.index = self.section_start - 1;
             self.sink
-                .on_attrib_entity(ch, self.entity_start, self.section_start);
+                .on_attrib_entity_value(value, self.entity_start, self.section_start);
         } else {
             if self.section_start < self.entity_start {
                 self.sink.on_text(self.section_start, self.entity_start);
@@ -295,7 +295,7 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             self.section_start = self.entity_start + consumed;
             self.index = self.section_start - 1;
             self.sink
-                .on_text_entity(ch, self.entity_start, self.section_start);
+                .on_text_entity_value(value, self.entity_start, self.section_start);
         }
     }
 }

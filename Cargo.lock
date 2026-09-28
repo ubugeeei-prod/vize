@@ -4249,6 +4249,7 @@ dependencies = [
  "compact_str",
  "criterion",
  "davinci_harness",
+ "davinci_test_support",
  "htmlize",
  "insta",
  "oxc_allocator",
