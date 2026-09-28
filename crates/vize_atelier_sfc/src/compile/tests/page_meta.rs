@@ -46,7 +46,7 @@ const msg = 'ready'
 #[test]
 fn test_nuxt_explicit_page_meta_import_produces_route_artifact() {
     let source =
-        include_str!("../../../../tests/_fixtures/differential/nuxt/explicit-page-meta/App.vue");
+        include_str!("../../../../../tests/_fixtures/differential/nuxt/explicit-page-meta/App.vue");
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse SFC");
     let result = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("compile SFC");
 
