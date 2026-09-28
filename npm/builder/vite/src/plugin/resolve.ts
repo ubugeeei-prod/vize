@@ -28,6 +28,7 @@ import {
 } from "../virtual.ts";
 import { toNativeCssAliasRule } from "../utils/css.ts";
 import { createStyleVirtualId } from "./style-request.ts";
+import { isPureTemplateOnlyModule } from "./tree-shaking.ts";
 export function resolveVuePath(state: VizePluginState, id: string, importer?: string): string {
   return resolveViteVuePath(state.root, id, importer);
 }
@@ -800,7 +801,9 @@ export async function resolveIdHook(
   id: string,
   importer?: string,
   options?: { ssr?: boolean; scan?: boolean },
-): Promise<string | { id: string; external?: boolean } | null | undefined> {
+): Promise<
+  string | { id: string; external?: boolean; moduleSideEffects?: boolean } | null | undefined
+> {
   // Fast-return before request classification for the common case where neither
   // the id nor importer can involve a Vue SFC or Vize virtual module. This was
   // added after profiles showed ordinary dependency graph edges dominating the
@@ -1270,9 +1273,18 @@ export async function resolveIdHook(
       if (preserveQueryAsPath) {
         return `${resolved}${request.querySuffix}`;
       }
-      return isDependencyScan
-        ? resolved
-        : toPluginVisibleVirtualId(resolved, isSsrRequest, request.querySuffix);
+      if (isDependencyScan) return resolved;
+      const virtualId = toPluginVisibleVirtualId(resolved, isSsrRequest, request.querySuffix);
+      if (
+        state.isProduction &&
+        !isSsrRequest &&
+        isPureTemplateOnlyModule(state.cache.get(resolved))
+      ) {
+        // A template-only SFC has no authored top-level script effects. Mark its
+        // module pure so an unused barrel export cannot retain its CSS import.
+        return { id: virtualId, moduleSideEffects: false };
+      }
+      return virtualId;
     }
   }
 

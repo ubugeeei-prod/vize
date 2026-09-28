@@ -34,11 +34,12 @@ import {
 import { transformVizeVirtualModule } from "./vite-transform.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 import { getCompiledStyleSource, normalizeStyleVirtualId } from "./load-style.ts";
+import { isPureTemplateOnlyModule } from "./tree-shaking.ts";
 
 export { normalizeVueServerRendererImport };
 
 /** What `load` hands Vite: emitted code plus its map, when one was produced. */
-type LoadResult = { code: string; map: SourceMapV3 | null };
+type LoadResult = { code: string; map: SourceMapV3 | null; moduleSideEffects?: boolean };
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -148,7 +149,13 @@ function loadCompiledSfcModule(
   rewritten.edit(rewriteStaticAssetUrls(rewritten.code, state.dynamicImportAliasRules));
   rewritten.edit(rewriteImportMetaGlobBase(rewritten.code, realPath, state.root));
   rewritten.edit(registerSfcModule(state, rewritten.code, realPath, isSsr));
-  return { code: rewritten.code, map: rewritten.map };
+  return {
+    code: rewritten.code,
+    map: rewritten.map,
+    ...(state.isProduction && !isSsr && isPureTemplateOnlyModule(compiled)
+      ? { moduleSideEffects: false }
+      : {}),
+  };
 }
 
 function loadDefinePageArtifact(

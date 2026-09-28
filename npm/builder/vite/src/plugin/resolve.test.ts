@@ -1367,6 +1367,38 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const projectRoot = createTempProject("pure-template-only");
+  const source = path.join(projectRoot, "app", "pages", "index.vue");
+  const state = createState(projectRoot);
+  state.server = null;
+  state.isProduction = true;
+  state.cache.set(source, {
+    code: "export function render() {}",
+    scopeId: "pure",
+    hasScoped: true,
+    styles: [],
+    moduleShape: {
+      hasDefaultExport: false,
+      hasSfcMainDefined: false,
+      hasNamedRenderExport: true,
+      hasNamedSsrRenderExport: false,
+      defaultExportIsSfcMain: false,
+    },
+  });
+  assert.deepEqual(await resolveIdHook(nullResolveContext, state, source), {
+    id: toPluginVisibleVirtualId(source),
+    moduleSideEffects: false,
+  });
+  assert.equal(
+    expectResolvedId(
+      await resolveIdHook(nullResolveContext, state, source, undefined, { scan: true }),
+    ),
+    source,
+    "dependency scans must still inspect the authored Vue file",
+  );
+}
+
+{
   const projectRoot = createTempProject("dependency-scan-vue-path");
   const source = path.join(projectRoot, "app", "pages", "index.vue");
   const resolved = await resolveIdHook(

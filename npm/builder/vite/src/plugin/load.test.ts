@@ -125,6 +125,34 @@ export default _sfc_main`,
   } as never,
 };
 
+const purePath = "/src/Pure.vue";
+const pureState: VizePluginState = {
+  ...hmrState,
+  server: null,
+  isProduction: true,
+  cache: new Map([
+    [
+      purePath,
+      {
+        code: "export function render() { return null }",
+        scopeId: "pure",
+        hasScoped: true,
+        styles: [],
+        moduleShape: {
+          hasDefaultExport: false,
+          hasSfcMainDefined: false,
+          hasNamedRenderExport: true,
+          hasNamedSsrRenderExport: false,
+          defaultExportIsSfcMain: false,
+        },
+      },
+    ],
+  ]),
+};
+const pureModule = loadHook(pureState, toPluginVisibleVirtualId(purePath), { ssr: false });
+assert.ok(pureModule && typeof pureModule === "object");
+assert.equal(pureModule.moduleSideEffects, false);
+
 const virtualDefineState: VizePluginState = {
   ...hmrState,
   clientViteDefine: {
