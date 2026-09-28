@@ -106,7 +106,8 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
         }
         true
     } else {
-        codegen_experimental_options.no_slotted
+        selector::source_contains_expression_ampersand(source)
+            || codegen_experimental_options.no_slotted
     };
 
     let pipeline_options = if force_compat_sections {

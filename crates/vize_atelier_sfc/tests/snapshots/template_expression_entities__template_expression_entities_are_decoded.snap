@@ -1,0 +1,15 @@
+---
+source: crates/vize_atelier_sfc/tests/template_expression_entities.rs
+expression: result.code.as_str()
+---
+import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from "vue"
+
+const _hoisted_1 = { title: '<b>' }
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode("span", null, _toDisplayString(`<${_ctx.name}>`), 1 /* TEXT */),
+    _createElementVNode("span", null, _toDisplayString('&'), 1 /* TEXT */),
+    _createElementVNode("span", _hoisted_1, "x")
+  ], 64 /* STABLE_FRAGMENT */))
+}
