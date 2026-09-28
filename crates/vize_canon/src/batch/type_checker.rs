@@ -223,10 +223,7 @@ impl BatchTypeChecker {
 
     /// Scan the project for source files.
     pub fn scan_project(&mut self) -> CorsaResult<()> {
-        let paths = collect_project_paths(
-            self.project.project_root(),
-            self.project.source_file_policy(),
-        )?;
+        let paths = collect_project_paths(&self.project, self.project.source_file_policy())?;
         self.project.set_declaration_roots(&paths);
         self.project.register_paths(&paths)?;
         self.project.register_package_route_targets()?;
