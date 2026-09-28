@@ -19,12 +19,10 @@ pub(crate) fn tokenize_expression(
     let bytes = expr.as_bytes();
     let mut i = 0;
 
-    while let Some(&byte) = bytes.get(i) {
-        let c = byte as char;
-
+    while let Some(c) = expr.get(i..).and_then(|rest| rest.chars().next()) {
         // Skip whitespace
         if c.is_whitespace() {
-            i += 1;
+            i += c.len_utf8();
             continue;
         }
 
@@ -96,11 +94,12 @@ pub(crate) fn tokenize_expression(
         // Identifiers and keywords
         if is_ident_start(c) {
             let start = i;
-            while bytes
-                .get(i)
-                .is_some_and(|&next| is_ident_char(next as char))
-            {
-                i += 1;
+            i += c.len_utf8();
+            while let Some(next) = expr.get(i..).and_then(|rest| rest.chars().next()) {
+                if !is_ident_char(next) {
+                    break;
+                }
+                i += next.len_utf8();
             }
             let Some(ident) = expr.get(start..i) else {
                 continue;
@@ -149,7 +148,7 @@ pub(crate) fn tokenize_expression(
         }
 
         // Skip other characters (parentheses, brackets, commas, etc.)
-        i += 1;
+        i += c.len_utf8();
     }
 }
 
@@ -254,67 +253,54 @@ fn looks_like_property_access(expr: &str, offset: usize) -> bool {
         return false;
     }
 
-    let Some(before) = expr.as_bytes().get(..offset) else {
+    let Some(before) = expr.get(..offset) else {
         return false;
     };
-
-    // Skip whitespace
-    let last_non_ws = before
-        .iter()
-        .rposition(|&byte| !(byte as char).is_whitespace())
-        .unwrap_or(0);
-
-    // Check for dot
-    before.get(last_non_ws) == Some(&b'.')
+    before.chars().rev().find(|c| !c.is_whitespace()) == Some('.')
 }
 
 /// Check if identifier looks like a function call.
 pub(crate) fn looks_like_function_call(expr: &str, offset: usize) -> bool {
-    let bytes = expr.as_bytes();
     let mut i = offset;
 
     // Skip the identifier
-    while bytes
-        .get(i)
-        .is_some_and(|&byte| is_ident_char(byte as char))
-    {
-        i += 1;
+    while let Some(ch) = expr.get(i..).and_then(|rest| rest.chars().next()) {
+        if !is_ident_char(ch) {
+            break;
+        }
+        i += ch.len_utf8();
     }
 
     // Skip whitespace
-    while bytes
-        .get(i)
-        .is_some_and(|&byte| (byte as char).is_whitespace())
-    {
-        i += 1;
+    while let Some(ch) = expr.get(i..).and_then(|rest| rest.chars().next()) {
+        if !ch.is_whitespace() {
+            break;
+        }
+        i += ch.len_utf8();
     }
 
     // Check for opening paren
-    bytes.get(i) == Some(&b'(')
+    expr.get(i..).is_some_and(|rest| rest.starts_with('('))
 }
 
 /// Extract identifiers from an expression.
 #[cfg(test)]
 pub(crate) fn extract_identifiers(expr: &str) -> Vec<(&str, usize)> {
     let mut identifiers = Vec::new();
-    let bytes = expr.as_bytes();
     let mut i = 0;
 
-    while i < bytes.len() {
-        // Skip non-identifier characters
-        while i < bytes.len() && !is_ident_start(bytes[i] as char) {
-            i += 1;
+    while let Some(ch) = expr.get(i..).and_then(|rest| rest.chars().next()) {
+        if !is_ident_start(ch) {
+            i += ch.len_utf8();
+            continue;
         }
-
-        if i >= bytes.len() {
-            break;
-        }
-
         let start = i;
-
-        // Read the identifier
-        while i < bytes.len() && is_ident_char(bytes[i] as char) {
-            i += 1;
+        i += ch.len_utf8();
+        while let Some(next) = expr.get(i..).and_then(|rest| rest.chars().next()) {
+            if !is_ident_char(next) {
+                break;
+            }
+            i += next.len_utf8();
         }
 
         // Skip keywords and literals

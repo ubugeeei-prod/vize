@@ -200,13 +200,23 @@ pub(crate) fn define_art_metadata<'a>(
 /// Source location of `[start, end)`; the line and column are computed from
 /// the file-absolute start offset (1-based line, 0-based byte column).
 pub(crate) fn calculate_location_fast(source: &str, start: u32, end: u32) -> SourceLocation {
+    calculate_location_with_line(source, start, end, line_of(source, start))
+}
+
+/// Build a location when the caller already counted its starting line.
+pub(crate) fn calculate_location_with_line(
+    source: &str,
+    start: u32,
+    end: u32,
+    line: u32,
+) -> SourceLocation {
     let before = prefix(source, start);
     let line_start = before
         .iter()
         .rposition(|&byte| byte == b'\n')
         .map_or(0, |at| at + 1);
     let column = (before.len() - line_start) as u32;
-    SourceLocation::new(start, end, line_of(source, start), column)
+    SourceLocation::new(start, end, line, column)
 }
 
 /// 1-based line of a file-absolute offset (`\n`-delimited, as the

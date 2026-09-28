@@ -22,7 +22,7 @@ _None._
 | ------------------ | -------: | ---: |
 | `BindingMetadata`  |        0 |    1 |
 | `Croquis`          |        0 |    5 |
-| `Scope`            |        0 |    5 |
+| `Scope`            |        0 |    6 |
 | `ScopeBinding`     |        0 |   11 |
 | `ScopeChain`       |        0 |    1 |
 | `Span`             |        0 |  201 |

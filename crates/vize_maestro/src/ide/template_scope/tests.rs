@@ -1,6 +1,8 @@
-use tower_lsp::lsp_types::Url;
+use tower_lsp::lsp_types::{HoverContents, MarkupKind, Url};
 
-use super::{TemplateScopeBindingKind, v_for_binding_at, v_slot_binding_at};
+use super::{
+    TemplateScopeBindingKind, v_for_binding_at, v_for_hover, v_slot_binding_at, v_slot_hover,
+};
 use crate::{ide::IdeContext, server::ServerState};
 
 #[test]
@@ -38,6 +40,10 @@ const rows = []
         assert_eq!(binding.kind, kind);
         assert_eq!(&source[binding.start..binding.end], word);
         assert_eq!(binding.start, source.find(declaration).unwrap() + 1);
+        let hover = v_for_hover(&ctx, word).unwrap();
+        assert!(
+            matches!(hover.contents, HoverContents::Markup(content) if content.kind == MarkupKind::Markdown && content.value.contains("```vue\n<li v-for=\"(row, key, index) in rows\" :key=\"row.id\">\n```"))
+        );
     }
 }
 
@@ -104,6 +110,10 @@ const row = 'outer'
         assert_eq!(binding.kind, TemplateScopeBindingKind::SlotProp);
         assert_eq!(&source[binding.start..binding.end], word);
         assert_eq!(binding.start, source.find(declaration).unwrap());
+        let hover = v_slot_hover(&ctx, word).unwrap();
+        assert!(
+            matches!(hover.contents, HoverContents::Markup(content) if content.kind == MarkupKind::Markdown && content.value.contains("```vue\n<template #default=\"{ row, index }\">\n```"))
+        );
     }
 }
 

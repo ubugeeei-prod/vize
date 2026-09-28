@@ -1,0 +1,12 @@
+---
+source: crates/vize_glyph/tests/preserve_authored_content.rs
+expression: formatted
+---
+.a {
+  color: red;
+}
+
+/* second */
+.b {
+  color: blue;
+}

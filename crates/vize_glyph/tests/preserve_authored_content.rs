@@ -68,3 +68,35 @@ fn retains_authored_css_color_spellings_in_sfc() {
     insta::assert_snapshot!(formatted);
     assert_eq!(format_sfc(&formatted, &options).unwrap().code, formatted);
 }
+
+#[test]
+fn css_formatting_keeps_media_features_values_and_nested_selectors() {
+    let source = concat!(
+        ".box { margin: 1px 0 1px 0; border: solid 1px; }\n",
+        ".box::before { content: \"\"; }\n",
+        "@media screen and (max-width: 600px) { .box { color: blue; } }\n",
+        ".parent { .child { color: red; } }",
+    );
+    let options = FormatOptions::default();
+    let formatted = format_style(source, &options).unwrap();
+    insta::assert_snapshot!(formatted);
+    assert_eq!(format_style(&formatted, &options).unwrap(), formatted);
+}
+
+#[test]
+fn scoped_css_keeps_implicit_nested_selectors() {
+    let source = "<template><div class=\"p\" /></template>\n<style scoped>\n.p { :deep(.child) { color: red; } .q { color: blue; } }\n</style>";
+    let options = FormatOptions::default();
+    let formatted = format_sfc(source, &options).unwrap().code;
+    insta::assert_snapshot!(formatted);
+    assert_eq!(format_sfc(&formatted, &options).unwrap().code, formatted);
+}
+
+#[test]
+fn css_comment_keeps_preceding_blank_line() {
+    let source = ".a { color: red; }\n\n/* second */\n.b { color: blue; }";
+    let options = FormatOptions::default();
+    let formatted = format_style(source, &options).unwrap();
+    insta::assert_snapshot!(formatted);
+    assert_eq!(format_style(&formatted, &options).unwrap(), formatted);
+}

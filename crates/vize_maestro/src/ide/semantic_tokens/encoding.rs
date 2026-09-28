@@ -48,12 +48,12 @@ pub(crate) fn encode_tokens(tokens: &[AbsoluteToken]) -> Vec<SemanticToken> {
 
 /// Check if character can start an identifier.
 pub(crate) fn is_ident_start(c: char) -> bool {
-    c.is_ascii_alphabetic() || c == '_' || c == '$'
+    oxc_syntax::identifier::is_identifier_start(c)
 }
 
 /// Check if character can be part of an identifier.
 pub(crate) fn is_ident_char(c: char) -> bool {
-    c.is_ascii_alphanumeric() || c == '_' || c == '$'
+    oxc_syntax::identifier::is_identifier_part(c)
 }
 
 /// Check if identifier is a keyword or literal (used in tests).

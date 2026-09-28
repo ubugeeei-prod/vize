@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const 名前 = "x";
+const a = 名前;
+</script>
+<template>{{ 名前 }}</template>
