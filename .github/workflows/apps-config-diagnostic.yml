@@ -1,0 +1,64 @@
+name: Apps source config diagnostic
+on:
+  push:
+    branches: [ci/apps-config-diagnostic-6830]
+permissions:
+  contents: read
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  apps-config:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: cdd58930aec7987faaea809b80807b7952374768 # exact #7150 PR merge tested by Check 36465114982
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: check-vize-apps
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Check generated reference docs
+        run: vp node --test tests/tooling/lib-reference-docs.test.ts
+      - name: Pack source CLI config dependency
+        working-directory: npm/cli
+        run: vp pack
+      - name: Verify Vize package imports in the app
+        working-directory: examples/vite-musea
+        run: vp exec node --input-type=module -e "import { defineConfig } from 'vize'; if (typeof defineConfig !== 'function') process.exit(1)"
+      - name: Build source vize CLI and receipt
+        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && test -s target/ci/vize.differential-build.json
+      - name: Install source vize CLI
+        run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
+      - name: Run app fixtures with config-load assertion
+        run: |
+          set -o pipefail
+          vp run --workspace-root check:ci:vize-apps 2>&1 | tee "$RUNNER_TEMP/apps.log"
+          if grep -q 'Failed to parse .*vize.config' "$RUNNER_TEMP/apps.log"; then
+            echo 'Vize app configuration was not loaded' >&2
+            exit 1
+          fi
+
+  aggregate:
+    needs: apps-config
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    env:
+      TEST_RESULT: ${{ needs.apps-config.result }}
+    steps:
+      - name: Require app config success
+        run: test "$TEST_RESULT" = success
