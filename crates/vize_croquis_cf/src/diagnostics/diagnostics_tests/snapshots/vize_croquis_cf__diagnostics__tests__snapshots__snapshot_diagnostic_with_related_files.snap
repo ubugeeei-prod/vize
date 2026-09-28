@@ -13,6 +13,6 @@ Related files:
   - FileId(0) at 200: Value used here without .value
 
 Markdown Output:
-🟡 **WARNING** `vize:croquis/cf/provide-inject-type`
+**WARNING** `vize:croquis/cf/provide-inject-type`
 
 ### Type mismatch: provide returns Ref<UserStore> but inject expects UserStore

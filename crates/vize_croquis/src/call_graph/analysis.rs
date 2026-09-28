@@ -181,17 +181,17 @@ impl CallGraph {
         out.push_str("### Functions in Setup Context\n\n");
         for func in &self.functions {
             if func.called_in_setup || Some(func.id) == self.setup_function {
-                let marker = if func.is_composable {
-                    "🔧"
+                let kind = if func.is_composable {
+                    "composable"
                 } else if func.uses_vue_apis {
-                    "⚡"
+                    "Vue API"
                 } else {
-                    "📦"
+                    "function"
                 };
                 append!(
                     out,
                     "- {} `{}` ({}..{})\n",
-                    marker,
+                    kind,
                     func.name.as_deref().unwrap_or("<anonymous>"),
                     func.start,
                     func.end
@@ -204,7 +204,7 @@ impl CallGraph {
         out.push_str("| API | Category | In Setup | Offset |\n");
         out.push_str("|-----|----------|----------|--------|\n");
         for call in &self.vue_api_calls {
-            let in_setup = if call.in_setup_context { "✅" } else { "❌" };
+            let in_setup = if call.in_setup_context { "Yes" } else { "No" };
             append!(
                 out,
                 "| `{}` | {:?} | {} | {}..{} |\n",
@@ -222,7 +222,7 @@ impl CallGraph {
             out.push_str("| Composable | Source | In Setup | Offset |\n");
             out.push_str("|------------|--------|----------|--------|\n");
             for call in &self.composable_calls {
-                let in_setup = if call.in_setup_context { "✅" } else { "❌" };
+                let in_setup = if call.in_setup_context { "Yes" } else { "No" };
                 let source = call.source.as_deref().unwrap_or("-");
                 append!(
                     out,
@@ -239,7 +239,7 @@ impl CallGraph {
         // Issues (Vue APIs outside setup)
         let issues: Vec<_> = self.vue_api_calls_outside_setup().collect();
         if !issues.is_empty() {
-            out.push_str("\n### ⚠️ Issues: Vue APIs Outside Setup Context\n\n");
+            out.push_str("\n### Issues: Vue APIs Outside Setup Context\n\n");
             for call in issues {
                 append!(
                     out,

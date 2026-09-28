@@ -2,7 +2,7 @@
 source: crates/vize_croquis_cf/src/diagnostics/diagnostics_tests/markdown.rs
 expression: markdown.as_str()
 ---
-🟡 **WARNING** `vize:croquis/cf/destructuring-breaks-reactivity`
+**WARNING** `vize:croquis/cf/destructuring-breaks-reactivity`
 
 ### Destructuring props loses reactivity
 
@@ -11,11 +11,11 @@ expression: markdown.as_str()
 **What happens**:
 
 ```ts
-const { count, name } = props // ❌ count, name are plain values
+const { count, name } = props // count, name are plain values
 ```
 
 **Fix**: Use `toRefs()`:
 
 ```ts
-const { count, name } = toRefs(props) // ✅ count, name are refs
+const { count, name } = toRefs(props) // count, name are refs
 ```

@@ -34,11 +34,11 @@ impl ReactivityTracker {
 
             for binding in self.bindings.values() {
                 let state = match binding.state {
-                    BindingState::Active => "✓ Active",
-                    BindingState::ReactivityLost => "✗ Lost",
-                    BindingState::Moved => "→ Moved",
-                    BindingState::Escaped => "↗ Escaped",
-                    BindingState::Reassigned => "⟲ Reassigned",
+                    BindingState::Active => "Active",
+                    BindingState::ReactivityLost => "Lost",
+                    BindingState::Moved => "Moved",
+                    BindingState::Escaped => "Escaped",
+                    BindingState::Reassigned => "Reassigned",
                 };
                 append!(
                     md,
@@ -57,14 +57,14 @@ impl ReactivityTracker {
             md.push_str("## Violations\n\n");
 
             for violation in &self.violations {
-                let icon = match violation.severity {
-                    ViolationSeverity::Error => "❌",
-                    ViolationSeverity::Warning => "⚠️",
-                    ViolationSeverity::Info => "ℹ️",
-                    ViolationSeverity::Hint => "💡",
+                let severity = match violation.severity {
+                    ViolationSeverity::Error => "Error",
+                    ViolationSeverity::Warning => "Warning",
+                    ViolationSeverity::Info => "Info",
+                    ViolationSeverity::Hint => "Hint",
                 };
 
-                append!(md, "### {icon} {}\n\n", violation.message);
+                append!(md, "### {severity}: {}\n\n", violation.message);
                 append!(
                     md,
                     "**Location**: offset {}..{}\n\n",
@@ -80,13 +80,13 @@ impl ReactivityTracker {
                 match &violation.kind {
                     ViolationKind::DestructuringLoss { extracted_props } => {
                         md.push_str("```\n");
-                        md.push_str("// ❌ Reactivity is lost:\n");
+                        md.push_str("// Reactivity is lost:\n");
                         append!(
                             md,
                             "const {{ {} }} = reactiveObj\n",
                             extracted_props.join(", ")
                         );
-                        md.push_str("\n// ✓ Keep reactivity:\n");
+                        md.push_str("\n// Keep reactivity:\n");
                         append!(
                             md,
                             "const {{ {} }} = toRefs(reactiveObj)\n",
@@ -96,9 +96,9 @@ impl ReactivityTracker {
                     }
                     ViolationKind::SpreadLoss => {
                         md.push_str("```\n");
-                        md.push_str("// ❌ Creates non-reactive copy:\n");
+                        md.push_str("// Creates non-reactive copy:\n");
                         md.push_str("const copy = { ...reactiveObj }\n");
-                        md.push_str("\n// ✓ If intentional, use toRaw:\n");
+                        md.push_str("\n// If intentional, use toRaw:\n");
                         md.push_str("const copy = { ...toRaw(reactiveObj) }\n");
                         md.push_str("```\n\n");
                     }

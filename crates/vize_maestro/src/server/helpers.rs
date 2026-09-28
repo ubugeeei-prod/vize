@@ -234,16 +234,16 @@ impl MaestroServer {
         let mut markdown = String::new();
 
         for diag in lint_diags {
-            let severity_icon = match diag.severity {
-                Some(DiagnosticSeverity::ERROR) => "🔴",
-                Some(DiagnosticSeverity::WARNING) => "🟡",
-                Some(DiagnosticSeverity::INFORMATION) => "🔵",
-                Some(DiagnosticSeverity::HINT) => "💡",
-                _ => "⚪",
+            let severity = match diag.severity {
+                Some(DiagnosticSeverity::ERROR) => "Error",
+                Some(DiagnosticSeverity::WARNING) => "Warning",
+                Some(DiagnosticSeverity::INFORMATION) => "Information",
+                Some(DiagnosticSeverity::HINT) => "Hint",
+                _ => "Diagnostic",
             };
 
             if let Some(NumberOrString::String(ref rule)) = diag.code {
-                append!(markdown, "### {severity_icon} {rule}\n\n");
+                append!(markdown, "### {severity}: {rule}\n\n");
             }
 
             let mut parts = diag.message.split("\n\nHelp: ");
@@ -257,7 +257,7 @@ impl MaestroServer {
             if let Some(ref code_desc) = diag.code_description {
                 append!(
                     markdown,
-                    "[📖 View rule documentation]({})\n\n",
+                    "[View rule documentation]({})\n\n",
                     code_desc.href
                 );
             }

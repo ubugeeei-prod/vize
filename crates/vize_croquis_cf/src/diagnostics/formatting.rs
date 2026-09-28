@@ -14,10 +14,10 @@ impl CrossFileDiagnostic {
 
         // Severity badge
         let severity_badge = match self.severity {
-            DiagnosticSeverity::Error => "🔴 **ERROR**",
-            DiagnosticSeverity::Warning => "🟡 **WARNING**",
-            DiagnosticSeverity::Info => "🔵 **INFO**",
-            DiagnosticSeverity::Hint => "💡 **HINT**",
+            DiagnosticSeverity::Error => "**ERROR**",
+            DiagnosticSeverity::Warning => "**WARNING**",
+            DiagnosticSeverity::Info => "**INFO**",
+            DiagnosticSeverity::Hint => "**HINT**",
         };
 
         append!(out, "{severity_badge} `{}`\n\n", self.code());
@@ -28,7 +28,7 @@ impl CrossFileDiagnostic {
 
         // Suggestion
         if let Some(suggestion) = &self.suggestion {
-            append!(out, "\n**💡 Suggestion**: {suggestion}\n");
+            append!(out, "\n**Suggestion**: {suggestion}\n");
         }
 
         out
@@ -46,16 +46,13 @@ impl CrossFileDiagnostic {
                     "**Problem**: `{api_name}()` is called outside the setup context ({context_description}).\n\n",
                 );
                 out.push_str("**Why this is dangerous**:\n\n");
-                out.push_str("- 🔄 **State Pollution (CSRP)**: In SSR, module-level state is shared across requests, causing data leaks between users.\n");
-                out.push_str("- 💾 **Memory Leak**: Reactive state created outside setup won't be cleaned up when the component unmounts.\n");
-                out.push_str("- 🐛 **Unpredictable Behavior**: The reactivity system expects to track dependencies within component context.\n\n");
+                out.push_str("- **State Pollution (CSRP)**: In SSR, module-level state is shared across requests, causing data leaks between users.\n");
+                out.push_str("- **Memory Leak**: Reactive state created outside setup won't be cleaned up when the component unmounts.\n");
+                out.push_str("- **Unpredictable Behavior**: The reactivity system expects to track dependencies within component context.\n\n");
                 out.push_str("**Correct usage**:\n\n");
                 out.push_str("```vue\n");
                 out.push_str("<script setup>\n");
-                append!(
-                    *out,
-                    "const state = {api_name}(...) // ✅ Called in setup\n",
-                );
+                append!(*out, "const state = {api_name}(...) // Called in setup\n",);
                 out.push_str("</script>\n");
                 out.push_str("```\n");
             }
@@ -108,7 +105,7 @@ impl CrossFileDiagnostic {
                 out.push_str("```ts\n");
                 append!(
                     *out,
-                    "const copy = {{ ...{source_name} }} // ❌ copy is NOT reactive\n",
+                    "const copy = {{ ...{source_name} }} // copy is NOT reactive\n",
                 );
                 append!(
                     *out,
@@ -119,7 +116,7 @@ impl CrossFileDiagnostic {
                 out.push_str("```ts\n");
                 append!(
                     *out,
-                    "const {{ foo, bar }} = toRefs({source_name}) // ✅ foo, bar are refs\n",
+                    "const {{ foo, bar }} = toRefs({source_name}) // foo, bar are refs\n",
                 );
                 out.push_str("```\n");
             }
@@ -136,16 +133,13 @@ impl CrossFileDiagnostic {
                 append!(*out, "let {variable_name} = ref(0)\n");
                 append!(
                     *out,
-                    "{variable_name} = ref(1) // ❌ Template still watches the OLD ref\n",
+                    "{variable_name} = ref(1) // Template still watches the OLD ref\n",
                 );
                 out.push_str("```\n\n");
                 out.push_str("**Fix**: Mutate the `.value` instead:\n\n");
                 out.push_str("```ts\n");
                 append!(*out, "const {variable_name} = ref(0)\n");
-                append!(
-                    *out,
-                    "{variable_name}.value = 1 // ✅ Same ref, new value\n",
-                );
+                append!(*out, "{variable_name}.value = 1 // Same ref, new value\n",);
                 out.push_str("```\n");
             }
             CrossFileDiagnosticKind::DestructuringBreaksReactivity {
@@ -166,14 +160,14 @@ impl CrossFileDiagnostic {
                     .join(", ");
                 append!(
                     *out,
-                    "const {{ {keys} }} = {source_name} // ❌ {keys} are plain values\n",
+                    "const {{ {keys} }} = {source_name} // {keys} are plain values\n",
                 );
                 out.push_str("```\n\n");
                 append!(*out, "**Fix**: Use `{suggestion}()`:\n\n");
                 out.push_str("```ts\n");
                 append!(
                     *out,
-                    "const {{ {keys} }} = {suggestion}({source_name}) // ✅ {keys} are refs\n",
+                    "const {{ {keys} }} = {suggestion}({source_name}) // {keys} are refs\n",
                 );
                 out.push_str("```\n");
             }
@@ -212,13 +206,13 @@ impl CrossFileDiagnostic {
                 out.push_str("└──────────────────────────────────────────┘\n");
                 out.push_str("```\n\n");
                 out.push_str("**Issues**:\n\n");
-                out.push_str("- 🔍 **Hidden Data Flow**: Mutations happen \"at a distance\" - hard to trace.\n");
                 out.push_str(
-                    "- 🐛 **Unexpected Side Effects**: Function may modify your reactive state.\n",
+                    "- **Hidden Data Flow**: Mutations happen \"at a distance\" - hard to trace.\n",
                 );
                 out.push_str(
-                    "- 📦 **Ownership Unclear**: Who \"owns\" this reactive object now?\n\n",
+                    "- **Unexpected Side Effects**: Function may modify your reactive state.\n",
                 );
+                out.push_str("- **Ownership Unclear**: Who \"owns\" this reactive object now?\n\n");
                 out.push_str("**Explicit alternatives**:\n\n");
                 out.push_str("```ts\n");
                 out.push_str("// Option 1: Pass a readonly version\n");
@@ -275,9 +269,9 @@ impl CrossFileDiagnostic {
                 }
                 out.push_str("```\n\n");
                 out.push_str("**Why this is dangerous**:\n\n");
-                out.push_str("- 💥 **Infinite Update Loops**: Changes propagate endlessly.\n");
-                out.push_str("- 📚 **Stack Overflow Risk**: Deep recursion in reactive updates.\n");
-                out.push_str("- 🐌 **Performance Degradation**: Wasted computation cycles.\n\n");
+                out.push_str("- **Infinite Update Loops**: Changes propagate endlessly.\n");
+                out.push_str("- **Stack Overflow Risk**: Deep recursion in reactive updates.\n");
+                out.push_str("- **Performance Degradation**: Wasted computation cycles.\n\n");
                 out.push_str("**How to fix**:\n\n");
                 out.push_str("```ts\n");
                 out.push_str("// Option 1: Use computed() to break the cycle\n");
@@ -317,10 +311,10 @@ impl CrossFileDiagnostic {
                 out.push_str("┌─────────────────────────────────────────────────────────┐\n");
                 out.push_str("│  String Keys          │  Symbol/InjectionKey           │\n");
                 out.push_str("├───────────────────────┼────────────────────────────────┤\n");
-                out.push_str("│  ❌ Name collisions    │  ✅ Guaranteed uniqueness       │\n");
-                out.push_str("│  ❌ No type safety     │  ✅ Full TypeScript inference   │\n");
-                out.push_str("│  ❌ Refactoring breaks │  ✅ IDE rename support          │\n");
-                out.push_str("│  ❌ Hard to trace      │  ✅ Go-to-definition works      │\n");
+                out.push_str("│  Name collisions    │  Guaranteed uniqueness       │\n");
+                out.push_str("│  No type safety     │  Full TypeScript inference   │\n");
+                out.push_str("│  Refactoring breaks │  IDE rename support          │\n");
+                out.push_str("│  Hard to trace      │  Go-to-definition works      │\n");
                 out.push_str("└───────────────────────┴────────────────────────────────┘\n");
                 out.push_str("```\n\n");
                 out.push_str("**Name collision example**:\n\n");
@@ -328,7 +322,7 @@ impl CrossFileDiagnostic {
                 out.push_str("// ComponentA.vue\n");
                 append!(*out, "provide('{key}', myData)\n\n");
                 out.push_str("// LibraryX (unknown to you)\n");
-                append!(*out, "provide('{key}', otherData)  // 💥 Collision!\n");
+                append!(*out, "provide('{key}', otherData)  // Collision!\n");
                 out.push_str("```\n\n");
                 out.push_str("**Type-safe pattern with InjectionKey**:\n\n");
                 out.push_str("```ts\n");
@@ -343,12 +337,10 @@ impl CrossFileDiagnostic {
                 );
                 out.push_str("// Provider.vue\n");
                 out.push_str("import { UserKey } from './injection-keys'\n");
-                out.push_str("provide(UserKey, userData)  // ✅ Type-checked\n\n");
+                out.push_str("provide(UserKey, userData)  // Type-checked\n\n");
                 out.push_str("// Consumer.vue\n");
                 out.push_str("import { UserKey } from './injection-keys'\n");
-                out.push_str(
-                    "const user = inject(UserKey)  // ✅ Type: Ref<UserState> | undefined\n",
-                );
+                out.push_str("const user = inject(UserKey)  // Type: Ref<UserState> | undefined\n");
                 out.push_str("```\n");
             }
             CrossFileDiagnosticKind::WatchMutationCanBeComputed {
@@ -368,10 +360,10 @@ impl CrossFileDiagnostic {
                 out.push_str("┌─────────────────────────────────────────────────────────┐\n");
                 out.push_str("│  watch + mutation       │  computed                     │\n");
                 out.push_str("├─────────────────────────┼───────────────────────────────┤\n");
-                out.push_str("│  ❌ Imperative flow      │  ✅ Declarative transformation │\n");
-                out.push_str("│  ❌ Two variables        │  ✅ Single derived value       │\n");
-                out.push_str("│  ❌ Manual sync needed   │  ✅ Auto-cached and reactive   │\n");
-                out.push_str("│  ❌ Side effects possible│  ✅ Pure function guarantee    │\n");
+                out.push_str("│  Imperative flow      │  Declarative transformation │\n");
+                out.push_str("│  Two variables        │  Single derived value       │\n");
+                out.push_str("│  Manual sync needed   │  Auto-cached and reactive   │\n");
+                out.push_str("│  Side effects possible│  Pure function guarantee    │\n");
                 out.push_str("└─────────────────────────┴───────────────────────────────┘\n");
                 out.push_str("```\n\n");
                 out.push_str("**Refactored code** (declarative, easier to reason about):\n\n");
@@ -404,15 +396,15 @@ impl CrossFileDiagnostic {
                 out.push_str("```ts\n");
                 out.push_str("// Option 1: Use inside onMounted\n");
                 out.push_str("onMounted(() => {\n");
-                append!(*out, "  {api}  // ✅ Safe - DOM exists\n");
+                append!(*out, "  {api}  // Safe - DOM exists\n");
                 out.push_str("})\n\n");
                 out.push_str("// Option 2: Use nextTick after state change\n");
                 out.push_str("await nextTick()\n");
-                append!(*out, "{api}  // ✅ Safe - DOM updated\n");
+                append!(*out, "{api}  // Safe - DOM updated\n");
                 out.push('\n');
                 out.push_str("// Option 3: Guard for SSR\n");
                 out.push_str("if (typeof document !== 'undefined') {\n");
-                append!(*out, "  {api}  // ✅ Safe - browser only\n");
+                append!(*out, "  {api}  // Safe - browser only\n");
                 out.push_str("}\n");
                 out.push_str("```\n");
             }

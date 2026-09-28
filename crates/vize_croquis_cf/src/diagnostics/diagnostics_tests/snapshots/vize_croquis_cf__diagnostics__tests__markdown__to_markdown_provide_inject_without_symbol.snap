@@ -2,7 +2,7 @@
 source: crates/vize_croquis_cf/src/diagnostics/diagnostics_tests/markdown.rs
 expression: markdown.as_str()
 ---
-🟡 **WARNING** `vize:croquis/cf/provide-without-symbol`
+**WARNING** `vize:croquis/cf/provide-without-symbol`
 
 ### provide() uses string key
 
@@ -14,10 +14,10 @@ expression: markdown.as_str()
 ┌─────────────────────────────────────────────────────────┐
 │  String Keys          │  Symbol/InjectionKey           │
 ├───────────────────────┼────────────────────────────────┤
-│  ❌ Name collisions    │  ✅ Guaranteed uniqueness       │
-│  ❌ No type safety     │  ✅ Full TypeScript inference   │
-│  ❌ Refactoring breaks │  ✅ IDE rename support          │
-│  ❌ Hard to trace      │  ✅ Go-to-definition works      │
+│  Name collisions    │  Guaranteed uniqueness       │
+│  No type safety     │  Full TypeScript inference   │
+│  Refactoring breaks │  IDE rename support          │
+│  Hard to trace      │  Go-to-definition works      │
 └───────────────────────┴────────────────────────────────┘
 ```
 
@@ -28,7 +28,7 @@ expression: markdown.as_str()
 provide('user', myData)
 
 // LibraryX (unknown to you)
-provide('user', otherData)  // 💥 Collision!
+provide('user', otherData)  // Collision!
 ```
 
 **Type-safe pattern with InjectionKey**:
@@ -46,9 +46,9 @@ export const UserKey: InjectionKey<Ref<UserState>> = Symbol('user')
 
 // Provider.vue
 import { UserKey } from './injection-keys'
-provide(UserKey, userData)  // ✅ Type-checked
+provide(UserKey, userData)  // Type-checked
 
 // Consumer.vue
 import { UserKey } from './injection-keys'
-const user = inject(UserKey)  // ✅ Type: Ref<UserState> | undefined
+const user = inject(UserKey)  // Type: Ref<UserState> | undefined
 ```
