@@ -138,7 +138,6 @@ pub(super) struct CurrentElement<'a> {
     pub(super) is_self_closing: bool,
     pub(super) props: Vec<'a, PropNode<'a>>,
     pub(super) has_directive: bool,
-    pub(super) seen_attribute_names: Option<FxHashSet<String>>,
     pub(super) seen_directive_names: Option<FxHashSet<&'a str>>,
 }
 

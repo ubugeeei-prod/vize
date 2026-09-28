@@ -9,28 +9,12 @@ use vize_relief::{
 use super::super::{CurrentDirective, Parser};
 
 impl<'a> Parser<'a> {
-    pub(super) fn has_duplicate_attribute(&mut self, name: &str) -> bool {
-        let Some(current) = self.current_element.as_mut() else {
-            return false;
-        };
-        if current.props.len() < 32 {
-            return current.props.iter().any(|prop| {
+    pub(super) fn has_duplicate_attribute(&self, name: &str) -> bool {
+        self.current_element.as_ref().is_some_and(|current| {
+            current.props.iter().any(|prop| {
                 matches!(prop, PropNode::Attribute(existing) if existing.name.eq_ignore_ascii_case(name))
-            });
-        }
-        if let Some(names) = current.seen_attribute_names.as_mut() {
-            return !names.insert(name.to_ascii_lowercase().into());
-        }
-        let mut names = FxHashSet::default();
-        names.reserve(current.props.len() + 1);
-        for prop in &current.props {
-            if let PropNode::Attribute(existing) = prop {
-                names.insert(existing.name.to_ascii_lowercase().into());
-            }
-        }
-        let duplicate = !names.insert(name.to_ascii_lowercase().into());
-        current.seen_attribute_names = Some(names);
-        duplicate
+            })
+        })
     }
 
     pub(super) fn report_duplicate_directive(&mut self, directive: &CurrentDirective<'a>) {
