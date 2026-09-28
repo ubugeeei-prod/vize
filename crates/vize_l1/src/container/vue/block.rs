@@ -149,12 +149,12 @@ pub(super) fn find_closing_tag_end(
     None
 }
 
-/// Parse a single block from the source using byte operations
-/// Returns borrowed strings using Cow for zero-copy
+/// Parse a single block from source bytes with zero-copy borrowed `Cow` strings.
 ///
 /// - `Ok(Some(...))` — successfully parsed block.
 /// - `Ok(None)` — no SFC block starts at this position.
 /// - `Err(...)` — a block starts here but is incomplete or malformed.
+#[inline]
 pub fn parse_block_fast<'a>(
     bytes: &'a [u8],
     source: &'a str,
