@@ -304,8 +304,8 @@ fn artifact_macro_import_removal_span(
     if macro_indices.len() != 1 {
         return None;
     }
-    let index = macro_indices[0];
-    let macro_span = specifiers[index].span();
+    let index = *macro_indices.first()?;
+    let macro_span = specifiers.get(index)?.span();
     let other_named: Vec<_> = specifiers
         .iter()
         .enumerate()
@@ -318,7 +318,7 @@ fn artifact_macro_import_removal_span(
         let open = before.rfind('{')? + import_decl.span.start as usize;
         let after = content.get(macro_span.end as usize..import_decl.span.end as usize)?;
         let close = after.find('}')? + macro_span.end as usize + 1;
-        let default_end = specifiers[0].span().end as usize;
+        let default_end = specifiers.first()?.span().end as usize;
         return Some((default_end.min(open), close));
     }
     if let Some(next) = other_named.iter().find(|(other, _)| *other > index) {
