@@ -46,6 +46,17 @@ outlined by the changed compile layout, adding 15 instructions per dynamic
 element; that helper is forced inline at its existing call sites. These are
 code generation remedies, not new stages or budget changes. A fresh 100-probe
 diagnostic must pass before #7132 is updated.
+The first fresh-main diagnostic `70fcdbd6e` reduced the 11 protected misses
+to four SSR full-compile probes (+1 or +3 instructions) and one Vapor
+generate-large probe (+2); the ordinary Vapor lowering and compilation
+probes all passed. Callgrind attributed SSR's common +1 to the extracted
+ordinary compile body, with deep's extra +2 in `memcpy`; Vapor's +2 was
+inside `memcmp` with exactly the same comparison calls. Restore the SSR
+ordinary body in its original compile module, keep the captured sibling,
+and reuse the existing leading whitespace trim in Vapor's retained
+expression resolver. These changes preserve accepted output and reduce
+real ordinary work; the next diagnostic must prove all 100 ceilings before
+the PR head changes.
 Each product records only boundaries it actually executed. Provisional pages
 are committed only after final product selection, including DOM source-map
 parity. A compatibility map mismatch returns the compatibility module and

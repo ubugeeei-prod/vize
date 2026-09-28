@@ -3,38 +3,10 @@
 use super::{
     Allocator, CaptureOutcome, CaptureSink, CompilerError, CustomElementMatcher, ErrorCode, Level,
     RootNode, SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions,
-    SsrCompilerOptions, SsrL4Request, SsrL4Selection, String, TemplateSyntaxMode, cstr, l4,
-    parse_with_options_custom_elements_and_template_syntax, profile,
+    SsrCompilerOptions, SsrL4Request, SsrL4Selection, SsrLane, String, TemplateSyntaxMode, cstr,
+    l4, parse_with_options_custom_elements_and_template_syntax, profile,
     transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
 };
-
-mod plain;
-pub(crate) use plain::compile_ssr_on_lane;
-
-pub(super) fn compile_ssr_inner<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    options: SsrCompilerOptions,
-    template_syntax: TemplateSyntaxMode,
-    custom_elements: CustomElementMatcher,
-    experimental_options: SsrCompilerExperimentalOptions,
-    slotted: bool,
-) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    #[cfg(feature = "legacy-differential")]
-    let lane = crate::differential::production_lane();
-    #[cfg(not(feature = "legacy-differential"))]
-    let lane = SsrLane::Selected;
-    compile_ssr_on_lane(
-        allocator,
-        source,
-        options,
-        template_syntax,
-        custom_elements,
-        experimental_options,
-        slotted,
-        lane,
-    )
-}
 
 #[expect(
     clippy::too_many_arguments,
@@ -65,15 +37,6 @@ pub(super) fn compile_ssr_inner_captured<'a, C: CaptureSink>(
         lane,
         capture,
     )
-}
-
-/// Which emitter owns a compile. Production always asks the L4 selector;
-/// the differential battery pins the legacy walker on the same input.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum SsrLane {
-    Selected,
-    #[cfg(any(test, feature = "legacy-differential"))]
-    LegacyOnly,
 }
 
 #[expect(
