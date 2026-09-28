@@ -2,9 +2,9 @@
 //! baseline page (canonical text, round trip, rejections) and the keyed
 //! remarks-diff's classification of every change class.
 
-use vize_davinci::folio::remarks::corpus::{CorpusRemark, ExplainedRegression, RemarkCorpus};
-use vize_davinci::folio::remarks::diff::{ChangeKind, diff_corpus};
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::dump::remarks::corpus::{CorpusRemark, ExplainedRegression, RemarkCorpus};
+use vize_davinci::dump::remarks::diff::{ChangeKind, diff_corpus};
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_davinci::pass::RemarkKind;
 use vize_davinci::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
 use vize_l0::{Span, String};
@@ -68,11 +68,11 @@ fn corpus() -> RemarkCorpus {
 #[test]
 fn the_baseline_page_prints_canonically_and_round_trips() {
     let value = corpus();
-    assert_eq!(value.print_to_string(FolioMode::Full).as_str(), PAGE);
+    assert_eq!(value.print_to_string(DumpMode::Full).as_str(), PAGE);
     assert_eq!(RemarkCorpus::parse(PAGE), Ok(value.clone()));
     assert_eq!(
         RemarkCorpus::default()
-            .print_to_string(FolioMode::Full)
+            .print_to_string(DumpMode::Full)
             .as_str(),
         "[remarks-corpus]\n\n"
     );
@@ -83,21 +83,21 @@ fn the_baseline_page_prints_canonically_and_round_trips() {
 
 #[test]
 fn malformed_baseline_lines_are_rejected_exactly() {
-    let cases: [(&str, FolioError); 4] = [
+    let cases: [(&str, DumpError); 4] = [
         (
             "[remarks-corpus]\n\n[remarks-corpus.files]\na.vue\n",
-            FolioError::new(
+            DumpError::new(
                 4,
                 String::from("corpus line `a.vue` does not start with a quoted path"),
             ),
         ),
         (
             "[remarks-corpus]\n\n[remarks-corpus.files]\n\"a.vue\" extra\n",
-            FolioError::new(4, String::from("unexpected `extra` after a file path")),
+            DumpError::new(4, String::from("unexpected `extra` after a file path")),
         ),
         (
             "[remarks-corpus]\n\n[remarks-corpus.explained]\n\"a.vue\" s2.p applied n @1:2 reason=\"r\"\n",
-            FolioError::new(
+            DumpError::new(
                 4,
                 String::from(
                     "an explained regression is a missed entry with exactly `reason=\"...\"`",
@@ -106,7 +106,7 @@ fn malformed_baseline_lines_are_rejected_exactly() {
         ),
         (
             "[remarks-corpus]\n\n[remarks-corpus.lines]\n",
-            FolioError::new(3, String::from("unknown section [remarks-corpus.lines]")),
+            DumpError::new(3, String::from("unknown section [remarks-corpus.lines]")),
         ),
     ];
     for (input, error) in cases {

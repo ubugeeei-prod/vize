@@ -19,7 +19,7 @@ mod support;
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l1_to_l2::pass::cfg::{self, print_facts};
 
 use support::{assert_transformed_sound, with_transformed};
@@ -42,7 +42,7 @@ fn snapshot(stem: &str, budget_text: &str) -> (u32, u32) {
     let totals = with_transformed(&source, |lowered, folio, facts, budget| {
         insta::assert_snapshot!(
             format!("{stem}_folio"),
-            folio.print_to_string(FolioMode::Full).as_str()
+            folio.print_to_string(DumpMode::Full).as_str()
         );
         let complexity = facts
             .complexity
@@ -54,10 +54,7 @@ fn snapshot(stem: &str, budget_text: &str) -> (u32, u32) {
             format!("{stem}_breakdown"),
             print_facts(complexity, &source).as_str()
         );
-        assert_eq!(
-            budget.print_to_string(FolioMode::Full).as_str(),
-            budget_text
-        );
+        assert_eq!(budget.print_to_string(DumpMode::Full).as_str(), budget_text);
         // An analysis pass emits no diagnostics — `Optional`'s ground.
         assert_eq!(lowered.diagnostics, vec![]);
         (complexity.cyclomatic, complexity.cognitive)

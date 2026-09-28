@@ -34,22 +34,22 @@ deriving Repr, DecidableEq
 
 def OpKind.parse (text : String) : Option OpKind :=
   match text with
-  | "impeto.set-prop" => some .setProp
-  | "impeto.set-dynamic-props" => some .setDynamicProps
-  | "impeto.set-text" => some .setText
-  | "impeto.set-event" => some .setEvent
-  | "impeto.set-html" => some .setHtml
-  | "impeto.set-template-ref" => some .setTemplateRef
-  | "impeto.insert-node" => some .insertNode
-  | "impeto.prepend-node" => some .prependNode
-  | "impeto.directive" => some .directive
-  | "impeto.if" => some .branch
-  | "impeto.for" => some .loop
-  | "impeto.create-component" => some .createComponent
-  | "impeto.slot-outlet" => some .slotOutlet
-  | "impeto.get-text-child" => some .getTextChild
-  | "impeto.child-ref" => some .childRef
-  | "impeto.next-ref" => some .nextRef
+  | "l3.set-prop" => some .setProp
+  | "l3.set-dynamic-props" => some .setDynamicProps
+  | "l3.set-text" => some .setText
+  | "l3.set-event" => some .setEvent
+  | "l3.set-html" => some .setHtml
+  | "l3.set-template-ref" => some .setTemplateRef
+  | "l3.insert-node" => some .insertNode
+  | "l3.prepend-node" => some .prependNode
+  | "l3.directive" => some .directive
+  | "l3.if" => some .branch
+  | "l3.for" => some .loop
+  | "l3.create-component" => some .createComponent
+  | "l3.slot-outlet" => some .slotOutlet
+  | "l3.get-text-child" => some .getTextChild
+  | "l3.child-ref" => some .childRef
+  | "l3.next-ref" => some .nextRef
   | _ => none
 
 inductive EdgeKind where

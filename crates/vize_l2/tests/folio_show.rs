@@ -1,30 +1,33 @@
 //! TS-16 for `vue.show` (P2-11): Vue's `v-show` display toggle as a
 //! dialect binding, parseable and mirrorable like the other L2 ops.
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, String, Vec as ArenaVec};
+use vize_l2::dump::{
+    Binding as DumpBinding, Element as DumpElement, Expr as DumpExpr, Op as DumpOp, Page as L2Page,
+    VueShow as DumpVueShow,
+};
 use vize_l2::expr::{ExprRef, JsExpr};
-use vize_l2::folio::{DisegnoFolio, FolioBinding, FolioElement, FolioExpr, FolioOp, FolioVueShow};
 use vize_l2::op::{BindingOp, ElementOp, Namespace, Op, Region, VueShowOp};
 
 const CANONICAL: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @0:25
   vue.show value=js(\"open\" @13:17) @5:18
 
 ";
 
-fn hand_built() -> DisegnoFolio {
-    DisegnoFolio {
-        ops: vec![FolioOp::Element(FolioElement {
+fn hand_built() -> L2Page {
+    L2Page {
+        ops: vec![DumpOp::Element(DumpElement {
             tag: String::from("div"),
             namespace: Namespace::Html,
             attributes: vec![],
-            bindings: vec![FolioBinding::VueShow(FolioVueShow {
-                value: FolioExpr::Js {
+            bindings: vec![DumpBinding::VueShow(DumpVueShow {
+                value: DumpExpr::Js {
                     source: String::from("open"),
                     span: Span::new(13, 17),
                 },
@@ -40,9 +43,9 @@ fn hand_built() -> DisegnoFolio {
 fn the_show_op_round_trips() {
     let value = hand_built();
     assert_eq!(value.op_count(), 2);
-    assert_eq!(value.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    assert_eq!(value.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(
-        DisegnoFolio::parse(CANONICAL).expect("canonical text parses"),
+        L2Page::parse(CANONICAL).expect("canonical text parses"),
         value
     );
 }
@@ -79,9 +82,7 @@ fn an_arena_tree_mirrors_the_show_op() {
         &allocator,
     );
     assert_eq!(
-        DisegnoFolio::of(&ops)
-            .print_to_string(FolioMode::Full)
-            .as_str(),
+        L2Page::of(&ops).print_to_string(DumpMode::Full).as_str(),
         CANONICAL
     );
 }

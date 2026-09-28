@@ -133,7 +133,8 @@ pub fn analyze_sfc_descriptor(
     template_ast: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
 ) -> Croquis {
-    analyze_sfc_descriptor_with_context(descriptor, template_ast, options).croquis
+    analyze_sfc_descriptor_with_context_impl(descriptor, template_ast, options, false, false, false)
+        .croquis
 }
 
 /// Analyze an SFC descriptor and return matching script content/offset metadata.
@@ -142,7 +143,7 @@ pub fn analyze_sfc_descriptor_with_context(
     template_ast: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
 ) -> SfcCroquisAnalysis {
-    analyze_sfc_descriptor_with_context_impl(descriptor, template_ast, options, false, false)
+    analyze_sfc_descriptor_with_context_impl(descriptor, template_ast, options, false, false, true)
 }
 
 /// Analyze an SFC descriptor with Vue 3 Options API binding resolution enabled
@@ -152,7 +153,7 @@ pub fn analyze_sfc_descriptor_with_context_options_api(
     template_ast: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
 ) -> SfcCroquisAnalysis {
-    analyze_sfc_descriptor_with_context_impl(descriptor, template_ast, options, true, false)
+    analyze_sfc_descriptor_with_context_impl(descriptor, template_ast, options, true, false, true)
 }
 
 /// Analyze an SFC descriptor with legacy Vue 2.7 / Nuxt 2 compatibility enabled
@@ -162,7 +163,7 @@ pub fn analyze_sfc_descriptor_with_context_legacy_vue2(
     template_ast: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
 ) -> SfcCroquisAnalysis {
-    analyze_sfc_descriptor_with_context_impl(descriptor, template_ast, options, false, true)
+    analyze_sfc_descriptor_with_context_impl(descriptor, template_ast, options, false, true, true)
 }
 
 fn analyze_sfc_descriptor_with_context_impl(
@@ -171,16 +172,26 @@ fn analyze_sfc_descriptor_with_context_impl(
     options: SfcCroquisOptions,
     options_api: bool,
     legacy_vue2: bool,
+    include_script_content: bool,
 ) -> SfcCroquisAnalysis {
     analyze_sfc_descriptor_resolved_impl(
         descriptor,
         template_ast,
         options,
-        options_api,
-        legacy_vue2,
+        DescriptorAnalysisMode {
+            options_api,
+            legacy_vue2,
+            include_script_content,
+        },
         None,
         None,
     )
+}
+
+struct DescriptorAnalysisMode {
+    options_api: bool,
+    legacy_vue2: bool,
+    include_script_content: bool,
 }
 
 /// Analyze an SFC descriptor with externally-resolved props merged in before
@@ -204,8 +215,11 @@ pub fn analyze_sfc_descriptor_resolved(
         descriptor,
         template_ast,
         options,
-        options_api,
-        legacy_vue2,
+        DescriptorAnalysisMode {
+            options_api,
+            legacy_vue2,
+            include_script_content: true,
+        },
         Some(filename),
         None,
     )
@@ -226,8 +240,11 @@ pub fn analyze_sfc_descriptor_resolved_with_sources(
         descriptor,
         template_ast,
         options,
-        options_api,
-        legacy_vue2,
+        DescriptorAnalysisMode {
+            options_api,
+            legacy_vue2,
+            include_script_content: true,
+        },
         Some(filename),
         Some(sources),
     )
@@ -237,15 +254,14 @@ fn analyze_sfc_descriptor_resolved_impl(
     descriptor: &SfcDescriptor<'_>,
     template_ast: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
-    options_api: bool,
-    legacy_vue2: bool,
+    mode: DescriptorAnalysisMode,
     resolve_filename: Option<&str>,
     sources: Option<&crate::script::TypeSourceSnapshot>,
 ) -> SfcCroquisAnalysis {
     let drawer_options = options.analyzer_options;
     let script_analyzed = drawer_options.analyze_script
         && (descriptor.script.is_some() || descriptor.script_setup.is_some());
-    let mut summary = analyze_scripts(descriptor, options, options_api, legacy_vue2);
+    let mut summary = analyze_scripts(descriptor, options, mode.options_api, mode.legacy_vue2);
     if let Some(filename) = resolve_filename {
         match sources {
             Some(sources) => merge_resolved_props_into_croquis_with_sources(
@@ -263,7 +279,7 @@ fn analyze_sfc_descriptor_resolved_impl(
     } else {
         drawer
     };
-    let mut drawer = apply_options_api_mode(drawer, options_api, legacy_vue2);
+    let mut drawer = apply_options_api_mode(drawer, mode.options_api, mode.legacy_vue2);
 
     if let Some(root) = template_ast {
         profile!("atelier.sfc.croquis.template", drawer.draw_template(root));
@@ -277,7 +293,11 @@ fn analyze_sfc_descriptor_resolved_impl(
             unused::apply_style_reads(&mut croquis, descriptor, options.template_is_derived);
         }
     }
-    let (script_content, script_offset) = script_content_for_descriptor(descriptor, options);
+    let (script_content, script_offset) = if mode.include_script_content {
+        script_content_for_descriptor(descriptor, options)
+    } else {
+        (None, 0)
+    };
     SfcCroquisAnalysis {
         croquis,
         script_content,

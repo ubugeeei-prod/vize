@@ -3,7 +3,7 @@
 //! Each case mounts an authored template under a caller that supplies named or
 //! default slots, either as static text or as one displayed slot prop, while
 //! reactive patches change props, branches and loop items. Rust lowers every
-//! case and commits the exact graph/value Folios. The Lean reference computes
+//! case and commits the exact graph/value Dumps. The Lean reference computes
 //! the expected observations and both mounted Vue runtimes must reproduce them.
 //! Regenerate with `VIZE_UPDATE_SLOT_REFERENCE=1`, then
 //! `lake exe impetoRef --write-slot-reference`.
@@ -16,10 +16,10 @@
 
 use serde_json::{Value, json};
 use std::path::Path;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::Allocator;
-use vize_l3::folio::L3Folio;
-use vize_l3::values_folio::L3ValuesFolio;
+use vize_l3::dump::Page as L3Page;
+use vize_l3::values_dump::Page as ValuesPage;
 use vize_l3::verify::verify;
 
 fn patch(key: &str, value: Value) -> Value {
@@ -117,11 +117,11 @@ fn lowered(source: &str) -> (String, String) {
     let lowered = vize_l2_to_l3::lower(&allocator, &s2.root);
     assert_eq!(verify(&lowered.program), [], "{source}");
     (
-        L3Folio::of(&lowered.program)
-            .print_to_string(FolioMode::Full)
+        L3Page::of(&lowered.program)
+            .print_to_string(DumpMode::Full)
             .to_string(),
-        L3ValuesFolio::of(&lowered.program)
-            .print_to_string(FolioMode::Full)
+        ValuesPage::of(&lowered.program)
+            .print_to_string(DumpMode::Full)
             .to_string(),
     )
 }

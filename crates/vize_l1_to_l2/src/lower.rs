@@ -14,11 +14,11 @@
 //!
 //! Ops are numbered densely in page order as they are decided
 //! ([`lower::cx`]); [`Lowered::op_count`] equals
-//! `L2Folio::of(&lowered.root.ops).op_count()` on every input —
+//! `L2Page::of(&lowered.root.ops).op_count()` on every input —
 //! the law the side tables and the L2 verifier's `verify_table` key on.
 //!
 //! [`Diagnostic`]: vize_davinci::diagnostic::Diagnostic
-//! [`L2Folio`]: vize_l2::folio::L2Folio
+//! [`L2Page`]: vize_l2::dump::Page
 //! [`SurfaceError`]: vize_l1::SurfaceError
 
 use alloc::vec::Vec as StdVec;

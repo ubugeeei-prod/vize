@@ -15,7 +15,8 @@ mod differential_battery {
 
     /// The JSX roots the P2-16 projection refuses are named, so the refused
     /// count in the census cannot hide a newly refused construct. The custom
-    /// directive module (`v-custom={c}`) is admitted: main projects it.
+    /// directive module (`v-custom={c}`) is admitted: main projects it. The
+    /// falsy-value `&&` scope (#6887) is not modelled by L2 yet.
     #[test]
     fn refused_jsx_roots_are_the_named_ones() {
         let refused: std::vec::Vec<&str> = JSX
@@ -25,6 +26,6 @@ mod differential_battery {
             })
             .map(|(name, ..)| *name)
             .collect();
-        assert_eq!(refused, [] as [&str; 0]);
+        assert_eq!(refused, ["conditional-value"]);
     }
 }

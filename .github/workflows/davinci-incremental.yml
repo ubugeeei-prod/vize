@@ -74,7 +74,7 @@ jobs:
           shared-key: davinci-incremental-${{ matrix.platform.target }}
           cache-workspace-crates: "true"
       - name: Print and compare the TS-43 golden keys
-        run: cargo test -p vize_davinci --test artifact_keys --test key_manifests -- --nocapture
+        run: cargo test -p vize_davinci --test artifact_keys --test key_manifests --test hash_domains --test sfc_summary --test global_summary -- --nocapture
 
   incremental-equivalence:
     name: Incremental ≡ clean (TS-42)

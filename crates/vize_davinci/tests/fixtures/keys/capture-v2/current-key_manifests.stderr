@@ -1,0 +1,6 @@
+
+thread 'the_manifest_doc_lists_every_input_and_every_artifact_exactly' (16359082) panicked at crates/vize_davinci/tests/key_manifests.rs:209:5:
+assertion `left == right` failed
+  left: "l0.source-block [l0] toolchain-version\nl1.surface-page [l1] toolchain-version,feature-flags\nl2.page [l2] project-config,toolchain-version,feature-flags\nprojection.virtual-ts [l0,l2] tsconfig-content,project-config,toolchain-version,feature-flags\ncorsa.session [] project-identity,tsconfig-content,toolchain-version,corsa-version,feature-flags,platform\nplugin.result [l0] toolchain-version,feature-flags,plugin-identity,plugin-version,plugin-code,plugin-visits,plugin-demands,plugin-inputs\n"
+ right: "s0.source-block [l0] toolchain-version\ns1.surface-page [l1] toolchain-version,feature-flags\ns2.page [l2] project-config,toolchain-version,feature-flags\nprojection.virtual-ts [l0,l2] tsconfig-content,project-config,toolchain-version,feature-flags\ncorsa.session [] project-identity,tsconfig-content,toolchain-version,corsa-version,feature-flags,platform\nplugin.result [l0] toolchain-version,feature-flags,plugin-identity,plugin-version,plugin-code,plugin-visits,plugin-demands,plugin-inputs\n"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

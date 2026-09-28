@@ -18,6 +18,7 @@ use crate::compat::{JsxCompatMode, unsupported_with_vapor};
 use crate::diagnostics::JsxDiagnostic;
 use crate::forwarded_slots::{SlotsForwardingBackend, reject_forwarded_slots};
 use crate::lower::BabelLoweringOptions;
+use crate::spread_children::reject_spread_children;
 use crate::ssr::compile_lowered_root_to_ssr;
 use crate::vapor::{VaporCompileOptions, compile_root_to_vapor};
 use crate::vdom::{VdomCompatOptions, VdomCompileOptions, compile_root_to_vdom};
@@ -180,12 +181,13 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
 
     let mut components = Vec::with_capacity(lowered.roots.len());
     let mut spans = Vec::with_capacity(lowered.roots.len());
-    for lowered_root in lowered.roots {
+    for mut lowered_root in lowered.roots {
         spans.push((
             lowered_root.root.loc.span.start,
             lowered_root.root.loc.span.end,
         ));
         let component = if config.ssr {
+            reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
             // Only VDOM can forward an opaque slots object; the other backends
             // name the gap rather than drop the directive (#3467).
             reject_forwarded_slots(
@@ -203,6 +205,7 @@ pub(crate) fn compile_jsx_with_babel_customizations_inner(
         } else {
             let mode = resolve_mode(lowered_root.mode, config.default_mode);
             if mode == JsxOutputMode::Vapor {
+                reject_spread_children(allocator, &mut lowered_root.root, &mut diagnostics);
                 reject_forwarded_slots(
                     &lowered_root.root,
                     SlotsForwardingBackend::Vapor,

@@ -50,6 +50,7 @@ pub mod vdom;
 mod analyze;
 mod finder;
 mod forwarded_slots;
+mod spread_children;
 mod tooling_recovery;
 pub use tooling_recovery::lower_source_for_typecheck;
 
@@ -254,6 +255,7 @@ fn lower_source_with_compat<'a>(
     });
     let mapper = SpanMapper::new(source);
     let mut lowerer = Lowerer::with_compat(bump, &mapper, compat, babel, scoping);
+    lowerer.collect_boolean_bindings(&parsed.program);
     for diagnostic in parsed.diagnostics {
         lowerer.report(diagnostic);
     }

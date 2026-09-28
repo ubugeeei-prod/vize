@@ -148,21 +148,30 @@ fn fragments_are_not_reported_at_any_depth() {
 }
 
 #[test]
-fn spread_child_is_reported() {
+fn spread_child_lowers_without_a_diagnostic() {
+    // `{...items}` spreads into the children (#6888); only Vapor and SSR
+    // report it, at their compile entry points.
     let bump = Allocator::new();
-    let src = "const a = <div>{...items}</div>;";
+    let out = lower_all(&bump, "const a = <div>{...items}</div>;");
+    assert_eq!(diagnostic_texts(&out), vec![]);
+}
+
+#[test]
+fn jsx_inside_a_spread_child_argument_is_reported() {
+    let bump = Allocator::new();
+    let src = "const a = <div>{...[<i/>]}</div>;";
     let out = lower_all(&bump, src);
 
     assert_eq!(
         diagnostic_texts(&out),
         vec![(
             true,
-            "spread children (`{...items}`) are not supported; the value would be stringified instead of spread"
+            "JSX inside a spread child argument (`{...[<i/>]}`) is not supported; declare the VNodes separately and spread the variable"
         )]
     );
     let diagnostic = &out.diagnostics[0];
     assert_eq!(
         &src[diagnostic.start as usize..diagnostic.end as usize],
-        "{...items}"
+        "{...[<i/>]}"
     );
 }

@@ -12,7 +12,7 @@ use vize_canon::virtual_ts::{
     ProjectionFeatures, ProjectionMapping, ProjectionMeta, ProjectionSpanKind, VizeMapping,
     VizeSubSpan,
 };
-use vize_davinci::folio::{Folio, FolioError};
+use vize_davinci::dump::{Dump, Error as DumpError};
 use vize_extension_host::expression::{Analysis, ProjectionPage, accept_analysis};
 use vize_extension_host::{Diagnostic, Page, Severity, Span, Stage};
 use vize_l0::{String, cstr};
@@ -244,7 +244,7 @@ fn malformed_projection_pages_are_refused_exactly() {
     for (text, line, message) in cases {
         assert_eq!(
             ProjectionPage::parse(text),
-            Err(FolioError::new(line, String::from(message))),
+            Err(DumpError::new(line, String::from(message))),
             "{text:?}"
         );
     }

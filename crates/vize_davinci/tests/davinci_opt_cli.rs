@@ -20,7 +20,8 @@ use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
-use vize_davinci::folio::{Folio, FolioMode, croquis::CroquisFolio};
+use vize_davinci::dump::croquis::Page as CroquisPage;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 
 const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] [--remarks <path>] < folio\nPipeline selectors: l0..l4, l1-to-l2, l2-to-l3 (legacy s names accepted).\n";
 
@@ -156,9 +157,9 @@ fn an_unknown_stage_reports_the_available_stages() {
 #[test]
 fn non_canonical_input_reports_the_first_divergent_line() {
     let input = "[vir]\nscript_setup=false\nscopes=0\nbindings=1\n\n[bindings]\nc:b,a\n\n";
-    let printed = CroquisFolio::parse(input)
+    let printed = CroquisPage::parse(input)
         .expect("non-canonical text parses")
-        .print_to_string(FolioMode::Full);
+        .print_to_string(DumpMode::Full);
     let file = temp_file("p2-4-non-canonical.folio", input);
     let output = run(&["--roundtrip", file.to_str().expect("UTF-8 path")], None);
     assert_eq!(output.status.code(), Some(1));

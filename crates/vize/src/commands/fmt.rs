@@ -453,7 +453,7 @@ fn script_source_type_for_path(path: &Path) -> Option<SourceType> {
     let extension = path.extension().and_then(|extension| extension.to_str())?;
     match extension {
         "js" | "mjs" | "cjs" => Some(SourceType::from_path("module.js").ok()?.with_module(true)),
-        "ts" | "mts" | "cts" => Some(SourceType::from_path("module.ts").ok()?.with_module(true)),
+        "ts" | "mts" | "cts" => Some(SourceType::from_path(path).ok()?.with_module(true)),
         "jsx" => Some(SourceType::jsx().with_module(true)),
         "tsx" => Some(SourceType::tsx().with_module(true)),
         _ => None,

@@ -17,6 +17,11 @@ pub(crate) fn get_word_at_offset(content: &str, offset: usize) -> Option<String>
     crate::ide::token_at_offset(content, offset, is_word_char)
 }
 
+/// Get a JavaScript identifier in a script block, including Unicode letters.
+pub(crate) fn get_script_identifier_at_offset(content: &str, offset: usize) -> Option<String> {
+    crate::ide::script_identifier::at_offset(content, offset)
+}
+
 /// Check if a byte is a valid word character.
 #[inline]
 pub(crate) fn is_word_char(c: u8) -> bool {

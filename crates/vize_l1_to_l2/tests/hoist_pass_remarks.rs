@@ -17,15 +17,15 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::assert_folio_snapshot;
-use vize_davinci::folio::remarks::RemarkLog;
+use vize_davinci::assert_dump_snapshot;
+use vize_davinci::dump::remarks::RemarkLog;
 use vize_davinci::pass::{NoObserver, RemarkCollector, RemarkKind};
 use vize_l0::{Allocator, Span, String};
 use vize_l1::parse;
 use vize_l1_to_l2::pass::hoist::{STATIC_PROPS, STATIC_SUBTREE};
 use vize_l1_to_l2::pass::{StaticFacts, StaticLevel, run_transform};
 use vize_l1_to_l2::{LegacyCaps, lower_with_caps};
-use vize_l2::folio::{FolioOp, L2Folio};
+use vize_l2::dump::{Op as DumpOp, Page as L2Page};
 
 fn fixture(name: &str) -> String {
     let path: PathBuf = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -40,7 +40,7 @@ fn fixture(name: &str) -> String {
 
 /// One run: the post-pass folio, the facts in id order, and the remarks.
 struct Run {
-    folio: L2Folio,
+    folio: L2Page,
     facts: Vec<StaticFacts>,
     remarks: RemarkLog,
 }
@@ -52,7 +52,7 @@ fn run(source: &str) -> Run {
     let mut collector = RemarkCollector::new();
     let facts = run_transform(&mut lowered, &mut collector);
     Run {
-        folio: L2Folio::of(&lowered.root.ops),
+        folio: L2Page::of(&lowered.root.ops),
         facts: facts
             .static_facts
             .sorted_entries()
@@ -83,10 +83,10 @@ struct Owner {
     has_props: bool,
 }
 
-fn census(ops: &[FolioOp], out: &mut Vec<Owner>) {
+fn census(ops: &[DumpOp], out: &mut Vec<Owner>) {
     for op in ops {
         match op {
-            FolioOp::Element(element) => {
+            DumpOp::Element(element) => {
                 out.push(Owner {
                     element: true,
                     span: element.span,
@@ -94,7 +94,7 @@ fn census(ops: &[FolioOp], out: &mut Vec<Owner>) {
                 });
                 census(&element.children, out);
             }
-            FolioOp::Component(component) => {
+            DumpOp::Component(component) => {
                 out.push(Owner {
                     element: false,
                     span: component.span,
@@ -102,14 +102,14 @@ fn census(ops: &[FolioOp], out: &mut Vec<Owner>) {
                 });
                 census(&component.children, out);
             }
-            FolioOp::If(if_op) => {
+            DumpOp::If(if_op) => {
                 for branch in &if_op.branches {
                     census(&branch.ops, out);
                 }
             }
-            FolioOp::For(for_op) => census(&for_op.ops, out),
-            FolioOp::Slot(slot) => census(&slot.fallback, out),
-            FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => {}
+            DumpOp::For(for_op) => census(&for_op.ops, out),
+            DumpOp::Slot(slot) => census(&slot.fallback, out),
+            DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::Comment(_) => {}
         }
     }
 }
@@ -177,7 +177,7 @@ fn assert_remarks_follow_facts(run: &Run, source: &str) {
 fn the_levels_fixture_explains_every_lattice_rung() {
     let source = fixture("levels.vue");
     let run = run(&source);
-    assert_folio_snapshot!(run.remarks);
+    assert_dump_snapshot!(run.remarks);
     assert_remarks_follow_facts(&run, &source);
 }
 
@@ -185,7 +185,7 @@ fn the_levels_fixture_explains_every_lattice_rung() {
 fn the_positions_fixture_explains_structural_children() {
     let source = fixture("positions.vue");
     let run = run(&source);
-    assert_folio_snapshot!(run.remarks);
+    assert_dump_snapshot!(run.remarks);
     assert_remarks_follow_facts(&run, &source);
 }
 
@@ -193,7 +193,7 @@ fn the_positions_fixture_explains_structural_children() {
 fn the_blockers_fixture_names_every_blocker_class() {
     let source = fixture("blockers.vue");
     let run = run(&source);
-    assert_folio_snapshot!(run.remarks);
+    assert_dump_snapshot!(run.remarks);
     assert_remarks_follow_facts(&run, &source);
     assert_eq!(
         RemarkKind::ALL.map(|kind| run.remarks.count(kind)),

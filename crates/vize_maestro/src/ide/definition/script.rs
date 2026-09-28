@@ -39,7 +39,7 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
         }));
     }
 
-    let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
+    let word = helpers::get_script_identifier_at_offset(&ctx.content, ctx.offset)?;
 
     if word.is_empty() {
         return None;
@@ -67,7 +67,7 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
                     start: Position { line, character },
                     end: Position {
                         line,
-                        character: character + word.len() as u32,
+                        character: character + word.encode_utf16().count() as u32,
                     },
                 },
             }));

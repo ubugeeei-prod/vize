@@ -40,7 +40,7 @@ impl ProvideInjectTree {
             .unwrap_or("<unknown>");
 
         // Component name
-        writeln!(output, "{}📦 **{}**", indent, name).ok();
+        writeln!(output, "{}**{}**", indent, name).ok();
 
         // Provides
         if !node.provides.is_empty() {
@@ -53,11 +53,11 @@ impl ProvideInjectTree {
                 let consumers = if p.consumer_count > 0 {
                     cstr!(" → {} consumer(s)", p.consumer_count)
                 } else {
-                    CompactString::new(" ⚠️ _unused_")
+                    CompactString::new(" _unused_")
                 };
                 writeln!(
                     output,
-                    "{}  🔹 provide(`\"{}\"`){}{}",
+                    "{}  provide(`\"{}\"`){}{}",
                     indent, p.key, type_str, consumers
                 )
                 .ok();
@@ -69,13 +69,13 @@ impl ProvideInjectTree {
             for i in &node.injects {
                 let default_str = if i.has_default { " (has default)" } else { "" };
                 let provider_str = if i.provider.is_some() {
-                    " ✅"
+                    " (provided)"
                 } else {
-                    " ❌ _no provider_"
+                    " _no provider_"
                 };
                 writeln!(
                     output,
-                    "{}  🔸 inject(`\"{}\"`){}{}",
+                    "{}  inject(`\"{}\"`){}{}",
                     indent, i.key, default_str, provider_str
                 )
                 .ok();

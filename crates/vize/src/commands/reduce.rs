@@ -25,8 +25,8 @@ mod tests;
 use std::path::{Path, PathBuf};
 
 use clap::Args;
-use vize_davinci::folio::repro::ReproFolio;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::repro::Page as ReproPage;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::pass::RemarkKind;
 use vize_l0::{String, cstr};
 
@@ -144,7 +144,7 @@ pub fn run(args: ReduceArgs) {
     let mut checks = flag_checks(&args, &scratch).unwrap_or_else(|message| fail(2, &message));
     let repro = path.to_string_lossy().ends_with(".folio");
     let (artifact, repro_folio) = if repro {
-        let folio = ReproFolio::parse(&text)
+        let folio = ReproPage::parse(&text)
             .unwrap_or_else(|error| fail(2, &cstr!("{}: {error}", path.display())));
         if folio.artifact_stage.as_str() != ARTIFACT_STAGE_SOURCE {
             fail(
@@ -194,7 +194,7 @@ pub fn run(args: ReduceArgs) {
         Some(mut folio) => {
             folio.artifact = reduction.text.clone();
             folio.normalize();
-            folio.print_to_string(FolioMode::Full)
+            folio.print_to_string(DumpMode::Full)
         }
         None => reduction.text.clone(),
     };

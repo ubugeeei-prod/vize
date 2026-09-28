@@ -1,4 +1,4 @@
-//! TS-16 for `#[derive(Folio)]` pages (P2-4).
+//! TS-16 for `#[derive(Dump)]` pages (P2-4).
 //!
 //! Per derived type: `print(parse(t)) == t` byte-exact in `Full` mode for
 //! canonical text, `parse(print(v)) == v` structurally for values, and
@@ -12,12 +12,12 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_davinci::pass::BudgetObserver;
 use vize_l0::{FxHashMap, String, cstr};
 
 /// Every supported field kind on one page.
-#[derive(Debug, Default, PartialEq, Folio)]
+#[derive(Debug, Default, PartialEq, Dump)]
 struct SamplePage {
     title: String,
     enabled: bool,
@@ -61,16 +61,13 @@ fn sample() -> SamplePage {
 
 #[test]
 fn full_print_is_identity_on_canonical_text() {
-    assert_eq!(
-        sample().print_to_string(FolioMode::Full).as_str(),
-        CANONICAL
-    );
+    assert_eq!(sample().print_to_string(DumpMode::Full).as_str(), CANONICAL);
 }
 
 #[test]
 fn parse_print_is_structural_identity() {
     let value = sample();
-    let printed = value.print_to_string(FolioMode::Full);
+    let printed = value.print_to_string(DumpMode::Full);
     let reparsed = SamplePage::parse(printed.as_str()).expect("printed text parses");
     assert_eq!(reparsed, value);
 }
@@ -91,7 +88,7 @@ fn a_hand_built_value_round_trips_structurally() {
             .collect(),
         weights,
     };
-    assert_eq!(value.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    assert_eq!(value.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     let reparsed = SamplePage::parse(CANONICAL).expect("canonical text parses");
     assert_eq!(reparsed, value);
 }
@@ -121,7 +118,7 @@ first note
 second note
 ";
     let folio = SamplePage::parse(scrambled).expect("non-canonical text parses");
-    assert_eq!(folio.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(folio, sample());
 }
 
@@ -136,7 +133,7 @@ count=0
 ";
     let folio = SamplePage::parse(text).expect("header-only text parses");
     assert_eq!(folio, SamplePage::default());
-    assert_eq!(folio.print_to_string(FolioMode::Full).as_str(), text);
+    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), text);
 }
 
 #[test]
@@ -147,8 +144,8 @@ fn display_mode_prints_the_full_text_and_carries_no_law() {
     // must never be parsed.
     let value = sample();
     assert_eq!(
-        value.print_to_string(FolioMode::Display),
-        value.print_to_string(FolioMode::Full)
+        value.print_to_string(DumpMode::Display),
+        value.print_to_string(DumpMode::Full)
     );
 }
 
@@ -156,10 +153,10 @@ fn display_mode_prints_the_full_text_and_carries_no_law() {
 fn the_budget_observer_page_holds_the_full_mode_laws() {
     let budget = BudgetObserver::parse(BUDGET_CANONICAL).expect("canonical text parses");
     assert_eq!(
-        budget.print_to_string(FolioMode::Full).as_str(),
+        budget.print_to_string(DumpMode::Full).as_str(),
         BUDGET_CANONICAL
     );
-    let reparsed = BudgetObserver::parse(budget.print_to_string(FolioMode::Full).as_str())
+    let reparsed = BudgetObserver::parse(budget.print_to_string(DumpMode::Full).as_str())
         .expect("printed text parses");
     assert_eq!(reparsed, budget);
     assert_eq!(
@@ -174,7 +171,7 @@ fn the_budget_observer_page_holds_the_full_mode_laws() {
     );
 }
 
-fn parse_err(input: &str) -> FolioError {
+fn parse_err(input: &str) -> DumpError {
     SamplePage::parse(input).expect_err("input must not parse")
 }
 
@@ -182,72 +179,72 @@ fn parse_err(input: &str) -> FolioError {
 fn parse_errors_carry_line_numbers_and_exact_messages() {
     assert_eq!(
         parse_err("x\n"),
-        FolioError::new(1, cstr!("content before the [sample-page] header"))
+        DumpError::new(1, cstr!("content before the [sample-page] header"))
     );
     assert_eq!(
         parse_err("[sample-page.notes]\n"),
-        FolioError::new(1, cstr!("first section must be [sample-page]"))
+        DumpError::new(1, cstr!("first section must be [sample-page]"))
     );
     assert_eq!(
         parse_err(""),
-        FolioError::new(0, cstr!("missing [sample-page] header"))
+        DumpError::new(0, cstr!("missing [sample-page] header"))
     );
     assert_eq!(
         parse_err("[sample-page]\ntitle=a\nenabled=true\ncount=1\n\n[sample-page]\n"),
-        FolioError::new(6, cstr!("duplicate section [sample-page]"))
+        DumpError::new(6, cstr!("duplicate section [sample-page]"))
     );
     assert_eq!(
         parse_err("[sample-page]\n\n[sample-page.notes]\na\n\n[sample-page.notes]\n"),
-        FolioError::new(6, cstr!("duplicate section [sample-page.notes]"))
+        DumpError::new(6, cstr!("duplicate section [sample-page.notes]"))
     );
     assert_eq!(
         parse_err("[sample-page]\n\n[sample-page.bogus]\n"),
-        FolioError::new(3, cstr!("unknown section [sample-page.bogus]"))
+        DumpError::new(3, cstr!("unknown section [sample-page.bogus]"))
     );
     assert_eq!(
         parse_err("[sample-page]\n\n[other]\n"),
-        FolioError::new(3, cstr!("unknown section [other]"))
+        DumpError::new(3, cstr!("unknown section [other]"))
     );
     assert_eq!(
         parse_err("[sample-page]\nbogus=1\n"),
-        FolioError::new(2, cstr!("unknown field `bogus`"))
+        DumpError::new(2, cstr!("unknown field `bogus`"))
     );
     assert_eq!(
         parse_err("[sample-page]\ntitle=a\ntitle=b\n"),
-        FolioError::new(3, cstr!("duplicate field `title`"))
+        DumpError::new(3, cstr!("duplicate field `title`"))
     );
     assert_eq!(
         parse_err("[sample-page]\ntitle=a\nenabled=true\n"),
-        FolioError::new(0, cstr!("missing field `count`"))
+        DumpError::new(0, cstr!("missing field `count`"))
     );
     assert_eq!(
         parse_err("[sample-page]\njusttext\n"),
-        FolioError::new(2, cstr!("field line is missing `=`"))
+        DumpError::new(2, cstr!("field line is missing `=`"))
     );
     assert_eq!(
         parse_err("[sample-page]\nenabled=yes\n"),
-        FolioError::new(2, cstr!("invalid bool `yes`"))
+        DumpError::new(2, cstr!("invalid bool `yes`"))
     );
     assert_eq!(
         parse_err("[sample-page]\ncount=x\n"),
-        FolioError::new(2, cstr!("invalid integer `x`"))
+        DumpError::new(2, cstr!("invalid integer `x`"))
     );
     assert_eq!(
         parse_err(
             "[sample-page]\ntitle=a\nenabled=true\ncount=1\n\n[sample-page.weights]\nnoequals\n"
         ),
-        FolioError::new(7, cstr!("map entry line is missing `=`"))
+        DumpError::new(7, cstr!("map entry line is missing `=`"))
     );
     assert_eq!(
         parse_err(
             "[sample-page]\ntitle=a\nenabled=true\ncount=1\n\n[sample-page.weights]\nalpha=1\nalpha=2\n"
         ),
-        FolioError::new(8, cstr!("duplicate map key `alpha`"))
+        DumpError::new(8, cstr!("duplicate map key `alpha`"))
     );
 }
 
-#[derive(Debug, PartialEq, Folio)]
-#[folio(name = "s3-folio")]
+#[derive(Debug, PartialEq, Dump)]
+#[dump(name = "l3-dump-v2")]
 struct RenamedLayerPage {
     phase: String,
     ops: Vec<String>,
@@ -255,11 +252,11 @@ struct RenamedLayerPage {
 
 #[test]
 fn renamed_types_keep_explicit_wire_headers_and_sections() {
-    let text = "[s3-folio]\nphase=built\n\n[s3-folio.ops]\none\n\n";
+    let text = "[l3-dump-v2]\nphase=built\n\n[l3-dump-v2.ops]\none\n\n";
     let page = RenamedLayerPage::parse(text).expect("legacy header parses");
-    assert_eq!(page.print_to_string(FolioMode::Full).as_str(), text);
+    assert_eq!(page.print_to_string(DumpMode::Full).as_str(), text);
     assert_eq!(
-        RenamedLayerPage::parse(page.print_to_string(FolioMode::Full).as_str()).expect("roundtrip"),
+        RenamedLayerPage::parse(page.print_to_string(DumpMode::Full).as_str()).expect("roundtrip"),
         page
     );
     assert!(RenamedLayerPage::parse("[renamed-layer-page]\nphase=built\n\n").is_err());

@@ -15,8 +15,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-use vize_davinci::folio::repro::ReproFolio;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::repro::Page as ReproPage;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::String as CartonString;
 
 const INJECTED_FAILURE: &str = "template.transform: injected davinci panic in pass `transform`";
@@ -127,7 +127,7 @@ fn an_injected_panic_fails_one_file_writes_its_repro_and_emits_the_rest() {
     // The repro is exactly what the contract says it is: pipeline string,
     // config, recorded failure, last-good stage dump (the source).
     let text = fs::read_to_string(root.join("dist/b.repro.folio")).unwrap();
-    let folio = ReproFolio::parse(&text).expect("the written repro parses");
+    let folio = ReproPage::parse(&text).expect("the written repro parses");
     assert_eq!(folio.pipeline.as_str(), "template(transform,codegen)");
     assert_eq!(folio.failed_stage.as_str(), "template");
     assert_eq!(folio.failed_pass.as_str(), "transform");
@@ -170,11 +170,11 @@ fn vize_repro_replays_to_the_same_failure() {
 fn a_tampered_recorded_failure_is_reported_as_divergence() {
     let (root, _build) = injected_build("diverged");
     let text = fs::read_to_string(root.join("dist/b.repro.folio")).unwrap();
-    let mut folio = ReproFolio::parse(&text).unwrap();
+    let mut folio = ReproPage::parse(&text).unwrap();
     folio.reason = CartonString::from("tampered reason");
     fs::write(
         root.join("dist/tampered.repro.folio"),
-        folio.print_to_string(FolioMode::Full).as_str(),
+        folio.print_to_string(DumpMode::Full).as_str(),
     )
     .unwrap();
 
@@ -195,13 +195,13 @@ fn a_tampered_recorded_failure_is_reported_as_divergence() {
 fn a_repro_whose_replay_completes_reports_did_not_reproduce() {
     let (root, _build) = injected_build("completed");
     let text = fs::read_to_string(root.join("dist/b.repro.folio")).unwrap();
-    let mut folio = ReproFolio::parse(&text).unwrap();
+    let mut folio = ReproPage::parse(&text).unwrap();
     // Without the injection the replay is a real compile of the embedded
     // source, which succeeds - the recorded failure does not come back.
     folio.config.remove("inject-panic");
     fs::write(
         root.join("dist/completed.repro.folio"),
-        folio.print_to_string(FolioMode::Full).as_str(),
+        folio.print_to_string(DumpMode::Full).as_str(),
     )
     .unwrap();
 

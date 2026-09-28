@@ -13,4 +13,4 @@ expression: md.as_str()
 
 | Name | Origin | State | Scope |
 |------|--------|-------|-------|
-| `state` | Reactive | ✓ Active | 1 |
+| `state` | Reactive | Active | 1 |

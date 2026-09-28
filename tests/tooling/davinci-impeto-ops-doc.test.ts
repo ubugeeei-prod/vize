@@ -11,19 +11,15 @@ function readRepoFile(...segments: string[]): string {
 }
 
 function rustMnemonics(): string[] {
-  const rust = readRepoFile("crates", "vize_impeto", "src", "op", "kind.rs");
+  const rust = readRepoFile("crates", "vize_l3", "src", "op", "kind.rs");
   return [
-    ...new Set(
-      [...rust.matchAll(/Self::[A-Za-z]+ => "(impeto\.[^"]+)"/gu)].map((match) => match[1]),
-    ),
+    ...new Set([...rust.matchAll(/Self::[A-Za-z]+ => "(l3\.[^"]+)"/gu)].map((match) => match[1])),
   ];
 }
 
 function leanParserMnemonics(): string[] {
   const syntax = readRepoFile("tests", "formal", "impeto", "Impeto", "Syntax.lean");
-  return [...syntax.matchAll(/\| "(impeto\.[^"]+)" => some \.[A-Za-z]+/gu)].map(
-    (match) => match[1],
-  );
+  return [...syntax.matchAll(/\| "(l3\.[^"]+)" => some \.[A-Za-z]+/gu)].map((match) => match[1]);
 }
 
 function tableRows(): Map<string, { vapor: string; vdom: string }> {
@@ -35,7 +31,7 @@ function tableRows(): Map<string, { vapor: string; vdom: string }> {
       .split("|")
       .slice(1, -1)
       .map((cell) => cell.trim());
-    const mnemonic = cells[0]?.match(/^`(impeto\.[^`]+)`$/u);
+    const mnemonic = cells[0]?.match(/^`(l3\.[^`]+)`$/u);
     const vdom = cells[2]?.match(/^`([^`]+)`$/u);
     const vapor = cells[3]?.match(/^`([^`]+)`$/u);
 
@@ -79,7 +75,7 @@ test("P3-5 Impeto op reference records the executable Lean trace labels", () => 
 
 test("P3-5 Impeto op reference is cross-linked from Folio docs and rustdoc", () => {
   const folio = readRepoFile("docs/davinci", "plan", "folio-format-impeto.md");
-  const lib = readRepoFile("crates", "vize_impeto", "src", "lib.rs");
+  const lib = readRepoFile("crates", "vize_l3", "src", "lib.rs");
   const phase = readRepoFile("docs/davinci", "plan", "phase-3.md");
 
   assert.match(folio, /\[`impeto-ops\.md`\]\(\.\/impeto-ops\.md\)/u);

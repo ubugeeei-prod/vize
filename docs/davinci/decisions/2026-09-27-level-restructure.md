@@ -46,6 +46,14 @@ Decided by the maintainer on 2026-09-28 ([#6826 comment](https://github.com/ubug
 - **"Lightweight Davinci" means runtime cost and process weight.** Runtime: instruction counts, zero-cost unobserved paths, no reparses or serialization between levels ([#6868](https://github.com/ubugeeei-prod/vize/issues/6868), [#6869](https://github.com/ubugeeei-prod/vize/issues/6869)). Process: no committed whole-repo ledgers, shorter PR-tier CI, short PR bodies and issue comments, no hash- or evidence-heavy verifiers where a normal test does.
 - **The dump/naming stack #6906 → #6907 → #6943 → #6944 → #6945 → #6946 → #6947 is collapsed into one PR** on `main`; the seven PRs are closed in its favour.
 
+## Level dump naming
+
+The L3 package identity, stage feed types, level dump API, versioned dump protocols and `vize dump --roundtrip` are recorded in [level dump naming](./2026-09-28-level-dump-naming.md).
+
+## Rust verification for L3 (2026-09-28)
+
+The maintainer chose Rust Kani for Davinci verification and closed the Lean namespace rename PR [#7052](https://github.com/ubugeeei-prod/vize/pull/7052). New L3 properties use Kani harnesses against production Rust source, starting with the class and effect lattice in `tests/formal/kani/l3_lattice.rs`; each harness states its finite input domain. Bounded verification does not establish an unbounded theorem. Keep differential fixtures and Lean checks until each claim has replacement coverage, then remove the old lane separately. Remaining naming and shared CLI/playground production capture keep [#6832](https://github.com/ubugeeei-prod/vize/issues/6832) open.
+
 ## `vize_davinci` is deleted
 
 Tracked in [#6833](https://github.com/ubugeeei-prod/vize/issues/6833) and [#6834](https://github.com/ubugeeei-prod/vize/issues/6834).
@@ -69,6 +77,7 @@ Tracked in [#6831](https://github.com/ubugeeei-prod/vize/issues/6831) and [#6851
 - A `cargo metadata` gate enforces the rule. It starts with a shrinking allowlist and later covers product crates too.
 - The [declaration ratchet](./2026-09-27-foundation-stack-replay.md#dependency-gate)
   records shrinking #6831 permissions, enforcement and remaining scope.
+- The L1→L2 prefix collector owns its retained-AST lexical-scope walk until L2 identifier-resolution facts replace prefix rewriting. Its direct `vize_relief` edge is removed; the two remaining L1 legacy edges belong to #6835.
 
 ## L1: what the text _is_
 
@@ -163,7 +172,8 @@ See the [dialects, languages, frameworks decisions](./2026-09-27-level-restructu
 
 ## JSX semantics
 
-See the [JSX semantics decisions](./2026-09-27-level-restructure-designs.md#jsx-semantics) in the companion record.
+See the [JSX semantics decisions](./2026-09-27-level-restructure-designs.md#jsx-semantics) in the companion record
+and the [falsy-child fix and oracle review](./2026-09-27-jsx-falsy-and.md).
 
 ## Products on the levels
 

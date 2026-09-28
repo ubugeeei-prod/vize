@@ -60,6 +60,39 @@ fn clean_tokens(text: &str, filename: &str) -> Vec<SemanticToken> {
     ))
 }
 
+#[test]
+fn template_identifiers_keep_unicode_names_and_utf16_ranges() {
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/lsp/template-unicode-tokens/App.vue.txt"
+    ));
+    let descriptor =
+        vize_resident::descriptor::parse_descriptor("App.vue", source).expect("the fixture parses");
+    let tokens = SemanticTokensService::tokens_from_descriptor(source, &descriptor);
+
+    for (line, name) in [(7, "値"), (7, "total"), (8, "ñandú"), (9, "café")] {
+        let text = source.lines().nth(line as usize).expect("template line");
+        let byte_start = text.find(name).expect("identifier in template line");
+        let start = text[..byte_start].encode_utf16().count() as u32;
+        let length = name.encode_utf16().count() as u32;
+        let matching = tokens
+            .iter()
+            .filter(|token| {
+                token.line == line
+                    && token.start == start
+                    && token.length == length
+                    && token.token_type == super::TokenType::Variable as u32
+            })
+            .count();
+        assert_eq!(matching, 1, "{name} on line {line}: {tokens:#?}");
+    }
+
+    assert_eq!(
+        super::expressions::extract_identifiers("値 + ñandú + café"),
+        [("値", 0), ("ñandú", 6), ("café", 16)]
+    );
+}
+
 /// The source line of `needle`, as an LSP range covering that line only.
 fn line_of(text: &str, needle: &str) -> Range {
     let line = text[..text.find(needle).expect("needle")]

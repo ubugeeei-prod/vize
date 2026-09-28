@@ -1053,6 +1053,7 @@ dependencies = [
  "mimalloc",
  "serde",
  "serde_json",
+ "stacker",
  "tempfile",
  "thiserror 2.0.20",
  "valgrind-requests",
@@ -4229,11 +4230,11 @@ dependencies = [
  "vize_doctor",
  "vize_fresco",
  "vize_glyph",
- "vize_impeto",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
+ "vize_l3",
  "vize_maestro",
  "vize_musea",
  "vize_patina",
@@ -4395,12 +4396,12 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_croquis",
  "vize_davinci",
- "vize_impeto",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
  "vize_l2_to_l3",
+ "vize_l3",
  "vize_relief",
 ]
 
@@ -4427,11 +4428,11 @@ dependencies = [
  "vize_carton",
  "vize_croquis",
  "vize_davinci",
- "vize_impeto",
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
  "vize_l2_to_l3",
+ "vize_l3",
 ]
 
 [[package]]
@@ -4544,7 +4545,7 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_carton",
  "vize_davinci",
- "vize_impeto",
+ "vize_l3",
  "vize_relief",
 ]
 
@@ -4593,12 +4594,12 @@ dependencies = [
  "vize_croquis",
  "vize_croquis_cf",
  "vize_davinci",
- "vize_impeto",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
  "vize_l2_to_l3",
+ "vize_l3",
 ]
 
 [[package]]
@@ -4748,16 +4749,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "vize_impeto"
-version = "0.429.1"
-dependencies = [
- "serde_json",
- "toml",
- "vize_davinci",
- "vize_l0",
-]
-
-[[package]]
 name = "vize_l0"
 version = "0.429.1"
 dependencies = [
@@ -4799,11 +4790,10 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_croquis",
  "vize_davinci",
- "vize_impeto",
  "vize_l0",
  "vize_l1",
  "vize_l2",
- "vize_relief",
+ "vize_l3",
 ]
 
 [[package]]
@@ -4826,20 +4816,30 @@ dependencies = [
  "serde_json",
  "vize_atelier_sfc",
  "vize_davinci",
- "vize_impeto",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
+ "vize_l3",
+]
+
+[[package]]
+name = "vize_l3"
+version = "0.429.1"
+dependencies = [
+ "serde_json",
+ "toml",
+ "vize_davinci",
+ "vize_l0",
 ]
 
 [[package]]
 name = "vize_l4"
 version = "0.429.1"
 dependencies = [
- "vize_impeto",
  "vize_l0",
  "vize_l2",
+ "vize_l3",
 ]
 
 [[package]]
@@ -5026,11 +5026,11 @@ dependencies = [
  "vize_curator",
  "vize_davinci",
  "vize_glyph",
- "vize_impeto",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
+ "vize_l3",
  "vize_musea",
  "vize_patina",
  "vize_relief",

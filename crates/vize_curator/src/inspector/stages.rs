@@ -1,0 +1,148 @@
+//! Spolvero feed construction for the inspector (Davinci P2-18).
+//!
+//! The inspector's stage pages, in the feed shape `vize_davinci` owns
+//! (`folio::feed::StageFeed`, committed schema
+//! `docs/davinci/plan/spolvero-feed.schema.json`). There is exactly one
+//! serializer of that shape - `StageFeed::to_json` - so this module
+//! builds pages and parses the feed's own output into the
+//! `serde_json::Value` the payload embeds; it never re-encodes the shape.
+//!
+//! # What the feed carries today
+//!
+//! - **L1**: one page per `.vue` file with a template block, produced by
+//!   parsing the template into `vize_l1`'s lossless surface tree and
+//!   rendering it back (`stage: "s1"`, `pass: "parse"` - a parse product,
+//!   not a pass product). By the L1 byte-fidelity law (TS-19) the text
+//!   equals the authored template bytes, malformed input included - which
+//!   is exactly what the ladder's L1 rung shows, proven through the tree
+//!   rather than copied from the source.
+//! - **The full ladder** ([`ladder_pages`]): L1, the L2 (Disegno) lowering
+//!   page, the transform plan's walks (`[fusion-plan-folio]`), one L2 page
+//!   per executed transform pass, and the L3 (Impeto)
+//!   graph, partition-fact and value pages - all from one L1 parse through
+//!   the real lowerings and pass manager. The wasm `analyzeSfc` result (the
+//!   playground's Davinci view) carries it. The inspector payload keeps its
+//!   L1-only pages: it rides inside share URLs (the P2-18 growth note), and
+//!   the playground recomputes the ladder from the same sources.
+//! - **Remarks** (P3-13): every inline HTML template's optimization remarks
+//!   from the L2 transform pipeline ([`template_remarks`]), spans in the
+//!   template's byte frame (the pages' frame) - the decision explanations
+//!   Spolvero renders (C-5).
+//! - **Step and walk timings** ([`ladder_run`], [`ladder_profile`]): the
+//!   same run timed by a host-supplied clock and exported as a P0-11 profile
+//!   document (C-3), since the feed schema carries no timing.
+//!
+//! Files that are not `.vue`, fail SFC parsing, or have no template block
+//! contribute no page: the feed is a stage-dump channel, not a diagnostics
+//! channel (diagnostics stay on their own surfaces).
+
+mod ladder;
+mod profile;
+
+pub use ladder::{LadderClock, LadderRun, LadderStep, ladder_pages, ladder_run};
+pub use profile::{LADDER_STEP_KEY, LADDER_WALK_KEY, ladder_profile};
+pub use vize_davinci::dump::feed::{StageFeed, StagePage, StageRemark};
+use vize_davinci::pass::RemarkCollector;
+use vize_l0::{Allocator, String, cstr};
+
+use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+
+use super::payload::InspectorSourceFile;
+
+/// The L1 page for one template: L1 parse + byte-faithful render.
+#[must_use]
+pub fn l1_page(path: &str, template: &str) -> StagePage {
+    let allocator = Allocator::default();
+    let (tree, _errors) = vize_l1::parse(&allocator, template);
+    let mut text = String::default();
+    vize_l1::render::render(&tree, &mut |slice| text.push_str(slice));
+    StagePage {
+        path: Some(String::from(path)),
+        stage: cstr!("s1"),
+        pass: cstr!("parse"),
+        text,
+    }
+}
+
+/// The optimization remarks (P3-13) the L2 transform pipeline emits for
+/// one template: L1 parse, L1→L2 lowering (Vue 3 dialect), the transform
+/// pipeline under a remark collector, in canonical order. Spans are byte
+/// offsets into `template` - the frame of the feed's L1/L2 pages, so a
+/// remark and the page lines it explains highlight the same source bytes.
+#[must_use]
+pub fn template_remarks(path: &str, template: &str) -> Vec<StageRemark> {
+    let allocator = Allocator::default();
+    let (tree, errors) = vize_l1::parse(&allocator, template);
+    let mut lowered =
+        vize_l1_to_l2::lower_with_caps(&allocator, &tree, &errors, vize_l1_to_l2::LegacyCaps::VUE3);
+    let mut collector = RemarkCollector::new();
+    let _facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut collector);
+    collector
+        .finish()
+        .into_iter()
+        .map(|remark| StageRemark {
+            path: Some(String::from(path)),
+            remark,
+        })
+        .collect()
+}
+
+/// A feed's embeddable JSON value, through the one serializer.
+///
+/// # Panics
+///
+/// Never in practice: `StageFeed::to_json` emits valid JSON by the
+/// feed's escaping law (pinned by the TS-52 tests).
+#[must_use]
+pub fn spolvero_value(command: &str, pages: Vec<StagePage>) -> serde_json::Value {
+    spolvero_value_with_remarks(command, pages, Vec::new())
+}
+
+/// [`spolvero_value`] carrying optimization remarks beside the pages.
+///
+/// # Panics
+///
+/// As [`spolvero_value`].
+#[must_use]
+pub fn spolvero_value_with_remarks(
+    command: &str,
+    pages: Vec<StagePage>,
+    remarks: Vec<StageRemark>,
+) -> serde_json::Value {
+    let feed = StageFeed {
+        command: String::from(command),
+        pages,
+        remarks,
+    };
+    // `StageFeed::to_json` emits valid JSON by the feed escaping law;
+    // `null` is the unreachable fallback rather than an abort.
+    serde_json::from_str(feed.to_json().as_str()).unwrap_or_default()
+}
+
+/// The inspector payload's feed: L1 pages for every parseable `.vue` file
+/// with a template, in payload file order (see the module docs for why the
+/// payload stays L1-only), plus each inline HTML template's optimization
+/// remarks (P3-13).
+pub(super) fn payload_spolvero(files: &[InspectorSourceFile]) -> serde_json::Value {
+    let mut pages = Vec::new();
+    let mut remarks = Vec::new();
+    for file in files {
+        if !file.path.ends_with(".vue") {
+            continue;
+        }
+        let Ok(descriptor) = parse_sfc(file.source.as_str(), SfcParseOptions::default()) else {
+            continue;
+        };
+        if let Some(template) = descriptor.template.as_ref() {
+            pages.push(l1_page(file.path.as_str(), template.content.as_ref()));
+            let html = template.lang.as_deref().is_none_or(|lang| lang == "html");
+            if template.src.is_none() && html {
+                remarks.extend(template_remarks(
+                    file.path.as_str(),
+                    template.content.as_ref(),
+                ));
+            }
+        }
+    }
+    spolvero_value_with_remarks("inspector", pages, remarks)
+}

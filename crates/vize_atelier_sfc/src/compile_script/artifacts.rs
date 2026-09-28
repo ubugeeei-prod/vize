@@ -5,16 +5,22 @@
 //! returning a loadable artifact for tools such as file-based routers.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Argument, CallExpression, Expression, ImportDeclarationSpecifier, Statement};
+use oxc_ast::ast::{Argument, CallExpression, Expression, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_carton::{String, ToCompactString};
 use vize_croquis::macros::{artifact_macro_names, macro_artifact_kind};
 
 use crate::module_map::{Runs, apply_edits};
 use crate::types::SfcMacroArtifact;
 
+use self::imports::{
+    artifact_macro_import_removal_spans, collect_artifact_macro_import_bindings,
+    collect_static_imports, is_artifact_macro_only_import,
+};
 use super::runtime_bindings::collect_runtime_bindings;
+
+mod imports;
 
 pub(crate) fn extract_macro_artifacts(
     content: &str,
@@ -116,6 +122,12 @@ pub(crate) fn erase_artifact_macro_statements_traced(content: &str) -> Option<(S
             continue;
         }
 
+        let import_removals = artifact_macro_import_removal_spans(stmt, content);
+        if !import_removals.is_empty() {
+            ranges.extend(import_removals);
+            continue;
+        }
+
         let Some(call) = artifact_call_from_statement(stmt) else {
             continue;
         };
@@ -187,100 +199,6 @@ fn argument_source(arg: &Argument<'_>, source: &str) -> String {
         .unwrap_or_default()
 }
 
-fn collect_static_imports<'a>(
-    statements: impl Iterator<Item = &'a Statement<'a>>,
-    content: &str,
-) -> String {
-    let mut imports = String::default();
-
-    for stmt in statements {
-        if !matches!(stmt, Statement::ImportDeclaration(_)) {
-            continue;
-        }
-        if is_artifact_macro_only_import(stmt) {
-            continue;
-        }
-
-        let span = stmt.span();
-        let start = span.start as usize;
-        let end = span.end as usize;
-        let Some(import) = content.get(start..end) else {
-            continue;
-        };
-
-        imports.push_str(import.trim());
-        imports.push('\n');
-    }
-
-    imports
-}
-
-fn collect_artifact_macro_import_bindings<'a>(
-    statements: impl Iterator<Item = &'a Statement<'a>>,
-) -> FxHashSet<String> {
-    let mut bindings = FxHashSet::default();
-
-    for stmt in statements {
-        let Statement::ImportDeclaration(import_decl) = stmt else {
-            continue;
-        };
-        if import_decl.import_kind.is_type()
-            || !is_known_artifact_macro_import_source(import_decl.source.value.as_str())
-        {
-            continue;
-        }
-        let Some(specifiers) = import_decl.specifiers.as_ref() else {
-            continue;
-        };
-        for specifier in specifiers {
-            if let Some(local) = artifact_macro_import_local_name(specifier) {
-                bindings.insert(local.into());
-            }
-        }
-    }
-
-    bindings
-}
-
-fn is_artifact_macro_only_import(stmt: &Statement<'_>) -> bool {
-    let Statement::ImportDeclaration(import_decl) = stmt else {
-        return false;
-    };
-    if import_decl.import_kind.is_type()
-        || !is_known_artifact_macro_import_source(import_decl.source.value.as_str())
-    {
-        return false;
-    }
-    let Some(specifiers) = import_decl.specifiers.as_ref() else {
-        return false;
-    };
-    !specifiers.is_empty()
-        && specifiers
-            .iter()
-            .all(|specifier| artifact_macro_import_local_name(specifier).is_some())
-}
-
-fn artifact_macro_import_local_name<'a>(
-    specifier: &'a ImportDeclarationSpecifier<'a>,
-) -> Option<&'a str> {
-    let ImportDeclarationSpecifier::ImportSpecifier(spec) = specifier else {
-        return None;
-    };
-    if spec.import_kind.is_type() {
-        return None;
-    }
-    let imported = spec.imported.name().as_str();
-    let local = spec.local.name.as_str();
-    if imported != local || macro_artifact_kind(imported).is_none() {
-        return None;
-    }
-    Some(local)
-}
-
-fn is_known_artifact_macro_import_source(source: &str) -> bool {
-    matches!(source, "@typed-router")
-}
-
 fn build_artifact_module(kind: &str, payload: &str, static_imports: &str) -> String {
     let mut module_code = String::default();
     module_code.push_str(static_imports);
@@ -299,222 +217,4 @@ fn build_artifact_module(kind: &str, payload: &str, static_imports: &str) -> Str
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{erase_artifact_macro_statements, extract_macro_artifacts};
-
-    #[test]
-    fn extracts_define_page_artifact_module() {
-        let content = r#"import { routeMeta } from './route'
-
-definePage({
-  name: 'home',
-  meta: routeMeta,
-})
-
-const msg = 'ready'
-"#;
-
-        let artifacts = extract_macro_artifacts(content, 10);
-
-        assert_eq!(artifacts.len(), 1);
-        assert_eq!(artifacts[0].kind.as_str(), "vue-router.definePage");
-        assert_eq!(artifacts[0].name.as_str(), "definePage");
-        assert!(artifacts[0].source.contains("definePage"));
-        assert!(artifacts[0].content.contains("routeMeta"));
-        assert_eq!(artifacts[0].start, 10 + content.find("definePage").unwrap());
-        assert!(
-            artifacts[0]
-                .module_code
-                .as_ref()
-                .unwrap()
-                .contains("import { routeMeta } from './route'\nexport default {")
-        );
-    }
-
-    #[test]
-    fn extracts_define_page_meta_artifact_module() {
-        let content = r#"import { pageAlias } from './route'
-
-definePageMeta({
-  name: 'docs',
-  alias: pageAlias,
-  meta: {
-    scrollMargin: 180,
-  },
-})
-
-const msg = 'ready'
-"#;
-
-        let artifacts = extract_macro_artifacts(content, 4);
-
-        assert_eq!(artifacts.len(), 1);
-        assert_eq!(artifacts[0].kind.as_str(), "nuxt.definePageMeta");
-        assert_eq!(artifacts[0].name.as_str(), "definePageMeta");
-        assert!(artifacts[0].source.contains("definePageMeta"));
-        assert!(artifacts[0].content.contains("scrollMargin"));
-        assert_eq!(
-            artifacts[0].start,
-            4 + content.find("definePageMeta").unwrap()
-        );
-        assert!(
-            artifacts[0]
-                .module_code
-                .as_ref()
-                .unwrap()
-                .contains("import { pageAlias } from './route'\nconst __nuxt_page_meta = {")
-        );
-        assert!(
-            artifacts[0]
-                .module_code
-                .as_ref()
-                .unwrap()
-                .contains("export default __nuxt_page_meta")
-        );
-    }
-
-    #[test]
-    fn extracts_define_page_meta_imported_from_typed_router() {
-        let content = r#"import { definePageMeta } from '@typed-router'
-import { pageAlias } from './route'
-
-definePageMeta({
-  name: 'docs',
-  alias: pageAlias,
-})
-
-const msg = 'ready'
-"#;
-
-        let artifacts = extract_macro_artifacts(content, 0);
-
-        assert_eq!(artifacts.len(), 1);
-        assert_eq!(artifacts[0].kind.as_str(), "nuxt.definePageMeta");
-        assert_eq!(artifacts[0].name.as_str(), "definePageMeta");
-        assert!(
-            artifacts[0]
-                .module_code
-                .as_ref()
-                .unwrap()
-                .contains("import { pageAlias } from './route'\nconst __nuxt_page_meta = {")
-        );
-        assert!(
-            !artifacts[0]
-                .module_code
-                .as_ref()
-                .unwrap()
-                .contains("@typed-router")
-        );
-    }
-
-    #[test]
-    fn extracts_define_route_rules_artifact_module() {
-        let content = r#"defineRouteRules({
-  prerender: true,
-  cache: {
-    maxAge: 60,
-  },
-})
-
-const msg = 'ready'
-"#;
-
-        let artifacts = extract_macro_artifacts(content, 2);
-
-        assert_eq!(artifacts.len(), 1);
-        assert_eq!(artifacts[0].kind.as_str(), "nuxt.defineRouteRules");
-        assert_eq!(artifacts[0].name.as_str(), "defineRouteRules");
-        assert!(artifacts[0].source.contains("defineRouteRules"));
-        assert!(artifacts[0].content.contains("prerender"));
-        assert_eq!(
-            artifacts[0].start,
-            2 + content.find("defineRouteRules").unwrap()
-        );
-        assert!(
-            artifacts[0]
-                .module_code
-                .as_ref()
-                .unwrap()
-                .starts_with("export default {")
-        );
-    }
-
-    #[test]
-    fn ignores_content_without_artifact_macro_candidates() {
-        let content = r#"const msg = 'ready'
-const LazyHydrationMyComponent = defineLazyHydrationComponent(
-  'visible',
-  () => import('./components/MyComponent.vue'),
-)
-"#;
-
-        assert!(extract_macro_artifacts(content, 0).is_empty());
-        assert!(erase_artifact_macro_statements(content).is_none());
-    }
-
-    #[test]
-    fn preserves_imported_define_page_runtime_call() {
-        let content = r#"import { definePage } from '@/page.js'
-
-definePage(() => ({
-  title: 'runtime page',
-}))
-
-const msg = 'ready'
-"#;
-
-        assert!(extract_macro_artifacts(content, 0).is_empty());
-        assert!(erase_artifact_macro_statements(content).is_none());
-    }
-
-    #[test]
-    fn erases_define_page_top_level_statement() {
-        let content = r#"definePage({ name: 'home' })
-const msg = 'ready'
-"#;
-
-        let erased = erase_artifact_macro_statements(content).expect("macro should be erased");
-
-        assert!(!erased.contains("definePage"));
-        assert!(erased.contains("const msg = 'ready'"));
-    }
-
-    #[test]
-    fn erases_define_page_meta_top_level_statement() {
-        let content = r#"definePageMeta({ name: 'docs' })
-const msg = 'ready'
-"#;
-
-        let erased = erase_artifact_macro_statements(content).expect("macro should be erased");
-
-        assert!(!erased.contains("definePageMeta"));
-        assert!(erased.contains("const msg = 'ready'"));
-    }
-
-    #[test]
-    fn erases_typed_router_macro_import_and_call() {
-        let content = r#"import { definePageMeta } from '@typed-router'
-
-definePageMeta({ name: 'docs' })
-const msg = 'ready'
-"#;
-
-        let erased = erase_artifact_macro_statements(content).expect("macro should be erased");
-
-        assert!(!erased.contains("definePageMeta"));
-        assert!(!erased.contains("@typed-router"));
-        assert!(erased.contains("const msg = 'ready'"));
-    }
-
-    #[test]
-    fn erases_define_route_rules_top_level_statement() {
-        let content = r#"defineRouteRules({ prerender: true })
-const msg = 'ready'
-"#;
-
-        let erased = erase_artifact_macro_statements(content).expect("macro should be erased");
-
-        assert!(!erased.contains("defineRouteRules"));
-        assert!(erased.contains("const msg = 'ready'"));
-    }
-}
+mod tests;

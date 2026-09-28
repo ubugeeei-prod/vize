@@ -1,5 +1,6 @@
 ---
 source: crates/vize/src/cli.rs
+assertion_line: 146
 expression: normalize_help(help)
 ---
 High-performance Vue.js toolchain in Rust
@@ -8,6 +9,7 @@ Usage: vize [COMMAND]
 
 Commands:
   build           Compile Vue SFC files (default command) [alias: atelier]
+  dump            Validate L1 source fidelity or a canonical L2/L3 Full dump
   fmt             Format Vue, JSX, and TSX files [alias: glyph]
   lint            Lint Vue, HTML, JSX, and TSX files [alias: patina]
   explain         Explain a diagnostic code

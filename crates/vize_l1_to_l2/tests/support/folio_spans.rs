@@ -2,39 +2,40 @@
 //! L2 folio must resolve against the authored source.
 
 use vize_l0::{SourceRoot, Span};
-use vize_l2::expr::OpaqueReason;
-use vize_l2::folio::{
-    DisegnoFolio, FolioAttribute, FolioBinding, FolioExpr, FolioForBinding, FolioName, FolioOp,
+use vize_l2::dump::{
+    Attribute as DumpAttribute, Binding as DumpBinding, Expr as DumpExpr,
+    ForBinding as DumpForBinding, Name as DumpName, Op as DumpOp, Page as L2Page,
 };
+use vize_l2::expr::OpaqueReason;
 
-pub fn assert_folio_spans_resolve(source: &str, folio: &DisegnoFolio, context: &str) {
+pub fn assert_folio_spans_resolve(source: &str, folio: &L2Page, context: &str) {
     let root = SourceRoot::new(source).expect("authored source");
     for op in &folio.ops {
         assert_op(source, root, op, context);
     }
 }
 
-fn assert_op(source: &str, root: SourceRoot<'_>, op: &FolioOp, context: &str) {
+fn assert_op(source: &str, root: SourceRoot<'_>, op: &DumpOp, context: &str) {
     match op {
-        FolioOp::Element(element) => {
+        DumpOp::Element(element) => {
             assert_span(source, root, element.span, "element", context);
             assert_attributes(source, root, &element.attributes, context);
             assert_bindings(source, root, &element.bindings, context);
             assert_ops(source, root, &element.children, context);
         }
-        FolioOp::Component(component) => {
+        DumpOp::Component(component) => {
             assert_span(source, root, component.span, "component", context);
             assert_attributes(source, root, &component.attributes, context);
             assert_bindings(source, root, &component.bindings, context);
             assert_ops(source, root, &component.children, context);
         }
-        FolioOp::Text(text) => assert_span(source, root, text.span, "text", context),
-        FolioOp::Comment(comment) => assert_span(source, root, comment.span, "comment", context),
-        FolioOp::Interpolation(interpolation) => {
+        DumpOp::Text(text) => assert_span(source, root, text.span, "text", context),
+        DumpOp::Comment(comment) => assert_span(source, root, comment.span, "comment", context),
+        DumpOp::Interpolation(interpolation) => {
             assert_span(source, root, interpolation.span, "interpolation", context);
             assert_expr(source, root, &interpolation.expression, context);
         }
-        FolioOp::If(if_op) => {
+        DumpOp::If(if_op) => {
             assert_span(source, root, if_op.span, "if", context);
             for branch in &if_op.branches {
                 assert_span(source, root, branch.span, "if branch", context);
@@ -44,12 +45,12 @@ fn assert_op(source: &str, root: SourceRoot<'_>, op: &FolioOp, context: &str) {
                 assert_ops(source, root, &branch.ops, context);
             }
         }
-        FolioOp::For(for_op) => {
+        DumpOp::For(for_op) => {
             assert_span(source, root, for_op.span, "for", context);
             assert_for_binding(source, root, &for_op.binding, context);
             assert_ops(source, root, &for_op.ops, context);
         }
-        FolioOp::Slot(slot) => {
+        DumpOp::Slot(slot) => {
             assert_span(source, root, slot.span, "slot", context);
             assert_name(source, root, &slot.name, context);
             assert_attributes(source, root, &slot.attributes, context);
@@ -59,22 +60,22 @@ fn assert_op(source: &str, root: SourceRoot<'_>, op: &FolioOp, context: &str) {
     }
 }
 
-fn assert_ops(source: &str, root: SourceRoot<'_>, ops: &[FolioOp], context: &str) {
+fn assert_ops(source: &str, root: SourceRoot<'_>, ops: &[DumpOp], context: &str) {
     for op in ops {
         assert_op(source, root, op, context);
     }
 }
 
-fn assert_attributes(source: &str, root: SourceRoot<'_>, attrs: &[FolioAttribute], context: &str) {
+fn assert_attributes(source: &str, root: SourceRoot<'_>, attrs: &[DumpAttribute], context: &str) {
     for attr in attrs {
         assert_span(source, root, attr.span, "attribute", context);
     }
 }
 
-fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[FolioBinding], context: &str) {
+fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[DumpBinding], context: &str) {
     for binding in bindings {
         match binding {
-            FolioBinding::Bind(bind) => {
+            DumpBinding::Bind(bind) => {
                 assert_span(source, root, bind.span, "bind", context);
                 if let Some(name) = &bind.name {
                     assert_name(source, root, name, context);
@@ -83,7 +84,7 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[FolioBinding]
                     assert_expr(source, root, value, context);
                 }
             }
-            FolioBinding::On(on) => {
+            DumpBinding::On(on) => {
                 assert_span(source, root, on.span, "on", context);
                 if let Some(name) = &on.name {
                     assert_name(source, root, name, context);
@@ -92,7 +93,7 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[FolioBinding]
                     assert_expr(source, root, handler, context);
                 }
             }
-            FolioBinding::Model(model) => {
+            DumpBinding::Model(model) => {
                 assert_span(source, root, model.span, "model", context);
                 assert_expr(source, root, &model.contract.read, context);
                 assert_expr(source, root, &model.contract.write, context);
@@ -101,7 +102,7 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[FolioBinding]
                 }
                 assert_attributes(source, root, &model.attributes, context);
             }
-            FolioBinding::SlotContent(content) => {
+            DumpBinding::SlotContent(content) => {
                 assert_span(source, root, content.span, "slot content", context);
                 if let Some(name) = &content.name {
                     assert_name(source, root, name, context);
@@ -110,7 +111,7 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[FolioBinding]
                     assert_expr(source, root, params, context);
                 }
             }
-            FolioBinding::VueDirective(directive) => {
+            DumpBinding::VueDirective(directive) => {
                 assert_span(source, root, directive.span, "vue directive", context);
                 if let Some(argument) = &directive.argument {
                     assert_name(source, root, argument, context);
@@ -119,61 +120,56 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[FolioBinding]
                     assert_expr(source, root, value, context);
                 }
             }
-            FolioBinding::VueCssBind(css) => {
+            DumpBinding::VueCssBind(css) => {
                 assert_span(source, root, css.span, "css bind", context);
                 assert_expr(source, root, &css.value, context);
             }
-            FolioBinding::VueSync(sync) => {
+            DumpBinding::VueSync(sync) => {
                 assert_span(source, root, sync.span, "sync", context);
                 assert_expr(source, root, &sync.value, context);
             }
-            FolioBinding::VueSlotScope(slot) => {
+            DumpBinding::VueSlotScope(slot) => {
                 assert_span(source, root, slot.span, "slot scope", context);
                 if let Some(params) = &slot.params {
                     assert_expr(source, root, params, context);
                 }
             }
-            FolioBinding::VueOnce(once) => assert_span(source, root, once.span, "once", context),
-            FolioBinding::VueMemo(memo) => {
+            DumpBinding::VueOnce(once) => assert_span(source, root, once.span, "once", context),
+            DumpBinding::VueMemo(memo) => {
                 assert_span(source, root, memo.span, "memo", context);
                 assert_expr(source, root, &memo.value, context);
             }
-            FolioBinding::VueShow(show) => {
+            DumpBinding::VueShow(show) => {
                 assert_span(source, root, show.span, "show", context);
                 assert_expr(source, root, &show.value, context);
             }
-            FolioBinding::VueHtml(html) => {
+            DumpBinding::VueHtml(html) => {
                 assert_span(source, root, html.span, "html", context);
                 if let Some(value) = &html.value {
                     assert_expr(source, root, value, context);
                 }
             }
-            FolioBinding::VueText(text) => {
+            DumpBinding::VueText(text) => {
                 assert_span(source, root, text.span, "text", context);
                 if let Some(value) = &text.value {
                     assert_expr(source, root, value, context);
                 }
             }
-            FolioBinding::VueCloak(cloak) => {
+            DumpBinding::VueCloak(cloak) => {
                 assert_span(source, root, cloak.span, "cloak", context);
             }
         }
     }
 }
 
-fn assert_name(source: &str, root: SourceRoot<'_>, name: &FolioName, context: &str) {
+fn assert_name(source: &str, root: SourceRoot<'_>, name: &DumpName, context: &str) {
     match name {
-        FolioName::Static(_) => {}
-        FolioName::Dynamic(expr) => assert_expr(source, root, expr, context),
+        DumpName::Static(_) => {}
+        DumpName::Dynamic(expr) => assert_expr(source, root, expr, context),
     }
 }
 
-fn assert_for_binding(
-    source: &str,
-    root: SourceRoot<'_>,
-    binding: &FolioForBinding,
-    context: &str,
-) {
+fn assert_for_binding(source: &str, root: SourceRoot<'_>, binding: &DumpForBinding, context: &str) {
     assert_expr(source, root, &binding.source, context);
     assert_expr(source, root, &binding.value, context);
     if let Some(key) = &binding.key {
@@ -184,25 +180,25 @@ fn assert_for_binding(
     }
 }
 
-fn assert_expr(source: &str, root: SourceRoot<'_>, expr: &FolioExpr, context: &str) {
+fn assert_expr(source: &str, root: SourceRoot<'_>, expr: &DumpExpr, context: &str) {
     match expr {
-        FolioExpr::Js {
+        DumpExpr::Js {
             source: expr_source,
             span,
         }
-        | FolioExpr::Foreign {
+        | DumpExpr::Foreign {
             source: expr_source,
             span,
             ..
         }
-        | FolioExpr::Filter {
+        | DumpExpr::Filter {
             source: expr_source,
             span,
         } => {
             assert_span(source, root, *span, "expression", context);
             assert_expr_source(source, *span, expr_source.as_str(), context);
         }
-        FolioExpr::Opaque {
+        DumpExpr::Opaque {
             reason,
             source: expr_source,
             span,

@@ -4,7 +4,7 @@
 //! it: L0 for every block, the L1 surface page and the L2 page for the
 //! template. Three properties, all by exact equality:
 //!
-//! 1. **Golden keys, two platforms.** `fixtures/keys/base.keys` is the full
+//! 1. **Golden keys, two platforms.** `fixtures/keys/base-l2-recipe3.keys` is the full
 //!    key listing of `fixtures/keys/base.vue`. The Linux and macOS lanes of
 //!    `.github/workflows/davinci-incremental.yml` both print the listing and
 //!    compare it with the golden, so a platform-dependent byte anywhere in a
@@ -38,7 +38,7 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_davinci::key::{ArtifactKey, source_block_key};
 use vize_l0::{Allocator, SourceRoot, String};
 use vize_l1_to_l2::key::SurfacePage;
-use vize_l2::folio::L2Folio;
+use vize_l2::dump::Page as L2Page;
 
 type Keys = BTreeMap<String, ArtifactKey>;
 
@@ -84,7 +84,7 @@ fn template_keys(source: &str, block: &str, start: u32) -> (ArtifactKey, Artifac
         .and_then(|root| root.block(block, start))
         .expect("template block frame");
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, frame);
-    let s2 = ArtifactKey::of(&L2Folio::of(&lowered.root.ops), start);
+    let s2 = ArtifactKey::of(&L2Page::of(&lowered.root.ops), start);
     (s1, s2)
 }
 
@@ -104,12 +104,12 @@ fn keys_of(source: &str) -> Keys {
         let attrs = attr_pairs(template.attrs.iter().map(|(k, v)| (k.as_ref(), v.as_ref())));
         put(
             "template",
-            "s0",
+            "l0",
             source_block_key("template", &attrs, block),
         );
         let (s1, s2) = template_keys(source, block, start);
-        put("template", "s1", s1);
-        put("template", "s2", s2);
+        put("template", "l1", s1);
+        put("template", "l2", s2);
     }
     for (name, script) in [
         ("script", &descriptor.script),
@@ -118,7 +118,7 @@ fn keys_of(source: &str) -> Keys {
         if let Some(script) = script {
             let (block, _) = block_slice(source, script.loc.start, script.loc.end);
             let attrs = attr_pairs(script.attrs.iter().map(|(k, v)| (k.as_ref(), v.as_ref())));
-            put(name, "s0", source_block_key("script", &attrs, block));
+            put(name, "l0", source_block_key("script", &attrs, block));
         }
     }
     for (index, style) in descriptor.styles.iter().enumerate() {
@@ -126,7 +126,7 @@ fn keys_of(source: &str) -> Keys {
         let attrs = attr_pairs(style.attrs.iter().map(|(k, v)| (k.as_ref(), v.as_ref())));
         let mut name = String::default();
         write!(name, "style[{index}]").expect("string write");
-        put(&name, "s0", source_block_key("style", &attrs, block));
+        put(&name, "l0", source_block_key("style", &attrs, block));
     }
     for (index, custom) in descriptor.custom_blocks.iter().enumerate() {
         let (block, _) = block_slice(source, custom.loc.start, custom.loc.end);
@@ -135,7 +135,7 @@ fn keys_of(source: &str) -> Keys {
         write!(name, "{}[{index}]", custom.block_type).expect("string write");
         put(
             &name,
-            "s0",
+            "l0",
             source_block_key(&custom.block_type, &attrs, block),
         );
     }
@@ -185,7 +185,8 @@ fn template_first(base: &str) -> String {
 fn base_keys_equal_the_committed_golden() {
     let keys = listing(&keys_of(&base()));
     println!("TS-43 keys for fixtures/keys/base.vue:\n{keys}");
-    let golden = fixture("base.keys");
+    // Keep the source-bound version2 capture immutable after the L2 recipe change.
+    let golden = fixture("base-l2-recipe3.keys");
     if std::env::var_os("UPDATE_KEY_GOLDENS").is_some() {
         std::fs::write(&golden, keys.as_bytes()).expect("write golden");
     }
@@ -197,7 +198,7 @@ fn base_keys_equal_the_committed_golden() {
 fn each_edit_changes_exactly_the_edited_blocks_keys() {
     let base = base();
     let base_keys = keys_of(&base);
-    let template = ["template s0", "template s1", "template s2"].as_slice();
+    let template = ["template l0", "template l1", "template l2"].as_slice();
     let cases: [(&str, String, &[&str]); 10] = [
         (
             "insert above every block (outside any block)",
@@ -207,7 +208,7 @@ fn each_edit_changes_exactly_the_edited_blocks_keys() {
         (
             "insert inside the script above the template",
             edit(&base, "const label", "const extra = 1\nconst label"),
-            &["script-setup s0"],
+            &["script-setup l0"],
         ),
         (
             "insert inside the template",
@@ -221,7 +222,7 @@ fn each_edit_changes_exactly_the_edited_blocks_keys() {
         (
             "insert inside the i18n block below the template",
             edit(&base, "\"Hello\"", "\"Hello\", \"bye\": \"Bye\""),
-            &["i18n[0] s0"],
+            &["i18n[0] l0"],
         ),
         (
             "reorder blocks (template first)",
@@ -250,7 +251,7 @@ fn each_edit_changes_exactly_the_edited_blocks_keys() {
         (
             "header attribute of the second style",
             edit(&base, "</style>\n\n<style scoped>", "</style>\n\n<style>"),
-            &["style[1] s0"],
+            &["style[1] l0"],
         ),
         (
             "whitespace inside the first style",
@@ -259,7 +260,7 @@ fn each_edit_changes_exactly_the_edited_blocks_keys() {
                 "</style>\n\n<style scoped>",
                 "\n</style>\n\n<style scoped>",
             ),
-            &["style[0] s0"],
+            &["style[0] l0"],
         ),
     ];
     for (case, source, expected) in cases {
@@ -273,7 +274,7 @@ fn each_edit_changes_exactly_the_edited_blocks_keys() {
 fn identical_block_content_keys_identically_at_any_offset() {
     let keys = keys_of(&base());
     // The two `<style scoped>` blocks are byte-identical at different offsets.
-    assert_eq!(keys["style[0] s0"], keys["style[1] s0"]);
+    assert_eq!(keys["style[0] l0"], keys["style[1] l0"]);
 
     // The template lowered with file-absolute spans and rebased keys exactly
     // like the same template lowered as its own root (base-zero spans).
@@ -284,5 +285,5 @@ fn identical_block_content_keys_identically_at_any_offset() {
     let absolute = template_keys(&base, block, u32::try_from(start).expect("u32"));
     let own_root = template_keys(block, block, 0);
     assert_eq!(absolute, own_root);
-    assert_eq!((keys["template s1"], keys["template s2"]), absolute);
+    assert_eq!((keys["template l1"], keys["template l2"]), absolute);
 }

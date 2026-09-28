@@ -132,17 +132,17 @@ expression: output
 == Markdown ==
 ## Provide/Inject Tree
 
-📦 **App**
-  🔹 provide(`"theme"`) → 2 consumer(s)
-  📦 **Layout**
-    📦 **Panel**
-      🔹 provide(`"panelState"`) → 1 consumer(s)
-      🔸 inject(`"theme"`) ✅
-      📦 **Button**
-        🔸 inject(`"panelState"`) ✅
-    📦 **Sidebar**
-      🔸 inject(`"theme"`) ✅
-📦 **Orphan**
-  🔸 inject(`"missing"`) (has default) ❌ _no provider_
-📦 **UnusedProvider**
-  🔹 provide(`"stale"`) ⚠️ _unused_
+**App**
+  provide(`"theme"`) → 2 consumer(s)
+  **Layout**
+    **Panel**
+      provide(`"panelState"`) → 1 consumer(s)
+      inject(`"theme"`) (provided)
+      **Button**
+        inject(`"panelState"`) (provided)
+    **Sidebar**
+      inject(`"theme"`) (provided)
+**Orphan**
+  inject(`"missing"`) (has default) _no provider_
+**UnusedProvider**
+  provide(`"stale"`) _unused_

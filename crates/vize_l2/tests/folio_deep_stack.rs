@@ -2,9 +2,9 @@
 
 #![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, Vec as ArenaVec};
-use vize_l2::folio::L2Folio;
+use vize_l2::dump::Page as L2Page;
 use vize_l2::op::{ElementOp, Namespace, Op, Region, TextOp};
 
 const DEPTH: usize = 1_100;
@@ -48,10 +48,10 @@ fn deep_folio_mirror_count_and_print_survive_small_stack() {
         .spawn(|| {
             let allocator = Allocator::default();
             let ops = nested_tree(&allocator);
-            let folio = L2Folio::of(&ops);
+            let folio = L2Page::of(&ops);
 
             assert_eq!(folio.op_count(), DEPTH as u64 + 1);
-            let printed = folio.print_to_string(FolioMode::Display);
+            let printed = folio.print_to_string(DumpMode::Display);
             let expected_tail = format!("{}ui.text \"x\"\n\n", "  ".repeat(DEPTH));
             assert_eq!(printed.lines().nth(1), Some("ops=1101"));
             assert_eq!(

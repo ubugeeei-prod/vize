@@ -15,7 +15,7 @@ const portableStageCrates = [
   ["vize_davinci", "vize_davinci"],
   ["vize_l1", "vize_l1"],
   ["vize_l2", "vize_l2"],
-  ["vize_impeto", "vize_impeto"],
+  ["vize_l3", "vize_l3"],
   ["vize_l1_to_l2", "vize_l1_to_l2"],
   ["vize_l2_to_l3", "vize_l2_to_l3"],
 ] as const;

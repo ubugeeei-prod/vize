@@ -11,7 +11,7 @@
 
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
-use vize_davinci::folio::repro::ReproFolio;
+use vize_davinci::dump::repro::Page as ReproPage;
 use vize_davinci::pass::parse_pipelines;
 use vize_l0::{Allocator, String, cstr};
 
@@ -42,7 +42,7 @@ pub(crate) fn has_element(source: &str, tag: &str) -> bool {
 
 /// Replay a parsed repro: `Ok(Some(_))` reproduced a failure, `Ok(None)`
 /// completed without one, `Err` means this repro cannot be replayed at all.
-pub(crate) fn replay(folio: &ReproFolio) -> Result<Option<IceFailure>, String> {
+pub(crate) fn replay(folio: &ReproPage) -> Result<Option<IceFailure>, String> {
     if let Some(pass) = folio.config.get(CONFIG_INJECT) {
         if let Some(tag) = folio.config.get(CONFIG_INJECT_WHEN)
             && !has_element(folio.artifact.as_str(), tag.as_str())

@@ -12,7 +12,7 @@ metadata.vize.stability = "experimental"
 
 [features]
 # Benchmark-only instrumentation; no production crate enables this feature.
-instruction-counts = ["dep:valgrind-requests"]
+instruction-counts = ["dep:valgrind-requests", "dep:stacker"]
 
 [dependencies]
 criterion = { workspace = true }
@@ -29,6 +29,7 @@ libc = { workspace = true }
 valgrind-requests = { version = "=1.2.0", optional = true, default-features = false, features = [
   "act",
 ] }
+stacker = { workspace = true, optional = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }

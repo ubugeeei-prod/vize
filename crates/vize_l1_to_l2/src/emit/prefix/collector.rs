@@ -16,10 +16,10 @@ use oxc_ast_visit::{
 };
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::String;
-use vize_relief::ExpressionScope;
 
 use super::globals::{is_generated_filter_helper, is_global_allowed};
 use super::scope::PrefixScope;
+use super::scope_walk::ExpressionScope;
 
 pub(super) struct IdentifierCollector<'s, 'a> {
     scope: &'s PrefixScope<'s>,

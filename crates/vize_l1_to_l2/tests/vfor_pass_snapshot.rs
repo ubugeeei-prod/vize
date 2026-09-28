@@ -17,8 +17,8 @@ mod support;
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::assert_folio_snapshot;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::assert_dump_snapshot;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l1_to_l2::pass::vfor::ForName;
 
 use support::{assert_transformed_sound, with_transformed};
@@ -38,7 +38,7 @@ fn the_loops_fixture_snapshots_the_post_pass_folio() {
     let source = fixture("loops.vue");
     with_transformed(&source, |lowered, folio, facts, budget| {
         // The oracle: the full normalized folio after the pipeline ran.
-        assert_folio_snapshot!(*folio);
+        assert_dump_snapshot!(*folio);
 
         // Supplements: the planned walk accounting through the budget
         // observer's own derived page. The fixture builds `v-if` and
@@ -46,7 +46,7 @@ fn the_loops_fixture_snapshots_the_post_pass_folio() {
         // Both fact families are lowering-published, so the plan is
         // only the fused analysis group (two passes, one walk).
         assert_eq!(
-            budget.print_to_string(FolioMode::Full).as_str(),
+            budget.print_to_string(DumpMode::Full).as_str(),
             "[budget-observer]\nwalks=1\npasses=2\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
         // Three loops, consumed in document order with fresh tags: the
@@ -96,7 +96,7 @@ fn the_holes_fixture_snapshots_the_post_pass_folio() {
         // The undecomposable value keeps its op (pessimal escape); the
         // expressionless v-for keeps only its element. Both errors are
         // the lowering's — the fact mirror adds none.
-        assert_folio_snapshot!(*folio);
+        assert_dump_snapshot!(*folio);
         assert_eq!(lowered.diagnostics.len(), 2);
         assert_eq!(
             lowered.diagnostics[0].message.as_str(),

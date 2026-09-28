@@ -14,7 +14,7 @@
 use vize_atelier_core::{ElementNode, ElementType, TemplateChildNode};
 use vize_davinci::side_table::SideTable;
 use vize_l1_to_l2::pass::StaticFacts;
-use vize_l2::folio::FolioOp;
+use vize_l2::dump::Op as DumpOp;
 
 use super::hoist::{HoistCounters, Mode, replay_or_dormant, walk_for_body};
 use super::hoist_old::{Decision, decision_of};
@@ -38,16 +38,16 @@ pub fn structural<'t, 'a>(children: &'t [TemplateChildNode<'a>]) -> Vec<&'t Temp
 }
 
 /// Structural filter over folio ops.
-pub fn structural_l2(ops: &[FolioOp]) -> Vec<&FolioOp> {
+pub fn structural_l2(ops: &[DumpOp]) -> Vec<&DumpOp> {
     ops.iter()
         .filter(|op| {
             matches!(
                 op,
-                FolioOp::Element(_)
-                    | FolioOp::Component(_)
-                    | FolioOp::Slot(_)
-                    | FolioOp::If(_)
-                    | FolioOp::For(_)
+                DumpOp::Element(_)
+                    | DumpOp::Component(_)
+                    | DumpOp::Slot(_)
+                    | DumpOp::If(_)
+                    | DumpOp::For(_)
             )
         })
         .collect()
@@ -61,7 +61,7 @@ pub fn walk_level(
     source: &str,
     old1: &[TemplateChildNode<'_>],
     old2: &[TemplateChildNode<'_>],
-    s2: &[FolioOp],
+    s2: &[DumpOp],
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
@@ -84,7 +84,7 @@ pub fn walk_level(
         // Leaf ops between structural positions still consume ids.
         if matches!(
             op,
-            FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_)
+            DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::Comment(_)
         ) {
             *next += 1;
             continue;
@@ -114,7 +114,7 @@ pub fn walk_position(
     source: &str,
     o1: &TemplateChildNode<'_>,
     o2: &TemplateChildNode<'_>,
-    op: &FolioOp,
+    op: &DumpOp,
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
@@ -122,7 +122,7 @@ pub fn walk_position(
     counters: &mut HoistCounters,
 ) -> bool {
     match (o1, o2, op) {
-        (TemplateChildNode::If(node1), TemplateChildNode::If(node2), FolioOp::If(if_op)) => {
+        (TemplateChildNode::If(node1), TemplateChildNode::If(node2), DumpOp::If(if_op)) => {
             *next += 1;
             assert_eq!(
                 node1.branches.len(),
@@ -189,7 +189,7 @@ pub fn walk_position(
             }
             false
         }
-        (TemplateChildNode::For(node1), TemplateChildNode::For(node2), FolioOp::For(for_op)) => {
+        (TemplateChildNode::For(node1), TemplateChildNode::For(node2), DumpOp::For(for_op)) => {
             *next += 1;
             match (&node1.children[..], &node2.children[..]) {
                 ([TemplateChildNode::Element(el1)], [TemplateChildNode::Element(el2)])
@@ -233,13 +233,13 @@ pub fn walk_position(
             }
             false
         }
-        (TemplateChildNode::Element(el1), _, FolioOp::Slot(slot)) => walk_slot(
+        (TemplateChildNode::Element(el1), _, DumpOp::Slot(slot)) => walk_slot(
             name, source, el1, o2, slot, mode, suppressed, next, facts, counters,
         ),
-        (TemplateChildNode::Element(el1), _, FolioOp::Element(element)) => walk_element(
+        (TemplateChildNode::Element(el1), _, DumpOp::Element(element)) => walk_element(
             name, source, o1, el1, o2, element, mode, suppressed, next, facts, counters,
         ),
-        (TemplateChildNode::Element(el1), _, FolioOp::Component(component)) => walk_component(
+        (TemplateChildNode::Element(el1), _, DumpOp::Component(component)) => walk_component(
             name, source, el1, o2, component, mode, suppressed, next, facts, counters,
         ),
         _ => panic!("hoist projection pairing broke in {name}: {o1:?} / {op:?}\n{source}"),
@@ -255,7 +255,7 @@ fn walk_branch_roots(
     source: &str,
     c1: &[TemplateChildNode<'_>],
     c2: &[TemplateChildNode<'_>],
-    ops: &[FolioOp],
+    ops: &[DumpOp],
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
@@ -273,7 +273,7 @@ fn walk_branch_roots(
     for op in ops {
         if matches!(
             op,
-            FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_)
+            DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::Comment(_)
         ) {
             *next += 1;
             continue;
@@ -291,11 +291,9 @@ fn walk_branch_roots(
         match (o1, o2, op) {
             (TemplateChildNode::Element(el1), TemplateChildNode::Element(el2), _) => {
                 let (region, bindings) = match op {
-                    FolioOp::Element(element) => (&element.children, element.bindings.len()),
-                    FolioOp::Component(component) => {
-                        (&component.children, component.bindings.len())
-                    }
-                    FolioOp::Slot(slot) => (&slot.fallback, slot.bindings.len()),
+                    DumpOp::Element(element) => (&element.children, element.bindings.len()),
+                    DumpOp::Component(component) => (&component.children, component.bindings.len()),
+                    DumpOp::Slot(slot) => (&slot.fallback, slot.bindings.len()),
                     _ => panic!("branch root kinds misaligned in {name}\n{source}"),
                 };
                 *next += 1 + u32::try_from(bindings).expect("binding count fits");

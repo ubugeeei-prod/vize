@@ -11,7 +11,7 @@
       _Landed 2026-09-21: the wasm `analyzeSfc` feed carries the L1 page, the
       L2 lowering page and one L2 page per executed transform pass
       (`vize_curator::inspector::ladder_pages`, TS-52 `spolvero_ladder`), and
-      the playground's Davinci tab (`playground/src/features/davinci/`)
+      the playground's Davinci tab (`playground/src/features/stages/`)
       renders them after negotiating `schema_version`; the P2-18 rendering
       review point is now a VRT baseline (`davinci-{light,dark}.png`) plus
       the real-wasm `e2e/davinci-ladder.test.ts`. The `vize inspector`

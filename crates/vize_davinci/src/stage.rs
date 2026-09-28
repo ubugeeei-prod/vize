@@ -1,8 +1,8 @@
 //! Canonical Davinci stage names and their current crate spellings.
 //!
-//! Human-facing implementation names use `l0` through `l4`. Serialized
-//! artifact identifiers retain `s0` through `s4` so existing keys and wire
-//! documents keep their byte identity.
+//! Implementation names and artifact-key v2 use logical `l0` through `l4`.
+//! Pipeline selectors retain their separate `s0` through `s4` mapping;
+//! Emit/l4 does not imply a physical L4 crate.
 
 /// The stage a Davinci diagnostic came from.
 ///
@@ -36,16 +36,16 @@ impl Stage {
         }
     }
 
-    /// Stable schema identifier used in serialized artifacts and key hashes.
+    /// Canonical logical identifier used in artifact-key v2 hashes and Display.
     #[inline]
     #[must_use]
     pub const fn wire_id(self) -> &'static str {
         match self {
-            Stage::Source => "s0",
-            Stage::Surface => "s1",
-            Stage::Semantic => "s2",
-            Stage::Lowered => "s3",
-            Stage::Emit => "s4",
+            Stage::Source => "l0",
+            Stage::Surface => "l1",
+            Stage::Semantic => "l2",
+            Stage::Lowered => "l3",
+            Stage::Emit => "l4",
         }
     }
 
@@ -158,7 +158,7 @@ pub const L2: LayerCrate = LayerCrate {
 pub const L3: LayerCrate = LayerCrate {
     id: "l3",
     crate_alias: "vize_l3",
-    package: "vize_impeto",
+    package: "vize_l3",
     role: "reactivity and backend scheduling IR",
 };
 
@@ -172,6 +172,16 @@ pub const L1_TO_L2: ConversionCrate = ConversionCrate {
     role: "Vue surface-to-semantic lowering",
 };
 
+/// L2→L3: lowering from semantic UI IR into backend scheduling IR.
+pub const L2_TO_L3: ConversionCrate = ConversionCrate {
+    id: "l2_to_l3",
+    crate_alias: "vize_l2_to_l3",
+    package: "vize_l2_to_l3",
+    from: L2.id,
+    to: L3.id,
+    role: "semantic-to-backend scheduling lowering",
+};
+
 /// Davinci layer crates that exist in the workspace today.
 pub const LAYERS: &[LayerCrate] = &[L0, L1, L2, L3];
 
@@ -181,7 +191,7 @@ pub const LAYERS: &[LayerCrate] = &[L0, L1, L2, L3];
 pub const ARTIFACT_STAGES: &[StageCrate] = &[L1, L2, L3];
 
 /// Conversion crates that exist in the workspace today.
-pub const CONVERSIONS: &[ConversionCrate] = &[L1_TO_L2];
+pub const CONVERSIONS: &[ConversionCrate] = &[L1_TO_L2, L2_TO_L3];
 
 #[cfg(test)]
 mod tests {
@@ -209,12 +219,12 @@ mod tests {
     }
 
     #[test]
-    fn wire_stage_identifiers_remain_s0_to_s4() {
-        assert_eq!(Stage::Source.wire_id(), "s0");
-        assert_eq!(Stage::Surface.wire_id(), "s1");
-        assert_eq!(Stage::Semantic.wire_id(), "s2");
-        assert_eq!(Stage::Lowered.wire_id(), "s3");
-        assert_eq!(Stage::Emit.wire_id(), "s4");
+    fn artifact_key_wire_identifiers_are_canonical_l0_to_l4() {
+        assert_eq!(Stage::Source.wire_id(), "l0");
+        assert_eq!(Stage::Surface.wire_id(), "l1");
+        assert_eq!(Stage::Semantic.wire_id(), "l2");
+        assert_eq!(Stage::Lowered.wire_id(), "l3");
+        assert_eq!(Stage::Emit.wire_id(), "l4");
     }
 
     #[test]
@@ -244,15 +254,49 @@ mod tests {
         assert_eq!(L0.package, "vize_carton");
         assert_eq!(L1.package, "vize_l1");
         assert_eq!(L2.package, "vize_l2");
-        assert_eq!(L3.package, "vize_impeto");
+        assert_eq!(L3.package, "vize_l3");
         assert_eq!(L1_TO_L2.package, "vize_l1_to_l2");
     }
 
     #[test]
-    fn conversion_names_its_stage_edges() {
-        assert_eq!((L1_TO_L2.from, L1_TO_L2.to), (L1.id, L2.id));
+    fn conversions_cover_each_artifact_stage_edge_once() {
         assert_eq!(LAYERS.len(), 4);
-        assert_eq!(CONVERSIONS.len(), 1);
+        for edge in ARTIFACT_STAGES.windows(2) {
+            assert_eq!(
+                CONVERSIONS
+                    .iter()
+                    .filter(
+                        |conversion| (conversion.from, conversion.to) == (edge[0].id, edge[1].id)
+                    )
+                    .count(),
+                1,
+                "each adjacent artifact stage must have exactly one conversion",
+            );
+        }
+        for (index, conversion) in CONVERSIONS.iter().enumerate() {
+            assert!(
+                ARTIFACT_STAGES
+                    .windows(2)
+                    .any(|edge| { (conversion.from, conversion.to) == (edge[0].id, edge[1].id) })
+            );
+            assert_eq!(
+                conversion
+                    .id
+                    .strip_prefix(conversion.from)
+                    .and_then(|rest| rest.strip_prefix("_to_")),
+                Some(conversion.to),
+            );
+            assert_eq!(
+                conversion.package.strip_prefix("vize_"),
+                Some(conversion.id)
+            );
+            assert_eq!(conversion.crate_alias, conversion.package);
+            assert!(
+                CONVERSIONS[..index]
+                    .iter()
+                    .all(|previous| previous.id != conversion.id)
+            );
+        }
     }
 
     #[test]

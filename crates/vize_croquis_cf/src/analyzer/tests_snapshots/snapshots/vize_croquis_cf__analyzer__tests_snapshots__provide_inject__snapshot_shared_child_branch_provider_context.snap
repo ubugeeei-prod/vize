@@ -89,11 +89,11 @@ expression: output
 == Markdown ==
 ## Provide/Inject Tree
 
-📦 **ParentA**
-  🔹 provide(`"theme"`) → 1 consumer(s)
-  📦 **Child**
-    🔸 inject(`"theme"`) ✅
-📦 **ParentB**
-  🔹 provide(`"theme"`) → 1 consumer(s)
-  📦 **Child**
-    🔸 inject(`"theme"`) ✅
+**ParentA**
+  provide(`"theme"`) → 1 consumer(s)
+  **Child**
+    inject(`"theme"`) (provided)
+**ParentB**
+  provide(`"theme"`) → 1 consumer(s)
+  **Child**
+    inject(`"theme"`) (provided)

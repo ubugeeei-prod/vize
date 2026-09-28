@@ -109,12 +109,12 @@ fn a_siblings_local_is_not_an_exact_binding_in_this_scope() {
     let mut guest = MoonBitTypedGuest::new(host);
     let mut analysis = guest.analyze_typed(&batch).unwrap();
     // Change the parsed canonical document to avoid relying on its spelling.
+    use vize_davinci::dump::{Dump, Mode as DumpMode};
     use vize_davinci::fact::{AlphaDocument, ExpressionFacts};
-    use vize_davinci::folio::{Folio, FolioMode};
     let mut facts = AlphaDocument::<ExpressionFacts>::parse(&analysis.facts.text).unwrap();
     facts.alpha.references.insert(0, "item".into());
     facts.alpha.exact.insert(0, true);
-    analysis.facts.text = facts.print_to_string(FolioMode::Full);
+    analysis.facts.text = facts.print_to_string(DumpMode::Full);
     let error = vize_extension_contract::typed_expression::accept_typed_analysis(&batch, analysis)
         .unwrap_err();
     assert_eq!(

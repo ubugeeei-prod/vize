@@ -18,7 +18,7 @@ The durable current witnesses are:
 - [`emit_dynamic_bind_keys.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_dynamic_bind_keys.rs)
   — direct S2 emission snapshots for computed keys, modifier composition,
   `mergeProps`, `v-if`, `v-for` and slot outlets.
-- [`davinci_s2_dynamic_bind_keys.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_dynamic_bind_keys.rs)
+- [`davinci_s2_dynamic_bind_keys.rs`](../../../../../crates/vize_atelier_dom/tests/l2_dynamic_bind_keys.rs)
   — a 14-fixture S2-vs-shipped byte-for-byte battery over those families.
 
 This installment does not tick P2-11. Filters and local slot/outlet guard-only

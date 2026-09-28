@@ -143,7 +143,6 @@ paths = [
   "crates/vize_atelier_jsx/tests/module_code.rs",
   "crates/vize_atelier_jsx/tests/module_props.rs",
   "crates/vize_atelier_jsx/tests/pragma.rs",
-  "crates/vize_atelier_sfc/src/compile_script/artifacts.rs",
   "crates/vize_atelier_sfc/src/compile_script/inline/tests.rs",
   "crates/vize_atelier_sfc/src/compile_script/lazy_hydration.rs",
   "crates/vize_atelier_sfc/src/compile_script/tests.rs",

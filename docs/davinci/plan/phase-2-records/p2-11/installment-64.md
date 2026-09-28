@@ -10,7 +10,7 @@ typed component and multiline block handlers retain their authored payloads.
 
 The durable witnesses are:
 
-- [`davinci_s2_handler_parity.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_handler_parity.rs)
+- [`davinci_s2_handler_parity.rs`](../../../../../crates/vize_atelier_dom/tests/l2_handler_parity.rs)
   - compares reduced real-project handler cases byte-for-byte against the
     shipped DOM lane.
 - [`wrapped.rs`](../../../../../crates/vize_l1_to_l2/src/emit/on/wrapped.rs)

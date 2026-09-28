@@ -2,7 +2,7 @@
 source: crates/vize_croquis_cf/src/diagnostics/diagnostics_tests/markdown.rs
 expression: markdown.as_str()
 ---
-🟡 **WARNING** `vize:croquis/cf/mutated-after-escape`
+**WARNING** `vize:croquis/cf/mutated-after-escape`
 
 ### Reactive object mutated after escape
 

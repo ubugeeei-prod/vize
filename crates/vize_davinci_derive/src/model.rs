@@ -4,7 +4,7 @@
 //! The derive is deliberately narrow. It accepts a non-generic struct with
 //! named fields and classifies each field by the last path segment of its
 //! type: `Vec` is a list section, `FxHashMap` is a sorted map section, and
-//! everything else is a scalar line resolved through `FolioValue` (so an
+//! everything else is a scalar line resolved through `DumpValue` (so an
 //! unsupported scalar type fails to compile in the deriving crate rather
 //! than silently formatting as something).
 
@@ -49,19 +49,19 @@ impl PageModel {
         if !input.generics.params.is_empty() || input.generics.where_clause.is_some() {
             return Err(Error::new_spanned(
                 &input.generics,
-                "#[derive(Folio)] does not support generic types: a folio page is an owned document",
+                "#[derive(Dump)] does not support generic types: a dump page is an owned document",
             ));
         }
         let Data::Struct(data) = &input.data else {
             return Err(Error::new_spanned(
                 &input.ident,
-                "#[derive(Folio)] supports only structs with named fields",
+                "#[derive(Dump)] supports only structs with named fields",
             ));
         };
         let Fields::Named(named) = &data.fields else {
             return Err(Error::new_spanned(
                 &input.ident,
-                "#[derive(Folio)] supports only structs with named fields",
+                "#[derive(Dump)] supports only structs with named fields",
             ));
         };
 
@@ -85,7 +85,7 @@ impl PageModel {
         if sections > 64 {
             return Err(Error::new_spanned(
                 &input.ident,
-                "#[derive(Folio)] supports at most 64 list/map sections per page",
+                "#[derive(Dump)] supports at most 64 list/map sections per page",
             ));
         }
 
@@ -103,14 +103,14 @@ fn page_name(input: &DeriveInput) -> Result<String, Error> {
     for attr in input
         .attrs
         .iter()
-        .filter(|attr| attr.path().is_ident("folio"))
+        .filter(|attr| attr.path().is_ident("dump"))
     {
         attr.parse_nested_meta(|meta| {
             if !meta.path.is_ident("name") {
-                return Err(meta.error("unsupported folio attribute; expected name"));
+                return Err(meta.error("unsupported dump attribute; expected name"));
             }
             if name.is_some() {
-                return Err(meta.error("duplicate folio name"));
+                return Err(meta.error("duplicate dump name"));
             }
             let value: LitStr = meta.value()?.parse()?;
             let text = value.value();
@@ -121,7 +121,7 @@ fn page_name(input: &DeriveInput) -> Result<String, Error> {
             {
                 return Err(Error::new_spanned(
                     value,
-                    "folio name must be a non-empty lowercase page identifier",
+                    "dump name must be a non-empty lowercase page identifier",
                 ));
             }
             name = Some(text);
@@ -218,16 +218,16 @@ mod tests {
     #[test]
     fn explicit_page_names_preserve_headers_after_type_renames() {
         let model = model_of(parse_quote! {
-            #[folio(name = "s3-folio")]
-            struct L3Folio { phase: String }
+            #[dump(name = "l3-dump-v2")]
+            struct L3Page { phase: String }
         })
         .expect("a stable wire header derives");
-        assert_eq!(model.page, "s3-folio");
+        assert_eq!(model.page, "l3-dump-v2");
         for input in [
-            parse_quote! { #[folio(name = "bad.name")] struct Sample { x: u32 } },
-            parse_quote! { #[folio(name = "")] struct Sample { x: u32 } },
-            parse_quote! { #[folio(name = "one", name = "two")] struct Sample { x: u32 } },
-            parse_quote! { #[folio(other = "one")] struct Sample { x: u32 } },
+            parse_quote! { #[dump(name = "bad.name")] struct Sample { x: u32 } },
+            parse_quote! { #[dump(name = "")] struct Sample { x: u32 } },
+            parse_quote! { #[dump(name = "one", name = "two")] struct Sample { x: u32 } },
+            parse_quote! { #[dump(other = "one")] struct Sample { x: u32 } },
         ] {
             let _ = error_of(input);
         }
@@ -240,7 +240,7 @@ mod tests {
         });
         assert_eq!(
             error.to_string(),
-            "#[derive(Folio)] supports only structs with named fields"
+            "#[derive(Dump)] supports only structs with named fields"
         );
     }
 
@@ -251,7 +251,7 @@ mod tests {
         });
         assert_eq!(
             error.to_string(),
-            "#[derive(Folio)] supports only structs with named fields"
+            "#[derive(Dump)] supports only structs with named fields"
         );
     }
 
@@ -262,7 +262,7 @@ mod tests {
         });
         assert_eq!(
             error.to_string(),
-            "#[derive(Folio)] supports only structs with named fields"
+            "#[derive(Dump)] supports only structs with named fields"
         );
     }
 
@@ -273,7 +273,7 @@ mod tests {
         });
         assert_eq!(
             error.to_string(),
-            "#[derive(Folio)] does not support generic types: a folio page is an owned document"
+            "#[derive(Dump)] does not support generic types: a dump page is an owned document"
         );
     }
 

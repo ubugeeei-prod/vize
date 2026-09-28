@@ -299,16 +299,16 @@ corpus-pinned self-contained literals; the remaining exclusions stay explicit
 
 ## Children
 
-| Case                       | Babel                         | Vize today                         | Compat mode                    | Verdict |
-| -------------------------- | ----------------------------- | ---------------------------------- | ------------------------------ | ------- |
-| `children/static_text`     | `[createTextVNode("x")]`      | `"x"` as the children argument     | no change                      | ✅      |
-| `children/text_interp_mix` | three children                | one concatenated `TEXT` child      | no change                      | ✅      |
-| `children/comment_only`    | children `null`               | no children                        | no change                      | ✅      |
-| `children/empty_expr`      | children `null`               | no children                        | no change                      | ✅      |
-| `children/spread_child`    | `[...items]`                  | `toDisplayString(items)`, reported | spread into the children array | ✅      |
-| `children/logical_and`     | `[c && vnode]`                | `v-if` with a comment placeholder  | no change                      | ✅      |
-| `children/ternary`         | `[c ? a : b]`                 | two-branch `v-if` with keys        | no change                      | ✅      |
-| `children/map_list`        | raw `list.map(…)` array child | `renderList` + `KEYED_FRAGMENT`    | no change                      | ✅      |
+| Case                       | Babel                         | Vize today                        | Compat mode                    | Verdict |
+| -------------------------- | ----------------------------- | --------------------------------- | ------------------------------ | ------- |
+| `children/static_text`     | `[createTextVNode("x")]`      | `"x"` as the children argument    | no change                      | ✅      |
+| `children/text_interp_mix` | three children                | one concatenated `TEXT` child     | no change                      | ✅      |
+| `children/comment_only`    | children `null`               | no children                       | no change                      | ✅      |
+| `children/empty_expr`      | children `null`               | no children                       | no change                      | ✅      |
+| `children/spread_child`    | `[...items]`                  | `BAIL` Fragment of `[...items]`   | spread into the children array | ✅      |
+| `children/logical_and`     | `[c && vnode]`                | `v-if` with a comment placeholder | no change                      | ✅      |
+| `children/ternary`         | `[c ? a : b]`                 | two-branch `v-if` with keys       | no change                      | ✅      |
+| `children/map_list`        | raw `list.map(…)` array child | `renderList` + `KEYED_FRAGMENT`   | no change                      | ✅      |
 
 ## `optimize: true` (patch flags and dynamic prop keys)
 

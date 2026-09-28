@@ -8,6 +8,7 @@ pub mod content_mapper;
 pub mod curator;
 pub(crate) mod davinci_ice;
 pub mod doctor;
+pub mod dump;
 pub mod env_info;
 pub mod explain;
 #[cfg(feature = "glyph")]

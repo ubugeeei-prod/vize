@@ -13,7 +13,7 @@
 use vize_l0::{FxHashMap, String};
 
 use super::{AlphaExport, Demand, FactGroup, FactTable, ids};
-use crate::folio::Folio;
+use crate::dump::Dump;
 use crate::pass::AnalysisId;
 
 /// The group: one [`ExpressionFact`] per expression id.
@@ -41,7 +41,7 @@ impl FactGroup for ExpressionFacts {
 }
 
 /// The α page: the three answers as three id-keyed sections.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Folio)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
 pub struct ExpressionFactsAlpha {
     pub references: FxHashMap<u32, String>,
     pub exact: FxHashMap<u32, bool>,

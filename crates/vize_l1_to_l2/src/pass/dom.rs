@@ -70,7 +70,7 @@ fn run_dom_legacy_transform<'a, O: PassObserver>(
         #[cfg(debug_assertions)]
         {
             verify.note(event);
-            let folio = vize_l2::folio::L2Folio::of(&lowered.root.ops);
+            let folio = vize_l2::dump::Page::of(&lowered.root.ops);
             verify.check(event, &folio);
             verify.check_table(event, &folio, &lowered.scopes);
             verify.check_table(event, &folio, &lowered.texts);

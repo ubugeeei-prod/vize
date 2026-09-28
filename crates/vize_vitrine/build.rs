@@ -60,7 +60,7 @@ fn main() -> BuildResult {
         "crates/vize_l1_to_l2/src",
         "crates/vize_l2/src",
         "crates/vize_croquis/src",
-        "crates/vize_impeto/src",
+        "crates/vize_l3/src",
         "crates/vize_relief/src",
         "crates/vize_armature/src",
     ] {

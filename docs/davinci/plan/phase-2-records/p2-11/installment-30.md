@@ -22,7 +22,7 @@ The change stays local to slot-template realization:
 
 The durable witnesses are:
 
-- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_slots.rs)
+- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/l2_slots.rs)
   - S2-vs-shipped byte fixtures for plain, conditional and looped slot-template
     carriers with inert render bindings.
 - [`emit_slots.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_slots.rs)

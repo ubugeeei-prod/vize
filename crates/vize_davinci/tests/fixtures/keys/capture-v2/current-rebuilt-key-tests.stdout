@@ -1,0 +1,11 @@
+
+running 6 tests
+test key::tests::length_prefixes_keep_adjacent_fields_apart ... ok
+test key::tests::out_of_block_spans_do_not_collapse_onto_relative_ones ... ok
+test key::tests::spans_key_relative_to_their_block_start ... ok
+test key::tests::stage_and_version_are_inside_the_hashed_domain ... ok
+test key::tests::source_block_headers_are_an_attribute_set ... ok
+test key::tests::keys_print_stage_version_and_the_full_digest ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 57 filtered out; finished in 0.00s
+

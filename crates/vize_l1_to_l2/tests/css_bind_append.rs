@@ -6,11 +6,11 @@
     reason = "tests assert by panicking"
 )]
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, SourceRoot};
 use vize_l1::parse;
 use vize_l1_to_l2::lower_source_block;
-use vize_l2::folio::DisegnoFolio;
+use vize_l2::dump::Page as L2Page;
 
 fn block_between<'a>(source: &'a str, open: &str, close: &str) -> (&'a str, u32) {
     let tag = source.find(open).expect("opening tag");
@@ -40,15 +40,15 @@ fn style_blocks_without_css_binds_do_not_append_a_carrier() {
             .expect("style block is a source slice"),
     );
 
-    let folio = DisegnoFolio::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops);
     assert_eq!(lowered.op_count, 2);
     assert_eq!(
-        folio.print_to_string(FolioMode::Full).as_str(),
+        folio.print_to_string(DumpMode::Full).as_str(),
         "\
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element p @10:19
   ui.text \"hi\" @13:15
 

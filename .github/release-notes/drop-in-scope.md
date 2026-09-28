@@ -9,6 +9,16 @@ parity with `@vitejs/plugin-vue` is still incomplete.
 See [Drop-in Scope](https://vizejs.dev/guide/vite-plugin#drop-in-scope) and
 [#3227](https://github.com/ubugeeei-prod/vize/issues/3227).
 
+## Declaration formatting
+
+`vize fmt` now accepts ambient `const` declarations in `.d.ts`, `.d.mts`, and
+`.d.cts` files.
+
+## Nuxt page metadata
+
+`definePageMeta` imported explicitly from `#imports` now produces route metadata
+and is removed from the component setup code, matching Nuxt's auto-import path.
+
 ## Reporter acknowledgements
 
 All nine fixes are included in
@@ -32,3 +42,15 @@ earlier fixes.
   `node_modules` [#6683](https://github.com/ubugeeei-prod/vize/issues/6683).
 
 Thank you for the concrete reproductions that made these regressions actionable.
+
+## JSX spread children
+
+Native JSX `<div>{...items}</div>` spreads the items into the children, as
+`@vue/babel-plugin-jsx` does, instead of rendering `toDisplayString(items)`.
+VDOM output supports it. Vapor and SSR report it as unsupported.
+
+## JSX rendering fix
+
+Native JSX `value && <Child/>` preserves falsy numbers such as `0` and `NaN`
+instead of rendering nothing. Boolean, nullish and empty-string children stay
+empty, and the condition is evaluated once per render or reactive update.

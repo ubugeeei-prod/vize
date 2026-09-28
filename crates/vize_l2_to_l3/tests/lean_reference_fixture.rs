@@ -1,11 +1,11 @@
 //! TS-28 bridge from Rust L2->L3 lowering into the Lean reference fixture set.
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::Allocator;
 use vize_l2_to_l3::lower;
-use vize_l3::folio::L3Folio;
+use vize_l3::dump::Page as L3Page;
 use vize_l3::trace::{TraceBackend, backend_trace_text, reference_trace_text};
-use vize_l3::values_folio::L3ValuesFolio;
+use vize_l3::values_dump::Page as ValuesPage;
 use vize_l3::verify::verify;
 
 mod lean_reference_fixture {
@@ -43,7 +43,7 @@ fn rust_lowered_values_match_stateful_reference_input() {
         let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
         let lowered = lower(&allocator, &s2.root);
         assert_eq!(verify(&lowered.program), []);
-        let actual = L3ValuesFolio::of(&lowered.program).print_to_string(FolioMode::Full);
+        let actual = ValuesPage::of(&lowered.program).print_to_string(DumpMode::Full);
         assert_eq!(
             actual.trim_end_matches('\n'),
             expected.trim_end_matches('\n')
@@ -107,7 +107,7 @@ fn assert_rust_lowered_fixture(
     let lowered = lower(&allocator, &s2.root);
     assert_eq!(verify(&lowered.program), []);
 
-    let actual = L3Folio::of(&lowered.program).print_to_string(FolioMode::Full);
+    let actual = L3Page::of(&lowered.program).print_to_string(DumpMode::Full);
     assert_eq!(
         actual.trim_end_matches('\n'),
         expected_folio.trim_end_matches('\n')

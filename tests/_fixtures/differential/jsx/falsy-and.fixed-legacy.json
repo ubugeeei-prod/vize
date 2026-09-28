@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "fixedProducer": {
+    "product": "vize_atelier_jsx",
+    "entry": "compile_jsx -> module_code",
+    "sourceHead": "225b436e9f5d0ca6f7e28988ce28b27007386615",
+    "features": ["default"],
+    "profile": "test/unoptimized/debuginfo2",
+    "compiler": "rustc 1.98.0",
+    "artifactSha256": "2218a20d60c68f52fd82a700a1615eb676dd8bd04d076aa00cf29a350e1668c7"
+  },
+  "fixtures": {
+    "boolean": {
+      "outputs": {
+        "ssr": {
+          "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>`)\n  if (!!read()) {\n    _push(`<span data-test=\"rhs\">X</span>`)\n  } else {\n    _push(`<!---->`)\n  }\n  _push(`</div>`)\n}\n",
+          "componentCode": "\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>`)\n  if (!!read()) {\n    _push(`<span data-test=\"rhs\">X</span>`)\n  } else {\n    _push(`<!---->`)\n  }\n  _push(`</div>`)\n}\n",
+          "diagnostics": [],
+          "functionName": "ssrRender",
+          "map": null
+        },
+        "vapor": {
+          "code": "import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';\nconst t0 = _template(\"<span data-test=\\\"rhs\\\">X</span>\", true)\nconst t1 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t1()\n  _setInsertionState(n0)\n  const n1 = _createIf(() => (!!read()), () => {\n    const n3 = t0()\n    return n3\n  })\n  return n0\n}\n",
+          "componentCode": "\nimport { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';\nconst t0 = _template(\"<span data-test=\\\"rhs\\\">X</span>\", true)\nconst t1 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t1()\n  _setInsertionState(n0)\n  const n1 = _createIf(() => (!!read()), () => {\n    const n3 = t0()\n    return n3\n  })\n  return n0\n}\n",
+          "diagnostics": [],
+          "functionName": "render",
+          "map": null
+        },
+        "vdom": {
+          "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n\nconst App = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (!!read())\n      ? (_openBlock(), _createElementBlock(\"span\", {\n        key: 0,\n        \"data-test\": \"rhs\"\n      }, \"X\"))\n      : _createCommentVNode(\"v-if\", true)\n  ]))\n})(undefined, [])\n})();\n",
+          "componentCode": "import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (!!read())\n      ? (_openBlock(), _createElementBlock(\"span\", {\n        key: 0,\n        \"data-test\": \"rhs\"\n      }, \"X\"))\n      : _createCommentVNode(\"v-if\", true)\n  ]))\n}",
+          "diagnostics": [],
+          "functionName": "App",
+          "map": null
+        }
+      },
+      "source": "const App = () => <div>{!!read() && <span data-test=\"rhs\">X</span>}</div>;\n"
+    },
+    "loop": {
+      "outputs": {
+        "ssr": {
+          "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderAttr as _ssrRenderAttr, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<main${_ssrRenderAttrs(_attrs)}>`)\n  _push(`<!--[-->`)\n  _ssrRenderList(rows, (row) => {\n    _push(`<div${_ssrRenderAttr(\"data-id\", row.id)}>`)\n    { const _jsx_value77 = row.value\n      if (_jsx_value77) {\n        _push(`<span>X</span>`)\n      } else if (typeof _jsx_value77 === \"number\" || typeof _jsx_value77 === \"string\" || typeof _jsx_value77 === \"bigint\") {\n        _push(`<!--[-->${_ssrInterpolate(_jsx_value77)}<!--]-->`)\n      } else {\n        _push(`<!---->`)\n      }\n    }\n    _push(`</div>`)\n  })\n  _push(`<!--]-->`)\n  _push(`</main>`)\n}\n",
+          "componentCode": "\nimport { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderAttr as _ssrRenderAttr, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<main${_ssrRenderAttrs(_attrs)}>`)\n  _push(`<!--[-->`)\n  _ssrRenderList(rows, (row) => {\n    _push(`<div${_ssrRenderAttr(\"data-id\", row.id)}>`)\n    { const _jsx_value77 = row.value\n      if (_jsx_value77) {\n        _push(`<span>X</span>`)\n      } else if (typeof _jsx_value77 === \"number\" || typeof _jsx_value77 === \"string\" || typeof _jsx_value77 === \"bigint\") {\n        _push(`<!--[-->${_ssrInterpolate(_jsx_value77)}<!--]-->`)\n      } else {\n        _push(`<!---->`)\n      }\n    }\n    _push(`</div>`)\n  })\n  _push(`<!--]-->`)\n  _push(`</main>`)\n}\n",
+          "diagnostics": [],
+          "functionName": "ssrRender",
+          "map": null
+        },
+        "vapor": {
+          "code": "import { toDisplayString as _toDisplayString, setText as _setText, setAttr as _setAttr, computed as _computed, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';\nconst t0 = _template(\"<span>X</span>\")\nconst t1 = _template(\" \")\nconst t2 = _template(\"<div></div>\")\nconst t3 = _template(\"<main></main>\", true)\n\nexport function render(_ctx) {\n  const n0 = t3()\n  _setInsertionState(n0)\n  const n1 = _createFor(() => (rows), (_for_item0) => {\n    const n3 = t2()\n    _setInsertionState(n3)\n    const n4 = ((_for_item1) => {\n      const n6 = _createIf(() => (_for_item1.value), () => {\n        const n8 = t0()\n        return n8\n      }, () => _createIf(() => (typeof _for_item1.value === \"number\" || typeof _for_item1.value === \"string\" || typeof _for_item1.value === \"bigint\"), () => {\n        const n10 = t1()\n        _renderEffect(() => _setText(n10, _toDisplayString(_for_item1.value)))\n        return n10\n      }))\n      return n6\n    })(_computed(() => (_for_item0.value.value)))\n    _renderEffect(() => _setAttr(n3, \"data-id\", _for_item0.value.id))\n    return n3\n  }, (row) => (row.id))\n  return n0\n}\n",
+          "componentCode": "\nimport { toDisplayString as _toDisplayString, setText as _setText, setAttr as _setAttr, computed as _computed, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';\nconst t0 = _template(\"<span>X</span>\")\nconst t1 = _template(\" \")\nconst t2 = _template(\"<div></div>\")\nconst t3 = _template(\"<main></main>\", true)\n\nexport function render(_ctx) {\n  const n0 = t3()\n  _setInsertionState(n0)\n  const n1 = _createFor(() => (rows), (_for_item0) => {\n    const n3 = t2()\n    _setInsertionState(n3)\n    const n4 = ((_for_item1) => {\n      const n6 = _createIf(() => (_for_item1.value), () => {\n        const n8 = t0()\n        return n8\n      }, () => _createIf(() => (typeof _for_item1.value === \"number\" || typeof _for_item1.value === \"string\" || typeof _for_item1.value === \"bigint\"), () => {\n        const n10 = t1()\n        _renderEffect(() => _setText(n10, _toDisplayString(_for_item1.value)))\n        return n10\n      }))\n      return n6\n    })(_computed(() => (_for_item0.value.value)))\n    _renderEffect(() => _setAttr(n3, \"data-id\", _for_item0.value.id))\n    return n3\n  }, (row) => (row.id))\n  return n0\n}\n",
+          "diagnostics": [],
+          "functionName": "render",
+          "map": null
+        },
+        "vdom": {
+          "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, createCommentVNode as _createCommentVNode, renderList as _renderList } from \"vue\"\n\nconst App = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"main\", null, [\n    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(rows, (row) => {\n      return (_openBlock(), _createElementBlock(\"div\", {\n        key: row.id,\n        \"data-id\": row.id\n      }, [\n        (() => { const _jsx_value77 = row.value; return (_jsx_value77)\n          ? (_openBlock(), _createElementBlock(\"span\", { key: 0 }, \"X\"))\n          : (typeof _jsx_value77 === \"number\" || typeof _jsx_value77 === \"string\" || typeof _jsx_value77 === \"bigint\")\n            ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [\n              _createTextVNode(_toDisplayString(_jsx_value77), 1 /* TEXT */)\n            ], 64 /* STABLE_FRAGMENT */))\n          : _createCommentVNode(\"v-if\", true) })()\n      ], 8 /* PROPS */, [\"data-id\"]))\n    }), 128 /* KEYED_FRAGMENT */))\n  ]))\n})(undefined, [])\n})();\n",
+          "componentCode": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, createCommentVNode as _createCommentVNode, renderList as _renderList } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"main\", null, [\n    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(rows, (row) => {\n      return (_openBlock(), _createElementBlock(\"div\", {\n        key: row.id,\n        \"data-id\": row.id\n      }, [\n        (() => { const _jsx_value77 = row.value; return (_jsx_value77)\n          ? (_openBlock(), _createElementBlock(\"span\", { key: 0 }, \"X\"))\n          : (typeof _jsx_value77 === \"number\" || typeof _jsx_value77 === \"string\" || typeof _jsx_value77 === \"bigint\")\n            ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [\n              _createTextVNode(_toDisplayString(_jsx_value77), 1 /* TEXT */)\n            ], 64 /* STABLE_FRAGMENT */))\n          : _createCommentVNode(\"v-if\", true) })()\n      ], 8 /* PROPS */, [\"data-id\"]))\n    }), 128 /* KEYED_FRAGMENT */))\n  ]))\n}",
+          "diagnostics": [],
+          "functionName": "App",
+          "map": null
+        }
+      },
+      "source": "const App = () => <main>{rows.map(row => <div key={row.id} data-id={row.id}>{row.value && <span>X</span>}</div>)}</main>;\n"
+    },
+    "nested": {
+      "outputs": {
+        "ssr": {
+          "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>`)\n  { const _jsx_value24 = read()\n    if (_jsx_value24) {\n      _push(`<section><i>nested</i></section>`)\n    } else if (typeof _jsx_value24 === \"number\" || typeof _jsx_value24 === \"string\" || typeof _jsx_value24 === \"bigint\") {\n      _push(`<!--[-->${_ssrInterpolate(_jsx_value24)}<!--]-->`)\n    } else {\n      _push(`<!---->`)\n    }\n  }\n  _push(`</div>`)\n}\n",
+          "componentCode": "\nimport { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>`)\n  { const _jsx_value24 = read()\n    if (_jsx_value24) {\n      _push(`<section><i>nested</i></section>`)\n    } else if (typeof _jsx_value24 === \"number\" || typeof _jsx_value24 === \"string\" || typeof _jsx_value24 === \"bigint\") {\n      _push(`<!--[-->${_ssrInterpolate(_jsx_value24)}<!--]-->`)\n    } else {\n      _push(`<!---->`)\n    }\n  }\n  _push(`</div>`)\n}\n",
+          "diagnostics": [],
+          "functionName": "ssrRender",
+          "map": null
+        },
+        "vapor": {
+          "code": "import { toDisplayString as _toDisplayString, setText as _setText, computed as _computed, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';\nconst t0 = _template(\"<section><i>nested</i></section>\")\nconst t1 = _template(\" \")\nconst t2 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t2()\n  _setInsertionState(n0)\n  const n1 = ((_for_item0) => {\n    const n3 = _createIf(() => (_for_item0.value), () => {\n      const n5 = t0()\n      return n5\n    }, () => _createIf(() => (typeof _for_item0.value === \"number\" || typeof _for_item0.value === \"string\" || typeof _for_item0.value === \"bigint\"), () => {\n      const n7 = t1()\n      _renderEffect(() => _setText(n7, _toDisplayString(_for_item0.value)))\n      return n7\n    }))\n    return n3\n  })(_computed(() => (read())))\n  return n0\n}\n",
+          "componentCode": "\nimport { toDisplayString as _toDisplayString, setText as _setText, computed as _computed, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';\nconst t0 = _template(\"<section><i>nested</i></section>\")\nconst t1 = _template(\" \")\nconst t2 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t2()\n  _setInsertionState(n0)\n  const n1 = ((_for_item0) => {\n    const n3 = _createIf(() => (_for_item0.value), () => {\n      const n5 = t0()\n      return n5\n    }, () => _createIf(() => (typeof _for_item0.value === \"number\" || typeof _for_item0.value === \"string\" || typeof _for_item0.value === \"bigint\"), () => {\n      const n7 = t1()\n      _renderEffect(() => _setText(n7, _toDisplayString(_for_item0.value)))\n      return n7\n    }))\n    return n3\n  })(_computed(() => (read())))\n  return n0\n}\n",
+          "diagnostics": [],
+          "functionName": "render",
+          "map": null
+        },
+        "vdom": {
+          "code": "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, createCommentVNode as _createCommentVNode } from \"vue\"\n\nconst App = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (() => { const _jsx_value24 = read(); return (_jsx_value24)\n      ? (_openBlock(), _createElementBlock(\"section\", { key: 0 }, [\n        _createElementVNode(\"i\", null, \"nested\")\n      ]))\n      : (typeof _jsx_value24 === \"number\" || typeof _jsx_value24 === \"string\" || typeof _jsx_value24 === \"bigint\")\n        ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [\n          _createTextVNode(_toDisplayString(_jsx_value24), 1 /* TEXT */)\n        ], 64 /* STABLE_FRAGMENT */))\n      : _createCommentVNode(\"v-if\", true) })()\n  ]))\n})(undefined, [])\n})();\n",
+          "componentCode": "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, createCommentVNode as _createCommentVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (() => { const _jsx_value24 = read(); return (_jsx_value24)\n      ? (_openBlock(), _createElementBlock(\"section\", { key: 0 }, [\n        _createElementVNode(\"i\", null, \"nested\")\n      ]))\n      : (typeof _jsx_value24 === \"number\" || typeof _jsx_value24 === \"string\" || typeof _jsx_value24 === \"bigint\")\n        ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [\n          _createTextVNode(_toDisplayString(_jsx_value24), 1 /* TEXT */)\n        ], 64 /* STABLE_FRAGMENT */))\n      : _createCommentVNode(\"v-if\", true) })()\n  ]))\n}",
+          "diagnostics": [],
+          "functionName": "App",
+          "map": null
+        }
+      },
+      "source": "const App = () => <div>{read() && <section><i>nested</i></section>}</div>;\n"
+    },
+    "values": {
+      "outputs": {
+        "ssr": {
+          "code": "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>`)\n  { const _jsx_value24 = read()\n    if (_jsx_value24) {\n      _push(`<span data-test=\"rhs\">X</span>`)\n    } else if (typeof _jsx_value24 === \"number\" || typeof _jsx_value24 === \"string\" || typeof _jsx_value24 === \"bigint\") {\n      _push(`<!--[-->${_ssrInterpolate(_jsx_value24)}<!--]-->`)\n    } else {\n      _push(`<!---->`)\n    }\n  }\n  _push(`</div>`)\n}\n",
+          "componentCode": "\nimport { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}>`)\n  { const _jsx_value24 = read()\n    if (_jsx_value24) {\n      _push(`<span data-test=\"rhs\">X</span>`)\n    } else if (typeof _jsx_value24 === \"number\" || typeof _jsx_value24 === \"string\" || typeof _jsx_value24 === \"bigint\") {\n      _push(`<!--[-->${_ssrInterpolate(_jsx_value24)}<!--]-->`)\n    } else {\n      _push(`<!---->`)\n    }\n  }\n  _push(`</div>`)\n}\n",
+          "diagnostics": [],
+          "functionName": "ssrRender",
+          "map": null
+        },
+        "vapor": {
+          "code": "import { toDisplayString as _toDisplayString, setText as _setText, computed as _computed, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';\nconst t0 = _template(\"<span data-test=\\\"rhs\\\">X</span>\")\nconst t1 = _template(\" \")\nconst t2 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t2()\n  _setInsertionState(n0)\n  const n1 = ((_for_item0) => {\n    const n3 = _createIf(() => (_for_item0.value), () => {\n      const n5 = t0()\n      return n5\n    }, () => _createIf(() => (typeof _for_item0.value === \"number\" || typeof _for_item0.value === \"string\" || typeof _for_item0.value === \"bigint\"), () => {\n      const n7 = t1()\n      _renderEffect(() => _setText(n7, _toDisplayString(_for_item0.value)))\n      return n7\n    }))\n    return n3\n  })(_computed(() => (read())))\n  return n0\n}\n",
+          "componentCode": "\nimport { toDisplayString as _toDisplayString, setText as _setText, computed as _computed, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';\nconst t0 = _template(\"<span data-test=\\\"rhs\\\">X</span>\")\nconst t1 = _template(\" \")\nconst t2 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t2()\n  _setInsertionState(n0)\n  const n1 = ((_for_item0) => {\n    const n3 = _createIf(() => (_for_item0.value), () => {\n      const n5 = t0()\n      return n5\n    }, () => _createIf(() => (typeof _for_item0.value === \"number\" || typeof _for_item0.value === \"string\" || typeof _for_item0.value === \"bigint\"), () => {\n      const n7 = t1()\n      _renderEffect(() => _setText(n7, _toDisplayString(_for_item0.value)))\n      return n7\n    }))\n    return n3\n  })(_computed(() => (read())))\n  return n0\n}\n",
+          "diagnostics": [],
+          "functionName": "render",
+          "map": null
+        },
+        "vdom": {
+          "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, createCommentVNode as _createCommentVNode } from \"vue\"\n\nconst App = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (() => { const _jsx_value24 = read(); return (_jsx_value24)\n      ? (_openBlock(), _createElementBlock(\"span\", {\n        key: 0,\n        \"data-test\": \"rhs\"\n      }, \"X\"))\n      : (typeof _jsx_value24 === \"number\" || typeof _jsx_value24 === \"string\" || typeof _jsx_value24 === \"bigint\")\n        ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [\n          _createTextVNode(_toDisplayString(_jsx_value24), 1 /* TEXT */)\n        ], 64 /* STABLE_FRAGMENT */))\n      : _createCommentVNode(\"v-if\", true) })()\n  ]))\n})(undefined, [])\n})();\n",
+          "componentCode": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode, createCommentVNode as _createCommentVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (() => { const _jsx_value24 = read(); return (_jsx_value24)\n      ? (_openBlock(), _createElementBlock(\"span\", {\n        key: 0,\n        \"data-test\": \"rhs\"\n      }, \"X\"))\n      : (typeof _jsx_value24 === \"number\" || typeof _jsx_value24 === \"string\" || typeof _jsx_value24 === \"bigint\")\n        ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [\n          _createTextVNode(_toDisplayString(_jsx_value24), 1 /* TEXT */)\n        ], 64 /* STABLE_FRAGMENT */))\n      : _createCommentVNode(\"v-if\", true) })()\n  ]))\n}",
+          "diagnostics": [],
+          "functionName": "App",
+          "map": null
+        }
+      },
+      "source": "const App = () => <div>{read() && <span data-test=\"rhs\">X</span>}</div>;\n"
+    }
+  },
+  "native": {
+    "handled": 0,
+    "equivalent": 0,
+    "pair": "pending"
+  },
+  "comparison": {
+    "code": "UTF-8 byte exact",
+    "componentCode": "UTF-8 byte exact",
+    "metadata": "complete structured diagnostics/map/functionName"
+  },
+  "runtimeObservationFileSha256": "073c6640b1135234757e35bd3064d09fc7788a754d66b772633d227d62cd2256",
+  "sourcebuiltRepeatFileSha256": "073c6640b1135234757e35bd3064d09fc7788a754d66b772633d227d62cd2256"
+}

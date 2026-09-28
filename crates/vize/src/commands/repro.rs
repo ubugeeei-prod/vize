@@ -17,8 +17,8 @@ use std::path::PathBuf;
 use clap::Args;
 
 use super::davinci_ice::{self, IceFailure};
-use vize_davinci::folio::Folio;
-use vize_davinci::folio::repro::ReproFolio;
+use vize_davinci::dump::Dump;
+use vize_davinci::dump::repro::Page as ReproPage;
 
 #[derive(Args, Default)]
 pub struct ReproArgs {
@@ -35,7 +35,7 @@ pub fn run(args: ReproArgs) {
             std::process::exit(2);
         }
     };
-    let folio = match ReproFolio::parse(&text) {
+    let folio = match ReproPage::parse(&text) {
         Ok(folio) => folio,
         Err(error) => {
             eprintln!("repro: {}: {error}", path.display());

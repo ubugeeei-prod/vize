@@ -35,7 +35,7 @@ The durable witnesses are:
 - [`lowering_elements.rs`](../../../../../crates/vize_l1_to_l2/tests/lowering_elements.rs)
   - `v-pre` remains the unmapped-directive witness outside the dedicated
     directive-realization files.
-- [`davinci_s2_text.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_text.rs)
+- [`davinci_s2_text.rs`](../../../../../crates/vize_atelier_dom/tests/l2_text.rs)
   - S2-vs-shipped byte fixtures plus per-node patch-flag extraction across the
     realized cases above.
 - [`emit_unsupported_census.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_unsupported_census.rs)

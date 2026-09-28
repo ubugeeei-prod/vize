@@ -16,7 +16,7 @@ The durable witnesses are:
 - [`emit_create_slots_wrappers.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_create_slots_wrappers.rs)
   - pins S1-to-S2 exact output for both single and multiple nested wrapper
     slot cases.
-- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_slots.rs)
+- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/l2_slots.rs)
   - keeps the S2 DOM output byte-identical to the shipped DOM lane for the
     wrapper-default cases.
 - [`create_slots_walk.rs`](../../../../../crates/vize_l1_to_l2/src/emit/create_slots_walk.rs)

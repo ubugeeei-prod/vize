@@ -21,6 +21,9 @@ enum Commands {
     #[command(visible_alias = "atelier")]
     Build(crate::commands::build::BuildArgs),
 
+    /// Validate L1 source fidelity or a canonical L2/L3 Full dump
+    Dump(crate::commands::dump::DumpArgs),
+
     /// Format Vue, JSX, and TSX files
     #[cfg(feature = "glyph")]
     #[command(visible_alias = "glyph")]
@@ -98,6 +101,7 @@ pub fn run_from_args(args: Vec<String>) {
 fn run(cli: Cli) {
     match cli.command {
         Some(Commands::Build(args)) => crate::commands::build::run(args),
+        Some(Commands::Dump(args)) => crate::commands::dump::run(args),
         #[cfg(feature = "glyph")]
         Some(Commands::Fmt(args)) => crate::commands::fmt::run(args),
         Some(Commands::Lint(args)) => crate::commands::lint::run(args),

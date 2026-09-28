@@ -18,18 +18,18 @@ const TEMPLATE: &str = "\n  <div>{{ msg }}</div>\n";
 /// byte, after the two transform passes the artifact selects (`hoist-static`
 /// and `template-complexity` are fact-producing analyses, so the tree they
 /// leave is the lowering's).
-const L2_PAGE: &str = "[disegno]
+const L2_PAGE: &str = "[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @3:23
   ui.interpolation js(\"msg\" @11:14) @8:17
 
 ";
 
-const L2_PROVENANCE_PAGE: &str = r#"[s2-provenance-folio]
+const L2_PROVENANCE_PAGE: &str = r#"[l2-provenance-dump-v2]
 
-[s2-provenance-folio.records]
+[l2-provenance-dump-v2.records]
 rule=condense.drop-whitespace node=- before="\n  " after="" @0:3
 rule=lower.element node=0 before="<div>" after="ui.element div" @3:23
 rule=lower.interpolation node=1 before=" msg " after="ui.interpolation js" @8:17
@@ -38,18 +38,18 @@ rule=pass.hoist-static.fact node=0 before="ui.element" after="level=dynamic-text
 
 "#;
 
-const L3_PAGE: &str = "[s3-folio]
+const L3_PAGE: &str = "[l3-dump-v2]
 phase=built
 
-[s3-folio.regions]
+[l3-dump-v2.regions]
 id=0 parent=- owner=- span=3:23
 id=1 parent=0 owner=0 span=8:17
 
-[s3-folio.ops]
-id=0 kind=impeto.insert-node region=0 effect=- span=3:23
-id=1 kind=impeto.set-text region=1 effect=0 span=8:17
+[l3-dump-v2.ops]
+id=0 kind=l3.insert-node region=0 effect=- span=3:23
+id=1 kind=l3.set-text region=1 effect=0 span=8:17
 
-[s3-folio.effects]
+[l3-dump-v2.effects]
 id=0 owner=1 region=1 span=8:17
 
 ";

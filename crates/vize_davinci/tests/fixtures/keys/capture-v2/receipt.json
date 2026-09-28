@@ -1,0 +1,1108 @@
+{
+  "schema": "vize.hash-migration.capture",
+  "version": 1,
+  "state": "actual-observed-and-independent-preimage-verified; final-activated-fixture-tests-unrun",
+  "scope": {
+    "oldProductBaseRevision": "3bf16a50e0e8ad9aa5e6cafb2151e5340bc5e3c4",
+    "actualOldProbeHead": "7298647ee8164adf6a9b6c128167cd060f18b77f",
+    "actualCurrentBuildHead": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+    "profiles": "dev; actual selected artifacts opt0/debuginfo2/test=true",
+    "oldFeatures": ["default", "glyph"],
+    "currentFeatures": [],
+    "napiExecuted": false,
+    "wholeIssueClosed": false,
+    "nativeAcceptance": 0
+  },
+  "currentProducerSources": [
+    {
+      "path": "crates/vize_davinci/src/key.rs",
+      "sha256": "37c3941634d89f44e02871b1070c0bc03895c43815213bfb8c12314a55683c0b"
+    },
+    {
+      "path": "crates/vize_davinci/src/key/sink.rs",
+      "sha256": "ea02d8b891c97214f6f4b6490cb707d1ab492b5e7387692c4b350b682e3ee044"
+    },
+    {
+      "path": "crates/vize_davinci/src/key/manifest.rs",
+      "sha256": "2f43f44326c8a7be8aff4ecd9d49c3dff5e34c4845ac739eadd72aa105ffcff3"
+    },
+    {
+      "path": "crates/vize_davinci/src/stage.rs",
+      "sha256": "b177a10e2235c8c30cdb7a877653d58fcf0f20bf00a14d2a53a56e7cae804672"
+    },
+    {
+      "path": "crates/vize_davinci/src/summary.rs",
+      "sha256": "bf1d273d61b726b2bd4f00112d1ba073a9e688eee67fda3fcdc77b24d0585836"
+    },
+    {
+      "path": "crates/vize_davinci/src/summary/global.rs",
+      "sha256": "fe424fbf2f756b2e135dad1b61559dfbbcac6407aa98a3e740dca0e234ae1bfb"
+    }
+  ],
+  "oldCompiledHostBuildId": "7298647ee8164adf6a9b6c128167cd060f18b77f:f2a06b7a91f26135ab4851fa046c2d26e3593918cd3fde4af0699af607189d10",
+  "builds": [
+    {
+      "name": "old-build",
+      "argv": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "--profile",
+        "dev",
+        "-p",
+        "vize_vitrine",
+        "--lib",
+        "--no-run",
+        "--message-format=json-render-diagnostics"
+      ],
+      "cwd": "/tmp/vize-hash-domain-v1-probe-6832-20260927",
+      "startedAtUTC": "2026-09-27T01:19:10.669025+00:00",
+      "finishedAtUTC": "2026-09-27T01:20:19.716432+00:00",
+      "elapsedSeconds": 69.047636834,
+      "returncode": 0,
+      "signal": null,
+      "stdoutSha256": "5eae2b76c1aaafcf9c38fd6fd9fbb6d6fa053ba58ef1b1438d5a001189d62fd9",
+      "stderrSha256": "951b2ce8bed274b188479c13a2eace9693e227552c8c790241e105781b0251d6",
+      "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+      "stdinSha256": null,
+      "source": {
+        "head": "7298647ee8164adf6a9b6c128167cd060f18b77f",
+        "tree": "60c5581e8729d8a4ed6ec9381fd546f36cbc4d71",
+        "cleanAtStart": true,
+        "trackedSourceCensusSha256": "7a716b32ef7c2e5d9781477b7c8c957b3ee25cad935dcd7fd3edc0c40d706c22",
+        "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+      }
+    },
+    {
+      "name": "current-build",
+      "argv": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "--profile",
+        "dev",
+        "-p",
+        "vize_davinci",
+        "--lib",
+        "--test",
+        "artifact_keys",
+        "--test",
+        "key_manifests",
+        "--test",
+        "hash_domains",
+        "--test",
+        "sfc_summary",
+        "--test",
+        "global_summary",
+        "--no-run",
+        "--message-format=json-render-diagnostics"
+      ],
+      "cwd": "/tmp/vize-hash-domain-migration-6832-20260927",
+      "startedAtUTC": "2026-09-27T01:21:03.890281+00:00",
+      "finishedAtUTC": "2026-09-27T01:21:13.855692+00:00",
+      "elapsedSeconds": 9.965192958,
+      "returncode": 0,
+      "signal": null,
+      "stdoutSha256": "10af109ac28adbb6dd8ac4189c70b1525501a6c40b1ddcc6a8675d0ab80ea1ef",
+      "stderrSha256": "d4cf8bfd00f381c6ae79d05ea8d05b30066c8148da3bad7daa76f656dee45e74",
+      "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+      "stdinSha256": null,
+      "source": {
+        "head": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+        "tree": "64f0affdca95981d1ac7fd0dd50e68271d762f33",
+        "cleanAtStart": true,
+        "trackedSourceCensusSha256": "8b9951b407298f87b91b7fc4dc9495572cd373534180e37110df5527b370781d",
+        "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+      }
+    },
+    {
+      "name": "current-rebuilt-build",
+      "argv": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "--profile",
+        "dev",
+        "-p",
+        "vize_davinci",
+        "--lib",
+        "--test",
+        "artifact_keys",
+        "--test",
+        "key_manifests",
+        "--test",
+        "hash_domains",
+        "--test",
+        "sfc_summary",
+        "--test",
+        "global_summary",
+        "--no-run",
+        "--message-format=json-render-diagnostics"
+      ],
+      "cwd": "/tmp/vize-hash-domain-migration-6832-20260927",
+      "startedAtUTC": "2026-09-27T01:24:41.875022+00:00",
+      "finishedAtUTC": "2026-09-27T01:24:59.514418+00:00",
+      "elapsedSeconds": 17.637804583,
+      "returncode": 0,
+      "signal": null,
+      "stdoutSha256": "768e2d4d49f7b857370c3aa219b767aec571467a5719060c63013bd29f10ddb6",
+      "stderrSha256": "1ebf31ffd9ece6d01f08e2cf59f83011fc54acfd3006c9cc25446c90ce145536",
+      "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+      "stdinSha256": null,
+      "source": {
+        "head": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+        "tree": "64f0affdca95981d1ac7fd0dd50e68271d762f33",
+        "cleanAtStart": true,
+        "trackedSourceCensusSha256": "8b9951b407298f87b91b7fc4dc9495572cd373534180e37110df5527b370781d",
+        "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+      }
+    }
+  ],
+  "packageClean": {
+    "name": "davinci-package-clean",
+    "argv": [
+      "cargo",
+      "clean",
+      "-p",
+      "vize_davinci",
+      "--target-dir",
+      "/tmp/vize-nuxt6825-resident-census-target",
+      "--profile",
+      "dev"
+    ],
+    "cwd": "/tmp/vize-hash-domain-migration-6832-20260927",
+    "startedAtUTC": "2026-09-27T01:24:35.092694+00:00",
+    "finishedAtUTC": "2026-09-27T01:24:37.502175+00:00",
+    "elapsedSeconds": 2.4087634170000003,
+    "returncode": 0,
+    "signal": null,
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderrSha256": "af989d3d0af2a3c0ae6d6a39eb73ea00684e19efcd7a96b599f5dec8a9bd4eba",
+    "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+    "stdinSha256": null,
+    "source": {
+      "head": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+      "tree": "64f0affdca95981d1ac7fd0dd50e68271d762f33",
+      "cleanAtStart": true,
+      "trackedSourceCensusSha256": "8b9951b407298f87b91b7fc4dc9495572cd373534180e37110df5527b370781d",
+      "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+    },
+    "actualDeletedFiles": 8394,
+    "actualDeletedBytes": 976645713,
+    "scope": "only vize_davinci dev profile in granted existing target"
+  },
+  "firstAttempt": {
+    "state": "refused-source-artifact-identity-mismatch",
+    "manifestPass": 4,
+    "manifestFail": 1,
+    "observerRows": 0,
+    "producerNames": "s0/s1/s2 from reused non-test rlib contrary to exactcurrentl0/l1/l2 source; original raw failures preserved",
+    "untrustedRlibSha256": "825db1e6241d8661ff3b4301958a39b12c8ed05a7e111c29f384da37a3fa147c",
+    "newlibtestKeyPass": 6,
+    "sfcPass": 7,
+    "globalPass": 2,
+    "recovery": "authorized package-only clean followed by identicalsource/recipe; non-testcurrentrlib fresh=false; no timestamp/source-content workaround"
+  },
+  "oldBinary": {
+    "path": "/tmp/vize-hash-domain-actual-6832-20260927/old-vize_vitrine",
+    "sha256": "adaf806fd1d99df46044a4b2ba8cb9546674e606ab72171251ca5620f4dfa57f",
+    "cargoArtifact": {
+      "reason": "compiler-artifact",
+      "package_id": "path+file:///private/tmp/vize-hash-domain-v1-probe-6832-20260927/crates/vize_vitrine#0.429.0",
+      "manifest_path": "/private/tmp/vize-hash-domain-v1-probe-6832-20260927/crates/vize_vitrine/Cargo.toml",
+      "target": {
+        "kind": ["cdylib", "rlib"],
+        "crate_types": ["cdylib", "rlib"],
+        "name": "vize_vitrine",
+        "src_path": "/private/tmp/vize-hash-domain-v1-probe-6832-20260927/crates/vize_vitrine/src/lib.rs",
+        "edition": "2024",
+        "doc": true,
+        "doctest": true,
+        "test": true
+      },
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": ["default", "glyph"],
+      "filenames": [
+        "/tmp/vize-nuxt6825-resident-census-target/debug/deps/vize_vitrine-dc7ef1ffd50e57e2"
+      ],
+      "executable": "/tmp/vize-nuxt6825-resident-census-target/debug/deps/vize_vitrine-dc7ef1ffd50e57e2",
+      "fresh": false
+    },
+    "sourceHead": "7298647ee8164adf6a9b6c128167cd060f18b77f",
+    "buildReceipt": "/tmp/vize-hash-domain-actual-6832-20260927/old-build.receipt.json"
+  },
+  "currentBinaries": {
+    "global_summary": {
+      "path": "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-global_summary",
+      "sha256": "a47f3d947b4b380049ed41ea2ee948984394654cd87e6b4fa2a5f7af8e14d533",
+      "cargoArtifact": {
+        "reason": "compiler-artifact",
+        "package_id": "path+file:///private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci#0.429.0",
+        "manifest_path": "/private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci/Cargo.toml",
+        "target": {
+          "kind": ["test"],
+          "crate_types": ["bin"],
+          "name": "global_summary",
+          "src_path": "/private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci/tests/global_summary.rs",
+          "edition": "2024",
+          "doc": false,
+          "doctest": false,
+          "test": true
+        },
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 2,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        },
+        "features": [],
+        "filenames": [
+          "/tmp/vize-nuxt6825-resident-census-target/debug/deps/global_summary-8737bdacb694adeb"
+        ],
+        "executable": "/tmp/vize-nuxt6825-resident-census-target/debug/deps/global_summary-8737bdacb694adeb",
+        "fresh": false
+      },
+      "sourceHead": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+      "buildReceipt": "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-build.receipt.json"
+    },
+    "hash_domains": {
+      "path": "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-hash_domains",
+      "sha256": "4636ae4b4360c85bd62587efc7cc44be4f3fd4e748d72b1cfdcef31b6bdb99d8",
+      "cargoArtifact": {
+        "reason": "compiler-artifact",
+        "package_id": "path+file:///private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci#0.429.0",
+        "manifest_path": "/private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci/Cargo.toml",
+        "target": {
+          "kind": ["test"],
+          "crate_types": ["bin"],
+          "name": "hash_domains",
+          "src_path": "/private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci/tests/hash_domains.rs",
+          "edition": "2024",
+          "doc": false,
+          "doctest": false,
+          "test": true
+        },
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 2,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        },
+        "features": [],
+        "filenames": [
+          "/tmp/vize-nuxt6825-resident-census-target/debug/deps/hash_domains-bd8fdc04143c2913"
+        ],
+        "executable": "/tmp/vize-nuxt6825-resident-census-target/debug/deps/hash_domains-bd8fdc04143c2913",
+        "fresh": false
+      },
+      "sourceHead": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+      "buildReceipt": "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-build.receipt.json"
+    },
+    "sfc_summary": {
+      "path": "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-sfc_summary",
+      "sha256": "38a339c317d742bf5c8437ed436b4f5f40bcadb347a288c69261154f1f5df8f1",
+      "cargoArtifact": {
+        "reason": "compiler-artifact",
+        "package_id": "path+file:///private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci#0.429.0",
+        "manifest_path": "/private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci/Cargo.toml",
+        "target": {
+          "kind": ["test"],
+          "crate_types": ["bin"],
+          "name": "sfc_summary",
+          "src_path": "/private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci/tests/sfc_summary/main.rs",
+          "edition": "2024",
+          "doc": false,
+          "doctest": false,
+          "test": true
+        },
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 2,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        },
+        "features": [],
+        "filenames": [
+          "/tmp/vize-nuxt6825-resident-census-target/debug/deps/sfc_summary-1b0e7220456c7bf2"
+        ],
+        "executable": "/tmp/vize-nuxt6825-resident-census-target/debug/deps/sfc_summary-1b0e7220456c7bf2",
+        "fresh": false
+      },
+      "sourceHead": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+      "buildReceipt": "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-build.receipt.json"
+    },
+    "key_manifests": {
+      "path": "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-key_manifests",
+      "sha256": "769b53dbf469c85b758306499fcfe9412f9cd1212ef29d1e5cbb2ff9f4e9eabd",
+      "cargoArtifact": {
+        "reason": "compiler-artifact",
+        "package_id": "path+file:///private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci#0.429.0",
+        "manifest_path": "/private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci/Cargo.toml",
+        "target": {
+          "kind": ["test"],
+          "crate_types": ["bin"],
+          "name": "key_manifests",
+          "src_path": "/private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci/tests/key_manifests.rs",
+          "edition": "2024",
+          "doc": false,
+          "doctest": false,
+          "test": true
+        },
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 2,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        },
+        "features": [],
+        "filenames": [
+          "/tmp/vize-nuxt6825-resident-census-target/debug/deps/key_manifests-1ad734da74e887d4"
+        ],
+        "executable": "/tmp/vize-nuxt6825-resident-census-target/debug/deps/key_manifests-1ad734da74e887d4",
+        "fresh": false
+      },
+      "sourceHead": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+      "buildReceipt": "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-build.receipt.json"
+    },
+    "artifact_keys": {
+      "path": "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-artifact_keys",
+      "sha256": "356ebfbc63ca71a56c16f75d2cd658f8c3181618bad9b3b9629e42ea667f624a",
+      "cargoArtifact": {
+        "reason": "compiler-artifact",
+        "package_id": "path+file:///private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci#0.429.0",
+        "manifest_path": "/private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci/Cargo.toml",
+        "target": {
+          "kind": ["test"],
+          "crate_types": ["bin"],
+          "name": "artifact_keys",
+          "src_path": "/private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci/tests/artifact_keys.rs",
+          "edition": "2024",
+          "doc": false,
+          "doctest": false,
+          "test": true
+        },
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 2,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        },
+        "features": [],
+        "filenames": [
+          "/tmp/vize-nuxt6825-resident-census-target/debug/deps/artifact_keys-de67db34a9f87189"
+        ],
+        "executable": "/tmp/vize-nuxt6825-resident-census-target/debug/deps/artifact_keys-de67db34a9f87189",
+        "fresh": false
+      },
+      "sourceHead": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+      "buildReceipt": "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-build.receipt.json"
+    },
+    "vize_davinci": {
+      "path": "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-vize_davinci",
+      "sha256": "1b37cebc5424155299a486b1a3ab216a3d4c9f9af12a932279938e342f9e0a8b",
+      "cargoArtifact": {
+        "reason": "compiler-artifact",
+        "package_id": "path+file:///private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci#0.429.0",
+        "manifest_path": "/private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci/Cargo.toml",
+        "target": {
+          "kind": ["lib"],
+          "crate_types": ["lib"],
+          "name": "vize_davinci",
+          "src_path": "/private/tmp/vize-hash-domain-migration-6832-20260927/crates/vize_davinci/src/lib.rs",
+          "edition": "2024",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        },
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 2,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        },
+        "features": [],
+        "filenames": [
+          "/tmp/vize-nuxt6825-resident-census-target/debug/deps/vize_davinci-364535934c8e69fe"
+        ],
+        "executable": "/tmp/vize-nuxt6825-resident-census-target/debug/deps/vize_davinci-364535934c8e69fe",
+        "fresh": false
+      },
+      "sourceHead": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+      "buildReceipt": "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-build.receipt.json"
+    }
+  },
+  "oldObservers": {
+    "count": 4,
+    "eachPassed": 1,
+    "observations": [
+      { "diagnostic": "s0.v1:fae95018d4407e71658e7bfae6462692" },
+      {
+        "provider": "s0.v1:599021f015a56fa001b300e6ce7125a9",
+        "providerResult": "s0.v1:ed1d83b12494c48eb8730794c9492b38",
+        "providerValues": { "tokens/colors": [[0, "red"]] }
+      },
+      { "output": "s0.v1:ad58e73fb7a33b3b2b6f7f30d6ab91ff" },
+      { "transform": "s0.v1:e99ab135a693b1e38e520b7918806d3b" }
+    ],
+    "receipts": [
+      {
+        "name": "old-observer-1",
+        "argv": [
+          "/tmp/vize-hash-domain-actual-6832-20260927/old-vize_vitrine",
+          "plugin_sdk_host::plugin_cache::migration::observe_diagnostic_migration_key",
+          "--exact",
+          "--ignored",
+          "--nocapture"
+        ],
+        "cwd": "/tmp/vize-hash-domain-v1-probe-6832-20260927",
+        "startedAtUTC": "2026-09-27T01:21:00.977902+00:00",
+        "finishedAtUTC": "2026-09-27T01:21:00.985869+00:00",
+        "elapsedSeconds": 0.007982333000000175,
+        "returncode": 0,
+        "signal": null,
+        "stdoutSha256": "3399f54a368ea08d040b494cb617d0cfd42fb1e0899c7aada82743c80a08af6f",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+        "stdinSha256": null,
+        "source": {
+          "head": "7298647ee8164adf6a9b6c128167cd060f18b77f",
+          "tree": "60c5581e8729d8a4ed6ec9381fd546f36cbc4d71",
+          "cleanAtStart": true,
+          "trackedSourceCensusSha256": "7a716b32ef7c2e5d9781477b7c8c957b3ee25cad935dcd7fd3edc0c40d706c22",
+          "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+        }
+      },
+      {
+        "name": "old-observer-2",
+        "argv": [
+          "/tmp/vize-hash-domain-actual-6832-20260927/old-vize_vitrine",
+          "plugin_sdk_host::providers::cache::tests::observe_provider_migration_keys",
+          "--exact",
+          "--ignored",
+          "--nocapture"
+        ],
+        "cwd": "/tmp/vize-hash-domain-v1-probe-6832-20260927",
+        "startedAtUTC": "2026-09-27T01:21:01.539491+00:00",
+        "finishedAtUTC": "2026-09-27T01:21:01.547604+00:00",
+        "elapsedSeconds": 0.008137583999999976,
+        "returncode": 0,
+        "signal": null,
+        "stdoutSha256": "6ae1cf1f7abab15c9a584cc7e88fe77557fb837becd18211b1682b9c29961b8a",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+        "stdinSha256": null,
+        "source": {
+          "head": "7298647ee8164adf6a9b6c128167cd060f18b77f",
+          "tree": "60c5581e8729d8a4ed6ec9381fd546f36cbc4d71",
+          "cleanAtStart": true,
+          "trackedSourceCensusSha256": "7a716b32ef7c2e5d9781477b7c8c957b3ee25cad935dcd7fd3edc0c40d706c22",
+          "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+        }
+      },
+      {
+        "name": "old-observer-3",
+        "argv": [
+          "/tmp/vize-hash-domain-actual-6832-20260927/old-vize_vitrine",
+          "plugin_output::cache::tests::observe_output_migration_key",
+          "--exact",
+          "--ignored",
+          "--nocapture"
+        ],
+        "cwd": "/tmp/vize-hash-domain-v1-probe-6832-20260927",
+        "startedAtUTC": "2026-09-27T01:21:02.091239+00:00",
+        "finishedAtUTC": "2026-09-27T01:21:02.099315+00:00",
+        "elapsedSeconds": 0.008094707999999784,
+        "returncode": 0,
+        "signal": null,
+        "stdoutSha256": "dc1091ef837dd3217f5fc2d01c5eca58d2f15b069d15e5c00751ea1c5fd36706",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+        "stdinSha256": null,
+        "source": {
+          "head": "7298647ee8164adf6a9b6c128167cd060f18b77f",
+          "tree": "60c5581e8729d8a4ed6ec9381fd546f36cbc4d71",
+          "cleanAtStart": true,
+          "trackedSourceCensusSha256": "7a716b32ef7c2e5d9781477b7c8c957b3ee25cad935dcd7fd3edc0c40d706c22",
+          "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+        }
+      },
+      {
+        "name": "old-observer-4",
+        "argv": [
+          "/tmp/vize-hash-domain-actual-6832-20260927/old-vize_vitrine",
+          "plugin_transform::disk::migration::observe_transform_migration_key",
+          "--exact",
+          "--ignored",
+          "--nocapture"
+        ],
+        "cwd": "/tmp/vize-hash-domain-v1-probe-6832-20260927",
+        "startedAtUTC": "2026-09-27T01:21:02.642432+00:00",
+        "finishedAtUTC": "2026-09-27T01:21:02.649169+00:00",
+        "elapsedSeconds": 0.006761416000000686,
+        "returncode": 0,
+        "signal": null,
+        "stdoutSha256": "21c91b1fbb163d156793be95bd8501afe99bb67400b46e05fb1958e5c2f2efc5",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+        "stdinSha256": null,
+        "source": {
+          "head": "7298647ee8164adf6a9b6c128167cd060f18b77f",
+          "tree": "60c5581e8729d8a4ed6ec9381fd546f36cbc4d71",
+          "cleanAtStart": true,
+          "trackedSourceCensusSha256": "7a716b32ef7c2e5d9781477b7c8c957b3ee25cad935dcd7fd3edc0c40d706c22",
+          "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+        }
+      }
+    ]
+  },
+  "currentGates": {
+    "key": 6,
+    "manifests": 5,
+    "sfc": 7,
+    "global": 2,
+    "vectorObserver": 1,
+    "vectorRows": 24,
+    "realProducerEquality": 11,
+    "negativeProducerNull": 13,
+    "ts43Update": 1,
+    "ts43Rows": 7,
+    "ts43Sha256": "3d1676cdf640de111723e5a3b3fbd546c42ecee9e9392ee363a13a42320466a4",
+    "oldV1GoldenSha256": "25c449cf36249bf7fabc8de9c2cf41ce3a491463a5d23b336cbdcc81b874ec5a",
+    "receipts": [
+      {
+        "name": "current-rebuilt-key-tests",
+        "argv": [
+          "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-vize_davinci",
+          "key::tests::",
+          "--nocapture"
+        ],
+        "cwd": "/tmp/vize-hash-domain-migration-6832-20260927",
+        "startedAtUTC": "2026-09-27T01:26:01.880415+00:00",
+        "finishedAtUTC": "2026-09-27T01:26:01.886129+00:00",
+        "elapsedSeconds": 0.005719333000000049,
+        "returncode": 0,
+        "signal": null,
+        "stdoutSha256": "b774b768a4aa170ebd7ec9418d6e7037c60e36198074fb0e17a2ece60dd1848a",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+        "stdinSha256": null,
+        "source": {
+          "head": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+          "tree": "64f0affdca95981d1ac7fd0dd50e68271d762f33",
+          "cleanAtStart": true,
+          "trackedSourceCensusSha256": "8b9951b407298f87b91b7fc4dc9495572cd373534180e37110df5527b370781d",
+          "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+        }
+      },
+      {
+        "name": "current-rebuilt-key_manifests",
+        "argv": [
+          "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-key_manifests",
+          "--nocapture"
+        ],
+        "cwd": "/tmp/vize-hash-domain-migration-6832-20260927",
+        "startedAtUTC": "2026-09-27T01:26:02.418469+00:00",
+        "finishedAtUTC": "2026-09-27T01:26:02.424441+00:00",
+        "elapsedSeconds": 0.005990582999999994,
+        "returncode": 0,
+        "signal": null,
+        "stdoutSha256": "27786267e7b4819fe36604e53281d3cc9567a7675548bd8a1b5000811ed7aa10",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+        "stdinSha256": null,
+        "source": {
+          "head": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+          "tree": "64f0affdca95981d1ac7fd0dd50e68271d762f33",
+          "cleanAtStart": true,
+          "trackedSourceCensusSha256": "8b9951b407298f87b91b7fc4dc9495572cd373534180e37110df5527b370781d",
+          "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+        }
+      },
+      {
+        "name": "current-rebuilt-sfc_summary",
+        "argv": [
+          "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-sfc_summary",
+          "--nocapture"
+        ],
+        "cwd": "/tmp/vize-hash-domain-migration-6832-20260927",
+        "startedAtUTC": "2026-09-27T01:26:02.953705+00:00",
+        "finishedAtUTC": "2026-09-27T01:26:02.959791+00:00",
+        "elapsedSeconds": 0.006086916999999303,
+        "returncode": 0,
+        "signal": null,
+        "stdoutSha256": "afe77af4a23bdb72adb86bf00427d0967e9ef7cab6b1543ce161e8e52dd712a2",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+        "stdinSha256": null,
+        "source": {
+          "head": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+          "tree": "64f0affdca95981d1ac7fd0dd50e68271d762f33",
+          "cleanAtStart": true,
+          "trackedSourceCensusSha256": "8b9951b407298f87b91b7fc4dc9495572cd373534180e37110df5527b370781d",
+          "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+        }
+      },
+      {
+        "name": "current-rebuilt-global_summary",
+        "argv": [
+          "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-global_summary",
+          "--nocapture"
+        ],
+        "cwd": "/tmp/vize-hash-domain-migration-6832-20260927",
+        "startedAtUTC": "2026-09-27T01:26:03.493529+00:00",
+        "finishedAtUTC": "2026-09-27T01:26:03.499353+00:00",
+        "elapsedSeconds": 0.005829291999999597,
+        "returncode": 0,
+        "signal": null,
+        "stdoutSha256": "9016e5162cb1a7497afad4540d667fbc83b69476cf2f1cade9288e06b0c6fc3e",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+        "stdinSha256": null,
+        "source": {
+          "head": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+          "tree": "64f0affdca95981d1ac7fd0dd50e68271d762f33",
+          "cleanAtStart": true,
+          "trackedSourceCensusSha256": "8b9951b407298f87b91b7fc4dc9495572cd373534180e37110df5527b370781d",
+          "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+        }
+      },
+      {
+        "name": "current-rebuilt-vector-observer",
+        "argv": [
+          "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-hash_domains",
+          "observe_pending_hash_domain_vectors",
+          "--exact",
+          "--ignored",
+          "--nocapture"
+        ],
+        "cwd": "/tmp/vize-hash-domain-migration-6832-20260927",
+        "startedAtUTC": "2026-09-27T01:26:04.028041+00:00",
+        "finishedAtUTC": "2026-09-27T01:26:04.035403+00:00",
+        "elapsedSeconds": 0.007367290999999554,
+        "returncode": 0,
+        "signal": null,
+        "stdoutSha256": "9cbbd775f05ea987c08f6ffdc30c18b37f4ecf1c6550a85afd74ed1299ef1b6d",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+        "stdinSha256": null,
+        "source": {
+          "head": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+          "tree": "64f0affdca95981d1ac7fd0dd50e68271d762f33",
+          "cleanAtStart": true,
+          "trackedSourceCensusSha256": "8b9951b407298f87b91b7fc4dc9495572cd373534180e37110df5527b370781d",
+          "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+        }
+      },
+      {
+        "name": "current-rebuilt-ts43-update",
+        "argv": [
+          "/tmp/vize-hash-domain-actual-6832-20260927/current-rebuilt-artifact_keys",
+          "base_keys_equal_the_committed_golden",
+          "--exact",
+          "--nocapture"
+        ],
+        "cwd": "/tmp/vize-hash-domain-migration-6832-20260927",
+        "startedAtUTC": "2026-09-27T01:26:04.563145+00:00",
+        "finishedAtUTC": "2026-09-27T01:26:04.572708+00:00",
+        "elapsedSeconds": 0.00957479100000036,
+        "returncode": 0,
+        "signal": null,
+        "stdoutSha256": "df994b93f3d7f49a7353fd9853133ab91cceb6ae5bc58760f71e87e891b158ff",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "declaredEnvironment": {
+          "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target",
+          "UPDATE_KEY_GOLDENS": "1"
+        },
+        "stdinSha256": null,
+        "source": {
+          "head": "de5e6566bd04f6aa0518ccf53f20802612905b04",
+          "tree": "64f0affdca95981d1ac7fd0dd50e68271d762f33",
+          "cleanAtStart": true,
+          "trackedSourceCensusSha256": "8b9951b407298f87b91b7fc4dc9495572cd373534180e37110df5527b370781d",
+          "censusLimit": "conservative tracked source/config census, not observed compiler dependency closure"
+        }
+      }
+    ]
+  },
+  "independentOneShot": {
+    "state": "actual-independent-one-shot-verified",
+    "sourcePath": "/tmp/vize-hash-domain-source-review-6832-20260927/one_shot.rs",
+    "sourceSha256": "d8939b4dcc02bb4bbb61d86fa184635abb179c2b511745d9167aff72a6501eb6",
+    "primitiveArtifact": {
+      "reason": "compiler-artifact",
+      "package_id": "registry+https://github.com/rust-lang/crates.io-index#xxhash-rust@0.8.18",
+      "manifest_path": "/Users/ubugeeei/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xxhash-rust-0.8.18/Cargo.toml",
+      "target": {
+        "kind": ["lib"],
+        "crate_types": ["lib"],
+        "name": "xxhash_rust",
+        "src_path": "/Users/ubugeeei/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xxhash-rust-0.8.18/src/lib.rs",
+        "edition": "2018",
+        "doc": true,
+        "doctest": true,
+        "test": true
+      },
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": false
+      },
+      "features": ["xxh3"],
+      "filenames": [
+        "/tmp/vize-nuxt6825-resident-census-target/debug/deps/libxxhash_rust-ffc695129e742c48.rlib",
+        "/tmp/vize-nuxt6825-resident-census-target/debug/deps/libxxhash_rust-ffc695129e742c48.rmeta"
+      ],
+      "executable": null,
+      "fresh": true
+    },
+    "frozenPrimitivePath": "/tmp/vize-hash-domain-actual-6832-20260927/libexisting_xxhash_rust.rlib",
+    "primitiveSha256": "652906f971601c7417499ebaeb091ad42dd063377d5ebff40fdf4b9a47c194cd",
+    "compilerVersionReceipt": "/tmp/vize-hash-domain-actual-6832-20260927/one-shot-pinned-rustc-version.receipt.json",
+    "compileReceipt": "/tmp/vize-hash-domain-actual-6832-20260927/one-shot-pinned-compile.receipt.json",
+    "binarySha256": "54a7e91dffc6cb18226b1dbcfe6aa7f131ab9d3390565a36c57219c6dca79441",
+    "input": "/tmp/vize-hash-domain-actual-6832-20260927/one-shot-input.tsv",
+    "inputSha256": "e607e2da752a178e84df1f745dc98623a5314a01c6a9847f7c2001ec16edb1cf",
+    "verificationReceipt": "/tmp/vize-hash-domain-actual-6832-20260927/one-shot-verification.receipt.json",
+    "rows": 24,
+    "productionPositiveEqual": 11,
+    "negativeProductionNull": 13,
+    "priorFailedCompile": {
+      "receipt": "/tmp/vize-hash-domain-actual-6832-20260927/one-shot-compile.receipt.json",
+      "reason": "default outside-worktree rustc1.98.1 rejected actual1.98.0 rlib E0514; exact existing pinned compiler retry, no install"
+    },
+    "samePrimitiveLimit": "independent one-shot XXH3 call verifies exact fixed preimages; same reviewed primitive, not independent hash algorithm implementation",
+    "nativeAcceptance": 0
+  },
+  "oneShotReceipts": [
+    {
+      "name": "one-shot-rustc-version",
+      "argv": ["rustc", "-Vv"],
+      "cwd": "/tmp/vize-hash-domain-actual-6832-20260927",
+      "startedAtUTC": "2026-09-27T01:26:23.183613+00:00",
+      "finishedAtUTC": "2026-09-27T01:26:23.304622+00:00",
+      "elapsedSeconds": 0.120809458,
+      "returncode": 0,
+      "signal": null,
+      "stdoutSha256": "e2211d4c0760a2a3b03eab88e42f8848952b7aa2ed649277a8fdbf3ce1838fd4",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+      "stdinSha256": null,
+      "source": null
+    },
+    {
+      "name": "one-shot-compile",
+      "argv": [
+        "rustc",
+        "--edition=2021",
+        "/tmp/vize-hash-domain-source-review-6832-20260927/one_shot.rs",
+        "--extern",
+        "xxhash_rust=/tmp/vize-hash-domain-actual-6832-20260927/libexisting_xxhash_rust.rlib",
+        "-o",
+        "/tmp/vize-hash-domain-actual-6832-20260927/independent-one-shot"
+      ],
+      "cwd": "/tmp/vize-hash-domain-actual-6832-20260927",
+      "startedAtUTC": "2026-09-27T01:26:23.306492+00:00",
+      "finishedAtUTC": "2026-09-27T01:26:23.474765+00:00",
+      "elapsedSeconds": 0.168315667,
+      "returncode": 1,
+      "signal": null,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "062cf2bca0189347030b9c1d07cdc159883f4f469081bd7303cafabf7552c1e2",
+      "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+      "stdinSha256": null,
+      "source": null
+    },
+    {
+      "name": "one-shot-pinned-rustc-version",
+      "argv": ["rustup", "run", "1.98.0", "rustc", "-Vv"],
+      "cwd": "/tmp/vize-hash-domain-actual-6832-20260927",
+      "startedAtUTC": "2026-09-27T01:26:52.985888+00:00",
+      "finishedAtUTC": "2026-09-27T01:26:53.201849+00:00",
+      "elapsedSeconds": 0.215806917,
+      "returncode": 0,
+      "signal": null,
+      "stdoutSha256": "bd38eb565e393486255b35ff1f74e9dc7ca87425f1febb798b9dd042159a833a",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+      "stdinSha256": null,
+      "source": null
+    },
+    {
+      "name": "one-shot-pinned-compile",
+      "argv": [
+        "rustup",
+        "run",
+        "1.98.0",
+        "rustc",
+        "--edition=2021",
+        "/tmp/vize-hash-domain-source-review-6832-20260927/one_shot.rs",
+        "--extern",
+        "xxhash_rust=/tmp/vize-hash-domain-actual-6832-20260927/libexisting_xxhash_rust.rlib",
+        "-o",
+        "/tmp/vize-hash-domain-actual-6832-20260927/independent-one-shot"
+      ],
+      "cwd": "/tmp/vize-hash-domain-actual-6832-20260927",
+      "startedAtUTC": "2026-09-27T01:26:53.203599+00:00",
+      "finishedAtUTC": "2026-09-27T01:26:53.730108+00:00",
+      "elapsedSeconds": 0.526536209,
+      "returncode": 0,
+      "signal": null,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+      "stdinSha256": null,
+      "source": null
+    },
+    {
+      "name": "one-shot-verification",
+      "argv": ["/tmp/vize-hash-domain-actual-6832-20260927/independent-one-shot"],
+      "cwd": "/tmp/vize-hash-domain-actual-6832-20260927",
+      "startedAtUTC": "2026-09-27T01:26:53.730904+00:00",
+      "finishedAtUTC": "2026-09-27T01:26:54.115057+00:00",
+      "elapsedSeconds": 0.38419012500000005,
+      "returncode": 0,
+      "signal": null,
+      "stdoutSha256": "e607e2da752a178e84df1f745dc98623a5314a01c6a9847f7c2001ec16edb1cf",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "declaredEnvironment": { "CARGO_TARGET_DIR": "/tmp/vize-nuxt6825-resident-census-target" },
+      "stdinSha256": "e607e2da752a178e84df1f745dc98623a5314a01c6a9847f7c2001ec16edb1cf",
+      "source": null
+    }
+  ],
+  "rawArtifacts": [
+    {
+      "path": "old-build.stdout",
+      "sha256": "5eae2b76c1aaafcf9c38fd6fd9fbb6d6fa053ba58ef1b1438d5a001189d62fd9",
+      "bytes": 357219,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "old-build.stderr",
+      "sha256": "951b2ce8bed274b188479c13a2eace9693e227552c8c790241e105781b0251d6",
+      "bytes": 3277,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-build.stdout",
+      "sha256": "10af109ac28adbb6dd8ac4189c70b1525501a6c40b1ddcc6a8675d0ab80ea1ef",
+      "bytes": 201798,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-build.stderr",
+      "sha256": "d4cf8bfd00f381c6ae79d05ea8d05b30066c8148da3bad7daa76f656dee45e74",
+      "bytes": 302,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-key_manifests.stdout",
+      "sha256": "fe47e4a0ac49af24bdbb0570f98739bb0eb40bd502755f036e42faab608de142",
+      "bytes": 524,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-key_manifests.stderr",
+      "sha256": "644e2c2a798e87d982339d2c365db34cebca7789a3e263f03c42dfefdee5c186",
+      "bytes": 1268,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-initial-hash_domains.stdout",
+      "sha256": "e79433ee06488c53cb07981aed89a449d75f4666291d49ca2d1e08e8ec4b7e19",
+      "bytes": 230,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-initial-hash_domains.stderr",
+      "sha256": "28dff2d73006c3296f1cd8f92c85e790f75f60d3d02c693f3a5fc789e3849d7f",
+      "bytes": 359,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-rebuilt-build.stdout",
+      "sha256": "768e2d4d49f7b857370c3aa219b767aec571467a5719060c63013bd29f10ddb6",
+      "bytes": 201811,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-rebuilt-build.stderr",
+      "sha256": "1ebf31ffd9ece6d01f08e2cf59f83011fc54acfd3006c9cc25446c90ce145536",
+      "bytes": 1647,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-rebuilt-key-tests.stdout",
+      "sha256": "b774b768a4aa170ebd7ec9418d6e7037c60e36198074fb0e17a2ece60dd1848a",
+      "bytes": 529,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-rebuilt-key_manifests.stdout",
+      "sha256": "27786267e7b4819fe36604e53281d3cc9567a7675548bd8a1b5000811ed7aa10",
+      "bytes": 428,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-rebuilt-sfc_summary.stdout",
+      "sha256": "afe77af4a23bdb72adb86bf00427d0967e9ef7cab6b1543ce161e8e52dd712a2",
+      "bytes": 564,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-rebuilt-global_summary.stdout",
+      "sha256": "9016e5162cb1a7497afad4540d667fbc83b69476cf2f1cade9288e06b0c6fc3e",
+      "bytes": 237,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-rebuilt-vector-observer.stdout",
+      "sha256": "9cbbd775f05ea987c08f6ffdc30c18b37f4ecf1c6550a85afd74ed1299ef1b6d",
+      "bytes": 8728,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-rebuilt-vector-observer.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-rebuilt-ts43-update.stdout",
+      "sha256": "df994b93f3d7f49a7353fd9853133ab91cceb6ae5bc58760f71e87e891b158ff",
+      "bytes": 561,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "current-rebuilt-ts43-update.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "one-shot-input.tsv",
+      "sha256": "e607e2da752a178e84df1f745dc98623a5314a01c6a9847f7c2001ec16edb1cf",
+      "bytes": 6078,
+      "kind": "exact24-preimage-and-observed-digest-transport"
+    },
+    {
+      "path": "one-shot-verification.stdout",
+      "sha256": "e607e2da752a178e84df1f745dc98623a5314a01c6a9847f7c2001ec16edb1cf",
+      "bytes": 6078,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "one-shot-verification.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "one-shot-rustc-version.stdout",
+      "sha256": "e2211d4c0760a2a3b03eab88e42f8848952b7aa2ed649277a8fdbf3ce1838fd4",
+      "bytes": 192,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "one-shot-compile.stderr",
+      "sha256": "062cf2bca0189347030b9c1d07cdc159883f4f469081bd7303cafabf7552c1e2",
+      "bytes": 676,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "one-shot-pinned-rustc-version.stdout",
+      "sha256": "bd38eb565e393486255b35ff1f74e9dc7ca87425f1febb798b9dd042159a833a",
+      "bytes": 192,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "one-shot-pinned-compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "one-shot-pinned-compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "old-observer-1.stdout",
+      "sha256": "3399f54a368ea08d040b494cb617d0cfd42fb1e0899c7aada82743c80a08af6f",
+      "bytes": 279,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "old-observer-1.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "old-observer-2.stdout",
+      "sha256": "6ae1cf1f7abab15c9a584cc7e88fe77557fb837becd18211b1682b9c29961b8a",
+      "bytes": 381,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "old-observer-2.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "old-observer-3.stdout",
+      "sha256": "dc1091ef837dd3217f5fc2d01c5eca58d2f15b069d15e5c00751ea1c5fd36706",
+      "bytes": 258,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "old-observer-3.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "old-observer-4.stdout",
+      "sha256": "21c91b1fbb163d156793be95bd8501afe99bb67400b46e05fb1958e5c2f2efc5",
+      "bytes": 270,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "old-observer-4.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "kind": "unchanged-raw-process-output"
+    },
+    {
+      "path": "one_shot.rs",
+      "sha256": "d8939b4dcc02bb4bbb61d86fa184635abb179c2b511745d9167aff72a6501eb6",
+      "bytes": 813,
+      "kind": "independent-existing-primitive-probe-source"
+    }
+  ],
+  "limits": [
+    "Normal hash_domains acceptance and all3 TS43 tests afterfixtureactivation require later rebuild; not run from this datachild.",
+    "Current4-store migration acceptance requires separate Vitrine build after fixtureactivation; no NAPI/legacyABI/WASM/compiler-output parity run here.",
+    "Independent one-shot uses existingXXH3 primitive with directone-shotAPI; not a second hash algorithm implementation.",
+    "Source census is conservative trackedfiles, not observed completecompiler dependencyclosure.",
+    "Detailed original build/test receipts and frozenexecutables retained locally at /tmp/vize-hash-domain-actual-6832-20260927."
+  ]
+}

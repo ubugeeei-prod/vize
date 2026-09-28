@@ -12,7 +12,8 @@ impl HoverService {
         }
         // Check if this looks like TypeScript type info
         // Common patterns: (const), (let), (var), (function), (method), (property), type, interface, etc.
-        let looks_like_type_info = text.starts_with('(')
+        let looks_like_type_info = is_bare_type(text)
+            || text.starts_with('(')
             || text.starts_with("type ")
             || text.starts_with("interface ")
             || text.starts_with("class ")
@@ -46,6 +47,38 @@ impl HoverService {
     /// and pushed the signature below the fold in small popups (#3894);
     /// Volar and tsserver open with the code block.
     pub(super) fn decorate_corsa_hover_markdown(value: &str) -> String {
-        value.trim().to_string()
+        let value = value.trim();
+        if is_bare_type(value) {
+            return Self::wrap_type_info_in_codeblock(value);
+        }
+        value.to_string()
+    }
+}
+
+fn is_bare_type(text: &str) -> bool {
+    matches!(
+        text,
+        "string" | "number" | "boolean" | "unknown" | "any" | "void" | "never" | "object"
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::HoverService;
+
+    #[test]
+    fn bare_template_type_gets_a_typescript_fence() {
+        assert_eq!(
+            HoverService::decorate_corsa_hover_markdown("number"),
+            "```typescript\nnumber\n```"
+        );
+        assert_eq!(
+            HoverService::wrap_type_info_in_codeblock("string"),
+            "```typescript\nstring\n```"
+        );
+        assert_eq!(
+            HoverService::decorate_corsa_hover_markdown("A component description."),
+            "A component description."
+        );
     }
 }

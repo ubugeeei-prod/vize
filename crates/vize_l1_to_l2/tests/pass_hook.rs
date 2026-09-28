@@ -3,12 +3,12 @@
 //! post-pass L2 tree, and it only observes - the facts, diagnostics and
 //! folio equal the hook-free `run_transform` run exactly.
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::pass::BudgetObserver;
 use vize_l0::{Allocator, String};
 use vize_l1_to_l2::lower;
 use vize_l1_to_l2::pass::{TransformProfile, run_transform, run_transform_with_pass_hook};
-use vize_l2::folio::L2Folio;
+use vize_l2::dump::Page as L2Page;
 
 const SOURCE: &str = r#"<Comp v-model="x"><template #a>hi</template></Comp><p>{{ y }}</p>"#;
 
@@ -17,7 +17,7 @@ fn the_hook_sees_every_executed_pass_in_order_with_the_post_pass_tree() {
     let allocator = Allocator::default();
     let (tree, errors) = vize_l1::parse(&allocator, SOURCE);
     let mut lowered = lower(&allocator, &tree, &errors);
-    let before = L2Folio::of(&lowered.root.ops).print_to_string(FolioMode::Full);
+    let before = L2Page::of(&lowered.root.ops).print_to_string(DumpMode::Full);
 
     let mut seen: Vec<(String, usize, usize, String)> = Vec::new();
     let mut budget = BudgetObserver::new();
@@ -30,7 +30,7 @@ fn the_hook_sees_every_executed_pass_in_order_with_the_post_pass_tree() {
                 String::from(event.desc().name),
                 event.group_index,
                 event.pass_index,
-                L2Folio::of(&lowered.root.ops).print_to_string(FolioMode::Full),
+                L2Page::of(&lowered.root.ops).print_to_string(DumpMode::Full),
             ));
         },
     );
@@ -81,8 +81,8 @@ fn the_hook_only_observes() {
     assert_eq!(hooked.diagnostics, plain.diagnostics);
     assert_eq!(hooked.provenance, plain.provenance);
     assert_eq!(
-        L2Folio::of(&hooked.root.ops).print_to_string(FolioMode::Full),
-        L2Folio::of(&plain.root.ops).print_to_string(FolioMode::Full)
+        L2Page::of(&hooked.root.ops).print_to_string(DumpMode::Full),
+        L2Page::of(&plain.root.ops).print_to_string(DumpMode::Full)
     );
     assert_eq!(hooked_facts.slot_facts, plain_facts.slot_facts);
     assert_eq!(hooked_facts.model_faults, plain_facts.model_faults);

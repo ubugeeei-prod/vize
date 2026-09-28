@@ -13,7 +13,7 @@
 //! page"). `Display` prints the same text as `Full`: nothing is elidable
 //! from a page that is only offsets.
 
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 
 mod mirror;
 mod parse;
@@ -113,12 +113,12 @@ impl SurfacePage {
     }
 }
 
-impl Folio for SurfacePage {
-    fn print<W: core::fmt::Write>(&self, w: &mut W, _mode: FolioMode) -> core::fmt::Result {
+impl Dump for SurfacePage {
+    fn print<W: core::fmt::Write>(&self, w: &mut W, _mode: DumpMode) -> core::fmt::Result {
         print::print(self, w)
     }
 
-    fn parse(input: &str) -> Result<Self, FolioError> {
+    fn parse(input: &str) -> Result<Self, DumpError> {
         parse::parse(input)
     }
 }

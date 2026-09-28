@@ -298,10 +298,10 @@ fn push_call_tokens(
             }
 
             // Check word boundary
-            let is_start = abs_pos
-                .checked_sub(1)
-                .and_then(|prev| script.as_bytes().get(prev))
-                .is_none_or(|&byte| !is_ident_char(byte as char));
+            let is_start = script
+                .get(..abs_pos)
+                .and_then(|before| before.chars().next_back())
+                .is_none_or(|ch| !is_ident_char(ch));
 
             if is_start {
                 let (line, col) = offset_to_line_col(script, abs_pos);

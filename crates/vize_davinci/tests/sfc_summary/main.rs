@@ -15,7 +15,7 @@
 mod fixture;
 
 use fixture::{BARE, BUTTON, button_pages, entry, replace_once, signature, summarize, users};
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_davinci::summary::{AlphaPages, DeclarationId, Facet, SfcSummary, SummaryError, Usage};
 use vize_l0::String;
 
@@ -33,12 +33,12 @@ fn summary_round_trip_is_exact() {
         components: Vec::new(),
     })
     .expect("bare signature");
-    let bare_text = bare.print_to_string(FolioMode::Full);
+    let bare_text = bare.print_to_string(DumpMode::Full);
     assert_eq!(bare_text, BARE);
-    assert_eq!(bare.print_to_string(FolioMode::Display), bare_text);
+    assert_eq!(bare.print_to_string(DumpMode::Display), bare_text);
     let parsed = SfcSummary::parse(&bare_text).expect("canonical bare text");
     assert_eq!(parsed, bare);
-    assert_eq!(parsed.print_to_string(FolioMode::Full), bare_text);
+    assert_eq!(parsed.print_to_string(DumpMode::Full), bare_text);
 
     // Non-canonical: header order, a blank line, and `params` before `name`.
     let messy = "\
@@ -58,16 +58,16 @@ name=Bare
 ";
     let normalized = SfcSummary::parse(messy).expect("messy bare text");
     assert_eq!(normalized, bare);
-    assert_eq!(normalized.print_to_string(FolioMode::Full), bare_text);
+    assert_eq!(normalized.print_to_string(DumpMode::Full), bare_text);
 
     let button = summarize(&button_pages());
-    let text = button.print_to_string(FolioMode::Full);
+    let text = button.print_to_string(DumpMode::Full);
     assert_eq!(text, BUTTON);
     assert_eq!(button.len(), 8);
     let parsed = SfcSummary::parse(&text).expect("canonical button text");
     assert_eq!(parsed, button);
-    assert_eq!(parsed.print_to_string(FolioMode::Full), text);
-    assert_eq!(parsed.print_to_string(FolioMode::Display), text);
+    assert_eq!(parsed.print_to_string(DumpMode::Full), text);
+    assert_eq!(parsed.print_to_string(DumpMode::Display), text);
 
     // Unsorted prop lines normalize.
     let swapped = replace_once(
@@ -79,7 +79,7 @@ name=Bare
 
     assert_eq!(
         SfcSummary::parse("").map(|_| ()),
-        Err(FolioError::new(
+        Err(DumpError::new(
             0,
             String::from("missing [sfc-summary] header")
         ))
@@ -92,7 +92,7 @@ name=Bare
     let wrong = replace_once(&text, "schema_version=1", "schema_version=2");
     assert_eq!(
         SfcSummary::parse(&wrong).map(|_| ()),
-        Err(FolioError::new(
+        Err(DumpError::new(
             schema_line,
             String::from("expected `schema_version=1`, found `schema_version=2`")
         ))
@@ -102,7 +102,7 @@ name=Bare
     with_body.push_str("[sfc-summary.expression-facts]\n0=body\n");
     assert_eq!(
         SfcSummary::parse(&with_body).map(|_| ()),
-        Err(FolioError::new(
+        Err(DumpError::new(
             extra_line,
             String::from("unknown section [sfc-summary.expression-facts]")
         ))
@@ -137,8 +137,8 @@ fn no_ripple_fixture_body_optimization_changes_no_fingerprint() {
     let cached = summarize_component(&cached);
     assert_eq!(inline, cached);
     assert_eq!(
-        inline.print_to_string(FolioMode::Full),
-        cached.print_to_string(FolioMode::Full)
+        inline.print_to_string(DumpMode::Full),
+        cached.print_to_string(DumpMode::Full)
     );
     assert_eq!(inline.changed(&cached), Vec::<DeclarationId>::new());
     assert_eq!(cached.invalidated(&users(&inline)), Vec::<&str>::new());

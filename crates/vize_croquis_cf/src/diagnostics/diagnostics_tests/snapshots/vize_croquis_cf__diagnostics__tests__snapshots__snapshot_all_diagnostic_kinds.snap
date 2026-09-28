@@ -9,7 +9,7 @@ Severity: error
 Message: No provider found for inject('theme')
 
 Markdown Output:
-🔴 **ERROR** `vize:croquis/cf/unmatched-inject`
+**ERROR** `vize:croquis/cf/unmatched-inject`
 
 ### No provider found for inject('theme')
 
@@ -20,7 +20,7 @@ Severity: warning
 Message: provide('config') is never injected
 
 Markdown Output:
-🟡 **WARNING** `vize:croquis/cf/unused-provide`
+**WARNING** `vize:croquis/cf/unused-provide`
 
 ### provide('config') is never injected
 
@@ -31,7 +31,7 @@ Severity: warning
 Message: Type mismatch between provide and inject
 
 Markdown Output:
-🟡 **WARNING** `vize:croquis/cf/provide-inject-type`
+**WARNING** `vize:croquis/cf/provide-inject-type`
 
 ### Type mismatch between provide and inject
 
@@ -42,7 +42,7 @@ Severity: error
 Message: emit('update') is not declared in defineEmits
 
 Markdown Output:
-🔴 **ERROR** `vize:croquis/cf/undeclared-emit`
+**ERROR** `vize:croquis/cf/undeclared-emit`
 
 ### emit('update') is not declared in defineEmits
 
@@ -53,7 +53,7 @@ Severity: warning
 Message: Declared emit 'submit' is never called
 
 Markdown Output:
-🟡 **WARNING** `vize:croquis/cf/unused-emit`
+**WARNING** `vize:croquis/cf/unused-emit`
 
 ### Declared emit 'submit' is never called
 
@@ -64,7 +64,7 @@ Severity: error
 Message: Duplicate id 'main-header' found
 
 Markdown Output:
-🔴 **ERROR** `vize:croquis/cf/duplicate-id`
+**ERROR** `vize:croquis/cf/duplicate-id`
 
 ### Duplicate id 'main-header' found
 
@@ -75,7 +75,7 @@ Severity: warning
 Message: Browser API used in potentially SSR context
 
 Markdown Output:
-🟡 **WARNING** `vize:croquis/cf/browser-api-ssr`
+**WARNING** `vize:croquis/cf/browser-api-ssr`
 
 ### Browser API used in potentially SSR context
 
@@ -86,7 +86,7 @@ Severity: hint
 Message: watch can be simplified to computed
 
 Markdown Output:
-💡 **HINT** `vize:croquis/cf/watch-can-be-computed`
+**HINT** `vize:croquis/cf/watch-can-be-computed`
 
 ### watch can be simplified to computed
 
@@ -106,10 +106,10 @@ watch(count, (newVal) => {
 ┌─────────────────────────────────────────────────────────┐
 │  watch + mutation       │  computed                     │
 ├─────────────────────────┼───────────────────────────────┤
-│  ❌ Imperative flow      │  ✅ Declarative transformation │
-│  ❌ Two variables        │  ✅ Single derived value       │
-│  ❌ Manual sync needed   │  ✅ Auto-cached and reactive   │
-│  ❌ Side effects possible│  ✅ Pure function guarantee    │
+│  Imperative flow      │  Declarative transformation │
+│  Two variables        │  Single derived value       │
+│  Manual sync needed   │  Auto-cached and reactive   │
+│  Side effects possible│  Pure function guarantee    │
 └─────────────────────────┴───────────────────────────────┘
 ```
 
@@ -127,7 +127,7 @@ Severity: warning
 Message: Reactive reference escapes via props
 
 Markdown Output:
-🟡 **WARNING** `vize:croquis/cf/reference-escapes-scope`
+**WARNING** `vize:croquis/cf/reference-escapes-scope`
 
 ### Reactive reference escapes via props
 
@@ -152,9 +152,9 @@ Markdown Output:
 
 **Issues**:
 
-- 🔍 **Hidden Data Flow**: Mutations happen "at a distance" - hard to trace.
-- 🐛 **Unexpected Side Effects**: Function may modify your reactive state.
-- 📦 **Ownership Unclear**: Who "owns" this reactive object now?
+- **Hidden Data Flow**: Mutations happen "at a distance" - hard to trace.
+- **Unexpected Side Effects**: Function may modify your reactive state.
+- **Ownership Unclear**: Who "owns" this reactive object now?
 
 **Explicit alternatives**:
 

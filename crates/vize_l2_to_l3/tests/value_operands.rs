@@ -1,8 +1,8 @@
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String};
 use vize_l2_to_l3::lower;
 use vize_l3::operand::{OperandRole as Role, ValueKind};
-use vize_l3::values_folio::L3ValuesFolio;
+use vize_l3::values_dump::Page as ValuesPage;
 use vize_l3::verify::verify;
 
 #[test]
@@ -83,9 +83,9 @@ fn lowered_values_outlive_both_source_text_and_the_l2_arena() {
     assert_eq!(branches.len(), 2);
     assert_ne!(branches[0].region, branches[1].region);
     assert_eq!(branches[1].value.kind, ValueKind::Absent);
-    let folio = L3ValuesFolio::of(&lowered.program);
+    let folio = ValuesPage::of(&lowered.program);
     assert_eq!(
-        L3ValuesFolio::parse(folio.print_to_string(FolioMode::Full).as_str()).unwrap(),
+        ValuesPage::parse(folio.print_to_string(DumpMode::Full).as_str()).unwrap(),
         folio
     );
 }

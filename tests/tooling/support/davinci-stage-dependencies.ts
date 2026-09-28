@@ -90,7 +90,7 @@ export function s2DomWitnessFiles(): string[] {
   const testDir = path.join(repoRoot, "crates", "vize_atelier_dom", "tests");
   const witnesses = fs
     .readdirSync(testDir, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && /^davinci_l2_.*\.rs$/u.test(entry.name))
+    .filter((entry) => entry.isFile() && /^l2_.*\.rs$/u.test(entry.name))
     .map((entry) => entry.name)
     .sort();
   assert.ok(

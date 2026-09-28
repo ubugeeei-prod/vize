@@ -57,8 +57,8 @@ fn test_shared_child_reports_and_renders_unmatched_parent_branch() {
         provider.as_u32()
     );
     let markdown = tree.to_markdown(analyzer.registry());
-    assert_eq!(markdown.matches("✅").count(), 1);
-    assert_eq!(markdown.matches("❌ _no provider_").count(), 1);
+    assert_eq!(markdown.matches("(provided)").count(), 1);
+    assert_eq!(markdown.matches("_no provider_").count(), 1);
 
     let summary = result
         .provide_inject_tree_summary
@@ -131,8 +131,8 @@ fn test_disjoint_branch_keys_are_partial_in_json_markdown_and_summary() {
     assert_eq!(injects_a[1]["hasDefault"], true);
 
     let markdown = tree.to_markdown(analyzer.registry());
-    assert_eq!(markdown.matches("✅").count(), 2);
-    assert_eq!(markdown.matches("❌ _no provider_").count(), 2);
+    assert_eq!(markdown.matches("(provided)").count(), 2);
+    assert_eq!(markdown.matches("_no provider_").count(), 2);
     assert_eq!(markdown.matches("(has default)").count(), 2);
 
     let mut partial_diagnostics = result

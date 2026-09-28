@@ -14,8 +14,8 @@
 //! that is not one of those pages, so a hot-path optimization has nowhere
 //! to go.
 
+mod dump;
 mod facet;
-mod folio;
 mod global;
 mod usage;
 
@@ -55,7 +55,7 @@ impl fmt::Debug for Fingerprint {
 }
 
 /// Domain tag, distinct from artifact keys and manifest folds.
-const DOMAIN: &[u8] = b"vize.davinci.sfc-summary\0";
+const DOMAIN: &[u8] = b"vize.sfc-summary.v2\0";
 
 fn fingerprint(facet: Facet, name: &str, contract: &str) -> Fingerprint {
     digest(DOMAIN, facet.group(), facet.schema(), name, contract)
@@ -328,7 +328,7 @@ fn finish(mut declarations: Vec<Declaration>) -> SfcSummary {
     SfcSummary { declarations }
 }
 
-fn folio_error(err: SummaryError, line: usize) -> crate::folio::FolioError {
+fn folio_error(err: SummaryError, line: usize) -> crate::dump::Error {
     let message = match err {
         SummaryError::BadName { name, .. } => cstr!("invalid declaration name `{name}`"),
         SummaryError::BadContract { name, .. } => cstr!("invalid contract of `{name}`"),
@@ -343,5 +343,5 @@ fn folio_error(err: SummaryError, line: usize) -> crate::folio::FolioError {
         SummaryError::EmptyConsumer => cstr!("empty consumer"),
         SummaryError::DuplicateUse { name, .. } => cstr!("duplicate use `{name}`"),
     };
-    crate::folio::FolioError::new(line, message)
+    crate::dump::Error::new(line, message)
 }

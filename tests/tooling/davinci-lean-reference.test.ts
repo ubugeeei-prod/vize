@@ -45,14 +45,11 @@ test("TS-28 Rust lowering bridge is covered by an ordinary cargo test", () => {
   assert.match(bridge, /rust_lowered_fixtures_match_impeto_reference_inputs/u);
   assert.match(bridge, /tests\/formal\/impeto\/fixtures\/rust-lowered-static-dynamic\.s3\.folio/u);
   assert.match(bridge, /tests\/formal\/impeto\/fixtures\/rust-lowered-control-slots\.s3\.folio/u);
-  assert.match(bridge, /L3Folio::of\(&lowered\.program\)\.print_to_string\(FolioMode::Full\)/u);
+  assert.match(bridge, /L3Page::of\(&lowered\.program\)\.print_to_string\(DumpMode::Full\)/u);
   assert.match(bridge, /reference_trace_text\(&lowered\.program\)/u);
   assert.match(bridge, /backend_trace_text\(TraceBackend::Vdom, &lowered\.program\)/u);
   assert.match(bridge, /backend_trace_text\(TraceBackend::Vapor, &lowered\.program\)/u);
-  assert.match(
-    bridge,
-    /L3ValuesFolio::of\(&lowered\.program\)\.print_to_string\(FolioMode::Full\)/u,
-  );
+  assert.match(bridge, /ValuesPage::of\(&lowered\.program\)\.print_to_string\(DumpMode::Full\)/u);
   assert.match(bridge, /rust-lowered-static-dynamic\.values\.folio/u);
 });
 

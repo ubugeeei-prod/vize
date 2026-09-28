@@ -8,12 +8,15 @@
 
 mod attr;
 mod babel_slot;
+mod boolean;
 mod child;
 mod control_flow;
 mod element;
 mod expr;
+mod logical_and;
 mod name;
 mod slot;
+mod spread;
 mod style;
 mod text;
 mod v_custom;
@@ -70,6 +73,7 @@ pub struct Lowerer<'a, 'm, 's: 'a> {
     compat: JsxCompatMode,
     is_custom_element: Option<&'m BabelIsCustomElement>,
     scoping: Option<Scoping>,
+    boolean_bindings: boolean::BooleanBindings,
     custom_element_spans: std::vec::Vec<(u32, u32)>,
     babel_vdom_lane: bool,
     transform_on_helper: Option<String>,
@@ -109,6 +113,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             compat,
             is_custom_element: babel.is_custom_element,
             scoping,
+            boolean_bindings: boolean::BooleanBindings::default(),
             custom_element_spans: std::vec::Vec::new(),
             babel_vdom_lane: babel.vdom_lane,
             transform_on_helper: babel.transform_on_helper.map(String::from),

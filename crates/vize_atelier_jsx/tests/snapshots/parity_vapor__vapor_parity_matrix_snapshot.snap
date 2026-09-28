@@ -174,17 +174,25 @@ export function render(_ctx) {
 ### source
 const A = () => <ul>{ok && <span/>}</ul>;
 ### output
-import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
-const t0 = _template("<span></span>", true)
-const t1 = _template("<ul></ul>", true)
+import { toDisplayString as _toDisplayString, setText as _setText, computed as _computed, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<span></span>")
+const t1 = _template(" ")
+const t2 = _template("<ul></ul>", true)
 
 export function render(_ctx) {
-  const n0 = t1()
+  const n0 = t2()
   _setInsertionState(n0)
-  const n1 = _createIf(() => (ok), () => {
-    const n3 = t0()
+  const n1 = ((_for_item0) => {
+    const n3 = _createIf(() => (_for_item0.value), () => {
+      const n5 = t0()
+      return n5
+    }, () => _createIf(() => (typeof _for_item0.value === "number" || typeof _for_item0.value === "string" || typeof _for_item0.value === "bigint"), () => {
+      const n7 = t1()
+      _renderEffect(() => _setText(n7, _toDisplayString(_for_item0.value)))
+      return n7
+    }))
     return n3
-  })
+  })(_computed(() => (ok)))
   return n0
 }
 

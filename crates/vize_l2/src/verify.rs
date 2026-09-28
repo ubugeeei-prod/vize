@@ -34,10 +34,10 @@
 //!
 //! # One walk, over the owned model
 //!
-//! The checks run over [`L2Folio`], the owned document model, in one
+//! The checks run over [`L2Page`], the owned document model, in one
 //! traversal — never a second walk per invariant. That is also why there
 //! is no parallel arena-tree walk: the owned model is the single surface
-//! the TS-18 fixture set and a live tree (via `L2Folio::of`, which
+//! the TS-18 fixture set and a live tree (via `L2Page::of`, which
 //! the folio observer's dump already needs) share, and a duplicated walk
 //! is exactly the drift the P1-8 scanner split taught. Violations are
 //! reported in **page order** — the order `print` emits lines — so
@@ -57,7 +57,7 @@ use core::fmt;
 use vize_davinci::side_table::SideTable;
 use vize_l0::{Span, String, cstr};
 
-use crate::folio::L2Folio;
+use crate::dump::Page as L2Page;
 
 pub mod observer;
 mod walk;
@@ -155,7 +155,7 @@ const _: () = assert!(size_of::<Violation>() == 40);
 /// check is [`verify_table`] — id resolution needs the table, which the
 /// tree does not carry.
 #[must_use]
-pub fn verify(folio: &L2Folio, rigor: Rigor) -> Vec<Violation> {
+pub fn verify(folio: &L2Page, rigor: Rigor) -> Vec<Violation> {
     let mut out = Vec::new();
     walk::walk(folio, rigor, &mut out);
     out
@@ -170,7 +170,7 @@ pub fn verify(folio: &L2Folio, rigor: Rigor) -> Vec<Violation> {
 /// `ops=` header states (`folio-format.md`, "Node numbering"). Dangling
 /// references are reported in ascending id order, one violation each.
 #[must_use]
-pub fn verify_table<T>(folio: &L2Folio, table: &SideTable<T>) -> Vec<Violation> {
+pub fn verify_table<T>(folio: &L2Page, table: &SideTable<T>) -> Vec<Violation> {
     let count = folio.op_count();
     let mut out = Vec::new();
     for (id, _) in table.sorted_entries() {
@@ -188,7 +188,7 @@ pub fn verify_table<T>(folio: &L2Folio, table: &SideTable<T>) -> Vec<Violation> 
 #[cfg(test)]
 mod tests {
     use super::{Rigor, Violation, ViolationCode, verify, verify_table};
-    use crate::folio::L2Folio;
+    use crate::dump::Page as L2Page;
     use alloc::vec;
     use vize_davinci::id::NodeId;
     use vize_davinci::side_table::SideTable;
@@ -219,21 +219,21 @@ mod tests {
 
     #[test]
     fn an_empty_page_holds_every_invariant_at_both_rigors() {
-        let folio = L2Folio::default();
+        let folio = L2Page::default();
         assert_eq!(verify(&folio, Rigor::Raw), vec![]);
         assert_eq!(verify(&folio, Rigor::Canonical), vec![]);
     }
 
     #[test]
     fn an_empty_side_table_dangles_nothing() {
-        let folio = L2Folio::default();
+        let folio = L2Page::default();
         let table: SideTable<u8> = SideTable::new();
         assert_eq!(verify_table(&folio, &table), vec![]);
     }
 
     #[test]
     fn a_dangling_reference_names_the_id_and_the_count_exactly() {
-        let folio = L2Folio::default();
+        let folio = L2Page::default();
         let mut table = SideTable::new();
         table.insert(
             NodeId::from_index(4).expect("index 4 has an id"),

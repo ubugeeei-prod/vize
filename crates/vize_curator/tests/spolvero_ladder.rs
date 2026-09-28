@@ -14,14 +14,14 @@
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;
-use vize_curator::inspector::{SpolveroPage, ladder_pages, spolvero_value};
+use vize_curator::inspector::{StagePage, ladder_pages, spolvero_value};
 
 const TEMPLATE: &str = "\n  <div :class=\"cls\">{{ msg }}</div>\n  <Comp v-model=\"x\"><template #a>hi</template></Comp>\n";
 
-const L2_PAGE: &str = r#"[disegno]
+const L2_PAGE: &str = r#"[l2-dump-v2]
 ops=8
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @3:36
   ui.bind name="class" value=js("cls" @16:19) @8:20
   ui.interpolation js("msg" @24:27) @21:30
@@ -48,9 +48,9 @@ walk=2 pass=template-complexity kind=optional fusability=fusable
 
 ";
 
-const L2_PROVENANCE_PAGE: &str = r##"[s2-provenance-folio]
+const L2_PROVENANCE_PAGE: &str = r##"[l2-provenance-dump-v2]
 
-[s2-provenance-folio.records]
+[l2-provenance-dump-v2.records]
 rule=condense.drop-whitespace node=- before="\n  " after="" @0:3
 rule=lower.element node=0 before="<div :class=\"cls\">" after="ui.element div" @3:36
 rule=lower.bind node=1 before=":class=\"cls\"" after="ui.bind \"class\"" @8:20
@@ -69,26 +69,26 @@ rule=pass.hoist-static.fact node=3 before="ui.component" after="level=not-static
 
 "##;
 
-const L3_PAGE: &str = "[s3-folio]
+const L3_PAGE: &str = "[l3-dump-v2]
 phase=built
 
-[s3-folio.regions]
+[l3-dump-v2.regions]
 id=0 parent=- owner=- span=3:90
 id=1 parent=0 owner=0 span=21:30
 id=2 parent=0 owner=3 span=57:83
 id=3 parent=2 owner=5 span=70:72
 
-[s3-folio.ops]
-id=0 kind=impeto.insert-node region=0 effect=- span=3:36
-id=1 kind=impeto.set-prop region=0 effect=0 span=8:20
-id=2 kind=impeto.set-text region=1 effect=1 span=21:30
-id=3 kind=impeto.create-component region=0 effect=2 span=39:90
-id=4 kind=impeto.set-prop region=0 effect=3 span=45:56
-id=5 kind=impeto.insert-node region=2 effect=4 span=57:83
-id=6 kind=impeto.slot-outlet region=2 effect=5 span=67:69
-id=7 kind=impeto.set-text region=3 effect=6 span=70:72
+[l3-dump-v2.ops]
+id=0 kind=l3.insert-node region=0 effect=- span=3:36
+id=1 kind=l3.set-prop region=0 effect=0 span=8:20
+id=2 kind=l3.set-text region=1 effect=1 span=21:30
+id=3 kind=l3.create-component region=0 effect=2 span=39:90
+id=4 kind=l3.set-prop region=0 effect=3 span=45:56
+id=5 kind=l3.insert-node region=2 effect=4 span=57:83
+id=6 kind=l3.slot-outlet region=2 effect=5 span=67:69
+id=7 kind=l3.set-text region=3 effect=6 span=70:72
 
-[s3-folio.edges]
+[l3-dump-v2.edges]
 from=1 to=2 kind=effect-order effect=-
 from=2 to=3 kind=effect-order effect=-
 from=3 to=4 kind=effect-order effect=-
@@ -97,7 +97,7 @@ from=5 to=6 kind=effect-order effect=-
 from=6 to=7 kind=effect-order effect=-
 from=0 to=3 kind=dom-order effect=-
 
-[s3-folio.effects]
+[l3-dump-v2.effects]
 id=0 owner=1 region=0 span=8:20
 id=1 owner=2 region=1 span=21:30
 id=2 owner=3 region=0 span=39:90
@@ -158,7 +158,7 @@ fn load_schema() -> serde_json::Value {
     serde_json::from_str(&text).expect("committed schema is valid JSON")
 }
 
-fn rungs(pages: &[SpolveroPage]) -> Vec<(&str, &str)> {
+fn rungs(pages: &[StagePage]) -> Vec<(&str, &str)> {
     pages
         .iter()
         .map(|page| (page.stage.as_str(), page.pass.as_str()))
@@ -259,7 +259,7 @@ fn a_malformed_template_still_climbs_every_rung() {
     // L3 graph over whatever L2 kept. The L1 page is still the authored bytes.
     let template = "\n<div class=\"open>{{ msg }\n";
     let pages = ladder_pages("src/Broken.vue", template);
-    let s2 = "[disegno]\nops=1\n\n[disegno.ops]\nui.element div @1:27\n  attr class=\"open>{{ msg }\\n\" @6:27\n\n";
+    let s2 = "[l2-dump-v2]\nops=1\n\n[l2-dump-v2.ops]\nui.element div @1:27\n  attr class=\"open>{{ msg }\\n\" @6:27\n\n";
     assert_eq!(
         pages
             .iter()
@@ -278,12 +278,12 @@ fn a_malformed_template_still_climbs_every_rung() {
             (
                 "s2-provenance",
                 "transform",
-                "[s2-provenance-folio]\n\n[s2-provenance-folio.records]\nrule=condense.drop-whitespace node=- before=\"\\n\" after=\"\" @0:1\nrule=lower.element node=0 before=\"<div class=\\\"open>{{ msg }\\n\" after=\"ui.element div\" @1:27\nrule=pass.hoist-static.fact node=0 before=\"ui.element\" after=\"level=fully-static props=true nested=false native=true\" @1:27\n\n",
+                "[l2-provenance-dump-v2]\n\n[l2-provenance-dump-v2.records]\nrule=condense.drop-whitespace node=- before=\"\\n\" after=\"\" @0:1\nrule=lower.element node=0 before=\"<div class=\\\"open>{{ msg }\\n\" after=\"ui.element div\" @1:27\nrule=pass.hoist-static.fact node=0 before=\"ui.element\" after=\"level=fully-static props=true nested=false native=true\" @1:27\n\n",
             ),
             (
                 "s3",
                 "lower",
-                "[s3-folio]\nphase=built\n\n[s3-folio.regions]\nid=0 parent=- owner=- span=1:27\nid=1 parent=0 owner=0 span=1:27\n\n[s3-folio.ops]\nid=0 kind=impeto.insert-node region=0 effect=- span=1:27\n\n",
+                "[l3-dump-v2]\nphase=built\n\n[l3-dump-v2.regions]\nid=0 parent=- owner=- span=1:27\nid=1 parent=0 owner=0 span=1:27\n\n[l3-dump-v2.ops]\nid=0 kind=l3.insert-node region=0 effect=- span=1:27\n\n",
             ),
             (
                 "s3-partition",

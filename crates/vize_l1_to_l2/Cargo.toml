@@ -50,10 +50,7 @@ oxc_syntax = { workspace = true }
 smallvec = { workspace = true }
 vize_l0 = { workspace = true }
 vize_davinci = { workspace = true }
-vize_impeto = { workspace = true }
-# Shared read-only binding facts over the retained OXC AST. Relief is already
-# in L1's dependency closure; this does not introduce a legacy compiler edge.
-vize_relief = { workspace = true }
+vize_l3 = { workspace = true }
 vize_l1 = { workspace = true }
 vize_l2 = { workspace = true }
 

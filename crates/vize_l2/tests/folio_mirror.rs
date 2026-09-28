@@ -2,15 +2,15 @@
 //! reference tree built with the op family in a live arena - retained
 //! `js` payloads parsed through the real load-path parse site
 //! ([`JsExpr::parse_in`]), `opaque` and `foreign` payloads allocated by
-//! hand - mirrored through [`DisegnoFolio::of`] into the committed
+//! hand - mirrored through [`L2Page::of`] into the committed
 //! canonical page. The owned twin of this tree lives in
 //! `tests/folio_laws.rs`.
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, Vec as ArenaVec};
+use vize_l2::dump::Page as L2Page;
 use vize_l2::expr::{ExprRef, ForeignExpr, JsExpr, OpaqueExpr, OpaqueReason};
-use vize_l2::folio::DisegnoFolio;
 use vize_l2::op::{
     Attribute, BindOp, BindingContract, BindingOp, CommentOp, ComponentOp, DynamicName, ElementOp,
     ForBinding, ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region,
@@ -259,14 +259,11 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
 fn an_arena_tree_mirrors_into_the_same_folio() {
     let allocator = Allocator::default();
     let ops = arena_built(&allocator);
-    let mirrored = DisegnoFolio::of(&ops);
+    let mirrored = L2Page::of(&ops);
     assert_eq!(mirrored.op_count(), 13);
-    assert_eq!(
-        mirrored.print_to_string(FolioMode::Full).as_str(),
-        CANONICAL
-    );
+    assert_eq!(mirrored.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(
         mirrored,
-        DisegnoFolio::parse(CANONICAL).expect("canonical text parses")
+        L2Page::parse(CANONICAL).expect("canonical text parses")
     );
 }

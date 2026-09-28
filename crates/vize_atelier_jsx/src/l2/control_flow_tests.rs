@@ -8,7 +8,7 @@ use crate::{JsxLang, lower_source};
 #[test]
 fn logical_and_child_projects_to_l2_if() {
     let allocator = Allocator::new();
-    let source = "const App = () => <ul>{ok && <li>{item}</li>}</ul>;";
+    let source = "const App = () => <ul>{!!ok && <li>{item}</li>}</ul>;";
     let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
     let root = lowered.roots.first().expect("one JSX root");
 
@@ -29,7 +29,7 @@ fn logical_and_child_projects_to_l2_if() {
             .condition
             .as_ref()
             .map(|condition| condition.source()),
-        Some("ok")
+        Some("!!ok")
     );
     let Op::Element(branch_element) = &branch.region.ops[0] else {
         panic!("branch carries one element");

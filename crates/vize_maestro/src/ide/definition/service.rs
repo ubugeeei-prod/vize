@@ -253,7 +253,7 @@ impl super::DefinitionService {
             }
         }
 
-        let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
+        let word = helpers::get_script_identifier_at_offset(&ctx.content, ctx.offset)?;
 
         if word.is_empty() {
             return None;

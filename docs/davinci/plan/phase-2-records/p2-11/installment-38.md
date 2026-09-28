@@ -18,7 +18,7 @@ The durable witnesses are:
 - [`emit_on.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_on.rs)
   - exact pins that object `v-on` modifiers preserve the same handler object
     and output as the modifier-free source.
-- [`davinci_s2_von.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_von.rs)
+- [`davinci_s2_von.rs`](../../../../../crates/vize_atelier_dom/tests/l2_von.rs)
   - S2-vs-shipped byte fixtures for lone, merged, and component object `v-on`
     modifiers.
 - [`emit_unsupported_census.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_unsupported_census.rs)

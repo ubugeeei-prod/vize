@@ -5,6 +5,12 @@ use vize_l0::{FxHashMap, String, cstr};
 use super::{Attr, Cond, ElemId, Facts, Members, Ns};
 use crate::html_content_model::rows::ROWS;
 
+/// The element universe's width: [`super::Bits`] holds 256 ids.
+const UNIVERSE: usize = 256;
+
+/// Upper bound on `children` rows in the committed table.
+const CHILDREN_ROWS: usize = 64;
+
 impl Facts {
     /// Parse a fact table, skipping malformed, unknown or duplicate rows. The
     /// table is committed data, so the unit tests assert that
@@ -18,16 +24,19 @@ impl Facts {
         tsv: &'static str,
         defects: &mut Vec<String>,
     ) -> Self {
+        // Sized up front: the table loads once per process, cold, and growing
+        // these maps rehashes every interned name several times.
         let mut facts = Self {
-            names: Vec::new(),
-            ids: FxHashMap::default(),
+            names: Vec::with_capacity(UNIVERSE),
+            ids: FxHashMap::with_capacity_and_hasher(UNIVERSE, Default::default()),
             cased: Vec::new(),
             rows: vec![Members::default(); ROWS.len()],
-            children: FxHashMap::default(),
+            children: FxHashMap::with_capacity_and_hasher(CHILDREN_ROWS, Default::default()),
             empty: Members::default(),
         };
         let mut seen = [false; ROWS.len()];
-        let mut categories: FxHashMap<&'static str, Members> = FxHashMap::default();
+        let mut categories: FxHashMap<&'static str, Members> =
+            FxHashMap::with_capacity_and_hasher(ROWS.len(), Default::default());
         for line in tsv
             .lines()
             .filter(|line| !line.is_empty() && !line.starts_with('#'))

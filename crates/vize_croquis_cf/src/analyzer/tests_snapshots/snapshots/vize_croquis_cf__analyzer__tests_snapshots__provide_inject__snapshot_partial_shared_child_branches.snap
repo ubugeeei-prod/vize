@@ -113,14 +113,14 @@ Warning: **Conditionally Defaulted Inject**: `inject('locale')` falls back to it
 == Markdown ==
 ## Provide/Inject Tree
 
-📦 **App**
-  📦 **ParentA**
-    🔹 provide(`"theme"`) → 1 consumer(s)
-    📦 **Child**
-      🔸 inject(`"theme"`) ✅
-      🔸 inject(`"locale"`) (has default) ❌ _no provider_
-  📦 **ParentB**
-    🔹 provide(`"locale"`) → 1 consumer(s)
-    📦 **Child**
-      🔸 inject(`"theme"`) ❌ _no provider_
-      🔸 inject(`"locale"`) (has default) ✅
+**App**
+  **ParentA**
+    provide(`"theme"`) → 1 consumer(s)
+    **Child**
+      inject(`"theme"`) (provided)
+      inject(`"locale"`) (has default) _no provider_
+  **ParentB**
+    provide(`"locale"`) → 1 consumer(s)
+    **Child**
+      inject(`"theme"`) _no provider_
+      inject(`"locale"`) (has default) (provided)

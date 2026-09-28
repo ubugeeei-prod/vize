@@ -17,7 +17,7 @@
 
 use core::fmt::{Result as FmtResult, Write};
 
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{String, cstr};
 
 use crate::contract::Span;
@@ -38,8 +38,8 @@ pub struct EmitDocument {
     pub links: Vec<EmitLink>,
 }
 
-impl Folio for EmitDocument {
-    fn print<W: Write>(&self, w: &mut W, _mode: FolioMode) -> FmtResult {
+impl Dump for EmitDocument {
+    fn print<W: Write>(&self, w: &mut W, _mode: DumpMode) -> FmtResult {
         writeln!(
             w,
             "[emit-document]\nschema_version=1\n\n[emit-document.links]"
@@ -56,8 +56,8 @@ impl Folio for EmitDocument {
         write!(w, "\n[emit-document.text]\n{}", self.text)
     }
 
-    fn parse(input: &str) -> Result<Self, FolioError> {
-        let err = |line: usize, message: String| FolioError::new(line, message);
+    fn parse(input: &str) -> Result<Self, DumpError> {
+        let err = |line: usize, message: String| DumpError::new(line, message);
         let Some((head, text)) = input.split_once("[emit-document.text]\n") else {
             return Err(err(0, cstr!("missing section [emit-document.text]")));
         };
@@ -91,8 +91,8 @@ impl Folio for EmitDocument {
     }
 }
 
-fn link(line: &str, no: usize) -> Result<EmitLink, FolioError> {
-    let bad = || FolioError::new(no, cstr!("invalid link `{line}`"));
+fn link(line: &str, no: usize) -> Result<EmitLink, DumpError> {
+    let bad = || DumpError::new(no, cstr!("invalid link `{line}`"));
     let mut parts = line.split(' ');
     let generated = span(parts.next().ok_or_else(bad)?, no)?;
     let authored = span(parts.next().ok_or_else(bad)?, no)?;
@@ -113,8 +113,8 @@ fn link(line: &str, no: usize) -> Result<EmitLink, FolioError> {
     })
 }
 
-fn span(text: &str, no: usize) -> Result<Span, FolioError> {
-    let bad = || FolioError::new(no, cstr!("invalid range `{text}`"));
+fn span(text: &str, no: usize) -> Result<Span, DumpError> {
+    let bad = || DumpError::new(no, cstr!("invalid range `{text}`"));
     let (start, end) = text.split_once(':').ok_or_else(bad)?;
     let start = start.parse().map_err(|_| bad())?;
     let end = end.parse().map_err(|_| bad())?;

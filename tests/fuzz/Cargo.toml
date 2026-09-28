@@ -33,7 +33,7 @@ vize_l1 = { path = "../../crates/vize_l1" }
 vize_l1_to_l2 = { path = "../../crates/vize_l1_to_l2" }
 vize_l2 = { path = "../../crates/vize_l2" }
 vize_l2_to_l3 = { path = "../../crates/vize_l2_to_l3" }
-vize_l3 = { package = "vize_impeto", path = "../../crates/vize_impeto" }
+vize_l3 = { path = "../../crates/vize_l3" }
 
 [[bin]]
 name = "sfc_parse"

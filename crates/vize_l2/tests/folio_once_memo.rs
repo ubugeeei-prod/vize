@@ -3,19 +3,20 @@
 //! `folio_laws.rs` so the Vue 3 family pin stays inside the source
 //! budget.
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, String, Vec as ArenaVec};
-use vize_l2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
-use vize_l2::folio::{
-    DisegnoFolio, FolioBinding, FolioElement, FolioExpr, FolioOp, FolioVueMemo, FolioVueOnce,
+use vize_l2::dump::{
+    Binding as DumpBinding, Element as DumpElement, Expr as DumpExpr, Op as DumpOp, Page as L2Page,
+    VueMemo as DumpVueMemo, VueOnce as DumpVueOnce,
 };
+use vize_l2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{BindingOp, ElementOp, Namespace, Op, Region, VueMemoOp, VueOnceOp};
 
 const CANONICAL: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=4
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @0:50
   vue.once @0:7
   vue.memo value=js(\"[id]\" @16:20) @8:21
@@ -23,25 +24,25 @@ ui.element div @0:50
 
 ";
 
-fn hand_built() -> DisegnoFolio {
-    DisegnoFolio {
-        ops: vec![FolioOp::Element(FolioElement {
+fn hand_built() -> L2Page {
+    L2Page {
+        ops: vec![DumpOp::Element(DumpElement {
             tag: String::from("div"),
             namespace: Namespace::Html,
             attributes: vec![],
             bindings: vec![
-                FolioBinding::VueOnce(FolioVueOnce {
+                DumpBinding::VueOnce(DumpVueOnce {
                     span: Span::new(0, 7),
                 }),
-                FolioBinding::VueMemo(FolioVueMemo {
-                    value: FolioExpr::Js {
+                DumpBinding::VueMemo(DumpVueMemo {
+                    value: DumpExpr::Js {
                         source: String::from("[id]"),
                         span: Span::new(16, 20),
                     },
                     span: Span::new(8, 21),
                 }),
-                FolioBinding::VueMemo(FolioVueMemo {
-                    value: FolioExpr::Opaque {
+                DumpBinding::VueMemo(DumpVueMemo {
+                    value: DumpExpr::Opaque {
                         reason: OpaqueReason::ParseRejected,
                         source: String::from("%"),
                         span: Span::new(30, 31),
@@ -59,9 +60,9 @@ fn hand_built() -> DisegnoFolio {
 fn the_once_and_memo_ops_round_trip() {
     let value = hand_built();
     assert_eq!(value.op_count(), 4);
-    assert_eq!(value.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    assert_eq!(value.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(
-        DisegnoFolio::parse(CANONICAL).expect("canonical text parses"),
+        L2Page::parse(CANONICAL).expect("canonical text parses"),
         value
     );
 }
@@ -118,9 +119,7 @@ fn an_arena_tree_mirrors_the_once_and_memo_ops() {
         &allocator,
     );
     assert_eq!(
-        DisegnoFolio::of(&ops)
-            .print_to_string(FolioMode::Full)
-            .as_str(),
+        L2Page::of(&ops).print_to_string(DumpMode::Full).as_str(),
         CANONICAL
     );
 }

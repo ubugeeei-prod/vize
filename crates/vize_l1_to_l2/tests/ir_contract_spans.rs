@@ -10,7 +10,9 @@ use std::fs;
 use davinci_test_support::surface_fixture as battery;
 use support::{assert_folio_spans_resolve, with_lowered, with_transformed};
 use vize_l0::{Allocator, SourceRoot, Span, String};
-use vize_l2::folio::{DisegnoFolio, FolioExpr, FolioInterpolation, FolioOp};
+use vize_l2::dump::{
+    Expr as DumpExpr, Interpolation as DumpInterpolation, Op as DumpOp, Page as L2Page,
+};
 
 #[test]
 fn owned_folio_spans_resolve_for_committed_battery() {
@@ -73,7 +75,7 @@ fn owned_folio_expression_sources_resolve_through_sfc_block_offsets() {
     let allocator = Allocator::new();
     let (tree, errors) = vize_l1::parse(&allocator, template);
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, block);
-    let folio = DisegnoFolio::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops);
 
     assert_folio_spans_resolve(source, &folio, "sfc-block-expression-slices");
 }
@@ -81,9 +83,9 @@ fn owned_folio_expression_sources_resolve_through_sfc_block_offsets() {
 #[test]
 #[should_panic(expected = "expression source is not authored")]
 fn owned_folio_rejects_same_length_expression_source_mismatches() {
-    let folio = DisegnoFolio {
-        ops: vec![FolioOp::Interpolation(FolioInterpolation {
-            expression: FolioExpr::Js {
+    let folio = L2Page {
+        ops: vec![DumpOp::Interpolation(DumpInterpolation {
+            expression: DumpExpr::Js {
                 source: String::from("y"),
                 span: Span::new(3, 4),
             },
@@ -97,9 +99,9 @@ fn owned_folio_rejects_same_length_expression_source_mismatches() {
 #[test]
 #[should_panic(expected = "expression source is not authored")]
 fn owned_folio_rejects_different_length_expression_source_mismatches() {
-    let folio = DisegnoFolio {
-        ops: vec![FolioOp::Interpolation(FolioInterpolation {
-            expression: FolioExpr::Js {
+    let folio = L2Page {
+        ops: vec![DumpOp::Interpolation(DumpInterpolation {
+            expression: DumpExpr::Js {
                 source: String::from("items"),
                 span: Span::new(3, 11),
             },

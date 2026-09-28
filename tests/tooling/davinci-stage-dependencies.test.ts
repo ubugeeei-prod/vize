@@ -20,7 +20,7 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
   ["vize_l1", [["vize_l0", null]]],
   ["vize_l2", [["vize_l0", null]]],
   [
-    "vize_impeto",
+    "vize_l3",
     [
       ["vize_l0", null],
       ["vize_davinci", null],
@@ -31,7 +31,7 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
     [
       ["vize_l0", null],
       ["vize_l1", null],
-      ["vize_impeto", null],
+      ["vize_l3", null],
       ["vize_l2", null],
     ],
   ],
@@ -40,7 +40,7 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
     [
       ["vize_l0", null],
       ["vize_l2", null],
-      ["vize_impeto", "vize_l3"],
+      ["vize_l3", null],
     ],
   ],
 ]);
@@ -51,7 +51,7 @@ const publishedDavinciStages = new Set([
   "vize_davinci",
   "vize_l1",
   "vize_l2",
-  "vize_impeto",
+  "vize_l3",
   "vize_l1_to_l2",
   "vize_l2_to_l3",
 ]);
@@ -80,7 +80,7 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
     ["vize_davinci", 1],
     ["vize_l1", 1],
     ["vize_l2", 2],
-    ["vize_impeto", 3],
+    ["vize_l3", 3],
     ["vize_l1_to_l2", 4],
     ["vize_l2_to_l3", 4],
   ]);
@@ -90,9 +90,9 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
     ["vize_davinci", ["vize_l0"]],
     ["vize_l1", ["vize_l0"]],
     ["vize_l2", ["vize_davinci", "vize_l0"]],
-    ["vize_impeto", ["vize_davinci", "vize_l0"]],
-    ["vize_l1_to_l2", ["vize_davinci", "vize_impeto", "vize_l0", "vize_l1", "vize_l2"]],
-    ["vize_l2_to_l3", ["vize_davinci", "vize_impeto", "vize_l0", "vize_l2"]],
+    ["vize_l3", ["vize_davinci", "vize_l0"]],
+    ["vize_l1_to_l2", ["vize_davinci", "vize_l0", "vize_l1", "vize_l2", "vize_l3"]],
+    ["vize_l2_to_l3", ["vize_davinci", "vize_l0", "vize_l2", "vize_l3"]],
   ]);
 
   for (const [packageName, packageTier] of tiers) {
@@ -142,10 +142,7 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
   assert.match(manifest, /^vize_l1_to_l2 = \{ path = "\.\.\/\.\.\/crates\/vize_l1_to_l2" \}$/m);
   assert.match(manifest, /^vize_l2 = \{ path = "\.\.\/\.\.\/crates\/vize_l2" \}$/m);
   assert.match(manifest, /^vize_l2_to_l3 = \{ path = "\.\.\/\.\.\/crates\/vize_l2_to_l3" \}$/m);
-  assert.match(
-    manifest,
-    /^vize_l3 = \{ package = "vize_impeto", path = "\.\.\/\.\.\/crates\/vize_impeto" \}$/m,
-  );
+  assert.match(manifest, /^vize_l3 = \{ path = "\.\.\/\.\.\/crates\/vize_l3" \}$/m);
   assert.doesNotMatch(manifest, /^vize_(?:carton|disegno|ricalco) = /m);
 
   for (const target of [
@@ -188,17 +185,17 @@ test("Davinci L1-to-L2 uses the physical crate package and directory", () => {
   assert.doesNotMatch(lockfile, /\bvize_ricalco\b/u);
 });
 
-test("Davinci L3 uses the Impeto package through the stage alias", () => {
+test("Davinci L3 uses the physical crate package and directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
-  assert.match(workspaceManifest, /^\s*"crates\/vize_impeto",$/m);
+  assert.match(workspaceManifest, /^\s*"crates\/vize_l3",$/m);
   assert.deepEqual(workspaceDependencyDeclaration("vize_l3"), {
-    path: "crates/vize_impeto",
-    version: `=${workspacePackage(metadata, "vize_impeto").version}`,
+    path: "crates/vize_l3",
+    version: `=${workspacePackage(metadata, "vize_l3").version}`,
   });
-  assert.doesNotMatch(workspaceManifest, /^vize_l3 = \{ path = "crates\/vize_l3"/m);
+  assert.doesNotMatch(workspaceManifest, /\bvize_impeto\b/u);
 
-  const impetoManifest = readRepoFile("crates", "vize_impeto", "Cargo.toml");
-  assert.match(impetoManifest, /^name = "vize_impeto"$/m);
+  const l3Manifest = readRepoFile("crates", "vize_l3", "Cargo.toml");
+  assert.match(l3Manifest, /^name = "vize_l3"$/m);
 });
 
 test("Davinci L1-to-L2 source paths use the physical L2 folio type", () => {
@@ -207,8 +204,8 @@ test("Davinci L1-to-L2 source paths use the physical L2 folio type", () => {
     const source = fs.readFileSync(fullPath, "utf8");
     assert.doesNotMatch(
       source,
-      /\bDisegnoFolio\b/u,
-      `${path.relative(sourceDir, fullPath)} must use L2Folio`,
+      /\b(?:DisegnoFolio|L2Folio)\b/u,
+      `${path.relative(sourceDir, fullPath)} must use vize_l2::dump::Page`,
     );
   }
 });
@@ -262,7 +259,7 @@ test("Davinci Vapor compile path imports the verified L3 bridge", () => {
     ["vize_l1", null],
     ["vize_l1_to_l2", null],
     ["vize_l2_to_l3", null],
-    ["vize_impeto", "vize_l3"],
+    ["vize_l3", null],
   ] as const) {
     const dep = dependency(metadata, "vize_atelier_vapor", dependencyName, null);
     assert.equal(dep.rename, rename);

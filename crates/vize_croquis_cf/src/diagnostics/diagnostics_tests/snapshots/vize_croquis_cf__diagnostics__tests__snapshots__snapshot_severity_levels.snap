@@ -9,7 +9,7 @@ is_error: true
 is_warning: false
 
 Markdown:
-🔴 **ERROR** `vize:croquis/cf/unmatched-inject`
+**ERROR** `vize:croquis/cf/unmatched-inject`
 
 ### Example diagnostic
 
@@ -19,7 +19,7 @@ is_error: false
 is_warning: true
 
 Markdown:
-🟡 **WARNING** `vize:croquis/cf/unmatched-inject`
+**WARNING** `vize:croquis/cf/unmatched-inject`
 
 ### Example diagnostic
 
@@ -29,7 +29,7 @@ is_error: false
 is_warning: false
 
 Markdown:
-🔵 **INFO** `vize:croquis/cf/unmatched-inject`
+**INFO** `vize:croquis/cf/unmatched-inject`
 
 ### Example diagnostic
 
@@ -39,6 +39,6 @@ is_error: false
 is_warning: false
 
 Markdown:
-💡 **HINT** `vize:croquis/cf/unmatched-inject`
+**HINT** `vize:croquis/cf/unmatched-inject`
 
 ### Example diagnostic

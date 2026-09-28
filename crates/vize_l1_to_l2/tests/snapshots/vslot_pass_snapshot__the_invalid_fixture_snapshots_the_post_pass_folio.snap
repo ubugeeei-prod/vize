@@ -2,10 +2,10 @@
 source: crates/vize_l1_to_l2/tests/vslot_pass_snapshot.rs
 expression: "$crate :: folio :: Folio ::\nprint_to_string(& *folio, $crate :: folio :: FolioMode :: Full,)"
 ---
-[disegno]
+[l2-dump-v2]
 ops=19
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element span @0:33
   ui.slot-content params=js("misplaced" @14:23) @6:24
   ui.text "x" @25:26

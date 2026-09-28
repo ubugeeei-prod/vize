@@ -8,9 +8,13 @@ const A = () => <ul>{ok && <li/>}</ul>;
 ### output
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("ul", null, [
-    (ok)
+    (() => { const _jsx_value21 = ok; return (_jsx_value21)
       ? (_openBlock(), _createElementBlock("li", { key: 0 }))
-      : _createCommentVNode("v-if", true)
+      : (typeof _jsx_value21 === "number" || typeof _jsx_value21 === "string" || typeof _jsx_value21 === "bigint")
+        ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [
+          _createTextVNode(_toDisplayString(_jsx_value21), 1 /* TEXT */)
+        ], 64 /* STABLE_FRAGMENT */))
+      : _createCommentVNode("v-if", true) })()
   ]))
 }
 
@@ -88,10 +92,14 @@ export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, [
     (a)
       ? (_openBlock(), _createElementBlock("p", { key: 0 }))
-      : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [
-        (cond)
+      : (() => { const _jsx_value34 = cond; return (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [
+        (_jsx_value34)
           ? (_openBlock(), _createElementBlock("span", { key: 0 }))
+          : (typeof _jsx_value34 === "number" || typeof _jsx_value34 === "string" || typeof _jsx_value34 === "bigint")
+            ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [
+              _createTextVNode(_toDisplayString(_jsx_value34), 1 /* TEXT */)
+            ], 64 /* STABLE_FRAGMENT */))
           : _createCommentVNode("v-if", true)
-      ], 64 /* STABLE_FRAGMENT */))
+      ], 64 /* STABLE_FRAGMENT */)) })()
   ]))
 }

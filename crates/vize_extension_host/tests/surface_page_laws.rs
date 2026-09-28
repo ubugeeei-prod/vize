@@ -15,7 +15,7 @@
 )]
 
 use davinci_test_support::surface_fixture::{MALFORMED, WELL_FORMED};
-use vize_davinci::folio::{Folio, FolioError};
+use vize_davinci::dump::{Dump, Error as DumpError};
 use vize_extension_host::accept::full_text;
 use vize_extension_host::surface_page::{PageNode, PageToken};
 use vize_extension_host::{SurfacePage, TileError};
@@ -135,7 +135,7 @@ fn missing_tokens_and_the_empty_page_print_exactly() {
     );
 }
 
-fn refusal(text: &str) -> FolioError {
+fn refusal(text: &str) -> DumpError {
     SurfacePage::parse(text).expect_err("the page must be refused")
 }
 
@@ -214,7 +214,7 @@ fn malformed_pages_are_refused_exactly() {
     for &(text, line, message) in cases {
         assert_eq!(
             refusal(text),
-            FolioError::new(line, String::from(message)),
+            DumpError::new(line, String::from(message)),
             "{text:?}"
         );
     }

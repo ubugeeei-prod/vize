@@ -2,7 +2,7 @@
 source: crates/vize_croquis_cf/src/diagnostics/diagnostics_tests/markdown.rs
 expression: markdown.as_str()
 ---
-🟡 **WARNING** `vize:croquis/cf/dom-access-without-next-tick`
+**WARNING** `vize:croquis/cf/dom-access-without-next-tick`
 
 ### DOM access in setup without nextTick
 
@@ -30,15 +30,15 @@ Timeline of Vue component lifecycle:
 ```ts
 // Option 1: Use inside onMounted
 onMounted(() => {
-  document.getElementById('app')  // ✅ Safe - DOM exists
+  document.getElementById('app')  // Safe - DOM exists
 })
 
 // Option 2: Use nextTick after state change
 await nextTick()
-document.getElementById('app')  // ✅ Safe - DOM updated
+document.getElementById('app')  // Safe - DOM updated
 
 // Option 3: Guard for SSR
 if (typeof document !== 'undefined') {
-  document.getElementById('app')  // ✅ Safe - browser only
+  document.getElementById('app')  // Safe - browser only
 }
 ```

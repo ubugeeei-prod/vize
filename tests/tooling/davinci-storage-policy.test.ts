@@ -19,7 +19,7 @@ const libraryRoots = [
   "crates/vize_davinci/src",
   "crates/vize_l1/src",
   "crates/vize_l2/src",
-  "crates/vize_impeto/src",
+  "crates/vize_l3/src",
   "crates/vize_l1_to_l2/src",
   "crates/vize_l2_to_l3/src",
 ];
@@ -45,7 +45,7 @@ function scopeFor(file: string): StorageScope {
   if (file.startsWith("crates/vize_davinci/")) return "infra";
   if (file.startsWith("crates/vize_l1/")) return "l1";
   if (file.startsWith("crates/vize_l2/")) return "l2";
-  if (file.startsWith("crates/vize_impeto/")) return "l3";
+  if (file.startsWith("crates/vize_l3/")) return "l3";
   if (file.startsWith("crates/vize_l1_to_l2/")) return "l1_to_l2";
   if (file.startsWith("crates/vize_l2_to_l3/")) return "l2_to_l3";
   throw new Error(`unknown storage scope: ${file}`);

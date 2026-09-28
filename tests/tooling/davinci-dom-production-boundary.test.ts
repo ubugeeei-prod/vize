@@ -93,7 +93,7 @@ test("source-map-disabled DOM compile records the L2 profiling counter", () => {
       "-p",
       "vize_atelier_dom",
       "--test",
-      "davinci_l2_profile",
+      "l2_profile",
       "profile_reports_real_l2_dom_walks",
       "--",
       "--exact",

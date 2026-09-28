@@ -1,7 +1,7 @@
-[disegno]
+[l2-dump-v2]
 ops=13
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element form @0:99
   attr method="post" @5:20
   ui.model read=js("draft.note" @29:39) write=js("draft.note" @29:39) @21:40

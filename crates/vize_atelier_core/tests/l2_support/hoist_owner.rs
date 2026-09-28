@@ -13,7 +13,9 @@
 use vize_atelier_core::{ElementNode, ElementType, StaticType, TemplateChildNode, get_static_type};
 use vize_davinci::side_table::SideTable;
 use vize_l1_to_l2::pass::StaticFacts;
-use vize_l2::folio::{FolioComponent, FolioElement, FolioOp, FolioSlot};
+use vize_l2::dump::{
+    Component as DumpComponent, Element as DumpElement, Op as DumpOp, Slot as DumpSlot,
+};
 
 use super::hoist::{HoistCounters, Mode, fact_of, predict, predict_for_item, replay_or_dormant};
 use super::hoist_old::{
@@ -29,7 +31,7 @@ pub fn walk_element(
     o1: &TemplateChildNode<'_>,
     el1: &ElementNode<'_>,
     o2: &TemplateChildNode<'_>,
-    element: &FolioElement,
+    element: &DumpElement,
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
@@ -183,7 +185,7 @@ pub fn walk_component(
     source: &str,
     el1: &ElementNode<'_>,
     o2: &TemplateChildNode<'_>,
-    component: &FolioComponent,
+    component: &DumpComponent,
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
@@ -264,7 +266,7 @@ pub fn walk_slot(
     source: &str,
     el1: &ElementNode<'_>,
     o2: &TemplateChildNode<'_>,
-    slot: &FolioSlot,
+    slot: &DumpSlot,
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
@@ -310,32 +312,32 @@ pub fn walk_slot(
 
 /// Advance the page-order cursor across a subtree without walking a
 /// legacy counterpart (a legacy whole-hoist consumed it).
-pub fn advance_ops(ops: &[FolioOp], next: &mut u32) {
+pub fn advance_ops(ops: &[DumpOp], next: &mut u32) {
     for op in ops {
         match op {
-            FolioOp::Element(element) => {
+            DumpOp::Element(element) => {
                 *next += 1 + u32::try_from(element.bindings.len()).expect("binding count fits");
                 advance_ops(&element.children, next);
             }
-            FolioOp::Component(component) => {
+            DumpOp::Component(component) => {
                 *next += 1 + u32::try_from(component.bindings.len()).expect("binding count fits");
                 advance_ops(&component.children, next);
             }
-            FolioOp::Slot(slot) => {
+            DumpOp::Slot(slot) => {
                 *next += 1 + u32::try_from(slot.bindings.len()).expect("binding count fits");
                 advance_ops(&slot.fallback, next);
             }
-            FolioOp::If(if_op) => {
+            DumpOp::If(if_op) => {
                 *next += 1;
                 for branch in if_op.branches.iter() {
                     advance_ops(&branch.ops, next);
                 }
             }
-            FolioOp::For(for_op) => {
+            DumpOp::For(for_op) => {
                 *next += 1;
                 advance_ops(&for_op.ops, next);
             }
-            FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => *next += 1,
+            DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::Comment(_) => *next += 1,
         }
     }
 }

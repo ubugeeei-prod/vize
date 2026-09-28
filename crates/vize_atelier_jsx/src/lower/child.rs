@@ -9,10 +9,9 @@ use vize_relief::{
 
 use super::Lowerer;
 
-/// `<div>{...items}</div>`. `@vue/babel-plugin-jsx` spreads the value into the
-/// children array; the lowering has no spread child, so the array used to be
-/// stringified into a single text node through `toDisplayString`.
-const SPREAD_CHILD_UNSUPPORTED: &str = "spread children (`{...items}`) are not supported; the value would be stringified instead of spread";
+/// `<div>{...[<i/>]}</div>`. The spread argument is copied as source text, so
+/// JSX nested inside it cannot be compiled; say so instead of emitting raw JSX.
+const SPREAD_CHILD_JSX_ARGUMENT: &str = "JSX inside a spread child argument (`{...[<i/>]}`) is not supported; declare the VNodes separately and spread the variable";
 
 impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// Lower children of an intrinsic element, preserving Babel's raw value
@@ -131,8 +130,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         }
     }
 
-    /// `{...children}` keeps the spread argument as an interpolation expression,
-    /// which is not what a spread means; report before doing so.
+    /// `{...children}` spreads the value into the children, as JSX does (#6888).
     fn lower_spread_child(&mut self, spread: &JSXSpreadChild<'_>) -> TemplateChildNode<'a> {
         if self.uses_babel_vdom_compat() {
             let expression = self.dyn_simple_expr(spread.expression.span());
@@ -147,9 +145,12 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             return TemplateChildNode::CompoundExpression(self.boxed(compound));
         }
 
-        self.reject(spread.span, SPREAD_CHILD_UNSUPPORTED);
-        let content = self.dyn_expr(spread.expression.span());
-        self.interpolation(content, spread.span)
+        if contains_jsx(&spread.expression) {
+            self.reject(spread.span, SPREAD_CHILD_JSX_ARGUMENT);
+            let content = self.dyn_expr(spread.expression.span());
+            return self.interpolation(content, spread.span);
+        }
+        self.spread_block(spread)
     }
 
     pub(crate) fn interpolation(
@@ -186,4 +187,22 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             .push(CompoundExpressionChild::Simple(expression));
         TemplateChildNode::CompoundExpression(self.boxed(compound))
     }
+}
+
+/// Whether `expression` contains a JSX element or fragment anywhere.
+fn contains_jsx(expression: &oxc_ast::ast::Expression<'_>) -> bool {
+    use oxc_ast_visit::Visit;
+
+    struct Finder(bool);
+    impl<'x> Visit<'x> for Finder {
+        fn visit_jsx_element(&mut self, _: &oxc_ast::ast::JSXElement<'x>) {
+            self.0 = true;
+        }
+        fn visit_jsx_fragment(&mut self, _: &oxc_ast::ast::JSXFragment<'x>) {
+            self.0 = true;
+        }
+    }
+    let mut finder = Finder(false);
+    finder.visit_expression(expression);
+    finder.0
 }

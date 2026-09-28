@@ -1,0 +1,12 @@
+
+running 7 tests
+test a_body_shaped_group_cannot_enter_the_summary ... ok
+test a_sibling_declaration_does_not_change_any_other_fingerprint ... ok
+test from_alpha_rejects_a_duplicate_a_bad_name_and_a_body_contract ... ok
+test a_signature_change_invalidates_exactly_the_recorded_users ... ok
+test a_prop_type_change_invalidates_only_its_recorded_users ... ok
+test no_ripple_fixture_body_optimization_changes_no_fingerprint ... ok
+test summary_round_trip_is_exact ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

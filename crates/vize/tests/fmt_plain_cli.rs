@@ -64,3 +64,33 @@ fn fmt_check_passes_on_already_normalized_yaml() {
         "expected already-formatted summary, got: {stderr}",
     );
 }
+
+#[test]
+fn fmt_accepts_typescript_declaration_files() {
+    let project = tempfile::tempdir().unwrap();
+    let fixture = include_str!(
+        "../../../tests/_fixtures/differential/formatter/standalone-declarations/input.d.ts"
+    );
+    for name in ["types.d.ts", "types.d.mts", "types.d.cts"] {
+        write_project_file(project.path(), name, fixture);
+        let output = run_fmt(project.path(), &["--no-config", "--write", name]);
+        assert_eq!(
+            output.status.code(),
+            Some(0),
+            "{name}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let formatted = fs::read_to_string(project.path().join(name)).unwrap();
+        assert!(
+            formatted.contains("export const foo:"),
+            "{name}: {formatted}"
+        );
+        let output = run_fmt(project.path(), &["--no-config", "--check", name]);
+        assert_eq!(
+            output.status.code(),
+            Some(0),
+            "{name}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+}
