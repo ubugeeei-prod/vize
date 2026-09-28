@@ -26,6 +26,8 @@ comparison against a fresh-main control measurement.
 | Armature compile host using sibling source path | [36442556112](https://github.com/ubugeeei-prod/vize/actions/runs/36442556112) | 17 | Restored prebuilt-AST codegen, but sibling path is absent from a published Armature package. |
 | Compile host plus MathML shortcut | [36443453328](https://github.com/ubugeeei-prod/vize/actions/runs/36443453328) | 27 | Gains did not combine. |
 | Packageable Armature source snapshot, optional L1 edge | [36445737713](https://github.com/ubugeeei-prod/vize/actions/runs/36445737713) | 17 | Local package, byte parity, tests and Clippy passed; fused compiler probes still failed. |
+| Small dynamic-prop deduplication without a hash table | [36448073726](https://github.com/ubugeeei-prod/vize/actions/runs/36448073726) | 25 | Output parity passed, but fused compile misses remained. |
+| Common HTML tags before the PHF lookup | [36448889203](https://github.com/ubugeeei-prod/vize/actions/runs/36448889203) | 23 | Fused compile improved, but independent codegen and generate probes exceeded ceilings. |
 
 The final experiment failed DOM compile in five fixtures and SSR/Vapor compile
 in six each, up to 13,837 instructions above a pinned ceiling. It matched the
@@ -42,13 +44,23 @@ both source trees symmetrically into files under 350 lines would be necessary
 if a later, measured variant justifies keeping the snapshot; it would need
 another full instruction run because source layout can change code generation.
 
+The two subsequent source experiments stayed off #7136. Dynamic-prop
+deduplication preserved output and improved five ceilings, but did not address
+the 17 fused compiler misses. Direct matches for common HTML tags preserved
+the exported PHF set and greatly reduced fused compile instructions (DOM
+stress-interp by 69,436), yet DOM codegen stress-deep rose 47,654 and Vapor
+generate stress-interp rose 22,294. Neither passes the global gate. These
+cross-stage movements show that local hot-path savings alone are insufficient
+under the current ThinLTO layout.
+
 ## Next bounded work
 
-First isolate the PHF/SipHash classification path in the fused compiler with
-function-level measurements, then test a semantics-preserving source change
-against all 100 immutable ceilings. Keep byte/error-recovery parity and the
+The bounded PHF/SipHash source experiment did not pass. Stop speculative
+variants. On the current fresh `main`, attribute the remaining prebuilt-AST
+codegen/generate and fused-compile differences to concrete functions before
+proposing another source change. Keep byte/error-recovery parity and the
 published package check. Only after an exact-head candidate passes should
 #7136 and its native Stack descendants be rebased and sent through PR Actions
-and the protected queue. If no source change passes, leave #7136 dequeued and
-bring these measured alternatives to the maintainer; do not merge a temporary
-duplicate production tokenizer or mark #6835 complete.
+and the protected queue. Meanwhile bring these measured alternatives to the
+maintainer; do not merge a temporary duplicate production tokenizer or mark
+#6835 complete.
