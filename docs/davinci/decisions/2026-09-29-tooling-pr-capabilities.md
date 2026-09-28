@@ -65,7 +65,8 @@ job. The job builds `target/ci/vize` from the candidate source, writes its
 build receipt, invokes that exact binary, and runs either directly changed
 structural contract with the source-binding requirement set. Rust, JS and
 browser PR jobs retain their existing coverage for the changed source. An
-empty comparison, unknown path, tooling helper edit, new or other test file,
+empty comparison, unknown path, deleted audited contract, tooling helper edit,
+new or other test file,
 action edit, npm edit, or dependency input outside `Cargo.lock` restores the
 prior broad PR tooling preparation. The required source report waits for both
 the early smoke and the broad-or-no-op job. The protected merge queue retains
