@@ -12,11 +12,11 @@ run every test. Shared workspace/task/dependency changes and unknown paths
 restore the broad T0 inventory; missing or nonliteral imports restore broad
 inputs for the affected scoped test. Direct changes always select the test.
 
-| Scope                        | Tests                                              | Runtime inputs beyond literal imports                                                                                                                                                    |
-| ---------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Scope                        | Tests                                              | Runtime inputs beyond literal imports                                                                                                                                                            |
+| ---------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Rust corpus                  | fact-spec, complexity, metamorphic corpus wrappers | Cargo workspace sources/config/lock/toolchain, fixture trees and hydrated submodule shards, benchmark harness, npm schema inputs, workflow hydration, Davinci plan thresholds/schema/budget data |
-| Moon build                   | `moonbit-warnings.test.ts`                         | Entire `tools/moon` module including `moon.mod`, commands and shared library; pinned MoonBit version, setup workflow and Nix toolchain definition                                        |
-| Benchmark fixture comparison | `davinci-bench-compare.test.ts`                    | Standalone Rust script, Rust support helpers, explicit fixture budgets/baseline/current reports, Cargo/toolchain config and setup workflow                                               |
+| Moon build                   | `moonbit-warnings.test.ts`                         | Entire `tools/moon` module including `moon.mod`, commands and shared library; pinned MoonBit version, setup workflow and Nix toolchain definition                                                |
+| Benchmark fixture comparison | `davinci-bench-compare.test.ts`                    | Standalone Rust script, Rust support helpers, explicit fixture budgets/baseline/current reports, Cargo/toolchain config and setup workflow                                                       |
 
 The Rust wrappers execute specific Cargo test targets. Their dependency scope
 keeps every crate conservatively, `tests/_fixtures/**`, `tests/fixtures/**`, and
