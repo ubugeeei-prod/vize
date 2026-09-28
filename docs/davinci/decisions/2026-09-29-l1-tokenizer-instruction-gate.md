@@ -5,7 +5,7 @@
 Keep [#7136](https://github.com/ubugeeei-prod/vize/pull/7136) out of the
 protected merge queue until its updated exact head passes ordinary Actions.
 The first merge group failed immutable instruction ceilings; a source-level
-candidate now passes all 100 on the #7147 main base, but it has not yet passed
+candidate now passes all 100 on the #7150 main base, but it has not yet passed
 the PR and cumulative merge-group gates. Do not raise budgets, change the
 measurement method or relax the source-length ratchet. The existing compiler
 parser stays on its original product path; #6880 still gates a route change.
@@ -35,6 +35,9 @@ comparison against a fresh-main control measurement.
 | Lazy `Option<NameSet>` alone | [36453809416](https://github.com/ubugeeei-prod/vize/actions/runs/36453809416) | 4 | The same four misses proved the lazy layout caused the regression. |
 | Best inline set plus bounded capacity, rebased after #7147 merge | [36457549037](https://github.com/ubugeeei-prod/vize/actions/runs/36457549037) | 2 | The same exact wide +28 and interp +44 Vapor generate ceilings remained. |
 | Build fallback spans only when a source map is requested, on #7147 main | [36459529667](https://github.com/ubugeeei-prod/vize/actions/runs/36459529667) | 0 | All 100 ceilings hold; three executions match exactly. PR and merge-group verification remain. |
+| Same cumulative source after #7132 merge | [36461474662](https://github.com/ubugeeei-prod/vize/actions/runs/36461474662) | 4 | Vapor lower small, deep, interp and generate interp exceeded their ceilings. |
+| Cache computed-prop mode once per element and skip empty delegate append, after #7150 merge | [36469060988](https://github.com/ubugeeei-prod/vize/actions/runs/36469060988) | 1 | Only Vapor lower stress-deep remained +33; #7150 did not alter that result. |
+| Skip computed-prop scan for one static attribute, after #7150 merge | [36469732014](https://github.com/ubugeeei-prod/vize/actions/runs/36469732014) | 0 | All 100 ceilings hold in three exact repeats; ordinary PR and merge-group verification remain. |
 
 The packageable snapshot failed DOM compile in five fixtures and SSR/Vapor compile
 in six each, up to 13,837 instructions above a pinned ceiling. It matched the
@@ -80,16 +83,27 @@ when neither authored spans nor a requested source map could use them. Make
 the fallback only when the map is requested and no spans were supplied. The
 source-map suite passed 18/18 and Vapor artifact check 1/1; exact diagnostic
 Actions then measured 100/100 on `b801e023`, with three identical executions.
-Later main changes and #7136's cumulative protected gate still need checking.
+After #7132 merged, that cumulative source missed four ceilings. A separate
+Vapor-only precursor on main missed four ceilings as a pair, one as an inline
+wrapper alone, and three as lazy spans alone; it was not made a PR. The best
+cumulative source after #7150 merged missed only Vapor lower stress-deep by
+33 instructions. That fixture has 48 elements with exactly one authored
+static attribute. `uses_computed_props` scanned that sole attribute even
+though no computed `v-bind` can exist. An exact singleton-attribute early
+return preserved all 266 Vapor library tests, the compiler fix-history and
+artifact tests, and strict Clippy; the cumulative Actions run then passed
+100/100 with three identical executions. This is evidence for updating the
+existing PR head, not for bypassing its ordinary or protected queue gates.
 
 ## Next bounded work
 
-Update #7136 after the current independent queue prefix has actually merged.
-Keep the two move-only commits intact and put the measured source optimization
-in its own commit. Run exact-head ordinary Actions, then native Stack prefix
-merge through the protected queue; verify actual `mergedAt` and fresh main
-before restacking children. If the cumulative gate changes the result, record
-the exact failed probes before another decision. Keep byte/error-recovery
+Update #7136 with the original move-only commit intact and each measured
+source optimization in its own commit. Run exact-head ordinary Actions. The
+independent #7152 queue entry must finish first; then rebase once on fresh
+main, remeasure all 100 and use native Stack prefix merge through the protected
+queue. Verify actual `mergedAt` and fresh main before restacking children. If
+the cumulative gate changes the result, record the exact failed probes before
+another decision. Keep byte/error-recovery
 parity, Cargo package checks and the unchanged source-length ratchet. Do not
 mark #6835 complete until the shared production lexer and remaining dependency
 work land; #6880 still gates compiler route replacement.
