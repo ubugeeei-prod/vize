@@ -682,7 +682,7 @@ fn compile_sfc_inner(
         }
         Some(Err(e)) => {
             errors.push(e.clone());
-            stage_capture::unavailable(capture.as_deref_mut(), "template-error");
+            stage_capture::unavailable(capture, "template-error");
             (
                 String::default(),
                 String::default(),
