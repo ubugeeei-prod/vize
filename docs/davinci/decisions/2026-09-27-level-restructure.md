@@ -19,15 +19,15 @@ Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (res
 - **Codenames are aliases only.** Davinci, Sinopia, Disegno, Ricalco, Impeto, Folio, Spolvero and the rest may appear in crate docs (`//! L3 — reactivity IR (codename: Impeto)`) and in `docs/`. They never appear in crate, directory, file, module or type names, or in serialized strings. Ordinary terms such as `lattice` and `ledger` are not codenames.
 - Examples of the mapping ([#6832](https://github.com/ubugeeei-prod/vize/issues/6832)):
 
-  | Now                                                          | After                                                                     |
-  | ------------------------------------------------------------ | ------------------------------------------------------------------------- |
-  | `folio`, `trait Folio`, `FolioValue`                         | `dump`, `trait Dump`, `DumpValue`                                         |
-  | `FolioOp`, `FolioIf`, …                                      | `vize_l2::dump::{Op, If, …}`                                              |
-  | `vize_impeto`                                                | `vize_l3`                                                                 |
-  | `impeto.set-prop`                                            | `l3.set-prop`                                                             |
-  | `davinci.s2_dom.*` counters                                  | `l2.dom.*`                                                                |
-  | `SpolveroFeed`, `inspector::spolvero`                        | `StageFeed`, `inspector::stages`                                          |
-  | features `davinci-differential` / `davinci-dom-differential` | `legacy-differential` / `legacy-dom-differential`                         |
+  | Now                                                          | After                                                                      |
+  | ------------------------------------------------------------ | -------------------------------------------------------------------------- |
+  | `folio`, `trait Folio`, `FolioValue`                         | `dump`, `trait Dump`, `DumpValue`                                          |
+  | `FolioOp`, `FolioIf`, …                                      | `vize_l2::dump::{Op, If, …}`                                               |
+  | `vize_impeto`                                                | `vize_l3`                                                                  |
+  | `impeto.set-prop`                                            | `l3.set-prop`                                                              |
+  | `davinci.s2_dom.*` counters                                  | `l2.dom.*`                                                                 |
+  | `SpolveroFeed`, `inspector::spolvero`                        | `StageFeed`, `inspector::stages`                                           |
+  | features `davinci-differential` / `davinci-dom-differential` | `legacy-differential` / `legacy-dom-differential`                          |
   | `davinci-opt`                                                | `vize dump` opt-in product compilation capture for raw DOM and SFC targets |
 
 - Davinci has no external users yet, so its crates, APIs, dump formats, serialized strings and feature names change without a compatibility period. Legacy products keep strict output compatibility; the [#6898 SSR slot scope correction](./2026-09-27-ssr-slot-scope.md) adds its own regression corpus.

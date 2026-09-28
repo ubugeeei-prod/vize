@@ -27,10 +27,13 @@ use vize_l1_to_l2::lower::pug::derive_template_source;
 use super::{DumpArgs, Pipeline};
 
 pub(super) fn run(args: &DumpArgs) {
-    let path = args.source.as_deref().expect("Clap requires source");
+    let Some(path) = args.source.as_deref() else {
+        eprintln!("dump: source argument required");
+        std::process::exit(2);
+    };
     let source = match std::fs::read_to_string(path) {
         Ok(source) => source,
-        Err(error) => fail(path, &error.to_string()),
+        Err(error) => fail(path, &format!("{error}")),
     };
     let path_text = path.to_string_lossy();
     let pipeline = args.pipeline.unwrap_or_default();
@@ -91,10 +94,10 @@ pub(super) fn run(args: &DumpArgs) {
             path_out,
             &json!({
                 "schema_version": 2,
-                "target": value["target"],
-                "outcome": value["outcome"],
-                "observed": value["observed"]["timings"],
-                "timings": value["timings"],
+                "target": required_field(&value, "target", path),
+                "outcome": required_field(&value, "outcome", path),
+                "observed": required_field(required_field(&value, "observed", path), "timings", path),
+                "timings": required_field(&value, "timings", path),
             }),
             path,
         );
@@ -104,10 +107,10 @@ pub(super) fn run(args: &DumpArgs) {
             path_out,
             &json!({
                 "schema_version": 2,
-                "target": value["target"],
-                "outcome": value["outcome"],
-                "observed": value["observed"]["remarks"],
-                "remarks": value["remarks"],
+                "target": required_field(&value, "target", path),
+                "outcome": required_field(&value, "outcome", path),
+                "observed": required_field(required_field(&value, "observed", path), "remarks", path),
+                "remarks": required_field(&value, "remarks", path),
             }),
             path,
         );
@@ -242,10 +245,17 @@ fn write_pages(
 }
 
 fn write_json(path: &Path, value: &Value, source: &Path) {
-    let mut text = value.to_string();
+    let mut text = serde_json::to_string(value)
+        .unwrap_or_else(|error| fail(source, &format!("cannot serialize capture feed: {error}")));
     text.push('\n');
     std::fs::write(path, text)
         .unwrap_or_else(|error| fail(source, &format!("cannot write {}: {error}", path.display())));
+}
+
+fn required_field<'a>(value: &'a Value, key: &str, source: &Path) -> &'a Value {
+    value
+        .get(key)
+        .unwrap_or_else(|| fail(source, &format!("capture feed missing `{key}`")))
 }
 
 fn fail(path: &Path, message: &str) -> ! {
