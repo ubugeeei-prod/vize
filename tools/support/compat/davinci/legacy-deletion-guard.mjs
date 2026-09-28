@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 
 const legacyManifest =
-  /^crates\/(?:vize_armature|vize_relief|vize_croquis|vize_atelier_[^/]+)\/Cargo\.toml$/;
+  /^crates\/(?:vize_armature|vize_relief|vize_croquis(?:_cf)?|vize_atelier_[^/]+)\/Cargo\.toml$/;
 const auditWorkflow = ".github/workflows/level-deletion-readiness.yml";
 const shaPattern = /^[0-9a-f]{40}$/;
 
