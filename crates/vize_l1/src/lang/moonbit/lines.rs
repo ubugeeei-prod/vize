@@ -6,6 +6,8 @@
 //! P6-4a: `"😀x"` advances the column by two, not three or five). The
 //! dialect converts at its boundary, in this one place.
 
+use alloc::{vec, vec::Vec};
+
 /// A 1-based line and a 1-based column in Unicode scalar values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct LineCol {

@@ -44,6 +44,7 @@ l1	-	crates/vize_l1/src/markup/lex/native/dynamic_arg.rs	0	0	0	0	0	0	1	1
 l1	-	crates/vize_l1/src/markup/lex/native/dynamic_arg/tests.rs	0	0	0	0	0	0	1	2
 l1	-	crates/vize_l1/src/markup/lex/native/tests.rs	0	0	0	0	0	0	1	2
 l1	-	crates/vize_l1/src/event.rs	0	0	0	0	1	2	0	0
+l1	analysis	crates/vize_l1/src/lang/moonbit/lines.rs	1	1	0	0	0	0	0	0
 l1	-	crates/vize_l1/src/parse.rs	0	0	0	0	1	9	0	0
 l1	-	crates/vize_l1/src/pug.rs	0	0	0	0	1	6	0	0
 l1	-	crates/vize_l1/src/pug/build.rs	0	0	0	0	1	7	0	0

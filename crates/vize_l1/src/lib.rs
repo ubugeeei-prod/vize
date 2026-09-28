@@ -65,6 +65,7 @@ extern crate alloc;
 
 pub mod container;
 pub mod embed;
+pub mod lang;
 pub mod markup;
 pub mod parse;
 pub mod pug;

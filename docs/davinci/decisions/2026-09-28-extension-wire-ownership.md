@@ -6,10 +6,11 @@ Tracked in [#6833](https://github.com/ubugeeei-prod/vize/issues/6833),
 
 ## Decision
 
-Retire the separately named `vize_extension_contract`,
-`vize_extension_host` and `vize_guest` packages by moving their actual
-responsibilities into the levels and the product integration owner. Do not add
-a renamed extension package, a guest SDK naming exception or a package facade.
+Retire the separately named internal `vize_extension_contract` and
+`vize_extension_host` packages by moving their actual responsibilities into the
+levels and the product integration owner. The independent Rust guest SDK is the
+approved [`vize_guest` external-product exception](./2026-09-28-guest-sdk-crate-axis.md);
+do not add another internal package facade.
 
 Begin with a real neutral-code move. The existing L0 workspace alias points to
 `vize_carton`; its `extension::wire` module now owns the protocol constants,
@@ -59,10 +60,9 @@ benchmark harness, therefore build the same L0 source as before.
   existing product integration owner rather than another level-named package.
 - Physical L0 extraction must make its standalone guest feature genuinely
   defaults-off and `no_std`; current std-based Carton is not that package.
-- Move the five real guest source files, runtime ownership, WIT and version
-  sources together when that isolated feature graph is buildable. Preserve all
-  published guest exchanges. Do not substitute an empty stub or remove guest
-  functionality to make the old SDK name disappear.
+- Keep the five real guest source files, runtime ownership, WIT and version
+  sources together in the independent `vize_guest` product. Preserve all
+  published guest exchanges and the packed external component check.
 - Delete each old package only after its last responsibility and dependent
   imports have moved. These names are still unfinished after this first step.
 
