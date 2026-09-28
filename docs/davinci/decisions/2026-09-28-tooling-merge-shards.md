@@ -105,6 +105,16 @@ before claiming any artifact reuse or speedup; leave manual and JS-package
 builds on their current task. This profile experiment alone cannot establish
 a two-minute gate.
 
+The [same-profile exact-head diagnostic 36449697411](https://github.com/ubugeeei-prod/vize/actions/runs/36449697411)
+passed all 651 files and its aggregate, with 5,322 passes, zero failures
+and 12 skips. Its native `ci` builds took 39.16, 42.40, 39.58 and 40.95
+seconds, versus 41.36, 45.75, 44.30 and 44.14 seconds for the weighted
+`dev` run. The two-profile savings were only about two to five seconds per
+shard; the complete run took 7m14s versus the previous 6m25s amid other
+runner variation. The separate profile code remains diagnostic-only and is
+not part of this proposed merge change. Prioritize prerequisite cohorts
+over this profile variation.
+
 Next broader experiment: audit selected tests' actual preparation needs and
 declare capability cohorts for pure scripts, native binding, source-built CLI
 and their overlap. Unknown or dynamic requirements must retain the complete
