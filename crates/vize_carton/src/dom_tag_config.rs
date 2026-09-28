@@ -110,7 +110,13 @@ pub fn is_svg_tag(tag: &str) -> bool {
 /// Check if tag is a valid MathML tag
 #[inline]
 pub fn is_math_ml_tag(tag: &str) -> bool {
-    MATH_TAGS.contains(tag)
+    match tag.as_bytes().first().copied() {
+        Some(b'm') => MATH_TAGS.contains(tag),
+        Some(b'a') => matches!(tag, "annotation" | "annotation-xml"),
+        Some(b'n') => tag == "none",
+        Some(b's') => tag == "semantics",
+        _ => false,
+    }
 }
 
 /// Check if tag is a void (self-closing) tag
@@ -155,7 +161,10 @@ pub fn is_rcdata_tag(tag: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{is_boolean_attr, is_html_tag, is_raw_text_tag, is_svg_tag, is_void_tag};
+    use super::{
+        MATH_TAGS, is_boolean_attr, is_html_tag, is_math_ml_tag, is_raw_text_tag, is_svg_tag,
+        is_void_tag,
+    };
 
     #[test]
     fn test_html_tags() {
@@ -172,6 +181,16 @@ mod tests {
         assert!(is_svg_tag("path"));
         assert!(is_svg_tag("circle"));
         assert!(!is_svg_tag("div"));
+    }
+
+    #[test]
+    fn math_tag_shortcut_preserves_every_declared_member() {
+        for tag in MATH_TAGS.iter() {
+            assert!(is_math_ml_tag(tag), "{tag}");
+        }
+        for tag in ["button", "span", "annotation-extra", "semantics-extra", "none-extra"] {
+            assert!(!is_math_ml_tag(tag), "{tag}");
+        }
     }
 
     #[test]
