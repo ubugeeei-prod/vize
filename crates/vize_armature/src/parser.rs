@@ -50,6 +50,8 @@ pub struct Parser<'a> {
     /// are parsed into it so they share the template tree's lifetime.
     oxc_allocator: &'a oxc_allocator::Allocator,
     source: &'a str,
+    /// Avoid rescanning plain interpolations when the entire template has no entities.
+    has_ampersand: bool,
     options: ParserOptions,
     custom_elements: CustomElementMatcher,
     /// Template syntax compatibility mode.
