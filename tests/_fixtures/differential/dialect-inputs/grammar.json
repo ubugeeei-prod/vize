@@ -1,0 +1,90 @@
+{
+  "schema": "vize.dialectInputGrammar",
+  "version": 1,
+  "cases": [
+    {
+      "id": "vue0-10-repeat",
+      "dialects": ["vue0-template"],
+      "selector": { "vueVersion": "0.10", "templateSyntax": "standard" },
+      "expectedParserMode": "legacy-v0.10",
+      "production": "list",
+      "tokens": { "loop": "v-repeat=\"item: items\"", "event": "v-on=\"click: select\"" },
+      "witness": {
+        "file": "crates/vize_armature/src/legacy.rs",
+        "selector": "Templates iterate with `v-repeat` (no `v-for`; that arrives in 1.0),"
+      }
+    },
+    {
+      "id": "vue0-11-repeat",
+      "dialects": ["vue0-template"],
+      "selector": { "vueVersion": "0.11", "templateSyntax": "standard" },
+      "expectedParserMode": "legacy-v0.11",
+      "production": "list",
+      "tokens": { "loop": "v-repeat=\"item: items\"", "event": "v-on=\"click: select\"" },
+      "witness": {
+        "file": "crates/vize_armature/src/legacy.rs",
+        "selector": "Shares the clause-style directive surface with 0.10 (`v-repeat`,"
+      }
+    },
+    {
+      "id": "vue1-list",
+      "dialects": ["vue1-template"],
+      "selector": { "vueVersion": "1", "templateSyntax": "standard" },
+      "expectedParserMode": "legacy-v1",
+      "production": "list",
+      "tokens": { "loop": "v-for=\"item in items\"", "event": "@click=\"select\"" },
+      "witness": {
+        "file": "crates/vize_armature/src/legacy.rs",
+        "selector": "The 1.0 migration replaced `v-repeat` with `v-for` (`track-by`,"
+      }
+    },
+    {
+      "id": "vue1-raw-html",
+      "dialects": ["vue1-template"],
+      "selector": { "vueVersion": "1", "templateSyntax": "standard" },
+      "expectedParserMode": "legacy-v1",
+      "production": "raw-html",
+      "tokens": {},
+      "witness": {
+        "file": "crates/vize_armature/src/parser/legacy_tests.rs",
+        "selector": "fn triple_mustache_under_v1_lowers_to_raw_html_interpolation()"
+      }
+    },
+    {
+      "id": "vue1-attribute-interpolation",
+      "dialects": ["vue1-template"],
+      "selector": { "vueVersion": "1", "templateSyntax": "standard" },
+      "expectedParserMode": "legacy-v1",
+      "production": "attribute-interpolation",
+      "tokens": {},
+      "witness": {
+        "file": "crates/vize_armature/src/legacy.rs",
+        "selector": "interpolation still works inside plain attribute values"
+      }
+    },
+    {
+      "id": "quirks-adjacent-attributes",
+      "dialects": ["vue-quirks"],
+      "selector": { "vueVersion": "3", "templateSyntax": "quirks" },
+      "expectedParserMode": "quirks",
+      "production": "adjacent-attributes",
+      "tokens": {},
+      "witness": {
+        "file": "crates/vize_armature/tests/template_syntax_quirks.rs",
+        "selector": "fn quirks_accepts_adjacent_attributes_recovered_by_vue_compiler()"
+      }
+    },
+    {
+      "id": "quirks-void-close",
+      "dialects": ["vue-quirks"],
+      "selector": { "vueVersion": "3", "templateSyntax": "quirks" },
+      "expectedParserMode": "quirks",
+      "production": "void-close",
+      "tokens": {},
+      "witness": {
+        "file": "crates/vize_armature/tests/template_syntax_quirks.rs",
+        "selector": "fn quirks_ignores_closing_tags_for_void_elements()"
+      }
+    }
+  ]
+}
