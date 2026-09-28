@@ -40,7 +40,7 @@ export function loadCompilerManifest(manifestPath) {
       assert.equal(fixture.inputs.root, "ssr-slot-scope");
       assert.equal(fixture.inputs.files.length, 1);
       const entry = fixture.inputs.files[0];
-      assert.equal(entry.path, "Layout.vue");
+      assert.equal(entry.path, "Layout.vue.txt");
       assert.equal(entry.role, "entry");
       assert.equal(fixture.comparison.contract, "compiler-ssr-module-bytes-v1");
       assert.deepEqual(fixture.comparison.requiredFacets, [

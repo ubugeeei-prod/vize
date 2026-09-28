@@ -118,7 +118,7 @@ void test("compiler comparison checks every code byte and rejects forged native 
 });
 
 void test("compiler input and reference digests fail closed", () => {
-  for (const relative of ["ssr-slot-scope/Layout.vue", "ssr-slot-scope/module.expected.txt"]) {
+  for (const relative of ["ssr-slot-scope/Layout.vue.txt", "ssr-slot-scope/module.expected.txt"]) {
     const copy = fs.mkdtempSync(path.join(os.tmpdir(), "vize-compiler-manifest-"));
     try {
       fs.cpSync(pack, copy, { recursive: true });

@@ -41,7 +41,9 @@ The first compiler manifest plans one `compiler/sfc/ssr-slot-scope` case at
 target `ssr`. The authored SFC and full emitted module reference are copied
 byte-for-byte from the existing `ssr_slot_scope.rs` regression at
 `ecef0efd44c5047293170b6d42b5b16aacae6560`. Both SHA256 values are
-committed. The adapter runs the source-built `vize build Layout.vue --format
+committed. The physical `Layout.vue.txt` is input data outside global `.vue`
+sweeps; the adapter writes its exact bytes as `Layout.vue` in an isolated
+workspace. It runs the source-built `vize build Layout.vue --format
 json --output out --ssr --no-config`, retains raw process and JSON output,
 compares emitted module code bytes to the pinned reference, and requires empty
 CSS, errors, warnings and macro artifacts. Exact HEAD and executable SHA are

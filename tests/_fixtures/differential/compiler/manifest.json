@@ -12,7 +12,7 @@
         "root": "ssr-slot-scope",
         "files": [
           {
-            "path": "Layout.vue",
+            "path": "Layout.vue.txt",
             "sha256": "89a06356b7c3a383fe12e806adf3b60fad22ce9ad0778f8b1b2fafabc20b9ed9",
             "role": "entry"
           }
