@@ -319,8 +319,7 @@ required runtime proof to the receipted current CLI without cached fallback.
 Use test-step environment variables to retain the plain VP command and compose
 with the formatter's always-upload corpus evidence without changing build setup.
 
-[Stacked PR checks](./2026-09-27-stacked-pr-checks.md) run on every PR base. [Rust PR archive and shard execution](./2026-09-27-rust-nextest-shards.md) records #6862's runner, doctest, resource and archive identity decisions.
-Dependent slices use GitHub parent-branch PR bases; each child is retargeted and revalidated on fresh `main` after its parent actually squash-merges (delivery rule in `AGENTS.md`, #6826). `AGENTS.md` is Markdown guidance, so T0 source planning treats it as documentation while T1 remains full.
+[Stacked PR checks](./2026-09-27-stacked-pr-checks.md) run on every PR base; dependent children target parent branches and revalidate on fresh `main` after squash merge (#6826, `AGENTS.md`, treated as Markdown guidance in T0). [Rust PR archive and shard execution](./2026-09-27-rust-nextest-shards.md) records #6862's runner, doctest, resource and archive identity decisions.
 
 [Rust source wiring](./2026-09-27-ci-rust-core.md) preserves full queue execution, proves the tested comparison base and records the intermediate scope.
 
