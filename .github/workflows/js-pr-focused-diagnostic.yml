@@ -43,6 +43,8 @@ jobs:
         run: |
           printf 'source=%s\ntree=%s\n' "$(git rev-parse HEAD)" "$(git rev-parse HEAD^{tree})" >> "$GITHUB_STEP_SUMMARY"
           shasum -a 256 npm/native/vize-vitrine.*.node >> "$GITHUB_STEP_SUMMARY"
+      - name: Pack source CLI config dependency
+        run: vp run --filter './npm/cli' test
       - name: Run prepared Vite compiler tests with bound addon
         run: VP_RUN_CONCURRENCY_LIMIT=1 node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test
 
