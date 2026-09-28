@@ -14,30 +14,30 @@ Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835),
   token array. `Sink::mode` exposes `LexMode::Verbatim` for `v-pre` to its
   consumer. Armature's parser currently answers it; the L1 surface tree does
   not yet use the mode.
-- Lex errors are an L1 enum (`LexErrorCode`). Legacy maps them onto its own
-  `ErrorCode` at the armature boundary, so no level crate depends on relief.
+- Lex errors are an L1 enum (`LexErrorCode`). The native L1 surface tree uses
+  them directly; legacy keeps its own `ErrorCode` and tokenizer until #6880.
 - Directive-name decomposition is the dialect hook `DirectiveSyntax`. It
   returns spans only (`modifiers` is one span over the `.a.b` run), so it
   allocates nothing.
 - `vize_l1::container` holds `ContainerFormat` and the lossless block records;
   `container::vue` is the first format.
 
-## Tokenizer move (#6835)
+## Native tokenizer ownership (#6835, partial)
 
-- The armature tokenizer now lives in `vize_l1::markup::lex` as
-  `Lexer<P, S>`; entity decoding lives in `markup::entity`. `vize_armature`
-  and `vize_relief` depend on `vize_l1`; `vize_l1` has no legacy dependency,
-  and its two allowlist entries are removed.
-- `LexErrorCode` owns its messages. Relief converts with
-  `From<LexErrorCode> for ErrorCode`, and a relief test pins that both
-  messages stay identical, so legacy output is unchanged.
-- Armature's document mode instantiates `Lexer<Document, _>`; the SFC path
-  instantiates `Lexer<Component, _>`. Vue 1 `{{{` is the plain
-  `LexOptions::raw_interpolation` switch.
-- The never-entered `InSFCRootTagName` and `InSpecialComment` states are
-  deleted.
-- Armature's public `Tokenizer`/`Callbacks` API is replaced by re-exports of
-  the L1 names; the next release needs the matching version bump.
+- L1 owns `markup::lex::Lexer<P, S>` and `markup::entity` for its native
+  surface tree. L1 has no legacy dependency; its two dependency allowlist
+  entries are removed. The resident tier records native `LexErrorCode`
+  findings without converting through relief.
+- The existing `vize_armature::tokenizer` and compiler/parser consumers remain
+  on their original path. `vize_relief` keeps its own error codes. The native
+  lexer and legacy tokenizer temporarily coexist, because compiler fix-history
+  issue #6880 is still open. No legacy product parser path changes in this PR.
+- `LexErrorCode` owns its messages for native L1. Document and component
+  profiles, including the Vue 1 raw-interpolation option, are native lexer
+  capabilities; no legacy product uses them yet.
+- The native L1 tree still needs its `v-pre` mode wired to the sink, and
+  legacy tokenizer replacement needs #6880 to close first. These are
+  unfinished parts of #6835, which stays open.
 
 TODO: implement `VueDirectives` (#6836) and the SFC split (#6837). The
 `v-pre` switch is still answered by armature's parser; the L1 surface tree
@@ -46,13 +46,12 @@ does not use it yet.
 ## Delivery order for the existing tokenizer PR
 
 The owner explicitly queued #7038 on 2026-09-28 while #6832 remained open.
-Finish this already-started tokenizer move through its checks and squash merge;
-keep #6832 open and its remaining rename work separately tracked. This scoped
-delivery exception does not change the issue order for new Stage 1 work. The
-merge queue's instruction-count budget remains strict and must pass before merge.
+Deliver the independent native L1 lexer ownership as partial #6835, while
+keeping #6832 and #6880 open for their remaining work. This scoped delivery
+exception does not change the issue order for new Stage 1 work. The merge
+queue's instruction-count budget remains strict and must pass before merge.
 
-For coordinated delivery, the GitHub PR base of #7038 is #7037
-(`feat/l4-document-move`), whose base is #7043. Keep the child out of the
-queue until its parent actually merges, then retarget it to fresh `main`,
-rebase, and run ordinary and merge-group checks again. This is tracked in
+The earlier #7043 → #7037 → #7038 PR stack reflected the former live compiler
+integration. With that integration deferred, #7038 has no source dependency on
+those PRs and can target `main` directly. This supersedes the stack plan in
 [#6835](https://github.com/ubugeeei-prod/vize/issues/6835#issuecomment-5867058001).

@@ -2,7 +2,6 @@
 mod codes;
 mod compatibility;
 mod diagnostic;
-mod lex;
 pub use diagnostic::COMPILER_ERROR;
 pub mod recovery;
 mod render;

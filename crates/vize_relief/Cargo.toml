@@ -24,8 +24,6 @@ _legacy = []
 
 [dependencies]
 vize_l0 = { workspace = true }
-# The template lexer and its error codes (#6835).
-vize_l1 = { workspace = true }
 # The unified diagnostic channel compiler errors adapt onto (P4-14b).
 vize_davinci = { workspace = true }
 

@@ -1,7 +1,7 @@
-//! Interpolation delimiter validation and lexer setup.
+//! Interpolation delimiter validation and tokenizer setup.
 
 use super::{Parser, callbacks::ParserCallbacks};
-use crate::tokenizer::{Component, Delimiters, Document, LexOptions, Lexer};
+use crate::tokenizer::Tokenizer;
 use vize_l0::Vec;
 use vize_relief::{
     RootNode,
@@ -25,25 +25,20 @@ impl<'a> Parser<'a> {
         let delimiter_close: Vec<'a, u8> =
             Vec::from_iter_in(self.options.delimiters.1.bytes(), &self.allocator);
         let document = self.document;
+        let in_tag_comments = self.options.experimental_in_tag_comments;
         #[cfg(feature = "legacy")]
-        let raw_interpolation = self.raw_html_interpolation_enabled();
-        #[cfg(not(feature = "legacy"))]
-        let raw_interpolation = false;
-        let options = LexOptions {
-            delimiters: Delimiters {
-                open: &delimiter_open,
-                close: &delimiter_close,
-            },
-            raw_interpolation,
-            in_tag_comments: self.options.experimental_in_tag_comments,
-        };
-        let source = self.source;
-        let callbacks = ParserCallbacks { parser: self };
-        if document {
-            Lexer::<Document, _>::new(source, callbacks, options).run();
-        } else {
-            Lexer::<Component, _>::new(source, callbacks, options).run();
-        }
+        let triple_mustache = self.raw_html_interpolation_enabled();
+        let mut tokenizer = Tokenizer::with_delimiters(
+            self.source,
+            ParserCallbacks { parser: self },
+            &delimiter_open,
+            &delimiter_close,
+        );
+        tokenizer.set_tolerate_declarations(document);
+        tokenizer.set_in_tag_comments(in_tag_comments);
+        #[cfg(feature = "legacy")]
+        tokenizer.set_triple_mustache(triple_mustache);
+        tokenizer.tokenize();
         true
     }
 

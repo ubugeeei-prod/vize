@@ -4757,9 +4757,8 @@ name = "vize_l1"
 version = "0.429.1"
 dependencies = [
  "davinci_test_support",
- "vize_armature",
+ "htmlize",
  "vize_carton",
- "vize_relief",
 ]
 
 [[package]]
@@ -4972,7 +4971,6 @@ dependencies = [
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
- "vize_relief",
 ]
 
 [[package]]

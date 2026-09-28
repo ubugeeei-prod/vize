@@ -12,9 +12,9 @@
 //! (`render(tree) == source`, the SwiftSyntax import recorded in
 //! `docs/davinci/prior-art-toolchains.md`).
 //!
-//! The tree is built from the [`markup`] lexer's events — the same lexer
-//! `vize_armature` drives for the legacy AST (one shared lexer, no private
-//! re-scan). L1 owns the lexer and depends on no legacy crate (#6835).
+//! The tree is built from the [`markup`] lexer's events. L1 owns its native
+//! lexer and depends on no legacy crate (#6835). The existing armature
+//! tokenizer remains in place until the compiler fix-history gate (#6880).
 //!
 //! # The hole policy (single, documented — L1→L2 consumers read this)
 //!

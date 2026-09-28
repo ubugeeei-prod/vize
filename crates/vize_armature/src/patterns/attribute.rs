@@ -1,9 +1,10 @@
 //! Rebase decoded pattern spans through the same entity decoder as HTML attributes.
 
 use super::{MatchArm, MatchPattern, PatternKind, PatternSyntaxError, parse_match_pattern};
+use crate::tokenizer::entity_decode::try_decode_entity;
+use htmlize::Context;
 use oxc_span::Span;
 use vize_l0::String;
-use vize_l1::markup::entity::{EntityContext, decode_one};
 
 struct Attribute {
     text: String,
@@ -18,20 +19,10 @@ impl Attribute {
         while let Some(rest) = source.get(at..)
             && let Some(first) = rest.chars().next()
         {
-            let before = text.len();
-            let len = if let Some((decoded, len)) =
-                decode_one(rest.as_bytes(), EntityContext::Attribute)
-            {
-                decoded.for_each(|ch| text.push(ch));
-                len
-            } else {
-                text.push(first);
-                first.len_utf8()
-            };
-            offsets.extend(std::iter::repeat_n(
-                at as u32,
-                (text.len() - before).saturating_sub(1),
-            ));
+            let (ch, len) = try_decode_entity(rest.as_bytes(), Context::Attribute)
+                .unwrap_or((first, first.len_utf8()));
+            text.push(ch);
+            offsets.extend(std::iter::repeat_n(at as u32, ch.len_utf8() - 1));
             at += len;
             offsets.push(at as u32);
         }
@@ -127,18 +118,6 @@ pub fn attribute_source_offset(source: &str, decoded: u32) -> u32 {
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
     use super::*;
-
-    #[test]
-    fn multi_scalar_reference_keeps_all_output_and_the_consumed_end() {
-        let source = "pre&fjlig;post";
-        let attribute = Attribute::new(source);
-        assert_eq!(attribute.text, "prefjpost");
-        assert_eq!(attribute.offset(5), 10);
-        assert_eq!(
-            attribute.offset(attribute.text.len() as u32),
-            source.len() as u32
-        );
-    }
 
     #[test]
     fn entities_preserve_binding_guard_and_error_offsets() {

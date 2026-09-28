@@ -16,10 +16,10 @@ use vize_davinci::diagnostic::Diagnostic;
 use vize_davinci::key::{ArtifactKey, source_block_key};
 use vize_l0::config::VueVersion;
 use vize_l0::{Allocator, FxHashMap, String};
+use vize_l1::markup::LexErrorCode;
 use vize_l1_to_l2::key::SurfacePage;
 use vize_l1_to_l2::{LegacyCaps, lower_style_block, lower_with_caps};
 use vize_l2::dump::Page as L2Page;
-use vize_relief::ErrorCode;
 
 /// The kind of an SFC block, as its identity in the database sees it.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -119,7 +119,7 @@ pub struct StageConfig {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SurfaceFinding {
     /// The tokenizer's error code.
-    pub code: ErrorCode,
+    pub code: LexErrorCode,
     /// Byte offset inside the block.
     pub offset: u32,
 }
@@ -275,7 +275,7 @@ pub fn surface_artifact(source: &BlockSource) -> Option<SurfaceArtifact> {
         findings: errors
             .iter()
             .map(|error| SurfaceFinding {
-                code: error.code.into(),
+                code: error.code,
                 offset: error.offset,
             })
             .collect(),
