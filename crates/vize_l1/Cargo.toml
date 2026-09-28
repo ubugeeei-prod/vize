@@ -21,6 +21,7 @@ metadata.vize.stability = "experimental"
 # counts, plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
 legacy-differential = []
 native-markup-lex = ["dep:htmlize"]
+moonbit = []
 
 [dependencies]
 vize_armature = { workspace = true }

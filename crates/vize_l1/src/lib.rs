@@ -65,6 +65,7 @@ extern crate alloc;
 
 pub mod container;
 pub mod embed;
+#[cfg(feature = "moonbit")]
 pub mod lang;
 pub mod markup;
 pub mod parse;

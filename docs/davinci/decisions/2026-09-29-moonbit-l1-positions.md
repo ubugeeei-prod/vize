@@ -17,6 +17,16 @@ source's newline count. The reviewed L1 analysis row in
 `docs/davinci/plan/storage-inventory.tsv` records one direct import and one
 bound use; no fixed inline bound applies to authored text.
 
+The L1 `moonbit` feature exports this language module only for MoonBit
+consumers; `vize_dialect_moonbit` enables it on its L1 dependency. Ordinary
+Vue builds do not compile the unused position index. The protected queue
+measured unchanged behavior but tiny shared lowering instruction regressions
+across DOM, SSR and Vapor when the module was unconditional. Callgrind assigned
+the deltas to common L1→L2 lowering functions, not to `Lines`. The feature
+keeps the default graph focused while feature-enabled L1 tests and MoonBit
+checks cover the new API. The 100-probe instruction gate must still pass
+without increasing any ceiling.
+
 The other old MoonBit files remain in their current crate for now. Its SFC
 split still calls legacy Croquis; `vize_l1::container::Vue` is a `todo!`
 skeleton under #6837. The guest L1 surface page and L4 projection use the

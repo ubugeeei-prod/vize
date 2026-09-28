@@ -29,7 +29,7 @@ vize_davinci = { workspace = true }
 vize_extension_contract = { workspace = true }
 vize_croquis = { workspace = true }
 vize_l0 = { workspace = true }
-vize_l1 = { workspace = true }
+vize_l1 = { workspace = true, features = ["moonbit"] }
 vize_l1_to_l2 = { workspace = true }
 vize_l2 = { workspace = true }
 
