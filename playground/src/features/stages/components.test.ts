@@ -26,7 +26,7 @@ describe("StageRail", () => {
       "L1Surface2 lines",
       "L2Disegno2 ops, 1 pass",
       "L3Impetono page",
-      "L4OutputDOM, Vapor, SSR",
+      "L4EmitBackend + SFC module",
     ]);
     expect(stations[1].attributes("aria-pressed")).toBe("true");
     expect(wrapper.findAll(".davinci-pounce")).toHaveLength(3);

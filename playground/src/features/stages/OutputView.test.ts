@@ -1,7 +1,15 @@
 import { mount } from "@vue/test-utils";
+import { defineComponent, h } from "vue";
 import { describe, expect, it } from "vite-plus/test";
 import { createEmptyCodeOutputs } from "../atelier/codeOutputs";
 import OutputView from "./OutputView.vue";
+
+const CodeHighlightStub = defineComponent({
+  props: { code: { type: String, required: true } },
+  setup(props) {
+    return () => h("pre", props.code);
+  },
+});
 
 describe("product output boundaries", () => {
   it("shows the captured L4 backend page separately from assembled SFC code", async () => {
@@ -16,7 +24,7 @@ describe("product output boundaries", () => {
       },
       global: {
         stubs: {
-          CodeHighlight: { props: ["code"], template: "<pre>{{ code }}</pre>" },
+          CodeHighlight: CodeHighlightStub,
         },
       },
     });
