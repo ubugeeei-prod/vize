@@ -62,17 +62,10 @@ fn clean_tokens(text: &str, filename: &str) -> Vec<SemanticToken> {
 
 #[test]
 fn template_identifiers_keep_unicode_names_and_utf16_ranges() {
-    let source = "<script setup lang=\"ts\">\n\
-const 値 = 2;\n\
-const ñandú = 3;\n\
-const café = 1;\n\
-const total = 0;\n\
-</script>\n\
-<template>\n\
-  <p>{{ 値 }}{{ total }}</p>\n\
-  <p>{{ ñandú }}</p>\n\
-  <p>{{ café }}</p>\n\
-</template>";
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/lsp/template-unicode-tokens/App.vue.txt"
+    ));
     let descriptor =
         vize_resident::descriptor::parse_descriptor("App.vue", source).expect("the fixture parses");
     let tokens = SemanticTokensService::tokens_from_descriptor(source, &descriptor);
