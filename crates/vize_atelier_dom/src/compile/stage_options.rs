@@ -184,6 +184,7 @@ pub(super) fn l2_emit_options<'a>(
         cache_handlers: options.cache_handlers,
         hoisted_scope_id,
         scope_id: options.scope_id.as_deref(),
+        no_slotted: false,
         is_ts: options.is_ts,
         comments: options.comments,
         experimental_in_tag_comments: options.experimental_in_tag_comments,

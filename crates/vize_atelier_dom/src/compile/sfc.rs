@@ -43,12 +43,14 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     ) && !stage_options::source_may_contain_patterned_template_syntax(source)
         && !stage_options::source_may_contain_vize_directive_comment(source);
 
-    let mut force_compat_sections = false;
     let fast_path_supported = selector::l2_sfc_fast_path_supported_source(source);
+    let no_slotted = codegen_experimental_options.no_slotted;
+    let mut force_compat_sections =
+        no_slotted && (!use_l2_emit || !fast_path_supported || codegen_opts.source_map);
 
     if use_l2_emit && fast_path_supported && !codegen_opts.source_map {
         let binding_table = stage_options::l2_binding_table_for(&options);
-        let l2_options = stage_options::l2_emit_options(
+        let mut l2_options = stage_options::l2_emit_options(
             &options,
             &codegen_opts,
             &custom_elements,
@@ -56,6 +58,9 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
             hoisted_scope_id.as_deref(),
             codegen_experimental_options.component_name.as_deref(),
         );
+        if let Some(options) = l2_options.as_mut() {
+            options.no_slotted = no_slotted;
+        }
         if let Some(l2_options) = l2_options
             && let Ok(result) = profile!(
                 "atelier.dom.template.s2_codegen_sfc_fast",

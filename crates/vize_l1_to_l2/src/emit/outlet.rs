@@ -82,17 +82,31 @@ pub(super) fn emit_outlet(
         }
         cx.buf.push(", () => [");
         emit_fallback(cx, &slot.fallback, compact_fallback)?;
-        cx.buf.push("])");
+        cx.buf.push("]");
+        finish_outlet(cx, true, true);
     } else if props {
         skip_region(cx, &slot.fallback);
         cx.buf.push(", ");
         emit_props(cx, slot, key)?;
-        cx.buf.push(")");
+        finish_outlet(cx, false, true);
     } else {
         skip_region(cx, &slot.fallback);
-        cx.buf.push(")");
+        finish_outlet(cx, false, false);
     }
     Ok(())
+}
+
+fn finish_outlet(cx: &mut EmitCx<'_>, fallback: bool, props: bool) {
+    if cx.no_slotted {
+        if !fallback {
+            if !props {
+                cx.buf.push(", {}");
+            }
+            cx.buf.push(", undefined");
+        }
+        cx.buf.push(", true");
+    }
+    cx.buf.push(")");
 }
 
 fn emit_name(cx: &mut EmitCx<'_>, slot: &SlotOp<'_>) -> Result<(), EmitError> {

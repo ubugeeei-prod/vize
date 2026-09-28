@@ -141,6 +141,22 @@ pub(crate) fn normalize_destructure_default_value(default_value: &str) -> String
     default_value.to_compact_string()
 }
 
+pub(crate) fn normalize_destructure_default_value_with_factory(
+    default_value: &str,
+    needs_factory: bool,
+) -> String {
+    let trimmed = default_value.trim();
+    if needs_factory && !trimmed.starts_with(['[', '{']) {
+        let mut wrapped = String::with_capacity(trimmed.len() + 8);
+        wrapped.push_str("() => (");
+        wrapped.push_str(trimmed);
+        wrapped.push(')');
+        wrapped
+    } else {
+        normalize_destructure_default_value(default_value)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::extract_with_defaults_values;
