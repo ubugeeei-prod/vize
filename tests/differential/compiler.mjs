@@ -69,28 +69,33 @@ export function compilerAttempt(result, output, expected) {
     codeBase64: null,
     codeSha256: null,
     referenceComparison: null,
+    facetError: null,
   };
   if (output) {
-    const parsed = JSON.parse(output.toString("utf8"));
-    assert.deepEqual(Object.keys(parsed), [
-      "filename",
-      "code",
-      "css",
-      "errors",
-      "warnings",
-      "script_lang",
-      "macro_artifacts",
-    ]);
-    assert.equal(parsed.filename, "Layout.vue");
-    assert.equal(parsed.script_lang, "js");
-    assert.equal(parsed.css, null);
-    assert.deepEqual(parsed.errors, []);
-    assert.deepEqual(parsed.warnings, []);
-    assert.deepEqual(parsed.macro_artifacts, []);
-    const code = Buffer.from(parsed.code, "utf8");
-    observation.codeBase64 = code.toString("base64");
-    observation.codeSha256 = sha256(code);
-    observation.referenceComparison = compareBytes(expected, code);
+    try {
+      const parsed = JSON.parse(output.toString("utf8"));
+      assert.deepEqual(Object.keys(parsed), [
+        "filename",
+        "code",
+        "css",
+        "errors",
+        "warnings",
+        "script_lang",
+        "macro_artifacts",
+      ]);
+      assert.equal(parsed.filename, "Layout.vue");
+      assert.equal(parsed.script_lang, "js");
+      assert.equal(parsed.css, null);
+      assert.deepEqual(parsed.errors, []);
+      assert.deepEqual(parsed.warnings, []);
+      assert.deepEqual(parsed.macro_artifacts, []);
+      const code = Buffer.from(parsed.code, "utf8");
+      observation.codeBase64 = code.toString("base64");
+      observation.codeSha256 = sha256(code);
+      observation.referenceComparison = compareBytes(expected, code);
+    } catch (error) {
+      observation.facetError = error.message;
+    }
   }
   return observation;
 }
@@ -149,6 +154,7 @@ export function validateCompilerReport(loaded, report, expectedBuild) {
       assert.equal(attempt.exitStatus, 0);
       assert.equal(attempt.signal, null);
       assert.equal(attempt.processError, null);
+      assert.equal(attempt.facetError, null, "invalid compiler facets cannot complete");
       assert.equal(
         row.legacy.verdict,
         attempt.referenceComparison.state === "equal" ? "matched-reference" : "baseline-drift",
@@ -157,6 +163,7 @@ export function validateCompilerReport(loaded, report, expectedBuild) {
     } else {
       assert.equal(row.legacy.verdict, "failed");
       assert.equal(typeof row.legacy.error, "string");
+      if (attempt?.facetError) assert.equal(row.legacy.error, attempt.facetError);
       summary.legacyFailures += 1;
     }
   }
@@ -192,6 +199,7 @@ function runCompilerCase(fixture, binaryPath, binaryFailure) {
       ? fs.readFileSync(path.join(workspace, OUTPUT_FILE))
       : null;
     row.legacy.observation = compilerAttempt(result, output, fixture.expected);
+    if (row.legacy.observation.facetError) throw new Error(row.legacy.observation.facetError);
     if (result.error) throw result.error;
     assert.equal(result.status, 0, result.stderr?.toString());
     assert(output, "compiler JSON output is missing");

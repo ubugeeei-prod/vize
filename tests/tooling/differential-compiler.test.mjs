@@ -133,6 +133,32 @@ void test("compiler input and reference digests fail closed", () => {
   }
 });
 
+void test("malformed compiler output retains raw evidence and cannot complete", () => {
+  const raw = Buffer.from("{broken JSON");
+  const observation = compilerAttempt(
+    { status: 0, signal: null, stdout: Buffer.from("log"), stderr: Buffer.from("warning") },
+    raw,
+    fixture.expected,
+  );
+  assert.equal(observation.jsonBase64, raw.toString("base64"));
+  assert.equal(observation.jsonSha256, sha256(raw));
+  assert.equal(observation.stdoutBase64, Buffer.from("log").toString("base64"));
+  assert.equal(typeof observation.facetError, "string");
+  const report = syntheticReport();
+  report.rows[0].legacy = {
+    ...report.rows[0].legacy,
+    state: "failed",
+    verdict: "failed",
+    error: observation.facetError,
+    observation,
+  };
+  report.summary = { ...report.summary, legacyMatches: 0, legacyFailures: 1 };
+  assert.deepEqual(validateCompilerReport(loaded, report, build), report.summary);
+  const forged = structuredClone(report);
+  forged.rows[0].legacy.state = "completed";
+  assert.throws(() => validateCompilerReport(loaded, forged, build));
+});
+
 void test("missing source-built CLI retains the planned failed row", () => {
   const report = runCompilerPack({
     manifestPath,
