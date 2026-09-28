@@ -73,6 +73,7 @@ impl<'a> Parser<'a> {
             implicitly_closed_tags: Vec::new_in(&allocator),
             root: None,
             current_element: None,
+            seen_attr_names: None,
             current_attr: None,
             current_dir: None,
             errors: std::vec::Vec::new(),

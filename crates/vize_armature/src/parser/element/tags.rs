@@ -47,8 +47,8 @@ impl<'a> Parser<'a> {
     /// Process open tag end
     pub(in crate::parser) fn on_open_tag_end_impl(&mut self, end: usize) {
         if let Some(current) = self.current_element.take() {
-            if current.props.len() > 1 {
-                self.report_duplicate_attributes(&current);
+            if current.props.len() >= 12 {
+                self.seen_attr_names = None;
             }
             let tag_start = current.tag_start;
             let loc = self.create_loc(tag_start.saturating_sub(1), end + 1); // Include < and >
