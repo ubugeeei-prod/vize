@@ -249,8 +249,8 @@ pub(super) fn emit_dom_source_with_options_and_observer_captured<
             profile = profile.without_static_analysis();
         }
         let facts = run_dom_transform_with_profile(&mut lowered, observer, profile);
-        capture.page(Level::L2, "transform", || {
-            L2Page::of(&lowered.root.ops).print_to_string(DumpMode::Full)
+        capture.page(Level::L2, "facts", || {
+            String::from(alloc::format!("{facts:#?}"))
         });
         let emitted = emit_dom_observed(&lowered, &facts, options, strict_slot_params)?;
         capture.page(Level::L4, "emit", || emitted.emit.assembled());

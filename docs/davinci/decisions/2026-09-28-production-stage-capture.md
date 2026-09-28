@@ -11,14 +11,18 @@ L0 owns a target-neutral `CaptureSink` contract and an owned `StageCapture`
 sidecar. The ordinary compile uses `NoCapture`; page, timing, remark and
 outcome builders are lazy, so they do no dump work or clock reading there.
 Each product records only boundaries it actually executed. Provisional pages
-are committed when its native emitter returns the selected module; a legacy
-selection, no-template result or rejected compile discards them. The sidecar
+are committed only after final product selection, including DOM source-map
+parity. A compatibility map mismatch returns the compatibility module and
+discards native pages; selection accounting reports that final lane. A legacy
+selection, no-template result or rejected compile likewise discards pages. The sidecar
 records the target, effective options and explicit outcome so an empty feed
 cannot be mistaken for a native run with no changes.
 
-DOM records its actual surface parse, lowering, fact transform and render
-emission. Its production emitter folds preserving facts rather than executing
-the separate ladder's pass plan, and does not lower L3. SSR and Vapor record
+DOM records its actual surface parse, lowering, resulting fact tables and render
+emission. These facts describe the current transitional DOM emitter; static
+and hoist decisions remain L3 target ownership. The production emitter folds
+preserving facts rather than executing the separate ladder's pass plan, and
+does not lower L3. SSR and Vapor record
 the L3 artifact that their accepted backends consume. L4 pages represent the
 documented backend emission boundary; later SFC script assembly is a distinct
 host step. The current SFC adapter must carry the capture from the compile

@@ -27,6 +27,9 @@ pub(super) enum DomLegacyReason {
     /// L2 was attempted and refused the template (an unsupported surface or
     /// a diagnostic the shipped lane must report).
     EmitRefused,
+    /// L2 emitted a module, but the compatibility source-map generator
+    /// disagreed on code or section boundaries and supplied the result.
+    SourceMapMismatch,
     /// SSR options reached the DOM compiler.
     Ssr,
     /// `experimental_patterned_template` is on.
@@ -59,6 +62,7 @@ impl DomLegacyReason {
             Self::ParseError => "parse-error",
             Self::Entry => "entry",
             Self::EmitRefused => "emit-refused",
+            Self::SourceMapMismatch => "source-map-mismatch",
             Self::Ssr => "ssr",
             Self::PatternedTemplate => "patterned-template",
             Self::SelfComponent => "self-component",
@@ -80,6 +84,7 @@ impl DomLegacyReason {
             Self::ParseError => "davinci.s2_dom.legacy.parse_error",
             Self::Entry => "davinci.s2_dom.legacy.entry",
             Self::EmitRefused => "davinci.s2_dom.legacy.emit_refused",
+            Self::SourceMapMismatch => "davinci.s2_dom.legacy.source_map_mismatch",
             Self::Ssr => "davinci.s2_dom.legacy.ssr",
             Self::PatternedTemplate => "davinci.s2_dom.legacy.patterned_template",
             Self::SelfComponent => "davinci.s2_dom.legacy.self_component",

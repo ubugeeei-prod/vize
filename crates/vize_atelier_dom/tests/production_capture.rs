@@ -64,6 +64,9 @@ fn accepted_dom_capture_is_from_the_emitting_run() {
             .collect::<Vec<_>>(),
         [Level::L1, Level::L2, Level::L2, Level::L4],
     );
+    assert_eq!(capture.pages[2].step, "facts");
+    assert!(capture.pages[2].text.contains("static_facts"));
+    assert_ne!(capture.pages[1].text, capture.pages[2].text);
 }
 
 #[test]
