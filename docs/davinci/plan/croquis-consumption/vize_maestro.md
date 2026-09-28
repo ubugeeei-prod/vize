@@ -41,6 +41,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `BlockLocation`               |     2 |     2 |
 | `CroquisFacts`                |     6 |     6 |
 | `Demand`                      |     6 |    14 |
+| `EmitContract`                |     1 |     1 |
 | `FactConsumer`                |     6 |     8 |
 | `FactGroup`                   |     3 |     3 |
 | `PropContract`                |     2 |     3 |
