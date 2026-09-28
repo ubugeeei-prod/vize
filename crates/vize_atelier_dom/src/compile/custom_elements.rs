@@ -17,10 +17,6 @@ use vize_atelier_core::{
 use vize_l0::dump::capture::StageCapture;
 use vize_l0::{Allocator, String};
 
-const fn bool_id(value: bool) -> &'static str {
-    if value { "true" } else { "false" }
-}
-
 /// Compile with declarative custom-element patterns without growing public options.
 #[doc(hidden)]
 pub fn compile_template_with_custom_elements_and_template_syntax_and_codegen_options<'a>(
@@ -90,9 +86,15 @@ pub fn compile_template_with_custom_elements_template_syntax_codegen_and_experim
     codegen_experimental_options: CodegenExperimentalOptions,
     capture: &mut StageCapture,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
-    capture.option("source-map", bool_id(options.source_map));
-    capture.option("hoist-static", bool_id(options.hoist_static));
-    capture.option("inline", bool_id(options.inline));
+    super::capture_options::record_dom_options(
+        capture,
+        &options,
+        template_syntax,
+        None,
+        &custom_elements,
+        &codegen_options,
+        &codegen_experimental_options,
+    );
     let (root, errors, result) = super::inner::compile_template_inner_with_sections_captured(
         allocator,
         source,
@@ -264,9 +266,15 @@ pub fn compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_i
     codegen_experimental_options: CodegenExperimentalOptions,
     capture: &mut StageCapture,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
-    capture.option("source-map", bool_id(options.source_map));
-    capture.option("hoist-static", bool_id(options.hoist_static));
-    capture.option("inline", bool_id(options.inline));
+    super::capture_options::record_dom_options(
+        capture,
+        &options,
+        template_syntax,
+        hoisted_scope_id.as_deref(),
+        &custom_elements,
+        &codegen_options,
+        &codegen_experimental_options,
+    );
     compile_template_inner_for_sfc_with_sections_captured(
         allocator,
         source,
