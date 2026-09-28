@@ -58,8 +58,10 @@ impl EventKeys {
         let start = self
             .hashes
             .partition_point(|(_, other_hash)| *other_hash < hash);
-        self.hashes[start..]
-            .iter()
+        self.hashes
+            .get(start..)
+            .into_iter()
+            .flatten()
             .take_while(|(_, other_hash)| *other_hash == hash)
             .any(|(other, _)| {
                 *other != index
