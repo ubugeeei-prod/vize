@@ -71,7 +71,7 @@ fn schema_refusal_precedes_parsing_and_current_text_is_not_a_v1_alias() {
         }
     );
     assert_eq!(
-        error.to_string(),
+        cstr!("{error}"),
         "s2-page: folio parse error at line 1: first section must be [disegno]"
     );
 }
@@ -98,7 +98,7 @@ fn canonical_byte_offset_and_line_zero_error_keep_the_old_contract() {
         }
     );
     assert_eq!(
-        error.to_string(),
+        cstr!("{error}"),
         "s2-page: folio parse error: missing [disegno] header"
     );
 }

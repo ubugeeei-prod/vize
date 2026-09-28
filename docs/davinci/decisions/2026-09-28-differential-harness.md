@@ -1,6 +1,7 @@
 # Shared differential result contract (#6891)
 
-The formatter CLI remains the only registered executable adapter. The shared
+The formatter CLI was the first registered executable adapter. A narrow
+compiler SSR adapter is prepared below. The shared
 `tests/differential/harness.mjs` seam reads a product's `vize.differential.manifest`
 v1, binds the raw manifest SHA256, checks unique planned case IDs and target
 coordinates, and validates the `vize.differential.result` v1 envelope. Each
@@ -33,3 +34,29 @@ contribution as legacy-backed. Other real product adapters, product-specific
 comparators, T1/T2 complete execution, and native acceptance integration
 remain open work under #6891 and #6853. This contract alone closes none of
 those product gaps.
+
+## Compiler SSR adapter preparation (#6891)
+
+The first compiler manifest plans one `compiler/sfc/ssr-slot-scope` case at
+target `ssr`. The authored SFC and full emitted module reference are copied
+byte-for-byte from the existing `ssr_slot_scope.rs` regression at
+`ecef0efd44c5047293170b6d42b5b16aacae6560`. Both SHA256 values are
+committed. The physical `Layout.vue.txt` is input data outside global `.vue`
+sweeps; the adapter writes its exact bytes as `Layout.vue` in an isolated
+workspace. It runs the source-built `vize build Layout.vue --format
+json --output out --ssr --no-config`, retains raw process and JSON output,
+compares emitted module code bytes to the pinned reference, and requires empty
+CSS, errors, warnings and macro artifacts. Exact HEAD and executable SHA are
+bound through the existing build receipt. A missing build still yields the
+planned failed row.
+
+This is a legacy regression observation only. Its native row is explicitly
+`unsupported`, its paired comparison is `not-compared`, and its native
+acceptance numerator is zero. A completed native row fails this adapter's
+validator. Whole-product native compiler acceptance needs #6835 to remove
+armature/relief from L1 Vue parsing and replace the Croquis SFC descriptor,
+which remains a legacy fact. #6842 is required for Vue 0.x, 1.x and quirks
+dialect coverage.
+Extending this one SSR fixture to every compiler target, dialect and T1/T2
+source is still open. The source-built CLI test belongs in Actions after the
+build receipt step; until that run finishes, the reference match is unverified.

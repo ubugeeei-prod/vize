@@ -73,16 +73,12 @@ impl ServerState {
         // Get workspace root for Corsa configuration.
         let workspace_root = self.get_workspace_root();
         let type_checker_config = self.get_type_checker_config();
-        let tsconfig_path = type_checker_config.tsconfig.as_ref().map(|path| {
-            let path = PathBuf::from(path);
-            if path.is_absolute() {
-                path
-            } else {
-                workspace_root
-                    .as_ref()
-                    .map_or(path.clone(), |root| root.join(path))
-            }
-        });
+        let project = vize_l0::config::ProjectModel::new(
+            workspace_root.as_deref(),
+            None,
+            &type_checker_config,
+        );
+        let tsconfig_path = project.tsconfig().map(PathBuf::from);
 
         let config = CorsaBridgeConfig {
             corsa_path: type_checker_config.runtime_path().map(PathBuf::from),
