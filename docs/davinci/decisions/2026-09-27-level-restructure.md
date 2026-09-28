@@ -325,6 +325,8 @@ with the formatter's always-upload corpus evidence without changing build setup;
 
 [CI baseline decisions](./2026-09-27-ci-baseline-decisions.md) preserve the original Rust timings, first formatter path and stack replay evidence; [current PR Check latency](./2026-09-28-pr-check-latency.md) records the #6861 phase split and T0 p50/p90 sample.
 
+[JS and browser PR latency](./2026-09-29-js-browser-pr-latency.md) measures the #7132/#7150 required paths, records the source-built CLI pack prerequisite for focused Vite tests, and scopes a conservative source-only T0/T1 split. Its 88-second diagnostic is not an integrated required-report result; the two-minute target remains unmet.
+
 [Tooling tier wiring](./2026-09-27-ci-tooling-tier-core.md) records the shared comparison base, queue-only VRT and preserved complete tooling task.
 
 [Heavy tooling inputs](./2026-09-27-heavy-tooling-inputs.md) records corpus, Moon, benchmark, queue and stacked-PR source limits;
