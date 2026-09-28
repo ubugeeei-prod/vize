@@ -1,8 +1,7 @@
 # Decision Record — Level Restructure (2026-09-27)
 
 > [!NOTE]
-> This record and its linked companion pages collect the decisions from
-> the maintainer's 2026-09-27 design session. It is the working source of truth for crate layout, naming, level
+> This record and its linked companion pages collect the decisions from the maintainer's 2026-09-27 design session. It is the working source of truth for crate layout, naming, level
 > responsibilities and CI tiers. Where it conflicts with older pages (S0–S4
 > naming, the `vize_davinci` substrate crate, Folio naming, S4 placement,
 > charter rows #1, #5 and #11), this record wins until those pages are
