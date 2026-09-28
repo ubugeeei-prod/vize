@@ -24,7 +24,7 @@ use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_core::{CodegenExperimentalOptions, CodegenOptions};
 use vize_l0::Allocator;
 
-use vize_atelier_core::{CompilerErrorWithSource, ErrorCode};
+use vize_atelier_core::CompilerErrorWithSource;
 
 use crate::compile::output_module::OutputModule;
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
@@ -108,27 +108,7 @@ pub(crate) fn compile_template_block_with_capture(
     codegen_options: &CodegenOptions,
     capture: Option<&mut StageCapture>,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
-    let duplicate_spans = duplicates::find_duplicate_props(&template.content);
-    if !duplicate_spans.is_empty() {
-        let duplicate_errors: Vec<_> = duplicate_spans
-            .into_iter()
-            .map(|span| {
-                vize_atelier_core::CompilerError::new(ErrorCode::DuplicateAttribute, Some(span))
-            })
-            .collect();
-        let errors: Vec<_> = duplicate_errors
-            .iter()
-            .map(|error| CompilerErrorWithSource::new(error, &template.content))
-            .collect();
-        let mut message = String::from("Template compilation errors: ");
-        use std::fmt::Write as _;
-        let _ = write!(&mut message, "{:?}", errors);
-        return Err(SfcError {
-            message,
-            code: Some("TEMPLATE_ERROR".to_compact_string()),
-            loc: Some(template.loc.clone()),
-        });
-    }
+    duplicates::reject_duplicate_props(template)?;
     let TemplateBlockCompileContext {
         scope_id,
         apply_scope_id,

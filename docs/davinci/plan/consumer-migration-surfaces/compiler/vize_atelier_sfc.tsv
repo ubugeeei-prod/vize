@@ -1,6 +1,7 @@
 consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	41	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	41	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	41	old_ast	old AST/parser	old	vize_armature	legacy	1
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	41	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	41	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	41	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -136,8 +137,10 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/typescript.r
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/typescript.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/typescript.rs	5	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_template.rs	6	l0	L0	stage	vize_l0	preferred	2
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_template.rs	24	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_template.rs	24	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_template.rs	25	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_template.rs	25	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_template/duplicates.rs	4	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_template/duplicates.rs	4	old_ast	old AST/parser	old	vize_armature	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_template/extraction.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_template/section_offsets_tests.rs	53	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_template/vapor.rs	8	l0	L0	stage	vize_l0	preferred	7
