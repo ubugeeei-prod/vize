@@ -1,5 +1,5 @@
-import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { appendFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { changedPaths } from "./plan-source-checks.mjs";
 
@@ -26,8 +26,14 @@ function isAuditedFastInput(path) {
 // merge tier executes every tooling file. The fast PR lane validates the
 // source-built CLI plus any directly changed audited structural contracts.
 // Unsupported or unknown inputs retain the existing broad PR tooling lane.
-export function planToolingFastPr(paths) {
-  const fast = paths.length > 0 && paths.every(isAuditedFastInput);
+export function planToolingFastPr(paths, { cwd = root } = {}) {
+  const fast =
+    paths.length > 0 &&
+    paths.every(
+      (path) =>
+        isAuditedFastInput(path) &&
+        (!fastStructuralTests.includes(path) || existsSync(join(cwd, path))),
+    );
   return {
     version: 1,
     mode: fast ? "fast" : "full",

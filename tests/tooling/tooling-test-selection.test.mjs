@@ -174,6 +174,12 @@ void test("fast PR tooling admits only measured Rust and structural inputs", () 
     assert.equal(planToolingFastPr([...paths, outside]).mode, "full", outside);
   }
   assert.equal(planToolingFastPr([]).mode, "full");
+  const deleted = fixture();
+  try {
+    assert.equal(planToolingFastPr([fastStructuralTests[0]], { cwd: deleted.cwd }).mode, "full");
+  } finally {
+    deleted.cleanup();
+  }
   assert.throws(
     () => fastToolingTestArgs({ ...fast, tests: [...fast.tests, fast.tests[0]] }),
     /invalid/,
