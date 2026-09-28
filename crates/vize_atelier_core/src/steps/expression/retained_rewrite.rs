@@ -14,11 +14,11 @@
 //! scan that runs to the end of the content would, on the legacy path, run
 //! through the wrapper `)` and be dropped by the splicer's bounds check.
 //!
-//! Under `cfg(any(test, feature = "davinci-differential"))` every AST-driven
+//! Under `cfg(any(test, feature = "legacy-differential"))` every AST-driven
 //! result is dual-run against the legacy wrapped re-parse and compared
 //! exactly (code bytes and helper usage); divergence panics.
 
-#[cfg(any(test, feature = "davinci-differential"))]
+#[cfg(any(test, feature = "legacy-differential"))]
 use vize_l0::String;
 use vize_relief::JsExpression;
 
@@ -51,7 +51,7 @@ pub(super) fn rewrite_retained(
         parse_error: None,
     };
 
-    #[cfg(any(test, feature = "davinci-differential"))]
+    #[cfg(any(test, feature = "legacy-differential"))]
     assert_rewrite_agrees(js, ctx, &result);
 
     result
@@ -65,7 +65,7 @@ pub(super) fn rewrite_retained(
 /// one side — panic, never average. The legacy side runs in its own
 /// uncounted arena: lane-only work must not disturb the production
 /// re-parse floor.
-#[cfg(any(test, feature = "davinci-differential"))]
+#[cfg(any(test, feature = "legacy-differential"))]
 #[expect(
     clippy::panic,
     reason = "differential oracle: a divergence must abort the run"

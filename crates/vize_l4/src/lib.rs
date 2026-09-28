@@ -18,10 +18,11 @@
 //! - [`targets`] — the DOM, SSR and Vapor emitters and the type-check
 //!   projection.
 //!
-//! Dependencies are level crates only (L0, L2, L3). Legacy codegen depends on
-//! this crate, never the reverse.
+//! Dependencies are level crates (L0, L2, L3) plus `serde_json` for Source Map
+//! v3 serialization. The production compiler keeps its own emission document
+//! until its fix-history gate closes (#6880).
 
-#![no_std]
+#![cfg_attr(not(test), no_std)]
 
 extern crate alloc;
 

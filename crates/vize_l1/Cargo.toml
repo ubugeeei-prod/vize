@@ -19,7 +19,7 @@ metadata.vize.stability = "experimental"
 # Arms the corpus-runnable TS-19 lane (`tests/davinci_surface_corpus.rs`),
 # the P1-6/P1-7 differential-lane shape: committed battery with pinned
 # counts, plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
-davinci-differential = []
+legacy-differential = []
 
 [dependencies]
 vize_armature = { workspace = true }
@@ -31,7 +31,7 @@ davinci_test_support.workspace = true
 
 [[test]]
 name = "davinci_surface_corpus"
-required-features = ["davinci-differential"]
+required-features = ["legacy-differential"]
 
 [lints]
 workspace = true

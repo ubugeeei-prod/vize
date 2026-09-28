@@ -26,8 +26,12 @@ each recorded as `honored` (with the behavioral probe that proves it),
 fails when an entry is missing, so a new or newly honored option cannot pass unrecorded.
 
 `fixture-compatibility-ledger.json` joins every pinned gitlink to its ecosystem-matrix and App E2E
-memberships, then records only evidence-backed Vue generations, API styles, Nuxt macros, and test
-oracles. Capability presence, exercised behavior, and runtime verification are independent levels:
+memberships. Each project also has explicit `dialectCoverage`: `unknown`, or `partial` with
+evidence-backed presence claims. Partial project presence never classifies every source file or
+counts as a per-case zero-fallback pass. A pinned `package.json` Vue declaration proves version
+selection for that project, not authored syntax or a passing build. The ledger separately records
+evidence-backed Vue
+generations, API styles, Nuxt macros, and test oracles. Capability presence, exercised behavior, and runtime verification are independent levels:
 finding source text never promotes a project to runtime coverage. Run
 `rust-script tools/commands/fixtures/fixture-compatibility-report.rs` for the deterministic coverage report. Any
 unknown, unverified, or excluded compatibility dimension must retain a reason and tracking Issue.

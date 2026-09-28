@@ -183,8 +183,9 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/css.rs	32	l0	L0	stage	viz
 compiler	Compiler	source	crates/vize_atelier_sfc/src/css/parser.rs	14	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/css/parser/engine_boundary.rs	30	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/css/parser/engine_boundary/value_guard.rs	22	l0	L0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/css/scoped.rs	8	l0	L0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/css/scoped.rs	9	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/css/scoped/slotted.rs	3	l0	L0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/css/scoped/where_selector.rs	1	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/css/tests.rs	8	l0	L0	stage	vize_carton	compat	4
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/css/transform.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/css/transform/vars.rs	10	l0	L0	stage	vize_carton	compat	2
@@ -291,9 +292,10 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/script/type_resolution.rs	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/utils.rs	5	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/utils.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/snapshot_tests.rs	15	l0	L0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/style.rs	6	l0	L0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/style.rs	7	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/style/keyframes.rs	5	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/style/nested.rs	4	l0	L0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/style/where_selector.rs	2	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/template_tests.rs	135	l0	L0	stage	vize_carton	compat	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/types.rs	6	l0	L0	stage	vize_carton	compat	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/types.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
@@ -323,7 +325,8 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/css_engine_panic_bounda
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/css_nesting_guard.rs	11	l0	L0	stage	vize_l0	preferred	6
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/custom_directive_patch_flag.rs	9	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/davinci_arena_pool.rs	28	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/davinci_production_reach.rs	62	l0	L0	stage	vize_l0	preferred	2
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/davinci_production_reach.rs	64	l0	L0	stage	vize_l0	preferred	2
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/davinci_production_reach.rs	64	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/davinci_production_reach/inline_parity_regressions.rs	5	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/davinci_production_reach/selection_tests.rs	4	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/davinci_production_reach/shapes.rs	88	l0	L0	stage	vize_l0	preferred	1

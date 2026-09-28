@@ -29,7 +29,7 @@
 //! its reach; parity is enforced there too, the floors are not.
 //!
 //! ```text
-//! cargo test -p vize_atelier_sfc --features davinci-dom-differential \
+//! cargo test -p vize_atelier_sfc --features legacy-dom-differential \
 //!     --test davinci_production_reach -- --nocapture
 //! ```
 
@@ -39,6 +39,7 @@
 #![expect(clippy::indexing_slicing, reason = "tests assert by panicking")]
 
 mod davinci_production_reach {
+    pub mod acceptance;
     pub mod diff;
     #[cfg(test)]
     mod inline_parity_regressions;
@@ -54,6 +55,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
+use davinci_production_reach::acceptance::report;
 use davinci_production_reach::diff::{divergence, error_divergence};
 use davinci_production_reach::parity::parity_failures;
 use davinci_production_reach::shapes::{Shape, compile, explicit_vapor_source};
@@ -458,7 +460,7 @@ fn sweep(root: &Path, files: &[PathBuf]) -> Sweep {
             filename: vize_l0::String::from(name.as_str()),
             ..Default::default()
         };
-        let Ok(descriptor) = parse_sfc(&source, parse_options) else {
+        let Ok(descriptor) = vize_croquis::sfc::parse_sfc(&source, parse_options) else {
             result.parse_errors += 1;
             continue;
         };
@@ -567,16 +569,6 @@ fn compare_with_legacy(
         tally
             .divergences
             .push(format!("{name} [{}]: {divergence}", shape.id()));
-    }
-}
-
-fn report(scope: &str, sweep: &Sweep) {
-    eprintln!(
-        "davinci production reach: scope={scope} files={} unreadable={} parse_errors={} without_template={}",
-        sweep.files, sweep.unreadable, sweep.parse_errors, sweep.without_template
-    );
-    for (shape, tally) in sweep.tallies.values() {
-        eprintln!("{}", tally.line(*shape));
     }
 }
 

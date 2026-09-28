@@ -128,7 +128,7 @@ pub use self::budget::{
     emit_dom_source_observed_with_options, emit_dom_source_sfc_observed_with_options,
     emit_dom_source_with_caps_observed,
 };
-#[cfg(any(test, feature = "davinci-differential"))]
+#[cfg(any(test, feature = "legacy-differential"))]
 pub use self::budget::{
     ObservedPatchFactsEmit, emit_dom_source_patch_facts_observed,
     emit_dom_source_patch_facts_observed_with_options,

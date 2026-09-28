@@ -276,9 +276,9 @@ models the dump, not the analysis: tree shape is validated, semantic
 invariants (branch ordering, region well-formedness beyond the grammar)
 belong to the L2 verifier (P2-6). The committed reference page is
 `crates/vize_l2/tests/fixtures/reference.folio`, pinned by TS-16 in
-`crates/vize_l2/tests/folio_laws.rs` (which also pins every opaque
+`crates/vize_l2/tests/dump_laws.rs` (which also pins every opaque
 reason spelling both directions) and mirrored from a live arena tree in
-`tests/folio_mirror.rs`; the arena-reset replay law is
+`tests/dump_mirror.rs`; the arena-reset replay law is
 `tests/expr_replay.rs`. Provenance records get their own derived page,
 `[s2-provenance-folio]` (`rule=… node=… before="…" after="…" @s:e`, this
 page's escapes; grammar in `vize_l2::folio::provenance`, TS-16 laws in

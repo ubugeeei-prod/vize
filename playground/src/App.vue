@@ -10,7 +10,7 @@ import CroquisPlayground from "./features/croquis/CroquisPlayground.vue";
 import CrossFilePlayground from "./features/cross-file/CrossFilePlayground.vue";
 import TypeCheckPlayground from "./features/canon/TypeCheckPlayground.vue";
 import InspectorPlayground from "./features/inspector/InspectorPlayground.vue";
-import DavinciPlayground from "./features/stages/DavinciPlayground.vue";
+import StagePlayground from "./features/stages/StagePlayground.vue";
 import { getPlaygroundEnvironmentInfo } from "./utils/environment";
 import { useClipboard } from "./utils/useClipboard";
 
@@ -294,7 +294,7 @@ onMounted(async () => {
         <GlyphPlayground :compiler />
       </template>
       <template v-else-if="mainTab === 'davinci'">
-        <DavinciPlayground :compiler />
+        <StagePlayground :compiler />
       </template>
       <template v-else>
         <AtelierPlayground :compiler />

@@ -37,7 +37,7 @@ export interface Token {
   text: string;
 }
 
-export interface FolioLine {
+export interface DumpLine {
   /** 0-based line index within the page. */
   index: number;
   text: string;
@@ -53,10 +53,10 @@ export interface FolioLine {
   node: number | null;
 }
 
-const FOLIO_TOKEN =
+const DUMP_TOKEN =
   /("(?:[^"\\]|\\.)*")|(@\d+:\d+)|(\b[a-z][\w-]*=)|(\b(?:ui|impeto|vue)\.[\w.-]+|\b(?:attr|branch)\b)|(\b(?:js|opaque|foreign|compound)\()|(\bstatic\b)|(\bdynamic\b)|(\d+:\d+)|(\bnull\b|(?<==)-(?=\s|$))|(\d+)|([()[\],])/g;
 
-const FOLIO_GROUPS: TokenType[] = [
+const DUMP_GROUPS: TokenType[] = [
   "string",
   "span",
   "key",
@@ -85,9 +85,9 @@ function scan(text: string, pattern: RegExp, groups: TokenType[]): Token[] {
 }
 
 /** Tokens for one folio page line. */
-export function folioTokens(line: string): Token[] {
+export function dumpTokens(line: string): Token[] {
   if (/^\[[\w.-]+\]$/.test(line)) return [{ type: "section", text: line }];
-  const tokens = scan(line, FOLIO_TOKEN, FOLIO_GROUPS);
+  const tokens = scan(line, DUMP_TOKEN, DUMP_GROUPS);
   // A provenance rule name, or a plan's pass name, reads as a mnemonic.
   for (let index = 0; index + 1 < tokens.length; index += 1) {
     const [key, value] = [tokens[index], tokens[index + 1]];
@@ -161,7 +161,7 @@ function utf8Bytes(text: string): number {
 }
 
 /** Split a page into display lines with tokens and spans. */
-export function folioLines(kind: PageKind, text: string): FolioLine[] {
+export function dumpLines(kind: PageKind, text: string): DumpLine[] {
   const raw = text.endsWith("\n") ? text.slice(0, -1).split("\n") : text.split("\n");
   let byteCursor = 0;
   let nextNode = 0;
@@ -177,7 +177,7 @@ export function folioLines(kind: PageKind, text: string): FolioLine[] {
     return {
       index,
       text: line,
-      tokens: kind === "surface" ? surfaceTokens(line) : folioTokens(line),
+      tokens: kind === "surface" ? surfaceTokens(line) : dumpTokens(line),
       span,
       depth: kind === "disegno" ? Math.floor((/^ */.exec(line)?.[0].length ?? 0) / 2) : 0,
       node: kind === "disegno" && /^\s*ui\./.test(line) ? nextNode++ : null,
@@ -189,7 +189,7 @@ export function folioLines(kind: PageKind, text: string): FolioLine[] {
  * Lines whose span covers template byte offset `offset`, narrowest first -
  * the reverse provenance query (source position -> stage lines).
  */
-export function linesCovering(lines: FolioLine[], offset: number): number[] {
+export function linesCovering(lines: DumpLine[], offset: number): number[] {
   return lines
     .filter((line) => line.span && line.span.start <= offset && offset < line.span.end)
     .sort((left, right) => {

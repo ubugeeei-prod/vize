@@ -5,9 +5,9 @@
 //! `steps/expression.rs` and the node-aware retained entries here.
 
 use oxc_ast::ast::{ChainElement, Expression};
-#[cfg(any(test, feature = "davinci-differential"))]
+#[cfg(any(test, feature = "legacy-differential"))]
 use oxc_parser::Parser;
-#[cfg(any(test, feature = "davinci-differential"))]
+#[cfg(any(test, feature = "legacy-differential"))]
 use oxc_span::{GetSpan, SourceType};
 use vize_relief::SimpleExpressionNode;
 
@@ -45,7 +45,7 @@ pub fn is_event_handler_reference_node(node: &SimpleExpressionNode<'_>) -> bool 
     match crate::retained::retained_whole_expression(node) {
         Some(js) if crate::retained::js_module_compatible(js) => {
             let result = is_handler_reference_shape(js.ast);
-            #[cfg(any(test, feature = "davinci-differential"))]
+            #[cfg(any(test, feature = "legacy-differential"))]
             differential_shape_check(js.raw, result, is_handler_reference_shape);
             result
         }
@@ -58,7 +58,7 @@ pub fn is_function_expression_node(node: &SimpleExpressionNode<'_>) -> bool {
     match crate::retained::retained_whole_expression(node) {
         Some(js) if crate::retained::js_module_compatible(js) => {
             let result = is_function_shape(js.ast);
-            #[cfg(any(test, feature = "davinci-differential"))]
+            #[cfg(any(test, feature = "legacy-differential"))]
             differential_shape_check(js.raw, result, is_function_shape);
             result
         }
@@ -69,7 +69,7 @@ pub fn is_function_expression_node(node: &SimpleExpressionNode<'_>) -> bool {
 /// Davinci P1-7 differential lane: a retained shape decision must match the
 /// legacy string parse's decision (uncounted arena — lane-only work stays
 /// off the production re-parse floor). Divergence panics, never averages.
-#[cfg(any(test, feature = "davinci-differential"))]
+#[cfg(any(test, feature = "legacy-differential"))]
 fn differential_shape_check(raw: &str, retained_result: bool, shape: fn(&Expression<'_>) -> bool) {
     let allocator = oxc_allocator::Allocator::default();
     let wrapped = vize_l0::cstr!("({raw}\n)");

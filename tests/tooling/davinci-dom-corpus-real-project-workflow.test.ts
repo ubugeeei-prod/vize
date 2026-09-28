@@ -73,7 +73,7 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   assert.match(helperSource, /VIZE_DAVINCI_DIFFERENTIAL_CORPUS", CORPUS_ROOT/);
   assert.match(helperSource, /Command::new\("cargo"\)/);
   assert.match(helperSource, /"test",\s+"-p",\s+"vize_l1_to_l2"/);
-  assert.match(helperSource, /"davinci-differential"/);
+  assert.match(helperSource, /"legacy-differential"/);
   assert.match(helperSource, /"davinci_dom_corpus"/);
   assert.match(helperSource, /dom-corpus\.log/);
 

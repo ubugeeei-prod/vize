@@ -12,7 +12,7 @@ metadata.vize.stability = "compatibility-preview"
 # Arms the TS-25 markup lane (`tests/davinci_markup_differential.rs`): the
 # facade's full hook trace over Relief vs over L2, exact, on the committed
 # battery plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
-davinci-differential = []
+legacy-differential = []
 
 [dependencies]
 # Internal crates
@@ -85,7 +85,7 @@ harness = false
 
 [[test]]
 name = "davinci_markup_differential"
-required-features = ["davinci-differential"]
+required-features = ["legacy-differential"]
 
 [lints]
 workspace = true

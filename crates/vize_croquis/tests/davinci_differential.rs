@@ -1,6 +1,6 @@
 //! Davinci P1-6 differential lane — corpus-runnable entry.
 //!
-//! Compiled only with the `davinci-differential` feature (see
+//! Compiled only with the `legacy-differential` feature (see
 //! `[[test]] required-features` in Cargo.toml), which also arms the dual-run
 //! comparators inside the migrated croquis helpers: every retained-AST
 //! identifier walk and component-reference check re-runs the legacy re-parse
@@ -11,7 +11,7 @@
 //! Run:
 //!
 //! ```text
-//! cargo test -p vize_croquis --features davinci-differential \
+//! cargo test -p vize_croquis --features legacy-differential \
 //!     --test davinci_differential -- --nocapture
 //! ```
 //!

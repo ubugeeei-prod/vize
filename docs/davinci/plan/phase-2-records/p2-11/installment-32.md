@@ -23,7 +23,7 @@ The realized cases are:
 
 The durable witnesses are:
 
-- [`folio_show.rs`](../../../../../crates/vize_l2/tests/folio_show.rs)
+- [`folio_show.rs`](../../../../../crates/vize_l2/tests/dump_show.rs)
   - exact Folio parse/print and owned-mirror coverage for `vue.show`.
 - [`lowering_elements.rs`](../../../../../crates/vize_l1_to_l2/tests/lowering_elements.rs)
   - well-formed `v-show` lowers to `vue.show`; the deferral witness remains on

@@ -42,7 +42,7 @@ fn nested_tree<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
 }
 
 #[test]
-fn deep_folio_mirror_count_and_print_survive_small_stack() {
+fn deep_dump_mirror_count_and_print_survive_small_stack() {
     std::thread::Builder::new()
         .stack_size(SMALL_STACK)
         .spawn(|| {

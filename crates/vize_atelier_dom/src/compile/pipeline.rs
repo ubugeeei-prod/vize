@@ -71,7 +71,7 @@ impl DomCompilePipelineOptions {
     }
 
     /// The legacy lane, L2 declined — the differential lanes' old side.
-    #[cfg(feature = "davinci-differential")]
+    #[cfg(feature = "legacy-differential")]
     pub(super) fn deny_l2(
         custom_elements: CustomElementMatcher,
         codegen_options: CodegenOptions,

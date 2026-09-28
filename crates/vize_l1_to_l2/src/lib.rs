@@ -84,7 +84,7 @@ pub use emit::{
     emit_dom_source_with_caps, emit_dom_source_with_caps_observed, emit_dom_source_with_options,
     emit_dom_with_options,
 };
-#[cfg(any(test, feature = "davinci-differential"))]
+#[cfg(any(test, feature = "legacy-differential"))]
 pub use emit::{
     ObservedPatchFactsEmit, emit_dom_source_patch_facts_observed,
     emit_dom_source_patch_facts_observed_with_options,

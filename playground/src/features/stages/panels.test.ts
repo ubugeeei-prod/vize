@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 import { mount } from "@vue/test-utils";
 import PassTimeline from "./PassTimeline.vue";
 import RemarksPanel from "./RemarksPanel.vue";
-import FolioDiffView from "./FolioDiffView.vue";
+import DumpDiffView from "./DumpDiffView.vue";
 import type { TimelineStep } from "./ladder";
 import type { StageRemark } from "./remarks";
 
@@ -135,9 +135,9 @@ describe("RemarksPanel", () => {
   });
 });
 
-describe("FolioDiffView", () => {
+describe("DumpDiffView", () => {
   it("says so when a pass left the page identical", () => {
-    const wrapper = mount(FolioDiffView, {
+    const wrapper = mount(DumpDiffView, {
       props: {
         before: "Lowered",
         after: "v-slot",
@@ -154,7 +154,7 @@ describe("FolioDiffView", () => {
   });
 
   it("marks added and removed lines", () => {
-    const wrapper = mount(FolioDiffView, {
+    const wrapper = mount(DumpDiffView, {
       props: {
         before: "Lowered",
         after: "legacy",

@@ -1,6 +1,6 @@
 //! Davinci P1-7 differential lane — corpus-runnable entry (atelier wave B).
 //!
-//! Compiled only with the `davinci-differential` feature (see
+//! Compiled only with the `legacy-differential` feature (see
 //! `[[test]] required-features` in Cargo.toml), which arms the dual-run
 //! comparators inside the migrated atelier sites: every retained-AST
 //! consumption — the transform-lane rewrite walk, the codegen prefixer
@@ -12,7 +12,7 @@
 //! Run:
 //!
 //! ```text
-//! cargo test -p vize_atelier_sfc --features davinci-differential \
+//! cargo test -p vize_atelier_sfc --features legacy-differential \
 //!     --test davinci_differential -- --nocapture
 //! ```
 //!

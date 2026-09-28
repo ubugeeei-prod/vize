@@ -31,11 +31,11 @@ pub use compile::custom_elements::{
 };
 /// Force the legacy DOM lane on this thread, for production-path
 /// differentials over `compile_sfc`.
-#[cfg(feature = "davinci-differential")]
+#[cfg(feature = "legacy-differential")]
 pub use compile::differential;
 /// The differential lanes' old side — see its own docs for why the ordinary
 /// entry points cannot serve as one.
-#[cfg(feature = "davinci-differential")]
+#[cfg(feature = "legacy-differential")]
 pub use compile::legacy::compile_template_legacy_with_options;
 pub use compile::{
     compile_template, compile_template_with_options,

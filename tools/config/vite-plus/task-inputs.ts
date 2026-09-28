@@ -164,7 +164,8 @@ export const cacheInputs = {
     "Cargo.lock",
     "rust-toolchain.toml",
     "crates/**",
-    "tests/**",
+    "tests/_fixtures/**",
+    "tests/fixtures/**",
     "tools/benchmarks/**",
     "docs/davinci/plan/**",
     "npm/**",
@@ -181,6 +182,23 @@ export const cacheInputs = {
     "tools/commands/davinci/bench-compare.rs",
     "tools/support/**",
     "tests/_fixtures/davinci-bench-compare/**",
+  ],
+  // Release contracts exercise standalone scripts and synthetic packages.
+  // The fresh-install smoke also copies the content-mapper fixture project.
+  toolingReleaseContracts: [
+    ".github/**",
+    ".cargo/**",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    "tools/**",
+    "tests/**",
+    "npm/**",
+    "editors/**",
+    "docs/**",
+    "examples/**",
+    "README.md",
+    "crates/vize/tests/fixtures/content_mapper_project/**",
   ],
   rust: [
     "package.json",

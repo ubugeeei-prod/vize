@@ -4837,6 +4837,7 @@ dependencies = [
 name = "vize_l4"
 version = "0.429.1"
 dependencies = [
+ "serde_json",
  "vize_l0",
  "vize_l2",
  "vize_l3",

@@ -11,7 +11,7 @@
 //! `_ctx.`. Static hoisting and handler caching default off for predictable,
 //! `@vue/babel-plugin-jsx`-shaped output; callers can opt in.
 
-#[cfg(all(test, feature = "davinci-differential"))]
+#[cfg(all(test, feature = "legacy-differential"))]
 #[expect(clippy::expect_used, reason = "tests assert by panicking")]
 mod l2_differential;
 mod l2_emit;

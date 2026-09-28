@@ -44,3 +44,15 @@ running a second L2 transform solely for the feed. This keeps the existing
 feed schema and the inline HTML remark filter. The CLI all-level export and
 integration with product compilation remain separate work; this capture does
 not establish that legacy product compilation runs through the levels.
+
+## Differential feature selectors
+
+The current differential test selectors `davinci-differential` and
+`davinci-dom-differential` become `legacy-differential` and
+`legacy-dom-differential`. Their Cargo dependency values, cfg gates, explicit
+Actions recipes, corpus helpers, current suite commands and tooling assertions
+move together. This is a feature-name change only: corpus environment variables
+and emitted messages, test target names, profile keys, archived fixtures and
+compiler output stay as they are. The scoped
+`tools/support/levels/rename-differential-features.py` script replays the
+change on the then-current main and skips fixture/snapshot paths.

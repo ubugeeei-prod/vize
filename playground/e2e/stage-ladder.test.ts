@@ -13,7 +13,7 @@ import {
 } from "../src/wasm/types/profile";
 import { DAVINCI_PRESET } from "../src/shared/presets/davinci";
 import { buildLadder, type StageLadder } from "../src/features/stages/ladder";
-import { folioLines } from "../src/features/stages/folioLines";
+import { dumpLines } from "../src/features/stages/dumpLines";
 import { parseProvenance, recordsForNode } from "../src/features/stages/provenance";
 import { remarksAt, summarizeRemarks } from "../src/features/stages/remarks";
 import { templateBytesToSfcRange, templateStartInSfc } from "../src/features/stages/offsets";
@@ -45,12 +45,12 @@ beforeAll(async () => {
 
 function authored(pageKey: string, needle: string): string {
   const page = ladder.rungs.flatMap((rung) => rung.pages).find((p) => p.key === pageKey)!;
-  const line = folioLines(page.kind, page.text).find((l) => l.text.includes(needle))!;
+  const line = dumpLines(page.kind, page.text).find((l) => l.text.includes(needle))!;
   const range = templateBytesToSfcRange(ladder.template, templateStart, line.span!);
   return DAVINCI_PRESET.slice(range.start, range.end);
 }
 
-describe("Davinci stage ladder from the real compiler", () => {
+describe("Stage ladder from the real compiler", () => {
   it("climbs L1, L2 with its artifact-selected passes, and L3", () => {
     expect(
       ladder.rungs.map((rung) => [rung.id, rung.facts, rung.pages.map((page) => page.key)]),
@@ -163,7 +163,7 @@ describe("Davinci stage ladder from the real compiler", () => {
     const [lowered] = ladder.rungs[1].pages;
     const provenance = ladder.rungs[1].pages.find((page) => page.kind === "provenance")!;
     const records = parseProvenance(provenance.text);
-    const lines = folioLines("disegno", lowered.text);
+    const lines = dumpLines("disegno", lowered.text);
     const why = (needle: string) => {
       const line = lines.find((l) => l.text.includes(needle))!;
       return recordsForNode(records, line.node!).map(({ rule, after }) => [rule, after]);
@@ -182,7 +182,7 @@ describe("Davinci stage ladder from the real compiler", () => {
     expect(summarizeRemarks(ladder.remarks)).toEqual({ applied: 3, missed: 8, analysis: 0 });
     expect(ladder.timeline.find(({ key }) => key === "l2/hoist-static")!.remarks).toBe(11);
     const lowered = ladder.rungs[1].pages[0];
-    const lines = folioLines("disegno", lowered.text);
+    const lines = dumpLines("disegno", lowered.text);
     const about = (needle: string) => {
       const line = lines.find((l) => l.text.includes(needle))!;
       return remarksAt(ladder.remarks, line.span!).map(({ kind, name, args }) => [

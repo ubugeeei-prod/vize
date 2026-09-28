@@ -5,7 +5,7 @@
 //! adds a Croquis summary for `<script setup>`, for example), so the corpus
 //! gate also drives the real SFC entry point. These thread-local switches let
 //! it run that entry point twice, once per lane, and read each production SSR
-//! compile's lane verdict. They exist only under `davinci-differential`; the
+//! compile's lane verdict. They exist only under `legacy-differential`; the
 //! published compile path always selects.
 
 use core::cell::{Cell, RefCell};

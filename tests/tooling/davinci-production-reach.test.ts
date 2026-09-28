@@ -7,7 +7,7 @@ import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 // its floors live in reach-budgets.toml [reach] for exactly the measured shapes,
 // and the plan record names every shape the Rust gate measures.
 const reachCommand =
-  "cargo test -p vize_atelier_sfc --features davinci-dom-differential --test davinci_production_reach -- --nocapture";
+  "cargo test -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach -- --nocapture";
 const shapes = ["dom_inline", "dom_module", "ssr", "vapor"];
 
 function reachSection(budgets: string): string {
@@ -42,11 +42,11 @@ test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
   assert.ok(recipe.includes(reachCommand), "the reach gate must run in clippy-and-test");
   assert.match(
     manifest,
-    /^\[\[test\]\]\nname = "davinci_production_reach"\nrequired-features = \["davinci-dom-differential"\]$/mu,
+    /^\[\[test\]\]\nname = "davinci_production_reach"\nrequired-features = \["legacy-dom-differential"\]$/mu,
   );
   assert.match(
     manifest,
-    /^davinci-dom-differential = \["vize_atelier_dom\/davinci-differential"\]$/mu,
+    /^legacy-dom-differential = \["vize_atelier_dom\/legacy-differential"\]$/mu,
   );
 
   const section = reachSection(budgets);

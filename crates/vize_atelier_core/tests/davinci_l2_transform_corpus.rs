@@ -1,5 +1,5 @@
 //! P2-9, the corpus-runnable differential entry — the
-//! P1-6/P1-7 lane shape. Compiled only with the `davinci-differential`
+//! P1-6/P1-7 lane shape. Compiled only with the `legacy-differential`
 //! feature (`[[test]] required-features`). Runs the committed battery
 //! with the same exact-pinned counters as the plain witness, then, with
 //! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>`, additionally dual-runs the
@@ -13,7 +13,7 @@
 //!
 //! ```text
 //! VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
-//!     cargo test -p vize_atelier_core --features davinci-differential \
+//!     cargo test -p vize_atelier_core --features legacy-differential \
 //!     --test davinci_l2_transform_corpus -- --nocapture
 //! ```
 

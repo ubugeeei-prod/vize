@@ -20,7 +20,7 @@ legacy = ["vize_relief/_legacy", "vize_armature/legacy"]
 # the atelier transform/codegen sites dual-runs the legacy re-parse and panics
 # on divergence. `cfg(test)` arms it for this crate's own unit tests; this
 # feature arms it for integration/corpus binaries. Off in production builds.
-davinci-differential = []
+legacy-differential = []
 
 [dependencies]
 vize_l0 = { workspace = true }
@@ -68,7 +68,7 @@ vize_l1 = { workspace = true }
 # regression fails loudly in both lanes.
 [[test]]
 name = "davinci_l2_transform_corpus"
-required-features = ["davinci-differential"]
+required-features = ["legacy-differential"]
 
 # Vue 2 dialect dual-run. The shipped `.sync` / `slot-scope` / filter
 # expansion lives behind `legacy`, so this witness cannot ride the

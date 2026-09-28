@@ -63,7 +63,7 @@ fn test_scope_nested_rules_and_rules_inside_nested_media() {
     let css = ".box { color: red; .label { color: blue; } /* responsive */ @media (min-width: 30rem) { .label, &:hover { color: green; } } }";
     let result = apply_scoped_css(css, "data-v-abc123");
 
-    assert!(result.contains(".box[data-v-abc123]"), "{result}");
+    assert!(result.starts_with(".box{"), "{result}");
     assert!(
         result.contains(".label[data-v-abc123]{ color: blue; }"),
         "{result}"
@@ -74,6 +74,24 @@ fn test_scope_nested_rules_and_rules_inside_nested_media() {
         "{result}"
     );
     assert!(!result.contains(".label{"), "{result}");
+}
+
+#[test]
+fn nested_scoped_css_keeps_ancestor_selector_unscoped() {
+    let css = ".theme-dark { .card { color: white; } }";
+    assert_eq!(
+        apply_scoped_css(css, "data-v-abc123"),
+        ".theme-dark{ .card[data-v-abc123]{ color: white; } }"
+    );
+}
+
+#[test]
+fn nested_scoped_css_preserves_scope_text_inside_parent_attribute_value() {
+    let css = ".theme-dark[title='[data-v-abc123]'] { .card { color: white; } }";
+    assert_eq!(
+        apply_scoped_css(css, "data-v-abc123"),
+        ".theme-dark[title='[data-v-abc123]']{ .card[data-v-abc123]{ color: white; } }"
+    );
 }
 
 #[test]

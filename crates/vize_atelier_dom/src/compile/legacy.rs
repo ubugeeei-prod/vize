@@ -1,6 +1,6 @@
 //! The differential lanes' old side.
 //!
-//! Gated behind `davinci-differential` so no production build can reach
+//! Gated behind `legacy-differential` so no production build can reach
 //! it: the legacy lane is the thing the strangler is replacing, and an
 //! ungated entry point would be a way back onto the old path rather than
 //! a measurement of it.

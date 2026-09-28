@@ -26,7 +26,7 @@ export function planSourceChecks(paths, eventName = "pull_request") {
     }
     if (
       (/^(docs\/|\.changeset\/)/.test(path) && /\.(md|mdx)$/.test(path)) ||
-      /(^|\/)README\.md$/.test(path)
+      /(^|\/)(README|AGENTS)\.md$/.test(path)
     )
       continue;
     if (

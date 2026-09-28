@@ -1,6 +1,6 @@
 //! Davinci P2-8 corpus-runnable entry — the P1-6/P1-7 lane shape.
 //!
-//! Compiled only with the `davinci-differential` feature (`[[test]]
+//! Compiled only with the `legacy-differential` feature (`[[test]]
 //! required-features` in Cargo.toml). Runs the committed battery with its
 //! exact-pinned scope and census (the same numbers the plain suite pins,
 //! so a feature-wiring regression fails loudly in both lanes), then,
@@ -19,7 +19,7 @@
 //!
 //! ```text
 //! VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
-//!     cargo test -p vize_l1_to_l2 --features davinci-differential \
+//!     cargo test -p vize_l1_to_l2 --features legacy-differential \
 //!     --test davinci_lowering_corpus -- --nocapture
 //! ```
 

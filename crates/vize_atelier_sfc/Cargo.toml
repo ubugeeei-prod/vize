@@ -16,20 +16,20 @@ legacy = ["vize_atelier_core/legacy", "vize_atelier_ssr/legacy"]
 # retained-AST consumption dual-runs the legacy re-parse and panics on
 # divergence. Off in production builds; the corpus-runnable entry below
 # requires it.
-davinci-differential = [
-  "vize_atelier_core/davinci-differential",
-  "vize_atelier_vapor/davinci-differential",
+legacy-differential = [
+  "vize_atelier_core/legacy-differential",
+  "vize_atelier_vapor/legacy-differential",
 ]
 # Arms only the DOM legacy-lane override (P3-17) so the production-reach
 # gate can compile every `compile_sfc` shape on both DOM lanes and compare
 # the complete modules, without the P1-7 retained-AST dual-run panics.
-davinci-dom-differential = ["vize_atelier_dom/davinci-differential"]
+legacy-dom-differential = ["vize_atelier_dom/legacy-differential"]
 # Controlled selected/retained adapter comparisons, without the retained-AST
 # differential dual-run instrumentation used by semantic corpus tests.
 davinci-production-bench = [
-  "davinci-dom-differential",
+  "legacy-dom-differential",
   "vize_atelier_vapor/davinci-benchmark",
-  "vize_atelier_ssr/davinci-differential",
+  "vize_atelier_ssr/legacy-differential",
 ]
 # Separate attribution executable; detailed spans are absent from timed pairs.
 davinci-production-profile = [
@@ -94,11 +94,11 @@ harness = false
 
 [[test]]
 name = "davinci_differential"
-required-features = ["davinci-differential"]
+required-features = ["legacy-differential"]
 
 [[test]]
 name = "davinci_production_reach"
-required-features = ["davinci-dom-differential"]
+required-features = ["legacy-dom-differential"]
 
 [[example]]
 name = "css_engine_recovery"

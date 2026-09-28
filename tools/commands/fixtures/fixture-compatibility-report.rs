@@ -47,6 +47,22 @@ const ORACLE_KINDS: &[&str] = &[
     "vrt",
     "real-vite-hmr",
 ];
+const DIALECT_LABELS: &[&str] = &[
+    "vue0-template",
+    "vue1-template",
+    "vue2-sfc",
+    "vue2.7-sfc",
+    "vue3-sfc",
+    "petite-vue",
+    "pug-template",
+    "jsx-babel",
+    "jsx-vapor",
+    "js",
+    "ts",
+    "jsx",
+    "tsx",
+    "vue-quirks",
+];
 
 fn main() -> ExitCode {
     common::main_result(run())
@@ -81,6 +97,7 @@ fn create_report(ledger: &Value) -> Result<Value, String> {
         .get("capabilities")
         .and_then(Value::as_array)
         .ok_or_else(|| "ledger capabilities must be an array".to_string())?;
+    let dialect_coverage = dialect_coverage_summary(&fixture_map);
     let mut capability_report = serde_json::Map::new();
     for (dimension, values) in CAPABILITY_VALUES {
         let mut dimension_report = serde_json::Map::new();
@@ -146,9 +163,36 @@ fn create_report(ledger: &Value) -> Result<Value, String> {
             "appOnly": app_only,
         },
         "capabilities": Value::Object(capability_report),
+        "dialectCoverage": dialect_coverage,
         "oracles": Value::Object(oracle_report),
         "unresolved": unresolved,
     }))
+}
+
+fn dialect_coverage_summary(fixtures: &BTreeMap<String, Value>) -> Value {
+    let mut present = serde_json::Map::new();
+    for dialect in DIALECT_LABELS {
+        let paths = fixtures
+            .iter()
+            .filter_map(|(path, fixture)| {
+                let evidence = fixture["dialectCoverage"]["evidence"].as_array()?;
+                evidence
+                    .iter()
+                    .any(|item| {
+                        item["dialects"].as_array().is_some_and(|labels| {
+                            labels.iter().any(|label| label.as_str() == Some(*dialect))
+                        })
+                    })
+                    .then(|| path.clone())
+            })
+            .collect::<Vec<_>>();
+        present.insert((*dialect).to_string(), json!(paths));
+    }
+    json!({
+        "unknownFixtureCount": fixtures.values().filter(|fixture| fixture["dialectCoverage"]["state"] == "unknown").count(),
+        "partialFixtureCount": fixtures.values().filter(|fixture| fixture["dialectCoverage"]["state"] == "partial").count(),
+        "presentInFixtures": present,
+    })
 }
 
 fn capability_counts(capabilities: &[Value], dimension: &str, value: &str) -> Value {

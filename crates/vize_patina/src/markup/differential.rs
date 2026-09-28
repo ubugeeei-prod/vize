@@ -10,7 +10,7 @@
 //! never averaged.
 //!
 //! Compiled for `cfg(test)` (the plain-suite witness) and under the
-//! `davinci-differential` feature (the corpus-runnable entry,
+//! `legacy-differential` feature (the corpus-runnable entry,
 //! `tests/davinci_markup_differential.rs`).
 
 mod battery;

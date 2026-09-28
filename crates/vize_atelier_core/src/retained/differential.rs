@@ -5,7 +5,7 @@
 //! Compiled unconditionally (a few atomics, dead in production) so the
 //! cfg-gated comparators in this crate *and* in `vize_atelier_vapor` can
 //! record into one set of counters regardless of which crate's `test` cfg
-//! or `davinci-differential` feature armed them.
+//! or `legacy-differential` feature armed them.
 //!
 //! P1-9 adds the transform-lane *legacy* counters: every
 //! `rewrite_expression` call that could not be served by the AST-driven

@@ -2,7 +2,7 @@
 //! lane shape (`davinci_lowering_corpus.rs`) for `<template lang="pug">`,
 //! and the corpus half of the P4-12c compile oracle.
 //!
-//! Compiled only with the `davinci-differential` feature. Pins the
+//! Compiled only with the `legacy-differential` feature. Pins the
 //! committed fixture census, then, with
 //! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>`, sweeps every `.vue` file
 //! under `<dir>` whose inline template is pug:
@@ -21,7 +21,7 @@
 //!
 //! ```text
 //! VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
-//!     cargo test -p vize_l1_to_l2 --features davinci-differential \
+//!     cargo test -p vize_l1_to_l2 --features legacy-differential \
 //!     --test davinci_pug_corpus -- --nocapture
 //! ```
 

@@ -47,8 +47,8 @@ pub(super) enum DomLegacyReason {
     PatternedSource,
     /// The source text may carry an `@vize:` directive comment.
     DirectiveComment,
-    /// The `davinci-differential` legacy lane was forced for this thread.
-    #[cfg(feature = "davinci-differential")]
+    /// The `legacy-differential` legacy lane was forced for this thread.
+    #[cfg(feature = "legacy-differential")]
     Forced,
 }
 
@@ -69,7 +69,7 @@ impl DomLegacyReason {
             Self::Croquis => "davinci.s2_dom.legacy.croquis",
             Self::PatternedSource => "davinci.s2_dom.legacy.patterned_source",
             Self::DirectiveComment => "davinci.s2_dom.legacy.directive_comment",
-            #[cfg(feature = "davinci-differential")]
+            #[cfg(feature = "legacy-differential")]
             Self::Forced => "davinci.s2_dom.legacy.forced",
         }
     }
@@ -88,11 +88,11 @@ pub(super) fn record(outcome: Result<(), DomLegacyReason>) {
     profiler.record_counter_enabled(counter, 1);
 }
 
-/// The `davinci-differential` legacy override: while it is armed on a
+/// The `legacy-differential` legacy override: while it is armed on a
 /// thread, every DOM compile on that thread selects the legacy lane, so a
 /// production entry point (`compile_sfc`) can be run on both lanes and its
 /// complete output compared byte for byte. Compiled out of production.
-#[cfg(feature = "davinci-differential")]
+#[cfg(feature = "legacy-differential")]
 pub mod differential {
     use core::cell::Cell;
 

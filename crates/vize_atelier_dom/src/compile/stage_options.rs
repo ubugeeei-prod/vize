@@ -109,7 +109,7 @@ pub(super) fn l2_emit_refusal(
     l2_emit_selection: L2EmitSelection,
     experimental_self_component: bool,
 ) -> Option<DomLegacyReason> {
-    #[cfg(feature = "davinci-differential")]
+    #[cfg(feature = "legacy-differential")]
     if super::selection::differential::legacy_forced() {
         return Some(DomLegacyReason::Forced);
     }

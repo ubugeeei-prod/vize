@@ -72,10 +72,10 @@ test("DOM production keeps the published L2 renderer available for profiling", (
     // empty, so unlike `legacy` it selects nothing at all — it cannot pull
     // an unpublished stage in, which is what this firewall exists to stop.
     // Asserted below rather than trusted from the name.
-    "davinci-differential": [],
+    "legacy-differential": [],
   });
   assert.deepEqual(
-    dom.features["davinci-differential"],
+    dom.features["legacy-differential"],
     [],
     "a test-only feature must select nothing",
   );

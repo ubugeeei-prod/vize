@@ -1,4 +1,4 @@
-//! Two-lane comparison entry for the SSR corpus gate (`davinci-differential`).
+//! Two-lane comparison entry for the SSR corpus gate (`legacy-differential`).
 //!
 //! The published compile path selects one emitter. The corpus gate needs both
 //! on the same input: the selected lane, the legacy AST walker pinned, and the

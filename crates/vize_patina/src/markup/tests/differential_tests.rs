@@ -1,6 +1,6 @@
 //! Plain-suite witness for the P4-7a TS-25 markup lane: the committed battery
 //! runs in every `cargo test`, and its census is pinned to the same numbers
-//! the `davinci-differential` corpus entry pins, so a cfg regression in
+//! the `legacy-differential` corpus entry pins, so a cfg regression in
 //! either lane fails loudly.
 
 #[cfg(test)]

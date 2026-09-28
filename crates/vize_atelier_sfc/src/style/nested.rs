@@ -14,13 +14,20 @@ enum BlockKind {
 struct Block {
     kind: BlockKind,
     segment_start: usize,
+    header_index: Option<usize>,
+}
+
+struct SelectorHeader {
+    start: usize,
+    end: usize,
+    nested: bool,
+    has_child: bool,
 }
 
 pub(super) fn scope_nested_selectors(css: &str, attr_selector: &str) -> Option<String> {
-    let mut output = None::<String>;
     let mut blocks = Vec::<Block>::new();
+    let mut selectors = Vec::<SelectorHeader>::new();
     let mut root_segment_start = 0usize;
-    let mut copied_through = 0usize;
     let mut paren_depth = 0usize;
     let mut bracket_depth = 0usize;
     let mut quote = None;
@@ -64,23 +71,35 @@ pub(super) fn scope_nested_selectors(css: &str, attr_selector: &str) -> Option<S
                     .map_or(root_segment_start, |block| block.segment_start);
                 let header = css.get(header_start..index).unwrap_or_default();
                 let kind = classify_header(header);
-
-                if kind == BlockKind::Selector
-                    && blocks.iter().any(|block| block.kind == BlockKind::Selector)
-                    && !blocks
-                        .iter()
-                        .any(|block| block.kind == BlockKind::Keyframes)
-                {
-                    let rewritten = output.get_or_insert_with(|| {
-                        String::with_capacity(css.len() + attr_selector.len())
+                let in_keyframes = blocks
+                    .iter()
+                    .any(|block| block.kind == BlockKind::Keyframes);
+                let nested = blocks.iter().any(|block| block.kind == BlockKind::Selector);
+                let header_index = if kind == BlockKind::Selector && !in_keyframes {
+                    if nested {
+                        for block in &blocks {
+                            if let Some(parent) = block.header_index
+                                && let Some(selector) = selectors.get_mut(parent)
+                            {
+                                selector.has_child = true;
+                            }
+                        }
+                    }
+                    let header_index = selectors.len();
+                    selectors.push(SelectorHeader {
+                        start: header_start,
+                        end: index,
+                        nested,
+                        has_child: false,
                     });
-                    rewritten.push_str(css.get(copied_through..header_start).unwrap_or_default());
-                    rewritten.push_str(scope_header(header, attr_selector).as_str());
-                    copied_through = index;
-                }
+                    Some(header_index)
+                } else {
+                    None
+                };
                 blocks.push(Block {
                     kind,
                     segment_start: index + 1,
+                    header_index,
                 });
             }
             ';' if paren_depth == 0 && bracket_depth == 0 => {
@@ -102,10 +121,76 @@ pub(super) fn scope_nested_selectors(css: &str, attr_selector: &str) -> Option<S
         }
     }
 
-    output.map(|mut rewritten| {
-        rewritten.push_str(css.get(copied_through..).unwrap_or_default());
-        rewritten
-    })
+    let mut output = String::with_capacity(css.len() + selectors.len() * attr_selector.len());
+    let mut copied_through = 0;
+    let mut changed = false;
+    for selector in selectors {
+        let header = css.get(selector.start..selector.end).unwrap_or_default();
+        let replacement = if selector.has_child && !selector.nested {
+            strip_parent_scope(header, attr_selector)
+        } else if selector.nested && !selector.has_child {
+            scope_header(header, attr_selector)
+        } else {
+            continue;
+        };
+        output.push_str(css.get(copied_through..selector.start).unwrap_or_default());
+        output.push_str(replacement.as_str());
+        copied_through = selector.end;
+        changed = true;
+    }
+    if changed {
+        output.push_str(css.get(copied_through..).unwrap_or_default());
+        Some(output)
+    } else {
+        None
+    }
+}
+
+fn strip_parent_scope(header: &str, attr_selector: &str) -> String {
+    let mut output = String::with_capacity(header.len());
+    let mut copied_through = 0;
+    let mut quote = None;
+    let mut escaped = false;
+    let mut bracket_depth = 0usize;
+    let mut paren_depth = 0usize;
+    for (index, ch) in header.char_indices() {
+        if index < copied_through {
+            continue;
+        }
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        if ch == '\\' {
+            escaped = true;
+            continue;
+        }
+        if let Some(active_quote) = quote {
+            if ch == active_quote {
+                quote = None;
+            }
+            continue;
+        }
+        match ch {
+            '\'' | '"' => quote = Some(ch),
+            '[' if bracket_depth == 0
+                && paren_depth == 0
+                && header
+                    .get(index..)
+                    .is_some_and(|rest| rest.starts_with(attr_selector)) =>
+            {
+                output.push_str(header.get(copied_through..index).unwrap_or_default());
+                copied_through = index + attr_selector.len();
+            }
+            '[' => bracket_depth += 1,
+            ']' => bracket_depth = bracket_depth.saturating_sub(1),
+            '(' => paren_depth += 1,
+            ')' => paren_depth = paren_depth.saturating_sub(1),
+            _ => {}
+        }
+    }
+    output.push_str(header.get(copied_through..).unwrap_or_default());
+    output
 }
 
 fn classify_header(header: &str) -> BlockKind {

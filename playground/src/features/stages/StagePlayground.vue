@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import "./DavinciPlayground.css";
+import "./StagePlayground.css";
 import "./StageRail.css";
-import "./FolioView.css";
+import "./DumpView.css";
 import { computed, onMounted, onUnmounted, ref, useId, watch } from "vue";
 import { type WasmModule, getWasm } from "../../wasm/index";
 import MonacoEditor from "../../shared/MonacoEditor.vue";
 import { DAVINCI_EXAMPLES } from "../../shared/presets/davinci";
 import StageRail from "./StageRail.vue";
 import PassTimeline from "./PassTimeline.vue";
-import FolioView from "./FolioView.vue";
+import DumpView from "./DumpView.vue";
 import OutputView from "./OutputView.vue";
-import FolioDiffView from "./FolioDiffView.vue";
+import DumpDiffView from "./DumpDiffView.vue";
 import RemarksPanel from "./RemarksPanel.vue";
 import FlameView from "./FlameView.vue";
 import type { TimelineStep } from "./ladder";
-import { useDavinciLadder, type StageId } from "./useDavinciLadder";
+import { useStageLadder, type StageId } from "./useStageLadder";
 import { stepKeyAction } from "./keys";
 import { formatArg } from "./remarks";
 
@@ -55,7 +55,7 @@ const {
   selectPage,
   locateRemark,
   onCursor,
-} = useDavinciLadder(() => props.compiler ?? getWasm());
+} = useStageLadder(() => props.compiler ?? getWasm());
 
 const showTabs = computed(
   () => rung.value !== null && (rung.value.pages.length > 1 || rung.value.id !== "l1"),
@@ -198,13 +198,13 @@ function snippet(text: string): string {
             @pin="pinBaseline"
             @unpin="clearBaseline"
           />
-          <FolioDiffView
+          <DumpDiffView
             v-else-if="pageView === 'diff' && diff && previousPage && page"
             :diff
             :before="previousPage.label"
             :after="page.label"
           />
-          <FolioView
+          <DumpView
             v-else-if="page"
             :lines
             :marks="lineMarks"

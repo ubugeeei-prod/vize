@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { fullAppE2eRows } from "../github/app-e2e-plan.mjs";
+import { validateDialectCoverage } from "./fixture-dialect-coverage.mjs";
 import {
   array,
   compareCodepoints,
@@ -134,11 +135,12 @@ function validateFixtures(fixtures, context) {
   const expectedGitlinks = context.gitlinkPaths;
   const actualPaths = fixtures.map((fixture, index) => {
     record(fixture, `fixtures[${index}]`);
-    exactKeys(fixture, ["fixturePath", "memberships"]);
+    exactKeys(fixture, ["fixturePath", "memberships", "dialectCoverage"]);
     string(fixture.fixturePath, `fixtures[${index}].fixturePath`);
     array(fixture.memberships, `${fixture.fixturePath}.memberships`);
     unique(fixture.memberships, `${fixture.fixturePath}.memberships`);
     for (const membership of fixture.memberships) enumValue(membership, memberships, "membership");
+    validateDialectCoverage(fixture.dialectCoverage, fixture.fixturePath, context);
     return fixture.fixturePath;
   });
   unique(actualPaths, "fixture paths");

@@ -55,7 +55,7 @@ pub(super) fn resolve_expression_node(
         let mut collector = ExpressionRewriteCollector::new(ctx);
         collector.visit_expression(js.ast);
         let resolved = apply_rewrites(trimmed, collector.rewrites, lead);
-        #[cfg(any(test, feature = "davinci-differential"))]
+        #[cfg(any(test, feature = "legacy-differential"))]
         assert_resolve_agrees(ctx, trimmed, &resolved, false);
         return resolved;
     }
@@ -85,7 +85,7 @@ pub(super) fn resolve_model_update_node(
         collector.add_event_parameter();
         collector.visit_expression(js.ast);
         let resolved = apply_rewrites(target, collector.rewrites, lead);
-        #[cfg(any(test, feature = "davinci-differential"))]
+        #[cfg(any(test, feature = "legacy-differential"))]
         assert_resolve_agrees(ctx, target, &resolved, true);
         return cstr!("$event => (({resolved}) = $event)");
     }
@@ -113,7 +113,7 @@ pub(super) fn resolve_inline_handler_node(
         collector.add_event_parameter();
         collector.visit_expression(js.ast);
         let resolved = apply_rewrites(handler, collector.rewrites, lead);
-        #[cfg(any(test, feature = "davinci-differential"))]
+        #[cfg(any(test, feature = "legacy-differential"))]
         assert_resolve_agrees(ctx, handler, &resolved, true);
         return cstr!("$event => ({resolved})");
     }
@@ -142,7 +142,7 @@ pub(super) fn resolve_inline_handler_node(
 /// counts through the P0-3 probe, so the dual-run replicates it in an
 /// uncounted arena instead — lane-only work stays off the production
 /// re-parse floor. Divergence panics, never averages.
-#[cfg(any(test, feature = "davinci-differential"))]
+#[cfg(any(test, feature = "legacy-differential"))]
 fn assert_resolve_agrees(ctx: &GenerateContext<'_>, expr: &str, retained: &str, event_local: bool) {
     use oxc_parser::Parser;
     use oxc_span::SourceType;

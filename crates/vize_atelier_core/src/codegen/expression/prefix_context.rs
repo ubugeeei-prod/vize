@@ -113,7 +113,7 @@ pub(super) fn prefix_node_in_scope(
         && crate::retained::js_module_compatible(js)
     {
         let result = prefix_via_expr(js.ast, 0, js.raw, ctx, implicit_event);
-        #[cfg(any(test, feature = "davinci-differential"))]
+        #[cfg(any(test, feature = "legacy-differential"))]
         #[expect(
             clippy::panic,
             reason = "differential oracle: a divergence must abort the run"

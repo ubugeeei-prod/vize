@@ -19,4 +19,4 @@ _None._
 | product   | resolved | grep |
 | --------- | -------: | ---: |
 | `Croquis` |        0 |    2 |
-| `Span`    |        0 |   22 |
+| `Span`    |        0 |   64 |

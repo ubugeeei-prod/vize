@@ -1,6 +1,6 @@
 //! Davinci P2-7 TS-19 lane — corpus-runnable entry.
 //!
-//! Compiled only with the `davinci-differential` feature (see `[[test]]
+//! Compiled only with the `legacy-differential` feature (see `[[test]]
 //! required-features` in Cargo.toml), the P1-6/P1-7 lane shape. Runs the
 //! committed battery with its exact-pinned scope and hole census (the
 //! cfg-regression witness — the plain suite pins the same numbers, so a
@@ -18,7 +18,7 @@
 //!
 //! ```text
 //! VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
-//!     cargo test -p vize_l1 --features davinci-differential \
+//!     cargo test -p vize_l1 --features legacy-differential \
 //!     --test davinci_surface_corpus -- --nocapture
 //! ```
 

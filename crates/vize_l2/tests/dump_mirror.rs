@@ -4,7 +4,7 @@
 //! ([`JsExpr::parse_in`]), `opaque` and `foreign` payloads allocated by
 //! hand - mirrored through [`L2Page::of`] into the committed
 //! canonical page. The owned twin of this tree lives in
-//! `tests/folio_laws.rs`.
+//! `tests/dump_laws.rs`.
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use vize_davinci::dump::{Dump, Mode as DumpMode};

@@ -1,7 +1,7 @@
 //! TS-16 for the disegno folio (P2-5a; expression payloads P2-5b). Full mode
 //! round-trips byte-exact canonical text and parse/print structure; Display
 //! elides spans and carries no round-trip law. The committed reference page
-//! covers every op and binding kind; `tests/folio_mirror.rs` builds the same
+//! covers every op and binding kind; `tests/dump_mirror.rs` builds the same
 //! tree in a live arena, and this file pins all opaque-reason spellings.
 
 use vize_davinci::dump::{Dump, Mode as DumpMode};

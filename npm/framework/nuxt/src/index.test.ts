@@ -132,6 +132,28 @@ void test("Nuxt 2 host-compiler compatibility skips Vite plugin loading", async 
   assert.deepEqual(nuxt.options.vite, {});
 });
 
+void test("plain Nuxt 2 webpack setup skips Nitro-only server plugins", async () => {
+  const { default: nuxtModule } = await import(new URL("../dist/index.mjs", import.meta.url).href);
+  const hooks: string[] = [];
+  const nuxt = {
+    options: {
+      rootDir: process.cwd(),
+      buildDir: ".nuxt",
+      builder: "@nuxt/webpack-builder",
+      modules: [],
+      dev: true,
+      vite: {},
+    },
+    hook(name: string) {
+      hooks.push(name);
+    },
+  };
+
+  await nuxtModule({ lint: false }, nuxt);
+  assert.deepEqual(nuxt.options.vite, {});
+  assert.equal(hooks.includes("nitro:config"), false);
+});
+
 void test("Nuxt Musea static public asset points at generated client output", () => {
   let nitroConfigHook: ((config: { publicAssets?: unknown[] }) => unknown) | undefined;
   registerNuxtMuseaStaticPublicAsset(

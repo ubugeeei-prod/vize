@@ -29,7 +29,7 @@
 //! deliberately over-conservative there (TS-syntax expressions stay on the
 //! vapor fallback parse — recorded).
 //!
-//! Under `cfg(any(test, feature = "davinci-differential"))` every gated
+//! Under `cfg(any(test, feature = "legacy-differential"))` every gated
 //! consumption is dual-run against the legacy parse it replaced and
 //! divergence panics — the P1-6 differential-lane pattern, counters in
 //! [`differential`]. The dual-run legacy parses use their own uncounted

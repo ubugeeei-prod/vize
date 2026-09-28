@@ -19,20 +19,20 @@ Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (res
 - **Codenames are aliases only.** Davinci, Sinopia, Disegno, Ricalco, Impeto, Folio, Spolvero and the rest may appear in crate docs (`//! L3 — reactivity IR (codename: Impeto)`) and in `docs/`. They never appear in crate, directory, file, module or type names, or in serialized strings. Ordinary terms such as `lattice` and `ledger` are not codenames.
 - Examples of the mapping ([#6832](https://github.com/ubugeeei-prod/vize/issues/6832)):
 
-  | Now                                   | After                                                                     |
-  | ------------------------------------- | ------------------------------------------------------------------------- |
-  | `folio`, `trait Folio`, `FolioValue`  | `dump`, `trait Dump`, `DumpValue`                                         |
-  | `FolioOp`, `FolioIf`, …               | `vize_l2::dump::{Op, If, …}`                                              |
-  | `vize_impeto`                         | `vize_l3`                                                                 |
-  | `impeto.set-prop`                     | `l3.set-prop`                                                             |
-  | `davinci.s2_dom.*` counters           | `l2.dom.*`                                                                |
-  | `SpolveroFeed`, `inspector::spolvero` | `StageFeed`, `inspector::stages`                                          |
-  | feature `davinci-differential`        | `legacy-differential`                                                     |
-  | `davinci-opt`                         | `vize dump` options (one generator shared with the playground stage view) |
+  | Now                                                          | After                                                                     |
+  | ------------------------------------------------------------ | ------------------------------------------------------------------------- |
+  | `folio`, `trait Folio`, `FolioValue`                         | `dump`, `trait Dump`, `DumpValue`                                         |
+  | `FolioOp`, `FolioIf`, …                                      | `vize_l2::dump::{Op, If, …}`                                              |
+  | `vize_impeto`                                                | `vize_l3`                                                                 |
+  | `impeto.set-prop`                                            | `l3.set-prop`                                                             |
+  | `davinci.s2_dom.*` counters                                  | `l2.dom.*`                                                                |
+  | `SpolveroFeed`, `inspector::spolvero`                        | `StageFeed`, `inspector::stages`                                          |
+  | features `davinci-differential` / `davinci-dom-differential` | `legacy-differential` / `legacy-dom-differential`                         |
+  | `davinci-opt`                                                | `vize dump` options (one generator shared with the playground stage view) |
 
 - Davinci has no external users yet, so its crates, APIs, dump formats, serialized strings and feature names change without a compatibility period. Legacy products keep strict output compatibility; the [#6898 SSR slot scope correction](./2026-09-27-ssr-slot-scope.md) adds its own regression corpus.
 - Product crates with art names (croquis, patina, glyph, maestro, canon, carton, …) keep their names. `docs/davinci/` keeps its name as the program name.
-- The migration does not freeze other work. Move-only commits keep git rename detection working for in-flight fixes, renames are scripted (on a conflict, re-run the script on `main`), and PRs stay small.
+- The migration does not freeze other work. Move-only commits keep git rename detection working for in-flight fixes, renames are scripted (on a conflict, re-run the script on `main`), and PRs stay small. [MoonBit workflow naming](./2026-09-28-level-moonbit-workflow.md) records the bounded CI move for #6832; the remaining tooling names stay open.
 
 ## Skeleton-first (2026-09-28)
 
@@ -48,8 +48,8 @@ Decided by the maintainer on 2026-09-28 ([#6826 comment](https://github.com/ubug
 
 ## Level dump naming
 
-The L3 package identity, stage feed types, level dump API, versioned dump protocols and `vize dump --roundtrip` are recorded in [level dump naming](./2026-09-28-level-dump-naming.md).
-The native stage ladder now collects pages, remarks and timings from one pass execution for the playground; CLI export and product compilation integration remain open in #6832.
+The L3 package identity, stage feed types, level dump API, versioned dump protocols and `vize dump --roundtrip` are recorded in [level dump naming](./2026-09-28-level-dump-naming.md). The native stage ladder now collects pages, remarks and timings from one pass execution for the playground; CLI export and product compilation integration remain open in #6832.
+For [#6832](https://github.com/ubugeeei-prod/vize/issues/6832), L2's 13 auto-discovered `folio_*` test targets move to `dump_*` in a move-only commit; source references and live documentation links follow in a separate commit, while `.folio` fixture bytes and extensions remain unchanged. [Playground stage view naming](./2026-09-28-playground-stage-view-names.md) records the active source/e2e renames and still-open UI/DOM inventory.
 
 ## Rust verification for L3 (2026-09-28)
 
@@ -147,7 +147,7 @@ unchanged. The fresh source and merge-queue checks remain required.
 
 See the [l4: emission decisions](./2026-09-27-level-restructure-designs.md#l4-emission) in the companion record.
 
-[The `vize_l4` skeleton](./2026-09-28-l4-skeleton.md) records the crate layout (`write`, `expr`, `runtime`, `module`, `targets/{dom,ssr,vapor,ts}`), the compile-time link sink, and the L4 codename Stesura; target, expression and module bodies remain `todo!()`.
+[The `vize_l4` skeleton](./2026-09-28-l4-skeleton.md) records the crate layout, compile-time link sink, and independent emission document for [#6840](https://github.com/ubugeeei-prod/vize/issues/6840). After #7037 exposed 31 instruction regressions from a live cross-crate re-export, retain the production compiler document and every instruction budget until the fix-history gate [#6880](https://github.com/ubugeeei-prod/vize/issues/6880) closes. Keep L4 unpublished and #6840 open for the consumer switch and unfinished targets; #7037 uses existing L0 APIs and can merge directly on `main` without #7043. Its escape append skips empty patterns, tracks signed length changes, and clamps links inside shortened patterns to the output start.
 
 [Compiler fix-history byte references](./2026-09-27-compiler-fix-history-pins.md) records [#6880](https://github.com/ubugeeei-prod/vize/issues/6880): three immutable complete SFC Results, including #1416 diagnostics. The earlier ten-profile archive has eight fixes and two feature controls; whole history/native acceptance remain unfinished and fresh Actions are required. Publication uses ordinary shared test modules, a documented unused-helper expectation verified by strict Clippy, and a generated SFC consumer shard after Actions found policy drift.
 
@@ -223,12 +223,12 @@ whole-history and native admission remain unfinished; the companion preserves ev
 ## Legacy deletion criteria
 
 See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria),
-[native-only accounting](./2026-09-27-native-selection-accounting.md),
+[native-only accounting](./2026-09-27-native-selection-accounting.md), [#6891's exact-stage shared result contract](./2026-09-28-differential-harness.md),
 and the [LSP fix-history response-fixture installment](./2026-09-27-lsp-fix-history.md)
 for the pinned review ledger, complete document-link and CRLF on-type response contracts and
 unfinished history obligations in #6883.
 The same installment preserves dated source-runtime receipts separately from
-historical binary evidence; later heads still require their own Actions proof.
+historical binary evidence; later heads still require their own Actions proof. The compiler fixture sweep counts all planned `.vue` inputs per target and gives no native-only credit to a Croquis-backed SFC descriptor.
 
 ## Multi-framework
 
@@ -247,7 +247,7 @@ Tracked in [#6829](https://github.com/ubugeeei-prod/vize/issues/6829) and [#6855
 - **TSRX:** not a priority; nice to have if something runs.
 - **Other frameworks:** only the neutral types and names are designed before the talk. Flow is not in scope at all.
 - **Goal (A):** for the in-scope inputs, all five products run on the shared L1/L2 structure as far as native work goes, with per-product native-only acceptance rates.
-- **Deletion (B)** follows later, under the criteria above.
+- **Deletion (B)** follows later, under the criteria above; the fail-closed [readiness audit and crate-removal guard](./2026-09-28-deletion-readiness.md) record #6854's product, tier, dialect, project and stability blockers; route swaps remain unguarded.
 - Unfinished work is reported as unfinished. There are no legacy-backed shortcuts.
 
 ## Performance
@@ -290,8 +290,8 @@ Vize follows language-toolchain practice, not compiler-only practice. It stays l
 - **The formatter keeps its Doc IR separate from its printer** ([#6875](https://github.com/ubugeeei-prod/vize/issues/6875)).
 - **Edits have one representation.** Diagnostic fixes, code actions and lint autofixes are all L1 span edits tagged with a document version ([#6876](https://github.com/ubugeeei-prod/vize/issues/6876)).
 
-[Inspector comparison transport](./2026-09-27-inspector-compare-transport.md)
-preserves authoritative child failures when Node exits before input delivery.
+[Inspector comparison transport](./2026-09-27-inspector-compare-transport.md) preserves authoritative child failures when Node exits before input delivery.
+[Shared differential contract](./2026-09-28-differential-harness.md) fixes case/target coordinates and whole-product provenance for #6891; [native-only acceptance rates](./2026-09-28-native-acceptance-rates.md) count every registered coordinate for #6853 and separate unsupported, legacy-backed and unverified rows. The formatter fixture pack is 0/5; other products and complete dialect/T1/T2 coverage remain unfinished.
 
 ## CI tiers
 
@@ -306,29 +306,29 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 
 - zizmor runs only for external contributors, releases and PRs that touch `.github/**`. [Audit selection](./2026-09-27-ci-security-selection.md) and [inherited finding repair](./2026-09-27-workflow-security-refresh.md) record #6866.
 - VRT, tsgo-required tests and ledger checks leave the PR tier. [Inventory tier implementation](./2026-09-27-ci-tier-inventories.md) records #6864.
-- Whole-repo generated ledgers stop being committed; merge queue, nightly and exact-SHA release Check runs publish the validated bundle. [Artifact generation](./2026-09-27-generated-ledgers.md) records #6867.
+- Whole-repo generated ledgers stop being committed; merge queue, nightly and exact-SHA release Check runs publish the validated bundle. [Artifact generation](./2026-09-27-generated-ledgers.md) records #6867; [dialect fixture coverage](./2026-09-28-dialect-fixture-coverage.md) records #6892's pinned source and package evidence, unknowns and remaining case work.
 - [JS native preparation](./2026-09-27-js-native-preparation.md) keeps package coverage and reuses the root test build ([#6830](https://github.com/ubugeeei-prod/vize/issues/6830)).
 - [UI check tiers](./2026-09-27-ui-check-ci-tiers.md) retain Fresco declarations/types in T0 and require UI acceptance in T1 ([#6864](https://github.com/ubugeeei-prod/vize/issues/6864)).
 
 [Affected Rust selection](./2026-09-27-affected-rust-ci.md) records the fail-closed dependency plan and shell-free package execution for #6862.
 
-[Tooling input selection](./2026-09-27-tooling-input-selection.md) records the shared task inputs, explicit T1 runtime inventory and conservative T0 fallback for [#6863](https://github.com/ubugeeei-prod/vize/issues/6863) and [#6864](https://github.com/ubugeeei-prod/vize/issues/6864).
+[Tooling input selection](./2026-09-27-tooling-input-selection.md) records shared task inputs, audited Rust corpus fixtures, the T1 runtime inventory and conservative T0 fallback for [#6863](https://github.com/ubugeeei-prod/vize/issues/6863) and [#6864](https://github.com/ubugeeei-prod/vize/issues/6864).
 
 [Full tooling LSP source identity](./2026-09-27-lsp-source-binding.md) binds
 required runtime proof to the receipted current CLI without cached fallback.
 Use test-step environment variables to retain the plain VP command and compose
-with the formatter's always-upload corpus evidence without changing build setup.
+with the formatter's always-upload corpus evidence without changing build setup; [#6852's legacy fix input audit](./2026-09-28-legacy-fix-fixture-gate.md) remains report-only until every product adapter and queue proof exists.
 
-[Stacked PR checks](./2026-09-27-stacked-pr-checks.md) run on every PR base. [Rust PR archive and shard execution](./2026-09-27-rust-nextest-shards.md) records #6862's runner, doctest, resource and archive identity decisions.
+[Stacked PR checks](./2026-09-27-stacked-pr-checks.md) run on every PR base; dependent children target parent branches and revalidate on fresh `main` after squash merge (#6826, `AGENTS.md`, treated as Markdown guidance in T0). [Rust PR archive and shard execution](./2026-09-27-rust-nextest-shards.md) records #6862's runner, doctest, resource and archive identity decisions.
 
 [Rust source wiring](./2026-09-27-ci-rust-core.md) preserves full queue execution, proves the tested comparison base and records the intermediate scope.
 
-[CI baseline decisions](./2026-09-27-ci-baseline-decisions.md) preserve the Rust timings, first formatter path and stack replay evidence.
+[CI baseline decisions](./2026-09-27-ci-baseline-decisions.md) preserve the original Rust timings, first formatter path and stack replay evidence; [current PR Check latency](./2026-09-28-pr-check-latency.md) records the #6861 phase split and T0 p50/p90 sample.
 
 [Tooling tier wiring](./2026-09-27-ci-tooling-tier-core.md) records the shared comparison base, queue-only VRT and preserved complete tooling task.
 
-[Heavy tooling inputs](./2026-09-27-heavy-tooling-inputs.md) records Cargo corpus,
-Moon/benchmark dependencies and the immutable queue source-length base for #6863.
+[Heavy tooling inputs](./2026-09-27-heavy-tooling-inputs.md) records corpus, Moon, benchmark and queue source limits;
+[release tooling inputs](./2026-09-28-release-tooling-inputs.md) records audited release-contract selection for #6863.
 
 [Rust cache backends](./2026-09-27-rust-cache-backends.md) records #6830's bounded provider namespaces and actual partial trusted seed receipts; [nested post paths](./2026-09-27-rust-cache-backends.md#nested-cache-post-paths) records the reviewed missing-target repair. Nested target saving and later restore proof remain pending. Reviewed save eligibility for the two observed oversized roles keeps full validation and fixed provider mounts; actual full-run post omission remains pending.
 

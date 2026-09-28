@@ -536,19 +536,18 @@ function resolveProjectNuxtVuePeerRuntimeEntryWithNode(
     "nuxt/package.json",
     path.join(state.root, "package.json"),
   );
-  if (!nuxtPackageJson) {
-    return null;
-  }
+  if (!nuxtPackageJson) return null;
 
   const nuxtPackageRoot = path.dirname(splitViteIdQuery(nuxtPackageJson).request);
-  if (!resolveProjectLocalResolvedPath(state, nuxtPackageRoot)) {
-    return null;
-  }
+  if (!resolveProjectLocalResolvedPath(state, nuxtPackageRoot)) return null;
 
-  return resolveVuePeerRuntimeEntryFromBaseWithNode(
-    state,
-    id,
-    path.join(nuxtPackageRoot, "package.json"),
+  return (
+    resolveVuePeerRuntimeEntryFromBaseWithNode(state, id, path.join(state.root, "package.json")) ??
+    resolveVuePeerRuntimeEntryFromBaseWithNode(
+      state,
+      id,
+      path.join(nuxtPackageRoot, "package.json"),
+    )
   );
 }
 

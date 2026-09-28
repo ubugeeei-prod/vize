@@ -2,8 +2,11 @@
 
 mod keyframes;
 mod nested;
+mod where_selector;
 
 use vize_carton::{String, ToCompactString};
+use where_selector::add_scope_to_element;
+pub(crate) use where_selector::scope_bare_where;
 
 use crate::types::{CssModuleMapping, SfcError, SfcStyleBlock, StyleCompileOptions};
 
@@ -499,33 +502,6 @@ fn split_top_level_whitespace(s: &str) -> Vec<&str> {
     out
 }
 
-/// Add scope attribute to an element selector
-fn add_scope_to_element(selector: &str, attr_selector: &str) -> String {
-    // Find the FIRST top-level pseudo-element or pseudo-class so the scope
-    // attribute lands on the compound selector, not inside a functional
-    // pseudo-class argument (e.g. `.x:not(:checked)` → `.x[attr]:not(:checked)`,
-    // not `.x:not(:[attr]checked)`). Skip colons inside parentheses. (#971)
-    if let Some(pseudo_pos) = find_top_level_pseudo(selector)
-        && let Some((before, after)) = selector.split_at_checked(pseudo_pos)
-    {
-        // Avoid splitting at a pseudo that is part of an escape sequence
-        // (`\:`), which is rare but valid in CSS.
-        if !before.ends_with('\\') {
-            let mut result =
-                String::with_capacity(before.len() + attr_selector.len() + after.len());
-            result.push_str(before);
-            result.push_str(attr_selector);
-            result.push_str(after);
-            return result;
-        }
-    }
-
-    let mut result = String::with_capacity(selector.len() + attr_selector.len());
-    result.push_str(selector);
-    result.push_str(attr_selector);
-    result
-}
-
 /// Find the first top-level `:` introducing a pseudo-class or `::` introducing
 /// a pseudo-element, skipping any colon that lives inside parentheses (i.e.
 /// inside `:not(...)`, `:is(...)`, `:where(...)`, `:has(...)` arguments).
@@ -602,10 +578,13 @@ fn trailing_combinator_start(value: &str) -> Option<usize> {
 /// Transform :slotted() for slot content
 fn transform_slotted(selector: &str, attr_selector: &str) -> String {
     // :slotted(.child) -> .child[data-v-xxx-s]
-    if let Some((_, after)) = selector.split_once(":slotted(")
+    if let Some((before, after)) = selector.split_once(":slotted(")
         && let Some((inner, rest)) = split_parenthesized_argument(after)
     {
-        let mut result = String::with_capacity(inner.len() + attr_selector.len() + rest.len() + 2);
+        let mut result = String::with_capacity(
+            before.len() + inner.len() + attr_selector.len() + rest.len() + 2,
+        );
+        result.push_str(before);
         result.push_str(inner);
         if let Some(scope) = attr_selector.strip_suffix(']') {
             result.push_str(scope);

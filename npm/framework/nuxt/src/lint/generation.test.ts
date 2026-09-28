@@ -105,6 +105,22 @@ export default config;
   assert.equal(hooks.get("builder:generateApp")?.length, 1);
 });
 
+void test("Nuxt 2 recreates its generated config after clearing the build directory", async (t) => {
+  const root = await temporaryRoot(t, "vize-nuxt2-lint-");
+  const { hooks, nuxt } = createNuxt(root);
+  const nuxt2 = { ...nuxt, _version: "2.17.3" };
+  await setupNuxtLintConfigGeneration(true, nuxt2, {
+    resolvePluginSpecifier: () => "../plugin.mjs",
+  });
+
+  const generated = path.join(root, ".nuxt", "oxlint.config.json");
+  await rm(path.dirname(generated), { force: true, recursive: true });
+  assert.equal(await absent(generated), true);
+  await callHooks(hooks, "build:templates");
+  assert.equal(await absent(generated), false);
+  assert.match(await readFile(generated, "utf8"), /"jsPlugins"/);
+});
+
 void test("regeneration resolves addons afresh and rewrites same-length changes", async (t) => {
   const root = await temporaryRoot(t, "vize-nuxt-lint-addons-");
   const { hooks, nuxt } = createNuxt(root);

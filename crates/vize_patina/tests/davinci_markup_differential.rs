@@ -1,6 +1,6 @@
 //! Davinci P4-7a corpus-runnable entry — the TS-25 markup lane.
 //!
-//! Compiled only with the `davinci-differential` feature (`[[test]]
+//! Compiled only with the `legacy-differential` feature (`[[test]]
 //! required-features` in Cargo.toml). Runs the committed battery with its
 //! exact-pinned census (the same numbers the plain suite pins in
 //! `markup::tests::differential_tests`, so a feature-wiring regression fails
@@ -18,7 +18,7 @@
 //!
 //! ```text
 //! VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
-//!     cargo test -p vize_patina --features davinci-differential \
+//!     cargo test -p vize_patina --features legacy-differential \
 //!     --test davinci_markup_differential -- --nocapture
 //! ```
 

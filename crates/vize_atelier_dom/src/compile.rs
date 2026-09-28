@@ -13,7 +13,7 @@ use vize_l0::{Allocator, String};
 
 mod croquis_facts;
 mod inner;
-#[cfg(feature = "davinci-differential")]
+#[cfg(feature = "legacy-differential")]
 pub(crate) mod legacy;
 mod pipeline;
 mod selection;
@@ -21,8 +21,8 @@ mod sfc;
 mod source_map;
 mod stage_options;
 
-/// The `davinci-differential` DOM legacy-lane override (P3-17).
-#[cfg(feature = "davinci-differential")]
+/// The `legacy-differential` DOM legacy-lane override (P3-17).
+#[cfg(feature = "legacy-differential")]
 pub use selection::differential;
 
 use crate::options::DomCompilerOptions;
