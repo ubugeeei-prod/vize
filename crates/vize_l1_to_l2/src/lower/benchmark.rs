@@ -6,7 +6,7 @@ use vize_l2::provenance::ProvenanceRecord;
 
 /// The caller has already built `after`, so its allocation is excluded here.
 pub(super) fn record_guard() -> Option<ProfileGuard> {
-    global_profiler().global_span("davinci.lower.provenance.record")
+    global_profiler().global_span("l1_to_l2.provenance.record")
 }
 
 /// The artifact owns these bytes at the end of L1→L2 lowering. Later transform
@@ -17,29 +17,29 @@ pub(super) fn retained(records: &[ProvenanceRecord], capacity: usize) {
         return;
     }
     let bytes = core::mem::size_of::<ProvenanceRecord>() as u64;
-    profiler.record_counter_enabled("davinci.lower.provenance.records", records.len() as u64);
+    profiler.record_counter_enabled("l1_to_l2.provenance.records", records.len() as u64);
     profiler.record_counter_enabled(
-        "davinci.lower.provenance.vector_capacity_bytes",
+        "l1_to_l2.provenance.vector_capacity_bytes",
         capacity as u64 * bytes,
     );
     profiler.record_counter_enabled(
-        "davinci.lower.provenance.record_bytes",
+        "l1_to_l2.provenance.record_bytes",
         records.len() as u64 * bytes,
     );
     for (count, capacity, field) in [
         (
-            "davinci.lower.provenance.rule_heap_strings",
-            "davinci.lower.provenance.rule_heap_capacity_bytes",
+            "l1_to_l2.provenance.rule_heap_strings",
+            "l1_to_l2.provenance.rule_heap_capacity_bytes",
             0,
         ),
         (
-            "davinci.lower.provenance.before_heap_strings",
-            "davinci.lower.provenance.before_heap_capacity_bytes",
+            "l1_to_l2.provenance.before_heap_strings",
+            "l1_to_l2.provenance.before_heap_capacity_bytes",
             1,
         ),
         (
-            "davinci.lower.provenance.after_heap_strings",
-            "davinci.lower.provenance.after_heap_capacity_bytes",
+            "l1_to_l2.provenance.after_heap_strings",
+            "l1_to_l2.provenance.after_heap_capacity_bytes",
             2,
         ),
     ] {

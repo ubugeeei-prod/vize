@@ -413,7 +413,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // Deferred class-component alias: `(class_end, name)`.
             let mut pending_class_alias: Option<(usize, &str)> = None;
             let mut emitted_default_alias = false;
-            let uses_import_meta = self::script_module::emit_import_meta_polyfill(&mut ts, script);
 
             for (src_byte_offset, raw_line) in ambient.script_lines(script) {
                 boundaries.emit_through(src_byte_offset, &mut ts, &mut mappings, source_offset);
@@ -569,13 +568,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         );
                     }
                 }
-                // Replace import.meta with polyfill variable to avoid TS1343
-                if uses_import_meta && output_line.contains("import.meta") {
-                    output_line = std::borrow::Cow::Owned(
-                        output_line.replace("import.meta", "__import_meta"),
-                    );
-                }
-
                 ts.push_str(&output_line);
                 let gen_content_end = ts.len();
                 ts.push('\n');

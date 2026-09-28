@@ -49,7 +49,7 @@ Decided by the maintainer on 2026-09-28 ([#6826 comment](https://github.com/ubug
 ## Level dump naming
 
 The L3 package identity, stage feed types, level dump API, versioned dump protocols and `vize dump --roundtrip` are recorded in [level dump naming](./2026-09-28-level-dump-naming.md). The native stage ladder now collects pages, remarks and timings from one pass execution for the playground; CLI export and product compilation integration remain open in #6832.
-For [#6832](https://github.com/ubugeeei-prod/vize/issues/6832), L2's 13 auto-discovered `folio_*` test targets move to `dump_*` in a move-only commit; source references and live documentation links follow in a separate commit, while `.folio` fixture bytes and extensions remain unchanged. [Playground stage view naming](./2026-09-28-playground-stage-view-names.md) records the active source/e2e renames and still-open UI/DOM inventory.
+For [#6832](https://github.com/ubugeeei-prod/vize/issues/6832), L2's 13 auto-discovered `folio_*` test targets move to `dump_*` in a move-only commit; source references and live documentation links follow in a separate commit, while `.folio` fixture bytes and extensions remain unchanged. [Playground stage view naming](./2026-09-28-playground-stage-view-names.md) records the active source/e2e renames and still-open UI/DOM inventory. [L1→L2 provenance profile keys](./2026-09-28-l1-to-l2-profile-wire.md) record the native profile wire mapping.
 
 ## Rust verification for L3 (2026-09-28)
 
@@ -286,12 +286,12 @@ Vize follows language-toolchain practice, not compiler-only practice. It stays l
   - Diagnostics and code actions carry a range and a document version, and they are recomputed when stale.
   - Memory holds artifacts only for open files, plus `SfcSummary` for every file.
 - **Stale requests are cancelled on edit** ([#6873](https://github.com/ubugeeei-prod/vize/issues/6873)).
-- **The CLI and the LSP share one project model** ([#6874](https://github.com/ubugeeei-prod/vize/issues/6874)).
+- **The CLI and the LSP share one project model** ([#6874](https://github.com/ubugeeei-prod/vize/issues/6874)); the [first path-identity slice](./2026-09-28-shared-project-model.md) resolves configured tsconfig paths once per invocation or folder, while full config/workspace unification remains open.
 - **The formatter keeps its Doc IR separate from its printer** ([#6875](https://github.com/ubugeeei-prod/vize/issues/6875)).
 - **Edits have one representation.** Diagnostic fixes, code actions and lint autofixes are all L1 span edits tagged with a document version ([#6876](https://github.com/ubugeeei-prod/vize/issues/6876)).
 
 [Inspector comparison transport](./2026-09-27-inspector-compare-transport.md) preserves authoritative child failures when Node exits before input delivery.
-[Shared differential contract](./2026-09-28-differential-harness.md) fixes case/target coordinates and whole-product provenance for #6891; [native-only acceptance rates](./2026-09-28-native-acceptance-rates.md) count every registered coordinate for #6853 and separate unsupported, legacy-backed and unverified rows. The formatter fixture pack is 0/5; other products and complete dialect/T1/T2 coverage remain unfinished.
+[Shared differential contract and compiler SSR adapter preparation](./2026-09-28-differential-harness.md) fix case/target coordinates and whole-product provenance for #6891; [native-only acceptance rates](./2026-09-28-native-acceptance-rates.md) count every registered coordinate for #6853 and separate unsupported, legacy-backed and unverified rows. The formatter fixture pack is 0/5; compiler SSR native credit is 0; complete dialect/T1/T2 coverage remains unfinished.
 
 ## CI tiers
 

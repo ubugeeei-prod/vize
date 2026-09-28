@@ -210,19 +210,17 @@ export function generateOutputWithMap(
       );
     }
   } else if (!hasExportDefault && !hasSfcMainDefined && hasNamedRenderExport) {
-    emitted.edit(`${emitted.code}\nconst _sfc_main = {};`);
-    if (compiled.hasScoped && compiled.scopeId) {
-      emitted.edit(`${emitted.code}\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`);
-    }
-    emitted.edit(`${emitted.code}\n_sfc_main.render = render;`);
-    emitted.edit(`${emitted.code}\nexport default _sfc_main;`);
+    const scope =
+      compiled.hasScoped && compiled.scopeId ? `, __scopeId: "data-v-${compiled.scopeId}"` : "";
+    emitted.edit(
+      `${emitted.code}\nconst _sfc_main = { render${scope} };\nexport default _sfc_main;`,
+    );
   } else if (!hasExportDefault && !hasSfcMainDefined && hasNamedSsrRenderExport) {
-    emitted.edit(`${emitted.code}\nconst _sfc_main = {};`);
-    if (compiled.hasScoped && compiled.scopeId) {
-      emitted.edit(`${emitted.code}\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`);
-    }
-    emitted.edit(`${emitted.code}\n_sfc_main.ssrRender = ssrRender;`);
-    emitted.edit(`${emitted.code}\nexport default _sfc_main;`);
+    const scope =
+      compiled.hasScoped && compiled.scopeId ? `, __scopeId: "data-v-${compiled.scopeId}"` : "";
+    emitted.edit(
+      `${emitted.code}\nconst _sfc_main = { ssrRender${scope} };\nexport default _sfc_main;`,
+    );
   }
 
   // Determine whether to use style imports or inline CSS injection.

@@ -56,13 +56,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         eprintln!("[vize] Skipping check because typeChecker.enabled is false in vize.config.");
         return;
     }
-    let effective_tsconfig = args.tsconfig.clone().or_else(|| {
-        config
-            .type_checker
-            .tsconfig
-            .as_deref()
-            .map(|path| resolve_from_config_dir(config_dir, path))
-    });
+    let project = crate::config::ProjectModel::new(
+        Some(&cwd),
+        loaded_config.source_path.as_deref(),
+        &config.type_checker,
+    )
+    .with_explicit_tsconfig(args.tsconfig.as_deref());
+    let effective_tsconfig = project.tsconfig().map(Path::to_path_buf);
     let effective_corsa_path = args.corsa_path.as_ref().map(PathBuf::from).or_else(|| {
         config
             .type_checker
