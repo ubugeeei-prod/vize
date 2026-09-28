@@ -61,8 +61,10 @@ impl LanguageServer for MaestroServer {
         }
 
         // Record every workspace folder so per-document features resolve their own folder's config in multi-root sessions (#3240).
-        self.state
-            .apply_initialize_workspace_folders(params.workspace_folders.as_deref());
+        self.state.apply_initialize_workspace_folders(
+            params.workspace_folders.as_deref(),
+            workspace_path.as_deref(),
+        );
 
         self.state
             .apply_lsp_initialization_options(params.initialization_options.as_ref());

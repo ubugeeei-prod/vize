@@ -1,5 +1,6 @@
 //! Tests for the diagnostics aggregation pipeline.
 mod macro_scope;
+mod scoped_lint;
 mod self_closing_compatibility;
 use std::fs;
 

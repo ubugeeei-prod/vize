@@ -423,7 +423,9 @@ impl DiagnosticService {
         ecosystem_enabled: bool,
         line_index: &LineIndex<'_>,
     ) -> Vec<Diagnostic> {
-        let (linter_config, rule_options) = state.linter_settings_for_uri(uri);
+        let Some((linter_config, rule_options)) = state.linter_settings_for_uri(uri) else {
+            return vec![];
+        };
         if !linter_config.enabled {
             return vec![];
         }

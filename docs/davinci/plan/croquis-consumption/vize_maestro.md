@@ -91,5 +91,5 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.macros`              |       14 |   24 |
 | `Croquis.pattern_diagnostics` |        3 |    4 |
 | `Croquis.reactivity`          |        0 |    1 |
-| `Croquis.scopes`              |       15 |   16 |
+| `Croquis.scopes`              |       15 |   17 |
 | `Croquis.types`               |        0 |    1 |
