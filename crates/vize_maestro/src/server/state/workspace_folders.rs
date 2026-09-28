@@ -14,36 +14,82 @@
 use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::{InitializeParams, Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
-use vize_l0::config::{ConfigLintRuleOptions, LinterConfig};
+use vize_l0::config::{
+    ConfigLintRuleOptions, LinterConfig, LinterConfigPlanWithConfigRuleOptions,
+    matcher::LintPlanScope,
+};
 
 use super::ServerState;
 
 /// Linter context resolved for one workspace folder at registration time.
 pub(super) struct WorkspaceFolderConfig {
     root: PathBuf,
-    linter: LinterConfig,
-    rule_options: ConfigLintRuleOptions,
+    plan: LinterConfigPlanWithConfigRuleOptions,
+    scopes: Vec<LintPlanScope>,
+    global_ignores: Vec<LintPlanScope>,
 }
 
 impl WorkspaceFolderConfig {
     /// Load the folder's own `vize.config.*`; a folder without a config file
     /// gets the built-in defaults so contexts stay order-independent.
     fn load(root: PathBuf) -> Self {
-        let (loaded, linter) = vize_l0::config::load_config_and_linter_with_source(Some(&root));
-        if loaded.source_path.is_some() {
-            let rule_options = vize_l0::config::load_config_lint_rule_options(Some(&root));
-            Self {
-                root,
-                linter,
-                rule_options,
-            }
+        let (loaded, plan, _) = vize_l0::config::
+            load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source(
+                Some(&root),
+            );
+        let plan = if loaded.source_path.is_some() {
+            plan
         } else {
-            Self {
-                root,
-                linter: LinterConfig::default(),
-                rule_options: ConfigLintRuleOptions::default(),
-            }
+            LinterConfigPlanWithConfigRuleOptions::default()
+        };
+        let scopes = plan
+            .plan
+            .entries
+            .iter()
+            .map(|entry| {
+                LintPlanScope::new(
+                    entry.base_path.as_deref(),
+                    entry.files.as_deref(),
+                    &entry.ignores,
+                    &root,
+                    &root,
+                )
+            })
+            .collect();
+        let global_ignores = plan
+            .plan
+            .global_ignores
+            .iter()
+            .map(|entry| {
+                LintPlanScope::new(
+                    entry.base_path.as_deref(),
+                    None,
+                    std::slice::from_ref(&entry.pattern),
+                    &root,
+                    &root,
+                )
+            })
+            .collect();
+        Self {
+            root,
+            plan,
+            scopes,
+            global_ignores,
         }
+    }
+
+    fn linter_for_path(&self, path: &Path) -> Option<(LinterConfig, ConfigLintRuleOptions)> {
+        if self.global_ignores.iter().any(|scope| scope.ignores(path)) {
+            return None;
+        }
+        let matching = self
+            .scopes
+            .iter()
+            .enumerate()
+            .filter_map(|(index, scope)| scope.matches(path).then_some(index))
+            .collect::<Vec<_>>();
+        let resolved = self.plan.resolve_matching_entries(&matching);
+        Some((resolved.config, resolved.rule_options))
     }
 }
 
@@ -74,8 +120,18 @@ impl ServerState {
 
     /// Load a context for every folder carried by `initialize` (#3240),
     /// keeping the wire types out of the request handler.
-    pub(crate) fn apply_initialize_workspace_folders(&self, folders: Option<&[WorkspaceFolder]>) {
-        self.set_workspace_folders(folder_roots(folders.unwrap_or_default()));
+    pub(crate) fn apply_initialize_workspace_folders(
+        &self,
+        folders: Option<&[WorkspaceFolder]>,
+        primary: Option<&Path>,
+    ) {
+        let mut roots = folder_roots(folders.unwrap_or_default());
+        if roots.is_empty()
+            && let Some(primary) = primary
+        {
+            roots.push(primary.to_path_buf());
+        }
+        self.set_workspace_folders(roots);
     }
 
     /// Apply a `workspace/didChangeWorkspaceFolders` event: removed roots
@@ -118,14 +174,14 @@ impl ServerState {
     pub(crate) fn linter_settings_for_uri(
         &self,
         uri: &Url,
-    ) -> (LinterConfig, ConfigLintRuleOptions) {
+    ) -> Option<(LinterConfig, ConfigLintRuleOptions)> {
         if let Ok(path) = uri.to_file_path() {
             let contexts = self.workspace_folder_configs.read();
             if let Some(context) = deepest_enclosing_folder(&contexts, &path) {
-                return (context.linter.clone(), context.rule_options.clone());
+                return context.linter_for_path(&path);
             }
         }
-        (self.get_linter_config(), self.get_linter_rule_options())
+        Some((self.get_linter_config(), self.get_linter_rule_options()))
     }
 }
 
@@ -148,125 +204,5 @@ fn deepest_enclosing_folder<'a>(
 }
 
 #[cfg(test)]
-mod tests {
-    use tower_lsp::lsp_types::{Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
-    use vize_l0::{config::LintRuleSeverity, cstr};
-
-    use crate::server::ServerState;
-
-    fn folder_with_config(
-        parent: &std::path::Path,
-        name: &str,
-        config: &str,
-    ) -> std::path::PathBuf {
-        let dir = parent.join(name);
-        std::fs::create_dir_all(&dir).unwrap();
-        std::fs::write(dir.join("vize.config.json"), config).unwrap();
-        dir
-    }
-
-    #[test]
-    fn documents_resolve_their_own_folder_config_regardless_of_order() {
-        let nonce = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let parent =
-            std::env::temp_dir().join(cstr!("vize-folder-configs-{}-{nonce}", std::process::id()));
-        let strict = parent.join("strict-root");
-        std::fs::create_dir_all(&strict).unwrap();
-        let relaxed = folder_with_config(
-            &parent,
-            "relaxed-root",
-            r#"{ "linter": { "rules": { "vue/require-v-for-key": "off" } } }"#,
-        );
-
-        for roots in [
-            vec![strict.clone(), relaxed.clone()],
-            vec![relaxed.clone(), strict.clone()],
-        ] {
-            let state = ServerState::new();
-            state.set_workspace_folders(roots);
-
-            let strict_uri = Url::from_file_path(strict.join("List.vue")).unwrap();
-            let (strict_config, _) = state.linter_settings_for_uri(&strict_uri);
-            assert_eq!(strict_config.rules.get("vue/require-v-for-key"), None);
-
-            let relaxed_uri = Url::from_file_path(relaxed.join("List.vue")).unwrap();
-            let (relaxed_config, _) = state.linter_settings_for_uri(&relaxed_uri);
-            assert_eq!(
-                relaxed_config.rules.get("vue/require-v-for-key"),
-                Some(&LintRuleSeverity::Off),
-            );
-        }
-
-        let _ = std::fs::remove_dir_all(parent);
-    }
-
-    #[test]
-    fn removed_folders_drop_their_context_and_outside_documents_use_globals() {
-        let nonce = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let parent =
-            std::env::temp_dir().join(cstr!("vize-folder-removal-{}-{nonce}", std::process::id()));
-        let relaxed = folder_with_config(
-            &parent,
-            "relaxed-root",
-            r#"{ "linter": { "rules": { "vue/require-v-for-key": "off" } } }"#,
-        );
-
-        let state = ServerState::new();
-        state.set_workspace_folders(vec![relaxed.clone()]);
-        let uri = Url::from_file_path(relaxed.join("List.vue")).unwrap();
-        let (config, _) = state.linter_settings_for_uri(&uri);
-        assert_eq!(
-            config.rules.get("vue/require-v-for-key"),
-            Some(&LintRuleSeverity::Off),
-        );
-
-        state.update_workspace_folders(Vec::new(), std::slice::from_ref(&relaxed));
-        let (config, _) = state.linter_settings_for_uri(&uri);
-        assert_eq!(config.rules.get("vue/require-v-for-key"), None);
-
-        let _ = std::fs::remove_dir_all(parent);
-    }
-
-    #[test]
-    fn workspace_folder_changes_select_only_open_documents_under_changed_roots() {
-        let nonce = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let parent = std::env::temp_dir().join(cstr!(
-            "vize-folder-revalidation-{}-{nonce}",
-            std::process::id()
-        ));
-        let added_root = parent.join("added");
-        let untouched_root = parent.join("untouched");
-        std::fs::create_dir_all(&added_root).unwrap();
-        std::fs::create_dir_all(&untouched_root).unwrap();
-
-        let affected = Url::from_file_path(added_root.join("Affected.vue")).unwrap();
-        let untouched = Url::from_file_path(untouched_root.join("Untouched.vue")).unwrap();
-        let state = ServerState::new();
-        state
-            .documents
-            .open(affected.clone(), "<template />".into(), 1, "vue".into());
-        state
-            .documents
-            .open(untouched, "<template />".into(), 1, "vue".into());
-
-        let selected = state.apply_workspace_folders_change(&WorkspaceFoldersChangeEvent {
-            added: vec![WorkspaceFolder {
-                uri: Url::from_file_path(&added_root).unwrap(),
-                name: "added".into(),
-            }],
-            removed: Vec::new(),
-        });
-
-        assert_eq!(selected, vec![affected]);
-        let _ = std::fs::remove_dir_all(parent);
-    }
-}
+#[path = "workspace_folders/tests.rs"]
+mod tests;

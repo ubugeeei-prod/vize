@@ -18,7 +18,7 @@ use vize_l0::{SourceBlock, SourceRoot, String, ToCompactString};
 
 /// The dialect id carried by every [`vize_l2::expr::ForeignExpr`] this
 /// crate builds.
-pub const DIALECT: &str = "moonbit";
+pub use vize_l2::lang::moonbit::DIALECT;
 
 /// The script `lang` values that select the MoonBit expression dialect.
 pub const LANGS: [&str; 2] = ["moonbit", "mbt"];

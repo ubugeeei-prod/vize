@@ -103,7 +103,7 @@ fn canonical_prop_references_reach_parent_template_usage() {
         let child_uri = Url::from_file_path(&child_path).expect("child URI");
 
         let state = ServerState::new();
-        state.apply_lsp_initialization_options(Some(&serde_json::json!({"crossFile": true})));
+        assert!(!state.lsp_features().cross_file);
         state.set_workspace_root(project.path().to_path_buf());
         state
             .documents
@@ -135,7 +135,19 @@ fn canonical_prop_references_reach_parent_template_usage() {
             ReferencesService::references_with_corsa(&ctx, true, Some(Arc::clone(&bridge)))
                 .await
                 .expect("prop references");
+        let parent_offset = APP_SOURCE.find(":title").expect("parent prop") + 2;
+        let parent_ctx =
+            IdeContext::new(&state, &app_uri, parent_offset).expect("parent query context");
+        let parent_references =
+            ReferencesService::references_with_corsa(&parent_ctx, true, Some(Arc::clone(&bridge)))
+                .await
+                .expect("parent prop references");
         bridge.shutdown().await.expect("shutdown");
+
+        assert_eq!(
+            parent_references, references,
+            "both sides of a component prop must report the same authored locations",
+        );
 
         let child_hits = references
             .iter()

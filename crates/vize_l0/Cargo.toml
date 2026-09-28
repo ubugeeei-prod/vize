@@ -18,6 +18,7 @@ vize_carton = { workspace = true }
 default = []
 # The neutral extension wire (#6976), still owned by carton.
 extension = ["vize_carton/extension"]
+lint-glob = ["vize_carton/lint-glob"]
 
 [lints]
 workspace = true
