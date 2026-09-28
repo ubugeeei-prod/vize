@@ -95,7 +95,7 @@ fn get_landmark_role<'a>(element: &ElementNode<'a>) -> Option<&'static str> {
         "header" => Some("banner"),
         "footer" => Some("contentinfo"),
         "form" => Some("form"),
-        "section" => Some("region"),
+        "section" if get_label(element).is_some() => Some("region"),
         "search" => Some("search"),
         _ => None,
     }
@@ -115,9 +115,11 @@ fn has_bound_attribute(element: &ElementNode, name: &str) -> bool {
 }
 
 fn get_label(element: &ElementNode) -> Option<LandmarkLabel> {
-    for name in ["aria-label", "aria-labelledby"] {
+    for name in ["aria-label", "aria-labelledby", "title"] {
         if let Some(value) = get_static_or_bound_literal_attribute_value(element, name) {
-            return Some(LandmarkLabel::Static(value.to_compact_string()));
+            if !value.trim().is_empty() {
+                return Some(LandmarkLabel::Static(value.to_compact_string()));
+            }
         }
 
         if has_bound_attribute(element, name) {
@@ -352,5 +354,25 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn unnamed_sections_are_not_region_landmarks() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<main><section><h2>First</h2></section><section><h2>Second</h2></section></main>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn named_sections_are_region_landmarks() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<section title="News">A</section><section aria-label="News">B</section>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 2);
     }
 }

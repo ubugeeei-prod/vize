@@ -54,6 +54,26 @@ fn has_aria_attribute_or_binding(element: &ElementNode, name: &str) -> bool {
     })
 }
 
+fn is_focusable_separator(element: &ElementNode) -> bool {
+    if has_aria_attribute_or_binding(element, "tabindex") {
+        return true;
+    }
+    if matches!(
+        element.tag,
+        "button" | "input" | "select" | "textarea" | "summary"
+    ) {
+        return true;
+    }
+    if matches!(element.tag, "a" | "area") && has_aria_attribute_or_binding(element, "href") {
+        return true;
+    }
+    if has_aria_attribute_or_binding(element, "contenteditable") {
+        return super::helpers::get_static_attribute_value(element, "contenteditable")
+            != Some("false");
+    }
+    false
+}
+
 impl Rule for RoleHasRequiredAriaProps {
     fn meta(&self) -> &'static RuleMeta {
         &META
@@ -68,6 +88,10 @@ impl Rule for RoleHasRequiredAriaProps {
             Some(r) => r,
             None => return,
         };
+
+        if role == "separator" && !is_focusable_separator(element) {
+            return;
+        }
 
         let required_props = get_required_aria_props(role);
         if required_props.is_empty() {
@@ -169,5 +193,25 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn static_separators_do_not_require_a_value() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<hr role="separator" /><div role="separator"></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn focusable_separators_require_a_value() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div role="separator" tabindex="0"></div><div role="separator" :tabindex="index"></div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 2);
     }
 }
