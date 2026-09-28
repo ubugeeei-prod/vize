@@ -8,7 +8,10 @@ use crate::Sweep;
 /// not turn those legacy facts into native-only compiler execution.
 fn report_native_only(scope: &str, shape: Shape, sweep: &Sweep) -> String {
     let unverified = sweep.unreadable + sweep.parse_errors + sweep.without_template;
-    assert!(unverified <= sweep.files, "corpus accounting exceeds planned inputs");
+    assert!(
+        unverified <= sweep.files,
+        "corpus accounting exceeds planned inputs"
+    );
     let attempted = sweep.files - unverified;
     format!(
         "davinci native-only acceptance: scope={scope} product=compiler target={} planned={} native_only=0 legacy_backed={} unverified={} permille=0 contribution=sfc_parse:legacy:legacy",
