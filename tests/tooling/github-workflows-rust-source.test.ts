@@ -157,16 +157,25 @@ test("PR and merge-queue Rust jobs run the skeleton todo ratchet", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
     jobs: Record<string, Job>;
   };
-  const ratchetJobs = Object.entries(workflow.jobs)
-    .filter(([, job]) =>
-      (job.steps ?? []).some((step) =>
-        /check-skeleton-todos\.rs -o "\$RUNNER_TEMP\/check-skeleton-todos" && "\$RUNNER_TEMP\/check-skeleton-todos" --check/u.test(
-          step.run ?? "",
-        ),
-      ),
-    )
-    .map(([name, job]) => [name, job.if]);
-  assert.equal(ratchetJobs.length, 2, JSON.stringify(ratchetJobs));
-  assert.ok(ratchetJobs.some(([, condition]) => /pull_request/u.test(condition ?? "")));
-  assert.ok(ratchetJobs.some(([, condition]) => /merge_group/u.test(condition ?? "")));
+  for (const [jobName, event] of [
+    ["pr-rust-build", "pull_request"],
+    ["merge-rust-source", "merge_group"],
+  ]) {
+    const job = workflow.jobs[jobName];
+    assert.ok(job, `${jobName} must exist`);
+    assert.ok(
+      job.if?.includes(`github.event_name == '${event}'`) && job.if.includes("inputs.run-rust"),
+      `${jobName} must run for ${event} when Rust is selected`,
+    );
+    const ratchet = job.steps?.find((step) => step.name === "Skeleton todo ratchet");
+    assert.ok(ratchet, `${jobName} must run the skeleton todo ratchet`);
+    assert.ok(
+      ratchet.run?.includes("check-skeleton-todos.rs") && ratchet.run.includes("--check"),
+      `${jobName} must check the skeleton todo ledger`,
+    );
+    assert.ok(
+      !ratchet.if || ratchet.if.includes("inputs.run-rust"),
+      `${jobName} must not skip the ratchet for ${event}`,
+    );
+  }
 });

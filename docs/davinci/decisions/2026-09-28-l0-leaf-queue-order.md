@@ -14,7 +14,7 @@ The package alias resolves to physical `vize_l0`, which currently re-exports Car
 
 ## Product-path boundary
 
-The #7043 diff against current `main` changes no live `vize_atelier_dom`, `vize_atelier_ssr`, or `vize_atelier_sfc` source. The workspace `vize_l0` alias changes from Carton to the physical L0 package, but L0 immediately re-exports `vize_carton::*`, so existing compiler storage imports still use Carton's implementation. The only changed legacy parser file is a test-only `to_string()` to `to_owned()` adjustment. Davinci's `id`, `side_table`, and preserved-pass paths re-export their moved L0 definitions. This slice does not replace a compiler product's legacy execution path; [#6880](https://github.com/ubugeeei-prod/vize/issues/6880) remains a prerequisite for that later switch.
+The #7043 diff against current `main` changes no live `vize_atelier_dom` or `vize_atelier_sfc` source. It changes native SSR slot planning in `crates/vize_atelier_ssr/src/l4/emit/slots.rs` to keep instruction counts within the existing ceilings, without switching product-path selection. The workspace `vize_l0` alias changes from Carton to the physical L0 package, but L0 immediately re-exports `vize_carton::*`, so existing compiler storage imports still use Carton's implementation. The only changed legacy parser file is a test-only `to_string()` to `to_owned()` adjustment. Davinci's `id`, `side_table`, and preserved-pass paths re-export their moved L0 definitions. This slice does not replace a compiler product's legacy execution path; [#6880](https://github.com/ubugeeei-prod/vize/issues/6880) remains a prerequisite for that later switch.
 
 ## Instruction-count recovery
 
