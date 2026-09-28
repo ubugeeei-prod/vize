@@ -45,7 +45,7 @@ void test("package changes run package tests while documentation stays fast", ()
     tooling: false,
     playground: false,
   });
-  assert.deepEqual(planSourceChecks(["docs/guide/example.md", "README.md"]), {
+  assert.deepEqual(planSourceChecks(["docs/guide/example.md", "README.md", "AGENTS.md"]), {
     rust: false,
     js: false,
     tooling: false,
