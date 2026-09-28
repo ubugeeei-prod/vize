@@ -85,3 +85,5 @@ pub use surface::{
     AttrValue, Attribute, CloseTag, Element, ElementClose, Interpolation, OpenTag, SurfaceChild,
     SurfaceTree, Token, TokenStatus,
 };
+
+// Source report CI diagnostic: source-only candidate.
