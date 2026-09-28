@@ -817,6 +817,25 @@ fn test_nuxt_explicit_page_meta_import_produces_route_artifact() {
 }
 
 #[test]
+fn test_nuxt_mixed_page_meta_import_retains_runtime_binding() {
+    let source = r#"<script setup lang="ts">
+import { definePageMeta, useRoute } from '#imports'
+definePageMeta({ layout: 'bare' })
+const route = useRoute()
+</script>
+<template><div>{{ route.path }}</div></template>"#;
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse SFC");
+    let result = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("compile SFC");
+    assert_eq!(result.macro_artifacts.len(), 1);
+    assert!(
+        result.code.contains("import { useRoute } from '#imports'"),
+        "{}",
+        result.code
+    );
+    assert!(!result.code.contains("definePageMeta"), "{}", result.code);
+}
+
+#[test]
 fn test_script_setup_define_route_rules_is_compile_time_only() {
     let source = r#"<script setup lang="ts">
 defineRouteRules({

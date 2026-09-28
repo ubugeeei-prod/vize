@@ -116,6 +116,11 @@ pub(crate) fn erase_artifact_macro_statements_traced(content: &str) -> Option<(S
             continue;
         }
 
+        if let Some((start, end)) = artifact_macro_import_removal_span(stmt, content) {
+            ranges.push((start, end));
+            continue;
+        }
+
         let Some(call) = artifact_call_from_statement(stmt) else {
             continue;
         };
@@ -208,7 +213,15 @@ fn collect_static_imports<'a>(
             continue;
         };
 
-        imports.push_str(import.trim());
+        if let Some((remove_start, remove_end)) = artifact_macro_import_removal_span(stmt, content)
+        {
+            let mut cleaned = String::new();
+            cleaned.push_str(content.get(start..remove_start).unwrap_or_default());
+            cleaned.push_str(content.get(remove_end..end).unwrap_or_default());
+            imports.push_str(cleaned.trim());
+        } else {
+            imports.push_str(import.trim());
+        }
         imports.push('\n');
     }
 
@@ -260,6 +273,59 @@ fn is_artifact_macro_only_import(stmt: &Statement<'_>) -> bool {
         && specifiers.iter().all(|specifier| {
             artifact_macro_import_local_name(specifier, import_decl.source.value.as_str()).is_some()
         })
+}
+
+/// Remove a compile-time macro from an import that also carries runtime bindings.
+/// The source spans keep the remaining import and its provenance byte-identical.
+fn artifact_macro_import_removal_span(
+    stmt: &Statement<'_>,
+    content: &str,
+) -> Option<(usize, usize)> {
+    let Statement::ImportDeclaration(import_decl) = stmt else {
+        return None;
+    };
+    if import_decl.import_kind.is_type()
+        || !is_known_artifact_macro_import_source(import_decl.source.value.as_str())
+    {
+        return None;
+    }
+    let specifiers = import_decl.specifiers.as_ref()?;
+    if specifiers.len() < 2 {
+        return None;
+    }
+    let macro_indices: Vec<_> = specifiers
+        .iter()
+        .enumerate()
+        .filter_map(|(index, specifier)| {
+            artifact_macro_import_local_name(specifier, import_decl.source.value.as_str())
+                .map(|_| index)
+        })
+        .collect();
+    if macro_indices.len() != 1 {
+        return None;
+    }
+    let index = macro_indices[0];
+    let macro_span = specifiers[index].span();
+    let other_named: Vec<_> = specifiers
+        .iter()
+        .enumerate()
+        .filter(|(other, specifier)| {
+            *other != index && matches!(specifier, ImportDeclarationSpecifier::ImportSpecifier(_))
+        })
+        .collect();
+    if other_named.is_empty() {
+        let before = content.get(import_decl.span.start as usize..macro_span.start as usize)?;
+        let open = before.rfind('{')? + import_decl.span.start as usize;
+        let after = content.get(macro_span.end as usize..import_decl.span.end as usize)?;
+        let close = after.find('}')? + macro_span.end as usize + 1;
+        let default_end = specifiers[0].span().end as usize;
+        return Some((default_end.min(open), close));
+    }
+    if let Some(next) = other_named.iter().find(|(other, _)| *other > index) {
+        return Some((macro_span.start as usize, next.1.span().start as usize));
+    }
+    let previous = other_named.last()?.1.span();
+    Some((previous.end as usize, macro_span.end as usize))
 }
 
 fn artifact_macro_import_local_name<'a>(
@@ -510,6 +576,33 @@ const msg = 'ready'
         assert!(!erased.contains("definePageMeta"));
         assert!(!erased.contains("@typed-router"));
         assert!(erased.contains("const msg = 'ready'"));
+    }
+
+    #[test]
+    fn retains_runtime_binding_in_mixed_nuxt_import() {
+        for import in [
+            "import { definePageMeta, useRoute } from '#imports'",
+            "import { useRoute, definePageMeta } from '#imports'",
+        ] {
+            let content =
+                format!("{import}\ndefinePageMeta({{ name: 'docs' }})\nconst route = useRoute()\n");
+            let artifacts = extract_macro_artifacts(&content, 0);
+            assert_eq!(artifacts.len(), 1, "{import}");
+            assert!(
+                artifacts[0]
+                    .module_code
+                    .as_deref()
+                    .is_some_and(|code| code.contains("import { useRoute } from '#imports'")),
+                "{import}"
+            );
+            let erased = erase_artifact_macro_statements(&content).expect("macro erasure");
+            assert!(
+                erased.contains("import { useRoute } from '#imports'"),
+                "{erased}"
+            );
+            assert!(!erased.contains("definePageMeta"), "{erased}");
+            assert!(erased.contains("const route = useRoute()"), "{erased}");
+        }
     }
 
     #[test]
