@@ -4687,21 +4687,13 @@ dependencies = [
  "vize_canon",
  "vize_davinci",
  "vize_extension_contract",
- "vize_extension_sdk",
+ "vize_guest",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
  "vize_marquette",
  "wasmtime",
-]
-
-[[package]]
-name = "vize_extension_sdk"
-version = "0.429.1"
-dependencies = [
- "dlmalloc",
- "wit-bindgen 0.62.0",
 ]
 
 [[package]]
@@ -4748,6 +4740,14 @@ dependencies = [
  "thiserror 2.0.20",
  "vize_atelier_sfc",
  "vize_l0",
+]
+
+[[package]]
+name = "vize_guest"
+version = "0.429.1"
+dependencies = [
+ "dlmalloc",
+ "wit-bindgen 0.62.0",
 ]
 
 [[package]]

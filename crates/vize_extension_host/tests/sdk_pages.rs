@@ -1,7 +1,7 @@
 //! The SDK's page writers speak the host's grammar exactly (P6-2).
 //!
 //! The SDK cannot depend on the host, so the L1 page has two printers — the
-//! host's (`SurfacePage`) and the guest's (`vize_extension_sdk::pages::l1`).
+//! host's (`SurfacePage`) and the guest's (`vize_guest::pages::l1`).
 //! Over the TS-19 battery and its truncations they print byte-equal pages;
 //! the L2 writer's pages are canonical disegno pages the host accepts; and
 //! the SDK's capability offer negotiates exactly as the in-tree one.
@@ -13,8 +13,8 @@ use vize_davinci::dump::Dump;
 use vize_extension_host::accept::full_text;
 use vize_extension_host::surface_page::{PageClose, PageNode, PageToken};
 use vize_extension_host::{SurfacePage, negotiate};
-use vize_extension_sdk::pages::{l1, l2};
-use vize_extension_sdk::types::Span;
+use vize_guest::pages::{l1, l2};
+use vize_guest::types::Span;
 use vize_l0::{Allocator, String};
 use vize_l2::dump::historical::v1::Page as HistoricalL2Page;
 
@@ -149,7 +149,7 @@ fn the_sdk_l2_writer_prints_canonical_disegno_pages() {
 
 #[test]
 fn the_sdk_capability_negotiates_like_the_in_tree_offer() {
-    let offer = vize_extension_sdk::capability(&["html"]);
+    let offer = vize_guest::capability(&["html"]);
     let mirrored = vize_extension_host::Capability {
         protocol_version: offer.protocol_version,
         features: offer
@@ -165,7 +165,7 @@ fn the_sdk_capability_negotiates_like_the_in_tree_offer() {
 
 #[test]
 fn legacy_sdk_names_write_identical_wire_pages() {
-    use vize_extension_sdk::{L1_PAGE_SCHEMA, L2_PAGE_SCHEMA, L3_PAGE_SCHEMA, pages};
+    use vize_guest::{L1_PAGE_SCHEMA, L2_PAGE_SCHEMA, L3_PAGE_SCHEMA, pages};
 
     let surface: pages::s1::SurfacePage = pages::l1::SurfacePage::default();
     let semantic: pages::s2::SemanticPage = pages::l2::SemanticPage::default();
@@ -179,9 +179,9 @@ fn legacy_sdk_names_write_identical_wire_pages() {
         pages::s2_page(semantic.text()),
         pages::l2_page(semantic.text())
     );
-    assert_eq!(vize_extension_sdk::S1_PAGE_SCHEMA, L1_PAGE_SCHEMA);
-    assert_eq!(vize_extension_sdk::S2_PAGE_SCHEMA, L2_PAGE_SCHEMA);
-    assert_eq!(vize_extension_sdk::S3_PAGE_SCHEMA, L3_PAGE_SCHEMA);
+    assert_eq!(vize_guest::S1_PAGE_SCHEMA, L1_PAGE_SCHEMA);
+    assert_eq!(vize_guest::S2_PAGE_SCHEMA, L2_PAGE_SCHEMA);
+    assert_eq!(vize_guest::S3_PAGE_SCHEMA, L3_PAGE_SCHEMA);
     assert_eq!(
         vize_extension_host::contract::S1_PAGE_SCHEMA,
         L1_PAGE_SCHEMA

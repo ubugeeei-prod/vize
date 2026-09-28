@@ -185,7 +185,7 @@ async fn prepare_candidate(
       continue
     }
     if @process.run("cargo", [
-        "update", "--manifest-path", manifest, "-p", "vize_extension_sdk", "--offline",
+        "update", "--manifest-path", manifest, "-p", "vize_guest", "--offline",
       ]) != 0 {
       @stdio.stderr.write("Failed to update the SDK guest lockfile for \{manifest}\n")
       return 1

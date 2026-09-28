@@ -11,7 +11,7 @@
 
 **Lane:** A
 
-**Deliverable:** `crates/vize_extension_sdk/wit/input-dialect.wit`: block in → L1 surface tree and L2 page out, as coarse-grained calls (one call per block, canonical-ABI copy cost paid once), plus the `get-capability` handshake — integer protocol version and feature strings (the Swift import) — shared by every world.
+**Deliverable:** `crates/vize_guest/wit/input-dialect.wit`: block in → L1 surface tree and L2 page out, as coarse-grained calls (one call per block, canonical-ABI copy cost paid once), plus the `get-capability` handshake — integer protocol version and feature strings (the Swift import) — shared by every world.
 
 **Steps:**
 
@@ -33,7 +33,7 @@
 
 **Lane:** A
 
-**Deliverable:** `crates/vize_extension_sdk/wit/expression-dialect.wit`: environment + expression body in → analysis facts (referenced bindings, const-ness, spans — P2-5b's capability contract) and a checkable projection with span links out (charter #14).
+**Deliverable:** `crates/vize_guest/wit/expression-dialect.wit`: environment + expression body in → analysis facts (referenced bindings, const-ness, spans — P2-5b's capability contract) and a checkable projection with span links out (charter #14).
 
 **Steps:**
 
@@ -52,7 +52,7 @@
 
 **Lane:** A
 
-**Deliverable:** `crates/vize_extension_sdk/wit/output-target.wit`: canonical L3/L2 in → emitted document (P3-9's span-carrying L4 document) out.
+**Deliverable:** `crates/vize_guest/wit/output-target.wit`: canonical L3/L2 in → emitted document (P3-9's span-carrying L4 document) out.
 
 **Steps:**
 
@@ -74,7 +74,7 @@
 
 **Lane:** B
 
-**Deliverable:** versioned, prebuilt contract artifacts published per release — WIT bindings, a Rust SDK crate `crates/vize_extension_sdk/`, JS/TS types in `npm/extension-sdk/` — so no consumer ever compiles vize internals (the Swift macro-crisis countermeasure). Lane B owns the crate implementation, manifest, README, examples, and JS/TS package; lane A owns the WIT and released surface history that the SDK packages.
+**Deliverable:** versioned, prebuilt contract artifacts published per release — WIT bindings, an independent Rust guest product crate `crates/vize_guest/`, JS/TS types in `npm/extension-sdk/` — so no consumer ever compiles vize internals (the Swift macro-crisis countermeasure). `vize_guest` is the explicit external-product exception to internal level-only crate names; it owns the guest WIT and bindings, not host implementation. Lane B owns the crate implementation, manifest, README, examples, and JS/TS package; lane A owns the WIT and released surface history that the SDK packages.
 
 **Steps:**
 

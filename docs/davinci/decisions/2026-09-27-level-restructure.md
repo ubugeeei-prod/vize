@@ -14,8 +14,8 @@ Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (res
 ## Levels and naming
 
 - The stages are renamed **L0–L4** (levels). The rename is in progress.
-- **Crates are named by level only**: `vize_l0` … `vize_l4`, and conversion crates `vize_l1_to_l2` and `vize_l2_to_l3`. The one exception is `vize_l0_derive`, because proc-macro crates must be separate.
-- There are no functional crate names (no `vize_folio`, `vize_dialect`, …). Functional concerns are modules inside a level crate.
+- **Internal Davinci crates are named by level only**: `vize_l0` … `vize_l4`, and conversions `vize_l1_to_l2` and `vize_l2_to_l3`. `vize_l0_derive` stays separate for proc macros. The independent external Rust guest product is the explicit `vize_guest` exception ([decision](./2026-09-28-guest-sdk-crate-axis.md)).
+- There are no functional internal crate names (no `vize_folio`, `vize_dialect`, …). Internal functional concerns are modules inside a level crate.
 - **Codenames are aliases only.** Davinci, Sinopia, Disegno, Ricalco, Impeto, Folio, Spolvero and the rest may appear in crate docs (`//! L3 — reactivity IR (codename: Impeto)`) and in `docs/`. They never appear in crate, directory, file, module or type names, or in serialized strings. Ordinary terms such as `lattice` and `ledger` are not codenames.
 - Examples of the mapping ([#6832](https://github.com/ubugeeei-prod/vize/issues/6832)):
 

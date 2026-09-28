@@ -33,8 +33,8 @@ Lanes own disjoint paths within this phase; registration touchpoints (the worksp
 
 | Lane | Tasks               | Owns (only this lane edits)                                                                                                                                                  |
 | ---- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A    | P6-1a, P6-1b, P6-1c | `crates/vize_extension_sdk/wit/`, `crates/vize_extension_sdk/versions/`                                                                                                      |
-| B    | P6-2                | `crates/vize_extension_sdk/src/`, `crates/vize_extension_sdk/examples/`, `crates/vize_extension_sdk/Cargo.toml`, `crates/vize_extension_sdk/README.md`, `npm/extension-sdk/` |
+| A    | P6-1a, P6-1b, P6-1c | `crates/vize_guest/wit/`, `crates/vize_guest/versions/`                                                                                                      |
+| B    | P6-2                | `crates/vize_guest/src/`, `crates/vize_guest/examples/`, `crates/vize_guest/Cargo.toml`, `crates/vize_guest/README.md`, `npm/extension-sdk/` |
 | C    | P6-3                | `crates/vize_extension_host/`                                                                                                                                                |
 | D    | P6-4a, P6-4b, P6-5  | `crates/vize_dialect_moonbit/`, `docs/davinci/plan/exprref-validation.md`                                                                                                    |
 | E    | P6-6                | `examples/volt-target/`                                                                                                                                                      |

@@ -5,7 +5,7 @@
 # depends on no vize implementation crate (a tooling test pins the set), so
 # no consumer ever compiles vize internals — the Swift macro lesson.
 [package]
-name = "vize_extension_sdk"
+name = "vize_guest"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

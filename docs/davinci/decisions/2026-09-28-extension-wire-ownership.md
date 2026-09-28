@@ -7,7 +7,7 @@ Tracked in [#6833](https://github.com/ubugeeei-prod/vize/issues/6833),
 ## Decision
 
 Retire the separately named `vize_extension_contract`,
-`vize_extension_host` and `vize_extension_sdk` packages by moving their actual
+`vize_extension_host` and `vize_guest` packages by moving their actual
 responsibilities into the levels and the product integration owner. Do not add
 a renamed extension package, a guest SDK naming exception or a package facade.
 

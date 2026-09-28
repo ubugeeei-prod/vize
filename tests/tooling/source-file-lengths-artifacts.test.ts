@@ -22,7 +22,7 @@ test("only canonical released contract artifacts are exempt from source length",
     git(cwd, "add", "README.md");
     git(cwd, "-c", "user.name=Vize", "-c", "user.email=vize@example.com", "commit", "-qm", "base");
     const base = git(cwd, "rev-parse", "HEAD");
-    const artifact = "crates/vize_extension_sdk/versions/vize-contracts@0.1.3.json";
+    const artifact = "crates/vize_guest/versions/vize-contracts@0.1.3.json";
     const text = `${Array.from({ length: 351 }, () => "line").join("\n")}\n`;
     const write = (relative: string) => {
       const file = path.join(cwd, relative);
@@ -40,9 +40,9 @@ test("only canonical released contract artifacts are exempt from source length",
 
     const controls = [
       "crates/other/versions/vize-contracts@0.1.3.json",
-      "crates/vize_extension_sdk/versions/authored.rs",
-      "crates/vize_extension_sdk/versions/other.json",
-      "crates/vize_extension_sdk/versions/vize-contracts@nested/part.json",
+      "crates/vize_guest/versions/authored.rs",
+      "crates/vize_guest/versions/other.json",
+      "crates/vize_guest/versions/vize-contracts@nested/part.json",
     ];
     controls.forEach(write);
     const result = run();

@@ -1,4 +1,4 @@
-# vize_extension_sdk
+# vize_guest
 
 The SDK for Vize extension-contract guests: the canonical `vize:contracts`
 WIT package (`wit/`) and its released surface history (`versions/`),

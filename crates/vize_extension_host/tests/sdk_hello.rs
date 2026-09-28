@@ -1,9 +1,9 @@
 //! P6-2 acceptance: a hello-world input dialect builds from the **packed**
 //! SDK alone and runs through the host.
 //!
-//! The test packs `vize_extension_sdk` (`cargo package`), unpacks the
+//! The test packs `vize_guest` (`cargo package`), unpacks the
 //! tarball outside the source tree, copies the example's sources
-//! (`crates/vize_extension_sdk/examples/hello-dialect`) next to it with a
+//! (`crates/vize_guest/examples/hello-dialect`) next to it with a
 //! manifest whose only vize dependency is that unpacked tarball — no path into
 //! the workspace — builds the component for `wasm32-wasip2`, and exchanges a
 //! block in both hosting modes with exact pages.
@@ -48,7 +48,7 @@ fn build_hello() -> PathBuf {
         &[
             "package",
             "-p",
-            "vize_extension_sdk",
+            "vize_guest",
             "--allow-dirty",
             "--no-verify",
         ],
@@ -60,7 +60,7 @@ fn build_hello() -> PathBuf {
         ],
     );
     let version = env!("CARGO_PKG_VERSION");
-    let crate_file = pack.join(cstr!("package/vize_extension_sdk-{version}.crate").as_str());
+    let crate_file = pack.join(cstr!("package/vize_guest-{version}.crate").as_str());
     let unpacked = target_root.join("sdk");
     std::fs::create_dir_all(&unpacked).expect("creates the unpack directory");
     let status = Command::new("tar")
@@ -75,21 +75,21 @@ fn build_hello() -> PathBuf {
         "unpacking {} failed",
         crate_file.display()
     );
-    let sdk = unpacked.join(cstr!("vize_extension_sdk-{version}").as_str());
+    let sdk = unpacked.join(cstr!("vize_guest-{version}").as_str());
 
-    let example = root().join("crates/vize_extension_sdk/examples/hello-dialect");
+    let example = root().join("crates/vize_guest/examples/hello-dialect");
     let project = target_root.join("project");
     std::fs::create_dir_all(project.join("src")).expect("creates the project");
     std::fs::copy(example.join("src/lib.rs"), project.join("src/lib.rs")).expect("copies lib.rs");
     let manifest = std::fs::read_to_string(example.join("Cargo.toml")).expect("reads the manifest");
-    let local = "vize_extension_sdk = { path = \"../..\" }";
+    let local = "vize_guest = { path = \"../..\" }";
     assert_eq!(
         manifest.matches(local).count(),
         1,
         "the example has one local SDK edge"
     );
     let packed = cstr!(
-        "vize_extension_sdk = {{ path = {:?} }}",
+        "vize_guest = {{ path = {:?} }}",
         sdk.to_str().expect("a UTF-8 target path")
     );
     std::fs::write(project.join("Cargo.toml"), manifest.replace(local, &packed))

@@ -3,16 +3,16 @@
 extern crate alloc;
 use alloc::string::String;
 use alloc::vec::Vec;
-use vize_extension_sdk::typed_bindings::exports::vize::contracts::typed_expression_analysis;
-use vize_extension_sdk::typed_handshake as handshake;
+use vize_guest::typed_bindings::exports::vize::contracts::typed_expression_analysis;
+use vize_guest::typed_handshake as handshake;
 use typed_expression_analysis::TypedAnalysis as Analysis;
-use vize_extension_sdk::types::Page;
+use vize_guest::types::Page;
 
 struct Echo;
 
 impl handshake::Guest for Echo {
     fn get_capability() -> handshake::Capability {
-        vize_extension_sdk::typed_capability()
+        vize_guest::typed_capability()
     }
 }
 
@@ -33,4 +33,4 @@ impl typed_expression_analysis::Guest for Echo {
     }
 }
 
-vize_extension_sdk::export_typed_expression_dialect!(Echo);
+vize_guest::export_typed_expression_dialect!(Echo);

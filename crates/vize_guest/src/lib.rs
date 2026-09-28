@@ -9,21 +9,21 @@
 //! traits:
 //!
 //! ```text
-//! use vize_extension_sdk::handshake::{Capability, Guest as Handshake};
-//! use vize_extension_sdk::input_lowering::{Guest as Lowering, LoweredBlock, SourceBlock};
+//! use vize_guest::handshake::{Capability, Guest as Handshake};
+//! use vize_guest::input_lowering::{Guest as Lowering, LoweredBlock, SourceBlock};
 //!
 //! struct Dialect;
 //! impl Handshake for Dialect {
 //!     fn get_capability() -> Capability {
-//!         vize_extension_sdk::capability(&["hello"])
+//!         vize_guest::capability(&["hello"])
 //!     }
 //! }
 //! impl Lowering for Dialect {
 //!     fn lower_block(block: SourceBlock) -> LoweredBlock {
-//!         /* write the L1 and L2 pages with `vize_extension_sdk::pages` */
+//!         /* write the L1 and L2 pages with `vize_guest::pages` */
 //!     }
 //! }
-//! vize_extension_sdk::export_input_dialect!(Dialect);
+//! vize_guest::export_input_dialect!(Dialect);
 //! ```
 //!
 //! The crate owns the canonical WIT package (`wit/`) and released surfaces
@@ -68,7 +68,7 @@ pub mod bindings {
         world: "input-dialect",
         pub_export_macro: true,
         export_macro_name: "export_input_dialect",
-        default_bindings_module: "vize_extension_sdk::bindings",
+        default_bindings_module: "vize_guest::bindings",
         additional_derives: [PartialEq, Eq],
     });
 }
@@ -151,7 +151,7 @@ pub mod typed_bindings {
         world: "typed-expression-dialect",
         pub_export_macro: true,
         export_macro_name: "export_typed_expression_dialect",
-        default_bindings_module: "vize_extension_sdk::typed_bindings",
+        default_bindings_module: "vize_guest::typed_bindings",
         additional_derives: [PartialEq, Eq],
     });
 }

@@ -11,10 +11,10 @@ use alloc::vec::Vec;
 
 // Links the SDK's runtime (allocator, `cabi_realloc`, `memcmp`, panic
 // handler) into this component.
-use vize_extension_sdk as _;
+use vize_guest as _;
 
 wit_bindgen::generate!({
-    path: "../../../../vize_extension_sdk/wit",
+    path: "../../../../vize_guest/wit",
     world: "output-target",
 });
 

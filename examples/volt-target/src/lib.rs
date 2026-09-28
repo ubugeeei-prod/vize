@@ -9,10 +9,10 @@ extern crate alloc;
 use alloc::string::String;
 use alloc::vec::Vec;
 
-use vize_extension_sdk as _;
+use vize_guest as _;
 
 wit_bindgen::generate!({
-    path: "../../crates/vize_extension_sdk/wit",
+    path: "../../crates/vize_guest/wit",
     world: "output-target",
 });
 

@@ -36,7 +36,7 @@ members = [
   "crates/vize_extension_host",
   "crates/vize_resident",
   "crates/vize_dialect_moonbit",
-  "crates/vize_extension_sdk",
+  "crates/vize_guest",
   "tools/benchmarks/crates/davinci_harness",
   "tools/benchmarks/crates/vize",
   "tests/davinci_test_support",
@@ -80,7 +80,7 @@ vize_curator = { path = "crates/vize_curator" }
 vize_resident = { path = "crates/vize_resident" }
 vize_extension_contract = { path = "crates/vize_extension_contract" }
 vize_extension_host = { path = "crates/vize_extension_host" }
-vize_extension_sdk = { path = "crates/vize_extension_sdk" }
+vize_guest = { path = "crates/vize_guest" }
 
 # Publishable Davinci stage infrastructure. Stage crates keep their physical
 # names and version fallbacks so a publishable consumer can resolve the same
@@ -204,7 +204,7 @@ wasmtime = { version = "=48.0.2", default-features = false, features = [
 # Reads WIT sources for contract-surface classification (P6-8), behind
 # `vize_marquette`'s `wit` feature.
 wit-parser = { version = "=0.259.0", default-features = false, features = ["std"] }
-# The guest side of the contracts (`vize_extension_sdk`, P6-2): WIT bindings
+# The guest side of the contracts (`vize_guest`, P6-2): WIT bindings
 # and the allocator an import-free `no_std` guest links.
 wit-bindgen = { version = "=0.62.0", default-features = false, features = ["macros", "realloc"] }
 dlmalloc = { version = "=0.2.14", features = ["global"] }

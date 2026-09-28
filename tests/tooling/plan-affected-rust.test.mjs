@@ -226,11 +226,11 @@ void test("real Cargo metadata supplies the current workspace aliases and revers
   const all = planAffectedRust(metadata, ["Cargo.lock"]);
   assert.deepEqual(all.packages, workspace.map((pkg) => pkg.name).sort());
   assert.equal(all.packages.includes("vize-zed-extension"), false);
-  const leaf = workspace.find((pkg) => pkg.name === "vize_extension_sdk");
+  const leaf = workspace.find((pkg) => pkg.name === "vize_guest");
   assert.ok(leaf);
   const leafPath = leaf.manifest_path.slice(metadata.workspace_root.length + 1);
   const selected = planAffectedRust(metadata, [leafPath]);
-  assert.ok(selected.packages.includes("vize_extension_sdk"));
+  assert.ok(selected.packages.includes("vize_guest"));
   assert.ok(selected.packages.length < all.packages.length);
   const foundation = workspace.find((pkg) => pkg.name === "vize_l0" || pkg.name === "vize_carton");
   const foundationPath = foundation.manifest_path.slice(metadata.workspace_root.length + 1);

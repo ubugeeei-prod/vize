@@ -1,4 +1,4 @@
-//! Hello, dialect: the smallest input dialect built on `vize_extension_sdk`.
+//! Hello, dialect: the smallest input dialect built on `vize_guest`.
 //!
 //! A `lang="hello"` block lists one name per line; the dialect greets each.
 //! L1 records every line as one text token (tiling the block), L2 lowers the
@@ -21,18 +21,18 @@ extern crate alloc;
 use alloc::string::String;
 use alloc::vec::Vec;
 
-use vize_extension_sdk::handshake::{Capability, Guest as Handshake};
-use vize_extension_sdk::input_lowering::{Guest as Lowering, LoweredBlock, SourceBlock};
-use vize_extension_sdk::pages::l1::{Node, SurfacePage, Token};
-use vize_extension_sdk::pages::l2::{Op, SemanticPage};
-use vize_extension_sdk::pages::{l1_page, l2_page};
-use vize_extension_sdk::types::Span;
+use vize_guest::handshake::{Capability, Guest as Handshake};
+use vize_guest::input_lowering::{Guest as Lowering, LoweredBlock, SourceBlock};
+use vize_guest::pages::l1::{Node, SurfacePage, Token};
+use vize_guest::pages::l2::{Op, SemanticPage};
+use vize_guest::pages::{l1_page, l2_page};
+use vize_guest::types::Span;
 
 struct Hello;
 
 impl Handshake for Hello {
     fn get_capability() -> Capability {
-        vize_extension_sdk::capability(&["hello"])
+        vize_guest::capability(&["hello"])
     }
 }
 
@@ -87,4 +87,4 @@ impl Lowering for Hello {
     }
 }
 
-vize_extension_sdk::export_input_dialect!(Hello);
+vize_guest::export_input_dialect!(Hello);
