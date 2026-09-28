@@ -118,8 +118,7 @@ fn format_layout_only(source: &str, options: &FormatOptions) -> String {
     let mut start = 0usize;
     let mut index = 0usize;
 
-    while index < bytes.len() {
-        let byte = bytes[index];
+    while let Some(&byte) = bytes.get(index) {
         if byte == b'\\' && index + 1 < bytes.len() {
             index += 2;
             continue;
@@ -152,7 +151,7 @@ fn format_layout_only(source: &str, options: &FormatOptions) -> String {
             b'{' if parens == 0 && brackets == 0 => {
                 write_css_line(
                     &mut output,
-                    source[start..index].trim(),
+                    source.get(start..index).unwrap_or_default().trim(),
                     depth,
                     &indent,
                     newline,
@@ -167,7 +166,7 @@ fn format_layout_only(source: &str, options: &FormatOptions) -> String {
                 start = index + 1;
             }
             b';' if parens == 0 && brackets == 0 => {
-                let statement = source[start..index].trim();
+                let statement = source.get(start..index).unwrap_or_default().trim();
                 if !statement.is_empty() {
                     write_css_indent(&mut output, depth, &indent);
                     output.push_str(statement);
@@ -179,7 +178,7 @@ fn format_layout_only(source: &str, options: &FormatOptions) -> String {
             b'}' if parens == 0 && brackets == 0 && depth > 0 => {
                 write_css_line(
                     &mut output,
-                    source[start..index].trim(),
+                    source.get(start..index).unwrap_or_default().trim(),
                     depth,
                     &indent,
                     newline,
@@ -188,7 +187,13 @@ fn format_layout_only(source: &str, options: &FormatOptions) -> String {
                 write_css_indent(&mut output, depth, &indent);
                 output.push('}');
                 output.push_str(newline);
-                if depth == 0 && !source[index + 1..].trim().is_empty() {
+                if depth == 0
+                    && !source
+                        .get(index + 1..)
+                        .unwrap_or_default()
+                        .trim()
+                        .is_empty()
+                {
                     output.push_str(newline);
                 }
                 start = index + 1;
@@ -197,7 +202,13 @@ fn format_layout_only(source: &str, options: &FormatOptions) -> String {
         }
         index += 1;
     }
-    write_css_line(&mut output, source[start..].trim(), depth, &indent, newline);
+    write_css_line(
+        &mut output,
+        source.get(start..).unwrap_or_default().trim(),
+        depth,
+        &indent,
+        newline,
+    );
     output
 }
 
@@ -231,11 +242,11 @@ fn source_separator_lines(source: &str) -> usize {
 
 fn source_separator_lines_before(source: &str) -> usize {
     let prefix_len = source.len() - source.trim_start().len();
-    source_separator_lines(&source[..prefix_len])
+    source_separator_lines(source.get(..prefix_len).unwrap_or_default())
 }
 
 fn source_separator_lines_after(source: &str) -> usize {
-    source_separator_lines(&source[source.trim_end().len()..])
+    source_separator_lines(source.get(source.trim_end().len()..).unwrap_or_default())
 }
 
 fn changes_authored_css(source: &str, printed: &str) -> bool {
@@ -247,10 +258,9 @@ fn changes_authored_css(source: &str, printed: &str) -> bool {
         let mut output = Vec::with_capacity(bytes.len());
         let mut index = 0;
         let mut quote = None;
-        while index < bytes.len() {
-            let byte = bytes[index];
+        while let Some(&byte) = bytes.get(index) {
             if byte == b'\\' && index + 1 < bytes.len() {
-                output.extend_from_slice(&bytes[index..index + 2]);
+                output.extend_from_slice(bytes.get(index..index + 2).unwrap_or_default());
                 index += 2;
                 continue;
             }
@@ -273,7 +283,12 @@ fn changes_authored_css(source: &str, printed: &str) -> bool {
                 continue;
             }
             if byte == b';'
-                && bytes[index + 1..].iter().find(|b| !b.is_ascii_whitespace()) == Some(&b'}')
+                && bytes
+                    .get(index + 1..)
+                    .unwrap_or_default()
+                    .iter()
+                    .find(|b| !b.is_ascii_whitespace())
+                    == Some(&b'}')
             {
                 index += 1;
                 continue;
