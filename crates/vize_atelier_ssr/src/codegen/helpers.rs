@@ -64,9 +64,9 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         let fallthrough_child_index = if inherit_attrs && !as_fragment {
-            single_fallthrough_child_index(children)
+            single_fallthrough_child_index(children).unwrap_or(usize::MAX)
         } else {
-            None
+            usize::MAX
         };
 
         for (index, child) in vize_atelier_core::walk_probe::ssr_children(children).enumerate() {
@@ -74,7 +74,7 @@ impl<'a> SsrCodegenContext<'a> {
                 child,
                 disable_nested_fragments,
                 disable_comment,
-                fallthrough_child_index == Some(index),
+                fallthrough_child_index == index,
             );
         }
 
