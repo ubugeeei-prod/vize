@@ -97,6 +97,27 @@ try {
       const html = await response.text();
       fs.writeFileSync(path.join(artifacts, `${route === "/" ? "index" : "about"}.html`), html);
       assert.match(html, new RegExp(`<h1[^>]*>${heading}</h1>`));
+      if (route === "/") {
+        assert.match(html, /<article[^>]*data-card="Alpha"[^>]*>/);
+        assert.match(html, /<article[^>]*data-card="Beta"[^>]*>/);
+        assert.match(html, /<strong[^>]*>Alpha<\/strong>/);
+        assert.match(html, /<strong[^>]*>Beta<\/strong>/);
+        assert.match(html, /<span[^>]*class="card-id"[^>]*>alpha<\/span>/);
+        assert.match(html, /<span[^>]*class="card-id"[^>]*>beta<\/span>/);
+        assert.equal((html.match(/class="featured"/g) ?? []).length, 1);
+        assert.match(html, /<span[^>]*class="featured"[^>]*>Featured<\/span>/);
+        const cssFiles = fs
+          .readdirSync(path.join(fixture, ".output/public/_nuxt"))
+          .filter((name) => name.endsWith(".css"));
+        assert.ok(
+          cssFiles.some((name) =>
+            /rebeccapurple|#639(?:\b|;|})|#663399\b|rgb\(102,\s*51,\s*153\)/i.test(
+              fs.readFileSync(path.join(fixture, ".output/public/_nuxt", name), "utf8"),
+            ),
+          ),
+          "scoped component CSS must reach the Nuxt build",
+        );
+      }
     }
   } finally {
     server.kill("SIGTERM");
