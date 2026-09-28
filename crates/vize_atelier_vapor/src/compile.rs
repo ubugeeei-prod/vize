@@ -21,7 +21,9 @@ use vize_atelier_core::{
     options::{CustomElementMatcher, ParserOptions, TemplateSyntaxMode, TransformOptions},
     parser::parse_with_options_custom_elements_and_template_syntax,
 };
+use vize_carton::cstr;
 use vize_carton::{Allocator, String};
+use vize_l0::dump::capture::{CaptureOutcome, CaptureSink, NoCapture};
 
 pub use entry::{
     compile_vapor, compile_vapor_with_custom_elements_and_template_syntax,
@@ -29,8 +31,8 @@ pub use entry::{
     compile_vapor_with_custom_elements_template_syntax_and_experimental_options,
     compile_vapor_with_custom_elements_template_syntax_diagnostics_and_experimental_options,
     compile_vapor_with_diagnostics, compile_vapor_with_experimental_options,
-    compile_vapor_with_sfc_context, compile_vapor_with_template_syntax,
-    compile_vapor_with_template_syntax_and_diagnostics,
+    compile_vapor_with_sfc_context, compile_vapor_with_sfc_context_and_capture,
+    compile_vapor_with_template_syntax, compile_vapor_with_template_syntax_and_diagnostics,
     compile_vapor_with_template_syntax_and_experimental_options,
 };
 #[expect(deprecated, reason = "re-exported until their removal")]
@@ -104,6 +106,32 @@ fn compile_vapor_inner_scoped<'a>(
     experimental_options: VaporCompilerExperimentalOptions,
     scope_id: Option<&str>,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    compile_vapor_inner_scoped_captured(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        scope_id,
+        &mut NoCapture,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "SFC options plus an opt-in capture sink"
+)]
+fn compile_vapor_inner_scoped_captured<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: VaporCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: VaporCompilerExperimentalOptions,
+    scope_id: Option<&str>,
+    capture: &mut C,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     vize_carton::ensure_sufficient_stack(|| {
         compile_vapor_inner_with_stack(
             allocator,
@@ -113,11 +141,16 @@ fn compile_vapor_inner_scoped<'a>(
             custom_elements,
             experimental_options,
             scope_id,
+            capture,
         )
     })
 }
 
-fn compile_vapor_inner_with_stack<'a>(
+#[expect(
+    clippy::too_many_arguments,
+    reason = "SFC options plus an opt-in capture sink"
+)]
+fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
     allocator: &'a Allocator,
     source: &'a str,
     options: VaporCompilerOptions,
@@ -125,6 +158,7 @@ fn compile_vapor_inner_with_stack<'a>(
     custom_elements: CustomElementMatcher,
     experimental_options: VaporCompilerExperimentalOptions,
     scope_id: Option<&str>,
+    capture: &mut C,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     #[cfg(feature = "davinci-benchmark")]
     let options = benchmark::apply(options);
@@ -133,7 +167,7 @@ fn compile_vapor_inner_with_stack<'a>(
     // codes and L2 refuses every recovery rule; `s3/tests/parser_agreement.rs`
     // pins this over the fixture corpus and its malformed variants), so an
     // admitted source never builds the legacy tree it would discard.
-    let l3_bridge_status = l3::lower_source_for_vapor(
+    let l3_bridge_status = l3::lower_source_for_vapor_captured(
         allocator,
         source,
         VaporL3BridgeOptions {
@@ -156,6 +190,7 @@ fn compile_vapor_inner_with_stack<'a>(
                 || vize_atelier_core::parser::current_legacy_line_breaks(),
             inline: options.inline,
         },
+        capture,
     );
     // A map-requesting compile also carries the authored anchors generation
     // needs beyond the IR (Davinci P3-9).
@@ -176,17 +211,22 @@ fn compile_vapor_inner_with_stack<'a>(
             .is_empty(),
             "the native Vapor lane admitted a source the legacy parser diagnoses"
         );
-        return (
-            native::emit_accepted(
-                allocator,
-                source,
-                artifact,
-                scope_id,
-                source_map,
-                |ir, spans| emit(ir, Vec::new(), spans),
-            ),
-            std::vec::Vec::new(),
+        let result = native::emit_accepted(
+            allocator,
+            source,
+            artifact,
+            scope_id,
+            source_map,
+            |ir, spans| emit(ir, Vec::new(), spans),
         );
+        capture.finish(|| {
+            if result.error_messages.is_empty() && !result.code.is_empty() {
+                CaptureOutcome::Accepted
+            } else {
+                CaptureOutcome::Rejected(result.error_messages.first().cloned().unwrap_or_default())
+            }
+        });
+        return (result, std::vec::Vec::new());
     }
 
     let (mut root, errors) = parse_with_options_custom_elements_and_template_syntax(
@@ -200,6 +240,7 @@ fn compile_vapor_inner_with_stack<'a>(
 
     let fatal: std::vec::Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
     if !fatal.is_empty() {
+        capture.finish(|| CaptureOutcome::Rejected(String::from("Vapor parser rejected template")));
         return (
             VaporCompileResult {
                 code: String::default(),
@@ -217,11 +258,18 @@ fn compile_vapor_inner_with_stack<'a>(
     } else {
         VaporL3BridgeStatus::Legacy(l3::LegacyReason::SurfaceSemantics)
     };
+    let legacy_reason = match &l3_bridge_status {
+        VaporL3BridgeStatus::Legacy(reason) => Some(*reason),
+        VaporL3BridgeStatus::Rejected(_) | VaporL3BridgeStatus::Accepted(_) => None,
+    };
     l3::record_selection(&l3_bridge_status);
     match l3_bridge_status {
         // Every accepted artifact returned above, including emission failures.
         VaporL3BridgeStatus::Accepted(_) => {}
         VaporL3BridgeStatus::Rejected(error_messages) => {
+            capture.finish(|| {
+                CaptureOutcome::Rejected(error_messages.first().cloned().unwrap_or_default())
+            });
             return (
                 VaporCompileResult {
                     code: String::default(),
@@ -262,6 +310,8 @@ fn compile_vapor_inner_with_stack<'a>(
         .filter(|error| !error.is_recoverable())
         .collect();
     if !fatal.is_empty() {
+        capture
+            .finish(|| CaptureOutcome::Rejected(String::from("Vapor transform rejected template")));
         let mut diagnostics = parser_diagnostics;
         diagnostics.extend(transform_errors.iter().cloned());
         return (
@@ -279,10 +329,18 @@ fn compile_vapor_inner_with_stack<'a>(
     let (ir, transform_diagnostics, template_spans) =
         vapor_lower::transform_to_ir_with_spans(allocator, &root, source, scope_id, source_map);
     let spans = template_spans.map(|templates| VaporSourceSpans::collect(&root, templates));
-    (
-        emit(&ir, transform_diagnostics, spans.as_ref()),
-        parser_diagnostics,
-    )
+    let result = emit(&ir, transform_diagnostics, spans.as_ref());
+    capture.finish(|| {
+        if result.code.is_empty() || !result.error_messages.is_empty() {
+            CaptureOutcome::Rejected(result.error_messages.first().cloned().unwrap_or_default())
+        } else {
+            CaptureOutcome::Legacy(cstr!(
+                "{:?}",
+                legacy_reason.unwrap_or(l3::LegacyReason::Options)
+            ))
+        }
+    });
+    (result, parser_diagnostics)
 }
 
 fn generate(

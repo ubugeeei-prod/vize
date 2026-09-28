@@ -1,7 +1,9 @@
 //! The L2 -> L3 -> string plan -> emission half of the SSR L4 lane, shared by
 //! the template compile path and callers that build L2 themselves (JSX).
 
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String, cstr};
+use vize_l0::{dump::capture::CaptureSink, level::Level};
 use vize_l1_to_l2::TransformExpressions;
 use vize_l2::op::Region;
 use vize_l3::verify::verify;
@@ -23,15 +25,25 @@ pub(super) struct L2Artifact<'s, 'a> {
 /// Lower `artifact` to L3, verify it, build the string plan from the shared
 /// partition facts, and emit from it when `admit` hands back the expression
 /// rewriter (its `Err` names the legacy reason instead).
-pub(super) fn select_from_l2<'a, 'e>(
+pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
     allocator: &'a Allocator,
     artifact: &L2Artifact<'_, 'a>,
     options: &SsrCompilerOptions,
     experimental: &SsrCompilerExperimentalOptions,
     slotted: bool,
+    capture: &mut C,
     admit: impl FnOnce() -> Result<TransformExpressions<'e>, LegacyReason>,
 ) -> SsrL4Selection {
     let s3 = vize_l2_to_l3::lower(allocator, artifact.root);
+    capture.page(Level::L3, "lower", || {
+        vize_l3::dump::Page::of(&s3.program).print_to_string(DumpMode::Full)
+    });
+    capture.page(Level::L3, "partition", || {
+        vize_l2_to_l3::PartitionPage::of(&s3.partition).print_to_string(DumpMode::Full)
+    });
+    capture.page(Level::L3, "values", || {
+        vize_l3::values_dump::Page::of(&s3.program).print_to_string(DumpMode::Full)
+    });
     let violations = verify(&s3.program);
     if !violations.is_empty() {
         return SsrL4Selection::Rejected(
