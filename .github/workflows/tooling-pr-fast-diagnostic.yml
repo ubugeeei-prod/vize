@@ -22,6 +22,14 @@ jobs:
           node-version-file: "package.json"
           cache: true
           run-install: false
+      - name: Plan the exact representative PR diff
+        env:
+          BASE_SHA: 931016efaddd36f00da5f836b6121c798ee40487
+          HEAD_SHA: 717d52d13434ee41f0983207694b9afe7dcf8eaa
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          node tools/support/compat/github/plan-tooling-fast-pr.mjs "$BASE_SHA" "$HEAD_SHA" "$RUNNER_TEMP/tooling-fast-plan.json"
+          node -e "if (require(process.argv[1]).mode !== 'fast') process.exit(1)" "$RUNNER_TEMP/tooling-fast-plan.json"
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         with:
           toolchain: "1.98.0"
@@ -45,4 +53,4 @@ jobs:
         env:
           VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
-        run: vp exec node --test --test-concurrency=1 tests/tooling/davinci-ssr-l4-bridge.test.ts tests/tooling/davinci-stage-dependencies.test.ts
+        run: node tools/support/compat/github/run-tooling-fast-pr.mjs "$RUNNER_TEMP/tooling-fast-plan.json"
