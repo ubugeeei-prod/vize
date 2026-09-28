@@ -42,7 +42,7 @@ function report({ title = "fix(format): preserve input", before, after, files = 
   });
 }
 
-test("known legacy product source paths are mapped without counting tests or level crates", () => {
+void test("known legacy product source paths are mapped without counting tests or level crates", () => {
   assert.deepEqual(
     legacyProducts([
       "crates/vize_atelier_sfc/src/style.rs",
@@ -58,7 +58,7 @@ test("known legacy product source paths are mapped without counting tests or lev
   );
 });
 
-test("unregistered fixes are reported without granting parity", () => {
+void test("unregistered fixes are reported without granting parity", () => {
   assert.deepEqual(report().products, [
     { product: "formatter", state: "adapter-or-manifest-missing", cases: [] },
   ]);
@@ -67,7 +67,7 @@ test("unregistered fixes are reported without granting parity", () => {
   assert.match(formatSummary(unchanged), /grants no parity or native acceptance/);
 });
 
-test("only a newly registered active case with a matching pinned input counts", () => {
+void test("only a newly registered active case with a matching pinned input counts", () => {
   const path = "head:tests/_fixtures/differential/formatter/new-fix/App.vue";
   const result = report({
     before: manifest([]),
@@ -87,7 +87,7 @@ test("only a newly registered active case with a matching pinned input counts", 
   );
 });
 
-test("non-fix titles and native-only paths do not claim legacy fixture requirements", () => {
+void test("non-fix titles and native-only paths do not claim legacy fixture requirements", () => {
   assert.equal(report({ title: "refactor(format): move printer" }).state, "not-a-fix-pr");
   assert.equal(
     analyzeLegacyFix({
@@ -101,7 +101,7 @@ test("non-fix titles and native-only paths do not claim legacy fixture requireme
   );
 });
 
-test("the Actions planner reports on PRs without adding a required gate", () => {
+void test("the Actions planner reports on PRs without adding a required gate", () => {
   const workflow = readFileSync(
     new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url),
     "utf8",
