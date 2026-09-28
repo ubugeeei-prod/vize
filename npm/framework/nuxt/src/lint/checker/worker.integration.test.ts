@@ -26,7 +26,6 @@ void test("real worker re-reads its oxlint + Patina config on every pass", async
   const pluginEntry = fileURLToPath(import.meta.resolve("oxlint-plugin-vize"));
   const pluginSpecifier = path.relative(root, pluginEntry).replaceAll(path.sep, "/");
   const oxlintManifest = require.resolve("oxlint/package.json");
-  const oxlintEntrypoint = path.resolve(path.dirname(pluginEntry), "..", "bin", "oxlint-vize");
   await mkdir(path.join(root, "node_modules"));
   await symlink(
     path.dirname(oxlintManifest),
@@ -46,7 +45,6 @@ void test("real worker re-reads its oxlint + Patina config on every pass", async
     exclude: [],
     fix: false,
     formatter: "json",
-    oxlintEntrypoint,
     targets: [path.join(root, "**/*.{js,jsx,ts,tsx,vue}")],
   };
 
