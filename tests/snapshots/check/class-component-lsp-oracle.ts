@@ -95,9 +95,8 @@ test("class-component @Prop usage typo breaks and repairs over didChange", async
 //
 //   - dropping the required prop (`<HelloDecorator nme="World" />`) is a
 //     `component-required-props` error on the tag name; the misspelled attr
-//     falls through to the native `button` root, matching Vue runtime behavior,
-//     while the type layer keeps the missing required prop diagnostic at the tag,
-//     and
+//     falls through to the native `button` root, matching Vue runtime behavior;
+//     the duplicate type-layer TS2345 is suppressed, and
 //   - binding a mismatched type (`<HelloDecorator :name="123" />`) is a TS2322
 //     on the attribute name.
 //
@@ -121,21 +120,6 @@ const missingRequiredPropDiagnostic = {
   message:
     "<HelloDecorator> is missing required prop: `name`\n\nPass the prop in this " +
     "template usage, or make it optional/provide a default in the child component.",
-};
-
-const missingRequiredTypeDiagnostic = {
-  range: {
-    start: { line: 19, character: 5 },
-    end: { line: 19, character: 19 },
-  },
-  severity: 1,
-  code: 2345,
-  source: "vize/types",
-  message:
-    "Argument of type '{ nme: string; }' is not assignable to parameter of type " +
-    "'__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\n" +
-    "  Property '\"name\"' is missing in type '{ nme: string; }' but required in type " +
-    "'{ readonly name: string; }'.",
 };
 
 const propTypeMismatchDiagnostic = {
@@ -177,7 +161,6 @@ test("class-component usage sites enforce @Prop contracts", async () => {
     assert.deepEqual(await waitForDiagnostics(session, appUri, 2), {
       diagnostics: [
         missingRequiredPropDiagnostic,
-        missingRequiredTypeDiagnostic,
         propTypeMismatchDiagnostic,
       ],
       uri: appUri,
