@@ -9,7 +9,8 @@ export interface ProductCaptureFeed {
   command: string;
   source: {
     path: string | null;
-    input_syntax: string;
+    container: string;
+    authored_syntax: string;
     compiled_syntax: string;
     template_span: { start: number; end: number } | null;
   };
@@ -51,14 +52,25 @@ function text(value: unknown): value is string {
   return typeof value === "string";
 }
 
+function syntax(value: unknown): value is string {
+  return text(value) && /^[a-z][a-z0-9-]*$/.test(value);
+}
+
 function page(value: unknown): boolean {
-  return record(value) && text(value.level) && text(value.step) && text(value.text);
+  return (
+    record(value) &&
+    text(value.level) &&
+    /^l[0-4]$/.test(value.level) &&
+    text(value.step) &&
+    text(value.text)
+  );
 }
 
 function timing(value: unknown): boolean {
   return (
     record(value) &&
     text(value.level) &&
+    /^l[0-4]$/.test(value.level) &&
     text(value.step) &&
     Number.isSafeInteger(value.nanos) &&
     (value.nanos as number) >= 0
@@ -69,8 +81,10 @@ function remark(value: unknown): boolean {
   return (
     record(value) &&
     text(value.level) &&
+    /^l[0-4]$/.test(value.level) &&
     text(value.pass) &&
-    ["applied", "missed", "analysis"].includes(String(value.kind)) &&
+    text(value.kind) &&
+    ["applied", "missed", "analysis"].includes(value.kind) &&
     text(value.name) &&
     span(value.span) &&
     Array.isArray(value.args) &&
@@ -78,7 +92,7 @@ function remark(value: unknown): boolean {
       (arg: unknown) =>
         record(arg) &&
         text(arg.name) &&
-        ["string", "number", "boolean"].includes(typeof arg.value),
+        (text(arg.value) || typeof arg.value === "boolean" || Number.isSafeInteger(arg.value)),
     )
   );
 }
@@ -102,14 +116,16 @@ export function negotiateProductCapture(
   const outcome = raw.outcome;
   const observed = raw.observed;
   if (
-    !text(raw.command) ||
+    !syntax(raw.command) ||
     !record(source) ||
     !(source.path === null || text(source.path)) ||
-    !text(source.input_syntax) ||
-    !text(source.compiled_syntax) ||
+    !syntax(source.container) ||
+    !syntax(source.authored_syntax) ||
+    !syntax(source.compiled_syntax) ||
     !(source.template_span === null || span(source.template_span)) ||
     !record(outcome) ||
-    !["accepted", "legacy", "unavailable", "rejected"].includes(String(outcome.kind)) ||
+    !text(outcome.kind) ||
+    !["accepted", "legacy", "unavailable", "rejected"].includes(outcome.kind) ||
     !(outcome.reason === null || text(outcome.reason)) ||
     !record(observed) ||
     typeof observed.timings !== "boolean" ||
@@ -126,10 +142,22 @@ export function negotiateProductCapture(
     return { ok: false, error: `${target} product capture does not match schema v2.` };
   }
   if (
+    (outcome.kind === "accepted" && outcome.reason !== null) ||
+    (outcome.kind !== "accepted" && (!text(outcome.reason) || outcome.reason.length === 0))
+  ) {
+    return { ok: false, error: `${target} product capture has no valid outcome reason.` };
+  }
+  if (
     outcome.kind !== "accepted" &&
     (raw.pages.length > 0 || raw.timings.length > 0 || raw.remarks.length > 0)
   ) {
     return { ok: false, error: `${target} fallback capture unexpectedly contains native stages.` };
+  }
+  if (
+    (!observed.timings && raw.timings.length > 0) ||
+    (!observed.remarks && raw.remarks.length > 0)
+  ) {
+    return { ok: false, error: `${target} capture contains data for an unobserved channel.` };
   }
   return { ok: true, feed: raw as unknown as ProductCaptureFeed };
 }

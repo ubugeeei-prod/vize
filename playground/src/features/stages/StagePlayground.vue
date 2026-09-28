@@ -12,11 +12,12 @@ import DumpView from "./DumpView.vue";
 import OutputView from "./OutputView.vue";
 import DumpDiffView from "./DumpDiffView.vue";
 import RemarksPanel from "./RemarksPanel.vue";
-import FlameView from "./FlameView.vue";
 import type { TimelineStep } from "./ladder";
 import { useStageLadder, type StageId } from "./useStageLadder";
 import { stepKeyAction } from "./keys";
 import { formatArg } from "./remarks";
+
+const targets = ["dom", "ssr", "vapor"] as const;
 
 const props = defineProps<{
   compiler: WasmModule | null;
@@ -27,13 +28,13 @@ const {
   source,
   ladder,
   error,
+  captureError,
+  captureStatus,
+  captureLabel,
+  remarksNote,
+  syntaxNote,
   outputs,
-  ladderTime,
   profileNote,
-  profile,
-  baseline,
-  pinBaseline,
-  clearBaseline,
   stage,
   rung,
   page,
@@ -61,7 +62,7 @@ const showTabs = computed(
   () => rung.value !== null && (rung.value.pages.length > 1 || rung.value.id !== "l1"),
 );
 
-function toggleView(view: "diff" | "remarks" | "flame") {
+function toggleView(view: "diff" | "remarks") {
   pageView.value = pageView.value === view ? "page" : view;
 }
 
@@ -79,20 +80,16 @@ function selectStep(step: TimelineStep) {
   selectPage(step.rung, step.key);
 }
 
-/** A flame frame opens its stage, or the step page its stage/pass names. */
-function selectFrame([stageName, pass]: string[]) {
-  const step = ladder.value?.timeline.find((s) => s.key === `${stageName}/${pass}`);
-  if (step) selectStep(step);
-  else if (ladder.value?.rungs.some((r) => r.id === stageName)) selectStage(stageName as StageId);
-}
-
 // Presenter keys: 1-4 jump to a stage, arrows walk the pass timeline.
 function onKey(event: KeyboardEvent) {
   const action = stepKeyAction(event, ladder.value?.timeline ?? [], page.value?.key ?? null);
   if (!action) return;
   event.preventDefault();
-  if (action.kind === "stage") selectStage(action.stage as StageId);
-  else selectStep(action.step);
+  if (action.kind === "stage") {
+    if (action.stage === "l4" || ladder.value?.rungs.some((r) => r.id === action.stage)) {
+      selectStage(action.stage as StageId);
+    }
+  } else selectStep(action.step);
 }
 
 onMounted(() => window.addEventListener("keydown", onKey));
@@ -130,14 +127,34 @@ function snippet(text: string): string {
     <section class="davinci-stages" aria-label="Davinci stage ladder">
       <div class="davinci-bar">
         <h2 class="davinci-title">Davinci stage ladder</h2>
-        <span v-if="ladderTime !== null" class="davinci-badge" title="analyzeSfc wall time"
-          >{{ ladderTime.toFixed(2) }} ms</span
+        <span v-if="captureLabel" class="davinci-badge" title="Same-run product capture">{{
+          captureLabel
+        }}</span>
+        <span v-if="captureStatus" class="davinci-badge" title="Product capture schema_version"
+          >feed v2</span
         >
-        <span class="davinci-badge" title="Spolvero feed schema_version">feed v1</span>
         <span class="davinci-hint davinci-keys">Keys 1–4 pick a stage, ← → walk the steps</span>
       </div>
 
+      <div class="davinci-subtabs" role="tablist" aria-label="Compile target">
+        <button
+          v-for="target in targets"
+          :key="target"
+          type="button"
+          role="tab"
+          :class="['davinci-subtab', { active: outputTarget === target }]"
+          :aria-selected="outputTarget === target"
+          @click="outputTarget = target"
+        >
+          {{ target.toUpperCase() }}
+        </button>
+      </div>
+
       <div v-if="error" class="davinci-message error" role="alert">{{ error }}</div>
+      <div v-else-if="captureError" class="davinci-body">
+        <div class="davinci-message error" role="alert">{{ captureError }}</div>
+        <OutputView v-model:target="outputTarget" :outputs :theme />
+      </div>
       <template v-else-if="ladder">
         <StageRail :rungs="ladder.rungs" :selected="stage" @select="selectStage" />
         <PassTimeline
@@ -170,6 +187,7 @@ function snippet(text: string): string {
             Diff vs {{ previousPage.label }}
           </button>
           <button
+            v-if="!remarksNote"
             type="button"
             :class="['davinci-subtab', { active: pageView === 'remarks' }]"
             :aria-pressed="pageView === 'remarks'"
@@ -177,27 +195,12 @@ function snippet(text: string): string {
           >
             Remarks <span class="davinci-count">{{ remarks.length }}</span>
           </button>
-          <button
-            type="button"
-            :class="['davinci-subtab', { active: pageView === 'flame' }]"
-            :aria-pressed="pageView === 'flame'"
-            @click="() => toggleView('flame')"
-          >
-            Flame
-          </button>
+          <span v-else class="davinci-hint">Remarks unavailable</span>
         </div>
 
         <div class="davinci-body">
           <OutputView v-if="stage === 'l4'" v-model:target="outputTarget" :outputs :theme />
           <RemarksPanel v-else-if="pageView === 'remarks'" :remarks @locate="locateRemark" />
-          <FlameView
-            v-else-if="pageView === 'flame'"
-            :profile
-            :baseline
-            @select="selectFrame"
-            @pin="pinBaseline"
-            @unpin="clearBaseline"
-          />
           <DumpDiffView
             v-else-if="pageView === 'diff' && diff && previousPage && page"
             :diff
@@ -245,16 +248,22 @@ function snippet(text: string): string {
             >Point at a line to see the authored source it came from</span
           >
           <span v-else class="davinci-hint"
-            >Emitted by the same compiler build, from the same source</span
+            >Module and stages came from the same compileSfc call</span
           >
-          <span v-if="profileNote" class="davinci-hint"
-            >Step timings unavailable: {{ profileNote }}</span
-          >
+          <span v-if="remarksNote" class="davinci-hint">{{ remarksNote }}</span>
+          <span v-if="profileNote" class="davinci-hint">{{ profileNote }}</span>
+          <span v-if="syntaxNote" class="davinci-hint">{{ syntaxNote }}</span>
           <span v-if="ladder.unplaced.length" class="davinci-hint"
             >Unplaced pages: {{ ladder.unplaced.join(", ") }}</span
           >
         </footer>
       </template>
+      <div v-else-if="captureStatus" class="davinci-body">
+        <div class="davinci-message">
+          {{ captureStatus }}. Native stage pages are unavailable for this target.
+        </div>
+        <OutputView v-model:target="outputTarget" :outputs :theme />
+      </div>
       <div v-else class="davinci-message">Loading the compiler…</div>
     </section>
   </div>

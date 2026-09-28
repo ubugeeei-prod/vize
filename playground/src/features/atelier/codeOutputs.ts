@@ -239,7 +239,9 @@ async function compileSfcVariant(
       outputMode,
     });
     onSfcResult?.(target, result);
-    return await (assembledModule ? buildSfcScriptVariant(result) : buildSfcTemplateVariant(result));
+    return await (assembledModule
+      ? buildSfcScriptVariant(result)
+      : buildSfcTemplateVariant(result));
   } catch (error) {
     return {
       ...createEmptyCodeOutputVariant(),

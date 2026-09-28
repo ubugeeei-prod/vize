@@ -8,14 +8,8 @@ import {
   watch,
   type ComputedRef,
 } from "vue";
-import type { WasmModule } from "../../wasm/index";
-import { negotiateSpolveroFeed } from "../../wasm/types/stages";
-import {
-  ladderStepTimings,
-  ladderWalkTimings,
-  negotiateProfileExport,
-  type ProfileExport,
-} from "../../wasm/types/profile";
+import type { SfcCompileResult, WasmModule } from "../../wasm/index";
+import { negotiateProductCapture } from "../../wasm/types/productCapture";
 import type { InspectorDiff } from "../../wasm/types/inspector";
 import { DAVINCI_PRESET } from "../../shared/presets/davinci";
 import type { EditorHighlight } from "../../shared/MonacoEditor.vue";
@@ -24,55 +18,48 @@ import {
   createEmptyCodeOutputs,
   type CodeOutputs,
 } from "../atelier/codeOutputs";
-import { buildLadder, type RungId, type StageLadder } from "./ladder";
+import type { RungId } from "./ladder";
+import { useProductCaptureState, type ProductCapturedResult } from "./productCaptureState";
 import { dumpLines, linesCovering } from "./dumpLines";
-import {
-  sfcOffsetToTemplateBytes,
-  templateBytesToSfcRange,
-  templateStartInSfc,
-  type Range,
-} from "./offsets";
+import { sfcOffsetToTemplateBytes, templateBytesToSfcRange, type Range } from "./offsets";
 import { remarksAt, type StageRemark } from "./remarks";
 import { parseProvenance, recordsForNode } from "./provenance";
 import { graphLineKinds, partitionKinds } from "./partition";
 
 export type StageId = RungId | "l4";
 export type OutputTarget = "dom" | "vapor" | "ssr";
-/** What the stage body shows: the page, its diff, the remarks, or the flame view. */
-export type PageView = "page" | "diff" | "remarks" | "flame";
+/** What the stage body shows: the page, its diff, or observed remarks. */
+export type PageView = "page" | "diff" | "remarks";
 
 const FILENAME = "Component.vue";
 
 /**
- * The Davinci tab's state: one compile of the source through the real wasm
- * compiler (the Spolvero feed from `analyzeSfc`, the emitted code from
- * `compileSfc`), plus the selection that links stage lines to source spans.
+ * Each target's stage pages and assembled module come from its own exact
+ * `compileSfc` invocation. The stage tab never invokes `analyzeSfc`.
  */
 export function useStageLadder(getCompiler: () => WasmModule | null) {
   const injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");
   const theme = computed<"dark" | "light">(() => injectedTheme?.value ?? "light");
 
   const source = ref(DAVINCI_PRESET);
-  const ladder = shallowRef<StageLadder | null>(null);
+  const captures = shallowRef<Partial<Record<OutputTarget, ProductCapturedResult>>>({});
+  const compiledSource = ref<string | null>(null);
   const error = ref<string | null>(null);
   const outputs = shallowRef<CodeOutputs>(createEmptyCodeOutputs());
-  const templateStart = ref(0);
-  const ladderTime = ref<number | null>(null);
-  /** Why step timings are missing, when the profile did not negotiate. */
-  const profileNote = ref<string | null>(null);
-  /** This run's profile export, and a pinned earlier run to compare against. */
-  const profile = shallowRef<ProfileExport | null>(null);
-  const baseline = shallowRef<ProfileExport | null>(null);
-  function pinBaseline() {
-    baseline.value = profile.value;
-  }
-  function clearBaseline() {
-    baseline.value = null;
-  }
 
   const stage = ref<StageId>("l2");
   const pageKeys = ref<Partial<Record<RungId, string>>>({});
   const outputTarget = ref<OutputTarget>("dom");
+  const {
+    captureError,
+    captureStatus,
+    captureLabel,
+    remarksNote,
+    profileNote,
+    ladder,
+    templateStart,
+    syntaxNote,
+  } = useProductCaptureState(captures, compiledSource, source, outputs, outputTarget);
   const selectedLine = ref<number | null>(null);
   const hoveredLine = ref<number | null>(null);
   const cursorBytes = ref<number | null>(null);
@@ -140,13 +127,13 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
   });
   const highlights = computed<EditorHighlight[]>(() => {
     const span = focusSpan.value;
-    if (!span || !ladder.value) return [];
+    if (!span || !ladder.value || templateStart.value === null) return [];
     const range = templateBytesToSfcRange(ladder.value.template, templateStart.value, span);
     return [{ ...range, className: "davinci-provenance", reveal: hoveredLine.value === null }];
   });
   const focusSource = computed(() => {
     const span = focusSpan.value;
-    if (!span || !ladder.value) return null;
+    if (!span || !ladder.value || templateStart.value === null) return null;
     const range = templateBytesToSfcRange(ladder.value.template, templateStart.value, span);
     return { span, text: source.value.slice(range.start, range.end) };
   });
@@ -170,11 +157,11 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
   }
 
   function onCursor(offset: number) {
-    const template = ladder.value?.template;
+    const template = templateStart.value === null ? undefined : ladder.value?.template;
     cursorBytes.value =
       template === undefined
         ? null
-        : sfcOffsetToTemplateBytes(template, templateStart.value, offset);
+        : sfcOffsetToTemplateBytes(template, templateStart.value!, offset);
   }
 
   let version = 0;
@@ -182,79 +169,104 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
     const compiler = getCompiler();
     if (!compiler) return;
     const current = ++version;
+    const input = source.value;
     try {
-      const started = performance.now();
-      const analysis = compiler.analyzeSfc(source.value, { filename: FILENAME });
-      ladderTime.value = performance.now() - started;
-      const negotiated = negotiateSpolveroFeed(analysis.spolvero);
-      if (!negotiated.ok) {
-        error.value = negotiated.error;
-        ladder.value = null;
-        return;
-      }
       const options = {
         mode: "module" as const,
         scriptExt: "preserve" as const,
         filename: FILENAME,
+        captureStages: true,
       };
-      const sfc = compiler.compileSfc(source.value, options);
-      const start = sfc.descriptor.template?.loc.start;
-      templateStart.value = start === undefined ? 0 : templateStartInSfc(source.value, start);
-      const timed = negotiateProfileExport(analysis.spolveroProfile);
-      profileNote.value = timed.ok ? null : timed.error;
-      profile.value = timed.ok ? timed.profile : null;
-      const none = new Map<string, number>();
-      ladder.value = buildLadder(
-        negotiated.feed,
-        FILENAME,
-        timed.ok ? ladderStepTimings(timed.profile) : none,
-        timed.ok ? ladderWalkTimings(timed.profile) : none,
-      );
-      error.value = null;
+      const sfc = compiler.compileSfc(input, options);
+      const results: Partial<Record<OutputTarget, SfcCompileResult>> = {};
       const compiled = await compileCodeOutputs({
         compiler,
         inputMode: "sfc",
-        source: source.value,
+        source: input,
         options,
         baseOutput: null,
         baseSfcResult: sfc,
+        onSfcResult: (target, result) => {
+          results[target] = result;
+        },
+        assembledModule: true,
       });
-      if (current === version) outputs.value = compiled;
+      if (current !== version) return;
+      const next: Partial<Record<OutputTarget, ProductCapturedResult>> = {};
+      for (const target of ["dom", "ssr", "vapor"] as const) {
+        const result = results[target];
+        if (result) {
+          next[target] = {
+            result,
+            negotiation: negotiateProductCapture(result.stageCapture, target),
+          };
+        }
+      }
+      captures.value = next;
+      compiledSource.value = input;
+      outputs.value = compiled;
+      error.value = null;
+      const visible = ladder.value?.rungs ?? [];
+      if (stage.value !== "l4" && !visible.some(({ id }) => id === stage.value)) {
+        stage.value = visible[0]?.id ?? "l4";
+      }
     } catch (caught) {
       if (current !== version) return;
       error.value = caught instanceof Error ? caught.message : String(caught);
-      ladder.value = null;
+      captures.value = {};
+      compiledSource.value = null;
+      outputs.value = createEmptyCodeOutputs();
     }
   }
 
   let timer: ReturnType<typeof setTimeout> | null = null;
   watch(source, () => {
+    version++;
+    captures.value = {};
+    compiledSource.value = null;
+    outputs.value = createEmptyCodeOutputs();
+    error.value = null;
+    pageView.value = "page";
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => void run(), 250);
+  });
+  watch(outputTarget, () => {
+    pageView.value = "page";
+    pageKeys.value = {};
+    selectedLine.value = null;
+    const visible = ladder.value?.rungs ?? [];
+    if (stage.value !== "l4" && !visible.some(({ id }) => id === stage.value)) {
+      stage.value = visible[0]?.id ?? "l4";
+    }
   });
   watch(lines, () => {
     selectedLine.value = null;
     hoveredLine.value = null;
     pinnedSpan.value = null;
   });
-  watch(getCompiler, (compiler) => {
-    if (compiler) void run();
-  });
+  let readyCompiler: WasmModule | null = null;
+  function runWithNewCompiler(compiler: WasmModule | null) {
+    if (!compiler || compiler === readyCompiler) return;
+    readyCompiler = compiler;
+    void run();
+  }
+  watch(getCompiler, runWithNewCompiler);
 
   let poll: ReturnType<typeof setInterval> | null = null;
   onMounted(() => {
     if (getCompiler()) {
-      void run();
+      runWithNewCompiler(getCompiler());
       return;
     }
     poll = setInterval(() => {
       if (!getCompiler()) return;
       if (poll) clearInterval(poll);
       poll = null;
-      void run();
+      runWithNewCompiler(getCompiler());
     }, 200);
   });
   onUnmounted(() => {
+    version++;
     if (timer) clearTimeout(timer);
     if (poll) clearInterval(poll);
   });
@@ -264,13 +276,13 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
     source,
     ladder,
     error,
+    captureError,
+    captureStatus,
+    captureLabel,
+    remarksNote,
+    syntaxNote,
     outputs,
-    ladderTime,
     profileNote,
-    profile,
-    baseline,
-    pinBaseline,
-    clearBaseline,
     stage,
     rung,
     page,

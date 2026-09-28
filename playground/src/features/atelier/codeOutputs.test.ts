@@ -225,4 +225,32 @@ describe("compileCodeOutputs", () => {
     expect(outputs.vapor.warnings).toEqual(["vapor warning"]);
     expect(outputs.vaporSsr.warnings).toEqual([]);
   });
+
+  it("observes the existing SFC calls and shows their assembled modules in stage mode", async () => {
+    const base = createSfcResult("dom-module", { templateCode: "dom-template" });
+    const compileSfc = vi.fn((_: string, options: CompilerOptions) =>
+      options.ssr
+        ? createSfcResult("ssr-module", { templateCode: "ssr-template" })
+        : createSfcResult("vapor-module", { templateCode: "vapor-template" }),
+    );
+    const seen: string[] = [];
+    const outputs = await compileCodeOutputs({
+      compiler: { compileSfc } as unknown as WasmModule,
+      inputMode: "sfc",
+      source: "<template><div /></template>",
+      options: { captureStages: true },
+      baseOutput: null,
+      baseSfcResult: base,
+      assembledModule: true,
+      onSfcResult: (target, result) => seen.push(`${target}:${result.script?.code}`),
+    });
+
+    expect(compileSfc).toHaveBeenCalledTimes(2);
+    expect(seen).toEqual(["dom:dom-module", "ssr:ssr-module", "vapor:vapor-module"]);
+    expect([outputs.dom.code, outputs.ssr.code, outputs.vapor.code]).toEqual([
+      "dom-module",
+      "ssr-module",
+      "vapor-module",
+    ]);
+  });
 });

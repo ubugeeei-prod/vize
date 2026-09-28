@@ -4,6 +4,7 @@
 mod codegen_options;
 mod free_fns;
 pub(in crate::wasm) mod pipeline;
+mod sfc_capture;
 
 pub(in crate::wasm) use codegen_options::{
     compiler_codegen_experimental_options, compiler_codegen_options, self_component_name,
@@ -19,8 +20,7 @@ use vize_atelier_core::parser::parse_with_options_custom_elements_and_template_s
 use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions,
-    SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions,
-    compile_sfc_for_adapter_with_experimental_options as sfc_compile_for_adapter, parse_sfc,
+    SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions, parse_sfc,
 };
 
 use super::ast::build_ast_json;
@@ -31,6 +31,7 @@ use super::sfc_types::{
     SfcScriptResult, SfcWasmResult, descriptor_to_wasm, macro_artifact_to_wasm,
 };
 use pipeline::compile_internal;
+use sfc_capture::compile_sfc_product;
 
 /// WASM Compiler instance
 #[wasm_bindgen]
@@ -150,6 +151,7 @@ impl Compiler {
     #[wasm_bindgen(js_name = "compileSfc")]
     pub fn compile_sfc(&self, source: &str, options: JsValue) -> Result<JsValue, JsValue> {
         let parsed = parse_compiler_options(&options);
+        let capture_stages = parsed.capture_stages;
         let opts = parsed.options;
 
         let filename: vize_l0::CompactString = opts
@@ -258,27 +260,28 @@ impl Compiler {
             scope_id: None,
         };
 
-        let compile_result = sfc_compile_for_adapter(
+        let custom_elements = CustomElementMatcher::from_patterns(
+            crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
+        );
+        let script_output = if standalone {
+            SfcScriptOutputMode::InlineTemplate
+        } else {
+            SfcScriptOutputMode::SeparateTemplate
+        };
+        let experimental_options = SfcCompileExperimentalOptions {
+            self_component: opts.experimental_self_component.unwrap_or(false),
+        };
+        let (sfc_result, stage_capture) = compile_sfc_product(
             &descriptor,
             sfc_opts,
             template_syntax,
-            CustomElementMatcher::from_patterns(crate::types::custom_element_patterns(
-                opts.custom_elements.as_deref(),
-            )),
+            custom_elements,
             codegen_options,
-            if standalone {
-                SfcScriptOutputMode::InlineTemplate
-            } else {
-                SfcScriptOutputMode::SeparateTemplate
-            },
-            SfcCompileExperimentalOptions {
-                self_component: opts.experimental_self_component.unwrap_or(false),
-            },
-        );
-        let sfc_result = match compile_result {
-            Ok(r) => r,
-            Err(e) => return Err(JsValue::from_str(&e.message)),
-        };
+            script_output,
+            experimental_options,
+            capture_stages,
+        )
+        .map_err(|error| JsValue::from_str(&error.message))?;
 
         let script_code = if source_is_ts && !output_is_ts {
             transform_typescript_to_js(&sfc_result.code).to_string()
@@ -325,6 +328,7 @@ impl Compiler {
                 .collect(),
             binding_metadata,
             macro_artifacts,
+            stage_capture,
         };
 
         to_json_js_value(&result)

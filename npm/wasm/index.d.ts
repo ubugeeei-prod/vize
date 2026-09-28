@@ -195,9 +195,7 @@ export interface SfcCompileOptions extends CompilerOptions {}
 
 /** Result of SFC compilation */
 export interface SfcCompileResult {
-  /** Parsed SFC descriptor */
   descriptor: SfcDescriptor;
-  /** Compiled template result */
   template?: CompileResult;
   /** Compiled script result */
   script: {
@@ -206,13 +204,9 @@ export interface SfcCompileResult {
     /** Binding metadata */
     bindings?: BindingMetadata;
   };
-  /** Generated CSS */
   css?: string;
-  /** Compilation errors */
   errors: string[];
-  /** Compilation warnings */
   warnings: string[];
-  /** Compile-time macro artifacts */
   macroArtifacts?: MacroArtifact[];
   /** Flat binding map for feeding a later template-only compile. */
   bindingMetadata?: Record<string, BindingType>;
