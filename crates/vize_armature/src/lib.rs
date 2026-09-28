@@ -18,7 +18,10 @@
 
 pub mod parser;
 pub mod patterns;
+#[cfg(not(feature = "native-lex-parity"))]
 pub mod tokenizer;
+#[cfg(feature = "native-lex-parity")]
+pub use vize_l1::markup::lex::compat as tokenizer;
 
 /// Legacy Vue (v0.10 / v0.11 / v1 / v2) support. Gated behind the `legacy` feature and
 /// dropped from the default Vue 3 build; opt-in only.
