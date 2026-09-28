@@ -3,7 +3,7 @@
 use vize_carton::{String, ToCompactString};
 
 pub(super) fn path_references(source: &str) -> Vec<String> {
-    if !source.contains("///") {
+    if !source.contains("<reference") || !source.contains("path=") {
         return Vec::new();
     }
     source
