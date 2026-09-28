@@ -303,7 +303,13 @@ instruction artifact is `10956831913` in run `36392270701`.
 
 The one-scan alias lookup inspects every underscore call and helper name even
 when a module uses few helpers. For at most eight used helpers or at most
-8,192 bytes of generated code, keep the previous early-exit per-alias scan;
+8,192 bytes of generated code and hoists, keep the previous early-exit per-alias scan;
 use the one-scan cache only above both bounds. This is a bounded correction,
 not a ceiling change. Its instruction result and actual queue merge remain
 pending fresh Actions.
+
+The separate exact-head run `36393697379` on the unre-based PR branch missed
+nine ceilings. A control run on current main (`36394193126`) passed, but the
+PR branch still had merge base `b4af1e027`; its lower-vfor probe measured
+150,424 instructions versus 21,207 on main. Rebase onto main and measure the
+combined candidate before attributing that gap to the alias-scan change.

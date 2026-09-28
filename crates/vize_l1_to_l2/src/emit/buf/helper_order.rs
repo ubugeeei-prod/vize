@@ -43,7 +43,12 @@ impl Buf {
         }
         let mut cache = OrderCache {
             rank_five_keys: [None; 8],
-            scan_all_aliases: self.used.count_ones() > 8 && self.code.len() > 8_192,
+            scan_all_aliases: self.used.count_ones() > 8
+                && self
+                    .hoists
+                    .iter()
+                    .fold(self.code.len(), |len, text| len.saturating_add(text.len()))
+                    > 8_192,
             alias_positions: None,
         };
         listed.sort_by(|left, right| {
