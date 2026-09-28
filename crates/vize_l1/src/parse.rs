@@ -1,7 +1,7 @@
-//! The parse entry: armature's tokenizer → event stream → surface tree,
+//! The parse entry: L1's moved tokenizer → event stream → surface tree,
 //! with the byte-fidelity verifier asserted on every construction.
 
-use vize_armature::tokenizer::Tokenizer;
+use crate::markup::lex::compat::Tokenizer;
 use vize_l0::{Allocator, Vec};
 use vize_relief::ErrorCode;
 
@@ -18,7 +18,7 @@ pub struct SurfaceParseOptions {
 }
 
 /// A recoverable tokenizer diagnostic, by code and byte offset. L1 keeps
-/// armature's codes verbatim; rendering them through the P2-1
+/// the moved tokenizer's codes verbatim; rendering them through the P2-1
 /// `Diagnostic` channel is the L1→L2 lowering's job (P2-8).
 #[derive(Debug, Clone, Copy)]
 pub struct SurfaceError {
