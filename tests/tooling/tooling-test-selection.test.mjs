@@ -113,6 +113,16 @@ void test("merge tooling shards cover every test once with isolated serial runne
   assert.equal(new Set(shards.flat()).size, files.length);
   assert.ok(shards[0].includes(formatterEvidenceTest));
   assert.ok(shards.every((shard) => shard.length > 0));
+  const slowest = [
+    "tests/tooling/canon-functional-slot-contracts.test.ts",
+    "tests/tooling/canon-upstream-diagnostics.test.ts",
+    "tests/tooling/real-project-lsp.test.ts",
+    "tests/tooling/canon-script-syntax-ownership.test.ts",
+  ];
+  assert.equal(
+    new Set(slowest.map((file) => shards.findIndex((shard) => shard.includes(file)))).size,
+    4,
+  );
   assert.ok(
     Math.max(...shards.map((shard) => shard.length)) -
       Math.min(...shards.map((shard) => shard.length)) <=
@@ -130,6 +140,9 @@ void test("merge tooling shards cover every test once with isolated serial runne
     /evidence test/,
   );
   assert.throws(() => partitionMergeToolingTests([...files, files[0]]), /unique/);
+  const newFile = "tests/tooling/new-unknown-merge-scenario.test.ts";
+  const withNewFile = partitionMergeToolingTests([...files, newFile]);
+  assert.deepEqual(withNewFile.flat().sort(), [...files, newFile].sort());
 });
 
 void test("merge matrix uses the planner's complete shards and the required report", () => {
