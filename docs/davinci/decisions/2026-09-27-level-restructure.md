@@ -77,6 +77,7 @@ Tracked in [#6831](https://github.com/ubugeeei-prod/vize/issues/6831) and [#6851
 - A `cargo metadata` gate enforces the rule. It starts with a shrinking allowlist and later covers product crates too.
 - The [declaration ratchet](./2026-09-27-foundation-stack-replay.md#dependency-gate)
   records shrinking #6831 permissions, enforcement and remaining scope.
+- The L1→L2 prefix collector owns its retained-AST lexical-scope walk until L2 identifier-resolution facts replace prefix rewriting. Its direct `vize_relief` edge is removed; the two remaining L1 legacy edges belong to #6835.
 
 ## L1: what the text _is_
 
