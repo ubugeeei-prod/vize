@@ -8,7 +8,7 @@ use super::imports::{IdentifierUsage, collect_identifier_usage};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Declaration, Statement};
 use oxc_span::{GetSpan, SourceType};
-use vize_carton::{CompactString, FxHashSet, String as VizeString};
+use vize_carton::{CompactString, FxHashSet};
 use vize_croquis::script_parser::parse_program_for_analysis;
 
 pub(super) use namespace_hoist::NamespaceHoistPlan;
@@ -161,15 +161,6 @@ pub(super) fn strip_named_value_exports(
             line.to_mut().replace_range(column..column + 6, "      ");
         }
     }
-}
-
-/// Emit the setup-scoped polyfill that avoids TS1343 under older module targets.
-pub(super) fn emit_import_meta_polyfill(ts: &mut VizeString, script: &str) -> bool {
-    let uses_import_meta = script.contains("import.meta");
-    if uses_import_meta {
-        ts.push_str("  const __import_meta: any = {};\n");
-    }
-    uses_import_meta
 }
 
 fn declaration_has_runtime_value(declaration: &Declaration<'_>) -> bool {
