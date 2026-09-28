@@ -79,6 +79,7 @@ in
               tar -xzf $coreSrc -C $out/lib
               PATH=$out/bin:$PATH $out/bin/moon -C $out/lib/core bundle --warn-list -a --all
               PATH=$out/bin:$PATH $out/bin/moon -C $out/lib/core bundle --warn-list -a --target wasm-gc --quiet
+              PATH=$out/bin:$PATH $out/bin/moon -C $out/lib/core bundle --warn-list -a --target native --quiet
             '';
             meta = {
               description = "MoonBit native toolchain";
