@@ -74,3 +74,19 @@ fn repeated_object_bind_spreads_are_not_duplicate_attributes() {
             .all(|error| error.code != ErrorCode::DuplicateAttribute)
     );
 }
+
+#[test]
+fn duplicate_attribute_in_wide_tag_is_case_insensitive() {
+    let allocator = Allocator::new();
+    let (_, errors) = parse(
+        &allocator,
+        "<div a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 A12 a13 />",
+    );
+    assert_eq!(
+        errors
+            .iter()
+            .filter(|error| error.code == ErrorCode::DuplicateAttribute)
+            .count(),
+        1
+    );
+}

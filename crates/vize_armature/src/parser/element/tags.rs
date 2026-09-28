@@ -41,6 +41,7 @@ impl<'a> Parser<'a> {
             ns,
             is_self_closing: false,
             props: vize_l0::Vec::new_in(&self.allocator),
+            seen_attr_names: None,
         });
     }
 

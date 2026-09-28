@@ -167,16 +167,30 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn has_duplicate_attribute(&self, name: &str) -> bool {
-        self.current_element.as_ref().is_some_and(|current| {
-            current.props.iter().any(|prop| {
-                matches!(
-                    prop,
-                    PropNode::Attribute(existing)
-                        if existing.name.eq_ignore_ascii_case(name)
-                )
-            })
-        })
+    fn has_duplicate_attribute(&mut self, name: &str) -> bool {
+        let Some(current) = self.current_element.as_mut() else {
+            return false;
+        };
+        // Small tags avoid a hash table. Wide tags switch once to a set so
+        // checking every attribute does not repeatedly scan all prior props.
+        if current.props.len() < 12 {
+            return current.props.iter().any(|prop| {
+                matches!(prop, PropNode::Attribute(existing) if existing.name.eq_ignore_ascii_case(name))
+            });
+        }
+        let seen = current.seen_attr_names.get_or_insert_with(|| {
+            current
+                .props
+                .iter()
+                .filter_map(|prop| match prop {
+                    PropNode::Attribute(existing) => {
+                        Some(existing.name.to_ascii_lowercase().into())
+                    }
+                    _ => None,
+                })
+                .collect()
+        });
+        !seen.insert(name.to_ascii_lowercase().into())
     }
 
     /// Freeze an accumulated attribute/directive value into arena-resident
