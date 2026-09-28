@@ -1,7 +1,6 @@
 //! Vue SSR compiler for Vize.
 //!
 //! The SSR atelier specializes in server-rendered HTML strings, not VNode trees.
-
 pub mod codegen;
 mod compile;
 #[cfg(feature = "legacy-differential")]
