@@ -368,11 +368,10 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
                 self.state = State::Text;
             }
             self.section_start = self.index + 1;
+        } else if self.try_start_in_tag_comment(c) {
         } else if c == SLASH {
-            if !self.try_start_in_tag_comment() {
-                self.after_quoted_attr_value = false;
-                self.state = State::InSelfClosingTag;
-            }
+            self.after_quoted_attr_value = false;
+            self.state = State::InSelfClosingTag;
         } else if is_whitespace(c) {
             self.after_quoted_attr_value = false;
         } else if c == EQ {
@@ -381,7 +380,7 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
                 LexErrorCode::UnexpectedEqualsSignBeforeAttributeName,
                 self.index,
             );
-        } else {
+        } else if !is_whitespace(c) {
             if self.after_quoted_attr_value {
                 self.sink
                     .on_error(LexErrorCode::MissingWhitespaceBetweenAttributes, self.index);
