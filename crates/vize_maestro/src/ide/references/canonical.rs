@@ -70,10 +70,10 @@ pub(super) async fn references(
         .references(&document.request_uri, line, character, include_declaration)
         .await
         .ok()?;
-    locations.extend(
+    let (prop_locations, has_component_prop_navigation) =
         component_prop_references(ctx, bridge, &document, line, character, include_declaration)
-            .await,
-    );
+            .await;
+    locations.extend(prop_locations);
     let mut linked = linked_positions(&document, &locations);
     linked.extend(corsa_support::materialized_semantic_positions(
         &document, ctx.uri, ctx.offset,
@@ -104,7 +104,10 @@ pub(super) async fn references(
     }
     let mut mapped = corsa_support::map_canonical_corsa_locations(ctx, &document, locations);
     mapped.extend(style_locations(ctx, &document, &mapped));
-    if document_only {
+    // The default project surface already contains open reverse importers.
+    // A component prop's navigation identity can therefore reach its parent
+    // attributes without the opt-in workspace-wide Vue scan.
+    if document_only && !has_component_prop_navigation {
         mapped.retain(|location| location.uri == *ctx.uri);
     }
     mapped.sort_by(|left, right| {
@@ -127,7 +130,7 @@ async fn component_prop_references(
     line: u32,
     character: u32,
     include_declaration: bool,
-) -> Vec<vize_canon::LspLocation> {
+) -> (Vec<vize_canon::LspLocation>, bool) {
     let mut matches = corsa_support::matching_component_prop_navigation_positions(
         ctx,
         bridge,
@@ -138,8 +141,9 @@ async fn component_prop_references(
     )
     .await;
     if matches.names.is_empty() {
-        return Vec::new();
+        return (Vec::new(), false);
     }
+    let has_component_prop_navigation = !matches.positions.is_empty();
 
     let queries = matches
         .positions
@@ -153,7 +157,7 @@ async fn component_prop_references(
         })
         .collect::<Vec<_>>();
     let Ok(batches) = bridge.references_batch(&queries, include_declaration).await else {
-        return Vec::new();
+        return (Vec::new(), false);
     };
     let mut references = Vec::new();
     let names = &matches.names;
@@ -174,7 +178,7 @@ async fn component_prop_references(
             )
         }));
     }
-    references
+    (references, has_component_prop_navigation)
 }
 
 fn style_locations(
