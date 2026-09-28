@@ -145,8 +145,51 @@ async fn component_prop_references(
     }
     let has_component_prop_navigation = !matches.positions.is_empty();
 
-    let queries = matches
-        .positions
+    // A query on the parent attribute reaches the child's declaration, but
+    // TypeScript does not follow that edge onward to the child's template
+    // binding. Ask for references at the mapped declaration as well.
+    let mut positions = matches.positions.clone();
+    for definition in &matches.authored_definitions {
+        let source = if definition.uri == *ctx.uri {
+            Some(ctx.content.clone())
+        } else {
+            document
+                .authored_source(&definition.uri)
+                .map(str::to_owned)
+                .or_else(|| ctx.state.documents.text(&definition.uri))
+                .or_else(|| {
+                    definition
+                        .uri
+                        .to_file_path()
+                        .ok()
+                        .and_then(|path| std::fs::read_to_string(path).ok())
+                })
+        };
+        let Some(offset) = source.as_deref().and_then(|source| {
+            crate::ide::position_to_offset(
+                source,
+                definition.range.start.line,
+                definition.range.start.character,
+            )
+        }) else {
+            continue;
+        };
+        positions.extend(corsa_support::materialized_semantic_positions(
+            document,
+            &definition.uri,
+            offset,
+        ));
+    }
+    positions.sort_by(|left, right| {
+        (&left.request_uri, left.line, left.character).cmp(&(
+            &right.request_uri,
+            right.line,
+            right.character,
+        ))
+    });
+    positions.dedup();
+
+    let queries = positions
         .iter()
         .map(|position| {
             (
