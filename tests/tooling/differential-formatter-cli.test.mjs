@@ -4,6 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import {
+  renderNativeAcceptanceMarkdown,
+  summarizeNativeAcceptance,
+} from "../differential/acceptance-rates.mjs";
 import { loadFormatterManifest } from "../differential/manifest.mjs";
 import { runFormatterPack } from "../differential/formatter.mjs";
 
@@ -13,7 +17,8 @@ void test("source-built formatter matches every exact reference and reaches a fi
   const revision = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" });
   assert.equal(revision.status, 0, revision.stderr);
   const manifestPath = path.join(root, "tests/_fixtures/differential/formatter/manifest.json");
-  const count = loadFormatterManifest(manifestPath).cases.length;
+  const loaded = loadFormatterManifest(manifestPath);
+  const count = loaded.cases.length;
   const report = runFormatterPack({
     manifestPath,
     binaryPath: path.join(root, "target/ci", process.platform === "win32" ? "vize.exe" : "vize"),
@@ -24,6 +29,23 @@ void test("source-built formatter matches every exact reference and reaches a fi
   fs.mkdirSync(path.dirname(artifact), { recursive: true });
   fs.writeFileSync(artifact, `${JSON.stringify(report, null, 2)}\n`);
   t.diagnostic(`Raw CLI observations: ${artifact}`);
+  const acceptance = summarizeNativeAcceptance(loaded, report, {
+    sourceRevision: revision.stdout.trim(),
+  });
+  assert.deepEqual(acceptance.total, {
+    planned: count,
+    nativeHandled: 0,
+    nativeEquivalent: 0,
+    unsupported: count,
+    legacyBacked: 0,
+    unverified: 0,
+  });
+  const acceptanceArtifact = path.join(root, "target/differential/native-acceptance.json");
+  const markdown = renderNativeAcceptanceMarkdown([acceptance]);
+  fs.writeFileSync(acceptanceArtifact, `${JSON.stringify(acceptance, null, 2)}\n`);
+  t.diagnostic(markdown);
+  t.diagnostic(`Native acceptance: ${acceptanceArtifact}`);
+  if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, markdown);
   assert.deepEqual(
     report.summary,
     {
