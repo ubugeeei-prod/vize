@@ -14,7 +14,7 @@ export interface NuxtLintCheckerTask {
   emitWarning: boolean;
   emitError: boolean;
   fix: boolean;
-  /** Test/integration override. Normal callers resolve the project's oxlint. */
+  /** Test/integration override. Normal callers use oxlint-vize. */
   oxlintEntrypoint?: string;
 }
 
@@ -48,13 +48,13 @@ type WorkerResponse =
   | { id: number; result: NuxtLintCheckerResult }
   | { error: { message: string; stack?: string }; id: number };
 
-function resolveOxlintEntrypoint(cwd: string): string {
+function resolveOxlintEntrypoint(): string {
   try {
-    const manifest = createRequire(path.join(cwd, "package.json")).resolve("oxlint/package.json");
-    return path.join(path.dirname(manifest), "bin", "oxlint");
+    const plugin = createRequire(import.meta.url).resolve("oxlint-plugin-vize");
+    return path.resolve(path.dirname(plugin), "..", "bin", "oxlint-vize");
   } catch (error) {
     throw new Error(
-      `Unable to resolve oxlint from ${cwd}. Install oxlint before enabling the Nuxt lint checker.`,
+      "Unable to resolve oxlint-vize. Install oxlint-plugin-vize before enabling the Nuxt lint checker.",
       { cause: error },
     );
   }
@@ -221,7 +221,7 @@ export async function runNuxtLintCheckerTask(
   if (!task.emitError && !task.emitWarning && !task.fix) {
     return { diagnosticCount: 0, hasErrors: false, hasWarnings: false, output: "" };
   }
-  const entrypoint = task.oxlintEntrypoint ?? resolveOxlintEntrypoint(task.cwd);
+  const entrypoint = task.oxlintEntrypoint ?? resolveOxlintEntrypoint();
   const stdout = await executeOxlint(entrypoint, await checkerArgs(task), task.cwd);
   let payload: OxlintPayload;
   try {

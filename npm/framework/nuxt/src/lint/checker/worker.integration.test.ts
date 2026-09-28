@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import { createRequire } from "node:module";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -26,7 +26,13 @@ void test("real worker re-reads its oxlint + Patina config on every pass", async
   const pluginEntry = fileURLToPath(import.meta.resolve("oxlint-plugin-vize"));
   const pluginSpecifier = path.relative(root, pluginEntry).replaceAll(path.sep, "/");
   const oxlintManifest = require.resolve("oxlint/package.json");
-  const oxlintEntrypoint = path.join(path.dirname(oxlintManifest), "bin", "oxlint");
+  const oxlintEntrypoint = path.resolve(path.dirname(pluginEntry), "..", "bin", "oxlint-vize");
+  await mkdir(path.join(root, "node_modules"));
+  await symlink(
+    path.dirname(oxlintManifest),
+    path.join(root, "node_modules", "oxlint"),
+    "junction",
+  );
   await writeFile(
     source,
     `<script setup>\nconst items = [1]\n</script>\n<template>\n  <div v-for="item in items">{{ item }}</div>\n</template>\n`,
@@ -54,6 +60,28 @@ void test("real worker re-reads its oxlint + Patina config on every pass", async
     ),
     ["vize(vue/require-v-for-key)"],
   );
+
+  await writeFile(
+    source,
+    `<template>\n  <ul>\n    <li v-for="item in [1]">{{ item }}</li>\n  </ul>\n</template>\n`,
+  );
+  const scriptless = await worker.run(task);
+  assert.equal(scriptless.hasErrors, true);
+  const diagnostics = (
+    JSON.parse(scriptless.output) as {
+      diagnostics: Array<{
+        code: string;
+        filename?: string;
+        filePath?: string;
+        labels: Array<{ span: { line: number; column: number } }>;
+      }>;
+    }
+  ).diagnostics;
+  assert.equal(diagnostics.length, 1);
+  assert.equal(diagnostics[0].code, "vize(vue/require-v-for-key)");
+  assert.equal(diagnostics[0].filename ?? diagnostics[0].filePath, source);
+  assert.equal(diagnostics[0].labels[0].span.line, 3);
+  assert.equal(diagnostics[0].labels[0].span.column, 9);
 
   await writeConfig("off");
   assert.deepEqual(await worker.run(task), {
