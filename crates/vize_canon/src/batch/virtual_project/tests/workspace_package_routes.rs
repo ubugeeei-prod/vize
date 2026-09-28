@@ -6,6 +6,54 @@ use crate::{PackageResolutionContext, PackageRoute, PackageRouteBinding};
 use super::{VirtualProject, unique_case_dir};
 
 #[test]
+fn private_typescript_imports_keep_the_authored_package_scope() {
+    let root = unique_case_dir("private-typescript-imports");
+    let _ = fs::remove_dir_all(&root);
+    fs::create_dir_all(root.join("src/lib")).unwrap();
+    let manifest =
+        r##"{"type":"module","imports":{"#lib/*":"./src/lib/*","#lib2/*":"./src/lib/*.ts"}}"##;
+    fs::write(root.join("package.json"), manifest).unwrap();
+    fs::write(
+        root.join("tsconfig.json"),
+        r#"{"compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","strict":true,"allowImportingTsExtensions":true,"noEmit":true},"include":["src/**/*"]}"#,
+    )
+    .unwrap();
+    fs::write(
+        root.join("src/lib/util.ts"),
+        "export const greet = (s: string) => s;\n",
+    )
+    .unwrap();
+    let importer = root.join("src/App.vue");
+    fs::write(
+        &importer,
+        "<script setup lang='ts'>import { greet } from '#lib/util.ts'; import { greet as second } from '#lib2/util'; greet(second('x'))</script>",
+    )
+    .unwrap();
+
+    let mut project = VirtualProject::new(&root).unwrap();
+    project.register_path(&importer).unwrap();
+    project.reconcile_package_routes_for_importers(std::slice::from_ref(&importer));
+    let bindings = project.package_routes_snapshot();
+    assert_eq!(
+        bindings.len(),
+        2,
+        "both private routes must resolve: {bindings:#?}"
+    );
+    assert!(bindings.iter().all(|binding| binding.route.is_some()));
+    project.register_package_route_targets().unwrap();
+    project.finalize_package_routes().unwrap();
+    project.materialize().unwrap();
+
+    assert_eq!(
+        fs::read_to_string(project.virtual_root().join("package.json")).unwrap(),
+        manifest,
+        "native TypeScript must see the authored imports map",
+    );
+    assert!(project.virtual_root().join("src/lib/util.ts").is_file());
+    let _ = fs::remove_dir_all(&root);
+}
+
+#[test]
 fn package_shadow_preserves_user_paths_and_raw_manifest() {
     let project_root = unique_case_dir("workspace-package-shadow");
     let package_root = project_root.parent().unwrap().join(

@@ -109,7 +109,11 @@ impl VirtualProject {
                 if has_route {
                     reachability.record_work(&mut resolver);
                 }
-                let needs_shadow = reachability.requires_shadow()
+                // Private `#` mappings require the authored scope manifest in
+                // the mirror even when they resolve only ordinary `.ts` files.
+                // The synthetic root manifest has no `imports` map.
+                let needs_shadow = (specifier.starts_with('#') && has_route)
+                    || reachability.requires_shadow()
                     || route
                         .as_ref()
                         .is_some_and(crate::PackageRoute::requires_workspace_source_shadow);
