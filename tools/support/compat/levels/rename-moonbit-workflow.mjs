@@ -16,13 +16,18 @@ const replacements = [
   [newPath, oldPath, newPath],
   [newPath, "davinci-moonbit-${{", "level-moonbit-${{"],
   [newPath, "key: davinci-moonbit", "key: level-moonbit"],
-  ["tests/tooling/github-workflows-check-gate.test.ts", '"davinci-moonbit.yml"', '"level-moonbit.yml"'],
+  [
+    "tests/tooling/github-workflows-check-gate.test.ts",
+    '"davinci-moonbit.yml"',
+    '"level-moonbit.yml"',
+  ],
 ];
 
 for (const [path, before, after] of replacements) {
   const source = readFileSync(path, "utf8");
   const matches = source.split(before).length - 1;
   if (matches > 1) throw new Error(`ambiguous replacement (${matches}): ${path} ${before}`);
-  if (matches === 0 && !source.includes(after)) throw new Error(`missing replacement: ${path} ${before}`);
+  if (matches === 0 && !source.includes(after))
+    throw new Error(`missing replacement: ${path} ${before}`);
   if (matches === 1) writeFileSync(path, source.replace(before, after));
 }
