@@ -11,6 +11,7 @@ import { fileURLToPath } from "node:url";
 import { cacheInputs } from "../../../config/vite-plus/task-inputs.ts";
 import {
   mergeOnlyToolingTests,
+  pureToolingTests,
   toolingTestScopes,
 } from "../../../config/vite-plus/tooling-test-scopes.ts";
 import { changedPaths } from "./plan-source-checks.mjs";
@@ -19,6 +20,19 @@ import { toolingShardIds } from "./tooling-merge-shards.mjs";
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const globalInputs = [...cacheInputs.workspace, "pnpm-workspace.yaml"];
 const matchesAny = (path, patterns) => patterns.some((pattern) => matchesGlob(path, pattern));
+// An edited test, tool, action or JS dependency can change a pure test's
+// runtime needs without changing its listed imports. Demote the cohort until
+// its prerequisites have been reviewed again.
+const pureCapabilitySensitiveInputs = [
+  "tests/**",
+  "tools/**",
+  ".github/**",
+  "npm/**",
+  "scripts/**",
+  "package.json",
+  "pnpm-lock.yaml",
+  "pnpm-workspace.yaml",
+];
 
 export function toolingTestFiles(cwd = root) {
   return ["tests/tooling", "tests/tooling/davinci", "tests/tooling/release"]
@@ -72,10 +86,19 @@ export function planToolingTests(paths, { tier = "pr", cwd = root } = {}) {
     const inputs = scope && imports.complete ? cacheInputs[scope.input] : cacheInputs.tooling;
     return paths.some((path) => matchesAny(path, [...inputs, ...imports.files]));
   });
+  const pureSet = new Set(pureToolingTests);
+  const pureSafe =
+    tier === "pr" &&
+    !unknown &&
+    !paths.some((path) => matchesAny(path, pureCapabilitySensitiveInputs));
+  const pureTests = pureSafe
+    ? tests.filter((file) => pureSet.has(file) && localImportInputs(file, cwd).complete)
+    : [];
   return {
     version: 1,
     tier,
     tests,
+    pureTests,
     totalTests: files.length,
     deferredTests: tier === "merge" ? 0 : files.filter((file) => mergeOnly.has(file)).length,
     reason:
@@ -113,6 +136,11 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   writeToolingPlan(plan, output);
   if (githubOutput && process.env.GITHUB_OUTPUT) {
     appendFileSync(process.env.GITHUB_OUTPUT, `tooling=${plan.tests.length > 0}\n`);
+    appendFileSync(process.env.GITHUB_OUTPUT, `tooling-pure=${plan.pureTests.length > 0}\n`);
+    appendFileSync(
+      process.env.GITHUB_OUTPUT,
+      `tooling-full=${plan.tests.length > plan.pureTests.length}\n`,
+    );
     appendFileSync(
       process.env.GITHUB_OUTPUT,
       `tooling-shards=${JSON.stringify(toolingShardIds(tier))}\n`,
