@@ -243,7 +243,8 @@ impl EmitDocument {
         // (input offset of an escape, total growth once it is applied)
         let mut growth: Vec<(usize, usize)> = Vec::new();
         let (mut start, mut index) = (0, 0);
-        while let Some(rest) = bytes.get(index..).filter(|rest| !rest.is_empty()) {
+        while index < bytes.len() {
+            let rest = bytes.split_at(index).1;
             let Some((from, to)) = escapes
                 .iter()
                 .find(|(from, _)| rest.starts_with(from.as_bytes()))
