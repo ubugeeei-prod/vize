@@ -9,7 +9,7 @@
 mod values;
 
 use super::attrs::{attr_value, has_attr};
-use super::{calculate_location_fast, line_of};
+use super::{calculate_location_with_line, line_of};
 use crate::types::{ArtParseError, ArtVariant};
 use values::{parse_args_json, parse_viewport};
 use vize_l0::{Allocator, SourceBlock, ToCompactString};
@@ -98,7 +98,7 @@ fn parse_single_variant<'a>(
         args,
         viewport,
         skip_vrt,
-        loc: Some(calculate_location_fast(source, start, end)),
+        loc: Some(calculate_location_with_line(source, start, end, line)),
     })
 }
 
