@@ -28,5 +28,5 @@ _None._
 | `Span`             |        0 |  201 |
 | `Symbol`           |        0 |    1 |
 | `Croquis.bindings` |        4 |  253 |
-| `Croquis.hoists`   |        0 |    7 |
+| `Croquis.hoists`   |        0 |    8 |
 | `Croquis.scopes`   |        0 |   14 |
