@@ -56,16 +56,12 @@ pub(crate) fn analyzed_template_binding_completions(
             items_vec.push(template_scope_completion_item(name, scope_kind));
         }
     }
-    let macro_prop_names: BTreeSet<&str> = if include_vue3_details {
-        BTreeSet::new()
-    } else {
-        croquis
-            .macros
-            .props()
-            .iter()
-            .map(|prop| prop.name.as_str())
-            .collect()
-    };
+    let macro_prop_names: BTreeSet<&str> = croquis
+        .macros
+        .props()
+        .iter()
+        .map(|prop| prop.name.as_str())
+        .collect();
 
     let mut facts = CroquisFacts::new(&croquis);
     let view = facts.prepare::<TemplateBindingCompletion>();
@@ -76,10 +72,10 @@ pub(crate) fn analyzed_template_binding_completions(
         if locals.contains(name) {
             continue;
         }
-        if !include_vue3_details
-            && (!is_legacy_vue2_binding(binding_type)
-                || binding_type == BindingType::Props && macro_prop_names.contains(name))
-        {
+        if binding_type == BindingType::Props && macro_prop_names.contains(name) {
+            continue;
+        }
+        if !include_vue3_details && !is_legacy_vue2_binding(binding_type) {
             continue;
         }
         let (kind, type_detail, doc) = items::binding_type_to_completion_info(binding_type);
