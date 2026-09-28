@@ -1,0 +1,18 @@
+---
+source: crates/vize_glyph/tests/preserve_authored_content.rs
+expression: formatted
+---
+<template>
+  <div class="p" />
+</template>
+
+<style scoped>
+.p {
+  :deep(.child) {
+    color: red;
+  }
+  .q {
+    color: blue;
+  }
+}
+</style>
