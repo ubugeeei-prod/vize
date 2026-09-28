@@ -138,6 +138,14 @@ void test("native credit requires a verified whole-product transcript and observ
   const missing = structuredClone(native);
   missing.provenance.contributions.pop();
   assert.equal(classifyNativeRow({ native: missing }, options), "unverified");
+  const extra = structuredClone(native);
+  extra.provenance.contributions.push({
+    stage: "unexpected",
+    implementation: "native",
+    factOrigin: "native",
+    fallback: false,
+  });
+  assert.equal(classifyNativeRow({ native: extra }, options), "unverified");
   const fallback = structuredClone(native);
   fallback.provenance.contributions[1].fallback = true;
   assert.equal(classifyNativeRow({ native: fallback }, options), "legacy-backed");

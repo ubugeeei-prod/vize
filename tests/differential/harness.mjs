@@ -102,6 +102,8 @@ export function classifyNativeRow(
   if (row.native?.state !== "completed") return row.native?.state ?? "unverified";
   assert(Array.isArray(requiredStages) && requiredStages.length > 0);
   assert.equal(typeof verifyObservation, "function", "native observation verifier is required");
+  const required = new Set(requiredStages);
+  assert.equal(required.size, requiredStages.length, "duplicate required product stage");
   const proof = row.native.provenance;
   if (
     proof?.scope !== "whole-product" ||
@@ -112,9 +114,10 @@ export function classifyNativeRow(
     return "unverified";
   }
   if (!Array.isArray(proof.contributions)) return "unverified";
+  if (proof.contributions.length !== required.size) return "unverified";
   const stages = new Set();
   for (const part of proof.contributions) {
-    if (typeof part.stage !== "string" || stages.has(part.stage)) return "unverified";
+    if (!required.has(part.stage) || stages.has(part.stage)) return "unverified";
     stages.add(part.stage);
     if (
       part.implementation !== "native" ||
@@ -124,6 +127,5 @@ export function classifyNativeRow(
       return "legacy-backed";
     }
   }
-  if (requiredStages.some((stage) => !stages.has(stage))) return "unverified";
   return verifyObservation(row.native.observation) === true ? "native-handled" : "unverified";
 }

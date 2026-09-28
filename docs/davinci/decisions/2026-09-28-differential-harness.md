@@ -21,7 +21,7 @@ case, with absent coverage treated as unknown by downstream reporting.
 Native acceptance requires an observed, source/build-bound whole-product
 transcript. A completed native row carries `provenance` with
 `scope: "whole-product"`, the exact `sourceRevision`, a validated build receipt
-SHA256 and unique `contributions` for the adapter's required stages. Each
+SHA256 and exactly the adapter's required set of unique `contributions`. Each
 contribution records `stage`, `implementation`, `factOrigin` and explicit
 `fallback`. A missing, unknown, legacy or fallback contribution cannot count
 as native handled. The product adapter must also verify its runtime
