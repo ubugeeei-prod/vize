@@ -1,9 +1,9 @@
 //! The MoonBit answers to the L2 expression capability contract.
 //!
 //! [`MoonBitDialect`] is the first implementor of
-//! [`vize_l2::expr::capability::ExprDialect`] (charter #28: the trait had
+//! [`crate::expr::capability::ExprDialect`] (charter #28: the trait had
 //! none until phase 6). It answers for `ExprRef::Foreign` payloads of
-//! dialect [`crate::sfc::DIALECT`]; every other variant gets the pessimal
+//! dialect [`DIALECT`]; every other variant gets the pessimal
 //! answers the contract prescribes. The answers come from a lexical scan
 //! of the MoonBit expression, and the scan says when it is not exact:
 //! a binder form (`fn`, `let`, `match`, `for`, `is`, `=>`, …) or a
@@ -11,16 +11,19 @@
 //! the consumer falls back to may-read-anything instead of trusting a
 //! guess. Types are `moonc`'s job, never this scan's.
 
+use alloc::vec::Vec;
 use core::fmt;
 
+use crate::expr::ExprRef;
+use crate::expr::capability::ExprDialect;
 use vize_l0::Span;
-use vize_l2::expr::ExprRef;
-use vize_l2::expr::capability::ExprDialect;
 
-use crate::sfc::DIALECT;
 use scan::{Tok, scan};
 
 mod scan;
+
+/// Dialect id carried by a MoonBit [`crate::expr::ForeignExpr`].
+pub const DIALECT: &str = "moonbit";
 
 /// The in-tree MoonBit expression dialect (charter #15's first-party
 /// tier: compiled in, statically dispatched, no transport).

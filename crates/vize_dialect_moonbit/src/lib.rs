@@ -26,7 +26,7 @@
 
 pub mod cache;
 pub mod diagnostic;
-pub mod dialect;
+pub use vize_l2::lang::moonbit as dialect;
 pub mod host;
 pub mod lines;
 #[cfg(feature = "moonc")]

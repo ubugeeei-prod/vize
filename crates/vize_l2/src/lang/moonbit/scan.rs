@@ -2,6 +2,8 @@
 //! never a parse. `moonc` owns MoonBit's grammar and types; the scan only
 //! has to know when it cannot be exact.
 
+use alloc::vec::Vec;
+
 /// MoonBit's reserved words, sorted for binary search.
 const KEYWORDS: [&str; 52] = [
     "_",
