@@ -168,10 +168,13 @@ Unknown and modified files remain untouched; filename collisions and symlinked
 source directories fail the dump instead of redirecting writes or deletion.
 Cleanup runs before the next observed compile, so a read, parse or compile
 failure under `--continue-on-error` leaves no stale accepted feed beside its
-fallback module. The source syntax label is a lowercase slug; only Pug changes
-the compiled syntax label to `vue-template`. External template, script or style
-`src` makes an otherwise successful capture unavailable because the product
-compile does not inline those external blocks into the observed stages.
+fallback module. The authored syntax label is a lowercase slug; an unannotated
+Vue SFC template uses `vue-template`, matching `vize dump`. Pug is desugared
+first, while Jade is passed through unchanged. Every inline template is handed
+to the Vue template parser, so its compiled syntax is `vue-template`. External
+template, script or style `src` makes an otherwise successful capture
+unavailable because the product compile does not inline those external blocks
+into the observed stages.
 
 ## Merge sequence
 

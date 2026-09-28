@@ -136,7 +136,7 @@ fn failed_rebuild_does_not_keep_an_old_accepted_feed() {
 }
 
 #[test]
-fn uppercase_pug_is_schema_valid_and_jade_claims_no_preprocessing() {
+fn syntax_labels_match_the_vue_template_parser_route() {
     let root = project("syntax", "<template lang=\"PUG\">p Hello</template>");
     assert!(build(&root, &[]).status.success());
     let pug = feed(&root);
@@ -149,13 +149,29 @@ fn uppercase_pug_is_schema_valid_and_jade_claims_no_preprocessing() {
     assert_eq!(schema::validate(&schema_value, &pug, "$"), Ok(()));
     fs::write(
         root.join("src/a.vue"),
-        "<template lang=\"jade\">hello</template>",
+        "<template lang=\"jade\">p Hello</template>",
     )
     .unwrap();
     assert!(build(&root, &[]).status.success());
     let jade = feed(&root);
     assert_eq!(jade["source"]["authored_syntax"], "jade");
-    assert_eq!(jade["source"]["compiled_syntax"], "jade");
+    assert_eq!(jade["source"]["compiled_syntax"], "vue-template");
+    assert_eq!(schema::validate(&schema_value, &jade, "$"), Ok(()));
+    assert!(
+        fs::read_to_string(root.join("dist/a.js"))
+            .unwrap()
+            .contains("p Hello")
+    );
+    fs::write(
+        root.join("src/a.vue"),
+        "<template><div>Hello</div></template>",
+    )
+    .unwrap();
+    assert!(build(&root, &[]).status.success());
+    let standard = feed(&root);
+    assert_eq!(standard["source"]["authored_syntax"], "vue-template");
+    assert_eq!(standard["source"]["compiled_syntax"], "vue-template");
+    assert_eq!(schema::validate(&schema_value, &standard, "$"), Ok(()));
     fs::remove_dir_all(root).unwrap();
 }
 

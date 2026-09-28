@@ -29,11 +29,11 @@ impl BuildCapture {
         descriptor: &SfcDescriptor<'_>,
     ) -> Self {
         let template = descriptor.template.as_ref();
-        // Only Pug is preprocessed by the product adapter. Preserve other
-        // declared syntaxes without claiming a transformation.
+        // Only Pug is preprocessed; every inline template is then passed to
+        // the Vue template parser, including unconverted Jade content.
         let authored_lower = template
             .and_then(|template| template.lang.as_deref())
-            .unwrap_or("html")
+            .unwrap_or("vue-template")
             .to_ascii_lowercase();
         let authored_syntax = if authored_lower
             .bytes()
@@ -46,11 +46,6 @@ impl BuildCapture {
             authored_lower.as_str()
         } else {
             "vue-template"
-        };
-        let compiled_syntax = if authored_syntax == "pug" {
-            "vue-template"
-        } else {
-            authored_syntax
         };
         if template.is_some_and(|block| block.src.is_some())
             || descriptor
@@ -74,7 +69,7 @@ impl BuildCapture {
         Self {
             stages,
             authored_syntax: String::from(authored_syntax),
-            compiled_syntax: String::from(compiled_syntax),
+            compiled_syntax: String::from("vue-template"),
             template_span,
         }
     }
