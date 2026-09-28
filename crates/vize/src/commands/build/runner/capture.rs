@@ -1,12 +1,13 @@
 //! Host-side dump of the stages from the exact SFC compile that built a file.
 
+mod page_files;
+
 use std::path::Path;
 
 use vize_atelier_sfc::SfcDescriptor;
 use vize_curator::inspector::{ProductCaptureSource, product_capture_value};
 use vize_l0::cstr;
-use vize_l0::dump::capture::{CaptureOutcome, StageCapture};
-use vize_l0::hash::hash_str;
+use vize_l0::dump::capture::{CaptureOutcome, CaptureSink, StageCapture};
 use vize_l0::{Span, String};
 
 use super::super::config::{CompileError, CompileOutput, CompileStats, ErrorPhase, FileProfile};
@@ -23,16 +24,47 @@ pub(super) struct BuildCapture {
 }
 
 impl BuildCapture {
-    pub(super) fn from_descriptor(stages: StageCapture, descriptor: &SfcDescriptor<'_>) -> Self {
+    pub(super) fn from_descriptor(
+        mut stages: StageCapture,
+        descriptor: &SfcDescriptor<'_>,
+    ) -> Self {
         let template = descriptor.template.as_ref();
-        let authored_syntax = template
+        // Only Pug is preprocessed by the product adapter. Preserve other
+        // declared syntaxes without claiming a transformation.
+        let authored_lower = template
             .and_then(|template| template.lang.as_deref())
-            .unwrap_or("html");
-        let compiled_syntax = if matches!(authored_syntax, "pug" | "jade") {
-            "html"
+            .unwrap_or("html")
+            .to_ascii_lowercase();
+        let authored_syntax = if authored_lower
+            .bytes()
+            .next()
+            .is_some_and(|byte| byte.is_ascii_lowercase())
+            && authored_lower
+                .bytes()
+                .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
+        {
+            authored_lower.as_str()
+        } else {
+            "vue-template"
+        };
+        let compiled_syntax = if authored_syntax == "pug" {
+            "vue-template"
         } else {
             authored_syntax
         };
+        if template.is_some_and(|block| block.src.is_some())
+            || descriptor
+                .script
+                .as_ref()
+                .is_some_and(|block| block.src.is_some())
+            || descriptor
+                .script_setup
+                .as_ref()
+                .is_some_and(|block| block.src.is_some())
+            || descriptor.styles.iter().any(|block| block.src.is_some())
+        {
+            stages.finish(|| CaptureOutcome::Unavailable(cstr!("external SFC block source")));
+        }
         let template_span = template.and_then(|template| {
             Some(Span::new(
                 template.loc.start.try_into().ok()?,
@@ -53,8 +85,19 @@ pub(super) fn compile_planned_file(
     settings: &CompileFileSettings,
     stats: &CompileStats,
 ) -> Result<(CompileOutput, FileProfile), CompileError> {
+    let dir = settings
+        .davinci
+        .dump_dir
+        .as_deref()
+        .map(|root| page_files::prepare(root, &input.relative_source))
+        .transpose()
+        .map_err(|error| CompileError {
+            path: input.source.clone(),
+            error,
+            phase: ErrorPhase::Dump,
+        })?;
     let (output, profile, capture) = compile_file_with_profile(&input.source, settings, stats)?;
-    if let Some(dir) = settings.davinci.dump_dir.as_deref() {
+    if let Some(dir) = dir.as_deref() {
         let capture = capture.ok_or_else(|| CompileError {
             path: input.source.clone(),
             error: cstr!("--dump-dir: observed compile did not return a stage capture"),
@@ -76,57 +119,12 @@ pub(super) fn compile_planned_file(
 }
 
 pub(super) fn write(
-    root: &Path,
+    dir: &Path,
     relative_source: &Path,
-    mut capture: BuildCapture,
+    capture: BuildCapture,
     after_change: bool,
 ) -> Result<(), String> {
-    let dir = root.join(relative_source);
-    std::fs::create_dir_all(&dir)
-        .map_err(|error| cstr!("--dump-dir: cannot create {}: {error}", dir.display()))?;
-    // An earlier run may have selected a native backend or emitted more
-    // stages. Clear only files with this command's generated page shape so a
-    // later fallback never inherits pages from that earlier run.
-    for entry in std::fs::read_dir(&dir)
-        .map_err(|error| cstr!("--dump-dir: cannot read {}: {error}", dir.display()))?
-    {
-        let entry =
-            entry.map_err(|error| cstr!("--dump-dir: cannot read {}: {error}", dir.display()))?;
-        let name = entry.file_name();
-        let name = name.to_string_lossy();
-        if name.ends_with(".dump")
-            && name.split_once('-').is_some_and(|(index, _)| {
-                !index.is_empty() && index.bytes().all(|b| b.is_ascii_digit())
-            })
-        {
-            std::fs::remove_file(entry.path()).map_err(|error| {
-                cstr!(
-                    "--dump-dir: cannot remove {}: {error}",
-                    entry.path().display()
-                )
-            })?;
-        }
-    }
-
-    // Only a selected native backend has pages. Filtering the sidecar also
-    // makes the versioned feed describe exactly the files written below.
-    if !matches!(capture.stages.outcome, CaptureOutcome::Accepted) {
-        capture.stages.pages.clear();
-    } else if after_change {
-        let mut previous = None;
-        capture.stages.pages.retain(|page| {
-            let current = hash_str(&page.text);
-            let changed = previous != Some(current);
-            previous = Some(current);
-            changed
-        });
-    }
-
-    for (index, page) in capture.stages.pages.iter().enumerate() {
-        let path = dir.join(cstr!("{index:03}-{}.{}.dump", page.level.id(), page.step));
-        std::fs::write(&path, page.text.as_bytes())
-            .map_err(|error| cstr!("--dump-dir: cannot write {}: {error}", path.display()))?;
-    }
+    page_files::write_pages(dir, &capture.stages, after_change)?;
 
     let source_path = relative_source.to_string_lossy();
     let feed = product_capture_value(
@@ -143,6 +141,5 @@ pub(super) fn write(
     let path = dir.join("stages.json");
     let bytes = serde_json::to_vec_pretty(&feed)
         .map_err(|error| cstr!("--dump-dir: cannot serialize {}: {error}", path.display()))?;
-    std::fs::write(&path, bytes)
-        .map_err(|error| cstr!("--dump-dir: cannot write {}: {error}", path.display()))
+    page_files::write_feed(&path, &bytes)
 }

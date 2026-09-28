@@ -149,7 +149,7 @@ the export without deleting user content; unrelated files remain untouched.
 
 `vize build --dump-dir` observes the same SFC compile that returns each built
 module. `--dump-after-change` filters consecutive equal page text without
-another compile. The former `--folio-dir` and `--folio-after-change` names have
+another compile; the version 2 feed still records every executed page. The former `--folio-dir` and `--folio-after-change` names have
 no aliases. Ordinary builds keep the non-observing compiler entry and do no
 dump work. A stats-only build bypasses its content cache only when capture is
 requested, so each reported file has an executed compile.
@@ -161,6 +161,17 @@ not claim native SFC script/style work or add native acceptance credit.
 Each Rayon worker writes and releases its own capture, so batch memory does
 not retain all dump pages. A dump write failure fails that file without
 emitting a fallback module, including under `--continue-on-error`.
+
+On reuse, build validates the prior feed's version, command and source, plus
+each existing page filename and exact bytes before deleting owned files.
+Unknown and modified files remain untouched; filename collisions and symlinked
+source directories fail the dump instead of redirecting writes or deletion.
+Cleanup runs before the next observed compile, so a read, parse or compile
+failure under `--continue-on-error` leaves no stale accepted feed beside its
+fallback module. The source syntax label is a lowercase slug; only Pug changes
+the compiled syntax label to `vue-template`. External template, script or style
+`src` makes an otherwise successful capture unavailable because the product
+compile does not inline those external blocks into the observed stages.
 
 ## Merge sequence
 
