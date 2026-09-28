@@ -71,14 +71,16 @@ issues are all closed.
 
 ## Merging
 
-For dependent slices, use GitHub stacked PRs: branch each child from its
-parent's head and set the child's PR base to that parent branch, so the
-reviewed diff contains only the child. Link parent and child in their PR
-descriptions. Keep a child out of the merge queue while its parent is open.
-After the parent actually squash-merges, rebase the child onto fresh `main`,
-change its PR base to `main`, and rerun Actions before queuing it.
+For dependent slices, use a GitHub native Stack. Branch each child from its
+parent's head, create each PR with the parent branch as its base, and register
+all existing PRs with `gh stack link --remote origin <bottom> ... <top>`.
+Verify GitHub reports the same Stack number and ordered positions for every
+PR. Parent-base links or prose alone do not establish a native Stack.
+Do not auto-merge an individual layer. Once every layer's exact-head Actions
+passes, run `gh stack merge <top> --yes` to enter the protected merge queue.
+Track each queue candidate, actual merge and fresh `main` before completion.
 
-For PRs targeting `main`, enable auto-merge (squash) once PR checks pass.
+For an independent PR, enable auto-merge (squash) once its PR checks pass.
 The merge queue runs the full suites. If a queue candidate fails, remove its
 PR from the queue until the failure is fixed; do not leave a known-red
 candidate blocking later PRs.

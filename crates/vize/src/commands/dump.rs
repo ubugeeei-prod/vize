@@ -1,9 +1,8 @@
-//! `vize dump` validates a level dump or exports the native stage ladder.
+//! `vize dump` validates a level dump or captures one product compilation.
 //!
 //! L1 checks lossless Vue-template source, including recoverable holes.
 //! L2/L3 check canonical Full dump bytes, not semantic IR validity.
-//! The all-level feed captures the native stage ladder; it does not replace
-//! product compilation.
+//! The all-level feed observes the selected product backend's executed levels.
 
 mod all_levels;
 mod roundtrip;
@@ -29,6 +28,14 @@ impl Level {
     }
 }
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, ValueEnum)]
+pub enum Pipeline {
+    #[default]
+    Dom,
+    Ssr,
+    Vapor,
+}
+
 #[derive(Args)]
 #[command(group(ArgGroup::new("mode").required(true).args(["roundtrip", "all_levels"])))]
 pub struct DumpArgs {
@@ -40,7 +47,7 @@ pub struct DumpArgs {
     #[arg(long, value_name = "FILE", requires = "level")]
     pub roundtrip: Option<PathBuf>,
 
-    /// Capture L1, L2 and L3 pages from one native template ladder run
+    /// Capture only the levels executed by one product compile
     #[arg(long, requires_all = ["json", "source"])]
     pub all_levels: bool,
 
@@ -48,14 +55,34 @@ pub struct DumpArgs {
     #[arg(long, requires = "all_levels")]
     pub json: bool,
 
-    /// Raw Vue template to capture (.vue SFCs await the native container)
+    /// Compile FILE (.html, .vue or .pug) and capture its executed levels
     #[arg(value_name = "FILE", requires = "all_levels")]
     pub source: Option<PathBuf>,
+
+    /// Select a real product backend; named no-op passes are unsupported
+    #[arg(long, value_enum, requires = "all_levels")]
+    pub pipeline: Option<Pipeline>,
+
+    /// Write captured pages and the versioned product feed into DIR
+    #[arg(long, value_name = "DIR", requires = "all_levels")]
+    pub dump_dir: Option<PathBuf>,
+
+    /// Write a page only when its bytes differ from the preceding page
+    #[arg(long, requires = "dump_dir")]
+    pub dump_after_change: bool,
+
+    /// Write observed timing data, including availability, as JSON
+    #[arg(long, value_name = "FILE", requires = "all_levels")]
+    pub timing_json: Option<PathBuf>,
+
+    /// Write observed remarks, including availability, as JSON
+    #[arg(long, value_name = "FILE", requires = "all_levels")]
+    pub remarks: Option<PathBuf>,
 }
 
 pub fn run(args: DumpArgs) {
-    if let Some(path) = args.source.as_deref() {
-        all_levels::run(path);
+    if args.source.is_some() {
+        all_levels::run(&args);
         return;
     }
     let (Some(path), Some(level)) = (args.roundtrip.as_deref(), args.level) else {
