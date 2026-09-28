@@ -1,6 +1,6 @@
 //! TS-16 for `vue.once` / `vue.memo` (P2-11): Vue one-shot and
 //! dependency-memoized render as dialect bindings. Split from
-//! `folio_laws.rs` so the Vue 3 family pin stays inside the source
+//! `dump_laws.rs` so the Vue 3 family pin stays inside the source
 //! budget.
 
 use vize_davinci::dump::{Dump, Mode as DumpMode};

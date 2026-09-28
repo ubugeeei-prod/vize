@@ -51,6 +51,8 @@ Decided by the maintainer on 2026-09-28 ([#6826 comment](https://github.com/ubug
 The L3 package identity, stage feed types, level dump API, versioned dump protocols and `vize dump --roundtrip` are recorded in [level dump naming](./2026-09-28-level-dump-naming.md).
 The native stage ladder now collects pages, remarks and timings from one pass execution for the playground; CLI export and product compilation integration remain open in #6832.
 
+For [#6832](https://github.com/ubugeeei-prod/vize/issues/6832), L2's 13 auto-discovered `folio_*` test targets move to `dump_*` in a move-only commit; source references and live documentation links follow in a separate commit, while `.folio` fixture bytes and extensions remain unchanged.
+
 ## Rust verification for L3 (2026-09-28)
 
 The maintainer chose Rust Kani for Davinci verification and closed the Lean namespace rename PR [#7052](https://github.com/ubugeeei-prod/vize/pull/7052). New L3 properties use Kani harnesses against production Rust source, starting with the class and effect lattice in `tests/formal/kani/l3_lattice.rs`; each harness states its finite input domain. Bounded verification does not establish an unbounded theorem. Keep differential fixtures and Lean checks until each claim has replacement coverage, then remove the old lane separately. Remaining naming and shared CLI/playground production capture keep [#6832](https://github.com/ubugeeei-prod/vize/issues/6832) open.

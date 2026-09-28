@@ -1,5 +1,5 @@
 //! TS-16 for `vue.css-bind` (P2-10): SFC style `v-bind()` as a dialect
-//! binding. Split from `folio_laws.rs` so the Vue 3 family pin stays
+//! binding. Split from `dump_laws.rs` so the Vue 3 family pin stays
 //! inside the source budget.
 
 use vize_davinci::dump::{Dump, Mode as DumpMode};

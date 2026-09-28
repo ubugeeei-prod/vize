@@ -1,6 +1,6 @@
 //! TS-16 for the Vue 2 dialect ops (P2-9 installment 7): `vue.sync`,
 //! `vue.slot-scope`, and `vue.filter` round-trip through the folio.
-//! Split from `folio_laws.rs` so the original reference page stays the
+//! Split from `dump_laws.rs` so the original reference page stays the
 //! Vue 3 family pin and this file stays inside the source budget.
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 

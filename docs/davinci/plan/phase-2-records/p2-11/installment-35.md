@@ -28,7 +28,7 @@ The realized cases are:
 
 The durable witnesses are:
 
-- [`folio_cloak.rs`](../../../../../crates/vize_l2/tests/folio_cloak.rs)
+- [`folio_cloak.rs`](../../../../../crates/vize_l2/tests/dump_cloak.rs)
   - exact Folio parse/print and owned-mirror coverage for `vue.cloak`.
 - [`lowering_vcloak.rs`](../../../../../crates/vize_l1_to_l2/tests/lowering_vcloak.rs)
   - element and slot-outlet `v-cloak` lower to `vue.cloak`, including

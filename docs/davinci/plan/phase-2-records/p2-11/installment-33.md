@@ -24,7 +24,7 @@ The realized cases are:
 
 The durable witnesses are:
 
-- [`folio_html.rs`](../../../../../crates/vize_l2/tests/folio_html.rs)
+- [`folio_html.rs`](../../../../../crates/vize_l2/tests/dump_html.rs)
   - exact Folio parse/print and owned-mirror coverage for value-bearing and
     value-less `vue.html`.
 - [`lowering_html.rs`](../../../../../crates/vize_l1_to_l2/tests/lowering_html.rs)
