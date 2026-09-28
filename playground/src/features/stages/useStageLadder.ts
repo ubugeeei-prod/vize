@@ -177,7 +177,13 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
         filename: FILENAME,
         captureStages: true,
       };
-      const sfc = compiler.compileSfc(input, options);
+      let sfc: SfcCompileResult | null = null;
+      let domError: string | null = null;
+      try {
+        sfc = compiler.compileSfc(input, options);
+      } catch (caught) {
+        domError = caught instanceof Error ? caught.message : String(caught);
+      }
       const results: Partial<Record<OutputTarget, SfcCompileResult>> = {};
       const compiled = await compileCodeOutputs({
         compiler,
@@ -191,6 +197,7 @@ export function useStageLadder(getCompiler: () => WasmModule | null) {
         },
         assembledModule: true,
       });
+      if (domError) compiled.dom = { ...compiled.dom, error: domError };
       if (current !== version) return;
       const next: Partial<Record<OutputTarget, ProductCapturedResult>> = {};
       for (const target of ["dom", "ssr", "vapor"] as const) {

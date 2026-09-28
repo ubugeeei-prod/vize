@@ -39,8 +39,8 @@ const emit = defineEmits<{
       @click="() => emit('select', 'l4')"
     >
       <span class="davinci-station-ordinal">L4</span>
-      <span class="davinci-station-name">Output</span>
-      <span class="davinci-station-facts">DOM, Vapor, SSR</span>
+      <span class="davinci-station-name">Emit</span>
+      <span class="davinci-station-facts">Backend + SFC module</span>
     </button>
   </nav>
 </template>

@@ -10,6 +10,7 @@ export type PageKind =
   | "disegno"
   | "plan"
   | "provenance"
+  | "facts"
   | "impeto"
   | "partition"
   | "values";
@@ -152,6 +153,7 @@ export function lineSpan(kind: PageKind, line: string): Range | null {
     }
     case "surface":
     case "plan":
+    case "facts":
       return null;
   }
 }

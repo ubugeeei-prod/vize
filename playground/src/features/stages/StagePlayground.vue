@@ -199,7 +199,13 @@ function snippet(text: string): string {
         </div>
 
         <div class="davinci-body">
-          <OutputView v-if="stage === 'l4'" v-model:target="outputTarget" :outputs :theme />
+          <OutputView
+            v-if="stage === 'l4'"
+            v-model:target="outputTarget"
+            :outputs
+            :theme
+            :backend-pages="ladder.l4Pages"
+          />
           <RemarksPanel v-else-if="pageView === 'remarks'" :remarks @locate="locateRemark" />
           <DumpDiffView
             v-else-if="pageView === 'diff' && diff && previousPage && page"

@@ -62,10 +62,13 @@ function result(input: string, target: "dom" | "ssr" | "vapor"): SfcCompileResul
   };
 }
 
-function harness() {
-  const compileSfc = vi.fn((input: string, options: CompilerOptions) =>
-    result(input, options.outputMode === "vapor" ? "vapor" : options.ssr ? "ssr" : "dom"),
-  );
+function harness(domFailure = false) {
+  const compileSfc = vi.fn((input: string, options: CompilerOptions) => {
+    if (domFailure && !options.ssr && options.outputMode !== "vapor") {
+      throw new Error("DOM route rejected");
+    }
+    return result(input, options.outputMode === "vapor" ? "vapor" : options.ssr ? "ssr" : "dom");
+  });
   const analyzeSfc = vi.fn();
   const compiler = { compileSfc, analyzeSfc } as unknown as WasmModule;
   let state!: ReturnType<typeof useStageLadder>;
@@ -106,6 +109,19 @@ describe("product stage tab", () => {
     expect(state.ladder.value).toBeNull();
     expect(state.captureStatus.value).toBe("VAPOR legacy: legacy selected");
     expect(state.outputs.value.vapor.code).toContain("vapor-module");
+    wrapper.unmount();
+  });
+
+  it("keeps SSR and Vapor results when the DOM route rejects", async () => {
+    const { state, wrapper, compileSfc } = harness(true);
+    await vi.waitFor(() => expect(state.outputs.value.ssr.code).toContain("ssr-module"));
+    expect(compileSfc).toHaveBeenCalledTimes(3);
+    expect(state.error.value).toBeNull();
+    expect(state.outputs.value.dom.error).toBe("DOM route rejected");
+    state.outputTarget.value = "ssr";
+    await nextTick();
+    expect(state.ladder.value?.rungs.map(({ id }) => id)).toEqual(["l1", "l2", "l3"]);
+    expect(state.outputs.value.ssr.code).toContain("ssr-module");
     wrapper.unmount();
   });
 

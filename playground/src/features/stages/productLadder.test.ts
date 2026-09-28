@@ -44,10 +44,42 @@ describe("same-run product stage feed", () => {
     if (!negotiated.ok) return;
     const ladder = buildProductLadder(negotiated.feed, result);
     expect(ladder.rungs.map((rung) => rung.id)).toEqual(["l1", "l2"]);
+    expect(ladder.l4Pages).toEqual([{ step: "emit", text: "export default {}" }]);
     expect(ladder.unplaced).toEqual([]);
     expect(ladder.template).toBe("<div>hello</div>");
     expect(ladder.timeline.map((step) => step.nanos)).toEqual([null, null]);
     expect(source.slice(10, 26)).toBe(ladder.template);
+  });
+
+  it("places observed fact, provenance, partition, and value pages without inventing passes", () => {
+    const product = capture("ssr");
+    product.pages = [
+      { level: "l1", step: "parse", text: "<div>hello</div>" },
+      { level: "l2", step: "lower", text: "ops=1\n" },
+      { level: "l2", step: "facts", text: "L2Facts { static: true }" },
+      { level: "l2", step: "provenance", text: "[l2-provenance]" },
+      { level: "l3", step: "lower", text: "[l3-dump-v2.ops]\nop=0" },
+      { level: "l3", step: "partition", text: "[s3-partition-folio.ops]\nop=0 kind=dynamic" },
+      { level: "l3", step: "values", text: "[l3-values]" },
+      { level: "l4", step: "emit", text: "export function ssrRender() {}" },
+    ];
+    const negotiated = negotiateProductCapture(product, "ssr");
+    expect(negotiated.ok).toBe(true);
+    if (!negotiated.ok) return;
+    const ladder = buildProductLadder(negotiated.feed, result);
+    expect(ladder.rungs.find(({ id }) => id === "l2")?.pages.map(({ kind }) => kind)).toEqual([
+      "disegno",
+      "facts",
+      "provenance",
+    ]);
+    expect(ladder.rungs.find(({ id }) => id === "l2")?.facts).toEqual(["1 op", "0 passes"]);
+    expect(ladder.rungs.find(({ id }) => id === "l3")?.pages.map(({ kind }) => kind)).toEqual([
+      "impeto",
+      "partition",
+      "values",
+    ]);
+    expect(ladder.timeline.map(({ key }) => key)).toEqual(["l1/parse", "l2/lower", "l3/lower"]);
+    expect(ladder.l4Pages).toEqual([{ step: "emit", text: "export function ssrRender() {}" }]);
   });
 
   it("shows target and fallback reason without invented stages", () => {

@@ -176,6 +176,20 @@ template, script or style `src` makes an otherwise successful capture
 unavailable because the product compile does not inline those external blocks
 into the observed stages.
 
+## Playground product stage view
+
+The Playground derives stage identity from the product feed's `(level, step)`
+pair. L2 facts and provenance are not transform trees; L3 partition and values
+are their own observed pages. The stage timeline counts only executed stages
+with the appropriate semantic kind. The actual L4 emit page remains visible
+beside the later assembled SFC module, with distinct labels; assembly is not
+presented as an L4 backend decision. A rejected DOM target does not suppress
+independent SSR or Vapor results. The stage view observes the same adapter
+compile that supplies its displayed assembled module. The WASM result still
+also computes a separate legacy `template` field; this duplicate work is an
+unresolved #6832/#6868 performance follow-up, not another native stage or
+evidence for the displayed module.
+
 ## Merge sequence
 
 Dependent product capture slices are registered as one GitHub native Stack

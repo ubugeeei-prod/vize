@@ -58,6 +58,8 @@ export interface StageLadder {
   remarks: StageRemark[];
   /** The L2 transform plan's walks, in run order (empty without a plan page). */
   walks: TimelineWalk[];
+  /** L4 backend pages, distinct from the host-assembled SFC module. */
+  l4Pages: { step: string; text: string }[];
 }
 
 const PAGE_KINDS: Record<string, { rung: RungId; kind: PageKind; label: string }> = {
@@ -65,6 +67,7 @@ const PAGE_KINDS: Record<string, { rung: RungId; kind: PageKind; label: string }
   l2: { rung: "l2", kind: "disegno", label: "" },
   "l2-plan": { rung: "l2", kind: "plan", label: "Plan" },
   "l2-provenance": { rung: "l2", kind: "provenance", label: "Provenance" },
+  "l2-facts": { rung: "l2", kind: "facts", label: "Facts" },
   l3: { rung: "l3", kind: "impeto", label: "Graph" },
   "l3-partition": { rung: "l3", kind: "partition", label: "Partition" },
   "l3-values": { rung: "l3", kind: "values", label: "Values" },
@@ -179,7 +182,7 @@ export function buildLadder(
       // The L3 partition and value pages come from the same lowering step as
       // the graph; the plan and provenance pages describe L2's steps rather
       // than being one. The timeline shows steps, not pages.
-      if (["partition", "values", "provenance", "plan"].includes(page.kind)) continue;
+      if (["partition", "values", "provenance", "plan", "facts"].includes(page.kind)) continue;
       const producer = page.pass === "lower" || page.pass === "parse";
       timeline.push({
         key: page.key,
@@ -202,5 +205,6 @@ export function buildLadder(
     unplaced,
     remarks,
     walks: plan ? planWalks(plan, walkTimings) : [],
+    l4Pages: [],
   };
 }
