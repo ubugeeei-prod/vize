@@ -5,6 +5,7 @@
 
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_carton::{String, profile};
+use vize_l0::dump::capture::StageCapture;
 
 use crate::compile_template::{
     TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
@@ -20,7 +21,7 @@ use super::output_module::{
 use super::styles::CompiledStyles;
 
 /// Everything the template-only path reads from the shared prelude.
-pub(super) struct TemplateOnlyInput<'a> {
+pub(super) struct TemplateOnlyInput<'a, 'c> {
     pub(super) template: &'a SfcTemplateBlock<'a>,
     pub(super) options: &'a SfcCompileOptions,
     pub(super) custom_elements: &'a CustomElementMatcher,
@@ -34,10 +35,11 @@ pub(super) struct TemplateOnlyInput<'a> {
     pub(super) is_vapor: bool,
     pub(super) template_is_ts: bool,
     pub(super) experimental_self_component: bool,
+    pub(super) capture: Option<&'c mut StageCapture>,
 }
 
 pub(super) fn compile_template_only(
-    input: TemplateOnlyInput<'_>,
+    mut input: TemplateOnlyInput<'_, '_>,
     css: Option<String>,
     errors: Vec<SfcError>,
     mut warnings: Vec<SfcError>,
@@ -68,6 +70,7 @@ pub(super) fn compile_template_only(
                 },
                 input.template_syntax,
                 input.codegen_options,
+                input.capture.as_deref_mut(),
             )
         )
     } else {
@@ -96,6 +99,7 @@ pub(super) fn compile_template_only(
                 },
                 input.template_syntax,
                 input.codegen_options,
+                input.capture.as_deref_mut(),
             )
         )
     };

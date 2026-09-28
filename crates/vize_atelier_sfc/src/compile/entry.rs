@@ -6,6 +6,7 @@ use crate::types::{
 use root_match::compile_sfc_inner;
 pub use root_match::prepare_root_patterned_template;
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
+use vize_l0::dump::capture::StageCapture;
 
 /// Script/template assembly selected by adapter-facing compiler entrypoints.
 #[doc(hidden)]
@@ -36,6 +37,7 @@ pub fn compile_sfc(
         CodegenOptions::default(),
         SfcScriptOutputMode::InlineTemplate,
         SfcCompileExperimentalOptions::default(),
+        None,
     )
 }
 
@@ -53,6 +55,7 @@ pub fn compile_sfc_with_vue_parser_quirks(
         CodegenOptions::default(),
         SfcScriptOutputMode::InlineTemplate,
         SfcCompileExperimentalOptions::default(),
+        None,
     )
 }
 
@@ -71,6 +74,7 @@ pub fn compile_sfc_with_template_syntax(
         CodegenOptions::default(),
         SfcScriptOutputMode::InlineTemplate,
         SfcCompileExperimentalOptions::default(),
+        None,
     )
 }
 
@@ -129,6 +133,7 @@ pub fn compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental
         codegen_options,
         SfcScriptOutputMode::InlineTemplate,
         experimental_options,
+        None,
     )
 }
 
@@ -173,5 +178,33 @@ pub fn compile_sfc_for_adapter_with_experimental_options(
         codegen_options,
         script_output,
         experimental_options,
+        None,
     )
+}
+
+/// Compile once and return the stages observed by the backend that produced
+/// the SFC module. The ordinary entry points keep their existing result shape.
+#[doc(hidden)]
+#[expect(clippy::too_many_arguments, reason = "independent adapter inputs")]
+pub fn compile_sfc_for_adapter_with_stage_capture(
+    descriptor: &SfcDescriptor,
+    options: SfcCompileOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    script_output: SfcScriptOutputMode,
+    experimental_options: SfcCompileExperimentalOptions,
+) -> Result<(SfcCompileResult, StageCapture), SfcError> {
+    let mut capture = StageCapture::new("sfc");
+    let result = compile_sfc_inner(
+        descriptor,
+        options,
+        template_syntax,
+        custom_elements,
+        codegen_options,
+        script_output,
+        experimental_options,
+        Some(&mut capture),
+    )?;
+    Ok((result, capture))
 }

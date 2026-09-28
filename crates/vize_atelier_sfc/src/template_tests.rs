@@ -200,6 +200,7 @@ const isRootSelected = ref(false)
         },
         vize_atelier_core::TemplateSyntaxMode::Standard,
         &vize_atelier_core::CodegenOptions::default(),
+        None,
     )
     .expect("template compile should succeed");
     let template_code = template_output.code;

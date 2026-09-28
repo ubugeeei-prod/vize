@@ -78,6 +78,7 @@ fn test_slice_template_parts_matches_line_scanner() {
                 },
                 vize_atelier_core::TemplateSyntaxMode::Standard,
                 &vize_atelier_core::CodegenOptions::default(),
+                None,
             )
             .expect("template should compile");
 

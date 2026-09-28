@@ -12,6 +12,8 @@ mod helpers;
 mod module_trace;
 mod normal_script;
 pub(crate) mod output_module;
+#[cfg(test)]
+mod stage_capture_tests;
 mod styles;
 mod template_only;
 #[cfg(test)]
@@ -51,13 +53,14 @@ pub use crate::compile_script::ScriptCompileResult;
 pub use entry::compile_sfc_with_vue_parser_quirks;
 pub use entry::{
     SfcScriptOutputMode, compile_sfc, compile_sfc_for_adapter,
-    compile_sfc_for_adapter_with_experimental_options,
+    compile_sfc_for_adapter_with_experimental_options, compile_sfc_for_adapter_with_stage_capture,
     compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
     compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options,
     compile_sfc_with_template_syntax, compile_sfc_with_template_syntax_and_codegen_options,
     prepare_root_patterned_template,
 };
 use vize_carton::{String, ToCompactString, profile};
+use vize_l0::dump::capture::{CaptureOutcome, CaptureSink, StageCapture};
 
 fn compile_sfc_inner(
     descriptor: &SfcDescriptor,
@@ -67,6 +70,7 @@ fn compile_sfc_inner(
     codegen_options: CodegenOptions,
     script_output: SfcScriptOutputMode,
     experimental_options: SfcCompileExperimentalOptions,
+    mut capture: Option<&mut StageCapture>,
 ) -> Result<SfcCompileResult, SfcError> {
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
@@ -134,6 +138,32 @@ fn compile_sfc_inner(
         warnings.push(create_vapor_ssr_fallback_warning(descriptor));
     }
     let is_vapor = !options.template.ssr && vapor_requested;
+    if let Some(capture) = capture.as_deref_mut() {
+        capture.target = String::from(if is_vapor {
+            "vapor"
+        } else if options.template.ssr {
+            "ssr"
+        } else {
+            "dom"
+        });
+        capture.option(
+            "ssr",
+            if options.template.ssr {
+                "true"
+            } else {
+                "false"
+            },
+        );
+        capture.option("vapor", if is_vapor { "true" } else { "false" });
+        capture.option(
+            "sourceMap",
+            if codegen_options.source_map {
+                "true"
+            } else {
+                "false"
+            },
+        );
+    }
 
     // is_ts controls output format:
     // - true: output TypeScript (add `: any` annotations, defineComponent wrapper)
@@ -157,6 +187,9 @@ fn compile_sfc_inner(
     let has_script_setup = descriptor.script_setup.is_some();
     let has_script = descriptor.script.is_some();
     let has_template = descriptor.template.is_some();
+    if !has_template && let Some(capture) = capture.as_deref_mut() {
+        capture.finish(|| CaptureOutcome::Unavailable(String::from("no-template")));
+    }
 
     // Case 1: Template only - just output render function
     if !has_script
@@ -178,6 +211,7 @@ fn compile_sfc_inner(
                 is_vapor,
                 template_is_ts,
                 experimental_self_component: experimental_options.self_component,
+                capture: capture.as_deref_mut(),
             },
             css,
             errors,
@@ -246,6 +280,7 @@ fn compile_sfc_inner(
                         },
                         template_syntax,
                         &codegen_options,
+                        capture.as_deref_mut(),
                     )
                 )
             } else {
@@ -284,6 +319,7 @@ fn compile_sfc_inner(
                         },
                         template_syntax,
                         &codegen_options,
+                        capture.as_deref_mut(),
                     )
                 )
             };
@@ -337,6 +373,10 @@ fn compile_sfc_inner(
                 }
                 Err(e) => {
                     errors.push(e);
+                    if let Some(capture) = capture.as_deref_mut() {
+                        capture
+                            .finish(|| CaptureOutcome::Unavailable(String::from("template-error")));
+                    }
                     // Fall back to just the script
                     code = final_script.clone();
                     code.push('\n');
@@ -589,6 +629,7 @@ fn compile_sfc_inner(
                     },
                     template_syntax,
                     &codegen_options,
+                    capture.as_deref_mut(),
                 )
             ))
         } else {
@@ -626,6 +667,7 @@ fn compile_sfc_inner(
                     },
                     template_syntax,
                     &codegen_options,
+                    capture.as_deref_mut(),
                 )
             ))
         }
@@ -683,6 +725,9 @@ fn compile_sfc_inner(
         }
         Some(Err(e)) => {
             errors.push(e.clone());
+            if let Some(capture) = capture.as_deref_mut() {
+                capture.finish(|| CaptureOutcome::Unavailable(String::from("template-error")));
+            }
             (
                 String::default(),
                 String::default(),

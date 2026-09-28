@@ -5,6 +5,7 @@ use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomEleme
 use vize_atelier_vapor::{
     VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor_with_sfc_context,
 };
+use vize_l0::dump::capture::StageCapture;
 use vize_l0::{Allocator, String, ToCompactString};
 
 use crate::{
@@ -23,6 +24,7 @@ pub(crate) fn compile_template_block_vapor(
     ctx: TemplateBlockCompileContext<'_>,
     template_syntax: TemplateSyntaxMode,
     codegen_options: &CodegenOptions,
+    capture: Option<&mut StageCapture>,
 ) -> Result<TemplateBlockCompileResult, SfcError> {
     let compiler_options = options.compiler_options.as_ref();
     let TemplateBlockCompileContext {
@@ -55,15 +57,28 @@ pub(crate) fn compile_template_block_vapor(
     let scope_attr = has_scoped.then(|| vize_l0::cstr!("data-v-{scope_id}"));
 
     // Compile template with Vapor
-    let (result, diagnostics) = compile_vapor_with_sfc_context(
-        allocator,
-        &template.content,
-        vapor_opts,
-        template_syntax,
-        custom_elements.clone(),
-        experimental_options,
-        scope_attr.as_deref(),
-    );
+    let (result, diagnostics) = if let Some(capture) = capture {
+        vize_atelier_vapor::compile_vapor_with_sfc_context_and_capture(
+            allocator,
+            &template.content,
+            vapor_opts,
+            template_syntax,
+            custom_elements.clone(),
+            experimental_options,
+            scope_attr.as_deref(),
+            capture,
+        )
+    } else {
+        compile_vapor_with_sfc_context(
+            allocator,
+            &template.content,
+            vapor_opts,
+            template_syntax,
+            custom_elements.clone(),
+            experimental_options,
+            scope_attr.as_deref(),
+        )
+    };
 
     if !result.error_messages.is_empty() {
         let mut message = String::from("Vapor template compilation errors: ");
