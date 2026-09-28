@@ -9,6 +9,11 @@ parity with `@vitejs/plugin-vue` is still incomplete.
 See [Drop-in Scope](https://vizejs.dev/guide/vite-plugin#drop-in-scope) and
 [#3227](https://github.com/ubugeeei-prod/vize/issues/3227).
 
+## Declaration formatting
+
+`vize fmt` now accepts ambient `const` declarations in `.d.ts`, `.d.mts`, and
+`.d.cts` files.
+
 ## Reporter acknowledgements
 
 All nine fixes are included in
