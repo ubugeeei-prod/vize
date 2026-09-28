@@ -39,7 +39,7 @@
 //!
 //! The crate is `no_std + alloc` from birth so every future stage artifact
 //! can print and parse on any target (wasm32-wasip2 included). Host-only
-//! helpers belong in binaries (`davinci-opt`), never in the library.
+//! helpers belong in the `vize` host CLI, never in this library.
 
 #![no_std]
 

@@ -39,7 +39,8 @@
 //! - [`fusion`] — [`Pipeline`] and [`FusionGroup`]
 //! - [`observer`] — [`PassObserver`], the run driver, and the four in-tree
 //!   observers
-//! - [`pipeline`] — the textual pipeline syntax `davinci-opt --pipeline` reads
+//! - [`pipeline`] — the historical textual pipeline syntax, retained as a
+//!   parser and printer contract; product `vize dump` selects real backends
 //!
 //! # What this module does not do yet
 //!

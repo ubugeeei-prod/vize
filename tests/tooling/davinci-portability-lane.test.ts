@@ -52,8 +52,8 @@ test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
   const toolchainFile = readRepoFile("rust-toolchain.toml");
   assert.match(toolchainFile, /^targets = \[.*"wasm32-wasip2".*\]$/m);
 
-  // Both builds target libraries only. The host `davinci-opt` binary must not
-  // become evidence for a `no_std` claim merely because WASI provides std.
+  // Both builds target libraries only. A host executable does not establish
+  // the portability claim merely because WASI provides std.
   assert.ok(
     job.includes(`        run: ${defaultLane} && ${noDefaultLane}`),
     "TS-24 must build all six stage libraries with and without default features",
@@ -82,6 +82,6 @@ test("the no_std claim stays on all six stage libraries and excludes the std L0 
   const carton = readRepoFile("davinci", "vize_l0", "src", "lib.rs");
   assert.doesNotMatch(carton, /^#!\[no_std\]$/m, "L0 is the accepted std host foundation");
 
-  const davinciManifest = readRepoFile("davinci", "vize_davinci", "Cargo.toml");
-  assert.match(davinciManifest, /^path = "src\/bin\/davinci-opt\/main\.rs"$/m);
+  const substrateManifest = readRepoFile("davinci", "vize_davinci", "Cargo.toml");
+  assert.doesNotMatch(substrateManifest, /^\[\[bin\]\]$/m);
 });

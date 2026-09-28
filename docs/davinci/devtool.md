@@ -42,11 +42,13 @@ constraint that keeps the tool honest.
 
 **Decided: document over JSON-RPC** (P2-19 spike, 2026-08-21 —
 [record](./plan/phase-2-records/p2-19.md), with the measurements). The
-schema-versioned feed document (P2-18, `spolvero-feed.schema.json`) is the
-unit on every surface; transports differ only in how the same bytes arrive:
+historical v1 feed document (P2-18, `spolvero-feed.schema.json`) was the
+unit on those surfaces. Current product capture has a distinct version 2
+schema and reports only stages executed by the selected compiler lane:
 
-- **At rest / CLI** — served files: `davinci-opt --folio-dir` writes
-  `spolvero.json` beside the pages (production since P2-18, TS-52).
+- **At rest / CLI** — historical v1 files came from `davinci-opt --folio-dir`.
+  Current `vize dump --all-levels --json --dump-dir` writes a version 2
+  product-stage feed beside the captured pages from one accepted compile.
 - **Browser playground** — the P2-18 embedding: wasm can open no socket and
   read no directory, so the feed value rides inside the inspector payload
   and the `analyzeSfc` result. No transport reaches the browser; the

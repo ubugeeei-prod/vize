@@ -1,62 +1,51 @@
-//! The Spolvero feed v1 (P2-18), pinned end to end on the `davinci-opt`
-//! surface: `--folio-dir` writes `spolvero.json` beside the pages, the
-//! document validates against the committed schema
+//! The historical stage feed v1 (P2-18), pinned through typed collectors.
+//! The document validates against the committed schema
 //! (`docs/davinci/plan/spolvero-feed.schema.json`) through the shared strict
 //! validator (TS-15), and its content equals the dump's pages
 //! exactly, escaping law included.
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use std::io::Write as _;
-use std::path::{Path, PathBuf};
-use std::process::{Command, Output, Stdio};
+use std::path::Path;
 
 use davinci_test_support::schema as schema_check;
 use vize_davinci::dump::collector::Collector;
 use vize_davinci::dump::feed::{StageFeed, StageFeedSchemaMismatch};
-use vize_davinci::pass::{Fusability, PassDesc, PassEvent, PassKind, Pipeline, Preserved};
+use vize_davinci::pass::{
+    BudgetObserver, Fusability, PassDesc, PassEvent, PassKind, Pipeline, Preserved, run_pipeline,
+};
 
 /// A canonical `[budget-observer]` page - the smallest committed-format
 /// artifact a pipeline can run over.
 const BUDGET: &str =
     "[budget-observer]\nwalks=2\npasses=3\nanalyses=0\npipelines=1\nfailures=0\n\n";
 
-fn run_folio_dir(dir: &Path, extra: &[&str]) -> Output {
-    let mut args = vec![
-        "--pipeline",
-        "l2(alpha,beta)",
-        "--stage",
-        "budget-observer",
-        "--folio-dir",
-        dir.to_str().expect("UTF-8 dir"),
-    ];
-    args.extend_from_slice(extra);
-    let mut child = Command::new(env!("CARGO_BIN_EXE_davinci-opt"))
-        .args(&args)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .expect("davinci-opt spawns");
-    child
-        .stdin
-        .as_mut()
-        .expect("stdin is piped")
-        .write_all(BUDGET.as_bytes())
-        .expect("stdin accepts the folio");
-    drop(child.stdin.take());
-    child.wait_with_output().expect("davinci-opt exits")
-}
-
-fn temp_dir(name: &str) -> PathBuf {
-    let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join(name);
-    let _ = std::fs::remove_dir_all(&dir);
-    dir
-}
-
-fn read_feed(dir: &Path) -> serde_json::Value {
-    let text = std::fs::read_to_string(dir.join("spolvero.json")).expect("feed reads");
-    serde_json::from_str(&text).expect("feed is valid JSON")
+fn collected_feed(after_change_only: bool) -> serde_json::Value {
+    const ALPHA: PassDesc = PassDesc::new(
+        "alpha",
+        PassKind::Optional,
+        Fusability::Fusable,
+        Preserved::ALL,
+    );
+    const BETA: PassDesc = PassDesc::new(
+        "beta",
+        PassKind::Optional,
+        Fusability::Fusable,
+        Preserved::ALL,
+    );
+    const PASSES: &[PassDesc] = &[ALPHA, BETA];
+    const PIPELINE: Pipeline = Pipeline::new("l2", PASSES);
+    let mut collector = Collector::new(after_change_only);
+    collector.seed(BUDGET);
+    let mut budget = BudgetObserver::new();
+    run_pipeline(&PIPELINE, &mut budget, |event| {
+        collector.after_pass(event, BUDGET);
+        Ok(())
+    })
+    .expect("no-op body cannot fail");
+    assert_eq!((budget.walks, budget.passes), (1, 2));
+    let feed = StageFeed::of_dump("typed-pass-test", &collector);
+    serde_json::from_str(feed.to_json().as_str()).expect("feed is valid JSON")
 }
 
 fn negotiate_feed_schema(feed: &serde_json::Value) -> Result<(), SchemaGateError> {
@@ -91,21 +80,17 @@ fn load_schema() -> serde_json::Value {
 }
 
 #[test]
-fn folio_dir_feed_validates_and_carries_the_dump_pages_exactly() {
-    let dir = temp_dir("p2-18-feed");
-    let output = run_folio_dir(&dir, &[]);
-    assert_eq!(output.status.code(), Some(0));
-
-    let feed = read_feed(&dir);
+fn typed_feed_validates_and_carries_collected_pages_exactly() {
+    let feed = collected_feed(false);
     assert_eq!(schema_check::validate(&load_schema(), &feed, "$"), Ok(()));
     assert_eq!(
         feed,
         serde_json::json!({
             "schema_version": 1,
-            "command": "davinci-opt",
+            "command": "typed-pass-test",
             "pages": [
-                { "path": null, "stage": "s2", "pass": "alpha", "text": BUDGET },
-                { "path": null, "stage": "s2", "pass": "beta", "text": BUDGET },
+                { "path": null, "stage": "l2", "pass": "alpha", "text": BUDGET },
+                { "path": null, "stage": "l2", "pass": "beta", "text": BUDGET },
             ],
             "remarks": [],
         })
@@ -113,21 +98,17 @@ fn folio_dir_feed_validates_and_carries_the_dump_pages_exactly() {
 }
 
 #[test]
-fn a_fully_gated_dump_feeds_zero_pages_loudly() {
-    let dir = temp_dir("p2-18-feed-gated");
-    let output = run_folio_dir(&dir, &["--folio-after-change"]);
-    assert_eq!(output.status.code(), Some(0));
-
+fn a_fully_gated_collector_feeds_zero_pages_loudly() {
     // The gate emitted nothing, and the feed says so instead of being
     // absent: an empty dump is observable, not indistinguishable from an
     // ignored flag.
-    let feed = read_feed(&dir);
+    let feed = collected_feed(true);
     assert_eq!(schema_check::validate(&load_schema(), &feed, "$"), Ok(()));
     assert_eq!(
         feed,
         serde_json::json!({
             "schema_version": 1,
-            "command": "davinci-opt",
+            "command": "typed-pass-test",
             "pages": [],
             "remarks": [],
         })
@@ -156,12 +137,12 @@ fn the_feed_escapes_page_text_into_valid_json_exactly() {
     let nasty = "a\"b\\c\nd\re\tf\u{1}g\u{3042}\n";
     let mut dump = Collector::new(false);
     dump.after_pass(&event, nasty);
-    let feed = StageFeed::of_dump("davinci-opt", &dump);
+    let feed = StageFeed::of_dump("typed-pass-test", &dump);
 
     let json = feed.to_json();
     assert_eq!(
         json.as_str(),
-        "{\"schema_version\":1,\"command\":\"davinci-opt\",\"pages\":[{\"path\":null,\
+        "{\"schema_version\":1,\"command\":\"typed-pass-test\",\"pages\":[{\"path\":null,\
          \"stage\":\"s2\",\"pass\":\"alpha\",\
          \"text\":\"a\\\"b\\\\c\\nd\\re\\tf\\u0001g\u{3042}\\n\"}],\"remarks\":[]}\n"
     );
@@ -175,7 +156,7 @@ fn the_schema_refuses_version_and_shape_mismatches_loudly() {
     let schema = load_schema();
     let valid = serde_json::json!({
         "schema_version": 1,
-        "command": "davinci-opt",
+        "command": "typed-pass-test",
         "pages": [{ "path": null, "stage": "s2", "pass": "alpha", "text": "" }],
     });
     assert_eq!(schema_check::validate(&schema, &valid, "$"), Ok(()));
@@ -226,7 +207,7 @@ fn the_schema_refuses_version_and_shape_mismatches_loudly() {
 fn consumers_negotiate_schema_version_before_reading_pages() {
     let mut feed = serde_json::json!({
         "schema_version": 1,
-        "command": "davinci-opt",
+        "command": "typed-pass-test",
         "pages": "not read until the version is accepted",
     });
     assert_eq!(negotiate_feed_schema(&feed), Ok(()));

@@ -8,12 +8,10 @@
 //! reuses - parse the stage artifact, run a classified plan through
 //! `run_pipeline` under the budget observer, snapshot the artifact with
 //! `assert_dump_snapshot!` (the printer), and pin the walk accounting as
-//! the structural supplement. The binary-level twin drives the same fixture
-//! through `davinci-opt --pipeline` on stdin.
+//! the structural supplement. The retired host's catalogue-free no-op
+//! binding is no longer a product route.
 
-use std::io::Write as _;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
 
 use vize_davinci::assert_dump_snapshot;
 use vize_davinci::dump::croquis::Page as CroquisPage;
@@ -70,39 +68,5 @@ fn a_pipeline_run_snapshots_the_full_normalized_folio() {
     assert_eq!(
         budget.print_to_string(DumpMode::Full).as_str(),
         "[budget-observer]\nwalks=2\npasses=3\nanalyses=0\npipelines=1\nfailures=0\n\n"
-    );
-}
-
-#[test]
-fn the_binary_pipeline_emits_the_same_normalized_folio() {
-    let text = std::fs::read_to_string(fixture()).expect("committed folio reads");
-    let mut child = Command::new(env!("CARGO_BIN_EXE_davinci-opt"))
-        .args(["--pipeline", "croquis(normalize,fold,check)"])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .expect("davinci-opt spawns");
-    child
-        .stdin
-        .as_mut()
-        .expect("stdin is piped")
-        .write_all(text.as_bytes())
-        .expect("stdin accepts the folio");
-    drop(child.stdin.take());
-    let output = child.wait_with_output().expect("davinci-opt exits");
-
-    assert_eq!(output.status.code(), Some(0));
-    // The committed fixture is canonical and the passes are no-ops, so the
-    // full normalized folio on stdout is the input byte-for-byte.
-    assert_eq!(
-        core::str::from_utf8(&output.stdout).expect("stdout is UTF-8"),
-        text
-    );
-    // All three names bind as fusable no-ops in the binary (no pass
-    // catalogue until P2-9), so the plan fuses to a single walk there.
-    assert_eq!(
-        core::str::from_utf8(&output.stderr).expect("stderr is UTF-8"),
-        "davinci-opt: pipeline croquis(normalize,fold,check): walks=1 passes=3\n"
     );
 }

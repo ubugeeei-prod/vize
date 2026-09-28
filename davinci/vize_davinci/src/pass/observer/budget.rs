@@ -19,8 +19,8 @@ use super::{AnalysisEvent, FailEvent, PassEvent, PassObserver, Pipeline};
 ///
 /// Carries a derived folio page (`[budget-observer]`, P2-4), so a run's
 /// counts print and parse under the TS-16 round-trip laws like any other
-/// stage artifact - which is what lets `davinci-opt` treat the budget dump
-/// as a stage (`--stage budget-observer`).
+/// stage artifact. The retired host exposed it as a selectable stage; typed
+/// tests still pin the budget page and walk counts.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Dump)]
 pub struct BudgetObserver {
     /// Traversals of the tree: one per fusion group entered.

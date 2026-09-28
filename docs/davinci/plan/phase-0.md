@@ -1,5 +1,7 @@
 # Phase 0 — Instrumentation and Groundwork
 
+Historical implementation plan: the `davinci-opt` host named below was retired under #6832; current product capture is `vize dump`. The original acceptance and fixture history is retained.
+
 > [!NOTE]
 > No behavior changes anywhere in this phase. Every task is parallelizable
 > unless a dependency says otherwise. Exit gate at the bottom.

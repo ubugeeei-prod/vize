@@ -30,8 +30,8 @@ lists, reordered sections, raw renderer output) is **normalized by the
 first print, by design**: `parse` is lenient exactly where the printer
 normalizes, and `parse` itself returns normalized values, so the
 structural law quantifies over normalized values (`CroquisFolio::normalize`
-canonicalizes hand-built ones). `davinci-opt --roundtrip <file>` checks
-the byte-identity law; exit 0 means the file is canonical.
+canonicalizes hand-built ones). The typed Croquis dump fixture test checks
+the byte-identity law; `vize dump --roundtrip` covers supported L1–L3 pages.
 
 ## Normalization rules (both modes)
 
@@ -108,8 +108,8 @@ section`) rather than silently misparsed; an empty-string list entry prints
 as a blank line and vanishes on reparse.
 
 The first derived page is `[budget-observer]` (P2-3's counter set), pinned
-by TS-16 in `davinci/vize_davinci/tests/folio_derive_laws.rs` and reachable
-from the CLI as `davinci-opt --stage budget-observer`.
+by TS-16 in `davinci/vize_davinci/tests/folio_derive_laws.rs` and checked
+through the typed `BudgetObserver` page tests.
 
 ## The repro page (`[repro]`, P2-13)
 
@@ -180,8 +180,8 @@ their committed canonical `.folio` dumps. The harness
 with the inspector recipe, checks the parser accepts the live renderer's
 output, and asserts the committed folio equals the canonical print plus
 both round-trip laws. Regenerate after a deliberate renderer change with
-`UPDATE_FOLIO_FIXTURES=1`. Verify from the CLI with
-`cargo run -p vize_davinci --bin davinci-opt -- --roundtrip <file> --stage croquis`.
+`UPDATE_FOLIO_FIXTURES=1`. Verify the committed pages with
+`cargo test -p vize_davinci --test dump_croquis`.
 
 Provenance (P0-2's fixture ladder had not landed when these were drawn, so
 the inputs come from the e2e project fixtures plus two written for

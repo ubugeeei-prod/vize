@@ -335,7 +335,7 @@ Three layers share one data model:
    views. Reconciliation with the CLI's ring-buffered provenance: Spolvero's
    live views attach to **resident or replay executions** (where provenance
    is fully materialized); inspecting a one-shot CLI run means replaying it
-   (`vize repro` / `davinci-opt`) rather than expecting the fused walk to
+   (`vize repro`; stage capture through `vize dump`) rather than expecting the fused walk to
    have retained everything.
 
 The same artifacts close the **AI optimization loop**: profiles and Folio

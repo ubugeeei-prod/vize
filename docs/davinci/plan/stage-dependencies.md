@@ -43,7 +43,7 @@ on it, and the one-shot CLI never links it.
 
 The [storage boundary](./storage-boundary.md) defines how every stage consumes
 L0 strings and collections, inventories retained `alloc::vec::Vec` sites, and
-keeps `std` confined to the explicit `davinci-opt` host edge.
+keeps host filesystem and process I/O in the `vize` CLI.
 
 Cargo manifests use dependency renames where the package id still differs from
 the preferred crate name. Today those exceptions are L0/Carton and L3/Impeto,

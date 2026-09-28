@@ -284,7 +284,7 @@ function assertP2_17MechanicalWitnesses(): void {
   assert.match(spanWitness, /assert_folio_spans_resolve/);
 
   const schemaWitness = fs.readFileSync(
-    new URL("../../../davinci/vize_davinci/tests/spolvero_feed.rs", import.meta.url),
+    new URL("../../../davinci/vize_davinci/tests/stage_feed.rs", import.meta.url),
     "utf8",
   );
   assert.match(schemaWitness, /consumers_negotiate_schema_version_before_reading_pages/);
@@ -292,7 +292,7 @@ function assertP2_17MechanicalWitnesses(): void {
   assert.match(schemaWitness, /SchemaGateError::VersionMismatch/);
 
   const profileWitness = fs.readFileSync(
-    new URL("../../../davinci/vize_davinci/tests/davinci_opt_dumps.rs", import.meta.url),
+    new URL("../../../davinci/vize_davinci/tests/dump_collector.rs", import.meta.url),
     "utf8",
   );
   assert.match(profileWitness, /timing_json_satisfies_the_p0_11_schema/);

@@ -53,12 +53,12 @@ Therefore the five attributes describe their source boundary, not a std-less
 link. wasm32-wasip2 includes Rust `std`, so the target can compile the accepted
 edges below. Embedded targets without `std` remain out of scope.
 
-### The host binary is also outside the claim
+### Host commands remain outside the claim
 
-`davinci-opt` lives at `davinci/vize_davinci/src/bin/davinci-opt/main.rs`.
-It reads files, writes output, and returns process exit codes, so it is a std
-host tool. TS-24 passes `--lib` explicitly: a WASI build of this binary would
-not be evidence that it is `no_std` merely because WASI provides std.
+The old `davinci-opt` executable has been removed. `vize dump` lives in the
+`vize` host CLI and uses `std` for files and exit codes. TS-24 passes `--lib`
+explicitly: a WASI build of any host executable would not establish that its
+library dependencies are `no_std` merely because WASI provides std.
 
 ## Accepted dependency edges
 
@@ -108,7 +108,7 @@ The required lane proves all of the following on a 32-bit target:
 - default features cannot be required for the portable library graph.
 
 It does **not** prove a std-less link, embedded support, or portability of the
-`davinci-opt` host binary.
+`vize` host CLI.
 
 ## The required CI lanes
 
@@ -130,7 +130,7 @@ target comes from `rust-toolchain.toml`, and
 - both exact commands and the `--lib` boundary;
 - the five `#![no_std]`/`extern crate alloc` attribute pairs;
 - the L0 alias and its exclusion from the claim;
-- the current `davinci-opt` host-binary path.
+- absence of a resurrected binary target in the dump substrate manifest.
 
 The step remains inside the existing job because `check.yml` is already over
 the repository's 350-line source ratchet. This change replaces the existing

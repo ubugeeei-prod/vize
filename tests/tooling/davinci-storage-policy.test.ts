@@ -29,7 +29,6 @@ const inventoryPath = path.join(repoRoot, "docs/davinci/plan/storage-inventory.t
 const foundationBridges = JSON.parse(
   fs.readFileSync(path.join(repoRoot, "docs/davinci/plan/foundation-storage-bridges.json"), "utf8"),
 ) as { issues: string[] };
-const davinciOptRoot = "davinci/vize_davinci/src/bin/davinci-opt/";
 
 function rustFiles(root: string): string[] {
   const files: string[] = [];
@@ -39,10 +38,6 @@ function rustFiles(root: string): string[] {
     else if (entry.isFile() && entry.name.endsWith(".rs")) files.push(absolute);
   }
   return files;
-}
-
-function isDavinciOptHostEdge(relative: string): boolean {
-  return relative.startsWith(davinciOptRoot);
 }
 
 function scopeFor(file: string): StorageScope {
@@ -65,7 +60,6 @@ function measureInventory(): { storage: Map<string, FileStorage>; issues: string
   const issues: string[] = [];
   for (const file of sources) {
     const relative = path.relative(repoRoot, file);
-    if (isDavinciOptHostEdge(relative)) continue;
     const scanned = scanStorage(fs.readFileSync(file, "utf8"));
     issues.push(...scanned.issues.map((issue) => `${relative}: ${issue}`));
     if (hasStorage(scanned.storage)) storage.set(relative, scanned.storage);
@@ -273,9 +267,4 @@ test("scanner rejects escape hatches and masks only cfg(test) items", () => {
     directPaths: 0,
     boundUses: 0,
   });
-});
-
-test("davinci-opt is the exact host edge", () => {
-  assert.equal(isDavinciOptHostEdge("davinci/vize_davinci/src/bin/davinci-opt/main.rs"), true);
-  assert.equal(isDavinciOptHostEdge("davinci/vize_davinci/src/lib.rs"), false);
 });

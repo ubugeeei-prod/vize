@@ -13,11 +13,10 @@ type.
 | unbounded owned sequence | `alloc::vec::Vec`                 | Retain only in the exact reviewed inventory below; new or removed sites update the ledger.   |
 | hash collection          | `vize_l0::{FxHashMap, FxHashSet}` | Do not name a `std::collections` hash type in stage libraries.                               |
 
-The `davinci-opt` files under `davinci/vize_davinci/src/bin/davinci-opt/` are an
-explicit host edge. They may use `std` for paths, environment, filesystem, I/O,
-and exit codes. That exception does not extend to `vize_davinci` library code
-or to L1, L2, L3, and L1-to-L2 libraries. Importing or aliasing the `std`, `vec`,
-or `collections` modules does not bypass the boundary.
+The old `davinci-opt` host edge has been retired. `vize_davinci` is scanned as
+library source throughout; the `vize` CLI owns paths, filesystem I/O, and exit
+codes. No exception extends to L1, L2, L3, or L1-to-L2 libraries. Importing or
+aliasing `std`, `vec`, or `collections` does not bypass the boundary.
 
 ## Retained `alloc::vec::Vec` inventory
 

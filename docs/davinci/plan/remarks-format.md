@@ -74,8 +74,7 @@ already made it canonical. An empty log is the bare `[remarks]` header.
 Parse is strict except that any `\uXXXX` escape is accepted and normalized
 by the first print; every rejection message is pinned by
 `davinci/vize_davinci/tests/remark_folio.rs`. `Display` drops the spans and
-carries no round-trip law. `davinci-opt --roundtrip <file> --stage remarks`
-checks canonicity.
+carries no round-trip law. The typed `dump_remarks` test checks canonicity.
 
 ## The JSON document
 
@@ -83,7 +82,8 @@ checks canonicity.
 `command`, `remarks`; each remark `stage`, `pass`, `kind`, `name`, `span`
 (`start`, `end`), `args` (`[{key, value}]`). Consumers negotiate
 `schema_version` (`RemarkLog::negotiate_schema_version`) before reading
-anything else. `davinci-opt --remarks <path>` writes it for a pipeline run.
+anything else. The retired host wrote this historical v1 document; current
+`vize dump --remarks` reports producer availability in its version 2 export.
 
 ## TS-32 — the corpus remarks-diff
 
@@ -119,7 +119,7 @@ every producer emits it (possibly empty), and it is optional in the
 schema so earlier v1 documents stay valid. Producers: the inspector payload
 and wasm `analyzeSfc` (`vize_curator::inspector::template_remarks`, one run
 of lowering + the L2 transform pipeline per inline HTML template) and
-`davinci-opt --folio-dir` (the run's own log). This is what the playground's
+the retired host's v1 directory feed (the run's own log). This is what the playground's
 decision view renders (C-5).
 
 **C-13 backlog.** `vize_davinci::folio::remarks::backlog::mine_missed`

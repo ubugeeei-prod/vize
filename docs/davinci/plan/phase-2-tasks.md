@@ -1,5 +1,7 @@
 # Phase 2 — Task contracts
 
+Historical task contracts: the `davinci-opt` executable mentioned below was retired under #6832. Its typed fixture and pass-manager laws remain; current product capture uses `vize dump`.
+
 > [!NOTE]
 > The 22 per-task contracts for [Phase 2 — Disegno and the Pass Manager](./phase-2.md) — Deliverable / Steps / Acceptance / Deps / Non-goals for P2-1 through P2-20. They live beside the phase file rather than inside it because the contracts alone exceed the repository's 350-line source-length budget (`tools/moon/cmd/source_file_lengths --max-lines 350`, which plan files are not exempt from). The phase-level record — what the re-cut changed, the phase-1 carry-ins, the TODO index and the exit gate — stays in [phase-2.md](./phase-2.md), and that index is where a task's box gets checked; the **Steps** sub-checkboxes are here.
 

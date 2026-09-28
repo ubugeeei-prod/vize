@@ -53,7 +53,7 @@ pub struct StageFeedSchemaMismatch {
 pub struct StagePage {
     /// Source file the page was produced for, when the producing surface
     /// works per-file (the inspector). `None` for a single-artifact
-    /// pipeline run (`davinci-opt`, whose artifact arrives on stdin).
+    /// historical single-artifact pipeline run.
     pub path: Option<String>,
     /// Stage that produced the page (`s1`, `s2`, `croquis`, ...).
     pub stage: String,
@@ -68,8 +68,7 @@ pub struct StagePage {
 /// One optimization remark in the feed (P3-13): the recorded remark plus
 /// the file it was produced for. Spans are byte offsets into the artifact
 /// the pipeline lowered - the same frame as that file's pages (the template
-/// content for the inspector and `analyzeSfc`, the stdin artifact for
-/// `davinci-opt`).
+/// content for the inspector and `analyzeSfc`, or a single typed artifact).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StageRemark {
     /// Source file, as for [`StagePage::path`].
@@ -85,7 +84,7 @@ pub struct StageRemark {
 /// version its shape does not have.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StageFeed {
-    /// The producing surface (`davinci-opt`, `inspector`, `analyze-sfc`).
+    /// The producing surface (for example `inspector` or `analyze-sfc`).
     pub command: String,
     /// The pages, in emission order.
     pub pages: Vec<StagePage>,

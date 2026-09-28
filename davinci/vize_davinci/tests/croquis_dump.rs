@@ -4,7 +4,7 @@
 //! inspector's croquis recipe, rendered through the live
 //! `Croquis::to_vir()` renderer, parsed as a [`CroquisPage`], and printed
 //! canonically. The committed `*.folio` next to each input is that
-//! canonical text; `davinci-opt --roundtrip` must be identity on it.
+//! canonical text; the typed page parse/print must be identity on it.
 //!
 //! Regenerate the committed folios after a deliberate renderer change:
 //!
@@ -97,7 +97,7 @@ fn committed_folios_are_canonical_renderer_output() {
             folio_path.display()
         );
 
-        // Round-trip laws on the canonical text (the davinci-opt gate).
+        // Round-trip laws on the canonical text (the typed page gate).
         let reparsed = CroquisPage::parse(canonical.as_str()).expect("canonical text parses");
         assert_eq!(
             reparsed.print_to_string(DumpMode::Full).as_str(),

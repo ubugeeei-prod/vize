@@ -31,10 +31,6 @@ vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true }
 vize_l2 = { workspace = true }
 
-[[bin]]
-name = "davinci-opt"
-path = "src/bin/davinci-opt/main.rs"
-
 [[bench]]
 name = "davinci"
 harness = false

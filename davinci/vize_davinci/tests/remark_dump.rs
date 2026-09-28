@@ -209,14 +209,15 @@ fn load_schema() -> serde_json::Value {
 
 #[test]
 fn the_json_document_is_exact_and_schema_valid() {
-    let json = sample().to_json("davinci-opt");
+    // `command` is caller-supplied metadata; this test does not run a host.
+    let json = sample().to_json("typed-remarks-test");
     let parsed: serde_json::Value = serde_json::from_str(json.as_str()).expect("valid JSON");
     assert_eq!(schema_check::validate(&load_schema(), &parsed, "$"), Ok(()));
     assert_eq!(
         parsed,
         serde_json::json!({
             "schema_version": 1,
-            "command": "davinci-opt",
+            "command": "typed-remarks-test",
             "remarks": [
                 {
                     "stage": "s2", "pass": "hoist-static", "kind": "missed",
@@ -255,7 +256,7 @@ fn the_json_document_is_exact_and_schema_valid() {
 fn the_schema_refuses_version_and_shape_drift() {
     let schema = load_schema();
     let mut parsed: serde_json::Value =
-        serde_json::from_str(sample().to_json("davinci-opt").as_str()).expect("valid JSON");
+        serde_json::from_str(sample().to_json("typed-remarks-test").as_str()).expect("valid JSON");
     parsed["remarks"][0]["kind"] = serde_json::Value::from("hoisted");
     let error = schema_check::validate(&schema, &parsed, "$").expect_err("bad kind fails");
     assert_eq!(

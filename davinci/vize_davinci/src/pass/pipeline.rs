@@ -1,4 +1,7 @@
-//! The textual pipeline syntax `davinci-opt --pipeline` reads.
+//! Historical textual pipeline syntax retained as a typed grammar contract.
+//!
+//! Product `vize dump --pipeline` selects real backends; it does not bind
+//! arbitrary names from this grammar to executable passes.
 //!
 //! # Grammar
 //!

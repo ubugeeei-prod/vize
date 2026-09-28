@@ -10,8 +10,8 @@
 //!
 //! The library half is deliberately IO-free (`no_std + alloc`): pages carry
 //! their text plus stage/pass provenance (which the P2-18 Spolvero feed
-//! serializes), and writing them into a directory is the host binary's job
-//! (`davinci-opt`, the `vize` CLI). Page names are
+//! serializes). Writing them into a directory was the retired host's job;
+//! product `vize dump` writes its distinct same-run capture pages. Names are
 //! `{seq:03}-{stage}.{pass}.folio` in emission order, so a directory listing
 //! sorts into the order the passes ran and two dumps of the same pass name
 //! (one pipeline may run a pass twice) cannot collide.

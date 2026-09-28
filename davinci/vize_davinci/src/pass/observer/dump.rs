@@ -10,8 +10,8 @@
 //! The observer takes any [`Dump`] artifact and a sink to print into, so it
 //! works with the hand-written [`Dump`] impls that exist today (P0-10's
 //! `CroquisPage`). What P2-4 adds is `#[derive(Dump)]`, so every L2 type
-//! gets its page for free, and `davinci-opt --pipeline`, which is this
-//! observer wired to a CLI. Neither changes this type's shape.
+//! gets its page for free. The old host once wired this observer to a CLI;
+//! its removal does not change this typed observer's shape.
 
 use core::fmt::Write;
 
