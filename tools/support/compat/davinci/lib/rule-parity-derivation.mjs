@@ -11,7 +11,7 @@ export function preambleSection() {
   lines.push("<!-- GENERATED FILE — do not edit by hand.");
   lines.push(`     Regenerate: ${REGEN_COMMAND}`);
   lines.push("     Verify:     rust-script tools/commands/davinci/rule-parity.rs --check");
-  lines.push("     Generator:  tools/davinci/rule-parity.mjs");
+  lines.push("     Generator:  tools/support/compat/davinci/rule-parity.mjs");
   lines.push(`     Overrides:  ${OVERRIDES_REL} (hand-corrections; applied last) -->`);
   lines.push("");
   lines.push("# Rule-parity matrix (SFC × JSX)");
