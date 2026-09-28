@@ -31,5 +31,8 @@ test("renamed features retain the same differential dependency wiring", () => {
   assert.match(vapor, /^legacy-differential = \["vize_atelier_core\/legacy-differential"\]$/m);
   assert.match(recipe, /--features legacy-differential --test davinci_lowering_corpus/u);
   assert.match(recipe, /--features legacy-dom-differential --test davinci_production_reach/u);
-  assert.match(read("tests/davinci_test_support/src/corpus.rs"), /davinci-differential corpus scope/u);
+  assert.match(
+    read("tests/davinci_test_support/src/corpus.rs"),
+    /davinci-differential corpus scope/u,
+  );
 });
