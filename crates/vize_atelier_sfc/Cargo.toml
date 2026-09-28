@@ -39,6 +39,7 @@ davinci-production-profile = [
 
 [dependencies]
 vize_l0.workspace = true
+vize_armature.workspace = true
 vize_croquis = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_dom = { workspace = true }
