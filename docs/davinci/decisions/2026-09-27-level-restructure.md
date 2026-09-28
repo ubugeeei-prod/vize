@@ -52,15 +52,7 @@ The L3 package identity, stage feed types, level dump API, versioned dump protoc
 
 ## Rust verification for L3 (2026-09-28)
 
-The maintainer chose Rust Kani for Davinci verification. The Lean namespace
-rename PR [#7052](https://github.com/ubugeeei-prod/vize/pull/7052) was closed;
-new L3 properties use Kani harnesses against production Rust source, beginning
-with the class and effect lattice in `tests/formal/kani/l3_lattice.rs`. Each
-harness states its finite input domain. Bounded verification does not establish
-an unbounded theorem. Keep the existing differential fixtures and Lean checks
-until each claim has replacement coverage, then remove the old lane separately.
-Remaining naming and shared CLI/playground production capture keep
-[#6832](https://github.com/ubugeeei-prod/vize/issues/6832) open.
+The maintainer chose Rust Kani for Davinci verification and closed the Lean namespace rename PR [#7052](https://github.com/ubugeeei-prod/vize/pull/7052). New L3 properties use Kani harnesses against production Rust source, starting with the class and effect lattice in `tests/formal/kani/l3_lattice.rs`; each harness states its finite input domain. Bounded verification does not establish an unbounded theorem. Keep differential fixtures and Lean checks until each claim has replacement coverage, then remove the old lane separately. Remaining naming and shared CLI/playground production capture keep [#6832](https://github.com/ubugeeei-prod/vize/issues/6832) open.
 
 ## `vize_davinci` is deleted
 
