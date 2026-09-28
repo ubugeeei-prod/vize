@@ -150,6 +150,70 @@ mod tests {
     }
 
     #[test]
+    fn nested_js_braces_do_not_end_interpolation_or_template() {
+        let source =
+            "<template>{{ ({ x: {} }) ? '</template>' : 'ok' }}</template><style>.ok {}</style>";
+        let allocator = Allocator::default();
+        let result = Vue.split(&allocator, source);
+        assert!(result.errors.is_empty(), "{:?}", result.errors);
+        assert_eq!(result.blocks.len(), 2);
+        assert_eq!(
+            result.blocks[0].content.slice(source),
+            "{{ ({ x: {} }) ? '</template>' : 'ok' }}"
+        );
+        assert_eq!(
+            result.blocks[0].close_tag.unwrap().slice(source),
+            "</template>"
+        );
+        assert_eq!(result.blocks[1].content.slice(source), ".ok {}");
+    }
+
+    #[test]
+    fn js_comment_delimiters_do_not_end_interpolation_or_template() {
+        let source = "<template>{{ /* }} <template> */ value }}<div>after</div></template><style>.ok {}</style>";
+        let allocator = Allocator::default();
+        let result = Vue.split(&allocator, source);
+        assert!(result.errors.is_empty(), "{:?}", result.errors);
+        assert_eq!(result.blocks.len(), 2);
+        assert_eq!(
+            result.blocks[0].content.slice(source),
+            "{{ /* }} <template> */ value }}<div>after</div>"
+        );
+        assert_eq!(
+            result.blocks[0].close_tag.unwrap().slice(source),
+            "</template>"
+        );
+        assert_eq!(result.blocks[1].content.slice(source), ".ok {}");
+    }
+
+    #[test]
+    fn js_regex_delimiters_do_not_end_interpolation() {
+        let source = "<template>{{ /}} <template>/.test(value) ? count / 2 : 0 }}<div>after</div></template>";
+        let allocator = Allocator::default();
+        let result = Vue.split(&allocator, source);
+        assert!(result.errors.is_empty(), "{:?}", result.errors);
+        assert_eq!(result.blocks.len(), 1);
+        assert_eq!(
+            result.blocks[0].content.slice(source),
+            "{{ /}} <template>/.test(value) ? count / 2 : 0 }}<div>after</div>"
+        );
+    }
+
+    #[test]
+    fn nested_template_expression_is_reported_as_uncertain() {
+        let source = "<template>{{ `value ${name}` }}</template>";
+        let allocator = Allocator::default();
+        let result = Vue.split(&allocator, source);
+        assert_eq!(result.blocks.len(), 1);
+        assert_eq!(
+            result.errors[0].code,
+            ContainerErrorCode::UncertainInterpolation
+        );
+        assert_eq!(result.errors[1].code, ContainerErrorCode::MissingCloseTag);
+        assert!(result.blocks[0].close_tag.is_none());
+    }
+
+    #[test]
     fn duplicate_and_missing_closer_report_offsets() {
         let source = "<template>x</template><template>y";
         let allocator = Allocator::default();

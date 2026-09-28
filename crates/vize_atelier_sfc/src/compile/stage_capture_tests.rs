@@ -105,6 +105,31 @@ fn accepted_dom_sfc_carries_only_the_stages_that_produced_its_module() {
 }
 
 #[test]
+fn script_and_template_keep_the_observed_module_identical() {
+    let (result, capture) = compile_both(
+        "<script>export default { name: 'WithTemplate' }</script><template><div>hello</div></template>",
+        TemplateSyntaxMode::Standard,
+    );
+    assert!(result.errors.is_empty());
+    assert_eq!(capture.target, "dom");
+    assert_eq!(capture.outcome, CaptureOutcome::Accepted);
+    assert!(!capture.pages.is_empty());
+}
+
+#[test]
+fn script_setup_template_error_discards_provisional_pages() {
+    let (result, capture) = compile_both(
+        "<script setup>const foo = () => {}</script><template><div>{{ foo( }}</div></template>",
+        TemplateSyntaxMode::Standard,
+    );
+    assert_eq!(result.errors.len(), 1);
+    assert_eq!(result.errors[0].code.as_deref(), Some("TEMPLATE_ERROR"));
+    assert_eq!(capture.target, "dom");
+    assert!(matches!(capture.outcome, CaptureOutcome::Unavailable(_)));
+    assert!(capture.pages.is_empty());
+}
+
+#[test]
 fn legacy_template_selection_has_no_native_pages() {
     let (_, capture) = compile_both(
         "<template><div>{{ message }}</div></template>",
