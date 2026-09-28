@@ -7,16 +7,15 @@ use crate::Sweep;
 /// `vize_croquis::sfc::parse_sfc` in `sweep`. Backend selection and parity do
 /// not turn those legacy facts into native-only compiler execution.
 fn report_native_only(scope: &str, shape: Shape, sweep: &Sweep) -> String {
-    let attempted = sweep
-        .files
-        .checked_sub(sweep.unreadable + sweep.parse_errors + sweep.without_template)
-        .expect("corpus accounting exceeds planned inputs");
+    let unverified = sweep.unreadable + sweep.parse_errors + sweep.without_template;
+    assert!(unverified <= sweep.files, "corpus accounting exceeds planned inputs");
+    let attempted = sweep.files - unverified;
     format!(
         "davinci native-only acceptance: scope={scope} product=compiler target={} planned={} native_only=0 legacy_backed={} unverified={} permille=0 contribution=sfc_parse:legacy:legacy",
         shape.id(),
         sweep.files,
         attempted,
-        sweep.files - attempted,
+        unverified,
     )
 }
 
