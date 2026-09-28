@@ -4,6 +4,7 @@ mod diff;
 mod graph;
 mod imports;
 mod payload;
+mod product_capture;
 mod stages;
 
 #[cfg(test)]
@@ -21,6 +22,9 @@ pub use payload::{
     InspectorAgentReport, InspectorOptions, InspectorPayload, InspectorSourceFile, InspectorTarget,
     InspectorTemplateSyntax, build_agent_report, build_payload, build_playground_url,
     serialize_agent_report, serialize_payload,
+};
+pub use product_capture::{
+    PRODUCT_STAGE_FEED_VERSION, ProductCaptureSource, product_capture_value,
 };
 pub use stages::{
     LADDER_STEP_KEY, LADDER_WALK_KEY, LadderClock, LadderRun, LadderStep, StageFeed, StagePage,

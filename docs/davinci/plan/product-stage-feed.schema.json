@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vize.dev/schemas/product-stage-feed.schema.json",
+  "title": "Product stage capture feed",
+  "description": "Version 2 captures only the stages executed by the compiler invocation that returned the product module. A separate inspector ladder uses the version 1 feed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "command",
+    "source",
+    "target",
+    "outcome",
+    "observed",
+    "options",
+    "pages",
+    "timings",
+    "remarks"
+  ],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 2 },
+    "command": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "container", "authored_syntax", "compiled_syntax", "template_span"],
+      "properties": {
+        "path": { "type": ["string", "null"] },
+        "container": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "authored_syntax": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "compiled_syntax": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "template_span": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["start", "end"],
+          "properties": {
+            "start": { "type": "integer", "minimum": 0 },
+            "end": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "target": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "reason"],
+      "properties": {
+        "kind": { "type": "string", "pattern": "^(accepted|legacy|unavailable|rejected|pending)$" },
+        "reason": { "type": ["string", "null"] }
+      }
+    },
+    "observed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timings", "remarks"],
+      "properties": {
+        "timings": { "type": "boolean" },
+        "remarks": { "type": "boolean" }
+      }
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "value"],
+        "properties": {
+          "name": { "type": "string" },
+          "value": { "type": "string" }
+        }
+      }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level", "step", "text"],
+        "properties": {
+          "level": { "type": "string", "pattern": "^l[0-4]$" },
+          "step": { "type": "string" },
+          "text": { "type": "string" }
+        }
+      }
+    },
+    "timings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level", "step", "nanos"],
+        "properties": {
+          "level": { "type": "string", "pattern": "^l[0-4]$" },
+          "step": { "type": "string" },
+          "nanos": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "remarks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level", "pass", "kind", "name", "span", "args"],
+        "properties": {
+          "level": { "type": "string", "pattern": "^l[0-4]$" },
+          "pass": { "type": "string" },
+          "kind": { "type": "string" },
+          "name": { "type": "string" },
+          "span": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["start", "end"],
+            "properties": {
+              "start": { "type": "integer", "minimum": 0 },
+              "end": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "value"],
+              "properties": {
+                "name": { "type": "string" },
+                "value": { "type": ["string", "integer", "boolean"] }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
