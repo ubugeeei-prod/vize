@@ -68,6 +68,7 @@ test("source planning installs the declared Node runtime before TypeScript impor
 test("selected PR tooling regenerates its plan while merge tooling retains the full receipt path", () => {
   const job = source.jobs["pr-tooling-scripts"];
   const steps = job.steps ?? [];
+  assert.deepEqual(job.needs, ["pr-source-plan", "pr-tooling-fast"]);
   assert.equal(
     job.strategy?.matrix.shard,
     "${{ fromJSON(needs.pr-source-plan.outputs.tooling-shards) }}",
@@ -81,7 +82,7 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
   for (const step of [steps[regenerate], steps[selected]]) {
     assert.equal(
       step.if,
-      "${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling-full == 'true' }}",
+      "${{ github.event_name == 'pull_request' && env.RUN_FULL_TOOLING == 'true' && needs.pr-source-plan.outputs.tooling-full == 'true' }}",
     );
   }
   assert.equal(
@@ -113,6 +114,17 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
     steps[build].run ?? "",
     /cargo build --profile ci -p vize && vp exec node tests\/differential\/build-receipt\.mjs/,
   );
+  const fast = source.jobs["pr-tooling-fast"];
+  const fastSteps = fast.steps ?? [];
+  const fastPlan = fastSteps.findIndex((step) => step.name === "Plan fast PR tooling inputs");
+  const fastBuild = fastSteps.findIndex((step) => step.name === "Build and verify source CLI for fast tooling");
+  const fastTests = fastSteps.findIndex((step) => step.name === "Test changed structural PR tooling contracts");
+  assert.ok(fastPlan >= 0 && fastPlan < fastBuild && fastBuild < fastTests);
+  assert.match(fastSteps[fastBuild].run ?? "", /cargo build --profile ci -p vize/u);
+  assert.match(fastSteps[fastBuild].run ?? "", /tests\/differential\/build-receipt\.mjs/u);
+  assert.equal(fastSteps[fastTests].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
+  assert.equal(fastSteps[fastTests].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
+  assert.ok(source.jobs["source-report"].needs?.includes("pr-tooling-fast"));
   const pure = source.jobs["pr-tooling-pure"];
   const pureSteps = pure.steps ?? [];
   const pureRun = pureSteps.find((step) => step.name === "Test audited pure PR tooling scripts");

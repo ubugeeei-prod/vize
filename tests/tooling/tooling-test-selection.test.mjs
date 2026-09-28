@@ -12,6 +12,11 @@ import {
   toolingTestFiles,
 } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 import {
+  fastStructuralTests,
+  planToolingFastPr,
+} from "../../tools/support/compat/github/plan-tooling-fast-pr.mjs";
+import { fastToolingTestArgs } from "../../tools/support/compat/github/run-tooling-fast-pr.mjs";
+import {
   prToolingCohortCommand,
   toolingTestCommand,
 } from "../../tools/support/compat/github/run-tooling-tests.mjs";
@@ -138,6 +143,37 @@ void test("audited pure PR tests run once while changed or unknown capabilities 
   assert.throws(() => prToolingCohortCommand(plan, "other"), /cohort must/);
 });
 
+void test("fast PR tooling admits only measured Rust and structural inputs", () => {
+  const paths = [
+    "Cargo.lock",
+    "crates/vize_atelier_ssr/src/l4.rs",
+    "crates/vize_atelier_vapor/src/compile.rs",
+    "crates/vize_l0/src/dump/capture.rs",
+    "crates/vize_l2/src/dump.rs",
+    "docs/davinci/plan/storage-inventory.tsv",
+    ...fastStructuralTests,
+  ];
+  const fast = planToolingFastPr(paths);
+  assert.equal(fast.mode, "fast");
+  assert.deepEqual(fast.tests, fastStructuralTests);
+  assert.deepEqual(fastToolingTestArgs(fast), ["--test", "--test-concurrency=1", ...fastStructuralTests]);
+  assert.equal(planToolingTests(paths, { tier: "merge" }).tests.length, toolingTestFiles().length);
+  for (const outside of [
+    "new-root/unknown.ts",
+    "tests/tooling/new-contract.test.ts",
+    "tests/tooling/support/davinci-stage-dependencies.ts",
+    "tools/support/compat/github/plan-tooling-tests.mjs",
+    ".github/workflows/pr-source-checks.yml",
+    "npm/native/src/lib.rs",
+    "pnpm-lock.yaml",
+  ]) {
+    assert.equal(planToolingFastPr([...paths, outside]).mode, "full", outside);
+  }
+  assert.equal(planToolingFastPr([]).mode, "full");
+  assert.throws(() => fastToolingTestArgs({ ...fast, tests: [...fast.tests, fast.tests[0]] }), /invalid/);
+  assert.throws(() => fastToolingTestArgs({ ...fast, tests: ["tests/tooling/new-contract.test.ts"] }), /invalid/);
+});
+
 void test("merge tooling shards cover every test once with isolated serial runners", () => {
   const files = toolingTestFiles();
   const shards = partitionMergeToolingTests(files);
@@ -206,6 +242,7 @@ void test("merge matrix uses the planner's complete shards and the required repo
   );
   assert.ok(check.jobs["test-report"].needs.includes("pr-source-checks"));
   assert.ok(workflow.jobs["source-report"].needs.includes("pr-tooling-pure"));
+  assert.ok(workflow.jobs["source-report"].needs.includes("pr-tooling-fast"));
 });
 
 void test("pure typecheck and LSP helper contracts remain in T0; explicit runtime inventory exists", () => {
