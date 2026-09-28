@@ -15,6 +15,22 @@ pub(super) fn needs_fragment(children: &[TemplateChildNode<'_>]) -> bool {
             rendered_child_count(&element.children) > 1
         }
         [_] | [] => false,
-        _ => rendered_child_count(children) > 1,
+        _ => {
+            let mut rendered = 0;
+            for child in children {
+                rendered += match child {
+                    TemplateChildNode::Element(element)
+                        if element.tag_type == ElementType::Template =>
+                    {
+                        rendered_child_count(&element.children)
+                    }
+                    _ => 1,
+                };
+                if rendered > 1 {
+                    return true;
+                }
+            }
+            false
+        }
     }
 }
