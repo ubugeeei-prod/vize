@@ -2,7 +2,7 @@
 #
 # The generator (tools/commands/davinci/rule-parity.rs) applies these AFTER its
 # heuristic classification and marks overridden rows with `*` in
-# docs/davinci/plan/rule-parity.md. Never edit the generated artifact —
+# artifacts/davinci-ledgers/rule-parity.md. Never edit the generated artifact —
 # record corrections here, then `rust-script tools/commands/davinci/rule-parity.rs --write`.
 #
 # Schema — one table per corrected rule, keyed by the exact rule name:

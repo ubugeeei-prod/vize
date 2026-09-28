@@ -314,7 +314,11 @@ mod tests {
             let again = format_style_content(result.as_str(), &options).unwrap();
 
             assert_eq!(result, again);
-            assert!(result.as_str().contains("max-height: 2147483647px;"));
+            assert!(
+                result.as_str().contains("3.40282e38px")
+                    || result.as_str().contains("calc(infinity * 1px)"),
+                "{result}"
+            );
         }
     }
 

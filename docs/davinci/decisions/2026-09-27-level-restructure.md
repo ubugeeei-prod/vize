@@ -43,6 +43,7 @@ Decided by the maintainer on 2026-09-28 ([#6826 comment](https://github.com/ubug
 - **A CI ratchet counts those expectations per crate.** `tools/commands/ci/check-skeleton-todos.rs --check` (clippy job and `check:rust`) compares them with `tools/config/skeleton-todos.toml`; counts only go down, and a PR that fills a module lowers its line (`--write`).
 - **Priority:** L0 (`vize_l0`, [#6833](https://github.com/ubugeeei-prod/vize/issues/6833)), the L1 lexer (`vize_l1::markup`), L4 (`vize_l4`).
 - **`vize_l0` is the L0 package behind the `vize_l0` workspace alias.** It re-exports `vize_carton`'s public API (`pub use vize_carton::*`) until [#6834](https://github.com/ubugeeei-prod/vize/issues/6834) moves the storage modules in, so every existing `vize_l0::` path keeps resolving; it publishes right after carton. Its own modules are `id`, `side_table`, `key`, `dump` (trait, values, runtime), `diag` (diagnostic, witness), `pass` (manager, preserved sets; remarks, fusion and timing observers), `fact` and `level` (L0–L4 and the `vize_l1_to_l2`/`vize_l2_to_l3` conversions). The neutral extension wire stays in `vize_carton::extension` ([#6976](https://github.com/ubugeeei-prod/vize/pull/6976)) and arrives through the same re-export. Moved modules stay reachable from `vize_davinci` through re-exports (`vize_davinci::id` is `vize_l0::id`) until #6833 deletes `vize_davinci`.
+- **Queue order for #7043:** the maintainer's explicit queue entry permits this validated L0 leaf slice before #6832 closes; the bounded exception and resume checks are recorded in [the L0 leaf queue decision](./2026-09-28-l0-leaf-queue-order.md).
 - **"Lightweight Davinci" means runtime cost and process weight.** Runtime: instruction counts, zero-cost unobserved paths, no reparses or serialization between levels ([#6868](https://github.com/ubugeeei-prod/vize/issues/6868), [#6869](https://github.com/ubugeeei-prod/vize/issues/6869)). Process: no committed whole-repo ledgers, shorter PR-tier CI, short PR bodies and issue comments, no hash- or evidence-heavy verifiers where a normal test does.
 - **The dump/naming stack #6906 → #6907 → #6943 → #6944 → #6945 → #6946 → #6947 is collapsed into one PR** on `main`; the seven PRs are closed in its favour.
 
@@ -221,8 +222,9 @@ whole-history and native admission remain unfinished; the companion preserves ev
 
 ## Legacy deletion criteria
 
-See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria)
-in the companion record and the [LSP fix-history response-fixture installment](./2026-09-27-lsp-fix-history.md)
+See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria),
+[native-only accounting](./2026-09-27-native-selection-accounting.md),
+and the [LSP fix-history response-fixture installment](./2026-09-27-lsp-fix-history.md)
 for the pinned review ledger, complete document-link and CRLF on-type response contracts and
 unfinished history obligations in #6883.
 The same installment preserves dated source-runtime receipts separately from
@@ -303,7 +305,7 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 
 - zizmor runs only for external contributors, releases and PRs that touch `.github/**`. [Audit selection](./2026-09-27-ci-security-selection.md) and [inherited finding repair](./2026-09-27-workflow-security-refresh.md) record #6866.
 - VRT, tsgo-required tests and ledger checks leave the PR tier. [Inventory tier implementation](./2026-09-27-ci-tier-inventories.md) records #6864.
-- Whole-repo generated ledgers stop being committed. [Artifact generation](./2026-09-27-generated-ledgers.md) records #6867.
+- Whole-repo generated ledgers stop being committed; merge queue, nightly and exact-SHA release Check runs publish the validated bundle. [Artifact generation](./2026-09-27-generated-ledgers.md) records #6867.
 - [JS native preparation](./2026-09-27-js-native-preparation.md) keeps package coverage and reuses the root test build ([#6830](https://github.com/ubugeeei-prod/vize/issues/6830)).
 - [UI check tiers](./2026-09-27-ui-check-ci-tiers.md) retain Fresco declarations/types in T0 and require UI acceptance in T1 ([#6864](https://github.com/ubugeeei-prod/vize/issues/6864)).
 
