@@ -29,7 +29,7 @@ pub(super) fn run(path: &Path) {
             std::process::exit(1);
         }
     };
-    let result = ladder_run(&path.display().to_string(), &source, &|| 0);
+    let result = ladder_run(path.to_string_lossy().as_ref(), &source, &|| 0);
     let feed = StageFeed {
         command: "vize-dump".into(),
         pages: result.pages,
