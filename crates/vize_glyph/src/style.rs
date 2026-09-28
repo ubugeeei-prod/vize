@@ -3,6 +3,7 @@
 //! This module provides formatting for CSS/SCSS/Less content
 //! in Vue SFC `<style>` blocks using lightningcss for parsing and printing.
 
+mod authored;
 mod color;
 mod comment_scan;
 mod number;
@@ -44,12 +45,15 @@ fn format_with_preserved_top_level_comments(
     let newline = options.newline_string();
     let mut output: String = String::with_capacity(source.len());
     let mut emitted_any = false;
+    let mut separator_lines = 1;
 
     for segment in split_top_level_comments(source) {
         match segment.kind {
             SegmentKind::Code => {
                 let trimmed_chunk = segment.content.trim();
                 if trimmed_chunk.is_empty() {
+                    separator_lines =
+                        separator_lines.max(authored::source_separator_lines(segment.content));
                     continue;
                 }
                 let formatted = format_chunk(trimmed_chunk, options)?;
@@ -61,17 +65,25 @@ fn format_with_preserved_top_level_comments(
                     continue;
                 }
                 if emitted_any {
-                    output.push_str(newline);
+                    for _ in 0..separator_lines
+                        .max(authored::source_separator_lines_before(segment.content))
+                    {
+                        output.push_str(newline);
+                    }
                 }
                 output.push_str(formatted);
                 emitted_any = true;
+                separator_lines = authored::source_separator_lines_after(segment.content);
             }
             SegmentKind::Comment => {
                 if emitted_any {
-                    output.push_str(newline);
+                    for _ in 0..separator_lines {
+                        output.push_str(newline);
+                    }
                 }
                 output.push_str(segment.content);
                 emitted_any = true;
+                separator_lines = 1;
             }
         }
     }
@@ -84,7 +96,15 @@ fn format_chunk(trimmed: &str, options: &FormatOptions) -> Result<String, Format
     let formatted = stabilization::format_to_fixed_point(colors.source.as_str(), |source| {
         format_chunk_once(source, options)
     })?;
-    Ok(colors.restore(formatted))
+    let formatted = colors.restore(formatted);
+    // The CSS printer also performs syntax and value normalization. A formatter
+    // must never silently change browser support or the scoped selector target.
+    // Format only structural whitespace when the print changes authored CSS.
+    if authored::changes_authored_css(trimmed, formatted.as_str()) {
+        Ok(authored::format_layout_only(trimmed, options))
+    } else {
+        Ok(formatted)
+    }
 }
 
 fn format_chunk_once(trimmed: &str, options: &FormatOptions) -> Result<String, FormatError> {
@@ -107,42 +127,10 @@ fn format_chunk_once(trimmed: &str, options: &FormatOptions) -> Result<String, F
 
     // lightningcss uses 2-space indent by default; re-indent if needed
     if options.use_tabs || indent_width != 2 {
-        code = reindent_css(&code, options);
+        code = authored::reindent_css(&code, options);
     }
 
     Ok(code)
-}
-
-/// Re-indent CSS output to match the configured indent style
-fn reindent_css(source: &str, options: &FormatOptions) -> String {
-    let indent = options.indent_string();
-    let newline = options.newline_string();
-    let mut result: String = String::with_capacity(source.len());
-
-    for line in source.lines() {
-        // Count leading spaces (lightningcss uses 2-space indent)
-        let leading_spaces = line.len() - line.trim_start().len();
-        let indent_level = leading_spaces / 2;
-        let trimmed = line.trim_start();
-
-        if trimmed.is_empty() {
-            result.push_str(newline);
-            continue;
-        }
-
-        for _ in 0..indent_level {
-            result.push_str(&indent);
-        }
-        result.push_str(trimmed);
-        result.push_str(newline);
-    }
-
-    // Remove trailing newline added by the loop
-    if result.ends_with(newline) {
-        result.truncate(result.len() - newline.len());
-    }
-
-    result
 }
 
 fn contains_comment(source: &str) -> bool {
@@ -154,15 +142,13 @@ mod tests {
     use super::{FormatOptions, format_style_content};
 
     #[test]
-    fn test_background_position_shorthand_reaches_fixed_point_in_one_pass() {
-        // `background-position: left 1em top 50%` is a non-idempotent case for
-        // lightningcss: it first prints `1em 50%`, then a re-parse collapses
-        // the redundant center `50%` to `1em`. The formatter must reach that
-        // normal form in a single `vize fmt` pass. (#3248)
+    fn test_background_position_shorthand_stays_authored_and_stable() {
+        // lightningcss normalizes this shorthand over multiple passes. Keep
+        // the original declaration so formatting remains syntax preserving.
         let source = ".a { background-position: left 1em top 50%; }";
         let options = FormatOptions::default();
         let result = format_style_content(source, &options).unwrap();
-        assert_eq!(result.as_str(), ".a {\n  background-position: 1em;\n}\n");
+        assert!(result.contains("background-position: left 1em top 50%;"));
 
         // And formatting the result again is a no-op.
         let again = format_style_content(&result, &options).unwrap();
@@ -292,7 +278,7 @@ mod tests {
         let options = FormatOptions::default();
         let result = format_style_content(source, &options).unwrap();
 
-        assert!(result.contains(".asset {\n"));
+        assert!(result.contains(".asset {"));
         assert!(result.contains("https://example.test/a/*/icon.svg"));
         assert!(result.contains("/* after */"));
     }
@@ -326,6 +312,10 @@ mod tests {
         let again = format_style_content(result.as_str(), &options).unwrap();
 
         assert_eq!(result, again);
-        assert!(result.as_str().starts_with("/* comment */\n.a {"));
+        assert!(
+            result
+                .as_str()
+                .starts_with("@charset \"UTF-8\";\n/* comment */\n.a {")
+        );
     }
 }

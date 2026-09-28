@@ -21,6 +21,7 @@ mod handler;
 mod params;
 mod rewrite;
 mod scope;
+mod scope_walk;
 mod shape;
 #[cfg(test)]
 mod shorthand_scope;
@@ -30,6 +31,7 @@ mod strip;
 mod targets;
 #[cfg(feature = "typescript")]
 mod typescript;
+mod var_bindings;
 
 pub(super) use globals::{is_global_allowed, is_simple_identifier};
 pub(super) use rewrite::slot_params_syntax_valid;

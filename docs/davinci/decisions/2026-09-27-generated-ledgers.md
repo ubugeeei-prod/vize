@@ -38,10 +38,19 @@ dated counts in records remain dated evidence.
 
 The `check-level-inventories` composite action keeps all source witness
 commands in the owning Check job, generates and checks the bundle, and uploads
-it even when a later inventory command fails. The inventory step retains its
-current pull-request, push and merge-group condition. Moving generation to the
-full merge-queue, nightly and release tiers is tracked separately in #6864;
-this artifact change does not remove current PR inventory coverage.
+it even when a later inventory command fails. Check runs this composite for
+merge groups, schedules and exact-SHA workflow dispatches. Release preflight
+dispatches Check for its candidate or tag SHA, so the same full-tier inventory
+step produces the release artifact. Pull requests and pushes use the fast source
+check without this generated bundle. The full-tier condition is owned by #6864;
+the generated bundle remains owned by #6867. Source-inventory and upload
+failures remain blocking.
+
+The release candidate `f59c3e6d5552b7fbe3d281bcdf22a0a5d3d7a371` passed
+[full Check run 36330394793](https://github.com/ubugeeei-prod/vize/actions/runs/36330394793).
+Its `davinci-generated-ledgers` artifact `10935811185` contains the five reports.
+Downloading that artifact and running the strict bundle `--check --out-dir`
+against the exact candidate checkout reproduced all five files byte-for-byte.
 
 The inventory action directory is `check-level-inventories`, following the
 level-only naming rule. The move is isolated from its caller updates. Existing

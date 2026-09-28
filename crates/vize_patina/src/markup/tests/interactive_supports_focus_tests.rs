@@ -57,8 +57,8 @@ fn interactive_supports_focus_template() {
         ),
         (
             r#"<div role="button" :tabindex="0">Click</div>"#,
-            1,
-            "bound tabindex stays outside the legacy static-value helper",
+            0,
+            "bound tabindex is a focus contract for this rule",
         ),
         (
             r#"<div role="button" contenteditable="true">Click</div>"#,

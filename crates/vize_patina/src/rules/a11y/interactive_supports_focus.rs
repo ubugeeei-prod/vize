@@ -21,7 +21,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::ir::TemplateSyntax;
-use crate::markup::{MarkupContext, MarkupDocument, MarkupElement, MarkupRule};
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupDocument, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::FxHashSet;
 use vize_relief::RootNode;
@@ -75,7 +75,15 @@ impl InteractiveSupportsFocus {
 
         // Element has interactive role but is not natively interactive
         // Check if it's focusable
-        if !markup_helpers::is_focusable_markup_element(element) {
+        let mut bound_tabindex = false;
+        element.walk_bindings(&mut |binding| {
+            if binding.kind() == MarkupBindingKind::Bind
+                && binding.is_static_unqualified_arg_exact("tabindex")
+            {
+                bound_tabindex = true;
+            }
+        });
+        if !markup_helpers::is_focusable_markup_element(element) && !bound_tabindex {
             ctx.warn_at_with_help(
                 ctx.t_fmt("a11y/interactive-supports-focus.message", &[("role", role)]),
                 element.range(),
@@ -165,6 +173,16 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(
             r#"<div role="button" tabindex="0" @click="handle">Click</div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_bound_tabindex() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div role="tab" :tabindex="disabled ? -1 : 0"></div><div role="tab" v-bind:tabindex="0"></div>"#,
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);

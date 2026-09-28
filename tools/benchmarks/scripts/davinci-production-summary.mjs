@@ -25,10 +25,17 @@ const identity = (report) =>
     sampling: report.sampling,
   });
 if (!/^[0-9a-f]{40}$/.test(reports[0].head_sha)) throw new Error("Missing exact benchmark head");
+const shippingShapes = ["dom_inline", "dom_module", "ssr", "vapor"];
 for (const report of reports) {
   if (identity(report) !== identity(reports[0]))
     throw new Error("Reports have different input/build identities");
-  if (report.shapes.length !== 4) throw new Error("Expected all four shipping shapes");
+  if (
+    !Array.isArray(report.shapes) ||
+    JSON.stringify(report.shapes.map((shape) => shape.shape).sort()) !==
+      JSON.stringify(shippingShapes)
+  ) {
+    throw new Error("Expected each shipping shape exactly once");
+  }
 }
 const median = (values) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
 const lines = [
@@ -90,16 +97,18 @@ for (const shape of reports[0].shapes) {
 }
 lines.push(
   "",
-  "## Production adoption observations",
+  "## Backend-selection observations",
   "",
   "Counts include diagnosed inputs if the backend actually recorded acceptance; clean accepted timing cohorts exclude warnings/errors and routed Vapor. Requested DOM shapes keep explicit Vapor routes separate. This table does not replace the P3-17 fixed reach-floor gate.",
   "",
-  "| Requested shape | Compiled templates | Native for requested backend | Routed Vapor accepted | Fallback/rejected/unrecorded templates | Code differences on clean accepted pairs | Diagnostic-message differences |",
+  "Native-only acceptance is not measured by these reports. An accepted selection proves which emitter ran; it does not prove that its facts were produced without legacy code. The DOM emitter can consume Croquis-backed binding and reactivity facts. These counts do not satisfy #6853 native-only acceptance or #6854 zero-fallback deletion criteria.",
+  "",
+  "| Requested shape | Compiled templates | Emitter selected for requested backend | Routed Vapor accepted | Fallback/rejected/unrecorded templates | Code differences on clean accepted pairs | Diagnostic-message differences |",
   "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
 );
 for (const shape of reports[0].shapes) {
   const templates = shape.observations.filter((entry) => entry.has_template && entry.compiled);
-  const native = templates.filter(
+  const selected = templates.filter(
     (entry) => entry.selected_lane === "accepted" && entry.backend === shape.shape,
   );
   const routed = templates.filter(
@@ -110,7 +119,7 @@ for (const shape of reports[0].shapes) {
   ).length;
   const differentMessages = shape.observations.filter((entry) => !entry.messages_equal).length;
   lines.push(
-    `| ${shape.shape} | ${templates.length} | ${native.length} | ${routed.length} | ${templates.length - native.length - routed.length} | ${differentCode} | ${differentMessages} |`,
+    `| ${shape.shape} | ${templates.length} | ${selected.length} | ${routed.length} | ${templates.length - selected.length - routed.length} | ${differentCode} | ${differentMessages} |`,
   );
 }
 lines.push(

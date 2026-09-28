@@ -24,17 +24,6 @@
       "issue": 6835,
       "reason": "Move Namespace and decide the ErrorCode home.",
       "workspace": true
-    },
-    {
-      "from": "vize_l1_to_l2",
-      "to": "vize_relief",
-      "rename": null,
-      "target": null,
-      "optional": false,
-      "roots": ["vize_l1_to_l2"],
-      "issue": 6831,
-      "reason": "Replace ExpressionScope in the prefix collector; semantic migration owner remains to be assigned.",
-      "workspace": true
     }
   ]
 }

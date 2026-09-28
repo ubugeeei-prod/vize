@@ -77,6 +77,7 @@ Tracked in [#6831](https://github.com/ubugeeei-prod/vize/issues/6831) and [#6851
 - A `cargo metadata` gate enforces the rule. It starts with a shrinking allowlist and later covers product crates too.
 - The [declaration ratchet](./2026-09-27-foundation-stack-replay.md#dependency-gate)
   records shrinking #6831 permissions, enforcement and remaining scope.
+- The L1→L2 prefix collector owns its retained-AST lexical-scope walk until L2 identifier-resolution facts replace prefix rewriting. Its direct `vize_relief` edge is removed; the two remaining L1 legacy edges belong to #6835.
 
 ## L1: what the text _is_
 
@@ -220,8 +221,9 @@ whole-history and native admission remain unfinished; the companion preserves ev
 
 ## Legacy deletion criteria
 
-See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria)
-in the companion record and the [LSP fix-history response-fixture installment](./2026-09-27-lsp-fix-history.md)
+See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria),
+[native-only accounting](./2026-09-27-native-selection-accounting.md),
+and the [LSP fix-history response-fixture installment](./2026-09-27-lsp-fix-history.md)
 for the pinned review ledger, complete document-link and CRLF on-type response contracts and
 unfinished history obligations in #6883.
 The same installment preserves dated source-runtime receipts separately from
@@ -302,7 +304,7 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 
 - zizmor runs only for external contributors, releases and PRs that touch `.github/**`. [Audit selection](./2026-09-27-ci-security-selection.md) and [inherited finding repair](./2026-09-27-workflow-security-refresh.md) record #6866.
 - VRT, tsgo-required tests and ledger checks leave the PR tier. [Inventory tier implementation](./2026-09-27-ci-tier-inventories.md) records #6864.
-- Whole-repo generated ledgers stop being committed. [Artifact generation](./2026-09-27-generated-ledgers.md) records #6867.
+- Whole-repo generated ledgers stop being committed; merge queue, nightly and exact-SHA release Check runs publish the validated bundle. [Artifact generation](./2026-09-27-generated-ledgers.md) records #6867.
 - [JS native preparation](./2026-09-27-js-native-preparation.md) keeps package coverage and reuses the root test build ([#6830](https://github.com/ubugeeei-prod/vize/issues/6830)).
 - [UI check tiers](./2026-09-27-ui-check-ci-tiers.md) retain Fresco declarations/types in T0 and require UI acceptance in T1 ([#6864](https://github.com/ubugeeei-prod/vize/issues/6864)).
 
