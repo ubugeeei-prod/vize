@@ -16,8 +16,12 @@ mod string_plan;
 pub use l2_input::compile_l2_to_ssr;
 
 use vize_atelier_core::TemplateSyntaxMode;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::config::VueVersion;
+#[cfg(any(test, feature = "legacy-differential"))]
+use vize_l0::dump::capture::NoCapture;
 use vize_l0::{Allocator, String, profile, profiler::global_profiler};
+use vize_l0::{dump::capture::CaptureSink, level::Level};
 use vize_l1::SurfaceParseOptions;
 use vize_l1_to_l2::TransformExpressions;
 
@@ -152,15 +156,25 @@ const ADMITTED_RULES: &[&str] = &[
 
 /// Lower `source` through L1->L2->L3, build the SSR string plan from the
 /// shared partition facts, and emit from it when the surface is admitted.
+#[cfg(any(test, feature = "legacy-differential"))]
 pub(crate) fn select_ssr_lane(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
 ) -> SsrL4Selection {
+    select_ssr_lane_captured(allocator, source, request, &mut NoCapture)
+}
+
+pub(crate) fn select_ssr_lane_captured<C: CaptureSink>(
+    allocator: &Allocator,
+    source: &str,
+    request: &SsrL4Request<'_>,
+    capture: &mut C,
+) -> SsrL4Selection {
     let selection = if bridge_supported(request) {
         profile!(
             "atelier.ssr.template.s4_bridge",
-            lower_and_emit(allocator, source, request)
+            lower_and_emit(allocator, source, request, capture)
         )
     } else {
         SsrL4Selection::Legacy(LegacyReason::Options)
@@ -169,10 +183,11 @@ pub(crate) fn select_ssr_lane(
     selection
 }
 
-fn lower_and_emit(
+fn lower_and_emit<C: CaptureSink>(
     allocator: &Allocator,
     source: &str,
     request: &SsrL4Request<'_>,
+    capture: &mut C,
 ) -> SsrL4Selection {
     let (tree, surface_errors) = vize_l1::parse_with_options(
         allocator,
@@ -181,7 +196,18 @@ fn lower_and_emit(
             experimental_in_tag_comments: request.options.experimental_in_tag_comments,
         },
     );
+    capture.page(Level::L1, "parse", || {
+        let mut text = String::default();
+        vize_l1::render::render(&tree, &mut |part| text.push_str(part));
+        text
+    });
     let s2 = vize_l1_to_l2::lower(allocator, &tree, &surface_errors);
+    capture.page(Level::L2, "lower", || {
+        vize_l2::dump::Page::of(&s2.root.ops).print_to_string(DumpMode::Full)
+    });
+    capture.page(Level::L2, "provenance", || {
+        vize_l2::dump::ProvenancePage::of(&s2.provenance).print_to_string(DumpMode::Full)
+    });
     let artifact = select::L2Artifact {
         source,
         root: &s2.root,
@@ -204,6 +230,7 @@ fn lower_and_emit(
         request.options,
         request.experimental,
         request.slotted,
+        capture,
         || {
             if let Some(summary) = request.options.croquis.as_deref()
                 && !croquis::projectable(summary, request.options.binding_metadata.as_ref())

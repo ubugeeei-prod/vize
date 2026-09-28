@@ -9,6 +9,8 @@ description = "Atelier Vapor - The Vapor mode compiler workshop for Vize"
 metadata.vize.stability = "experimental"
 
 [dependencies]
+vize_l0 = { workspace = true }
+vize_davinci = { workspace = true }
 vize_carton = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_croquis = { workspace = true }
@@ -42,7 +44,6 @@ legacy-differential = ["vize_atelier_core/legacy-differential"]
 oxc_semantic = { workspace = true }
 criterion = { workspace = true }
 davinci_harness = { workspace = true }
-vize_davinci = { workspace = true }
 # The DOM backend is compiled alongside Vapor in the cross-backend agreement
 # tests (`<template>` children must lower the same way in both backends).
 vize_atelier_dom = { workspace = true }

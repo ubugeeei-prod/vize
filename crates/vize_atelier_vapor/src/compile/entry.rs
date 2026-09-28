@@ -5,10 +5,11 @@ use vize_atelier_core::{
     options::{CustomElementMatcher, TemplateSyntaxMode},
 };
 use vize_carton::Allocator;
+use vize_l0::dump::capture::CaptureSink;
 
 use super::{
     VaporCompileResult, VaporCompilerExperimentalOptions, VaporCompilerOptions,
-    compile_vapor_inner, compile_vapor_inner_scoped,
+    compile_vapor_inner, compile_vapor_inner_scoped, compile_vapor_inner_scoped_captured,
 };
 
 /// Compile an SFC template with its scoped-style attribute on every native element.
@@ -30,6 +31,34 @@ pub fn compile_vapor_with_sfc_context<'a>(
         custom_elements,
         experimental_options,
         scope_id,
+    )
+}
+
+/// Compile an SFC template and observe the stages that emitted its module.
+#[doc(hidden)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "SFC options plus an opt-in capture sink"
+)]
+pub fn compile_vapor_with_sfc_context_and_capture<'a, C: CaptureSink>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: VaporCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: VaporCompilerExperimentalOptions,
+    scope_id: Option<&str>,
+    capture: &mut C,
+) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    compile_vapor_inner_scoped_captured(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        scope_id,
+        capture,
     )
 }
 
