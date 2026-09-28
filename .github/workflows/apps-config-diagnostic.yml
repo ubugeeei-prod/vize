@@ -43,7 +43,15 @@ jobs:
         run: vp pack
       - name: Verify Vize package imports in the app
         working-directory: examples/vite-musea
-        run: vp exec node --input-type=module -e "import { defineConfig } from 'vize'; if (typeof defineConfig !== 'function') process.exit(1)"
+        run: |
+          vp exec node --input-type=module -e "
+            import { loadConfig } from 'vize';
+            const config = await loadConfig(process.cwd());
+            if (config?.vite?.scanPatterns?.[0] !== 'src/**/*.vue') {
+              throw new Error('Vize app config was not loaded from source');
+            }
+            console.log('Loaded app config from source-built vize and native binding');
+          "
       - name: Build source vize CLI and receipt
         run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && test -s target/ci/vize.differential-build.json
       - name: Install source vize CLI
