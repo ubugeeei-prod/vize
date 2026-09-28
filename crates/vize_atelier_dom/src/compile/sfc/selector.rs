@@ -1,5 +1,18 @@
 pub(super) fn l2_sfc_fast_path_supported_source(source: &str) -> bool {
-    !source_contains_parser_recovery(source) && !super::p_end::source_has_invalid_p_end_tag(source)
+    !source_contains_character_reference(source)
+        && !source_contains_parser_recovery(source)
+        && !super::p_end::source_has_invalid_p_end_tag(source)
+}
+
+// L2 currently leaves character references inside template expressions verbatim.
+// Let the shared parser decode them before generating an SFC render function.
+pub(super) fn source_contains_character_reference(source: &str) -> bool {
+    source.as_bytes().windows(2).any(|pair| {
+        pair.first() == Some(&b'&')
+            && pair
+                .get(1)
+                .is_some_and(|byte| *byte == b'#' || byte.is_ascii_alphabetic())
+    })
 }
 
 /// The SFC fast path skips the shipped parser, so it cannot return its HTML
@@ -106,44 +119,7 @@ fn source_contains_parser_recovery(source: &str) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::l2_sfc_fast_path_supported_source;
-
-    #[test]
-    fn html_void_element_does_not_keep_parent_open_after_close() {
-        for source in [
-            r#"<a><img src="x"></a><a>next</a>"#,
-            r#"<a><IMG src="x"></a><a>next</a>"#,
-        ] {
-            assert!(
-                l2_sfc_fast_path_supported_source(source),
-                "{source} should keep the direct L2 SFC fast path"
-            );
-        }
-    }
-
-    #[test]
-    fn stray_end_tag_requires_parser_diagnostics() {
-        assert!(!l2_sfc_fast_path_supported_source("<div></div></div>"));
-        assert!(l2_sfc_fast_path_supported_source("<div></div>"));
-    }
-
-    #[test]
-    fn duplicate_attributes_require_parser_diagnostics() {
-        for source in [
-            r#"<h4 :class="premium" class="" class="shop_title">Shop</h4>"#,
-            r#"<div CLASS="first" class="second" />"#,
-        ] {
-            assert!(!l2_sfc_fast_path_supported_source(source), "{source}");
-        }
-        for source in [
-            r#"<div class="first" title="class='second'">Shop</div>"#,
-            r#"<div :class="first" class="second">Shop</div>"#,
-        ] {
-            assert!(l2_sfc_fast_path_supported_source(source), "{source}");
-        }
-    }
-}
+mod tests;
 
 fn find_byte(bytes: &[u8], start: usize, needle: u8) -> Option<usize> {
     bytes

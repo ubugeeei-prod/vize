@@ -25,6 +25,7 @@ pub(in crate::wasm) fn compiler_codegen_experimental_options(
     CodegenExperimentalOptions {
         component_name: None,
         self_component: opts.experimental_self_component.unwrap_or(false),
+        ..Default::default()
     }
 }
 

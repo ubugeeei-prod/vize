@@ -138,8 +138,8 @@ fn compile_scoped(
         ..Default::default()
     };
     let codegen_experimental_opts = CodegenExperimentalOptions {
-        component_name: None,
         self_component: opts.experimental_self_component.unwrap_or(false),
+        ..Default::default()
     };
     let result = generate_with_experimental_options(&root, codegen_opts, codegen_experimental_opts);
     let map = result
