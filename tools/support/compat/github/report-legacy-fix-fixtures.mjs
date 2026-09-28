@@ -44,15 +44,33 @@ export function analyzeLegacyFix({ title, paths, readFile }) {
           manifest.version !== 1 ||
           manifest.product !== product ||
           !Array.isArray(manifest.cases) ||
-          (before !== null && (!Array.isArray(before.cases) || before.product !== product))
+          (before !== null &&
+            (before.schema !== manifest.schema ||
+              before.version !== manifest.version ||
+              !Array.isArray(before.cases) ||
+              before.product !== product))
         ) {
           throw new Error("invalid product manifest envelope");
         }
+        const allIds = manifest.cases.map((entry) => entry.id);
+        if (new Set(allIds).size !== allIds.length) throw new Error("duplicate case ID");
         const oldIds = new Set(before?.cases.map((entry) => entry.id) ?? []);
         const added = manifest.cases.filter((entry) => !oldIds.has(entry.id));
         const cases = added.map((entry) => {
-          if (entry.state !== "active" || !/^[-a-z0-9/]+$/.test(entry.id ?? "")) {
+          if (
+            entry.state !== "active" ||
+            !entry.id?.startsWith(`${product}/`) ||
+            !/^[-a-z0-9/]+$/.test(entry.id)
+          ) {
             throw new Error(`invalid active case: ${entry.id}`);
+          }
+          if (
+            !Array.isArray(entry.targets) ||
+            entry.targets.length === 0 ||
+            new Set(entry.targets).size !== entry.targets.length ||
+            entry.targets.some((target) => !/^[a-z][a-z0-9_-]*$/.test(target))
+          ) {
+            throw new Error(`invalid case targets: ${entry.id}`);
           }
           const files = entry.inputs?.files;
           if (!Array.isArray(files) || files.length === 0 || !entry.inputs?.root) {

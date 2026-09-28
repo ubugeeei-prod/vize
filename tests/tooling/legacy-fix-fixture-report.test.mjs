@@ -13,6 +13,7 @@ const input = Buffer.from("<template><div /></template>\n");
 const caseRow = {
   id: "formatter/sfc/new-fix",
   state: "active",
+  targets: ["fmt"],
   inputs: {
     root: "new-fix",
     files: [{ path: "App.vue", sha256: createHash("sha256").update(input).digest("hex") }],
@@ -82,6 +83,14 @@ void test("only a newly registered active case with a matching pinned input coun
       before: manifest([]),
       after: manifest([caseRow]),
       files: { [path]: Buffer.from("wrong") },
+    }).products[0].state,
+    "invalid-manifest-or-input",
+  );
+  assert.equal(
+    report({
+      before: manifest([]),
+      after: manifest([{ ...caseRow, targets: [] }]),
+      files: { [path]: input },
     }).products[0].state,
     "invalid-manifest-or-input",
   );
