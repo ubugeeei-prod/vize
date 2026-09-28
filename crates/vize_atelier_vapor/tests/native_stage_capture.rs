@@ -4,6 +4,7 @@ use vize_atelier_vapor::{
     compile_vapor_with_sfc_context_and_capture,
 };
 use vize_carton::Allocator;
+use vize_davinci::dump::{Dump, Mode};
 use vize_l0::{
     dump::capture::{CaptureOutcome, StageCapture},
     level::Level,
@@ -88,8 +89,10 @@ fn accepted_vapor_pages_describe_the_checked_emitter_input() {
         ]
     );
     assert_eq!(capture.pages[0].text.as_str(), "<div>hello</div>");
-    assert!(capture.pages[1].text.contains("[l2-"));
-    assert!(capture.pages[3].text.contains("[l3-"));
+    let l2 = vize_l2::dump::Page::parse(&capture.pages[1].text).expect("L2 page parses");
+    assert_eq!(l2.print_to_string(Mode::Full), capture.pages[1].text);
+    let l3 = vize_l3::dump::Page::parse(&capture.pages[3].text).expect("L3 page parses");
+    assert_eq!(l3.print_to_string(Mode::Full), capture.pages[3].text);
     // Vapor returns a complete backend module. The SFC adapter may later
     // rewrite its imports and render function as it composes the SFC script.
     assert_eq!(capture.pages[6].step, "emit");
@@ -104,6 +107,17 @@ fn retained_vapor_module_has_no_native_pages() {
             davinci_retained_lane: true,
             ..Default::default()
         },
+    );
+    assert!(!code.is_empty());
+    assert!(matches!(capture.outcome, CaptureOutcome::Legacy(_)));
+    assert!(capture.pages.is_empty());
+}
+
+#[test]
+fn v_pre_selects_retained_vapor_without_native_pages() {
+    let (code, capture) = compile(
+        "<div v-pre>{{ literal }}</div>",
+        VaporCompilerOptions::default(),
     );
     assert!(!code.is_empty());
     assert!(matches!(capture.outcome, CaptureOutcome::Legacy(_)));

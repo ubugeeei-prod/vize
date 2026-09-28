@@ -12,9 +12,6 @@ mod text;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::{Allocator, String, cstr, profile, profiler::global_profiler};
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-#[cfg(test)]
-use vize_l0::dump::capture::NoCapture;
 use vize_l0::{dump::capture::CaptureSink, level::Level};
 use vize_l1::SurfaceParseOptions;
 use vize_l2_to_l3::Lowered;
@@ -130,7 +127,12 @@ pub(crate) fn lower_source_for_vapor<'a>(
     source: &str,
     options: VaporL3BridgeOptions,
 ) -> VaporL3BridgeStatus<'a> {
-    lower_source_for_vapor_captured(allocator, source, options, &mut NoCapture)
+    lower_source_for_vapor_captured(
+        allocator,
+        source,
+        options,
+        &mut vize_l0::dump::capture::NoCapture,
+    )
 }
 
 pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
@@ -176,10 +178,10 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
             vize_l1_to_l2::lower(&scratch, &tree, &errors)
         );
         capture.page(Level::L2, "lower", || {
-            vize_l2::dump::Page::of(&s2.root.ops).print_to_string(DumpMode::Full)
+            vize_l2::dump::render_full_page(&vize_l2::dump::Page::of(&s2.root.ops))
         });
         capture.page(Level::L2, "provenance", || {
-            vize_l2::dump::ProvenancePage::of(&s2.provenance).print_to_string(DumpMode::Full)
+            vize_l2::dump::render_full_page(&vize_l2::dump::ProvenancePage::of(&s2.provenance))
         });
         if !s2.diagnostics.is_empty()
             || s2.provenance.iter().any(|record| {
@@ -236,13 +238,13 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
             };
         }
         capture.page(Level::L3, "lower", || {
-            vize_l3::dump::Page::of(&s3.program).print_to_string(DumpMode::Full)
+            vize_l2::dump::render_full_page(&vize_l3::dump::Page::of(&s3.program))
         });
         capture.page(Level::L3, "partition", || {
-            vize_l2_to_l3::PartitionPage::of(&s3.partition).print_to_string(DumpMode::Full)
+            vize_l2::dump::render_full_page(&vize_l2_to_l3::PartitionPage::of(&s3.partition))
         });
         capture.page(Level::L3, "values", || {
-            vize_l3::values_dump::Page::of(&s3.program).print_to_string(DumpMode::Full)
+            vize_l2::dump::render_full_page(&vize_l3::values_dump::Page::of(&s3.program))
         });
         admit_with(s3, &retained, &loops)
     })

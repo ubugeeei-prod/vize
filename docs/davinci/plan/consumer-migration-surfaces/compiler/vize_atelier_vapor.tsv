@@ -1,6 +1,7 @@
 consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/benches/davinci.rs	35	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	manifest	crates/vize_atelier_vapor/Cargo.toml	12	davinci	Davinci	stage	vize_davinci	preferred	1
+compiler	Compiler	manifest	crates/vize_atelier_vapor/Cargo.toml	12	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_vapor/Cargo.toml	12	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	manifest	crates/vize_atelier_vapor/Cargo.toml	12	l1	L1	stage	vize_l1	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_vapor/Cargo.toml	12	l2	L2	stage	vize_l2	preferred	1
@@ -12,8 +13,11 @@ compiler	Compiler	manifest	crates/vize_atelier_vapor/Cargo.toml	12	raw_oxc	raw O
 compiler	Compiler	manifest	crates/vize_atelier_vapor/Cargo.toml	12	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	manifest	crates/vize_atelier_vapor/Cargo.toml	12	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 compiler	Compiler	manifest	crates/vize_atelier_vapor/Cargo.toml	12	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/compile.rs	24	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/compile.rs	24	l0	L0	stage	vize_carton	compat	8
+compiler	Compiler	source	crates/vize_atelier_vapor/src/compile/entry.rs	7	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/compile/entry.rs	7	l0	L0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/compile/inner.rs	66	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/compile/native.rs	7	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/compile/result.rs	3	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate.rs	15	l0	L0	stage	vize_carton	compat	1
@@ -69,10 +73,13 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/ir/control_flow.rs	4	l0	L
 compiler	Compiler	source	crates/vize_atelier_vapor/src/ir/events.rs	3	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/ir/props.rs	4	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/ir/slots.rs	5	l0	L0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/l3.rs	14	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/l3.rs	14	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/l3.rs	14	l1	L1	stage	vize_l1	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/l3.rs	147	l1	L1	stage	vize_l1	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/l3.rs	147	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/l3.rs	134	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/l3.rs	134	l1	L1	stage	vize_l1	preferred	2
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/l3.rs	134	l2	L2	stage	vize_l2	preferred	7
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/l3.rs	134	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/l3/benchmark.rs	7	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/l3/markup.rs	12	l0	L0	stage	vize_carton	compat	2
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/l3/markup.rs	120	l0	L0	stage	vize_carton	compat	3
@@ -232,6 +239,10 @@ compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_vapor_upstrea
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_walk_baseline.rs	31	davinci	Davinci	stage	vize_davinci	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_walk_baseline.rs	31	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/experimental_diagnostics.rs	2	l0	L0	stage	vize_carton	compat	3
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/native_stage_capture.rs	6	davinci	Davinci	stage	vize_davinci	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/native_stage_capture.rs	6	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/native_stage_capture.rs	6	l0	L0	stage	vize_carton	compat	2
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/native_stage_capture.rs	6	l2	L2	stage	vize_l2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/nested_delegate_events.rs	8	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/patterned_template_grammar.rs	11	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/patterned_template_recovery.rs	14	l0	L0	stage	vize_carton	compat	1
