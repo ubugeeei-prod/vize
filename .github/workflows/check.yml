@@ -200,6 +200,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     env:
+      CARGO_BUILD_JOBS: "12"
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -208,6 +209,7 @@ jobs:
           node-version-file: "package.json"
           cache: true
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
@@ -220,6 +222,21 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check generated reference docs
         run: vp node --test tests/tooling/lib-reference-docs.test.ts
+      - name: Build native addon for source Vize config
+        run: vp run --workspace-root build:native:test
+      - name: Pack source Vize config package
+        working-directory: npm/cli
+        run: vp pack
+      - name: Require the app to load source Vize config
+        working-directory: examples/vite-musea
+        run: |
+          vp exec node --input-type=module -e "
+            import { loadConfig } from 'vize';
+            const config = await loadConfig(process.cwd());
+            if (config?.vite?.scanPatterns?.[0] !== 'src/**/*.vue') {
+              throw new Error('Vize app config was not loaded from source');
+            }
+          "
       - name: Build vize CLI
         run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs
       - name: Install vize CLI
@@ -231,7 +248,13 @@ jobs:
         working-directory: npm/builder/vite-musea
         run: vp exec tsx --test gallery/components/MarkdownContent.test.ts
       - name: Check Vize app fixtures
-        run: vp run --workspace-root check:ci:vize-apps
+        run: |
+          set -o pipefail
+          vp run --workspace-root check:ci:vize-apps 2>&1 | tee "$RUNNER_TEMP/vize-apps.log"
+          if grep -q 'Failed to parse .*vize.config' "$RUNNER_TEMP/vize-apps.log"; then
+            echo 'Vize app configuration was not loaded' >&2
+            exit 1
+          fi
 
   vue-parity:
     runs-on: blacksmith-32vcpu-ubuntu-2404

@@ -42,6 +42,7 @@ type Job = {
     if?: string;
     run?: string;
     uses?: string;
+    "working-directory"?: string;
     with?: Record<string, string>;
   }>;
   "timeout-minutes"?: number | string;
@@ -177,6 +178,26 @@ test("source gates cover PRs and merge groups while extra checks require schedul
     referenceDocs < appSteps.findIndex((step) => step.name === "Build vize CLI"),
     "generated reference docs must be checked before the Rust build",
   );
+  const nativeConfig = appSteps.findIndex(
+    (step) => step.name === "Build native addon for source Vize config",
+  );
+  const packConfig = appSteps.findIndex((step) => step.name === "Pack source Vize config package");
+  const loadConfig = appSteps.findIndex(
+    (step) => step.name === "Require the app to load source Vize config",
+  );
+  const buildCli = appSteps.findIndex((step) => step.name === "Build vize CLI");
+  const fixtures = appSteps.findIndex((step) => step.name === "Check Vize app fixtures");
+  assert.ok(appSteps.some((step) => step.uses === "./.github/actions/setup-moonbit"));
+  assert.ok(referenceDocs < nativeConfig && nativeConfig < packConfig && packConfig < loadConfig);
+  assert.ok(loadConfig < buildCli && buildCli < fixtures);
+  assert.equal(appSteps[nativeConfig]?.run, "vp run --workspace-root build:native:test");
+  assert.equal(appSteps[packConfig]?.["working-directory"], "npm/cli");
+  assert.equal(appSteps[packConfig]?.run, "vp pack");
+  assert.equal(appSteps[loadConfig]?.["working-directory"], "examples/vite-musea");
+  assert.match(appSteps[loadConfig]?.run ?? "", /loadConfig\(process\.cwd\(\)\)/);
+  assert.match(appSteps[loadConfig]?.run ?? "", /config\?\.vite\?\.scanPatterns/);
+  assert.match(appSteps[fixtures]?.run ?? "", /vp run --workspace-root check:ci:vize-apps/);
+  assert.match(appSteps[fixtures]?.run ?? "", /grep -q 'Failed to parse .*vize\.config'/);
   assert.match(commands("check-vize-apps"), /cargo build --profile ci -p vize/);
   assert.match(commands("test-scripts"), /vp run --workspace-root test:scripts/);
   assert.match(commands("test-js-packages"), /vp run --workspace-root test:js/);

@@ -323,7 +323,7 @@ with the formatter's always-upload corpus evidence without changing build setup;
 
 [Rust source wiring](./2026-09-27-ci-rust-core.md) preserves full queue execution, proves the tested comparison base and records the intermediate scope.
 
-[CI baseline decisions](./2026-09-27-ci-baseline-decisions.md) preserve the original Rust timings, first formatter path and stack replay evidence; [current PR Check latency](./2026-09-28-pr-check-latency.md) records the #6861 phase split and T0 p50/p90 sample.
+[CI baseline decisions](./2026-09-27-ci-baseline-decisions.md) preserve the original Rust timings, first formatter path and stack replay evidence; [current PR Check latency](./2026-09-28-pr-check-latency.md) records the #6861 phase split and T0 p50/p90 sample; [Apps source config](./2026-09-29-apps-source-config.md) requires same-checkout NAPI and CLI preparation before full app checks while the two-minute PR target remains open.
 
 [Tooling tier wiring](./2026-09-27-ci-tooling-tier-core.md) records the shared comparison base, queue-only VRT and preserved complete tooling task.
 
