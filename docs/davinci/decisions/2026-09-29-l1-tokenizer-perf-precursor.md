@@ -28,8 +28,22 @@ semantics; the first avoids four unused empty maps, while the second has a
 measured lower-stage reduction. This branch contains no tokenizer move or
 compiler route change. Measure all 100 pinned probes three times in Actions
 before publishing a PR, and keep the PR unpublished until the independent
-#7150 prefix has drained. A green precursor does not prove #7136 safe: merge
-the precursor first, then rebase and measure the original move-only commits on
-fresh main. Keep #6835 open until production ownership, dependency direction,
-parity and protected queue checks are complete; #6880 still gates product-route
-replacement.
+#7150 prefix has drained.
+
+The exact results on main `08843fae9` rejected this precursor:
+
+| Source slice | Actions run | Ceilings met | Misses |
+| --- | --- | ---: | --- |
+| Both changes | [36466507056](https://github.com/ubugeeei-prod/vize/actions/runs/36466507056) | 96/100 | Vapor generate medium +172, compile medium +66, lower large +1, generate stress-deep +100 |
+| Inline wrapper only | [36466876881](https://github.com/ubugeeei-prod/vize/actions/runs/36466876881) | 99/100 | Vapor lower large +1 |
+| Lazy fallback spans only | [36466904385](https://github.com/ubugeeei-prod/vize/actions/runs/36466904385) | 97/100 | Vapor generate medium +172, compile medium +66, generate stress-deep +100 |
+
+Each run measured all 100 probes three times under the unchanged ceilings.
+Source-map tests passed 18/18, fix-history 1/1, artifact 1/1, strict Clippy
+and formatting passed for the combined source, but those checks cannot waive
+instruction misses. No precursor PR or queue entry is permitted. Keep #7136
+at its old head and out of the queue; preserve its move-only commits. Further
+work must identify a source-level improvement with a measured 100/100 outcome
+on the actual cumulative tree before publishing. Keep #6835 open until
+production ownership, dependency direction, parity and protected queue checks
+are complete; #6880 still gates product-route replacement.
