@@ -169,12 +169,9 @@ impl<'a> Parser<'a> {
 
     fn has_duplicate_attribute(&self, name: &str) -> bool {
         self.current_element.as_ref().is_some_and(|current| {
-            current.props.iter().any(|prop| {
-                matches!(
-                    prop,
-                    PropNode::Attribute(existing)
-                        if existing.name.eq_ignore_ascii_case(name)
-                )
+            current.props.iter().any(|prop| match prop {
+                PropNode::Attribute(existing) => existing.name.eq_ignore_ascii_case(name),
+                _ => false,
             })
         })
     }
