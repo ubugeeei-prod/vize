@@ -1,5 +1,9 @@
 //! Markup lexer entry point.
 
+/// Byte-identical template tokenizer moved from Armature. The compiler keeps
+/// using this entry point while the generic profile lexer is validated.
+pub mod compat;
+
 #[cfg(any(test, feature = "native-markup-lex"))]
 mod native;
 #[cfg(not(any(test, feature = "native-markup-lex")))]

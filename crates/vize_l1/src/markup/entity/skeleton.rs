@@ -29,7 +29,8 @@ pub fn needs_decoding(bytes: &[u8]) -> bool {
 ///
 /// # Panics
 ///
-/// Always, until the decoder moves here from `vize_armature` (#6835).
+/// Always, until the generic entity hook replaces the moved compatibility
+/// decoder after parity validation (#6835).
 pub fn decode_one(_input: &[u8], _context: EntityContext) -> Option<(char, usize)> {
     todo!("#6835: move entity decoding into vize_l1::markup::entity")
 }

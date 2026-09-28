@@ -60,3 +60,22 @@ The earlier #7043 → #7037 → #7038 PR stack reflected the former live compile
 integration. With that integration deferred, #7038 has no source dependency on
 those PRs and can target `main` directly. This supersedes the stack plan in
 [#6835](https://github.com/ubugeeei-prod/vize/issues/6835#issuecomment-5867058001).
+
+## Tokenizer source relocation (#6835)
+
+The next source-ownership slice moves Armature's existing tokenizer files as a
+move-only commit into `vize_l1::markup::lex::compat`. Armature re-exports that
+same implementation at its old public path, and L1's surface parser calls the
+L1-owned path directly. Thus `vize_l1` loses its normal Armature dependency and
+`vize_armature` depends on L1. The compiler still calls its original parser;
+neither this move nor the crate edge counts as a native product route switch.
+
+The `compat` module preserves the existing tokenizer's events, diagnostics,
+entity behavior and recovery while the profile-generic `Lexer<P, S>` remains
+opt-in. A source move is distinct from replacing the parser or claiming native
+acceptance. TODO (#6835): compare the generic lexer event stream against the
+preserved tokenizer for both profiles, including self-closing whitespace and
+malformed input, then converge the implementations without changing the legacy
+parser's byte output. TODO (#6835): move the remaining `Namespace`/`ErrorCode`
+vocabulary out of Relief to remove L1's other direct legacy dependency. The
+compiler product route remains gated by #6880.

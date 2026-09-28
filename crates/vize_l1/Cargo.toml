@@ -20,14 +20,15 @@ metadata.vize.stability = "experimental"
 # the P1-6/P1-7 differential-lane shape: committed battery with pinned
 # counts, plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
 legacy-differential = []
-native-markup-lex = ["dep:htmlize"]
+native-markup-lex = []
+# Retain the moved tokenizer's Vue 1 raw-interpolation test lane.
+legacy = []
 moonbit = []
 
 [dependencies]
-vize_armature = { workspace = true }
 vize_l0 = { workspace = true }
 vize_relief = { workspace = true }
-htmlize = { workspace = true, optional = true }
+htmlize = { workspace = true }
 
 [dev-dependencies]
 davinci_test_support.workspace = true
