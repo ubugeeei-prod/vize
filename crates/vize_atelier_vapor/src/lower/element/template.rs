@@ -45,6 +45,7 @@ fn write_element_template(
 
     // Collect dynamic binding names to skip their static counterparts
     let mut has_static_attr = false;
+    let mut has_bind = false;
     let dynamic_attrs: vize_carton::FxHashSet<&str> = el
         .props
         .iter()
@@ -53,18 +54,22 @@ fn write_element_template(
                 has_static_attr = true;
                 None
             }
-            PropNode::Directive(dir) if dir.name == "bind" => match dir.arg.as_ref() {
-                Some(ExpressionNode::Simple(key)) => Some(key.content),
-                _ => None,
-            },
+            PropNode::Directive(dir) if dir.name == "bind" => {
+                has_bind = true;
+                match dir.arg.as_ref() {
+                    Some(ExpressionNode::Simple(key)) => Some(key.content),
+                    _ => None,
+                }
+            }
             _ => None,
         })
         .collect();
 
     // Add static attributes (skip those overridden by dynamic bindings).
     // This result depends only on the unchanged props. The first pass above
-    // avoids computing it for elements without static attributes.
-    let uses_computed = has_static_attr && super::super::merged_props::uses_computed_props(el);
+    // avoids computing it without both static attributes and a v-bind.
+    let uses_computed =
+        has_static_attr && has_bind && super::super::merged_props::uses_computed_props(el);
     for prop in el.props.iter() {
         if let PropNode::Attribute(attr) = prop {
             if uses_computed || is_runtime_only_attr(attr.name) {
