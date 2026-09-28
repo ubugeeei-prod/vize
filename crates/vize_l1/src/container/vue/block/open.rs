@@ -1,15 +1,15 @@
 use alloc::borrow::Cow;
 use memchr::memchr;
 
-use super::AttrSink;
+use super::{AttrSink, is_whitespace_fast};
 
 pub(super) fn parse_attrs<'a>(
     bytes: &'a [u8],
     source: &'a str,
-    pos: &mut usize,
+    cursor: &mut usize,
     attrs: &mut impl AttrSink<'a>,
 ) {
-    let mut pos = *pos;
+    let mut pos = *cursor;
     let len = bytes.len();
     // Parse attributes with zero-copy
 
@@ -53,7 +53,7 @@ pub(super) fn parse_attrs<'a>(
             pos += 1;
         }
 
-        let attr_value: Cow<'a, str> = if bytes.get(pos) == Some(&b'=') {
+        let attr_value: Option<Cow<'a, str>> = if bytes.get(pos) == Some(&b'=') {
             pos += 1;
 
             // Skip whitespace
@@ -70,7 +70,7 @@ pub(super) fn parse_attrs<'a>(
                     pos += quote_pos;
                     let value = Cow::Borrowed(source.get(value_start..pos).unwrap_or_default());
                     pos += 1; // Skip closing quote
-                    value
+                    Some(value)
                 } else {
                     // No closing quote found
                     while bytes.get(pos).is_some_and(|&b| b != quote_char) {
@@ -80,7 +80,7 @@ pub(super) fn parse_attrs<'a>(
                     if pos < len {
                         pos += 1;
                     }
-                    value
+                    Some(value)
                 }
             } else {
                 // Unquoted value
@@ -91,11 +91,13 @@ pub(super) fn parse_attrs<'a>(
                     }
                     pos += 1;
                 }
-                Cow::Borrowed(source.get(value_start..pos).unwrap_or_default())
+                Some(Cow::Borrowed(
+                    source.get(value_start..pos).unwrap_or_default(),
+                ))
             }
         } else {
             // Boolean attribute
-            Cow::Borrowed("")
+            None
         };
 
         if !attr_name.is_empty() {
@@ -103,5 +105,5 @@ pub(super) fn parse_attrs<'a>(
         }
     }
 
-    *pos = pos;
+    *cursor = pos;
 }

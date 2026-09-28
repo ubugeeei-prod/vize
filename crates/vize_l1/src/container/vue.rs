@@ -3,7 +3,7 @@
 //! Block boundaries are found in one byte pass: script blocks skip strings,
 //! comments and regex literals; the root `<template>` tracks nesting while
 //! skipping comments, raw-text elements and interpolations. The legacy SFC
-//! descriptor (`vize_croquis`) is built from [`parse_block_fast`].
+//! descriptor (`vize_croquis`) retains its own scanner until #6880 closes.
 
 mod attrs;
 mod block;
@@ -75,9 +75,13 @@ impl ContainerFormat for Vue {
                     pos = end;
                 }
                 Ok(None) => pos += 1,
-                Err(_) => {
+                Err((code, _)) => {
                     container.errors.push(ContainerError {
-                        code: ContainerErrorCode::MissingCloseTag,
+                        code: if code == "UNTERMINATED_OPEN_TAG" {
+                            ContainerErrorCode::UnterminatedOpenTag
+                        } else {
+                            ContainerErrorCode::MissingCloseTag
+                        },
                         offset: offset_u32(pos),
                     });
                     break;
@@ -149,14 +153,24 @@ struct Attrs<'a> {
 }
 
 impl<'a> AttrSink<'a> for Attrs<'a> {
-    fn attr(&mut self, name: Cow<'a, str>, value: Cow<'a, str>, (start, end): (usize, usize)) {
+    fn attr(
+        &mut self,
+        name: Cow<'a, str>,
+        value: Option<Cow<'a, str>>,
+        (start, end): (usize, usize),
+    ) {
         // The block scanner only ever borrows from the source.
-        let (Cow::Borrowed(name), Cow::Borrowed(value)) = (name, value) else {
+        let Cow::Borrowed(name) = name else {
             return;
+        };
+        let value = match value {
+            Some(Cow::Borrowed(value)) => Some(value),
+            Some(Cow::Owned(_)) => return,
+            None => None,
         };
         self.list.push(BlockAttr {
             name,
-            value: (!value.is_empty()).then_some(value),
+            value,
             span: span(start, end),
         });
     }

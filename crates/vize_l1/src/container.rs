@@ -9,8 +9,8 @@
 //! `vue` is the only format today. Svelte, Analog and TSRX containers join as
 //! further [`ContainerFormat`] implementors with their own block rules.
 //!
-//! The legacy SFC descriptor is built from [`vue::parse_block_fast`], so the
-//! Vue block scanner exists once (#6837).
+//! The legacy SFC descriptor keeps its existing scanner until #6880 closes.
+//! L1 exposes a native Vue block scanner for the future consumer switch (#6837).
 
 pub mod vue;
 

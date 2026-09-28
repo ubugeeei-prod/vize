@@ -52,6 +52,12 @@ pub(super) fn build_malformed_error(tag_name: &[u8], reason: &str) -> BlockParse
     )
 }
 
+/// Distinguish an incomplete opening tag from a missing block close.
+pub(super) fn build_unterminated_open_error(tag_name: &[u8], reason: &str) -> BlockParseError {
+    let (_, message) = build_malformed_error(tag_name, reason);
+    ("UNTERMINATED_OPEN_TAG", message)
+}
+
 /// Fast tag name comparison using byte slices
 #[inline(always)]
 pub fn tag_name_eq(name: &[u8], expected: &[u8]) -> bool {

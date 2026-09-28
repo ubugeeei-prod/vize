@@ -6,8 +6,9 @@ use super::end::find_block_end;
 use super::open;
 use super::{
     AttrSink, BlockEndSearch, BlockParseResult, TAG_SCRIPT, TAG_STYLE, TAG_TEMPLATE, advance_line,
-    build_malformed_error, content_end_column, find_closing_tag_end, is_tag_name_char_fast,
-    is_whitespace_fast, position_after, skip_regex_literal, skip_script_string_literal,
+    build_malformed_error, build_unterminated_open_error, can_start_regex_literal,
+    content_end_column, find_closing_tag_end, is_tag_name_char_fast, is_whitespace_fast,
+    position_after, skip_regex_literal, skip_script_string_literal,
 };
 
 /// Parse a single block from source bytes with zero-copy borrowed `Cow` strings.
@@ -58,7 +59,7 @@ pub fn parse_block_fast<'a>(
             pos += 1;
         }
         if bytes.get(pos) != Some(&b'>') {
-            return Err(build_malformed_error(
+            return Err(build_unterminated_open_error(
                 tag_name,
                 "the self-closing tag is incomplete",
             ));
@@ -84,7 +85,7 @@ pub fn parse_block_fast<'a>(
     if bytes.get(pos) == Some(&b'>') {
         pos += 1;
     } else {
-        return Err(build_malformed_error(
+        return Err(build_unterminated_open_error(
             tag_name,
             "the opening tag is incomplete",
         ));
@@ -115,7 +116,7 @@ pub fn parse_block_fast<'a>(
 
     // Handle known tags with static closing tags
     if tag_name.eq_ignore_ascii_case(TAG_TEMPLATE) {
-        return super::template_boundary::find_template_block_end(BlockEndSearch {
+        return super::super::template_boundary::find_template_block_end(BlockEndSearch {
             bytes,
             source,
             tag_name,

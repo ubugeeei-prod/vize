@@ -42,3 +42,25 @@ fn reports_duplicates_and_missing_close_tags() {
         ]
     );
 }
+
+#[test]
+fn distinguishes_boolean_and_explicitly_empty_attributes() {
+    let allocator = Allocator::default();
+    let container = Vue.split(&allocator, r#"<script setup lang=""></script>"#);
+    assert!(container.errors.is_empty());
+    let script = &container.blocks[0];
+    assert_eq!(script.attr("setup").and_then(|attr| attr.value), None);
+    assert_eq!(script.attr("lang").and_then(|attr| attr.value), Some(""));
+}
+
+#[test]
+fn reports_unterminated_open_tag_separately_from_missing_close() {
+    let allocator = Allocator::default();
+    let container = Vue.split(&allocator, r#"<style lang="css""#);
+    assert_eq!(container.errors.len(), 1);
+    assert_eq!(
+        container.errors[0].code,
+        ContainerErrorCode::UnterminatedOpenTag
+    );
+    assert_eq!(container.errors[0].offset, 0);
+}
