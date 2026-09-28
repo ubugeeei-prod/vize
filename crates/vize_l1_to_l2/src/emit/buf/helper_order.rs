@@ -40,12 +40,12 @@ impl Buf {
             push(helper);
         }
         // Keep the small-module comparator free of the shared-scan branch.
-        if self.used.count_ones() > 8
+        if self.used.count_ones() > 24
             && self
                 .hoists
                 .iter()
                 .fold(self.code.len(), |len, text| len.saturating_add(text.len()))
-                > 8_192
+                > 65_536
         {
             self.sort_helpers::<true>(listed)
         } else {

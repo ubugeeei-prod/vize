@@ -2,6 +2,7 @@ use oxc_syntax::identifier::is_identifier_part;
 
 /// The per-alias reference scan [`underscore_call_sites`] must agree with.
 pub(super) fn helper_call_position(text: &str, alias: &str) -> Option<usize> {
+    debug_assert!(alias.starts_with('_'));
     let bytes = text.as_bytes();
     let alias = alias.as_bytes();
     let mut position = 0;
@@ -26,7 +27,7 @@ pub(super) fn helper_call_position(text: &str, alias: &str) -> Option<usize> {
             }
             // `alias` is UTF-8, so a match starts on a char boundary and
             // `text.get(..position)` is present.
-            _ if bytes
+            b'_' if bytes
                 .get(position..)
                 .is_some_and(|tail| tail.starts_with(alias))
                 && text.get(..position).is_some_and(|before| {

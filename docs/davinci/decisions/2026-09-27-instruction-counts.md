@@ -327,3 +327,13 @@ checking the shared-scan flag at every alias lookup. Specialize the normal
 and shared paths at compile time, so the normal comparator has no scan-mode
 branch; select the shared path only once before sorting. Measure the new
 candidate before queueing.
+
+On fresh main `a8cca54e825bf4271af1512c892378bba5e47834`, the paired
+control `36397220924` passed, while candidate `36397221536` missed ten
+ceilings, including DOM stress-deep by 271,340 instructions. The shared path
+still loses on moderate fixtures. Restrict it to more than 24 used helpers and
+more than 65,536 bytes of body plus hoists. In the ordinary per-alias scan,
+skip non-underscore bytes before checking an alias; every helper alias begins
+with `_`. This restores a cheap path for common modules while reserving the
+shared scan for large, helper-rich modules. Keep the pinned ceilings and
+re-measure against the same current main.
