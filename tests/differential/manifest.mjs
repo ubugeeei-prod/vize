@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
-import fs from "node:fs";
 import path from "node:path";
+import { loadProductManifest, readPinnedArtifact } from "./harness.mjs";
 
 export const FORMATTER_ARGV = ["fmt", "--no-config", "--write", "App.vue"];
 export const CONFIGURED_FORMATTER_ARGV = [
@@ -11,36 +10,16 @@ export const CONFIGURED_FORMATTER_ARGV = [
   "--write",
   "App.vue",
 ];
-export const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
-
-function artifact(root, file) {
-  assert.equal(typeof file.path, "string", "artifact path is required");
-  assert(!path.isAbsolute(file.path), "artifact path must be relative");
-  const resolved = fs.realpathSync(path.resolve(root, file.path));
-  const relative = path.relative(fs.realpathSync(root), resolved);
-  assert(
-    relative !== "" && !relative.startsWith("..") && !path.isAbsolute(relative),
-    "artifact must remain inside its fixture root",
-  );
-  assert(fs.statSync(resolved).isFile(), "artifact must be a file");
-  assert.match(file.sha256, /^[a-f0-9]{64}$/, "artifact sha256 is required");
-  const bytes = fs.readFileSync(resolved);
-  assert.equal(sha256(bytes), file.sha256, `immutable artifact SHA256 mismatch: ${file.path}`);
-  return bytes;
-}
+export { sha256 } from "./harness.mjs";
 
 // Deliberately only the first executable product. Other real adapters stack later.
 export function loadFormatterManifest(manifestPath) {
-  const raw = fs.readFileSync(manifestPath);
-  const manifest = JSON.parse(raw.toString("utf8"));
-  assert.equal(manifest.schema, "vize.differential.manifest");
-  assert.equal(manifest.version, 1);
-  assert.equal(manifest.product, "formatter", "no registered adapter for this product");
-  assert.match(manifest.baseRevision, /^[a-f0-9]{40}$/);
+  const loaded = loadProductManifest(manifestPath, "formatter");
+  const { manifest } = loaded;
   assert.deepEqual(manifest.adapterOptions, { argv: FORMATTER_ARGV, passes: 3 });
   assert(Array.isArray(manifest.cases) && manifest.cases.length > 0, "planned cases are required");
   const root = path.dirname(manifestPath);
-  artifact(root, manifest.configurationReference);
+  readPinnedArtifact(root, manifest.configurationReference);
   assert.equal(manifest.baselineCapture.kind, "release-candidate-observation");
   assert.match(manifest.baselineCapture.baselineRevision, /^[a-f0-9]{40}$/);
   assert.equal(
@@ -48,12 +27,9 @@ export function loadFormatterManifest(manifestPath) {
     2,
     "candidate capture and artifact receipt are required",
   );
-  for (const capture of manifest.baselineCapture.artifacts) artifact(root, capture);
-  const ids = new Set();
+  for (const capture of manifest.baselineCapture.artifacts) readPinnedArtifact(root, capture);
   const cases = manifest.cases.map((fixture) => {
     assert.match(fixture.id, /^formatter\/[a-z0-9/-]+$/);
-    assert(!ids.has(fixture.id), `duplicate planned case: ${fixture.id}`);
-    ids.add(fixture.id);
     assert(["draft", "active"].includes(fixture.state));
     assert.deepEqual(fixture.targets, ["fmt"]);
     assert.equal(fixture.adapters.legacy, "formatter-cli-v1");
@@ -85,7 +61,7 @@ export function loadFormatterManifest(manifestPath) {
     };
     const config = fixture.inputs.config.map((file) => {
       assert.equal(file.path, "vize.config.json", "only the explicit JSON config is supported");
-      const bytes = artifact(root, {
+      const bytes = readPinnedArtifact(root, {
         ...file,
         path: path.join(fixture.inputs.root, file.path),
       });
@@ -104,11 +80,11 @@ export function loadFormatterManifest(manifestPath) {
     assert(Array.isArray(fixture.witnesses) && fixture.witnesses.length > 0);
     return {
       ...fixture,
-      input: artifact(root, inputFile),
-      expected: artifact(root, expectedFiles[0]),
+      input: readPinnedArtifact(root, inputFile),
+      expected: readPinnedArtifact(root, expectedFiles[0]),
       config,
       argv: [...(config.length ? CONFIGURED_FORMATTER_ARGV : FORMATTER_ARGV)],
     };
   });
-  return { manifest, cases, manifestSha256: sha256(raw) };
+  return { ...loaded, cases };
 }

@@ -6,6 +6,7 @@ import path from "node:path";
 import { compareBytes } from "./compare.mjs";
 import { FORMATTER_ARGV, loadFormatterManifest, sha256 } from "./manifest.mjs";
 import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.mjs";
+import { runPlannedCases, validateResultEnvelope } from "./harness.mjs";
 
 export function assertProcessSucceeded(result) {
   if (result.error) throw result.error;
@@ -38,15 +39,7 @@ export function formatterAttempt(pass, input, output, result, expected) {
 }
 
 export function validateFormatterReport(loaded, report, expectedBuild) {
-  assert.equal(report.schema, "vize.differential.result");
-  assert.equal(report.version, 1);
-  assert.equal(report.product, "formatter");
-  assert.equal(report.manifestSha256, loaded.manifestSha256);
-  assert.equal(
-    report.sourceRevision,
-    expectedBuild.sourceRevision,
-    "unexpected actual source revision",
-  );
+  validateResultEnvelope(loaded, report, expectedBuild.sourceRevision);
   assert.deepEqual(report.argv, FORMATTER_ARGV);
   if (report.buildReceipt) validateBuildReceipt(report.buildReceipt, expectedBuild);
   if (report.binary) {
@@ -55,12 +48,7 @@ export function validateFormatterReport(loaded, report, expectedBuild) {
     assert.equal(report.binary.sha256, expectedBuild.binarySha256);
     assert.equal(report.binary.version, expectedBuild.cliVersion);
   }
-  assert.equal(report.rows.length, loaded.cases.length, "missing or extra planned result rows");
-  const rows = new Map();
-  for (const row of report.rows) {
-    assert(!rows.has(row.id), `duplicate result row: ${row.id}`);
-    rows.set(row.id, row);
-  }
+  const rows = new Map(report.rows.map((row) => [row.id, row]));
   const summary = {
     plannedCases: loaded.cases.length,
     legacyMatches: 0,
@@ -73,7 +61,6 @@ export function validateFormatterReport(loaded, report, expectedBuild) {
   };
   for (const fixture of loaded.cases) {
     const row = rows.get(fixture.id);
-    assert(row, `missing planned result: ${fixture.id}`);
     assert.equal(row.native.state, "unsupported");
     assert.equal(row.native.reason, fixture.adapters.reasons.native);
     assert.equal(row.comparison.state, "not-compared");
@@ -142,6 +129,53 @@ export function validateFormatterReport(loaded, report, expectedBuild) {
   return summary;
 }
 
+function runFormatterCase(fixture, binaryPath, binaryFailure) {
+  const row = {
+    id: fixture.id,
+    legacy: { state: "failed", verdict: "failed", passes: [] },
+    native: { state: "unsupported", reason: fixture.adapters.reasons.native },
+    comparison: { state: "not-compared", reason: "native formatter adapter unavailable" },
+  };
+  if (fixture.config.length) {
+    row.legacy.argv = [...fixture.argv];
+    row.legacy.config = fixture.config.map(({ path, sha256 }) => ({ path, sha256 }));
+  }
+  let workspace;
+  try {
+    if (binaryFailure) throw new Error(binaryFailure);
+    workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-differential-formatter-"));
+    const entry = path.join(workspace, "App.vue");
+    fs.writeFileSync(entry, fixture.input);
+    for (const file of fixture.config) {
+      fs.writeFileSync(path.join(workspace, file.path), file.bytes);
+    }
+    for (let pass = 1; pass <= 3; pass += 1) {
+      const input = fs.readFileSync(entry);
+      const result = spawnSync(binaryPath, fixture.argv, {
+        cwd: workspace,
+        timeout: 30_000,
+        maxBuffer: 4 * 1024 * 1024,
+      });
+      const output = fs.existsSync(entry) ? fs.readFileSync(entry) : null;
+      const observation = formatterAttempt(pass, input, output, result, fixture.expected);
+      row.legacy.passes.push(observation);
+      assertProcessSucceeded(result);
+      assert(output, "formatter removed the entry file");
+      row.legacy.state = "completed";
+      row.legacy.verdict =
+        observation.referenceComparison.state === "equal" ? "matched-reference" : "baseline-drift";
+      if (row.legacy.verdict === "baseline-drift") break;
+    }
+  } catch (error) {
+    row.legacy.state = "failed";
+    row.legacy.verdict = "failed";
+    row.legacy.error = error.message;
+  } finally {
+    if (workspace) fs.rmSync(workspace, { recursive: true, force: true });
+  }
+  return row;
+}
+
 export function runFormatterPack({ manifestPath, binaryPath, sourceRevision, repoRoot }) {
   const loaded = loadFormatterManifest(manifestPath);
   assert.match(sourceRevision, /^[a-f0-9]{40}$/, "actual source revision is required");
@@ -191,54 +225,9 @@ export function runFormatterPack({ manifestPath, binaryPath, sourceRevision, rep
   } catch (error) {
     binaryFailure = error.message;
   }
-  for (const fixture of loaded.cases) {
-    const row = {
-      id: fixture.id,
-      legacy: { state: "failed", verdict: "failed", passes: [] },
-      native: { state: "unsupported", reason: fixture.adapters.reasons.native },
-      comparison: { state: "not-compared", reason: "native formatter adapter unavailable" },
-    };
-    if (fixture.config.length) {
-      row.legacy.argv = [...fixture.argv];
-      row.legacy.config = fixture.config.map(({ path, sha256 }) => ({ path, sha256 }));
-    }
-    let workspace;
-    try {
-      if (binaryFailure) throw new Error(binaryFailure);
-      workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-differential-formatter-"));
-      const entry = path.join(workspace, "App.vue");
-      fs.writeFileSync(entry, fixture.input);
-      for (const file of fixture.config) {
-        fs.writeFileSync(path.join(workspace, file.path), file.bytes);
-      }
-      for (let pass = 1; pass <= 3; pass += 1) {
-        const input = fs.readFileSync(entry);
-        const result = spawnSync(binaryPath, fixture.argv, {
-          cwd: workspace,
-          timeout: 30_000,
-          maxBuffer: 4 * 1024 * 1024,
-        });
-        const output = fs.existsSync(entry) ? fs.readFileSync(entry) : null;
-        const observation = formatterAttempt(pass, input, output, result, fixture.expected);
-        row.legacy.passes.push(observation);
-        assertProcessSucceeded(result);
-        assert(output, "formatter removed the entry file");
-        row.legacy.state = "completed";
-        row.legacy.verdict =
-          observation.referenceComparison.state === "equal"
-            ? "matched-reference"
-            : "baseline-drift";
-        if (row.legacy.verdict === "baseline-drift") break;
-      }
-    } catch (error) {
-      row.legacy.state = "failed";
-      row.legacy.verdict = "failed";
-      row.legacy.error = error.message;
-    } finally {
-      if (workspace) fs.rmSync(workspace, { recursive: true, force: true });
-    }
-    report.rows.push(row);
-  }
+  report.rows = runPlannedCases(loaded, {
+    runCase: (fixture) => runFormatterCase(fixture, binaryPath, binaryFailure),
+  });
   report.summary = {
     plannedCases: report.rows.length,
     legacyMatches: report.rows.filter((row) => row.legacy.verdict === "matched-reference").length,

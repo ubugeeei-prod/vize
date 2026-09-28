@@ -292,6 +292,8 @@ Vize follows language-toolchain practice, not compiler-only practice. It stays l
 [Inspector comparison transport](./2026-09-27-inspector-compare-transport.md)
 preserves authoritative child failures when Node exits before input delivery.
 
+[Shared differential result contract](./2026-09-28-differential-harness.md) fixes case/target coverage and whole-product native provenance for #6891; product adapters and T1/T2 integration remain open.
+
 ## CI tiers
 
 Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861](https://github.com/ubugeeei-prod/vize/issues/6861)–[#6867](https://github.com/ubugeeei-prod/vize/issues/6867). [First-publish control repair](./2026-09-27-sdk-bootstrap-control.md) is tracked in [#6895](https://github.com/ubugeeei-prod/vize/issues/6895).
