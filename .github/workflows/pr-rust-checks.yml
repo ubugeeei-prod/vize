@@ -8,6 +8,12 @@ on:
       rust-plan:
         type: string
         required: true
+      rust-fast:
+        type: boolean
+        required: true
+      rust-fast-plan:
+        type: string
+        required: true
 permissions:
   contents: read
 env:
@@ -137,7 +143,7 @@ jobs:
 
   pr-rust-build:
     name: Build affected Rust tests
-    if: ${{ github.event_name == 'pull_request' && inputs.run-rust }}
+    if: ${{ github.event_name == 'pull_request' && inputs.run-rust && !inputs.rust-fast }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     env:
@@ -186,7 +192,7 @@ jobs:
 
   pr-rust-shard:
     name: Rust tests (${{ matrix.shard }}/4)
-    if: ${{ always() && !cancelled() && inputs.run-rust && (github.event_name == 'pull_request' && needs.pr-rust-build.result == 'success' || github.event_name == 'merge_group' && needs.merge-rust-source.result == 'success') }}
+    if: ${{ always() && !cancelled() && inputs.run-rust && (github.event_name == 'pull_request' && !inputs.rust-fast && needs.pr-rust-build.result == 'success' || github.event_name == 'merge_group' && needs.merge-rust-source.result == 'success') }}
     needs: [pr-rust-build, merge-rust-source]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
@@ -249,10 +255,97 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  pr-rust-fast-clippy:
+    name: PR changed-owner Clippy
+    if: ${{ github.event_name == 'pull_request' && inputs.run-rust && inputs.rust-fast }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: "12"
+      VIZE_TEST_DISABLE_TSGO: "1"
+      RUST_FAST_PLAN_JSON: ${{ inputs.rust-fast-plan }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          components: clippy
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: ${{ format('pr-{0}-', github.event.pull_request.number) }}
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Materialize fast Rust plan
+        run: node tools/support/compat/github/write-fast-rust-plan.mjs "$RUNNER_TEMP/rust-fast-plan.json"
+      - name: Clippy changed crate owners
+        run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-fast-plan.json" cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports
+      - name: Skeleton todo ratchet
+        run: rustc --edition 2024 tools/commands/ci/check-skeleton-todos.rs -o "$RUNNER_TEMP/check-skeleton-todos" && "$RUNNER_TEMP/check-skeleton-todos" --check
+
+  pr-rust-fast-tests:
+    name: PR changed-owner Rust tests
+    if: ${{ github.event_name == 'pull_request' && inputs.run-rust && inputs.rust-fast }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: "12"
+      VIZE_TEST_DISABLE_TSGO: "1"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
+      RUST_TEST_THREADS: "4"
+      RUST_FAST_PLAN_JSON: ${{ inputs.rust-fast-plan }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: true
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: ${{ format('pr-{0}-', github.event.pull_request.number) }}
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-nextest@0.9.146
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
+      - name: Materialize fast Rust plan
+        run: node tools/support/compat/github/write-fast-rust-plan.mjs "$RUNNER_TEMP/rust-fast-plan.json"
+      - name: Build and receipt changed-owner library tests
+        run: |
+          mkdir -p target/rust-fast-archive target/tmp
+          node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-fast-plan.json" cargo nextest archive @packages@ --lib --cargo-profile ci --archive-file target/rust-fast-archive/tests.tar.zst
+          node tools/support/compat/github/rust-test-archive.mjs stamp target/rust-fast-archive/tests.tar.zst target/rust-fast-archive/receipt.json
+          node tools/support/compat/github/rust-test-archive.mjs verify target/rust-fast-archive/tests.tar.zst target/rust-fast-archive/receipt.json
+      - name: Run changed-owner library tests from source receipt
+        run: cargo nextest run --archive-file target/rust-fast-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile pr --no-tests=fail
+      - name: Run changed-owner doctests
+        run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-fast-plan.json" cargo test @packages@ --profile ci --doc
+      - name: Upload fast Rust test evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-fast-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/rust-fast-archive/receipt.json
+            target/nextest/pr/junit.xml
+          if-no-files-found: error
+          retention-days: 7
+
   rust-source-report:
     name: Rust source report
     if: ${{ always() }}
-    needs: [merge-rust-source, pr-rust-build, pr-rust-shard]
+    needs: [merge-rust-source, pr-rust-build, pr-rust-shard, pr-rust-fast-clippy, pr-rust-fast-tests]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -260,5 +353,6 @@ jobs:
       - name: Require the complete Rust tier
         env:
           RUN_RUST: ${{ inputs.run-rust }}
+          RUST_FAST: ${{ inputs.rust-fast }}
           NEEDS_JSON: ${{ toJSON(needs) }}
         run: node tools/support/compat/github/require-rust-tier.mjs

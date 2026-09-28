@@ -177,12 +177,43 @@ test("the Rust report waits for the builder and all four independently executing
     "merge-rust-source",
     "pr-rust-build",
     "pr-rust-shard",
+    "pr-rust-fast-clippy",
+    "pr-rust-fast-tests",
   ]);
   assert.equal(rust.jobs["rust-source-report"].if, "${{ always() }}");
   assert.equal(
     rust.jobs["rust-source-report"].steps?.at(-1)?.run,
     "node tools/support/compat/github/require-rust-tier.mjs",
   );
+});
+
+test("fast Rust source selection is narrow and its two jobs feed the required report", () => {
+  const planner = source.jobs["pr-source-plan"];
+  assert.equal(planner.outputs?.["rust-fast"], "${{ steps.fast-rust-plan.outputs.rust-fast }}");
+  assert.equal(
+    planner.outputs?.["rust-fast-plan"],
+    "${{ steps.fast-rust-plan.outputs.rust-fast-plan }}",
+  );
+  assert.equal(
+    source.jobs["pr-rust-source"].with?.["rust-fast"],
+    "${{ needs.pr-source-plan.outputs.rust-fast == 'true' }}",
+  );
+  assert.match(rust.jobs["pr-rust-build"].if ?? "", /!inputs\.rust-fast/u);
+  assert.match(rust.jobs["pr-rust-shard"].if ?? "", /!inputs\.rust-fast/u);
+  for (const job of ["pr-rust-fast-clippy", "pr-rust-fast-tests"]) {
+    assert.match(rust.jobs[job].if ?? "", /inputs\.rust-fast/u);
+    assert.ok(rust.jobs["rust-source-report"].needs?.includes(job));
+  }
+  const fastTests = (rust.jobs["pr-rust-fast-tests"].steps ?? [])
+    .map((step) => step.run ?? "")
+    .join("\n");
+  assert.match(fastTests, /cargo nextest archive @packages@ --lib/u);
+  assert.match(fastTests, /rust-test-archive\.mjs stamp/u);
+  assert.match(fastTests, /rust-test-archive\.mjs verify/u);
+  assert.match(fastTests, /cargo nextest run --archive-file/u);
+  assert.match(fastTests, /cargo test @packages@ --profile ci --doc/u);
+  assert.equal(rust.jobs["rust-source-report"].steps?.at(-1)?.env?.RUST_FAST, "${{ inputs.rust-fast }}");
+  assert.equal(rust.jobs["merge-rust-source"].if, "${{ github.event_name == 'merge_group' }}");
 });
 
 test("merge Rust timing receipts remain available after workspace failure", () => {

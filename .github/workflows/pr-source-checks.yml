@@ -19,6 +19,8 @@ jobs:
       comparison-base: ${{ steps.comparison.outputs.base }}
       rust: ${{ steps.plan.outputs.rust }}
       rust-plan: ${{ steps.rust-plan.outputs.rust-plan }}
+      rust-fast: ${{ steps.fast-rust-plan.outputs.rust-fast }}
+      rust-fast-plan: ${{ steps.fast-rust-plan.outputs.rust-fast-plan }}
       js: ${{ steps.plan.outputs.js }}
       tooling: ${{ steps.tooling-plan.outputs.tooling }}
       tooling-pure: ${{ steps.tooling-plan.outputs.tooling-pure }}
@@ -65,6 +67,12 @@ jobs:
         env:
           BASE_SHA: ${{ steps.comparison.outputs.base }}
         run: node tools/support/compat/github/plan-affected-rust.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" "$RUNNER_TEMP/rust-plan.json"
+      - name: Plan fast Rust source tier
+        id: fast-rust-plan
+        if: ${{ github.event_name == 'pull_request' && steps.plan.outputs.rust == 'true' }}
+        env:
+          BASE_SHA: ${{ steps.comparison.outputs.base }}
+        run: node tools/support/compat/github/plan-fast-rust.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" "$RUNNER_TEMP/rust-fast-plan.json"
 
       - name: Plan tooling test inputs
         id: tooling-plan
@@ -81,6 +89,8 @@ jobs:
     with:
       run-rust: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
       rust-plan: ${{ needs.pr-source-plan.outputs.rust-plan }}
+      rust-fast: ${{ needs.pr-source-plan.outputs.rust-fast == 'true' }}
+      rust-fast-plan: ${{ needs.pr-source-plan.outputs.rust-fast-plan }}
 
   pr-js-packages:
     name: PR JS package build and tests
