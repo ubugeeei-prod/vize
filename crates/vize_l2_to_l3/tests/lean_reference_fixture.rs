@@ -56,9 +56,7 @@ fn rust_lowered_fixtures_match_impeto_reference_inputs() {
     let cases = [
         (
             STATIC_DYNAMIC_SOURCE,
-            include_str!(
-                "../../../tests/formal/l3/fixtures/rust-lowered-static-dynamic.s3.folio"
-            ),
+            include_str!("../../../tests/formal/l3/fixtures/rust-lowered-static-dynamic.s3.folio"),
             include_str!("../../../tests/formal/l3/fixtures/rust-lowered-static-dynamic.trace"),
             include_str!(
                 "../../../tests/formal/l3/fixtures/rust-lowered-static-dynamic.vdom.trace"
@@ -69,13 +67,9 @@ fn rust_lowered_fixtures_match_impeto_reference_inputs() {
         ),
         (
             CONTROL_SLOTS_SOURCE,
-            include_str!(
-                "../../../tests/formal/l3/fixtures/rust-lowered-control-slots.s3.folio"
-            ),
+            include_str!("../../../tests/formal/l3/fixtures/rust-lowered-control-slots.s3.folio"),
             include_str!("../../../tests/formal/l3/fixtures/rust-lowered-control-slots.trace"),
-            include_str!(
-                "../../../tests/formal/l3/fixtures/rust-lowered-control-slots.vdom.trace"
-            ),
+            include_str!("../../../tests/formal/l3/fixtures/rust-lowered-control-slots.vdom.trace"),
             include_str!(
                 "../../../tests/formal/l3/fixtures/rust-lowered-control-slots.vapor.trace"
             ),

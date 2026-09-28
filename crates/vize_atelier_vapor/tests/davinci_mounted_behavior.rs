@@ -115,10 +115,8 @@ fn mounted_branch_and_slot_fallback_update_together() {
     ))
     .unwrap();
     let trace = assert_backends(
-        include_str!(
-            "../../../tests/formal/l3/fixtures/rust-lowered-control-slots.template.txt"
-        )
-        .trim_end(),
+        include_str!("../../../tests/formal/l3/fixtures/rust-lowered-control-slots.template.txt")
+            .trim_end(),
         Value::Object(scenario.context),
         Value::Array(scenario.steps),
     );
