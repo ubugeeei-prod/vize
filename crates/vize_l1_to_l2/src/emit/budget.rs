@@ -193,15 +193,30 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
     observer: &mut O,
     strict_slot_params: bool,
 ) -> Result<DomEmitObservation, EmitError> {
-    emit_dom_source_with_options_and_observer_captured(
-        allocator,
-        source,
-        caps,
-        options,
-        observer,
-        strict_slot_params,
-        &mut NoCapture,
-    )
+    ensure_sufficient_stack(|| {
+        let (tree, errors) = parse_with_options(
+            allocator,
+            source,
+            SurfaceParseOptions {
+                experimental_in_tag_comments: options.experimental_in_tag_comments,
+            },
+        );
+        let mut lowered = lower_with_caps_and_comment_policy(
+            allocator,
+            &tree,
+            &errors,
+            caps,
+            options.comments,
+            options.custom_element_patterns,
+            options.custom_element_predicate,
+        );
+        let mut profile = TransformProfile::DEFAULT;
+        if !options.hoist_static {
+            profile = profile.without_static_analysis();
+        }
+        let facts = run_dom_transform_with_profile(&mut lowered, observer, profile);
+        emit_dom_observed(&lowered, &facts, options, strict_slot_params)
+    })
 }
 
 /// The same native emission as the ordinary entry, with an optional compile-
@@ -219,6 +234,16 @@ pub(super) fn emit_dom_source_with_options_and_observer_captured<
     strict_slot_params: bool,
     capture: &mut C,
 ) -> Result<DomEmitObservation, EmitError> {
+    if !C::RECORDING {
+        return emit_dom_source_with_options_and_observer(
+            allocator,
+            source,
+            caps,
+            options,
+            observer,
+            strict_slot_params,
+        );
+    }
     ensure_sufficient_stack(|| {
         let (tree, errors) = parse_with_options(
             allocator,

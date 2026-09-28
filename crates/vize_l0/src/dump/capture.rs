@@ -109,6 +109,9 @@ impl StageCapture {
 /// A compile-time selected page sink. Pass a renderer rather than preprinted
 /// text so the ordinary [`NoCapture`] specialization does no dump work.
 pub trait CaptureSink {
+    /// Compile-time switch for the ordinary emitter's original hot path.
+    const RECORDING: bool;
+
     fn page<F: FnOnce() -> String>(&mut self, level: Level, step: &'static str, render: F);
 
     /// Record a measured host-clock window. No clock is read by this trait.
@@ -125,6 +128,8 @@ pub trait CaptureSink {
 pub struct NoCapture;
 
 impl CaptureSink for NoCapture {
+    const RECORDING: bool = false;
+
     #[inline(always)]
     fn page<F: FnOnce() -> String>(&mut self, _: Level, _: &'static str, _: F) {}
 
@@ -139,6 +144,8 @@ impl CaptureSink for NoCapture {
 }
 
 impl CaptureSink for StageCapture {
+    const RECORDING: bool = true;
+
     fn page<F: FnOnce() -> String>(&mut self, level: Level, step: &'static str, render: F) {
         self.pages.push(StageCapturePage {
             level,

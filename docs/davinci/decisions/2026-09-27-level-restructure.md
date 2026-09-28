@@ -48,7 +48,7 @@ Decided by the maintainer on 2026-09-28 ([#6826 comment](https://github.com/ubug
 
 ## Level dump naming
 
-The L3 package identity, stage feed types, level dump API, versioned dump protocols and `vize dump --roundtrip` are recorded in [level dump naming](./2026-09-28-level-dump-naming.md). The native stage ladder collects pages, remarks and timings in one separate pass execution; [production stage capture](./2026-09-28-production-stage-capture.md) records actual product stages, effective options and the final selected lane after source-map parity. CLI and playground connection remain open in #6832.
+The L3 package identity, stage feed types, level dump API, versioned dump protocols and `vize dump --roundtrip` are recorded in [level dump naming](./2026-09-28-level-dump-naming.md). The native stage ladder collects pages, remarks and timings in one separate pass execution; [production stage capture](./2026-09-28-production-stage-capture.md) records actual product stages, effective options, the final selected lane after source-map parity and compile-time ordinary-path dispatch to preserve instruction budgets. CLI and playground connection remain open in #6832.
 For [#6832](https://github.com/ubugeeei-prod/vize/issues/6832), L2's 13 auto-discovered `folio_*` test targets move to `dump_*` in a move-only commit; source references and live documentation links follow in a separate commit, while `.folio` fixture bytes and extensions remain unchanged. [Playground stage view naming](./2026-09-28-playground-stage-view-names.md) records the active source/e2e renames and still-open UI/DOM inventory. [L1→L2 provenance profile keys](./2026-09-28-l1-to-l2-profile-wire.md) record the native profile wire mapping.
 
 ## Rust verification for L3 (2026-09-28)
