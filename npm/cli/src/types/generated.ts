@@ -355,6 +355,10 @@ export interface TypeCheckerConfig {
    * Reserved Corsa server count. The direct project-session runner currently supports only 1.
    */
   servers?: number;
+  /**
+   * Hard bound in milliseconds for each editor Corsa request. Defaults to 60000; use a larger value for large cold projects.
+   */
+  lspRequestTimeoutMs?: number;
 }
 /**
  * Formatter options

@@ -5,6 +5,7 @@ const SCRIPTLESS_WORKAROUND_MARKER = "oxlint-plugin-vize-scriptless";
 const SCRIPTLESS_WORKAROUND_OPEN_TAG_PREFIX = `<script setup lang="ts" data-${SCRIPTLESS_WORKAROUND_MARKER}="`;
 const SCRIPTLESS_WORKAROUND_CLOSE_TAG = "</script>";
 const SCRIPTLESS_WORKAROUND_FILENAME_ATTR = `data-${SCRIPTLESS_WORKAROUND_MARKER}="`;
+const LOCATION_BRIDGE_MARKER = "/*vize-location-bridge*/";
 
 export const SCRIPTLESS_WORKAROUND_TRACKING = {
   strategy: "synthetic-script-setup-bridge",
@@ -26,6 +27,10 @@ export function hasScriptLikeBlock(source: string): boolean {
 
 export function appendScriptlessWorkaround(source: string, filename: string): string {
   return `${createWorkaroundScript(source, filename)}${source}`;
+}
+
+export function isLocationBridgeProgram(extractedScript: string): boolean {
+  return extractedScript.trimEnd().endsWith(LOCATION_BRIDGE_MARKER);
 }
 
 export function resolveWorkaroundSource(
@@ -71,7 +76,10 @@ function getPrependedWorkaroundBlock(
   if (!firstBlock || firstBlock.kind !== "script-setup") {
     return null;
   }
-  if (!isWhitespaceOnly(firstBlock.content)) {
+  if (
+    !firstBlock.content.endsWith(LOCATION_BRIDGE_MARKER) ||
+    !isWhitespaceOnly(firstBlock.content.slice(0, -LOCATION_BRIDGE_MARKER.length))
+  ) {
     return null;
   }
 
@@ -88,7 +96,10 @@ function getPrependedWorkaroundBlock(
   if (strippedSourceStart == null) {
     return null;
   }
-  if (firstBlock.content !== createWhitespaceMirror(source.slice(strippedSourceStart))) {
+  if (
+    firstBlock.content !==
+    createWhitespaceMirror(source.slice(strippedSourceStart)) + LOCATION_BRIDGE_MARKER
+  ) {
     return null;
   }
 
@@ -129,7 +140,7 @@ function encodedFilenameFromWorkaroundOpenTag(openTag: string): string | null {
 }
 
 function createWorkaroundScript(source: string, filename: string): string {
-  return `${SCRIPTLESS_WORKAROUND_OPEN_TAG_PREFIX}${encodeWorkaroundFilename(filename)}">${createWhitespaceMirror(source)}</script>\n`;
+  return `${SCRIPTLESS_WORKAROUND_OPEN_TAG_PREFIX}${encodeWorkaroundFilename(filename)}">${createWhitespaceMirror(source)}${LOCATION_BRIDGE_MARKER}</script>\n`;
 }
 
 function createWhitespaceMirror(source: string): string {
