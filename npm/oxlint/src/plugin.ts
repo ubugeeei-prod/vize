@@ -43,8 +43,10 @@ function createOxlintDiagnostic(
 
   return {
     loc: loc ?? {
-      start: { line: 1, column: 1 },
-      end: { line: 1, column: 1 },
+      // An empty extracted <script> has no offset 1. Anchor an unmappable
+      // template diagnostic at the valid zero-width start of that program.
+      start: { line: 1, column: 0 },
+      end: { line: 1, column: 0 },
     },
     message: formatPatinaMessage(diagnostic, {
       hasMappedLocation: loc !== null,
