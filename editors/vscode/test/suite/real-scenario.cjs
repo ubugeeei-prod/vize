@@ -151,8 +151,9 @@ async function stepComponentContractHoverSurfaces() {
   const document = await vscode.workspace.openTextDocument(uri);
   await vscode.window.showTextDocument(document);
 
+  let lastHovers;
   const hovers = await waitFor(
-    async () => ({
+    async () => (lastHovers = {
       importBinding: await hoverAt(uri, 1, 8),
       scriptUsage: await hoverAt(uri, 3, 1),
       templateTag: await hoverAt(uri, 7, 5),
@@ -160,7 +161,10 @@ async function stepComponentContractHoverSurfaces() {
     (next) => deepEqual(next, expected.componentContractHovers),
     "component contract hovers",
     180_000,
-  );
+  ).catch((error) => {
+    console.error("Last component contract hovers:", JSON.stringify(lastHovers));
+    throw error;
+  });
   assert.deepEqual(hovers, expected.componentContractHovers);
   for (const value of Object.values(hovers).flatMap((hover) =>
     hover.flatMap((item) => item.contents),
