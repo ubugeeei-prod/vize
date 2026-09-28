@@ -39,6 +39,16 @@ fn test_valid_component_self_closing() {
 }
 
 #[test]
+fn test_valid_kebab_case_vue_builtins_self_closing() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<div><transition-group tag="div" name="fade" /><keep-alive /><TransitionGroup /></div>"#,
+        "test.vue",
+    );
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
 fn test_invalid_empty_component() {
     let linter = create_linter();
     let result = linter.lint_template(r#"<MyComponent></MyComponent>"#, "test.vue");

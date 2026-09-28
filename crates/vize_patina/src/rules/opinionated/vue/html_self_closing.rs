@@ -167,8 +167,7 @@ fn check_element<'a>(
     }
 
     let has_children = !element.children.is_empty();
-    let is_self_closing = element.is_self_closing
-        || (matches!(style, HtmlSelfClosingStyle::Never) && authored_self_closing(ctx, element));
+    let is_self_closing = element.is_self_closing || authored_self_closing(ctx, element);
 
     match style {
         HtmlSelfClosingStyle::Always if !has_children && !is_self_closing => {
