@@ -49,6 +49,30 @@ fn accepted_vapor_pages_describe_the_checked_emitter_input() {
     assert_eq!(capture.outcome, CaptureOutcome::Accepted);
     assert_eq!(
         capture
+            .options
+            .iter()
+            .find(|option| option.name == "template_syntax")
+            .map(|option| option.value.as_str()),
+        Some("Standard")
+    );
+    assert_eq!(
+        capture
+            .options
+            .iter()
+            .find(|option| option.name == "ssr")
+            .map(|option| option.value.as_str()),
+        Some("false")
+    );
+    assert_eq!(
+        capture
+            .options
+            .iter()
+            .find(|option| option.name == "scope_id")
+            .map(|option| option.value.as_str()),
+        Some("<none>")
+    );
+    assert_eq!(
+        capture
             .pages
             .iter()
             .map(|page| page.level)

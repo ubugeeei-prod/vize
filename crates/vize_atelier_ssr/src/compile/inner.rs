@@ -112,6 +112,24 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
     lane: SsrLane,
     capture: &mut C,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    capture.effective_option("template_syntax", || cstr!("{template_syntax:?}"));
+    capture.effective_option("dialect", || cstr!("{:?}", options.dialect));
+    capture.effective_option("is_ts", || cstr!("{}", options.is_ts));
+    capture.effective_option("inline", || cstr!("{}", options.inline));
+    capture.effective_option("comments", || cstr!("{}", options.comments));
+    capture.effective_option("scope_id", || {
+        options
+            .scope_id
+            .clone()
+            .unwrap_or_else(|| String::from("<none>"))
+    });
+    capture.effective_option("slotted", || cstr!("{slotted}"));
+    capture.effective_option("source_map", || {
+        cstr!("{}", experimental_options.source_map)
+    });
+    capture.effective_option("custom_elements", || {
+        cstr!("{}", !custom_elements.is_empty())
+    });
     let codegen_options = options.clone();
     let parser_opts = crate::stage_options::parser_options(&options);
 
