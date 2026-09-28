@@ -73,16 +73,15 @@ impl NameSet {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use vize_carton::ToCompactString;
+    use vize_carton::cstr;
 
     #[test]
     fn matches_hash_set_membership_across_promotion_and_removal() {
         let mut names = NameSet::default();
         let mut expected = FxHashSet::default();
         for index in 0..40 {
-            let name = format!("event-{index}");
-            let compact = name.to_compact_string();
-            assert_eq!(names.insert(compact.clone()), expected.insert(compact));
+            let name = cstr!("event-{index}");
+            assert_eq!(names.insert(name.clone()), expected.insert(name.clone()));
             assert_eq!(names.contains(&name), expected.contains(name.as_str()));
         }
         for name in ["event-0", "event-4", "event-39", "event-4", "missing"] {
