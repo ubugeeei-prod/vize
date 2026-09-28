@@ -25,13 +25,18 @@ fn late_registered_declaration_import_uses_the_mirror() {
 
     let mut project = VirtualProject::new(&root).unwrap();
     project.register_path(&env).unwrap();
-    project.register_path(&builder).unwrap();
-    project.register_path(&vendor).unwrap();
+    project.register_reachable_dependencies().unwrap();
     project.finalize_package_routes().unwrap();
     project.materialize().unwrap();
 
     let actual = fs::read_to_string(project.virtual_root().join("types/builder-env.d.ts")).unwrap();
     let expected = project.virtual_root().join("vendor/client/index");
     assert!(actual.contains(expected.to_str().unwrap()), "{actual}");
+    assert!(
+        project
+            .virtual_root()
+            .join("vendor/client/index.d.ts")
+            .is_file()
+    );
     let _ = fs::remove_dir_all(&root);
 }

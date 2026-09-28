@@ -213,12 +213,16 @@ impl VirtualProject {
                 if inside_node_modules(&key) && !package_local && !is_reference {
                     continue;
                 }
-                // TypeScript follows imports from declarations itself. Mirroring
-                // their targets here can load the same ambient module twice.
+                // Declarations reached through a path reference must keep
+                // their transitive declaration imports in this same mirror.
+                // The final rewrite then points imports at that one identity.
+                // Ordinary source imports can still use TypeScript's authored
+                // declaration resolution without registering another root.
                 if is_declaration_file(&key)
                     && !package_local
                     && !self.session_scripts
                     && !is_reference
+                    && !is_declaration_file(&importer)
                 {
                     continue;
                 }
