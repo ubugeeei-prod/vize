@@ -153,11 +153,14 @@ async function stepComponentContractHoverSurfaces() {
 
   let lastHovers;
   const hovers = await waitFor(
-    async () => (lastHovers = {
-      importBinding: await hoverAt(uri, 1, 8),
-      scriptUsage: await hoverAt(uri, 3, 1),
-      templateTag: await hoverAt(uri, 7, 5),
-    }),
+    async () => {
+      lastHovers = {
+        importBinding: await hoverAt(uri, 1, 8),
+        scriptUsage: await hoverAt(uri, 3, 1),
+        templateTag: await hoverAt(uri, 7, 5),
+      };
+      return lastHovers;
+    },
     (next) => deepEqual(next, expected.componentContractHovers),
     "component contract hovers",
     180_000,
