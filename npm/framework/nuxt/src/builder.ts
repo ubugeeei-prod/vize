@@ -33,6 +33,17 @@ export function isWebpackNuxtBuilder(builder: unknown): boolean {
   return builder === "webpack" || builder.includes("webpack-builder");
 }
 
+export function hasNuxtViteCompilerSupport(nuxt: {
+  options: { builder?: unknown; vite?: unknown; _nuxtVersion?: string };
+  _version?: string;
+  version?: string;
+}): boolean {
+  if (isWebpackNuxtBuilder(nuxt.options.builder)) return false;
+  if (isViteNuxtBuilder(nuxt.options.builder)) return true;
+  if (nuxt.options.vite) return true;
+  return getDetectedNuxtMajor(nuxt) !== 2;
+}
+
 export function getNuxtBuilderKind(builder: unknown): NuxtBuilderKind {
   if (isViteNuxtBuilder(builder)) {
     return "vite";

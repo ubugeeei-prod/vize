@@ -8,7 +8,7 @@ import { patchNuxtClientManifestCloseBundlePlugin } from "./client-manifest-brid
 import { patchNuxtHostVuePluginForCompilerExcludes } from "./host-vue-bridge";
 import { patchNuxtKeyedFunctionsPlugin, type ViteTransformResult } from "./keyed-functions-bridge";
 import "./schema";
-import { getDetectedNuxtMajor, isViteNuxtBuilder } from "./builder";
+import { getDetectedNuxtMajor, hasNuxtViteCompilerSupport } from "./builder";
 import * as bridgeFastPath from "./bridge-fast-path";
 import type { VizeNuxtCompilerOptions, VizeNuxtOptions } from "./options";
 import {
@@ -149,16 +149,6 @@ function registerNuxt2CompatibilityHooks(nuxt: NuxtWithBuilderOptions): void {
   nuxt.hook("close", () => {});
   nuxt.hook("builder:prepared", () => {});
   nuxt.hook("build:templates", () => {});
-}
-
-function hasNuxtViteCompilerSupport(nuxt: NuxtWithBuilderOptions): boolean {
-  if (isViteNuxtBuilder(nuxt.options.builder)) {
-    return true;
-  }
-  if (nuxt.options.vite) {
-    return true;
-  }
-  return getDetectedNuxtMajor(nuxt) !== 2;
 }
 
 function getNuxtAppBaseURL(nuxt: NuxtWithBuilderOptions): string | undefined {
