@@ -1,4 +1,4 @@
-name: Davinci MoonBit
+name: Level MoonBit
 
 # P6-4a: MoonBit expressions in Vue templates, type-checked by the pinned
 # native `moonc` (`.moonbit-version`, installed by setup-moonbit). The
@@ -20,11 +20,11 @@ on:
       - ".github/actions/setup-moonbit/**"
       - "Cargo.toml"
       - "Cargo.lock"
-      - ".github/workflows/davinci-moonbit.yml"
+      - ".github/workflows/level-moonbit.yml"
   workflow_dispatch:
 
 concurrency:
-  group: davinci-moonbit-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  group: level-moonbit-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 permissions:
@@ -50,7 +50,7 @@ jobs:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
-          key: davinci-moonbit
+          key: level-moonbit
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-moonbit
       - name: Clippy the moonc host lane

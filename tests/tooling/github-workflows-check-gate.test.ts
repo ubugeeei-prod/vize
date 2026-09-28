@@ -231,7 +231,7 @@ test("slow suites use schedules or explicit dispatch without starting on PRs", (
     "davinci-contracts.yml",
     "davinci-html-content-model.yml",
     "davinci-incremental.yml",
-    "davinci-moonbit.yml",
+    "level-moonbit.yml",
   ];
   const scheduledOrDispatch = [
     "benchmark.yml",
