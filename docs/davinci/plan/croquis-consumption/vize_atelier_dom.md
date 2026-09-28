@@ -33,4 +33,4 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `BindingMetadata`  |        0 |   24 |
 | `Croquis`          |        7 |   25 |
 | `Scope`            |        0 |    1 |
-| `Croquis.bindings` |        2 |    5 |
+| `Croquis.bindings` |        2 |    6 |
