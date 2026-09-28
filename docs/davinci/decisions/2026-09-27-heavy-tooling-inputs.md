@@ -14,17 +14,26 @@ inputs for the affected scoped test. Direct changes always select the test.
 
 | Scope                        | Tests                                              | Runtime inputs beyond literal imports                                                                                                                                                    |
 | ---------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rust corpus                  | fact-spec, complexity, metamorphic corpus wrappers | Cargo workspace sources/config/lock/toolchain, tests and hydrated submodule shards, benchmark harness, npm schema inputs, workflow hydration, Davinci plan thresholds/schema/budget data |
+| Rust corpus                  | fact-spec, complexity, metamorphic corpus wrappers | Cargo workspace sources/config/lock/toolchain, fixture trees and hydrated submodule shards, benchmark harness, npm schema inputs, workflow hydration, Davinci plan thresholds/schema/budget data |
 | Moon build                   | `moonbit-warnings.test.ts`                         | Entire `tools/moon` module including `moon.mod`, commands and shared library; pinned MoonBit version, setup workflow and Nix toolchain definition                                        |
 | Benchmark fixture comparison | `davinci-bench-compare.test.ts`                    | Standalone Rust script, Rust support helpers, explicit fixture budgets/baseline/current reports, Cargo/toolchain config and setup workflow                                               |
 
 The Rust wrappers execute specific Cargo test targets. Their dependency scope
-keeps every crate conservatively, all test fixtures and the out-of-workspace
-`tools/benchmarks` harness. It also retains `docs/davinci/plan/**`: compiled
-Rust tests read threshold Markdown such as `complexity-metrics.md`, and Rust
-production code reads `budgets.toml`. Guide-only documents are outside this
+keeps every crate conservatively, `tests/_fixtures/**`, `tests/fixtures/**`, and
+the out-of-workspace `tools/benchmarks` harness. It also retains
+`docs/davinci/plan/**`: compiled Rust tests read threshold Markdown such as
+`complexity-metrics.md`, and Rust production code reads `budgets.toml`.
+Guide-only documents are outside this
 scope. A newly introduced runtime input must be added to the catalog when its
 consumer changes.
+
+The three invoked Rust oracle targets read `tests/fixtures/davinci-matrix/**`
+for their committed matrix. The wrapper processes pass the hydrated
+`tests/_fixtures/_git/{ant-design-vue,create-vue}` roots as corpus shards.
+The selector adds each wrapper's own file and transitive local imports. Other
+`tests/**` paths, including `tests/differential/**`, are not consumed by these
+three subprocesses. Direct wrapper edits and shared/unknown input fallback
+still select them; the full merge suite remains unchanged.
 
 The Moon test enumerates every `tools/moon/cmd/**/main.mbt` and invokes
 `runMoonScript(..., { buildOnly: true, denyWarn: true })`. This builds the module
@@ -64,6 +73,15 @@ building Moon commands. These are historical lane observations, not predicted
 PR percentiles. A Rust-source change still selects all three corpus gates but
 omits Moon compilation and standalone benchmark fixtures. Guide-only changes
 omit all five if a tooling plan is requested. Native package build remains.
+
+Two later ordinary PR jobs, [#7044](https://github.com/ubugeeei-prod/vize/actions/runs/36399061622/job/108853167187)
+and [#7081](https://github.com/ubugeeei-prod/vize/actions/runs/36398676566/job/108851514772),
+selected 491/640 tooling files and spent about 325/323 seconds in serial Node
+tests. In both, fact-spec, complexity and metamorphic corpus wrappers took
+roughly 39 seconds together. #7044 changed Rust source and must retain them;
+#7081 changed `tests/differential/**` and is the fixture-scope case. The
+selector now omits those three for that path. This is a selection proof, not a
+measured end-to-end saving or a percentile result.
 
 TODO: measure the resulting exact-head Actions durations after integration and
 expand the catalog only after auditing each test's subprocess/read dependencies.
