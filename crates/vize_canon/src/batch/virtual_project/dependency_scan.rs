@@ -202,17 +202,12 @@ impl VirtualProject {
                 if inside_node_modules(&key) && !package_local && !is_reference {
                     continue;
                 }
-                // A declaration already selected as a program root needs no
-                // second dependency copy in the virtual tree.
+                // TypeScript follows imports from declarations itself. Mirroring
+                // their targets here can load the same ambient module twice.
                 if is_declaration_file(&key)
                     && !package_local
                     && !self.session_scripts
                     && !is_reference
-                    && (!is_declaration_file(&importer)
-                        || self
-                            .declaration_roots
-                            .as_ref()
-                            .is_some_and(|roots| roots.contains(&key)))
                 {
                     continue;
                 }
