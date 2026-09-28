@@ -20,7 +20,7 @@ pub(super) fn dedupe_dynamic_props(props: &mut Vec<String>) {
             }
         }
     } else {
-        let mut seen = FxHashSet::default();
+        let mut seen = FxHashSet::with_capacity_and_hasher(props.len(), Default::default());
         props.retain(|prop| seen.insert(prop.clone()));
     }
 }
@@ -56,5 +56,16 @@ mod tests {
                 assert_eq!(actual, expected, "len={len}, bits={bits}");
             }
         }
+    }
+
+    #[test]
+    fn hundred_distinct_props_keep_order_when_a_late_duplicate_is_removed() {
+        let mut props: Vec<String> = (0..100)
+            .map(|index| vize_l0::cstr!("key-{index}"))
+            .collect();
+        let expected = props.clone();
+        props.push(String::from("key-7"));
+        dedupe_dynamic_props(&mut props);
+        assert_eq!(props, expected);
     }
 }

@@ -5,9 +5,9 @@ use oxc_span::SourceType;
 use oxc_syntax::scope::ScopeFlags;
 use vize_atelier_core::steps::expression::ExpressionScope;
 use vize_atelier_core::steps::expression::is_template_global;
-use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_carton::{String, ToCompactString};
 
-use super::context::GenerateContext;
+use super::{context::GenerateContext, names::NameSet};
 
 pub(super) fn resolve_expression(ctx: &GenerateContext<'_>, expr: &str) -> String {
     let trimmed = expr.trim();
@@ -157,7 +157,7 @@ pub(super) struct Rewrite {
 pub(super) struct ExpressionRewriteCollector<'a, 'ctx> {
     ctx: &'a GenerateContext<'ctx>,
     pub(super) rewrites: std::vec::Vec<Rewrite>,
-    local_scopes: std::vec::Vec<FxHashSet<String>>,
+    local_scopes: std::vec::Vec<NameSet>,
 }
 
 impl<'a, 'ctx> ExpressionRewriteCollector<'a, 'ctx> {
@@ -170,7 +170,7 @@ impl<'a, 'ctx> ExpressionRewriteCollector<'a, 'ctx> {
     }
 
     pub(super) fn add_event_parameter(&mut self) {
-        let mut scope = FxHashSet::default();
+        let mut scope = NameSet::default();
         scope.insert(String::from("$event"));
         self.local_scopes.push(scope);
     }
@@ -313,7 +313,7 @@ impl<'a, 'ctx> Visit<'_> for ExpressionRewriteCollector<'a, 'ctx> {
 
 impl<'ast> ExpressionScope<'ast> for ExpressionRewriteCollector<'_, '_> {
     fn push_scope(&mut self) {
-        self.local_scopes.push(FxHashSet::default());
+        self.local_scopes.push(NameSet::default());
     }
     fn pop_scope(&mut self) {
         self.local_scopes.pop();
