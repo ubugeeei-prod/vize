@@ -188,6 +188,14 @@ impl VirtualProject {
             for (specifier, mode, is_reference) in specifiers {
                 if is_reference {
                     perf_reference_count += 1;
+                    if perf_reference_count <= 25
+                        && self.project_root.to_string_lossy().contains("misskey")
+                    {
+                        eprintln!(
+                            "canon-perf reference importer={} specifier={specifier}",
+                            importer.display()
+                        );
+                    }
                 }
                 let native_target =
                     resolve_dependency(&specifier, &importer_dir, &self.project_root, &aliases);
@@ -245,6 +253,14 @@ impl VirtualProject {
                 };
                 if registered.is_ok() {
                     perf_registered += 1;
+                    if perf_registered <= 25
+                        && self.project_root.to_string_lossy().contains("misskey")
+                    {
+                        eprintln!(
+                            "canon-perf registered={} reference={is_reference}",
+                            key.display()
+                        );
+                    }
                     queue.push(key);
                 }
             }
