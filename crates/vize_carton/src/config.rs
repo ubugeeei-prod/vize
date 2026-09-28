@@ -1,6 +1,7 @@
 //! Shared Vize configuration loading.
 
 mod loader;
+#[cfg(feature = "lint-glob")]
 pub mod matcher;
 mod model;
 mod normalize;

@@ -22,7 +22,7 @@ phf = { workspace = true }
 rustc-hash = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-globset = { workspace = true }
+globset = { workspace = true, optional = true }
 once_cell = { workspace = true }
 smallvec = { workspace = true }
 memchr = { workspace = true }
@@ -39,6 +39,7 @@ default = []
 # External extension wire records and negotiation. Kept out of the default
 # graph so compiler-only consumers build the same code as before.
 extension = []
+lint-glob = ["dep:globset"]
 
 [dev-dependencies]
 davinci_test_support.workspace = true
