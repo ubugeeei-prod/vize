@@ -140,11 +140,9 @@ mod tests {
         let result = Vue.split(&allocator, source);
         assert!(result.errors.is_empty(), "{:?}", result.errors);
         assert_eq!(result.blocks.len(), 1);
-        assert!(
-            result.blocks[0]
-                .content
-                .slice(source)
-                .ends_with("<div>ok</div>")
+        assert_eq!(
+            result.blocks[0].content.slice(source),
+            "<template #default><p :x='\"</template>\"'>{{ '</template>' }}</p></template><div>ok</div>"
         );
         assert_eq!(
             result.blocks[0].close_tag.unwrap().slice(source),
