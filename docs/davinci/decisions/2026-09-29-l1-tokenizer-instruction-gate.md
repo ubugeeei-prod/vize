@@ -106,6 +106,10 @@ calls; direct first-byte comparison retained ordered matching and reduced the
 remaining seven misses. Core, SSR and Vapor library tests passed 251, 70 and
 266 cases, including map and output checks; strict Clippy and formatting passed.
 The exact Actions run on #7152 main then passed all 100 pinned ceilings.
+#7155 subsequently changed only three `npm/oxlint` files. The #7136 source
+commits rebase without conflict onto its main commit `40e0389e4`; the Rust
+graph is identical, while exact-head PR Actions and the protected merge-group
+measurement still determine acceptance on the final ref.
 
 ## Next bounded work
 
