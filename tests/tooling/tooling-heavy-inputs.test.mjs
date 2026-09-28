@@ -64,6 +64,14 @@ void test("Rust corpus inputs include compiler, hydrated shards, matrix, harness
   }
 });
 
+void test("differential JavaScript harness changes do not select the Rust corpus wrappers", () => {
+  const path = "tests/differential/harness.mjs";
+  const pr = new Set(planToolingTests([path]).tests);
+  for (const file of corpus) assert.equal(pr.has(file), false, file);
+  const merge = new Set(planToolingTests([path], { tier: "merge" }).tests);
+  for (const file of corpus) assert.equal(merge.has(file), true, file);
+});
+
 void test("Moon build inputs retain module, library, toolchain and imported helper without unrelated crates", () => {
   assert.equal(selected("crates/vize_l1/src/parser.rs").has(moon), false);
   for (const path of [
