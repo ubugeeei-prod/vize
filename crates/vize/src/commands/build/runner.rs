@@ -30,14 +30,12 @@ use vize_curator::profile::{
 
 use super::{
     BuildArgs, OutputFormat,
-    config::{CompileError, CompileOutput, CompileStats, ErrorPhase, FileProfile},
+    config::{CompileError, CompileStats, ErrorPhase, FileProfile},
 };
 
 use capture::compile_planned_file;
 use collect::{CollectedFiles, collect_files_or_exit};
-use output::{
-    CompiledBuildOutput, PlannedInput, WrittenFormat, plan_inputs, preflight_outputs, write_outputs,
-};
+use output::{CompiledBuildOutput, WrittenFormat, plan_inputs, preflight_outputs, write_outputs};
 use settings::{CompileFileSettings, load_build_config};
 use stats_run::StatsRun;
 
