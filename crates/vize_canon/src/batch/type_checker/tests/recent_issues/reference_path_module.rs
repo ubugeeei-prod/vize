@@ -71,6 +71,20 @@ fn reference_path_keeps_module_declaration_and_its_side_effect_import() {
         return;
     }
     let snapshot = snapshot_project_diagnostics(&project_root);
+    let debug = if snapshot
+        .as_ref()
+        .is_some_and(|diagnostics| !diagnostics.is_empty())
+    {
+        let config_path = checker.project.virtual_root().join("tsconfig.json");
+        let config = std::fs::read_to_string(&config_path).unwrap_or_default();
+        let output = std::process::Command::new(resolve_test_tsgo_binary().unwrap())
+            .args(["--project", config_path.to_str().unwrap(), "--listFiles"])
+            .output()
+            .expect("inspect the materialized TypeScript program");
+        format!("{config}\n{}", String::from_utf8_lossy(&output.stdout))
+    } else {
+        String::new()
+    };
     let _ = std::fs::remove_dir_all(&project_root);
-    assert_eq!(snapshot, Some(Vec::new()), "{projections:#?}");
+    assert_eq!(snapshot, Some(Vec::new()), "{projections:#?}\n{debug}");
 }
