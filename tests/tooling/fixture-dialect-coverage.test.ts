@@ -29,9 +29,7 @@ test("pinned project dialect presence stays distinct from per-file coverage", ()
     "tests/_fixtures/_git/dho-web-client",
     "tests/_fixtures/_git/wave-ui",
   ]);
-  assert.deepEqual(coverage.presentInFixtures["jsx-vapor"], [
-    "tests/_fixtures/_git/vue-jsx-vapor",
-  ]);
+  assert.deepEqual(coverage.presentInFixtures["jsx-vapor"], ["tests/_fixtures/_git/vue-jsx-vapor"]);
   for (const dialect of ["vue0-sfc", "vue1-sfc", "vue2.7-sfc", "jsx-babel", "vue-quirks"]) {
     assert.deepEqual(coverage.presentInFixtures[dialect], []);
   }
@@ -43,16 +41,19 @@ test("dialect claims fail closed when evidence or unknown state drifts", () => {
       value.fixtures[0].dialectCoverage.state = "partial";
     },
     (value: typeof ledger) => {
-      value.fixtures.find((row) => row.fixturePath.endsWith("/wave-ui")).dialectCoverage.evidence[0]
-        .selector = "stale";
+      value.fixtures.find((row) =>
+        row.fixturePath.endsWith("/wave-ui"),
+      ).dialectCoverage.evidence[0].selector = "stale";
     },
     (value: typeof ledger) => {
-      value.fixtures.find((row) => row.fixturePath.endsWith("/vue2-elm")).dialectCoverage.evidence[0]
-        .file = "tests/missing.ts";
+      value.fixtures.find((row) =>
+        row.fixturePath.endsWith("/vue2-elm"),
+      ).dialectCoverage.evidence[0].file = "tests/missing.ts";
     },
     (value: typeof ledger) => {
-      value.fixtures.find((row) => row.fixturePath.endsWith("/petite-vue")).dialectCoverage.evidence[0]
-        .dialects = ["made-up"];
+      value.fixtures.find((row) =>
+        row.fixturePath.endsWith("/petite-vue"),
+      ).dialectCoverage.evidence[0].dialects = ["made-up"];
     },
   ]) {
     const changed = structuredClone(ledger);
