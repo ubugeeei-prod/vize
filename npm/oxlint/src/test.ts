@@ -4,8 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { assertEmptyScriptDiagnostic } from "./test-support/empty-script-diagnostic.ts";
 import { resetFixtureDir } from "./test-support/fixture-dir.ts";
-
 const packageDir = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(packageDir, "../../..");
 const pluginEntry = path.join(workspaceRoot, "npm/oxlint/dist/index.mjs");
@@ -35,7 +35,6 @@ const optionsApiVuePath = path.join(fixtureDir, "OptionsApi.vue");
 const dualScriptVuePath = path.join(fixtureDir, "DualScript.vue");
 const coreRulesVuePath = path.join(fixtureDir, "CoreRules.vue");
 const scriptlessVuePath = path.join(fixtureDir, "Scriptless.vue");
-const emptyScriptVuePath = path.join(fixtureDir, "EmptyScript.vue");
 const standaloneHtmlPath = path.join(fixtureDir, "Standalone.html");
 const hugeJsonVuePath = path.join(fixtureDir, "HugeJson.vue");
 const snapshotsDir = path.join(packageDir, "__snapshots__");
@@ -61,7 +60,6 @@ function findOxlintBin() {
 
 const oxlintBin = findOxlintBin();
 resetFixtureDir(fixtureDir);
-
 fs.writeFileSync(
   configPath,
   JSON.stringify(
@@ -412,17 +410,6 @@ fs.writeFileSync(
 );
 
 fs.writeFileSync(
-  emptyScriptVuePath,
-  `<script setup lang="ts"></script>
-<template>
-  <ul>
-    <li v-for="item in [1, 2]">{{ item }}</li>
-  </ul>
-</template>
-`,
-);
-
-fs.writeFileSync(
   standaloneHtmlPath,
   `<!doctype html>
 <html>
@@ -596,17 +583,7 @@ assert.equal(shortHelpRun.output, readSnapshot("stylish-short-help-output.txt"))
 const jsonRun = runOxlint(["-c", ".oxlintrc.no-help.json", "-f", "json", "App.vue"]);
 assert.notEqual(jsonRun.exitCode, 0, "json formatter should still report Patina failures");
 assert.equal(jsonRun.output, readSnapshot("json-no-help-output.txt"));
-
-const emptyScriptRun = runOxlint([
-  "-c",
-  ".oxlintrc.scriptless.json",
-  "-f",
-  "json",
-  "EmptyScript.vue",
-]);
-assert.notEqual(emptyScriptRun.exitCode, 0, "empty scripts must still report template diagnostics");
-assert.match(emptyScriptRun.output, /vize\(vue\/require-v-for-key\)/u);
-assert.doesNotMatch(emptyScriptRun.output, /Error running JS plugin|RangeError/u);
+assertEmptyScriptDiagnostic(fixtureDir, runOxlint);
 
 const scriptlessJsonRun = runOxlintVize([
   "-c",

@@ -44,8 +44,6 @@ function createOxlintDiagnostic(
 
   return {
     loc: loc ?? {
-      // An empty extracted <script> has no offset 1. Keep the established
-      // fallback for nonempty programs and anchor empty ones at offset zero.
       start: { line: 1, column: fallbackColumn },
       end: { line: 1, column: fallbackColumn },
     },
