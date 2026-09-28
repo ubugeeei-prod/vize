@@ -3,12 +3,13 @@
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
-use vize_carton::{FxHashMap, FxHashSet};
+use vize_carton::FxHashMap;
 
 use super::super::error::{CorsaError, CorsaResult};
 use super::super::source_policy::SourceFilePolicy;
 use super::super::virtual_project::VirtualProject;
 
+mod hidden;
 #[cfg(test)]
 mod snapshot_tests;
 
@@ -183,7 +184,7 @@ pub(super) fn collect_project_paths(
     source_policy: SourceFilePolicy,
 ) -> CorsaResult<Vec<PathBuf>> {
     let project_root = project.project_root();
-    let explicit_hidden_dirs = explicit_hidden_source_dirs(project);
+    let explicit_hidden_dirs = hidden::explicit_hidden_source_dirs(project);
     let mut paths = Vec::new();
     for entry in walkdir::WalkDir::new(project_root)
         .into_iter()
@@ -203,44 +204,6 @@ pub(super) fn collect_project_paths(
         }
     }
     Ok(paths)
-}
-
-/// Only descend into hidden directories named by a tsconfig `files` or
-/// `include` entry. TypeScript includes such files (notably Nuxt's `.nuxt`),
-/// while scanning every hidden cache or VCS directory would be wasteful.
-fn explicit_hidden_source_dirs(project: &VirtualProject) -> FxHashSet<PathBuf> {
-    let root = project.project_root();
-    let mut directories = FxHashSet::default();
-    for config_path in project.governing_config_paths() {
-        let Ok(content) = std::fs::read_to_string(&config_path) else {
-            continue;
-        };
-        let Ok(config) = crate::batch::virtual_project::parse_jsonc_value(&content) else {
-            continue;
-        };
-        for entry in ["files", "include"]
-            .into_iter()
-            .filter_map(|key| config.get(key).and_then(serde_json::Value::as_array))
-            .flatten()
-            .filter_map(serde_json::Value::as_str)
-        {
-            let Some(base) = config_path.parent() else {
-                continue;
-            };
-            let path = vize_carton::path::canonicalize_non_verbatim(&base.join(entry));
-            let Ok(relative) = path.strip_prefix(root) else {
-                continue;
-            };
-            let mut ancestor = root.to_path_buf();
-            for component in relative.components() {
-                ancestor.push(component);
-                if component.as_os_str().to_string_lossy().starts_with('.') {
-                    directories.insert(ancestor.clone());
-                }
-            }
-        }
-    }
-    directories
 }
 
 pub(super) fn refresh_paths(
