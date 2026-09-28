@@ -18,8 +18,6 @@ pub use l2_input::compile_l2_to_ssr;
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::config::VueVersion;
-#[cfg(any(test, feature = "legacy-differential"))]
-use vize_l0::dump::capture::NoCapture;
 use vize_l0::{Allocator, String, profile, profiler::global_profiler};
 use vize_l0::{dump::capture::CaptureSink, level::Level};
 use vize_l1::SurfaceParseOptions;
