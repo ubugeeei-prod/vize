@@ -73,16 +73,47 @@ impl NameSet {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use vize_carton::ToCompactString;
+    use crate::generate::context::GenerateContext;
+    use vize_carton::{FxHashMap, cstr};
+
+    #[test]
+    fn context_creates_name_sets_only_when_names_are_added() {
+        let element_template_map = FxHashMap::default();
+        let standalone_text_elements = FxHashSet::default();
+        let mut context =
+            GenerateContext::new(&element_template_map, &standalone_text_elements, None, "");
+        assert!(context.delegate_events.is_none());
+        assert!(context.resolved_components.is_none());
+        assert!(!context.is_component_resolved("Card"));
+
+        context.add_delegate_event("click");
+        context.add_delegate_event("click");
+        assert_eq!(
+            context
+                .delegate_events
+                .as_ref()
+                .map_or(0, |events| events.iter().count()),
+            1
+        );
+        assert!(context.resolved_components.is_none());
+
+        context.mark_component_resolved("Outer");
+        context.push_component_scope();
+        context.mark_component_resolved("Card");
+        context.mark_component_resolved("Outer");
+        assert!(context.is_component_resolved("Card"));
+        context.pop_component_scope();
+        assert!(!context.is_component_resolved("Card"));
+        assert!(context.is_component_resolved("Outer"));
+    }
 
     #[test]
     fn matches_hash_set_membership_across_promotion_and_removal() {
         let mut names = NameSet::default();
         let mut expected = FxHashSet::default();
         for index in 0..40 {
-            let name = format!("event-{index}");
-            let compact = name.to_compact_string();
-            assert_eq!(names.insert(compact.clone()), expected.insert(compact));
+            let name = cstr!("event-{index}");
+            assert_eq!(names.insert(name.clone()), expected.insert(name.clone()));
             assert_eq!(names.contains(&name), expected.contains(name.as_str()));
         }
         for name in ["event-0", "event-4", "event-39", "event-4", "missing"] {

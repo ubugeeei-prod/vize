@@ -7,6 +7,7 @@ use vize_atelier_core::{codegen::document::EmitDocument, options::BindingMetadat
 use vize_carton::{FxHashSet, String, cstr};
 
 use super::context::GenerateContext;
+use super::names::NameSet;
 use super::setup::generate_imports;
 use super::spans::{TEMPLATE_ESCAPES, VaporSourceSpans};
 use super::{
@@ -178,9 +179,18 @@ pub(crate) fn generate_vapor_with_spans(
     ctx.push_line("}");
 
     let mut delegate_code = String::default();
-    if !ctx.delegate_events.is_empty() {
+    if ctx
+        .delegate_events
+        .as_ref()
+        .is_some_and(|events| !events.is_empty())
+    {
         ctx.use_helper("delegateEvents");
-        let mut events: Vec<_> = ctx.delegate_events.iter().collect();
+        let mut events: Vec<_> = ctx
+            .delegate_events
+            .as_ref()
+            .into_iter()
+            .flat_map(NameSet::iter)
+            .collect();
         events.sort();
         for event in events {
             writeln!(delegate_code, "_delegateEvents(\"{}\")", event).ok();

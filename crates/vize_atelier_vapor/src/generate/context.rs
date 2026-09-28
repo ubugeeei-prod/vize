@@ -27,7 +27,7 @@ pub(crate) struct GenerateContext<'a> {
     /// Used helpers for import generation
     pub(crate) used_helpers: FxHashSet<&'static str>,
     /// Events that need delegation (event names)
-    pub(crate) delegate_events: NameSet,
+    pub(crate) delegate_events: Option<NameSet>,
     /// Text node references (element_id -> text_node_var)
     pub(crate) text_nodes: FxHashMap<usize, String>,
     /// Position of every node reached by a `ChildRef`/`NextRef` operation
@@ -51,7 +51,7 @@ pub(crate) struct GenerateContext<'a> {
     /// Counter for slot scope variable names
     pub(crate) slot_scope_count: usize,
     /// Components that have already been resolved (to avoid duplicate resolveComponent calls)
-    pub(crate) resolved_components: NameSet,
+    pub(crate) resolved_components: Option<NameSet>,
     /// Component resolutions created inside callback scopes and removed on exit.
     resolved_component_scopes: std::vec::Vec<std::vec::Vec<String>>,
     /// Element IDs that are standalone text nodes (no _txt needed)
@@ -84,7 +84,7 @@ impl<'a> GenerateContext<'a> {
             element_template_map,
             temp_count: 0,
             used_helpers: FxHashSet::default(),
-            delegate_events: NameSet::default(),
+            delegate_events: None,
             text_nodes: FxHashMap::default(),
             node_positions: FxHashMap::default(),
             is_fragment: false,
@@ -94,7 +94,7 @@ impl<'a> GenerateContext<'a> {
             for_scopes: std::vec::Vec::new(),
             slot_scopes: std::vec::Vec::new(),
             slot_scope_count: 0,
-            resolved_components: NameSet::default(),
+            resolved_components: None,
             resolved_component_scopes: std::vec::Vec::new(),
             standalone_text_elements,
             binding_metadata,
@@ -234,7 +234,9 @@ impl<'a> GenerateContext<'a> {
     }
 
     pub(crate) fn add_delegate_event(&mut self, event_name: &str) {
-        self.delegate_events.insert(event_name.to_compact_string());
+        self.delegate_events
+            .get_or_insert_with(NameSet::default)
+            .insert(event_name.to_compact_string());
     }
 
     pub(crate) fn next_text_node(&mut self, element_id: usize) -> String {
@@ -260,17 +262,24 @@ impl<'a> GenerateContext<'a> {
         };
 
         for component in added_components {
-            self.resolved_components.remove(&component);
+            if let Some(resolved) = &mut self.resolved_components {
+                resolved.remove(&component);
+            }
         }
     }
 
     pub(crate) fn is_component_resolved(&self, component: &str) -> bool {
-        self.resolved_components.contains(component)
+        self.resolved_components
+            .as_ref()
+            .is_some_and(|resolved| resolved.contains(component))
     }
 
     pub(crate) fn mark_component_resolved(&mut self, component: &str) {
         let component = component.to_compact_string();
-        if self.resolved_components.insert(component.clone())
+        if self
+            .resolved_components
+            .get_or_insert_with(NameSet::default)
+            .insert(component.clone())
             && let Some(scope) = self.resolved_component_scopes.last_mut()
         {
             scope.push(component);
