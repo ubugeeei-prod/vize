@@ -247,7 +247,7 @@ Tracked in [#6829](https://github.com/ubugeeei-prod/vize/issues/6829) and [#6855
 - **TSRX:** not a priority; nice to have if something runs.
 - **Other frameworks:** only the neutral types and names are designed before the talk. Flow is not in scope at all.
 - **Goal (A):** for the in-scope inputs, all five products run on the shared L1/L2 structure as far as native work goes, with per-product native-only acceptance rates.
-- **Deletion (B)** follows later, under the criteria above.
+- **Deletion (B)** follows later, under the criteria above; the fail-closed [readiness audit](./2026-09-28-deletion-readiness.md) records #6854's product, tier, dialect, project and stability blockers.
 - Unfinished work is reported as unfinished. There are no legacy-backed shortcuts.
 
 ## Performance

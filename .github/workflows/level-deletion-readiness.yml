@@ -1,0 +1,43 @@
+name: Level deletion readiness
+
+on:
+  workflow_dispatch:
+    inputs:
+      evidence_run_id:
+        description: Successful exact-SHA Real Project Matrix run with davinci-deletion-evidence
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  deletion-readiness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          run-install: false
+      - name: Download exact-SHA differential evidence
+        if: ${{ inputs.evidence_run_id != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EVIDENCE_RUN_ID: ${{ inputs.evidence_run_id }}
+        run: |
+          [[ "$EVIDENCE_RUN_ID" =~ ^[0-9]+$ ]]
+          gh api "repos/$GH_REPO/actions/runs/$EVIDENCE_RUN_ID" \
+            --jq '{head_sha, conclusion, path, event}' > "$RUNNER_TEMP/evidence-run.json"
+          jq -e --arg sha "$GITHUB_SHA" \
+            '.head_sha == $sha and .conclusion == "success" and .path == ".github/workflows/real-project-matrix.yml" and (.event == "schedule" or .event == "workflow_dispatch")' \
+            "$RUNNER_TEMP/evidence-run.json"
+          gh run download "$EVIDENCE_RUN_ID" --name davinci-deletion-evidence \
+            --dir "$RUNNER_TEMP/davinci-deletion-evidence"
+      - name: Check deletion readiness
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: vp node tests/differential/check-deletion-readiness.mjs "$RUNNER_TEMP/davinci-deletion-evidence"

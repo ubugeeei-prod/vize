@@ -1,0 +1,29 @@
+{
+  "schema": "vize.deletion-readiness.policy",
+  "version": 1,
+  "minimumStableDays": null,
+  "maximumGapDays": null,
+  "dialects": [
+    "vue0-template",
+    "vue1-template",
+    "vue2-sfc",
+    "vue2.7-sfc",
+    "vue3-sfc",
+    "petite-vue",
+    "pug-template",
+    "jsx-babel",
+    "jsx-vapor",
+    "js",
+    "ts",
+    "jsx",
+    "tsx",
+    "vue-quirks"
+  ],
+  "targets": {
+    "compiler": [],
+    "linter": [],
+    "formatter": ["fmt"],
+    "typechecker": [],
+    "lsp": []
+  }
+}
