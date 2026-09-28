@@ -4,7 +4,11 @@ The deletion decision covers five products: compiler, linter, formatter,
 typechecker and LSP. This gate is an explicit `workflow_dispatch` audit while
 native product adapters and historical evidence are incomplete. Ordinary PRs,
 pushes and scheduled `main` runs do not execute a permanently red readiness
-job. A deletion cannot claim readiness from a green ordinary Check run.
+job. A deletion cannot claim readiness from a green ordinary Check run. The
+ordinary PR and merge-group `check-js` job guards removal or renaming of a
+legacy crate's `Cargo.toml`: a successful readiness audit must exist at both
+the exact base SHA and deletion candidate SHA. Missing audits or a change to
+either SHA fails closed. Other PRs pay only the manifest-diff check.
 
 The gate checks the exact deletion candidate with T1 merge-group fixture
 results and an on-demand T2 Real Project Matrix run at the same SHA. It also
@@ -36,4 +40,6 @@ These are remaining #6854 tasks, alongside product adapter and case coverage
 work in #6853, #6891 and #6892. Before any deletion is permitted, wire the
 trusted Real Project Matrix bundle producer to actual per-run result artifacts,
 review the policy values and require a successful exact-candidate readiness
-run for the deletion change. This first gate does not certify legacy deletion.
+run for the deletion change. The manifest guard does not yet detect route swaps
+inside a retained legacy crate, so #6854 stays open until those paths are
+protected. This first gate does not certify legacy deletion.

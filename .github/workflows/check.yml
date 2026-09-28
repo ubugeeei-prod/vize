@@ -65,15 +65,27 @@ jobs:
   check-js:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 2
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: "package.json"
           cache: true
           run-install: false
+      - name: Guard legacy crate deletion
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
+        run: vp node tools/support/compat/davinci/legacy-deletion-guard.mjs
       - name: Check Davinci source inventories
         if: ${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         uses: ./.github/actions/check-level-inventories
