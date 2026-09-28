@@ -6,15 +6,16 @@ import {
   checkDialectInputs,
 } from "../../tools/support/compat/fixtures/generate-dialect-inputs.mjs";
 
-test("rare dialect input inventory is generated from pinned grammar rules", () => {
+void test("rare dialect input inventory is generated from pinned grammar rules", () => {
   checkDialectInputs();
   const { inventory } = buildDialectInputs();
   assert.equal(inventory.cases.length, 7);
-  assert.deepEqual([...new Set(inventory.cases.flatMap((item) => item.dialects))].sort(), [
-    "vue-quirks",
-    "vue0-template",
-    "vue1-template",
-  ]);
+  assert.deepEqual(
+    [...new Set(inventory.cases.flatMap((item) => item.dialects))].sort((a, b) =>
+      a < b ? -1 : a > b ? 1 : 0,
+    ),
+    ["vue-quirks", "vue0-template", "vue1-template"],
+  );
   assert.ok(inventory.cases.every((item) => item.state === "input-only"));
   assert.equal(
     inventory.cases[0].input.sha256,
