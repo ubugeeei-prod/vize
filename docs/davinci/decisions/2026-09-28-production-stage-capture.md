@@ -53,10 +53,11 @@ probes all passed. Callgrind attributed SSR's common +1 to the extracted
 ordinary compile body, with deep's extra +2 in `memcpy`; Vapor's +2 was
 inside `memcmp` with exactly the same comparison calls. Restore the SSR
 ordinary body in its original compile module, keep the captured sibling,
-and reuse the existing leading whitespace trim in Vapor's retained
-expression resolver. These changes preserve accepted output and reduce
-real ordinary work; the next diagnostic must prove all 100 ceilings before
-the PR head changes.
+and keep the existing Vapor lowering helper inline. A second diagnostic
+`f777c645d` made all SSR probes pass, but changing the retained expression
+trim algorithm pushed eight Vapor generate/compile probes above their
+ceilings, so that experimental trim change is withdrawn. The next exact
+100-probe diagnostic must pass before the PR head changes.
 Each product records only boundaries it actually executed. Provisional pages
 are committed only after final product selection, including DOM source-map
 parity. A compatibility map mismatch returns the compatibility module and
