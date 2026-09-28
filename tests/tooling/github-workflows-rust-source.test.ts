@@ -163,12 +163,17 @@ test("PR and merge-queue Rust jobs run the skeleton todo ratchet", () => {
   ]) {
     const job = workflow.jobs[jobName];
     assert.ok(job, `${jobName} must exist`);
+    const jobCondition = job.if ?? "";
     assert.ok(
-      job.if?.includes(`github.event_name == '${event}'`) && job.if.includes("inputs.run-rust"),
-      `${jobName} must run for ${event} when Rust is selected`,
+      jobCondition.includes(`github.event_name == '${event}'`),
+      `${jobName} must run for ${event}`,
     );
     const ratchet = job.steps?.find((step) => step.name === "Skeleton todo ratchet");
     assert.ok(ratchet, `${jobName} must run the skeleton todo ratchet`);
+    assert.ok(
+      jobCondition.includes("inputs.run-rust") || ratchet.if?.includes("inputs.run-rust"),
+      `${jobName} must run the ratchet when Rust is selected`,
+    );
     assert.ok(
       ratchet.run?.includes("check-skeleton-todos.rs") && ratchet.run.includes("--check"),
       `${jobName} must check the skeleton todo ledger`,
