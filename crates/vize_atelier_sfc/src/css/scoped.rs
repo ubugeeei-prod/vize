@@ -4,15 +4,14 @@
 //! to CSS selectors. Handles special pseudo-selectors: `:deep()`, `:slotted()`, `:global()`.
 
 mod slotted;
+mod where_selector;
 
 use vize_carton::{Allocator, Vec as ArenaVec};
 
 pub(super) use slotted::transform_slotted;
+pub(super) use where_selector::add_scope_to_element;
 
-use super::scoped_selector::{
-    find_top_level_pseudo, leading_universal_selector_end,
-    split_before_trailing_universal_or_pseudo,
-};
+use super::scoped_selector::split_before_trailing_universal_or_pseudo;
 use super::transform::find_matching_paren;
 
 /// Apply scoped CSS transformation
@@ -309,6 +308,15 @@ fn scope_single_selector(out: &mut ArenaVec<u8>, selector: &str, attr_selector: 
     }
 
     if let Some((prefix, boundary, suffix)) = split_before_trailing_universal_or_pseudo(selector) {
+        if suffix.starts_with(":where(")
+            && let Ok(attr) = std::str::from_utf8(attr_selector)
+            && let Some(scoped) = crate::style::scope_bare_where(suffix, attr)
+        {
+            out.extend_from_slice(prefix.as_bytes());
+            out.extend_from_slice(boundary.as_bytes());
+            out.extend_from_slice(scoped.as_bytes());
+            return;
+        }
         scope_single_selector(out, prefix.trim_end(), attr_selector);
         out.extend_from_slice(boundary.as_bytes());
         out.extend_from_slice(suffix.trim_start().as_bytes());
@@ -363,29 +371,6 @@ fn split_top_level_whitespace(s: &str) -> Vec<&str> {
     }
 
     out
-}
-
-/// Add scope attribute to an element selector
-pub(super) fn add_scope_to_element(out: &mut ArenaVec<u8>, selector: &str, attr_selector: &[u8]) {
-    let selector = leading_universal_selector_end(selector)
-        .and_then(|end| selector.get(end..))
-        .unwrap_or(selector);
-
-    // Find the first top-level pseudo-element or pseudo-class so the scope
-    // attribute lands on the compound selector, not inside a functional
-    // pseudo-class argument.
-    if let Some((before, after)) =
-        find_top_level_pseudo(selector).and_then(|pos| selector.split_at_checked(pos))
-        && !before.ends_with('\\')
-    {
-        out.extend_from_slice(before.as_bytes());
-        out.extend_from_slice(attr_selector);
-        out.extend_from_slice(after.as_bytes());
-        return;
-    }
-
-    out.extend_from_slice(selector.as_bytes());
-    out.extend_from_slice(attr_selector);
 }
 
 /// Transform :deep() to descendant selector
