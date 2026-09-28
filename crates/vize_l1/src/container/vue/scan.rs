@@ -24,7 +24,7 @@ pub(super) fn read_open<'a>(
     while bytes.get(pos).is_some_and(|byte| is_name(*byte)) {
         pos += 1;
     }
-    let name = &source[at + 1..pos];
+    let name = source.get(at + 1..pos).ok_or(())?;
     let mut attrs = Vec::new_in(&allocator);
     loop {
         while bytes
@@ -63,7 +63,7 @@ pub(super) fn read_open<'a>(
         if pos == start {
             return Err(());
         }
-        let name = &source[start..pos];
+        let name = source.get(start..pos).ok_or(())?;
         while bytes
             .get(pos)
             .is_some_and(|byte| byte.is_ascii_whitespace())
@@ -87,7 +87,7 @@ pub(super) fn read_open<'a>(
                 if bytes.get(pos).is_none() {
                     return Err(());
                 }
-                let value = &source[value_start..pos];
+                let value = source.get(value_start..pos).ok_or(())?;
                 pos += 1;
                 Some(value)
             } else {
@@ -98,7 +98,7 @@ pub(super) fn read_open<'a>(
                 {
                     pos += 1;
                 }
-                Some(&source[value_start..pos])
+                Some(source.get(value_start..pos).ok_or(())?)
             }
         } else {
             None
@@ -120,11 +120,14 @@ pub(super) fn find_template_close<'a>(
     let (mut pos, mut depth) = (from, 1usize);
     let mut uncertain = false;
     while pos < bytes.len() {
-        if bytes[pos..].starts_with(b"<!--") {
+        if bytes
+            .get(pos..)
+            .is_some_and(|rest| rest.starts_with(b"<!--"))
+        {
             pos = find_bytes(bytes, pos + 4, b"-->").map_or(bytes.len(), |end| end + 3);
             continue;
         }
-        if bytes[pos..].starts_with(b"{{") {
+        if bytes.get(pos..).is_some_and(|rest| rest.starts_with(b"{{")) {
             if let Some(end) = skip_interpolation(bytes, pos + 2) {
                 pos = end;
             } else {
@@ -135,7 +138,7 @@ pub(super) fn find_template_close<'a>(
             }
             continue;
         }
-        if bytes[pos] != b'<' {
+        if bytes.get(pos) != Some(&b'<') {
             pos += 1;
             continue;
         }
@@ -172,9 +175,11 @@ fn skip_interpolation(bytes: &[u8], from: usize) -> Option<usize> {
     let (mut pos, mut quote, mut braces) = (from, None, 0usize);
     let mut can_start_regex = true;
     while pos + 1 < bytes.len() {
-        match (quote, bytes[pos]) {
+        let byte = *bytes.get(pos)?;
+        let next = *bytes.get(pos + 1)?;
+        match (quote, byte) {
             (Some(_), b'\\') => pos += 2,
-            (Some(b'`'), b'$') if bytes[pos + 1] == b'{' => {
+            (Some(b'`'), b'$') if next == b'{' => {
                 // Nested template expressions need a full JS lexer. Refuse a
                 // trusted block boundary until the native container owns one.
                 return None;
@@ -185,14 +190,15 @@ fn skip_interpolation(bytes: &[u8], from: usize) -> Option<usize> {
                 can_start_regex = false;
             }
             (None, b'\'' | b'"' | 0x60) => {
-                quote = Some(bytes[pos]);
+                quote = Some(byte);
                 pos += 1;
             }
-            (None, b'/') if bytes[pos + 1] == b'*' => {
+            (None, b'/') if next == b'*' => {
                 pos = find_bytes(bytes, pos + 2, b"*/")? + 2;
             }
-            (None, b'/') if bytes[pos + 1] == b'/' => {
-                pos = bytes[pos + 2..]
+            (None, b'/') if next == b'/' => {
+                pos = bytes
+                    .get(pos + 2..)?
                     .iter()
                     .position(|byte| *byte == b'\n')
                     .map_or(bytes.len(), |offset| pos + 3 + offset);
@@ -207,7 +213,7 @@ fn skip_interpolation(bytes: &[u8], from: usize) -> Option<usize> {
                 pos += 1;
                 can_start_regex = false;
             }
-            (None, b'}') if bytes[pos + 1] == b'}' => return Some(pos + 2),
+            (None, b'}') if next == b'}' => return Some(pos + 2),
             (None, b'}') => return None,
             (None, b'/') if can_start_regex => {
                 pos = skip_regex(bytes, pos)?;
@@ -226,7 +232,7 @@ fn skip_interpolation(bytes: &[u8], from: usize) -> Option<usize> {
                 // operand, Vue+TS also permits a postfix non-null assertion.
                 pos += 1;
             }
-            (None, b'+' | b'-') if bytes[pos + 1] == bytes[pos] => {
+            (None, b'+' | b'-') if next == byte => {
                 // JS increment/decrement can be prefix or postfix. Either
                 // form preserves whether an operand was already present.
                 pos += 2;
@@ -240,7 +246,7 @@ fn skip_interpolation(bytes: &[u8], from: usize) -> Option<usize> {
                     pos += 1;
                 }
                 can_start_regex = matches!(
-                    &bytes[start..pos],
+                    bytes.get(start..pos)?,
                     b"return"
                         | b"throw"
                         | b"case"
@@ -268,7 +274,7 @@ fn skip_interpolation(bytes: &[u8], from: usize) -> Option<usize> {
 fn skip_regex(bytes: &[u8], from: usize) -> Option<usize> {
     let (mut pos, mut in_class) = (from + 1, false);
     while pos < bytes.len() {
-        match bytes[pos] {
+        match bytes.get(pos).copied()? {
             b'\\' => pos += 2,
             b'[' => {
                 in_class = true;
@@ -295,7 +301,7 @@ fn skip_regex(bytes: &[u8], from: usize) -> Option<usize> {
 pub(super) fn find_close(bytes: &[u8], from: usize, name: &str) -> Option<(usize, usize)> {
     let mut pos = from;
     while pos < bytes.len() {
-        if bytes[pos] == b'<'
+        if bytes.get(pos) == Some(&b'<')
             && let Some(end) = close_at(bytes, pos, name)
         {
             return Some((pos, end));

@@ -29,11 +29,14 @@ impl ContainerFormat for Vue {
         let bytes = source.as_bytes();
         let (mut at, mut template, mut script, mut setup) = (0, false, false, false);
         while at < bytes.len() {
-            if bytes[at] != b'<' {
+            if bytes.get(at) != Some(&b'<') {
                 at += 1;
                 continue;
             }
-            if bytes[at..].starts_with(b"<!--") {
+            if bytes
+                .get(at..)
+                .is_some_and(|rest| rest.starts_with(b"<!--"))
+            {
                 at = find_bytes(bytes, at + 4, b"-->").map_or(bytes.len(), |end| end + 3);
                 continue;
             }
