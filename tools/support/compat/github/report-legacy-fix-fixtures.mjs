@@ -20,7 +20,7 @@ export function legacyProducts(paths) {
       products.add("compiler");
     }
   }
-  return [...products].sort();
+  return [...products].sort((left, right) => left.localeCompare(right));
 }
 
 export function analyzeLegacyFix({ title, paths, readFile }) {
