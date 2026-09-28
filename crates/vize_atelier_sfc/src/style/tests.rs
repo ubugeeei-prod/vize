@@ -255,3 +255,17 @@ fn test_scope_keyframes_inside_media() {
     let result = apply_scoped_css(css, "data-v-123");
     insta::assert_snapshot!(result.as_str());
 }
+
+#[test]
+fn scoped_keyframes_rewrite_animation_references() {
+    let css = ".spin { animation: spin 1s linear infinite; animation-name: spin; } @keyframes spin { to { transform: rotate(360deg); } }";
+    let result = apply_scoped_css(css, "data-v-abc123");
+    insta::assert_snapshot!(result.as_str());
+}
+
+#[test]
+fn scoped_keyframes_rewrite_vendor_names_and_preserve_text() {
+    let css = "/* @keyframes fake */ .box { content: 'spin'; -webkit-animation: spin 1s; animation-name: spin, other; } @-webkit-keyframes spin { to { opacity: 0; } }";
+    let result = apply_scoped_css(css, "data-v-abc123");
+    insta::assert_snapshot!(result.as_str());
+}

@@ -1,5 +1,6 @@
 //! Style block processing and scoped CSS.
 
+mod keyframes;
 mod nested;
 
 use vize_carton::{String, ToCompactString};
@@ -63,12 +64,10 @@ pub(crate) fn compile_style_with_modules(
     }
 
     let (mut output, _) = crate::css::transform_css_v_bind(&style.content, Some(&options.id));
-
     // Apply scoped transformation if needed
     if style.scoped || options.scoped {
         output = apply_scoped_css(&output, &options.id);
     }
-
     // Trim if requested
     if options.trim {
         output = output.trim().to_compact_string();
@@ -250,7 +249,6 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
             }
         }
     }
-
     // Handle any remaining content
     if let Some(rest) = current.get(last_selector_end..)
         && !rest.is_empty()
@@ -259,7 +257,9 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
         output.push_str(rest);
     }
 
-    nested::scope_nested_selectors(output.as_str(), attr_selector.as_str()).unwrap_or(output)
+    let scoped =
+        nested::scope_nested_selectors(output.as_str(), attr_selector.as_str()).unwrap_or(output);
+    keyframes::scope_keyframes(scoped.as_str(), scope_id)
 }
 
 /// Text buffered since `start`, without the `{` that was just pushed.

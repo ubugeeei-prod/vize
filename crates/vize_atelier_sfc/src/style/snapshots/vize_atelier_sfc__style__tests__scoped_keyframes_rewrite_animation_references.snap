@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/style/tests.rs
+expression: result.as_str()
+---
+.spin[data-v-abc123]{ animation: spin-abc123 1s linear infinite; animation-name: spin-abc123; }@keyframes spin-abc123{to{ transform: rotate(360deg); }}
