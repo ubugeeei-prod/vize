@@ -3,7 +3,6 @@ use core::cmp::Ordering;
 
 use super::super::helper::Helper;
 use super::Buf;
-#[cfg(test)]
 use super::call_position::helper_call_position;
 use super::call_position::underscore_call_sites;
 use vize_l0::String;
@@ -15,6 +14,8 @@ type RankFiveKey = (usize, u8, u8);
 /// per [`Buf::ordered_helpers`] instead of once per comparison.
 struct OrderCache {
     rank_five_keys: [Option<RankFiveKey>; 8],
+    /// One full scan pays off only for modules with many helpers and code.
+    scan_all_aliases: bool,
     /// Filled by one scan of the module on first use, indexed by
     /// `Helper::bit().trailing_zeros()`.
     alias_positions: Option<[Option<usize>; 64]>,
@@ -42,6 +43,7 @@ impl Buf {
         }
         let mut cache = OrderCache {
             rank_five_keys: [None; 8],
+            scan_all_aliases: self.used.count_ones() > 8 && self.code.len() > 8_192,
             alias_positions: None,
         };
         listed.sort_by(|left, right| {
@@ -108,6 +110,9 @@ impl Buf {
     }
 
     fn first_alias_position(&self, helper: Helper, cache: &mut OrderCache) -> Option<usize> {
+        if !cache.scan_all_aliases {
+            return self.scan_alias_position(helper);
+        }
         let positions = cache
             .alias_positions
             .get_or_insert_with(|| self.scan_alias_positions());
@@ -142,7 +147,6 @@ impl Buf {
         positions
     }
 
-    #[cfg(test)]
     fn scan_alias_position(&self, helper: Helper) -> Option<usize> {
         let alias = helper.alias();
         let mut offset = 0;

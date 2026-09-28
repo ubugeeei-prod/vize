@@ -1,7 +1,6 @@
 use oxc_syntax::identifier::is_identifier_part;
 
 /// The per-alias reference scan [`underscore_call_sites`] must agree with.
-#[cfg(test)]
 pub(super) fn helper_call_position(text: &str, alias: &str) -> Option<usize> {
     let bytes = text.as_bytes();
     let alias = alias.as_bytes();

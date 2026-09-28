@@ -292,3 +292,18 @@ to `report-test-inventory`, preserving the exact required `test-report` job
 name, inventory artifact and final dependency verification. Both oversized
 files stay at or below their event-base lengths. No source-length exemption
 or change to instruction ceilings is introduced.
+
+## Helper alias scan queue correction (#7044)
+
+The first protected queue candidate `83940da178af0343f178b2ffa47f74b2fdde9d64`
+on main `370caeafee07cec57e78a7b0c75569b299ccd160` measured all 100
+probes identically three times, but failed seven DOM/Vapor compile ceilings.
+The largest miss was DOM stress-deep, `2,456,660 > 2,453,987`; the raw
+instruction artifact is `10956831913` in run `36392270701`.
+
+The one-scan alias lookup inspects every underscore call and helper name even
+when a module uses few helpers. For at most eight used helpers or at most
+8,192 bytes of generated code, keep the previous early-exit per-alias scan;
+use the one-scan cache only above both bounds. This is a bounded correction,
+not a ceiling change. Its instruction result and actual queue merge remain
+pending fresh Actions.
