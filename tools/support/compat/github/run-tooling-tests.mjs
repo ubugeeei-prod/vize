@@ -38,7 +38,15 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const shardId = Number(process.env.VIZE_TOOLING_MERGE_SHARD);
     const tests = mergeToolingShardTests(available, shardId);
     // Matrix jobs have separate checkouts; tests remain serial within each.
-    const args = ["--test", "--test-concurrency=1", ...tests];
+    const reporters = process.env.VIZE_TOOLING_TIMING_FILE
+      ? [
+          "--test-reporter=spec",
+          "--test-reporter=./tools/support/compat/github/tooling-file-timing-reporter.mjs",
+          "--test-reporter-destination=stdout",
+          `--test-reporter-destination=${process.env.VIZE_TOOLING_TIMING_FILE}`,
+        ]
+      : [];
+    const args = ["--test", "--test-concurrency=1", ...reporters, ...tests];
     process.stdout.write(
       `Merge tooling shard ${shardId}/${mergeToolingShardCount}: ${tests.length}/${available.length} files.\n`,
     );

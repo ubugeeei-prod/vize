@@ -46,7 +46,14 @@ jobs:
           VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
           VIZE_TOOLING_MERGE_SHARD: ${{ matrix.shard }}
+          VIZE_TOOLING_TIMING_FILE: target/tooling-file-times-${{ matrix.shard }}.jsonl
         run: vp run --workspace-root test:scripts:merge-shard
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: tooling-file-times-${{ github.run_id }}-${{ github.run_attempt }}-shard-${{ matrix.shard }}
+          path: target/tooling-file-times-${{ matrix.shard }}.jsonl
+          if-no-files-found: warn
       - uses: ./.github/actions/upload-formatter-api-corpus-evidence
         if: ${{ always() && matrix.shard == 1 }}
 
