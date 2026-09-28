@@ -122,7 +122,7 @@ function completeEvidence() {
 const codes = (evidence) =>
   new Set(assessDeletionReadiness(evidence).blockers.map((item) => item.code));
 
-test("complete exact-candidate and stable scheduled evidence can satisfy the deletion gate", () => {
+void test("complete exact-candidate and stable scheduled evidence can satisfy the deletion gate", () => {
   const result = assessDeletionReadiness(completeEvidence());
   assert.equal(result.ready, true, JSON.stringify(result.blockers.slice(0, 5)));
 
@@ -137,7 +137,7 @@ test("complete exact-candidate and stable scheduled evidence can satisfy the del
   );
 });
 
-test("missing, forged and fallback evidence never gets native deletion credit", () => {
+void test("missing, forged and fallback evidence never gets native deletion credit", () => {
   const missing = completeEvidence();
   delete missing.candidate.tiers.T1.linter;
   assert(codes(missing).has("missing-result"));
@@ -159,7 +159,7 @@ test("missing, forged and fallback evidence never gets native deletion credit", 
   assert(codes(untrusted).has("run-provenance"));
 });
 
-test("scope and stability cannot pass on reduced plans or selective projects", () => {
+void test("scope and stability cannot pass on reduced plans or selective projects", () => {
   const scope = completeEvidence();
   scope.policy.targets.typechecker = [];
   scope.policy.dialects.pop();
@@ -181,7 +181,7 @@ test("scope and stability cannot pass on reduced plans or selective projects", (
   assert(unstableCodes.has("scope-drift"));
 });
 
-test("current repository state is explicitly blocked without native product evidence", () => {
+void test("current repository state is explicitly blocked without native product evidence", () => {
   assert.throws(
     () =>
       execFileSync(
@@ -203,7 +203,7 @@ test("current repository state is explicitly blocked without native product evid
   );
 });
 
-test("unmet deletion readiness runs only on explicit Actions dispatch", () => {
+void test("unmet deletion readiness runs only on explicit Actions dispatch", () => {
   const workflow = fs.readFileSync(
     new URL("../../.github/workflows/level-deletion-readiness.yml", import.meta.url),
     "utf8",
