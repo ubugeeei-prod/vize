@@ -11,7 +11,6 @@ metadata.vize.stability = "compatibility-preview"
 [dependencies]
 vize_armature.workspace = true
 vize_carton.workspace = true
-vize_l1.workspace = true
 vize_relief.workspace = true
 vize_davinci.workspace = true
 vize_l3.workspace = true
