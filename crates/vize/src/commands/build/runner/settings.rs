@@ -65,6 +65,9 @@ pub(super) struct CompileFileSettings {
 /// compile path is described by, where a `repro.folio` goes, the per-pass
 /// dump controls, and the TS-23 panic injection.
 pub(super) struct DavinciBuildSettings {
+    /// Opt-in destination for the stages from this exact product compile.
+    pub(super) dump_dir: Option<PathBuf>,
+    pub(super) dump_after_change: bool,
     /// The selected backend's legacy plan (`legacy_plan::{DOM,SSR,VAPOR}`)
     /// in the canonical pipeline-grammar spelling.
     pub(super) plan_string: String,
@@ -108,16 +111,13 @@ impl CompileFileSettings {
                 std::process::exit(1);
             })
         });
-        // The dump directory is created even though no pages can be written
-        // until P2-12b gives the compile path a folio-printable stage
-        // artifact: an existing empty directory is an observable "nothing
-        // was dumped", where a missing one is indistinguishable from an
-        // ignored flag. Pinned by `davinci_repro_cli.rs`.
-        if let Some(dir) = args.folio_dir.as_deref()
+        // Create the requested output root before compiling. Each successful
+        // file writes a feed with the backend selection from that same run.
+        if let Some(dir) = args.dump_dir.as_deref()
             && let Err(error) = std::fs::create_dir_all(dir)
         {
             eprintln!(
-                "\x1b[31mError:\x1b[0m --folio-dir: cannot create {}: {error}",
+                "\x1b[31mError:\x1b[0m --dump-dir: cannot create {}: {error}",
                 dir.display()
             );
             std::process::exit(1);
@@ -138,6 +138,8 @@ impl CompileFileSettings {
             script_ext: args.script_ext,
             record_profile_totals: args.profile,
             davinci: DavinciBuildSettings {
+                dump_dir: args.dump_dir.clone(),
+                dump_after_change: args.dump_after_change,
                 plan_string: davinci_ice::plan_string(plan),
                 planned_groups: budget.walks,
                 planned_passes: budget.passes,

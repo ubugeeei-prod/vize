@@ -137,8 +137,8 @@ pub fn run(args: ReadyArgs) {
         profile: false,
         slow_threshold: 100,
         continue_on_error: false,
-        folio_dir: None,
-        folio_after_change: false,
+        dump_dir: None,
+        dump_after_change: false,
         davinci_inject_panic: None,
         profile_export: Default::default(),
     });

@@ -6,7 +6,7 @@ use super::{OutputError, OutputFormat, ScriptExtension};
 
 pub(crate) struct PlannedInput {
     pub(crate) source: PathBuf,
-    pub(super) relative_source: PathBuf,
+    pub(crate) relative_source: PathBuf,
 }
 
 struct ComparableSource {

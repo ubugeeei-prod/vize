@@ -133,17 +133,13 @@ pub struct BuildArgs {
     #[arg(long)]
     pub continue_on_error: bool,
 
-    /// Write per-pass Davinci folio dumps for davinci-driven compiles into DIR
-    ///
-    /// The compile path has no folio-printable stage artifact until the L2
-    /// build path lands (docs/davinci P2-12b), so today a build writes the
-    /// directory and no pages; `davinci-opt --folio-dir` dumps real pages.
+    /// Write observed native compiler stages for each built SFC into DIR
     #[arg(long, value_name = "DIR")]
-    pub folio_dir: Option<PathBuf>,
+    pub dump_dir: Option<PathBuf>,
 
-    /// Only dump a pass's folio when the artifact hash changed across it
-    #[arg(long, requires = "folio_dir")]
-    pub folio_after_change: bool,
+    /// Only dump a stage when its artifact hash changed from the prior stage
+    #[arg(long, requires = "dump_dir")]
+    pub dump_after_change: bool,
 
     /// Inject a panic for the crash-repro machinery (TS-23): '<file-stem>:<pass>'
     #[arg(long, hide = true, value_name = "SPEC")]

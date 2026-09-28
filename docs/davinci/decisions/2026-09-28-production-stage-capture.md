@@ -145,6 +145,20 @@ directory removes only page files whose generated names and bytes match the
 previous version 2 `vize-dump` feed. A modified page or a colliding file stops
 the export without deleting user content; unrelated files remain untouched.
 
+## Build command dump
+
+`vize build --dump-dir` observes the same SFC compile that returns each built
+module. `--dump-after-change` filters consecutive equal page text without
+another compile. The former `--folio-dir` and `--folio-after-change` names have
+no aliases. Ordinary builds keep the non-observing compiler entry and do no
+dump work. A stats-only build bypasses its content cache only when capture is
+requested, so each reported file has an executed compile.
+
+Each source gets a version 2 `stages.json` feed through the shared product
+serializer. Only accepted native template stages write `.dump` pages; legacy
+or unavailable selection records its actual outcome and zero pages. This does
+not claim native SFC script/style work or add native acceptance credit.
+
 ## Merge sequence
 
 Dependent product capture slices are registered as one GitHub native Stack
