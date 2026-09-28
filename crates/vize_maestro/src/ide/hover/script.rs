@@ -20,7 +20,7 @@ use std::sync::Arc;
 use vize_canon::CorsaBridge;
 
 use super::{HoverBuilder, HoverService};
-use crate::ide::IdeContext;
+use crate::ide::{IdeContext, script_identifier};
 
 #[cfg(feature = "native")]
 mod reactive_type;
@@ -30,7 +30,7 @@ use reactive_type::hover_has_unknown_reactive_type;
 impl HoverService {
     /// Get hover for script context.
     pub(super) fn hover_script(ctx: &IdeContext, is_setup: bool) -> Option<Hover> {
-        let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
+        let word = script_identifier::at_offset(&ctx.content, ctx.offset).unwrap_or_default();
 
         if word.is_empty() {
             return None;
@@ -61,7 +61,7 @@ impl HoverService {
         is_setup: bool,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Hover> {
-        let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
+        let word = script_identifier::at_offset(&ctx.content, ctx.offset).unwrap_or_default();
 
         if word.is_empty() {
             return None;

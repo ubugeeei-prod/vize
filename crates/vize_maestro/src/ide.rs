@@ -37,6 +37,7 @@ pub(crate) mod musea;
 pub(crate) mod pug;
 pub mod references;
 pub mod rename;
+pub(crate) mod script_identifier;
 pub mod selection_range;
 pub mod semantic_tokens;
 pub(crate) mod sfc_region;

@@ -14,7 +14,7 @@ lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	45	raw_oxc	raw OXC	raw	oxc_synta
 lsp	LSP	source	crates/vize_maestro/src/document/store.rs	83	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/document/text.rs	6	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/document/text/tests.rs	4	l0	L0	stage	vize_l0	preferred	8
-lsp	LSP	source	crates/vize_maestro/src/ide.rs	103	l0	L0	stage	vize_l0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide.rs	104	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/auto_insert.rs	78	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/call_hierarchy.rs	140	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/call_hierarchy/document.rs	48	l0	L0	stage	vize_l0	preferred	1
@@ -93,7 +93,7 @@ lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/workspace_edit.rs	160
 lsp	LSP	source	crates/vize_maestro/src/ide/declaration.rs	124	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/declaration/tests.rs	123	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/definition/art.rs	10	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/definition/corsa_tests.rs	32	l0	L0	stage	vize_l0	preferred	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/definition/corsa_tests.rs	33	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/definition/facts.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/ide/definition/helpers.rs	11	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/definition/import_resolver.rs	6	l0	L0	stage	vize_l0	preferred	1
@@ -251,6 +251,7 @@ lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/pr
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/identity.rs	4	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/readiness.rs	3	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_tests.rs	343	l0	L0	stage	vize_l0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/script_identifier.rs	10	raw_oxc	raw OXC	raw	oxc_syntax	raw	2
 lsp	LSP	source	crates/vize_maestro/src/ide/selection_range/markup.rs	121	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/art.rs	276	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/encoding.rs	13	l0	L0	stage	vize_l0	preferred	1
