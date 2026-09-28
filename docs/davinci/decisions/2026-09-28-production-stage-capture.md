@@ -10,15 +10,19 @@ be presented as the stages that emitted a product module.
 L0 owns a target-neutral `CaptureSink` contract and an owned `StageCapture`
 sidecar. The ordinary compile uses `NoCapture`; page, timing, remark and
 outcome builders are lazy, so they do no dump work or clock reading there.
-The ordinary DOM emitter retains its original parse, lower, transform and emit
-body. A compile-time `CaptureSink::RECORDING` switch sends `NoCapture` to that
-body and an observing sink through the same-run page path. This boundary was
+The ordinary DOM host retains its original `try_emit_l2` and `emit_l2` bodies,
+and the L1→L2 emitter retains its original parse, lower, transform and emit
+body. A compile-time `CaptureSink::RECORDING` switch sends `NoCapture` through
+those bodies and an observing sink through the same-run page path. This was
 required by the protected instruction gate: candidate `8f364d` against the
 green predecessor `cf8086` changed only the six full DOM compile probes
 (+162, +779, +772, +1251, +23 and +2121 instructions); the DOM transform,
 codegen and other product probes stayed unchanged. The captured generic body
 changed LLVM's optimization of the ordinary DOM emitter despite lazy page
-builders. No instruction ceiling is raised.
+builders. Restoring the L1→L2 body alone left only the small (+28) and wide
+(+48) probes above their ceilings; Callgrind showed the remaining ordinary
+host calls still passed through the generic captured wrappers. No instruction
+ceiling is raised.
 Each product records only boundaries it actually executed. Provisional pages
 are committed only after final product selection, including DOM source-map
 parity. A compatibility map mismatch returns the compatibility module and
