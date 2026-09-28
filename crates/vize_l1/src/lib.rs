@@ -2,6 +2,7 @@
 //!
 //! **Experimental:** the stage API may change in any alpha release; record
 //! intentional breaking changes in the release notes.
+//! This source-only edit exercises the unpublished CI tier diagnostic.
 //!
 //! A *sinopia* is the preparatory underdrawing beneath a fresco. When the
 //! finished layer is detached from the wall, the sinopia survives as the
