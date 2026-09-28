@@ -28,6 +28,7 @@ jobs:
           HEAD_SHA: 717d52d13434ee41f0983207694b9afe7dcf8eaa
         run: |
           git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          git fetch --no-tags --depth=1 origin "$HEAD_SHA"
           node tools/support/compat/github/plan-tooling-fast-pr.mjs "$BASE_SHA" "$HEAD_SHA" "$RUNNER_TEMP/tooling-fast-plan.json"
           node -e "if (require(process.argv[1]).mode !== 'fast') process.exit(1)" "$RUNNER_TEMP/tooling-fast-plan.json"
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
