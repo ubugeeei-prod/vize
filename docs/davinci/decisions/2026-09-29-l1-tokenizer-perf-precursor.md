@@ -47,3 +47,12 @@ work must identify a source-level improvement with a measured 100/100 outcome
 on the actual cumulative tree before publishing. Keep #6835 open until
 production ownership, dependency direction, parity and protected queue checks
 are complete; #6880 still gates product-route replacement.
+
+The native L1 `markup::lex::native` remains opt-in on current main. Default
+`vize_l1::parse` and its event adapter still import Armature, and L1 retains
+normal Armature and Relief dependencies. A second opt-in lexer PR would leave
+those production edges and #7136's failed inversion untouched. A genuine
+structural alternative must relocate that adapter without making legacy own
+L1 syntax, or replace the default parser with a native, parity-verified L1
+consumer; it must satisfy the same instruction and #6880 route gates. Do not
+count another opt-in slice as completion of #6835.
