@@ -233,7 +233,9 @@ fn collect_artifact_macro_import_bindings<'a>(
             continue;
         };
         for specifier in specifiers {
-            if let Some(local) = artifact_macro_import_local_name(specifier) {
+            if let Some(local) =
+                artifact_macro_import_local_name(specifier, import_decl.source.value.as_str())
+            {
                 bindings.insert(local.into());
             }
         }
@@ -255,13 +257,14 @@ fn is_artifact_macro_only_import(stmt: &Statement<'_>) -> bool {
         return false;
     };
     !specifiers.is_empty()
-        && specifiers
-            .iter()
-            .all(|specifier| artifact_macro_import_local_name(specifier).is_some())
+        && specifiers.iter().all(|specifier| {
+            artifact_macro_import_local_name(specifier, import_decl.source.value.as_str()).is_some()
+        })
 }
 
 fn artifact_macro_import_local_name<'a>(
     specifier: &'a ImportDeclarationSpecifier<'a>,
+    source: &str,
 ) -> Option<&'a str> {
     let ImportDeclarationSpecifier::ImportSpecifier(spec) = specifier else {
         return None;
@@ -271,14 +274,17 @@ fn artifact_macro_import_local_name<'a>(
     }
     let imported = spec.imported.name().as_str();
     let local = spec.local.name.as_str();
-    if imported != local || macro_artifact_kind(imported).is_none() {
+    if imported != local
+        || macro_artifact_kind(imported).is_none()
+        || (source == "#imports" && imported != "definePageMeta")
+    {
         return None;
     }
     Some(local)
 }
 
 fn is_known_artifact_macro_import_source(source: &str) -> bool {
-    matches!(source, "@typed-router")
+    matches!(source, "@typed-router" | "#imports")
 }
 
 fn build_artifact_module(kind: &str, payload: &str, static_imports: &str) -> String {

@@ -798,6 +798,25 @@ const msg = 'ready'
 }
 
 #[test]
+fn test_nuxt_explicit_page_meta_import_produces_route_artifact() {
+    let source =
+        include_str!("../../../../tests/_fixtures/differential/nuxt/explicit-page-meta/App.vue");
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse SFC");
+    let result = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("compile SFC");
+
+    assert_eq!(result.macro_artifacts.len(), 1);
+    let artifact = &result.macro_artifacts[0];
+    assert_eq!(artifact.kind.as_str(), "nuxt.definePageMeta");
+    assert_eq!(artifact.content.as_str(), "{ layout: 'bare' }");
+    assert_eq!(
+        artifact.module_code.as_deref(),
+        Some("const __nuxt_page_meta = { layout: 'bare' }\nexport default __nuxt_page_meta\n")
+    );
+    assert!(!result.code.contains("definePageMeta"), "{}", result.code);
+    assert!(!result.code.contains("#imports"), "{}", result.code);
+}
+
+#[test]
 fn test_script_setup_define_route_rules_is_compile_time_only() {
     let source = r#"<script setup lang="ts">
 defineRouteRules({

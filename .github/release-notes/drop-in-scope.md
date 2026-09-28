@@ -14,6 +14,11 @@ See [Drop-in Scope](https://vizejs.dev/guide/vite-plugin#drop-in-scope) and
 `vize fmt` now accepts ambient `const` declarations in `.d.ts`, `.d.mts`, and
 `.d.cts` files.
 
+## Nuxt page metadata
+
+`definePageMeta` imported explicitly from `#imports` now produces route metadata
+and is removed from the component setup code, matching Nuxt's auto-import path.
+
 ## Reporter acknowledgements
 
 All nine fixes are included in
