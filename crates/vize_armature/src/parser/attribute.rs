@@ -254,18 +254,7 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        let first_directive = self.current_element.as_mut().is_some_and(|current| {
-            if current.directive_name_count == 0 {
-                current.directive_names[0] = Some(dir.raw_name);
-                current.directive_name_count = 1;
-                true
-            } else {
-                false
-            }
-        });
-        if !first_directive {
-            self.report_duplicate_directive(&dir);
-        }
+        self.check_duplicate_directive(&dir);
 
         // The `.foo` shorthand is equivalent to `v-bind:foo.prop`: detect it
         // before `raw_name` is moved so we can synthesize a `prop` modifier.
