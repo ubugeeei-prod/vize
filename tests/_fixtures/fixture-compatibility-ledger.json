@@ -45,7 +45,21 @@
     {
       "fixturePath": "tests/_fixtures/_git/bootstrap-vue",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/bootstrap-vue/bootstrap-vue",
+            "revision": "9a246f45fc813f161df291fc7d6197febf8afaf4",
+            "file": "package.json",
+            "blobSha": "419ac83c50c1b1f9ae9e031508c217d7187f3526",
+            "field": "devDependencies.vue",
+            "value": "^2.6.12"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/buefy",
@@ -75,7 +89,21 @@
     {
       "fixturePath": "tests/_fixtures/_git/cube-ui",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/didi/cube-ui",
+            "revision": "77c342462be8f97c62f37e33abbe4824756bf057",
+            "file": "package.json",
+            "blobSha": "d1f9ce1be921bb28271145d1a1ffc60b89934e93",
+            "field": "peerDependencies.vue",
+            "value": "^2.5.13"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/dashy",
@@ -124,7 +152,21 @@
     {
       "fixturePath": "tests/_fixtures/_git/element",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/ElemeFE/element",
+            "revision": "c345bb453bf11badb4831a6a3f600c9372b3a336",
+            "file": "package.json",
+            "blobSha": "95b92a20820739047dedf9bd6ac1e32233c0be42",
+            "field": "peerDependencies.vue",
+            "value": "^2.5.17"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/element-plus",
@@ -637,7 +679,21 @@
     {
       "fixturePath": "tests/_fixtures/_git/vue-material",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2.7-sfc"],
+            "repository": "https://github.com/vuematerial/vue-material",
+            "revision": "7b1efd058abaccc826bcf856e2a879936bf0fcd3",
+            "file": "package.json",
+            "blobSha": "7122aef7901ee0b7851e190fc7e28bd49d65f757",
+            "field": "peerDependencies.vue",
+            "value": "^2.7.14"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-multiselect",
@@ -667,7 +723,21 @@
     {
       "fixturePath": "tests/_fixtures/_git/vue-select",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/sagalbot/vue-select",
+            "revision": "35897ade99e750a452e67df3b38e156d0c1fff42",
+            "file": "package.json",
+            "blobSha": "a2b9fc46d2d394331131e2106d83ff2ca5bf1564",
+            "field": "peerDependencies.vue",
+            "value": "2.x"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-sonner",
@@ -782,7 +852,21 @@
     {
       "fixturePath": "tests/_fixtures/_git/vux",
       "memberships": ["ecosystem"],
-      "dialectCoverage": { "state": "unknown", "evidence": [] }
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "pinned-package",
+            "dialects": ["vue2-sfc"],
+            "repository": "https://github.com/airyland/vux",
+            "revision": "881e6803832b535aff3ef90a9aee9fba6aae1a9a",
+            "file": "package.json",
+            "blobSha": "c380d6511d3159c98394fe53b0d1a3f221c56355",
+            "field": "devDependencies.vue",
+            "value": "2.5.16"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/wakapi",

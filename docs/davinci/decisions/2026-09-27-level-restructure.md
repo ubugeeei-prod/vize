@@ -306,7 +306,7 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 
 - zizmor runs only for external contributors, releases and PRs that touch `.github/**`. [Audit selection](./2026-09-27-ci-security-selection.md) and [inherited finding repair](./2026-09-27-workflow-security-refresh.md) record #6866.
 - VRT, tsgo-required tests and ledger checks leave the PR tier. [Inventory tier implementation](./2026-09-27-ci-tier-inventories.md) records #6864.
-- Whole-repo generated ledgers stop being committed; merge queue, nightly and exact-SHA release Check runs publish the validated bundle. [Artifact generation](./2026-09-27-generated-ledgers.md) records #6867; [dialect fixture coverage](./2026-09-28-dialect-fixture-coverage.md) records #6892's evidenced project presence, unknowns and remaining case work.
+- Whole-repo generated ledgers stop being committed; merge queue, nightly and exact-SHA release Check runs publish the validated bundle. [Artifact generation](./2026-09-27-generated-ledgers.md) records #6867; [dialect fixture coverage](./2026-09-28-dialect-fixture-coverage.md) records #6892's pinned source and package evidence, unknowns and remaining case work.
 - [JS native preparation](./2026-09-27-js-native-preparation.md) keeps package coverage and reuses the root test build ([#6830](https://github.com/ubugeeei-prod/vize/issues/6830)).
 - [UI check tiers](./2026-09-27-ui-check-ci-tiers.md) retain Fresco declarations/types in T0 and require UI acceptance in T1 ([#6864](https://github.com/ubugeeei-prod/vize/issues/6864)).
 

@@ -53,6 +53,18 @@ export function validateDialectCoverage(coverage, fixturePath, context) {
     } else if (item.kind === "test-oracle") {
       exactKeys(item, ["kind", "dialects", "file", "selector"]);
       validateTestOracle(item, context.rootDir);
+    } else if (item.kind === "pinned-package") {
+      exactKeys(item, [
+        "kind",
+        "dialects",
+        "repository",
+        "revision",
+        "file",
+        "blobSha",
+        "field",
+        "value",
+      ]);
+      validatePinnedPackage(item, fixturePath, context);
     } else {
       invalid(`${fixturePath} unknown dialect evidence kind ${item.kind}`);
     }
@@ -65,6 +77,33 @@ export function validateDialectCoverage(coverage, fixturePath, context) {
     }
   }
   unique(identities, `${fixturePath} dialect claims`);
+}
+
+function validatePinnedPackage(item, fixturePath, context) {
+  const project = context.registry.projects.find((row) => row.fixturePath === fixturePath);
+  if (project == null || !project.vueGlobs?.length) {
+    invalid(`${fixturePath} pinned package claim needs a registered Vue source corpus`);
+  }
+  if (item.repository !== project.repository || item.revision !== project.revision) {
+    invalid(`${fixturePath} pinned package receipt drifted from fixture registry`);
+  }
+  if (item.file !== "package.json" || !/^[a-f0-9]{40}$/.test(item.blobSha)) {
+    invalid(`${fixturePath} pinned package receipt must name a package.json Git blob`);
+  }
+  enumValue(
+    item.field,
+    ["dependencies.vue", "devDependencies.vue", "peerDependencies.vue"],
+    "Vue package field",
+  );
+  if (!/^(?:\^|~)?2(?:\.(?:[0-9]+|x)(?:\.[0-9]+)?)?(?:$|\s)/.test(item.value)) {
+    invalid(`${fixturePath} pinned Vue package value does not select Vue 2`);
+  }
+  if (item.dialects.includes("vue2.7-sfc") && !/(?:\^|~)?2\.7\./.test(item.value)) {
+    invalid(`${fixturePath} Vue 2.7 claim needs a Vue 2.7 package value`);
+  }
+  if (item.dialects.some((dialect) => !["vue2-sfc", "vue2.7-sfc"].includes(dialect))) {
+    invalid(`${fixturePath} package version cannot prove a template syntax dialect`);
+  }
 }
 
 export function dialectCoverageSummary(fixtures) {
