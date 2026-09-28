@@ -8,8 +8,8 @@
 
 use core::marker::PhantomData;
 
-use super::profile::Profile;
-use super::token::Sink;
+use super::super::profile::Profile;
+use super::super::token::Sink;
 
 /// Interpolation delimiters, `{{`/`}}` by default.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
