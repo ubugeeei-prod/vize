@@ -96,7 +96,7 @@ pub static BOOLEAN_ATTRS: phf::Set<&'static str> = phf_set! {
 };
 
 /// Check if tag is a valid HTML tag
-#[inline]
+#[inline(never)]
 pub fn is_html_tag(tag: &str) -> bool {
     // These common template tags are checked repeatedly during classification.
     matches!(
