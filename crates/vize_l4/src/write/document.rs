@@ -17,8 +17,10 @@ use alloc::vec::Vec;
 
 use vize_l0::{Span, String};
 
-use super::rewrite_spans::rewritten_identifier_spans;
 use super::source_map::SourceMapBuilder;
+
+mod expression_links;
+pub use expression_links::expression_links;
 
 /// One generated↔authored link.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -39,6 +41,7 @@ pub struct SpanLink {
 }
 
 impl SpanLink {
+    #[inline]
     fn rebased(&self, base: u32) -> Self {
         Self {
             generated: Span::new(self.generated.start + base, self.generated.end + base),
@@ -57,6 +60,7 @@ pub struct EmitDocument {
 
 impl Default for EmitDocument {
     /// An empty recording fragment.
+    #[inline]
     fn default() -> Self {
         Self::new(true)
     }
@@ -64,6 +68,7 @@ impl Default for EmitDocument {
 
 impl From<String> for EmitDocument {
     /// A recording fragment holding `text` with no links.
+    #[inline]
     fn from(text: String) -> Self {
         Self {
             text,
@@ -75,11 +80,13 @@ impl From<String> for EmitDocument {
 
 impl EmitDocument {
     /// An empty document; it keeps links only when `recording`.
+    #[inline]
     pub fn new(recording: bool) -> Self {
         Self::with_capacity(0, recording)
     }
 
     /// An empty document with room for `capacity` bytes of text.
+    #[inline]
     pub fn with_capacity(capacity: usize, recording: bool) -> Self {
         Self {
             text: String::with_capacity(capacity),
@@ -89,6 +96,7 @@ impl EmitDocument {
     }
 
     /// A non-recording document holding `text`.
+    #[inline]
     pub fn unrecorded(text: String) -> Self {
         Self {
             text,
@@ -98,48 +106,58 @@ impl EmitDocument {
     }
 
     /// A fragment holding `text` with no links.
+    #[inline]
     pub fn plain(text: &str) -> Self {
         Self::from(String::new(text))
     }
 
     /// A fragment holding `text` generated from the authored byte `source`.
+    #[inline]
     pub fn mapped(text: &str, source: u32) -> Self {
         let mut fragment = Self::default();
         fragment.push_mapped(text, source);
         fragment
     }
 
+    #[inline]
     pub fn is_recording(&self) -> bool {
         self.recording
     }
 
+    #[inline]
     pub fn len(&self) -> usize {
         self.text.len()
     }
 
+    #[inline]
     pub fn is_empty(&self) -> bool {
         self.text.is_empty()
     }
 
+    #[inline]
     pub fn as_str(&self) -> &str {
         &self.text
     }
 
+    #[inline]
     pub fn links(&self) -> &[SpanLink] {
         &self.links
     }
 
     /// The generated text, dropping the links.
+    #[inline]
     pub fn into_string(self) -> String {
         self.text
     }
 
+    #[inline]
     pub fn into_parts(self) -> (String, Vec<SpanLink>) {
         (self.text, self.links)
     }
 
     /// A recording fragment from text and links over it, the inverse of
     /// [`Self::into_parts`].
+    #[inline]
     pub fn from_parts(text: String, links: Vec<SpanLink>) -> Self {
         Self {
             text,
@@ -177,10 +195,12 @@ impl EmitDocument {
         self.text.push(ch);
     }
 
+    #[inline]
     fn cursor(&self) -> u32 {
         self.text.len() as u32
     }
 
+    #[inline]
     fn record(&mut self, generated: Span, authored: Span, name: Option<&str>) {
         if self.recording {
             self.links.push(SpanLink {
@@ -192,6 +212,7 @@ impl EmitDocument {
         }
     }
 
+    #[inline]
     fn push_recorded(&mut self, text: &str, authored: Span, name: Option<&str>) {
         let start = self.cursor();
         self.record(Span::new(start, start + text.len() as u32), authored, name);
@@ -199,29 +220,34 @@ impl EmitDocument {
     }
 
     /// Anchor the next written byte at the authored byte `source`.
+    #[inline]
     pub fn anchor(&mut self, source: u32) {
         let at = self.cursor();
         self.record(Span::new(at, at), Span::new(source, source), None);
     }
 
     /// Append `text` generated from the authored unit starting at `source`.
+    #[inline]
     pub fn push_mapped(&mut self, text: &str, source: u32) {
         self.push_recorded(text, Span::new(source, source), None);
     }
 
     /// Append `text` generated from the authored range `authored`.
+    #[inline]
     pub fn push_linked(&mut self, text: &str, authored: Span) {
         self.push_recorded(text, authored, None);
     }
 
     /// Append `text` generated from the authored range `authored`, which
     /// spells the symbol `name`.
+    #[inline]
     pub fn push_named(&mut self, text: &str, authored: Span, name: &str) {
         self.push_recorded(text, authored, Some(name));
     }
 
     /// Append an emitted expression authored at `span` of `source_text`, with
     /// its whole-expression and rewritten-identifier links.
+    #[inline]
     pub fn push_expression(&mut self, code: &str, span: Span, source_text: &str) {
         if self.recording {
             let base = self.cursor();
@@ -235,6 +261,7 @@ impl EmitDocument {
     }
 
     /// Append another document, rebasing its links.
+    #[inline]
     pub fn push_spanned(&mut self, other: &EmitDocument) {
         if self.recording {
             let base = self.cursor();
@@ -308,42 +335,6 @@ impl EmitDocument {
         self.write_segments(&mut builder);
         builder.finish(&self.text, filename, source)
     }
-}
-
-/// Links for an emitted expression authored at `span`: the whole expression
-/// plus every identifier the context rewrite scoped (named, see
-/// [`rewritten_identifier_spans`]). When an identifier starts the expression,
-/// the whole-expression link keeps its range but yields its segment to the
-/// identifier. An expression without an authored span (the empty stub
-/// location of a synthesized node) has no links.
-pub fn expression_links(code: &str, span: Span, source_text: &str) -> Vec<SpanLink> {
-    if span.start >= span.end {
-        return Vec::new();
-    }
-    let authored = source_text.get(span.start as usize..span.end as usize);
-    let identifiers = authored
-        .and_then(|authored| rewritten_identifier_spans(authored, code))
-        .unwrap_or_default();
-    let covers_start = identifiers
-        .first()
-        .is_some_and(|identifier| identifier.emitted == 0 && identifier.authored == 0);
-    let whole = SpanLink {
-        generated: Span::new(0, code.len() as u32),
-        authored: span,
-        name: None,
-        segment: !covers_start,
-    };
-    let named = identifiers.into_iter().map(|identifier| {
-        let start = span.start + identifier.authored as u32;
-        let emitted = identifier.emitted as u32;
-        SpanLink {
-            generated: Span::new(emitted, emitted + identifier.emitted_len() as u32),
-            authored: Span::new(start, start + identifier.name.len() as u32),
-            name: Some(String::new(identifier.name)),
-            segment: true,
-        }
-    });
-    core::iter::once(whole).chain(named).collect()
 }
 
 #[cfg(test)]
