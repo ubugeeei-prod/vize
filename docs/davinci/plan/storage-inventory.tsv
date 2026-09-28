@@ -42,6 +42,9 @@ l1	-	crates/vize_l1/src/build/tag.rs	0	0	0	0	1	4	0	0
 l1	-	crates/vize_l1/src/container.rs	0	0	0	0	1	3	0	0
 l1	-	crates/vize_l1/src/container/vue.rs	0	0	0	0	1	2	0	0
 l1	-	crates/vize_l1/src/container/vue/scan.rs	0	0	0	0	1	2	0	0
+l1	-	crates/vize_l1/src/markup/lex/compat/dynamic_arg.rs	0	0	0	0	0	0	1	1
+l1	-	crates/vize_l1/src/markup/lex/compat/dynamic_arg/tests.rs	0	0	0	0	0	0	1	2
+l1	-	crates/vize_l1/src/markup/lex/compat/tests.rs	0	0	0	0	0	0	1	2
 l1	-	crates/vize_l1/src/markup/lex/native/dynamic_arg.rs	0	0	0	0	0	0	1	1
 l1	-	crates/vize_l1/src/markup/lex/native/dynamic_arg/tests.rs	0	0	0	0	0	0	1	2
 l1	-	crates/vize_l1/src/markup/lex/native/tests.rs	0	0	0	0	0	0	1	2
