@@ -1,12 +1,14 @@
 //! Patch flag calculation and naming functions.
 
+mod dynamic_props;
 mod static_literal;
 
+use self::dynamic_props::dedupe_dynamic_props;
 use self::static_literal::{is_static_literal, is_static_object_or_array_literal_node};
 use super::helpers::camelize;
 use crate::options::{BindingMetadata, BindingType};
 use crate::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
-use vize_l0::{FxHashSet, String, ToCompactString, is_builtin_directive};
+use vize_l0::{String, ToCompactString, is_builtin_directive};
 
 /// Check whether an interpolation only references bindings constant at runtime.
 fn is_constant_interpolation(
@@ -394,10 +396,8 @@ fn calculate_element_patch_info_inner(
     }
 
     let patch_flag = if flag > 0 { Some(flag) } else { None };
-    // Deduplicate in source order even when another generated prop sits
-    // between two listeners for the same runtime key (v-model plus @update).
-    let mut seen_dynamic_props = FxHashSet::default();
-    dynamic_props.retain(|prop| seen_dynamic_props.insert(prop.clone()));
+    // Deduplicate in source order across separated listeners (v-model plus @update).
+    dedupe_dynamic_props(&mut dynamic_props);
     let dynamic_props_result = if !dynamic_props.is_empty() {
         Some(dynamic_props)
     } else {
