@@ -57,8 +57,8 @@ fn source_contains_parser_recovery(source: &str) -> bool {
         let namespace = tag_namespace(name, tags.last().copied());
         let tag_end = scan_tag_end(bytes, name_end);
         // The direct L2 path does not run the shipped parser, which reports
-        // repeated static attributes as recoverable SFC warnings. Parse only
-        // these tags through the shared path so the warning is retained.
+        // repeated attributes as SFC errors. Parse these tags through the
+        // shared path so their diagnostics are retained.
         if tag_has_duplicate_attribute(bytes, name_end, tag_end) {
             return true;
         }
@@ -129,7 +129,7 @@ mod tests {
     }
 
     #[test]
-    fn duplicate_attributes_require_parser_warnings() {
+    fn duplicate_attributes_require_parser_diagnostics() {
         for source in [
             r#"<h4 :class="premium" class="" class="shop_title">Shop</h4>"#,
             r#"<div CLASS="first" class="second" />"#,
@@ -353,7 +353,7 @@ fn scan_tag_end(bytes: &[u8], start: usize) -> usize {
     bytes.len()
 }
 
-/// A cheap warning gate for the SFC direct path. A duplicate (or a tag with
+/// A cheap diagnostic gate for the SFC direct path. A duplicate (or a tag with
 /// too many attributes for this fixed-size probe) gets the shipped parser;
 /// it can still use L2 for codegen after collecting diagnostics.
 fn tag_has_duplicate_attribute(bytes: &[u8], start: usize, end: usize) -> bool {

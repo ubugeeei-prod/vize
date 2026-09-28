@@ -22,7 +22,7 @@ use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_core::{CodegenExperimentalOptions, CodegenOptions};
 use vize_l0::Allocator;
 
-use vize_atelier_core::CompilerErrorWithSource;
+use vize_atelier_core::{CompilerErrorWithSource, ErrorCode};
 
 use crate::compile::output_module::OutputModule;
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
@@ -139,12 +139,10 @@ pub(crate) fn compile_template_block(
             )
         );
 
-        // Recoverable parser diagnostics (e.g. duplicate attribute) must
-        // not gate SFC compilation, or a single `<div id=a id=b>` produces
-        // a 0-byte module marked as success. (#958)
+        // Duplicate attributes change render semantics, so reject the SFC.
         let fatal: Vec<_> = errors
             .iter()
-            .filter(|e| !e.is_recoverable())
+            .filter(|e| !e.is_recoverable() || e.code == ErrorCode::DuplicateAttribute)
             .map(|e| CompilerErrorWithSource::new(e, &template.content))
             .collect();
         if !fatal.is_empty() {
@@ -227,11 +225,10 @@ pub(crate) fn compile_template_block(
         )
     );
 
-    // See above — drop recoverable parser diagnostics from the gating
-    // check so duplicate-attribute SFCs still produce valid render code. (#958)
+    // Reject duplicate attributes before their repeated directives can lower.
     let fatal: Vec<_> = errors
         .iter()
-        .filter(|e| !e.is_recoverable())
+        .filter(|e| !e.is_recoverable() || e.code == ErrorCode::DuplicateAttribute)
         .map(|e| CompilerErrorWithSource::new(e, &template.content))
         .collect();
     if !fatal.is_empty() {

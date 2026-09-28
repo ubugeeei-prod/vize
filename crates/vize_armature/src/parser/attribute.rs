@@ -3,6 +3,8 @@
 //! Handles attribute names, directive names/arguments/modifiers,
 //! attribute data (values), and finalization of attribute and directive nodes.
 
+mod duplicate;
+
 use vize_l0::{Box, String, Vec, appends};
 use vize_relief::{
     AttributeNode, ConstantType, DirectiveNode, ExpressionNode, PropNode, SimpleExpressionNode,
@@ -165,18 +167,6 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn has_duplicate_attribute(&self, name: &str) -> bool {
-        self.current_element.as_ref().is_some_and(|current| {
-            current.props.iter().any(|prop| {
-                matches!(
-                    prop,
-                    PropNode::Attribute(existing)
-                        if existing.name.eq_ignore_ascii_case(name)
-                )
-            })
-        })
-    }
-
     /// Freeze an accumulated attribute/directive value into arena-resident
     /// text: the source slice when decoding left the run verbatim (the common
     /// case, copy-free), an arena copy when an entity rewrote it.
@@ -263,6 +253,11 @@ impl<'a> Parser<'a> {
             ));
             return;
         }
+
+        self.report_duplicate_directive(
+            dir.raw_name,
+            self.create_loc(dir.name_start, dir.name_end),
+        );
 
         // The `.foo` shorthand is equivalent to `v-bind:foo.prop`: detect it
         // before `raw_name` is moved so we can synthesize a `prop` modifier.

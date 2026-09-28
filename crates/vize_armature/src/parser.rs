@@ -29,6 +29,8 @@ pub use whitespace_context::{
 };
 
 #[cfg(test)]
+mod duplicate_tests;
+#[cfg(test)]
 mod tests;
 
 use vize_l0::{Allocator, String, Vec, interner::Interner};

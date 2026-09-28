@@ -253,7 +253,7 @@ fn nested_interactive_recoveries_keep_production_dom_parity() {
 }
 
 #[test]
-fn duplicate_static_attribute_keeps_production_dom_warning_parity() {
+fn duplicate_static_attribute_keeps_production_dom_error_parity() {
     let _guard = PROFILER_TEST_LOCK.lock().unwrap();
     let source =
         r#"<template><h4 :class="premium" class="" class="shop_title">Shop</h4></template>"#;
@@ -262,29 +262,20 @@ fn duplicate_static_attribute_keeps_production_dom_warning_parity() {
         let profiler = global_profiler();
         profiler.clear();
         profiler.enable();
-        let selected = compile(&descriptor, "DuplicateClass.vue", shape).unwrap();
+        let selected = compile(&descriptor, "DuplicateClass.vue", shape)
+            .err()
+            .expect("duplicate attributes must reject the SFC");
         let counters = profiler.counter_summary();
         profiler.disable();
         profiler.clear();
         assert_eq!(classify(shape, &counters), Ok(Lane::Accepted), "{shape:?}");
 
-        let warnings: Vec<_> = selected
-            .warnings
-            .iter()
-            .map(|warning| warning.message.as_str())
-            .collect();
-        assert_eq!(
-            warnings,
-            [
-                "Duplicate attribute `class`. Keeping the repeated attribute so parsing can continue."
-            ],
-            "{shape:?}"
-        );
+        assert_eq!(selected.code.as_deref(), Some("TEMPLATE_ERROR"));
 
         let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
             compile(&descriptor, "DuplicateClass.vue", shape)
         });
-        assert_eq!(divergence(&selected, &legacy), None, "{shape:?}");
+        assert_eq!(error_divergence(&selected, &legacy), None, "{shape:?}");
     }
 }
 

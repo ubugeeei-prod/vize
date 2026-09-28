@@ -181,6 +181,15 @@ impl Rule for NoDuplicateAttributes {
                         } else {
                             seen_directives.insert(model_key);
                         }
+                    } else {
+                        let name = dir.raw_name.unwrap_or(dir.name);
+                        if !seen_directives.insert(name.to_compact_string()) {
+                            ctx.error_with_help(
+                                ctx.t_fmt("vue/no-duplicate-attributes.message", &[("attr", name)]),
+                                &dir.loc,
+                                ctx.t("vue/no-duplicate-attributes.help"),
+                            );
+                        }
                     }
                 }
             }
@@ -309,6 +318,14 @@ mod tests {
         let linter = create_linter();
         let result =
             linter.lint_template_rules_only(r#"<div @click="a" @click="b"></div>"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_duplicate_if_directive() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template_rules_only(r#"<p v-if="ok" v-if="!ok">x</p>"#, "test.vue");
         assert_eq!(result.error_count, 1);
     }
 }
