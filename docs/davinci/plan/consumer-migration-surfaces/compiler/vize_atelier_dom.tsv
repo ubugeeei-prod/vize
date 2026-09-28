@@ -9,15 +9,16 @@ compiler	Compiler	source	crates/vize_atelier_dom/src/compile/croquis_facts.rs	23
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/croquis_facts.rs	23	croquis	Croquis analysis	old	vize_croquis	legacy	4
 compiler	Compiler	test/dev	crates/vize_atelier_dom/src/compile/croquis_facts.rs	98	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/src/compile/croquis_facts.rs	98	croquis	Croquis analysis	old	vize_croquis	legacy	2
-compiler	Compiler	source	crates/vize_atelier_dom/src/compile/custom_elements.rs	14	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_dom/src/compile/inner.rs	11	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile/custom_elements.rs	17	l0	L0	stage	vize_l0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile/inner.rs	11	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/inner.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/legacy.rs	11	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/selection.rs	12	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_dom/src/compile/sfc.rs	14	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile/sfc.rs	14	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/source_map.rs	13	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_dom/src/compile/stage_options.rs	12	l0	L0	stage	vize_l0	preferred	6
-compiler	Compiler	source	crates/vize_atelier_dom/src/compile/stage_options.rs	12	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	5
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile/stage_options.rs	12	l0	L0	stage	vize_l0	preferred	7
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile/stage_options.rs	12	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	3
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile/stage_options/capture.rs	8	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_dom/src/compile/stage_options/tests.rs	4	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/src/experimental_tests.rs	7	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/namespace.rs	12	l0	L0	stage	vize_l0	preferred	4
@@ -125,6 +126,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/l2_text.rs	21	l1_to_l2	
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/l2_unref_helper_order.rs	30	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/l2_unref_helper_order.rs	30	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	3
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/nested_scope_bindings.rs	8	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/production_capture.rs	11	l0	L0	stage	vize_l0	preferred	3
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/setup_component_unref.rs	4	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/slot_outlet_hoist.rs	2	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/support/bindings.rs	6	l0	L0	stage	vize_l0	preferred	1
