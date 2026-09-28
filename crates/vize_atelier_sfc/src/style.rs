@@ -578,10 +578,13 @@ fn trailing_combinator_start(value: &str) -> Option<usize> {
 /// Transform :slotted() for slot content
 fn transform_slotted(selector: &str, attr_selector: &str) -> String {
     // :slotted(.child) -> .child[data-v-xxx-s]
-    if let Some((_, after)) = selector.split_once(":slotted(")
+    if let Some((before, after)) = selector.split_once(":slotted(")
         && let Some((inner, rest)) = split_parenthesized_argument(after)
     {
-        let mut result = String::with_capacity(inner.len() + attr_selector.len() + rest.len() + 2);
+        let mut result = String::with_capacity(
+            before.len() + inner.len() + attr_selector.len() + rest.len() + 2,
+        );
+        result.push_str(before);
         result.push_str(inner);
         if let Some(scope) = attr_selector.strip_suffix(']') {
             result.push_str(scope);

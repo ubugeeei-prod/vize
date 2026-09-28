@@ -1,4 +1,4 @@
-use super::{push_deep_scope_prefix, split_pseudo_function, trailing_combinator_start};
+use super::split_pseudo_function;
 use crate::css::scoped_selector::{find_top_level_pseudo, leading_universal_selector_end};
 use vize_carton::Vec as ArenaVec;
 
@@ -10,23 +10,11 @@ pub(in crate::css) fn transform_slotted(
     attr_selector: &[u8],
 ) {
     if let Some((before, inner, rest)) = split_pseudo_function(selector, start, ":slotted(") {
-        push_slotted_scope_prefix(out, before, attr_selector);
+        out.extend_from_slice(before.as_bytes());
         push_slotted_target(out, inner, attr_selector);
         out.extend_from_slice(rest.as_bytes());
     } else {
         out.extend_from_slice(selector.as_bytes());
-    }
-}
-
-fn push_slotted_scope_prefix(out: &mut ArenaVec<u8>, before: &str, attr_selector: &[u8]) {
-    let before = before.trim_end();
-    if before.is_empty() {
-        return;
-    }
-
-    push_deep_scope_prefix(out, before, attr_selector);
-    if trailing_combinator_start(before).is_none() {
-        out.push(b' ');
     }
 }
 

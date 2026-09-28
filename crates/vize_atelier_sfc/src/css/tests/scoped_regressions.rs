@@ -47,9 +47,9 @@ fn test_compile_scoped_css_keeps_slotted_parent_combinator() {
 
     assert_eq!(
         code,
-        ".card[data-v-123]>[data-v-123-s]{flex:1;}\
-         .card[data-v-123]>.title[data-v-123-s],\
-         .card[data-v-123]>.subtitle[data-v-123-s]{line-height:1.2;}\
-         .card[data-v-123]>[data-v-123-s]:not(:last-child){margin-bottom:2px;}"
+        ".card>[data-v-123-s]{flex:1;}\
+         .card>.title[data-v-123-s],\
+         .card>.subtitle[data-v-123-s]{line-height:1.2;}\
+         .card>[data-v-123-s]:not(:last-child){margin-bottom:2px;}"
     );
 }
