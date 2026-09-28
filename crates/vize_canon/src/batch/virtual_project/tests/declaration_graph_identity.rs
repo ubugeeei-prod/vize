@@ -19,7 +19,7 @@ fn late_registered_declaration_import_uses_the_mirror() {
     fs::write(&builder, "import \"../vendor/client/index\";\n").unwrap();
     fs::write(
         &vendor,
-        "declare module \"*?raw\" { const source: string; export default source; }\n",
+        "declare module \"*?vize-reference-fixture\" { const source: string; export default source; }\n",
     )
     .unwrap();
 
