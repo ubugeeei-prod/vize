@@ -21,7 +21,6 @@ use vize_l1::{
 };
 use vize_relief::ErrorCode;
 
-#[path = "surface_fidelity/v_pre.rs"]
 mod v_pre;
 
 fn rendered(tree: &SurfaceTree<'_>) -> String {
