@@ -115,18 +115,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     push_null_props_if_missing(ctx, emitted_props);
                     ctx.push(", ");
                     if gen_is_template {
-                        ctx.push("[");
-                        ctx.indent();
-                        for (i, child) in children_el.children.iter().enumerate() {
-                            if i > 0 {
-                                ctx.push(",");
-                            }
-                            ctx.newline();
-                            generate_node(ctx, child);
-                        }
-                        ctx.deindent();
-                        ctx.newline();
-                        ctx.push("]");
+                        generate_template_for_children(ctx, &children_el.children);
                     } else {
                         ctx.with_parent_namespace(child_namespace(children_el), |ctx| {
                             generate_children(ctx, &children_el.children);
@@ -272,19 +261,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         // "Non-function value encountered for default slot"
                         generate_slots(ctx, children_el);
                     } else if gen_is_template {
-                        // Template children are array
-                        ctx.push("[");
-                        ctx.indent();
-                        for (i, child) in children_el.children.iter().enumerate() {
-                            if i > 0 {
-                                ctx.push(",");
-                            }
-                            ctx.newline();
-                            generate_node(ctx, child);
-                        }
-                        ctx.deindent();
-                        ctx.newline();
-                        ctx.push("]");
+                        generate_template_for_children(ctx, &children_el.children);
                     } else if ctx.skip_v_memo {
                         // v-for + v-memo: force array form for children
                         if children_el.tag_type == ElementType::Element {
@@ -432,6 +409,33 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
         }
         _ => generate_node(ctx, node),
     }
+}
+
+/// Keep the direct array path for element-only fragments. Text runs need the
+/// shared child generator so interpolations become VNodes rather than strings.
+fn generate_template_for_children(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
+    if children.iter().any(|child| {
+        matches!(
+            child,
+            TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
+        )
+    }) {
+        generate_children_force_array(ctx, children);
+        return;
+    }
+
+    ctx.push("[");
+    ctx.indent();
+    for (i, child) in children.iter().enumerate() {
+        if i > 0 {
+            ctx.push(",");
+        }
+        ctx.newline();
+        generate_node(ctx, child);
+    }
+    ctx.deindent();
+    ctx.newline();
+    ctx.push("]");
 }
 
 /// Generate props for v-for item, including key and all other props

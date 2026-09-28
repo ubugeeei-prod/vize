@@ -160,5 +160,5 @@ pub(super) fn emit_for_template_item(
         cx.template_for_item_single_root = previous;
         return result;
     }
-    emit_inner_fragment(cx, ops, key, attributes, class, ChildMode::GenerateNode)
+    emit_inner_fragment(cx, ops, key, attributes, class, ChildMode::ForceArray)
 }
