@@ -41,9 +41,25 @@ The stage ladder now collects pages, optimization remarks, steps and walks in
 one L1 → L2 → L3 execution. Its L2 remark observer shares the executed pass
 plan with the page collector; `analyzeSfc` consumes those remarks instead of
 running a second L2 transform solely for the feed. This keeps the existing
-feed schema and the inline HTML remark filter. The CLI all-level export and
-integration with product compilation remain separate work; this capture does
-not establish that legacy product compilation runs through the levels.
+feed schema and the inline HTML remark filter. The CLI export below is a
+consumer of this capture. Neither change establishes that legacy product
+compilation runs through the levels.
+
+## All-level CLI export
+
+`vize dump --all-levels --json FILE` runs the same native `ladder_run` that
+feeds the playground stage view and writes its pages and remarks through the
+single `StageFeed::to_json` serializer. The input is a raw Vue template file;
+`.vue` SFC input fails explicitly while the native L1 container remains open
+in #7039; Pug input also fails until its native stage adapter is wired. The
+browser view's feed uses the same template bytes after its own
+SFC extraction. The existing level roundtrip command keeps its success and
+failure bytes. This feed covers the current native L1 → L2 → L3 ladder,
+separate from the current legacy-backed product compiler path.
+
+`--pipeline` migration and removal of the `davinci-opt` bin remain open. The
+old binary still tests a no-op pass catalogue over input dumps; it does not
+serve as evidence that product compilation uses the new levels.
 
 ## Differential feature selectors
 

@@ -9,7 +9,7 @@ Usage: vize [COMMAND]
 
 Commands:
   build           Compile Vue SFC files (default command) [alias: atelier]
-  dump            Validate L1 source fidelity or a canonical L2/L3 Full dump
+  dump            Validate a level dump or export native stage pages as JSON
   fmt             Format Vue, JSX, and TSX files [alias: glyph]
   lint            Lint Vue, HTML, JSX, and TSX files [alias: patina]
   explain         Explain a diagnostic code

@@ -184,7 +184,7 @@ fn unreadable_and_non_utf8_files_fail_without_success_output() {
 }
 
 #[test]
-fn only_implemented_levels_and_options_are_accepted() {
+fn invalid_options_and_incomplete_modes_are_rejected() {
     for (args, expected) in [
         (
             vec!["dump"],
@@ -231,7 +231,7 @@ fn only_implemented_levels_and_options_are_accepted() {
 }
 
 #[test]
-fn help_describes_roundtrip_only_and_exits_zero() {
+fn help_describes_both_dump_modes_and_exits_zero() {
     let output = invoke(&["dump", "--help"]);
     assert_eq!(output.status.code(), Some(0));
     assert_eq!(output.stderr, b"");

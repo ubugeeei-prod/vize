@@ -1,7 +1,6 @@
-error: unexpected argument '--all-levels' found
+error: the following required arguments were not provided:
+  <FILE>
 
-  tip: a similar argument exists: '--level'
-
-Usage: vize dump --level <LEVEL> --roundtrip <FILE>
+Usage: vize dump --json <--roundtrip <FILE>|--all-levels> <FILE>
 
 For more information, try '--help'.

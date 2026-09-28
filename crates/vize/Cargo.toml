@@ -102,6 +102,7 @@ similar.workspace = true
 [dev-dependencies]
 corsa.workspace = true
 corsa_lsp.workspace = true
+davinci_test_support = { workspace = true }
 insta.workspace = true
 lsp-types.workspace = true
 

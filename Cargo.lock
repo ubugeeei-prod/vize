@@ -4193,6 +4193,7 @@ dependencies = [
  "clap",
  "corsa",
  "corsa_lsp",
+ "davinci_test_support",
  "dirs",
  "futures",
  "glob",

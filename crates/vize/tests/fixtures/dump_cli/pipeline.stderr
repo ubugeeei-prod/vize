@@ -1,5 +1,7 @@
 error: unexpected argument '--pipeline' found
 
-Usage: vize dump --level <LEVEL> --roundtrip <FILE>
+  tip: to pass '--pipeline' as a value, use '-- --pipeline'
+
+Usage: vize dump --level <LEVEL> <--roundtrip <FILE>|--all-levels> [FILE]
 
 For more information, try '--help'.

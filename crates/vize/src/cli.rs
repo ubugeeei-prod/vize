@@ -21,7 +21,7 @@ enum Commands {
     #[command(visible_alias = "atelier")]
     Build(crate::commands::build::BuildArgs),
 
-    /// Validate L1 source fidelity or a canonical L2/L3 Full dump
+    /// Validate a level dump or export native stage pages as JSON
     Dump(crate::commands::dump::DumpArgs),
 
     /// Format Vue, JSX, and TSX files

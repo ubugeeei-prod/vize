@@ -1,8 +1,13 @@
-Validate L1 source fidelity or a canonical L2/L3 Full dump
+Validate a level dump or export native stage pages as JSON
 
-Usage: vize dump --level <LEVEL> --roundtrip <FILE>
+Usage: vize dump [OPTIONS] <--roundtrip <FILE>|--all-levels> [FILE]
+
+Arguments:
+  [FILE]  Raw Vue template to capture (.vue SFCs await the native container)
 
 Options:
       --level <LEVEL>     L1 Vue-template source fidelity, or L2/L3 canonical Full dump bytes [possible values: l1, l2, l3]
       --roundtrip <FILE>  Read FILE and require byte identity after the selected level's roundtrip
+      --all-levels        Capture L1, L2 and L3 pages from one native template ladder run
+      --json              Write the stage feed as JSON
   -h, --help              Print help
