@@ -1,4 +1,3 @@
-
 use super::{erase_artifact_macro_statements, extract_macro_artifacts};
 
 #[test]
