@@ -70,8 +70,15 @@ impl ImportRewriter {
             .or_else(|| {
                 (!preserve_relative_declarations)
                     .then(|| {
-                        source_dir
-                            .and_then(|dir| rewrite_relative_dts_specifier(path, dir, roots.0))
+                        source_dir.and_then(|dir| {
+                            rewrite_relative_dts_specifier(
+                                path,
+                                dir,
+                                roots.0,
+                                roots.1,
+                                mirrorable_project_files,
+                            )
+                        })
                     })
                     .flatten()
             })
@@ -213,7 +220,15 @@ impl ImportRewriter {
         }
         if let Some(source_dir) = source_dir
             && let Some(rewritten) = (!preserve_relative_declarations)
-                .then(|| rewrite_relative_dts_specifier(path, source_dir, roots.0))
+                .then(|| {
+                    rewrite_relative_dts_specifier(
+                        path,
+                        source_dir,
+                        roots.0,
+                        roots.1,
+                        mirrorable_project_files,
+                    )
+                })
                 .flatten()
                 .or_else(|| rewrite_relative_vue_specifier(path, source_dir))
         {

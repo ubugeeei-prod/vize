@@ -14,7 +14,7 @@ use commonjs_declaration::declaration_requires_commonjs_spelling;
 ///
 /// `content` is the file's authored text, read to decide whether a `.d.ts` has
 /// to be mirrored as `.d.cts`; see [`commonjs_declaration`].
-pub(super) fn script_virtual_path(
+pub(in crate::batch) fn script_virtual_path(
     roots: (&Path, &Path),
     path: &Path,
     content: &str,

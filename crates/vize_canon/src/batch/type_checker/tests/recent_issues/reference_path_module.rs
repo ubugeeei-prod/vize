@@ -42,23 +42,6 @@ fn reference_path_keeps_module_declaration_and_its_side_effect_import() {
     )
     .expect("write the authored TypeScript configuration");
     let snapshot = snapshot_project_diagnostics(&project_root);
-    if snapshot
-        .as_ref()
-        .is_some_and(|diagnostics| !diagnostics.is_empty())
-    {
-        let virtual_root = crate::batch::project_virtual_root(&project_root);
-        for path in [
-            "tsconfig.json",
-            "env.d.ts",
-            "types/builder-env.d.ts",
-            "vendor/client/index.d.ts",
-        ] {
-            eprintln!(
-                "virtual {path}: {:?}",
-                std::fs::read_to_string(virtual_root.join(path))
-            );
-        }
-    }
     let _ = std::fs::remove_dir_all(&project_root);
     assert_eq!(snapshot, Some(Vec::new()));
 }
