@@ -12,6 +12,7 @@ pub(super) fn legacy_metadata(
         return ComponentMetadata {
             props: Vec::new(),
             slots: Vec::new(),
+            emits: Vec::new(),
         };
     };
 
@@ -94,5 +95,9 @@ pub(super) fn legacy_metadata(
         }
     }
 
-    ComponentMetadata { props, slots }
+    ComponentMetadata {
+        props,
+        slots,
+        emits: Vec::new(),
+    }
 }

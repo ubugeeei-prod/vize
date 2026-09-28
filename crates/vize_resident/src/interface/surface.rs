@@ -4,13 +4,15 @@ use vize_davinci::summary::{AlphaEntry, Facet, SfcSummary};
 
 use crate::{ResidentDocuments, SharedDescriptor, SummaryInput, sfc_summary};
 
-/// Prop and slot contracts used by imported-component IDE metadata.
+/// Prop, event, and slot contracts used by imported-component IDE metadata.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ComponentSurface {
     /// Producer metadata for authored prop and slot presentation order.
     pub signature: Option<AlphaEntry>,
     /// Current props, in canonical declaration order.
     pub props: Vec<AlphaEntry>,
+    /// Current declared component events.
+    pub emits: Vec<AlphaEntry>,
     /// Current slots, in canonical declaration order.
     pub slots: Vec<AlphaEntry>,
 }
@@ -38,6 +40,7 @@ impl ComponentSurface {
                     contract: contract.into(),
                 }),
             props: project(Facet::Prop),
+            emits: project(Facet::Emit),
             slots: project(Facet::Slot),
         }
     }
@@ -58,9 +61,14 @@ impl ComponentSurface {
                     .iter()
                     .map(|entry| (Facet::Prop, entry.name.as_str(), entry.contract.as_str()))
                     .chain(
-                        self.slots.iter().map(|entry| {
-                            (Facet::Slot, entry.name.as_str(), entry.contract.as_str())
-                        }),
+                        self.emits
+                            .iter()
+                            .map(|entry| {
+                                (Facet::Emit, entry.name.as_str(), entry.contract.as_str())
+                            })
+                            .chain(self.slots.iter().map(|entry| {
+                                (Facet::Slot, entry.name.as_str(), entry.contract.as_str())
+                            })),
                     ),
             )
     }

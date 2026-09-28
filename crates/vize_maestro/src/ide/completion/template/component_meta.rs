@@ -1,5 +1,7 @@
 //! Imported-component metadata, caching, and prop/slot completion items.
 
+pub(super) mod emit;
+
 use std::sync::Arc;
 
 use oxc_ast::ast::{PropertyKey, Statement, TSSignature, TSType};
@@ -48,26 +50,34 @@ pub(crate) fn component_surface_completions(ctx: &IdeContext) -> Vec<CompletionI
             .collect();
     }
 
-    if !is_component_tag(&tag_ctx.tag_name) || !is_prop_completion_prefix(&tag_ctx.current_token) {
+    if !is_component_tag(&tag_ctx.tag_name) {
         return Vec::new();
     }
 
     let Some(metadata) = component_metadata(ctx, &tag_ctx.tag_name) else {
         return Vec::new();
     };
-    let dynamic = is_dynamic_prop_prefix(&tag_ctx.current_token);
-
-    metadata
-        .props
-        .iter()
-        .map(|prop| prop_completion_item(prop, dynamic))
-        .collect()
+    let mut items = Vec::new();
+    if is_prop_completion_prefix(&tag_ctx.current_token) {
+        let dynamic = is_dynamic_prop_prefix(&tag_ctx.current_token);
+        items.extend(
+            metadata
+                .props
+                .iter()
+                .map(|prop| prop_completion_item(prop, dynamic)),
+        );
+    }
+    if tag_ctx.current_token.is_empty() || tag_ctx.current_token.starts_with('@') {
+        items.extend(emit::completion_items(&metadata.emits));
+    }
+    items
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ComponentMetadata {
     pub(crate) props: Vec<ComponentProp>,
     pub(super) slots: Vec<ComponentSlot>,
+    pub(super) emits: Vec<emit::ComponentEmit>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

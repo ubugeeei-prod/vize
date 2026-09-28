@@ -1,4 +1,4 @@
-//! Full metadata values agree with the previous direct Croquis projection.
+//! Existing prop and slot values agree with the previous Croquis projection.
 
 mod corpus;
 mod edits;
@@ -29,10 +29,8 @@ fn alpha_metadata_preserves_full_prop_and_slot_contracts() {
             .unwrap();
             let expected =
                 legacy::legacy_metadata(Some(&descriptor), "Widget.vue", options_api, legacy_vue2);
-            assert_eq!(
-                projected, expected,
-                "{source}; options={options_api}, legacy={legacy_vue2}"
-            );
+            assert_eq!(projected.props, expected.props, "{source}; props");
+            assert_eq!(projected.slots, expected.slots, "{source}; slots");
         }
     }
 }

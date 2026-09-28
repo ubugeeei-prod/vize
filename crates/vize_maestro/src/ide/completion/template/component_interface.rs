@@ -1,10 +1,12 @@
 //! Imported component surfaces consume production Croquis alpha contracts.
 
 use vize_croquis::croquis::alpha::{
-    AlphaSchema, PropContract, SignatureContract, SlotContract, TypeEnvironment, declaration_key,
+    AlphaSchema, EmitContract, PropContract, SignatureContract, SlotContract, TypeEnvironment,
+    declaration_key,
 };
 use vize_davinci::summary::{AlphaEntry, AlphaPages, Facet};
 
+use super::component_meta::emit::ComponentEmit;
 use super::component_meta::{ComponentMetadata, ComponentProp, ComponentSlot};
 
 #[cfg(test)]
@@ -88,6 +90,7 @@ pub(super) fn component_metadata_from_interface(
         serde_json::from_str(&summary.signature.as_ref()?.contract).ok()?;
     let mut props = Vec::new();
     let mut slots = Vec::new();
+    let mut emits = Vec::new();
     for (facet, _, contract) in summary.iter() {
         match facet {
             Facet::Prop => {
@@ -104,6 +107,13 @@ pub(super) fn component_metadata_from_interface(
                 slots.push(ComponentSlot {
                     name: slot.name.into(),
                     props_type: slot.props.map(Into::into),
+                });
+            }
+            Facet::Emit => {
+                let event: EmitContract = serde_json::from_str(contract).ok()?;
+                emits.push(ComponentEmit {
+                    name: event.name.into(),
+                    payload: event.payload.map(Into::into),
                 });
             }
             _ => {}
@@ -133,5 +143,10 @@ pub(super) fn component_metadata_from_interface(
             .copied()
             .unwrap_or(usize::MAX)
     });
-    Some(ComponentMetadata { props, slots })
+    emits.sort_by(|left, right| left.name.cmp(&right.name));
+    Some(ComponentMetadata {
+        props,
+        slots,
+        emits,
+    })
 }

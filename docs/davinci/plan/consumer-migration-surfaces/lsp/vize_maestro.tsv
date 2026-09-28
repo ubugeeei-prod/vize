@@ -54,8 +54,8 @@ lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/bindings.rs	11	cr
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_cache.rs	35	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_interface.rs	3	davinci	Davinci	stage	vize_davinci	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_interface.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface.rs	36	l0	L0	stage	vize_l0	preferred	3
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface.rs	36	old_ast	old AST/parser	old	vize_armature	legacy	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface.rs	38	l0	L0	stage	vize_l0	preferred	3
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface.rs	38	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests.rs	8	davinci	Davinci	stage	vize_davinci	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/corpus.rs	5	davinci	Davinci	stage	vize_davinci	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/corpus.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	4
@@ -64,10 +64,10 @@ lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_inter
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/edits.rs	3	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/edits.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	2
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/legacy.rs	4	old_ast	old AST/parser	old	vize_relief	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	5	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
-lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	7	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	7	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_meta.rs	7	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/slot_outlets.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/slot_outlets.rs	9	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/slot_outlets.rs	9	old_ast	old AST/parser	old	vize_armature	legacy	1
