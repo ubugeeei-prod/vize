@@ -41,7 +41,9 @@ impl EventKeys {
                 event_key(piece, is_plain_element).map(|key| (index, key_hash(&key)))
             })
             .collect();
-        Self { hashes }
+        let mut keys = Self { hashes };
+        keys.hashes.sort_unstable_by_key(|(_, hash)| *hash);
+        keys
     }
 
     /// Whether a visible piece other than `index` also carries `key`.
@@ -53,13 +55,18 @@ impl EventKeys {
         is_plain_element: bool,
     ) -> bool {
         let hash = key_hash(key);
-        self.hashes.iter().any(|(other, other_hash)| {
-            *other != index
-                && *other_hash == hash
-                && visible
-                    .get(*other)
-                    .is_some_and(|piece| event_key(piece, is_plain_element).as_deref() == Some(key))
-        })
+        let start = self
+            .hashes
+            .partition_point(|(_, other_hash)| *other_hash < hash);
+        self.hashes[start..]
+            .iter()
+            .take_while(|(_, other_hash)| *other_hash == hash)
+            .any(|(other, _)| {
+                *other != index
+                    && visible.get(*other).is_some_and(|piece| {
+                        event_key(piece, is_plain_element).as_deref() == Some(key)
+                    })
+            })
     }
 }
 
