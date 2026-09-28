@@ -71,13 +71,7 @@ impl ImportRewriter {
                 (!preserve_relative_declarations)
                     .then(|| {
                         source_dir.and_then(|dir| {
-                            rewrite_relative_dts_specifier(
-                                path,
-                                dir,
-                                roots.0,
-                                roots.1,
-                                mirrorable_project_files,
-                            )
+                            rewrite_relative_dts_specifier(path, dir, roots.0, roots.1, None)
                         })
                     })
                     .flatten()
