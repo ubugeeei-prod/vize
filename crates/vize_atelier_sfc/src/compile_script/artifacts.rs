@@ -215,7 +215,7 @@ fn collect_static_imports<'a>(
 
         if let Some((remove_start, remove_end)) = artifact_macro_import_removal_span(stmt, content)
         {
-            let mut cleaned = String::new();
+            let mut cleaned = String::default();
             cleaned.push_str(content.get(start..remove_start).unwrap_or_default());
             cleaned.push_str(content.get(remove_end..end).unwrap_or_default());
             imports.push_str(cleaned.trim());
