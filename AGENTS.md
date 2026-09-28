@@ -27,8 +27,11 @@ most when you have been told to "do the rest" and left to run.
   [#6840](https://github.com/ubugeeei-prod/vize/issues/6840#issuecomment-5847908963)
   (L4).
 
-**Picking work:** take the lowest-stage open issue whose "Start after"
-issues are all closed.
+**Picking work:** prefer the lowest-stage ready slice. The
+[2026-09-28 maintainer decision](https://github.com/ubugeeei-prod/vize/issues/6826#issuecomment-5871526916)
+allows independently reviewable #6832 and L1-L4/dialect structural PRs to
+open and merge in parallel while #6832 remains open. Actual provider APIs and
+product fix-history gates still apply; use the [order record](./docs/davinci/decisions/2026-09-27-level-restructure-order.md).
 
 ## Working rules
 
