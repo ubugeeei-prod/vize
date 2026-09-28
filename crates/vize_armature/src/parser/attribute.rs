@@ -167,15 +167,6 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn has_duplicate_attribute(&self, name: &str) -> bool {
-        self.current_element.as_ref().is_some_and(|current| {
-            current.props.iter().any(|prop| match prop {
-                PropNode::Attribute(existing) => existing.name.eq_ignore_ascii_case(name),
-                _ => false,
-            })
-        })
-    }
-
     /// Freeze an accumulated attribute/directive value into arena-resident
     /// text: the source slice when decoding left the run verbatim (the common
     /// case, copy-free), an arena copy when an entity rewrote it.

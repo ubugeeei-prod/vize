@@ -33,7 +33,7 @@ mod duplicate_tests;
 #[cfg(test)]
 mod tests;
 
-use vize_l0::{Allocator, String, Vec, interner::Interner};
+use vize_l0::{Allocator, FxHashSet, String, Vec, interner::Interner};
 use vize_relief::{
     ElementNode, Namespace, PropNode, RootNode, SourceLocation, TemplateChildNode,
     errors::{CompilerError, ErrorCode},
@@ -134,7 +134,8 @@ pub(super) struct CurrentElement<'a> {
     pub(super) ns: Namespace,
     pub(super) is_self_closing: bool,
     pub(super) props: Vec<'a, PropNode<'a>>,
-    pub(super) seen_directive_names: Option<std::collections::HashSet<&'a str>>,
+    pub(super) seen_attribute_names: Option<FxHashSet<String>>,
+    pub(super) seen_directive_names: Option<FxHashSet<&'a str>>,
 }
 
 /// Current attribute being parsed

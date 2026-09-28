@@ -1,5 +1,6 @@
 //! Duplicate attribute and directive detection before transform lowering.
 
+use vize_l0::FxHashSet;
 use vize_relief::{
     ExpressionNode, PropNode,
     errors::{CompilerError, ErrorCode},
@@ -8,6 +9,30 @@ use vize_relief::{
 use super::super::{CurrentDirective, Parser};
 
 impl<'a> Parser<'a> {
+    pub(super) fn has_duplicate_attribute(&mut self, name: &str) -> bool {
+        let Some(current) = self.current_element.as_mut() else {
+            return false;
+        };
+        if let Some(names) = current.seen_attribute_names.as_mut() {
+            return !names.insert(name.to_ascii_lowercase().into());
+        }
+        if current.props.len() < 8 {
+            return current.props.iter().any(|prop| {
+                matches!(prop, PropNode::Attribute(existing) if existing.name.eq_ignore_ascii_case(name))
+            });
+        }
+        let mut names = FxHashSet::default();
+        names.reserve(current.props.len() + 1);
+        for prop in &current.props {
+            if let PropNode::Attribute(existing) = prop {
+                names.insert(existing.name.to_ascii_lowercase().into());
+            }
+        }
+        let duplicate = !names.insert(name.to_ascii_lowercase().into());
+        current.seen_attribute_names = Some(names);
+        duplicate
+    }
+
     pub(super) fn report_duplicate_directive(&mut self, directive: &CurrentDirective<'a>) {
         // Event listeners and argumentless object spreads may repeat.
         if directive.name == "on" || (directive.name == "bind" && directive.arg.is_none()) {
@@ -22,12 +47,13 @@ impl<'a> Parser<'a> {
                     matches!(prop, PropNode::Directive(existing) if existing.raw_name == Some(directive.raw_name))
                 });
             }
-            let mut names = std::collections::HashSet::with_capacity(current.props.len() + 1);
+            let mut names = FxHashSet::default();
+            names.reserve(current.props.len() + 1);
             for prop in &current.props {
-                if let PropNode::Directive(existing) = prop {
-                    if let Some(raw_name) = existing.raw_name {
-                        names.insert(raw_name);
-                    }
+                if let PropNode::Directive(existing) = prop
+                    && let Some(raw_name) = existing.raw_name
+                {
+                    names.insert(raw_name);
                 }
             }
             let repeated = !names.insert(directive.raw_name);
