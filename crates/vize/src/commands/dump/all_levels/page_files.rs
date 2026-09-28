@@ -106,10 +106,10 @@ fn remove_previous_pages(dir: &Path, source: &Path) {
     });
 }
 
-fn page_filename(index: usize, level: &str, step: &str, source: &Path) -> String {
+fn page_filename(index: usize, level: &str, step: &str, source: &Path) -> PathBuf {
     if !matches!(level, "l0" | "l1" | "l2" | "l3" | "l4") {
         fail(source, "capture page has invalid level");
     }
     let safe_step = step.replace(|ch: char| !ch.is_ascii_alphanumeric() && ch != '-', "_");
-    format!("{index:03}-{level}.{safe_step}.dump")
+    PathBuf::from(format!("{index:03}-{level}.{safe_step}.dump"))
 }
