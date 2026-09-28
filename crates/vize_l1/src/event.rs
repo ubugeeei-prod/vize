@@ -1,14 +1,14 @@
 //! The tokenizer-event stream the tree is built from.
 //!
-//! Construction is two-phase: a [`Recorder`] implements the markup
-//! [`Sink`] and flattens the token events into an arena `Vec` of
+//! Construction is two-phase: a [`Recorder`] implements armature's
+//! [`Callbacks`] and flattens the token events into an arena `Vec` of
 //! plain [`Event`]s (12 bytes, `Copy`), then `build` walks that slice
 //! with lookahead. The split keeps the tree builder a straight-line
 //! function over data instead of a callback state machine.
 
+use vize_armature::tokenizer::{Callbacks, QuoteType};
 use vize_l0::Vec;
-
-use crate::markup::{LexErrorCode, QuoteType, Sink};
+use vize_relief::ErrorCode;
 
 use crate::parse::SurfaceError;
 
@@ -79,7 +79,7 @@ impl Event {
     }
 }
 
-/// The `Sink` impl: pushes events and errors, decides nothing.
+/// The `Callbacks` impl: pushes events and errors, decides nothing.
 pub(crate) struct Recorder<'a, 'v> {
     pub events: &'v mut Vec<'a, Event>,
     pub errors: &'v mut Vec<'a, SurfaceError>,
@@ -91,7 +91,7 @@ impl Recorder<'_, '_> {
     }
 }
 
-impl Sink for Recorder<'_, '_> {
+impl Callbacks for Recorder<'_, '_> {
     fn on_text(&mut self, start: usize, end: usize) {
         self.push(EventKind::Text, start, end);
     }
@@ -176,7 +176,7 @@ impl Sink for Recorder<'_, '_> {
 
     fn on_end(&mut self) {}
 
-    fn on_error(&mut self, code: LexErrorCode, index: usize) {
+    fn on_error(&mut self, code: ErrorCode, index: usize) {
         self.errors.push(SurfaceError {
             code,
             offset: index as u32,

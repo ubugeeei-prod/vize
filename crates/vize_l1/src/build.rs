@@ -15,8 +15,8 @@
 mod attr;
 mod tag;
 
-use crate::markup::Namespace;
 use vize_l0::{Allocator, Box, Vec};
+use vize_relief::Namespace;
 
 use crate::event::{Event, EventKind};
 use crate::surface::{

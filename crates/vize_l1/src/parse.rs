@@ -1,11 +1,12 @@
-//! The parse entry: the markup lexer → event stream → surface tree,
+//! The parse entry: armature's tokenizer → event stream → surface tree,
 //! with the byte-fidelity verifier asserted on every construction.
 
+use vize_armature::tokenizer::Tokenizer;
 use vize_l0::{Allocator, Vec};
+use vize_relief::ErrorCode;
 
 use crate::build::build;
 use crate::event::{Event, Recorder};
-use crate::markup::{Component, LexErrorCode, LexOptions, Lexer};
 use crate::render::check_fidelity;
 use crate::surface::{SurfaceChild, SurfaceTree, Token};
 
@@ -16,12 +17,12 @@ pub struct SurfaceParseOptions {
     pub experimental_in_tag_comments: bool,
 }
 
-/// A recoverable lexer diagnostic, by code and byte offset. L1 keeps
-/// the lexer's codes verbatim; rendering them through the P2-1
+/// A recoverable tokenizer diagnostic, by code and byte offset. L1 keeps
+/// armature's codes verbatim; rendering them through the P2-1
 /// `Diagnostic` channel is the L1→L2 lowering's job (P2-8).
 #[derive(Debug, Clone, Copy)]
 pub struct SurfaceError {
-    pub code: LexErrorCode,
+    pub code: ErrorCode,
     pub offset: u32,
 }
 
@@ -95,11 +96,9 @@ fn parse_projection<'a>(
             events: &mut events,
             errors: &mut errors,
         };
-        let lex_options = LexOptions {
-            in_tag_comments: options.experimental_in_tag_comments,
-            ..LexOptions::default()
-        };
-        Lexer::<Component, _>::new(source, recorder, lex_options).run();
+        let mut tokenizer = Tokenizer::new(source, recorder);
+        tokenizer.set_in_tag_comments(options.experimental_in_tag_comments);
+        tokenizer.tokenize();
     }
     let (tree, repaired) = build(allocator, source, &events, true);
     let authored = (authored && repaired).then(|| build(allocator, source, &events, false).0);

@@ -11,9 +11,9 @@
 //! is a dialect syntax hook ([`directive::DirectiveSyntax`]), like an MLIR
 //! custom assembly format.
 //!
-//! The native L1 surface tree drives this lexer. The legacy armature parser
-//! retains its tokenizer until the compiler fix-history gate (#6880).
-//! The directive hook is still a skeleton.
+//! L1 now owns this lexer, but the existing surface tree and compiler still
+//! drive `vize_armature::tokenizer`. Wiring consumers to this lexer waits for
+//! compiler fix-history gate #6880. The directive hook is still a skeleton.
 //! Design: <https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929>.
 
 pub mod directive;

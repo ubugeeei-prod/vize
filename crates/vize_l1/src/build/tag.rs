@@ -1,7 +1,7 @@
 //! Open and close tags: the element half of the builder.
 
-use crate::markup::Namespace;
 use vize_l0::{Box, Vec, is_html_tag, is_math_ml_tag, is_svg_tag, is_void_tag};
+use vize_relief::Namespace;
 
 use super::{Builder, Frame, ImplicitlyClosedTag};
 use crate::event::{Event, EventKind};

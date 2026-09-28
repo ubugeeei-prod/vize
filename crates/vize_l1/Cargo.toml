@@ -22,8 +22,9 @@ metadata.vize.stability = "experimental"
 legacy-differential = []
 
 [dependencies]
+vize_armature = { workspace = true }
 vize_l0 = { workspace = true }
-
+vize_relief = { workspace = true }
 htmlize = { workspace = true }
 
 [dev-dependencies]
