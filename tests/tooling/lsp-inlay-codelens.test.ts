@@ -153,7 +153,7 @@ test("vize lsp inlayHint renders i18n message preview for $t() keys", async () =
   }
 });
 
-test("vize lsp codeLens reports per-binding reference counts with singular/plural wording", async () => {
+test("vize lsp codeLens anchors declarations and labels template/style counts", async () => {
   const testRootDir = path.join(testOutputRoot, "lsp-codelens");
   fs.mkdirSync(testRootDir, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
@@ -197,14 +197,10 @@ const unused = ref(0)
 
     assert.ok(Array.isArray(lenses), JSON.stringify(lenses));
 
-    // Characterized current behavior: the lens range is anchored one line BELOW
-    // the declaration it describes (the server emits `base_line + line - 1`
-    // where `base_line` is already the script-tag line). Map each lens to the
-    // declaration immediately above its range to read the binding name.
     const sourceLines = source.split("\n");
     const byName = new Map<string, CodeLens>();
     for (const lens of lenses) {
-      const declLine = sourceLines[lens.range.start.line - 1] ?? "";
+      const declLine = sourceLines[lens.range.start.line] ?? "";
       const match = declLine.match(/^(?:const|let|function)\s+([A-Za-z0-9_$]+)/);
       if (match) {
         byName.set(match[1], lens);
@@ -216,22 +212,21 @@ const unused = ref(0)
         new RegExp(`^(?:const|let|function)\\s+${name}\\b`).test(line),
       );
 
-    // Once-referenced bindings -> "1 reference".
+    // The count covers template and style references.
     for (const name of ["count", "doubled", "inc"]) {
       const lens = byName.get(name);
       assert.ok(lens, `expected a lens for ${name}, got ${JSON.stringify(lenses)}`);
       assert.equal(lens.command?.command, "vize.findReferences");
-      assert.equal(lens.command?.title, "1 reference");
+      assert.equal(lens.command?.title, "1 template/style reference");
       assert.equal(lens.range.start.character, 0);
       assert.equal(lens.range.start.line, lens.range.end.line);
-      // The lens sits exactly one line below the declaration it annotates.
-      assert.equal(lens.range.start.line, expectedDeclLine(name) + 1);
+      assert.equal(lens.range.start.line, expectedDeclLine(name));
     }
 
-    // Twice-referenced binding -> "2 references".
+    // Twice-referenced binding uses plural wording.
     const twice = byName.get("twice");
     assert.ok(twice, JSON.stringify(lenses));
-    assert.equal(twice.command?.title, "2 references");
+    assert.equal(twice.command?.title, "2 template/style references");
 
     // Zero-reference binding -> no lens at all.
     assert.equal(byName.has("unused"), false, JSON.stringify(lenses));
