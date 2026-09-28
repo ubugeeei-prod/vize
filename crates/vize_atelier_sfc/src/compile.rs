@@ -64,10 +64,7 @@ pub use entry::{
 use vize_carton::{String, ToCompactString, profile};
 use vize_l0::dump::capture::StageCapture;
 
-#[expect(
-    clippy::too_many_arguments,
-    reason = "adapter inputs with optional stage capture"
-)]
+#[expect(clippy::too_many_arguments, reason = "optional stage capture")]
 fn compile_sfc_inner(
     descriptor: &SfcDescriptor,
     mut options: SfcCompileOptions,
@@ -144,7 +141,6 @@ fn compile_sfc_inner(
     let is_ts = output_is_ts(&options);
     let template_is_ts = template_is_ts(descriptor, &options);
 
-    // Extract component name from filename
     let component_name = extract_component_name(filename);
 
     // Determine output mode based on script type
