@@ -79,8 +79,6 @@ pub struct Parser<'a> {
     root: Option<RootNode<'a>>,
     /// Current element being parsed
     current_element: Option<CurrentElement<'a>>,
-    /// Allocated only while parsing a wide opening tag.
-    seen_attr_names: Option<vize_l0::FxHashSet<String>>,
     /// Current attribute being parsed
     current_attr: Option<CurrentAttribute<'a>>,
     /// Current directive being parsed
