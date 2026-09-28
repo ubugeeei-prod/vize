@@ -71,7 +71,7 @@ impl DiagnosticService {
                         });
                     }
                     tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
-                    diagnostics.extend(corsa_diags);
+                    diagnostics.extend(without_duplicate_required_props(corsa_diags, &diagnostics));
                 }
                 Ok(CorsaDiagnostics::Unavailable(hints)) => diagnostics.extend(hints),
                 Err(_) => {
@@ -99,6 +99,48 @@ impl DiagnosticService {
         diagnostics
     }
 }
+
+/// The authored component check already reports the missing prop on the tag.
+/// A native TS2345 for the generated checker call repeats it and exposes
+/// internal helper types, especially after an unsaved dependency edit.
+fn without_duplicate_required_props(
+    corsa: Vec<Diagnostic>,
+    authored: &[Diagnostic],
+) -> Vec<Diagnostic> {
+    let required_tags = authored
+        .iter()
+        .filter(|diagnostic| {
+            diagnostic.source.as_deref() == Some(sources::COMPONENTS)
+                && diagnostic.code.as_ref()
+                    == Some(&tower_lsp::lsp_types::NumberOrString::String(
+                        "component-required-props".into(),
+                    ))
+        })
+        .map(|diagnostic| diagnostic.range)
+        .collect::<Vec<_>>();
+    corsa
+        .into_iter()
+        .filter(|diagnostic| {
+            let duplicate = diagnostic.source.as_deref() == Some(sources::TYPE_CHECKER)
+                && matches!(
+                    diagnostic.code.as_ref(),
+                    Some(tower_lsp::lsp_types::NumberOrString::Number(2345))
+                )
+                && diagnostic.message.contains("__VizeComponentCheckProps")
+                && diagnostic.message.contains("is missing")
+                && required_tags.iter().any(|tag| {
+                    diagnostic.range.start.line == tag.start.line
+                        && diagnostic.range.start.character >= tag.start.character.saturating_sub(1)
+                        && diagnostic.range.start.character <= tag.end.character
+                });
+            !duplicate
+        })
+        .collect()
+}
+
+#[cfg(test)]
+#[path = "native/tests.rs"]
+mod tests;
 
 fn has_blocking_parser_error(diagnostics: &[Diagnostic], native_script_syntax: bool) -> bool {
     diagnostics.iter().any(|diagnostic| {
