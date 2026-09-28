@@ -193,7 +193,9 @@ pub(crate) fn generate_vapor_with_spans(
     let mut document = EmitDocument::with_capacity(capacity, spans.is_some());
     document.push_str(&imports);
     document.push_spanned(&template_code);
-    document.push_str(&delegate_code);
+    if !delegate_code.is_empty() {
+        document.push_str(&delegate_code);
+    }
     if !document.is_empty() {
         document.push_char('\n');
     }
