@@ -1,5 +1,4 @@
-//! Component slot content: the static slots object whose `_withCtx` slot
-//! functions render the push form and return the VNode fallback.
+//! Component slot functions render the push form and VNode fallback.
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{FxHashSet, String, ToCompactString};
@@ -19,13 +18,11 @@ pub(super) struct SlotSpec {
     pub(super) name: String,
     pub(super) pattern: Option<String>,
     pub(super) ranges: Ranges,
-    /// Authored starts of the slot name token and of the element carrying
-    /// the slot, as the AST walker anchors them (P3-9 source maps).
+    /// Authored slot-name and carrier starts (P3-9 source maps).
     pub(super) anchor: SlotAnchor,
 }
 
-/// `(slot name start, carrying element start)`; both absent for the
-/// implicit default slot.
+/// `(slot-name start, carrier start)`; absent for the implicit default.
 pub(super) type SlotAnchor = (Option<u32>, Option<u32>);
 
 /// Start of the static slot name in the `#name` / `v-slot:name` directive.
@@ -62,8 +59,7 @@ fn slot_content<'r, 'a>(bindings: &'r [l2::BindingOp<'a>]) -> Option<&'r l2::Slo
     })
 }
 
-/// The authored value between the attribute quotes when only whitespace pads
-/// `source` (the legacy lane reads the directive value's whole span).
+/// Recover the quoted value when whitespace pads `source`.
 fn quote_padded<'f>(file: &'f str, source: &'f str, span: vize_l0::Span) -> &'f str {
     let (start, end) = (span.start as usize, span.end as usize);
     if file.get(start..end) != Some(source) {
@@ -119,17 +115,23 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .unwrap_or_default()
             .iter()
             .any(|segment| segment.kind == Kind::SlotOutlet);
+        let child_count = children.len();
+        let default_capacity =
+            if (2..=4).contains(&child_count) && self.template_slot(children[0]).is_none() {
+                child_count
+            } else {
+                0
+            };
         let mut slots = ComponentSlots {
             own: None,
-            default: std::vec::Vec::new(),
+            default: std::vec::Vec::with_capacity(default_capacity),
             named: std::vec::Vec::new(),
             forwards,
             dynamic: std::vec::Vec::new(),
         };
         if let Some(content) = slot_content(&component.bindings) {
             let (name, pattern) = slot_head(self.ctx.source, content)?;
-            // The walker puts every child in this one slot. A nested
-            // `<template v-slot>` is transparent there, not a second slot.
+            // Nested `<template v-slot>` is transparent: all children belong here.
             let mut ranges = std::vec::Vec::new();
             for child in children {
                 ranges.push((child, self.child_end(child)?));
@@ -167,8 +169,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                     ),
                 });
             } else if self.nested_carrier(child, child_end)? {
-                // A slot carrier nested below plain content has no legacy
-                // `createSlots` entry shape the plan emitter reproduces.
+                // A nested carrier has no reproducible legacy `createSlots` entry.
                 return Err(LegacyReason::Operation.into());
             } else {
                 slots.default.push((child, child_end));
@@ -177,8 +178,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         Ok(slots)
     }
 
-    /// Whether `[start, end)` holds a slot carrier outside the content of
-    /// nested components (which own their own carriers).
+    /// Find carriers outside nested components, which own their slots.
     fn nested_carrier(&self, start: usize, end: usize) -> Result<bool> {
         let mut pos = start;
         while pos < end {
@@ -208,8 +208,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         }
     }
 
-    /// `_: 3` for forwarded slots at the top scope, `_: 2` inside scoped
-    /// params, `_: 1` otherwise.
+    /// Slot flag: 3 for forwarding, 2 for scoped forwarding, 1 otherwise.
     pub(super) fn slot_flag(&self, slots: &ComponentSlots) -> &'static str {
         match (slots.forwards, self.scoped_params.is_empty()) {
             (true, true) => "_: 3 /* FORWARDED */",
@@ -272,8 +271,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         Ok(())
     }
 
-    /// `_withCtx((params, _push, _parent, _scopeId) => { if (_push) { ... }
-    /// else { return [...] } })`.
+    /// Emit a push-form `_withCtx` slot function with VNode fallback.
     pub(super) fn slot_fn(&mut self, spec: &SlotSpec) -> Result<()> {
         self.ctx.use_core_helper(RuntimeHelper::WithCtx);
         self.ctx.push_optionally_mapped("_withCtx((", spec.anchor.1);
