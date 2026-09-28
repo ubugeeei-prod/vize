@@ -14,7 +14,7 @@ const unscoped = releaseFiles.filter((file) => !scoped.includes(file));
 const selected = (path) =>
   planToolingTests([path]).tests.filter((file) => file.startsWith("tests/tooling/release/"));
 
-test("audited release contracts have complete imports and leave unresolved cases broad", () => {
+void test("audited release contracts have complete imports and leave unresolved cases broad", () => {
   assert.equal(releaseFiles.length, 28);
   assert.equal(scoped.length, 26);
   assert.deepEqual(unscoped, [
@@ -28,7 +28,7 @@ test("audited release contracts have complete imports and leave unresolved cases
   assert.deepEqual(selected("crates/vize_l1/src/parser.rs"), unscoped);
 });
 
-test("release scripts, manifests, workflow, docs and copied fixture restore every contract", () => {
+void test("release scripts, manifests, workflow, docs and copied fixture restore every contract", () => {
   for (const path of [
     "tools/commands/release/pr.rs",
     "tools/support/compat/npm/smoke-release-runtime.mjs",
@@ -43,7 +43,7 @@ test("release scripts, manifests, workflow, docs and copied fixture restore ever
   }
 });
 
-test("direct, global and unknown changes remain broad; merge runs every release test", () => {
+void test("direct, global and unknown changes remain broad; merge runs every release test", () => {
   for (const path of [
     "tests/tooling/release/release-pr.test.ts",
     "pnpm-lock.yaml",
