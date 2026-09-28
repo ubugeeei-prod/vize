@@ -308,7 +308,7 @@ export async function runCorpus() {
       "-p",
       "vize_l1_to_l2",
       "--features",
-      "davinci-differential",
+      "legacy-differential",
       "--test",
       "davinci_dom_corpus",
       "--",

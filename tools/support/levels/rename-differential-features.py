@@ -8,6 +8,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 SUFFIXES = {".rs", ".toml", ".ts", ".mjs", ".yml", ".yaml"}
+EXTRA_PATHS = (
+    "tools/commands/fixtures/davinci-dom-corpus-workflow.rs",
+    "tools/support/compat/fixtures/davinci-dom-corpus-workflow.mjs",
+    "docs/davinci/plan/test-suites.md",
+)
 RENAMES = (
     ("davinci-dom-differential", "legacy-dom-differential"),
     ("davinci-differential", "legacy-differential"),
@@ -16,10 +21,13 @@ PROTECTED_MESSAGES = (
     "davinci-differential (P1-",
     "davinci-differential corpus ",
     "davinci-differential totals:",
+    "vize_s1 --features davinci-differential",
 )
 
 
 def eligible(path: Path) -> bool:
+    if path.as_posix() in EXTRA_PATHS:
+        return True
     parts = path.parts
     if path.suffix not in SUFFIXES or "fixtures" in parts or "snapshots" in parts:
         return False
@@ -40,7 +48,7 @@ def rewrite(source: str) -> str:
 
 def tracked_paths() -> list[Path]:
     result = subprocess.run(
-        ["git", "ls-files", "-z", "--", ".github", "crates", "tests"],
+        ["git", "ls-files", "-z", "--", ".github", "crates", "tests", *EXTRA_PATHS],
         cwd=ROOT,
         check=True,
         capture_output=True,

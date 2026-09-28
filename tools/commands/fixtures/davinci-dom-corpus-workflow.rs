@@ -185,7 +185,7 @@ fn run_corpus() -> Result<u8, String> {
             "-p",
             "vize_l1_to_l2",
             "--features",
-            "davinci-differential",
+            "legacy-differential",
             "--test",
             "davinci_dom_corpus",
             "--",
