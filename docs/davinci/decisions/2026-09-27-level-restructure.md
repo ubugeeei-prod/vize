@@ -324,8 +324,9 @@ with the formatter's always-upload corpus evidence without changing build setup.
 
 [Tooling tier wiring](./2026-09-27-ci-tooling-tier-core.md) records the shared comparison base, queue-only VRT and preserved complete tooling task.
 
-[Heavy tooling inputs](./2026-09-27-heavy-tooling-inputs.md) records Cargo corpus,
-Moon/benchmark dependencies and the immutable queue source-length base for #6863.
+[Heavy tooling inputs](./2026-09-27-heavy-tooling-inputs.md) records corpus,
+Moon, benchmark and queue source limits; [release tooling inputs](./2026-09-28-release-tooling-inputs.md)
+records audited release-contract selection for #6863.
 
 [Rust cache backends](./2026-09-27-rust-cache-backends.md) records #6830's bounded provider namespaces and actual partial trusted seed receipts; [nested post paths](./2026-09-27-rust-cache-backends.md#nested-cache-post-paths) records the reviewed missing-target repair. Nested target saving and later restore proof remain pending. Reviewed save eligibility for the two observed oversized roles keeps full validation and fixed provider mounts; actual full-run post omission remains pending.
 
