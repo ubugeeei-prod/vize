@@ -150,8 +150,8 @@ export function assessDeletionReadiness({
       }
     }
     for (const product of deletionProducts) {
-      const seenDialects = new Set();
       for (const tier of snapshot.tiersToCheck) {
+        const seenDialects = new Set();
         const entry = snapshot.tiers?.[tier]?.[product];
         const context = `${snapshot.day}/${tier}/${product}`;
         if (!entry?.loaded || !entry?.report) {
@@ -239,10 +239,9 @@ export function assessDeletionReadiness({
             if (!observedProjects.has(project)) block("missing-project", `${context}/${project}`);
           }
         }
-      }
-      for (const dialect of deletionDialects) {
-        if (!seenDialects.has(dialect))
-          block("missing-dialect", `${snapshot.day}/${product}/${dialect}`);
+        for (const dialect of deletionDialects) {
+          if (!seenDialects.has(dialect)) block("missing-dialect", `${context}/${dialect}`);
+        }
       }
     }
   }

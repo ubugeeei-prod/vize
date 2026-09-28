@@ -171,6 +171,12 @@ void test("scope and stability cannot pass on reduced plans or selective project
   assert(scopeCodes.has("dialect-policy"));
   assert(scopeCodes.has("missing-project"));
 
+  const tierDialect = completeEvidence();
+  tierDialect.candidate.tiers.T1.compiler.loaded.cases[0].dialectCoverage.evidence = [
+    { dialects: ["js"] },
+  ];
+  assert(codes(tierDialect).has("missing-dialect"), "T2 cannot cover a T1 dialect hole");
+
   const unstable = completeEvidence();
   unstable.policy.maximumGapDays = 6;
   unstable.candidate.sourceRevision = "0".repeat(40);
