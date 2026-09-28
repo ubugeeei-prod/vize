@@ -79,7 +79,7 @@ void test("real worker re-reads its oxlint + Patina config on every pass", async
   ).diagnostics;
   assert.equal(diagnostics.length, 1);
   assert.equal(diagnostics[0].code, "vize(vue/require-v-for-key)");
-  assert.equal(diagnostics[0].filename ?? diagnostics[0].filePath, source);
+  assert.equal(diagnostics[0].filename ?? diagnostics[0].filePath, path.relative(root, source));
   assert.equal(diagnostics[0].labels[0].span.line, 3);
   assert.equal(diagnostics[0].labels[0].span.column, 9);
 
