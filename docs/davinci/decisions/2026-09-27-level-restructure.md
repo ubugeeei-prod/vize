@@ -49,9 +49,7 @@ Decided by the maintainer on 2026-09-28 ([#6826 comment](https://github.com/ubug
 ## Level dump naming
 
 The L3 package identity, stage feed types, level dump API, versioned dump protocols and `vize dump --roundtrip` are recorded in [level dump naming](./2026-09-28-level-dump-naming.md). The native stage ladder now collects pages, remarks and timings from one pass execution for the playground; CLI export and product compilation integration remain open in #6832.
-For [#6832](https://github.com/ubugeeei-prod/vize/issues/6832), L2's 13 auto-discovered `folio_*` test targets move to `dump_*` in a move-only commit; source references and live documentation links follow in a separate commit, while `.folio` fixture bytes and extensions remain unchanged.
-
-[Playground stage view naming](./2026-09-28-playground-stage-view-names.md) records the active source/e2e file and type rename, and the still-open UI/DOM naming inventory for #6832.
+For [#6832](https://github.com/ubugeeei-prod/vize/issues/6832), L2's 13 auto-discovered `folio_*` test targets move to `dump_*` in a move-only commit; source references and live documentation links follow in a separate commit, while `.folio` fixture bytes and extensions remain unchanged. [Playground stage view naming](./2026-09-28-playground-stage-view-names.md) records the active source/e2e renames and still-open UI/DOM inventory.
 
 ## Rust verification for L3 (2026-09-28)
 
