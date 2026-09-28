@@ -141,10 +141,9 @@ fn unsupported_named_pass_is_rejected_instead_of_running_a_noop() {
     let output = run(&path, &["--pipeline", "l2(template-complexity)"]);
     assert_eq!(output.status.code(), Some(2));
     assert!(output.stdout.is_empty());
-    assert!(
-        String::from_utf8(output.stderr)
-            .unwrap()
-            .contains("invalid value")
+    assert_eq!(
+        output.stderr,
+        b"error: invalid value 'l2(template-complexity)' for '--pipeline <PIPELINE>'\n  [possible values: dom, ssr, vapor]\n\nFor more information, try '--help'.\n"
     );
 }
 
@@ -242,7 +241,15 @@ fn modified_prior_page_is_preserved_and_blocks_reuse() {
     fs::write(&page, "user edits").unwrap();
     let second = run(&template, &dump_dir);
     assert_eq!(second.status.code(), Some(1));
-    assert!(String::from_utf8_lossy(&second.stderr).contains("refusing to remove modified"));
+    assert_eq!(
+        second.stderr,
+        format!(
+            "dump: {}: refusing to remove modified {}\n",
+            template.display(),
+            page.display()
+        )
+        .as_bytes()
+    );
     assert_eq!(fs::read(&page).unwrap(), b"user edits");
     assert_eq!(
         fs::read(dir.join("product-stage-feed.json")).unwrap(),
@@ -314,5 +321,12 @@ fn external_template_source_is_rejected_before_capture() {
     let output = run(&path, &[]);
     assert_eq!(output.status.code(), Some(1));
     assert!(output.stdout.is_empty());
-    assert!(String::from_utf8_lossy(&output.stderr).contains("external <template src>"));
+    assert_eq!(
+        output.stderr,
+        format!(
+            "dump: {}: external <template src> is not supported by native dump\n",
+            path.display()
+        )
+        .as_bytes()
+    );
 }

@@ -22,7 +22,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | ---------------------- | ----: | ----: |
 | `BlockLocation`        |     1 |     1 |
 | `SfcDescriptor`        |     2 |     4 |
-| `SfcParseOptions`      |    11 |    14 |
+| `SfcParseOptions`      |    12 |    15 |
 | `SfcScriptBlock`       |     1 |     1 |
 | `component_usage_list` |     1 |     1 |
 | `to_pascal_case`       |     1 |     1 |
