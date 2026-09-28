@@ -94,7 +94,7 @@ and the actual queue remain required before closing the issue.
   - Profiles: `document` (HTML and in-DOM rules, used by petite-vue) and `component` (SFC template rules).
   - One shared lexer, `Lexer<P: Profile>`, with static dispatch.
   - The template tokenizer moves from armature into `vize_l1::markup`, so armature depends on L1 and not the other way round.
-- The [L1 tokenizer ownership record](./2026-09-28-l1-markup-skeleton.md#tokenizer-source-relocation-6835) tracks the source move and dependency inversion separately from the remaining generic-profile parity work. Moving the same tokenizer code does not switch a product from its legacy parser path; that still requires #6880.
+- The [L1 tokenizer ownership record](./2026-09-28-l1-markup-skeleton.md#tokenizer-source-relocation-6835) tracks the source move and dependency inversion separately from the remaining generic-profile parity work. The #6831 allowlist removes the now-stale L1→Armature permission for L1 and L1→L2; L1→Relief remains. Moving the same tokenizer code does not switch a product from its legacy parser path; that still requires #6880.
 - **Container** is the file-format layer. SFC block splitting moves here out of Croquis, laid out so Svelte, Analog and TSRX containers fit later.
 - **Dialect syntax hooks** decompose directive names (`v-on:click.stop`, `@click`, `#default`, `:[dyn]`). They play the role of MLIR custom assembly formats.
 - **Typed embeds.** Attribute values, mustaches and dynamic arguments become `Embed { grammar, source }` with `Grammar = Shape × Lang`:
