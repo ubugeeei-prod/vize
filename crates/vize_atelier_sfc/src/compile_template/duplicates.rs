@@ -2,7 +2,10 @@
 //! can lower a repeated structural directive into nested control flow.
 
 use vize_armature::tokenizer::{Callbacks, QuoteType, Tokenizer};
-use vize_atelier_core::{ErrorCode, SourceLocation};
+use vize_atelier_core::{CompilerError, CompilerErrorWithSource, ErrorCode, SourceLocation};
+use vize_l0::{String, ToCompactString};
+
+use crate::types::{SfcError, SfcTemplateBlock};
 
 struct Candidate<'a> {
     name: &'a str,
@@ -41,7 +44,29 @@ struct DuplicateCollector<'a> {
     duplicates: Vec<SourceLocation>,
 }
 
-pub(super) fn find_duplicate_props(source: &str) -> Vec<SourceLocation> {
+pub(super) fn reject_duplicate_props(template: &SfcTemplateBlock) -> Result<(), SfcError> {
+    let errors: Vec<_> = find_duplicate_props(&template.content)
+        .into_iter()
+        .map(|span| CompilerError::new(ErrorCode::DuplicateAttribute, Some(span)))
+        .collect();
+    if errors.is_empty() {
+        return Ok(());
+    }
+    let with_source: Vec<_> = errors
+        .iter()
+        .map(|error| CompilerErrorWithSource::new(error, &template.content))
+        .collect();
+    let mut message = String::from("Template compilation errors: ");
+    use std::fmt::Write as _;
+    let _ = write!(&mut message, "{:?}", with_source);
+    Err(SfcError {
+        message,
+        code: Some("TEMPLATE_ERROR".to_compact_string()),
+        loc: Some(template.loc.clone()),
+    })
+}
+
+fn find_duplicate_props(source: &str) -> Vec<SourceLocation> {
     let mut collector = DuplicateCollector {
         source,
         current: None,
