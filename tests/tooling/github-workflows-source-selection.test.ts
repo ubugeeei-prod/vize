@@ -14,6 +14,7 @@ type Step = {
 type Job = {
   if?: string;
   needs?: string[] | string;
+  env?: Record<string, string>;
   steps?: Step[];
   outputs?: Record<string, string>;
   strategy?: { "fail-fast": boolean; matrix: { shard: number[] | string } };
@@ -70,6 +71,10 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
   const steps = job.steps ?? [];
   assert.deepEqual(job.needs, ["pr-source-plan", "pr-tooling-fast"]);
   assert.equal(
+    job.env?.RUN_FULL_TOOLING,
+    "${{ github.event_name == 'merge_group' || needs.pr-tooling-fast.outputs.mode != 'fast' }}",
+  );
+  assert.equal(
     job.strategy?.matrix.shard,
     "${{ fromJSON(needs.pr-source-plan.outputs.tooling-shards) }}",
   );
@@ -116,9 +121,14 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
   );
   const fast = source.jobs["pr-tooling-fast"];
   const fastSteps = fast.steps ?? [];
+  assert.equal(fast.outputs?.mode, "${{ steps.fast-plan.outputs.mode }}");
   const fastPlan = fastSteps.findIndex((step) => step.name === "Plan fast PR tooling inputs");
-  const fastBuild = fastSteps.findIndex((step) => step.name === "Build and verify source CLI for fast tooling");
-  const fastTests = fastSteps.findIndex((step) => step.name === "Test changed structural PR tooling contracts");
+  const fastBuild = fastSteps.findIndex(
+    (step) => step.name === "Build and verify source CLI for fast tooling",
+  );
+  const fastTests = fastSteps.findIndex(
+    (step) => step.name === "Test changed structural PR tooling contracts",
+  );
   assert.ok(fastPlan >= 0 && fastPlan < fastBuild && fastBuild < fastTests);
   assert.match(fastSteps[fastBuild].run ?? "", /cargo build --profile ci -p vize/u);
   assert.match(fastSteps[fastBuild].run ?? "", /tests\/differential\/build-receipt\.mjs/u);

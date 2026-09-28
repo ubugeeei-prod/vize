@@ -156,7 +156,11 @@ void test("fast PR tooling admits only measured Rust and structural inputs", () 
   const fast = planToolingFastPr(paths);
   assert.equal(fast.mode, "fast");
   assert.deepEqual(fast.tests, fastStructuralTests);
-  assert.deepEqual(fastToolingTestArgs(fast), ["--test", "--test-concurrency=1", ...fastStructuralTests]);
+  assert.deepEqual(fastToolingTestArgs(fast), [
+    "--test",
+    "--test-concurrency=1",
+    ...fastStructuralTests,
+  ]);
   assert.equal(planToolingTests(paths, { tier: "merge" }).tests.length, toolingTestFiles().length);
   for (const outside of [
     "new-root/unknown.ts",
@@ -170,8 +174,14 @@ void test("fast PR tooling admits only measured Rust and structural inputs", () 
     assert.equal(planToolingFastPr([...paths, outside]).mode, "full", outside);
   }
   assert.equal(planToolingFastPr([]).mode, "full");
-  assert.throws(() => fastToolingTestArgs({ ...fast, tests: [...fast.tests, fast.tests[0]] }), /invalid/);
-  assert.throws(() => fastToolingTestArgs({ ...fast, tests: ["tests/tooling/new-contract.test.ts"] }), /invalid/);
+  assert.throws(
+    () => fastToolingTestArgs({ ...fast, tests: [...fast.tests, fast.tests[0]] }),
+    /invalid/,
+  );
+  assert.throws(
+    () => fastToolingTestArgs({ ...fast, tests: ["tests/tooling/new-contract.test.ts"] }),
+    /invalid/,
+  );
 });
 
 void test("merge tooling shards cover every test once with isolated serial runners", () => {

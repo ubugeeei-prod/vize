@@ -59,8 +59,12 @@ for (const { file, job } of callers) {
 test("fast PR tooling creates its own source CLI receipt before changed contracts", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as Workflow;
   const steps = workflow.jobs["pr-tooling-fast"].steps ?? [];
-  const build = steps.findIndex((step) => step.name === "Build and verify source CLI for fast tooling");
-  const tests = steps.findIndex((step) => step.name === "Test changed structural PR tooling contracts");
+  const build = steps.findIndex(
+    (step) => step.name === "Build and verify source CLI for fast tooling",
+  );
+  const tests = steps.findIndex(
+    (step) => step.name === "Test changed structural PR tooling contracts",
+  );
   assert.ok(build >= 0 && tests > build);
   assert.match(steps[build].run ?? "", /cargo build --profile ci -p vize/u);
   assert.match(steps[build].run ?? "", /tests\/differential\/build-receipt\.mjs/u);

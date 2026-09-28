@@ -50,5 +50,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   mkdirSync(dirname(output), { recursive: true });
   writeFileSync(output, `${JSON.stringify(plan, null, 2)}\n`);
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `mode=${plan.mode}\n`);
-  process.stdout.write(`PR tooling: ${plan.mode}; ${plan.tests.length} changed structural tests; ${plan.reason}.\n`);
+  process.stdout.write(
+    `PR tooling: ${plan.mode}; ${plan.tests.length} changed structural tests; ${plan.reason}.\n`,
+  );
 }
