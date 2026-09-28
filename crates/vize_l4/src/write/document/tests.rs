@@ -80,6 +80,26 @@ fn escaping_rebases_links_onto_the_escaped_output() {
 }
 
 #[test]
+fn escaping_skips_empty_patterns_and_clamps_shrunken_links() {
+    let mut piece = EmitDocument::default();
+    piece.push_mapped("ab", 10);
+    piece.anchor(11);
+    piece.push_mapped("cd", 12);
+
+    let mut out = EmitDocument::plain("pre");
+    out.push_escaped(&piece, &[("", "ignored"), ("abcd", "x")]);
+    assert_eq!(out.as_str(), "prex");
+    assert_eq!(
+        out.links(),
+        [
+            link((3, 3), (10, 10), None),
+            link((3, 3), (11, 11), None),
+            link((3, 4), (12, 12), None),
+        ]
+    );
+}
+
+#[test]
 fn insertion_shifts_the_links_at_or_after_it() {
     let mut doc = EmitDocument::new(true);
     doc.push_linked("ab", Span::new(0, 2));

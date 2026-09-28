@@ -19,6 +19,7 @@ use vize_l0::{Span, String};
 
 use super::source_map::SourceMapBuilder;
 
+mod escape;
 mod expression_links;
 pub use expression_links::expression_links;
 
@@ -277,54 +278,6 @@ impl EmitDocument {
                 .extend(other.links.iter().map(|link| link.rebased(base)));
         }
         self.text.push_str(&other.text);
-    }
-
-    /// Append another document with every occurrence of each `(from, to)`
-    /// pattern replaced, rebasing its links onto the escaped output. Patterns
-    /// are ASCII and tried in order at each byte; a link boundary at an
-    /// escaped byte lands before its replacement.
-    #[inline(always)]
-    pub fn push_escaped(&mut self, other: &EmitDocument, escapes: &[(&str, &str)]) {
-        let base = self.text.len();
-        let bytes = other.text.as_bytes();
-        // (input offset of an escape, total growth once it is applied)
-        let mut growth: Vec<(usize, usize)> = Vec::new();
-        let (mut start, mut index) = (0, 0);
-        while let Some(rest) = bytes.get(index..).filter(|rest| !rest.is_empty()) {
-            let Some((from, to)) = escapes
-                .iter()
-                .find(|(from, _)| rest.starts_with(from.as_bytes()))
-            else {
-                index += 1;
-                continue;
-            };
-            self.text
-                .push_str(other.text.get(start..index).unwrap_or_default());
-            self.text.push_str(to);
-            if self.recording && !other.links.is_empty() {
-                let total = growth.last().map_or(0, |&(_, total)| total);
-                growth.push((index, total + to.len() - from.len()));
-            }
-            index += from.len();
-            start = index;
-        }
-        self.text
-            .push_str(other.text.get(start..).unwrap_or_default());
-        if !self.recording {
-            return;
-        }
-        let out = |offset: u32| {
-            let before = growth.partition_point(|&(at, _)| at < offset as usize);
-            let grown = before
-                .checked_sub(1)
-                .and_then(|last| growth.get(last))
-                .map_or(0, |&(_, total)| total);
-            (base + offset as usize + grown) as u32
-        };
-        self.links.extend(other.links.iter().map(|link| SpanLink {
-            generated: Span::new(out(link.generated.start), out(link.generated.end)),
-            ..link.clone()
-        }));
     }
 
     /// Record every segment-bearing link into `builder`, in emission order.
