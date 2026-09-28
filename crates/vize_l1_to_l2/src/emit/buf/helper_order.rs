@@ -14,8 +14,6 @@ type RankFiveKey = (usize, u8, u8);
 /// per [`Buf::ordered_helpers`] instead of once per comparison.
 struct OrderCache {
     rank_five_keys: [Option<RankFiveKey>; 8],
-    /// One full scan pays off only for modules with many helpers and code.
-    scan_all_aliases: bool,
     /// Filled by one scan of the module on first use, indexed by
     /// `Helper::bit().trailing_zeros()`.
     alias_positions: Option<[Option<usize>; 64]>,
@@ -41,25 +39,34 @@ impl Buf {
         for helper in Helper::ALL {
             push(helper);
         }
+        // Keep the small-module comparator free of the shared-scan branch.
+        if self.used.count_ones() > 8
+            && self
+                .hoists
+                .iter()
+                .fold(self.code.len(), |len, text| len.saturating_add(text.len()))
+                > 8_192
+        {
+            self.sort_helpers::<true>(listed)
+        } else {
+            self.sort_helpers::<false>(listed)
+        }
+    }
+
+    fn sort_helpers<const SHARED: bool>(&self, mut listed: StdVec<Helper>) -> StdVec<Helper> {
         let mut cache = OrderCache {
             rank_five_keys: [None; 8],
-            scan_all_aliases: self.used.count_ones() > 8
-                && self
-                    .hoists
-                    .iter()
-                    .fold(self.code.len(), |len, text| len.saturating_add(text.len()))
-                    > 8_192,
             alias_positions: None,
         };
         listed.sort_by(|left, right| {
             left.rank()
                 .cmp(&right.rank())
-                .then_with(|| self.order_same_rank_helper(*left, *right, &mut cache))
+                .then_with(|| self.order_same_rank_helper::<SHARED>(*left, *right, &mut cache))
         });
         listed
     }
 
-    fn order_same_rank_helper(
+    fn order_same_rank_helper<const SHARED: bool>(
         &self,
         left: Helper,
         right: Helper,
@@ -76,8 +83,8 @@ impl Buf {
                 (Some(_), None) => Ordering::Less,
                 (None, Some(_)) => Ordering::Greater,
                 (None, None) => match (
-                    self.first_alias_position(left, cache),
-                    self.first_alias_position(right, cache),
+                    self.first_alias_position::<SHARED>(left, cache),
+                    self.first_alias_position::<SHARED>(right, cache),
                 ) {
                     (Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
                     _ => Ordering::Equal,
@@ -89,7 +96,7 @@ impl Buf {
                     if let Some(Some(cached)) = cache.rank_five_keys.get(slot) {
                         return *cached;
                     }
-                    let key = self.rank_five_key(helper, cache);
+                    let key = self.rank_five_key::<SHARED>(helper, cache);
                     if let Some(cached) = cache.rank_five_keys.get_mut(slot) {
                         *cached = Some(key);
                     }
@@ -114,8 +121,12 @@ impl Buf {
             .position(|candidate| candidate.bit() == helper.bit())
     }
 
-    fn first_alias_position(&self, helper: Helper, cache: &mut OrderCache) -> Option<usize> {
-        if !cache.scan_all_aliases {
+    fn first_alias_position<const SHARED: bool>(
+        &self,
+        helper: Helper,
+        cache: &mut OrderCache,
+    ) -> Option<usize> {
+        if !SHARED {
             return self.scan_alias_position(helper);
         }
         let positions = cache
@@ -164,19 +175,25 @@ impl Buf {
         helper_call_position(self.code.as_str(), alias).map(|position| offset + position)
     }
 
-    fn rank_five_key(&self, helper: Helper, cache: &mut OrderCache) -> RankFiveKey {
-        if let Some((position, order)) = self.normalize_props_guard_merge_order(helper, cache) {
+    fn rank_five_key<const SHARED: bool>(
+        &self,
+        helper: Helper,
+        cache: &mut OrderCache,
+    ) -> RankFiveKey {
+        if let Some((position, order)) =
+            self.normalize_props_guard_merge_order::<SHARED>(helper, cache)
+        {
             return (position, order, rank_five_all_order(helper));
         }
         let position = self
-            .first_alias_position(helper, cache)
+            .first_alias_position::<SHARED>(helper, cache)
             .map(alias_sort_position)
-            .or_else(|| self.virtual_alias_position(helper, cache))
+            .or_else(|| self.virtual_alias_position::<SHARED>(helper, cache))
             .unwrap_or_else(|| usize::MAX - 16 + usize::from(rank_five_all_order(helper)));
         (position, 0, rank_five_all_order(helper))
     }
 
-    fn normalize_props_guard_merge_order(
+    fn normalize_props_guard_merge_order<const SHARED: bool>(
         &self,
         helper: Helper,
         cache: &mut OrderCache,
@@ -184,8 +201,8 @@ impl Buf {
         if !matches!(helper, Helper::GuardReactiveProps | Helper::MergeProps) {
             return None;
         }
-        let normalize_pos = self.first_alias_position(Helper::NormalizeProps, cache)?;
-        let merge_pos = self.first_alias_position(Helper::MergeProps, cache)?;
+        let normalize_pos = self.first_alias_position::<SHARED>(Helper::NormalizeProps, cache)?;
+        let merge_pos = self.first_alias_position::<SHARED>(Helper::MergeProps, cache)?;
         if normalize_pos >= merge_pos {
             return None;
         }
@@ -193,7 +210,7 @@ impl Buf {
         match helper {
             Helper::GuardReactiveProps
                 if self
-                    .first_alias_position(helper, cache)
+                    .first_alias_position::<SHARED>(helper, cache)
                     .is_some_and(|position| position > merge_pos) =>
             {
                 Some((base, 0))
@@ -203,7 +220,11 @@ impl Buf {
         }
     }
 
-    fn virtual_alias_position(&self, helper: Helper, cache: &mut OrderCache) -> Option<usize> {
+    fn virtual_alias_position<const SHARED: bool>(
+        &self,
+        helper: Helper,
+        cache: &mut OrderCache,
+    ) -> Option<usize> {
         let index = self
             .used_order
             .iter()
@@ -213,12 +234,12 @@ impl Buf {
         before
             .iter()
             .rev()
-            .find_map(|candidate| self.first_alias_position(*candidate, cache))
+            .find_map(|candidate| self.first_alias_position::<SHARED>(*candidate, cache))
             .map(|position| alias_sort_position(position) + 1)
             .or_else(|| {
                 after
                     .iter()
-                    .find_map(|candidate| self.first_alias_position(*candidate, cache))
+                    .find_map(|candidate| self.first_alias_position::<SHARED>(*candidate, cache))
                     .map(|position| alias_sort_position(position).saturating_sub(1))
             })
     }

@@ -320,3 +320,10 @@ The one-scan path searched all 43 helper aliases linearly at each call site;
 dispatch recognized aliases directly instead. The ordinary compiler fixtures
 exercise this path, so its three-run instruction result must pass before the
 PR enters the queue again. Ceilings remain unchanged.
+
+Direct dispatch reduced the misses to ten in exact-head run `36395857088`,
+but small compiler probes still regressed. The small-module comparator was
+checking the shared-scan flag at every alias lookup. Specialize the normal
+and shared paths at compile time, so the normal comparator has no scan-mode
+branch; select the shared path only once before sorting. Measure the new
+candidate before queueing.
