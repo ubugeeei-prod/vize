@@ -9,8 +9,8 @@ fn reference_path_keeps_module_declaration_and_its_side_effect_import() {
         "reference-path-module-side-effect",
         &[
             (
-                "src/env.d.ts",
-                "/// <reference path=\"../types/builder-env.d.ts\" />\nexport {};\n",
+                "env.d.ts",
+                "/// <reference path=\"./types/builder-env.d.ts\" />\nexport {};\n",
             ),
             (
                 "types/builder-env.d.ts",
@@ -26,6 +26,21 @@ fn reference_path_keeps_module_declaration_and_its_side_effect_import() {
             ),
         ],
     );
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "types": []
+  },
+  "include": ["env.d.ts", "src/**/*"]
+}"#,
+    )
+    .expect("write the authored TypeScript configuration");
     let snapshot = snapshot_project_diagnostics(&project_root);
     let _ = std::fs::remove_dir_all(&project_root);
     assert_eq!(snapshot, Some(Vec::new()));
