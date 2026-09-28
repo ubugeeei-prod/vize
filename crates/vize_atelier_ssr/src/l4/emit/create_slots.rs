@@ -8,18 +8,18 @@
 //! expression form lives in `vnode_create_slots`.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_l0::{FxHashSet, String, ToCompactString, cstr};
+use vize_l0::{cstr, FxHashSet, String, ToCompactString};
 use vize_l1_to_l2::TransformContent;
 use vize_l2::op::{self as l2, DynamicName};
 
 use super::control::alias;
-use super::slots::{ComponentSlots, SlotSpec, slot_pattern};
+use super::slots::{slot_pattern, ComponentSlots, SlotSpec};
 use super::spans::expression_span;
 use super::{Emitter, Result};
 use crate::codegen::element::props::quoted_js_string;
 use crate::codegen::helpers::extract_destructure_params;
-use crate::l4::AdmissionFailure;
 use crate::l4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
+use crate::l4::AdmissionFailure;
 
 /// A `createSlots` entry source, by the plan position of its content child.
 #[derive(Clone, Copy)]
@@ -175,12 +175,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.push("_createSlots({\n");
         self.ctx.indent_level += 1;
         if !slots.default.is_empty() {
-            self.slot_property(&SlotSpec {
-                name: "default".to_compact_string(),
-                pattern: None,
-                ranges: slots.default.clone(),
-                anchor: (None, None),
-            })?;
+            self.slot_property_parts("default", None, &slots.default, (None, None))?;
         }
         for named in &slots.named {
             self.slot_property(named)?;
