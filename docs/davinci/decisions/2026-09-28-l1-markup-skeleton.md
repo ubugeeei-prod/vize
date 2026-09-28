@@ -42,3 +42,11 @@ Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835),
 TODO: implement `VueDirectives` (#6836) and the SFC split (#6837). The
 `v-pre` switch is still answered by armature's parser; the L1 surface tree
 does not use it yet.
+
+## Delivery order for the existing tokenizer PR
+
+The owner explicitly queued #7038 on 2026-09-28 while #6832 remained open.
+Finish this already-started tokenizer move through its checks and squash merge;
+keep #6832 open and its remaining rename work separately tracked. This scoped
+delivery exception does not change the issue order for new Stage 1 work. The
+merge queue's instruction-count budget remains strict and must pass before merge.

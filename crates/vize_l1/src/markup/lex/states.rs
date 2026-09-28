@@ -357,6 +357,7 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
         }
     }
 
+    #[inline(always)]
     pub(super) fn state_before_attr_name(&mut self, c: u8) {
         if c == GT {
             self.after_quoted_attr_value = false;
