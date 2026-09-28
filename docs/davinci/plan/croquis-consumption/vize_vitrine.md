@@ -59,7 +59,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ReactivityFact`                             |     1 |     3 |
 | `ReactivityKey`                              |     1 |     3 |
 | `ReactivityLossKind`                         |     1 |    11 |
-| `SfcDescriptor`                              |     4 |     4 |
+| `SfcDescriptor`                              |     5 |     5 |
+| `SfcError`                                   |     1 |     1 |
 | `SfcParseOptions`                            |    11 |    16 |
 | `SignatureContract`                          |     1 |     1 |
 | `SlotContract`                               |     1 |     1 |
@@ -81,7 +82,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ReactivityTracker`  |        1 |    2 |
 | `Scope`              |        0 |    2 |
 | `ScopeId`            |        0 |    2 |
-| `Span`               |        0 |    7 |
+| `Span`               |        0 |    9 |
 | `Symbol`             |        0 |    4 |
 | `Croquis.bindings`   |        2 |   15 |
 | `Croquis.reactivity` |        1 |    3 |
