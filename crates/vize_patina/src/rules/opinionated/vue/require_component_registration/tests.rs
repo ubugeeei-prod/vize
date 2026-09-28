@@ -1,3 +1,5 @@
+mod local_bindings;
+
 use super::{RequireComponentRegistration, pascal_to_kebab};
 use crate::{LintPreset, Linter};
 
@@ -104,7 +106,7 @@ const StatusBadge = Vue.defineAsyncComponent(() => import('./StatusBadge.vue'))
 }
 
 #[test]
-fn test_reports_non_component_setup_bindings_and_missing_components() {
+fn test_accepts_template_visible_setup_bindings_and_reports_missing_components() {
     let linter = create_linter();
     let sfc = r#"<script setup lang="ts">
 import { defineAsyncComponent } from 'vue'
@@ -123,7 +125,7 @@ const LocalFactory = (() => 'not a Vue component')()
 "#;
     let result = linter.lint_sfc(sfc, "ParentWidget.vue");
 
-    assert_eq!(result.warning_count, 3, "{:?}", result.diagnostics);
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
     assert!(
         result
             .diagnostics
@@ -133,7 +135,7 @@ const LocalFactory = (() => 'not a Vue component')()
 }
 
 #[test]
-fn test_does_not_treat_unrelated_factory_as_vue_async_component() {
+fn test_local_factory_binding_is_template_visible() {
     let linter = create_linter();
     let sfc = r#"<script setup lang="ts">
 function defineAsyncComponent(loader: () => unknown) { return loader }
@@ -146,11 +148,11 @@ const LocalPanel = defineAsyncComponent(() => import('./LocalPanel.vue'))
 "#;
     let result = linter.lint_sfc(sfc, "ParentWidget.vue");
 
-    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
 }
 
 #[test]
-fn test_does_not_treat_non_vue_or_type_only_import_as_async_factory() {
+fn test_local_bindings_are_visible_even_when_their_factories_are_not_vue_imports() {
     let linter = create_linter();
     let sfc = r#"<script setup lang="ts">
 import { defineAsyncComponent as unrelatedFactory } from './factory'
@@ -167,7 +169,7 @@ const TypeOnlyPanel = defineAsyncComponent(() => import('./TypeOnlyPanel.vue'))
 "#;
     let result = linter.lint_sfc(sfc, "ParentWidget.vue");
 
-    assert_eq!(result.warning_count, 2, "{:?}", result.diagnostics);
+    assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
 }
 
 #[test]

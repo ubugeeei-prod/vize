@@ -46,6 +46,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::builtins::is_builtin_component;
 use vize_croquis::naming::{names_match, to_pascal_case};
+use vize_croquis::script_parser::parse_script_setup;
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind};
 use vize_l0::String;
 use vize_l0::ToCompactString;
@@ -230,6 +231,17 @@ impl Rule for RequireComponentRegistration {
             .and_then(|descriptor| descriptor.script_setup.as_ref())
             .map(async_component_names)
             .unwrap_or_default();
+        let setup_bindings: Vec<String> = ctx
+            .sfc_descriptor()
+            .and_then(|descriptor| descriptor.script_setup.as_ref())
+            .map(|script| {
+                parse_script_setup(script.content.as_ref())
+                    .bindings
+                    .iter()
+                    .map(|(name, _)| name.to_compact_string())
+                    .collect()
+            })
+            .unwrap_or_default();
 
         // For now, we warn on all custom components that aren't built-in or framework globals
         for (tag, start, end) in used_components {
@@ -248,6 +260,9 @@ impl Rule for RequireComponentRegistration {
                 }) || async_components
                     .iter()
                     .any(|name| component_name_matches(&tag, name))
+                    || setup_bindings
+                        .iter()
+                        .any(|name| component_name_matches(&tag, name))
                 {
                     continue;
                 }

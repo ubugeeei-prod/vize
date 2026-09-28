@@ -45,6 +45,12 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use oxc_allocator::Allocator;
+use oxc_ast::ast::TSType;
+use oxc_ast_visit::Visit;
+use oxc_parser::Parser;
+use oxc_span::{GetSpan, SourceType};
+use vize_l0::String;
 use vize_relief::BindingType;
 use vize_relief::{ElementNode, ExpressionNode, InterpolationNode, RootNode};
 
@@ -188,7 +194,7 @@ impl NoBrowserGlobalsInSsr {
     /// - Skips property access after `.` (e.g., `obj.top` → only `obj`)
     /// - Skips object property keys (e.g., `{ top: 0 }` → skips `top`)
     /// - Skips direct `typeof window` guards that are safe in SSR
-    fn extract_identifiers(expr: &str) -> Vec<&str> {
+    fn extract_identifiers(expr: &str) -> Vec<(&str, usize)> {
         let mut identifiers = Vec::new();
         let bytes = expr.as_bytes();
         let len = bytes.len();
@@ -333,7 +339,7 @@ impl NoBrowserGlobalsInSsr {
                     }
                 }
 
-                identifiers.push(ident);
+                identifiers.push((ident, start));
                 after_dot = false;
                 can_start_regex = false;
                 continue;
@@ -384,6 +390,60 @@ impl NoBrowserGlobalsInSsr {
 
         identifiers
     }
+
+    fn runtime_identifiers(expr: &str) -> Vec<&str> {
+        let identifiers = Self::extract_identifiers(expr);
+        if !identifiers
+            .iter()
+            .any(|(name, _)| Self::is_browser_global_static(name))
+        {
+            return identifiers.into_iter().map(|(name, _)| name).collect();
+        }
+
+        let type_ranges = Self::type_ranges(expr);
+        identifiers
+            .into_iter()
+            .filter(|(_, offset)| {
+                !type_ranges
+                    .iter()
+                    .any(|(start, end)| *offset >= *start && *offset < *end)
+            })
+            .map(|(name, _)| name)
+            .collect()
+    }
+
+    fn type_ranges(expr: &str) -> Vec<(usize, usize)> {
+        const PREFIX: &str = "const __vize_ssr_expr = (";
+        let mut source = String::with_capacity(PREFIX.len() + expr.len() + 2);
+        source.push_str(PREFIX);
+        source.push_str(expr);
+        source.push_str(");");
+
+        let allocator = Allocator::default();
+        let parsed = Parser::new(&allocator, source.as_str(), SourceType::ts()).parse();
+        if parsed.panicked || !parsed.diagnostics.is_empty() {
+            return Vec::new();
+        }
+
+        struct TypeRanges(Vec<(usize, usize)>);
+        impl<'a> Visit<'a> for TypeRanges {
+            fn visit_ts_type(&mut self, ty: &TSType<'a>) {
+                let span = ty.span();
+                self.0.push((span.start as usize, span.end as usize));
+            }
+        }
+
+        let mut ranges = TypeRanges(Vec::new());
+        ranges.visit_program(&parsed.program);
+        ranges
+            .0
+            .into_iter()
+            .filter_map(|(start, end)| {
+                let offset = PREFIX.len();
+                (start >= offset).then_some((start - offset, end.saturating_sub(offset)))
+            })
+            .collect()
+    }
 }
 
 impl Rule for NoBrowserGlobalsInSsr {
@@ -409,7 +469,7 @@ impl Rule for NoBrowserGlobalsInSsr {
             ExpressionNode::Simple(s) => s.content,
             ExpressionNode::Compound(_) => return, // Skip compound expressions for now
         };
-        let identifiers = Self::extract_identifiers(content);
+        let identifiers = Self::runtime_identifiers(content);
 
         for ident in identifiers {
             // Skip if it's defined as a local variable (from v-for, etc.)
@@ -446,7 +506,7 @@ impl Rule for NoBrowserGlobalsInSsr {
                 ExpressionNode::Simple(s) => s.content,
                 ExpressionNode::Compound(_) => return, // Skip compound expressions
             };
-            let identifiers = Self::extract_identifiers(content);
+            let identifiers = Self::runtime_identifiers(content);
 
             for ident in identifiers {
                 // Skip if it's defined as a local variable
@@ -470,199 +530,4 @@ impl Rule for NoBrowserGlobalsInSsr {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::NoBrowserGlobalsInSsr;
-    use crate::Linter;
-    use crate::context::{LintContext, SsrMode};
-    use crate::rule::{Rule, RuleRegistry};
-    use vize_l0::CompactString;
-
-    fn lint_with_ssr(source: &str) -> Vec<CompactString> {
-        let mut registry = RuleRegistry::new();
-        registry.add(Box::new(NoBrowserGlobalsInSsr));
-        let _linter = Linter::with_registry(registry);
-
-        // Create allocator and context
-        use vize_l0::Allocator;
-        let allocator = Allocator::with_capacity(1024);
-        let mut ctx = LintContext::with_locale(
-            &allocator,
-            source,
-            "test.vue",
-            crate::Linter::default().locale(),
-        );
-        ctx.set_ssr_mode(SsrMode::Enabled);
-
-        let parser = vize_armature::Parser::new(&allocator, source);
-        let (root, _) = parser.parse();
-
-        let rules: Vec<Box<dyn Rule>> = vec![Box::new(NoBrowserGlobalsInSsr)];
-        let rule_names = [rules[0].meta().name];
-        let mut visitor = crate::visitor::LintVisitor::new(&mut ctx, &rules, &rule_names, true);
-        visitor.visit_root(&root);
-
-        ctx.into_diagnostics()
-            .into_iter()
-            .map(|d| d.message)
-            .collect()
-    }
-
-    #[test]
-    fn test_detects_window_in_interpolation() {
-        let result = lint_with_ssr("<div>{{ window.innerWidth }}</div>");
-        insta::assert_debug_snapshot!(result);
-    }
-
-    #[test]
-    fn test_detects_document_in_interpolation() {
-        let result = lint_with_ssr("<div>{{ document.title }}</div>");
-        insta::assert_debug_snapshot!(result);
-    }
-
-    #[test]
-    fn test_detects_navigator_in_directive() {
-        let result = lint_with_ssr("<div :class=\"navigator.userAgent\"></div>");
-        insta::assert_debug_snapshot!(result);
-    }
-
-    #[test]
-    fn test_allows_local_variable() {
-        // If 'window' is a local variable (e.g., from v-for), it should be allowed
-        let result = lint_with_ssr("<div v-for=\"window in windows\">{{ window }}</div>");
-        insta::assert_debug_snapshot!(result);
-    }
-
-    #[test]
-    fn test_allows_scoped_slot_binding_named_open() {
-        let result = lint_with_ssr(
-            r#"<Dropdown v-slot="{ open }"><button :class="{ active: open }">{{ open }}</button></Dropdown>"#,
-        );
-        assert!(
-            result.is_empty(),
-            "Should not flag scoped slot variables, got: {:?}",
-            result
-        );
-    }
-
-    #[test]
-    fn test_detects_localstorage() {
-        let result = lint_with_ssr("<div>{{ localStorage.getItem('key') }}</div>");
-        insta::assert_debug_snapshot!(result);
-    }
-
-    #[test]
-    fn test_allows_globalthis_in_interpolation() {
-        let result = lint_with_ssr("<div>{{ globalThis }}</div>");
-        assert!(
-            result.is_empty(),
-            "Should not flag globalThis in SSR, got: {:?}",
-            result
-        );
-    }
-
-    #[test]
-    fn test_allows_self_in_directive() {
-        let result = lint_with_ssr(r#"<div :data-target="self"></div>"#);
-        assert!(
-            result.is_empty(),
-            "Should not flag self in SSR, got: {:?}",
-            result
-        );
-    }
-
-    #[test]
-    fn test_ignores_css_property_names_in_style_object() {
-        // { top: 0 } - 'top' is an object key, not a reference to window.top
-        let result =
-            lint_with_ssr(r#"<div :style="{ position: 'absolute', top: 0, left: 0 }"></div>"#);
-        assert!(
-            result.is_empty(),
-            "Should not flag CSS property names in style objects, got: {:?}",
-            result
-        );
-    }
-
-    #[test]
-    fn test_ignores_string_literal_values() {
-        // 'window' is a string literal, not a reference to the window global
-        let result = lint_with_ssr(r#"<div :class="'window'"></div>"#);
-        assert!(
-            result.is_empty(),
-            "Should not flag string literals, got: {:?}",
-            result
-        );
-    }
-
-    #[test]
-    fn test_ignores_property_access() {
-        // obj.top - 'top' is a property access, not a reference to window.top
-        let result = lint_with_ssr(r#"<div>{{ obj.top }}</div>"#);
-        // Only 'obj' should be checked, not 'top'
-        assert!(
-            result.is_empty(),
-            "Should not flag property accesses, got: {:?}",
-            result
-        );
-    }
-
-    #[test]
-    fn test_detects_actual_global_in_style_value() {
-        // { top: window.scrollY } - 'window' is a real global reference
-        let result = lint_with_ssr(r#"<div :style="{ top: window.scrollY + 'px' }"></div>"#);
-        insta::assert_debug_snapshot!(result);
-    }
-
-    #[test]
-    fn test_ignores_typeof_window_guard() {
-        let result = lint_with_ssr(r#"<div>{{ typeof window === 'undefined' }}</div>"#);
-        assert!(
-            result.is_empty(),
-            "Should not flag direct typeof guards, got: {:?}",
-            result
-        );
-    }
-
-    #[test]
-    fn test_ignores_parenthesized_typeof_document_guard_in_directive() {
-        let result = lint_with_ssr(
-            r#"<div :class="typeof (document) === 'undefined' ? 'ssr' : 'dom'"></div>"#,
-        );
-        assert!(
-            result.is_empty(),
-            "Should not flag parenthesized direct typeof guards, got: {:?}",
-            result
-        );
-    }
-
-    #[test]
-    fn test_detects_typeof_member_access() {
-        let result = lint_with_ssr(r#"<div>{{ typeof window.innerWidth }}</div>"#);
-        assert_eq!(result.len(), 1);
-    }
-
-    #[test]
-    fn test_ignores_regex_literal_with_browser_global_name() {
-        let result = lint_with_ssr(r#"<div>{{ /window|document/.test(name) }}</div>"#);
-        assert!(
-            result.is_empty(),
-            "Should not flag browser global names inside regex literals, got: {:?}",
-            result
-        );
-    }
-
-    #[test]
-    fn test_ignores_block_comment_with_browser_global_name() {
-        let result = lint_with_ssr(r#"<div>{{ value /* window */ }}</div>"#);
-        assert!(
-            result.is_empty(),
-            "Should not flag browser global names inside comments, got: {:?}",
-            result
-        );
-    }
-
-    #[test]
-    fn test_detects_division_by_browser_global() {
-        let result = lint_with_ssr(r#"<div>{{ width / window.innerWidth }}</div>"#);
-        assert_eq!(result.len(), 1);
-    }
-}
+mod tests;
