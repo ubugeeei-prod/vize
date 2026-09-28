@@ -112,7 +112,7 @@ fn required_prop_dedup_preserves_other_type_errors() {
                 real_type_error.clone(),
                 elsewhere.clone()
             ],
-            &[required.clone()],
+            std::slice::from_ref(&required),
         ),
         vec![real_type_error, elsewhere],
     );
