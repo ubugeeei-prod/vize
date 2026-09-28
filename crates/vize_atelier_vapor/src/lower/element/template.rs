@@ -59,10 +59,14 @@ fn write_element_template(
         })
         .collect();
 
-    // Add static attributes (skip those overridden by dynamic bindings)
+    // Add static attributes (skip those overridden by dynamic bindings).
+    // This result depends only on the unchanged props, so compute it once
+    // when the first static attribute needs it.
+    let mut uses_computed = None;
     for prop in el.props.iter() {
         if let PropNode::Attribute(attr) = prop {
-            if super::super::merged_props::uses_computed_props(el)
+            if *uses_computed
+                .get_or_insert_with(|| super::super::merged_props::uses_computed_props(el))
                 || is_runtime_only_attr(attr.name)
             {
                 continue;
