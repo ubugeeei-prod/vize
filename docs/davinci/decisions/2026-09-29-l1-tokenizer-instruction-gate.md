@@ -5,8 +5,8 @@
 Keep [#7136](https://github.com/ubugeeei-prod/vize/pull/7136) out of the
 protected merge queue until its updated exact head passes ordinary Actions.
 The first merge group failed immutable instruction ceilings; a source-level
-candidate now passes all 100 on the #7150 main base, but it has not yet passed
-the PR and cumulative merge-group gates. Do not raise budgets, change the
+candidate now passes all 100 on the #7152 main base, but it has not yet passed
+the updated PR and cumulative merge-group gates. Do not raise budgets, change the
 measurement method or relax the source-length ratchet. The existing compiler
 parser stays on its original product path; #6880 still gates a route change.
 The agreed L1 ownership and Armature dependency direction remain the target,
@@ -38,6 +38,9 @@ comparison against a fresh-main control measurement.
 | Same cumulative source after #7132 merge                                                    | [36461474662](https://github.com/ubugeeei-prod/vize/actions/runs/36461474662) |             4 | Vapor lower small, deep, interp and generate interp exceeded their ceilings.                             |
 | Cache computed-prop mode once per element and skip empty delegate append, after #7150 merge | [36469060988](https://github.com/ubugeeei-prod/vize/actions/runs/36469060988) |             1 | Only Vapor lower stress-deep remained +33; #7150 did not alter that result.                              |
 | Skip computed-prop scan for one static attribute, after #7150 merge                         | [36469732014](https://github.com/ubugeeei-prod/vize/actions/runs/36469732014) |             0 | All 100 ceilings hold in three exact repeats; ordinary PR and merge-group verification remain.           |
+| Same source rebased after #7152 merge                                                       | [36475522097](https://github.com/ubugeeei-prod/vize/actions/runs/36475522097) |             9 | Vapor generate/compile and SSR codegen changed under the new Core graph.                                 |
+| Scan escaped bytes by checked split on #7152 main                                           | [36476726346](https://github.com/ubugeeei-prod/vize/actions/runs/36476726346) |             7 | Shared escape scanning improved but still exceeded seven ceilings.                                       |
+| Compare single-byte escapes directly on #7152 main                                          | [36477945753](https://github.com/ubugeeei-prod/vize/actions/runs/36477945753) |             0 | All 100 ceilings hold in three exact repeats; updated PR and protected queue remain.                     |
 
 The packageable snapshot failed DOM compile in five fixtures and SSR/Vapor compile
 in six each, up to 13,837 instructions above a pinned ceiling. It matched the
@@ -94,14 +97,23 @@ return preserved all 266 Vapor library tests, the compiler fix-history and
 artifact tests, and strict Clippy; the cumulative Actions run then passed
 100/100 with three identical executions. This is evidence for updating the
 existing PR head, not for bypassing its ordinary or protected queue gates.
+After #7152 actually merged as `95f39c658`, the same source exceeded nine
+ceilings. Callgrind attributed the SSR codegen and Vapor generate differences
+mainly to unchanged `EmitDocument::push_escaped` code under the new linked
+graph. Replacing its optional tail scan with a length-bounded split removed
+two misses. Single-byte escape patterns still made thousands of libc `memcmp`
+calls; direct first-byte comparison retained ordered matching and reduced the
+remaining seven misses. Core, SSR and Vapor library tests passed 251, 70 and
+266 cases, including map and output checks; strict Clippy and formatting passed.
+The exact Actions run on #7152 main then passed all 100 pinned ceilings.
 
 ## Next bounded work
 
 Update #7136 with the original move-only commit intact and each measured
-source optimization in its own commit. Run exact-head ordinary Actions. The
-independent #7152 queue entry must finish first; then rebase once on fresh
-main, remeasure all 100 and use native Stack prefix merge through the protected
-queue. Verify actual `mergedAt` and fresh main before restacking children. If
+source optimization in its own commit. Run exact-head ordinary Actions, then
+restack each child onto its actual parent commit and recheck its Actions. Use
+native Stack prefix merge through the protected queue when the contiguous
+prefix is ready. Verify actual `mergedAt` and fresh main after the queue. If
 the cumulative gate changes the result, record the exact failed probes before
 another decision. Keep byte/error-recovery
 parity, Cargo package checks and the unchanged source-length ratchet. Do not
