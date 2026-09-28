@@ -45,9 +45,7 @@ describe("dumpTokens", () => {
       { type: "text", text: " " },
       { type: "span", text: "@3:36" },
     ]);
-    expect(dumpTokens("[l3-dump-v2.ops]")).toEqual([
-      { type: "section", text: "[l3-dump-v2.ops]" },
-    ]);
+    expect(dumpTokens("[l3-dump-v2.ops]")).toEqual([{ type: "section", text: "[l3-dump-v2.ops]" }]);
     expect(dumpTokens("id=0 parent=- owner=- span=3:36").map((token) => token.type)).toEqual([
       "key",
       "number",
