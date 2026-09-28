@@ -167,18 +167,7 @@ See the [script side decisions](./2026-09-27-level-restructure-designs.md#script
 
 ## Dialects, languages, frameworks
 
-See the [dialects, languages, frameworks decisions](./2026-09-27-level-restructure-designs.md#dialects-languages-frameworks) in the companion record.
-
-The first #6841 MoonBit move places its `ExprDialect` implementation and
-lexical scan under `vize_l2::lang::moonbit`; the former module path remains a
-temporary re-export while its other responsibilities are migrated. This is
-only an L2 responsibility move. The `vize_dialect_moonbit` package, its
-Croquis-backed SFC split, typed projection and checker host remain and do not
-count as completion of #6841. The SFC split needs the native L1 container
-boundary (#6837), and the projection and checker host need their corresponding
-level capabilities. The maintainer authorized #6832 and L1–L4 structural
-work in parallel on 2026-09-28; this move may land before #6832 closes,
-while #6841 remains open until the package is dissolved.
+See the [dialects, languages, frameworks decisions](./2026-09-27-level-restructure-designs.md#dialects-languages-frameworks) and the [MoonBit L2 move](./2026-09-28-moonbit-l2-move.md).
 
 [Legacy formatter Vue 2 filters](./2026-09-27-glyph-vue2-filters.md) records [#6845](https://github.com/ubugeeei-prod/vize/issues/6845), explicit version selection and the native FilterChain follow-up in #6836.
 
