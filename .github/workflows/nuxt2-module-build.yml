@@ -1,0 +1,58 @@
+name: Nuxt 2 module build
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/nuxt2-module-build.yml
+      - npm/framework/nuxt/**
+      - tests/_fixtures/_projects/nuxt2-module-build/**
+      - tools/support/compat/nuxt/nuxt2-module-build.mjs
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/nuxt2-module-build.yml
+      - npm/framework/nuxt/**
+      - tests/_fixtures/_projects/nuxt2-module-build/**
+      - tools/support/compat/nuxt/nuxt2-module-build.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nuxt2-module-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_OPTIONS: --openssl-legacy-provider
+
+jobs:
+  nuxt2-module-build:
+    name: Nuxt 2 webpack build and SSR
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version: "22"
+          cache: true
+          run-install: false
+      - name: Install workspace tooling
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build the candidate Nuxt integration
+        working-directory: npm/framework/nuxt
+        run: vp pack
+      - name: Install the Nuxt 2 reproduction
+        working-directory: tests/_fixtures/_projects/nuxt2-module-build
+        run: npm ci --no-audit --no-fund
+      - name: Verify candidate webpack build and SSR routes
+        run: vp env exec node tools/support/compat/nuxt/nuxt2-module-build.mjs "$RUNNER_TEMP/nuxt2-module-proof"
+      - name: Upload Nuxt 2 build and SSR evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nuxt2-module-proof-${{ github.sha }}
+          path: ${{ runner.temp }}/nuxt2-module-proof
+          if-no-files-found: ignore
