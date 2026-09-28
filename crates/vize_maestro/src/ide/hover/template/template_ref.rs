@@ -1,13 +1,18 @@
 use tower_lsp::lsp_types::Hover;
 
+use super::super::template_excerpt::opening_tag_at;
 use super::HoverBuilder;
 use crate::ide::IdeContext;
 
 pub(crate) fn hover_static_template_ref(ctx: &IdeContext<'_>) -> Option<Hover> {
     let target = crate::ide::template_ref::target_at_offset(ctx)?;
-    let mut hover = HoverBuilder::new()
+    let mut builder = HoverBuilder::new()
         .title(&target.ref_name)
-        .meta("Vue template ref")
+        .meta("Vue template ref");
+    if let Some(opening_tag) = opening_tag_at(&ctx.content, ctx.offset) {
+        builder = builder.code("vue", opening_tag);
+    }
+    let mut hover = builder
         .description("Static template ref resolved through `useTemplateRef()`.")
         .bullets(
             "Editor behavior",

@@ -4,6 +4,7 @@ use vize_croquis::{Drawer, DrawerOptions};
 
 mod items;
 
+use super::template_excerpt::opening_tag_at;
 use super::{HoverBuilder, HoverService};
 use crate::ide::completion::template::component_metadata;
 use crate::ide::definition::helpers;
@@ -23,8 +24,11 @@ impl HoverService {
             return None;
         }
 
-        let usage = component_usage_at_cursor(ctx, &tag_name)?;
+        let (usage, opening_tag) = component_usage_at_cursor(ctx, &tag_name)?;
         let mut builder = HoverBuilder::new().title(&tag_name).meta("Component usage");
+        if let Some(opening_tag) = opening_tag.as_deref() {
+            builder = builder.code("vue", opening_tag);
+        }
 
         let props = prop_items(&usage);
         if !props.is_empty() {
@@ -88,7 +92,10 @@ impl HoverService {
     }
 }
 
-fn component_usage_at_cursor(ctx: &IdeContext<'_>, tag_name: &str) -> Option<ComponentUsage> {
+fn component_usage_at_cursor(
+    ctx: &IdeContext<'_>,
+    tag_name: &str,
+) -> Option<(ComponentUsage, Option<String>)> {
     let template = template_view(ctx)?;
     let allocator = vize_l0::Allocator::new();
     let (root, _) = if template.is_document {
@@ -113,6 +120,11 @@ fn component_usage_at_cursor(ctx: &IdeContext<'_>, tag_name: &str) -> Option<Com
         })
         .min_by_key(|usage| usage.end.saturating_sub(usage.start))
         .cloned()
+        .map(|usage| {
+            let opening_tag =
+                opening_tag_at(template.content, usage.start as usize).map(str::to_string);
+            (usage, opening_tag)
+        })
 }
 
 struct TemplateView<'a> {
@@ -180,7 +192,7 @@ mod tests {
 
     use super::HoverService;
     use crate::{ide::IdeContext, server::ServerState};
-    use tower_lsp::lsp_types::{HoverContents, Url};
+    use tower_lsp::lsp_types::{HoverContents, MarkupKind, Url};
 
     #[test]
     fn hover_component_tag_uses_croquis_usage() {
@@ -212,9 +224,16 @@ function save() {}
         let offset = source.find("<Child").unwrap() + "<Ch".len();
         let ctx = IdeContext::new(&state, &uri, offset).unwrap();
         let hover = HoverService::hover(&ctx).unwrap();
+        assert!(
+            matches!(&hover.contents, HoverContents::Markup(content) if content.kind == MarkupKind::Markdown)
+        );
         let value = hover_markdown(hover);
 
         assert!(value.contains("Component usage"), "got {value:?}");
+        assert!(
+            value.contains("```vue\n<Child :message=\"msg\" @save.once=\"save\">\n```"),
+            "got {value:?}"
+        );
         assert!(value.contains(":message=\"msg\""), "got {value:?}");
         assert!(value.contains("@save.once=\"save\""), "got {value:?}");
         assert!(value.contains("#item { row, index }"), "got {value:?}");

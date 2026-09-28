@@ -20,6 +20,7 @@ mod tests;
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Hover, Location, Position, Range};
 
+use super::hover::template_excerpt::opening_tag_at;
 use super::{HoverBuilder, IdeContext, offset_to_position};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -85,10 +86,14 @@ pub(crate) fn v_for_hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
         TemplateScopeBindingKind::SlotProp => return None,
     };
 
+    let mut builder = HoverBuilder::new()
+        .title(&binding.name)
+        .meta("v-for scope binding");
+    if let Some(opening_tag) = opening_tag_at(&ctx.content, binding.start) {
+        builder = builder.code("vue", opening_tag);
+    }
     Some(
-        HoverBuilder::new()
-            .title(&binding.name)
-            .meta("v-for scope binding")
+        builder
             .description(description)
             .bullets(
                 "Behavior",
@@ -116,10 +121,14 @@ pub(crate) fn v_slot_definition(
 pub(crate) fn v_slot_hover(ctx: &IdeContext<'_>, word: &str) -> Option<Hover> {
     let binding = v_slot_binding_at(ctx, word)?;
 
+    let mut builder = HoverBuilder::new()
+        .title(&binding.name)
+        .meta("v-slot scope binding");
+    if let Some(opening_tag) = opening_tag_at(&ctx.content, binding.start) {
+        builder = builder.code("vue", opening_tag);
+    }
     Some(
-        HoverBuilder::new()
-            .title(&binding.name)
-            .meta("v-slot scope binding")
+        builder
             .description(
                 "Slot prop binding declared by the nearest scoped slot and available to this template subtree.",
             )

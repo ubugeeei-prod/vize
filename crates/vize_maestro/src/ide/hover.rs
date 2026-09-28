@@ -27,6 +27,7 @@ mod petite_vue;
 mod script;
 mod script_type_infer;
 mod template;
+pub(crate) mod template_excerpt;
 #[cfg(feature = "native")]
 mod v_model;
 
