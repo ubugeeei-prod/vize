@@ -77,28 +77,36 @@ fn remove_previous(dir: &Path, relative_source: &Path) -> Result<(), String> {
         .map_err(|error| cstr!("--dump-dir: cannot read {}: {error}", feed_path.display()))?;
     let feed: Value = serde_json::from_slice(&bytes)
         .map_err(|error| cstr!("--dump-dir: invalid {}: {error}", feed_path.display()))?;
-    if feed["schema_version"].as_u64() != Some(2)
-        || feed["command"].as_str() != Some("vize-build")
-        || feed["source"]["path"].as_str() != Some(relative_source.to_string_lossy().as_ref())
+    if feed.get("schema_version").and_then(Value::as_u64) != Some(2)
+        || feed.get("command").and_then(Value::as_str) != Some("vize-build")
+        || feed
+            .get("source")
+            .and_then(|source| source.get("path"))
+            .and_then(Value::as_str)
+            != Some(relative_source.to_string_lossy().as_ref())
     {
         return Err(cstr!(
             "--dump-dir: existing {} is not this source's vize-build feed",
             feed_path.display()
         ));
     }
-    let pages = feed["pages"]
-        .as_array()
+    let pages = feed
+        .get("pages")
+        .and_then(Value::as_array)
         .ok_or_else(|| cstr!("--dump-dir: invalid pages in {}", feed_path.display()))?;
     let mut owned = Vec::new();
     for (index, page) in pages.iter().enumerate() {
-        let level = page["level"]
-            .as_str()
+        let level = page
+            .get("level")
+            .and_then(Value::as_str)
             .ok_or_else(|| cstr!("--dump-dir: invalid page level in {}", feed_path.display()))?;
-        let step = page["step"]
-            .as_str()
+        let step = page
+            .get("step")
+            .and_then(Value::as_str)
             .ok_or_else(|| cstr!("--dump-dir: invalid page step in {}", feed_path.display()))?;
-        let text = page["text"]
-            .as_str()
+        let text = page
+            .get("text")
+            .and_then(Value::as_str)
             .ok_or_else(|| cstr!("--dump-dir: invalid page text in {}", feed_path.display()))?;
         let file = dir.join(page_filename(index, level, step)?);
         match std::fs::symlink_metadata(&file) {
@@ -234,7 +242,10 @@ mod tests {
         super::super::write(&dir, source, capture, true).unwrap();
         let feed: Value =
             serde_json::from_slice(&std::fs::read(dir.join("stages.json")).unwrap()).unwrap();
-        assert_eq!(feed["pages"].as_array().unwrap().len(), 2);
+        assert_eq!(
+            feed.get("pages").and_then(Value::as_array).unwrap().len(),
+            2
+        );
         assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 2);
         std::fs::remove_dir_all(root).unwrap();
     }
