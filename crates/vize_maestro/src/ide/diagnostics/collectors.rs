@@ -429,9 +429,7 @@ impl DiagnosticService {
         if !linter_config.enabled {
             return vec![];
         }
-
         let is_standalone_html = crate::utils::is_standalone_html_path(uri.path());
-
         let preset = linter_config.preset.as_deref();
         let preset = preset.and_then(LintPreset::parse).unwrap_or_default();
         let lint_options = linter_options::resolve_patina_options(&linter_config, &rule_options);
