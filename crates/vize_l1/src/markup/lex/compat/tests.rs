@@ -2,6 +2,7 @@ use super::{
     Tokenizer,
     types::{Callbacks, QuoteType, is_end_of_tag_section, is_tag_start_char, is_whitespace},
 };
+use vize_l0::SmallVec;
 use vize_relief::ErrorCode;
 
 // ========================================================================
@@ -33,8 +34,8 @@ pub(super) enum TokenEvent {
 
 #[derive(Debug, Default)]
 pub(super) struct TestCallbacks {
-    pub(super) events: Vec<TokenEvent>,
-    pub(super) errors: Vec<(ErrorCode, usize)>,
+    pub(super) events: SmallVec<[TokenEvent; 32]>,
+    pub(super) errors: SmallVec<[(ErrorCode, usize); 4]>,
 }
 
 impl Callbacks for TestCallbacks {
