@@ -12,6 +12,7 @@ mod helpers;
 mod module_trace;
 mod normal_script;
 pub(crate) mod output_module;
+mod stage_capture;
 #[cfg(test)]
 mod stage_capture_tests;
 mod styles;
@@ -23,7 +24,7 @@ mod tests;
 use crate::compile_script::props::{is_valid_identifier, validate_macro_scope_for_descriptor};
 use crate::compile_script::{SetupTrace, TemplateParts, compile_script_setup_inline_with_context};
 use crate::compile_template::{
-    TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
+    TemplateBlockCompileContext, compile_template_block_vapor, compile_template_block_with_capture,
     extract_template_parts, extract_template_parts_full, slice_template_parts,
 };
 use crate::script::ScriptCompileContext;
@@ -40,7 +41,8 @@ use self::diagnostics::{create_v_model_reactive_const_warning, create_vapor_ssr_
 pub(crate) use self::helpers::is_ts_lang;
 use self::helpers::{
     demote_v_model_reactive_const_bindings, extract_component_name,
-    extract_descriptor_macro_artifacts, generate_scope_id, trim_trailing_newlines,
+    extract_descriptor_macro_artifacts, generate_scope_id, output_is_ts, template_is_ts,
+    trim_trailing_newlines, vapor_requested,
 };
 use self::output_module::{
     RenderFunctionName, append_component_render_export, append_css_modules_assignment,
@@ -60,7 +62,7 @@ pub use entry::{
     prepare_root_patterned_template,
 };
 use vize_carton::{String, ToCompactString, profile};
-use vize_l0::dump::capture::{CaptureOutcome, CaptureSink, StageCapture};
+use vize_l0::dump::capture::StageCapture;
 
 #[expect(
     clippy::too_many_arguments,
@@ -124,17 +126,7 @@ fn compile_sfc_inner(
     if !compiled_styles.css.is_empty() {
         css = Some(compiled_styles.css.clone());
     }
-    let vapor_requested = options.vapor
-        || descriptor
-            .script_setup
-            .as_ref()
-            .map(|s| s.attrs.contains_key("vapor"))
-            .unwrap_or(false)
-        || descriptor
-            .script
-            .as_ref()
-            .map(|s| s.attrs.contains_key("vapor"))
-            .unwrap_or(false);
+    let vapor_requested = vapor_requested(descriptor, &options);
 
     // Vapor components currently render on the client. For SSR we fall back to
     // the standard VDOM compiler and let the client hydrate with Vapor output.
@@ -142,47 +134,15 @@ fn compile_sfc_inner(
         warnings.push(create_vapor_ssr_fallback_warning(descriptor));
     }
     let is_vapor = !options.template.ssr && vapor_requested;
-    if let Some(capture) = capture.as_deref_mut() {
-        capture.target = String::from(if is_vapor {
-            "vapor"
-        } else if options.template.ssr {
-            "ssr"
-        } else {
-            "dom"
-        });
-        capture.option(
-            "ssr",
-            if options.template.ssr {
-                "true"
-            } else {
-                "false"
-            },
-        );
-        capture.option("vapor", if is_vapor { "true" } else { "false" });
-        capture.option(
-            "sourceMap",
-            if codegen_options.source_map {
-                "true"
-            } else {
-                "false"
-            },
-        );
-    }
+    stage_capture::configure(
+        capture.as_deref_mut(),
+        is_vapor,
+        options.template.ssr,
+        codegen_options.source_map,
+    );
 
-    // is_ts controls output format:
-    // - true: output TypeScript (add `: any` annotations, defineComponent wrapper)
-    // - false: output JavaScript (strip TypeScript syntax from TS sources)
-    // Source language detection is tracked separately in the script/setup branches below.
-    let is_ts = options.script.is_ts || options.template.is_ts;
-    let template_is_ts = options.template.is_ts
-        || descriptor
-            .script_setup
-            .as_ref()
-            .is_some_and(|s| is_ts_lang(s.lang.as_deref()))
-        || descriptor
-            .script
-            .as_ref()
-            .is_some_and(|s| is_ts_lang(s.lang.as_deref()));
+    let is_ts = output_is_ts(&options);
+    let template_is_ts = template_is_ts(descriptor, &options);
 
     // Extract component name from filename
     let component_name = extract_component_name(filename);
@@ -191,8 +151,8 @@ fn compile_sfc_inner(
     let has_script_setup = descriptor.script_setup.is_some();
     let has_script = descriptor.script.is_some();
     let has_template = descriptor.template.is_some();
-    if !has_template && let Some(capture) = capture.as_deref_mut() {
-        capture.finish(|| CaptureOutcome::Unavailable(String::from("no-template")));
+    if !has_template {
+        stage_capture::unavailable(capture.as_deref_mut(), "no-template");
     }
 
     // Case 1: Template only - just output render function
@@ -304,7 +264,7 @@ fn compile_sfc_inner(
                 // can otherwise lose parent scoped attrs before the final DOM root.
                 profile!(
                     "atelier.sfc.template.compile",
-                    compile_template_block(
+                    compile_template_block_with_capture(
                         &template_allocator,
                         template,
                         &template_opts,
@@ -377,10 +337,7 @@ fn compile_sfc_inner(
                 }
                 Err(e) => {
                     errors.push(e);
-                    if let Some(capture) = capture.as_deref_mut() {
-                        capture
-                            .finish(|| CaptureOutcome::Unavailable(String::from("template-error")));
-                    }
+                    stage_capture::unavailable(capture.as_deref_mut(), "template-error");
                     // Fall back to just the script
                     code = final_script.clone();
                     code.push('\n');
@@ -652,7 +609,7 @@ fn compile_sfc_inner(
             }
             Some(profile!(
                 "atelier.sfc.template.compile",
-                compile_template_block(
+                compile_template_block_with_capture(
                     &template_allocator,
                     template,
                     &template_opts,
@@ -729,9 +686,7 @@ fn compile_sfc_inner(
         }
         Some(Err(e)) => {
             errors.push(e.clone());
-            if let Some(capture) = capture {
-                capture.finish(|| CaptureOutcome::Unavailable(String::from("template-error")));
-            }
+            stage_capture::unavailable(capture.as_deref_mut(), "template-error");
             (
                 String::default(),
                 String::default(),

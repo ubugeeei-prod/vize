@@ -8,10 +8,41 @@ use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString};
 
 use crate::script::{ScriptCompileContext, resolve_template_v_model_identifiers};
-use crate::types::{BindingMetadata, BindingType, SfcDescriptor, SfcMacroArtifact};
+use crate::types::{
+    BindingMetadata, BindingType, SfcCompileOptions, SfcDescriptor, SfcMacroArtifact,
+};
 
 pub(crate) fn is_ts_lang(lang: Option<&str>) -> bool {
     matches!(lang, Some("ts" | "tsx"))
+}
+
+/// Output language choice is distinct from source-language detection below.
+pub(super) fn output_is_ts(options: &SfcCompileOptions) -> bool {
+    options.script.is_ts || options.template.is_ts
+}
+
+pub(super) fn vapor_requested(descriptor: &SfcDescriptor, options: &SfcCompileOptions) -> bool {
+    options.vapor
+        || descriptor
+            .script_setup
+            .as_ref()
+            .is_some_and(|script| script.attrs.contains_key("vapor"))
+        || descriptor
+            .script
+            .as_ref()
+            .is_some_and(|script| script.attrs.contains_key("vapor"))
+}
+
+pub(super) fn template_is_ts(descriptor: &SfcDescriptor, options: &SfcCompileOptions) -> bool {
+    options.template.is_ts
+        || descriptor
+            .script_setup
+            .as_ref()
+            .is_some_and(|script| is_ts_lang(script.lang.as_deref()))
+        || descriptor
+            .script
+            .as_ref()
+            .is_some_and(|script| is_ts_lang(script.lang.as_deref()))
 }
 
 pub(super) fn extract_descriptor_macro_artifacts(

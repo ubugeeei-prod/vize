@@ -8,7 +8,7 @@ use vize_carton::{String, profile};
 use vize_l0::dump::capture::StageCapture;
 
 use crate::compile_template::{
-    TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
+    TemplateBlockCompileContext, compile_template_block_vapor, compile_template_block_with_capture,
 };
 use crate::types::{
     SfcCompileOptions, SfcCompileResult, SfcError, SfcMacroArtifact, SfcTemplateBlock,
@@ -80,7 +80,7 @@ pub(super) fn compile_template_only(
         // can otherwise lose parent scoped attrs before the final DOM root.
         profile!(
             "atelier.sfc.template.compile",
-            compile_template_block(
+            compile_template_block_with_capture(
                 &template_allocator,
                 template,
                 &template_opts,

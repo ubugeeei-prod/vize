@@ -73,11 +73,31 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
 }
 
 /// Compile template block
-#[expect(
-    clippy::too_many_arguments,
-    reason = "template context and optional stage capture"
-)]
+#[cfg(test)]
 pub(crate) fn compile_template_block(
+    allocator: &Allocator,
+    template: &SfcTemplateBlock,
+    options: &TemplateCompileOptions,
+    custom_elements: &CustomElementMatcher,
+    ctx: TemplateBlockCompileContext<'_>,
+    template_syntax: TemplateSyntaxMode,
+    codegen_options: &CodegenOptions,
+) -> Result<TemplateBlockCompileResult, SfcError> {
+    compile_template_block_with_capture(
+        allocator,
+        template,
+        options,
+        custom_elements,
+        ctx,
+        template_syntax,
+        codegen_options,
+        None,
+    )
+}
+
+/// Compile a template and observe the backend that supplies its render code.
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
+pub(crate) fn compile_template_block_with_capture(
     allocator: &Allocator,
     template: &SfcTemplateBlock,
     options: &TemplateCompileOptions,
