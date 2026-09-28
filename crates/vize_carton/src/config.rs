@@ -1,6 +1,7 @@
 //! Shared Vize configuration loading.
 
 mod loader;
+pub mod matcher;
 mod model;
 mod normalize;
 mod project;

@@ -1,5 +1,6 @@
 //! Tests for the diagnostics aggregation pipeline.
 mod macro_scope;
+mod scoped_lint;
 mod self_closing_compatibility;
 use std::fs;
 
@@ -16,7 +17,6 @@ struct DiagnosticSnapshot {
     message: String,
     range: (u32, u32, u32, u32),
 }
-
 fn state_with_lsp_diagnostics(lint: bool, typecheck: bool) -> ServerState {
     let state = ServerState::new();
     state.apply_lsp_initialization_options(Some(&serde_json::json!({

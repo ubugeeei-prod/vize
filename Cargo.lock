@@ -4498,6 +4498,7 @@ dependencies = [
  "bitflags 2.13.1",
  "compact_str",
  "davinci_test_support",
+ "globset",
  "insta",
  "memchr",
  "once_cell",

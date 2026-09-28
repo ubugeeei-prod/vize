@@ -19,9 +19,8 @@ pub(super) fn hover_attribute_documented(
     }
 
     let prop_name = crate::ide::definition::helpers::kebab_to_camel(&attr_name);
-    if let Some(metadata) = component_metadata(ctx, &component_name)
-        && let Some(prop) = metadata.props.iter().find(|prop| prop.name == prop_name)
-    {
+    if let Some(metadata) = component_metadata(ctx, &component_name) {
+        let prop = metadata.props.iter().find(|prop| prop.name == prop_name)?;
         let type_detail = prop.type_detail.as_deref().unwrap_or("unknown");
         let optional = if prop.required { "" } else { "?" };
         let signature = format!("{}{}: {}", prop.name, optional, type_detail);
@@ -54,7 +53,12 @@ pub(super) fn hover_attribute_documented(
     let import_path = crate::ide::definition::helpers::find_import_path(ctx, &component_name)?;
     let resolved_path =
         crate::ide::definition::helpers::resolve_import_path(ctx.uri, &import_path)?;
-    let component_content = std::fs::read_to_string(&resolved_path).ok()?;
+    let component_uri = tower_lsp::lsp_types::Url::from_file_path(&resolved_path).ok()?;
+    let component_content = ctx
+        .state
+        .documents
+        .text(&component_uri)
+        .or_else(|| std::fs::read_to_string(&resolved_path).ok())?;
     let descriptor = ctx
         .state
         .component_descriptor(&resolved_path, &component_content)?;
@@ -153,7 +157,50 @@ mod tests {
 
     use super::super::HoverService;
     use crate::{ide::IdeContext, server::ServerState};
-    use tower_lsp::lsp_types::{HoverContents, Url};
+    use tower_lsp::lsp_types::{HoverContents, TextDocumentContentChangeEvent, Url};
+
+    #[test]
+    fn hover_component_prop_follows_unsaved_child_rename() {
+        let dir = tempfile::tempdir().unwrap();
+        let child_path = dir.path().join("Child.vue");
+        let parent_path = dir.path().join("Parent.vue");
+        let child = "<script setup lang='ts'>defineProps<{ label: string }>()</script>";
+        let parent = "<script setup lang='ts'>import Child from './Child.vue'</script><template><Child label='old' title='new' /></template>";
+        fs::write(&child_path, child).unwrap();
+        fs::write(&parent_path, parent).unwrap();
+        let child_uri = Url::from_file_path(&child_path).unwrap();
+        let parent_uri = Url::from_file_path(&parent_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(parent_uri.clone(), parent.into(), 1, "vue".into());
+        state
+            .documents
+            .open(child_uri.clone(), child.into(), 1, "vue".into());
+
+        let hover_at = |name: &str| {
+            let offset = parent.find(&format!("{name}='")).unwrap() + 1;
+            let ctx = IdeContext::new(&state, &parent_uri, offset).unwrap();
+            super::hover_attribute(&ctx).map(hover_markdown)
+        };
+        assert!(hover_at("label").unwrap().contains("Component prop"));
+        assert!(hover_at("title").is_none());
+
+        assert!(state.documents.apply_changes(
+            &child_uri,
+            vec![TextDocumentContentChangeEvent {
+                range: None,
+                range_length: None,
+                text: child.replace("label", "title"),
+            }],
+            2,
+        ));
+        assert!(
+            hover_at("label").is_none(),
+            "removed prop must not fall back to disk"
+        );
+        assert!(hover_at("title").unwrap().contains("Component prop"));
+    }
 
     #[test]
     fn hover_component_prop_uses_croquis_metadata() {
