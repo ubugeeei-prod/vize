@@ -11,8 +11,9 @@ Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835),
 - Profile differences are associated constants on `Profile`, one list for
   the lexer and the tree builder. Only `TOLERATE_DECLARATIONS` is a lexer rule.
 - The lexer pushes events into a statically dispatched `Sink`; there is no
-  token array. `v-pre` is `LexMode::Verbatim`, answered by the L1 tree builder
-  through `Sink::mode`.
+  token array. `Sink::mode` exposes `LexMode::Verbatim` for `v-pre` to its
+  consumer. Armature's parser currently answers it; the L1 surface tree does
+  not yet use the mode.
 - Lex errors are an L1 enum (`LexErrorCode`). Legacy maps them onto its own
   `ErrorCode` at the armature boundary, so no level crate depends on relief.
 - Directive-name decomposition is the dialect hook `DirectiveSyntax`. It

@@ -6,10 +6,12 @@ use core::num::IntErrorKind;
 
 use htmlize::{Context, ENTITIES, ENTITY_MAX_LENGTH, ENTITY_MIN_LENGTH};
 
-/// If `input` starts with a valid entity, returns the first decoded scalar and the number of
+use super::DecodedEntity;
+
+/// If `input` starts with a valid entity, returns its decoded scalars and the number of
 /// bytes consumed (including `&` and an optional `;`). Otherwise `None` so the tokenizer can
 /// emit `&` as literal text.
-pub(crate) fn try_decode_entity(input: &[u8], context: Context) -> Option<(char, usize)> {
+pub(crate) fn try_decode_entity(input: &[u8], context: Context) -> Option<(DecodedEntity, usize)> {
     if input.first() != Some(&b'&') {
         return None;
     }
@@ -20,11 +22,11 @@ pub(crate) fn try_decode_entity(input: &[u8], context: Context) -> Option<(char,
     }
 }
 
-fn first_scalar(expansion: &[u8]) -> Option<char> {
-    core::str::from_utf8(expansion).ok()?.chars().next()
+fn named_expansion(expansion: &'static [u8]) -> Option<DecodedEntity> {
+    Some(DecodedEntity::Named(core::str::from_utf8(expansion).ok()?))
 }
 
-fn decode_named_entity(input: &[u8], context: Context) -> Option<(char, usize)> {
+fn decode_named_entity(input: &[u8], context: Context) -> Option<(DecodedEntity, usize)> {
     let mut j = 1usize;
     let mut steps = 0usize;
     while steps < ENTITY_MAX_LENGTH - 1 {
@@ -49,21 +51,19 @@ fn decode_named_entity(input: &[u8], context: Context) -> Option<(char, usize)> 
             return None;
         }
         let expansion = ENTITIES.get(candidate)?;
-        let ch = first_scalar(expansion)?;
-        return Some((ch, consumed_end));
+        return Some((named_expansion(expansion)?, consumed_end));
     }
 
     let max_len = min(consumed_end, ENTITY_MAX_LENGTH);
     for check_len in (ENTITY_MIN_LENGTH..=max_len).rev() {
         if let Some(expansion) = input.get(..check_len).and_then(|name| ENTITIES.get(name)) {
-            let ch = first_scalar(expansion)?;
-            return Some((ch, check_len));
+            return Some((named_expansion(expansion)?, check_len));
         }
     }
     None
 }
 
-fn decode_numeric_entity(input: &[u8]) -> Option<(char, usize)> {
+fn decode_numeric_entity(input: &[u8]) -> Option<(DecodedEntity, usize)> {
     if input.len() < 3 || !input.starts_with(b"&#") {
         return None;
     }
@@ -106,7 +106,7 @@ fn decode_numeric_entity(input: &[u8]) -> Option<(char, usize)> {
         Err(e) if *e.kind() == IntErrorKind::PosOverflow => '\u{FFFD}',
         Err(_) => return None,
     };
-    Some((ch, end))
+    Some((DecodedEntity::Numeric(ch), end))
 }
 
 /// <https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state>
@@ -148,13 +148,21 @@ fn correct_numeric_entity(number: u32) -> char {
 
 #[cfg(test)]
 mod tests {
+    use alloc::string::String;
+
     use super::*;
+
+    fn text(value: DecodedEntity) -> String {
+        let mut output = String::new();
+        value.for_each(|ch| output.push(ch));
+        output
+    }
 
     #[test]
     fn general_named_semicolon() {
         let s = b"&amp;rest";
         let (c, n) = try_decode_entity(s, Context::General).unwrap();
-        assert_eq!(c, '&');
+        assert_eq!(text(c), "&");
         assert_eq!(n, 5);
         assert_eq!(&s[n..], b"rest");
     }
@@ -163,7 +171,7 @@ mod tests {
     fn general_named_no_semicolon_longest() {
         let s = b"&timesX";
         let (c, n) = try_decode_entity(s, Context::General).unwrap();
-        assert_eq!(c, '\u{00d7}');
+        assert_eq!(text(c), "×");
         assert_eq!(n, 6);
     }
 
@@ -176,7 +184,7 @@ mod tests {
     fn numeric_dec() {
         let s = b"&#38;z";
         let (c, n) = try_decode_entity(s, Context::General).unwrap();
-        assert_eq!(c, '&');
+        assert_eq!(text(c), "&");
         assert_eq!(n, 5);
     }
 
@@ -192,7 +200,7 @@ mod tests {
     fn double_ampersand_decode_second_reference() {
         let s = b"&&amp;";
         let (c, n) = try_decode_entity(&s[1..], Context::General).unwrap();
-        assert_eq!(c, '&');
+        assert_eq!(text(c), "&");
         assert_eq!(n, 5);
         assert_eq!(1 + n, s.len());
     }
@@ -201,7 +209,7 @@ mod tests {
     fn hex_numeric() {
         let s = b"&#x26;y";
         let (c, n) = try_decode_entity(s, Context::General).unwrap();
-        assert_eq!(c, '&');
+        assert_eq!(text(c), "&");
         assert_eq!(n, 6);
         assert_eq!(&s[n..], b"y");
     }
@@ -210,7 +218,7 @@ mod tests {
     fn attribute_named_with_semicolon() {
         let s = b"&lt;";
         let (c, n) = try_decode_entity(s, Context::Attribute).unwrap();
-        assert_eq!(c, '<');
+        assert_eq!(text(c), "<");
         assert_eq!(n, 4);
     }
 
@@ -218,7 +226,7 @@ mod tests {
     fn numeric_surrogate_replaced() {
         let s = b"&#55296;";
         let (c, n) = try_decode_entity(s, Context::General).unwrap();
-        assert_eq!(c, '\u{FFFD}');
+        assert_eq!(text(c), "�");
         assert_eq!(n, 8);
     }
 
@@ -226,8 +234,17 @@ mod tests {
     fn numeric_windows_1252_mapping() {
         let s = b"&#128;";
         let (c, n) = try_decode_entity(s, Context::General).unwrap();
-        assert_eq!(c, '\u{20AC}');
+        assert_eq!(text(c), "€");
         assert_eq!(n, 6);
+    }
+
+    #[test]
+    fn named_reference_keeps_both_scalars_in_text_and_attributes() {
+        for context in [Context::General, Context::Attribute] {
+            let (value, consumed) = try_decode_entity(b"&fjlig;tail", context).unwrap();
+            assert_eq!(text(value), "fj");
+            assert_eq!(consumed, 7);
+        }
     }
 
     #[test]

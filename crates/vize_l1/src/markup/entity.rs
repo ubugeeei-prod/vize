@@ -15,6 +15,25 @@ pub enum EntityContext {
     Attribute,
 }
 
+/// Decoded scalars of one character reference without allocating per token.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DecodedEntity {
+    /// Named references use the static WHATWG table and may expand to multiple scalars.
+    Named(&'static str),
+    /// Numeric references expand to one corrected Unicode scalar.
+    Numeric(char),
+}
+
+impl DecodedEntity {
+    /// Visit every scalar in the expansion in source order.
+    pub fn for_each(self, mut visit: impl FnMut(char)) {
+        match self {
+            Self::Named(value) => value.chars().for_each(visit),
+            Self::Numeric(value) => visit(value),
+        }
+    }
+}
+
 /// Whether `bytes` contains any character reference candidate.
 #[inline]
 pub fn needs_decoding(bytes: &[u8]) -> bool {
@@ -23,13 +42,13 @@ pub fn needs_decoding(bytes: &[u8]) -> bool {
 
 /// Decode at most one character reference at the start of `input`.
 ///
-/// Returns the first decoded scalar and the number of bytes consumed
+/// Returns every decoded scalar and the number of source bytes consumed
 /// (`&`, name or number, optional `;`), or `None` when `input` does not
 /// start with a valid reference and the `&` is literal text.
 ///
 /// Rules follow WHATWG (`htmlize`'s entity table).
 #[inline]
-pub fn decode_one(input: &[u8], context: EntityContext) -> Option<(char, usize)> {
+pub fn decode_one(input: &[u8], context: EntityContext) -> Option<(DecodedEntity, usize)> {
     let context = match context {
         EntityContext::Text => htmlize::Context::General,
         EntityContext::Attribute => htmlize::Context::Attribute,

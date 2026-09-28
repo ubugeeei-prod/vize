@@ -823,7 +823,7 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
     }
 
     /// Vue `stateInEntity` (non-browser): `entityDecoder.write` uses signed length (`>0` done,
-    /// `0` rewind, `<0` wait for more buffer). Here: `Some` → `emit_entity_char`; `None` → rewind
+    /// `0` rewind, `<0` wait for more buffer). Here: `Some` → emit every scalar; `None` → rewind
     /// (like `0`); no `<0` path. `Context` follows `base_state` for htmlize attribute rules.
     pub(super) fn state_in_entity(&mut self) {
         let raw = self.input.get(self.entity_start..).unwrap_or_default();
@@ -832,8 +832,8 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             _ => Context::Attribute,
         };
 
-        if let Some((ch, consumed)) = try_decode_entity(raw, context) {
-            self.emit_entity_char(ch, consumed);
+        if let Some((decoded, consumed)) = try_decode_entity(raw, context) {
+            decoded.for_each(|ch| self.emit_entity_char(ch, consumed));
         } else {
             self.index = self.entity_start;
         }
