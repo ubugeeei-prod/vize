@@ -320,7 +320,7 @@ fn template_expression(
 }
 
 fn is_payload_prop_name(name: &str) -> bool {
-    name != "key" && name != "ref"
+    name != "ref"
 }
 
 fn expression_content<'a>(exp: &'a ExpressionNode<'_>, source: &'a str) -> &'a str {

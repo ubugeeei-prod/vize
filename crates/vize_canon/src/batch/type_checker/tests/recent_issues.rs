@@ -33,6 +33,7 @@ mod real_project_parity;
 mod real_vue;
 mod sequence_prop_expressions;
 mod single_required_camel_prop;
+mod slot_key;
 mod split_script_diagnostic_anchors;
 mod spread_props;
 mod spread_scope_bindings;
