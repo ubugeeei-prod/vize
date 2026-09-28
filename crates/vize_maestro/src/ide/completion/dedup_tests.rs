@@ -1,6 +1,6 @@
 use std::fs;
 
-use tower_lsp::lsp_types::{CompletionResponse, Url};
+use tower_lsp::lsp_types::{CompletionItem, CompletionResponse, Url};
 
 use crate::ide::{CompletionService, IdeContext};
 use crate::server::ServerState;
@@ -43,14 +43,39 @@ const ts = computed(() => st.value * 2)
     assert_eq!(labels.iter().filter(|l| l.as_str() == "ts").count(), 1);
 }
 
+#[test]
+fn template_completion_prefers_typed_macro_props_in_interpolation_and_handler() {
+    let source = r#"<script setup lang="ts">
+const props = defineProps<{ title: string; count?: number }>()
+const emit = defineEmits<{ select: [id: number] }>()
+</script>
+<template><button @click="emit('select', props.count ?? 0)">{{ props.title }}</button></template>"#;
+    let (state, uri) = state_with_document("MacroProps.vue", source);
+    for (cursor, name, detail) in [
+        ("emit('select'", "title", "prop: string"),
+        ("props.title", "count", "prop: number"),
+    ] {
+        let offset = source.find(cursor).unwrap();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let items = completion_items(CompletionService::complete(&ctx).unwrap());
+        let props: Vec<_> = items.iter().filter(|item| item.label == name).collect();
+        assert_eq!(props.len(), 1, "{cursor}: {name}");
+        assert_eq!(props[0].detail.as_deref(), Some(detail));
+    }
+}
+
 fn completion_labels(response: CompletionResponse) -> Vec<String> {
+    completion_items(response)
+        .into_iter()
+        .map(|item| item.label)
+        .collect()
+}
+
+fn completion_items(response: CompletionResponse) -> Vec<CompletionItem> {
     match response {
         CompletionResponse::Array(items) => items,
         CompletionResponse::List(list) => list.items,
     }
-    .into_iter()
-    .map(|item| item.label)
-    .collect()
 }
 
 fn state_with_document(name: &str, source: &str) -> (ServerState, Url) {
