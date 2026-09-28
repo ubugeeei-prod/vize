@@ -24,7 +24,7 @@ use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_core::{CodegenExperimentalOptions, CodegenOptions};
 use vize_l0::Allocator;
 
-use vize_atelier_core::CompilerErrorWithSource;
+use vize_atelier_core::{CompilerErrorWithSource, ErrorCode};
 
 use crate::compile::output_module::OutputModule;
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
