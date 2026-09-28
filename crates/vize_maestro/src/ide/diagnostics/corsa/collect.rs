@@ -16,7 +16,7 @@ use vize_l0::cstr;
 
 /// One attempt either yields diagnostics (possibly empty for non-Corsa
 /// reasons such as unsupported documents) or fails on a bridge call.
-enum CollectFailure {
+pub(super) enum CollectFailure {
     Unavailable,
     /// The backend session answered but the request failed; not retried.
     Request(CorsaBridgeError),
@@ -31,7 +31,10 @@ pub(in crate::ide::diagnostics) enum CorsaDiagnostics {
     Unavailable(Vec<Diagnostic>),
 }
 
-fn classify(bridge: &Arc<vize_canon::CorsaBridge>, error: CorsaBridgeError) -> CollectFailure {
+pub(super) fn classify(
+    bridge: &Arc<vize_canon::CorsaBridge>,
+    error: CorsaBridgeError,
+) -> CollectFailure {
     match error {
         CorsaBridgeError::CommunicationError(_)
         | CorsaBridgeError::ProcessTerminated
@@ -90,6 +93,10 @@ impl DiagnosticService {
         uri: &Url,
     ) -> Result<Vec<Diagnostic>, CollectFailure> {
         tracing::info!("collect_corsa_diagnostics: {}", uri);
+
+        if super::collect_script::is_script_uri(uri) {
+            return Self::try_collect_corsa_script_diagnostics(state, uri).await;
+        }
 
         // Only process .vue files
         if !uri.path().ends_with(".vue") {

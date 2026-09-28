@@ -118,6 +118,33 @@ pub(super) fn assemble_corsa_diagnostics(
     documents: &[CorsaDocument],
     finished: Vec<CorsaFinished>,
 ) -> Vec<Diagnostic> {
+    assemble_corsa_diagnostics_for_source(
+        &AuthoredSource::vue(content),
+        content,
+        documents,
+        finished,
+    )
+}
+
+pub(super) fn assemble_script_corsa_diagnostics(
+    content: &str,
+    documents: &[CorsaDocument],
+    finished: Vec<CorsaFinished>,
+) -> Vec<Diagnostic> {
+    assemble_corsa_diagnostics_for_source(
+        &AuthoredSource::script(content),
+        content,
+        documents,
+        finished,
+    )
+}
+
+fn assemble_corsa_diagnostics_for_source(
+    authored: &AuthoredSource<'_>,
+    content: &str,
+    documents: &[CorsaDocument],
+    finished: Vec<CorsaFinished>,
+) -> Vec<Diagnostic> {
     let projected: Vec<_> = documents
         .iter()
         .map(|document| ProjectedDocument {
@@ -132,7 +159,7 @@ pub(super) fn assemble_corsa_diagnostics(
     let policy = AssemblyPolicy {
         report_unused: true,
     };
-    assemble_diagnostics(&AuthoredSource::vue(content), &projected, finished, policy)
+    assemble_diagnostics(authored, &projected, finished, policy)
         .into_iter()
         .map(|assembled| {
             let (start_line, start_character) =

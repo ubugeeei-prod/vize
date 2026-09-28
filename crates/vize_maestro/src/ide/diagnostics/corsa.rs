@@ -11,6 +11,7 @@
 #[cfg(test)]
 mod art_variant_tests;
 pub(in crate::ide) mod collect;
+mod collect_script;
 mod collect_variant;
 mod collect_virtual;
 mod log_preview;
