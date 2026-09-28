@@ -44,6 +44,30 @@ fn accepted_ssr_pages_describe_the_module_emitter_input() {
     assert_eq!(capture.outcome, CaptureOutcome::Accepted);
     assert_eq!(
         capture
+            .options
+            .iter()
+            .find(|option| option.name == "template_syntax")
+            .map(|option| option.value.as_str()),
+        Some("Standard")
+    );
+    assert_eq!(
+        capture
+            .options
+            .iter()
+            .find(|option| option.name == "dialect")
+            .map(|option| option.value.as_str()),
+        Some("V3")
+    );
+    assert_eq!(
+        capture
+            .options
+            .iter()
+            .find(|option| option.name == "slotted")
+            .map(|option| option.value.as_str()),
+        Some("true")
+    );
+    assert_eq!(
+        capture
             .pages
             .iter()
             .map(|page| page.level)

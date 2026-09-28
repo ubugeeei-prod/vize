@@ -93,6 +93,24 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     #[cfg(feature = "davinci-benchmark")]
     let options = benchmark::apply(options);
+    capture.effective_option("template_syntax", || cstr!("{template_syntax:?}"));
+    capture.effective_option("ssr", || cstr!("{}", options.ssr));
+    capture.effective_option("inline", || cstr!("{}", options.inline));
+    capture.effective_option("custom_renderer", || cstr!("{}", options.custom_renderer));
+    capture.effective_option("prefix_identifiers", || {
+        cstr!("{}", options.prefix_identifiers)
+    });
+    capture.effective_option("scope_id", || {
+        scope_id
+            .map(String::from)
+            .unwrap_or_else(|| String::from("<none>"))
+    });
+    capture.effective_option("source_map", || {
+        cstr!("{}", experimental_options.source_map)
+    });
+    capture.effective_option("custom_elements", || {
+        cstr!("{}", !custom_elements.is_empty())
+    });
     // The native lane parses the source through L1 itself. It admits only
     // sources the legacy parser reports nothing for (L1 keeps the tokenizer's
     // codes and L2 refuses every recovery rule; `s3/tests/parser_agreement.rs`
