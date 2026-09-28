@@ -82,7 +82,10 @@ self-closing whitespace (`<x / >`). A separate `&fjlig;` fixture records that
 the preserved tokenizer emits only `f`, while L1 emits the complete `fj`
 expansion. L1 `Sink` receives the complete decoded value and authored byte
 span in one callback; its scalar callback defaults retain existing native
-consumers. TODO (#6835): make Armature adapt the shared L1 lexer while
+consumers. PR and merge-queue Actions run feature-enabled Armature library
+and event-parity tests; default test archives do not compile this contract.
+TODO (#6835): make Armature adapt the
+shared L1 lexer while
 preserving that first-scalar legacy behavior, then prove byte and error
 recovery parity before switching its production tokenizer. TODO (#6835):
 move the remaining `Namespace`/`ErrorCode`

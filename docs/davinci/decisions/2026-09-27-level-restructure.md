@@ -76,17 +76,14 @@ Tracked in [#6831](https://github.com/ubugeeei-prod/vize/issues/6831) and [#6851
 - Level crates never take normal dependencies on legacy crates: `vize_armature`, `vize_relief`, `vize_atelier_*`, `vize_croquis`, `vize_croquis_cf`. Legacy may depend on levels. Dev-dependencies used as differential oracles are fine.
 - **Croquis counts as legacy.** Script analysis is rebuilt natively in the levels ([#6844](https://github.com/ubugeeei-prod/vize/issues/6844)). No adapter presents legacy output as Davinci facts.
 - A `cargo metadata` gate enforces the rule. It starts with a shrinking allowlist and later covers product crates too.
-- The [declaration ratchet](./2026-09-27-foundation-stack-replay.md#dependency-gate)
-  records shrinking #6831 permissions, enforcement and remaining scope.
+- The [declaration ratchet](./2026-09-27-foundation-stack-replay.md#dependency-gate) records shrinking #6831 permissions, enforcement and remaining scope.
 - The L1→L2 prefix collector owns its retained-AST lexical-scope walk until L2 identifier-resolution facts replace prefix rewriting. Its direct `vize_relief` edge is removed; the two remaining L1 legacy edges belong to #6835.
 
 ## L1: what the text _is_
 
 Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835), [#6836](https://github.com/ubugeeei-prod/vize/issues/6836) and [#6837](https://github.com/ubugeeei-prod/vize/issues/6837). The detailed design is in the [#6836 design comment](https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929).
 
-[Authored formatter tag forms](./2026-09-27-formatter-tag-forms.md) records
-#6846's resolution-free audit and public byte corpus; source-built Actions
-and the actual queue remain required before closing the issue.
+[Authored formatter tag forms](./2026-09-27-formatter-tag-forms.md) records #6846's resolution-free audit and public byte corpus; source-built Actions and the actual queue remain required before closing the issue.
 
 - **Boundary rule:** L1 is what the text _is_ (the concrete syntax of every grammar, lossless). L2 is what it _does_.
 - **Markup** is a grammar × profile matrix:
@@ -95,7 +92,7 @@ and the actual queue remain required before closing the issue.
   - One shared lexer, `Lexer<P: Profile>`, with static dispatch.
   - The template tokenizer moves from armature into `vize_l1::markup`, so armature depends on L1 and not the other way round. [#7136's instruction gate](./2026-09-29-l1-tokenizer-instruction-gate.md) passed all 100 pinned probes on #7152 main after bounded escape-scanning optimizations; #7155 then changed only npm/oxlint files, so exact PR Actions and the protected queue must validate the rebased head, and #6835 stays open.
 - The [L1 tokenizer ownership record](./2026-09-28-l1-markup-skeleton.md#tokenizer-source-relocation-6835) tracks the source move and dependency inversion separately from the remaining generic-profile parity work. The #6831 allowlist removes the now-stale L1→Armature permission for L1 and L1→L2; L1→Relief remains. Moving the same tokenizer code does not switch a product from its legacy parser path; that still requires #6880.
-- The #6835 parity fixture keeps the preserved tokenizer's first-scalar `&fjlig;` output explicit. L1's sink carries the full decoded value with the authored byte span; Armature's eventual shared-lexer adapter must reproduce the old output until the strict legacy corpus permits a product change.
+- The #6835 parity fixture keeps the preserved tokenizer's first-scalar `&fjlig;` output explicit. L1's sink carries the full decoded value with the authored byte span; Armature's eventual shared-lexer adapter must reproduce the old output until the strict legacy corpus permits a product change. PR and merge-queue Actions explicitly run opt-in `native-lex-parity,legacy` tests because default archives do not compile them.
 - **Container** is the file-format layer. SFC block splitting moves here out of Croquis, laid out so Svelte, Analog and TSRX containers fit later.
 - **Dialect syntax hooks** decompose directive names (`v-on:click.stop`, `@click`, `#default`, `:[dyn]`). They play the role of MLIR custom assembly formats.
 - **Typed embeds.** Attribute values, mustaches and dynamic arguments become `Embed { grammar, source }` with `Grammar = Shape × Lang`:

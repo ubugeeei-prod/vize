@@ -88,6 +88,9 @@ jobs:
       - name: List full workspace archive tests
         if: ${{ inputs.run-rust }}
         run: cargo nextest list --archive-file target/rust-test-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile full --message-format json > "$RUNNER_TEMP/rust-test-timings/workspace-tests.json"
+      - name: Native L1 markup parity
+        if: ${{ inputs.run-rust }}
+        run: cargo test -p vize_armature --features native-lex-parity,legacy --lib --test markup_lex_parity
       - name: Run Rust workspace doctests
         id: rust-test-run
         if: ${{ inputs.run-rust }}
@@ -173,6 +176,9 @@ jobs:
           mkdir -p target/rust-test-archive
           node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo nextest archive @packages@ --cargo-profile ci --archive-file target/rust-test-archive/tests.tar.zst
           node tools/support/compat/github/rust-test-archive.mjs stamp target/rust-test-archive/tests.tar.zst target/rust-test-archive/receipt.json
+      - name: Native L1 markup parity
+        if: ${{ contains(fromJSON(inputs.rust-plan).packages, 'vize_l1') || contains(fromJSON(inputs.rust-plan).packages, 'vize_armature') }}
+        run: cargo test -p vize_armature --features native-lex-parity,legacy --lib --test markup_lex_parity
       - name: Run affected Rust doctests
         run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --doc
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
