@@ -3,7 +3,7 @@ use super::super::{
     tests::{TestCallbacks, TokenEvent},
 };
 use super::scan_argument;
-use vize_l0::cstr;
+use vize_l0::{SmallVec, cstr};
 use vize_relief::ErrorCode;
 
 #[test]
@@ -23,7 +23,7 @@ fn emits_one_complete_argument_and_preserves_modifiers() {
         let mut tokenizer = Tokenizer::new(&source, TestCallbacks::default());
         tokenizer.tokenize();
         assert!(tokenizer.callbacks.errors.is_empty(), "{source}");
-        let args: Vec<_> = tokenizer
+        let args: SmallVec<[&str; 2]> = tokenizer
             .callbacks
             .events
             .iter()
@@ -32,7 +32,7 @@ fn emits_one_complete_argument_and_preserves_modifiers() {
                 _ => None,
             })
             .collect();
-        assert_eq!(args, [argument], "{source}");
+        assert_eq!(args.as_slice(), [argument], "{source}");
         assert!(tokenizer.callbacks.events.iter().any(|event| matches!(
             event, TokenEvent::DirModifier(start, end) if &source[*start..*end] == "trim"
         )));
@@ -61,7 +61,7 @@ fn boundaries_and_unterminated_literals_recover_without_swallowing_markup() {
                 "{source}: {:?}",
                 tokenizer.callbacks.errors
             );
-            let args: Vec<_> = tokenizer
+            let args: SmallVec<[&str; 2]> = tokenizer
                 .callbacks
                 .events
                 .iter()
@@ -70,7 +70,7 @@ fn boundaries_and_unterminated_literals_recover_without_swallowing_markup() {
                     _ => None,
                 })
                 .collect();
-            assert_eq!(args, [argument], "{source}");
+            assert_eq!(args.as_slice(), [argument], "{source}");
         }
     }
 }

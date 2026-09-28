@@ -1,7 +1,7 @@
 use vize_relief::ErrorCode;
 
-use crate::char_codes::AMP;
-use crate::tokenizer::sequences::Sequence;
+use super::char_codes::AMP;
+use super::sequences::Sequence;
 
 use super::{
     Tokenizer,
