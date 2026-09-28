@@ -142,6 +142,8 @@ pub(crate) enum ErrorPhase {
     Read,
     Parse,
     Compile,
+    /// An observed stage could not be written to the requested dump directory.
+    Dump,
     /// An internal compiler error: a caught panic, reported with the path of
     /// the `repro.folio` it wrote (P2-13, charter #30).
     Ice,
@@ -153,6 +155,7 @@ impl std::fmt::Display for ErrorPhase {
             ErrorPhase::Read => write!(f, "read"),
             ErrorPhase::Parse => write!(f, "parse"),
             ErrorPhase::Compile => write!(f, "compile"),
+            ErrorPhase::Dump => write!(f, "dump"),
             ErrorPhase::Ice => write!(f, "ice"),
         }
     }

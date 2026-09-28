@@ -158,6 +158,9 @@ Each source gets a version 2 `stages.json` feed through the shared product
 serializer. Only accepted native template stages write `.dump` pages; legacy
 or unavailable selection records its actual outcome and zero pages. This does
 not claim native SFC script/style work or add native acceptance credit.
+Each Rayon worker writes and releases its own capture, so batch memory does
+not retain all dump pages. A dump write failure fails that file without
+emitting a fallback module, including under `--continue-on-error`.
 
 ## Merge sequence
 

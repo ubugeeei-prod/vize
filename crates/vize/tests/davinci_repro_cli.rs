@@ -325,3 +325,30 @@ fn stats_build_dump_observes_each_file_without_writing_modules() {
     assert!(!root.join("dist").exists());
     let _ = fs::remove_dir_all(root);
 }
+
+#[test]
+fn dump_write_failure_does_not_emit_a_fallback_module() {
+    let root = temp_project_dir("dump-write-failure");
+    write_batch(&root);
+    fs::create_dir_all(root.join("dumps/a.vue/stages.json")).unwrap();
+    let output = vize(
+        &root,
+        &[
+            "build",
+            "src",
+            "--output",
+            "dist",
+            "--dump-dir",
+            "dumps",
+            "--continue-on-error",
+        ],
+    );
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(sorted_entries(&root.join("dist")), ["b.js", "c.js"]);
+    assert!(
+        stderr_lines(&output)
+            .iter()
+            .any(|line| line.contains("Dump errors (1):"))
+    );
+    let _ = fs::remove_dir_all(root);
+}

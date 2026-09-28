@@ -15,7 +15,6 @@ mod profile_facts;
 mod settings;
 
 use std::{
-    path::PathBuf,
     sync::{Mutex, atomic::Ordering},
     time::{Duration, Instant},
 };
@@ -30,14 +29,16 @@ use vize_curator::profile::{
 
 use super::{
     BuildArgs, OutputFormat,
-    config::{CompileError, CompileStats, FileProfile},
+    config::{CompileError, CompileOutput, CompileStats, ErrorPhase, FileProfile},
 };
 
 use cache::StatsCompileCache;
 use collect::{CollectedFiles, collect_files_or_exit};
-use compile::{BuildCapture, compile_file_with_profile};
+use compile::compile_file_with_profile;
 use compile_stats::compile_file_stats_with_cache;
-use output::{CompiledBuildOutput, WrittenFormat, plan_inputs, preflight_outputs, write_outputs};
+use output::{
+    CompiledBuildOutput, PlannedInput, WrittenFormat, plan_inputs, preflight_outputs, write_outputs,
+};
 use settings::{CompileFileSettings, load_build_config};
 
 /// Main entry point for the build command.
@@ -126,7 +127,6 @@ pub(crate) fn run(args: BuildArgs) {
     let errors: Mutex<Vec<CompileError>> = Mutex::new(Vec::new());
     let slow_files: Mutex<Vec<FileProfile>> = Mutex::new(Vec::new());
     let profiles: Mutex<Vec<FileProfile>> = Mutex::new(Vec::new());
-    let captures: Mutex<Vec<(PathBuf, BuildCapture)>> = Mutex::new(Vec::new());
 
     let compile_start = Instant::now();
     let compile_settings = CompileFileSettings::resolve(&args, build_config);
@@ -137,8 +137,8 @@ pub(crate) fn run(args: BuildArgs) {
             // content-addressed stats entry would invent a run that did not
             // happen for the second source path.
             planned_inputs.par_iter().for_each(|input| {
-                match compile_file_with_profile(&input.source, &compile_settings, &stats) {
-                    Ok((output, profile, capture)) => {
+                match compile_planned_file(input, &compile_settings, &stats) {
+                    Ok((output, profile)) => {
                         stats.success.fetch_add(1, Ordering::Relaxed);
                         stats
                             .output_bytes
@@ -152,11 +152,6 @@ pub(crate) fn run(args: BuildArgs) {
                             && let Ok(mut p) = profiles.lock()
                         {
                             p.push(profile);
-                        }
-                        if let Some(capture) = capture
-                            && let Ok(mut observed) = captures.lock()
-                        {
-                            observed.push((input.relative_source.clone(), capture));
                         }
                     }
                     Err(err) => {
@@ -205,8 +200,8 @@ pub(crate) fn run(args: BuildArgs) {
         planned_inputs
             .par_iter()
             .map(|input| {
-                match compile_file_with_profile(&input.source, &compile_settings, &stats) {
-                    Ok((output, profile, capture)) => {
+                match compile_planned_file(input, &compile_settings, &stats) {
+                    Ok((output, profile)) => {
                         stats.success.fetch_add(1, Ordering::Relaxed);
                         stats
                             .output_bytes
@@ -225,20 +220,16 @@ pub(crate) fn run(args: BuildArgs) {
                             p.push(profile);
                         }
 
-                        if let Some(capture) = capture
-                            && let Ok(mut observed) = captures.lock()
-                        {
-                            observed.push((input.relative_source.clone(), capture));
-                        }
-
                         Some(CompiledBuildOutput { input, output })
                     }
                     Err(err) => {
                         stats.failed.fetch_add(1, Ordering::Relaxed);
                         fallback::record_error(&errors, err.clone());
-                        args.continue_on_error.then(|| CompiledBuildOutput {
-                            input,
-                            output: fallback::fallback_output(&input.source, &err),
+                        (args.continue_on_error && err.phase != ErrorPhase::Dump).then(|| {
+                            CompiledBuildOutput {
+                                input,
+                                output: fallback::fallback_output(&input.source, &err),
+                            }
                         })
                     }
                 }
@@ -248,18 +239,6 @@ pub(crate) fn run(args: BuildArgs) {
     let compile_elapsed = compile_start.elapsed();
 
     let io_start = Instant::now();
-    if let Some(dir) = args.dump_dir.as_deref() {
-        let mut captures = captures.into_inner().unwrap_or_default();
-        captures.sort_by(|left, right| left.0.cmp(&right.0));
-        for (relative_source, capture) in captures {
-            if let Err(error) =
-                capture::write(dir, &relative_source, capture, args.dump_after_change)
-            {
-                eprintln!("\x1b[31mError:\x1b[0m {error}");
-                std::process::exit(1);
-            }
-        }
-    }
     if let Some(format) = WrittenFormat::of(args.format)
         && let Err(error) = write_outputs(
             results.into_iter().flatten(),
@@ -340,7 +319,11 @@ pub(crate) fn run(args: BuildArgs) {
                 note: "ignore-aware walk",
             },
             ProfilePhase {
-                name: "compile wall",
+                name: if args.dump_dir.is_some() {
+                    "compile and dump wall"
+                } else {
+                    "compile wall"
+                },
                 duration: compile_elapsed,
                 kind: ProfilePhaseKind::Wall,
                 note: "parallel worker elapsed time",
@@ -465,4 +448,31 @@ pub(crate) fn run(args: BuildArgs) {
     if args.declaration {
         declarations::emit(&args, &planned_inputs);
     }
+}
+
+fn compile_planned_file(
+    input: &PlannedInput,
+    settings: &CompileFileSettings,
+    stats: &CompileStats,
+) -> Result<(CompileOutput, FileProfile), CompileError> {
+    let (output, profile, capture) = compile_file_with_profile(&input.source, settings, stats)?;
+    if let Some(dir) = settings.davinci.dump_dir.as_deref() {
+        let capture = capture.ok_or_else(|| CompileError {
+            path: input.source.clone(),
+            error: cstr!("--dump-dir: observed compile did not return a stage capture"),
+            phase: ErrorPhase::Dump,
+        })?;
+        capture::write(
+            dir,
+            &input.relative_source,
+            capture,
+            settings.davinci.dump_after_change,
+        )
+        .map_err(|error| CompileError {
+            path: input.source.clone(),
+            error,
+            phase: ErrorPhase::Dump,
+        })?;
+    }
+    Ok((output, profile))
 }

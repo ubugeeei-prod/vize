@@ -32,6 +32,10 @@ pub(super) fn report_errors(errors: &[CompileError]) {
         .iter()
         .filter(|e| e.phase == ErrorPhase::Compile)
         .collect();
+    let dump_errors: Vec<_> = errors
+        .iter()
+        .filter(|e| e.phase == ErrorPhase::Dump)
+        .collect();
     let ice_errors: Vec<_> = errors
         .iter()
         .filter(|e| e.phase == ErrorPhase::Ice)
@@ -66,6 +70,14 @@ pub(super) fn report_errors(errors: &[CompileError]) {
             for line in err.error.lines() {
                 eprintln!("      {}", line);
             }
+        }
+        eprintln!();
+    }
+
+    if !dump_errors.is_empty() {
+        eprintln!("  \x1b[31mDump errors ({}):\x1b[0m", dump_errors.len());
+        for err in &dump_errors {
+            eprintln!("    {} - {}", err.path.display(), err.error);
         }
         eprintln!();
     }
