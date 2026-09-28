@@ -70,8 +70,19 @@ does not filter any file. Replaying those 651 measured durations through the
 new partition projects 209.45, 190.82, 209.18 and 204.52 seconds per shard,
 an 86.60-second reduction in the slowest file-time shard. The projection
 comes from one run and must be validated by another Actions diagnostic.
-Even if it holds, the measured setup and native build keep the protected
-queue far above two minutes.
+
+The [weighted exact-head diagnostic run 36447504215](https://github.com/ubugeeei-prod/vize/actions/runs/36447504215)
+then succeeded with all four jobs and their aggregate. Its fresh timing
+artifacts contain 651 distinct files, split 163/162/163/163, with file-time
+sums of 206.73, 192.15, 202.33 and 201.27 seconds. Node reported 218.62,
+202.09, 211.17 and 208.99 seconds, totaling 840.86 seconds; 5,322 tests
+passed, none failed and 12 were skipped. The slowest Node shard was 80.90
+seconds faster than the 299.52-second unweighted shard; the test step fell
+from 348 to 263 seconds, and the run from 8m37s to 6m25s. The formatter
+evidence artifact remained on shard 1. The diagnostic is still not a
+protected queue or required `test-report` run. The measured setup and native
+build keep the queue far above two minutes, so further setup reduction is
+needed separately.
 
 ## Next measured choice
 
