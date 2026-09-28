@@ -16,6 +16,7 @@ import { fileURLToPath } from "node:url";
 
 import {
   changedPaths,
+  planJsBrowserTier,
   planSourceChecks,
 } from "../../tools/support/compat/github/plan-source-checks.mjs";
 
@@ -113,7 +114,7 @@ void test("the CLI applies merge-group scope to a real docs-only comparison", ()
         readFileSync(output, "utf8"),
         ["rust", "js", "tooling", "playground"]
           .map((lane) => `${lane}=${String(expected)}\n`)
-          .join(""),
+          .join("") + "js-browser-tier=full\n",
       );
     }
     const invalid = spawnSync(process.execPath, [script, base, head, "push"], {
@@ -122,6 +123,82 @@ void test("the CLI applies merge-group scope to a real docs-only comparison", ()
     });
     assert.notEqual(invalid.status, 0);
     assert.match(invalid.stderr, /invalid source planning context/);
+  } finally {
+    rmSync(cwd, { recursive: true, force: true });
+  }
+});
+
+void test("focused JS/browser tier only accepts audited SFC and L1 source edits", () => {
+  const source = [
+    "crates/vize_atelier_sfc/src/compile.rs",
+    "crates/vize_l1/src/container/vue.rs",
+    "docs/davinci/decisions/design.md",
+  ];
+  assert.equal(planJsBrowserTier(source), "source");
+  for (const path of [
+    "docs/davinci/plan/compiler/vize_atelier_sfc.md",
+    "tests/tooling/davinci/source.test.mjs",
+    "tools/config/skeleton-todos.toml",
+    "npm/builder/vite/src/plugin/index.ts",
+    "playground/e2e/sfc-compile.test.ts",
+    "Cargo.lock",
+    ".github/workflows/check.yml",
+    "crates/vize_l2/src/lib.rs",
+    "new-runtime/src/index.ts",
+  ]) {
+    assert.equal(planJsBrowserTier([...source, path]), "full", path);
+  }
+  assert.equal(planJsBrowserTier(source, "pull_request", true), "full");
+  assert.equal(planJsBrowserTier(source, "merge_group"), "full");
+  assert.equal(planJsBrowserTier(["docs/readme.md"]), "full");
+  assert.equal(planJsBrowserTier([]), "full");
+  assert.throws(() => planJsBrowserTier(source, "push"), /planning context/);
+});
+
+void test("the CLI routes a source deletion back to complete PR JS/browser checks", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "vize-js-browser-tier-"));
+  const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+  const script = fileURLToPath(
+    new URL("../../tools/support/compat/github/plan-source-checks.mjs", import.meta.url),
+  );
+  try {
+    git("init", "-q");
+    git("config", "user.name", "CI Test");
+    git("config", "user.email", "ci@example.invalid");
+    const sourceDir = join(cwd, "crates", "vize_l1", "src");
+    mkdirSync(sourceDir, { recursive: true });
+    const sourceFile = join(sourceDir, "lib.rs");
+    writeFileSync(sourceFile, "pub fn before() {}\n");
+    git("add", ".");
+    git("commit", "-qm", "add source");
+    const base = git("rev-parse", "HEAD");
+    writeFileSync(sourceFile, "pub fn after() {}\n");
+    git("commit", "-qam", "edit source");
+    const edited = git("rev-parse", "HEAD");
+    const planned = spawnSync(process.execPath, [script, base, edited], {
+      cwd,
+      encoding: "utf8",
+      env: { ...process.env, GITHUB_OUTPUT: join(cwd, "source-output"), GITHUB_STEP_SUMMARY: "" },
+    });
+    assert.equal(planned.status, 0, planned.stderr);
+    assert.match(
+      readFileSync(join(cwd, "source-output"), "utf8"),
+      /playground=false\njs-browser-tier=source\n/,
+    );
+    unlinkSync(sourceFile);
+    git("add", "-u");
+    git("commit", "-qm", "delete source");
+    const deleted = git("rev-parse", "HEAD");
+    const fallback = spawnSync(process.execPath, [script, edited, deleted], {
+      cwd,
+      encoding: "utf8",
+      env: { ...process.env, GITHUB_OUTPUT: join(cwd, "fallback-output"), GITHUB_STEP_SUMMARY: "" },
+    });
+    assert.equal(fallback.status, 0, fallback.stderr);
+    assert.match(
+      readFileSync(join(cwd, "fallback-output"), "utf8"),
+      /playground=true\njs-browser-tier=full\n/,
+    );
   } finally {
     rmSync(cwd, { recursive: true, force: true });
   }

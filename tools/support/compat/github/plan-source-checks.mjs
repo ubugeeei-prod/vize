@@ -85,6 +85,43 @@ export function changedPaths(base, head, cwd = process.cwd()) {
     .filter(Boolean);
 }
 
+// Only this audited source cohort may defer the complete JS and browser suites
+// to the protected merge queue. Every unclassified input keeps the PR suites.
+export function planJsBrowserTier(paths, eventName = "pull_request", hasRemovedPaths = false) {
+  if (!["pull_request", "merge_group"].includes(eventName)) {
+    throw new Error("expected pull_request or merge_group JS/browser planning context");
+  }
+  if (eventName === "merge_group" || hasRemovedPaths || paths.length === 0) return "full";
+  let sourceChanged = false;
+  for (const path of paths) {
+    if (/^crates\/vize_(?:atelier_sfc|l1)\/src\/.*\.rs$/.test(path)) {
+      sourceChanged = true;
+      continue;
+    }
+    if (isSharedRustInput(path)) return "full";
+    if (
+      (/^(?:docs\/|\.changeset\/)/.test(path) && /\.(?:md|mdx)$/.test(path)) ||
+      /(^|\/)(?:README|AGENTS)\.md$/.test(path)
+    ) {
+      continue;
+    }
+    return "full";
+  }
+  return sourceChanged ? "source" : "full";
+}
+
+function hasRemovedPaths(base, head) {
+  return (
+    execFileSync(
+      "git",
+      ["diff", "--no-renames", "--name-only", "--diff-filter=D", "-z", base, head],
+      {
+        encoding: "utf8",
+      },
+    ).length > 0
+  );
+}
+
 if (process.argv[1]?.endsWith("/plan-source-checks.mjs")) {
   const [base, head, eventName = "pull_request"] = process.argv.slice(2);
   if (!/^[0-9a-f]{40}$/.test(base ?? "") || !/^[0-9a-f]{40}$/.test(head ?? "")) {
@@ -97,15 +134,19 @@ if (process.argv[1]?.endsWith("/plan-source-checks.mjs")) {
   const plan = paths.length
     ? planSourceChecks(paths, eventName)
     : { rust: true, js: true, tooling: true, playground: true };
-  const output = `rust=${plan.rust}\njs=${plan.js}\ntooling=${plan.tooling}\nplayground=${plan.playground}\n`;
+  const jsBrowserTier = /^0+$/.test(base)
+    ? "full"
+    : planJsBrowserTier(paths, eventName, hasRemovedPaths(base, head));
+  if (jsBrowserTier === "source") plan.playground = false;
+  const output = `rust=${plan.rust}\njs=${plan.js}\ntooling=${plan.tooling}\nplayground=${plan.playground}\njs-browser-tier=${jsBrowserTier}\n`;
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, output);
   process.stdout.write(
-    `Scope: ${eventName}; changed paths: ${paths.length}; Rust: ${plan.rust}; JS packages: ${plan.js}; tooling: ${plan.tooling}; playground: ${plan.playground}\n`,
+    `Scope: ${eventName}; changed paths: ${paths.length}; Rust: ${plan.rust}; JS packages: ${plan.js} (${jsBrowserTier}); tooling: ${plan.tooling}; playground: ${plan.playground}\n`,
   );
   if (process.env.GITHUB_STEP_SUMMARY) {
     appendFileSync(
       process.env.GITHUB_STEP_SUMMARY,
-      `### Source checks\n\n| Check | Run |\n| --- | --- |\n| Rust Clippy, tests, and fixtures | ${plan.rust} |\n| JS package build and tests | ${plan.js} |\n| Tooling scripts | ${plan.tooling} |\n| Playground browser tests | ${plan.playground} |\n\nChanged paths: ${paths.length}.\n`,
+      `### Source checks\n\n| Check | Run |\n| --- | --- |\n| Rust Clippy, tests, and fixtures | ${plan.rust} |\n| JS package build and tests | ${plan.js} (${jsBrowserTier}) |\n| Tooling scripts | ${plan.tooling} |\n| Playground browser tests | ${plan.playground} |\n\nChanged paths: ${paths.length}.\n`,
     );
   }
 }
