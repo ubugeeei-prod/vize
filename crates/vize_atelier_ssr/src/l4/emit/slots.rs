@@ -130,7 +130,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             let (name, pattern) = slot_head(self.ctx.source, content)?;
             // The walker puts every child in this one slot. A nested
             // `<template v-slot>` is transparent there, not a second slot.
-            let mut ranges = std::vec::Vec::with_capacity(children.len());
+            let mut ranges = std::vec::Vec::new();
             for child in children {
                 ranges.push((child, self.child_end(child)?));
             }
@@ -230,7 +230,13 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             self.slot_property(own)?;
         } else {
             if !slots.default.is_empty() {
-                self.slot_property_parts("default", None, &slots.default, (None, None))?;
+                let default = SlotSpec {
+                    name: "default".to_compact_string(),
+                    pattern: None,
+                    ranges: slots.default.clone(),
+                    anchor: (None, None),
+                };
+                self.slot_property(&default)?;
             }
             for named in &slots.named {
                 self.slot_property(named)?;
@@ -247,36 +253,21 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     }
 
     pub(super) fn slot_property(&mut self, spec: &SlotSpec) -> Result<()> {
-        self.slot_property_parts(
-            &spec.name,
-            spec.pattern.as_deref(),
-            &spec.ranges,
-            spec.anchor,
-        )
-    }
-
-    pub(super) fn slot_property_parts(
-        &mut self,
-        name: &str,
-        pattern: Option<&str>,
-        ranges: &Ranges,
-        anchor: SlotAnchor,
-    ) -> Result<()> {
         self.ctx.push_indent();
         // The name maps to its authored `v-slot` argument, as the walker's does.
-        if is_valid_js_identifier(name) {
-            self.ctx.push_optionally_mapped(name, anchor.0);
+        if is_valid_js_identifier(&spec.name) {
+            self.ctx.push_optionally_mapped(&spec.name, spec.anchor.0);
         } else {
-            let quoted = quoted_js_string(name);
+            let quoted = quoted_js_string(&spec.name);
             self.ctx.push("\"");
             self.ctx.push_optionally_mapped(
                 quoted.get(1..quoted.len() - 1).unwrap_or_default(),
-                anchor.0,
+                spec.anchor.0,
             );
             self.ctx.push("\"");
         }
         self.ctx.push(": ");
-        self.slot_fn_parts(pattern, ranges, anchor)?;
+        self.slot_fn(spec)?;
         self.ctx.push(",\n");
         Ok(())
     }
@@ -284,18 +275,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `_withCtx((params, _push, _parent, _scopeId) => { if (_push) { ... }
     /// else { return [...] } })`.
     pub(super) fn slot_fn(&mut self, spec: &SlotSpec) -> Result<()> {
-        self.slot_fn_parts(spec.pattern.as_deref(), &spec.ranges, spec.anchor)
-    }
-
-    fn slot_fn_parts(
-        &mut self,
-        pattern: Option<&str>,
-        ranges: &Ranges,
-        anchor: SlotAnchor,
-    ) -> Result<()> {
         self.ctx.use_core_helper(RuntimeHelper::WithCtx);
-        self.ctx.push_optionally_mapped("_withCtx((", anchor.1);
-        self.ctx.push(pattern.unwrap_or("_"));
+        self.ctx.push_optionally_mapped("_withCtx((", spec.anchor.1);
+        self.ctx.push(spec.pattern.as_deref().unwrap_or("_"));
         self.ctx.push(", _push, _parent, _scopeId) => {\n");
         self.ctx.indent_level += 1;
         self.ctx.push_indent();
@@ -303,10 +285,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.indent_level += 1;
 
         let mut params = FxHashSet::default();
-        if let Some(pattern) = pattern {
+        if let Some(pattern) = spec.pattern.as_deref() {
             extract_destructure_params(pattern.trim(), &mut params);
         }
-        let mark = self.exprs.enter_slot(pattern.unwrap_or(""));
+        let mark = self.exprs.enter_slot(spec.pattern.as_deref().unwrap_or(""));
         let saved_parts = core::mem::take(&mut self.ctx.current_template_parts);
         let saved_scope = self.ctx.with_slot_scope_id;
         self.ctx.with_slot_scope_id = true;
@@ -314,7 +296,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         if scoped {
             self.scoped_params.push(params.clone());
         }
-        let pushed = self.slot_children(ranges);
+        let pushed = self.slot_children(&spec.ranges);
         self.ctx.flush_push();
         if scoped {
             self.scoped_params.pop();
@@ -325,7 +307,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             if scoped {
                 self.scoped_params.push(params);
             }
-            let fallback = self.vnode_list(ranges);
+            let fallback = self.vnode_list(&spec.ranges);
             if scoped {
                 self.scoped_params.pop();
             }

@@ -175,7 +175,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx.push("_createSlots({\n");
         self.ctx.indent_level += 1;
         if !slots.default.is_empty() {
-            self.slot_property_parts("default", None, &slots.default, (None, None))?;
+            self.slot_property(&SlotSpec {
+                name: "default".to_compact_string(),
+                pattern: None,
+                ranges: slots.default.clone(),
+                anchor: (None, None),
+            })?;
         }
         for named in &slots.named {
             self.slot_property(named)?;
