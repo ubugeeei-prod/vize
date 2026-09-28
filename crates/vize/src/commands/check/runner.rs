@@ -167,6 +167,9 @@ fn prepare_and_execute(
     let mut explicit_program_declarations = Vec::new();
     let mut package_routes = std::mem::take(&mut candidate.package_routes);
     let mut import_session = LocalImportSession::new(package_route_resolver);
+    // Validate only the paths requested by the user. Their relative imports
+    // may legitimately leave this root and still belong to the TS program.
+    validate_inputs_in_root(explicit_input_root, &candidate.inputs, validate_inputs)?;
     if !args.patterns.is_empty() || candidate.rebuild_supporting_files {
         let import_start = Instant::now();
         let discovered = register_transitive_local_imports_with_session(
@@ -175,8 +178,6 @@ fn prepare_and_execute(
                 cwd,
                 tsconfig_path: candidate.tsconfig_path.as_deref(),
                 import_options,
-                explicit_input_root: Some(explicit_input_root),
-                validate_inputs,
             },
             canonical_paths,
             package_route_resolver,
@@ -200,8 +201,6 @@ fn prepare_and_execute(
                 cwd,
                 tsconfig_path: candidate.tsconfig_path.as_deref(),
                 import_options,
-                explicit_input_root: Some(explicit_input_root),
-                validate_inputs,
             },
             canonical_paths,
             package_route_resolver,
@@ -210,8 +209,6 @@ fn prepare_and_execute(
         import_time += import_start.elapsed();
         package_routes.extend(discovered.package_routes);
     }
-    validate_inputs_in_root(explicit_input_root, &candidate.files, validate_inputs)?;
-
     let project_root =
         resolve_project_root(candidate.tsconfig_path.as_deref(), cwd, &candidate.files);
     let discovered_tsconfig_path = candidate

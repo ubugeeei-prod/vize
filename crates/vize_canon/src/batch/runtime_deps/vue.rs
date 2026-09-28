@@ -20,11 +20,21 @@ pub(in crate::batch) fn protected_vue_namespace_packages(
         return vec!["runtime-dom".into(), "runtime-core".into()];
     };
     match resolve_vue_runtime_packages(project_root, &vue_source) {
-        VueRuntimePackages::Namespace(namespace) => std::fs::read_dir(namespace)
-            .into_iter()
-            .flatten()
-            .filter_map(|entry| entry.ok()?.file_name().into_string().ok().map(Into::into))
-            .collect(),
+        VueRuntimePackages::Namespace(namespace)
+            if namespace.join("runtime-dom").exists()
+                && namespace.join("runtime-core").exists() =>
+        {
+            std::fs::read_dir(namespace)
+                .into_iter()
+                .flatten()
+                .filter_map(|entry| entry.ok()?.file_name().into_string().ok().map(Into::into))
+                .collect()
+        }
+        VueRuntimePackages::Namespace(_) => vec![
+            "runtime-dom".into(),
+            "runtime-core".into(),
+            "reactivity".into(),
+        ],
         VueRuntimePackages::RuntimeDom(_) | VueRuntimePackages::Stub => vec![
             "runtime-dom".into(),
             "runtime-core".into(),

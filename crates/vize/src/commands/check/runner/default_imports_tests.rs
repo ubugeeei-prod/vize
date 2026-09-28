@@ -316,7 +316,7 @@ declare module "vue" {
 }
 
 #[test]
-fn append_local_imports_checks_membership_once_per_discovered_path() {
+fn append_local_imports_keeps_relative_dependencies_outside_explicit_root() {
     let root = PathBuf::from("/workspace");
     let existing = root.join("src/existing.ts");
     let added = root.join("src/added.ts");
@@ -330,13 +330,14 @@ fn append_local_imports_checks_membership_once_per_discovered_path() {
             existing.clone(),
             added.clone(),
             added.clone(),
-            outside,
+            outside.clone(),
             nested.clone(),
         ],
-        Some(&root.join("src")),
-        true,
     );
 
-    assert_eq!(appended, [added.clone(), nested.clone()]);
-    assert_eq!(files, [added, existing, nested]);
+    assert_eq!(appended, [added.clone(), outside.clone(), nested.clone()]);
+    assert_eq!(files, [outside, added, existing, nested]);
 }
+
+#[path = "default_imports_relative_tests.rs"]
+mod relative;

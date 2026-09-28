@@ -33,6 +33,8 @@ use crate::batch::error::CorsaResult;
 
 use super::VirtualProject;
 
+#[path = "dependency_scan/references.rs"]
+mod references;
 #[path = "dependency_scan/resolution.rs"]
 mod resolution;
 #[cfg(test)]
@@ -134,11 +136,14 @@ impl VirtualProject {
                 continue;
             };
             let mut dependency_targets = FxHashSet::default();
-            if !may_resolve_a_dependency(
-                &virtual_content,
-                &alias_prefixes,
-                workspace_package_specifiers,
-            ) {
+            let references = references::path_references(&virtual_content);
+            if references.is_empty()
+                && !may_resolve_a_dependency(
+                    &virtual_content,
+                    &alias_prefixes,
+                    workspace_package_specifiers,
+                )
+            {
                 let released = self.replace_dependency_edges(&importer, dependency_targets);
                 self.prune_unowned_sources(released);
                 continue;
@@ -156,7 +161,14 @@ impl VirtualProject {
             };
             let specifiers = self
                 .rewriter()
-                .collect_all_specifier_occurrences(&virtual_content, source_type);
+                .collect_all_specifier_occurrences(&virtual_content, source_type)
+                .into_iter()
+                .map(|(specifier, mode)| (specifier, mode, false))
+                .chain(
+                    references
+                        .into_iter()
+                        .map(|specifier| (specifier, crate::PackageResolutionMode::Import, true)),
+                );
             // Package-local edges only exist inside a package root that already
             // contains this importer, so scan the route table once per importer
             // instead of once per specifier (#4137).
@@ -169,7 +181,7 @@ impl VirtualProject {
                 .map(|route| route.package_root.clone())
                 .collect::<Vec<_>>();
 
-            for (specifier, mode) in specifiers {
+            for (specifier, mode, is_reference) in specifiers {
                 let native_target =
                     resolve_dependency(&specifier, &importer_dir, &self.project_root, &aliases);
                 let Some(target) = native_target else {
@@ -184,10 +196,18 @@ impl VirtualProject {
                 let package_local = importer_package_roots
                     .iter()
                     .any(|package_root| key.starts_with(package_root));
-                if inside_node_modules(&key) && !package_local {
+                // A triple-slash path is an explicit program dependency, even
+                // when it names a declaration under node_modules. Ordinary
+                // package imports still use the resolver's package shadow.
+                if inside_node_modules(&key) && !package_local && !is_reference {
                     continue;
                 }
-                if is_declaration_file(&key) && !package_local && !self.session_scripts {
+                if is_declaration_file(&key)
+                    && !package_local
+                    && !self.session_scripts
+                    && !is_reference
+                    && !is_declaration_file(&importer)
+                {
                     continue;
                 }
                 // A requested subset still owns its complete import graph.

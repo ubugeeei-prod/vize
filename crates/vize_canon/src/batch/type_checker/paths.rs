@@ -9,6 +9,7 @@ use super::super::error::{CorsaError, CorsaResult};
 use super::super::source_policy::SourceFilePolicy;
 use super::super::virtual_project::VirtualProject;
 
+mod hidden;
 #[cfg(test)]
 mod snapshot_tests;
 
@@ -129,7 +130,7 @@ impl IncrementalPaths {
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         if self.allow_new_paths {
-            state.roots = collect_project_paths(project.project_root(), source_policy)?;
+            state.roots = collect_project_paths(project, source_policy)?;
         } else {
             state.roots.retain(|path| path.is_file());
         }
@@ -179,9 +180,11 @@ fn stamp_project_inputs(
 }
 
 pub(super) fn collect_project_paths(
-    project_root: &Path,
+    project: &VirtualProject,
     source_policy: SourceFilePolicy,
 ) -> CorsaResult<Vec<PathBuf>> {
+    let project_root = project.project_root();
+    let explicit_hidden_dirs = hidden::explicit_hidden_source_dirs(project);
     let mut paths = Vec::new();
     for entry in walkdir::WalkDir::new(project_root)
         .into_iter()
@@ -190,7 +193,8 @@ pub(super) fn collect_project_paths(
                 return true;
             }
             let name = entry.file_name().to_string_lossy();
-            !name.starts_with('.') && name != "node_modules"
+            name != "node_modules"
+                && (!name.starts_with('.') || explicit_hidden_dirs.contains(entry.path()))
         })
     {
         let entry = entry?;
