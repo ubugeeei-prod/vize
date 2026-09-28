@@ -52,7 +52,24 @@ including its false native column; the corrected summary passes.
 This accounting change does not establish a native-only numerator, the
 corpus/dialect denominator, a stability period, or eligibility to delete
 legacy code. Both tracking issues remain open. TODO: the shared differential
-harness must record per-product,
-per-target runtime provenance before publishing native-only acceptance
-rates; missing provenance, errors and skipped execution must remain
+harness must record per-product, per-target runtime provenance before
+publishing native-only acceptance rates; missing provenance, errors and
+skipped execution must remain
 explicitly unverified.
+
+## Compiler fixture reach baseline
+
+The existing production-reach sweep prints a separate native-only row for
+each shipping compiler target (`dom_inline`, `dom_module`, `ssr`, `vapor`).
+Its denominator is every discovered `.vue` input in that sweep, including
+unreadable, parse-failed and template-free inputs. Backend reach is reported
+separately. The test creates every compiled descriptor with
+`vize_croquis::sfc::parse_sfc`; every attempted target therefore consumes a
+legacy descriptor and receives zero native-only credit. Inputs not compiled
+by that test remain explicitly unverified. The committed fixture sweep and
+optional hydrated corpus are narrower than complete T1/T2 product and
+dialect coverage, so these rows do not close #6853.
+
+When a target stops consuming Croquis descriptors, this classification must
+be replaced with a complete runtime contribution transcript covering every
+stage and fact source, tied to the shared differential result contract.
