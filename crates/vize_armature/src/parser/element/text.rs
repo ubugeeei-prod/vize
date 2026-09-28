@@ -186,11 +186,15 @@ impl<'a> Parser<'a> {
         let inner_loc = self.create_loc(trimmed_start, trimmed_end);
 
         // Create expression node
-        let decoded = htmlize::unescape(content);
-        let expression_content = if decoded.as_ref() == content {
-            content
+        let expression_content = if content.as_bytes().contains(&b'&') {
+            let decoded = htmlize::unescape(content);
+            if decoded.as_ref() == content {
+                content
+            } else {
+                self.allocator.alloc_str(decoded.as_ref())
+            }
         } else {
-            self.allocator.alloc_str(decoded.as_ref())
+            content
         };
         let mut expr = SimpleExpressionNode::new(expression_content, false, inner_loc);
         self.retain_expression_ast(&mut expr, trimmed_start, trimmed_end);
