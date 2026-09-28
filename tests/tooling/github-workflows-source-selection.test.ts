@@ -16,7 +16,7 @@ type Job = {
   needs?: string[] | string;
   steps?: Step[];
   outputs?: Record<string, string>;
-  strategy?: { "fail-fast": boolean; matrix: { shard: number[] } };
+  strategy?: { "fail-fast": boolean; matrix: { shard: number[] | string } };
   with?: Record<string, string>;
 };
 const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
@@ -45,6 +45,10 @@ test("source planning installs the declared Node runtime before TypeScript impor
   assert.equal(steps[toolchain].with?.toolchain, "1.98.0");
   assert.equal(plan.outputs?.tooling, "${{ steps.tooling-plan.outputs.tooling }}");
   assert.equal(
+    plan.outputs?.["tooling-shards"],
+    "${{ steps.tooling-plan.outputs.tooling-shards }}",
+  );
+  assert.equal(
     steps[tooling].env?.TOOLING_TIER,
     "${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}",
   );
@@ -60,7 +64,13 @@ test("source planning installs the declared Node runtime before TypeScript impor
 });
 
 test("selected PR tooling regenerates its plan while merge tooling retains the full receipt path", () => {
-  const steps = source.jobs["pr-tooling-scripts"].steps ?? [];
+  const job = source.jobs["pr-tooling-scripts"];
+  const steps = job.steps ?? [];
+  assert.equal(
+    job.strategy?.matrix.shard,
+    "${{ fromJSON(needs.pr-source-plan.outputs.tooling-shards) }}",
+  );
+  assert.equal(job.strategy?.["fail-fast"], false);
   const regenerate = steps.findIndex((step) => step.name === "Regenerate PR tooling plan");
   const build = steps.findIndex((step) => step.name === "Build and install vize CLI");
   const selected = steps.findIndex((step) => step.name === "Test selected PR tooling scripts");
@@ -91,7 +101,9 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
     steps[full].if,
     "${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}",
   );
-  assert.equal(steps[full].run, "vp run --workspace-root test:scripts");
+  assert.equal(steps[full].run, "vp run --workspace-root test:scripts:merge-shard");
+  assert.equal(steps[full].env?.VIZE_TOOLING_MERGE_SHARD, "${{ matrix.shard }}");
+  assert.equal(steps[full].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
   assert.equal(steps[full].env?.SOURCE_LENGTH_BASE_REF, undefined);
   assert.match(
     steps[build].run ?? "",
