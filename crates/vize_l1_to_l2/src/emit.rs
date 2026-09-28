@@ -230,6 +230,7 @@ struct EmitCx<'facts> {
     hoisted_scope_id: Option<&'facts str>,
     /// The shipped lane's `scope_id`, emitted as the trailing props pair.
     scope_id: Option<&'facts str>,
+    no_slotted: bool,
     /// `CodegenContext::skip_scope_id`: inside a `mergeProps` call the scope
     /// pair is emitted once as a trailing argument, never per segment.
     skip_scope_id: bool,

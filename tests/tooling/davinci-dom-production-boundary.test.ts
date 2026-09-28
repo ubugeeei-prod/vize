@@ -44,6 +44,7 @@ const s2EmitOptionFields = [
   "cache_handlers",
   "hoisted_scope_id",
   "scope_id",
+  "no_slotted",
   "is_ts",
   "comments",
   "experimental_in_tag_comments",

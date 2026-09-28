@@ -117,6 +117,7 @@ pub(super) fn emit_dom_observed<'f>(
         cache_handlers: options.cache_handlers,
         hoisted_scope_id: options.hoisted_scope_id,
         scope_id: options.scope_id,
+        no_slotted: options.no_slotted,
         skip_scope_id: false,
         cache_sites: StdVec::new(),
         used_unref: core::cell::Cell::new(u32::MAX),

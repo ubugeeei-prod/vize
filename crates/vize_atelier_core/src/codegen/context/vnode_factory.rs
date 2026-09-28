@@ -47,6 +47,7 @@ impl CodegenContext {
             merge_props,
             component_name,
             experimental_self_component: experimental_options.self_component,
+            no_slotted: experimental_options.no_slotted,
             pure: false,
             used_helpers: RuntimeHelpers::default(),
             cache_index: 0,
