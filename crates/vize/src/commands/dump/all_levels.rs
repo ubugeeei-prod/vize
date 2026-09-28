@@ -2,7 +2,11 @@
 
 #![expect(clippy::disallowed_macros, reason = "CLI paths and errors use format")]
 
+mod page_files;
+
 use std::path::Path;
+
+use page_files::write_pages;
 
 use serde_json::{Value, json};
 use vize_atelier_core::options::{
@@ -162,6 +166,31 @@ fn compile_sfc<'a>(
         },
     )
     .unwrap_or_else(|error| fail(path, error.message.as_str()));
+    if descriptor
+        .template
+        .as_ref()
+        .is_some_and(|template| template.src.is_some())
+    {
+        fail(
+            path,
+            "external <template src> is not supported by native dump",
+        );
+    }
+    if descriptor
+        .script
+        .as_ref()
+        .is_some_and(|script| script.src.is_some())
+        || descriptor
+            .script_setup
+            .as_ref()
+            .is_some_and(|script| script.src.is_some())
+        || descriptor.styles.iter().any(|style| style.src.is_some())
+    {
+        fail(
+            path,
+            "external SFC block src is not supported by native dump",
+        );
+    }
     let native_template = native
         .blocks
         .iter()
@@ -188,6 +217,7 @@ fn compile_sfc<'a>(
         "vue-template"
     };
     let mut options = SfcCompileOptions::default();
+    options.parse.filename = path_text.into();
     options.template.ssr = pipeline == Pipeline::Ssr;
     options.vapor = pipeline == Pipeline::Vapor;
     let (_, capture) = compile_sfc_for_adapter_with_stage_capture(
@@ -210,38 +240,6 @@ fn compile_sfc<'a>(
             template_span,
         },
     )
-}
-
-fn write_pages(
-    dir: &Path,
-    capture: &StageCapture,
-    feed: &Value,
-    only_changed: bool,
-    source: &Path,
-) {
-    std::fs::create_dir_all(dir)
-        .unwrap_or_else(|error| fail(source, &format!("cannot create {}: {error}", dir.display())));
-    let mut previous = None;
-    for (index, page) in capture
-        .pages
-        .iter()
-        .filter(|_| matches!(capture.outcome, CaptureOutcome::Accepted))
-        .enumerate()
-    {
-        let changed = previous != Some(page.text.as_str());
-        previous = Some(page.text.as_str());
-        if only_changed && !changed {
-            continue;
-        }
-        let safe_step = page
-            .step
-            .replace(|ch: char| !ch.is_ascii_alphanumeric() && ch != '-', "_");
-        let file = dir.join(format!("{index:03}-{}.{}.dump", page.level.id(), safe_step));
-        std::fs::write(&file, page.text.as_bytes()).unwrap_or_else(|error| {
-            fail(source, &format!("cannot write {}: {error}", file.display()))
-        });
-    }
-    write_json(&dir.join("product-stage-feed.json"), feed, source);
 }
 
 fn write_json(path: &Path, value: &Value, source: &Path) {

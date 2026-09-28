@@ -136,6 +136,14 @@ the authored Pug text. The CLI pipeline selector accepts only real DOM,
 SSR and Vapor product backends; unsupported source/backend pairs and
 arbitrary named no-op passes are rejected. Page files use level and step
 names with a dump extension; historical fixture bytes remain unchanged.
+The CLI passes the real input filename to both descriptor parsing and product
+compilation, preserving scoped-style identity and relative script type-import
+resolution. Standalone dump uses its documented default compile options; build
+has its own explicit script, template and style options. External SFC block
+`src` inputs fail closed until the native CLI can resolve them. Reusing a dump
+directory removes only page files whose generated names and bytes match the
+previous version 2 `vize-dump` feed. A modified page or a colliding file stops
+the export without deleting user content; unrelated files remain untouched.
 
 ## Merge sequence
 

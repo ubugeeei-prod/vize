@@ -14,6 +14,10 @@ use vize_atelier_dom::{
     DomCompilerOptions,
     compile_template_with_custom_elements_template_syntax_codegen_and_experimental_options_with_stage_capture,
 };
+use vize_atelier_sfc::{
+    SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
+    compile_sfc_for_adapter_with_stage_capture, parse_sfc,
+};
 use vize_curator::inspector::{ProductCaptureSource, product_capture_value};
 use vize_l0::{Allocator, dump::capture::StageCapture};
 
@@ -183,4 +187,131 @@ fn page_directory_and_unobserved_channels_are_explicit() {
     assert_eq!(remarks_value["observed"], false);
     assert!(timing_value["timings"].as_array().unwrap().is_empty());
     assert!(remarks_value["remarks"].as_array().unwrap().is_empty());
+}
+
+#[test]
+fn reused_directory_removes_only_unchanged_pages_owned_by_the_prior_feed() {
+    let temp = tempfile::tempdir().unwrap();
+    let template = temp.path().join("template.html");
+    let script_only = temp.path().join("Script.vue");
+    let dir = temp.path().join("pages");
+    fs::write(&template, "<div>hi</div>").unwrap();
+    fs::write(&script_only, "<script>export default {}</script>").unwrap();
+    let dump_dir = ["--dump-dir", dir.to_str().unwrap()];
+    let first = run(&template, &dump_dir);
+    assert_eq!(first.status.code(), Some(0), "{first:?}");
+    let generated: Vec<_> = fs::read_dir(&dir)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .filter(|path| path.extension().is_some_and(|ext| ext == "dump"))
+        .collect();
+    assert!(!generated.is_empty());
+    fs::write(dir.join("notes.dump"), "user notes").unwrap();
+    fs::write(dir.join("keep.txt"), "user file").unwrap();
+
+    let second = run(&script_only, &dump_dir);
+    assert_eq!(second.status.code(), Some(0), "{second:?}");
+    let feed: serde_json::Value = serde_json::from_slice(&second.stdout).unwrap();
+    assert_eq!(feed["outcome"]["kind"], "unavailable");
+    assert!(feed["pages"].as_array().unwrap().is_empty());
+    for path in generated {
+        assert!(!path.exists(), "stale page: {}", path.display());
+    }
+    assert_eq!(fs::read(dir.join("notes.dump")).unwrap(), b"user notes");
+    assert_eq!(fs::read(dir.join("keep.txt")).unwrap(), b"user file");
+    let written: serde_json::Value =
+        serde_json::from_slice(&fs::read(dir.join("product-stage-feed.json")).unwrap()).unwrap();
+    assert_eq!(written, feed);
+}
+
+#[test]
+fn modified_prior_page_is_preserved_and_blocks_reuse() {
+    let temp = tempfile::tempdir().unwrap();
+    let template = temp.path().join("template.html");
+    let dir = temp.path().join("pages");
+    fs::write(&template, "<div>hi</div>").unwrap();
+    let dump_dir = ["--dump-dir", dir.to_str().unwrap()];
+    let first = run(&template, &dump_dir);
+    assert_eq!(first.status.code(), Some(0), "{first:?}");
+    let page = fs::read_dir(&dir)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .find(|path| path.extension().is_some_and(|ext| ext == "dump"))
+        .unwrap();
+    let old_feed = fs::read(dir.join("product-stage-feed.json")).unwrap();
+    fs::write(&page, "user edits").unwrap();
+    let second = run(&template, &dump_dir);
+    assert_eq!(second.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&second.stderr).contains("refusing to remove modified"));
+    assert_eq!(fs::read(&page).unwrap(), b"user edits");
+    assert_eq!(
+        fs::read(dir.join("product-stage-feed.json")).unwrap(),
+        old_feed
+    );
+}
+
+#[test]
+fn scoped_sfc_uses_real_filename_for_the_product_compile() {
+    let temp = tempfile::tempdir().unwrap();
+    let source = "<template><p>hi</p></template><style scoped>p { color: red }</style>";
+    let mut outputs = Vec::new();
+    for name in ["One.vue", "Two.vue"] {
+        let path = temp.path().join(name);
+        fs::write(&path, source).unwrap();
+        let output = run(&path, &[]);
+        assert_eq!(output.status.code(), Some(0), "{output:?}");
+        let actual: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        let filename = path.to_str().unwrap();
+        let descriptor = parse_sfc(
+            source,
+            SfcParseOptions {
+                filename: filename.into(),
+                ..SfcParseOptions::default()
+            },
+        )
+        .unwrap();
+        let mut options = SfcCompileOptions::default();
+        options.parse.filename = filename.into();
+        let (_, capture) = compile_sfc_for_adapter_with_stage_capture(
+            &descriptor,
+            options,
+            TemplateSyntaxMode::Standard,
+            CustomElementMatcher::default(),
+            CodegenOptions::default(),
+            SfcScriptOutputMode::SeparateTemplate,
+            SfcCompileExperimentalOptions::default(),
+        )
+        .unwrap();
+        let expected = product_capture_value(
+            "vize-dump",
+            ProductCaptureSource {
+                path: Some(filename),
+                container: "vue-sfc",
+                authored_syntax: "vue-template",
+                compiled_syntax: "vue-template",
+                template_span: Some(vize_l0::Span::new(
+                    source.find("<p>").unwrap() as u32,
+                    (source.find("<p>").unwrap() + "<p>hi</p>".len()) as u32,
+                )),
+            },
+            &capture,
+        );
+        assert_eq!(actual, expected);
+        outputs.push(actual["pages"].clone());
+    }
+    assert_ne!(
+        outputs[0], outputs[1],
+        "scoped output ignored source filename"
+    );
+}
+
+#[test]
+fn external_template_source_is_rejected_before_capture() {
+    let temp = tempfile::tempdir().unwrap();
+    let path = temp.path().join("External.vue");
+    fs::write(&path, "<template src=\"./template.html\"/>").unwrap();
+    let output = run(&path, &[]);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("external <template src>"));
 }

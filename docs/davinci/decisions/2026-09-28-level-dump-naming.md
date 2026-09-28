@@ -47,6 +47,11 @@ compilation runs through the levels.
 
 ## All-level CLI export
 
+The description below records the earlier ladder CLI. It was superseded by
+the same-run product CLI in [production stage capture](./2026-09-28-production-stage-capture.md):
+the current command accepts `.vue` and Pug inputs and `--pipeline` selects a
+real DOM, SSR or Vapor backend. The old ladder is not product evidence.
+
 `vize dump --all-levels --json FILE` runs the same native `ladder_run` that
 feeds the playground stage view and writes its pages and remarks through the
 single `StageFeed::to_json` serializer. The input is a raw Vue template file;
@@ -57,7 +62,7 @@ SFC extraction. The existing level roundtrip command keeps its success and
 failure bytes. This feed covers the current native L1 → L2 → L3 ladder,
 separate from the current legacy-backed product compiler path.
 
-`--pipeline` migration and removal of the `davinci-opt` bin remain open. The
+At the time of this earlier decision, `--pipeline` migration and removal of the `davinci-opt` bin remained open. The
 old binary still tests a no-op pass catalogue over input dumps; it does not
 serve as evidence that product compilation uses the new levels.
 
