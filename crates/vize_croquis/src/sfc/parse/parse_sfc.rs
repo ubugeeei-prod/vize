@@ -130,11 +130,11 @@ fn split_sfc<'a>(
         }
 
         // Parse block starting at '<'
-        let mut attrs = FxHashMap::default();
-        match parse_block_fast(bytes, source, pos, line, column, &mut attrs) {
+        match parse_block_fast(bytes, source, pos, line, column, FxHashMap::default) {
             Ok(Some(block_result)) => {
                 let (
                     tag_name,
+                    attrs,
                     content,
                     content_start,
                     content_end,

@@ -19,6 +19,11 @@ Tracked in [#6837](https://github.com/ubugeeei-prod/vize/issues/6837).
   `f5c520422`, so the parser now reuses the already-found interpolation close
   in the slow path and makes the legacy attribute map adapter inline. Measure
   this on the exact PR head before re-entering the queue; ceilings stay fixed.
+- The next measurement reduced 20 overages to 15 but left Croquis and compiler
+  call overhead. The shared scanner now constructs its sink only after a real
+  block tag starts, and returns it by value. Croquis receives its map at the
+  original parse point; L1 receives the ordered attribute list from the same
+  scanner. Verify output and instruction counts on Actions before merging.
 
 TODO: line/column tracking still lives inside the scanner for the legacy
 descriptor; drop it once Croquis is replaced and positions come from the L0

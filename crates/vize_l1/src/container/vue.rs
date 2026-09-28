@@ -49,12 +49,11 @@ impl ContainerFormat for Vue {
                     .map_or(bytes.len(), |end| pos + 4 + end + 3);
                 continue;
             }
-            let mut attrs = Attrs {
+            match parse_block_fast(bytes, source, pos, 1, 1, || Attrs {
                 list: Vec::new_in(&allocator),
-            };
-            match parse_block_fast(bytes, source, pos, 1, 1, &mut attrs) {
+            }) {
                 Ok(Some(raw)) => {
-                    let (name, _, content_start, content_end, end, _, _) = raw;
+                    let (name, attrs, _, content_start, content_end, end, _, _) = raw;
                     let name = source
                         .get(pos + 1..pos + 1 + name.len())
                         .unwrap_or_default();

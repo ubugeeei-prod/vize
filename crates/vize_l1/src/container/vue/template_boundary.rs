@@ -35,7 +35,9 @@ const BOUNDED_INTERPOLATION_SCAN_WINDOW: usize = 4096;
 /// The slow path jumps between `<`/`{` candidates and skips actual HTML tags as
 /// a unit, so template-shaped text in attributes, comments, raw-text elements,
 /// and Vue interpolations cannot mutate nesting depth.
-pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockParseResult<'a> {
+pub(super) fn find_template_block_end<'a, A>(
+    search: BlockEndSearch<'a, A>,
+) -> BlockParseResult<'a, A> {
     let BlockEndSearch {
         bytes,
         source,
@@ -45,6 +47,7 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
         start_line,
         start_column,
         initial_last_newline,
+        attrs,
     } = search;
     let len = bytes.len();
     let mut line = start_line;
@@ -74,6 +77,7 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
         let content = Cow::Borrowed(source.get(content_start..content_end).unwrap_or_default());
         return Ok(Some((
             tag_name,
+            attrs,
             content,
             content_start,
             content_end,
@@ -227,6 +231,7 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
                     Cow::Borrowed(source.get(content_start..content_end).unwrap_or_default());
                 return Ok(Some((
                     tag_name,
+                    attrs,
                     content,
                     content_start,
                     content_end,

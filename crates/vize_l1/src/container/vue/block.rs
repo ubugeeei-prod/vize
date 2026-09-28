@@ -19,8 +19,9 @@ pub(super) const TAG_TEMPLATE: &[u8] = b"template";
 const TAG_SCRIPT: &[u8] = b"script";
 const TAG_STYLE: &[u8] = b"style";
 
-pub type BlockParseOutput<'a> = (
+pub type BlockParseOutput<'a, A> = (
     &'a [u8],     // tag name as bytes
+    A,            // attributes in the caller's sink
     Cow<'a, str>, // content as borrowed string
     usize,        // content start
     usize,        // content end
@@ -29,9 +30,9 @@ pub type BlockParseOutput<'a> = (
     usize,        // content end column
 );
 pub type BlockParseError = (&'static str, String);
-pub type BlockParseResult<'a> = Result<Option<BlockParseOutput<'a>>, BlockParseError>;
+pub type BlockParseResult<'a, A> = Result<Option<BlockParseOutput<'a, A>>, BlockParseError>;
 
-pub(super) struct BlockEndSearch<'a> {
+pub(super) struct BlockEndSearch<'a, A> {
     pub(super) bytes: &'a [u8],
     pub(super) source: &'a str,
     pub(super) tag_name: &'a [u8],
@@ -40,6 +41,7 @@ pub(super) struct BlockEndSearch<'a> {
     pub(super) start_line: usize,
     pub(super) start_column: usize,
     pub(super) initial_last_newline: usize,
+    pub(super) attrs: A,
 }
 
 /// Build a uniform `(code, message)` error for any malformed block.
@@ -154,14 +156,14 @@ pub(super) fn find_closing_tag_end(
 /// - `Ok(Some(...))` — successfully parsed block.
 /// - `Ok(None)` — no SFC block starts at this position.
 /// - `Err(...)` — a block starts here but is incomplete or malformed.
-pub fn parse_block_fast<'a>(
+pub fn parse_block_fast<'a, A: AttrSink<'a>>(
     bytes: &'a [u8],
     source: &'a str,
     start: usize,
     start_line: usize,
     start_column: usize,
-    attrs: &mut impl AttrSink<'a>,
-) -> BlockParseResult<'a> {
+    make_attrs: impl FnOnce() -> A,
+) -> BlockParseResult<'a, A> {
     // This parser intentionally works on byte slices and returns borrowed `Cow`
     // values. SFC parsing sits on every compile/lint/check path, so avoiding
     // temporary strings for tag names, attrs, and block content has an outsized
@@ -187,6 +189,7 @@ pub fn parse_block_fast<'a>(
     let tag_name = source.as_bytes().get(tag_start..pos).unwrap_or_default();
 
     // Parse attributes with zero-copy
+    let mut attrs = make_attrs();
 
     while bytes.get(pos).is_some_and(|&b| b != b'>') {
         // Skip whitespace
@@ -300,6 +303,7 @@ pub fn parse_block_fast<'a>(
         );
         return Ok(Some((
             tag_name,
+            attrs,
             Cow::Borrowed(""),
             pos,
             pos,
@@ -329,6 +333,7 @@ pub fn parse_block_fast<'a>(
     if is_void_block(tag_name) {
         return Ok(Some((
             tag_name,
+            attrs,
             Cow::Borrowed(""),
             content_start,
             content_start,
@@ -353,6 +358,7 @@ pub fn parse_block_fast<'a>(
             start_line: content_start_line,
             start_column: content_start_column,
             initial_last_newline: content_start,
+            attrs,
         });
     }
 
@@ -366,6 +372,7 @@ pub fn parse_block_fast<'a>(
             start_line: content_start_line,
             start_column: content_start_column,
             initial_last_newline: content_start,
+            attrs,
         });
     }
 
@@ -380,6 +387,7 @@ pub fn parse_block_fast<'a>(
             start_line: content_start_line,
             start_column: content_start_column,
             initial_last_newline: content_start,
+            attrs,
         });
     }
 
@@ -485,6 +493,7 @@ pub fn parse_block_fast<'a>(
             let content = Cow::Borrowed(source.get(content_start..content_end).unwrap_or_default());
             return Ok(Some((
                 tag_name,
+                attrs,
                 content,
                 content_start,
                 content_end,
