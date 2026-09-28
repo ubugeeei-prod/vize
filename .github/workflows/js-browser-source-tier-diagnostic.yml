@@ -1,0 +1,72 @@
+name: JS browser source tier diagnostic
+on:
+  push:
+    branches: [ci/js-browser-source-tier-diagnostic-6830]
+permissions:
+  contents: read
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  source-tier:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: "12"
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 2
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - name: Plan exact source-only diff
+        id: plan
+        run: node tools/support/compat/github/plan-source-checks.mjs "$(git rev-parse HEAD^)" "$GITHUB_SHA" pull_request
+      - name: Require focused PR tier and complete queue tier
+        env:
+          JS_BROWSER_TIER: ${{ steps.plan.outputs.js-browser-tier }}
+          PLAYGROUND: ${{ steps.plan.outputs.playground }}
+          GITHUB_OUTPUT: /dev/null
+        run: |
+          test "$JS_BROWSER_TIER" = source
+          test "$PLAYGROUND" = false
+          node tools/support/compat/github/plan-source-checks.mjs "$(git rev-parse HEAD^)" "$GITHUB_SHA" merge_group | tee "$RUNNER_TEMP/queue-plan.log"
+          grep -q 'JS packages: true (full); tooling: true; playground: true' "$RUNNER_TEMP/queue-plan.log"
+      - uses: ./.github/actions/setup-moonbit
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: pr-7150-
+          key: test-js-packages
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build addon from diagnostic source
+        run: vp run --workspace-root build:native:test
+      - name: Record source binding identity
+        run: |
+          printf 'source=%s\ntree=%s\n' "$(git rev-parse HEAD)" "$(git rev-parse HEAD^{tree})" >> "$GITHUB_STEP_SUMMARY"
+          shasum -a 256 npm/native/vize-vitrine.*.node >> "$GITHUB_STEP_SUMMARY"
+      - name: Pack CLI config and test it
+        run: vp run --filter './npm/cli' test
+      - name: Test Vite with source binding
+        run: VP_RUN_CONCURRENCY_LIMIT=1 node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test
+
+  aggregate:
+    needs: source-tier
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    env:
+      TEST_RESULT: ${{ needs.source-tier.result }}
+    steps:
+      - name: Require source-tier success
+        run: test "$TEST_RESULT" = success
