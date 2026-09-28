@@ -313,3 +313,10 @@ nine ceilings. A control run on current main (`36394193126`) passed, but the
 PR branch still had merge base `b4af1e027`; its lower-vfor probe measured
 150,424 instructions versus 21,207 on main. Rebase onto main and measure the
 combined candidate before attributing that gap to the alias-scan change.
+
+The rebased exact-head run `36394784289` still missed 13 ceilings, including
+DOM stress-wide by 24,213 instructions, while the same-base main control passed.
+The one-scan path searched all 43 helper aliases linearly at each call site;
+dispatch recognized aliases directly instead. The ordinary compiler fixtures
+exercise this path, so its three-run instruction result must pass before the
+PR enters the queue again. Ceilings remain unchanged.

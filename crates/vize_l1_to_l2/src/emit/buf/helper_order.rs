@@ -139,7 +139,7 @@ impl Buf {
             .chain(core::iter::once(self.code.as_str()))
         {
             underscore_call_sites(text, |position, name| {
-                if let Some(helper) = Helper::ALL.iter().find(|helper| helper.alias() == name)
+                if let Some(helper) = Helper::from_alias(name)
                     && let Some(slot) = positions.get_mut(helper.bit().trailing_zeros() as usize)
                     && slot.is_none()
                 {
@@ -260,6 +260,17 @@ fn create_slots_before_v_show(left: Helper, _right: Helper) -> Ordering {
 #[cfg(test)]
 mod tests {
     use super::{Buf, Helper};
+
+    #[test]
+    fn alias_lookup_covers_every_helper() {
+        for helper in Helper::ALL {
+            assert_eq!(
+                Helper::from_alias(helper.alias()).map(Helper::bit),
+                Some(helper.bit())
+            );
+        }
+        assert!(Helper::from_alias("_notAHelper").is_none());
+    }
 
     #[test]
     fn one_scan_finds_every_alias_where_the_per_alias_scan_does() {
