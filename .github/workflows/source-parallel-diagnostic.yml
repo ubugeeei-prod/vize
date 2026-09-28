@@ -1,0 +1,240 @@
+name: Source parallel Stack diagnostic
+on:
+  push:
+    branches: [ci/source-parallel-diagnostic-6830]
+permissions:
+  contents: read
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      tier: ${{ steps.source.outputs.js-browser-tier }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 2
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: false
+          run-install: false
+      - name: Plan representative added source line
+        id: source
+        run: node tools/support/compat/github/plan-source-checks.mjs "$(git rev-parse HEAD^)" "$GITHUB_SHA" pull_request
+      - name: Require narrow source and full merge tiers
+        env:
+          SOURCE_TIER: ${{ steps.source.outputs.js-browser-tier }}
+          SOURCE_JS: ${{ steps.source.outputs.js }}
+          SOURCE_PLAYGROUND: ${{ steps.source.outputs.playground }}
+        run: |
+          test "$SOURCE_TIER" = source
+          test "$SOURCE_JS" = true
+          test "$SOURCE_PLAYGROUND" = false
+          GITHUB_OUTPUT=/dev/null node tools/support/compat/github/plan-source-checks.mjs "$(git rev-parse HEAD^)" "$GITHUB_SHA" merge_group | tee "$RUNNER_TEMP/merge-plan.log"
+          grep -q 'JS packages: true (full); tooling: true; playground: true' "$RUNNER_TEMP/merge-plan.log"
+
+  tooling-source:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      CARGO_BUILD_JOBS: "12"
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 2
+      - name: Require audited independent source input
+        run: |
+          node tools/support/compat/github/plan-source-checks.mjs "$(git rev-parse HEAD^)" "$GITHUB_SHA" pull_request | tee "$RUNNER_TEMP/source-tier.log"
+          grep -q 'JS packages: true (source); tooling: false; playground: false' "$RUNNER_TEMP/source-tier.log"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: pr-7132-
+          key: test-scripts
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install focused tooling dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build and receipt source CLI
+        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && cat target/ci/vize.differential-build.json && sudo install -m 0755 target/ci/vize /usr/local/bin/vize
+      - name: Test focused source tooling
+        env:
+          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+          VIZE_TEST_REQUIRE_TSGO: "1"
+        run: |
+          test -s target/ci/vize.differential-build.json
+          target/ci/vize --version
+          node --test --test-concurrency=1 tests/tooling/davinci-ssr-l4-bridge.test.ts tests/tooling/davinci-stage-dependencies.test.ts
+
+  js-source:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      CARGO_BUILD_JOBS: "12"
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 2
+      - name: Require audited independent source input
+        run: |
+          node tools/support/compat/github/plan-source-checks.mjs "$(git rev-parse HEAD^)" "$GITHUB_SHA" pull_request | tee "$RUNNER_TEMP/source-tier.log"
+          grep -q 'JS packages: true (source); tooling: false; playground: false' "$RUNNER_TEMP/source-tier.log"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: ./.github/actions/setup-moonbit
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: pr-7150-
+          key: test-js-packages
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build source native addon
+        run: vp run --workspace-root build:native:test
+      - name: Pack source CLI and test it
+        run: vp run --filter './npm/cli' test
+      - name: Require source Vize app config
+        working-directory: examples/vite-musea
+        run: |
+          vp exec node --input-type=module -e "
+            import { loadConfig } from 'vize';
+            const config = await loadConfig(process.cwd());
+            if (config?.vite?.scanPatterns?.[0] !== 'src/**/*.vue') {
+              throw new Error('Vize app config was not loaded from source');
+            }
+          "
+      - name: Test focused Vite compiler
+        run: VP_RUN_CONCURRENCY_LIMIT=1 node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test
+
+  rust-plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      rust-fast: ${{ steps.fast.outputs.rust-fast }}
+      rust-fast-plan: ${{ steps.fast.outputs.rust-fast-plan }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 2
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.98.0"
+      - name: Plan exact source-only commit
+        id: fast
+        run: node tools/support/compat/github/plan-fast-rust.mjs "$(git rev-parse HEAD^)" "$GITHUB_SHA" pull_request "$RUNNER_TEMP/fast-plan.json"
+
+  clippy:
+    needs: rust-plan
+    if: ${{ needs.rust-plan.outputs.rust-fast == 'true' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    env:
+      CARGO_BUILD_JOBS: "12"
+      VIZE_TEST_DISABLE_TSGO: "1"
+      RUST_FAST_PLAN_JSON: ${{ needs.rust-plan.outputs.rust-fast-plan }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          components: clippy
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: pr-7132-
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - run: node tools/support/compat/github/write-fast-rust-plan.mjs "$RUNNER_TEMP/fast-plan.json"
+      - name: Clippy changed owner
+        run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/fast-plan.json" cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports
+      - name: Skeleton todo ratchet
+        run: rustc --edition 2024 tools/commands/ci/check-skeleton-todos.rs -o "$RUNNER_TEMP/check-skeleton-todos" && "$RUNNER_TEMP/check-skeleton-todos" --check
+
+  tests:
+    needs: rust-plan
+    if: ${{ needs.rust-plan.outputs.rust-fast == 'true' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    env:
+      CARGO_BUILD_JOBS: "12"
+      VIZE_TEST_DISABLE_TSGO: "1"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
+      RUST_TEST_THREADS: "4"
+      RUST_FAST_PLAN_JSON: ${{ needs.rust-plan.outputs.rust-fast-plan }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: true
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: pr-7132-
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-nextest@0.9.146
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
+      - run: node tools/support/compat/github/write-fast-rust-plan.mjs "$RUNNER_TEMP/fast-plan.json"
+      - name: Build and receipt changed-owner library tests
+        run: |
+          mkdir -p target/rust-fast-archive target/tmp
+          node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/fast-plan.json" cargo nextest archive @packages@ --lib --cargo-profile ci --archive-file target/rust-fast-archive/tests.tar.zst
+          node tools/support/compat/github/rust-test-archive.mjs stamp target/rust-fast-archive/tests.tar.zst target/rust-fast-archive/receipt.json
+          node tools/support/compat/github/rust-test-archive.mjs verify target/rust-fast-archive/tests.tar.zst target/rust-fast-archive/receipt.json
+      - name: Run changed-owner library tests
+        run: cargo nextest run --archive-file target/rust-fast-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile pr --no-tests=fail
+      - name: Run changed-owner doctests
+        run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/fast-plan.json" cargo test @packages@ --profile ci --doc
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: rust-fast-diagnostic-${{ github.run_id }}
+          path: |
+            target/rust-fast-archive/receipt.json
+            target/nextest/pr/junit.xml
+          if-no-files-found: error
+
+  aggregate:
+    if: ${{ always() }}
+    needs: [plan, tooling-source, js-source, rust-plan, clippy, tests]
+    runs-on: ubuntu-24.04
+    env:
+      NEEDS_JSON: ${{ toJSON(needs) }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Require all diagnostic lanes
+        run: node tools/support/compat/github/require-needs-success.mjs
