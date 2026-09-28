@@ -53,9 +53,15 @@ test("direct, global and unknown changes remain broad; merge runs every release 
     if (path.endsWith("release-pr.test.ts")) {
       assert.ok(plan.tests.includes(path));
     } else {
-      assert.deepEqual(plan.tests.filter((file) => releaseFiles.includes(file)), releaseFiles);
+      assert.deepEqual(
+        plan.tests.filter((file) => releaseFiles.includes(file)),
+        releaseFiles,
+      );
     }
   }
   const merge = planToolingTests(["crates/vize_l1/src/parser.rs"], { tier: "merge" });
-  assert.deepEqual(merge.tests.filter((file) => releaseFiles.includes(file)), releaseFiles);
+  assert.deepEqual(
+    merge.tests.filter((file) => releaseFiles.includes(file)),
+    releaseFiles,
+  );
 });
