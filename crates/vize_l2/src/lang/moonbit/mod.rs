@@ -48,7 +48,7 @@ fn moonbit_source<'a>(expr: ExprRef<'a>) -> Option<&'a str> {
 
 /// Free binding names of a MoonBit expression, deduplicated, in source
 /// order, and whether that list is exact.
-pub(crate) fn free_names(source: &str) -> (Vec<&str>, bool) {
+pub fn free_names(source: &str) -> (Vec<&str>, bool) {
     let Some(tokens) = scan(source) else {
         return (Vec::new(), false);
     };
