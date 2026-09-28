@@ -3,7 +3,7 @@
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
-use vize_carton::FxHashMap;
+use vize_carton::{FxHashMap, FxHashSet};
 
 use super::super::error::{CorsaError, CorsaResult};
 use super::super::source_policy::SourceFilePolicy;
@@ -129,7 +129,7 @@ impl IncrementalPaths {
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         if self.allow_new_paths {
-            state.roots = collect_project_paths(project.project_root(), source_policy)?;
+            state.roots = collect_project_paths(project, source_policy)?;
         } else {
             state.roots.retain(|path| path.is_file());
         }
@@ -179,9 +179,11 @@ fn stamp_project_inputs(
 }
 
 pub(super) fn collect_project_paths(
-    project_root: &Path,
+    project: &VirtualProject,
     source_policy: SourceFilePolicy,
 ) -> CorsaResult<Vec<PathBuf>> {
+    let project_root = project.project_root();
+    let explicit_hidden_dirs = explicit_hidden_source_dirs(project);
     let mut paths = Vec::new();
     for entry in walkdir::WalkDir::new(project_root)
         .into_iter()
@@ -190,7 +192,8 @@ pub(super) fn collect_project_paths(
                 return true;
             }
             let name = entry.file_name().to_string_lossy();
-            !name.starts_with('.') && name != "node_modules"
+            name != "node_modules"
+                && (!name.starts_with('.') || explicit_hidden_dirs.contains(entry.path()))
         })
     {
         let entry = entry?;
@@ -200,6 +203,44 @@ pub(super) fn collect_project_paths(
         }
     }
     Ok(paths)
+}
+
+/// Only descend into hidden directories named by a tsconfig `files` or
+/// `include` entry. TypeScript includes such files (notably Nuxt's `.nuxt`),
+/// while scanning every hidden cache or VCS directory would be wasteful.
+fn explicit_hidden_source_dirs(project: &VirtualProject) -> FxHashSet<PathBuf> {
+    let root = project.project_root();
+    let mut directories = FxHashSet::default();
+    for config_path in project.governing_config_paths() {
+        let Ok(content) = std::fs::read_to_string(&config_path) else {
+            continue;
+        };
+        let Ok(config) = crate::batch::virtual_project::parse_jsonc_value(&content) else {
+            continue;
+        };
+        for entry in ["files", "include"]
+            .into_iter()
+            .filter_map(|key| config.get(key).and_then(serde_json::Value::as_array))
+            .flatten()
+            .filter_map(serde_json::Value::as_str)
+        {
+            let Some(base) = config_path.parent() else {
+                continue;
+            };
+            let path = vize_carton::path::canonicalize_non_verbatim(&base.join(entry));
+            let Ok(relative) = path.strip_prefix(root) else {
+                continue;
+            };
+            let mut ancestor = root.to_path_buf();
+            for component in relative.components() {
+                ancestor.push(component);
+                if component.as_os_str().to_string_lossy().starts_with('.') {
+                    directories.insert(ancestor.clone());
+                }
+            }
+        }
+    }
+    directories
 }
 
 pub(super) fn refresh_paths(

@@ -85,7 +85,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/generic_
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/generic_private_names.rs	13	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/incremental.rs	5	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/paths.rs	6	l0	L0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/paths.rs	59	l0	L0	stage	vize_carton	compat	8
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/paths.rs	59	l0	L0	stage	vize_carton	compat	9
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests.rs	10	l0	L0	stage	vize_carton	compat	3
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/emit_object_recursion.rs	7	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/generic_component_listener_payload.rs	2	l0	L0	stage	vize_carton	compat	1

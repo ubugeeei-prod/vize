@@ -196,7 +196,10 @@ impl VirtualProject {
                 let package_local = importer_package_roots
                     .iter()
                     .any(|package_root| key.starts_with(package_root));
-                if inside_node_modules(&key) && !package_local {
+                // A triple-slash path is an explicit program dependency, even
+                // when it names a declaration under node_modules. Ordinary
+                // package imports still use the resolver's package shadow.
+                if inside_node_modules(&key) && !package_local && !is_reference {
                     continue;
                 }
                 if is_declaration_file(&key)
