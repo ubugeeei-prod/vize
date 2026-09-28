@@ -310,7 +310,7 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 - [JS native preparation](./2026-09-27-js-native-preparation.md) keeps package coverage and reuses the root test build ([#6830](https://github.com/ubugeeei-prod/vize/issues/6830)).
 - [UI check tiers](./2026-09-27-ui-check-ci-tiers.md) retain Fresco declarations/types in T0 and require UI acceptance in T1 ([#6864](https://github.com/ubugeeei-prod/vize/issues/6864)).
 
-[Affected Rust selection](./2026-09-27-affected-rust-ci.md) records the fail-closed dependency plan and shell-free package execution for #6862.
+[Affected Rust selection](./2026-09-27-affected-rust-ci.md) records the fail-closed dependency plan and shell-free package execution for #6862; [focused Rust source tier](./2026-09-29-rust-source-pr-tier.md) limits #6830 T0 to audited L1/SFC inputs while the merge queue stays full.
 
 [Tooling input selection](./2026-09-27-tooling-input-selection.md) records shared task inputs, audited Rust corpus fixtures, the T1 runtime inventory and conservative T0 fallback for [#6863](https://github.com/ubugeeei-prod/vize/issues/6863) and [#6864](https://github.com/ubugeeei-prod/vize/issues/6864).
 
