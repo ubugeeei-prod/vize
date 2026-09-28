@@ -16,18 +16,34 @@ impl VirtualProject {
             let Ok(relative) = source.strip_prefix(&root) else {
                 continue;
             };
-            self.package_source_index.entry(root).or_default().insert(
-                source.clone(),
-                (relative.to_path_buf(), virtual_path.to_path_buf()),
-            );
+            let indexed = (relative.to_path_buf(), virtual_path.to_path_buf());
+            let changed = self
+                .package_source_index
+                .entry(root.clone())
+                .or_default()
+                .insert(source.clone(), indexed.clone())
+                .as_ref()
+                != Some(&indexed);
+            if changed
+                && self.package_shadows_initialized
+                && let Some(keys) = self.package_route_roots.get(&root)
+            {
+                self.package_shadow_dirty_keys.extend(keys.iter().cloned());
+            }
         }
     }
 
     pub(super) fn remove_package_source_from_index(&mut self, source: &Path) {
         let source = vize_carton::path::canonicalize_non_verbatim(source);
         for ancestor in source.ancestors() {
-            if let Some(sources) = self.package_source_index.get_mut(ancestor) {
-                sources.remove(&source);
+            if self
+                .package_source_index
+                .get_mut(ancestor)
+                .is_some_and(|sources| sources.remove(&source).is_some())
+                && self.package_shadows_initialized
+                && let Some(keys) = self.package_route_roots.get(ancestor)
+            {
+                self.package_shadow_dirty_keys.extend(keys.iter().cloned());
             }
         }
     }

@@ -85,7 +85,8 @@ typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/generic_
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/generic_private_names.rs	13	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/incremental.rs	5	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/paths.rs	6	l0	L0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/paths.rs	59	l0	L0	stage	vize_carton	compat	8
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/paths.rs	60	l0	L0	stage	vize_carton	compat	8
+typechecker	Typechecker	source	crates/vize_canon/src/batch/type_checker/paths/hidden.rs	5	l0	L0	stage	vize_carton	compat	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests.rs	10	l0	L0	stage	vize_carton	compat	3
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/emit_object_recursion.rs	7	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/generic_component_listener_payload.rs	2	l0	L0	stage	vize_carton	compat	1
@@ -137,7 +138,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/wide_props_type_complexity.rs	17	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/tsgo.rs	38	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project.rs	21	l0	L0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project.rs	273	l0	L0	stage	vize_carton	compat	2
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project.rs	274	l0	L0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/art_usage.rs	5	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/build.rs	7	l0	L0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/build/context.rs	4	l0	L0	stage	vize_carton	compat	2
@@ -152,6 +153,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/decla
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/declaration_emit/tsx_shims.rs	7	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/declaration_emit/tsx_shims.rs	7	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/dependency_scan.rs	29	l0	L0	stage	vize_carton	compat	2
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/dependency_scan/references.rs	3	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution.rs	5	l0	L0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/diagnostics.rs	7	l0	L0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/document.rs	8	l0	L0	stage	vize_carton	compat	3
@@ -178,7 +180,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/mat
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/materialize_links.rs	5	l0	L0	stage	vize_carton	compat	6
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/materialize_stubs.rs	10	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/materialize.rs	8	l0	L0	stage	vize_carton	compat	4
-typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/module_projection.rs	5	l0	L0	stage	vize_carton	compat	2
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/module_projection.rs	5	l0	L0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/option_probe.rs	31	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/package_link_owners.rs	5	l0	L0	stage	vize_carton	compat	3
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/package_node_modules.rs	30	l0	L0	stage	vize_carton	compat	1
@@ -247,7 +249,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tes
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/ref_arity.rs	50	l0	L0	stage	vize_carton	compat	4
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/tsconfig_extends.rs	313	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/windows_paths.rs	18	l0	L0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/workspace_package_routes.rs	12	l0	L0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/workspace_package_routes.rs	60	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/topology.rs	68	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/topology.rs	107	l0	L0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen.rs	17	l0	L0	stage	vize_carton	compat	4

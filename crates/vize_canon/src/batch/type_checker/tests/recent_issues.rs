@@ -32,6 +32,8 @@ mod pascal_case_prop_names;
 mod public_instance_contract;
 mod real_project_parity;
 mod real_vue;
+mod reference_path_dot_directory;
+mod reference_path_module;
 mod sequence_prop_expressions;
 mod single_required_camel_prop;
 mod slot_key;

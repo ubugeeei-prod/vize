@@ -1,5 +1,5 @@
-//! Redirecting relative re-exports/imports of generated declaration files to
-//! their real on-disk path when a script or SFC is materialized into canon.
+//! Redirecting relative declaration imports to their single module identity
+//! when a script or SFC is materialized into canon.
 //!
 //! Declarations retain their authored location and module identity, including
 //! declarations outside the project root. Every generated source must resolve
@@ -7,17 +7,18 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::{String, cstr};
+use vize_carton::{FxHashSet, String, cstr};
 
-use crate::batch::virtual_project::dependency_scan::resolve_dependency;
+use crate::batch::virtual_project::{dependency_scan::resolve_dependency, script_virtual_path};
 
-/// Rewrite a relative specifier that resolves to a generated `.d.ts` kept on its
-/// real path to that real (extensionless) path, so the re-exported identity is
-/// preserved inside the mirror.
+/// Rewrite a relative declaration specifier to the mirrored module when that
+/// declaration is registered, or to its authored path when it is not.
 pub(super) fn rewrite_relative_dts_specifier(
     path: &str,
     source_dir: &Path,
     project_root: &Path,
+    virtual_root: &Path,
+    mirrorable_project_files: Option<&FxHashSet<PathBuf>>,
 ) -> Option<String> {
     if !(path.starts_with("./") || path.starts_with("../")) {
         return None;
@@ -32,6 +33,19 @@ pub(super) fn rewrite_relative_dts_specifier(
         return None;
     }
     let resolved = vize_carton::path::canonicalize_non_verbatim(&resolved);
+    // A declaration already materialized in the virtual project must retain
+    // that single identity. Importing the authored absolute path as well loads
+    // ambient modules twice and produces duplicate-identifier diagnostics.
+    let resolved = if mirrorable_project_files.is_some_and(|paths| paths.contains(&resolved)) {
+        std::fs::read_to_string(&resolved)
+            .ok()
+            .and_then(|content| {
+                script_virtual_path((project_root, virtual_root), &resolved, &content, false).ok()
+            })
+            .unwrap_or(resolved)
+    } else {
+        resolved
+    };
     // Refer to the module rather than importing a declaration extension, which
     // TypeScript rejects with TS2846. Preserve ESM/CommonJS extension identity.
     let resolved = declaration_module_path(&resolved);

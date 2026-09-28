@@ -33,6 +33,8 @@ use crate::batch::error::CorsaResult;
 
 use super::VirtualProject;
 
+#[path = "dependency_scan/references.rs"]
+mod references;
 #[path = "dependency_scan/resolution.rs"]
 mod resolution;
 #[cfg(test)]
@@ -123,22 +125,36 @@ impl VirtualProject {
             .collect();
 
         while let Some(importer) = queue.pop() {
-            let Some((virtual_content, virtual_path)) =
+            let Some((virtual_content, virtual_path, generated_sfc)) =
                 self.find_by_original(&importer).map(|file| {
                     (
                         self.module_source(file).unwrap_or(&file.content).clone(),
                         file.virtual_path.clone(),
+                        file.source_map.sfc_map.is_some(),
                     )
                 })
             else {
                 continue;
             };
             let mut dependency_targets = FxHashSet::default();
-            if !may_resolve_a_dependency(
-                &virtual_content,
-                &alias_prefixes,
-                workspace_package_specifiers,
-            ) {
+            // Generated SFC projections carry synthetic triple-slash paths for
+            // the type checker. Only references in the authored SFC source are
+            // dependency edges; scanning the projection materializes the entire
+            // project for each editor open.
+            let references = if generated_sfc {
+                self.original_contents
+                    .get(&virtual_path)
+                    .map_or_else(Vec::new, |source| references::path_references(source))
+            } else {
+                references::path_references(&virtual_content)
+            };
+            if references.is_empty()
+                && !may_resolve_a_dependency(
+                    &virtual_content,
+                    &alias_prefixes,
+                    workspace_package_specifiers,
+                )
+            {
                 let released = self.replace_dependency_edges(&importer, dependency_targets);
                 self.prune_unowned_sources(released);
                 continue;
@@ -156,7 +172,14 @@ impl VirtualProject {
             };
             let specifiers = self
                 .rewriter()
-                .collect_all_specifier_occurrences(&virtual_content, source_type);
+                .collect_all_specifier_occurrences(&virtual_content, source_type)
+                .into_iter()
+                .map(|(specifier, mode)| (specifier, mode, false))
+                .chain(
+                    references
+                        .into_iter()
+                        .map(|specifier| (specifier, crate::PackageResolutionMode::Import, true)),
+                );
             // Package-local edges only exist inside a package root that already
             // contains this importer, so scan the route table once per importer
             // instead of once per specifier (#4137).
@@ -169,7 +192,7 @@ impl VirtualProject {
                 .map(|route| route.package_root.clone())
                 .collect::<Vec<_>>();
 
-            for (specifier, mode) in specifiers {
+            for (specifier, mode, is_reference) in specifiers {
                 let native_target =
                     resolve_dependency(&specifier, &importer_dir, &self.project_root, &aliases);
                 let Some(target) = native_target else {
@@ -184,10 +207,19 @@ impl VirtualProject {
                 let package_local = importer_package_roots
                     .iter()
                     .any(|package_root| key.starts_with(package_root));
-                if inside_node_modules(&key) && !package_local {
+                // A triple-slash path is an explicit program dependency, even
+                // when it names a declaration under node_modules. Ordinary
+                // package imports still use the resolver's package shadow.
+                if inside_node_modules(&key) && !package_local && !is_reference {
                     continue;
                 }
-                if is_declaration_file(&key) && !package_local && !self.session_scripts {
+                // TypeScript follows imports from declarations itself. Mirroring
+                // their targets here can load the same ambient module twice.
+                if is_declaration_file(&key)
+                    && !package_local
+                    && !self.session_scripts
+                    && !is_reference
+                {
                     continue;
                 }
                 // A requested subset still owns its complete import graph.

@@ -6,6 +6,7 @@ use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::cstr;
 mod alias_rewrite;
 mod base_url;
+mod declaration_graph_identity;
 mod declaration_root_dir;
 mod graphql_generated;
 mod macro_scope;
@@ -47,8 +48,7 @@ fn assert_reanchored_entries(
     let fallback = entries[1]
         .as_str()
         .expect("source fallback should be a path");
-    // The cache can be on a different drive on Windows. In that case the
-    // fallback must be absolute; otherwise it is relative to the mirror.
+    // On another drive, the cache fallback must be absolute to reach the original.
     let resolved = tsconfig_paths::normalize_path_lexically(
         &crate::batch::project_virtual_root(case_dir).join(fallback),
     );

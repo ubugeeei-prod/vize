@@ -26,6 +26,7 @@ impl VirtualProject {
             self.finalize_editor_imports();
             return;
         }
+        self.finalize_declaration_imports();
         if !self.jsx_typecheck {
             return;
         }
@@ -94,6 +95,64 @@ impl VirtualProject {
                         options,
                     )
                 };
+                Some((file.virtual_path.clone(), rewritten))
+            })
+            .collect::<Vec<_>>();
+        for (path, rewritten) in rewrites {
+            if let Some(file) = self.virtual_files.get_mut(&path) {
+                if file.content != rewritten.code {
+                    self.incremental_materialized_candidates.insert(path);
+                }
+                file.content = rewritten.code;
+                file.source_map.import_map = rewritten.source_map;
+            }
+        }
+    }
+
+    /// A declaration can be registered before a referenced declaration has
+    /// entered the mirror. Resolve its imports again once the graph is complete
+    /// so an authored path and its mirrored path cannot load the same ambient
+    /// module twice.
+    fn finalize_declaration_imports(&mut self) {
+        let mirrorable = self
+            .original_index
+            .keys()
+            .map(|path| vize_carton::path::canonicalize_non_verbatim(path))
+            .collect::<FxHashSet<_>>();
+        let rewrites = self
+            .virtual_files_sorted()
+            .into_iter()
+            .filter(|file| {
+                file.original_path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| {
+                        name.ends_with(".d.ts")
+                            || name.ends_with(".d.mts")
+                            || name.ends_with(".d.cts")
+                    })
+            })
+            .filter_map(|file| {
+                let source = self.original_contents.get(&file.virtual_path)?;
+                if !crate::batch::import_rewriter::source_may_contain_relative_specifier(source) {
+                    return None;
+                }
+                let source_type = super::build::source_type_for_path(&file.virtual_path)?;
+                let roots = (self.project_root.as_path(), self.virtual_root.as_path());
+                let rewritten = self.rewriter.rewrite_for_virtual_project_with_policy(
+                    source,
+                    source_type,
+                    roots,
+                    file.original_path.parent(),
+                    VirtualProjectRewriteOptions {
+                        preserve_relative_declarations: self
+                            .is_package_route_path(&file.original_path)
+                            || self.session_scripts,
+                        mirrorable_project_files: Some(&mirrorable),
+                        alias_rewrite_policy: Some(self.alias_rewrite_policy()),
+                        module_resolver: None,
+                    },
+                );
                 Some((file.virtual_path.clone(), rewritten))
             })
             .collect::<Vec<_>>();
