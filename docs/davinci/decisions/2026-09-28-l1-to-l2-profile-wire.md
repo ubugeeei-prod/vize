@@ -11,18 +11,18 @@ After a conflict, run `python3 tools/support/levels/rename-provenance-profile-ke
 on current `main`; `--check` requires all ten current keys and the replay is
 idempotent and scoped to the one producer file.
 
-| Old key | Current key |
-| --- | --- |
-| `davinci.lower.provenance.record` | `l1_to_l2.provenance.record` |
-| `davinci.lower.provenance.records` | `l1_to_l2.provenance.records` |
-| `davinci.lower.provenance.vector_capacity_bytes` | `l1_to_l2.provenance.vector_capacity_bytes` |
-| `davinci.lower.provenance.record_bytes` | `l1_to_l2.provenance.record_bytes` |
-| `davinci.lower.provenance.rule_heap_strings` | `l1_to_l2.provenance.rule_heap_strings` |
-| `davinci.lower.provenance.rule_heap_capacity_bytes` | `l1_to_l2.provenance.rule_heap_capacity_bytes` |
-| `davinci.lower.provenance.before_heap_strings` | `l1_to_l2.provenance.before_heap_strings` |
+| Old key                                               | Current key                                      |
+| ----------------------------------------------------- | ------------------------------------------------ |
+| `davinci.lower.provenance.record`                     | `l1_to_l2.provenance.record`                     |
+| `davinci.lower.provenance.records`                    | `l1_to_l2.provenance.records`                    |
+| `davinci.lower.provenance.vector_capacity_bytes`      | `l1_to_l2.provenance.vector_capacity_bytes`      |
+| `davinci.lower.provenance.record_bytes`               | `l1_to_l2.provenance.record_bytes`               |
+| `davinci.lower.provenance.rule_heap_strings`          | `l1_to_l2.provenance.rule_heap_strings`          |
+| `davinci.lower.provenance.rule_heap_capacity_bytes`   | `l1_to_l2.provenance.rule_heap_capacity_bytes`   |
+| `davinci.lower.provenance.before_heap_strings`        | `l1_to_l2.provenance.before_heap_strings`        |
 | `davinci.lower.provenance.before_heap_capacity_bytes` | `l1_to_l2.provenance.before_heap_capacity_bytes` |
-| `davinci.lower.provenance.after_heap_strings` | `l1_to_l2.provenance.after_heap_strings` |
-| `davinci.lower.provenance.after_heap_capacity_bytes` | `l1_to_l2.provenance.after_heap_capacity_bytes` |
+| `davinci.lower.provenance.after_heap_strings`         | `l1_to_l2.provenance.after_heap_strings`         |
+| `davinci.lower.provenance.after_heap_capacity_bytes`  | `l1_to_l2.provenance.after_heap_capacity_bytes`  |
 
 The source-built integration test pins the one span, all nine counters,
 their retained-record arithmetic, and disabled profiling. The three immutable
