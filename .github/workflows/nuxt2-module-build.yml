@@ -46,7 +46,7 @@ jobs:
         run: vp pack
       - name: Install the Nuxt 2 reproduction
         working-directory: tests/_fixtures/_projects/nuxt2-module-build
-        run: npm ci --no-audit --no-fund
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
       - name: Verify candidate webpack build and SSR routes
         run: vp env exec node tools/support/compat/nuxt/nuxt2-module-build.mjs "$RUNNER_TEMP/nuxt2-module-proof"
       - name: Upload Nuxt 2 build and SSR evidence
