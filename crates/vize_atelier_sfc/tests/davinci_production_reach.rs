@@ -29,7 +29,7 @@
 //! its reach; parity is enforced there too, the floors are not.
 //!
 //! ```text
-//! cargo test -p vize_atelier_sfc --features davinci-dom-differential \
+//! cargo test -p vize_atelier_sfc --features legacy-dom-differential \
 //!     --test davinci_production_reach -- --nocapture
 //! ```
 

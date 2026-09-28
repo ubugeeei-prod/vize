@@ -332,9 +332,9 @@ jobs:
         continue-on-error: true
         run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run
       - name: Run L4 SSR and pug L1 differential corpora
-        run: VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture && VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_l1_to_l2 --features davinci-differential --test davinci_pug_corpus -- --nocapture
+        run: VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --nocapture && VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus -- --nocapture
       - name: Measure Davinci production reach on the hydrated corpus
-        run: VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_sfc --features davinci-dom-differential --test davinci_production_reach -- --nocapture
+        run: VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach -- --nocapture
       - name: Finalize L2 DOM corpus evidence
         if: ${{ always() }}
         env:

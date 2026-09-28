@@ -196,7 +196,7 @@ pub fn is_constant_simple_expression(
         let mut visitor = RuntimeDependencyVisitor::new(bindings);
         visitor.visit_expression(js.ast);
         let result = !visitor.has_dynamic_dependency;
-        #[cfg(any(test, feature = "davinci-differential"))]
+        #[cfg(any(test, feature = "legacy-differential"))]
         {
             // Dual-run in an uncounted arena; divergence panics.
             let legacy =

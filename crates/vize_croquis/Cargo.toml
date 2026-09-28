@@ -38,7 +38,7 @@ oxc_allocator.workspace = true
 # Davinci P1-6 differential lane: dual-runs the retained-AST expression reads
 # against the legacy re-parse paths and panics on divergence. Also active
 # under cfg(test); zero-cost when off. Deleted with the lane at P1-8.
-davinci-differential = []
+legacy-differential = []
 
 [dev-dependencies]
 davinci_test_support.workspace = true
@@ -64,7 +64,7 @@ harness = false
 # vize_croquis's own unit tests.
 [[test]]
 name = "davinci_differential"
-required-features = ["davinci-differential"]
+required-features = ["legacy-differential"]
 
 [lints]
 workspace = true

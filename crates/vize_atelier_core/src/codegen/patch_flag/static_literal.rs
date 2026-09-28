@@ -110,7 +110,7 @@ pub(super) fn is_static_object_or_array_literal_node(
     match crate::retained::retained_whole_expression(simple) {
         Some(js) if crate::retained::js_module_compatible(js) => {
             let result = is_static_oxc_expression(js.ast);
-            #[cfg(any(test, feature = "davinci-differential"))]
+            #[cfg(any(test, feature = "legacy-differential"))]
             {
                 // Dual-run in an uncounted arena: lane-only work stays off
                 // the production re-parse floor. Divergence panics.

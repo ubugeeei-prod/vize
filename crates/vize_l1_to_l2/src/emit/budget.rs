@@ -35,7 +35,7 @@ pub struct ObservedDomEmit {
     pub budget: DomEmitBudget,
 }
 
-#[cfg(any(test, feature = "davinci-differential"))]
+#[cfg(any(test, feature = "legacy-differential"))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[doc(hidden)]
 pub struct ObservedPatchFactsEmit {
@@ -105,7 +105,7 @@ fn emit_dom_source_observed_with_slot_policy(
     })
 }
 
-#[cfg(any(test, feature = "davinci-differential"))]
+#[cfg(any(test, feature = "legacy-differential"))]
 #[doc(hidden)]
 pub fn emit_dom_source_patch_facts_observed<'a>(
     allocator: &'a Allocator,
@@ -119,7 +119,7 @@ pub fn emit_dom_source_patch_facts_observed<'a>(
     )
 }
 
-#[cfg(any(test, feature = "davinci-differential"))]
+#[cfg(any(test, feature = "legacy-differential"))]
 #[doc(hidden)]
 pub fn emit_dom_source_patch_facts_observed_with_options<'a>(
     allocator: &'a Allocator,

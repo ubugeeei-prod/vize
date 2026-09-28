@@ -7,7 +7,7 @@ import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 // job beside the sibling feature-gated L1-to-L2 corpus lanes, and the plan's
 // suite row names exactly the command CI runs.
 const remarksCorpusCommand =
-  "cargo test -p vize_l1_to_l2 --features davinci-differential --test davinci_remarks_corpus -- --nocapture";
+  "cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_remarks_corpus -- --nocapture";
 
 test("the TS-32 remarks-diff lane is wired and documented", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
@@ -24,7 +24,7 @@ test("the TS-32 remarks-diff lane is wired and documented", () => {
 
   assert.match(
     manifest,
-    /^\[\[test\]\]\nname = "davinci_remarks_corpus"\nrequired-features = \["davinci-differential"\]$/m,
+    /^\[\[test\]\]\nname = "davinci_remarks_corpus"\nrequired-features = \["legacy-differential"\]$/m,
   );
   assert.match(clippyJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
   assert.ok(
@@ -33,7 +33,7 @@ test("the TS-32 remarks-diff lane is wired and documented", () => {
   );
   assert.match(
     suites,
-    /^\| TS-32 \| Remarks diff\s+\| `cargo test -p vize_l1_to_l2 --features davinci-differential --test davinci_remarks_corpus`: /m,
+    /^\| TS-32 \| Remarks diff\s+\| `cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_remarks_corpus`: /m,
   );
   assert.match(suites, /`tests\/_fixtures\/davinci-remarks-baseline\.folio`/u);
   assert.match(baseline, /^\[remarks-corpus\]\n\n\[remarks-corpus\.files\]\n/u);

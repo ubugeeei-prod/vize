@@ -81,7 +81,7 @@ pub fn extract_identifiers_oxc(expr: &str) -> Vec<CompactString> {
 /// `/[/*]/.test(x)` is mangled before the parse, and reading the retained AST
 /// there would change that behavior outside the scanner-split deletion.
 ///
-/// Under `cfg(any(test, feature = "davinci-differential"))` every retained
+/// Under `cfg(any(test, feature = "legacy-differential"))` every retained
 /// walk is dual-run against the legacy re-parse and divergence panics — the
 /// P1-6 differential lane.
 #[inline]
@@ -109,7 +109,7 @@ pub fn extract_identifiers_retained(
             extract_identifiers_oxc_ast(stripped)
         ),
     };
-    #[cfg(any(test, feature = "davinci-differential"))]
+    #[cfg(any(test, feature = "legacy-differential"))]
     if retained.is_some() && comment_free {
         assert_retained_identifiers_agree(expr, &result);
     }
@@ -120,7 +120,7 @@ pub fn extract_identifiers_retained(
 /// legacy re-parse byte-for-byte (same names, same order). Any divergence is
 /// a bug in one side — panic, never average. Only comment-free text reaches
 /// this point, so both sides consume identical bytes.
-#[cfg(any(test, feature = "davinci-differential"))]
+#[cfg(any(test, feature = "legacy-differential"))]
 fn assert_retained_identifiers_agree(expr: &str, retained_result: &[CompactString]) {
     let legacy = extract_identifiers_oxc_ast(expr);
     assert_eq!(

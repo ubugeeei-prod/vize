@@ -137,8 +137,8 @@ test("the real-project matrix runs the pug corpus compile oracle on the hydrated
   const corpus = "VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test";
   assert.equal(
     lane.run,
-    `${corpus} -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture && ` +
-      `${corpus} -p vize_l1_to_l2 --features davinci-differential --test davinci_pug_corpus -- --nocapture`,
+    `${corpus} -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --nocapture && ` +
+      `${corpus} -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus -- --nocapture`,
   );
   assert.ok(
     steps.indexOf(lane) < steps.indexOf(findStep(steps, "Finalize L2 DOM corpus evidence")),

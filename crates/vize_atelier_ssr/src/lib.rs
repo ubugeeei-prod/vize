@@ -4,7 +4,7 @@
 
 pub mod codegen;
 mod compile;
-#[cfg(feature = "davinci-differential")]
+#[cfg(feature = "legacy-differential")]
 pub mod differential;
 pub mod errors;
 #[cfg(test)]

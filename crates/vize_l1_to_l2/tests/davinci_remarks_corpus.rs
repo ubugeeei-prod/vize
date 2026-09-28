@@ -22,7 +22,7 @@
 //! Run:
 //!
 //! ```text
-//! cargo test -p vize_l1_to_l2 --features davinci-differential \
+//! cargo test -p vize_l1_to_l2 --features legacy-differential \
 //!     --test davinci_remarks_corpus -- --nocapture
 //! ```
 

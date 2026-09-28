@@ -57,7 +57,7 @@ pub(crate) enum LegacyReason {
 
 impl LegacyReason {
     /// The counter name without the `davinci.l4_ssr.` namespace.
-    #[cfg(feature = "davinci-differential")]
+    #[cfg(feature = "legacy-differential")]
     pub(crate) fn counter_suffix(self) -> &'static str {
         let counter = self.counter();
         counter.strip_prefix("davinci.s4_ssr.").unwrap_or(counter)

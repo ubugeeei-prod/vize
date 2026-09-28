@@ -9,11 +9,11 @@
 //! counters those comparators report through, so a lane run can prove how
 //! much it actually compared.
 //!
-//! Compiled only under `cfg(any(test, feature = "davinci-differential"))`:
+//! Compiled only under `cfg(any(test, feature = "legacy-differential"))`:
 //!
 //! - `cargo test -p vize_croquis` exercises the comparators in every unit
 //!   test that walks a template through the drawer;
-//! - `cargo test -p vize_croquis --features davinci-differential --test
+//! - `cargo test -p vize_croquis --features legacy-differential --test
 //!   davinci_differential -- --nocapture` is the corpus-runnable entry
 //!   (`VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widens the sweep from the
 //!   committed fixture ladder to every `.vue` under `<dir>`);

@@ -43,7 +43,7 @@ pub fn parse_v_for_expression(expr: &str) -> (SmallVec<[CompactString; 3]>, Comp
 
         (!bindings.is_empty()).then_some((bindings, source))
     });
-    #[cfg(any(test, feature = "davinci-differential"))]
+    #[cfg(any(test, feature = "legacy-differential"))]
     if parsed.is_some() {
         crate::drawer::differential::record_v_for_shape();
     }
@@ -65,7 +65,7 @@ pub fn parse_v_for_scope_expression(expr: &str) -> Option<VForScopeAliases> {
             oxc::parse_v_for_scope_aliases(alias_part.trim_start_matches("const ").trim(), source)
         )
     });
-    #[cfg(any(test, feature = "davinci-differential"))]
+    #[cfg(any(test, feature = "legacy-differential"))]
     if aliases.is_some() {
         crate::drawer::differential::record_v_for_shape();
     }

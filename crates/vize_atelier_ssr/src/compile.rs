@@ -169,9 +169,9 @@ fn compile_ssr_inner<'a>(
     experimental_options: SsrCompilerExperimentalOptions,
     slotted: bool,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
-    #[cfg(feature = "davinci-differential")]
+    #[cfg(feature = "legacy-differential")]
     let lane = crate::differential::production_lane();
-    #[cfg(not(feature = "davinci-differential"))]
+    #[cfg(not(feature = "legacy-differential"))]
     let lane = SsrLane::Selected;
     compile_ssr_on_lane(
         allocator,
@@ -190,7 +190,7 @@ fn compile_ssr_inner<'a>(
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum SsrLane {
     Selected,
-    #[cfg(any(test, feature = "davinci-differential"))]
+    #[cfg(any(test, feature = "legacy-differential"))]
     LegacyOnly,
 }
 
@@ -245,10 +245,10 @@ pub(crate) fn compile_ssr_on_lane<'a>(
                 has_custom_elements: !custom_elements.is_empty(),
             },
         ),
-        #[cfg(any(test, feature = "davinci-differential"))]
+        #[cfg(any(test, feature = "legacy-differential"))]
         SsrLane::LegacyOnly => SsrL4Selection::Legacy(l4::LegacyReason::Options),
     };
-    #[cfg(feature = "davinci-differential")]
+    #[cfg(feature = "legacy-differential")]
     if lane == SsrLane::Selected {
         crate::differential::record_verdict(&selection);
     }

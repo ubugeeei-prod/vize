@@ -296,7 +296,7 @@ fn expression_identifier(exp: &ExpressionNode<'_>, template_source: &str) -> Opt
 /// Nodes carrying the parse-once retained AST (P1-5) are shape-checked
 /// directly and the legacy throwaway parse dies for them (Davinci P1-6);
 /// nodes without one (invalid or incomplete text, compound expressions) keep
-/// the legacy parse. Under `cfg(any(test, feature = "davinci-differential"))`
+/// the legacy parse. Under `cfg(any(test, feature = "legacy-differential"))`
 /// every retained check is dual-run against the legacy parse and divergence
 /// panics — the P1-6 differential lane.
 fn component_reference_expression(
@@ -307,7 +307,7 @@ fn component_reference_expression(
         Some(js) => component_reference_from_ast(js.ast, source),
         None => parse_component_reference_expression(source),
     };
-    #[cfg(any(test, feature = "davinci-differential"))]
+    #[cfg(any(test, feature = "legacy-differential"))]
     if retained.is_some() {
         let legacy = parse_component_reference_expression(source);
         assert_eq!(

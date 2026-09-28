@@ -36,7 +36,7 @@ davinci-benchmark = []
 davinci-benchmark-profile = ["davinci-benchmark", "vize_l1_to_l2/davinci-benchmark-profile"]
 # Arms the Davinci P1-7 differential lane in this crate's retained resolve
 # path and in vize_atelier_core's migrated sites. Off in production builds.
-davinci-differential = ["vize_atelier_core/davinci-differential"]
+legacy-differential = ["vize_atelier_core/legacy-differential"]
 
 [dev-dependencies]
 oxc_semantic = { workspace = true }

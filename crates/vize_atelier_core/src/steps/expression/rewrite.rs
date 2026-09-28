@@ -159,14 +159,14 @@ pub(crate) fn rewrite_expression(
         if js_content.as_str() == content {
             return rewrite_retained(js, ctx, as_params);
         }
-        #[cfg(any(test, feature = "davinci-differential"))]
+        #[cfg(any(test, feature = "legacy-differential"))]
         crate::retained::differential::record_transform_rewrite_legacy_ts_strip();
         return rewrite_reparsed(js_content, content, ctx, retained);
     }
 
     // Legacy string path. Classify the residual for the P1-9 coverage
     // ledger while the differential lane is armed.
-    #[cfg(any(test, feature = "davinci-differential"))]
+    #[cfg(any(test, feature = "legacy-differential"))]
     {
         use crate::retained::differential as lane;
         if as_params {
