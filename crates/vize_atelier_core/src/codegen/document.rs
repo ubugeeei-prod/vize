@@ -245,10 +245,14 @@ impl EmitDocument {
         let (mut start, mut index) = (0, 0);
         while index < bytes.len() {
             let rest = bytes.split_at(index).1;
-            let Some((from, to)) = escapes
-                .iter()
-                .find(|(from, _)| rest.starts_with(from.as_bytes()))
-            else {
+            let Some((from, to)) = escapes.iter().find(|(from, _)| {
+                let pattern = from.as_bytes();
+                if pattern.len() == 1 {
+                    rest.first() == pattern.first()
+                } else {
+                    rest.starts_with(pattern)
+                }
+            }) else {
                 index += 1;
                 continue;
             };
