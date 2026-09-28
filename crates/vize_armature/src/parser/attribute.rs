@@ -254,7 +254,13 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        self.report_duplicate_directive(&dir);
+        if self
+            .current_element
+            .as_ref()
+            .is_some_and(|current| current.has_directive)
+        {
+            self.report_duplicate_directive(&dir);
+        }
 
         // The `.foo` shorthand is equivalent to `v-bind:foo.prop`: detect it
         // before `raw_name` is moved so we can synthesize a `prop` modifier.
@@ -334,6 +340,7 @@ impl<'a> Parser<'a> {
         if let Some(ref mut current) = self.current_element {
             let boxed = Box::new_in(dir_node, &self.allocator);
             current.props.push(PropNode::Directive(boxed));
+            current.has_directive = true;
         }
     }
 }
