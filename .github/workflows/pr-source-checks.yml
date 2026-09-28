@@ -21,6 +21,7 @@ jobs:
       rust-plan: ${{ steps.rust-plan.outputs.rust-plan }}
       js: ${{ steps.plan.outputs.js }}
       tooling: ${{ steps.tooling-plan.outputs.tooling }}
+      tooling-shards: ${{ steps.tooling-plan.outputs.tooling-shards }}
       playground: ${{ steps.plan.outputs.playground }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -131,6 +132,10 @@ jobs:
     name: PR tooling scripts
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     needs: pr-source-plan
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.pr-source-plan.outputs.tooling-shards) }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
@@ -161,7 +166,7 @@ jobs:
         with:
           cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
           key: test-scripts
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          cache-key-suffix: ${{ github.event_name == 'merge_group' && format('{0}-{1}-shard-{2}', runner.os, runner.arch, matrix.shard) || format('{0}-{1}', runner.os, runner.arch) }}
       - uses: ./.github/actions/setup-rust-script
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
       - name: Regenerate PR tooling plan
@@ -191,9 +196,10 @@ jobs:
         env:
           VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
-        run: vp run --workspace-root test:scripts
+          VIZE_TOOLING_MERGE_SHARD: ${{ matrix.shard }}
+        run: vp run --workspace-root test:scripts:merge-shard
       - uses: ./.github/actions/upload-formatter-api-corpus-evidence
-        if: ${{ always() && github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ always() && github.event_name == 'merge_group' && matrix.shard == 1 && needs.pr-source-plan.outputs.tooling == 'true' }}
 
   pr-playground-test:
     name: PR playground browser tests
