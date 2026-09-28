@@ -22,25 +22,34 @@ fn code_mask(css: &str) -> Vec<u8> {
                 index += 1;
             }
             index = (index + 2).min(bytes.len());
-            masked[start..index].fill(b' ');
-        } else if bytes[index] == b'\'' || bytes[index] == b'"' {
+            if let Some(range) = masked.get_mut(start..index) {
+                range.fill(b' ');
+            }
+        } else if bytes
+            .get(index)
+            .is_some_and(|byte| *byte == b'\'' || *byte == b'"')
+        {
             let start = index;
-            let quote = bytes[index];
+            let quote = bytes.get(index).copied().unwrap_or_default();
             index += 1;
             while index < bytes.len() {
-                if bytes[index] == b'\\' {
+                if bytes.get(index) == Some(&b'\\') {
                     index = (index + 2).min(bytes.len());
-                } else if bytes[index] == quote {
+                } else if bytes.get(index) == Some(&quote) {
                     index += 1;
                     break;
                 } else {
                     index += 1;
                 }
             }
-            masked[start..index].fill(b' ');
+            if let Some(range) = masked.get_mut(start..index) {
+                range.fill(b' ');
+            }
         } else {
-            if !bytes[index].is_ascii() {
-                masked[index] = b' ';
+            if let Some(byte) = masked.get_mut(index)
+                && !byte.is_ascii()
+            {
+                *byte = b' ';
             }
             index += 1;
         }
@@ -91,16 +100,17 @@ pub(super) fn scope_keyframes(css: &str, scope_id: &str) -> String {
         let mut index = declaration.end();
         let mut parens = 0usize;
         while index < bytes.len() {
-            match bytes[index] {
+            let byte = bytes.get(index).copied().unwrap_or_default();
+            match byte {
                 b'(' => parens += 1,
                 b')' => parens = parens.saturating_sub(1),
                 b';' | b'}' if parens == 0 => break,
                 _ => {}
             }
-            if ident_byte(bytes[index]) {
+            if ident_byte(byte) {
                 let start = index;
                 index += 1;
-                while index < bytes.len() && ident_byte(bytes[index]) {
+                while bytes.get(index).is_some_and(|byte| ident_byte(*byte)) {
                     index += 1;
                 }
                 if let Some(name) = css.get(start..index)
