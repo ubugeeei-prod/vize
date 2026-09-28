@@ -4,7 +4,7 @@ use crate::script::{PropsDestructuredBindings, ScriptCompileContext};
 
 use super::super::super::props::{
     WithDefaultsValues, add_null_to_runtime_type, extract_prop_types_from_type_with_context,
-    normalize_destructure_default_value, resolve_prop_js_type, runtime_prop_key,
+    normalize_destructure_default_value_with_factory, resolve_prop_js_type, runtime_prop_key,
 };
 use super::super::type_handling::resolve_type_args;
 
@@ -157,7 +157,10 @@ pub(super) fn build_user_props_decl(
                         decl.push(b' ');
                     }
                     decl.extend_from_slice(b"default: ");
-                    let default_val = normalize_destructure_default_value(default_val);
+                    let default_val = normalize_destructure_default_value_with_factory(
+                        default_val,
+                        binding.default_needs_factory,
+                    );
                     decl.extend_from_slice(default_val.as_bytes());
                 }
                 if has_option {
@@ -260,7 +263,10 @@ fn build_unknown_type_destructured_props_decl(
             && let Some(default_val) = binding.default.as_ref()
         {
             decl.extend_from_slice(b": { default: ");
-            let default_val = normalize_destructure_default_value(default_val);
+            let default_val = normalize_destructure_default_value_with_factory(
+                default_val,
+                binding.default_needs_factory,
+            );
             decl.extend_from_slice(default_val.as_bytes());
             decl.extend_from_slice(b" }");
         } else {
