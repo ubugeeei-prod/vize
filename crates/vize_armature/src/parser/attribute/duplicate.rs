@@ -25,8 +25,8 @@ impl<'a> Parser<'a> {
         directive: &CurrentDirective<'a>,
         loc: SourceLocation,
     ) {
-        // Repeated event listeners are merged in source order by the compiler.
-        if directive.name == "on" {
+        // Event listeners and argumentless object spreads may repeat.
+        if directive.name == "on" || (directive.name == "bind" && directive.arg.is_none()) {
             return;
         }
         let argument = directive

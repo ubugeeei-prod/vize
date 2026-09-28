@@ -63,3 +63,14 @@ fn repeated_event_listeners_are_merged_without_parse_errors() {
             .all(|error| error.code != ErrorCode::DuplicateAttribute)
     );
 }
+
+#[test]
+fn repeated_object_bind_spreads_are_not_duplicate_attributes() {
+    let allocator = Allocator::new();
+    let (_, errors) = parse(&allocator, r#"<slot v-bind="first" v-bind="second" />"#);
+    assert!(
+        errors
+            .iter()
+            .all(|error| error.code != ErrorCode::DuplicateAttribute)
+    );
+}
