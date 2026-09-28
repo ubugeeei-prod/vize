@@ -31,3 +31,7 @@ The reverted emitter at `69c875fa` [failed](https://github.com/ubugeeei-prod/viz
 The two-to-four-child candidate `0e9f1180` [failed](https://github.com/ubugeeei-prod/vize/actions/runs/36406622755) SSR medium +200 and large +1. Callgrind shows it avoided only one of medium's nine vector growths; the other eight ordinary components have one child. Include one-child components in the reservation while retaining the named-slot guard, then measure again.
 
 The one-to-four-child candidate `9404e6c1` [missed](https://github.com/ubugeeei-prod/vize/actions/runs/36407144299) only SSR large by five instructions, while SSR medium measured 192 below its ceiling. Replace the inclusive-range membership check in the hot slot classifier with direct integer comparisons and remeasure; keep the reservation rule and budgets unchanged.
+
+Direct comparisons at `9512cedd` [still missed](https://github.com/ubugeeei-prod/vize/actions/runs/36407708076) SSR large by five instructions. Ordinary Clippy rejected its guarded `children[0]` access under `indexing_slicing`. Use `children.first()` to make the nonempty proof explicit; remeasure after the required safety fix.
+
+The large fixture has many named and dynamic slot carriers. `component_slots` computed `child_end` before classifying every child, although only an ordinary default child uses that scan. Move `child_end` into the default branch. This removes work from the large named-slot path without changing accepted input or output; retain the passing medium reservation and verify both CI and the strict instruction counts.

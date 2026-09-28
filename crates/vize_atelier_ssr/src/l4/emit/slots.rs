@@ -116,12 +116,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .iter()
             .any(|segment| segment.kind == Kind::SlotOutlet);
         let child_count = children.len();
-        let default_capacity =
-            if child_count != 0 && child_count <= 4 && self.template_slot(children[0]).is_none() {
-                child_count
-            } else {
-                0
-            };
+        let default_capacity = match children.first() {
+            Some(&first) if child_count <= 4 && self.template_slot(first).is_none() => child_count,
+            _ => 0,
+        };
         let mut slots = ComponentSlots {
             own: None,
             default: std::vec::Vec::with_capacity(default_capacity),
@@ -148,7 +146,6 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             return Ok(slots);
         }
         for child in children {
-            let child_end = self.child_end(child)?;
             if let Some(dynamic) = self.dynamic_slot_source(child)? {
                 slots.dynamic.push(dynamic);
             } else if let Some((element, content)) = self.template_slot(child) {
@@ -168,10 +165,12 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                         Some(element.span.start),
                     ),
                 });
-            } else if self.nested_carrier(child, child_end)? {
-                // A nested carrier has no reproducible legacy `createSlots` entry.
-                return Err(LegacyReason::Operation.into());
             } else {
+                let child_end = self.child_end(child)?;
+                if self.nested_carrier(child, child_end)? {
+                    // A nested carrier has no reproducible legacy `createSlots` entry.
+                    return Err(LegacyReason::Operation.into());
+                }
                 slots.default.push((child, child_end));
             }
         }
