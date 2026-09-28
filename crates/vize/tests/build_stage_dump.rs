@@ -173,7 +173,7 @@ fn dump_write_failure_does_not_emit_a_fallback_module() {
     assert!(
         stderr_lines(&output)
             .iter()
-            .any(|line| line.contains("Dump errors (1):"))
+            .any(|line| line == "  \x1b[31mDump errors (1):\x1b[0m")
     );
     let _ = fs::remove_dir_all(root);
 }

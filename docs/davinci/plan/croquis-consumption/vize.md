@@ -21,7 +21,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | item                   | files | sites |
 | ---------------------- | ----: | ----: |
 | `BlockLocation`        |     1 |     1 |
-| `SfcDescriptor`        |     2 |     4 |
+| `SfcDescriptor`        |     3 |     5 |
 | `SfcParseOptions`      |    12 |    15 |
 | `SfcScriptBlock`       |     1 |     1 |
 | `component_usage_list` |     1 |     1 |
@@ -36,7 +36,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis`                             |        1 |    3 |
 | `EffectGraphScript`                   |        2 |    3 |
 | `Scope`                               |        0 |    1 |
-| `Span`                                |        0 |    3 |
+| `Span`                                |        0 |    6 |
 | `build_effect_graph_from_sfc_scripts` |        1 |    2 |
 | `Croquis.bindings`                    |        0 |    2 |
 | `Croquis.scopes`                      |        0 |    1 |

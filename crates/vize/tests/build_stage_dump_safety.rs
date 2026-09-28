@@ -157,10 +157,15 @@ fn syntax_labels_match_the_vue_template_parser_route() {
     assert_eq!(jade["source"]["authored_syntax"], "jade");
     assert_eq!(jade["source"]["compiled_syntax"], "vue-template");
     assert_eq!(schema::validate(&schema_value, &jade, "$"), Ok(()));
-    assert!(
-        fs::read_to_string(root.join("dist/a.js"))
-            .unwrap()
-            .contains("p Hello")
+    let ordinary = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&root)
+        .args(["build", "src", "--output", "plain"])
+        .output()
+        .unwrap();
+    assert_eq!(ordinary.status.code(), Some(0));
+    assert_eq!(
+        fs::read(root.join("dist/a.js")).unwrap(),
+        fs::read(root.join("plain/a.js")).unwrap()
     );
     fs::write(
         root.join("src/a.vue"),
