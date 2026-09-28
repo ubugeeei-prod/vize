@@ -9,9 +9,9 @@ use vize_atelier_core::options::{
     TemplateSyntaxMode, TransformOptions, WhitespaceStrategy,
 };
 use vize_atelier_core::walk_probe::WalkCounts;
+use vize_l0::Allocator;
 use vize_l0::dump::capture::CaptureSink;
 use vize_l0::profiler::global_profiler;
-use vize_l0::{Allocator, profile};
 use vize_l1_to_l2::{
     BindingKind, BindingTable, DomEmitMode, DomEmitOptions, DomEmitSections, EmitError, LegacyCaps,
 };
@@ -20,6 +20,9 @@ use super::pipeline::L2EmitSelection;
 use super::selection::DomLegacyReason;
 use crate::namespace::get_namespace;
 use crate::options::DomCompilerOptions;
+
+mod capture;
+pub(super) use capture::try_emit_l2_captured;
 
 /// Parser options with DOM-specific settings.
 pub(super) fn parser_options(options: &DomCompilerOptions) -> ParserOptions {
@@ -210,45 +213,6 @@ pub(super) fn l2_binding_table(metadata: Option<&BindingMetadata>) -> Option<Bin
             metadata.is_script_setup,
         )
     })
-}
-
-#[expect(
-    clippy::too_many_arguments,
-    reason = "independent compile inputs and capture"
-)]
-pub(super) fn try_emit_l2_captured<C: CaptureSink>(
-    allocator: &Allocator,
-    source: &str,
-    options: &DomCompilerOptions,
-    codegen: &CodegenOptions,
-    custom_elements: &CustomElementMatcher,
-    hoisted_scope_id: Option<&str>,
-    experimental_component_name: Option<&str>,
-    pre_s2_walks: Option<WalkCounts>,
-    capture: &mut C,
-) -> Option<CodegenResultWithSections> {
-    let binding_table = l2_binding_table_for(options);
-    let emit_options = l2_emit_options(
-        options,
-        codegen,
-        custom_elements,
-        binding_table.as_ref(),
-        hoisted_scope_id,
-        experimental_component_name,
-    )?;
-    profile!(
-        "atelier.dom.template.s2_codegen",
-        emit_l2_captured(
-            allocator,
-            source,
-            options.dialect,
-            &emit_options,
-            pre_s2_walks,
-            false,
-            capture,
-        )
-    )
-    .ok()
 }
 
 /// Emit one DOM module through L2, with the SFC-only slot check when requested.
