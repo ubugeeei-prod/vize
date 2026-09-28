@@ -1,0 +1,48 @@
+name: Tooling PR fast diagnostic
+on:
+  push:
+    branches: [ci/tooling-pr-fast-diagnostic-6830]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_BUILD_JOBS: "12"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  source-cli-and-changed-structural-tests:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: pr-7132-
+          key: test-scripts
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build source CLI and verify receipt
+        run: |
+          cargo build --profile ci -p vize
+          vp exec node tests/differential/build-receipt.mjs
+          test -s target/ci/vize.differential-build.json
+          target/ci/vize --version
+      - name: Test changed structural contracts
+        env:
+          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+        run: vp exec node --test --test-concurrency=1 tests/tooling/davinci-ssr-l4-bridge.test.ts tests/tooling/davinci-stage-dependencies.test.ts
