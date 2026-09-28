@@ -159,10 +159,7 @@ test("class-component usage sites enforce @Prop contracts", async () => {
       contentChanges: [{ text: brokenSource }],
     });
     assert.deepEqual(await waitForDiagnostics(session, appUri, 2), {
-      diagnostics: [
-        missingRequiredPropDiagnostic,
-        propTypeMismatchDiagnostic,
-      ],
+      diagnostics: [missingRequiredPropDiagnostic, propTypeMismatchDiagnostic],
       uri: appUri,
       version: 2,
     });
