@@ -136,7 +136,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ onVnodeMounted: () => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_15, Record<string, unknown>>'.\nType '{ onVnodeMounted: () => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 12 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+          "message": "Argument of type '{ onVnodeMounted: () => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_15, Record<string, unknown>>'.\nType '{ onVnodeMounted: () => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -144,7 +144,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ onSave: (_value: string) => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_16, Record<string, unknown>>'.\nType '{ onSave: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 12 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+          "message": "Argument of type '{ onSave: (_value: string) => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_16, Record<string, unknown>>'.\nType '{ onSave: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -152,7 +152,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ globalToken: string; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_17, Record<string, unknown>>'.\nType '{ globalToken: string; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 12 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+          "message": "Argument of type '{ globalToken: string; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_17, Record<string, unknown>>'.\nType '{ globalToken: string; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -160,7 +160,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ onCancel: (_value: string) => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_18, Record<string, unknown>>'.\nType '{ onCancel: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 12 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+          "message": "Argument of type '{ onCancel: (_value: string) => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_18, Record<string, unknown>>'.\nType '{ onCancel: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
@@ -176,7 +176,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{ onXML: (_value: string) => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_20, Record<string, unknown>>'.\nType '{ onXML: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 12 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+          "message": "Argument of type '{ onXML: (_value: string) => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_20, Record<string, unknown>>'.\nType '{ onXML: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 13 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",
