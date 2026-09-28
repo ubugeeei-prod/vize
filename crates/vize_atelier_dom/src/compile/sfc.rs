@@ -72,10 +72,10 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
     ) && !stage_options::source_may_contain_patterned_template_syntax(source)
         && !stage_options::source_may_contain_vize_directive_comment(source);
 
-    let mut force_compat_sections = false;
-    let fast_path_supported = selector::l2_sfc_fast_path_supported_source(source);
-
-    if use_l2_emit && fast_path_supported && !codegen_opts.source_map {
+    let force_compat_sections = if use_l2_emit
+        && !codegen_opts.source_map
+        && selector::l2_sfc_fast_path_supported_source(source)
+    {
         let binding_table = stage_options::l2_binding_table_for(&options);
         let l2_options = stage_options::l2_emit_options(
             &options,
@@ -85,8 +85,9 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
             hoisted_scope_id.as_deref(),
             codegen_experimental_options.component_name.as_deref(),
         );
-        if let Some(l2_options) = l2_options
-            && let Ok(result) = profile!(
+        if let Some(mut l2_options) = l2_options {
+            l2_options.no_slotted = codegen_experimental_options.no_slotted;
+            if let Ok(result) = profile!(
                 "atelier.dom.template.s2_codegen_sfc_fast",
                 stage_options::emit_l2_captured(
                     allocator,
@@ -97,14 +98,16 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
                     true,
                     capture,
                 )
-            )
-        {
-            selection::record(Ok(()));
-            capture.finish(|| CaptureOutcome::Accepted);
-            return (Vec::new(), result);
+            ) {
+                selection::record(Ok(()));
+                capture.finish(|| CaptureOutcome::Accepted);
+                return (Vec::new(), result);
+            }
         }
-        force_compat_sections = true;
-    }
+        true
+    } else {
+        codegen_experimental_options.no_slotted
+    };
 
     let pipeline_options = if force_compat_sections {
         DomCompilePipelineOptions::after_refusal_with_experimental_options(

@@ -416,15 +416,15 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 }
                 ctx.deindent();
                 ctx.newline();
-                ctx.push("])");
+                ctx.finish_slot_outlet("])", true, true);
             } else if has_slot_props {
                 ctx.push(", ");
                 generate_slot_outlet_props(ctx, el);
                 ctx.skip_scope_id = prev_skip_scope_id;
-                ctx.push(")");
+                ctx.finish_slot_outlet(")", false, true);
             } else {
                 ctx.skip_scope_id = prev_skip_scope_id;
-                ctx.push(")");
+                ctx.finish_slot_outlet(")", false, false);
             }
         }
         ElementType::Template => {

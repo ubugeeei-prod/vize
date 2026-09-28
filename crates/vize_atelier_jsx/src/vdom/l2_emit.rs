@@ -81,6 +81,7 @@ pub(super) fn try_emit_l2_vdom<'a>(
             cache_handlers: false,
             hoisted_scope_id: None,
             scope_id,
+            no_slotted: false,
             is_ts,
             comments: false,
             experimental_in_tag_comments: false,

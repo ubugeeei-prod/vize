@@ -39,6 +39,7 @@ pub struct CodegenContext {
     pub(super) component_name: Option<String>,
     /// Whether the reserved `<Self>` tag resolves to the current component.
     pub(super) experimental_self_component: bool,
+    pub(super) no_slotted: bool,
     /// Pure annotation for tree-shaking
     pub(super) pure: bool,
     /// Helpers used during codegen
@@ -143,6 +144,35 @@ impl CodegenResultWithSections {
 }
 
 impl CodegenContext {
+    #[inline(always)]
+    pub(super) fn finish_slot_outlet(
+        &mut self,
+        default_suffix: &'static str,
+        has_fallback: bool,
+        has_props: bool,
+    ) {
+        if self.no_slotted {
+            self.finish_no_slotted_outlet(has_fallback, has_props);
+        } else {
+            self.push(default_suffix);
+        }
+    }
+
+    #[cold]
+    #[inline(never)]
+    fn finish_no_slotted_outlet(&mut self, has_fallback: bool, has_props: bool) {
+        if has_fallback {
+            self.push("]");
+        }
+        if !has_fallback {
+            if !has_props {
+                self.push(", {}");
+            }
+            self.push(", undefined");
+        }
+        self.push(", true");
+        self.push(")");
+    }
     /// Anchor the next written byte at the authored byte `source_offset`,
     /// for generated structure that opens an authored unit (the render
     /// function at the template start). No-op unless the document records.
