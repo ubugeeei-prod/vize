@@ -5,6 +5,7 @@
 
 use vize_atelier_core::TemplateChildNode;
 
+#[inline(always)]
 pub(super) fn single_text_branch(children: &[TemplateChildNode<'_>]) -> bool {
     matches!(
         children,
