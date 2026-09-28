@@ -49,10 +49,10 @@ TypeScript test. No oracle exemption is added.
 The original main summary fails this same full-output oracle with exit 1,
 including its false native column; the corrected summary passes.
 
-This private change has not run in Actions or merged. It does not establish
-a native-only numerator, the corpus/dialect denominator, a stability
-period, or eligibility to delete legacy code. Both tracking issues remain
-open. TODO: the shared differential harness must record per-product,
+This accounting change does not establish a native-only numerator, the
+corpus/dialect denominator, a stability period, or eligibility to delete
+legacy code. Both tracking issues remain open. TODO: the shared differential
+harness must record per-product,
 per-target runtime provenance before publishing native-only acceptance
 rates; missing provenance, errors and skipped execution must remain
 explicitly unverified.
