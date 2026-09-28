@@ -9,587 +9,818 @@
   "fixtures": [
     {
       "fixturePath": "tests/_fixtures/_git/airi",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/alexandrie",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/ant-design-vue",
-      "memberships": ["ecosystem", "app"]
+      "memberships": ["ecosystem", "app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/antares",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/arco-design-pro-vue",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/automa",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/better-scroll",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/bootstrap-vue",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/buefy",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/bym-vue-echarts",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/crater",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/create-vue",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/cssgridgenerator",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/cube-ui",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/dashy",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/datav",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/dbx",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/dho-web-client",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "registry-note",
+            "dialects": ["pug-template"],
+            "selector": "Pug-template Quasar application (211 of 215 pinned SFCs use <template lang=\"pug\">)."
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/directus",
-      "memberships": ["ecosystem", "app"]
+      "memberships": ["ecosystem", "app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/docsify",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/douyin",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/element",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/element-plus",
-      "memberships": ["ecosystem", "app"]
+      "memberships": ["ecosystem", "app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/element-plus-x",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/elk",
-      "memberships": ["ecosystem", "app"]
+      "memberships": ["ecosystem", "app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/epic-spinners",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/filebrowser",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/frappe-builder",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/frappe-crm",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/frontend-phpcon-do-website",
-      "memberships": ["app"]
+      "memberships": ["app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/frpc-desktop",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/gogocode",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/gridea",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/gui-for-singbox",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/habitica",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/heyui",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/hoppscotch",
-      "memberships": ["ecosystem", "app"]
+      "memberships": ["ecosystem", "app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/inertia",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/inspira-ui",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/jellyfin-vue",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/koel",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/laravel-breeze",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/layoutit-grid",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/lew-ui",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/lx-music-desktop",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/mall-admin-web",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/mavon-editor",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/mealie",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/mint-ui",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/misskey",
-      "memberships": ["ecosystem", "app"]
+      "memberships": ["ecosystem", "app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/mobile-web-best-practice",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "test-oracle",
+            "dialects": ["vue2-sfc"],
+            "file": "tests/snapshots/check/vue2-class-component-oracle.ts",
+            "selector": "pinned Vue 2 class-component app detects and repairs an exact authored error"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/motion-vue",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/multiple-select",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/muse-ui",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/music-website",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/naive-ui",
-      "memberships": ["ecosystem", "app"]
+      "memberships": ["ecosystem", "app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/nativescript-vue",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/npmx.dev",
-      "memberships": ["app"]
+      "memberships": ["app"],
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "test-oracle",
+            "dialects": ["vue3-sfc"],
+            "file": "tests/app/dev/npmx.spec.ts",
+            "selector": "authored head macros stay exact across SSR, hydration, and navigation"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/nutui",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/nuxt-ui",
-      "memberships": ["app"]
+      "memberships": ["app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/petite-vue",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "registry-note",
+            "dialects": ["petite-vue"],
+            "selector": "petite-vue upstream examples (plain HTML, no SFCs). vueGlobs stays .vue-only because SFC tool lanes glob it directly; the petite-vue sources are recorded in petiteVueGlobs for corpus-coverage scanning."
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/piclist",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/pinia",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/pinry",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/portal-vue",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/prevue",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/primevue",
-      "memberships": ["ecosystem", "app"]
+      "memberships": ["ecosystem", "app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/reka-ui",
-      "memberships": ["ecosystem", "app"]
+      "memberships": ["ecosystem", "app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/scalar",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/shadcn-vue",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/sigma-file-manager",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/solidtime",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/soybean-admin",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/splayer",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/splitpanes",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/tailwind-config-viewer",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/tdesign",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/tiny-rdm",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/uni-app",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/v-charts",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/v-viewer",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vant",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vant-demo",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/varlet",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vaul-vue",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vee-validate",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vitepress",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/voicevox",
-      "memberships": ["ecosystem", "app"]
+      "memberships": ["ecosystem", "app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vonic",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-apexcharts",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-bits",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-cal-v4",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-calendar",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-chartjs",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-charts",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-core-vapor",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-cropper",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-data-ui",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-datepicker",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-devtools-v6",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-draggable-next",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-draggable-plus",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-draggable-resizable",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-dropzone",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-echarts",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-element-admin",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "test-oracle",
+            "dialects": ["vue2-sfc"],
+            "file": "tests/snapshots/check/vue-element-admin-legacy-oracle.ts",
+            "selector": "vue-element-admin compiler lowers legacy slot scopes and filters deterministically"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-fabric-editor",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-flow",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-fullpage-js",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-grid-layout",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-js-modal",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-jsx-vapor",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "registry-note",
+            "dialects": ["jsx-vapor"],
+            "selector": "Vapor JSX corpus: playground app and docs tutorial steps hold the vapor-mode JSX sources."
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-lottie",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-manage-system",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-material",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-multiselect",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-native-core",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-netcore",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-pure-admin",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-router",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-select",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-sonner",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-storefront",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-termui",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-tui",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-uploader",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-vben-admin",
-      "memberships": ["ecosystem", "app"]
+      "memberships": ["ecosystem", "app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-vine",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue-virtual-scroller",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue2-elm",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "test-oracle",
+            "dialects": ["vue2-sfc"],
+            "file": "tests/snapshots/check/vue2-elm.ts",
+            "selector": "vue2-elm detects and repairs an exact authored JavaScript type error"
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue3-admin-design",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vue3-antd-admin",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuefes-2025",
-      "memberships": ["app"]
+      "memberships": ["app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuefes-japan-speakers",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuelidate",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuepress",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuesax",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuestic-admin",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuestic-ui",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuetify",
-      "memberships": ["ecosystem", "app"]
+      "memberships": ["ecosystem", "app"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vuetorrent",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/vux",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/wakapi",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "registry-note",
+            "dialects": ["petite-vue"],
+            "selector": "petite-vue over Go-templated HTML: server-side Go {{ }} delimiters interleave with petite-vue directives in views/*.html. vueGlobs stays .vue-only because SFC tool lanes glob it directly; the petite-vue sources are recorded in petiteVueGlobs for corpus-coverage scanning."
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/wave-ui",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": {
+        "state": "partial",
+        "evidence": [
+          {
+            "kind": "registry-note",
+            "dialects": ["pug-template"],
+            "selector": "Pug-template SFC corpus: every pinned src SFC uses <template lang=\"pug\"> (219 files at this revision). Globs stay scoped to src/ — docs assets are heavy."
+          }
+        ]
+      }
     },
     {
       "fixturePath": "tests/_fixtures/_git/youtube-dl-gui",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
       "fixturePath": "tests/_fixtures/_git/zy-player",
-      "memberships": ["ecosystem"]
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
     }
   ],
   "capabilities": [

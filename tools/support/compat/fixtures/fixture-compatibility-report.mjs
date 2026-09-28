@@ -9,6 +9,7 @@ import {
   validateCompatibilityLedger,
 } from "./fixture-compatibility-ledger.mjs";
 import { compareCodepoints, countMembership } from "./fixture-compatibility-validation.mjs";
+import { dialectCoverageSummary } from "./fixture-dialect-coverage.mjs";
 
 export function createCompatibilityReport(ledger, context = createCompatibilityContext()) {
   const { fixtureMap } = validateCompatibilityLedger(ledger, context);
@@ -47,6 +48,7 @@ export function createCompatibilityReport(ledger, context = createCompatibilityC
       ).length,
     },
     capabilities: capabilityReport,
+    dialectCoverage: dialectCoverageSummary(ledger.fixtures),
     oracles: oracleReport,
     unresolved: [...ledger.unresolved].sort((left, right) =>
       compareCodepoints(`${left.dimension}\0${left.value}`, `${right.dimension}\0${right.value}`),
