@@ -13,6 +13,7 @@ pub trait AttrSink<'a> {
 
 /// The legacy descriptor's map: a later duplicate replaces an earlier one.
 impl<'a> AttrSink<'a> for FxHashMap<Cow<'a, str>, Cow<'a, str>> {
+    #[inline(always)]
     fn attr(&mut self, name: Cow<'a, str>, value: Cow<'a, str>, _span: (usize, usize)) {
         self.insert(name, value);
     }

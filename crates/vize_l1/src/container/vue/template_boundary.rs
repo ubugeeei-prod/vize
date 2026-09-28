@@ -145,6 +145,7 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
                     bytes.get(..scan_limit).unwrap_or_default(),
                     pos,
                     scan_limit,
+                    close_ahead,
                     &mut line,
                     &mut last_newline,
                 ) {

@@ -16,6 +16,7 @@ pub(super) fn skip_template_interpolation(
     bytes: &[u8],
     mut pos: usize,
     len: usize,
+    known_close_offset: Option<usize>,
     line: &mut usize,
     last_newline: &mut usize,
 ) -> Option<usize> {
@@ -30,7 +31,8 @@ pub(super) fn skip_template_interpolation(
     // cannot close. Returning before the JS recovery loop keeps a run of
     // unclosed `{{` linear instead of re-walking the rest of the source per
     // occurrence through the string/regex machinery (#3275).
-    let close_offset = memmem::find(bytes.get(body_start..).unwrap_or_default(), b"}}")?;
+    let close_offset = known_close_offset
+        .or_else(|| memmem::find(bytes.get(body_start..).unwrap_or_default(), b"}}"))?;
 
     // Most interpolations are identifiers or simple expressions. Accept the
     // first delimiter immediately when no token before it can hide `}}`; this

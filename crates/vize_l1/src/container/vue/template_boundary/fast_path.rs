@@ -32,6 +32,7 @@ fn template_close_has_ambiguous_context(
             bytes,
             interpolation_start,
             len,
+            None,
             &mut line,
             &mut last_newline,
         )

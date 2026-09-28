@@ -15,8 +15,10 @@ Tracked in [#6837](https://github.com/ubugeeei-prod/vize/issues/6837).
   moved from Croquis to L1: 20 pinned Croquis and atelier cases exceeded their
   unchanged ceilings on head `576baa9b3`. A plain `#[inline]` hint gave
   byte-identical counts on head `a05640f2a`; a control run on `main` passed all
-  ceilings. Force cross-crate inlining of the moved parser and measure it on the
-  exact PR head before re-entering the queue. The ceilings must not increase.
+  ceilings. Forcing cross-crate inlining still exceeded 20 ceilings on
+  `f5c520422`, so the parser now reuses the already-found interpolation close
+  in the slow path and makes the legacy attribute map adapter inline. Measure
+  this on the exact PR head before re-entering the queue; ceilings stay fixed.
 
 TODO: line/column tracking still lives inside the scanner for the legacy
 descriptor; drop it once Croquis is replaced and positions come from the L0
