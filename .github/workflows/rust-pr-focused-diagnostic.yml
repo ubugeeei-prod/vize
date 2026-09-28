@@ -1,0 +1,102 @@
+name: Rust PR focused diagnostic
+on:
+  push:
+    branches: [ci/rust-pr-focused-diagnostic-6830]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_BUILD_JOBS: "12"
+  VIZE_TEST_DISABLE_TSGO: "1"
+  VIZE_NUXT_CONFIG_ITERATIONS: "100"
+  RUST_TEST_THREADS: "4"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  affected-owner-clippy:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          components: clippy
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: pr-7132-
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Clippy changed crate owners
+        run: cargo clippy -p vize_l0 -p vize_l2 -p vize_atelier_ssr -p vize_atelier_vapor --profile ci -- -D warnings -D clippy::wildcard_imports
+      - name: Skeleton todo ratchet
+        run: rustc --edition 2024 tools/commands/ci/check-skeleton-todos.rs -o "$RUNNER_TEMP/check-skeleton-todos" && "$RUNNER_TEMP/check-skeleton-todos" --check
+
+  changed-owner-tests:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: true
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: pr-7132-
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-nextest@0.9.146
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
+      - name: Build and receipt changed owners' library tests
+        run: |
+          mkdir -p target/rust-focused-evidence target/tmp
+          phase_started=$SECONDS
+          cargo nextest archive -p vize_l0 -p vize_l2 -p vize_atelier_ssr -p vize_atelier_vapor --lib --cargo-profile ci --archive-file target/rust-focused-evidence/lib.tar.zst
+          node tools/support/compat/github/rust-test-archive.mjs stamp target/rust-focused-evidence/lib.tar.zst target/rust-focused-evidence/lib-receipt.json
+          node tools/support/compat/github/rust-test-archive.mjs verify target/rust-focused-evidence/lib.tar.zst target/rust-focused-evidence/lib-receipt.json
+          printf '{"phase":"lib-build","elapsed_seconds":%d}\n' "$((SECONDS - phase_started))" > target/rust-focused-evidence/lib-build-timing.json
+      - name: Run changed owners' library tests
+        run: |
+          phase_started=$SECONDS
+          cargo nextest run --archive-file target/rust-focused-evidence/lib.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile pr --no-tests=fail
+          cp target/nextest/pr/junit.xml target/rust-focused-evidence/lib-junit.xml
+          printf '{"phase":"lib-run","elapsed_seconds":%d}\n' "$((SECONDS - phase_started))" > target/rust-focused-evidence/lib-run-timing.json
+      - name: Build and receipt directly changed integration targets
+        run: |
+          phase_started=$SECONDS
+          cargo nextest archive -p vize_atelier_ssr -p vize_atelier_vapor --test native_stage_capture --cargo-profile ci --archive-file target/rust-focused-evidence/changed.tar.zst
+          node tools/support/compat/github/rust-test-archive.mjs stamp target/rust-focused-evidence/changed.tar.zst target/rust-focused-evidence/changed-receipt.json
+          node tools/support/compat/github/rust-test-archive.mjs verify target/rust-focused-evidence/changed.tar.zst target/rust-focused-evidence/changed-receipt.json
+          printf '{"phase":"changed-build","elapsed_seconds":%d}\n' "$((SECONDS - phase_started))" > target/rust-focused-evidence/changed-build-timing.json
+      - name: Run directly changed integration targets
+        run: |
+          phase_started=$SECONDS
+          cargo nextest run --archive-file target/rust-focused-evidence/changed.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile pr --no-tests=fail
+          cp target/nextest/pr/junit.xml target/rust-focused-evidence/changed-junit.xml
+          printf '{"phase":"changed-run","elapsed_seconds":%d}\n' "$((SECONDS - phase_started))" > target/rust-focused-evidence/changed-run-timing.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: rust-focused-evidence-${{ github.run_id }}
+          path: |
+            target/rust-focused-evidence/*-receipt.json
+            target/rust-focused-evidence/*-timing.json
+            target/rust-focused-evidence/*-junit.xml
+          if-no-files-found: warn
+          retention-days: 7
