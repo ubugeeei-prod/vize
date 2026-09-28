@@ -58,6 +58,14 @@ and keep the existing Vapor lowering helper inline. A second diagnostic
 trim algorithm pushed eight Vapor generate/compile probes above their
 ceilings, so that experimental trim change is withdrawn. The next exact
 100-probe diagnostic must pass before the PR head changes.
+The isolated `fdb9e04ec` diagnostic then passed 99 of 100 probes; only Vapor
+generate-large remained two instructions over the unchanged ceiling.
+Callgrind showed the same 23 comparisons in its retained-expression resolver
+and two extra instructions inside libc `memcmp`. The resolver already has the
+trimmed subslice, so its byte offset from the original expression supplies
+the retained span adjustment without scanning leading whitespace again. This
+is a local ordinary-path optimization to be measured on all 100 probes;
+it changes neither parsed expressions nor output bytes.
 Each product records only boundaries it actually executed. Provisional pages
 are committed only after final product selection, including DOM source-map
 parity. A compatibility map mismatch returns the compatibility module and

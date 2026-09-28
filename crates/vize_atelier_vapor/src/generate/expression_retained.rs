@@ -51,7 +51,7 @@ pub(super) fn resolve_expression_node(
         // Retained spans are content-relative; the resolver rewrites the
         // trimmed text, so shift by the leading whitespace (tokens never
         // live in the surrounding whitespace).
-        let lead = expr.len() - expr.trim_start().len();
+        let lead = trimmed.as_ptr().addr() - expr.as_ptr().addr();
         let mut collector = ExpressionRewriteCollector::new(ctx);
         collector.visit_expression(js.ast);
         let resolved = apply_rewrites(trimmed, collector.rewrites, lead);
