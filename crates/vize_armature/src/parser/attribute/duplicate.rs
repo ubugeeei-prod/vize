@@ -13,13 +13,13 @@ impl<'a> Parser<'a> {
         let Some(current) = self.current_element.as_mut() else {
             return false;
         };
-        if let Some(names) = current.seen_attribute_names.as_mut() {
-            return !names.insert(name.to_ascii_lowercase().into());
-        }
-        if current.props.len() < 8 {
+        if current.props.len() < 32 {
             return current.props.iter().any(|prop| {
                 matches!(prop, PropNode::Attribute(existing) if existing.name.eq_ignore_ascii_case(name))
             });
+        }
+        if let Some(names) = current.seen_attribute_names.as_mut() {
+            return !names.insert(name.to_ascii_lowercase().into());
         }
         let mut names = FxHashSet::default();
         names.reserve(current.props.len() + 1);
@@ -39,13 +39,13 @@ impl<'a> Parser<'a> {
             return;
         }
         let repeated_name = self.current_element.as_mut().is_some_and(|current| {
-            if let Some(names) = current.seen_directive_names.as_mut() {
-                return !names.insert(directive.raw_name);
-            }
-            if current.props.len() < 8 {
+            if current.props.len() < 32 {
                 return current.props.iter().any(|prop| {
                     matches!(prop, PropNode::Directive(existing) if existing.raw_name == Some(directive.raw_name))
                 });
+            }
+            if let Some(names) = current.seen_directive_names.as_mut() {
+                return !names.insert(directive.raw_name);
             }
             let mut names = FxHashSet::default();
             names.reserve(current.props.len() + 1);
