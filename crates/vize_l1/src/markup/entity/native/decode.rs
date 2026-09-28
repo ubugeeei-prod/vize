@@ -148,12 +148,12 @@ fn correct_numeric_entity(number: u32) -> char {
 
 #[cfg(test)]
 mod tests {
-    use alloc::string::String;
+    use vize_l0::String;
 
     use super::*;
 
     fn text(value: DecodedEntity) -> String {
-        let mut output = String::new();
+        let mut output = String::default();
         value.for_each(|ch| output.push(ch));
         output
     }
