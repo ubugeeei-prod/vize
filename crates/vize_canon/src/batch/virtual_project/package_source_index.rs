@@ -24,7 +24,10 @@ impl VirtualProject {
                 .insert(source.clone(), indexed.clone())
                 .as_ref()
                 != Some(&indexed);
-            if changed && let Some(keys) = self.package_route_roots.get(&root) {
+            if changed
+                && self.package_shadows_initialized
+                && let Some(keys) = self.package_route_roots.get(&root)
+            {
                 self.package_shadow_dirty_keys.extend(keys.iter().cloned());
             }
         }
@@ -37,6 +40,7 @@ impl VirtualProject {
                 .package_source_index
                 .get_mut(ancestor)
                 .is_some_and(|sources| sources.remove(&source).is_some())
+                && self.package_shadows_initialized
                 && let Some(keys) = self.package_route_roots.get(ancestor)
             {
                 self.package_shadow_dirty_keys.extend(keys.iter().cloned());
