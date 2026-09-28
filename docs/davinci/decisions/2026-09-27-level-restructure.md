@@ -33,8 +33,7 @@ Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (res
 
 - Davinci has no external users yet, so its crates, APIs, dump formats, serialized strings and feature names change without a compatibility period. Legacy products keep strict output compatibility; the [#6898 SSR slot scope correction](./2026-09-27-ssr-slot-scope.md) adds its own regression corpus.
 - Product crates with art names (croquis, patina, glyph, maestro, canon, carton, …) keep their names. `docs/davinci/` keeps its name as the program name.
-- The migration does not freeze other work. Move-only commits keep git rename detection working for in-flight fixes, renames are scripted (on a conflict, re-run the script on `main`), and PRs stay small.
-- [MoonBit workflow naming](./2026-09-28-level-moonbit-workflow.md) records the bounded CI path and identifier move for #6832; the remaining tooling names stay open.
+- The migration does not freeze other work. Move-only commits keep git rename detection working for in-flight fixes, renames are scripted (on a conflict, re-run the script on `main`), and PRs stay small. [MoonBit workflow naming](./2026-09-28-level-moonbit-workflow.md) records the bounded CI move for #6832; the remaining tooling names stay open.
 
 ## Skeleton-first (2026-09-28)
 
