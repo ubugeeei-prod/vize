@@ -157,6 +157,25 @@ void test("malformed compiler output retains raw evidence and cannot complete", 
   const forged = structuredClone(report);
   forged.rows[0].legacy.state = "completed";
   assert.throws(() => validateCompilerReport(loaded, forged, build));
+  const arrayCode = Buffer.from(
+    JSON.stringify({
+      filename: "Layout.vue",
+      code: [65, 66],
+      css: null,
+      errors: [],
+      warnings: [],
+      script_lang: "js",
+      macro_artifacts: [],
+    }),
+  );
+  const malformed = compilerAttempt(
+    { status: 0, signal: null, stdout: Buffer.alloc(0), stderr: Buffer.alloc(0) },
+    arrayCode,
+    fixture.expected,
+  );
+  assert.match(malformed.facetError, /compiler output code must be a string/);
+  assert.equal(malformed.jsonBase64, arrayCode.toString("base64"));
+  assert.equal(malformed.referenceComparison, null);
 });
 
 void test("missing source-built CLI retains the planned failed row", () => {

@@ -89,6 +89,7 @@ export function compilerAttempt(result, output, expected) {
       assert.deepEqual(parsed.errors, []);
       assert.deepEqual(parsed.warnings, []);
       assert.deepEqual(parsed.macro_artifacts, []);
+      assert.equal(typeof parsed.code, "string", "compiler output code must be a string");
       const code = Buffer.from(parsed.code, "utf8");
       observation.codeBase64 = code.toString("base64");
       observation.codeSha256 = sha256(code);
