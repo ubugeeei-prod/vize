@@ -64,7 +64,7 @@ const code = computed(() =>
         role="tab"
         :class="['davinci-subtab', { active: !moduleShown && backendIndex === index }]"
         :aria-selected="!moduleShown && backendIndex === index"
-        @click="selected = `backend:${index}`"
+        @click="() => (selected = `backend:${index}`)"
       >
         L4 {{ page.step }}
       </button>
@@ -73,7 +73,7 @@ const code = computed(() =>
         role="tab"
         :class="['davinci-subtab', { active: moduleShown }]"
         :aria-selected="moduleShown"
-        @click="selected = 'module'"
+        @click="() => (selected = 'module')"
       >
         Assembled SFC module
       </button>

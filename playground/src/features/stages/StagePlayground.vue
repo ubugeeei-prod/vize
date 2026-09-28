@@ -144,7 +144,7 @@ function snippet(text: string): string {
           role="tab"
           :class="['davinci-subtab', { active: outputTarget === target }]"
           :aria-selected="outputTarget === target"
-          @click="outputTarget = target"
+          @click="() => (outputTarget = target)"
         >
           {{ target.toUpperCase() }}
         </button>
@@ -186,8 +186,9 @@ function snippet(text: string): string {
           >
             Diff vs {{ previousPage.label }}
           </button>
+          <span v-if="remarksNote" class="davinci-hint">Remarks unavailable</span>
           <button
-            v-if="!remarksNote"
+            v-else
             type="button"
             :class="['davinci-subtab', { active: pageView === 'remarks' }]"
             :aria-pressed="pageView === 'remarks'"
@@ -195,7 +196,6 @@ function snippet(text: string): string {
           >
             Remarks <span class="davinci-count">{{ remarks.length }}</span>
           </button>
-          <span v-else class="davinci-hint">Remarks unavailable</span>
         </div>
 
         <div class="davinci-body">
