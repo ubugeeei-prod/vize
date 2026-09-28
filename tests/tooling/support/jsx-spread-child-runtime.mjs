@@ -205,7 +205,6 @@ try {
   for (const [id, fixture] of Object.entries(fixtures)) {
     const babel = reference(fixture.source, fixture.lang);
     const expected = await observe(await program(id, "reference", babel.runtimeCode));
-    const outputs = {};
     assert.deepEqual(fixture.diagnostics, []);
     const actual = await observe(await program(id, "native", fixture.code));
     assert.deepEqual(comparable(actual), comparable(expected), `${id}: runtime observations`);
