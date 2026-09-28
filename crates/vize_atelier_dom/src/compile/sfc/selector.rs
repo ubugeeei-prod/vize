@@ -1,5 +1,16 @@
 pub(super) fn l2_sfc_fast_path_supported_source(source: &str) -> bool {
-    !source_contains_parser_recovery(source) && !super::p_end::source_has_invalid_p_end_tag(source)
+    !source_contains_character_reference(source)
+        && !source_contains_parser_recovery(source)
+        && !super::p_end::source_has_invalid_p_end_tag(source)
+}
+
+// L2 currently leaves character references inside template expressions verbatim.
+// Let the shared parser decode them before generating an SFC render function.
+pub(super) fn source_contains_character_reference(source: &str) -> bool {
+    source
+        .as_bytes()
+        .windows(2)
+        .any(|pair| pair[0] == b'&' && (pair[1] == b'#' || pair[1].is_ascii_alphabetic()))
 }
 
 /// The SFC fast path skips the shipped parser, so it cannot return its HTML
@@ -108,6 +119,19 @@ fn source_contains_parser_recovery(source: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::l2_sfc_fast_path_supported_source;
+
+    #[test]
+    fn character_references_require_the_shared_parser() {
+        assert!(!l2_sfc_fast_path_supported_source(
+            r#"<span>{{ '&lt;' }}</span>"#
+        ));
+        assert!(!l2_sfc_fast_path_supported_source(
+            r#"<span :title="'&amp;'"></span>"#
+        ));
+        assert!(l2_sfc_fast_path_supported_source(
+            "<span :title=\"a && b\"></span>"
+        ));
+    }
 
     #[test]
     fn html_void_element_does_not_keep_parent_open_after_close() {

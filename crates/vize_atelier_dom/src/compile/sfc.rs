@@ -43,7 +43,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     ) && !stage_options::source_may_contain_patterned_template_syntax(source)
         && !stage_options::source_may_contain_vize_directive_comment(source);
 
-    let mut force_compat_sections = false;
+    let mut force_compat_sections = selector::source_contains_character_reference(source);
     let fast_path_supported = selector::l2_sfc_fast_path_supported_source(source);
 
     if use_l2_emit && fast_path_supported && !codegen_opts.source_map {

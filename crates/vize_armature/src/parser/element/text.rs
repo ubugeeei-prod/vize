@@ -186,7 +186,13 @@ impl<'a> Parser<'a> {
         let inner_loc = self.create_loc(trimmed_start, trimmed_end);
 
         // Create expression node
-        let mut expr = SimpleExpressionNode::new(content, false, inner_loc);
+        let decoded = htmlize::unescape(content);
+        let expression_content = if decoded.as_ref() == content {
+            content
+        } else {
+            self.allocator.alloc_str(decoded.as_ref())
+        };
+        let mut expr = SimpleExpressionNode::new(expression_content, false, inner_loc);
         self.retain_expression_ast(&mut expr, trimmed_start, trimmed_end);
         let expr_boxed = Box::new_in(expr, &self.allocator);
 
