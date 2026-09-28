@@ -167,32 +167,6 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn has_duplicate_attribute(&mut self, name: &str) -> bool {
-        let Some(current) = self.current_element.as_mut() else {
-            return false;
-        };
-        // Small tags avoid a hash table. Wide tags switch once to a set so
-        // checking every attribute does not repeatedly scan all prior props.
-        if current.props.len() < 12 {
-            return current.props.iter().any(|prop| {
-                matches!(prop, PropNode::Attribute(existing) if existing.name.eq_ignore_ascii_case(name))
-            });
-        }
-        let seen = current.seen_attr_names.get_or_insert_with(|| {
-            current
-                .props
-                .iter()
-                .filter_map(|prop| match prop {
-                    PropNode::Attribute(existing) => {
-                        Some(existing.name.to_ascii_lowercase().into())
-                    }
-                    _ => None,
-                })
-                .collect()
-        });
-        !seen.insert(name.to_ascii_lowercase().into())
-    }
-
     /// Freeze an accumulated attribute/directive value into arena-resident
     /// text: the source slice when decoding left the run verbatim (the common
     /// case, copy-free), an arena copy when an entity rewrote it.
@@ -210,28 +184,6 @@ impl<'a> Parser<'a> {
         let loc_end = self.prop_loc_end(quote, end, attr.name_end);
         let loc = self.create_loc(attr.name_start, loc_end);
         let name_loc = self.create_loc(attr.name_start, attr.name_end);
-
-        if self.has_duplicate_attribute(attr.name) {
-            // Vue recovers from duplicate attributes — codegen ignores
-            // repeats and keeps the first occurrence — but linters still
-            // want to see both in the AST so they can warn about the
-            // repeat. So we KEEP both in `props` and emit a
-            // *recoverable* diagnostic; downstream pipelines treat it
-            // as non-fatal so a `<div id=a id=b>` no longer yields a
-            // 0-byte module marked as success. (#958)
-            let mut message = String::with_capacity(attr.name.len() + 79);
-            appends!(
-                message,
-                "Duplicate attribute `",
-                attr.name,
-                "`. Keeping the repeated attribute so parsing can continue."
-            );
-            self.errors.push(CompilerError::with_message(
-                ErrorCode::DuplicateAttribute,
-                message,
-                Some(name_loc.clone()),
-            ));
-        }
 
         let mut attr_node = AttributeNode::new(attr.name, loc);
         attr_node.name_loc = name_loc;

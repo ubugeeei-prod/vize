@@ -134,7 +134,6 @@ pub(super) struct CurrentElement<'a> {
     pub(super) ns: Namespace,
     pub(super) is_self_closing: bool,
     pub(super) props: Vec<'a, PropNode<'a>>,
-    pub(super) seen_attr_names: Option<vize_l0::FxHashSet<String>>,
 }
 
 /// Current attribute being parsed

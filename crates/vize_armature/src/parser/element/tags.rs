@@ -41,13 +41,15 @@ impl<'a> Parser<'a> {
             ns,
             is_self_closing: false,
             props: vize_l0::Vec::new_in(&self.allocator),
-            seen_attr_names: None,
         });
     }
 
     /// Process open tag end
     pub(in crate::parser) fn on_open_tag_end_impl(&mut self, end: usize) {
         if let Some(current) = self.current_element.take() {
+            if current.props.len() > 1 {
+                self.report_duplicate_attributes(&current);
+            }
             let tag_start = current.tag_start;
             let loc = self.create_loc(tag_start.saturating_sub(1), end + 1); // Include < and >
 
