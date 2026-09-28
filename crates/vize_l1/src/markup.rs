@@ -19,16 +19,8 @@
 //! Design: <https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929>.
 
 pub mod directive;
-#[cfg(any(test, feature = "native-markup-lex"))]
-pub mod entity;
-#[cfg(not(any(test, feature = "native-markup-lex")))]
-#[path = "markup/entity/skeleton.rs"]
 pub mod entity;
 pub mod grammar;
-#[cfg(any(test, feature = "native-markup-lex"))]
-pub mod lex;
-#[cfg(not(any(test, feature = "native-markup-lex")))]
-#[path = "markup/lex/skeleton.rs"]
 pub mod lex;
 pub mod profile;
 pub mod token;

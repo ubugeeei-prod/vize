@@ -10,13 +10,15 @@ pub mod char_codes;
 mod dynamic_arg;
 mod in_tag_comment;
 mod sequences;
-mod states;
+mod states_special;
+mod states_tag;
+mod states_text;
 mod types;
 
 use core::marker::PhantomData;
 
-use super::profile::Profile;
-use super::token::Sink;
+use super::super::profile::Profile;
+use super::super::token::Sink;
 
 use sequences::Sequence;
 pub(crate) use types::State;
