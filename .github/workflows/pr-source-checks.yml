@@ -44,6 +44,13 @@ jobs:
         env:
           BASE_SHA: ${{ steps.comparison.outputs.base }}
         run: node tools/support/compat/github/plan-source-checks.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
+      - name: Report legacy fix differential inputs
+        if: ${{ github.event_name == 'pull_request' }}
+        continue-on-error: true
+        env:
+          BASE_SHA: ${{ steps.comparison.outputs.base }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: node tools/support/compat/github/report-legacy-fix-fixtures.mjs "$BASE_SHA" "$GITHUB_SHA"
 
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         if: ${{ steps.plan.outputs.rust == 'true' }}
