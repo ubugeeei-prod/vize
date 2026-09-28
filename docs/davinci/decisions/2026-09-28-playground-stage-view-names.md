@@ -11,7 +11,9 @@ replays the moves and reference updates after a conflict.
 This is a source identity change. The stage page `kind` values and feed JSON,
 the `Davinci` UI tab's route key and label, its preset source, user-visible
 page/remark text, and VRT PNG bytes are unchanged. The generated Vapor test
-snapshot updates only the renamed App component binding and import. Verify
+snapshot updates only the renamed App component binding and import. The natural
+v-on corpus shard changes two path cells for `DumpView.vue`; spellings and
+counts stay the same. Verify
 focused playground tests, typechecking, the browser stage ladder, ordinary
 Actions, and the protected merge queue before treating this slice as landed.
 

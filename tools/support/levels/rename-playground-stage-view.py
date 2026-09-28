@@ -48,23 +48,27 @@ def main() -> None:
         return
 
     stale = []
-    for base in (ROOT / "playground/src", ROOT / "playground/e2e"):
-        for path in base.rglob("*"):
-            if not path.is_file() or path.suffix not in {".ts", ".vue", ".css", ".snap"}:
-                continue
-            content = path.read_text()
-            updated = content
-            for old, new in REPLACEMENTS.items():
-                updated = updated.replace(old, new)
-            if path.name == "stage-ladder.test.ts":
-                updated = updated.replace(
-                    'describe("Davinci stage ladder from the real compiler"',
-                    'describe("Stage ladder from the real compiler"',
-                )
-            if args.phase == "references" and updated != content:
-                path.write_text(updated)
-            if args.phase == "check" and updated != content:
-                stale.append(str(path.relative_to(ROOT)))
+    paths = [
+        path
+        for base in (ROOT / "playground/src", ROOT / "playground/e2e")
+        for path in base.rglob("*")
+        if path.is_file() and path.suffix in {".ts", ".vue", ".css", ".snap"}
+    ]
+    paths.append(ROOT / "docs/davinci/plan/v-on-corpus/playground--src.tsv")
+    for path in paths:
+        content = path.read_text()
+        updated = content
+        for old, new in REPLACEMENTS.items():
+            updated = updated.replace(old, new)
+        if path.name == "stage-ladder.test.ts":
+            updated = updated.replace(
+                'describe("Davinci stage ladder from the real compiler"',
+                'describe("Stage ladder from the real compiler"',
+            )
+        if args.phase == "references" and updated != content:
+            path.write_text(updated)
+        if args.phase == "check" and updated != content:
+            stale.append(str(path.relative_to(ROOT)))
 
     if args.phase == "check":
         stale.extend(old for old in MOVES if (ROOT / old).exists())
