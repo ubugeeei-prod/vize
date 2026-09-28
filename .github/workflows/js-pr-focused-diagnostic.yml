@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: 691429b3ac2faff6af49295f04e06eb499d992e7
+          ref: cdd58930aec7987faaea809b80807b7952374768
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: "package.json"
@@ -36,14 +36,14 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
-      - name: Build native addon from exact PR source
+      - name: Build native addon from exact PR merge source
         run: vp run --workspace-root build:native:test
-      - name: Run prepared Vite compiler tests with bound addon
-        run: node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test
-      - name: Record exact source and addon identity
+      - name: Record merge source and addon identity
         run: |
           printf 'source=%s\ntree=%s\n' "$(git rev-parse HEAD)" "$(git rev-parse HEAD^{tree})" >> "$GITHUB_STEP_SUMMARY"
           shasum -a 256 npm/native/vize-vitrine.*.node >> "$GITHUB_STEP_SUMMARY"
+      - name: Run prepared Vite compiler tests with bound addon
+        run: node npm/native/scripts/test-preparation.mjs vp run --filter './npm/builder/vite' test
 
   aggregate:
     needs: source-built-vite-tests
