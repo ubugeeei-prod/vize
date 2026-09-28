@@ -206,3 +206,5 @@ mod tests {
         );
     }
 }
+
+// Diagnostic-only source edit for the guarded PR tier.
