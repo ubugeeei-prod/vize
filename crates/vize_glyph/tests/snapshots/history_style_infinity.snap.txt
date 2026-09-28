@@ -1,4 +1,4 @@
 .group\/item.group\/nested-items-open > * > .group\/items.translate-x-0 .group\/button {
-  max-height: 2147483647px;
+  max-height: calc(infinity * 1px);
   display: flex;
 }

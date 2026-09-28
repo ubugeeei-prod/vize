@@ -44,12 +44,14 @@ fn format_with_preserved_top_level_comments(
     let newline = options.newline_string();
     let mut output: String = String::with_capacity(source.len());
     let mut emitted_any = false;
+    let mut separator_lines = 1;
 
     for segment in split_top_level_comments(source) {
         match segment.kind {
             SegmentKind::Code => {
                 let trimmed_chunk = segment.content.trim();
                 if trimmed_chunk.is_empty() {
+                    separator_lines = separator_lines.max(source_separator_lines(segment.content));
                     continue;
                 }
                 let formatted = format_chunk(trimmed_chunk, options)?;
@@ -61,17 +63,24 @@ fn format_with_preserved_top_level_comments(
                     continue;
                 }
                 if emitted_any {
-                    output.push_str(newline);
+                    for _ in 0..separator_lines.max(source_separator_lines_before(segment.content))
+                    {
+                        output.push_str(newline);
+                    }
                 }
                 output.push_str(formatted);
                 emitted_any = true;
+                separator_lines = source_separator_lines_after(segment.content);
             }
             SegmentKind::Comment => {
                 if emitted_any {
-                    output.push_str(newline);
+                    for _ in 0..separator_lines {
+                        output.push_str(newline);
+                    }
                 }
                 output.push_str(segment.content);
                 emitted_any = true;
+                separator_lines = 1;
             }
         }
     }
@@ -84,7 +93,197 @@ fn format_chunk(trimmed: &str, options: &FormatOptions) -> Result<String, Format
     let formatted = stabilization::format_to_fixed_point(colors.source.as_str(), |source| {
         format_chunk_once(source, options)
     })?;
-    Ok(colors.restore(formatted))
+    let formatted = colors.restore(formatted);
+    // The CSS printer also performs syntax and value normalization. A formatter
+    // must never silently change browser support or the scoped selector target.
+    // Format only structural whitespace when the print changes authored CSS.
+    if changes_authored_css(trimmed, formatted.as_str()) {
+        Ok(format_layout_only(trimmed, options))
+    } else {
+        Ok(formatted)
+    }
+}
+
+/// Indent rules and declarations without passing authored tokens through the
+/// CSS printer. This path keeps media queries, selectors, and values intact.
+fn format_layout_only(source: &str, options: &FormatOptions) -> String {
+    let newline = options.newline_string();
+    let indent = options.indent_string();
+    let bytes = source.as_bytes();
+    let mut output = String::with_capacity(source.len() + source.len() / 4);
+    let mut depth = 0usize;
+    let mut parens = 0usize;
+    let mut brackets = 0usize;
+    let mut quote = None;
+    let mut start = 0usize;
+    let mut index = 0usize;
+
+    while index < bytes.len() {
+        let byte = bytes[index];
+        if byte == b'\\' && index + 1 < bytes.len() {
+            index += 2;
+            continue;
+        }
+        if let Some(delimiter) = quote {
+            if byte == delimiter {
+                quote = None;
+            }
+            index += 1;
+            continue;
+        }
+        if matches!(byte, b'\'' | b'"') {
+            quote = Some(byte);
+            index += 1;
+            continue;
+        }
+        if byte == b'/' && bytes.get(index + 1) == Some(&b'*') {
+            index += 2;
+            while index + 1 < bytes.len() && bytes.get(index..index + 2) != Some(b"*/".as_slice()) {
+                index += 1;
+            }
+            index = (index + 2).min(bytes.len());
+            continue;
+        }
+        match byte {
+            b'(' => parens += 1,
+            b')' => parens = parens.saturating_sub(1),
+            b'[' => brackets += 1,
+            b']' => brackets = brackets.saturating_sub(1),
+            b'{' if parens == 0 && brackets == 0 => {
+                write_css_line(
+                    &mut output,
+                    source[start..index].trim(),
+                    depth,
+                    &indent,
+                    newline,
+                );
+                // Replace the preceding newline with the opening brace.
+                if output.ends_with(newline) {
+                    output.truncate(output.len() - newline.len());
+                }
+                output.push_str(" {");
+                output.push_str(newline);
+                depth += 1;
+                start = index + 1;
+            }
+            b';' if parens == 0 && brackets == 0 => {
+                let statement = source[start..index].trim();
+                if !statement.is_empty() {
+                    write_css_indent(&mut output, depth, &indent);
+                    output.push_str(statement);
+                    output.push(';');
+                    output.push_str(newline);
+                }
+                start = index + 1;
+            }
+            b'}' if parens == 0 && brackets == 0 && depth > 0 => {
+                write_css_line(
+                    &mut output,
+                    source[start..index].trim(),
+                    depth,
+                    &indent,
+                    newline,
+                );
+                depth -= 1;
+                write_css_indent(&mut output, depth, &indent);
+                output.push('}');
+                output.push_str(newline);
+                if depth == 0 && !source[index + 1..].trim().is_empty() {
+                    output.push_str(newline);
+                }
+                start = index + 1;
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    write_css_line(&mut output, source[start..].trim(), depth, &indent, newline);
+    output
+}
+
+fn write_css_line(output: &mut String, content: &str, depth: usize, indent: &str, newline: &str) {
+    if !content.is_empty() {
+        write_css_indent(output, depth, indent);
+        output.push_str(content);
+        output.push_str(newline);
+    }
+}
+
+fn write_css_indent(output: &mut String, depth: usize, indent: &str) {
+    for _ in 0..depth {
+        output.push_str(indent);
+    }
+}
+
+fn source_separator_lines(source: &str) -> usize {
+    if source
+        .as_bytes()
+        .iter()
+        .filter(|&&byte| byte == b'\n')
+        .count()
+        >= 2
+    {
+        2
+    } else {
+        1
+    }
+}
+
+fn source_separator_lines_before(source: &str) -> usize {
+    let prefix_len = source.len() - source.trim_start().len();
+    source_separator_lines(&source[..prefix_len])
+}
+
+fn source_separator_lines_after(source: &str) -> usize {
+    source_separator_lines(&source[source.trim_end().len()..])
+}
+
+fn changes_authored_css(source: &str, printed: &str) -> bool {
+    // Ignore layout whitespace and an optional final declaration semicolon.
+    // All other token changes, including inserted nesting ampersands, changed
+    // media features, reordered values and shortened pseudo-elements, matter.
+    fn tokens(source: &str) -> Vec<u8> {
+        let bytes = source.as_bytes();
+        let mut output = Vec::with_capacity(bytes.len());
+        let mut index = 0;
+        let mut quote = None;
+        while index < bytes.len() {
+            let byte = bytes[index];
+            if byte == b'\\' && index + 1 < bytes.len() {
+                output.extend_from_slice(&bytes[index..index + 2]);
+                index += 2;
+                continue;
+            }
+            if let Some(delimiter) = quote {
+                output.push(byte);
+                if byte == delimiter {
+                    quote = None;
+                }
+                index += 1;
+                continue;
+            }
+            if matches!(byte, b'\'' | b'"') {
+                quote = Some(byte);
+                output.push(byte);
+                index += 1;
+                continue;
+            }
+            if byte.is_ascii_whitespace() {
+                index += 1;
+                continue;
+            }
+            if byte == b';'
+                && bytes[index + 1..].iter().find(|b| !b.is_ascii_whitespace()) == Some(&b'}')
+            {
+                index += 1;
+                continue;
+            }
+            output.push(byte);
+            index += 1;
+        }
+        output
+    }
+    tokens(source) != tokens(printed)
 }
 
 fn format_chunk_once(trimmed: &str, options: &FormatOptions) -> Result<String, FormatError> {
@@ -154,15 +353,13 @@ mod tests {
     use super::{FormatOptions, format_style_content};
 
     #[test]
-    fn test_background_position_shorthand_reaches_fixed_point_in_one_pass() {
-        // `background-position: left 1em top 50%` is a non-idempotent case for
-        // lightningcss: it first prints `1em 50%`, then a re-parse collapses
-        // the redundant center `50%` to `1em`. The formatter must reach that
-        // normal form in a single `vize fmt` pass. (#3248)
+    fn test_background_position_shorthand_stays_authored_and_stable() {
+        // lightningcss normalizes this shorthand over multiple passes. Keep
+        // the original declaration so formatting remains syntax preserving.
         let source = ".a { background-position: left 1em top 50%; }";
         let options = FormatOptions::default();
         let result = format_style_content(source, &options).unwrap();
-        assert_eq!(result.as_str(), ".a {\n  background-position: 1em;\n}\n");
+        assert!(result.contains("background-position: left 1em top 50%;"));
 
         // And formatting the result again is a no-op.
         let again = format_style_content(&result, &options).unwrap();
@@ -292,7 +489,7 @@ mod tests {
         let options = FormatOptions::default();
         let result = format_style_content(source, &options).unwrap();
 
-        assert!(result.contains(".asset {\n"));
+        assert!(result.contains(".asset {"));
         assert!(result.contains("https://example.test/a/*/icon.svg"));
         assert!(result.contains("/* after */"));
     }
@@ -326,6 +523,10 @@ mod tests {
         let again = format_style_content(result.as_str(), &options).unwrap();
 
         assert_eq!(result, again);
-        assert!(result.as_str().starts_with("/* comment */\n.a {"));
+        assert!(
+            result
+                .as_str()
+                .starts_with("@charset \"UTF-8\";\n/* comment */\n.a {")
+        );
     }
 }
