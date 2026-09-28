@@ -1,0 +1,126 @@
+name: Rust L1 source-only PR diagnostic
+on:
+  push:
+    branches: [ci/rust-l1-source-diagnostic-6830]
+permissions:
+  contents: read
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      rust-fast: ${{ steps.fast.outputs.rust-fast }}
+      rust-fast-plan: ${{ steps.fast.outputs.rust-fast-plan }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 2
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: false
+          run-install: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.98.0"
+      - name: Plan exact source-only commit
+        id: fast
+        run: node tools/support/compat/github/plan-fast-rust.mjs "$(git rev-parse HEAD^)" "$GITHUB_SHA" pull_request "$RUNNER_TEMP/fast-plan.json"
+
+  clippy:
+    needs: plan
+    if: ${{ needs.plan.outputs.rust-fast == 'true' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    env:
+      CARGO_BUILD_JOBS: "12"
+      VIZE_TEST_DISABLE_TSGO: "1"
+      RUST_FAST_PLAN_JSON: ${{ needs.plan.outputs.rust-fast-plan }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          components: clippy
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: pr-7132-
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - run: node tools/support/compat/github/write-fast-rust-plan.mjs "$RUNNER_TEMP/fast-plan.json"
+      - name: Clippy changed owner
+        run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/fast-plan.json" cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports
+      - name: Skeleton todo ratchet
+        run: rustc --edition 2024 tools/commands/ci/check-skeleton-todos.rs -o "$RUNNER_TEMP/check-skeleton-todos" && "$RUNNER_TEMP/check-skeleton-todos" --check
+
+  tests:
+    needs: plan
+    if: ${{ needs.plan.outputs.rust-fast == 'true' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    env:
+      CARGO_BUILD_JOBS: "12"
+      VIZE_TEST_DISABLE_TSGO: "1"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
+      RUST_TEST_THREADS: "4"
+      RUST_FAST_PLAN_JSON: ${{ needs.plan.outputs.rust-fast-plan }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: true
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: pr-7132-
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-nextest@0.9.146
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
+      - run: node tools/support/compat/github/write-fast-rust-plan.mjs "$RUNNER_TEMP/fast-plan.json"
+      - name: Build and receipt changed-owner library tests
+        run: |
+          mkdir -p target/rust-fast-archive target/tmp
+          node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/fast-plan.json" cargo nextest archive @packages@ --lib --cargo-profile ci --archive-file target/rust-fast-archive/tests.tar.zst
+          node tools/support/compat/github/rust-test-archive.mjs stamp target/rust-fast-archive/tests.tar.zst target/rust-fast-archive/receipt.json
+          node tools/support/compat/github/rust-test-archive.mjs verify target/rust-fast-archive/tests.tar.zst target/rust-fast-archive/receipt.json
+      - name: Run changed-owner library tests
+        run: cargo nextest run --archive-file target/rust-fast-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile pr --no-tests=fail
+      - name: Run changed-owner doctests
+        run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/fast-plan.json" cargo test @packages@ --profile ci --doc
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: rust-fast-diagnostic-${{ github.run_id }}
+          path: |
+            target/rust-fast-archive/receipt.json
+            target/nextest/pr/junit.xml
+          if-no-files-found: error
+
+  aggregate:
+    needs: [plan, clippy, tests]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    env:
+      PLAN_RESULT: ${{ needs.plan.result }}
+      CLIPPY_RESULT: ${{ needs.clippy.result }}
+      TEST_RESULT: ${{ needs.tests.result }}
+    steps:
+      - name: Require complete selected diagnostic
+        run: |
+          test "$PLAN_RESULT" = success
+          test "$CLIPPY_RESULT" = success
+          test "$TEST_RESULT" = success
