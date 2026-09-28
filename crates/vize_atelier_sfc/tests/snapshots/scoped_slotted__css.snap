@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_sfc/tests/scoped_slotted.rs
+expression: compiled.code
+---
+.card > .title[data-v-abc123-s] {
+  font-weight: bold;
+}
