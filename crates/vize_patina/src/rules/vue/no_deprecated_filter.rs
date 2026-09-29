@@ -194,7 +194,9 @@ fn arrow_param_type_spans(expr: &str) -> Vec<(usize, usize)> {
     let mut prev_significant = 0u8;
 
     while i < bytes.len() {
-        let c = bytes[i];
+        let Some(&c) = bytes.get(i) else {
+            break;
+        };
         match c {
             b'\'' | b'"' => {
                 i = skip_string(bytes, i, c);
@@ -216,7 +218,7 @@ fn arrow_param_type_spans(expr: &str) -> Vec<(usize, usize)> {
             b')' => {
                 let open = paren_stack.pop();
                 let mut j = i + 1;
-                while j < bytes.len() && bytes[j].is_ascii_whitespace() {
+                while j < bytes.len() && bytes.get(j).is_some_and(u8::is_ascii_whitespace) {
                     j += 1;
                 }
                 if bytes.get(j) == Some(&b':') {
@@ -258,9 +260,12 @@ fn find_arrow_after_type(bytes: &[u8], mut i: usize) -> Option<usize> {
     let mut brace = 0i32;
     let mut angle = 0i32;
     while i < bytes.len() {
-        match bytes[i] {
+        let Some(&byte) = bytes.get(i) else {
+            break;
+        };
+        match byte {
             b'\'' | b'"' => {
-                i = skip_string(bytes, i, bytes[i]);
+                i = skip_string(bytes, i, byte);
                 continue;
             }
             b'`' => {
@@ -302,9 +307,12 @@ fn push_param_type_spans(bytes: &[u8], mut i: usize, end: usize, spans: &mut Vec
     let mut brace = 0i32;
     let mut angle = 0i32;
     while i < end {
-        match bytes[i] {
+        let Some(&byte) = bytes.get(i) else {
+            break;
+        };
+        match byte {
             b'\'' | b'"' => {
-                i = skip_string(bytes, i, bytes[i]).min(end);
+                i = skip_string(bytes, i, byte).min(end);
                 continue;
             }
             b'`' => {
@@ -319,9 +327,12 @@ fn push_param_type_spans(bytes: &[u8], mut i: usize, end: usize, spans: &mut Vec
                 let mut type_brace = 0i32;
                 let mut type_angle = 0i32;
                 while i < end {
-                    match bytes[i] {
+                    let Some(&byte) = bytes.get(i) else {
+                        break;
+                    };
+                    match byte {
                         b'\'' | b'"' => {
-                            i = skip_string(bytes, i, bytes[i]).min(end);
+                            i = skip_string(bytes, i, byte).min(end);
                             continue;
                         }
                         b'`' => {

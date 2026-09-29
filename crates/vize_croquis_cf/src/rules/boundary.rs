@@ -242,16 +242,23 @@ fn find_browser_api_usage(
 fn contains_ident(haystack: &str, ident: &str) -> bool {
     let bytes = haystack.as_bytes();
     let needle = ident.as_bytes();
+    if needle.is_empty() {
+        return false;
+    }
     let mut start = 0;
-    while let Some(pos) = haystack[start..].find(ident) {
-        let absolute = start + pos;
-        let before_ok = absolute == 0 || !is_ident_byte(bytes[absolute - 1]);
-        let after = absolute + needle.len();
-        let after_ok = after >= bytes.len() || !is_ident_byte(bytes[after]);
-        if before_ok && after_ok {
-            return true;
+    while start + needle.len() <= bytes.len() {
+        if bytes.get(start..start + needle.len()) == Some(needle) {
+            let before_ok = start == 0
+                || bytes
+                    .get(start - 1)
+                    .is_some_and(|byte| !is_ident_byte(*byte));
+            let after = start + needle.len();
+            let after_ok = bytes.get(after).is_none_or(|byte| !is_ident_byte(*byte));
+            if before_ok && after_ok {
+                return true;
+            }
         }
-        start = absolute + 1;
+        start += 1;
     }
     false
 }

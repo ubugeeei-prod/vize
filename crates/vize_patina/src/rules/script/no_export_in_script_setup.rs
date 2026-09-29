@@ -193,30 +193,34 @@ fn source_uses_script_setup_macro(source: &str) -> bool {
     let bytes = source.as_bytes();
     let mut index = 0;
     while index < bytes.len() {
-        match bytes[index] {
+        let Some(&byte) = bytes.get(index) else {
+            break;
+        };
+        match byte {
             b'/' if bytes.get(index + 1) == Some(&b'/') => {
                 index += 2;
-                while index < bytes.len() && bytes[index] != b'\n' {
+                while index < bytes.len() && bytes.get(index) != Some(&b'\n') {
                     index += 1;
                 }
             }
             b'/' if bytes.get(index + 1) == Some(&b'*') => {
                 index += 2;
-                while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
+                while index + 1 < bytes.len()
+                    && !(bytes.get(index) == Some(&b'*') && bytes.get(index + 1) == Some(&b'/'))
                 {
                     index += 1;
                 }
                 index = (index + 2).min(bytes.len());
             }
             b'\'' | b'"' => {
-                let quote = bytes[index];
+                let quote = byte;
                 index += 1;
-                while index < bytes.len() {
-                    if bytes[index] == b'\\' {
+                while let Some(&current) = bytes.get(index) {
+                    if current == b'\\' {
                         index += 2;
                         continue;
                     }
-                    if bytes[index] == quote {
+                    if current == quote {
                         index += 1;
                         break;
                     }
@@ -225,12 +229,12 @@ fn source_uses_script_setup_macro(source: &str) -> bool {
             }
             b'`' => {
                 index += 1;
-                while index < bytes.len() {
-                    if bytes[index] == b'\\' {
+                while let Some(&current) = bytes.get(index) {
+                    if current == b'\\' {
                         index += 2;
                         continue;
                     }
-                    if bytes[index] == b'`' {
+                    if current == b'`' {
                         index += 1;
                         break;
                     }
@@ -240,7 +244,10 @@ fn source_uses_script_setup_macro(source: &str) -> bool {
             byte if is_ident_start(byte) => {
                 let start = index;
                 index += 1;
-                while index < bytes.len() && is_ident_continue(bytes[index]) {
+                while bytes
+                    .get(index)
+                    .is_some_and(|current| is_ident_continue(*current))
+                {
                     index += 1;
                 }
                 if let Some(word) = source.get(start..index)

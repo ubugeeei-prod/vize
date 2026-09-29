@@ -373,7 +373,9 @@ fn style_disable_comments_suppress_only_the_marked_declarations() {
         .iter()
         .filter(|diagnostic| diagnostic.rule_name == "css/no-important")
         .map(|diagnostic| {
-            source[..diagnostic.start as usize]
+            source
+                .get(..diagnostic.start as usize)
+                .unwrap_or("")
                 .bytes()
                 .filter(|byte| *byte == b'\n')
                 .count()

@@ -115,7 +115,12 @@ fn same_name_shorthand_fix(source: &str, start: u32, end: u32) -> Option<Fix> {
     let slice = source.get(start..end)?;
     let eq = slice.find('=')?;
     let mut trim = eq;
-    while trim > 0 && slice.as_bytes()[trim - 1].is_ascii_whitespace() {
+    while trim > 0
+        && slice
+            .as_bytes()
+            .get(trim - 1)
+            .is_some_and(u8::is_ascii_whitespace)
+    {
         trim -= 1;
     }
     if trim == 0 {

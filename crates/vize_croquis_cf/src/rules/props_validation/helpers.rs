@@ -223,8 +223,9 @@ fn union_members(expected: &str) -> Vec<&str> {
             '(' | '[' | '{' | '<' => depth += 1,
             ')' | ']' | '}' | '>' => depth -= 1,
             '|' if depth == 0 => {
-                let member = expected[start..index].trim();
-                if !member.is_empty() {
+                if let Some(member) = expected.get(start..index).map(str::trim)
+                    && !member.is_empty()
+                {
                     members.push(member);
                 }
                 start = index + character.len_utf8();
@@ -232,8 +233,9 @@ fn union_members(expected: &str) -> Vec<&str> {
             _ => {}
         }
     }
-    let member = expected[start..].trim();
-    if !member.is_empty() {
+    if let Some(member) = expected.get(start..).map(str::trim)
+        && !member.is_empty()
+    {
         members.push(member);
     }
     members

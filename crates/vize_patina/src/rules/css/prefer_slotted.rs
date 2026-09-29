@@ -138,10 +138,12 @@ fn comment_ranges(bytes: &[u8]) -> Vec<(usize, usize)> {
     let mut ranges = Vec::new();
     let mut index = 0;
     while index + 1 < bytes.len() {
-        if bytes[index] == b'/' && bytes[index + 1] == b'*' {
+        if bytes.get(index) == Some(&b'/') && bytes.get(index + 1) == Some(&b'*') {
             let start = index;
             index += 2;
-            while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/') {
+            while index + 1 < bytes.len()
+                && !(bytes.get(index) == Some(&b'*') && bytes.get(index + 1) == Some(&b'/'))
+            {
                 index += 1;
             }
             let end = if index + 1 < bytes.len() {

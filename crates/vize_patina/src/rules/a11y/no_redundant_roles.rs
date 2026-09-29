@@ -231,7 +231,11 @@ fn remove_attribute_edit(source: &str, start: u32, end: u32) -> TextEdit {
     let bytes = source.as_bytes();
     let end = (end as usize).min(bytes.len());
     let mut start = (start as usize).min(end);
-    while start > 0 && matches!(bytes[start - 1], b' ' | b'\t') {
+    while start > 0
+        && bytes
+            .get(start - 1)
+            .is_some_and(|byte| matches!(*byte, b' ' | b'\t'))
+    {
         start -= 1;
     }
     TextEdit::delete(start as u32, end as u32)
