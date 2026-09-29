@@ -133,8 +133,8 @@ fn no_role_presentation_on_focusable_template() {
         ),
         (
             r#"<div tabindex="-1" role="presentation">Programmatic</div>"#,
-            0,
-            "negative tabindex",
+            1,
+            "tabindex -1 is programmatically focusable",
         ),
         (
             r#"<div tabindex tabindex="0" role="presentation">Maybe focusable</div>"#,

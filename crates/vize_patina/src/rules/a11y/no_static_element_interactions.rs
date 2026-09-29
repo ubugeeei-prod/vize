@@ -24,7 +24,8 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::helpers::{
-    has_interactive_role, is_aria_hidden_true, is_component_like_element, is_interactive_element,
+    get_static_attribute_value, has_interactive_role, is_aria_hidden_true,
+    is_component_like_element, is_interactive_element, is_presentation_role,
 };
 
 static META: RuleMeta = RuleMeta {
@@ -73,7 +74,18 @@ impl Rule for NoStaticElementInteractions {
             return;
         }
 
-        if is_aria_hidden_true(element) {
+        if is_aria_hidden_true(element) || is_presentation_role(element) {
+            return;
+        }
+
+        // Dialogs and toolbars are composite widgets, not static containers.
+        // `role="button"` stays on the interactive-role path below.
+        if element.tag == "dialog"
+            || matches!(
+                get_static_attribute_value(element, "role"),
+                Some("dialog" | "alertdialog" | "toolbar")
+            )
+        {
             return;
         }
 
@@ -156,6 +168,40 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<span @keydown="handle">Content</span>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_dialog_alertdialog_toolbar_and_native_dialog() {
+        let linter = create_linter();
+        for source in [
+            r#"<div role="dialog" @click="close">Close</div>"#,
+            r#"<div role="alertdialog" @keydown="trap">Alert</div>"#,
+            r#"<div role="toolbar" @click="focusTool">Tools</div>"#,
+            r#"<dialog @click="close">Close</dialog>"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.warning_count, 0, "{source}");
+        }
+    }
+
+    #[test]
+    fn test_role_button_without_key_handler_stays_unreported() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div role="button" @click="handle">Click</div>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_presentation_and_none_events() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div role="presentation" @click="close" /><div role="none" @keydown="close" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]

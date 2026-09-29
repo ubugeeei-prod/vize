@@ -119,13 +119,13 @@ fn no_aria_hidden_on_focusable_template() {
         ),
         (
             r#"<div tabindex="-1" aria-hidden="true">Programmatic</div>"#,
-            0,
-            "negative tabindex",
+            1,
+            "tabindex -1 is programmatically focusable",
         ),
         (
             r#"<input readonly tabindex="-1" aria-hidden="true" />"#,
-            0,
-            "negative tabindex removes native input from tab order",
+            1,
+            "tabindex -1 keeps a native input focusable",
         ),
         (
             r#"<div tabindex="x" aria-hidden="true">Focusable</div>"#,
