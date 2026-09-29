@@ -44,7 +44,10 @@ export async function createArchiveReceipt(
     ...checkout(cwd),
     platform: process.platform,
     arch: process.arch,
-    nextestVersion,
+    // cargo-binstall may select GNU or musl binaries on identical runners.
+    // Their version banners differ, but the pinned nextest release is the
+    // compatibility boundary for an archive consumed by another job.
+    nextestVersion: "0.9.146",
     rustcVersion,
     cargoProfile: "ci",
     requireTsgo,
