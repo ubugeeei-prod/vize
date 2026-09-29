@@ -67,3 +67,23 @@ fn patina_rule_metadata_includes_musea_opt_in_rules() {
     assert_eq!(require_title.default_severity, "error");
     assert_eq!(no_empty_variant.default_severity, "warning");
 }
+
+#[test]
+fn patina_rule_metadata_includes_opinionated_css_rules() {
+    let rules = collect_patina_rule_metadata();
+    let no_important = rules
+        .iter()
+        .find(|rule| rule.name == "css/no-important")
+        .expect("css/no-important should be exposed");
+
+    assert_eq!(no_important.category, "Css");
+    assert_eq!(no_important.presets, vec!["opinionated", "nuxt"]);
+    assert_eq!(no_important.default_severity, "warning");
+    assert_eq!(
+        rules
+            .iter()
+            .filter(|rule| rule.name.starts_with("css/"))
+            .count(),
+        10
+    );
+}
