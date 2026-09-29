@@ -299,6 +299,63 @@ mod tests {
     }
 
     #[test]
+    fn style_block_keeps_box_values_and_implicit_nested_selectors() {
+        // #7049: formatting may change whitespace, indentation, line breaks,
+        // and quotes, but not declaration values or selectors.
+        let source = concat!(
+            "<template>\n",
+            "  <hr />\n",
+            "</template>\n",
+            "\n",
+            "<style scoped>\n",
+            "hr {\n",
+            "  border: solid;\n",
+            "  border-width: thin 0 0 0;\n",
+            "  margin: 0 0 0 0;\n",
+            "}\n",
+            "\n",
+            ".wrap {\n",
+            "  color: red;\n",
+            "\n",
+            "  .item {\n",
+            "    color: blue;\n",
+            "  }\n",
+            "}\n",
+            "</style>\n",
+        );
+        let options = FormatOptions::default();
+        let formatted = crate::format_sfc(source, &options).unwrap().code;
+        assert!(
+            formatted.contains("border-width: thin 0 0 0;"),
+            "{formatted}"
+        );
+        assert!(formatted.contains("margin: 0 0 0 0;"), "{formatted}");
+        assert!(
+            formatted.contains("\n  .item {"),
+            "nested selector must stay authored and indented: {formatted}"
+        );
+        assert!(
+            !formatted.contains('&'),
+            "nested selectors must not gain a nesting prefix: {formatted}"
+        );
+        assert_eq!(
+            crate::format_sfc(&formatted, &options).unwrap().code,
+            formatted
+        );
+
+        let compact = concat!(
+            "hr{border:solid;border-width:thin 0 0 0;margin:0 0 0 0}",
+            ".wrap{color:red;.item{color:blue}}",
+        );
+        let pretty = format_style_content(compact, &options).unwrap();
+        assert!(pretty.contains("thin 0 0 0"), "{pretty}");
+        assert!(pretty.contains("0 0 0 0"), "{pretty}");
+        assert!(pretty.contains("\n  .item"), "{pretty}");
+        assert!(!pretty.contains('&'), "{pretty}");
+        assert_eq!(format_style_content(&pretty, &options).unwrap(), pretty);
+    }
+
+    #[test]
     fn test_format_charset_before_top_level_comment_reaches_fixed_point() {
         let source = concat!(
             "@charset \"UTF-8\";\n",
