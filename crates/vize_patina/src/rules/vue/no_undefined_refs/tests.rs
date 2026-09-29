@@ -162,3 +162,24 @@ fn ignores_a_javascript_global() {
 "#;
     assert_eq!(findings(&lint_sfc(sfc)), none());
 }
+
+#[test]
+fn does_not_report_vue_router_route_or_router() {
+    let sfc = r#"<script setup lang="ts">
+const label = "Back";
+</script>
+<template>
+  <a v-if="$route.name === 'home'" href="/" @click="() => $router.push('/list')">{{ label }} {{ missing }}</a>
+</template>
+"#;
+    let expected = undefined_at(sfc, "missing");
+    assert_eq!(
+        findings(&lint_sfc(sfc))
+            .into_iter()
+            .map(|(rule, severity, start, end, message)| {
+                (rule, severity, start, end, message.to_string())
+            })
+            .collect::<Vec<_>>(),
+        vec![expected]
+    );
+}

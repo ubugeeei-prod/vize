@@ -187,14 +187,80 @@ fn is_script_setup_block(program: &Program<'_>, source: &str) -> bool {
 
 /// Whether the block uses a compiler macro that is exclusive to `<script setup>`.
 ///
-/// A byte-level prefilter mirroring the convention used by other script rules
-/// (e.g. `no-with-defaults`). The macros are not valid identifiers to import in
-/// a normal `<script>`, so a textual occurrence is a strong setup signal.
+/// Only real identifiers count. A comment or string that mentions `defineEmits`
+/// does not make a plain `.ts` module `<script setup>`.
 fn source_uses_script_setup_macro(source: &str) -> bool {
     let bytes = source.as_bytes();
-    SCRIPT_SETUP_MACROS
-        .iter()
-        .any(|macro_name| memchr::memmem::find(bytes, macro_name.as_bytes()).is_some())
+    let mut index = 0;
+    while index < bytes.len() {
+        match bytes[index] {
+            b'/' if bytes.get(index + 1) == Some(&b'/') => {
+                index += 2;
+                while index < bytes.len() && bytes[index] != b'\n' {
+                    index += 1;
+                }
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                index += 2;
+                while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
+                {
+                    index += 1;
+                }
+                index = (index + 2).min(bytes.len());
+            }
+            b'\'' | b'"' => {
+                let quote = bytes[index];
+                index += 1;
+                while index < bytes.len() {
+                    if bytes[index] == b'\\' {
+                        index += 2;
+                        continue;
+                    }
+                    if bytes[index] == quote {
+                        index += 1;
+                        break;
+                    }
+                    index += 1;
+                }
+            }
+            b'`' => {
+                index += 1;
+                while index < bytes.len() {
+                    if bytes[index] == b'\\' {
+                        index += 2;
+                        continue;
+                    }
+                    if bytes[index] == b'`' {
+                        index += 1;
+                        break;
+                    }
+                    index += 1;
+                }
+            }
+            byte if is_ident_start(byte) => {
+                let start = index;
+                index += 1;
+                while index < bytes.len() && is_ident_continue(bytes[index]) {
+                    index += 1;
+                }
+                if let Some(word) = source.get(start..index)
+                    && SCRIPT_SETUP_MACROS.contains(&word)
+                {
+                    return true;
+                }
+            }
+            _ => index += 1,
+        }
+    }
+    false
+}
+
+fn is_ident_start(byte: u8) -> bool {
+    byte.is_ascii_alphabetic() || byte == b'_' || byte == b'$'
+}
+
+fn is_ident_continue(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
 }
 
 /// Whether the program contains a top-level `await`, which is only valid inside

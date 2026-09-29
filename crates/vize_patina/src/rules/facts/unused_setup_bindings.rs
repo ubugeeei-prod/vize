@@ -2,11 +2,15 @@
 //!
 //! Report valid script-setup declarations with no resolved script, template
 //! or style `v-bind()` read. Underscore prefixes express intentional non-use.
-//! Croquis stores the authoritative relation, and this consumer only reads
-//! its declared group. Unknown/invalid or external blocks are outside the domain.
+//! Croquis stores the authoritative relation. A binding used only as a `v-for`
+//! source is still a read; the template walk below counts those when the
+//! stored relation missed the source expression. Unknown/invalid or external
+//! blocks are outside the domain.
 
+use vize_croquis::drawer::{extract_identifiers_oxc, parse_v_for_scope_expression};
 use vize_croquis::facts::{Demand, FactConsumer, FactGroup, UnusedBindings};
-use vize_relief::RootNode;
+use vize_l0::{CompactString, FxHashSet};
+use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
@@ -30,14 +34,15 @@ impl FactConsumer for NoUnusedSetupBindings {
 }
 
 impl NoUnusedSetupBindings {
-    fn report(ctx: &mut LintContext<'_>) {
+    fn report(ctx: &mut LintContext<'_>, root: Option<&RootNode<'_>>) {
         let Some(view) = ctx.facts::<Self>() else {
             return;
         };
         let Ok(table) = view.get::<UnusedBindings>() else {
             return;
         };
-        let diagnostics = diagnostics(table);
+        let v_for_sources = root.map(v_for_source_reads).unwrap_or_default();
+        let diagnostics = diagnostics(table, &v_for_sources);
         for diagnostic in diagnostics {
             ctx.report_in_script(diagnostic);
         }
@@ -49,9 +54,9 @@ impl Rule for NoUnusedSetupBindings {
         &META
     }
 
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _: &RootNode<'a>) {
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         if ctx.sfc_descriptor().is_some() {
-            Self::report(ctx);
+            Self::report(ctx, Some(root));
         }
     }
 
@@ -76,17 +81,23 @@ impl Rule for NoUnusedSetupBindings {
         let Ok(table) = facts.prepare::<Self>().get::<UnusedBindings>() else {
             return;
         };
-        let diagnostics = diagnostics(table);
+        let diagnostics = diagnostics(table, &FxHashSet::default());
         for diagnostic in diagnostics {
             ctx.report_in_script(diagnostic);
         }
     }
 }
 
-fn diagnostics(table: &vize_croquis::facts::FactTable<UnusedBindings>) -> Vec<LintDiagnostic> {
+fn diagnostics(
+    table: &vize_croquis::facts::FactTable<UnusedBindings>,
+    v_for_sources: &FxHashSet<CompactString>,
+) -> Vec<LintDiagnostic> {
     table
         .iter()
-        .filter(|(name, _)| !name.starts_with('_'))
+        .filter(|(name, _)| {
+            let name: &str = name.as_ref();
+            !name.starts_with('_') && !v_for_sources.contains(name)
+        })
         .map(|(name, fact)| {
             LintDiagnostic::warn(
                 META.name,
@@ -99,6 +110,86 @@ fn diagnostics(table: &vize_croquis::facts::FactTable<UnusedBindings>) -> Vec<Li
             )
         })
         .collect()
+}
+
+/// Identifiers read by `v-for` source expressions (`item in DAYS`, `(row, at) in rows`).
+fn v_for_source_reads(root: &RootNode<'_>) -> FxHashSet<CompactString> {
+    let mut reads = FxHashSet::default();
+    walk_v_for_sources(&root.children, root.source, &mut reads);
+    reads
+}
+
+fn walk_v_for_sources(
+    children: &[TemplateChildNode<'_>],
+    source: &str,
+    reads: &mut FxHashSet<CompactString>,
+) {
+    for child in children {
+        match child {
+            TemplateChildNode::Element(element) => {
+                for prop in &element.props {
+                    if let PropNode::Directive(directive) = prop {
+                        push_v_for_directive(directive, source, reads);
+                    }
+                }
+                walk_v_for_sources(&element.children, source, reads);
+            }
+            TemplateChildNode::If(node) => {
+                for branch in &node.branches {
+                    walk_v_for_sources(&branch.children, source, reads);
+                }
+            }
+            TemplateChildNode::IfBranch(node) => {
+                walk_v_for_sources(&node.children, source, reads);
+            }
+            TemplateChildNode::For(node) => {
+                push_expression_reads(&node.source, source, reads);
+                walk_v_for_sources(&node.children, source, reads);
+            }
+            _ => {}
+        }
+    }
+}
+
+fn push_v_for_directive(
+    directive: &vize_relief::DirectiveNode<'_>,
+    source: &str,
+    reads: &mut FxHashSet<CompactString>,
+) {
+    if directive.name != "for" {
+        return;
+    }
+    if let Some(parsed) = &directive.for_parse_result {
+        push_expression_reads(&parsed.source, source, reads);
+        return;
+    }
+    let Some(exp) = directive.exp.as_ref() else {
+        return;
+    };
+    let text = expression_text(exp, source);
+    let Some(aliases) = parse_v_for_scope_expression(text) else {
+        return;
+    };
+    for ident in extract_identifiers_oxc(aliases.source.as_str()) {
+        reads.insert(ident);
+    }
+}
+
+fn push_expression_reads(
+    exp: &ExpressionNode<'_>,
+    source: &str,
+    reads: &mut FxHashSet<CompactString>,
+) {
+    for ident in extract_identifiers_oxc(expression_text(exp, source)) {
+        reads.insert(ident);
+    }
+}
+
+fn expression_text<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a str {
+    match exp {
+        ExpressionNode::Simple(simple) => simple.content,
+        ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
+    }
 }
 
 #[cfg(test)]

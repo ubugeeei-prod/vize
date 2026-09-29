@@ -13,6 +13,17 @@ expression: result.diagnostics
             "Use shorthand prop syntax",
         ),
         labels: [],
-        fix: None,
+        fix: Some(
+            Fix {
+                message: "Use shorthand prop syntax",
+                edits: [
+                    TextEdit {
+                        start: 17,
+                        end: 23,
+                        new_text: "",
+                    },
+                ],
+            },
+        ),
     },
 ]

@@ -27,7 +27,7 @@
 //! ```
 
 use crate::context::LintContext;
-use crate::diagnostic::Severity;
+use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::naming::names_match;
 use vize_relief::{ElementNode, ExpressionNode};
@@ -83,16 +83,48 @@ impl Rule for PreferPropsShorthand {
                         value.chars().all(|c: char| c.is_alphanumeric() || c == '_');
 
                     if is_simple_identifier && names_match(prop_name, value) {
-                        ctx.warn_with_help(
+                        let mut diagnostic = LintDiagnostic::warn(
+                            ctx.current_rule,
                             ctx.t("vue/prefer-props-shorthand.message"),
-                            &dir.loc,
-                            ctx.t("vue/prefer-props-shorthand.help"),
+                            dir.loc.span.start,
+                            dir.loc.span.end,
                         );
+                        let help = ctx.t("vue/prefer-props-shorthand.help");
+                        if let Some(help) = ctx.help_level().process(help.as_ref()) {
+                            diagnostic = diagnostic.with_help(help);
+                        }
+                        if let Some(fix) = same_name_shorthand_fix(
+                            ctx.source,
+                            dir.loc.span.start,
+                            dir.loc.span.end,
+                        ) {
+                            diagnostic = diagnostic.with_fix(fix);
+                        }
+                        ctx.report(diagnostic);
                     }
                 }
             }
         }
     }
+}
+
+/// Delete `="value"` from `:user-name="userName"`, leaving `:user-name`.
+fn same_name_shorthand_fix(source: &str, start: u32, end: u32) -> Option<Fix> {
+    let start = start as usize;
+    let end = end as usize;
+    let slice = source.get(start..end)?;
+    let eq = slice.find('=')?;
+    let mut trim = eq;
+    while trim > 0 && slice.as_bytes()[trim - 1].is_ascii_whitespace() {
+        trim -= 1;
+    }
+    if trim == 0 {
+        return None;
+    }
+    Some(Fix::new(
+        "Use shorthand prop syntax",
+        TextEdit::delete((start + trim) as u32, end as u32),
+    ))
 }
 
 #[cfg(test)]
@@ -135,6 +167,20 @@ mod tests {
         let linter = create_linter().with_vue_version(Some(VueVersion::V2_7));
         let result = linter.lint_template(r#"<MyComponent :foo="foo" />"#, "test.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn same_name_binding_emits_a_shorthand_fix() {
+        let linter = create_linter();
+        let source = r#"<MyComponent :foo="foo" />"#;
+        let result = linter.lint_template(source, "test.vue");
+        let fix = result.diagnostics[0].fix.as_ref().expect("shorthand fix");
+        assert_eq!(fix.apply(source), r#"<MyComponent :foo />"#);
+
+        let source = r#"<UserAvatar :user-name="userName" />"#;
+        let result = linter.lint_template(source, "UserCard.vue");
+        let fix = result.diagnostics[0].fix.as_ref().expect("shorthand fix");
+        assert_eq!(fix.apply(source), r#"<UserAvatar :user-name />"#);
     }
 
     #[test]

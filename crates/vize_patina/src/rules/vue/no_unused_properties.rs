@@ -30,9 +30,11 @@
 //! * The Options API `props:` option. Croquis exposes only `defineProps` props
 //!   through `macros.props()`, so that spelling declares nothing here and is out
 //!   of scope.
-//! * A model modifier prop paired with an authored `defineModel`: the default
-//!   model consumes `modelModifiers`, while a named model consumes
-//!   `<name>Modifiers`. Vue reads these props on behalf of the component.
+//! * A model modifier prop. `modelModifiers` is always consumed by Vue's
+//!   default `v-model`, even when it is only declared and not destructured.
+//!   A named model consumes `<name>Modifiers`, whether the model comes from
+//!   `defineModel` or from a declared prop of that name. Vue reads these
+//!   props on behalf of the component.
 //! * Names matched by `ignore_pattern`, and any name starting with `_`.
 //!
 //! ## Report location
@@ -202,16 +204,21 @@ impl Rule for NoUnusedProperties {
                 );
             }
 
-            // Vue consumes the modifier companion prop for each `defineModel`
-            // declaration. Match against the authored model set instead of
-            // suppressing every `*Modifiers` prop, which would hide ordinary
-            // unused declarations with the same suffix.
-            let model_modifier_props: FxHashSet<CompactString> = analysis
+            // Vue consumes `modelModifiers` for the default `v-model` even when
+            // the component never reads it, and `<name>Modifiers` for a named
+            // model. Pair named modifiers with `defineModel` or a declared prop
+            // of that name — do not suppress every `*Modifiers` prop, which
+            // would hide an ordinary unused declaration with the same suffix.
+            let mut model_modifier_props: FxHashSet<CompactString> = analysis
                 .macros
                 .models()
                 .iter()
                 .map(|model| vize_l0::get_modifier_prop_name(model.name.as_str()))
                 .collect();
+            model_modifier_props.insert(CompactString::new("modelModifiers"));
+            for prop in props {
+                model_modifier_props.insert(vize_l0::get_modifier_prop_name(prop.name.as_str()));
+            }
 
             let destructured = analysis.macros.props_destructure();
             props

@@ -99,15 +99,23 @@ fn parser_family_reports_name_the_closed_ancestor() {
     );
     assert_eq!(
         template(r#"<table><tr><span>not td/th</span></tr></table>"#),
-        [
-            "7..10 <tr> directly inside <table> gets an implied wrapper (<tbody>, <tr> or <colgroup>) from the HTML parser [0..6 <table> is open here]"
-        ]
+        NONE
     );
     assert_eq!(
         template(r#"<svg><div>html in svg</div></svg>"#),
         [
             "5..9 <div> breaks out of <svg>: the HTML parser ends SVG/MathML content at this tag [0..4 <svg> is open here]"
         ]
+    );
+}
+
+#[test]
+fn tr_directly_inside_table_is_legal_in_an_sfc_template() {
+    assert_eq!(
+        template(
+            r#"<table class="score-table"><tr><th>Subject</th><th>Score</th></tr><tr><td>Math</td><td>80</td></tr></table>"#
+        ),
+        NONE
     );
 }
 
