@@ -7,6 +7,11 @@ pub(super) struct DeclarationPositions<'a> {
     used: Vec<bool>,
 }
 
+#[expect(
+    clippy::string_slice,
+    clippy::indexing_slicing,
+    reason = "the scanner checks bounds and slices only at ASCII delimiters"
+)]
 impl<'a> DeclarationPositions<'a> {
     pub(super) fn new(source: &'a str, rule: &StyleRule<'_>) -> Self {
         let line_start = if rule.loc.line == 0 {
