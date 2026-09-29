@@ -52,6 +52,40 @@ fn lsp_corsa_request_bounds_are_independent_per_server() {
 }
 
 #[test]
+fn lsp_config_uses_one_evaluation_for_type_checker_and_timeout() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(dir.path().join("eval-count.txt"), "0").unwrap();
+    std::fs::write(
+        dir.path().join("vize.config.mjs"),
+        r#"
+import { readFileSync, writeFileSync } from 'node:fs';
+const counter = new URL('./eval-count.txt', import.meta.url);
+export default () => {
+  const count = Number(readFileSync(counter, 'utf8')) + 1;
+  writeFileSync(counter, String(count));
+  return { typeChecker: { strict: count === 1, lspRequestTimeoutMs: count === 1 ? 90000 : 120000 } };
+};
+"#,
+    )
+    .unwrap();
+
+    for load in [
+        ServerState::load_workspace_config,
+        ServerState::load_lsp_config,
+    ] {
+        std::fs::write(dir.path().join("eval-count.txt"), "0").unwrap();
+        let state = ServerState::new();
+        load(&state, dir.path());
+        assert!(state.get_type_checker_config().strict);
+        assert_eq!(state.lsp_request_timeout_ms(), 90_000);
+        assert_eq!(
+            std::fs::read_to_string(dir.path().join("eval-count.txt")).unwrap(),
+            "1"
+        );
+    }
+}
+
+#[test]
 fn patterned_template_opt_in_is_reloaded_by_both_config_loaders() {
     let dir = tempfile::tempdir().unwrap();
     for load in [

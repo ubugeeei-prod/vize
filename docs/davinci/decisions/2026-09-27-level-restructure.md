@@ -286,7 +286,7 @@ Vize follows language-toolchain practice, not compiler-only practice. It stays l
   - Diagnostics and code actions carry a range and a document version, and they are recomputed when stale.
   - Memory holds artifacts only for open files, plus `SfcSummary` for every file.
 - **Stale requests are cancelled on edit** ([#6873](https://github.com/ubugeeei-prod/vize/issues/6873)).
-- **The CLI and the LSP share one project model** ([#6874](https://github.com/ubugeeei-prod/vize/issues/6874)); the [first path-identity slice](./2026-09-28-shared-project-model.md) resolves configured tsconfig paths once per invocation or folder, while full config/workspace unification remains open. [The #7030 release compatibility correction](./2026-09-29-lsp-timeout-source-compat.md) keeps its editor timeout outside the public shared Rust config struct.
+- **The CLI and the LSP share one project model** ([#6874](https://github.com/ubugeeei-prod/vize/issues/6874)); the [first path-identity slice](./2026-09-28-shared-project-model.md) resolves configured tsconfig paths once per invocation or folder, while full config/workspace unification remains open. [The #7030 release compatibility correction](./2026-09-29-lsp-timeout-source-compat.md) keeps its editor timeout outside the public shared Rust config struct and derives all editor settings from one raw config evaluation.
 - **The formatter keeps its Doc IR separate from its printer** ([#6875](https://github.com/ubugeeei-prod/vize/issues/6875)).
 - **Edits have one representation.** Diagnostic fixes, code actions and lint autofixes are all L1 span edits tagged with a document version ([#6876](https://github.com/ubugeeei-prod/vize/issues/6876)).
 

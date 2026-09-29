@@ -16,6 +16,7 @@ mod language_server;
 mod legacy_dialect_tests;
 mod library;
 mod lint_features;
+mod lsp_snapshot;
 mod parse;
 mod pkl;
 #[cfg(test)]
@@ -33,6 +34,7 @@ use super::model::{
 };
 pub use compiler_keys::*;
 pub use library::{LoadedLibConfig, load_lib_config_with_source};
+pub use lsp_snapshot::{LoadedLspConfig, load_lsp_config_snapshot};
 pub use {jsx::load_compiler_jsx_compat, vapor::load_compiler_vapor};
 pub use {language_server::*, lint_features::*};
 
@@ -185,14 +187,6 @@ pub fn load_config_and_linter_with_features_and_source(
 pub fn load_linter_config(path: Option<&Path>) -> LinterConfig {
     let loaded = load_raw_config_with_source(path);
     load_linter_from_raw_config(&loaded.config)
-}
-
-/// Load the editor-only Corsa request bound without expanding the public
-/// `TypeCheckerConfig` struct used by CLI and external Rust callers.
-pub fn load_lsp_request_timeout_ms(path: Option<&Path>) -> u64 {
-    load_raw_config_with_source(path)
-        .config
-        .lsp_request_timeout_ms()
 }
 
 /// Load the typed per-rule lint options (`linter.ruleOptions`); defaults when unset.
