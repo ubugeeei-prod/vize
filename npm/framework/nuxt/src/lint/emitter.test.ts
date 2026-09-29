@@ -256,3 +256,26 @@ void test("later global plan items win without losing earlier keys", () => {
     ]),
   );
 });
+
+void test("override and ignore globs are rebased onto the generated config directory", () => {
+  const rendered = renderNuxtOxlintConfig(
+    [
+      { name: "ignores", ignores: ["!dist/**", "/tmp/keep/**"] },
+      {
+        name: "pages",
+        files: ["app/pages/**/*.{vue,ts}"],
+        ignores: ["app/pages/generated/**"],
+      },
+    ],
+    "./plugin.mjs",
+    { rootDir: "/proj", configDir: "/proj/.output/nuxt" },
+  );
+  const config = JSON.parse(rendered) as {
+    ignorePatterns: string[];
+    overrides: Array<{ files: string[]; excludeFiles: string[] }>;
+  };
+
+  assert.deepEqual(config.ignorePatterns, ["!../../dist/**", "/tmp/keep/**"]);
+  assert.deepEqual(config.overrides[0].files, ["../../app/pages/**/*.{vue,ts}"]);
+  assert.deepEqual(config.overrides[0].excludeFiles, ["../../app/pages/generated/**"]);
+});

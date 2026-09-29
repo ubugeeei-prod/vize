@@ -5,6 +5,8 @@
  * Patina as the `vize` JavaScript plugin, so this boundary is the one place
  * those ids gain their `vize/` prefix.
  */
+import path from "node:path";
+
 import type { NuxtLintConfigItem, NuxtLintSeverity } from "@vizejs/nuxt-lint-config";
 
 interface OxlintOverride {
@@ -81,11 +83,24 @@ function mergeRules(
   Object.assign(target, prefixVizeRules(source));
 }
 
+/**
+ * Plan globs are relative to the Nuxt root. Oxlint resolves `overrides` and
+ * `ignorePatterns` from the generated config's directory, so the emitter
+ * rebases them when it knows both directories.
+ */
+export interface NuxtOxlintGlobBase {
+  rootDir: string;
+  configDir: string;
+}
+
 /** Render the complete generated oxlint config, including its trailing newline. */
 export function renderNuxtOxlintConfig(
   items: readonly NuxtLintConfigItem[],
   pluginSpecifier: string,
+  globBase?: NuxtOxlintGlobBase,
 ): string {
+  const rebase = (glob: string) =>
+    globBase ? rebaseGlob(glob, globBase.rootDir, globBase.configDir) : glob;
   const ignorePatterns: string[] = [];
   const globals: Record<string, "readonly" | "writable"> = {};
   const rules: Record<string, NuxtLintSeverity> = {};
@@ -93,15 +108,15 @@ export function renderNuxtOxlintConfig(
 
   for (const item of items) {
     if (item.files) {
-      const override: OxlintOverride = { files: [...item.files] };
-      if (item.ignores) override.excludeFiles = [...item.ignores];
+      const override: OxlintOverride = { files: item.files.map(rebase) };
+      if (item.ignores) override.excludeFiles = item.ignores.map(rebase);
       if (item.globals) override.globals = { ...item.globals };
       if (item.rules) override.rules = prefixVizeRules(item.rules);
       overrides.push(override);
       continue;
     }
 
-    if (item.ignores) ignorePatterns.push(...item.ignores);
+    if (item.ignores) ignorePatterns.push(...item.ignores.map(rebase));
     mergeGlobals(globals, item.globals);
     mergeRules(rules, item.rules);
   }
@@ -117,4 +132,16 @@ export function renderNuxtOxlintConfig(
   if (overrides.length > 0) config.overrides = overrides;
 
   return `${JSON.stringify(config, null, 2)}\n`;
+}
+
+function rebaseGlob(glob: string, rootDir: string, configDir: string): string {
+  const negated = glob.startsWith("!");
+  const body = negated ? glob.slice(1) : glob;
+  if (path.isAbsolute(body)) return glob;
+
+  let relative = path.relative(configDir, path.resolve(rootDir, body));
+  relative = relative.split(path.sep).join("/");
+  if (relative.length === 0) relative = ".";
+  else if (!relative.startsWith(".")) relative = `./${relative}`;
+  return negated ? `!${relative}` : relative;
 }

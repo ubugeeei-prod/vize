@@ -215,6 +215,7 @@ export async function setupNuxtLintConfigGeneration(
     const artifact = renderNuxtOxlintConfig(
       nextPlan,
       resolvePluginSpecifier(path.dirname(configFile)),
+      { rootDir: planRoot, configDir: path.dirname(configFile) },
     );
     const changed = await writeFileIfChanged(configFile, artifact);
     currentPlan = nextPlan;

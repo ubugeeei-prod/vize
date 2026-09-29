@@ -23,8 +23,15 @@ export interface NuxtLintConfigAddon {
   getConfigs(): NuxtLintAwaitable<readonly NuxtLintConfigItem[] | undefined>;
 }
 
+/** Nuxt options that decide whether an unimport registry is actually injected. */
+export interface NuxtLintAutoImportOptions {
+  imports?: false | { autoImport?: boolean };
+  nitro?: { imports?: false | { autoImport?: boolean } };
+}
+
 /** The Nuxt hook surface used by lint config addons. */
 export interface NuxtLintConfigAddonNuxt {
+  options?: NuxtLintAutoImportOptions;
   hook(name: "imports:context" | "nitro:init", callback: (value: unknown) => unknown): void;
   callHook(
     name: typeof VIZE_NUXT_LINT_CONFIG_ADDONS_HOOK,
@@ -34,6 +41,11 @@ export interface NuxtLintConfigAddonNuxt {
 
 /** Resolve the config items contributed by the current addon registry. */
 export type ResolveNuxtLintConfigAddons = () => Promise<readonly NuxtLintConfigItem[]>;
+
+function autoImportEnabled(imports: false | { autoImport?: boolean } | undefined): boolean {
+  if (imports === false) return false;
+  return imports?.autoImport !== false;
+}
 
 function asImportContext(value: unknown): NuxtLintImportContext | undefined {
   if (value == null || typeof value !== "object" || !("getImports" in value)) {
@@ -71,8 +83,10 @@ function createNuxtImportGlobalsAddon(nuxt: NuxtLintConfigAddonNuxt): NuxtLintCo
     name: "vize:lint:import-globals",
     async getConfigs() {
       const imports = [
-        ...((await unimport?.getImports()) ?? []),
-        ...((await nitroUnimport?.getImports()) ?? []),
+        ...(autoImportEnabled(nuxt.options?.imports) ? ((await unimport?.getImports()) ?? []) : []),
+        ...(autoImportEnabled(nuxt.options?.nitro?.imports)
+          ? ((await nitroUnimport?.getImports()) ?? [])
+          : []),
       ].sort(
         (left, right) => left.from.localeCompare(right.from) || left.name.localeCompare(right.name),
       );
