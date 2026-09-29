@@ -25,19 +25,12 @@ pub struct TypeCheckerConfig {
     pub tsgo_path: Option<String>,
     pub globals_file: Option<String>,
     pub servers: Option<usize>,
-    /// Hard bound for each editor Corsa request. CLI checks use their own runtime.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub lsp_request_timeout_ms: Option<u64>,
 }
 
 impl TypeCheckerConfig {
     /// Canonical Corsa executable path, with the legacy `tsgoPath` key as a fallback.
     pub fn runtime_path(&self) -> Option<&str> {
         self.tsgo_path.as_deref()
-    }
-
-    pub fn lsp_request_timeout_ms(&self) -> u64 {
-        self.lsp_request_timeout_ms.unwrap_or(60_000).max(1)
     }
 
     /// Returns true when the config matches the built-in defaults.
@@ -62,7 +55,6 @@ impl Default for TypeCheckerConfig {
             tsgo_path: None,
             globals_file: None,
             servers: None,
-            lsp_request_timeout_ms: None,
         }
     }
 }
@@ -88,7 +80,6 @@ impl<'de> Deserialize<'de> for TypeCheckerConfig {
             tsgo_path: helper.corsa_path.or(helper.tsgo_path),
             globals_file: helper.globals_file,
             servers: helper.servers,
-            lsp_request_timeout_ms: helper.lsp_request_timeout_ms,
         })
     }
 }
@@ -110,7 +101,6 @@ struct TypeCheckerConfigDeserialize {
     tsgo_path: Option<String>,
     globals_file: Option<String>,
     servers: Option<usize>,
-    lsp_request_timeout_ms: Option<u64>,
 }
 
 impl Default for TypeCheckerConfigDeserialize {
@@ -131,25 +121,6 @@ impl Default for TypeCheckerConfigDeserialize {
             tsgo_path: config.tsgo_path,
             globals_file: config.globals_file,
             servers: config.servers,
-            lsp_request_timeout_ms: config.lsp_request_timeout_ms,
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::TypeCheckerConfig;
-
-    #[test]
-    fn lsp_request_timeout_can_cover_a_large_cold_project() {
-        let default = TypeCheckerConfig::default();
-        assert_eq!(default.lsp_request_timeout_ms(), 60_000);
-        let configured: TypeCheckerConfig =
-            serde_json::from_str(r#"{"lspRequestTimeoutMs":90000}"#).unwrap();
-        assert_eq!(configured.lsp_request_timeout_ms(), 90_000);
-        assert_eq!(
-            serde_json::to_value(configured).unwrap()["lspRequestTimeoutMs"],
-            90_000
-        );
     }
 }

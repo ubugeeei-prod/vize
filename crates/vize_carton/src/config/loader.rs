@@ -187,6 +187,14 @@ pub fn load_linter_config(path: Option<&Path>) -> LinterConfig {
     load_linter_from_raw_config(&loaded.config)
 }
 
+/// Load the editor-only Corsa request bound without expanding the public
+/// `TypeCheckerConfig` struct used by CLI and external Rust callers.
+pub fn load_lsp_request_timeout_ms(path: Option<&Path>) -> u64 {
+    load_raw_config_with_source(path)
+        .config
+        .lsp_request_timeout_ms()
+}
+
 /// Load the typed per-rule lint options (`linter.ruleOptions`); defaults when unset.
 pub fn load_config_lint_rule_options(path: Option<&Path>) -> crate::config::ConfigLintRuleOptions {
     let loaded = load_raw_config_with_source(path);

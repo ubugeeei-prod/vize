@@ -181,6 +181,9 @@ pub(crate) struct RawVizeConfig {
 struct RawTypeCheckerConfig {
     #[serde(flatten)]
     config: TypeCheckerConfig,
+    /// Editor-only Corsa bound; keep it off the public shared Rust struct so
+    /// existing exhaustive `TypeCheckerConfig` literals remain source compatible.
+    lsp_request_timeout_ms: Option<u64>,
     /// `None` when `typeChecker.optionsApi` is absent — defaults to enabled
     /// (matches vue-tsc). Set `false` to opt out.
     options_api: Option<bool>,
@@ -206,6 +209,13 @@ struct LegacyCheckConfig {
 }
 
 impl RawVizeConfig {
+    pub(crate) fn lsp_request_timeout_ms(&self) -> u64 {
+        self.type_checker
+            .lsp_request_timeout_ms
+            .unwrap_or(60_000)
+            .max(1)
+    }
+
     /// Read the language server switches that are not stable model fields.
     ///
     /// Resolves the same `languageServer` / legacy `lsp` precedence as

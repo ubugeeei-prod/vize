@@ -35,6 +35,12 @@ impl ServerState {
         self.type_checker_config.read().clone()
     }
 
+    /// Effective editor Corsa request bound in milliseconds.
+    #[inline]
+    pub fn lsp_request_timeout_ms(&self) -> u64 {
+        self.lsp_request_timeout_ms.load(Ordering::Relaxed)
+    }
+
     /// Build the shared virtual TypeScript options from workspace config.
     #[cfg(feature = "native")]
     pub(crate) fn virtual_ts_options(&self) -> vize_canon::virtual_ts::VirtualTsOptions {
@@ -169,6 +175,10 @@ impl ServerState {
                 vize_l0::config::load_config_lint_rule_options(Some(dir));
             self.apply_global_types_config(config.global_types, &source);
             self.apply_type_checker_config(config.type_checker, &source);
+            self.lsp_request_timeout_ms.store(
+                vize_l0::config::load_lsp_request_timeout_ms(Some(dir)),
+                Ordering::Relaxed,
+            );
             self.apply_config_features(loaded.features);
             self.apply_lsp_config(
                 Self::lsp_config_section_from_file(
@@ -193,6 +203,10 @@ impl ServerState {
                 vize_l0::config::load_config_lint_rule_options(Some(dir));
             self.apply_global_types_config(config.global_types, &source);
             self.apply_type_checker_config(config.type_checker, &source);
+            self.lsp_request_timeout_ms.store(
+                vize_l0::config::load_lsp_request_timeout_ms(Some(dir)),
+                Ordering::Relaxed,
+            );
             self.apply_config_features(loaded.features);
             self.apply_lsp_config(
                 Self::lsp_config_section_from_file(

@@ -63,7 +63,7 @@ impl ServerState {
         // Get workspace root for Corsa configuration.
         let workspace_root = self.get_workspace_root();
         let type_checker_config = self.get_type_checker_config();
-        let request_timeout_ms = type_checker_config.lsp_request_timeout_ms();
+        let request_timeout_ms = self.lsp_request_timeout_ms();
         let project = vize_l0::config::ProjectModel::new(
             workspace_root.as_deref(),
             None,
