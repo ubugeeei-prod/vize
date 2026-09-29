@@ -179,6 +179,36 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_tabindex_minus_one_is_focusable() {
+        let linter = create_linter();
+        for source in [
+            r#"<div role="button" tabindex="-1" @click="handle">Click</div>"#,
+            r#"<span role="link" tabindex="-1">Link</span>"#,
+        ] {
+            let template = linter.lint_template(source, "test.vue");
+            assert_eq!(template.warning_count, 0, "{source}");
+            let sfc = linter.lint_sfc(
+                &format!("<template>\n  {source}\n</template>\n"),
+                "Widget.vue",
+            );
+            assert_eq!(sfc.warning_count, 0, "{source}");
+        }
+    }
+
+    #[test]
+    fn test_invalid_tabindex_below_minus_one() {
+        let linter = create_linter();
+        let source = r#"<div role="button" tabindex="-2"></div>"#;
+        let template = linter.lint_template(source, "test.vue");
+        assert_eq!(template.warning_count, 1);
+        let sfc = linter.lint_sfc(
+            &format!("<template>\n  {source}\n</template>\n"),
+            "Widget.vue",
+        );
+        assert_eq!(sfc.warning_count, 1);
+    }
+
+    #[test]
     fn test_valid_bound_tabindex() {
         let linter = create_linter();
         let result = linter.lint_template(

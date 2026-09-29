@@ -19,7 +19,8 @@ pub fn is_interactive_markup_element(element: &MarkupElement<'_>) -> bool {
 pub fn is_focusable_markup_element(element: &MarkupElement<'_>) -> bool {
     if let Some(tabindex) = get_static_markup_attribute_value(element, "tabindex") {
         if let Ok(val) = tabindex.parse::<i32>() {
-            return val >= 0;
+            // `tabindex="-1"` is programmatically focusable. Lower values are not.
+            return val >= -1;
         }
         return true;
     }

@@ -47,8 +47,8 @@ fn interactive_supports_focus_template() {
         ),
         (
             r#"<div role="button" tabindex="-1">Click</div>"#,
-            1,
-            "negative tabindex is not focusable",
+            0,
+            "tabindex -1 is programmatically focusable",
         ),
         (
             r#"<div role="button" tabindex tabindex="0">Click</div>"#,

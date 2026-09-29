@@ -93,6 +93,7 @@ fn interactive_supports_focus_preserves_legacy_jsx_boundaries() {
         r#"const A = () => <Button role="button" />;"#,
         r#"const A = () => <Forms.button role="button" />;"#,
         r#"const A = () => <div a11y:role="button" />;"#,
+        r#"const A = () => <div role="button" tabindex="-1" />;"#,
     ] {
         let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
         assert_eq!(
@@ -107,7 +108,7 @@ fn interactive_supports_focus_preserves_legacy_jsx_boundaries() {
         r#"const A = () => <div role="button" />;"#,
         r#"const A = () => <span role="link" />;"#,
         r#"const A = () => <div role="button" role="presentation" />;"#,
-        r#"const A = () => <div role="button" tabindex="-1" />;"#,
+        r#"const A = () => <div role="button" tabindex="-2" />;"#,
         r#"const A = () => <div role="button" tabIndex="0" />;"#,
         r#"const A = () => <div role="button" contentEditable="true" />;"#,
         r#"const A = () => <area role="button" />;"#,

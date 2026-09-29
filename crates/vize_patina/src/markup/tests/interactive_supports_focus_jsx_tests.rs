@@ -64,8 +64,8 @@ fn interactive_supports_focus_jsx_direct_matches_lowered() {
         ),
         (
             r#"const A = () => <div role="button" tabindex="-1">Click</div>;"#,
-            1,
-            "negative tabindex",
+            0,
+            "tabindex -1 is programmatically focusable",
         ),
         (
             r#"const A = () => <div role="button" tabIndex="0">Click</div>;"#,
