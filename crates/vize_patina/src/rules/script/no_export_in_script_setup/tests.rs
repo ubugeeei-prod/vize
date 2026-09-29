@@ -266,11 +266,34 @@ const props = defineProps<{ count: number }>()
 
 #[test]
 fn test_valid_macro_substring_in_string_no_export() {
-    // The macro byte-prefilter may trip on a string literal, but with no
-    // actual export there is nothing to report.
+    // A macro name inside a string is not a `<script setup>` marker.
     let source = r#"
 const label = 'defineProps demo'
 const x = 1
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0);
+}
+
+#[test]
+fn test_plain_ts_export_is_not_script_setup_when_comment_mentions_define_emits() {
+    let source = r#"
+/**
+ * Shared constants for the calendar component.
+ * The component forwards these through `defineEmits`.
+ */
+export const ROW_HEIGHT = 48;
+
+export function rowTop(index: number): number {
+  return index * ROW_HEIGHT;
+}
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.error_count, 0);
+
+    let source = r#"
+/** The component forwards these through `defineExpose`. */
+export const ROW_HEIGHT = 48;
 "#;
     let result = create_linter().lint(source, 0);
     assert_eq!(result.error_count, 0);
