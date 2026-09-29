@@ -19,6 +19,11 @@ fn is_vue_whitespace(c: char) -> bool {
 ///
 /// Returns `None` when the text already satisfies the condense strategy, so
 /// the untouched node keeps borrowing the template source.
+///
+/// Vue 2 line-break migration keeps one authored break that condense would
+/// turn into a trailing space. A break between an interpolation and the next
+/// node is its own whitespace text and is handled above; a break after static
+/// text is folded into that text node, so the same replacement happens here.
 fn condense_internal_whitespace<'a>(allocator: &'a Allocator, text: &str) -> Option<&'a str> {
     let needs_condense = {
         let mut prev_ws = false;
@@ -57,7 +62,17 @@ fn condense_internal_whitespace<'a>(allocator: &'a Allocator, text: &str) -> Opt
             prev_ws = false;
         }
     }
-    Some(out.into_str())
+    let condensed = out.into_str();
+    if super::current_legacy_line_breaks()
+        && condensed.ends_with(' ')
+        && trailing_whitespace_has_line_break(text)
+    {
+        let mut rewritten = StringBuilder::with_capacity_in(condensed.len(), allocator);
+        rewritten.push_str(&condensed[..condensed.len() - 1]);
+        rewritten.push('\n');
+        return Some(rewritten.into_str());
+    }
+    Some(condensed)
 }
 
 /// Condense whitespace in children
@@ -232,6 +247,14 @@ fn whitespace_has_newline(child: &TemplateChildNode<'_>) -> bool {
         child,
         TemplateChildNode::Text(text) if text.content.contains('\n') || text.content.contains('\r')
     )
+}
+
+/// The text's own trailing `[ \t\n\f\r]` run contains a line break.
+fn trailing_whitespace_has_line_break(text: &str) -> bool {
+    text.chars()
+        .rev()
+        .take_while(|character| is_vue_whitespace(*character))
+        .any(|character| character == '\n' || character == '\r')
 }
 
 #[inline]

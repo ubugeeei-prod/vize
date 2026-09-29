@@ -57,6 +57,38 @@ pub(super) enum SpeculativeTypeAngleOpen {
     MalformedIdentifierEscape,
 }
 
+/// Index of `(` when `content[open]` is `<` and the following tokens are an
+/// arrow-parameter default: `<(ident =`, not `==` or `=>`.
+///
+/// OXC's type-argument speculation accepts that production as a function type
+/// and parses the default as an expression, so a later `||` does not abort the
+/// surrounding speculative parse (#7116).
+pub(super) fn speculative_arrow_default_paren(content: &str, open: usize) -> Option<usize> {
+    let after = content.get(open + 1..)?;
+    let marker = skip_type_angle_trivia(after);
+    if after.as_bytes().get(marker) != Some(&b'(') {
+        return None;
+    }
+    let paren = open + 1 + marker;
+    paren_starts_arrow_param_default(content, paren).then_some(paren)
+}
+
+fn paren_starts_arrow_param_default(content: &str, paren: usize) -> bool {
+    let after = content.get(paren + 1..).unwrap_or_default();
+    let bytes = after.as_bytes();
+    let start = skip_type_angle_trivia(after);
+    if !matches!(
+        bytes.get(start),
+        Some(b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$')
+    ) {
+        return false;
+    }
+    let after_ident = skip_identifier(bytes, start + 1);
+    let rest = after.get(after_ident..).unwrap_or_default();
+    let eq = after_ident + skip_type_angle_trivia(rest);
+    bytes.get(eq) == Some(&b'=') && !matches!(bytes.get(eq + 1), Some(b'=' | b'>'))
+}
+
 pub(super) fn speculative_type_angle_open_kind(
     content: &str,
     open: usize,

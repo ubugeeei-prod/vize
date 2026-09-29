@@ -9,7 +9,8 @@ pub mod scan;
 use scan::{
     SpeculativeTypeAngleOpen, keyword_allows_regex_after, skip_block_comment, skip_identifier,
     skip_line_comment, skip_number, skip_quoted, skip_regex, skip_template_text,
-    speculative_type_angle_open_kind, starts_valid_identifier_escape,
+    speculative_arrow_default_paren, speculative_type_angle_open_kind,
+    starts_valid_identifier_escape,
 };
 
 pub use scan::is_expression_trailing_trivia;
@@ -25,12 +26,21 @@ pub const MAX_EXPRESSION_NESTING_DEPTH: usize = 31;
 /// repeated failed medium-depth type-argument attempts still count toward #4618.
 const CUMULATIVE_SPECULATIVE_TYPE_ANGLE_MIN_DEPTH: usize = MAX_EXPRESSION_NESTING_DEPTH / 2;
 const MAX_NUMERIC_TOKEN_BYTES: usize = 4096;
+/// Product of per-frame `<` counts across nested `<(ident =` defaults.
+///
+/// One frame stays linear (a flat `x < y ||` tail). Two or more frames that
+/// each hold a `<` run multiply: oxc 0.142.0 spent ~134ms at product 972,
+/// ~3.6s at 11664, and ran out of memory on the #7116 input (~169000).
+/// `8 × 31²` sits between those measurements.
+const MAX_ARROW_DEFAULT_ANGLE_PRODUCT: usize =
+    8 * MAX_EXPRESSION_NESTING_DEPTH * MAX_EXPRESSION_NESTING_DEPTH;
 
 struct ExpressionNestingAnalysis {
     max_depth: usize,
     delimiters_balanced: bool,
     cumulative_speculative_type_angle_depth: usize,
     excessive_speculative_type_angle_opens: bool,
+    excessive_arrow_default_speculation: bool,
     oversized_numeric_token: bool,
 }
 
@@ -71,6 +81,11 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
     // real boolean chain resets. Measured against the #3712 reproducer, both
     // escapes also match OXC: injecting `&&` every 25 `<`, or closing the
     // angles, drops a 10.7KB input from 1.47s to ~25us.
+    //
+    // `<(ident =` is the exception (#7116): OXC parses it as a function type
+    // whose parameter default is an expression, so `||` inside the default does
+    // not end the outer speculation. `<` counts on each open default are tracked
+    // separately and rejected when their product blows up.
     let mut speculative_type_angle_opens = 0usize;
     // Closing `>` pays back recursion depth, but it does not make an outer
     // speculative type-argument parse succeed. Reopening more candidates in
@@ -82,6 +97,11 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
     let mut cumulative_speculative_type_angle_depth = 0usize;
     let mut oversized_numeric_token = false;
     let mut track_type_angles = false;
+    // Parallel to `(`. `true` entries own a frame in `arrow_default_angles`.
+    let mut paren_opened_arrow_default = Vec::new();
+    let mut arrow_default_angles: Vec<usize> = Vec::new();
+    let mut pending_arrow_default_paren: Option<usize> = None;
+    let mut excessive_arrow_default_speculation = false;
     let mut i = 0;
 
     while let Some(&b) = bytes.get(i) {
@@ -158,6 +178,14 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
                 continue;
             }
             b'(' | b'[' | b'{' => {
+                if b == b'(' {
+                    let opens_arrow = pending_arrow_default_paren == Some(i);
+                    pending_arrow_default_paren = None;
+                    paren_opened_arrow_default.push(opens_arrow);
+                    if opens_arrow {
+                        arrow_default_angles.push(0);
+                    }
+                }
                 delimiters.push(match b {
                     b'(' => b')',
                     b'[' => b']',
@@ -166,6 +194,9 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
                 can_start_regex = true;
             }
             b')' | b']' => {
+                if b == b')' && paren_opened_arrow_default.pop() == Some(true) {
+                    arrow_default_angles.pop();
+                }
                 delimiters_balanced &= delimiters.pop() == Some(b);
                 can_start_regex = false;
             }
@@ -201,6 +232,13 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
             }
             b'<' => {
                 angle_depth += 1;
+                pending_arrow_default_paren = speculative_arrow_default_paren(content, i);
+                if !arrow_default_angles.is_empty() {
+                    let current = arrow_default_angles.len() - 1;
+                    arrow_default_angles[current] += 1;
+                    excessive_arrow_default_speculation |=
+                        arrow_default_angle_product_exceeds(&arrow_default_angles);
+                }
                 if let Some(kind) = speculative_type_angle_open_kind(content, i) {
                     speculative_type_angle_opens += 1;
                     excessive_speculative_type_angle_opens |=
@@ -328,8 +366,25 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
             && template_interpolation_depths.is_empty(),
         cumulative_speculative_type_angle_depth,
         excessive_speculative_type_angle_opens,
+        excessive_arrow_default_speculation,
         oversized_numeric_token,
     }
+}
+
+/// `<(ident =` frames multiply OXC's speculative reparse. A single frame, or a
+/// nest whose other frames hold fewer than two `<`, stays on the linear path.
+fn arrow_default_angle_product_exceeds(frames: &[usize]) -> bool {
+    if frames.iter().filter(|&&count| count >= 2).count() < 2 {
+        return false;
+    }
+    let mut product = 1usize;
+    for &count in frames {
+        product = product.saturating_mul(count.max(1));
+        if product > MAX_ARROW_DEFAULT_ANGLE_PRODUCT {
+            return true;
+        }
+    }
+    false
 }
 
 pub fn expression_nesting_depth(content: &str) -> usize {
@@ -348,6 +403,7 @@ pub fn expression_is_safe_to_parse(content: &str) -> bool {
         && analysis.max_depth <= MAX_EXPRESSION_NESTING_DEPTH
         && analysis.cumulative_speculative_type_angle_depth <= MAX_EXPRESSION_NESTING_DEPTH
         && !analysis.excessive_speculative_type_angle_opens
+        && !analysis.excessive_arrow_default_speculation
         && !analysis.oversized_numeric_token
         && !operators::has_excessive_prefix_operator_run(content)
 }
