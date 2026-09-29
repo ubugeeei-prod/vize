@@ -3,7 +3,8 @@
 //! Require elements with ARIA roles to have all required ARIA properties.
 //!
 //! Some ARIA roles require specific ARIA attributes to be present.
-//! For example, `role="checkbox"` requires `aria-checked`.
+//! For example, `role="checkbox"` requires `aria-checked` on a non-native element.
+//! Native checkbox and radio inputs expose their checked state without it.
 //!
 //! ## Examples
 //!
@@ -99,6 +100,17 @@ impl Rule for RoleHasRequiredAriaProps {
         }
 
         for &required_prop in required_props {
+            // ARIA in HTML forbids aria-checked on native checkbox/radio inputs:
+            // their checked state already supplies the required role state.
+            if required_prop == "aria-checked"
+                && element.tag == "input"
+                && matches!(
+                    get_static_or_bound_literal_attribute_value(element, "type"),
+                    Some("checkbox" | "radio")
+                )
+            {
+                continue;
+            }
             if !has_aria_attribute_or_binding(element, required_prop) {
                 ctx.warn_with_help(
                     ctx.t_fmt(
@@ -146,6 +158,33 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn native_checked_inputs_do_not_require_aria_checked() {
+        let linter = create_linter();
+        for source in [
+            r#"<input type="checkbox" role="switch" />"#,
+            r#"<input type="checkbox" role="menuitemcheckbox" />"#,
+            r#"<input :type="'checkbox'" role="switch" />"#,
+            r#"<input type="radio" role="menuitemradio" />"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.warning_count, 0, "{source}");
+        }
+    }
+
+    #[test]
+    fn non_native_or_dynamic_input_types_still_require_aria_checked() {
+        let linter = create_linter();
+        for source in [
+            r#"<div role="switch"></div>"#,
+            r#"<input type="text" role="switch" />"#,
+            r#"<input :type="kind" role="switch" />"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.warning_count, 1, "{source}");
+        }
     }
 
     #[test]
