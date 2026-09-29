@@ -58,6 +58,39 @@ void test("scanArtFiles ignores art files whose real path leaves the trusted roo
   await fs.promises.rm(tempDir, { recursive: true, force: true });
 });
 
+void test("scanArtFiles skips dot dirs, gitignored names, and nested checkouts", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-scan-skip-"));
+  const root = path.join(tempDir, "app");
+  await fs.promises.mkdir(path.join(root, "src"), { recursive: true });
+  await fs.promises.mkdir(path.join(root, ".worktrees", "old"), { recursive: true });
+  await fs.promises.mkdir(path.join(root, "checkout"), { recursive: true });
+  await fs.promises.mkdir(path.join(root, "ignored"), { recursive: true });
+  await fs.promises.writeFile(path.join(root, ".gitignore"), "ignored\n", "utf8");
+  await fs.promises.writeFile(path.join(root, "checkout", ".git"), "gitdir: /tmp/other\n", "utf8");
+  const kept = path.join(root, "src", "Button.art.vue");
+  await fs.promises.writeFile(kept, "<art></art>\n", "utf8");
+  await fs.promises.writeFile(
+    path.join(root, ".worktrees", "old", "Button.art.vue"),
+    "<art></art>\n",
+    "utf8",
+  );
+  await fs.promises.writeFile(
+    path.join(root, "checkout", "Button.art.vue"),
+    "<art></art>\n",
+    "utf8",
+  );
+  await fs.promises.writeFile(
+    path.join(root, "ignored", "Button.art.vue"),
+    "<art></art>\n",
+    "utf8",
+  );
+
+  const files = await scanArtFiles(root, ["**/*.art.vue"], ["node_modules/**", "dist/**"], false);
+  assert.deepEqual(files, [kept]);
+
+  await fs.promises.rm(tempDir, { recursive: true, force: true });
+});
+
 void test("rewriteStorybookComponentImport rebases component path from story output", () => {
   const root = "/workspace";
   const artPath = path.join(root, "src", "AfsButton.art.vue");

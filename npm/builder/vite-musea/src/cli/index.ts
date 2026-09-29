@@ -26,9 +26,10 @@ import path from "node:path";
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { ArtFileInfo } from "../types/index.js";
-import { scanArtFiles, parseArtFile } from "./utils.js";
+import { parseArtFile } from "./utils.js";
+import { scanArtFiles } from "../utils.js";
 import { runVrt, runApprove, runClean, runGenerate } from "./commands.js";
-import { loadMuseaVrtOptions } from "./config.js";
+import { loadMuseaFileSet, loadMuseaVrtOptions } from "./config.js";
 import type { MuseaVrtOptions } from "../types/index.js";
 
 type Command = "run" | "approve" | "clean" | "generate";
@@ -242,10 +243,11 @@ async function main(): Promise<void> {
   }
 
   options.vrt = await loadMuseaVrtOptions(options.config, cwd);
+  const fileSet = await loadMuseaFileSet(options.config, cwd);
 
   // Scan for art files
   console.log("  Scanning for art files...");
-  const artFilePaths = await scanArtFiles(cwd);
+  const artFilePaths = await scanArtFiles(fileSet.root, fileSet.include, fileSet.exclude);
 
   if (artFilePaths.length === 0) {
     console.log("  No art files found.\n");
