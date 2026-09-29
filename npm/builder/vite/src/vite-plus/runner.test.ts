@@ -78,6 +78,18 @@ void test("formatting owns only selected Vue files and never expands an empty li
     calls.length = 0;
     await runTools("fmt", ["App.vue"], { config: {}, options: {} }, "vp", "native", execute);
     assert.deepEqual(calls[0].slice(4), ["--write", "App.vue"]);
+    assert.equal(calls.length, 1);
+    calls.length = 0;
+    await runTools(
+      "fmt:check",
+      ["App.vue", "script.ts"],
+      { config: {}, options: {} },
+      "vp",
+      "native",
+      execute,
+    );
+    assert.deepEqual(calls[0].slice(4), ["--check", "App.vue"]);
+    assert.deepEqual(calls[1], ["vp", "fmt", "--check", "script.ts"]);
   });
 });
 
@@ -105,9 +117,7 @@ void test("fmt.ignorePatterns excludes Vue files from check and write, even for 
       assert.ok(!calls.some((args) => args.includes("generated/Generated.vue")));
       calls.length = 0;
       await runTools(task, ["generated/Generated.vue"], metadata, "vp", "native", execute);
-      assert.deepEqual(calls, [
-        ["vp", "fmt", task === "fmt:check" ? "--check" : "--write", "generated/Generated.vue"],
-      ]);
+      assert.deepEqual(calls, []);
     }
   });
 });
@@ -202,7 +212,7 @@ void test("check --fix routes fixes only to lint and format and loads existing s
     assert.deepEqual(calls[0].slice(4), ["App.vue"]);
     assert.deepEqual(calls[1].slice(4), ["--fix", "App.vue"]);
     assert.deepEqual(calls[3].slice(4), ["--write", "App.vue"]);
-    assert.deepEqual(calls[4], ["vp", "fmt", "--write", "App.vue"]);
+    assert.equal(calls.length, 4);
   });
 });
 
