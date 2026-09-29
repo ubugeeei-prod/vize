@@ -63,10 +63,55 @@ impl Linter {
         self.script_rules = super::script_rules::all_builtin_script_rule_names();
         self.css_rules = super::css_rules::all_builtin_css_rule_names();
         self.musea_rules = super::musea_rules::all_builtin_musea_rule_names();
+        register_configured_rules(&mut self.registry, &rules);
         enabled_rules.extend(rules);
         self.enabled_rules = Some(enabled_rules);
         self
     }
+}
+
+/// Instantiate rules named in config when the active preset never registered them.
+///
+/// Names stay limited to `rules`. Other rules from the catalog are not enabled.
+fn register_configured_rules(registry: &mut crate::RuleRegistry, rules: &[String]) {
+    let wanted: Vec<&str> = rules
+        .iter()
+        .map(String::as_str)
+        .filter(|rule| !registry.has_rule(rule) && !rule_lives_outside_registry(rule))
+        .collect();
+    if wanted.is_empty() {
+        return;
+    }
+    let mut catalog = crate::RuleRegistry::with_all();
+    catalog.register_opt_in_rules();
+    let mut extras = catalog.take_matching(&wanted);
+    let still_missing: Vec<&str> = wanted
+        .iter()
+        .copied()
+        .filter(|name| !extras.iter().any(|rule| rule.meta().name == *name))
+        .collect();
+    if !still_missing.is_empty() {
+        let mut nuxt = crate::RuleRegistry::with_nuxt();
+        nuxt.register_opt_in_rules();
+        extras.extend(nuxt.take_matching(&still_missing));
+    }
+    let mut registered = false;
+    for rule in extras {
+        if registry.has_rule(rule.meta().name) {
+            continue;
+        }
+        registry.register(rule);
+        registered = true;
+    }
+    if registered {
+        registry.mark_has_exit_element_rules();
+    }
+}
+
+fn rule_lives_outside_registry(rule: &str) -> bool {
+    super::script_rules::all_builtin_script_rule_names().contains(&rule)
+        || super::css_rules::all_builtin_css_rule_names().contains(&rule)
+        || super::musea_rules::all_builtin_musea_rule_names().contains(&rule)
 }
 
 fn has_type_rule(rules: &[String]) -> bool {

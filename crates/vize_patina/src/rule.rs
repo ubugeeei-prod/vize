@@ -191,11 +191,16 @@ impl RuleRegistry {
         self.rule_names.contains(&name)
     }
 
-    /// Whether any registered rule exposes a [`MarkupRule`] projection (i.e. has
-    /// a JSX-capable IR entry point via [`Rule::as_markup_rule`]).
-    ///
-    /// Lets the JSX lint path skip building the markup IR entirely when the
-    /// active rule set has nothing to run over it.
+    pub(crate) fn take_matching(self, wanted: &[&str]) -> Vec<Box<dyn Rule>> {
+        self.rule_names
+            .into_iter()
+            .zip(self.rules)
+            .filter(|(name, _)| wanted.contains(name))
+            .map(|(_, rule)| rule)
+            .collect()
+    }
+
+    /// Whether any registered rule exposes a [`MarkupRule`] projection.
     pub fn has_markup_rules(&self) -> bool {
         self.rules
             .iter()
@@ -338,7 +343,6 @@ impl RuleRegistry {
         registry.register(Box::new(
             crate::rules::type_aware::RequireTypedEmits::default(),
         ));
-
         registry
     }
 
@@ -388,7 +392,6 @@ impl RuleRegistry {
 
         // HTML Conformance (essential)
         registry.register(Box::new(crate::rules::html::IdDuplication));
-
         registry
     }
 
@@ -396,7 +399,6 @@ impl RuleRegistry {
     pub fn with_opinionated() -> Self {
         let mut registry = Self::with_happy_path();
         crate::rules::opinionated::register(&mut registry);
-
         registry
     }
 
@@ -404,7 +406,6 @@ impl RuleRegistry {
     pub fn with_ecosystem() -> Self {
         let mut registry = Self::with_happy_path();
         crate::rules::ecosystem::register(&mut registry);
-
         registry
     }
 
@@ -412,7 +413,6 @@ impl RuleRegistry {
     pub fn with_all() -> Self {
         let mut registry = Self::with_opinionated();
         crate::rules::ecosystem::register_all(&mut registry);
-
         registry
     }
 
@@ -420,7 +420,6 @@ impl RuleRegistry {
     pub fn with_nuxt() -> Self {
         let mut registry = Self::with_happy_path();
         crate::rules::register_nuxt(&mut registry);
-
         registry
     }
 }
