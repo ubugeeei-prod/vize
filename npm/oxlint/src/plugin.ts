@@ -35,23 +35,32 @@ function createOxlintDiagnostic(
   state: FileState,
   scriptMap: SingleScriptMap | null,
   helpLevel: HelpLevel,
+  program: { range: [number, number] },
 ): Diagnostic {
   const loc = state.usesOriginalLocations
     ? createOriginalSfcLoc(diagnostic)
     : mapToScriptLoc(diagnostic, scriptMap);
   const block = loc === null ? getDiagnosticBlock(diagnostic, getSfcBlocks(state)) : null;
-  const fallbackColumn = state.extractedScript.length === 0 ? 0 : 1;
+  const message = formatPatinaMessage(diagnostic, {
+    hasMappedLocation: loc !== null,
+    blockLabel: formatBlockLabel(block),
+    helpLevel,
+  });
+  // An empty `<script>` has no line for a column to land on. Oxlint rejects
+  // that line/column pair with RangeError, so anchor the report on the program
+  // node. Template coordinates stay in the message; the script program cannot
+  // address a node that lives outside it.
+  if (loc == null && state.extractedScript.length === 0) {
+    return { node: program, message };
+  }
 
+  const fallbackColumn = state.extractedScript.length === 0 ? 0 : 1;
   return {
     loc: loc ?? {
       start: { line: 1, column: fallbackColumn },
       end: { line: 1, column: fallbackColumn },
     },
-    message: formatPatinaMessage(diagnostic, {
-      hasMappedLocation: loc !== null,
-      blockLabel: formatBlockLabel(block),
-      helpLevel,
-    }),
+    message,
   };
 }
 
@@ -99,7 +108,7 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
     },
     createOnce(context) {
       return {
-        Program() {
+        Program(program) {
           if (!isPatinaFile(context.filename)) {
             return;
           }
@@ -133,7 +142,9 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
               continue;
             }
 
-            context.report(createOxlintDiagnostic(diagnostic, state, scriptMap, helpLevel));
+            context.report(
+              createOxlintDiagnostic(diagnostic, state, scriptMap, helpLevel, program),
+            );
           }
         },
       };
