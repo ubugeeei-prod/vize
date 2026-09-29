@@ -149,6 +149,20 @@ fn test_root_only_directive_comment_compiles_to_null() {
 }
 
 #[test]
+fn root_siblings_keep_a_same_line_space() {
+    let result = compile!("<span>a</span> <span>b</span>");
+    let output = result_output(&result);
+    assert!(output.contains("_createTextVNode()"), "{output}");
+}
+
+#[test]
+fn root_siblings_drop_indentation_newlines() {
+    let result = compile!("<span>a</span>\n  <span>b</span>");
+    let output = result_output(&result);
+    assert!(!output.contains("_createTextVNode()"), "{output}");
+}
+
+#[test]
 fn test_codegen_pascal_case_dynamic_component() {
     let result = compile!(r#"<Component :is="current" :active-class="klass" />"#);
 

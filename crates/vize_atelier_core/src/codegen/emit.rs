@@ -40,11 +40,26 @@ pub(super) fn generate_with_sections_and_options(
         None => root.source.into(),
     };
     ctx.static_cache = ctx.options.inline | !root.hoists.is_empty();
-    let root_children: std::vec::Vec<&TemplateChildNode<'_>> = root
+    let mut root_children: std::vec::Vec<&TemplateChildNode<'_>> = root
         .children
         .iter()
-        .filter(|child| !is_ignorable_root_text(child) && !is_directive_comment(child))
+        .filter(|child| !is_directive_comment(child))
         .collect();
+    // Parsing has already condensed whitespace between meaningful siblings.
+    // Only edge whitespace is ignorable: an internal single space must become
+    // a text VNode in a multi-root fragment, as it does in Vue.
+    while root_children
+        .first()
+        .is_some_and(|child| is_ignorable_root_text(child))
+    {
+        root_children.remove(0);
+    }
+    while root_children
+        .last()
+        .is_some_and(|child| is_ignorable_root_text(child))
+    {
+        root_children.pop();
+    }
 
     // Generate function signature, anchored at the template section start.
     crate::walk_probe::record_walk(crate::walk_probe::WalkStage::Codegen);
