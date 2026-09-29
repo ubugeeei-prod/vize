@@ -28,6 +28,8 @@ pub(crate) struct DirectiveValueBinding {
     /// Whether the classic `<script>` default export is in scope as
     /// `__default__`, the home of a component's own `directives` option.
     pub(super) has_default_alias: bool,
+    /// Template span of the directive name (`v-focus`), not its value.
+    name_range: (u32, u32),
     /// A Vapor component calls the directive itself, with a value getter,
     /// instead of a hook that receives a binding object.
     vapor: bool,
@@ -129,6 +131,14 @@ fn directive_value_binding(
         })
         .collect();
     let location = expression.loc();
+    let name_start = directive.loc.span.start;
+    let raw_len = directive
+        .raw_name
+        .map(|raw| raw.len())
+        .unwrap_or(directive.name.len().saturating_add(2));
+    let name_end = name_start
+        .saturating_add(u32::try_from(raw_len).unwrap_or(u32::MAX))
+        .min(directive.loc.span.end);
     Some((
         (location.span.start, location.span.end),
         DirectiveValueBinding {
@@ -138,6 +148,7 @@ fn directive_value_binding(
             modifiers,
             has_default_alias: false,
             vapor: false,
+            name_range: (name_start, name_end),
         },
     ))
 }
@@ -159,7 +170,16 @@ pub(super) fn generate_directive_value_statement(
     generated_expression: &str,
     template_offset: u32,
     indent: &str,
+    check_unknown_directives: bool,
 ) {
+    emit_unknown_directive_presence(
+        ts,
+        mappings,
+        binding,
+        template_offset,
+        indent,
+        check_unknown_directives,
+    );
     let source = (template_offset + expr.start) as usize..(template_offset + expr.end) as usize;
     let name = vize_carton::cstr!("__vize_directive_check_{}", expr.start);
     let variable = binding.variable.as_str();
@@ -236,6 +256,57 @@ pub(super) fn generate_directive_value_statement(
         *ts,
         ") }}, ...__vizeDirectiveTail({name})); // CustomDirective\n"
     );
+}
+
+/// A missing registry entry is `TS2339` on the directive name. The shared
+/// `__vizeRegisteredDirective` fallback stays `unknown` so a `vue` package
+/// without `GlobalDirectives` does not error on the value check itself.
+fn emit_unknown_directive_presence(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    binding: &DirectiveValueBinding,
+    template_offset: u32,
+    indent: &str,
+    enabled: bool,
+) {
+    if !enabled || binding.in_setup {
+        return;
+    }
+    let (start, end) = binding.name_range;
+    if start >= end {
+        return;
+    }
+    let variable = binding.variable.as_str();
+    let registered = if binding.has_default_alias {
+        "typeof __default__"
+    } else {
+        "unknown"
+    };
+    let local = vize_carton::cstr!("__vize_unknown_directive_{start}");
+    append!(*ts, "{indent}const {{ ");
+    let gen_start = ts.len();
+    crate::virtual_ts::helpers::push_ts_string_literal(ts, variable);
+    let gen_end = ts.len();
+    append!(*ts, ": {local} }} = {{}} as (");
+    let push_key = |ts: &mut String| {
+        crate::virtual_ts::helpers::push_ts_string_literal(ts, variable);
+    };
+    push_key(ts);
+    append!(
+        *ts,
+        " extends keyof __VizeLocalDirectives<{registered}> ? {{ "
+    );
+    push_key(ts);
+    append!(*ts, ": unknown }} : ");
+    push_key(ts);
+    append!(*ts, " extends keyof __VizeGlobalDirectives ? {{ ");
+    push_key(ts);
+    append!(*ts, ": unknown }} : {{}});\n{indent}void {local};\n");
+    mappings.push(VizeMapping {
+        gen_range: gen_start..gen_end,
+        src_range: (template_offset + start) as usize..(template_offset + end) as usize,
+        sub_spans: Vec::new(),
+    });
 }
 
 #[cfg(test)]

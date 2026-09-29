@@ -60,6 +60,10 @@ pub(super) struct ProgramExecutionInput<'a> {
     pub(super) nuxt_project_root: &'a std::path::Path,
     pub(super) package_route_resolver: vize_canon::PackageRouteResolver,
     pub(super) discover_global_component_declarations: bool,
+    /// Full checks (`vize check` with no path arguments) also mirror every
+    /// source the tsconfig `include` covers. Explicit file arguments stay a
+    /// subset.
+    pub(super) ensure_included_sources: bool,
 }
 
 pub(super) fn execute_program(
@@ -139,6 +143,14 @@ pub(super) fn execute_program(
     checker.set_package_routes(input.package_routes.iter().cloned());
     checker
         .scan_paths(input.files)
+        .map_err(|error| cstr!("{}", error))?;
+    if input.ensure_included_sources {
+        checker
+            .ensure_included_sources()
+            .map_err(|error| cstr!("{}", error))?;
+    }
+    checker
+        .adopt_diagnostic_sources(input.reported_files.iter().cloned())
         .map_err(|error| cstr!("{}", error))?;
     checker.set_diagnostic_paths(input.reported_files.iter().map(PathBuf::as_path));
     let gen_time = gen_start.elapsed();

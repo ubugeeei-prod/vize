@@ -304,6 +304,7 @@ fn emit_expression_statement(
             generated_expression,
             template_offset,
             indent,
+            checks.check_unknown_directives,
         );
         return;
     }
