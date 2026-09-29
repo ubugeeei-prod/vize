@@ -89,36 +89,46 @@ impl Rule for VOnHandlerStyle {
 
 /// Whether `expr` is a bare method reference: a single identifier or a
 /// member-access path such as `foo` or `foo.bar`, with no call parentheses
-/// or operators. Pragmatic scan: every character must be a letter, digit,
-/// `_`, `$`, or `.`, it must not start or end with `.`, and it must not
-/// contain an empty path segment (`foo..bar`).
+/// or operators. Whitespace around `.` is ignored, so a member expression
+/// wrapped across lines (`gestures.swipe\n.handleMove`) stays a reference.
+/// The path must not start or end with `.` or contain an empty segment
+/// (`foo..bar`).
 fn is_method_reference(expr: &str) -> bool {
-    if expr.is_empty() {
-        return false;
-    }
-    if expr.starts_with('.') || expr.ends_with('.') {
-        return false;
-    }
-    if expr.contains("..") {
-        return false;
-    }
-    let mut chars = expr.chars();
-    // A path segment must not start with a digit; check the leading char of
-    // the whole expression and of each segment.
-    let mut segment_start = true;
-    for ch in chars.by_ref() {
-        match ch {
-            '.' => segment_start = true,
-            'a'..='z' | 'A'..='Z' | '_' | '$' => segment_start = false,
-            '0'..='9' => {
-                if segment_start {
-                    return false;
-                }
-            }
-            _ => return false,
+    let mut chars = expr.chars().peekable();
+    let mut expect_segment = true;
+    let mut saw_segment = false;
+    while let Some(ch) = chars.peek().copied() {
+        if ch.is_whitespace() {
+            chars.next();
+            continue;
         }
+        if ch == '.' {
+            if expect_segment {
+                return false;
+            }
+            chars.next();
+            expect_segment = true;
+            continue;
+        }
+        if !expect_segment || !is_ident_start(ch) {
+            return false;
+        }
+        chars.next();
+        while chars.peek().copied().is_some_and(is_ident_continue) {
+            chars.next();
+        }
+        saw_segment = true;
+        expect_segment = false;
     }
-    true
+    saw_segment && !expect_segment
+}
+
+fn is_ident_start(ch: char) -> bool {
+    ch.is_ascii_alphabetic() || ch == '_' || ch == '$'
+}
+
+fn is_ident_continue(ch: char) -> bool {
+    ch.is_ascii_alphanumeric() || ch == '_' || ch == '$'
 }
 
 /// Whether `expr` is an inline function: it starts with `function` (as a
@@ -259,6 +269,23 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<form @submit.prevent></form>"#, "App.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn allows_member_access_split_across_lines() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            "<div @touchmove=\"\n      gestures.swipe\n        .handleMove\n    \" />",
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn warns_when_whitespace_separates_two_identifiers() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<button @click="foo bar"></button>"#, "App.vue");
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
