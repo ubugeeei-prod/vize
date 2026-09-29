@@ -18,6 +18,8 @@ export interface CompileFileOptions extends PluginVueCompileOptions {
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string | number;
+  inlineTemplate?: boolean;
+  isProd?: boolean;
 }
 
 export interface CompileBatchOptions extends PluginVueCompileOptions {
@@ -36,6 +38,8 @@ export interface CompileBatchOptions extends PluginVueCompileOptions {
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string | number;
+  inlineTemplate?: boolean;
+  isProd?: boolean;
 }
 
 export function buildCompileFileOptions(
@@ -69,6 +73,8 @@ export function buildCompileFileOptions(
     ...(options.templatePrefixIdentifiers === undefined
       ? {}
       : { templatePrefixIdentifiers: options.templatePrefixIdentifiers }),
+    ...(options.inlineTemplate === undefined ? {} : { inlineTemplate: options.inlineTemplate }),
+    ...(options.isProd === undefined ? {} : { isProd: options.isProd }),
     ...(options.mode === undefined ? {} : { mode: options.mode }),
     ...(options.templateSyntax === undefined ? {} : { templateSyntax: options.templateSyntax }),
     ...(options.runtimeModuleName === undefined
@@ -115,6 +121,8 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
     ...(options.templatePrefixIdentifiers === undefined
       ? {}
       : { templatePrefixIdentifiers: options.templatePrefixIdentifiers }),
+    ...(options.inlineTemplate === undefined ? {} : { inlineTemplate: options.inlineTemplate }),
+    ...(options.isProd === undefined ? {} : { isProd: options.isProd }),
     ...(options.mode === undefined ? {} : { mode: options.mode }),
     ...(options.templateSyntax === undefined ? {} : { templateSyntax: options.templateSyntax }),
     ...(options.runtimeModuleName === undefined

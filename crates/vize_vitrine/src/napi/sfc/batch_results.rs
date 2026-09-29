@@ -55,8 +55,12 @@ fn compile_sfc_batch_with_results_inner(
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
     let whitespace = resolve_whitespace(opts.whitespace.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
-    let standalone = opts.mode.as_deref() == Some("function");
-    let script_output = if standalone {
+    let shape = super::batch_helpers::sfc_output_shape(
+        opts.mode.as_deref(),
+        opts.inline_template,
+        opts.is_prod,
+    );
+    let script_output = if shape.inline_render {
         SfcScriptOutputMode::InlineTemplate
     } else {
         SfcScriptOutputMode::SeparateTemplate
@@ -159,7 +163,7 @@ fn compile_sfc_batch_with_results_inner(
                 parse: SfcParseOptions::default(),
                 script: ScriptCompileOptions {
                     id: Some(filename_cs.clone()),
-                    inline_template: standalone,
+                    inline_template: shape.standalone,
                     is_ts,
                     ..Default::default()
                 },
@@ -167,6 +171,7 @@ fn compile_sfc_batch_with_results_inner(
                     scoped: has_scoped,
                     ssr,
                     is_ts,
+                    is_prod: shape.is_prod,
                     custom_renderer,
                     compiler_options: template_compiler_options,
                     ..Default::default()

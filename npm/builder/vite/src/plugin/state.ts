@@ -88,6 +88,8 @@ export type CompileOptionsForRequest = {
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
   vueVersion?: string | number;
+  inlineTemplate?: boolean;
+  isProd?: boolean;
 } & PluginVueCompileOptions &
   Partial<
     Pick<
@@ -147,6 +149,16 @@ export function getCompileOptionsForRequest(
   }
   if (state.mergedOptions?.experimentalServerScript) {
     options.experimentalServerScript = true;
+  }
+
+  // Client production matches @vitejs/plugin-vue: inline the render into setup
+  // and drop dev-only prop runtime types. SSR keeps a separate render. A
+  // standalone `mode: "function"` compile already chooses its own shape.
+  if (state.isProduction) {
+    options.isProd = true;
+    if (!ssr && options.mode !== "function") {
+      options.inlineTemplate = true;
+    }
   }
 
   return options;

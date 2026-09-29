@@ -79,8 +79,31 @@ assert.deepEqual(
     templateSyntax: "standard",
     templateComments: false,
     styleTrim: true,
+    isProd: true,
   },
   "SSR requests should continue to use the VDOM compiler while client builds hydrate with Vapor",
+);
+
+assert.deepEqual(
+  getCompileOptionsForRequest(
+    {
+      isProduction: true,
+      mergedOptions: {},
+    },
+    false,
+  ),
+  {
+    sourceMap: false,
+    ssr: false,
+    vapor: false,
+    customRenderer: false,
+    templateSyntax: "standard",
+    templateComments: false,
+    styleTrim: true,
+    inlineTemplate: true,
+    isProd: true,
+  },
+  "Client production builds inline the render and drop dev prop runtime types",
 );
 
 assert.deepEqual(

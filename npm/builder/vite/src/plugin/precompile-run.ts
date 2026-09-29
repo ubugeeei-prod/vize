@@ -63,6 +63,8 @@ function resolvePrecompileBatchOptions(state: VizePluginState): CompileBatchOpti
     templateComments: requestOptions.templateComments,
     templateHoistStatic: requestOptions.templateHoistStatic,
     templatePrefixIdentifiers: requestOptions.templatePrefixIdentifiers,
+    inlineTemplate: requestOptions.inlineTemplate,
+    isProd: requestOptions.isProd,
   };
 }
 

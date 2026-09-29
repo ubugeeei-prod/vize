@@ -86,6 +86,13 @@ pub struct SfcCompileOptionsNapi {
     pub template_comments: Option<bool>,
     pub template_hoist_static: Option<bool>,
     pub template_prefix_identifiers: Option<bool>,
+    /// Inline the render function into `setup()` and keep the ES module.
+    ///
+    /// This is the production bundler shape. It does not rewrite imports onto a
+    /// Vue global; that remains `mode: "function"`.
+    pub inline_template: Option<bool>,
+    /// Drop dev-only prop runtime types and `required` flags.
+    pub is_prod: Option<bool>,
     /// Preserve TypeScript in output when true
     pub is_ts: Option<bool>,
     /// Scope ID for scoped CSS (e.g., "data-v-abc123")
@@ -168,6 +175,10 @@ pub struct BatchCompileOptionsNapi {
     pub template_comments: Option<bool>,
     pub template_hoist_static: Option<bool>,
     pub template_prefix_identifiers: Option<bool>,
+    /// Inline the render function into `setup()` and keep the ES module.
+    pub inline_template: Option<bool>,
+    /// Drop dev-only prop runtime types and `required` flags.
+    pub is_prod: Option<bool>,
     /// Preserve TypeScript in output when true
     pub is_ts: Option<bool>,
     /// Worker threads for this call (1-256). Omit to use Rayon's global pool.

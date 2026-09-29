@@ -56,6 +56,10 @@ export interface BatchCompileOptionsNapi extends ExperimentalCompileFlags {
   templateComments?: boolean;
   templateHoistStatic?: boolean;
   templatePrefixIdentifiers?: boolean;
+  /** Inline the render into setup() and keep the ES module. */
+  inlineTemplate?: boolean;
+  /** Drop dev-only prop runtime types. */
+  isProd?: boolean;
   threads?: number;
   /**
    * Include per-block style metadata (incl. `styles[].content`). Default OFF.

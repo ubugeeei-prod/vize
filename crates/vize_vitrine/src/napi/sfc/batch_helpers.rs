@@ -63,6 +63,8 @@ pub(super) fn batch_options_bits(
     template_syntax: TemplateSyntaxMode,
     whitespace: crate::whitespace::ResolvedWhitespace,
     standalone: bool,
+    inline_render: bool,
+    is_prod: bool,
     experimental_bits: u16,
 ) -> u16 {
     u16::from(ssr)
@@ -70,9 +72,36 @@ pub(super) fn batch_options_bits(
         | (u16::from(is_ts) << 2)
         | (u16::from(template_syntax_bits(template_syntax)) << 3)
         | (u16::from(standalone) << 5)
+        | (u16::from(inline_render && !standalone) << 12)
+        | (u16::from(is_prod) << 13)
         | (u16::from(whitespace.strategy == vize_atelier_core::WhitespaceStrategy::Preserve) << 10)
         | (u16::from(whitespace.legacy_line_breaks) << 11)
         | experimental_bits
+}
+
+/// How a native compile request chooses the production module shape.
+///
+/// `mode: "function"` inlines the render and rewrites the module into a
+/// standalone function. `inlineTemplate` inlines the render into `setup()` and
+/// keeps the ES module. `isProd` drops dev-only prop runtime metadata.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) struct SfcOutputShape {
+    pub(super) inline_render: bool,
+    pub(super) standalone: bool,
+    pub(super) is_prod: bool,
+}
+
+pub(super) fn sfc_output_shape(
+    mode: Option<&str>,
+    inline_template: Option<bool>,
+    is_prod: Option<bool>,
+) -> SfcOutputShape {
+    let standalone = mode == Some("function");
+    SfcOutputShape {
+        inline_render: standalone || inline_template.unwrap_or(false),
+        standalone,
+        is_prod: is_prod.unwrap_or(false),
+    }
 }
 
 fn template_syntax_bits(template_syntax: TemplateSyntaxMode) -> u8 {
@@ -131,4 +160,33 @@ fn parent_cache_parts(path: &Path) -> (u64, usize) {
     };
     let parent = parent.to_string_lossy();
     (hash_str(parent.as_ref()), parent.len())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::sfc_output_shape;
+
+    #[test]
+    fn production_inline_keeps_the_module_and_marks_prod() {
+        let shape = sfc_output_shape(None, Some(true), Some(true));
+        assert!(shape.inline_render);
+        assert!(!shape.standalone);
+        assert!(shape.is_prod);
+    }
+
+    #[test]
+    fn function_mode_stays_a_standalone_rewrite() {
+        let shape = sfc_output_shape(Some("function"), None, None);
+        assert!(shape.inline_render);
+        assert!(shape.standalone);
+        assert!(!shape.is_prod);
+    }
+
+    #[test]
+    fn omitted_flags_keep_the_dev_module() {
+        let shape = sfc_output_shape(None, None, None);
+        assert!(!shape.inline_render);
+        assert!(!shape.standalone);
+        assert!(!shape.is_prod);
+    }
 }

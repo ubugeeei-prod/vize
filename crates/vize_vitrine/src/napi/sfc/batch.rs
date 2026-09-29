@@ -74,8 +74,12 @@ fn compile_sfc_batch_inner(
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
     let whitespace = resolve_whitespace(opts.whitespace.as_deref())
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
-    let standalone = opts.mode.as_deref() == Some("function");
-    let script_output = if standalone {
+    let shape = super::batch_helpers::sfc_output_shape(
+        opts.mode.as_deref(),
+        opts.inline_template,
+        opts.is_prod,
+    );
+    let script_output = if shape.inline_render {
         SfcScriptOutputMode::InlineTemplate
     } else {
         SfcScriptOutputMode::SeparateTemplate
@@ -90,7 +94,9 @@ fn compile_sfc_batch_inner(
         is_ts,
         template_syntax,
         whitespace,
-        standalone,
+        shape.standalone,
+        shape.inline_render,
+        shape.is_prod,
         experimentals.bits(),
     );
     let read_inputs: Vec<_> = files
@@ -159,7 +165,7 @@ fn compile_sfc_batch_inner(
                 },
                 script: ScriptCompileOptions {
                     id: Some(filename.clone()),
-                    inline_template: standalone,
+                    inline_template: shape.standalone,
                     is_ts,
                     ..Default::default()
                 },
@@ -168,6 +174,7 @@ fn compile_sfc_batch_inner(
                     scoped: has_scoped,
                     ssr,
                     is_ts,
+                    is_prod: shape.is_prod,
                     custom_renderer,
                     compiler_options: {
                         let mut dom_options = experimentals.dom_options();

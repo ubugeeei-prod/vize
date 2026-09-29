@@ -69,7 +69,11 @@ pub fn compile_sfc(
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
     let whitespace = resolve_whitespace(opts.whitespace.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
-    let standalone = opts.mode.as_deref() == Some("function");
+    let shape = super::batch_helpers::sfc_output_shape(
+        opts.mode.as_deref(),
+        opts.inline_template,
+        opts.is_prod,
+    );
     let custom_elements = vize_atelier_core::options::CustomElementMatcher::from_patterns(
         crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
     );
@@ -109,7 +113,7 @@ pub fn compile_sfc(
         },
         script: ScriptCompileOptions {
             id: Some(filename.clone()),
-            inline_template: standalone,
+            inline_template: shape.standalone,
             is_ts,
             ..Default::default()
         },
@@ -118,6 +122,7 @@ pub fn compile_sfc(
             scoped: has_scoped,
             ssr: opts.ssr.unwrap_or(false),
             is_ts,
+            is_prod: shape.is_prod,
             custom_renderer: opts.custom_renderer.unwrap_or(false),
             compiler_options: template_compiler_options,
             ..Default::default()
@@ -143,7 +148,7 @@ pub fn compile_sfc(
                 source_map,
                 ..Default::default()
             },
-            if standalone {
+            if shape.inline_render {
                 SfcScriptOutputMode::InlineTemplate
             } else {
                 SfcScriptOutputMode::SeparateTemplate
