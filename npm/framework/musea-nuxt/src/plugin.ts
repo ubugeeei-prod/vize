@@ -85,6 +85,8 @@ export {
   NuxtClientFallback,
   NuxtImg,
   NuxtPicture,
+  RouterLink,
+  RouterView,
 } from '${componentsPath}';
 `;
 }
