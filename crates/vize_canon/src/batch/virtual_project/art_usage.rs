@@ -32,6 +32,19 @@ fn collect_variant_template_referenced_names(
     experimental_in_tag_comments: bool,
     names: &mut FxHashSet<CompactString>,
 ) {
+    for (start, end) in variant_inner_ranges(art_content) {
+        collect_template_source_referenced_names(
+            art_content.get(start..end).unwrap_or_default().trim(),
+            template_syntax,
+            experimental_in_tag_comments,
+            names,
+        );
+    }
+}
+
+/// Markup inside `<variant>` in an `<art>` block, as ranges within `art_content`.
+fn variant_inner_ranges(art_content: &str) -> Vec<(usize, usize)> {
+    let mut ranges = Vec::new();
     let mut cursor = 0;
     while let Some(relative_start) = art_content
         .get(cursor..)
@@ -68,17 +81,80 @@ fn collect_variant_template_referenced_names(
         else {
             break;
         };
-        collect_template_source_referenced_names(
-            art_content
-                .get(template_start..close_start)
-                .unwrap_or_default()
-                .trim(),
-            template_syntax,
-            experimental_in_tag_comments,
-            names,
-        );
+        if art_content
+            .get(template_start..close_start)
+            .is_some_and(|inner| !inner.trim().is_empty())
+        {
+            ranges.push((template_start, close_start));
+        }
         cursor = close_start + "</variant>".len();
     }
+    ranges
+}
+
+/// Full-file template source whose bytes sit at the same offsets as the SFC.
+///
+/// Variant markup is not a `<template>` block, so its AST spans have to land on
+/// the authored file. The returned string is `source.len()` bytes: spaces
+/// everywhere except the real template body and each `<variant>` inner. Parsing
+/// it with a template offset of 0 type-checks that markup in the same projection
+/// as a normal SFC template.
+pub(super) fn art_variant_check_source(
+    source: &str,
+    descriptor: &SfcDescriptor<'_>,
+) -> Option<String> {
+    let mut ranges = Vec::new();
+    for block in &descriptor.custom_blocks {
+        if block.block_type.as_ref() != "art" {
+            continue;
+        }
+        let block_start = block.loc.start;
+        let block_end = block.loc.end;
+        let (body, origin) = match source.get(block_start..block_end) {
+            Some(slice) => (slice, block_start),
+            None => (block.content.as_ref(), block_start),
+        };
+        for (start, end) in variant_inner_ranges(body) {
+            ranges.push((origin + start, origin + end));
+        }
+    }
+    if ranges.is_empty() {
+        return None;
+    }
+
+    let mut bytes = vec![b' '; source.len()];
+    if let Some(template) = descriptor.template.as_ref() {
+        copy_aligned_range(
+            &mut bytes,
+            source,
+            template.loc.start,
+            template.loc.end,
+            template.content.as_ref(),
+        );
+    }
+    for (start, end) in ranges {
+        let Some(text) = source.get(start..end) else {
+            continue;
+        };
+        copy_aligned_range(&mut bytes, source, start, end, text);
+    }
+    String::from_utf8(bytes).ok()
+}
+
+fn copy_aligned_range(dest: &mut [u8], source: &str, start: usize, end: usize, content: &str) {
+    let bytes = if source.get(start..end) == Some(content) {
+        content.as_bytes()
+    } else if end >= start && content.len() == end - start {
+        content.as_bytes()
+    } else if let Some(slice) = source.get(start..end) {
+        slice.as_bytes()
+    } else {
+        return;
+    };
+    let Some(slot) = dest.get_mut(start..start + bytes.len()) else {
+        return;
+    };
+    slot.copy_from_slice(bytes);
 }
 
 fn is_variant_tag_boundary(next: Option<u8>) -> bool {
