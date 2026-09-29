@@ -33,7 +33,7 @@ mod corsa_overlays_tests;
 mod tests;
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use dashmap::DashMap;
 use parking_lot::{Mutex, RwLock};
@@ -95,8 +95,8 @@ pub struct ServerState {
     /// Fast path for checking whether type-aware features are enabled.
     lsp_typecheck_enabled: AtomicBool,
     /// Type checker options shared by LSP diagnostics.
-    type_checker_config: RwLock<TypeCheckerConfig>,
-    lsp_request_timeout_ms: AtomicU64,
+    /// Corsa options and timeout belong to the same config snapshot.
+    type_checker_config: RwLock<(TypeCheckerConfig, u64)>,
     /// User-declared template globals shared by every virtual TypeScript path.
     global_types: RwLock<GlobalTypesConfig>,
     /// Vue 3 Options API binding-resolution opt-in from config.
@@ -195,8 +195,7 @@ impl ServerState {
             workspace_vue_files: DashMap::new(),
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
-            type_checker_config: RwLock::new(TypeCheckerConfig::default()),
-            lsp_request_timeout_ms: AtomicU64::new(60_000),
+            type_checker_config: RwLock::new((TypeCheckerConfig::default(), 60_000)),
             global_types: RwLock::new(GlobalTypesConfig::default()),
             // Options API matches vue-tsc by default; config may opt out.
             type_checker_options_api: RwLock::new(true),

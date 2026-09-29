@@ -32,13 +32,13 @@ impl ServerState {
     /// Get a clone of the current type checker config.
     #[inline]
     pub fn get_type_checker_config(&self) -> TypeCheckerConfig {
-        self.type_checker_config.read().clone()
+        self.type_checker_config.read().0.clone()
     }
 
     /// Effective editor Corsa request bound in milliseconds.
     #[inline]
     pub fn lsp_request_timeout_ms(&self) -> u64 {
-        self.lsp_request_timeout_ms.load(Ordering::Relaxed)
+        self.type_checker_config.read().1
     }
 
     /// Build the shared virtual TypeScript options from workspace config.
@@ -81,8 +81,8 @@ impl ServerState {
         *self.dialect_config.write() = dialect;
     }
 
-    fn apply_type_checker_config(&self, config: TypeCheckerConfig, source: &str) {
-        *self.type_checker_config.write() = config;
+    fn apply_type_checker_config(&self, config: TypeCheckerConfig, timeout_ms: u64, source: &str) {
+        *self.type_checker_config.write() = (config, timeout_ms);
         self.invalidate_component_interfaces();
         // The tsconfig and runtime this selects decide which project the
         // overlays are layered onto, so a reload retargets them even though no
@@ -172,9 +172,7 @@ impl ServerState {
             self.apply_linter_config(loaded.linter, &source);
             *self.linter_rule_options.write() = loaded.lint_rule_options;
             self.apply_global_types_config(config.global_types, &source);
-            self.apply_type_checker_config(config.type_checker, &source);
-            self.lsp_request_timeout_ms
-                .store(loaded.request_timeout_ms, Ordering::Relaxed);
+            self.apply_type_checker_config(config.type_checker, loaded.request_timeout_ms, &source);
             self.apply_config_features(loaded.features);
             self.apply_lsp_config(
                 Self::lsp_config_section_from_file(
@@ -196,9 +194,7 @@ impl ServerState {
             self.apply_linter_config(loaded.linter, &source);
             *self.linter_rule_options.write() = loaded.lint_rule_options;
             self.apply_global_types_config(config.global_types, &source);
-            self.apply_type_checker_config(config.type_checker, &source);
-            self.lsp_request_timeout_ms
-                .store(loaded.request_timeout_ms, Ordering::Relaxed);
+            self.apply_type_checker_config(config.type_checker, loaded.request_timeout_ms, &source);
             self.apply_config_features(loaded.features);
             self.apply_lsp_config(
                 Self::lsp_config_section_from_file(
