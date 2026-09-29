@@ -4,10 +4,13 @@
 //! at the setup close that document writes, `// Invoke setup to verify types`.
 
 use vize_atelier_sfc::SfcDescriptor;
-use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
+use vize_atelier_sfc::croquis::{
+    SfcCroquisOptions, analyze_sfc_descriptor_with_context,
+    analyze_sfc_descriptor_with_context_options_api,
+};
 use vize_canon::virtual_ts::{
     ProjectionMapping, VirtualTsOptions, generate_virtual_ts_with_offsets,
-    generate_virtual_ts_with_offsets_options_api,
+    generate_virtual_ts_with_offsets_options_api, generate_virtual_ts_with_split_offsets,
 };
 use vize_l0::String;
 use vize_relief::RootNode;
@@ -36,25 +39,52 @@ pub(super) fn project_type_aware<'a>(
 ) -> TypeAwareDocument {
     // Lint analysis skips template expressions. The checker document needs
     // them so a probe can type the expression the author wrote.
+    //
+    // Check merges a sibling `<script lang="ts">` with `<script setup>` and
+    // generates from that text. Passing only the setup block drops the
+    // sibling's exports, so the template sees those names as `any`.
     let mut options = SfcCroquisOptions::lint_demand();
     options.analyzer_options.collect_template_expressions = true;
-    let analysis = analyze_sfc_descriptor(descriptor, template, options);
+    let use_options_api = descriptor.script_setup.is_none() && descriptor.script.is_some();
+    let analysis = if use_options_api {
+        analyze_sfc_descriptor_with_context_options_api(descriptor, template, options)
+    } else {
+        analyze_sfc_descriptor_with_context(descriptor, template, options)
+    };
+    let owned_script = analysis.script_content.clone();
+    let script_origin = if owned_script.is_some() {
+        analysis.script_offset
+    } else {
+        script_offset
+    };
+    let script_text = owned_script.as_deref().unwrap_or(script_content);
+    let split = analysis.split_script_setup_offsets(descriptor);
     let ts_options = VirtualTsOptions::default();
-    let output = if descriptor.script_setup.is_none() && descriptor.script.is_some() {
+    let output = if use_options_api {
         generate_virtual_ts_with_offsets_options_api(
-            &analysis,
-            Some(script_content),
+            &analysis.croquis,
+            Some(script_text),
             template,
-            script_offset,
+            script_origin,
             template_offset,
             &ts_options,
         )
+    } else if let Some(split) = split {
+        generate_virtual_ts_with_split_offsets(
+            &analysis.croquis,
+            Some(script_text),
+            template,
+            script_origin,
+            template_offset,
+            &ts_options,
+            Some(split),
+        )
     } else {
         generate_virtual_ts_with_offsets(
-            &analysis,
-            Some(script_content),
+            &analysis.croquis,
+            Some(script_text),
             template,
-            script_offset,
+            script_origin,
             template_offset,
             &ts_options,
         )
@@ -63,7 +93,7 @@ pub(super) fn project_type_aware<'a>(
         content: output.code,
         mapping: output.mapping,
     };
-    super::expression_bindings::hoist_type_imports(&mut document, script_content);
+    super::expression_bindings::hoist_type_imports(&mut document, script_text);
     super::expression_bindings::bind_template_expressions(&mut document);
     super::relative_imports::absolutize_relative_imports(&mut document, filename);
     // An unresolved `Ref` is `any` to this check, and the stock alias then
@@ -181,5 +211,32 @@ mod tests {
             .filter(|line| line.starts_with("type __VizeBooleanKey<"))
             .collect();
         assert_eq!(boolean_aliases, vec![expected_alias.as_str()]);
+    }
+
+    #[test]
+    fn sibling_script_type_export_is_in_the_checker_document() {
+        let source = "<script lang=\"ts\">\nexport type Item = { name: string }\n</script>\n<script setup lang=\"ts\">\ndefineProps<{ item: Item }>()\n</script>\n<template>{{ item.name }}</template>\n";
+        let descriptor =
+            vize_atelier_sfc::parse_sfc(source, vize_atelier_sfc::SfcParseOptions::default())
+                .expect("sfc");
+        let template = descriptor.template.as_ref().expect("template");
+        let allocator = vize_l0::Allocator::new();
+        let (root, _) = vize_armature::parse(&allocator, template.content.as_ref());
+        let script = descriptor.script_setup.as_ref().expect("script setup");
+        let document = project_type_aware(
+            &descriptor,
+            script.content.as_ref(),
+            Some(&root),
+            script.loc.start as u32,
+            template.loc.start as u32,
+            "Fixture.vue",
+        );
+        assert!(
+            document
+                .content
+                .contains("export type Item = { name: string }"),
+            "sibling script export missing from {}",
+            document.content
+        );
     }
 }
