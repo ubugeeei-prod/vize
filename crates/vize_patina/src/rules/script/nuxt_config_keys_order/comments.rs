@@ -4,6 +4,14 @@ use vize_l0::{String, ToCompactString};
 
 use super::support::{legacy_property_text_ranges, next_token_offset};
 
+#[path = "comments_text.rs"]
+mod text;
+
+use text::{
+    block_comment_end, contains_blank_line, is_comment_trivia, is_whitespace_only, line_start,
+    outside_prefix_is_safe, skip_hspace, skip_line_comment, trim_hspace_start,
+};
+
 pub(super) enum PropertyText {
     Fixable {
         start: usize,
@@ -94,15 +102,17 @@ fn comment_aware_ranges(
 
     for index in 0..owned.len() {
         let limit = owned.get(index + 1).map_or(close_brace, |next| next.start);
-        let (end, has_comma) = trailing_owned_end(source, owned[index].prop_end, limit);
-        if end < owned[index].prop_end || end > limit {
+        let prop_end = owned.get(index)?.prop_end;
+        let (end, has_comma) = trailing_owned_end(source, prop_end, limit);
+        if end < prop_end || end > limit {
             return None;
         }
-        owned[index].end = end;
-        owned[index].has_comma = has_comma;
+        let slot = owned.get_mut(index)?;
+        slot.end = end;
+        slot.has_comma = has_comma;
     }
 
-    let prefix = source.get(brace + 1..owned[0].start)?;
+    let prefix = source.get(brace + 1..owned.first()?.start)?;
     if !outside_prefix_is_safe(prefix) {
         return Some(PropertyText::Unfixable);
     }
@@ -113,10 +123,13 @@ fn comment_aware_ranges(
 
     let mut separators = Vec::with_capacity(owned.len().saturating_sub(1));
     for pair in owned.windows(2) {
-        if pair[1].start < pair[0].end {
+        let (Some(left), Some(right)) = (pair.get(0), pair.get(1)) else {
+            return None;
+        };
+        if right.start < left.end {
             return None;
         }
-        let gap = source.get(pair[0].end..pair[1].start)?;
+        let gap = source.get(left.end..right.start)?;
         if !is_whitespace_only(gap) {
             return Some(PropertyText::Unfixable);
         }
@@ -131,7 +144,7 @@ fn comment_aware_ranges(
         pieces.push(render_piece(source, property_owned, insert_comma)?);
     }
     Some(PropertyText::Fixable {
-        start: owned[0].start,
+        start: owned.first()?.start,
         end: owned.last()?.end,
         pieces,
         separators,
@@ -242,109 +255,4 @@ fn trailing_owned_end(source: &str, prop_end: usize, limit: usize) -> (usize, bo
         index += 1;
     }
     (index.min(limit), has_comma)
-}
-
-fn outside_prefix_is_safe(prefix: &str) -> bool {
-    match prefix.find('\n') {
-        None => is_whitespace_only(prefix),
-        Some(newline) => {
-            prefix.get(..newline).is_some_and(is_comment_trivia)
-                && prefix.get(newline + 1..).is_some_and(is_whitespace_only)
-        }
-    }
-}
-
-fn is_comment_trivia(text: &str) -> bool {
-    let bytes = text.as_bytes();
-    let mut index = 0;
-    while index < bytes.len() {
-        match bytes[index] {
-            b' ' | b'\t' | b'\n' | b'\r' => index += 1,
-            b'/' if bytes.get(index + 1) == Some(&b'/') => {
-                index += 2;
-                while index < bytes.len() && bytes[index] != b'\n' {
-                    index += 1;
-                }
-            }
-            b'/' if bytes.get(index + 1) == Some(&b'*') => {
-                let Some(relative) = text.get(index..).and_then(|tail| tail.find("*/")) else {
-                    return false;
-                };
-                let body_start = index + 2;
-                let body_end = index + relative;
-                if text
-                    .get(body_start..body_end)
-                    .is_none_or(contains_blank_line)
-                {
-                    return false;
-                }
-                index = body_end + 2;
-            }
-            _ => return false,
-        }
-    }
-    true
-}
-
-fn contains_blank_line(text: &str) -> bool {
-    let bytes = text.as_bytes();
-    let mut index = 0;
-    while index < bytes.len() {
-        if bytes[index] == b'\n' {
-            let mut next = index + 1;
-            while next < bytes.len() && matches!(bytes[next], b' ' | b'\t' | b'\r') {
-                next += 1;
-            }
-            if bytes.get(next) == Some(&b'\n') {
-                return true;
-            }
-        }
-        index += 1;
-    }
-    false
-}
-
-fn is_whitespace_only(text: &str) -> bool {
-    text.bytes()
-        .all(|byte| matches!(byte, b' ' | b'\t' | b'\n' | b'\r'))
-}
-
-fn line_start(source: &str, index: usize) -> usize {
-    source
-        .get(..index)
-        .and_then(|head| head.rfind('\n'))
-        .map_or(0, |found| found + 1)
-}
-
-fn trim_hspace_start(source: &str, floor: usize, prop_start: usize) -> usize {
-    let mut start = prop_start;
-    while start > floor && matches!(source.as_bytes().get(start - 1), Some(b' ' | b'\t')) {
-        start -= 1;
-    }
-    start
-}
-
-fn skip_hspace(source: &str, mut index: usize, limit: usize) -> usize {
-    let bytes = source.as_bytes();
-    while index < limit && matches!(bytes.get(index), Some(b' ' | b'\t')) {
-        index += 1;
-    }
-    index
-}
-
-fn skip_line_comment(source: &str, mut index: usize, limit: usize) -> usize {
-    let bytes = source.as_bytes();
-    while index < limit && bytes.get(index) != Some(&b'\n') {
-        index += 1;
-    }
-    index
-}
-
-fn block_comment_end(source: &str, index: usize, limit: usize) -> Option<usize> {
-    let tail = source.get(index..limit)?;
-    if !tail.starts_with("/*") {
-        return None;
-    }
-    let relative = tail.find("*/")?;
-    Some(index + relative + 2)
 }
