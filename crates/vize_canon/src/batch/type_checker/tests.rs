@@ -9,6 +9,10 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_carton::{String, corsa_resolver::platform_suffix, cstr};
 mod camel_case_component_props;
+#[path = "tests_symlink.rs"]
+mod symlink;
+
+use symlink::symlink_path;
 mod emit_object_recursion;
 mod generic_component_listener_payload;
 mod generic_props;
@@ -2208,29 +2212,4 @@ fn write_test_vite_stub(target: &Path) -> std::io::Result<()> {
     )?;
     std::fs::write(vite_dir.join("client.d.ts"), "")?;
     Ok(())
-}
-
-fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
-    if target.is_symlink() || target.is_file() {
-        std::fs::remove_file(target)?;
-    } else if target.exists() {
-        std::fs::remove_dir_all(target)?;
-    }
-    if let Some(parent) = target.parent() {
-        std::fs::create_dir_all(parent)?;
-    }
-
-    #[cfg(unix)]
-    {
-        std::os::unix::fs::symlink(source, target)
-    }
-    #[cfg(windows)]
-    {
-        let metadata = std::fs::metadata(source)?;
-        if metadata.is_dir() {
-            std::os::windows::fs::symlink_dir(source, target)
-        } else {
-            std::os::windows::fs::symlink_file(source, target)
-        }
-    }
 }

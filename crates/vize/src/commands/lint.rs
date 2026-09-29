@@ -10,6 +10,8 @@ mod patterns;
 mod rich;
 mod routes;
 mod stdout;
+#[path = "lint_warnings.rs"]
+mod warnings;
 
 #[cfg(test)]
 mod tests;
@@ -364,11 +366,5 @@ pub fn run(args: LintArgs) {
     if total_errors > 0 {
         std::process::exit(1);
     }
-
-    if let Some(max) = args.max_warnings
-        && total_warnings > max
-    {
-        eprintln!("\nToo many warnings ({} > max {})", total_warnings, max);
-        std::process::exit(1);
-    }
+    warnings::exit_if_over_max(total_warnings, args.max_warnings);
 }

@@ -272,8 +272,9 @@ fn incomplete_template_expression_does_not_drop_sibling_vue_import() {
         );
         imports.push(vize_l0::cstr!("{import}"));
     }
+    let expected = imports.first().expect("sibling import");
     assert!(
-        imports.iter().all(|import| import == &imports[0]),
+        imports.iter().all(|import| import == expected),
         "incomplete expressions rewrote the sibling import differently: {imports:?}"
     );
 }

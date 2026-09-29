@@ -8,9 +8,13 @@ mod native_options;
 mod path_rebase;
 pub(super) mod references;
 pub use references::{TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind};
+#[path = "tsconfig_gen_jsx_files.rs"]
+mod jsx_files;
 mod remap;
 mod vue_alias;
 mod vue_compiler_options;
+
+use jsx_files::compiler_option_enabled;
 use std::path::{Path, PathBuf};
 
 use serde_json::{Map, Value};
@@ -284,16 +288,7 @@ impl VirtualProject {
     }
 
     pub(super) fn needs_vue_jsx_compiler_options(&self) -> bool {
-        self.virtual_files.values().any(|file| {
-            file.virtual_path
-                .file_name()
-                .and_then(|name| name.to_str())
-                .is_some_and(|name| {
-                    name.ends_with(".vue.tsx")
-                        || name.ends_with(".tsx.ts")
-                        || name.ends_with(".jsx.ts")
-                })
-        })
+        jsx_files::needs_vue_jsx_compiler_options(self)
     }
 
     /// Declaration roots are program files. A diagnosed script that is not a
@@ -350,9 +345,4 @@ impl VirtualProject {
         includes.dedup();
         includes
     }
-}
-
-#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
-fn compiler_option_enabled(options: &Map<std::string::String, Value>, name: &str) -> bool {
-    options.get(name).and_then(Value::as_bool).unwrap_or(false)
 }

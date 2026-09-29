@@ -17,13 +17,8 @@ import {
   type QuickPickItem,
   type StatusBarItem,
 } from "vscode";
-import {
-  Executable,
-  LanguageClient,
-  ServerOptions,
-  Trace,
-  TransportKind,
-} from "vscode-languageclient/node.js";
+import { LanguageClient, Trace } from "vscode-languageclient/node.js";
+import { createServerOptions } from "./server-options.js";
 import {
   LINT_ONLY_CONFIGURATION_UPDATES,
   WORKSPACE_LSP_CONFIG_FILES,
@@ -535,7 +530,7 @@ async function startClient(
     return;
   }
   outputChannel.appendLine(`Using server: ${serverPath}`);
-  const serverOptions: ServerOptions = createServerOptions(serverPath);
+  const serverOptions = createServerOptions(serverPath);
   let nextClient: LanguageClient | undefined;
   nextClient = new LanguageClient(
     "vize",
@@ -1200,27 +1195,3 @@ async function writeExtractedServer(contents: Buffer, serverPath: string): Promi
   }
 }
 
-function createServerOptions(serverPath: string): ServerOptions {
-  const run: Executable = {
-    command: serverPath,
-    args: ["lsp"],
-    transport: TransportKind.stdio,
-  };
-
-  const debug: Executable = {
-    command: serverPath,
-    args: ["lsp", "--debug"],
-    transport: TransportKind.stdio,
-    options: {
-      env: {
-        ...process.env,
-        RUST_BACKTRACE: "1",
-      },
-    },
-  };
-
-  return {
-    run,
-    debug,
-  };
-}

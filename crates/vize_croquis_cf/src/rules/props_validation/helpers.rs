@@ -6,6 +6,11 @@ use vize_carton::{CompactString, FxHashMap, String, camelize};
 use vize_croquis::macros::MacroKind;
 use vize_croquis::types::TypeDefinitions;
 
+#[path = "helpers_builtin_attr.rs"]
+mod builtin_attr;
+
+pub(super) use builtin_attr::is_builtin_attr;
+
 pub(super) struct PassedComponentUsage {
     pub(super) props: Vec<PassedPropInfo>,
     pub(super) has_spread_attrs: bool,
@@ -320,37 +325,6 @@ fn to_pascal_case(s: &str) -> String {
             }
         })
         .collect()
-}
-
-/// Check if an attribute name is a built-in HTML/Vue attribute.
-#[inline]
-pub(super) fn is_builtin_attr(name: &str) -> bool {
-    matches!(
-        name,
-        "key"
-            | "ref"
-            | "is"
-            | "class"
-            | "style"
-            | "id"
-            | "slot"
-            | "slot-scope"
-            | "v-slot"
-            | "v-if"
-            | "v-else"
-            | "v-else-if"
-            | "v-for"
-            | "v-show"
-            | "v-bind"
-            | "v-on"
-            | "v-model"
-            | "v-html"
-            | "v-text"
-            | "v-pre"
-            | "v-cloak"
-            | "v-once"
-            | "v-memo"
-    )
 }
 
 #[cfg(test)]

@@ -21,32 +21,14 @@ mod component_exports;
 mod models;
 #[path = "content_mapper_navigation_tests.rs"]
 mod navigation;
+#[path = "content_mapper_offset_tests.rs"]
+mod offsets;
 #[path = "content_mapper_protocol_tests.rs"]
 mod protocol;
 #[path = "content_mapper_scoped_event_navigation_tests.rs"]
 mod scoped_event_navigation;
 #[path = "content_mapper_slot_outlet_navigation_tests.rs"]
 mod slot_outlet_navigation;
-
-#[test]
-fn keeps_mapper_offsets_in_utf8_bytes() {
-    let source = r#"<script setup lang="ts">
-const emoji = "😀"
-</script>
-<template>{{ emoji }}</template>
-"#;
-    let result =
-        generate_vue_content_mapper_transform(Path::new("Unicode.vue"), source).expect("transform");
-    let original = source.rfind("emoji").expect("template identifier");
-    assert!(
-        result
-            .mappings
-            .iter()
-            .any(|mapping| mapping.0[2] == original),
-        "expected a UTF-8 byte mapping at {original}: {:?}",
-        result.mappings
-    );
-}
 
 #[test]
 fn emits_stable_semantic_links_for_ref_unwraps() {
