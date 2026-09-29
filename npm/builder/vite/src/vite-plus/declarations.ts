@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { readFile, rm, stat, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { parse, type ParseError } from "jsonc-parser";
 import type { VizePackOptions, VizeTaskConfig } from "./types.ts";
@@ -23,7 +24,7 @@ export async function emitDeclarations(options: VizePackOptions, metadata: VizeT
     if (errors.length || !source || typeof source !== "object") {
       throw new Error(`Invalid TypeScript config: ${file}`);
     }
-    const temporary = path.join(path.dirname(file), `.vize-vp-${randomUUID()}.json`);
+    const temporary = path.join(os.tmpdir(), `.vize-vp-${randomUUID()}.json`);
     copies.set(file, temporary);
     const references = source.references
       ? await Promise.all(
