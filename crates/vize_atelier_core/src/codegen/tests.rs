@@ -472,6 +472,22 @@ fn test_codegen_conditional_named_slot_preserves_implicit_default_slot() {
 }
 
 #[test]
+fn comment_only_child_creates_a_default_slot_in_development() {
+    let result = compile!("<Card><!-- body comes later --></Card>");
+    let output = result_output(&result);
+    assert!(output.contains("default: _withCtx(() => ["), "{output}");
+    assert!(output.contains("_createCommentVNode"), "{output}");
+}
+
+#[test]
+fn comment_next_to_named_slot_does_not_create_a_default_slot() {
+    let result = compile!("<Card><!-- body comes later --><template #footer>ok</template></Card>");
+    let output = result_output(&result);
+    assert!(output.contains("footer: _withCtx(() => ["), "{output}");
+    assert!(!output.contains("default: _withCtx(() => ["), "{output}");
+}
+
+#[test]
 fn test_codegen_looped_slot_key_and_index_aliases_stay_local_in_dynamic_args() {
     use crate::lane::transform;
     use crate::options::{CodegenOptions, TransformOptions};

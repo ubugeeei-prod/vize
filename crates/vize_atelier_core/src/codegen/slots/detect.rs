@@ -39,7 +39,7 @@ pub(super) fn slots_are_only_forwarded(el: &ElementNode<'_>) -> bool {
 }
 
 /// Whether the element contributes slots of its own: a `v-slot` on the
-/// component root, or any child that is not whitespace/comment filler.
+/// component root, or any child that is not whitespace filler.
 fn has_authored_slots(el: &ElementNode<'_>) -> bool {
     if el
         .props
@@ -50,7 +50,7 @@ fn has_authored_slots(el: &ElementNode<'_>) -> bool {
     }
     el.children.iter().any(|child| match child {
         TemplateChildNode::Text(t) => !t.content.trim().is_empty(),
-        TemplateChildNode::Comment(_) => false,
+        TemplateChildNode::Comment(_) => true,
         _ => true,
     })
 }
@@ -82,12 +82,11 @@ pub fn has_slot_children(el: &ElementNode<'_>) -> bool {
         }
     }
 
-    // If children consist only of whitespace text and/or comments, skip slot generation.
-    // This matches Vue's official compiler behavior where `<Comp> </Comp>` does not
-    // produce a default slot (important for <router-view>, <transition>, etc.).
+    // Whitespace-only children do not create a slot. A comment-only child does
+    // create a default slot in development builds, as it does in Vue.
     let has_meaningful_child = el.children.iter().any(|child| match child {
         TemplateChildNode::Text(t) => !t.content.trim().is_empty(),
-        TemplateChildNode::Comment(_) => false,
+        TemplateChildNode::Comment(_) => true,
         _ => true,
     });
     if !has_meaningful_child {

@@ -211,7 +211,13 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             })
             .collect();
 
-        if !default_children.is_empty() && !has_generated_default {
+        let has_slot_template = el
+            .children
+            .iter()
+            .any(super::detect::child_is_slot_template);
+        let has_default_content = !has_slot_template
+            || super::detect::slot_children_have_meaningful_content(&default_children);
+        if !default_children.is_empty() && !has_generated_default && has_default_content {
             if !first_slot {
                 ctx.push(",");
             }
