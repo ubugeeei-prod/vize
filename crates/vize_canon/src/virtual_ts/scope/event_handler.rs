@@ -56,6 +56,9 @@ pub(super) fn generate_event_handler_expressions(
             let early_exit_guard = ctx.return_single_expression;
             if let Some(ref guard) = guard {
                 if early_exit_guard {
+                    let isolated =
+                        crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
+                    let guard = isolated.as_str();
                     append!(
                         *ts,
                         "{indent}// @ts-ignore Inference-only guard; authored v-if checks own diagnostics.\n{indent}if (!({guard})) throw 0;\n",

@@ -9,6 +9,8 @@ pub(crate) fn append_ignored_vif_guard_open(
     guard: &str,
     purpose: &str,
 ) {
+    let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
+    let guard = isolated.as_str();
     append!(
         *ts,
         "{indent}// @ts-ignore {purpose}; authored v-if checks own diagnostics.\n{indent}if ({guard}) {{\n"

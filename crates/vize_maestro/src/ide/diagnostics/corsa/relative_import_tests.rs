@@ -221,6 +221,63 @@ defineSlots<{
     );
 }
 
+#[test]
+fn incomplete_template_expression_does_not_drop_sibling_vue_import() {
+    let project = tempfile::TempDir::new().expect("temp project");
+    let root = project.path();
+    let parent = root.join("Parent.vue");
+    std::fs::write(root.join("Child.vue"), "<template><span /></template>\n").expect("child");
+    let script = "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n";
+    let mut clean = vize_l0::String::from("");
+    clean.push_str(script);
+    clean.push_str("<template><Child label=\"x\" /></template>\n");
+    let mut member = vize_l0::String::from("");
+    member.push_str(script);
+    member.push_str("<template><Child label=\"x\" />{{ foo. }}</template>\n");
+    let mut prop = vize_l0::String::from("");
+    prop.push_str(script);
+    prop.push_str("<template><Child label=\"x\" :title=\"foo.\" /></template>\n");
+    let mut unclosed = vize_l0::String::from("");
+    unclosed.push_str(script);
+    unclosed.push_str("<template><Child label=\"x\" />{{ foo</template>\n");
+    let cases = [clean, member, prop, unclosed];
+    let mut imports = Vec::new();
+    for source in &cases {
+        std::fs::write(&parent, source.as_str()).expect("parent");
+        let uri = Url::from_file_path(&parent).expect("uri");
+        let generated = DiagnosticService::generate_virtual_ts(&uri, source.as_str(), false, false)
+            .expect("virtual ts");
+        let import = generated
+            .code
+            .lines()
+            .find(|line| line.contains("Child.vue"))
+            .unwrap_or_default();
+        assert!(
+            import.contains("./Child.vue"),
+            "sibling import missing from editor virtual TS:\n{}",
+            generated.code
+        );
+        let allocator = oxc_allocator::Allocator::default();
+        let parsed = oxc_parser::Parser::new(
+            &allocator,
+            generated.code.as_str(),
+            oxc_span::SourceType::ts(),
+        )
+        .parse();
+        assert!(
+            !parsed.panicked && parsed.diagnostics.is_empty(),
+            "incomplete template made the editor virtual module unparseable: {:?}\n{}",
+            parsed.diagnostics,
+            generated.code
+        );
+        imports.push(vize_l0::cstr!("{import}"));
+    }
+    assert!(
+        imports.iter().all(|import| import == &imports[0]),
+        "incomplete expressions rewrote the sibling import differently: {imports:?}"
+    );
+}
+
 fn resolve_test_tsgo_binary() -> Option<std::path::PathBuf> {
     if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
         return None;

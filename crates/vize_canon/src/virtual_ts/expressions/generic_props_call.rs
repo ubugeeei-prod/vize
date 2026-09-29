@@ -132,7 +132,12 @@ pub(crate) fn generate_slot_host_binding(
         *ts,
         "{indent}const {binding_name} = (undefined as unknown as __VizeSlotsFactory<typeof {component_ref}>)({component_ref})(",
     );
-    if let Some(ref guard) = usage.vif_guard {
+    let isolated_guard = usage
+        .vif_guard
+        .as_ref()
+        .map(|guard| super::incomplete::isolate_incomplete_expression(guard.as_str()));
+    if let Some(guard) = isolated_guard.as_ref() {
+        let guard = guard.as_str();
         append!(*ts, "({guard}) ? ");
     }
     append_props_literal(

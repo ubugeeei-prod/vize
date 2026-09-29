@@ -135,6 +135,8 @@ fn emit_usage_event_references(
         };
         if !emitted_guard {
             if let Some(guard) = guard.as_deref() {
+                let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
+                let guard = isolated.as_str();
                 append!(
                     *ts,
                     "{indent}// @ts-ignore Navigation-only guard; authored binding checks own diagnostics.\n{indent}if ({guard}) {{\n"

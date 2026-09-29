@@ -112,6 +112,10 @@ mod vue_compiler_comments;
 #[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
+mod incomplete_expression_tests;
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#[cfg(test)]
 mod tests;
 
 pub(super) const AUTO_IMPORT_STUBS_FILE: &str = "__vize_auto_imports.d.ts";
