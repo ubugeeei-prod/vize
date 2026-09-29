@@ -1,3 +1,4 @@
+mod art;
 pub(in crate::linter::engine) mod facade;
 mod pug;
 
@@ -256,6 +257,9 @@ impl Linter {
             filename,
             &mut result,
         );
+        // `<variant>` markup is not an SFC `<template>`, so the template lane
+        // never sees it. Gallery variants are real components.
+        self.append_art_variant_template_diagnostics(source, filename, &mut result);
         if (source.contains("eslint-") || source.contains("oxlint-"))
             && let Ok(descriptor) = super::super::script_rules::parse_sfc_for_lint(source, filename)
             && crate::context::retain_unless_sfc_suppressed(&descriptor, &mut result.diagnostics)
