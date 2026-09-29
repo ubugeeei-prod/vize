@@ -3,7 +3,7 @@
 
 cargo-semver-checks 0.47.0 cannot resolve items relocated to a dependency and
 re-exported from their old paths (upstream issue #355). The paired downstream
-consumer fixture must compile against both 0.429.1 and the candidate before
+consumer fixture must pass against both 0.429.1 and the candidate before
 this allowlist is used. Every other SemVer diagnostic remains fatal.
 """
 

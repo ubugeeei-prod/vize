@@ -1,6 +1,8 @@
 //! Downstream witness for the public tokenizer paths shipped in v0.429.1.
 //! Keep this crate independent from the Vize workspace and from `vize_l1`.
 
+use std::cell::Cell;
+use std::rc::Rc;
 use vize_armature as armature;
 use vize_armature::tokenizer;
 
@@ -118,23 +120,80 @@ const CODES_ROOT: [u8; 35] = [
     armature::char_codes::RIGHT_BRACE,
 ];
 
-#[derive(Default)]
+// Frozen values from published vize_armature 0.429.1, not from this candidate.
+const PUBLISHED_CODES: [u8; 35] = [
+    0x09, 0x0A, 0x0C, 0x0D, 0x20, 0x21, 0x22, 0x23, 0x26, 0x27, 0x2D, 0x2E, 0x2F, 0x30, 0x39, 0x3A,
+    0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x46, 0x5A, 0x5B, 0x5D, 0x60, 0x61, 0x66, 0x76, 0x78,
+    0x7A, 0x7B, 0x7D,
+];
+
+// Exhaustive matches make a new public variant a compile error in this witness.
+fn published_state_code(state: armature::State) -> u8 {
+    match state {
+        armature::State::Text => 1,
+        armature::State::InterpolationOpen => 2,
+        armature::State::Interpolation => 3,
+        armature::State::InterpolationClose => 4,
+        armature::State::BeforeTagName => 5,
+        armature::State::InTagName => 6,
+        armature::State::InSelfClosingTag => 7,
+        armature::State::BeforeClosingTagName => 8,
+        armature::State::InClosingTagName => 9,
+        armature::State::AfterClosingTagName => 10,
+        armature::State::BeforeAttrName => 11,
+        armature::State::InTagComment => 12,
+        armature::State::InAttrName => 13,
+        armature::State::InDirName => 14,
+        armature::State::InDirArg => 15,
+        armature::State::InDirDynamicArg => 16,
+        armature::State::InDirModifier => 17,
+        armature::State::AfterAttrName => 18,
+        armature::State::BeforeAttrValue => 19,
+        armature::State::InAttrValueDq => 20,
+        armature::State::InAttrValueSq => 21,
+        armature::State::InAttrValueNq => 22,
+        armature::State::BeforeDeclaration => 23,
+        armature::State::InDeclaration => 24,
+        armature::State::InProcessingInstruction => 25,
+        armature::State::BeforeComment => 26,
+        armature::State::CDATASequence => 27,
+        armature::State::InSpecialComment => 28,
+        armature::State::InCommentLike => 29,
+        armature::State::BeforeSpecialS => 30,
+        armature::State::BeforeSpecialT => 31,
+        armature::State::SpecialStartSequence => 32,
+        armature::State::InRCDATA => 33,
+        armature::State::InEntity => 34,
+        armature::State::InSFCRootTagName => 35,
+    }
+}
+
+fn published_quote_code(quote: armature::QuoteType) -> u8 {
+    match quote {
+        armature::QuoteType::NoValue => 0,
+        armature::QuoteType::Unquoted => 1,
+        armature::QuoteType::Single => 2,
+        armature::QuoteType::Double => 3,
+    }
+}
+
+#[derive(Default, Clone)]
 struct Sink {
-    text: usize,
-    entities: usize,
-    interpolation: usize,
-    errors: usize,
+    text: Rc<Cell<usize>>,
+    entities: Rc<Cell<usize>>,
+    interpolation: Rc<Cell<usize>>,
+    errors: Rc<Cell<usize>>,
 }
 
 impl tokenizer::Callbacks for Sink {
     fn on_text(&mut self, _: usize, _: usize) {
-        self.text += 1;
+        self.text.set(self.text.get() + 1);
     }
     fn on_text_entity(&mut self, _: char, _: usize, _: usize) {
-        self.entities += 1;
+        self.entities.set(self.entities.get() + 1);
     }
     fn on_interpolation(&mut self, _: usize, _: usize) {
-        self.interpolation += 1;
+        self.interpolation.set(self.interpolation.get() + 1);
     }
     fn on_open_tag_name(&mut self, _: usize, _: usize) {}
     fn on_open_tag_end(&mut self, _: usize) {}
@@ -153,15 +212,28 @@ impl tokenizer::Callbacks for Sink {
     fn on_processing_instruction(&mut self, _: usize, _: usize) {}
     fn on_end(&mut self) {}
     fn on_error(&mut self, _: armature::ErrorCode, _: usize) {
-        self.errors += 1;
+        self.errors.set(self.errors.get() + 1);
     }
 }
 
 fn accepts_root_callback<C: armature::Callbacks>(_: &C) {}
 
 pub fn exercise_old_api() {
-    assert_eq!(STATES.len(), 35);
-    assert_eq!(CODES_MODULE, CODES_ROOT);
+    assert_eq!(CODES_MODULE, PUBLISHED_CODES);
+    assert_eq!(CODES_ROOT, PUBLISHED_CODES);
+    for (index, state) in STATES.into_iter().enumerate() {
+        assert_eq!(published_state_code(state), (index + 1) as u8);
+        assert_eq!(state as u8, (index + 1) as u8);
+    }
+    for (quote, value) in [
+        (armature::QuoteType::NoValue, 0),
+        (armature::QuoteType::Unquoted, 1),
+        (armature::QuoteType::Single, 2),
+        (armature::QuoteType::Double, 3),
+    ] {
+        assert_eq!(published_quote_code(quote), value);
+        assert_eq!(quote as u8, value);
+    }
     let mut sink = Sink::default();
     accepts_root_callback(&sink);
     // The module and crate-root names must refer to the same types.
@@ -187,11 +259,15 @@ pub fn exercise_old_api() {
     tokenizer::Callbacks::on_raw_interpolation(&mut sink, 0, 0);
     tokenizer::Callbacks::on_in_tag_comment(&mut sink, 0, 0);
     let mut lexer: armature::Tokenizer<'_, Sink> =
-        tokenizer::Tokenizer::with_delimiters("<div>x&amp;y</div>", sink, b"{{", b"}}");
+        tokenizer::Tokenizer::with_delimiters("<div>x&amp;y</div>", sink.clone(), b"{{", b"}}");
     lexer.set_tolerate_declarations(false);
     lexer.set_triple_mustache(false);
     lexer.set_in_tag_comments(false);
     lexer.tokenize();
+    assert_eq!(sink.interpolation.get(), 1);
+    assert!(sink.text.get() > 0);
+    assert_eq!(sink.entities.get(), 1);
+    assert_eq!(sink.errors.get(), 0);
 }
 
 #[cfg(test)]
