@@ -113,11 +113,13 @@ named imports with `#[doc(inline)]`. This is the upstream
 The release script accepts only the exact old tokenizer names and duplicate
 root/module paths observed in that failure. Any new lint, missing or extra
 item, unexpected baseline source path, tool error, or other crate failure still
-fails. Its external-consumer witness compiles one source against the published
+fails. Its external-consumer witness runs one source against the published
 0.429.1 crate and the candidate path crate. That source implements the old
 callback trait, calls its default methods and every public tokenizer method,
-checks all 35 state variants and 35 byte constants, and assigns the old module
-types to the old crate-root types. The witness checks Rust compatibility that
-rustdoc JSON cannot represent across crates; it does not claim a generic L1
-lexer product switch or substitute for the full output and instruction gates.
+checks exhaustive matches and discriminants for all 35 state variants and four
+quote variants, pins all 35 byte constants to published literals, and assigns
+the old module types to the old crate-root types. The witness checks Rust
+compatibility that rustdoc JSON cannot represent across crates. It does not
+claim a generic L1 lexer product switch or substitute for the full output and
+instruction gates.
 Exact release Actions and protected validation remain required before release.

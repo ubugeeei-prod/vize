@@ -42,11 +42,17 @@ if [ "$semver_status" -ne 0 ]; then
 fi
 
 if [ "$1" = vize_armature ]; then
-  # The same source must typecheck as a separate crate against the published
+  # The same source must execute as a separate crate against the published
   # 0.429.1 API and this candidate. This covers the re-exports rustdoc cannot
-  # resolve for cargo-semver-checks (upstream issue #355).
-  cargo check --locked --manifest-path tests/external-consumers/armature-tokenizer/baseline/Cargo.toml
-  # This path dependency changes version with the release branch, so resolve a
-  # fresh fixture lock rather than committing one pinned to the source version.
-  cargo check --manifest-path tests/external-consumers/armature-tokenizer/Cargo.toml
+  # resolve for cargo-semver-checks (upstream issue #355). Share target objects
+  # between both manifests and omit debug info to bound release-runner disk use.
+  (
+    export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$RUNNER_TEMP/armature-tokenizer-consumer-target}"
+    export CARGO_PROFILE_DEV_DEBUG=0
+    export CARGO_PROFILE_TEST_DEBUG=0
+    cargo test --lib --locked --manifest-path tests/external-consumers/armature-tokenizer/baseline/Cargo.toml
+    # This path dependency changes version with the release branch, so resolve
+    # a fresh fixture lock rather than pinning it to the source version.
+    cargo test --lib --manifest-path tests/external-consumers/armature-tokenizer/Cargo.toml
+  )
 fi
