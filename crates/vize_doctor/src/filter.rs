@@ -66,6 +66,7 @@ impl DoctorFilterSpec {
         sort_dedup(&mut normalized.severities);
         sort_dedup(&mut normalized.confidences);
         normalize_patterns(&mut normalized.targets, false);
+        expand_top_level_commas(&mut normalized.rules);
         normalize_patterns(&mut normalized.rules, false);
         normalize_patterns(&mut normalized.paths, true);
         normalize_patterns(&mut normalized.routes, false);
@@ -276,6 +277,51 @@ fn matches_enum<T: PartialEq>(accepted: &[T], value: T) -> bool {
 fn sort_dedup<T: Ord>(values: &mut Vec<T>) {
     values.sort();
     values.dedup();
+}
+
+fn expand_top_level_commas(patterns: &mut Vec<String>) {
+    let mut expanded = Vec::with_capacity(patterns.len());
+    for pattern in patterns.drain(..) {
+        if !has_top_level_comma(&pattern) {
+            expanded.push(pattern);
+            continue;
+        }
+        let mut depth = 0usize;
+        let mut start = 0usize;
+        for (index, ch) in pattern.char_indices() {
+            match ch {
+                '{' => depth += 1,
+                '}' => depth = depth.saturating_sub(1),
+                ',' if depth == 0 => {
+                    push_trimmed(&mut expanded, &pattern[start..index]);
+                    start = index + ch.len_utf8();
+                }
+                _ => {}
+            }
+        }
+        push_trimmed(&mut expanded, &pattern[start..]);
+    }
+    *patterns = expanded;
+}
+
+fn has_top_level_comma(pattern: &str) -> bool {
+    let mut depth = 0usize;
+    for ch in pattern.chars() {
+        match ch {
+            '{' => depth += 1,
+            '}' => depth = depth.saturating_sub(1),
+            ',' if depth == 0 => return true,
+            _ => {}
+        }
+    }
+    false
+}
+
+fn push_trimmed(patterns: &mut Vec<String>, pattern: &str) {
+    let pattern = pattern.trim();
+    if !pattern.is_empty() {
+        patterns.push(pattern.into());
+    }
 }
 
 fn normalize_patterns(patterns: &mut Vec<String>, path: bool) {

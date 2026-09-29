@@ -115,6 +115,37 @@ fn windows_patterns_and_candidate_paths_are_slash_normalized() {
 }
 
 #[test]
+fn comma_separated_rule_globs_match_any_listed_code() {
+    let report = fixture_report();
+    let filter = DoctorFilterSpec {
+        rules: vec!["*SECURITY*,*NOT_A_RULE*".into(), "VIZE_{FOO,BAR}".into()],
+        ..DoctorFilterSpec::default()
+    }
+    .compile()
+    .unwrap();
+
+    assert_eq!(
+        filter.spec().rules,
+        [
+            String::from("*NOT_A_RULE*"),
+            String::from("*SECURITY*"),
+            String::from("VIZE_{FOO,BAR}"),
+        ]
+    );
+    assert!(filter.matches(&report.findings()[0]));
+    assert!(!filter.matches(&report.findings()[1]));
+
+    let either = DoctorFilterSpec {
+        rules: vec!["*SECURITY*,*PERFORMANCE*".into()],
+        ..DoctorFilterSpec::default()
+    }
+    .compile()
+    .unwrap();
+    assert!(either.matches(&report.findings()[0]));
+    assert!(either.matches(&report.findings()[1]));
+}
+
+#[test]
 fn compiling_normalizes_deduplicates_and_serializes_the_spec() {
     let filter = DoctorFilterSpec {
         categories: vec![DoctorCategory::Security, DoctorCategory::Security],
