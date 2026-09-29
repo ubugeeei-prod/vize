@@ -43,7 +43,7 @@ void test("check runs native checks, native lint and Oxlint, and both formatters
         calls.push(args);
         if (args[0] === "vize/bin") {
           const file = args[args.indexOf("--config") + 1];
-          assert.equal(path.dirname(file), process.cwd());
+          assert.equal(path.dirname(file), os.tmpdir());
           assert.equal(JSON.parse(readFileSync(file, "utf8")).linter.preset, "essential");
         }
         return args[1] === "lint" ? 1 : 0;

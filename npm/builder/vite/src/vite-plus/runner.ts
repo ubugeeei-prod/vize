@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
+import os from "node:os";
 import path from "node:path";
 import { glob } from "tinyglobby";
 import type { ConfigWithVizeTasks, VizeTask, VizeTaskConfig } from "./types.ts";
@@ -149,7 +150,7 @@ export async function runNative(
     metadata.config === undefined
       ? ((await loadConfig(process.cwd(), { env })) ?? {})
       : await resolveConfigExport(metadata.config, env);
-  const file = path.resolve(`.vize-vp-${randomUUID()}.json`);
+  const file = path.join(os.tmpdir(), `.vize-vp-${randomUUID()}.json`);
   try {
     await writeFile(file, JSON.stringify(config), { flag: "wx", mode: 0o600 });
     const lintOptions =
