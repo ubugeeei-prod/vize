@@ -36,3 +36,32 @@ test("renamed features retain the same differential dependency wiring", () => {
     /davinci-differential corpus scope/u,
   );
 });
+
+test("v0.429.1 Cargo feature names remain temporary aliases", () => {
+  const publishedDifferentialAlias = ["davinci", "differential"].join("-");
+  const publishedDomAlias = ["davinci", "dom", "differential"].join("-");
+  const manifests = [
+    "vize_atelier_core",
+    "vize_atelier_dom",
+    "vize_atelier_jsx",
+    "vize_atelier_sfc",
+    "vize_atelier_ssr",
+    "vize_atelier_vapor",
+    "vize_canon",
+    "vize_croquis",
+    "vize_l1",
+    "vize_l1_to_l2",
+    "vize_patina",
+  ];
+  for (const name of manifests) {
+    assert.match(
+      read(`crates/${name}/Cargo.toml`),
+      new RegExp(`^${publishedDifferentialAlias} = \\["legacy-differential"\\]$`, "m"),
+      `${name} lost its published feature alias`,
+    );
+  }
+  assert.match(
+    read("crates/vize_atelier_sfc/Cargo.toml"),
+    new RegExp(`^${publishedDomAlias} = \\["legacy-dom-differential"\\]$`, "m"),
+  );
+});

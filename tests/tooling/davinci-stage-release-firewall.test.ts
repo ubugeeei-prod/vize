@@ -11,6 +11,7 @@ const publishedDavinciStages = new Set([
   "vize_l1_to_l2",
   "vize_l2_to_l3",
 ]);
+const publishedDifferentialAlias = ["davinci", "differential"].join("-");
 
 function isPublishable(pkg: Package): boolean {
   return pkg.publish === null || pkg.publish.length > 0;
@@ -73,12 +74,16 @@ test("DOM production keeps the published L2 renderer available for profiling", (
     // an unpublished stage in, which is what this firewall exists to stop.
     // Asserted below rather than trusted from the name.
     "legacy-differential": [],
+    // Published v0.429.1 spelling remains a temporary alias of the same
+    // test-only lane; it does not select a new stage dependency.
+    [publishedDifferentialAlias]: ["legacy-differential"],
   });
   assert.deepEqual(
     dom.features["legacy-differential"],
     [],
     "a test-only feature must select nothing",
   );
+  assert.deepEqual(dom.features[publishedDifferentialAlias], ["legacy-differential"]);
 
   const stageEdges = dom.dependencies
     .filter((dependency) => publishedDavinciStages.has(dependency.name))
