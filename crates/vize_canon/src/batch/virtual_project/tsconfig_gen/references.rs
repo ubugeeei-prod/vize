@@ -29,6 +29,57 @@ pub(in super::super) fn referenced_project_configs(tsconfig_path: &Path) -> Vec<
         .collect()
 }
 
+/// Authored sources under `project_root` that this tsconfig's `files` /
+/// `include` accepts. The walk skips `node_modules`, VCS, build output, and
+/// dot directories. TypeScript's `**` does not descend into hidden
+/// directories, and a gitignore-aware walk would drop included sources the
+/// diagnostic pass still has to see.
+pub(in super::super) fn included_sources(
+    tsconfig_path: &Path,
+    project_root: &Path,
+) -> Vec<PathBuf> {
+    let Some(spec) = spec::SpecCache::default().load(tsconfig_path) else {
+        return Vec::new();
+    };
+    let case_sensitive = !cfg!(windows);
+    let mut found = Vec::new();
+    for entry in walkdir::WalkDir::new(project_root)
+        .into_iter()
+        .filter_entry(|entry| {
+            if entry.depth() == 0 {
+                return true;
+            }
+            let name = entry.file_name().to_string_lossy();
+            name != "node_modules" && name != ".git" && name != "target" && !name.starts_with('.')
+        })
+    {
+        let Ok(entry) = entry else {
+            continue;
+        };
+        let path = entry.path();
+        if !path.is_file() {
+            continue;
+        }
+        let Some(kind) = included_source_kind(path) else {
+            continue;
+        };
+        if spec.includes(path, case_sensitive, kind) {
+            found.push(graph::normalize_path(path));
+        }
+    }
+    found.sort();
+    found.dedup();
+    found
+}
+
+fn included_source_kind(path: &Path) -> Option<TsconfigSourceKind> {
+    match path.extension().and_then(|extension| extension.to_str()) {
+        Some("js" | "jsx" | "mjs" | "cjs") => Some(TsconfigSourceKind::JavaScript),
+        Some("vue" | "ts" | "tsx" | "mts" | "cts") => Some(TsconfigSourceKind::Typed),
+        _ => None,
+    }
+}
+
 /// Select the unique effective project that owns an authored source. Missing
 /// or ambiguous ownership fails closed to the solution shell.
 pub(in super::super) fn effective_config_for_source(

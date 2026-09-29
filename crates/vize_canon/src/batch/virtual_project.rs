@@ -98,6 +98,7 @@ mod project;
 mod setup_props;
 mod topology;
 pub use topology::BatchTopologyMetrics;
+mod included_sources;
 mod tsconfig_gen;
 pub use tsconfig_gen::{
     TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind,

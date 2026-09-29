@@ -230,11 +230,27 @@ impl BatchTypeChecker {
         // Same reachability pass as `scan_paths`: imports that leave the
         // project root register instead of falling back to the stub (#3887).
         self.project.register_reachable_dependencies()?;
+        self.project.ensure_included_sources()?;
         self.project.finalize_package_routes()?;
         self.scanned = true;
         self.incremental_paths
             .after_project_scan(&self.project, &paths);
         Ok(())
+    }
+
+    /// Register tsconfig `include` sources the file walk did not hand to
+    /// `scan_paths`. Explicit subset scans do not call this.
+    pub fn ensure_included_sources(&mut self) -> CorsaResult<()> {
+        self.project.ensure_included_sources()
+    }
+
+    /// Register diagnosed paths that exist as project sources and were never
+    /// mirrored. `node_modules` paths stay out; TypeScript loads those itself.
+    pub fn adopt_diagnostic_sources(
+        &mut self,
+        paths: impl IntoIterator<Item = PathBuf>,
+    ) -> CorsaResult<()> {
+        self.project.adopt_diagnostic_sources(paths)
     }
 
     /// Get the number of registered files.

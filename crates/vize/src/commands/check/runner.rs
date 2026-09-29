@@ -288,6 +288,7 @@ fn prepare_and_execute(
             nuxt_project_root,
             package_route_resolver: package_route_resolver.clone(),
             discover_global_component_declarations,
+            ensure_included_sources: args.patterns.is_empty(),
         },
         settings,
     )?;

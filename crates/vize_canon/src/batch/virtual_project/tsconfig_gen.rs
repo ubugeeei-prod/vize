@@ -296,6 +296,20 @@ impl VirtualProject {
         })
     }
 
+    /// Declaration roots are program files. A diagnosed script that is not a
+    /// root still has to be in `include`: the diagnostic pass asks for it, and
+    /// a relative import of a file the program does not contain is `TS2307`.
+    /// Non-root `.d.ts` files stay out so they cannot shadow a package.
+    fn virtual_file_is_program_member(&self, file: &super::VirtualFile) -> bool {
+        let original = vize_carton::path::canonicalize_non_verbatim(&file.original_path);
+        if self.is_declaration_root(&original) {
+            return true;
+        }
+        self.source_file_policy()
+            .accepts_diagnostic_input(&file.virtual_path)
+            && !crate::batch::declaration_path::is_declaration_file(&original)
+    }
+
     pub(super) fn include_paths(
         &self,
         paths: Option<&[&Path]>,
@@ -311,11 +325,7 @@ impl VirtualProject {
             None => self
                 .virtual_files
                 .values()
-                .filter(|file| {
-                    let original =
-                        vize_carton::path::canonicalize_non_verbatim(&file.original_path);
-                    self.is_declaration_root(&original)
-                })
+                .filter(|file| self.virtual_file_is_program_member(file))
                 .filter_map(|file| relative(&file.virtual_path))
                 .collect(),
         };
@@ -323,9 +333,7 @@ impl VirtualProject {
             includes.extend(self.package_shadow_files.iter().filter_map(
                 |(materialized_path, canonical_path)| {
                     let file = self.virtual_files.get(canonical_path)?;
-                    let original =
-                        vize_carton::path::canonicalize_non_verbatim(&file.original_path);
-                    self.is_declaration_root(&original)
+                    self.virtual_file_is_program_member(file)
                         .then(|| relative(materialized_path))
                         .flatten()
                 },
