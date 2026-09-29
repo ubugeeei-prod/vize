@@ -45,4 +45,10 @@ fn expression_entities_require_the_shared_parser() {
         assert!(!l2_sfc_fast_path_supported_source(source), "{source}");
     }
     assert!(l2_sfc_fast_path_supported_source("<span>&amp;</span>"));
+    assert!(l2_sfc_fast_path_supported_source(
+        r#"<span v-if="count &gt; 0" v-else-if="count &lt; 0">x</span>"#
+    ));
+    assert!(!l2_sfc_fast_path_supported_source(
+        r#"<span v-if="name === '&amp;'">x</span>"#
+    ));
 }

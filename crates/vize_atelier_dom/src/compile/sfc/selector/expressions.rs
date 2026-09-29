@@ -97,9 +97,9 @@ fn tag_contains_directive_ampersand(bytes: &[u8], start: usize, end: usize) -> b
             index += 1;
         }
         if directive_name(name)
-            && bytes
-                .get(value_start..index)
-                .is_some_and(|value| value.contains(&b'&'))
+            && bytes.get(value_start..index).is_some_and(|value| {
+                value.contains(&b'&') && !is_decoded_if_comparison(name, value)
+            })
         {
             return true;
         }
@@ -108,6 +108,26 @@ fn tag_contains_directive_ampersand(bytes: &[u8], start: usize, end: usize) -> b
         }
     }
     false
+}
+
+/// The L2 `v-if` emitter already decodes named comparison operators. Keep
+/// those expressions on the fast path while other entities use the parser.
+fn is_decoded_if_comparison(name: &[u8], value: &[u8]) -> bool {
+    if name != b"v-if" && name != b"v-else-if" {
+        return false;
+    }
+    let mut remaining = value;
+    while let Some(position) = remaining.iter().position(|byte| *byte == b'&') {
+        let Some(rest) = remaining.get(position..) else {
+            return false;
+        };
+        remaining = if rest.starts_with(b"&gt;") || rest.starts_with(b"&lt;") {
+            rest.get(4..).unwrap_or_default()
+        } else {
+            return false;
+        };
+    }
+    true
 }
 
 fn directive_name(name: &[u8]) -> bool {
