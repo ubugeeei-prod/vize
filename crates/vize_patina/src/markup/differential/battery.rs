@@ -260,8 +260,8 @@ pub struct BatteryCensus {
 pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     templates: 37,
     rule_fixtures: 863,
-    rule_fixture_calls: 1027,
-    rule_fixture_skipped: 64,
+    rule_fixture_calls: 1029,
+    rule_fixture_skipped: 66,
     matrix: 90,
     template_lines: 6274,
     restructured: 0,
