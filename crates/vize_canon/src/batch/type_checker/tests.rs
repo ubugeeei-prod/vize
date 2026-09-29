@@ -272,7 +272,8 @@ const $q = functionCall()
 }
 
 #[test]
-fn batch_type_checker_reports_original_key_for_renamed_props_destructure() {
+fn batch_type_checker_keeps_declared_prop_name_for_renamed_props_destructure() {
+    // #7161: the template sees `foo`, not only the destructure local `bar`.
     if resolve_test_tsgo_binary().is_none() {
         return;
     }
@@ -297,10 +298,12 @@ void bar
     };
 
     assert!(
-        snapshot.iter().any(|(file, code, message)| {
-            file == "src/App.vue" && *code == Some(2339) && message.contains("foo")
+        snapshot.iter().all(|(file, code, message)| {
+            !(file == "src/App.vue"
+                && *code == Some(2339)
+                && (message.contains("'foo'") || message.contains("\"foo\"")))
         }),
-        "expected original prop key to report TS2339, got: {snapshot:#?}"
+        "declared prop name must not report a false TS2339, got: {snapshot:#?}"
     );
 
     let _ = std::fs::remove_dir_all(&project_root);

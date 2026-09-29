@@ -16,9 +16,11 @@ fn is_define_props_destructure_local(
     destructure: Option<&PropsDestructuredBindings>,
     prop_name: &str,
 ) -> bool {
+    // `{ foo: bar }` binds the local `bar` only. The declared prop name `foo`
+    // stays in the template. Skip a declared name only when the pattern
+    // actually binds that identifier (shorthand, rest, or a local that shadows it).
     destructure.is_some_and(|destructure| {
-        destructure.get(prop_name).is_some()
-            || destructure.rest_id.as_deref() == Some(prop_name)
+        destructure.rest_id.as_deref() == Some(prop_name)
             || destructure
                 .bindings
                 .values()

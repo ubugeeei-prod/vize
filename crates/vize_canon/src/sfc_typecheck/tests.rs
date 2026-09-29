@@ -125,7 +125,10 @@ const props = defineProps({ ...common, foo: String });
 }
 
 #[test]
-fn test_type_check_renamed_props_destructure_does_not_emit_original_prop_binding() {
+fn test_type_check_renamed_props_destructure_keeps_declared_prop_name() {
+    // #7161: `const { foo: bar } = defineProps<{ foo: string }>()` must still
+    // expose the declared prop `foo` to the template. Only the local `bar` is
+    // a script binding; dropping `foo` is a false TS2339.
     let source = r#"<script setup lang="ts">
 const { foo: bar } = defineProps<{ foo: string }>()
 void bar
@@ -136,8 +139,8 @@ void bar
     let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
 
     assert!(
-        !virtual_ts.contains(r#"const foo = props["foo"];"#),
-        "renamed props destructure must not emit a phantom original-key binding:\n{virtual_ts}"
+        virtual_ts.contains(r#"const foo = props["foo"];"#),
+        "renamed props destructure must keep the declared prop name in the template:\n{virtual_ts}"
     );
     assert!(
         virtual_ts.contains("void bar;"),
@@ -145,7 +148,7 @@ void bar
     );
     assert!(
         virtual_ts.contains("void (foo);"),
-        "template reference to original key should remain unresolved in virtual TS:\n{virtual_ts}"
+        "template reference to the declared prop name should resolve through the projected binding:\n{virtual_ts}"
     );
 }
 
