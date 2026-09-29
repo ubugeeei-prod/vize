@@ -372,6 +372,7 @@ fn test_client_only_scope() {
     chain.enter_client_only_scope(
         ClientOnlyScopeData {
             hook_name: CompactString::new("onMounted"),
+            acquires_resource: false,
         },
         100,
         200,
@@ -388,6 +389,7 @@ fn test_client_only_scope() {
     chain.enter_client_only_scope(
         ClientOnlyScopeData {
             hook_name: CompactString::new("onBeforeUnmount"),
+            acquires_resource: false,
         },
         250,
         300,
@@ -574,6 +576,7 @@ fn test_nested_ssr_scopes() {
     chain.enter_client_only_scope(
         ClientOnlyScopeData {
             hook_name: CompactString::new("onMounted"),
+            acquires_resource: false,
         },
         100,
         200,

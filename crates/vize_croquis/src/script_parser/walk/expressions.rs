@@ -94,6 +94,10 @@ pub(in crate::script_parser) fn walk_expression(
             walk_call_arguments(result, call, source);
         }
 
+        Expression::Identifier(id) => {
+            note_script_browser_global(result, id.name.as_str(), id.span.start);
+        }
+
         // Member expressions - walk the object
         Expression::StaticMemberExpression(member) => {
             walk_expression(result, &member.object, source);
@@ -273,19 +277,11 @@ pub(in crate::script_parser) fn walk_call_arguments(
     detect_call_argument_reactivity_loss(result, call, source);
     super::super::extract::check_reactive_plain_call_mutation(result, call, source);
 
-    // Check if this is a client-only lifecycle hook
-    let is_lifecycle_hook = if let Expression::Identifier(id) = &call.callee {
-        is_client_only_hook(id.name.as_str())
-    } else {
-        false
-    };
-
-    let hook_name = if is_lifecycle_hook {
-        if let Expression::Identifier(id) = &call.callee {
-            Some(id.name.as_str())
-        } else {
-            None
-        }
+    // onScopeDispose is cleanup for onMounted, but it is not a client-only
+    // lifecycle hook for race tracking.
+    let hook_name = if let Expression::Identifier(id) = &call.callee {
+        let name = id.name.as_str();
+        (is_client_only_hook(name) || name == "onScopeDispose").then_some(name)
     } else {
         None
     };
@@ -314,9 +310,12 @@ pub(in crate::script_parser) fn walk_call_arguments(
                                 lifecycle_callback_scope_recorded = true;
                                 // Enter client-only scope
                                 result.scopes.enter_client_only_scope(
-                                    ClientOnlyScopeData {
-                                        hook_name: CompactString::new(name),
-                                    },
+                                    client_only_data(
+                                        name,
+                                        source,
+                                        arrow.span.start,
+                                        arrow.span.end,
+                                    ),
                                     call.span.start,
                                     call.span.end,
                                 );
@@ -356,9 +355,7 @@ pub(in crate::script_parser) fn walk_call_arguments(
                                 lifecycle_callback_scope_recorded = true;
                                 // Enter client-only scope
                                 result.scopes.enter_client_only_scope(
-                                    ClientOnlyScopeData {
-                                        hook_name: CompactString::new(name),
-                                    },
+                                    client_only_data(name, source, func.span.start, func.span.end),
                                     call.span.start,
                                     call.span.end,
                                 );
@@ -405,12 +402,108 @@ pub(in crate::script_parser) fn walk_call_arguments(
         && !lifecycle_callback_scope_recorded
     {
         result.scopes.enter_client_only_scope(
-            ClientOnlyScopeData {
-                hook_name: CompactString::new(name),
-            },
+            client_only_data(name, source, call.span.start, call.span.end),
             call.span.start,
             call.span.end,
         );
         result.scopes.exit_scope();
     }
+}
+
+fn client_only_data(name: &str, source: &str, start: u32, end: u32) -> ClientOnlyScopeData {
+    ClientOnlyScopeData {
+        hook_name: CompactString::new(name),
+        acquires_resource: name == "onMounted" && callback_acquires_resource(source, start, end),
+    }
+}
+
+fn callback_acquires_resource(source: &str, start: u32, end: u32) -> bool {
+    let Some(text) = source.get(start as usize..end as usize) else {
+        return false;
+    };
+    const NAMES: &[&str] = &[
+        "addEventListener",
+        "setInterval",
+        "setTimeout",
+        "requestAnimationFrame",
+        "subscribe",
+    ];
+    NAMES.iter().any(|name| contains_ident(text, name))
+        || text.contains("new WebSocket")
+        || text.contains("new EventSource")
+        || text.contains("new Worker")
+        || text.contains("new IntersectionObserver")
+        || text.contains("new ResizeObserver")
+        || text.contains("new MutationObserver")
+        || text.contains(".observe(")
+}
+
+fn contains_ident(haystack: &str, ident: &str) -> bool {
+    let bytes = haystack.as_bytes();
+    let needle = ident.as_bytes();
+    let mut start = 0;
+    while let Some(pos) = haystack[start..].find(ident) {
+        let absolute = start + pos;
+        let before_ok = absolute == 0 || !is_ident_byte(bytes[absolute - 1]);
+        let after = absolute + needle.len();
+        let after_ok = after >= bytes.len() || !is_ident_byte(bytes[after]);
+        if before_ok && after_ok {
+            return true;
+        }
+        start = absolute + 1;
+    }
+    false
+}
+
+fn is_ident_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
+}
+
+fn note_script_browser_global(result: &mut ScriptParseResult, name: &str, offset: u32) {
+    if !is_browser_global(name) {
+        return;
+    }
+    let shadowed = result.scopes.lookup(name).is_some_and(|(scope, _)| {
+        !matches!(
+            scope.kind,
+            crate::scope::ScopeKind::JsGlobalUniversal
+                | crate::scope::ScopeKind::JsGlobalBrowser
+                | crate::scope::ScopeKind::JsGlobalNode
+                | crate::scope::ScopeKind::JsGlobalDeno
+                | crate::scope::ScopeKind::JsGlobalBun
+                | crate::scope::ScopeKind::VueGlobal
+        )
+    });
+    if shadowed {
+        return;
+    }
+    result
+        .script_browser_globals
+        .push((CompactString::new(name), offset));
+}
+
+fn is_browser_global(name: &str) -> bool {
+    matches!(
+        name,
+        "window"
+            | "document"
+            | "navigator"
+            | "localStorage"
+            | "sessionStorage"
+            | "location"
+            | "history"
+            | "fetch"
+            | "XMLHttpRequest"
+            | "WebSocket"
+            | "IntersectionObserver"
+            | "ResizeObserver"
+            | "MutationObserver"
+            | "requestAnimationFrame"
+            | "cancelAnimationFrame"
+            | "getComputedStyle"
+            | "matchMedia"
+            | "alert"
+            | "confirm"
+            | "prompt"
+    )
 }

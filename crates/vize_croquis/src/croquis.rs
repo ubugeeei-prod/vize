@@ -148,6 +148,8 @@ pub struct Croquis {
 
     /// Template expressions for type checking (interpolations, v-bind, etc.)
     pub template_expressions: Vec<TemplateExpression>,
+    /// Browser globals read from script, as `(name, script offset)`.
+    pub script_browser_globals: Vec<(CompactString, u32)>,
     /// Structural and pattern syntax diagnostics, in template-relative bytes.
     pub pattern_diagnostics: Vec<crate::patterns::PatternDiagnostic>,
 

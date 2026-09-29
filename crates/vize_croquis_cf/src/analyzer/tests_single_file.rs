@@ -200,7 +200,7 @@ onMounted(() => {
 }
 
 #[test]
-fn test_lifecycle_hook_without_cleanup_is_reported_for_identifier_handler() {
+fn test_lifecycle_hook_without_cleanup_ignores_identifier_handler_that_acquires_nothing() {
     let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::minimal().with_setup_context(true));
 
     analyzer.add_file(
@@ -212,15 +212,94 @@ onMounted(start)"#,
     );
 
     let result = analyzer.analyze();
-    assert!(result.diagnostics.iter().any(|diagnostic| {
+    assert!(!result.diagnostics.iter().any(|diagnostic| {
         matches!(
             &diagnostic.kind,
-            CrossFileDiagnosticKind::LifecycleHookWithoutCleanup {
-                hook_name,
-                cleanup_hook,
-            } if hook_name == "onMounted" && cleanup_hook == "onUnmounted"
+            CrossFileDiagnosticKind::LifecycleHookWithoutCleanup { .. }
         )
     }));
+}
+
+#[test]
+fn test_lifecycle_hook_ignores_mounted_that_only_updates_state() {
+    let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::minimal().with_setup_context(true));
+
+    analyzer.add_file(
+        Path::new("MountedState.vue"),
+        r#"import { onMounted, ref } from 'vue'
+
+const count = ref(0)
+onMounted(() => {
+    count.value++
+    console.log(count.value)
+})"#,
+    );
+
+    let result = analyzer.analyze();
+    assert!(!result.diagnostics.iter().any(|diagnostic| {
+        matches!(
+            &diagnostic.kind,
+            CrossFileDiagnosticKind::LifecycleHookWithoutCleanup { .. }
+        )
+    }));
+}
+
+#[test]
+fn test_before_unmount_and_scope_dispose_count_as_mounted_cleanup() {
+    let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::minimal().with_setup_context(true));
+
+    analyzer.add_file(
+        Path::new("BeforeUnmount.vue"),
+        r#"import { onBeforeUnmount, onMounted } from 'vue'
+
+onMounted(() => document.documentElement.addEventListener('mouseup', () => {}))
+onBeforeUnmount(() => document.documentElement.removeEventListener('mouseup', () => {}))"#,
+    );
+    analyzer.add_file(
+        Path::new("ScopeDispose.vue"),
+        r#"import { onMounted, onScopeDispose } from 'vue'
+
+onMounted(() => window.addEventListener('resize', () => {}))
+onScopeDispose(() => window.removeEventListener('resize', () => {}))"#,
+    );
+
+    let result = analyzer.analyze();
+    assert!(!result.diagnostics.iter().any(|diagnostic| {
+        matches!(
+            &diagnostic.kind,
+            CrossFileDiagnosticKind::LifecycleHookWithoutCleanup { .. }
+        )
+    }));
+}
+
+#[test]
+fn test_browser_api_requires_ident_boundary_and_sees_script_window() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::minimal().with_server_client_boundary(true));
+
+    analyzer.add_file(
+        Path::new("App.vue"),
+        r#"const confirmationMessage = 'Delete?'
+function confirmDeleting() {}
+async function fetchItems() {}
+const width = window.innerWidth
+"#,
+    );
+
+    let result = analyzer.analyze();
+    let apis: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter_map(|diagnostic| match &diagnostic.kind {
+            CrossFileDiagnosticKind::BrowserApiInSsr { api, .. } => Some(api.as_str()),
+            _ => None,
+        })
+        .collect();
+    assert!(apis.contains(&"window"), "{apis:?}");
+    assert!(
+        !apis.iter().any(|api| *api == "confirm" || *api == "fetch"),
+        "{apis:?}"
+    );
 }
 
 #[test]
