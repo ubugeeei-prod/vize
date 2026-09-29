@@ -20,7 +20,7 @@ use super::{
 /// This is called recursively to build the scope chain for the script.
 /// Performance: Only walks into expressions that might contain function scopes.
 #[inline]
-pub(in crate::script_parser) fn walk_expression<const SKIP: bool>(
+pub(in crate::script_parser) fn walk_expression(
     result: &mut ScriptParseResult,
     expr: &Expression<'_>,
     source: &str,
@@ -51,12 +51,12 @@ pub(in crate::script_parser) fn walk_expression<const SKIP: bool>(
                 if let Some(Statement::ExpressionStatement(expr_stmt)) =
                     arrow.body.statements.first()
                 {
-                    walk_expression::<SKIP>(result, &expr_stmt.expression, source);
+                    walk_expression(result, &expr_stmt.expression, source);
                 }
             } else {
                 // Block arrow: () => { ... }
                 for stmt in arrow.body.statements.iter() {
-                    walk_statement::<SKIP>(result, stmt, source);
+                    walk_statement(result, stmt, source);
                 }
             }
 
@@ -86,7 +86,7 @@ pub(in crate::script_parser) fn walk_expression<const SKIP: bool>(
             // Walk the body for nested scopes
             if let Some(body) = &func.body {
                 for stmt in body.statements.iter() {
-                    walk_statement::<SKIP>(result, stmt, source);
+                    walk_statement(result, stmt, source);
                 }
             }
 
@@ -95,59 +95,59 @@ pub(in crate::script_parser) fn walk_expression<const SKIP: bool>(
 
         // Call expressions may contain callbacks as arguments
         Expression::CallExpression(call) => {
-            walk_call_arguments::<SKIP>(result, call, source);
+            walk_call_arguments(result, call, source);
         }
 
         Expression::Identifier(id) => {
-            if !SKIP && identifier_might_be_browser_global(id.name.as_str()) {
+            if !result.skip_diagnostics && identifier_might_be_browser_global(id.name.as_str()) {
                 note_script_browser_global(result, id.name.as_str(), id.span.start);
             }
         }
 
         // Member expressions - walk the object
         Expression::StaticMemberExpression(member) => {
-            walk_expression::<SKIP>(result, &member.object, source);
+            walk_expression(result, &member.object, source);
         }
         Expression::ComputedMemberExpression(member) => {
-            walk_expression::<SKIP>(result, &member.object, source);
-            walk_expression::<SKIP>(result, &member.expression, source);
+            walk_expression(result, &member.object, source);
+            walk_expression(result, &member.expression, source);
         }
 
         // Chained expressions
         Expression::ChainExpression(chain) => match &chain.expression {
             oxc_ast::ast::ChainElement::CallExpression(call) => {
-                walk_call_arguments::<SKIP>(result, call, source);
+                walk_call_arguments(result, call, source);
             }
             oxc_ast::ast::ChainElement::TSNonNullExpression(expr) => {
-                walk_expression::<SKIP>(result, &expr.expression, source);
+                walk_expression(result, &expr.expression, source);
             }
             oxc_ast::ast::ChainElement::StaticMemberExpression(member) => {
-                walk_expression::<SKIP>(result, &member.object, source);
+                walk_expression(result, &member.object, source);
             }
             oxc_ast::ast::ChainElement::ComputedMemberExpression(member) => {
-                walk_expression::<SKIP>(result, &member.object, source);
-                walk_expression::<SKIP>(result, &member.expression, source);
+                walk_expression(result, &member.object, source);
+                walk_expression(result, &member.expression, source);
             }
             oxc_ast::ast::ChainElement::PrivateFieldExpression(field) => {
-                walk_expression::<SKIP>(result, &field.object, source);
+                walk_expression(result, &field.object, source);
             }
         },
 
         // Conditional expression
         Expression::ConditionalExpression(cond) => {
-            walk_expression::<SKIP>(result, &cond.test, source);
-            walk_expression::<SKIP>(result, &cond.consequent, source);
-            walk_expression::<SKIP>(result, &cond.alternate, source);
+            walk_expression(result, &cond.test, source);
+            walk_expression(result, &cond.consequent, source);
+            walk_expression(result, &cond.alternate, source);
         }
 
         // Logical/Binary expressions
         Expression::LogicalExpression(logical) => {
-            walk_expression::<SKIP>(result, &logical.left, source);
-            walk_expression::<SKIP>(result, &logical.right, source);
+            walk_expression(result, &logical.left, source);
+            walk_expression(result, &logical.right, source);
         }
         Expression::BinaryExpression(binary) => {
-            walk_expression::<SKIP>(result, &binary.left, source);
-            walk_expression::<SKIP>(result, &binary.right, source);
+            walk_expression(result, &binary.left, source);
+            walk_expression(result, &binary.right, source);
         }
 
         // Array/Object expressions
@@ -162,12 +162,12 @@ pub(in crate::script_parser) fn walk_expression<const SKIP: bool>(
                             spread.span.start,
                             spread.span.end,
                         );
-                        walk_expression::<SKIP>(result, &spread.argument, source);
+                        walk_expression(result, &spread.argument, source);
                     }
                     oxc_ast::ast::ArrayExpressionElement::Elision(_) => {}
                     _ => {
                         if let Some(expr) = elem.as_expression() {
-                            walk_expression::<SKIP>(result, expr, source);
+                            walk_expression(result, expr, source);
                         }
                     }
                 }
@@ -178,9 +178,9 @@ pub(in crate::script_parser) fn walk_expression<const SKIP: bool>(
                 match prop {
                     ObjectPropertyKind::ObjectProperty(p) => {
                         if let Some(key) = p.key.as_expression() {
-                            walk_expression::<SKIP>(result, key, source);
+                            walk_expression(result, key, source);
                         }
-                        walk_expression::<SKIP>(result, &p.value, source);
+                        walk_expression(result, &p.value, source);
                     }
                     ObjectPropertyKind::SpreadProperty(spread) => {
                         super::super::extract::check_reactive_spread_expression(
@@ -190,7 +190,7 @@ pub(in crate::script_parser) fn walk_expression<const SKIP: bool>(
                             spread.span.start,
                             spread.span.end,
                         );
-                        walk_expression::<SKIP>(result, &spread.argument, source);
+                        walk_expression(result, &spread.argument, source);
                     }
                 }
             }
@@ -198,22 +198,22 @@ pub(in crate::script_parser) fn walk_expression<const SKIP: bool>(
 
         // Await/Unary
         Expression::AwaitExpression(await_expr) => {
-            walk_expression::<SKIP>(result, &await_expr.argument, source);
+            walk_expression(result, &await_expr.argument, source);
         }
         Expression::UnaryExpression(unary) => {
-            walk_expression::<SKIP>(result, &unary.argument, source);
+            walk_expression(result, &unary.argument, source);
         }
 
         // Sequence expression
         Expression::SequenceExpression(seq) => {
             for expr in seq.expressions.iter() {
-                walk_expression::<SKIP>(result, expr, source);
+                walk_expression(result, expr, source);
             }
         }
 
         // Parenthesized
         Expression::ParenthesizedExpression(paren) => {
-            walk_expression::<SKIP>(result, &paren.expression, source);
+            walk_expression(result, &paren.expression, source);
         }
 
         // Assignment
@@ -242,10 +242,10 @@ pub(in crate::script_parser) fn walk_expression<const SKIP: bool>(
             }
             if let Some(root) = super::super::extract::member_assignment_root(&assign.left) {
                 let previous = result.reactive_assignment_root.replace(root);
-                walk_expression::<SKIP>(result, &assign.right, source);
+                walk_expression(result, &assign.right, source);
                 result.reactive_assignment_root = previous;
             } else {
-                walk_expression::<SKIP>(result, &assign.right, source);
+                walk_expression(result, &assign.right, source);
             }
         }
 
@@ -259,13 +259,13 @@ pub(in crate::script_parser) fn walk_expression<const SKIP: bool>(
 
         // TypeScript type assertions (as, satisfies, !)
         Expression::TSAsExpression(ts_as) => {
-            walk_expression::<SKIP>(result, &ts_as.expression, source);
+            walk_expression(result, &ts_as.expression, source);
         }
         Expression::TSSatisfiesExpression(ts_satisfies) => {
-            walk_expression::<SKIP>(result, &ts_satisfies.expression, source);
+            walk_expression(result, &ts_satisfies.expression, source);
         }
         Expression::TSNonNullExpression(ts_non_null) => {
-            walk_expression::<SKIP>(result, &ts_non_null.expression, source);
+            walk_expression(result, &ts_non_null.expression, source);
         }
 
         // Other expressions don't need walking for scopes

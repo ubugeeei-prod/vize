@@ -1,6 +1,5 @@
 use super::{CallExpression, CompactString, Expression, ScopeKind, ScriptParseResult};
 
-#[inline(always)]
 pub(super) fn root_identifier(expr: &Expression<'_>) -> Option<CompactString> {
     match expr {
         Expression::Identifier(identifier) => Some(CompactString::new(identifier.name.as_str())),
@@ -107,7 +106,6 @@ fn is_composable_call_name(name: &str) -> bool {
     first.is_ascii_uppercase()
 }
 
-#[inline(always)]
 pub(super) fn composable_call_name(
     result: &ScriptParseResult,
     call: &CallExpression<'_>,

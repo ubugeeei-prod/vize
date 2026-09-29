@@ -249,22 +249,30 @@ impl CodegenContext {
 
     /// Add newline with proper indentation.
     ///
-    /// One push covers the depths templates actually reach. Deeper trees
-    /// repeat that run so the bytes stay the same as a per-level `"  "`.
+    /// Shallow levels are one literal push. Deeper trees repeat a 128-space
+    /// run so the bytes stay the same as a per-level `"  "`.
     #[inline(always)]
     pub fn newline(&mut self) {
         const SPACES: &str = "                                                                                                                                ";
         self.out.push_char('\n');
-        let mut spaces = (self.indent_level as usize).saturating_mul(2);
-        if spaces == 0 {
-            return;
-        }
-        while spaces > SPACES.len() {
-            self.out.push_str(SPACES);
-            spaces -= SPACES.len();
-        }
-        if let Some(indent) = SPACES.get(..spaces) {
-            self.out.push_str(indent);
+        match self.indent_level {
+            0 => {}
+            1 => self.out.push_str("  "),
+            2 => self.out.push_str("    "),
+            3 => self.out.push_str("      "),
+            4 => self.out.push_str("        "),
+            5 => self.out.push_str("          "),
+            6 => self.out.push_str("            "),
+            level => {
+                let mut spaces = (level as usize).saturating_mul(2);
+                while spaces > SPACES.len() {
+                    self.out.push_str(SPACES);
+                    spaces -= SPACES.len();
+                }
+                if let Some(indent) = SPACES.get(..spaces) {
+                    self.out.push_str(indent);
+                }
+            }
         }
     }
 

@@ -7,17 +7,17 @@ use super::{
 
 /// Walk call expression arguments to find callbacks
 #[inline]
-pub(in crate::script_parser) fn walk_call_arguments<const SKIP: bool>(
+pub(in crate::script_parser) fn walk_call_arguments(
     result: &mut ScriptParseResult,
     call: &CallExpression<'_>,
     source: &str,
 ) {
     // First, walk the callee (might be a chained call like foo.bar().baz())
-    walk_expression::<SKIP>(result, &call.callee, source);
+    walk_expression(result, &call.callee, source);
 
     // Check for provide/inject calls
     detect_provide_inject_call(result, call, source);
-    if !SKIP {
+    if !result.skip_diagnostics {
         detect_race_condition_call(result, call, source);
     }
     detect_call_argument_reactivity_loss(result, call, source);
@@ -44,7 +44,7 @@ pub(in crate::script_parser) fn walk_call_arguments<const SKIP: bool>(
                     spread.span.start,
                     spread.span.end,
                 );
-                walk_expression::<SKIP>(result, &spread.argument, source);
+                walk_expression(result, &spread.argument, source);
             }
             _ => {
                 if let Some(expr) = arg.as_expression() {
@@ -85,15 +85,11 @@ pub(in crate::script_parser) fn walk_call_arguments<const SKIP: bool>(
                                     if let Some(Statement::ExpressionStatement(expr_stmt)) =
                                         arrow.body.statements.first()
                                     {
-                                        walk_expression::<SKIP>(
-                                            result,
-                                            &expr_stmt.expression,
-                                            source,
-                                        );
+                                        walk_expression(result, &expr_stmt.expression, source);
                                     }
                                 } else {
                                     for stmt in arrow.body.statements.iter() {
-                                        walk_statement::<SKIP>(result, stmt, source);
+                                        walk_statement(result, stmt, source);
                                     }
                                 }
 
@@ -131,7 +127,7 @@ pub(in crate::script_parser) fn walk_call_arguments<const SKIP: bool>(
 
                                 if let Some(body) = &func.body {
                                     for stmt in body.statements.iter() {
-                                        walk_statement::<SKIP>(result, stmt, source);
+                                        walk_statement(result, stmt, source);
                                     }
                                 }
 
@@ -142,7 +138,7 @@ pub(in crate::script_parser) fn walk_call_arguments<const SKIP: bool>(
                             _ => {}
                         }
                     }
-                    walk_expression::<SKIP>(result, expr, source);
+                    walk_expression(result, expr, source);
                 }
             }
         }
@@ -225,26 +221,34 @@ pub(super) fn identifier_might_be_browser_global(name: &str) -> bool {
     if !(5..=21).contains(&len) {
         return false;
     }
-    let Some(&first) = bytes.first() else {
+    let Some((&first, &second)) = bytes.first().zip(bytes.get(1)) else {
         return false;
     };
-    let Some(&second) = bytes.get(1) else {
-        return false;
-    };
-    match len {
-        5 => matches!((first, second), (b'a', b'l') | (b'f', b'e')),
-        6 => matches!((first, second), (b'p', b'r') | (b'w', b'i')),
-        7 => matches!((first, second), (b'c', b'o') | (b'h', b'i')),
-        8 => matches!((first, second), (b'd', b'o') | (b'l', b'o')),
-        9 => matches!((first, second), (b'W', b'e') | (b'n', b'a')),
-        10 => first == b'm' && second == b'a',
-        12 => first == b'l' && second == b'o',
-        14 => matches!((first, second), (b'X', b'M') | (b's', b'e') | (b'R', b'e')),
-        16 => matches!((first, second), (b'M', b'u') | (b'g', b'e')),
-        20 => matches!((first, second), (b'I', b'n') | (b'c', b'a')),
-        21 => first == b'r' && second == b'e',
-        _ => false,
-    }
+    // Each browser global is unique on (length, first byte, second byte), so
+    // the hot walk rejects ordinary identifiers before any string compare.
+    matches!(
+        (len, first, second),
+        (5, b'a', b'l')
+            | (5, b'f', b'e')
+            | (6, b'p', b'r')
+            | (6, b'w', b'i')
+            | (7, b'c', b'o')
+            | (7, b'h', b'i')
+            | (8, b'd', b'o')
+            | (8, b'l', b'o')
+            | (9, b'W', b'e')
+            | (9, b'n', b'a')
+            | (10, b'm', b'a')
+            | (12, b'l', b'o')
+            | (14, b'X', b'M')
+            | (14, b's', b'e')
+            | (14, b'R', b'e')
+            | (16, b'M', b'u')
+            | (16, b'g', b'e')
+            | (20, b'I', b'n')
+            | (20, b'c', b'a')
+            | (21, b'r', b'e')
+    )
 }
 
 pub(super) fn note_script_browser_global(result: &mut ScriptParseResult, name: &str, offset: u32) {

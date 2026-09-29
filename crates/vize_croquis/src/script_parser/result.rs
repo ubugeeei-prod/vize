@@ -96,6 +96,9 @@ pub struct ScriptParseResult {
     pub script_browser_globals: Vec<(CompactString, u32)>,
     /// Flag to track if we're in a non-setup script context
     pub(crate) is_non_setup_script: bool,
+    /// Compile demand skips browser-global and race reports. Full and doctor
+    /// walks leave this false so those reports stay.
+    pub(crate) skip_diagnostics: bool,
     /// Import statement spans in script content
     pub import_statements: Vec<ImportStatementInfo>,
     /// Re-export statement spans (`export { ... } from "..."`)

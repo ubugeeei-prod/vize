@@ -62,29 +62,6 @@ pub(crate) fn parse_script_setup_for_unused(
     result
 }
 
-fn walk_program_statements(
-    result: &mut ScriptParseResult,
-    program: &Program<'_>,
-    source: &str,
-    skip_diagnostics: bool,
-) {
-    if skip_diagnostics {
-        walk_program_statements_inner::<true>(result, program, source);
-    } else {
-        walk_program_statements_inner::<false>(result, program, source);
-    }
-}
-
-fn walk_program_statements_inner<const SKIP: bool>(
-    result: &mut ScriptParseResult,
-    program: &Program<'_>,
-    source: &str,
-) {
-    for stmt in program.body.iter() {
-        process::process_statement::<SKIP>(result, stmt, source);
-    }
-}
-
 /// Analyze an already-parsed script setup program.
 ///
 /// This is the parse-free core of [`parse_script_setup_with_generic`]: callers
@@ -111,6 +88,7 @@ pub(crate) fn analyze_script_setup_program_skipping(
     let mut result = ScriptParseResult {
         bindings: BindingMetadata::script_setup(),
         scopes: ScopeChain::with_capacity(16),
+        skip_diagnostics,
         ..Default::default()
     };
 
@@ -133,7 +111,9 @@ pub(crate) fn analyze_script_setup_program_skipping(
 
     // Process all statements
     profile!("croquis.script_setup.walk_statements", {
-        walk_program_statements(&mut result, program, source, skip_diagnostics);
+        for stmt in program.body.iter() {
+            process::process_statement(&mut result, stmt, source);
+        }
     });
 
     // After every binding is known, demote any `type` / `interface` that
@@ -266,6 +246,7 @@ pub(crate) fn parse_script_with_options_source_type(
         bindings: BindingMetadata::new(), // Not script setup
         scopes: ScopeChain::with_capacity(16),
         is_non_setup_script: true, // Mark as non-setup script for violation detection
+        skip_diagnostics,
         ..Default::default()
     };
 
@@ -295,7 +276,9 @@ pub(crate) fn parse_script_with_options_source_type(
 
     // Process all statements
     profile!("croquis.script_plain.walk_statements", {
-        walk_program_statements(&mut result, &ret.program, source, skip_diagnostics);
+        for stmt in ret.program.body.iter() {
+            process::process_statement(&mut result, stmt, source);
+        }
     });
 
     // Mirror the setup path so non-setup scripts also keep typeof-anchored

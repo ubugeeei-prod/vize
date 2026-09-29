@@ -15,21 +15,21 @@ mod with_statement;
 
 /// Walk a statement to find nested scopes
 #[inline]
-pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
+pub(in crate::script_parser) fn walk_statement(
     result: &mut ScriptParseResult,
     stmt: &Statement<'_>,
     source: &str,
 ) {
     match stmt {
         Statement::ExpressionStatement(expr_stmt) => {
-            walk_expression::<SKIP>(result, &expr_stmt.expression, source);
+            walk_expression(result, &expr_stmt.expression, source);
         }
         Statement::VariableDeclaration(var_decl) => {
             // Add variable bindings to current scope and check for reactivity losses
             for decl in var_decl.declarations.iter() {
                 add_binding_pattern_to_scope(result, &decl.id, decl.span.start);
                 if let Some(init) = &decl.init {
-                    walk_expression::<SKIP>(result, init, source);
+                    walk_expression(result, init, source);
 
                     // Check for ref.value extraction: const x = someRef.value
                     // This also applies in block scopes (e.g., { const x = countRef.value })
@@ -83,7 +83,7 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
 
             if let Some(body) = &func.body {
                 for stmt in body.statements.iter() {
-                    walk_statement::<SKIP>(result, stmt, source);
+                    walk_statement(result, stmt, source);
                 }
             }
 
@@ -116,7 +116,7 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
                         method.span.end,
                     );
                     for stmt in body.statements.iter() {
-                        walk_statement::<SKIP>(result, stmt, source);
+                        walk_statement(result, stmt, source);
                     }
                     result.scopes.exit_scope();
                 }
@@ -124,7 +124,7 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
         }
         Statement::ReturnStatement(ret) => {
             if let Some(arg) = &ret.argument {
-                walk_expression::<SKIP>(result, arg, source);
+                walk_expression(result, arg, source);
             }
         }
         Statement::BlockStatement(block) => {
@@ -136,12 +136,12 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
                 block.span.end,
             );
             for stmt in block.body.iter() {
-                walk_statement::<SKIP>(result, stmt, source);
+                walk_statement(result, stmt, source);
             }
             result.scopes.exit_scope();
         }
         Statement::IfStatement(if_stmt) => {
-            walk_expression::<SKIP>(result, &if_stmt.test, source);
+            walk_expression(result, &if_stmt.test, source);
 
             // Consequent block
             result.scopes.enter_block_scope(
@@ -151,7 +151,7 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
                 if_stmt.consequent.span().start,
                 if_stmt.consequent.span().end,
             );
-            walk_statement::<SKIP>(result, &if_stmt.consequent, source);
+            walk_statement(result, &if_stmt.consequent, source);
             result.scopes.exit_scope();
 
             // Alternate block (else/else if)
@@ -163,7 +163,7 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
                     alt.span().start,
                     alt.span().end,
                 );
-                walk_statement::<SKIP>(result, alt, source);
+                walk_statement(result, alt, source);
                 result.scopes.exit_scope();
             }
         }
@@ -182,25 +182,25 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
                         for decl in var_decl.declarations.iter() {
                             add_binding_pattern_to_scope(result, &decl.id, decl.span.start);
                             if let Some(init_expr) = &decl.init {
-                                walk_expression::<SKIP>(result, init_expr, source);
+                                walk_expression(result, init_expr, source);
                             }
                         }
                     }
                     _ => {
                         // Expression init (e.g., for (i = 0; ...))
                         if let Some(expr) = init.as_expression() {
-                            walk_expression::<SKIP>(result, expr, source);
+                            walk_expression(result, expr, source);
                         }
                     }
                 }
             }
             if let Some(test) = &for_stmt.test {
-                walk_expression::<SKIP>(result, test, source);
+                walk_expression(result, test, source);
             }
             if let Some(update) = &for_stmt.update {
-                walk_expression::<SKIP>(result, update, source);
+                walk_expression(result, update, source);
             }
-            walk_statement::<SKIP>(result, &for_stmt.body, source);
+            walk_statement(result, &for_stmt.body, source);
             result.scopes.exit_scope();
         }
         Statement::ForInStatement(for_in) => {
@@ -217,8 +217,8 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
                     add_binding_pattern_to_scope(result, &decl.id, decl.span.start);
                 }
             }
-            walk_expression::<SKIP>(result, &for_in.right, source);
-            walk_statement::<SKIP>(result, &for_in.body, source);
+            walk_expression(result, &for_in.right, source);
+            walk_statement(result, &for_in.body, source);
             result.scopes.exit_scope();
         }
         Statement::ForOfStatement(for_of) => {
@@ -235,8 +235,8 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
                     add_binding_pattern_to_scope(result, &decl.id, decl.span.start);
                 }
             }
-            walk_expression::<SKIP>(result, &for_of.right, source);
-            walk_statement::<SKIP>(result, &for_of.body, source);
+            walk_expression(result, &for_of.right, source);
+            walk_statement(result, &for_of.body, source);
             result.scopes.exit_scope();
         }
         Statement::WhileStatement(while_stmt) => {
@@ -247,8 +247,8 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
                 while_stmt.span.start,
                 while_stmt.span.end,
             );
-            walk_expression::<SKIP>(result, &while_stmt.test, source);
-            walk_statement::<SKIP>(result, &while_stmt.body, source);
+            walk_expression(result, &while_stmt.test, source);
+            walk_statement(result, &while_stmt.body, source);
             result.scopes.exit_scope();
         }
         Statement::DoWhileStatement(do_while) => {
@@ -259,12 +259,12 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
                 do_while.span.start,
                 do_while.span.end,
             );
-            walk_statement::<SKIP>(result, &do_while.body, source);
-            walk_expression::<SKIP>(result, &do_while.test, source);
+            walk_statement(result, &do_while.body, source);
+            walk_expression(result, &do_while.test, source);
             result.scopes.exit_scope();
         }
         Statement::SwitchStatement(switch_stmt) => {
-            walk_expression::<SKIP>(result, &switch_stmt.discriminant, source);
+            walk_expression(result, &switch_stmt.discriminant, source);
             result.scopes.enter_block_scope(
                 BlockScopeData {
                     kind: BlockKind::Switch,
@@ -274,10 +274,10 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
             );
             for case in switch_stmt.cases.iter() {
                 if let Some(test) = &case.test {
-                    walk_expression::<SKIP>(result, test, source);
+                    walk_expression(result, test, source);
                 }
                 for stmt in case.consequent.iter() {
-                    walk_statement::<SKIP>(result, stmt, source);
+                    walk_statement(result, stmt, source);
                 }
             }
             result.scopes.exit_scope();
@@ -292,7 +292,7 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
                 try_stmt.block.span.end,
             );
             for stmt in try_stmt.block.body.iter() {
-                walk_statement::<SKIP>(result, stmt, source);
+                walk_statement(result, stmt, source);
             }
             result.scopes.exit_scope();
 
@@ -317,7 +317,7 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
                     }
                 }
                 for stmt in handler.body.body.iter() {
-                    walk_statement::<SKIP>(result, stmt, source);
+                    walk_statement(result, stmt, source);
                 }
                 result.scopes.exit_scope();
             }
@@ -332,13 +332,13 @@ pub(in crate::script_parser) fn walk_statement<const SKIP: bool>(
                     finalizer.span.end,
                 );
                 for stmt in finalizer.body.iter() {
-                    walk_statement::<SKIP>(result, stmt, source);
+                    walk_statement(result, stmt, source);
                 }
                 result.scopes.exit_scope();
             }
         }
         Statement::WithStatement(with_stmt) => {
-            with_statement::walk_with_statement::<SKIP>(result, with_stmt, source);
+            with_statement::walk_with_statement(result, with_stmt, source);
         }
         _ => {}
     }
