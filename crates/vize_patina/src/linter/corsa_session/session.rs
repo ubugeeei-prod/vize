@@ -2,8 +2,9 @@ use super::{
     CorsaTypeAwareSession,
     errors::{compact_error, io_error_message},
     paths::{
-        TSCONFIG_CONTENTS, TSCONFIG_FILE_NAME, allocate_session_root, path_to_wire,
-        remove_session_root, resolve_corsa_executable, resolve_project_root, virtual_file_path,
+        TSCONFIG_FILE_NAME, allocate_session_root, path_to_wire, remove_session_root,
+        resolve_corsa_executable, resolve_project_root, session_tsconfig_contents,
+        virtual_file_path,
     },
 };
 use corsa::{
@@ -39,7 +40,10 @@ impl CorsaTypeAwareSession {
         let config_path = session_root.join(TSCONFIG_FILE_NAME);
         profile!(
             "patina.corsa_session.write_tsconfig",
-            std::fs::write(&config_path, TSCONFIG_CONTENTS)
+            std::fs::write(
+                &config_path,
+                session_tsconfig_contents(&project_root, filename).as_str(),
+            )
         )
         .map_err(|error| {
             io_error_message("Failed to write patina tsconfig", &config_path, &error)

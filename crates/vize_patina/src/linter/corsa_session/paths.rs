@@ -1,3 +1,4 @@
+use serde_json::Value;
 use std::{
     path::{Path, PathBuf},
     sync::atomic::{AtomicU64, Ordering},
@@ -250,6 +251,77 @@ fn remove_pid_sessions(session_store: &Path, pid: u64) {
     }
 }
 
+pub(super) fn session_tsconfig_contents(project_root: &Path, filename: &str) -> String {
+    let mut value = stub_tsconfig_value();
+    if let Some(tsconfig) = nearest_tsconfig(filename) {
+        overlay_user_compiler_options(&mut value, project_root, &tsconfig);
+    }
+    match serde_json::to_string_pretty(&value) {
+        Ok(text) => {
+            let mut rendered = text.to_compact_string();
+            rendered.push('\n');
+            rendered
+        }
+        Err(_) => TSCONFIG_CONTENTS.to_compact_string(),
+    }
+}
+
+fn stub_tsconfig_value() -> Value {
+    serde_json::json!({
+        "compilerOptions": {
+            "target": "ES2022",
+            "module": "ESNext",
+            "moduleResolution": "bundler",
+            "allowImportingTsExtensions": true,
+            "lib": ["ES2022", "DOM", "DOM.Iterable"],
+            "rootDirs": [".", "../../.."],
+            "strict": true,
+            "noEmit": true,
+            "skipLibCheck": true
+        },
+        "include": ["**/*.patina.ts"]
+    })
+}
+
+fn nearest_tsconfig(filename: &str) -> Option<PathBuf> {
+    let mut current = source_directory(filename);
+    loop {
+        let candidate = current.join("tsconfig.json");
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+        if !current.pop() {
+            return None;
+        }
+    }
+}
+
+fn overlay_user_compiler_options(value: &mut Value, project_root: &Path, tsconfig: &Path) {
+    let Ok(snapshot) = vize_canon::snapshot_tsconfig_compiler_options(project_root, tsconfig)
+    else {
+        return;
+    };
+    let Some(options) = value
+        .get_mut("compilerOptions")
+        .and_then(Value::as_object_mut)
+    else {
+        return;
+    };
+    for key in ["paths", "baseUrl", "types", "typeRoots"] {
+        if let Some(option) = snapshot.get(key) {
+            options.insert(json_string(key), option.clone());
+        }
+    }
+}
+
+#[expect(
+    clippy::disallowed_types,
+    reason = "serde_json object keys and string values are std String"
+)]
+fn json_string(text: &str) -> std::string::String {
+    std::string::String::from(text)
+}
+
 fn push_u64(buffer: &mut String, value: u64) {
     let rendered = value.to_compact_string();
     buffer.push_str(rendered.as_str());
@@ -261,7 +333,7 @@ mod tests {
     use super::is_stale_session_directory;
     use super::{
         cleanup_stale_session_roots, remove_finished_process_sessions, resolve_corsa_executable,
-        session_store_root, virtual_file_path,
+        session_store_root, session_tsconfig_contents, virtual_file_path,
     };
     use std::{
         path::{Path, PathBuf},
@@ -390,6 +462,42 @@ mod tests {
         assert!(!live.exists());
         assert!(!legacy.exists());
         assert!(foreign.exists());
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn session_tsconfig_honors_extended_paths() {
+        let root = case_dir("tsconfig-paths");
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::write(
+            root.join("base.json"),
+            r#"{ "compilerOptions": { "paths": { "@app/*": ["src/*"] } } }"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("tsconfig.json"),
+            r#"{ "extends": "./base.json", "compilerOptions": { "baseUrl": "." } }"#,
+        )
+        .unwrap();
+
+        let value: serde_json::Value = serde_json::from_str(&session_tsconfig_contents(
+            &root,
+            &root.join("src/App.vue").to_string_lossy(),
+        ))
+        .unwrap();
+        let canonical = std::fs::canonicalize(&root).unwrap();
+        let options = &value["compilerOptions"];
+        assert_eq!(
+            Path::new(options["baseUrl"].as_str().unwrap()),
+            canonical.as_path()
+        );
+        assert_eq!(
+            Path::new(options["paths"]["@app/*"][0].as_str().unwrap()),
+            canonical.join("src/*")
+        );
+        assert_eq!(value["include"][0], "**/*.patina.ts");
 
         let _ = std::fs::remove_dir_all(&root);
     }
