@@ -11,6 +11,9 @@ use super::{
     walk_expression,
 };
 
+#[path = "statements_with.rs"]
+mod with_statement;
+
 /// Walk a statement to find nested scopes
 #[inline]
 pub(in crate::script_parser) fn walk_statement(
@@ -336,16 +339,7 @@ pub(in crate::script_parser) fn walk_statement(
             }
         }
         Statement::WithStatement(with_stmt) => {
-            walk_expression(result, &with_stmt.object, source);
-            result.scopes.enter_block_scope(
-                BlockScopeData {
-                    kind: BlockKind::With,
-                },
-                with_stmt.body.span().start,
-                with_stmt.body.span().end,
-            );
-            walk_statement(result, &with_stmt.body, source);
-            result.scopes.exit_scope();
+            with_statement::walk_with_statement(result, with_stmt, source);
         }
         _ => {}
     }

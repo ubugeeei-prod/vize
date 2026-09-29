@@ -276,6 +276,11 @@ fn skip_closed_block_comment(bytes: &[u8], i: usize) -> Option<usize> {
     Some(i + at + 2)
 }
 
+#[path = "scan_number.rs"]
+mod number;
+
+pub use number::{keyword_allows_regex_after, skip_number};
+
 pub(super) fn skip_block_comment(bytes: &[u8], i: usize) -> usize {
     skip_closed_block_comment(bytes, i).unwrap_or(bytes.len())
 }
@@ -338,34 +343,4 @@ pub fn skip_identifier(bytes: &[u8], i: usize) -> usize {
             )
             .count()
     })
-}
-
-pub fn skip_number(bytes: &[u8], i: usize) -> usize {
-    i + bytes.get(i..).map_or(0, |rest| {
-        rest.iter()
-            .take_while(
-                |byte| matches!(byte, b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b'.'),
-            )
-            .count()
-    })
-}
-
-pub fn keyword_allows_regex_after(identifier: &[u8]) -> bool {
-    matches!(
-        identifier,
-        b"await"
-            | b"case"
-            | b"delete"
-            | b"do"
-            | b"else"
-            | b"in"
-            | b"instanceof"
-            | b"new"
-            | b"of"
-            | b"return"
-            | b"throw"
-            | b"typeof"
-            | b"void"
-            | b"yield"
-    )
 }

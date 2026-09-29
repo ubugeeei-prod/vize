@@ -26,6 +26,10 @@ use super::bindings::{
 };
 
 mod define_model_destructure;
+#[path = "macros_object_origins.rs"]
+mod object_origins;
+
+use object_origins::record_object_pattern_property_origins;
 
 pub(in crate::script_parser) fn process_variable_declarator(
     result: &mut ScriptParseResult,
@@ -689,47 +693,4 @@ fn collect_object_pattern_keys(obj: &ObjectPattern<'_>) -> Vec<CompactString> {
     }
 
     keys
-}
-
-fn record_object_pattern_property_origins(
-    result: &mut ScriptParseResult,
-    obj: &ObjectPattern<'_>,
-    source_name: CompactString,
-) {
-    for prop in obj.properties.iter() {
-        let prop_name = match &prop.key {
-            PropertyKey::StaticIdentifier(id) => CompactString::new(id.name.as_str()),
-            PropertyKey::StringLiteral(s) => CompactString::new(s.value.as_str()),
-            _ => {
-                let Some(local_name) = get_binding_pattern_name(&prop.value) else {
-                    continue;
-                };
-                CompactString::new(&local_name)
-            }
-        };
-
-        let Some(local_name) = get_binding_pattern_name(&prop.value) else {
-            continue;
-        };
-
-        result.reactive_value_origins.insert(
-            CompactString::new(&local_name),
-            ReactiveValueOrigin::ReactiveProperty {
-                source_name: source_name.clone(),
-                prop_name,
-            },
-        );
-    }
-
-    if let Some(rest) = &obj.rest
-        && let Some(local_name) = get_binding_pattern_name(&rest.argument)
-    {
-        result.reactive_value_origins.insert(
-            CompactString::new(&local_name),
-            ReactiveValueOrigin::ReactiveProperty {
-                source_name,
-                prop_name: CompactString::new("(rest)"),
-            },
-        );
-    }
 }

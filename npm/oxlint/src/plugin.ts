@@ -1,4 +1,11 @@
 import { definePlugin, defineRule, type Diagnostic } from "@oxlint/plugins";
+import {
+  hasOnlyKeys,
+  isRecord,
+  isString,
+  optionField,
+  optionalBooleanField,
+} from "./plugin-option-guards.js";
 
 import { getPatinaRules } from "./binding.js";
 import {
@@ -326,26 +333,6 @@ function isHtmlSelfClosingOption(value: unknown): value is HtmlSelfClosingOption
 
 function isHyphenationStyle(value: unknown): value is HyphenationStyle {
   return value === "always" || value === "never";
-}
-
-function optionField(value: unknown): boolean {
-  return value === undefined || value === "always" || value === "never" || value === "any";
-}
-
-function optionalBooleanField(value: unknown): boolean {
-  return value === undefined || typeof value === "boolean";
-}
-
-function isString(value: unknown): value is string {
-  return typeof value === "string";
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function hasOnlyKeys(value: Record<string, unknown>, keys: readonly string[]): boolean {
-  return Object.keys(value).every((key) => keys.includes(key));
 }
 
 const patinaRules = Object.fromEntries(

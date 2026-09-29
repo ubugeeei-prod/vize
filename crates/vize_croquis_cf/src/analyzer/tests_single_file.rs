@@ -3,6 +3,9 @@ use crate::diagnostics::CrossFileDiagnosticKind;
 use std::path::Path;
 use vize_croquis::AnalyzerOptions;
 
+#[path = "tests_single_file_nested.rs"]
+mod nested_callbacks;
+
 #[test]
 fn test_reactivity_wrappers_detected() {
     let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::minimal());
@@ -323,34 +326,4 @@ onDeactivated(() => {})"#,
             CrossFileDiagnosticKind::LifecycleHookWithoutCleanup { .. }
         )
     }));
-}
-
-#[test]
-fn test_nested_callback_scopes() {
-    let _analyzer = CrossFileAnalyzer::new(CrossFileOptions::minimal());
-
-    // Use Analyzer directly for script setup context
-    let mut single_analyzer = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
-    single_analyzer.analyze_script_setup(
-        r#"import { computed } from 'vue'
-
-const items = computed(() => {
-    return list.map(item => {
-        return item.value.filter(v => v > 0)
-    })
-})"#,
-    );
-    let analysis = single_analyzer.finish();
-
-    // Should have multiple closure scopes for nested callbacks
-    let closure_scopes: Vec<_> = analysis
-        .scopes
-        .iter()
-        .filter(|s| s.kind == vize_croquis::ScopeKind::Closure)
-        .collect();
-
-    assert!(
-        closure_scopes.len() >= 3,
-        "Should have at least 3 closure scopes (computed, map, filter)"
-    );
 }

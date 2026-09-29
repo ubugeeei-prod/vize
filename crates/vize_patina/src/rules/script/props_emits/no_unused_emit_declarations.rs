@@ -56,8 +56,7 @@
 
 use oxc_ast::ast::{
     Argument, ArrayExpressionElement, BindingPattern, CallExpression, Expression,
-    IdentifierReference, ObjectPropertyKind, Program, PropertyKey, Statement, TSLiteral,
-    TSSignature, TSType,
+    IdentifierReference, ObjectPropertyKind, Program, Statement, TSLiteral, TSSignature, TSType,
 };
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::{GetSpan, Span};
@@ -67,6 +66,11 @@ use vize_l0::{CompactString, FxHashSet};
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use super::template_emits::collect_template_emitted_events;
 use crate::diagnostic::{LintDiagnostic, Severity};
+
+#[path = "no_unused_emit_declarations_keys.rs"]
+mod keys;
+
+use keys::property_key_name;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-unused-emit-declarations",
@@ -337,14 +341,6 @@ fn report(name: &str, span: Span, offset: usize, result: &mut ScriptLintResult) 
              declaration.",
         );
     result.add_diagnostic(diagnostic);
-}
-
-fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
-    match key {
-        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
-        PropertyKey::StringLiteral(string) => Some(string.value.as_str()),
-        _ => None,
-    }
 }
 
 #[cfg(test)]
