@@ -54,6 +54,7 @@ pub(in crate::compile) fn try_emit_l2_captured<C: CaptureSink>(
             &emit_options,
             pre_s2_walks,
             false,
+            false,
             capture,
         )
     )
@@ -69,6 +70,7 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
     options: &DomEmitOptions<'_>,
     pre_s2_walks: Option<WalkCounts>,
     strict_slot_params: bool,
+    no_slotted: bool,
     capture: &mut C,
 ) -> Result<CodegenResultWithSections, EmitError> {
     if !C::RECORDING {
@@ -79,19 +81,22 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
             options,
             pre_s2_walks,
             strict_slot_params,
+            no_slotted,
         );
     }
     let caps = LegacyCaps::for_version(dialect);
     let profiler = global_profiler();
     let emit = if profiler.is_enabled() {
-        let observed = vize_l1_to_l2::emit_dom_source_observed_with_options_captured(
-            allocator,
-            source,
-            caps,
-            options,
-            strict_slot_params,
-            capture,
-        )?;
+        let observed =
+            vize_l1_to_l2::emit_dom_source_observed_with_options_captured_and_slot_scope(
+                allocator,
+                source,
+                caps,
+                options,
+                strict_slot_params,
+                no_slotted,
+                capture,
+            )?;
         let budget = observed.budget;
         // P2-12b observes the compiler path that actually produced this DOM
         // module. The regular entry point keeps the observer uninstantiated,
@@ -123,12 +128,13 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
         );
         observed.emit
     } else {
-        vize_l1_to_l2::emit_dom_source_with_options_captured(
+        vize_l1_to_l2::emit_dom_source_with_options_captured_and_slot_scope(
             allocator,
             source,
             caps,
             options,
             strict_slot_params,
+            no_slotted,
             capture,
         )?
     };

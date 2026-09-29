@@ -12,6 +12,12 @@ use crate::pass::{TransformProfile, run_dom_transform_with_profile};
 use super::run::{DomEmitObservation, emit_dom_observed};
 use super::{DomEmit, DomEmitOptions, EmitError};
 
+mod slot_scope;
+pub use slot_scope::{
+    emit_dom_source_observed_with_options_captured_and_slot_scope,
+    emit_dom_source_with_options_captured_and_slot_scope,
+};
+
 /// Observer-facing counts for the L2 DOM emitter.
 ///
 /// `transform` reports only pass-manager walks still needed before DOM
@@ -96,6 +102,7 @@ fn emit_dom_source_observed_with_slot_policy(
         caps,
         options,
         strict_slot_params,
+        false,
         &mut NoCapture,
     )
 }
@@ -106,6 +113,7 @@ fn emit_dom_source_observed_with_slot_policy_captured<C: CaptureSink>(
     caps: LegacyCaps,
     options: &DomEmitOptions<'_>,
     strict_slot_params: bool,
+    no_slotted: bool,
     capture: &mut C,
 ) -> Result<ObservedDomEmit, EmitError> {
     let mut transform = BudgetObserver::new();
@@ -116,6 +124,7 @@ fn emit_dom_source_observed_with_slot_policy_captured<C: CaptureSink>(
         options,
         &mut transform,
         strict_slot_params,
+        no_slotted,
         capture,
     )?;
     Ok(ObservedDomEmit {
@@ -138,12 +147,13 @@ pub fn emit_dom_source_observed_with_options_captured<C: CaptureSink>(
     strict_slot_params: bool,
     capture: &mut C,
 ) -> Result<ObservedDomEmit, EmitError> {
-    emit_dom_source_observed_with_slot_policy_captured(
+    emit_dom_source_observed_with_options_captured_and_slot_scope(
         allocator,
         source,
         caps,
         options,
         strict_slot_params,
+        false,
         capture,
     )
 }
@@ -178,6 +188,7 @@ pub fn emit_dom_source_patch_facts_observed_with_options<'a>(
         options,
         &mut observer,
         false,
+        false,
     )?;
     Ok(ObservedPatchFactsEmit {
         emit: observed.emit,
@@ -192,6 +203,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
     options: &DomEmitOptions<'_>,
     observer: &mut O,
     strict_slot_params: bool,
+    no_slotted: bool,
 ) -> Result<DomEmitObservation, EmitError> {
     ensure_sufficient_stack(|| {
         let (tree, errors) = parse_with_options(
@@ -215,7 +227,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
             profile = profile.without_static_analysis();
         }
         let facts = run_dom_transform_with_profile(&mut lowered, observer, profile);
-        emit_dom_observed(&lowered, &facts, options, strict_slot_params)
+        emit_dom_observed(&lowered, &facts, options, strict_slot_params, no_slotted)
     })
 }
 
@@ -232,6 +244,7 @@ pub(super) fn emit_dom_source_with_options_and_observer_captured<
     options: &DomEmitOptions<'_>,
     observer: &mut O,
     strict_slot_params: bool,
+    no_slotted: bool,
     capture: &mut C,
 ) -> Result<DomEmitObservation, EmitError> {
     if !C::RECORDING {
@@ -242,6 +255,7 @@ pub(super) fn emit_dom_source_with_options_and_observer_captured<
             options,
             observer,
             strict_slot_params,
+            no_slotted,
         );
     }
     ensure_sufficient_stack(|| {
@@ -275,7 +289,7 @@ pub(super) fn emit_dom_source_with_options_and_observer_captured<
         }
         let facts = run_dom_transform_with_profile(&mut lowered, observer, profile);
         capture.page(Level::L2, "facts", || vize_l0::cstr!("{facts:#?}"));
-        let emitted = emit_dom_observed(&lowered, &facts, options, strict_slot_params)?;
+        let emitted = emit_dom_observed(&lowered, &facts, options, strict_slot_params, no_slotted)?;
         capture.page(Level::L4, "emit", || emitted.emit.assembled());
         Ok(emitted)
     })
@@ -291,14 +305,13 @@ pub fn emit_dom_source_with_options_captured<'a, C: CaptureSink>(
     strict_slot_params: bool,
     capture: &mut C,
 ) -> Result<DomEmit, EmitError> {
-    emit_dom_source_with_options_and_observer_captured(
+    emit_dom_source_with_options_captured_and_slot_scope(
         allocator,
         source,
         caps,
         options,
-        &mut NoObserver,
         strict_slot_params,
+        false,
         capture,
     )
-    .map(|observed| observed.emit)
 }

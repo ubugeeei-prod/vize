@@ -15,7 +15,6 @@ fn default_options_project_the_shipped_codegen_defaults() {
             cache_handlers: false,
             hoisted_scope_id: None,
             scope_id: None,
-            no_slotted: false,
             is_ts: false,
             comments: false,
             experimental_in_tag_comments: false,

@@ -17,6 +17,7 @@ pub(super) struct DomCompilePipelineOptions {
     pub(super) codegen_options: CodegenOptions,
     pub(super) codegen_experimental_options: CodegenExperimentalOptions,
     pub(super) l2_emit_selection: L2EmitSelection,
+    pub(super) no_slotted: bool,
 }
 
 impl DomCompilePipelineOptions {
@@ -29,6 +30,7 @@ impl DomCompilePipelineOptions {
             codegen_options,
             codegen_experimental_options: CodegenExperimentalOptions::default(),
             l2_emit_selection: L2EmitSelection::Allowed,
+            no_slotted: false,
         }
     }
 
@@ -42,6 +44,7 @@ impl DomCompilePipelineOptions {
             codegen_options,
             codegen_experimental_options,
             l2_emit_selection: L2EmitSelection::Allowed,
+            no_slotted: false,
         }
     }
 
@@ -54,6 +57,7 @@ impl DomCompilePipelineOptions {
             codegen_options,
             codegen_experimental_options: CodegenExperimentalOptions::default(),
             l2_emit_selection: L2EmitSelection::RequireSections,
+            no_slotted: false,
         }
     }
 
@@ -67,6 +71,7 @@ impl DomCompilePipelineOptions {
             codegen_options,
             codegen_experimental_options,
             l2_emit_selection: L2EmitSelection::RequireSections,
+            no_slotted: false,
         }
     }
 
@@ -81,6 +86,7 @@ impl DomCompilePipelineOptions {
             codegen_options,
             codegen_experimental_options: CodegenExperimentalOptions::default(),
             l2_emit_selection: L2EmitSelection::Disabled,
+            no_slotted: false,
         }
     }
 
@@ -97,6 +103,7 @@ impl DomCompilePipelineOptions {
             codegen_options,
             codegen_experimental_options,
             l2_emit_selection: L2EmitSelection::Refused,
+            no_slotted: false,
         }
     }
 
@@ -110,6 +117,7 @@ impl DomCompilePipelineOptions {
             codegen_options,
             codegen_experimental_options,
             l2_emit_selection: L2EmitSelection::Disabled,
+            no_slotted: false,
         }
     }
 }

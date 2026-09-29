@@ -83,6 +83,7 @@ pub fn emit_dom_source_with_options<'a>(
         options,
         &mut observer,
         false,
+        false,
     )
     .map(|observed| observed.emit)
 }
@@ -96,6 +97,14 @@ pub fn emit_dom_source_sfc_with_options<'a>(
     options: &DomEmitOptions<'_>,
 ) -> Result<DomEmit, EmitError> {
     let mut observer = NoObserver;
-    emit_dom_source_with_options_and_observer(allocator, source, caps, options, &mut observer, true)
-        .map(|observed| observed.emit)
+    emit_dom_source_with_options_and_observer(
+        allocator,
+        source,
+        caps,
+        options,
+        &mut observer,
+        true,
+        false,
+    )
+    .map(|observed| observed.emit)
 }

@@ -7,10 +7,13 @@ use vize_atelier_core::options::{
     TemplateSyntaxMode, TransformOptions, WhitespaceStrategy,
 };
 use vize_atelier_core::walk_probe::WalkCounts;
+use vize_l0::dump::capture::NoCapture;
 use vize_l0::profiler::global_profiler;
 use vize_l0::{Allocator, profile};
 use vize_l1_to_l2::{
     BindingKind, BindingTable, DomEmitMode, DomEmitOptions, DomEmitSections, EmitError, LegacyCaps,
+    emit_dom_source_observed_with_options_captured_and_slot_scope as observe_sfc,
+    emit_dom_source_with_options_captured_and_slot_scope as emit_sfc,
 };
 
 use super::pipeline::L2EmitSelection;
@@ -35,9 +38,7 @@ pub(super) fn parser_options(options: &DomCompilerOptions) -> ParserOptions {
     }
 }
 
-/// Transform options for the DOM-specific transform steps.
-///
-/// `BindingMetadata` is passed directly (no string conversion needed).
+/// DOM transform settings pass `BindingMetadata` directly.
 pub(super) fn transform_options(options: &DomCompilerOptions) -> TransformOptions {
     TransformOptions {
         prefix_identifiers: options.prefix_identifiers,
@@ -142,23 +143,16 @@ pub(super) fn source_may_contain_patterned_template_syntax(source: &str) -> bool
     source.contains("v-match") || source.contains("v-when") || source.contains("v-case")
 }
 
-/// Whether the source may carry an `@vize:` directive comment. The shipped
-/// parser keeps those comments as children even with `comments` off (codegen
-/// and the linter read them), so an element holding one keeps its children
-/// slot (`createElementBlock("div", null, null)`); the L2 lowering drops them.
-/// A cheap superset scan keeps such templates on the lane that owns them
-/// (P3-17, found by the SFC snapshot oracle).
+/// `@vize:` comments stay on the legacy lane: its parser retains them as
+/// children even with `comments` off, affecting child-slot emission; L2
+/// drops them. This superset scan prevents output drift (P3-17).
 pub(super) fn source_may_contain_vize_directive_comment(source: &str) -> bool {
     source.contains("@vize:")
 }
 
-/// The published DOM option surface projected onto the L2 emitter.
-///
-/// Keep this conversion beside the legacy parse/transform wiring: the public
-/// compiler still returns its AST and diagnostics, while L2 owns the supported
-/// traversal surface. Source-map requests attach a verified compatibility map
-/// in `compile::source_map`; a field missing here must stay on the compatibility
-/// path rather than becoming an accidental L2 default.
+/// Project public DOM options to L2 while retaining the legacy AST and
+/// diagnostics. Source maps attach a verified compatibility map; fields
+/// missing here must force the compatibility path, not an L2 default.
 pub(super) fn l2_emit_options<'a>(
     options: &'a DomCompilerOptions,
     codegen: &'a CodegenOptions,
@@ -184,7 +178,6 @@ pub(super) fn l2_emit_options<'a>(
         cache_handlers: options.cache_handlers,
         hoisted_scope_id,
         scope_id: options.scope_id.as_deref(),
-        no_slotted: false,
         is_ts: options.is_ts,
         comments: options.comments,
         experimental_in_tag_comments: options.experimental_in_tag_comments,
@@ -241,6 +234,7 @@ pub(super) fn try_emit_l2(
             &emit_options,
             pre_s2_walks,
             false,
+            false,
         )
     )
     .ok()
@@ -254,21 +248,22 @@ pub(super) fn emit_l2(
     options: &DomEmitOptions<'_>,
     pre_s2_walks: Option<WalkCounts>,
     strict_slot_params: bool,
+    no_slotted: bool,
 ) -> Result<CodegenResultWithSections, EmitError> {
     let caps = LegacyCaps::for_version(dialect);
     let profiler = global_profiler();
     let emit = if profiler.is_enabled() {
-        let observed = if strict_slot_params {
-            vize_l1_to_l2::emit_dom_source_sfc_observed_with_options(
-                allocator, source, caps, options,
-            )?
-        } else {
-            vize_l1_to_l2::emit_dom_source_observed_with_options(allocator, source, caps, options)?
-        };
+        let observed = observe_sfc(
+            allocator,
+            source,
+            caps,
+            options,
+            strict_slot_params,
+            no_slotted,
+            &mut NoCapture,
+        )?;
         let budget = observed.budget;
-        // P2-12b observes the compiler path that actually produced this DOM
-        // module. The regular entry point keeps the observer uninstantiated,
-        // preserving the no-observer cost law outside explicit profiling.
+        // P2-12b counts this product path; ordinary calls instantiate no observer.
         profiler.record_counter_enabled("davinci.s2_dom.files", 1);
         profiler.record_counter_enabled(
             "davinci.s2_dom.transform.walks",
@@ -296,11 +291,15 @@ pub(super) fn emit_l2(
         );
         observed.emit
     } else {
-        if strict_slot_params {
-            vize_l1_to_l2::emit_dom_source_sfc_with_options(allocator, source, caps, options)?
-        } else {
-            vize_l1_to_l2::emit_dom_source_with_options(allocator, source, caps, options)?
-        }
+        emit_sfc(
+            allocator,
+            source,
+            caps,
+            options,
+            strict_slot_params,
+            no_slotted,
+            &mut NoCapture,
+        )?
     };
     Ok(CodegenResultWithSections {
         result: CodegenResult {
@@ -313,7 +312,6 @@ pub(super) fn emit_l2(
         sections: Some(l2_codegen_sections(emit.sections)),
     })
 }
-
 const fn l2_codegen_sections(sections: DomEmitSections) -> CodegenSections {
     CodegenSections {
         imports_len: sections.imports_len,

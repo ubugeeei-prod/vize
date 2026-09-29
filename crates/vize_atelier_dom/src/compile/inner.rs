@@ -1,7 +1,8 @@
 use vize_atelier_core::{
     CompilerError, RootNode,
     codegen::{
-        CodegenResult, CodegenResultWithSections, generate_with_sections_and_experimental_options,
+        CodegenResult, CodegenResultWithSections,
+        generate_with_sections_and_experimental_options_and_slot_scope,
     },
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode},
@@ -52,6 +53,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         codegen_options,
         codegen_experimental_options,
         l2_emit_selection,
+        no_slotted,
     } = pipeline_options;
     let parser_opts = stage_options::parser_options(&options);
 
@@ -181,10 +183,11 @@ pub(super) fn compile_template_inner_with_sections<'a>(
             }
             profile!(
                 "atelier.dom.template.codegen_compat",
-                generate_with_sections_and_experimental_options(
+                generate_with_sections_and_experimental_options_and_slot_scope(
                     &root,
                     codegen_opts,
-                    codegen_experimental_options
+                    codegen_experimental_options,
+                    no_slotted,
                 )
             )
         }

@@ -233,7 +233,6 @@ pub(crate) fn compile_template_block_with_capture(
     let codegen_experimental_options = CodegenExperimentalOptions {
         component_name: component_name.map(|name| name.to_compact_string()),
         self_component: experimental_self_component,
-        no_slotted: has_scoped && !slotted,
     };
 
     // For script setup, use inline mode to match Vue's actual compiler behavior
@@ -258,7 +257,7 @@ pub(crate) fn compile_template_block_with_capture(
     let (errors, result) = profile!(
         "atelier.sfc.template.dom",
         if let Some(capture) = capture {
-            vize_atelier_dom::compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options_with_stage_capture(
+            vize_atelier_dom::compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options_and_slot_scope_with_stage_capture(
                 allocator,
                 &template.content,
                 dom_opts,
@@ -267,10 +266,11 @@ pub(crate) fn compile_template_block_with_capture(
                 custom_elements.clone(),
                 codegen_options.clone(),
                 codegen_experimental_options,
+                has_scoped && !slotted,
                 capture,
             )
         } else {
-            vize_atelier_dom::compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options(
+            vize_atelier_dom::compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options_and_slot_scope(
                 allocator,
                 &template.content,
                 dom_opts,
@@ -279,6 +279,7 @@ pub(crate) fn compile_template_block_with_capture(
                 custom_elements.clone(),
                 codegen_options.clone(),
                 codegen_experimental_options,
+                has_scoped && !slotted,
             )
         }
     );

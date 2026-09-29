@@ -229,8 +229,6 @@ pub struct DomEmitOptions<'a> {
     /// attribute name (`data-v-abc123`) that every element's props object
     /// carries as a trailing `"data-v-abc123": ""` pair.
     pub scope_id: Option<&'a str>,
-    /// Pass Vue's renderSlot noSlotted flag for scoped SFCs without :slotted().
-    pub no_slotted: bool,
     /// The shipped lane's `is_ts`: template expressions are TypeScript,
     /// so each one is type-erased (`emit::prefix::typescript`) before the
     /// identifier pass reads it.
@@ -261,7 +259,6 @@ impl PartialEq for DomEmitOptions<'_> {
             && self.cache_handlers == other.cache_handlers
             && self.hoisted_scope_id == other.hoisted_scope_id
             && self.scope_id == other.scope_id
-            && self.no_slotted == other.no_slotted
             && self.is_ts == other.is_ts
             && self.comments == other.comments
             && self.experimental_in_tag_comments == other.experimental_in_tag_comments
@@ -301,7 +298,6 @@ impl DomEmitOptions<'static> {
         cache_handlers: false,
         hoisted_scope_id: None,
         scope_id: None,
-        no_slotted: false,
         is_ts: false,
         comments: false,
         experimental_in_tag_comments: false,

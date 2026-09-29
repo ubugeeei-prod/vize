@@ -49,7 +49,8 @@ pub use helpers::is_constant_simple_expression;
 pub use entry::{
     generate, generate_with_experimental_options, generate_with_merge_props,
     generate_with_sections, generate_with_sections_and_experimental_options,
-    generate_with_vnode_factory, generate_with_vnode_factory_and_merge_props,
+    generate_with_sections_and_experimental_options_and_slot_scope, generate_with_vnode_factory,
+    generate_with_vnode_factory_and_merge_props,
 };
 #[cfg(feature = "legacy")]
 pub(crate) use helpers::to_valid_asset_identifier;

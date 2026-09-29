@@ -27,6 +27,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     custom_elements: CustomElementMatcher,
     codegen_options: CodegenOptions,
     codegen_experimental_options: CodegenExperimentalOptions,
+    no_slotted: bool,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
     compile_template_inner_for_sfc_with_sections_captured(
         allocator,
@@ -37,6 +38,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
         custom_elements,
         codegen_options,
         codegen_experimental_options,
+        no_slotted,
         &mut NoCapture,
     )
 }
@@ -54,6 +56,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
     custom_elements: CustomElementMatcher,
     codegen_options: CodegenOptions,
     codegen_experimental_options: CodegenExperimentalOptions,
+    no_slotted: bool,
     capture: &mut C,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
     let codegen_opts = stage_options::codegen_options(&options, codegen_options.clone());
@@ -85,8 +88,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
             hoisted_scope_id.as_deref(),
             codegen_experimental_options.component_name.as_deref(),
         );
-        if let Some(mut l2_options) = l2_options {
-            l2_options.no_slotted = codegen_experimental_options.no_slotted;
+        if let Some(l2_options) = l2_options {
             if let Ok(result) = profile!(
                 "atelier.dom.template.s2_codegen_sfc_fast",
                 stage_options::emit_l2_captured(
@@ -96,6 +98,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
                     &l2_options,
                     None,
                     true,
+                    no_slotted,
                     capture,
                 )
             ) {
@@ -106,11 +109,10 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
         }
         true
     } else {
-        selector::source_contains_expression_ampersand(source)
-            || codegen_experimental_options.no_slotted
+        selector::source_contains_expression_ampersand(source) || no_slotted
     };
 
-    let pipeline_options = if force_compat_sections {
+    let mut pipeline_options = if force_compat_sections {
         DomCompilePipelineOptions::after_refusal_with_experimental_options(
             custom_elements,
             codegen_options,
@@ -123,6 +125,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
             codegen_experimental_options,
         )
     };
+    pipeline_options.no_slotted = no_slotted;
 
     let (_, errors, result) = super::inner::compile_template_inner_with_sections_captured(
         allocator,

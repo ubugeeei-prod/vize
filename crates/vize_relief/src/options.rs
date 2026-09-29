@@ -248,8 +248,6 @@ pub struct CodegenExperimentalOptions {
     pub component_name: Option<String>,
     /// Treat the reserved `<Self>` tag as a reference to the current SFC.
     pub self_component: bool,
-    /// Scoped SFC styles without :slotted() must suppress slotted scope IDs.
-    pub no_slotted: bool,
 }
 
 /// Codegen output mode

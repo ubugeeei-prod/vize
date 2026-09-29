@@ -24,6 +24,7 @@ impl CodegenContext {
             vnode_factory,
             merge_props,
             CodegenExperimentalOptions::default(),
+            false,
         )
     }
 
@@ -32,6 +33,7 @@ impl CodegenContext {
         vnode_factory: Option<&str>,
         merge_props: bool,
         experimental_options: CodegenExperimentalOptions,
+        no_slotted: bool,
     ) -> Self {
         let component_name = experimental_options
             .component_name
@@ -47,7 +49,7 @@ impl CodegenContext {
             merge_props,
             component_name,
             experimental_self_component: experimental_options.self_component,
-            no_slotted: experimental_options.no_slotted,
+            no_slotted,
             pure: false,
             used_helpers: RuntimeHelpers::default(),
             cache_index: 0,

@@ -48,7 +48,7 @@ pub(super) fn emit_dom_with_emit_budget<'f>(
     facts: &'f L2Facts,
     options: &DomEmitOptions<'f>,
 ) -> Result<(DomEmit, u32), EmitError> {
-    emit_dom_observed(lowered, facts, options, false)
+    emit_dom_observed(lowered, facts, options, false, false)
         .map(|observed| (observed.emit, observed.emit_visits))
 }
 
@@ -57,6 +57,7 @@ pub(super) fn emit_dom_observed<'f>(
     facts: &'f L2Facts,
     options: &DomEmitOptions<'f>,
     strict_slot_params: bool,
+    no_slotted: bool,
 ) -> Result<DomEmitObservation, EmitError> {
     if options.is_ts && !cfg!(feature = "typescript") {
         return Err(EmitError::unsupported(
@@ -117,7 +118,7 @@ pub(super) fn emit_dom_observed<'f>(
         cache_handlers: options.cache_handlers,
         hoisted_scope_id: options.hoisted_scope_id,
         scope_id: options.scope_id,
-        no_slotted: options.no_slotted,
+        no_slotted,
         skip_scope_id: false,
         cache_sites: StdVec::new(),
         used_unref: core::cell::Cell::new(u32::MAX),

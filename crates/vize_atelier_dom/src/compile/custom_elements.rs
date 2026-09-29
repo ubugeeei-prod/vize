@@ -215,6 +215,7 @@ pub fn compile_sfc_template_with_custom_elements_and_template_syntax_and_hoisted
         custom_elements,
         codegen_options,
         CodegenExperimentalOptions::default(),
+        false,
     )
 }
 
@@ -234,6 +235,28 @@ pub fn compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_i
     codegen_options: CodegenOptions,
     codegen_experimental_options: CodegenExperimentalOptions,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
+    compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options_and_slot_scope(
+        allocator, source, options, template_syntax, hoisted_scope_id, custom_elements,
+        codegen_options, codegen_experimental_options, false,
+    )
+}
+
+/// SFC-only slot-scope policy without expanding existing option literals.
+#[doc(hidden)]
+#[expect(clippy::too_many_arguments, reason = "independent SFC compile inputs")]
+pub fn compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options_and_slot_scope<
+    'a,
+>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+    no_slotted: bool,
+) -> (Vec<CompilerError>, CodegenResultWithSections) {
     compile_template_inner_for_sfc_with_sections(
         allocator,
         source,
@@ -243,6 +266,7 @@ pub fn compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_i
         custom_elements,
         codegen_options,
         codegen_experimental_options,
+        no_slotted,
     )
 }
 
@@ -266,6 +290,32 @@ pub fn compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_i
     codegen_experimental_options: CodegenExperimentalOptions,
     capture: &mut StageCapture,
 ) -> (Vec<CompilerError>, CodegenResultWithSections) {
+    compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options_and_slot_scope_with_stage_capture(
+        allocator, source, options, template_syntax, hoisted_scope_id, custom_elements,
+        codegen_options, codegen_experimental_options, false, capture,
+    )
+}
+
+/// Captured SFC compile with an invocation-local slot-scope policy.
+#[doc(hidden)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "independent SFC compile inputs and capture"
+)]
+pub fn compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options_and_slot_scope_with_stage_capture<
+    'a,
+>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DomCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    hoisted_scope_id: Option<String>,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    codegen_experimental_options: CodegenExperimentalOptions,
+    no_slotted: bool,
+    capture: &mut StageCapture,
+) -> (Vec<CompilerError>, CodegenResultWithSections) {
     super::capture_options::record_dom_options(
         capture,
         &options,
@@ -284,6 +334,7 @@ pub fn compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_i
         custom_elements,
         codegen_options,
         codegen_experimental_options,
+        no_slotted,
         capture,
     )
 }

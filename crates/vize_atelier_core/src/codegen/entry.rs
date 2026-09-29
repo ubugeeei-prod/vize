@@ -17,6 +17,7 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
         true,
         None,
         CodegenExperimentalOptions::default(),
+        false,
     )
     .into_result()
 }
@@ -39,6 +40,7 @@ pub fn generate_with_merge_props(
         merge_props,
         None,
         CodegenExperimentalOptions::default(),
+        false,
     )
     .into_result()
 }
@@ -57,6 +59,7 @@ pub fn generate_with_vnode_factory(
         true,
         None,
         CodegenExperimentalOptions::default(),
+        false,
     )
     .into_result()
 }
@@ -81,6 +84,7 @@ pub fn generate_with_vnode_factory_and_merge_props(
         merge_props,
         source_text,
         CodegenExperimentalOptions::default(),
+        false,
     )
     .into_result()
 }
@@ -97,6 +101,7 @@ pub fn generate_with_sections(
         true,
         None,
         CodegenExperimentalOptions::default(),
+        false,
     )
 }
 
@@ -107,7 +112,7 @@ pub fn generate_with_experimental_options(
     options: CodegenOptions,
     experimental_options: CodegenExperimentalOptions,
 ) -> CodegenResult {
-    generate_with_sections_and_options(root, options, None, true, None, experimental_options)
+    generate_with_sections_and_options(root, options, None, true, None, experimental_options, false)
         .into_result()
 }
 
@@ -118,5 +123,24 @@ pub fn generate_with_sections_and_experimental_options(
     options: CodegenOptions,
     experimental_options: CodegenExperimentalOptions,
 ) -> CodegenResultWithSections {
-    generate_with_sections_and_options(root, options, None, true, None, experimental_options)
+    generate_with_sections_and_options(root, options, None, true, None, experimental_options, false)
+}
+
+/// SFC-specific slot-scope policy carried outside the published options literal.
+#[doc(hidden)]
+pub fn generate_with_sections_and_experimental_options_and_slot_scope(
+    root: &RootNode<'_>,
+    options: CodegenOptions,
+    experimental_options: CodegenExperimentalOptions,
+    no_slotted: bool,
+) -> CodegenResultWithSections {
+    generate_with_sections_and_options(
+        root,
+        options,
+        None,
+        true,
+        None,
+        experimental_options,
+        no_slotted,
+    )
 }
