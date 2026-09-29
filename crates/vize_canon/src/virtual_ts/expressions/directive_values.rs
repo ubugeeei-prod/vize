@@ -169,8 +169,7 @@ pub(super) fn generate_directive_value_statement(
     binding: &DirectiveValueBinding,
     generated_expression: &str,
     template_offset: u32,
-    indent: &str,
-    check_unknown_directives: bool,
+    (indent, check_unknown_directives): (&str, bool),
 ) {
     emit_unknown_directive_presence(
         ts,

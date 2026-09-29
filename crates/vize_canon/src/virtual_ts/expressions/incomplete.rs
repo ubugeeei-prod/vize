@@ -84,7 +84,7 @@ fn outermost_inner(source: &str) -> Option<(char, char, String)> {
         '{' => '}',
         _ => return None,
     };
-    if source.chars().next_back() != Some(close) || !wrapper_covers_all(source, open, close) {
+    if !source.ends_with(close) || !wrapper_covers_all(source, open, close) {
         return None;
     }
     let mut inner = String::from("");
@@ -229,10 +229,10 @@ fn has_trailing_keyword(trimmed: &str) -> bool {
         if !trimmed.ends_with(keyword) {
             return false;
         }
-        match trimmed.chars().nth_back(keyword.chars().count()) {
-            Some(ch) if ch.is_ascii_alphanumeric() || ch == '_' || ch == '$' => false,
-            _ => true,
-        }
+        !trimmed
+            .chars()
+            .nth_back(keyword.chars().count())
+            .is_some_and(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
     })
 }
 

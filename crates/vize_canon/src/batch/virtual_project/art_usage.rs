@@ -102,7 +102,7 @@ fn variant_inner_ranges(art_content: &str) -> Vec<(usize, usize)> {
 pub(super) fn art_variant_check_source(
     source: &str,
     descriptor: &SfcDescriptor<'_>,
-) -> Option<String> {
+) -> Option<CompactString> {
     let mut ranges = Vec::new();
     for block in &descriptor.custom_blocks {
         if block.block_type.as_ref() != "art" {
@@ -138,13 +138,13 @@ pub(super) fn art_variant_check_source(
         };
         copy_aligned_range(&mut bytes, source, start, end, text);
     }
-    String::from_utf8(bytes).ok()
+    CompactString::from_utf8(bytes).ok()
 }
 
 fn copy_aligned_range(dest: &mut [u8], source: &str, start: usize, end: usize, content: &str) {
-    let bytes = if source.get(start..end) == Some(content) {
-        content.as_bytes()
-    } else if end >= start && content.len() == end - start {
+    let bytes = if source.get(start..end) == Some(content)
+        || (end >= start && content.len() == end - start)
+    {
         content.as_bytes()
     } else if let Some(slice) = source.get(start..end) {
         slice.as_bytes()

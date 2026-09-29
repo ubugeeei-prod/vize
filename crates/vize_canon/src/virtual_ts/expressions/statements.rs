@@ -303,8 +303,7 @@ fn emit_expression_statement(
             directive_value,
             generated_expression,
             template_offset,
-            indent,
-            checks.check_unknown_directives,
+            (indent, checks.check_unknown_directives),
         );
         return;
     }

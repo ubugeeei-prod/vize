@@ -409,7 +409,7 @@ mod tests {
 
         let names: Vec<_> = find_browser_api_usage(&analysis)
             .into_iter()
-            .map(|(name, _, _)| name.to_string())
+            .map(|(name, _, _)| name.clone())
             .collect();
         assert!(names.iter().any(|name| name == "window"), "{names:?}");
         assert!(names.iter().any(|name| name == "confirm"), "{names:?}");
