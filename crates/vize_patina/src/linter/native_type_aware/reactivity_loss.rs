@@ -71,13 +71,16 @@ pub(super) fn collect_reactivity_loss_queries(
 
     let mut queries = Vec::with_capacity(parse_result.reactivity.losses().len());
     let mut immediate = FxHashSet::default();
-    let exempt_value_spreads = parse_result
+    let exempt_value_spreads = if parse_result
         .reactivity
         .losses()
         .iter()
         .any(|loss| matches!(loss.kind, ReactivityLossKind::ReactiveSpread { .. }))
-        .then(|| computed_value_spread_spans(script_content))
-        .unwrap_or_default();
+    {
+        computed_value_spread_spans(script_content)
+    } else {
+        Default::default()
+    };
 
     for loss in parse_result.reactivity.losses() {
         if matches!(loss.kind, ReactivityLossKind::ReactiveSpread { .. })
