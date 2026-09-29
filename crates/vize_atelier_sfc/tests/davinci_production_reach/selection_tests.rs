@@ -83,3 +83,22 @@ fn missing_dom_selection_still_fails_for_dom_and_unproven_vapor_routes() {
         expected
     );
 }
+
+#[test]
+fn script_sfc_template_error_is_accounted_before_dom_selection() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    let source = include_str!("../fixtures/production-reach/script-duplicate-class.vue");
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+    for shape in [Shape::DomInline, Shape::DomModule] {
+        let selected = compile(&descriptor, "ScriptDuplicateClass.vue", shape)
+            .expect("normal-script SFC returns its template error in the result");
+        assert_eq!(selected.errors.len(), 1, "{shape:?}");
+        assert_eq!(selected.errors[0].code.as_deref(), Some("TEMPLATE_ERROR"));
+        let mut tally = Tally::default();
+        crate::measure(&descriptor, "ScriptDuplicateClass.vue", shape, &mut tally);
+        assert_eq!(tally.sfc_errors.get("TEMPLATE_ERROR"), Some(&1));
+        assert_eq!(tally.templates, 0, "{shape:?}");
+        assert_eq!(tally.unrecorded, 0, "{shape:?}");
+        assert!(tally.divergences.is_empty(), "{shape:?}");
+    }
+}
