@@ -8,7 +8,6 @@ from the same maintainer design session.
 
 Every issue body carries an `**Order:**` line; this table mirrors those lines. Prefer the lowest-stage ready slice. The maintainer [approved parallel #6832 and L1–L4/dialect structural PRs](https://github.com/ubugeeei-prod/vize/issues/6826#issuecomment-5871526916) on 2026-09-28: an open issue is not a blanket merge barrier for an independently reviewable slice. Actual provider APIs and target integrations still wait for their named prerequisites; dependent code uses native GitHub Stacks and exact-head protected-queue checks.
 
-
 For #6833, L0 moves may merge alongside #6832. Final deletion of `vize_davinci` waits for #6832 to retire the old `davinci-opt` binary and hand off the capture/Dump contracts, and for #6833 to move active `vize_davinci` imports to level crates. It does not wait for #6832 to close. Conversely, #6832 cannot close while that codename crate remains active; its complete path/type/serialized/CLI/product-capture audit still gates closure. This avoids a closure cycle without transferring naming work to #6833.
 Product-route switches still require their own fix-history fixture issues (#6879–#6883) and native parity; the product rows below are unchanged.
 
