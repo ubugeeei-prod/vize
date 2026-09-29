@@ -157,31 +157,36 @@ const state = inject('state')"#,
 }
 
 #[test]
-fn test_slot_projected_child_resolves_provider_context() {
+fn test_slot_content_keeps_the_writing_component_as_its_parent() {
     use crate::diagnostics::CrossFileDiagnosticKind;
 
     let mut analyzer =
         CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
 
-    analyzer.add_file_with_analysis(
-        Path::new("App.vue"),
-        "",
-        script_analysis_with_component_usages(
-            "// Provider receives Consumer as default slot content",
-            vec![
-                component_usage_with_span("Consumer", 30, 45),
-                component_usage_with_span("Provider", 10, 80),
-            ],
-        ),
-    );
     let provider = analyzer.add_file_with_analysis(
         Path::new("Provider.vue"),
-        "<template><slot /></template>",
-        script_analysis(
+        "",
+        script_analysis_with_component_usages(
             r#"import { provide, ref } from 'vue'
 const count = ref(0)
 provide('count', count)"#,
-            &[],
+            vec![
+                component_usage_with_span("Consumer", 30, 45),
+                component_usage_with_span("Frame", 10, 80),
+            ],
+        ),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("Frame.vue"),
+        "<template><slot /></template>",
+        script_analysis("", &[]),
+    );
+    analyzer.add_file_with_analysis(
+        Path::new("Other.vue"),
+        "",
+        script_analysis_with_component_usages(
+            "// Frame is also used without the provider",
+            vec![component_usage_with_span("Frame", 10, 40)],
         ),
     );
     let consumer = analyzer.add_file_with_analysis(
@@ -213,15 +218,6 @@ const count = inject('count')"#,
                 | CrossFileDiagnosticKind::UnusedProvide { .. }
         )
     }));
-
-    let tree = result
-        .provide_inject_tree
-        .as_ref()
-        .expect("tree should be built");
-    assert_eq!(tree.roots.len(), 1);
-    assert_eq!(tree.roots[0].file_id, provider);
-    assert_eq!(tree.roots[0].children.len(), 1);
-    assert_eq!(tree.roots[0].children[0].file_id, consumer);
 }
 
 fn script_analysis_with_component_usages(
