@@ -34,7 +34,15 @@ export function recommendEditor(source: string, extensions: boolean): string {
     ) {
       throw new Error("extensions.json recommendations must be a string array.");
     }
-    const merged = [...new Set([...(parsed.recommendations ?? []), ...recommendations])];
+    const merged: string[] = [...(parsed.recommendations ?? [])];
+    const seen = new Set(merged.map((id) => id.toLowerCase()));
+    for (const recommendation of recommendations) {
+      const id = recommendation.toLowerCase();
+      if (!seen.has(id)) {
+        merged.push(recommendation);
+        seen.add(id);
+      }
+    }
     if (JSON.stringify(merged) !== JSON.stringify(parsed.recommendations))
       set(["recommendations"], merged);
   } else {
