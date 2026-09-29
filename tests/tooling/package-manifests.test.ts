@@ -479,7 +479,7 @@ test("editor extension manifests keep expected defaults and version alignment", 
 
   assert.equal(zedVersion, workspaceVersion);
   assert.match(zedManifest, /^\[language_servers\.vize\]$/m);
-  assert.match(zedManifest, /^languages = \["Vue", "Art Vue"\]$/m);
+  assert.match(zedManifest, /^languages = \["Vue.js", "Art Vue"\]$/m);
 });
 
 test("workspace package builds do not nest pnpm run commands", () => {

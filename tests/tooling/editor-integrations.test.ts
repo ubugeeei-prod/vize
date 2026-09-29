@@ -336,8 +336,8 @@ test("vscode-art grammar stays aligned with vue-aware editor support", () => {
 
 test("zed-vize registers art-vue as a first-party language", () => {
   const manifest = readText("editors/zed/extension.toml");
-  assert.match(manifest, /^languages = \["Vue", "Art Vue"\]$/m);
-  assert.match(manifest, /^"Vue" = "vue"$/m);
+  assert.match(manifest, /^languages = \["Vue.js", "Art Vue"\]$/m);
+  assert.match(manifest, /^"Vue.js" = "vue"$/m);
   assert.match(manifest, /^"Art Vue" = "art-vue"$/m);
   assert.match(manifest, /^\[grammars\.vue\]$/m);
 

@@ -74,8 +74,8 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
   assert.match(emacsConfig, /recommended \. \(:editor t :ecosystem t :lint t :typecheck t\)/);
 
   const zedManifest = fs.readFileSync(path.join(root, "editors/zed/extension.toml"), "utf-8");
-  assert.match(zedManifest, /\[language_servers\.vize\][\s\S]*languages = \["Vue", "Art Vue"\]/);
-  assert.match(zedManifest, /"Vue" = "vue"/);
+  assert.match(zedManifest, /\[language_servers\.vize\][\s\S]*languages = \["Vue.js", "Art Vue"\]/);
+  assert.match(zedManifest, /"Vue.js" = "vue"/);
   assert.match(zedManifest, /"Art Vue" = "art-vue"/);
 
   const zedSource = fs.readFileSync(path.join(root, "editors/zed/src/lib.rs"), "utf-8");
