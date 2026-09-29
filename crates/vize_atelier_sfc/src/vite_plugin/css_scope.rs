@@ -1,8 +1,11 @@
 use crate::css::scoped_selector::split_before_trailing_universal_or_pseudo;
 use vize_carton::{SmallVec, String};
 
+mod at_rules;
 mod legacy_deep;
 mod slotted;
+
+use at_rules::should_recurse_at_rule;
 
 /// Scope CSS with the Vite plugin pipeline's selector model.
 pub(super) fn scope_css_for_pipeline(css: &str, scope_id: &str) -> String {
@@ -93,11 +96,6 @@ fn transform_css_block_with_parents(
         declarations.as_str(),
     );
     output
-}
-
-fn should_recurse_at_rule(statement: &str) -> bool {
-    ["@container", "@layer", "@media", "@supports"]
-        .contains(&statement.split_whitespace().next().unwrap_or(""))
 }
 
 fn find_rule_header_start(css: &str, start: usize, brace: usize) -> usize {
@@ -392,13 +390,12 @@ fn scope_selector(selector: &str, scope_id: &str) -> String {
         return String::from(selector);
     };
     const GLOBAL_MARKERS: &[&str] = &["::v-global(", ":global("];
-    if find_pseudo_function_any(body, GLOBAL_MARKERS).is_some() {
-        // The legacy deep normalizer unwraps :global() before scope rewriting,
-        // so handle it first. A global selector is wholly unscoped.
-        let unscoped = unwrap_pseudo_functions(body, GLOBAL_MARKERS);
+    if let Some(global) = find_pseudo_function_any(body, GLOBAL_MARKERS) {
+        // Vue replaces the whole selector with the :global() argument.
+        let unscoped = global.parts(body).1;
         let mut output = String::with_capacity(selector.len());
         output.push_str(leading);
-        output.push_str(unscoped.as_str());
+        output.push_str(unscoped);
         output.push_str(trailing);
         return output;
     }
