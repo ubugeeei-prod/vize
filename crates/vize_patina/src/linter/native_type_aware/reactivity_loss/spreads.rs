@@ -7,7 +7,6 @@ use super::{
     walk_function, walk_import_declaration, walk_spread_element, walk_variable_declarator,
 };
 
-#[path = "reactivity_loss_diagnostic.rs"]
 mod diagnostic;
 pub(super) use diagnostic::{diagnostic_key, reactivity_loss_diagnostic};
 

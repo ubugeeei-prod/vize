@@ -37,7 +37,6 @@
 //! <Draggable :item-key="(item: A | B | C) => item.id" />
 //! ```
 
-#[path = "no_deprecated_filter_scan.rs"]
 mod scan;
 use scan::{
     find_arrow_after_type, is_arrow_at, push_param_type_spans, regex_allowed, skip_regex,

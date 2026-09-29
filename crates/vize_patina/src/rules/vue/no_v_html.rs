@@ -275,5 +275,4 @@ fn translate_span(base: u32, raw_len: u32, span: oxc_span::Span) -> Option<(u32,
 }
 
 #[cfg(test)]
-#[path = "no_v_html_tests.rs"]
 mod tests;

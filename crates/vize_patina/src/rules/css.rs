@@ -38,7 +38,6 @@ mod prefer_logical_properties;
 mod prefer_nested_selectors;
 mod prefer_slotted;
 mod require_font_display;
-#[path = "css_strip_comments.rs"]
 mod strip_comments;
 
 pub use strip_comments::strip_vize_comments;

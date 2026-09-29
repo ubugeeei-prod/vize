@@ -1,6 +1,5 @@
 use super::Linter;
 
-#[path = "directives_script_style.rs"]
 mod script_style;
 
 #[test]

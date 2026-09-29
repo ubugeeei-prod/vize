@@ -28,9 +28,10 @@ export function submit(): void {\n\
 const REACTIVITY: &str = "\
 import { reactive } from \"vue\";\n\
 \n\
+const state = reactive({ count: 0 });\n\
+const count = state.count;\n\
+\n\
 export function useCount() {\n\
-  const state = reactive({ count: 0 });\n\
-  const count = state.count;\n\
   return { count };\n\
 }\n\
 ";
@@ -113,8 +114,8 @@ fn plain_typescript_reports_a_floating_promise() {
 
     let linter = type_aware();
     let result = linter.lint_script(FLOATING, "src/save.ts");
-    let Some(call) = FLOATING.find("save()") else {
-        panic!("save() is in the fixture");
+    let Some(call) = FLOATING.find("save();") else {
+        panic!("save(); is in the fixture");
     };
     assert_eq!(
         starts(&result, RULE_NO_FLOATING_PROMISES),

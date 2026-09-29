@@ -4,7 +4,6 @@ use vize_l0::{String, ToCompactString};
 
 use super::support::{legacy_property_text_ranges, next_token_offset};
 
-#[path = "comments_text.rs"]
 mod text;
 
 use text::{

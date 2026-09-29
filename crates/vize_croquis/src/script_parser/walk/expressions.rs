@@ -3,7 +3,6 @@
 //! Recursively walks expression nodes to find nested function scopes,
 //! callback arguments, reactivity losses, and client-only lifecycle hooks.
 
-#[path = "expressions_calls.rs"]
 mod calls;
 use calls::note_script_browser_global;
 pub(in crate::script_parser) use calls::walk_call_arguments;

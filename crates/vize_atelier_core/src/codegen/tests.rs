@@ -1,6 +1,5 @@
 //! Snapshot and assertion tests for codegen.
 
-#[path = "tests_source_map_identity.rs"]
 mod source_map_identity;
 
 use crate::compile;

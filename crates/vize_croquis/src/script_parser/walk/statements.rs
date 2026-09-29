@@ -11,7 +11,6 @@ use super::{
     walk_expression,
 };
 
-#[path = "statements_with.rs"]
 mod with_statement;
 
 /// Walk a statement to find nested scopes

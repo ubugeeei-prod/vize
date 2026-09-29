@@ -8,7 +8,8 @@ import { scanConsumerMigrationSurfaces } from "../../../tools/support/compat/dav
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const internalTestRows = [
-  ["crates/vize_atelier_core/src/codegen/tests.rs", "test", 20],
+  ["crates/vize_atelier_core/src/codegen/tests.rs", "test", 19],
+  ["crates/vize_atelier_core/src/codegen/tests/source_map_identity.rs", "test", 1],
   ["crates/vize_atelier_core/src/lane/tests.rs", "test", 1],
   ["crates/vize_atelier_core/src/lane/structural/tests.rs", "test", 1],
   ["crates/vize_atelier_core/src/retained/tests.rs", "test", 1],

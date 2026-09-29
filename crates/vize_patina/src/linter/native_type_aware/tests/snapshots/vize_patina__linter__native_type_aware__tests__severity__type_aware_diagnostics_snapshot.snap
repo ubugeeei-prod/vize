@@ -1,5 +1,5 @@
 ---
-source: crates/vize_patina/src/linter/native_type_aware/tests.rs
+source: crates/vize_patina/src/linter/native_type_aware/tests/severity.rs
 expression: diagnostics
 ---
 [

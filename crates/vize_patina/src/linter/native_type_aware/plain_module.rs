@@ -16,7 +16,6 @@ use super::{
 };
 use crate::diagnostic::LintDiagnostic;
 
-#[path = "plain_module_syntax.rs"]
 mod syntax;
 
 const PLAIN_HOST: &str = "function __vize_plain_host() {\n\n}\n\n// Invoke setup to verify types\n";

@@ -293,8 +293,8 @@ test("capability descriptions expose readable editor labels", () => {
 });
 
 test("editor integrations launch vize lsp by default", () => {
-  assert.match(readRepoFile("editors/vscode/src/extension.ts"), /args:\s*\["lsp"\]/);
-  assert.match(readRepoFile("editors/vscode/src/extension.ts"), /args:\s*\["lsp",\s*"--debug"\]/);
+  assert.match(readRepoFile("editors/vscode/src/server-options.ts"), /args:\s*\["lsp"\]/);
+  assert.match(readRepoFile("editors/vscode/src/server-options.ts"), /args:\s*\["lsp",\s*"--debug"\]/);
   assert.match(readRepoFile("editors/zed/src/lib.rs"), /vec!\["lsp"\.to_string\(\)\]/);
   assert.match(readRepoFile("editors/emacs/vize.el"), /'\("vize" "lsp"\)/);
   assert.match(readRepoFile("editors/helix/languages.toml"), /args = \["lsp"\]/);

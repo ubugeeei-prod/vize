@@ -47,7 +47,6 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::BindingType;
 
-#[path = "no_browser_globals_type_ranges.rs"]
 mod type_ranges;
 use vize_relief::{ElementNode, ExpressionNode, InterpolationNode, RootNode};
 

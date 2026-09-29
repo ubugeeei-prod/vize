@@ -84,7 +84,7 @@ compiler	Compiler	source	crates/vize_atelier_core/src/codegen/props/v_model.rs	3
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/root.rs	11	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/create_slots.rs	11	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/detect.rs	6	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/generate.rs	5	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/generate/slot_params.rs	1	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/outlet.rs	4	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/params.rs	4	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/params.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
@@ -95,8 +95,9 @@ compiler	Compiler	source	crates/vize_atelier_core/src/codegen/slots/params.rs	4	
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/slots/tests.rs	5	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/source_map_anchor.rs	1	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/source_map.rs	35	l0	L0	stage	vize_l0	preferred	3
-compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/tests.rs	5	l0	L0	stage	vize_l0	preferred	20
-compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/tests.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/tests.rs	7	l0	L0	stage	vize_l0	preferred	19
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/tests.rs	7	old_ast	old AST/parser	old	vize_relief	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/codegen/tests/source_map_identity.rs	12	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for.rs	23	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for/generate.rs	35	l0	L0	stage	vize_l0	preferred	3
 compiler	Compiler	source	crates/vize_atelier_core/src/codegen/v_for/helpers.rs	7	l0	L0	stage	vize_l0	preferred	1

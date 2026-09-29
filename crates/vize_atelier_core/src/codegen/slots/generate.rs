@@ -5,7 +5,6 @@ use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper, TemplateChildN
 
 use super::super::context::CodegenContext;
 
-#[path = "generate_slot_params.rs"]
 mod slot_params;
 
 use super::super::expression::generate_expression;

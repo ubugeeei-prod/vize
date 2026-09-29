@@ -1,4 +1,3 @@
-#[path = "tests_severity.rs"]
 mod severity;
 
 mod opt_in;

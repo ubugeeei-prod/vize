@@ -38,10 +38,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `FactView`                                |     1 |     1 |
 | `MacroKind`                               |     3 |     3 |
 | `ReactiveKind`                            |     1 |     1 |
-| `ReactivityLoss`                          |     1 |     2 |
-| `ReactivityLossKind`                      |     1 |    23 |
-| `ScriptParseResult`                       |     2 |     2 |
-| `ScriptParserOptions`                     |     1 |     1 |
+| `ReactivityLoss`                          |     2 |     2 |
+| `ReactivityLossKind`                      |     2 |    23 |
+| `ScriptParseResult`                       |     3 |     3 |
+| `ScriptParserOptions`                     |     2 |     2 |
 | `SfcCustomBlock`                          |     1 |     2 |
 | `SfcDescriptor`                           |    12 |    16 |
 | `SfcError`                                |     1 |     2 |
@@ -59,7 +59,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `names_match`                             |     3 |     3 |
 | `parse_script_setup`                      |     4 |     4 |
 | `parse_script_setup_with_generic_and_jsx` |     1 |     1 |
-| `parse_script_with_options`               |     1 |     1 |
+| `parse_script_with_options`               |     2 |     2 |
+| `parse_script_with_options_and_jsx`       |     1 |     1 |
 | `parse_v_for_expression`                  |     1 |     1 |
 | `parse_v_for_scope_expression`            |     1 |     1 |
 | `reactivity_lookup`                       |     1 |     1 |
@@ -79,7 +80,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeData`             |        2 |    4 |
 | `ScopeId`               |        0 |    1 |
 | `ScopeKind`             |        3 |    5 |
-| `Span`                  |        0 |  223 |
+| `Span`                  |        0 |  224 |
 | `Symbol`                |        0 |   15 |
 | `SymbolId`              |        0 |    3 |
 | `UnusedVarContext`      |        4 |    5 |

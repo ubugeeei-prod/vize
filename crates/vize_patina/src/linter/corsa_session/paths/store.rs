@@ -4,9 +4,7 @@ use super::{
     remove_session_root,
 };
 
-#[path = "paths_store_files.rs"]
 mod files;
-#[path = "paths_store_walk.rs"]
 mod walk;
 
 use files::ambient_declaration_files;

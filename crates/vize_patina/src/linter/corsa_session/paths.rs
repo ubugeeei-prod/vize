@@ -1,4 +1,3 @@
-#[path = "paths_store.rs"]
 mod store;
 pub(super) use store::remove_finished_process_sessions;
 pub(super) use store::resolve_corsa_executable;

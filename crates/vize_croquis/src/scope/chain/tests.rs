@@ -10,7 +10,6 @@ use crate::scope::types::JsRuntime;
 use insta::assert_snapshot;
 use vize_carton::{append, smallvec};
 
-#[path = "tests_empty_visible.rs"]
 mod empty_visible;
 
 #[test]

@@ -10,10 +10,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 | product                                | kind  | module              | files | sites |
 | -------------------------------------- | ----- | ------------------- | ----: | ----: |
-| `Analyzer`                             | type  | `analyzer`          |    20 |    42 |
-| `AnalyzerOptions`                      | type  | `analyzer`          |    14 |    21 |
+| `Analyzer`                             | type  | `analyzer`          |    21 |    42 |
+| `AnalyzerOptions`                      | type  | `analyzer`          |    15 |    21 |
 | `ComponentUsage`                       | type  | `croquis::template` |    14 |    38 |
-| `Croquis`                              | type  | `croquis`           |    41 |    97 |
+| `Croquis`                              | type  | `croquis`           |    42 |    97 |
 | `EffectGraphScript`                    | type  | `effect_graph`      |     1 |     1 |
 | `EffectGraphSummary`                   | type  | `effect_graph`      |     9 |    19 |
 | `ElementIdKind`                        | type  | `croquis::template` |     1 |     3 |
@@ -22,7 +22,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `PassedProp`                           | type  | `croquis::template` |     8 |    17 |
 | `ScopeData`                            | type  | `scope`             |     8 |     8 |
 | `ScopeId`                              | type  | `scope`             |    15 |    21 |
-| `ScopeKind`                            | type  | `scope`             |     6 |     8 |
+| `ScopeKind`                            | type  | `scope`             |     7 |     8 |
 | `SlotUsage`                            | type  | `croquis::template` |     2 |     2 |
 | `TemplateExpression`                   | type  | `croquis`           |     1 |     1 |
 | `TemplateExpressionKind`               | type  | `croquis`           |     1 |     1 |
@@ -34,10 +34,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.macros`                       | field | `croquis`           |    14 |    25 |
 | `Croquis.re_export_forwards`           | field | `croquis`           |     1 |     1 |
 | `Croquis.reactivity`                   | field | `croquis`           |     2 |     2 |
-| `Croquis.scopes`                       | field | `croquis`           |    11 |    16 |
+| `Croquis.scopes`                       | field | `croquis`           |    12 |    16 |
 | `Croquis.script_browser_globals`       | field | `croquis`           |     1 |     1 |
 | `Croquis.setup_context`                | field | `croquis`           |     1 |     1 |
-| `Croquis.template_expressions`         | field | `croquis`           |     1 |     4 |
+| `Croquis.template_expressions`         | field | `croquis`           |     2 |     4 |
 | `Croquis.template_info`                | field | `croquis`           |     5 |    14 |
 | `Croquis.type_exports`                 | field | `croquis`           |     1 |     1 |
 | `Croquis.types`                        | field | `croquis`           |     1 |     1 |
@@ -91,7 +91,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | product                                | resolved | grep |
 | -------------------------------------- | -------: | ---: |
 | `Analyzer`                             |       42 |   52 |
-| `AnalyzerOptions`                      |       21 |   60 |
+| `AnalyzerOptions`                      |       21 |   61 |
 | `ComponentUsage`                       |       38 |   85 |
 | `Croquis`                              |       97 |  125 |
 | `EffectGraphScript`                    |        1 |    2 |

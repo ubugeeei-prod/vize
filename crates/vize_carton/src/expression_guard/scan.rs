@@ -276,7 +276,6 @@ fn skip_closed_block_comment(bytes: &[u8], i: usize) -> Option<usize> {
     Some(i + at + 2)
 }
 
-#[path = "scan_number.rs"]
 mod number;
 
 pub use number::{keyword_allows_regex_after, skip_number};

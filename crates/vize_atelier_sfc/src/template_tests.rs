@@ -3,7 +3,6 @@
 //!
 //! Split out of `lib.rs` so that module stays inside the per-file
 //! source-length budget.
-#[path = "template_tests_inline.rs"]
 mod inline_render;
 use inline_render::assert_separate_template_local_directive_output;
 

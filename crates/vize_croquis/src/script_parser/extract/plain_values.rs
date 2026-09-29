@@ -1,4 +1,3 @@
-#[path = "plain_values_names.rs"]
 mod names;
 pub(in crate::script_parser) use names::snapshot_in_reexecuted_scope;
 use names::{

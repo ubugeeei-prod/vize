@@ -26,7 +26,6 @@ use super::bindings::{
 };
 
 mod define_model_destructure;
-#[path = "macros_object_origins.rs"]
 mod object_origins;
 
 use object_origins::record_object_pattern_property_origins;

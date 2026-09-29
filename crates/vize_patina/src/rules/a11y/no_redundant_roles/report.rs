@@ -1,8 +1,18 @@
 use super::{
-    ElementNode, ElementType, Fix, LintContext, LintDiagnostic, ListStyleType, META, MarkupContext,
+    ElementNode, ElementType, Fix, LintContext, LintDiagnostic, ListStyleType, MarkupContext,
     MarkupElement, MarkupRule, NoRedundantRoles, PropNode, Property, PropertyId, Rule, RuleMeta,
     TextEdit, get_implicit_role, get_static_attribute_value,
     get_static_or_bound_literal_attribute_value,
+};
+use crate::diagnostic::Severity;
+use crate::rule::RuleCategory;
+
+static META: RuleMeta = RuleMeta {
+    name: "a11y/no-redundant-roles",
+    description: "Disallow redundant ARIA roles",
+    category: RuleCategory::Accessibility,
+    fixable: true,
+    default_severity: Severity::Warning,
 };
 
 fn relief_role_attribute_span(element: &ElementNode<'_>) -> Option<(u32, u32)> {

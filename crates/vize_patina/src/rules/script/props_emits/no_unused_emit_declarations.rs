@@ -67,7 +67,6 @@ use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContex
 use super::template_emits::collect_template_emitted_events;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
-#[path = "no_unused_emit_declarations_keys.rs"]
 mod keys;
 
 use keys::property_key_name;

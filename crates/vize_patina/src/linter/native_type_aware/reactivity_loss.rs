@@ -1,4 +1,3 @@
-#[path = "reactivity_loss_spreads.rs"]
 mod spreads;
 use spreads::{computed_value_spread_spans, diagnostic_key, reactivity_loss_diagnostic};
 

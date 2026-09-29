@@ -19,14 +19,13 @@
 //! <div role="navigation">...</div>
 //! ```
 
-#[path = "no_redundant_roles_report.rs"]
 mod report;
 use report::property_has_markerless_list;
 
 use crate::context::LintContext;
-use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
+use crate::diagnostic::{Fix, LintDiagnostic, TextEdit};
 use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
-use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rule::{Rule, RuleMeta};
 use lightningcss::declaration::DeclarationBlock;
 use lightningcss::properties::list::ListStyleType;
 use lightningcss::properties::{Property, PropertyId};
@@ -39,14 +38,6 @@ use vize_relief::{ElementNode, ElementType, PropNode};
 use super::helpers::{
     get_implicit_role, get_implicit_role_by_attr, get_static_attribute_value,
     get_static_or_bound_literal_attribute_value,
-};
-
-static META: RuleMeta = RuleMeta {
-    name: "a11y/no-redundant-roles",
-    description: "Disallow redundant ARIA roles",
-    category: RuleCategory::Accessibility,
-    fixable: true,
-    default_severity: Severity::Warning,
 };
 
 /// Disallow redundant ARIA roles
