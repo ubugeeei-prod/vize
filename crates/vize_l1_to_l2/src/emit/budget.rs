@@ -18,6 +18,12 @@ pub use slot_scope::{
     emit_dom_source_with_options_captured_and_slot_scope,
 };
 
+struct EmitInvocation<'o, 'p> {
+    options: &'o DomEmitOptions<'p>,
+    strict_slot_params: bool,
+    no_slotted: bool,
+}
+
 /// Observer-facing counts for the L2 DOM emitter.
 ///
 /// `transform` reports only pass-manager walks still needed before DOM
@@ -121,10 +127,12 @@ fn emit_dom_source_observed_with_slot_policy_captured<C: CaptureSink>(
         allocator,
         source,
         caps,
-        options,
+        EmitInvocation {
+            options,
+            strict_slot_params,
+            no_slotted,
+        },
         &mut transform,
-        strict_slot_params,
-        no_slotted,
         capture,
     )?;
     Ok(ObservedDomEmit {
@@ -233,20 +241,19 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
 
 /// The same native emission as the ordinary entry, with an optional compile-
 /// time selected stage sink. Page rendering is inside sink closures.
-pub(super) fn emit_dom_source_with_options_and_observer_captured<
-    'a,
-    O: PassObserver,
-    C: CaptureSink,
->(
+fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: CaptureSink>(
     allocator: &'a Allocator,
     source: &'a str,
     caps: LegacyCaps,
-    options: &DomEmitOptions<'_>,
+    invocation: EmitInvocation<'_, '_>,
     observer: &mut O,
-    strict_slot_params: bool,
-    no_slotted: bool,
     capture: &mut C,
 ) -> Result<DomEmitObservation, EmitError> {
+    let EmitInvocation {
+        options,
+        strict_slot_params,
+        no_slotted,
+    } = invocation;
     if !C::RECORDING {
         return emit_dom_source_with_options_and_observer(
             allocator,

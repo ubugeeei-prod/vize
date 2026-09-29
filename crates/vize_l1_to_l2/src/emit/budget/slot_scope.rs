@@ -1,7 +1,7 @@
 //! Invocation-local SFC slot-scope policy without changing public option literals.
 
 use super::{
-    DomEmit, DomEmitOptions, EmitError, LegacyCaps, NoObserver, ObservedDomEmit,
+    DomEmit, DomEmitOptions, EmitError, EmitInvocation, LegacyCaps, NoObserver, ObservedDomEmit,
     emit_dom_source_observed_with_slot_policy_captured,
     emit_dom_source_with_options_and_observer_captured,
 };
@@ -45,10 +45,12 @@ pub fn emit_dom_source_with_options_captured_and_slot_scope<C: CaptureSink>(
         allocator,
         source,
         caps,
-        options,
+        EmitInvocation {
+            options,
+            strict_slot_params,
+            no_slotted,
+        },
         &mut NoObserver,
-        strict_slot_params,
-        no_slotted,
         capture,
     )
     .map(|observed| observed.emit)
