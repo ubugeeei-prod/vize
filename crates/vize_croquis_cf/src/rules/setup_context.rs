@@ -71,6 +71,7 @@ fn lifecycle_pair_diagnostics(
     let mut activated_offset = None;
     let mut has_unmounted = false;
     let mut has_before_unmount = false;
+    let mut has_scope_dispose = false;
     let mut has_deactivated = false;
 
     for scope in analysis.scopes.iter() {
@@ -79,7 +80,7 @@ fn lifecycle_pair_diagnostics(
         };
 
         match data.hook_name.as_str() {
-            "onMounted" => {
+            "onMounted" if data.acquires_resource => {
                 mounted_offset.get_or_insert(scope.span.start);
             }
             "onUnmounted" => has_unmounted = true,
@@ -87,6 +88,7 @@ fn lifecycle_pair_diagnostics(
                 before_mount_offset.get_or_insert(scope.span.start);
             }
             "onBeforeUnmount" => has_before_unmount = true,
+            "onScopeDispose" => has_scope_dispose = true,
             "onActivated" => {
                 activated_offset.get_or_insert(scope.span.start);
             }
@@ -99,7 +101,7 @@ fn lifecycle_pair_diagnostics(
     push_lifecycle_pair_diagnostic(
         &mut diagnostics,
         file_id,
-        mounted_offset.filter(|_| !has_unmounted),
+        mounted_offset.filter(|_| !has_unmounted && !has_before_unmount && !has_scope_dispose),
         "onMounted",
         "onUnmounted",
     );

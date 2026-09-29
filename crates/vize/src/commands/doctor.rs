@@ -82,7 +82,7 @@ pub struct DoctorArgs {
     #[arg(long = "target")]
     pub targets: Vec<String>,
 
-    /// Include stable rule codes matching a glob. Defaults to every rule.
+    /// Include stable rule codes matching a glob (repeat or comma-separate). Defaults to every rule.
     #[arg(long = "rule")]
     pub rules: Vec<String>,
 

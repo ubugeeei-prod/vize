@@ -183,6 +183,11 @@ pub struct NonScriptSetupScopeData {
 pub struct ClientOnlyScopeData {
     /// The lifecycle hook name (e.g., "onMounted", "onBeforeUnmount")
     pub hook_name: CompactString,
+    /// `onMounted` callback acquires a listener, timer, socket, or observer.
+    ///
+    /// Other hooks leave this false. Doctor uses it to avoid pairing a mount
+    /// hook that only sets state or logs.
+    pub acquires_resource: bool,
 }
 
 /// Data specific to universal scope (SSR - runs on both server and client)

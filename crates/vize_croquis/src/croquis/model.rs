@@ -68,6 +68,9 @@ impl Croquis {
             span.0 = span.0.saturating_add(delta);
             span.1 = span.1.saturating_add(delta);
         }
+        for (_, offset) in &mut self.script_browser_globals {
+            *offset = offset.saturating_add(delta);
+        }
     }
 
     /// Check if a variable is defined in any scope

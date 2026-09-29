@@ -213,13 +213,23 @@ fn find_browser_api_usage(
         ("prompt", "Browser dialog"),
     ];
 
-    // Check template expressions
+    // Check template expressions. Match a whole identifier so `confirmDeleting`
+    // and `fetchItems` are not treated as `confirm` / `fetch`.
     for expr in &analysis.template_expressions {
         for (api, context) in &browser_apis {
-            if expr.content.contains(api) {
+            if contains_ident(expr.content.as_str(), api) {
                 usages.push((CompactString::new(*api), expr.start, *context));
             }
         }
+    }
+
+    for (api, offset) in &analysis.script_browser_globals {
+        let context = browser_apis
+            .iter()
+            .find(|(name, _)| *name == api.as_str())
+            .map(|(_, context)| *context)
+            .unwrap_or("Browser global");
+        usages.push((api.clone(), *offset, context));
     }
 
     // Note: We intentionally don't check global scopes here because they define
@@ -227,6 +237,27 @@ fn find_browser_api_usage(
     // Instead, we only check template expressions for actual usage of these APIs.
 
     usages
+}
+
+fn contains_ident(haystack: &str, ident: &str) -> bool {
+    let bytes = haystack.as_bytes();
+    let needle = ident.as_bytes();
+    let mut start = 0;
+    while let Some(pos) = haystack[start..].find(ident) {
+        let absolute = start + pos;
+        let before_ok = absolute == 0 || !is_ident_byte(bytes[absolute - 1]);
+        let after = absolute + needle.len();
+        let after_ok = after >= bytes.len() || !is_ident_byte(bytes[after]);
+        if before_ok && after_ok {
+            return true;
+        }
+        start = absolute + 1;
+    }
+    false
+}
+
+fn is_ident_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
 }
 
 /// Check if an offset is inside a client-only context.
@@ -339,11 +370,49 @@ fn find_protected_components(boundary_id: FileId, graph: &DependencyGraph) -> Ve
 
 #[cfg(test)]
 mod tests {
-    use super::BoundaryKind;
+    use super::{BoundaryKind, find_browser_api_usage};
+    use vize_carton::CompactString;
+    use vize_croquis::{Croquis, ScopeId, TemplateExpression, TemplateExpressionKind};
 
     #[test]
     fn test_boundary_kind() {
         let kind = BoundaryKind::Error;
         assert_eq!(kind, BoundaryKind::Error);
+    }
+
+    #[test]
+    fn template_browser_api_does_not_match_name_prefixes() {
+        let mut analysis = Croquis::new();
+        for content in [
+            "confirmationMessage",
+            "confirmDeleting",
+            "fetchItems",
+            "window.innerWidth",
+            "confirm()",
+        ] {
+            analysis.template_expressions.push(TemplateExpression {
+                content: CompactString::new(content),
+                kind: TemplateExpressionKind::VOn,
+                start: 0,
+                end: content.len() as u32,
+                scope_id: ScopeId::ROOT,
+                vif_guard: None,
+            });
+        }
+
+        let names: Vec<_> = find_browser_api_usage(&analysis)
+            .into_iter()
+            .map(|(name, _, _)| name.to_string())
+            .collect();
+        assert!(names.iter().any(|name| name == "window"), "{names:?}");
+        assert!(names.iter().any(|name| name == "confirm"), "{names:?}");
+        assert_eq!(
+            names
+                .iter()
+                .filter(|name| name.as_str() == "confirm")
+                .count(),
+            1
+        );
+        assert!(!names.iter().any(|name| name == "fetch"), "{names:?}");
     }
 }
