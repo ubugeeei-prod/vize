@@ -9,6 +9,11 @@ use vize_l0::dump::capture::CaptureSink;
 use vize_l0::{Allocator, profile, profiler::global_profiler};
 use vize_l1_to_l2::{DomEmitOptions, EmitError, LegacyCaps};
 
+pub(in crate::compile) struct SlotEmitPolicy {
+    pub(in crate::compile) strict_slot_params: bool,
+    pub(in crate::compile) no_slotted: bool,
+}
+
 #[expect(
     clippy::too_many_arguments,
     reason = "independent compile inputs and capture"
@@ -53,8 +58,10 @@ pub(in crate::compile) fn try_emit_l2_captured<C: CaptureSink>(
             options.dialect,
             &emit_options,
             pre_s2_walks,
-            false,
-            false,
+            SlotEmitPolicy {
+                strict_slot_params: false,
+                no_slotted: false,
+            },
             capture,
         )
     )
@@ -69,10 +76,13 @@ pub(in crate::compile) fn emit_l2_captured<C: CaptureSink>(
     dialect: vize_l0::config::VueVersion,
     options: &DomEmitOptions<'_>,
     pre_s2_walks: Option<WalkCounts>,
-    strict_slot_params: bool,
-    no_slotted: bool,
+    policy: SlotEmitPolicy,
     capture: &mut C,
 ) -> Result<CodegenResultWithSections, EmitError> {
+    let SlotEmitPolicy {
+        strict_slot_params,
+        no_slotted,
+    } = policy;
     if !C::RECORDING {
         return super::emit_l2(
             allocator,

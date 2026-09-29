@@ -22,7 +22,7 @@ use crate::namespace::get_namespace;
 use crate::options::DomCompilerOptions;
 
 mod capture;
-pub(super) use capture::{emit_l2_captured, try_emit_l2_captured};
+pub(super) use capture::{SlotEmitPolicy, emit_l2_captured, try_emit_l2_captured};
 /// Parser options with DOM-specific settings.
 pub(super) fn parser_options(options: &DomCompilerOptions) -> ParserOptions {
     ParserOptions {
