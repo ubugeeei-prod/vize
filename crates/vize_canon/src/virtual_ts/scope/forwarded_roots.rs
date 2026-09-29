@@ -95,6 +95,8 @@ fn emit_probe(
     let call = cstr!("(undefined as unknown as {factory}<typeof {component}>)({component})({{");
     let indent = if guard.is_some() { "    " } else { "  " };
     if let Some(guard) = guard.as_deref() {
+        let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
+        let guard = isolated.as_str();
         append!(*ts, "  const {name} = (() => {{\n");
         append!(
             *ts,

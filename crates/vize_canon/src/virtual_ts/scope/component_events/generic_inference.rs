@@ -70,6 +70,8 @@ pub(super) fn generate_inferred_emit_args(
     let guarded_call_indent = guard.as_ref().map(|_| cstr!("{}  ", ctx.indent));
     let call_indent = guarded_call_indent.as_deref().unwrap_or(ctx.indent);
     if let Some(guard) = guard.as_deref() {
+        let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
+        let guard = isolated.as_str();
         append!(*ts, "{}const {emit_props} = (() => {{\n", ctx.indent);
         append!(
             *ts,

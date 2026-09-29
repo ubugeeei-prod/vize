@@ -191,6 +191,8 @@ fn emit_probe(
 }
 
 fn open_guard(ts: &mut String, indent: &mut String, closers: &mut Vec<String>, guard: &str) {
+    let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
+    let guard = isolated.as_str();
     append!(
         *ts,
         "{indent}// @ts-ignore Inference-only guard; the authored binding checks own diagnostics.\n"

@@ -33,6 +33,8 @@ pub(in crate::virtual_ts::scope) fn generate_closure_component_props_recursive(
                 (String::from(indent), inner_indent.clone())
             };
             if let Some(guard) = enclosing_guard {
+                let isolated = crate::virtual_ts::expressions::isolate_incomplete_expression(guard);
+                let guard = isolated.as_str();
                 append!(*ts, "{indent}if ({guard}) {{\n");
             }
 

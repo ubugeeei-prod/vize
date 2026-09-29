@@ -259,7 +259,10 @@ fn emit_expression_statement(
     let generated_expression = rewritten_expression
         .as_ref()
         .map_or_else(|| statement_expression, |s| s.as_str());
-    let mapping_needle = if rewritten_expression.is_some() {
+    let isolated_expression =
+        super::incomplete::isolate_incomplete_expression(generated_expression);
+    let generated_expression = isolated_expression.as_str();
+    let mapping_needle = if isolated_expression.is_owned() || rewritten_expression.is_some() {
         generated_expression
     } else {
         statement_expression

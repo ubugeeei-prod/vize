@@ -7,6 +7,7 @@
 //! bound expression.
 
 use super::component_props::ComponentPropSource;
+use super::incomplete::{IsolatedExpression, isolate_incomplete_expression};
 use super::reserved_props::rewrite_reserved_template_binding;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use oxc_allocator::Allocator;
@@ -81,10 +82,13 @@ fn generated_prop_value_with_comment_policy(
     };
     let trimmed_value = value.as_ref().trim();
     let rewritten_value = rewrite_reserved_template_binding(trimmed_value, template_binding_access);
-    Some(rewritten_value.as_ref().map_or_else(
-        || String::from(value.as_ref()),
-        |s| String::from(s.as_str()),
-    ))
+    let raw = rewritten_value
+        .as_ref()
+        .map_or_else(|| value.as_ref(), |rewritten| rewritten.as_str());
+    Some(match isolate_incomplete_expression(raw) {
+        IsolatedExpression::Borrowed(text) => String::from(text),
+        IsolatedExpression::Owned(text) => text,
+    })
 }
 
 /// Append one generated prop value and return its range without synthetic

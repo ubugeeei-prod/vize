@@ -144,11 +144,12 @@ pub(super) fn emit_v_for_loop_open(
     let source_gen_start = ts.len();
     let rewritten_source =
         rewrite_reserved_template_binding(data.source.as_str(), template_binding_access);
-    ts.push_str(
-        rewritten_source
-            .as_ref()
-            .map_or(data.source.as_str(), |source| source.as_str()),
-    );
+    let source_text = rewritten_source
+        .as_ref()
+        .map_or(data.source.as_str(), |source| source.as_str());
+    let isolated_source =
+        crate::virtual_ts::expressions::isolate_incomplete_expression(source_text);
+    ts.push_str(isolated_source.as_str());
     let source_gen_end = ts.len();
     if let Some(source_offset) = source_offset {
         let source_start = (template_offset + source_offset) as usize;
