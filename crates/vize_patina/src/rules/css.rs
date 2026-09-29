@@ -28,6 +28,7 @@
 //! .baz { color: green !important; } /* vize-disable-line css/no-important */
 //! ```
 
+mod declaration_positions;
 mod no_display_none;
 mod no_hardcoded_values;
 mod no_id_selectors;
