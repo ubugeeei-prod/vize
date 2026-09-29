@@ -116,10 +116,10 @@ fn lint_config_style_category_severity_applies_to_builtin_css_rules() {
             "ruleDocsPath": "docs/content/rules/musea-and-css.md",
             "severity": 2,
             "message": "[vize:css/no-hardcoded-values] Consider using a CSS variable for this color value",
-            "line": 1,
-            "column": 15,
+            "line": 2,
+            "column": 11,
             "endLine": 2,
-            "endColumn": 10,
+            "endColumn": 16,
             "help": "Use var(--color-name) for consistent theming"
           }, {
             "ruleId": "css/no-important",

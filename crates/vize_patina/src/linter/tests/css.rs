@@ -1,7 +1,7 @@
 use super::Linter;
 
 #[test]
-fn test_lint_sfc_css_logical_properties_after_import_reports_once() {
+fn test_lint_sfc_css_logical_properties_after_import_reports_each_declaration() {
     let linter =
         Linter::new().with_enabled_rules(Some(vec!["css/prefer-logical-properties".into()]));
     let sfc = r#"<template><div/></template>
@@ -25,8 +25,9 @@ fn test_lint_sfc_css_logical_properties_after_import_reports_once() {
 
     assert_eq!(
         logical_diags.len(),
-        1,
-        "logical property diagnostics should be deduplicated: {:?}",
+        2,
+        "each physical property should have its own diagnostic: {:?}",
         result.diagnostics
     );
+    assert!(logical_diags[0].start < logical_diags[1].start);
 }
