@@ -233,16 +233,17 @@ pub(crate) fn should_use_multiline_attrs(
         return true;
     }
 
-    if attrs.len() <= 1 {
-        return false;
-    }
+    // Count limits force a break only when there is more than one attribute.
+    // A single attribute that fits stays on the tag line; one that does not
+    // fit uses the same print-width check as a multi-attribute tag. (#7236)
+    if attrs.len() > 1 {
+        if options.single_attribute_per_line {
+            return true;
+        }
 
-    if options.single_attribute_per_line {
-        return true;
-    }
-
-    if let Some(max) = options.max_attributes_per_line {
-        return attrs.len() > max as usize;
+        if let Some(max) = options.max_attributes_per_line {
+            return attrs.len() > max as usize;
+        }
     }
 
     let indent_len = indent.len() * depth;
