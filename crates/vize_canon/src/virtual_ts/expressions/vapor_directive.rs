@@ -13,7 +13,12 @@ use vize_carton::{String, append};
 pub(super) fn generate(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    (name, generated_expression, source): (&str, &str, Range<usize>),
+    (name, generated_expression, (mapped_start, mapped_len), source): (
+        &str,
+        &str,
+        (usize, usize),
+        Range<usize>,
+    ),
     binding: &DirectiveValueBinding,
     template_offset: u32,
     indent: &str,
@@ -49,7 +54,10 @@ pub(super) fn generate(
     };
 
     append!(*ts, "{indent}{name}(null!, () => (");
-    push_mapped(ts, generated_expression, source);
+    let mapped_end = mapped_start + mapped_len;
+    let (mapped, tail) = generated_expression.split_at(mapped_end.min(generated_expression.len()));
+    push_mapped(ts, mapped, source);
+    ts.push_str(tail);
     ts.push_str("), ");
     match &binding.arg {
         Some((arg, range)) => {

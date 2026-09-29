@@ -9,8 +9,8 @@ use super::super::helpers::to_safe_identifier_fragment;
 use super::super::scope::append_ignored_vif_guard_open;
 use super::super::types::{VizeMapping, VizeSubSpan};
 use super::prop_sources::{
-    append_prop_value, generated_prop_value, generated_prop_value_preserving_comments,
-    prop_name_source_range, prop_value_source_range,
+    PropSpan, append_prop_value, generated_prop_span, generated_prop_span_preserving_comments,
+    generated_prop_value, prop_name_source_range, prop_value_source_range,
 };
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::FxHashMap;
@@ -168,11 +168,11 @@ pub(crate) fn generate_component_prop_checks(
             let generated_value = profile!(
                 "canon.virtual_ts.prop_check.value",
                 if crate::virtual_ts::scope::is_inline_ref_callback_prop(prop) {
-                    generated_prop_value_preserving_comments(prop, template_binding_access)
+                    generated_prop_span_preserving_comments(prop, template_binding_access)
                 } else {
-                    generated_prop_value(prop, template_binding_access)
+                    generated_prop_span(prop, template_binding_access)
                 }
-                .unwrap_or_default()
+                .unwrap_or_else(|| PropSpan::plain(String::default()))
             );
             append!(
                 *ts,
@@ -223,9 +223,19 @@ pub(crate) fn generate_component_prop_checks(
                     ": __{component_type_name}_{idx}_prop_{safe_prop_name} = ",
                 );
             }
-            let value_gen_range = append_prop_value(ts, generated_value.as_str());
+            let value_gen_range = append_prop_value(ts, generated_value.text.as_str());
             ts.push_str(";\n");
-            let gen_stmt_end = ts.len();
+            let statement_end = ts.len();
+            let gen_stmt_end = if generated_value.omits_tail() {
+                generated_value.mapped_limit(value_gen_range.start)
+            } else {
+                statement_end
+            };
+            let value_span = if generated_value.omits_tail() {
+                value_gen_range.start..gen_stmt_end
+            } else {
+                value_gen_range
+            };
             append!(*ts, "{expr_indent}void {check_name};\n");
 
             // The synthetic identifier receives the child prop-type error
@@ -242,7 +252,7 @@ pub(crate) fn generate_component_prop_checks(
             }
             if let Some(src_range) = value_src_range.clone() {
                 sub_spans.push(VizeSubSpan {
-                    gen_range: value_gen_range,
+                    gen_range: value_span,
                     src_range,
                 });
             }
@@ -260,7 +270,7 @@ pub(crate) fn generate_component_prop_checks(
                     mappings,
                     (component_type_name.as_str(), idx),
                     prop,
-                    generated_value.as_str(),
+                    generated_value.text.as_str(),
                     target_source,
                     expr_indent.as_str(),
                 );

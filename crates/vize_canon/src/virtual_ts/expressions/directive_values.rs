@@ -167,7 +167,7 @@ pub(super) fn generate_directive_value_statement(
     mappings: &mut Vec<VizeMapping>,
     expr: &TemplateExpression,
     binding: &DirectiveValueBinding,
-    generated_expression: &str,
+    (generated_expression, mapped_start, mapped_len): (&str, usize, usize),
     template_offset: u32,
     (indent, check_unknown_directives): (&str, bool),
 ) {
@@ -186,7 +186,12 @@ pub(super) fn generate_directive_value_statement(
         super::vapor_directive::generate(
             ts,
             mappings,
-            (name.as_str(), generated_expression, source),
+            (
+                name.as_str(),
+                generated_expression,
+                (mapped_start, mapped_len),
+                source,
+            ),
             binding,
             template_offset,
             indent,
@@ -246,8 +251,9 @@ pub(super) fn generate_directive_value_statement(
     ts.push_str(": (");
     let value_start = ts.len();
     ts.push_str(generated_expression);
+    let value_end = value_start + mapped_start + mapped_len;
     mappings.push(VizeMapping {
-        gen_range: value_start..ts.len(),
+        gen_range: value_start..value_end,
         src_range: source,
         sub_spans: Vec::new(),
     });

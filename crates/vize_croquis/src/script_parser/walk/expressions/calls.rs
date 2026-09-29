@@ -210,6 +210,33 @@ fn is_ident_byte(byte: u8) -> bool {
     byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
 }
 
+#[inline(always)]
+pub(super) fn identifier_might_be_browser_global(name: &str) -> bool {
+    matches!(
+        name.as_bytes().first(),
+        Some(
+            b'a' | b'c'
+                | b'd'
+                | b'f'
+                | b'g'
+                | b'h'
+                | b'l'
+                | b'm'
+                | b'n'
+                | b'p'
+                | b'r'
+                | b's'
+                | b'w'
+                | b'I'
+                | b'M'
+                | b'R'
+                | b'W'
+                | b'X'
+        )
+    )
+}
+
+#[inline(always)]
 pub(super) fn note_script_browser_global(result: &mut ScriptParseResult, name: &str, offset: u32) {
     if !is_browser_global(name) {
         return;
@@ -233,6 +260,7 @@ pub(super) fn note_script_browser_global(result: &mut ScriptParseResult, name: &
         .push((CompactString::new(name), offset));
 }
 
+#[inline(always)]
 fn is_browser_global(name: &str) -> bool {
     matches!(
         name,

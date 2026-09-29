@@ -150,7 +150,8 @@ pub(super) fn emit_v_for_loop_open(
     let isolated_source =
         crate::virtual_ts::expressions::isolate_incomplete_expression(source_text);
     ts.push_str(isolated_source.as_str());
-    let source_gen_end = ts.len();
+    let (mapped_start, mapped_len) = isolated_source.mapped_bounds();
+    let source_gen_end = source_gen_start + mapped_start + mapped_len;
     if let Some(source_offset) = source_offset {
         let source_start = (template_offset + source_offset) as usize;
         mappings.push(VizeMapping {

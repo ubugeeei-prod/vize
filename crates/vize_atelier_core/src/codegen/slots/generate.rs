@@ -201,23 +201,23 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             }
         }
 
-        // Generate default slot for non-template children
+        let mut has_slot_template = false;
         let default_children: Vec<_> = el
             .children
             .iter()
             .filter(|child| {
                 if let TemplateChildNode::Element(template_el) = child {
-                    !(template_el.tag == "template" && has_v_slot(template_el))
+                    let is_slot = template_el.tag == "template" && has_v_slot(template_el);
+                    has_slot_template |= is_slot;
+                    !is_slot
                 } else {
+                    has_slot_template |=
+                        matches!(child, TemplateChildNode::If(_) | TemplateChildNode::For(_))
+                            && super::detect::child_is_slot_template(child);
                     true
                 }
             })
             .collect();
-
-        let has_slot_template = el
-            .children
-            .iter()
-            .any(super::detect::child_is_slot_template);
         let has_default_content = !has_slot_template
             || super::detect::slot_children_have_meaningful_content(&default_children);
         if !default_children.is_empty() && !has_generated_default && has_default_content {

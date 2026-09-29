@@ -8,7 +8,7 @@ pub(super) fn generate(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     expression: &TemplateExpression,
-    generated: &str,
+    (generated, mapped_start, mapped_len): (&str, usize, usize),
     template_offset: u32,
     indent: &str,
     template_source: Option<&str>,
@@ -29,9 +29,14 @@ pub(super) fn generate(
     ts.push('[');
     let expression_start = ts.len();
     ts.push_str(generated);
-    let expression_end = ts.len();
+    let expression_full_end = ts.len();
+    let expression_end = expression_start + mapped_start + mapped_len;
     ts.push(']');
-    let key_end = ts.len();
+    let key_end = if expression_end < expression_full_end {
+        expression_end
+    } else {
+        ts.len()
+    };
     ts.push_str(": undefined }); // DynamicDirectiveArgument\n");
     mappings.push(VizeMapping {
         gen_range: key_start..key_end,

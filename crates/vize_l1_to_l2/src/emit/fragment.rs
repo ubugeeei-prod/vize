@@ -131,14 +131,18 @@ fn emit_fragment(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError
     cx.buf.push(", null, [");
     cx.buf.indent();
     let mut first = true;
-    for op in root.ops.iter() {
+    // Parsing already condensed whitespace between siblings. Only the
+    // leading and trailing runs are ignorable; an internal space is a
+    // text VNode, matching the legacy root fragment.
+    let bounds = meaningful_bounds(root);
+    for (index, op) in root.ops.iter().enumerate() {
         if let Op::Element(element) = op
             && sfc_style::is_carrier_element(element)
         {
             sfc_style::skip_carrier(cx, element);
             continue;
         }
-        if is_whitespace_text(op) {
+        if is_whitespace_text(op) && !is_internal_whitespace(index, bounds) {
             let _id = cx.walk.mint();
             continue;
         }
@@ -267,6 +271,25 @@ fn is_root_fragment_whitespace_gap(parts: &[crate::lower::TextPart], index: usiz
                 .and_then(|before| parts.get(before))
                 .is_some_and(|part| part.dynamic)
                 && parts.get(index + 1).is_some_and(|part| part.dynamic)))
+}
+
+fn meaningful_bounds(root: &Region<'_>) -> Option<(usize, usize)> {
+    let mut first = None;
+    let mut last = None;
+    for (index, op) in root.ops.iter().enumerate() {
+        if sfc_style::is_carrier(op) || is_whitespace_text(op) {
+            continue;
+        }
+        if first.is_none() {
+            first = Some(index);
+        }
+        last = Some(index);
+    }
+    first.zip(last)
+}
+
+fn is_internal_whitespace(index: usize, bounds: Option<(usize, usize)>) -> bool {
+    bounds.is_some_and(|(start, end)| index > start && index < end)
 }
 
 fn is_compound(op: &Op<'_>) -> bool {

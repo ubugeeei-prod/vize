@@ -24,7 +24,11 @@ fn is_vue_whitespace(c: char) -> bool {
 /// turn into a trailing space. A break between an interpolation and the next
 /// node is its own whitespace text and is handled above; a break after static
 /// text is folded into that text node, so the same replacement happens here.
-fn condense_internal_whitespace<'a>(allocator: &'a Allocator, text: &str) -> Option<&'a str> {
+fn condense_internal_whitespace<'a>(
+    allocator: &'a Allocator,
+    text: &str,
+    legacy_line_breaks: bool,
+) -> Option<&'a str> {
     let needs_condense = {
         let mut prev_ws = false;
         let mut any_run = false;
@@ -63,7 +67,7 @@ fn condense_internal_whitespace<'a>(allocator: &'a Allocator, text: &str) -> Opt
         }
     }
     let condensed = out.into_str();
-    if super::current_legacy_line_breaks()
+    if legacy_line_breaks
         && trailing_whitespace_has_line_break(text)
         && let Some(without_trailing_space) = condensed.strip_suffix(' ')
     {
@@ -85,6 +89,20 @@ pub(super) fn condense_whitespace<'a>(
     allocator: &'a Allocator,
     children: &mut Vec<'a, TemplateChildNode<'a>>,
     is_pre_tag: fn(&str) -> bool,
+) {
+    condense_whitespace_in(
+        allocator,
+        children,
+        is_pre_tag,
+        super::current_legacy_line_breaks(),
+    );
+}
+
+fn condense_whitespace_in<'a>(
+    allocator: &'a Allocator,
+    children: &mut Vec<'a, TemplateChildNode<'a>>,
+    is_pre_tag: fn(&str) -> bool,
+    legacy_line_breaks: bool,
 ) {
     // First pass: remove leading whitespace-only text nodes
     while children.first().is_some_and(is_whitespace_text) {
@@ -126,7 +144,7 @@ pub(super) fn condense_whitespace<'a>(
             } else {
                 WhitespaceAction::Condense(
                     run_end - i,
-                    super::current_legacy_line_breaks() && prev_is_text && has_newline,
+                    legacy_line_breaks && prev_is_text && has_newline,
                 )
             }
         } else {
@@ -157,7 +175,8 @@ pub(super) fn condense_whitespace<'a>(
                 // z` would keep its raw whitespace and diverge from
                 // `@vue/compiler-sfc`. (#960)
                 if let Some(TemplateChildNode::Text(text)) = children.get_mut(i)
-                    && let Some(condensed) = condense_internal_whitespace(allocator, text.content)
+                    && let Some(condensed) =
+                        condense_internal_whitespace(allocator, text.content, legacy_line_breaks)
                 {
                     text.content = condensed;
                 }
@@ -170,7 +189,12 @@ pub(super) fn condense_whitespace<'a>(
                 ensure_sufficient_stack(|| normalize_pre_newlines(allocator, &mut el.children));
             } else {
                 ensure_sufficient_stack(|| {
-                    condense_whitespace(allocator, &mut el.children, is_pre_tag)
+                    condense_whitespace_in(
+                        allocator,
+                        &mut el.children,
+                        is_pre_tag,
+                        legacy_line_breaks,
+                    )
                 });
             }
         }

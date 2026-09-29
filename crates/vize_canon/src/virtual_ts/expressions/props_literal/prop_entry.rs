@@ -4,7 +4,8 @@ use crate::virtual_ts::expressions::component_props::{
 };
 use crate::virtual_ts::expressions::map_rewritten_template_binding;
 use crate::virtual_ts::expressions::prop_sources::{
-    append_prop_value, generated_prop_value, prop_name_source_range, prop_value_source_range,
+    PropSpan, append_prop_value, generated_prop_span, prop_name_source_range,
+    prop_value_source_range,
 };
 use crate::virtual_ts::helpers::to_camel_case;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
@@ -32,9 +33,9 @@ pub(super) fn append_prop_entry(
             return;
         }
         *emitted_merged_class = true;
-        merged_class_binding_value(class_bindings)
+        merged_class_binding_value(class_bindings).map(PropSpan::plain)
     } else {
-        generated_prop_value(prop, template_binding_access)
+        generated_prop_span(prop, template_binding_access)
     };
     let Some(mut generated_value) = generated_value else {
         return;
@@ -44,7 +45,7 @@ pub(super) fn append_prop_entry(
         // The authored callback is checked against its resolved type separately.
         // `never` also satisfies a declared `never` prop; `any` would produce a
         // second diagnostic about this synthetic value at the same attribute.
-        generated_value = String::from("undefined as never");
+        generated_value = PropSpan::plain(String::from("undefined as never"));
     }
 
     let (prop_src_start, prop_src_end) = if merge_class_bindings && prop.name.as_str() == "class" {
@@ -86,8 +87,17 @@ pub(super) fn append_prop_entry(
     append!(*ts, "\"{camel_prop_name}\"");
     let key_gen_end = ts.len();
     ts.push_str(": ");
-    let value_gen_range = append_prop_value(ts, generated_value.as_str());
-    let entry_gen_end = ts.len();
+    let value_gen_range = append_prop_value(ts, generated_value.text.as_str());
+    let entry_gen_end = if generated_value.omits_tail() {
+        generated_value.mapped_limit(value_gen_range.start)
+    } else {
+        ts.len()
+    };
+    let value_span = if generated_value.omits_tail() {
+        value_gen_range.start..entry_gen_end
+    } else {
+        value_gen_range.clone()
+    };
     if !wrap_for_following_spread {
         ts.push_str(",\n");
     }
@@ -102,7 +112,7 @@ pub(super) fn append_prop_entry(
             source_context,
             prop,
             entry_gen_start..key_gen_end,
-            value_gen_range.clone(),
+            value_span.clone(),
         ),
     };
     mappings.push(VizeMapping {
@@ -120,7 +130,7 @@ pub(super) fn append_prop_entry(
         map_rewritten_template_binding(
             ts,
             mappings,
-            value_gen_range.start,
+            value_span.start,
             source.start,
             value.as_str(),
             template_binding_access,

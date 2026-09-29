@@ -4,8 +4,8 @@
 //! callback arguments, reactivity losses, and client-only lifecycle hooks.
 
 mod calls;
-use calls::note_script_browser_global;
 pub(in crate::script_parser) use calls::walk_call_arguments;
+use calls::{identifier_might_be_browser_global, note_script_browser_global};
 
 use oxc_ast::ast::{Argument, AssignmentTarget, CallExpression, ObjectPropertyKind, Statement};
 
@@ -99,7 +99,9 @@ pub(in crate::script_parser) fn walk_expression(
         }
 
         Expression::Identifier(id) => {
-            note_script_browser_global(result, id.name.as_str(), id.span.start);
+            if identifier_might_be_browser_global(id.name.as_str()) {
+                note_script_browser_global(result, id.name.as_str(), id.span.start);
+            }
         }
 
         // Member expressions - walk the object
@@ -238,12 +240,13 @@ pub(in crate::script_parser) fn walk_expression(
                     );
                 }
             }
-            let previous = result.reactive_assignment_root.clone();
             if let Some(root) = super::super::extract::member_assignment_root(&assign.left) {
-                result.reactive_assignment_root = Some(root);
+                let previous = result.reactive_assignment_root.replace(root);
+                walk_expression(result, &assign.right, source);
+                result.reactive_assignment_root = previous;
+            } else {
+                walk_expression(result, &assign.right, source);
             }
-            walk_expression(result, &assign.right, source);
-            result.reactive_assignment_root = previous;
         }
 
         Expression::UpdateExpression(update) => {

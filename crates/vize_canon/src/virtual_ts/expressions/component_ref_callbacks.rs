@@ -106,6 +106,7 @@ pub(super) fn generate_component_ref_callback_statement(
     mappings: &mut Vec<VizeMapping>,
     expr: &TemplateExpression,
     generated_expression: &str,
+    (mapped_start, mapped_len): (usize, usize),
     template_offset: u32,
     indent: &str,
 ) {
@@ -120,9 +121,14 @@ pub(super) fn generate_component_ref_callback_statement(
     ts.push_str(": (ref: any, refs: Record<string, any>) => void = (");
     let value_gen_start = ts.len();
     ts.push_str(generated_expression);
-    let value_gen_end = ts.len();
+    let value_full_end = ts.len();
+    let value_gen_end = value_gen_start + mapped_start + mapped_len;
     ts.push_str(");\n");
-    let gen_stmt_end = ts.len();
+    let gen_stmt_end = if value_gen_end < value_full_end {
+        value_gen_end
+    } else {
+        ts.len()
+    };
     append!(
         *ts,
         "{indent}void __vize_component_ref_check_{}; // VBind\n",

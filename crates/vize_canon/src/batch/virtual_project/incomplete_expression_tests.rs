@@ -70,10 +70,14 @@ fn incomplete_template_expression_keeps_vue_imports_parseable() {
         );
         if repaired_member {
             assert!(
-                code.lines()
-                    .filter(|line| !line.trim_start().starts_with("//"))
-                    .all(|line| !line.contains("foo.")),
-                "{name} still emits the broken expression:\n{code}"
+                code.contains("foo. x"),
+                "{name} dropped the member access:\n{code}"
+            );
+            assert!(
+                ["foo.;", "foo.)", "foo.,"]
+                    .iter()
+                    .all(|broken| !code.contains(broken)),
+                "{name} still emits a broken member tail:\n{code}"
             );
         }
         assert_parses(name, &code);

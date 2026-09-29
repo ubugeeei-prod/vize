@@ -4,7 +4,7 @@ use super::SlotOutlet;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use crate::virtual_ts::{
     expressions::{
-        ComponentPropSource, append_prop_value, generated_prop_value, prop_name_source_range,
+        ComponentPropSource, append_prop_value, generated_prop_span, prop_name_source_range,
         prop_value_source_range,
     },
     helpers::to_camel_case,
@@ -53,7 +53,7 @@ pub(super) fn append_slot_outlet_literal(
     for entry in entries {
         match entry {
             SlotOutletLiteralEntry::Prop(prop) => {
-                let Some(generated_value) = generated_prop_value(prop, template_binding_access)
+                let Some(generated_value) = generated_prop_span(prop, template_binding_access)
                 else {
                     continue;
                 };
@@ -83,11 +83,20 @@ pub(super) fn append_slot_outlet_literal(
                 } else {
                     ts.push_str(": ");
                 }
-                let value_gen_range = append_prop_value(ts, generated_value.as_str());
+                let value_gen_range = append_prop_value(ts, generated_value.text.as_str());
                 if forwards_key {
                     ts.push(')');
                 }
-                let entry_gen_end = ts.len();
+                let entry_gen_end = if generated_value.omits_tail() {
+                    generated_value.mapped_limit(value_gen_range.start)
+                } else {
+                    ts.len()
+                };
+                let value_span = if generated_value.omits_tail() {
+                    value_gen_range.start..entry_gen_end
+                } else {
+                    value_gen_range
+                };
                 ts.push_str(",\n");
                 mappings.push(VizeMapping {
                     gen_range: entry_gen_start..entry_gen_end,
@@ -96,7 +105,7 @@ pub(super) fn append_slot_outlet_literal(
                         source_context,
                         prop,
                         key_gen_start..key_gen_end,
-                        value_gen_range,
+                        value_span,
                     ),
                 });
             }

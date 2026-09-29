@@ -1,8 +1,4 @@
-//! Keep an unfinished template expression from making the virtual module
-//! unparseable. Emitting `foo.` verbatim is a syntax error, and the editor
-//! then reports TS2307 for every `.vue` import in that file. Repair the tail
-//! when a value is still there (`foo.` -> `foo`, so an unknown binding can
-//! still be reported) and substitute `undefined` only when nothing parses.
+//! Keep an unfinished template expression from making the virtual module unparseable.
 
 #[path = "incomplete_delimiters.rs"]
 mod delimiters;
@@ -15,19 +11,50 @@ use vize_carton::{String, cstr};
 
 pub(crate) enum IsolatedExpression<'a> {
     Borrowed(&'a str),
-    Owned(String),
+    Owned {
+        text: String,
+        mapped_start: usize,
+        mapped_len: usize,
+    },
 }
 
 impl<'a> IsolatedExpression<'a> {
     pub(crate) fn as_str(&self) -> &str {
         match self {
             Self::Borrowed(text) => text,
-            Self::Owned(text) => text.as_str(),
+            Self::Owned { text, .. } => text.as_str(),
+        }
+    }
+
+    pub(crate) fn mapped_str(&self) -> &str {
+        match self {
+            Self::Borrowed(text) => text,
+            Self::Owned {
+                text,
+                mapped_start,
+                mapped_len,
+            } => {
+                let end = mapped_start.saturating_add(*mapped_len);
+                text.as_str()
+                    .get(*mapped_start..end)
+                    .unwrap_or(text.as_str())
+            }
+        }
+    }
+
+    pub(crate) fn mapped_bounds(&self) -> (usize, usize) {
+        match self {
+            Self::Borrowed(text) => (0, text.len()),
+            Self::Owned {
+                mapped_start,
+                mapped_len,
+                ..
+            } => (*mapped_start, *mapped_len),
         }
     }
 
     pub(crate) fn is_owned(&self) -> bool {
-        matches!(self, Self::Owned(_))
+        matches!(self, Self::Owned { .. })
     }
 }
 
@@ -36,27 +63,38 @@ pub(crate) fn isolate_incomplete_expression(source: &str) -> IsolatedExpression<
     if trimmed.is_empty() || !looks_incomplete(trimmed) || expression_parses(trimmed) {
         return IsolatedExpression::Borrowed(source);
     }
-    IsolatedExpression::Owned(repair_incomplete(trimmed))
+    let (text, mapped_start, mapped_len) = repair_incomplete(trimmed);
+    IsolatedExpression::Owned {
+        text,
+        mapped_start,
+        mapped_len,
+    }
 }
 
-/// v-if guards are stored already wrapped, `(foo.)`. The dot sits inside the
-/// parentheses, so a trailing-character check on the whole guard misses it and
-/// the virtual module stays unparseable.
-fn repair_incomplete(trimmed: &str) -> String {
+fn repair_incomplete(trimmed: &str) -> (String, usize, usize) {
     if let Some((open, close, inner)) = outermost_inner(trimmed) {
-        let repaired_inner =
+        let (repaired_inner, inner_start, inner_len) =
             if looks_incomplete(inner.as_str()) && !expression_parses(inner.as_str()) {
                 repair_incomplete(inner.as_str())
             } else {
-                inner
+                let len = inner.len();
+                (inner, 0, len)
             };
         let mut wrapped = String::from("");
         wrapped.push(open);
         wrapped.push_str(repaired_inner.as_str());
         wrapped.push(close);
         if expression_parses(wrapped.as_str()) {
-            return wrapped;
+            let placeholder = inner_start + inner_len < repaired_inner.len();
+            if placeholder {
+                return (wrapped, 1 + inner_start, inner_len);
+            }
+            let len = wrapped.len();
+            return (wrapped, 0, len);
         }
+    }
+    if let Some(repaired) = member_placeholder(trimmed) {
+        return repaired;
     }
     let mut current = String::from(trimmed);
     let limit = trimmed.len();
@@ -70,13 +108,35 @@ fn repair_incomplete(trimmed: &str) -> String {
             break;
         }
         if expression_parses(candidate) {
-            return String::from(candidate);
+            let repaired = String::from(candidate);
+            let len = repaired.len();
+            return (repaired, 0, len);
         }
         if candidate.len() != current.len() {
             current = String::from(candidate);
         }
     }
-    String::from("undefined")
+    let fallback = String::from("undefined");
+    let len = fallback.len();
+    (fallback, 0, len)
+}
+
+fn member_placeholder(trimmed: &str) -> Option<(String, usize, usize)> {
+    let bytes = trimmed.as_bytes();
+    if bytes.last() != Some(&b'.') {
+        return None;
+    }
+    let prev = bytes.get(bytes.len().saturating_sub(2))?;
+    if *prev == b'.' || prev.is_ascii_digit() {
+        return None;
+    }
+    let mut candidate = String::from(trimmed);
+    candidate.push_str(" x");
+    if !expression_parses(candidate.as_str()) {
+        return None;
+    }
+    let mapped_len = trimmed.len();
+    Some((candidate, 0, mapped_len))
 }
 
 fn outermost_inner(source: &str) -> Option<(char, char, String)> {
@@ -157,11 +217,6 @@ fn looks_incomplete(trimmed: &str) -> bool {
         || has_trailing_keyword_before_closers(trimmed)
 }
 
-/// A member dot inside a stored v-if guard sits before the closing paren:
-/// `(foo.)`. Walking back past closers and whitespace finds that operator.
-/// A numeric `1.` / `(1.)` is already a complete literal, and `(` `[` `{`
-/// are not dangling — `foo()` is complete and an unclosed `foo(` is a
-/// delimiter imbalance.
 fn ends_with_dangling_operator(source: &str) -> bool {
     let mut reversed = source.chars().rev().peekable();
     while let Some(ch) = reversed.next() {
@@ -202,18 +257,9 @@ fn is_dangling_operator(ch: char) -> bool {
 }
 
 fn has_trailing_keyword_before_closers(source: &str) -> bool {
-    let mut kept = String::from("");
-    for ch in source.chars() {
-        kept.push(ch);
-    }
-    while kept
-        .chars()
-        .next_back()
-        .is_some_and(|ch| ch.is_whitespace() || matches!(ch, ')' | ']' | '}'))
-    {
-        kept.pop();
-    }
-    has_trailing_keyword(kept.as_str())
+    has_trailing_keyword(
+        source.trim_end_matches(|ch: char| ch.is_whitespace() || matches!(ch, ')' | ']' | '}')),
+    )
 }
 
 fn has_trailing_keyword(trimmed: &str) -> bool {
@@ -299,40 +345,4 @@ fn is_identifier_char(ch: char) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::isolate_incomplete_expression;
-
-    #[test]
-    fn trailing_member_dot_keeps_the_receiver() {
-        assert_eq!(isolate_incomplete_expression("foo.").as_str(), "foo");
-        assert_eq!(
-            isolate_incomplete_expression("foo.bar.").as_str(),
-            "foo.bar"
-        );
-        assert_eq!(isolate_incomplete_expression("foo?.").as_str(), "foo");
-    }
-
-    #[test]
-    fn valid_numeric_literal_and_non_null_assertion_stay() {
-        assert_eq!(isolate_incomplete_expression("1.").as_str(), "1.");
-        assert_eq!(isolate_incomplete_expression("foo!").as_str(), "foo!");
-        assert_eq!(isolate_incomplete_expression("foo.bar").as_str(), "foo.bar");
-    }
-
-    #[test]
-    fn unclosed_call_drops_the_incomplete_argument() {
-        assert_eq!(isolate_incomplete_expression("foo(bar").as_str(), "foo");
-        assert_eq!(isolate_incomplete_expression("foo(").as_str(), "foo");
-    }
-
-    #[test]
-    fn wrapped_guard_keeps_the_receiver_inside_parentheses() {
-        assert_eq!(isolate_incomplete_expression("(foo.)").as_str(), "(foo)");
-        assert_eq!(
-            isolate_incomplete_expression("((foo.))").as_str(),
-            "((foo))"
-        );
-        assert_eq!(isolate_incomplete_expression("(1.)").as_str(), "(1.)");
-        assert_eq!(isolate_incomplete_expression("foo()").as_str(), "foo()");
-    }
-}
+mod tests;

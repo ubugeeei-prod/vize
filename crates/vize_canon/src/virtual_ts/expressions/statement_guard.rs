@@ -38,7 +38,7 @@ pub(super) fn generate_vif_guard_expression(
     let isolated_guard = super::incomplete::isolate_incomplete_expression(generated_guard);
     let generated_guard = isolated_guard.as_str();
     let mapping_needle = if isolated_guard.is_owned() {
-        generated_guard
+        isolated_guard.mapped_str()
     } else if generated_guard.contains(generated_expression) {
         generated_expression
     } else {

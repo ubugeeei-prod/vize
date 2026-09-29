@@ -57,6 +57,31 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn root_siblings_keep_a_same_line_space() {
+    assert_eq!(
+        assembled("<span></span> <span></span>"),
+        "\
+const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createTextVNode: _createTextVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode(\"span\"),
+    _createTextVNode(),
+    _createElementVNode(\"span\")
+  ], 64 /* STABLE_FRAGMENT */))
+}"
+    );
+}
+
+#[test]
+fn root_siblings_drop_indentation_newlines() {
+    assert_eq!(
+        assembled("<span></span>\n  <span></span>"),
+        assembled("<span></span><span></span>")
+    );
+}
+
+#[test]
 fn two_native_roots_wrap_in_a_stable_fragment() {
     assert_eq!(
         assembled("<div></div><span></span>"),
