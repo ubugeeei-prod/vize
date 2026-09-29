@@ -10,6 +10,7 @@ interface TailwindTokenCandidate {
   category: string;
   path: string[];
   type: string;
+  description: string;
 }
 
 const TAILWIND_TOKEN_EXTENSIONS = new Set([".css", ".pcss", ".postcss"]);
@@ -96,7 +97,7 @@ function extractTailwindTokenCandidates(css: string): TailwindTokenCandidate[] {
   while ((match = VARIABLE_DECLARATION_RE.exec(source)) !== null) {
     const variable = match[1];
     const value = match[2].trim();
-    const mapped = mapTailwindVariable(variable);
+    const mapped = mapTokenVariable(variable, value);
     if (!mapped || !value) {
       continue;
     }
@@ -106,9 +107,34 @@ function extractTailwindTokenCandidates(css: string): TailwindTokenCandidate[] {
   return candidates;
 }
 
+function mapTokenVariable(
+  variable: string,
+  value: string,
+): Omit<TailwindTokenCandidate, "variable" | "value"> | null {
+  const tailwind = mapTailwindVariable(variable);
+  if (tailwind) {
+    return {
+      ...tailwind,
+      description: `Tailwind theme variable ${variable}`,
+    };
+  }
+
+  const name = variable.replace(/^--/, "");
+  const segments = name.split("-").filter(Boolean);
+  const category = segments[0];
+  if (!category) return null;
+  const rest = segments.slice(1).join("-");
+  return {
+    category,
+    path: rest ? [rest] : ["DEFAULT"],
+    type: inferCustomPropertyType(value),
+    description: `Custom property ${variable}`,
+  };
+}
+
 function mapTailwindVariable(
   variable: string,
-): Omit<TailwindTokenCandidate, "variable" | "value"> | null {
+): Omit<TailwindTokenCandidate, "variable" | "value" | "description"> | null {
   const name = variable.replace(/^--/, "");
   const mapping = NAMESPACE_MAPPINGS.find(
     (candidate) => name === candidate.prefix || name.startsWith(`${candidate.prefix}-`),
@@ -128,6 +154,20 @@ function mapTailwindVariable(
     path: pathParts,
     type: mapping.type,
   };
+}
+
+function inferCustomPropertyType(value: string): string {
+  const trimmed = value.trim();
+  if (/^(?:#|rgba?\(|hsla?\(|oklch\(|oklab\(|color-mix\(|color\()/i.test(trimmed)) {
+    return "color";
+  }
+  if (/^-?(?:\d+\.\d+|\d+)(?:px|rem|em|vh|vw|vmin|vmax|%)$/i.test(trimmed)) {
+    return "dimension";
+  }
+  if (/^-?(?:\d+\.\d+|\d+)$/.test(trimmed)) {
+    return "number";
+  }
+  return "other";
 }
 
 function tailwindNameToPath(name: string): string[] {
@@ -167,7 +207,7 @@ function buildCategories(candidates: TailwindTokenCandidate[]): TokenCategory[] 
     const token: DesignToken = {
       value: referencedPath ? `{${referencedPath}}` : candidate.value,
       type: candidate.type,
-      description: `Tailwind theme variable ${candidate.variable}`,
+      description: candidate.description,
       attributes: {
         tailwindVariable: candidate.variable,
       },

@@ -152,6 +152,45 @@ void test("parseTokens reads Tailwind CSS theme variables", async () => {
   }
 });
 
+void test("parseTokens keeps custom properties outside Tailwind namespaces", async () => {
+  const tempDir = await makeAgentTempDir();
+  const cssPath = path.join(tempDir, "tokens.css");
+
+  try {
+    await fs.promises.writeFile(
+      cssPath,
+      `:root {
+  --color-primary: #1976d2;
+  --spacing-card: 1.5rem;
+  --brand-color-primary: #1976d2;
+  --brand-color-accent: var(--brand-color-primary);
+  --space-2: 8px;
+  --elevation-overlay: 10;
+}
+`,
+      "utf-8",
+    );
+
+    const categories = await parseTokens(cssPath);
+    const tokenMap = buildTokenMap(categories);
+    resolveReferences(categories, tokenMap);
+    const resolved = buildTokenMap(categories);
+
+    assert.equal(resolved["color.primary"]?.value, "#1976d2");
+    assert.equal(resolved["spacing.card"]?.value, "1.5rem");
+    assert.equal(resolved["brand.color-primary"]?.value, "#1976d2");
+    assert.equal(resolved["brand.color-primary"]?.type, "color");
+    assert.equal(resolved["brand.color-accent"]?.$reference, "brand.color-primary");
+    assert.equal(resolved["brand.color-accent"]?.$resolvedValue, "#1976d2");
+    assert.equal(resolved["space.2"]?.value, "8px");
+    assert.equal(resolved["space.2"]?.type, "dimension");
+    assert.equal(resolved["elevation.overlay"]?.value, "10");
+    assert.equal(resolved["elevation.overlay"]?.type, "number");
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
 void test("scanTokenUsage matches Tailwind CSS variable usage", async () => {
   const tempDir = await makeAgentTempDir();
   const artPath = path.join(tempDir, "Button.art.vue");
