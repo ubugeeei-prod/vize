@@ -38,7 +38,7 @@ const FIXTURES: [(&str, &str, u64); 7] = [
     (
         "expressions",
         "<main class=\"shell\" :class=\"{ dense, [theme]: true }\"><button @click=\"count++\" :title=\"'n=' + count\">{{ count * 2 }} / {{ label.toUpperCase() }}</button><div v-show=\"open && ready\" v-text=\"items.map(i => i.name).join(', ')\"></div></main>",
-        109,
+        110,
     ),
     (
         "components",

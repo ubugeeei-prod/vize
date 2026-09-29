@@ -515,9 +515,13 @@ fn spread_writes_back(result: &ScriptParseResult, label: &str) -> bool {
 }
 
 /// Handlers, watchers, and computed getters run again and read the current value.
+///
+/// A function nested inside that callback does not. Its spread copies whenever
+/// the nested function runs, including after the callback has returned.
 pub(in crate::script_parser) fn snapshot_in_reexecuted_scope(result: &ScriptParseResult) -> bool {
     let mut id = Some(result.scopes.current_id());
     let mut depth = 0u8;
+    let mut functions = 0u8;
     while let Some(current) = id {
         if depth == 32 {
             break;
@@ -533,11 +537,14 @@ pub(in crate::script_parser) fn snapshot_in_reexecuted_scope(result: &ScriptPars
                 | ScopeKind::Callback
                 | ScopeKind::EventHandler
         ) {
-            return true;
+            functions += 1;
+            if functions > 1 {
+                return false;
+            }
         }
         id = scope.parent();
     }
-    false
+    functions == 1
 }
 
 fn is_intentional_discard(
