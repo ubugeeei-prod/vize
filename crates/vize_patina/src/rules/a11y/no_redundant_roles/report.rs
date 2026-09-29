@@ -1,3 +1,24 @@
+//! a11y/no-redundant-roles
+//!
+//! Disallow redundant ARIA roles that match the element's implicit role.
+//!
+//! Some HTML elements have implicit ARIA roles. Adding a role attribute that
+//! matches the implicit role is redundant and adds unnecessary noise.
+//!
+//! ## Examples
+//!
+//! ### Invalid
+//! ```vue
+//! <nav role="navigation">...</nav>
+//! <button role="button">...</button>
+//! ```
+//!
+//! ### Valid
+//! ```vue
+//! <nav>...</nav>
+//! <div role="navigation">...</div>
+//! ```
+
 use super::{
     ElementNode, ElementType, Fix, LintContext, LintDiagnostic, ListStyleType, MarkupContext,
     MarkupElement, MarkupRule, NoRedundantRoles, PropNode, Property, PropertyId, Rule, RuleMeta,
