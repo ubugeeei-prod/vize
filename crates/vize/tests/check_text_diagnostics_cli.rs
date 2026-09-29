@@ -286,8 +286,9 @@ const text = ref("bad");
     // one artifact: the modeled prop (`modelValue`), the shorthand prop
     // (`'s'`), the directive-like quoted value (`'value'`), the binding after
     // a UTF-16 astral-plane column offset (`'second'`), the event (`@save`),
-    // and the slot (`#default`). Declaring that slot must not add a missing-slot
-    // diagnostic to any invocation that omits it.
+    // and the slot expression, which must not inherit the start tag's slot
+    // binding. Declaring that slot must not add a missing-slot diagnostic to
+    // any invocation that omits it.
     let normalized_stdout = normalize_check_output(stdout, &project_root)
         .replace(
             "Types of parameters 'id' and 'id' are incompatible.",
@@ -309,7 +310,7 @@ const text = ref("bad");
             "  error:13:46 [TS2322] Type '(id: string) => void' is not assignable to type '(id: number) => any'.\n",
             "Types of parameters 'id' and '<target>' are incompatible.\n",
             "Type 'number' is not assignable to type 'string'. (source: <Child :model-value=\"1\" kind=\"num\" :n=\"1\" @save=\"(id: string) => {}\" />; binding: @save)\n",
-            "  error:14:73 [TS2339] Property 'toUpperCase' does not exist on type 'number'. (source: <Child :model-value=\"1\" kind=\"num\" :n=\"1\" v-slot=\"{ count }\">{{ count.toUpperCase() }}</Child>; binding: #default)\n",
+            "  error:14:73 [TS2339] Property 'toUpperCase' does not exist on type 'number'. (source: <Child :model-value=\"1\" kind=\"num\" :n=\"1\" v-slot=\"{ count }\">{{ count.toUpperCase() }}</Child>)\n",
             "\n\u{2717} Type checked 2 files in <duration> (collect: <duration>, imports: <duration>, gen: <duration>, corsa: <duration>)\n",
             "  6 error(s)\n",
         ),
