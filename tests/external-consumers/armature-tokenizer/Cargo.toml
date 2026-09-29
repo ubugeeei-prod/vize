@@ -1,0 +1,10 @@
+[package]
+name = "armature-tokenizer-consumer"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+vize_armature = { path = "../../../crates/vize_armature" }

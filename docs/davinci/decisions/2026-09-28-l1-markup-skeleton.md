@@ -96,3 +96,28 @@ prerequisite closes. TODO (#6835):
 move the remaining `Namespace`/`ErrorCode`
 vocabulary out of Relief to remove L1's other direct legacy dependency. The
 compiler product route remains gated by #6880.
+
+### Published Armature tokenizer API at v0.429.2
+
+The v0.429.1 `vize_armature` API exposed `Tokenizer`, `Callbacks`, `State`,
+`QuoteType`, three character helpers, and 35 `char_codes` constants from both
+`vize_armature::tokenizer` and the crate root. The move retains these paths as
+re-exports of the same L1 definitions, including the callback trait and all six
+public `Tokenizer` methods. Recreating the types in Armature would split their
+identity and reverse the L1 ownership decision.
+
+The release check with cargo-semver-checks 0.47.0 and Rust 1.95.0 reports six
+`*_missing` lint families for those re-exports, even when they are explicit
+named imports with `#[doc(inline)]`. This is the upstream
+[cross-crate re-export false positive](https://github.com/obi1kenobi/cargo-semver-checks/issues/355).
+The release script accepts only the exact old tokenizer names and duplicate
+root/module paths observed in that failure. Any new lint, missing or extra
+item, unexpected baseline source path, tool error, or other crate failure still
+fails. Its external-consumer witness compiles one source against the published
+0.429.1 crate and the candidate path crate. That source implements the old
+callback trait, calls its default methods and every public tokenizer method,
+checks all 35 state variants and 35 byte constants, and assigns the old module
+types to the old crate-root types. The witness checks Rust compatibility that
+rustdoc JSON cannot represent across crates; it does not claim a generic L1
+lexer product switch or substitute for the full output and instruction gates.
+Exact release Actions and protected validation remain required before release.
