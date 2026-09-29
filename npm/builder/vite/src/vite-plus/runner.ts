@@ -76,7 +76,9 @@ export async function runTools(
       // An empty pattern list would make native fmt format every file again.
       if (vue.length) await vize("fmt", [formatCheck ? "--check" : "--write", ...vue]);
     }
-    await run(vp, ["fmt", formatCheck ? "--check" : "--write", ...patterns]);
+    const oxfmtPatterns = patterns.filter((pattern) => !pattern.endsWith(".vue"));
+    if (oxfmtPatterns.length || patterns.length === 0)
+      await run(vp, ["fmt", formatCheck ? "--check" : "--write", ...oxfmtPatterns]);
   }
   return status;
 }

@@ -33,7 +33,8 @@ export function defineConfig(
       if (compiler !== false) {
         const { vize } = await import("./plugin/index.ts");
         // The optional Vite+ peer may expose a different Vite type instance.
-        plugins.unshift(
+        // User pre-plugins must be able to resolve imports before the compiler.
+        plugins.push(
           vize({
             ...compiler,
             configMode: false,

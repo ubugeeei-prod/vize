@@ -41,6 +41,16 @@ void test("a new editor setup assigns only Vue formatting to Vize", () => {
   assert.equal(settings["vize.formatting.enable"], true);
 });
 
+void test("extension recommendations compare IDs without case and keep existing spelling", () => {
+  const source = '{"recommendations":["voidzero.vite-plus-extension-pack"]}';
+  const result = recommendEditor(source, true);
+  assert.deepEqual(parse(result).recommendations, [
+    "voidzero.vite-plus-extension-pack",
+    "ubugeeei.vize",
+  ]);
+  assert.equal(recommendEditor(result, true), result);
+});
+
 void test("malformed editor files are rejected before planning writes", () => {
   assert.throws(() => recommendEditor("{ broken", false), /preserved/);
   assert.throws(() => recommendEditor('{"recommendations":false}', true), /string array/);
