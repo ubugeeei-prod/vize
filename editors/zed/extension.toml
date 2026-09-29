@@ -8,10 +8,10 @@ repository = "https://github.com/ubugeeei-prod/vize"
 
 [language_servers.vize]
 name = "Vize"
-languages = ["Vue", "Art Vue"]
+languages = ["Vue.js", "Art Vue"]
 
 [language_servers.vize.language_ids]
-"Vue" = "vue"
+"Vue.js" = "vue"
 "Art Vue" = "art-vue"
 
 [grammars.vue]

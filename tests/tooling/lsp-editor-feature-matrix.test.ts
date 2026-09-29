@@ -8,6 +8,7 @@ import {
   LINT_ONLY_CONFIGURATION_UPDATES,
   createDocumentSelector,
   describeCapabilities,
+  WORKSPACE_LSP_CONFIG_FILES,
   getInitializationOptions,
   hasAnyEnabledCapability,
   hasExplicitConfigurationValue,
@@ -254,6 +255,19 @@ test("explicit configuration detection respects global workspace and folder scop
     true,
   );
   assert.equal(hasExplicitConfigurationValue(new FakeConfig({}), "enable"), false);
+});
+
+test("workspace lsp config filenames include every CLI-discovered vize config", () => {
+  assert.deepEqual(WORKSPACE_LSP_CONFIG_FILES, [
+    "vize.config.pkl",
+    "vize.config.ts",
+    "vize.config.js",
+    "vize.config.mjs",
+    "vize.config.json",
+  ]);
+  const extension = readRepoFile("editors/vscode/src/extension.ts");
+  assert.match(extension, /WORKSPACE_LSP_CONFIG_FILES/);
+  assert.doesNotMatch(extension, /\["vize\.config\.pkl", "vize\.config\.json"\]/);
 });
 
 test("start condition mirrors VS Code workspace lsp fallback rules", () => {

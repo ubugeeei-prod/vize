@@ -15,7 +15,7 @@ features, and ecosystem helpers. Override `initialization_options` if you need a
 ```json
 {
   "languages": {
-    "Vue": {
+    "Vue.js": {
       "language_servers": ["vize", "..."]
     },
     "Art Vue": {
@@ -57,7 +57,7 @@ features, and ecosystem helpers. Override `initialization_options` if you need a
 ```json
 {
   "languages": {
-    "Vue": {
+    "Vue.js": {
       "language_servers": ["vize", "..."]
     },
     "Art Vue": {
@@ -89,7 +89,7 @@ route completions, and ecosystem lint diagnostics.
 
 To make Vize the only Vue language server, replace the existing Vue server entry in your `language_servers` list with its disabled form, such as `"!server-id"`.
 
-If you only want Vize on `*.art.vue`, keep your existing `Vue` language servers unchanged and
+If you only want Vize on `*.art.vue`, keep your existing `Vue.js` language servers unchanged and
 configure only `Art Vue`.
 
 ## Custom Binary

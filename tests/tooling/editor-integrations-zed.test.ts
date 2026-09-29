@@ -25,11 +25,11 @@ test("zed extension.toml declares vize server, language ids, grammar pin and ver
 
   // Language server registration for both Vue dialects.
   assert.match(manifest, /^\[language_servers\.vize\]$/m);
-  assert.match(manifest, /^languages = \["Vue", "Art Vue"\]$/m);
+  assert.match(manifest, /^languages = \["Vue.js", "Art Vue"\]$/m);
 
   // Display-name -> language-id mapping.
   assert.match(manifest, /^\[language_servers\.vize\.language_ids\]$/m);
-  assert.match(manifest, /^"Vue" = "vue"$/m);
+  assert.match(manifest, /^"Vue.js" = "vue"$/m);
   assert.match(manifest, /^"Art Vue" = "art-vue"$/m);
 
   // Zed derives the parser export from this identifier. tree-sitter-vue

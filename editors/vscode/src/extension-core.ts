@@ -25,6 +25,15 @@ export const SUPPORTED_LANGUAGE_IDS = [
   "javascriptreact",
 ] as const;
 export const SUPPORTED_URI_SCHEMES = ["file", "untitled"] as const;
+
+/** Filenames the CLI discovers as project config. Any one is workspace LSP config. */
+export const WORKSPACE_LSP_CONFIG_FILES = [
+  "vize.config.pkl",
+  "vize.config.ts",
+  "vize.config.js",
+  "vize.config.mjs",
+  "vize.config.json",
+] as const;
 export const FEATURE_SETTING_KEYS = [
   "lint.enable",
   "diagnostics.enable",
