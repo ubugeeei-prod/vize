@@ -47,6 +47,9 @@ impl NoIdSelectors {
                 for selector in style_rule.selectors.0.iter() {
                     self.check_selector(selector, offset, result);
                 }
+                for rule in &style_rule.rules.0 {
+                    self.check_rule(rule, offset, result);
+                }
             }
             LCssRule::Media(media) => {
                 for rule in &media.rules.0 {
@@ -106,6 +109,16 @@ mod tests {
     fn test_invalid_id_selector() {
         let linter = create_linter();
         let result = linter.lint("#header { color: red; }", 0);
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_nested_id_selector() {
+        let linter = create_linter();
+        let result = linter.lint(
+            ".card { .title { color: red; } #header { color: blue; } }",
+            0,
+        );
         assert_eq!(result.warning_count, 1);
     }
 

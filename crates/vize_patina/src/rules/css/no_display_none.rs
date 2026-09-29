@@ -53,15 +53,23 @@ impl NoDisplayNone {
     fn check_rule(&self, rule: &LCssRule, source: &str, offset: usize, result: &mut CssLintResult) {
         match rule {
             LCssRule::Style(style_rule) => {
-                if style_rule.selectors.0.iter().any(|selector| {
+                let is_pseudo = style_rule.selectors.0.iter().any(|selector| {
                     selector
                         .iter()
                         .any(|component| matches!(component, Component::PseudoElement(_)))
-                }) {
-                    return;
+                });
+                if !is_pseudo {
+                    let mut positions = DeclarationPositions::new(source, style_rule);
+                    self.check_declarations(
+                        &style_rule.declarations,
+                        &mut positions,
+                        offset,
+                        result,
+                    );
                 }
-                let mut positions = DeclarationPositions::new(source, style_rule);
-                self.check_declarations(&style_rule.declarations, &mut positions, offset, result);
+                for rule in &style_rule.rules.0 {
+                    self.check_rule(rule, source, offset, result);
+                }
             }
             LCssRule::LayerBlock(layer) => {
                 for rule in &layer.rules.0 {
@@ -142,6 +150,13 @@ mod tests {
     fn test_warns_display_none() {
         let linter = create_linter();
         let result = linter.lint(".hidden { display: none; }", 0);
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_warns_nested_display_none() {
+        let linter = create_linter();
+        let result = linter.lint(".card { .title { display: none; } }", 0);
         assert_eq!(result.warning_count, 1);
     }
 

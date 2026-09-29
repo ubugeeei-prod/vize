@@ -53,6 +53,7 @@ impl CssRule for PreferSlotted {
         result: &mut CssLintResult,
     ) {
         let bytes = source.as_bytes();
+        let comments = comment_ranges(bytes);
 
         // Check for deprecated ::v-deep without parentheses (Vue 2 style)
         // In Vue 3, should use :deep() or ::v-deep()
@@ -68,6 +69,10 @@ impl CssRule for PreferSlotted {
             let mut search_start = 0;
             while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
                 let absolute_pos = search_start + pos;
+                if in_comment(&comments, absolute_pos) {
+                    search_start = absolute_pos + 1;
+                    continue;
+                }
 
                 result.add_diagnostic(
                     LintDiagnostic::warn(
@@ -85,9 +90,9 @@ impl CssRule for PreferSlotted {
 
         // Check for slot element selector that might need ::v-slotted
         // Pattern: direct styling of slot element without ::v-slotted
-        if source.contains("slot")
-            && !source.contains("::v-slotted")
-            && !source.contains(":slotted")
+        if contains_outside(bytes, b"slot", &comments)
+            && !contains_outside(bytes, b"::v-slotted", &comments)
+            && !contains_outside(bytes, b":slotted", &comments)
         {
             // Only warn if there's actual styling around "slot"
             let finder = memmem::Finder::new(b"slot");
@@ -109,7 +114,7 @@ impl CssRule for PreferSlotted {
                     .get(after_pos)
                     .is_some_and(|next| matches!(next, b' ' | b'{' | b'.' | b'[' | b'>'));
 
-                if is_selector && is_followed_by_selector {
+                if is_selector && is_followed_by_selector && !in_comment(&comments, absolute_pos) {
                     result.add_diagnostic(
                         LintDiagnostic::warn(
                             META.name,
@@ -127,6 +132,49 @@ impl CssRule for PreferSlotted {
             }
         }
     }
+}
+
+fn comment_ranges(bytes: &[u8]) -> Vec<(usize, usize)> {
+    let mut ranges = Vec::new();
+    let mut index = 0;
+    while index + 1 < bytes.len() {
+        if bytes[index] == b'/' && bytes[index + 1] == b'*' {
+            let start = index;
+            index += 2;
+            while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/') {
+                index += 1;
+            }
+            let end = if index + 1 < bytes.len() {
+                index + 2
+            } else {
+                bytes.len()
+            };
+            ranges.push((start, end));
+            index = end;
+        } else {
+            index += 1;
+        }
+    }
+    ranges
+}
+
+fn in_comment(ranges: &[(usize, usize)], pos: usize) -> bool {
+    ranges
+        .iter()
+        .any(|(start, end)| pos >= *start && pos < *end)
+}
+
+fn contains_outside(bytes: &[u8], needle: &[u8], comments: &[(usize, usize)]) -> bool {
+    let finder = memmem::Finder::new(needle);
+    let mut search_start = 0;
+    while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
+        let absolute = search_start + pos;
+        if !in_comment(comments, absolute) {
+            return true;
+        }
+        search_start = absolute + 1;
+    }
+    false
 }
 
 #[cfg(test)]
@@ -158,6 +206,29 @@ mod tests {
     // because they are invalid CSS syntax and fail to parse.
     // These patterns should be detected at the SFC level before CSS parsing,
     // or by a raw text scanner that runs before the CSS linter.
+
+    #[test]
+    fn test_ignores_slot_and_deep_selectors_inside_comments() {
+        let linter = create_linter();
+        let source = r#"
+/*
+ * Layout notes:
+ *   ├ slot     40px
+ *   └ details  14px
+ *
+ * The old `.legacy::v-deep .inner` rule was removed.
+ * 旧 `.a .b >>> .c` は無効だった
+ */
+.field-box {
+  display: block;
+  & :deep(.child-control) {
+    padding: 0 12px;
+  }
+}
+"#;
+        let result = linter.lint(source, 0);
+        assert_eq!(result.warning_count, 0);
+    }
 
     #[test]
     fn test_warns_slot_selector() {

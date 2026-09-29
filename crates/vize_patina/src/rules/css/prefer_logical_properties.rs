@@ -45,6 +45,9 @@ impl PreferLogicalProperties {
             LCssRule::Style(style_rule) => {
                 let mut positions = DeclarationPositions::new(source, style_rule);
                 self.check_declarations(&style_rule.declarations, &mut positions, offset, result);
+                for rule in &style_rule.rules.0 {
+                    self.check_rule(rule, source, offset, result);
+                }
             }
             LCssRule::Media(media) => {
                 for rule in &media.rules.0 {
@@ -151,5 +154,12 @@ mod tests {
         );
         assert_eq!(result.warning_count, 2);
         assert!(result.diagnostics[0].start < result.diagnostics[1].start);
+    }
+
+    #[test]
+    fn test_warns_nested_physical_property() {
+        let linter = create_linter();
+        let result = linter.lint(".card { .title { margin-left: 10px; } }", 0);
+        assert_eq!(result.warning_count, 1);
     }
 }
