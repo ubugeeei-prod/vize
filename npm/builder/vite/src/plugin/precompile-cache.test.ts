@@ -48,6 +48,32 @@ import {
 }
 
 // ---------------------------------------------------------------------------
+// A cold restore must not hide warnings from an unchanged source.
+// ---------------------------------------------------------------------------
+{
+  const { root } = makeProject(`<script setup>
+import { reactive } from "vue";
+const form = reactive({ name: "" });
+</script>
+<template><input v-model="form" /></template>`);
+  const warnings: string[] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(" "));
+  try {
+    const first = await coldRun(root);
+    assert.equal(recompiledCount(first.log), 1);
+    assert.ok(warnings.some((message) => message.includes("v-model")));
+    warnings.length = 0;
+    const second = await coldRun(root);
+    assert.equal(restoredCount(second.log), 0, "warned sources cannot restore silently");
+    assert.equal(recompiledCount(second.log), 1);
+    assert.ok(warnings.some((message) => message.includes("v-model")));
+  } finally {
+    console.warn = originalWarn;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Stale case 1: content changes while the size stays identical.
 // ---------------------------------------------------------------------------
 {
