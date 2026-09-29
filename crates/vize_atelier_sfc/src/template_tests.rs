@@ -4,7 +4,8 @@
 //! Split out of `lib.rs` so that module stays inside the per-file
 //! source-length budget.
 use super::{
-    SfcCompileOptions, SfcScriptOutputMode, compile_sfc, compile_sfc_for_adapter, parse_sfc,
+    SfcCompileOptions, SfcScriptOutputMode, TemplateCompileOptions, compile_sfc,
+    compile_sfc_for_adapter, parse_sfc,
 };
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 
@@ -412,6 +413,55 @@ const message = ref('hello')
 </script>
 "#;
     assert_separate_template_local_directive_output(imported_source);
+}
+
+#[test]
+fn production_inline_render_stays_an_es_module_without_setup_proxy() {
+    let source = r#"<script setup lang="ts">
+const { title } = defineProps<{ title: string }>()
+function open(id: string) { return id }
+</script>
+<template>
+  <div class="card" @click="open(title)">{{ title }}</div>
+</template>
+"#;
+    let descriptor = parse_sfc(source, Default::default()).unwrap();
+    let result = compile_sfc_for_adapter(
+        &descriptor,
+        SfcCompileOptions {
+            template: TemplateCompileOptions {
+                is_prod: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        TemplateSyntaxMode::Standard,
+        CustomElementMatcher::default(),
+        CodegenOptions::default(),
+        SfcScriptOutputMode::InlineTemplate,
+    )
+    .unwrap();
+    let code = result.code.as_str();
+    assert!(
+        code.contains("export default"),
+        "production inline output stays an ES module:\n{code}"
+    );
+    assert!(
+        !code.contains("$setup"),
+        "inlined render must not read bindings through $setup:\n{code}"
+    );
+    assert!(
+        !code.contains("function _sfc_render"),
+        "inlined render must not keep a separate render function:\n{code}"
+    );
+    assert!(
+        !code.contains("type: String"),
+        "production output drops the string prop runtime type:\n{code}"
+    );
+    assert!(
+        !code.contains("= Vue"),
+        "production inline output must not rewrite the module onto a Vue global:\n{code}"
+    );
 }
 
 fn assert_separate_template_local_directive_output(source: &str) {

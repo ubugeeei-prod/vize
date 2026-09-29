@@ -20,6 +20,10 @@ export interface SfcCompileOptionsNapi extends ExperimentalCompileFlags {
   templateComments?: boolean;
   templateHoistStatic?: boolean;
   templatePrefixIdentifiers?: boolean;
+  /** Inline the render into setup() and keep the ES module. */
+  inlineTemplate?: boolean;
+  /** Drop dev-only prop runtime types. */
+  isProd?: boolean;
 }
 
 export interface MacroArtifact {

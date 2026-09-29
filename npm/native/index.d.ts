@@ -104,6 +104,10 @@ export interface BatchCompileOptionsNapi {
   templateComments?: boolean;
   templateHoistStatic?: boolean;
   templatePrefixIdentifiers?: boolean;
+  /** Inline the render into setup() and keep the ES module. */
+  inlineTemplate?: boolean;
+  /** Drop dev-only prop runtime types. */
+  isProd?: boolean;
   /** Preserve TypeScript in output when true */
   isTs?: boolean;
   /**
@@ -1238,6 +1242,10 @@ export interface SfcCompileOptionsNapi {
   templateComments?: boolean;
   templateHoistStatic?: boolean;
   templatePrefixIdentifiers?: boolean;
+  /** Inline the render into setup() and keep the ES module. */
+  inlineTemplate?: boolean;
+  /** Drop dev-only prop runtime types. */
+  isProd?: boolean;
   /** Preserve TypeScript in output when true */
   isTs?: boolean;
   /** Scope ID for scoped CSS (e.g., "data-v-abc123") */

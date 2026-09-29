@@ -56,6 +56,23 @@ const migrationBatch = buildCompileBatchOptions({
 });
 assert.equal(migrationFile.whitespace, "vue2-line-breaks");
 assert.equal(migrationBatch.whitespace, "vue2-line-breaks");
+
+const productionFile = buildCompileFileOptions("/src/App.vue", {
+  ...batchInput,
+  inlineTemplate: true,
+  isProd: true,
+});
+const productionBatch = buildCompileBatchOptions({
+  ...batchInput,
+  inlineTemplate: true,
+  isProd: true,
+});
+assert.equal(productionFile.inlineTemplate, true);
+assert.equal(productionFile.isProd, true);
+assert.equal(productionBatch.inlineTemplate, true);
+assert.equal(productionBatch.isProd, true);
+assert.equal(fileOptions.inlineTemplate, undefined);
+assert.equal(batchOptions.isProd, undefined);
 assert.notDeepEqual(
   migrationBatch,
   batchOptions,
