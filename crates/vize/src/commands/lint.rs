@@ -356,6 +356,9 @@ pub fn run(args: LintArgs) {
     }
 
     // `process::exit` below bypasses normal stdout teardown, so flush report output first.
+    // Closing sessions here also covers that exit: `Drop` would not run, and a
+    // successful return used to leave `.vize/patina/session-*` behind.
+    vize_patina::Linter::finish_type_aware_lint(&linters, &files);
     let _ = std::io::stdout().flush();
 
     if total_errors > 0 {

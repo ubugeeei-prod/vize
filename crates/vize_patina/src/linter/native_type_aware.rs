@@ -105,6 +105,7 @@ pub(crate) fn lint_sfc_with_corsa_descriptor<'a>(
         }
     };
 
+    super::severity::apply_severity_overrides(&mut result, &linter.severity_overrides);
     result.filename = filename.to_compact_string();
     result
 }

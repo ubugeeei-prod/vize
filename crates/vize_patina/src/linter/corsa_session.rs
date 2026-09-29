@@ -28,3 +28,13 @@ impl Drop for CorsaTypeAwareSession {
         self.close();
     }
 }
+
+pub(super) fn remove_finished_process_sessions(files: &[std::path::PathBuf]) {
+    let mut seen = vize_l0::FxHashSet::default();
+    for file in files {
+        let root = paths::resolve_project_root(file.to_string_lossy().as_ref());
+        if seen.insert(root.clone()) {
+            paths::remove_finished_process_sessions(&root);
+        }
+    }
+}
