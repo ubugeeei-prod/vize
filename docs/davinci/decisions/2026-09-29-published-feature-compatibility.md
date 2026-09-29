@@ -28,6 +28,13 @@ same comparator and required test targets. The SFC DOM alias is separate from
 the retained-AST differential lane, as it was before the rename. All aliases
 stay off by default and do not change product output or serialized strings.
 
+The published `vize_atelier_sfc/davinci-production-bench` composite also keeps
+its `davinci-dom-differential` and `vize_atelier_ssr/davinci-differential`
+feature edges. Those names forward to the renamed lanes through the aliases
+above. Replacing the composite edges
+with only new spellings drops the old feature activations even though the
+renamed runtime lanes remain enabled.
+
 For alpha/preview crates, the [support policy](../../release/support-policy.md)
 requires a full minor release with the manifest alias and a release note before
 removal. `vize_atelier_vapor`, `vize_l1` and `vize_l1_to_l2` are experimental,
