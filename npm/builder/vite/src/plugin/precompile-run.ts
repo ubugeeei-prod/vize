@@ -239,7 +239,11 @@ export async function compileAll(state: VizePluginState): Promise<void> {
 
       const compiled = state.cache.get(fileResult.path);
       const sourceHash = sourceHashes.get(fileResult.path);
-      if (compiled && sourceHash !== undefined) {
+      if (fileResult.warnings.length > 0) {
+        // The disk entry does not carry diagnostics. Recompile warned sources
+        // on every cold run so their warnings remain visible to the user.
+        cache.delete(fileResult.path);
+      } else if (compiled && sourceHash !== undefined) {
         cache.set(fileResult.path, sourceHash, compiled);
       }
 
