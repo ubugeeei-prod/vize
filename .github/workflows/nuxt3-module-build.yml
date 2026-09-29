@@ -51,6 +51,10 @@ jobs:
       - name: Install the pinned Nuxt 3 reproduction
         working-directory: tools/support/compat/nuxt/fixtures/nuxt3-module-build
         run: npm ci --no-audit --no-fund
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Install Chromium
+        working-directory: tests
+        run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
       - name: Verify candidate build and SSR routes
         run: vp env exec node tools/support/compat/nuxt/nuxt3-module-build.mjs "$RUNNER_TEMP/nuxt3-module-proof"
       - name: Upload Nuxt 3 build and SSR evidence

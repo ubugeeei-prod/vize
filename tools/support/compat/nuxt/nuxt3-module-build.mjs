@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
@@ -10,6 +11,7 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const fixture = path.join(root, "tools/support/compat/nuxt/fixtures/nuxt3-module-build");
 const artifacts = path.resolve(process.argv[2] ?? path.join(os.tmpdir(), "vize-nuxt3-build"));
+const requireTests = createRequire(path.join(root, "tests/package.json"));
 fs.mkdirSync(artifacts, { recursive: true });
 
 for (const [name, version] of [
@@ -75,6 +77,7 @@ try {
     stdio: ["ignore", serverFd, serverFd],
   });
   const serverExited = new Promise((resolve) => server.once("exit", resolve));
+  let browser;
   try {
     for (const [route, heading] of [
       ["/", "Nuxt 3 with Vize"],
@@ -106,6 +109,7 @@ try {
         assert.match(html, /<span[^>]*class="card-id"[^>]*>beta<\/span>/);
         assert.equal((html.match(/class="featured"/g) ?? []).length, 1);
         assert.match(html, /<span[^>]*class="featured"[^>]*>Featured<\/span>/);
+        assert.match(html, /<button[^>]*data-test="counter"[^>]*>Clicks: 0<\/button>/);
         const cssFiles = fs
           .readdirSync(path.join(fixture, ".output/public/_nuxt"))
           .filter((name) => name.endsWith(".css"));
@@ -119,7 +123,24 @@ try {
         );
       }
     }
+    const { chromium } = requireTests("@playwright/test");
+    browser = await chromium.launch();
+    const page = await browser.newPage();
+    const pageErrors = [];
+    page.on("pageerror", (error) => pageErrors.push(error.message));
+    await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "domcontentloaded" });
+    await page.getByRole("heading", { name: "Nuxt 3 with Vize" }).waitFor();
+    await page.getByRole("button", { name: "Clicks: 0" }).click();
+    await page.getByRole("button", { name: "Clicks: 1" }).waitFor();
+    await page.getByRole("link", { name: "About" }).click();
+    await page.getByRole("heading", { name: "Nuxt 3 route" }).waitFor();
+    assert.deepEqual(pageErrors, [], "hydration and client navigation must not throw");
+    fs.writeFileSync(
+      path.join(artifacts, "hydration.json"),
+      JSON.stringify({ clicks: 1, route: "/about", pageErrors }, null, 2) + "\n",
+    );
   } finally {
+    await browser?.close();
     server.kill("SIGTERM");
     await serverExited;
     fs.closeSync(serverFd);
@@ -133,12 +154,13 @@ try {
         nuxt: "3.19.3",
         buildExit: build.status,
         routes: ["/", "/about"],
+        hydratedInteraction: true,
       },
       null,
       2,
     ) + "\n",
   );
-  console.log("Candidate Nuxt 3 build and SSR routes passed");
+  console.log("Candidate Nuxt 3 build, SSR, hydration, and client navigation passed");
 } finally {
   if (server && server.exitCode === null) server.kill("SIGTERM");
   for (const item of swapped) {
