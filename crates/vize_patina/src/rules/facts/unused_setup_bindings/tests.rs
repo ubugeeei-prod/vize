@@ -98,6 +98,41 @@ fn unknown_blocks_parse_recovery_and_eval_do_not_prove_non_use() {
 }
 
 #[test]
+fn v_for_source_bindings_are_reads() {
+    let source = r#"<script setup lang="ts">
+import { computed } from "vue";
+
+const DAYS = ["Sun", "Mon", "Tue"];
+const rows = computed(() => [[1, 2, 3]]);
+const title = "Week";
+const unused = 0;
+</script>
+
+<template>
+  <table>
+    <caption>{{ title }}</caption>
+    <thead>
+      <tr>
+        <th v-for="day in DAYS" :key="day">{{ day }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="(row, at) in rows" :key="at">
+        <td v-for="cell in row" :key="cell">{{ cell }}</td>
+      </tr>
+    </tbody>
+  </table>
+</template>
+"#;
+    let start = source.find("const unused").unwrap() + "const ".len();
+    assert_eq!(
+        unused(source),
+        [(start, start + "unused".len())],
+        "{source}"
+    );
+}
+
+#[test]
 fn file_directives_and_configuration_are_honored() {
     let source = "<script setup>\n// eslint-disable-next-line vue/no-unused-setup-bindings\nconst unused = 0;\n</script><template><div /></template>";
     assert!(unused(source).is_empty());
