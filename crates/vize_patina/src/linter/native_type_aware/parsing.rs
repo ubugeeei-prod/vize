@@ -1,9 +1,12 @@
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast::{
-    Argument, CallExpression, ChainElement, Expression, ExpressionStatement, ObjectExpression,
-    ObjectPropertyKind, PropertyKey, Statement,
+    Argument, ArrowFunctionExpression, CallExpression, ChainElement, Expression,
+    ExpressionStatement, ObjectExpression, ObjectPropertyKind, PropertyKey, Statement,
 };
-use oxc_ast_visit::{Visit, walk::walk_expression_statement};
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_arrow_function_expression, walk_expression_statement},
+};
 use oxc_parser::Parser as OxcParser;
 use oxc_span::{GetSpan, SourceType};
 use oxc_syntax::operator::UnaryOperator;
@@ -113,6 +116,31 @@ impl<'a> Visit<'a> for FloatingCandidateCollector {
         }
 
         walk_expression_statement(self, statement);
+    }
+
+    fn visit_arrow_function_expression(&mut self, arrow: &ArrowFunctionExpression<'a>) {
+        if !arrow.expression {
+            walk_arrow_function_expression(self, arrow);
+            return;
+        }
+
+        // Oxc wraps a concise body in an expression statement. That statement
+        // is the function's return value (`() => fetch(url)`), not a floating
+        // call. Nested functions inside the expression are still walked.
+        if let Some(type_parameters) = &arrow.type_parameters {
+            self.visit_ts_type_parameter_declaration(type_parameters);
+        }
+        self.visit_formal_parameters(&arrow.params);
+        if let Some(return_type) = &arrow.return_type {
+            self.visit_ts_type_annotation(return_type);
+        }
+        for statement in &arrow.body.statements {
+            if let Statement::ExpressionStatement(statement) = statement {
+                self.visit_expression(&statement.expression);
+            } else {
+                self.visit_statement(statement);
+            }
+        }
     }
 }
 
@@ -231,5 +259,33 @@ fn is_macro_call_expression(expression: &Expression<'_>) -> bool {
                 | "withDefaults"
         ),
         _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::collect_floating_candidates;
+
+    fn candidate_texts(source: &str) -> Vec<&str> {
+        collect_floating_candidates(source)
+            .into_iter()
+            .filter_map(|candidate| source.get(candidate.start as usize..candidate.end as usize))
+            .collect()
+    }
+
+    #[test]
+    fn concise_arrow_body_is_returned_not_floating() {
+        assert!(candidate_texts("const load = () => fetch(url)").is_empty());
+        assert!(candidate_texts("const load = async () => fetch(url)").is_empty());
+        assert!(candidate_texts("const load = () => { return fetch(url) }").is_empty());
+        assert_eq!(
+            candidate_texts("const load = () => { fetch(url) }"),
+            vec!["fetch(url)"]
+        );
+        assert_eq!(
+            candidate_texts("const load = () => (() => { fetch(url) })"),
+            vec!["fetch(url)"]
+        );
+        assert_eq!(candidate_texts("fetch(url)"), vec!["fetch(url)"]);
     }
 }
