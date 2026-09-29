@@ -19,7 +19,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `MacroTracker`                 | type  | `macros`            |     1 |     1 |
 | `NonScriptSetupScopeData`      | type  | `scope`             |     1 |     3 |
 | `OptionGroup`                  | type  | `croquis`           |     2 |     7 |
-| `PassedProp`                   | type  | `croquis::template` |    10 |    23 |
+| `PassedProp`                   | type  | `croquis::template` |    10 |    24 |
 | `Scope`                        | type  | `scope`             |    14 |    25 |
 | `ScopeChain`                   | type  | `scope`             |     2 |     7 |
 | `ScopeData`                    | type  | `scope`             |    19 |    35 |
@@ -112,7 +112,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `EventListener`           |        3 |    5 |
 | `NonScriptSetupScopeData` |        3 |    4 |
 | `OptionGroup`             |        7 |    9 |
-| `PassedProp`              |       23 |   34 |
+| `PassedProp`              |       24 |   35 |
 | `Scope`                   |       25 |   58 |
 | `ScopeChain`              |        7 |    9 |
 | `ScopeData`               |       35 |   53 |
