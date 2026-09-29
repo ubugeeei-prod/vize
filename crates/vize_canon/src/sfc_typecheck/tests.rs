@@ -153,6 +153,34 @@ void bar
 }
 
 #[test]
+fn test_slot_outlet_key_stays_in_checked_props() {
+    // #7048: `:key` on `<slot>` is part of the checked slot props. A fresh
+    // object spread is invisible to defineSlots required-property checks.
+    let source = r#"<script setup lang="ts">
+defineSlots<{ default(props: { key: number; label: string }): unknown }>()
+const label = "item"
+const key = 1
+</script>
+<template><slot :key="key" :label="label" /></template>"#;
+    let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+    let result = type_check_sfc(source, &options);
+    let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
+
+    assert!(
+        virtual_ts.contains(r#"...__vizeSlotOutletKey("key", key)"#),
+        "slot outlet key must stay in the checked props:\n{virtual_ts}"
+    );
+    assert!(
+        !virtual_ts.contains(r#"...({ "key""#),
+        "fresh key spread is dropped from required slot props:\n{virtual_ts}"
+    );
+    assert!(
+        virtual_ts.contains(r#""label": label"#),
+        "sibling slot props stay checked:\n{virtual_ts}"
+    );
+}
+
+#[test]
 fn test_type_check_nested_interface_members_are_not_template_props() {
     let source = r#"<script setup lang="ts">
 interface Props {

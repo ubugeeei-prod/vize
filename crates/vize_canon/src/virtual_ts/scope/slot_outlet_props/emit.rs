@@ -1,7 +1,9 @@
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{FxHashMap, String, append};
 
-use crate::virtual_ts::{expressions::ComponentPropSource, types::VizeMapping};
+use crate::virtual_ts::{
+    expressions::ComponentPropSource, helpers::to_camel_case, types::VizeMapping,
+};
 
 use super::super::context::ScopeGenContext;
 use super::super::vif_guard::append_ignored_vif_guard_open;
@@ -31,12 +33,20 @@ pub(super) fn emit_slot_outlet_helpers(
     let mut needs_static = false;
     let mut needs_dynamic = false;
     let mut needs_spread = false;
+    let mut needs_key = false;
     for outlet in slot_outlets_by_scope
         .values()
         .flat_map(|outlets| outlets.iter())
     {
         if !outlet.spread_props.is_empty() {
             needs_spread = true;
+        }
+        if outlet
+            .props
+            .iter()
+            .any(|prop| to_camel_case(prop.name.as_str()) == "key")
+        {
+            needs_key = true;
         }
         if outlet.name_is_dynamic {
             needs_dynamic = true;
@@ -72,6 +82,14 @@ pub(super) fn emit_slot_outlet_helpers(
         );
         ts.push_str(
             "  type __VizeAnySlotOutletPayload<__S> = [__VizeAnySlotOutletArgs<__S>] extends [[]] ? unknown : __VizeAnySlotOutletArgs<__S>[0];\n",
+        );
+    }
+    if needs_key {
+        // `{ [name]: value }` with `name: "key"` is `{ key: V }`, so a required
+        // slot `key` is present. The spread at the call site is not a fresh
+        // object literal, so an undeclared vnode `key` is not an excess property.
+        ts.push_str(
+            "  function __vizeSlotOutletKey<V>(name: \"key\", value: V): { key: V } { return { [name]: value }; }\n",
         );
     }
     if needs_spread {
