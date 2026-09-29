@@ -52,6 +52,54 @@ pub(crate) const fn all_builtin_css_rule_names() -> &'static [&'static str] {
     ALL_BUILTIN_CSS_RULE_NAMES
 }
 
+const OPINIONATED_AND_NUXT_CSS_PRESETS: &[&str] = &["opinionated", "nuxt"];
+
+/// Metadata the Oxlint plugin uses to register a built-in `css/*` rule.
+pub struct BuiltinCssRuleMeta {
+    pub name: &'static str,
+    pub description: &'static str,
+    pub default_severity: crate::Severity,
+    pub presets: &'static [&'static str],
+}
+
+/// Built-in `css/*` rules, in the same order as [`all_builtin_css_rule_names`].
+///
+/// These rules are not `RuleRegistry` entries, so hosts that only walk the
+/// registry (the Oxlint metadata collector) never see them unless this list
+/// is exported beside the script and Musea catalogs.
+pub fn builtin_css_rules() -> Vec<BuiltinCssRuleMeta> {
+    ALL_BUILTIN_CSS_RULE_NAMES
+        .iter()
+        .filter_map(|rule_name| {
+            let rule = css_rule_for_name(rule_name)?;
+            let meta = rule.meta();
+            Some(BuiltinCssRuleMeta {
+                name: meta.name,
+                description: meta.description,
+                default_severity: meta.default_severity,
+                presets: OPINIONATED_AND_NUXT_CSS_PRESETS,
+            })
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::builtin_css_rules;
+
+    #[test]
+    fn builtin_css_rules_cover_the_opinionated_and_nuxt_presets() {
+        let rules = builtin_css_rules();
+        assert_eq!(rules.len(), 10);
+        assert!(rules.iter().any(|rule| rule.name == "css/no-important"));
+        assert!(rules.iter().all(|rule| {
+            rule.presets == ["opinionated", "nuxt"]
+                && !rule.description.is_empty()
+                && rule.default_severity == crate::Severity::Warning
+        }));
+    }
+}
+
 /// Whether any built-in `css/*` rule is both configured for this linter
 /// (`css_rules`) and enabled (`is_rule_enabled`).
 #[inline]

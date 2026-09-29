@@ -186,6 +186,21 @@ impl NoBrowserGlobalsInSsr {
         }
     }
 
+    /// A script or template binding shadows a browser global of the same name.
+    ///
+    /// Scope lookup finds ambient browser globals (`open`, `close`) before the
+    /// script binding map, so a destructured prop is not "undefined" just
+    /// because the global scope also has that name.
+    fn is_local_binding(ctx: &LintContext<'_>, name: &str) -> bool {
+        if ctx.is_v_for_var(name) || ctx.has_script_binding(name) {
+            return true;
+        }
+        match ctx.get_binding_type(name) {
+            Some(BindingType::JsGlobalBrowser) | None => false,
+            Some(_) => true,
+        }
+    }
+
     /// Extract identifiers from an expression string.
     ///
     /// This method is aware of JavaScript syntax to avoid false positives:
@@ -472,14 +487,11 @@ impl Rule for NoBrowserGlobalsInSsr {
         let identifiers = Self::runtime_identifiers(content);
 
         for ident in identifiers {
-            // Skip if it's defined as a local variable (from v-for, etc.)
-            if ctx.is_variable_defined(ident) {
+            if Self::is_local_binding(ctx, ident) {
                 continue;
             }
 
-            // Check using croquis analysis or fall back to static list
-            if Self::is_browser_global_binding(ctx, ident) || Self::is_browser_global_static(ident)
-            {
+            if Self::is_browser_global_binding(ctx, ident) {
                 ctx.warn_with_help(
                     ctx.t_fmt("ssr/no-browser-globals-in-ssr.message", &[("name", ident)]),
                     &interpolation.loc,
@@ -509,15 +521,11 @@ impl Rule for NoBrowserGlobalsInSsr {
             let identifiers = Self::runtime_identifiers(content);
 
             for ident in identifiers {
-                // Skip if it's defined as a local variable
-                if ctx.is_variable_defined(ident) {
+                if Self::is_local_binding(ctx, ident) {
                     continue;
                 }
 
-                // Check using croquis analysis or fall back to static list
-                if Self::is_browser_global_binding(ctx, ident)
-                    || Self::is_browser_global_static(ident)
-                {
+                if Self::is_browser_global_binding(ctx, ident) {
                     ctx.warn_with_help(
                         ctx.t_fmt("ssr/no-browser-globals-in-ssr.message", &[("name", ident)]),
                         &directive.loc,

@@ -1,6 +1,7 @@
 use vize_l0::FxHashSet;
 use vize_patina::{
-    LintPreset, RuleCategory, RuleRegistry, Severity, builtin_musea_rules, builtin_script_rules,
+    LintPreset, RuleCategory, RuleRegistry, Severity, builtin_css_rules, builtin_musea_rules,
+    builtin_script_rules,
 };
 
 pub(super) struct PatinaRuleMetaNapi<'a> {
@@ -121,6 +122,22 @@ pub(super) fn collect_patina_rule_metadata() -> Vec<PatinaRuleMetaNapi<'static>>
                 .presets
                 .iter()
                 .map(|preset| plugin_preset_name_from_raw(preset))
+                .collect(),
+        });
+    }
+
+    for css_rule in builtin_css_rules() {
+        rules.push(PatinaRuleMetaNapi {
+            name: css_rule.name,
+            description: css_rule.description,
+            category: "Css",
+            fixable: false,
+            default_severity: severity_name(css_rule.default_severity),
+            presets: css_rule
+                .presets
+                .iter()
+                .copied()
+                .map(plugin_preset_name_from_raw)
                 .collect(),
         });
     }

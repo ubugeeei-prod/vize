@@ -120,6 +120,7 @@ pub use diagnostic::{
 pub use ir::{
     ByteRange, LintDocument, LintDocumentKind, ScriptBlock, ScriptLanguage, TemplateBlock,
 };
+pub use linter::css_rules::{BuiltinCssRuleMeta, builtin_css_rules};
 pub use linter::script_rules::{BuiltinScriptRuleMeta, builtin_script_rules};
 pub use linter::{LintResult, Linter};
 pub use markup::{
