@@ -92,7 +92,7 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
     capture: &mut C,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     #[cfg(feature = "davinci-benchmark")]
-    let options = benchmark::apply(options);
+    let options = super::benchmark::apply(options);
     capture.effective_option("template_syntax", || cstr!("{template_syntax:?}"));
     capture.effective_option("ssr", || cstr!("{}", options.ssr));
     capture.effective_option("inline", || cstr!("{}", options.inline));
