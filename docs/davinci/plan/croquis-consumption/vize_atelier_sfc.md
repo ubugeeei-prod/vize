@@ -44,11 +44,11 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScriptParserOptions`                     |     1 |     1 |
 | `SfcCustomBlock`                          |     2 |     2 |
 | `SfcDescriptor`                           |    18 |    45 |
-| `SfcError`                                |    21 |    62 |
+| `SfcError`                                |    22 |    64 |
 | `SfcParseOptions`                         |    18 |   119 |
 | `SfcScriptBlock`                          |     2 |     2 |
 | `SfcStyleBlock`                           |     5 |     8 |
-| `SfcTemplateBlock`                        |     6 |     8 |
+| `SfcTemplateBlock`                        |     7 |     9 |
 | `TypeDeclaration`                         |     1 |     3 |
 | `TypeDeclarationKind`                     |     1 |     2 |
 | `TypeExportBinding`                       |     2 |     8 |
