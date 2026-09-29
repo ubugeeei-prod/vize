@@ -146,3 +146,25 @@ fn scanner_handles_mixed_or_and_filter() {
     // Division is not a regex; a following filter is still caught.
     assert!(has_filter_pipe("a / b | c"));
 }
+
+#[test]
+fn scanner_ignores_ts_union_in_arrow_param() {
+    assert!(!has_filter_pipe("(item: A | B | C) => item.id"));
+    assert!(!has_filter_pipe("(item: A | B, other: C | D) => item"));
+    assert!(!has_filter_pipe("({ a }: { a: A | B }) => a"));
+    assert!(!has_filter_pipe("(item): A | B => item"));
+    // A filter in the arrow body is still a filter.
+    assert!(has_filter_pipe("(item: A | B) => item | format"));
+    // Object values are expressions, not type annotations.
+    assert!(has_filter_pipe("{ id: rawId | toId }"));
+}
+
+#[test]
+fn ignores_ts_union_in_bound_arrow_function() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<Draggable :item-key="(item: A | B | C) => item.id" />"#,
+        "App.vue",
+    );
+    assert_eq!(result.error_count, 0);
+}
