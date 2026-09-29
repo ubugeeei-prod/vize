@@ -27,7 +27,8 @@ export function createVrtOptions(options: CliOptions): ExtendedVrtOptions {
   const configured = options.vrt ?? {};
   const vrtOptions: ExtendedVrtOptions = {
     ...configured,
-    snapshotDir: path.join(options.output, "snapshots"),
+    // run, approve, and clean all read this directory.
+    snapshotDir: resolveVrtSnapshotDir(options, configured.snapshotDir),
     threshold: options.thresholdProvided
       ? options.threshold
       : (configured.threshold ?? options.threshold),
@@ -37,6 +38,15 @@ export function createVrtOptions(options: CliOptions): ExtendedVrtOptions {
     vrtOptions.workers = normalizeVrtWorkerCount(workers);
   }
   return vrtOptions;
+}
+
+/**
+ * `vrt.snapshotDir` is resolved against the config file's directory.
+ * When it is unset, baselines stay under `<--output>/snapshots`.
+ */
+function resolveVrtSnapshotDir(options: CliOptions, snapshotDir: string | undefined): string {
+  if (!snapshotDir) return path.join(options.output, "snapshots");
+  return path.resolve(path.dirname(path.resolve(options.config)), snapshotDir);
 }
 
 export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Promise<void> {

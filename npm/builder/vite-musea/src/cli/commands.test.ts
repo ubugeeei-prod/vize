@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import path from "node:path";
 import test from "node:test";
 
 import { hasCiBlockingVrtResult, isArtFileInput, createVrtOptions } from "./commands.ts";
@@ -91,4 +92,44 @@ void test("CLI threshold overrides configured VRT threshold", () => {
     workers: 8,
     comparison: { antiAliasing: false },
   });
+});
+
+void test("CLI uses vrt.snapshotDir resolved against the config file directory", () => {
+  const options = parseArgs([
+    "-c",
+    path.join("project", "vite.config.ts"),
+    "-o",
+    "reports",
+  ]);
+  options.vrt = {
+    snapshotDir: path.join("vrt", "baseline"),
+    threshold: 0,
+    viewports: [{ width: 320, height: 200, name: "small" }],
+    capture: { settleTime: 250 },
+    comparison: { antiAliasing: false },
+    workers: 2,
+  };
+
+  // run, approve, and clean all go through createVrtOptions.
+  assert.deepEqual(createVrtOptions(options), {
+    snapshotDir: path.resolve("project", "vrt", "baseline"),
+    threshold: 0,
+    viewports: [{ width: 320, height: 200, name: "small" }],
+    capture: { settleTime: 250 },
+    comparison: { antiAliasing: false },
+    workers: 2,
+  });
+});
+
+void test("CLI keeps an absolute vrt.snapshotDir and falls back to output snapshots", () => {
+  const configured = parseArgs(["-c", path.join("/tmp", "app", "vite.config.ts"), "-o", "reports"]);
+  configured.vrt = { snapshotDir: path.join("/var", "baselines") };
+  assert.equal(
+    createVrtOptions(configured).snapshotDir,
+    path.resolve(path.join("/var", "baselines")),
+  );
+
+  const fallback = parseArgs(["-o", "reports"]);
+  fallback.vrt = { threshold: 3 };
+  assert.equal(createVrtOptions(fallback).snapshotDir, path.join("reports", "snapshots"));
 });
