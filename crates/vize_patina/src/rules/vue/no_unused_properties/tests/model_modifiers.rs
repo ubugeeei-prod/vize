@@ -54,6 +54,42 @@ defineProps<{
 }
 
 #[test]
+fn ignores_declared_model_modifiers_that_are_not_destructured() {
+    let sfc = r#"<script setup lang="ts">
+const { modelValue = "" } = defineProps<{
+  modelValue?: string;
+  modelModifiers?: Record<string, boolean>;
+}>();
+
+defineEmits<{ "update:modelValue": [value: string] }>();
+</script>
+
+<template>
+  <input :value="modelValue" @input="(e) => $emit('update:modelValue', (e.target as HTMLInputElement).value)" />
+</template>
+"#;
+
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
+fn ignores_named_model_modifiers_declared_beside_the_prop() {
+    let sfc = r#"<script setup lang="ts">
+defineProps<{
+  title?: string;
+  titleModifiers?: Record<string, boolean>;
+}>();
+</script>
+
+<template>
+  <label>{{ title }}</label>
+</template>
+"#;
+
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+}
+
+#[test]
 fn reports_a_modifiers_suffix_without_a_matching_model() {
     let sfc = r#"<script setup lang="ts">
 defineProps<{
