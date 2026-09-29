@@ -26,6 +26,7 @@ import {
 } from "vscode-languageclient/node.js";
 import {
   LINT_ONLY_CONFIGURATION_UPDATES,
+  WORKSPACE_LSP_CONFIG_FILES,
   describeCapabilities,
   getInitializationOptions,
   hasAnyEnabledCapability,
@@ -474,7 +475,7 @@ function hasWorkspaceLspConfig(): boolean {
   }
 
   return workspaceFolders.some((folder) =>
-    ["vize.config.pkl", "vize.config.json"].some((filename) =>
+    WORKSPACE_LSP_CONFIG_FILES.some((filename) =>
       fs.existsSync(path.join(folder.uri.fsPath, filename)),
     ),
   );
