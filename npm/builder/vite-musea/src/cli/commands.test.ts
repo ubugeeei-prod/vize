@@ -1,7 +1,15 @@
 import assert from "node:assert/strict";
+import path from "node:path";
 import test from "node:test";
 
-import { hasCiBlockingVrtResult, isArtFileInput, createVrtOptions } from "./commands.ts";
+import type { A11yOptions } from "../types/index.ts";
+import { MuseaA11yRunner } from "../a11y/index.ts";
+import {
+  hasCiBlockingVrtResult,
+  isArtFileInput,
+  createA11yRunner,
+  createVrtOptions,
+} from "./commands.ts";
 import { parseArgs } from "./index.ts";
 import type { VrtSummary } from "../vrt.ts";
 
@@ -91,4 +99,66 @@ void test("CLI threshold overrides configured VRT threshold", () => {
     workers: 8,
     comparison: { antiAliasing: false },
   });
+});
+
+void test("CLI uses vrt.snapshotDir resolved against the config file directory", () => {
+  const options = parseArgs(["-c", path.join("project", "vite.config.ts"), "-o", "reports"]);
+  options.vrt = {
+    snapshotDir: path.join("vrt", "baseline"),
+    threshold: 0,
+    viewports: [{ width: 320, height: 200, name: "small" }],
+    capture: { settleTime: 250 },
+    comparison: { antiAliasing: false },
+    workers: 2,
+  };
+
+  // run, approve, and clean all go through createVrtOptions.
+  assert.deepEqual(createVrtOptions(options), {
+    snapshotDir: path.resolve("project", "vrt", "baseline"),
+    threshold: 0,
+    viewports: [{ width: 320, height: 200, name: "small" }],
+    capture: { settleTime: 250 },
+    comparison: { antiAliasing: false },
+    workers: 2,
+  });
+});
+
+void test("CLI keeps an absolute vrt.snapshotDir and falls back to output snapshots", () => {
+  const configured = parseArgs(["-c", path.join("/tmp", "app", "vite.config.ts"), "-o", "reports"]);
+  configured.vrt = { snapshotDir: path.join("/var", "baselines") };
+  assert.equal(
+    createVrtOptions(configured).snapshotDir,
+    path.resolve(path.join("/var", "baselines")),
+  );
+
+  const fallback = parseArgs(["-o", "reports"]);
+  fallback.vrt = { threshold: 3 };
+  assert.equal(createVrtOptions(fallback).snapshotDir, path.join("reports", "snapshots"));
+});
+
+void test("vrt.a11y excludeRules is the object passed to MuseaA11yRunner", () => {
+  const a11y: A11yOptions = {
+    excludeRules: ["color-contrast"],
+    includeRules: ["image-alt"],
+    level: "AA",
+  };
+  const options = parseArgs(["--a11y"]);
+  options.vrt = { a11y, threshold: 4 };
+
+  const received: Array<A11yOptions | undefined> = [];
+  class RecordingA11yRunner extends MuseaA11yRunner {
+    constructor(configured?: A11yOptions) {
+      super(configured);
+      received.push(configured);
+    }
+  }
+
+  const runner = createA11yRunner(options, RecordingA11yRunner);
+
+  assert.equal(runner instanceof RecordingA11yRunner, true);
+  assert.deepEqual(received, [a11y]);
+  assert.equal(received[0], a11y);
+  assert.deepEqual(received[0]?.excludeRules, ["color-contrast"]);
+  assert.equal("a11y" in createVrtOptions(options), false);
+  assert.equal(createVrtOptions(options).threshold, 4);
 });

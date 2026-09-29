@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createApp, h } from "vue";
+import { createMemoryHistory, createRouter } from "vue-router";
 
 type MuseaNuxtRuntime = typeof import("./index.ts");
 
@@ -156,4 +157,110 @@ void test("installNuxtMuseaMocks registers Nuxt built-ins and global properties"
   assert.ok(app.component("ClientOnly"));
   assert.equal(app.config.globalProperties.$route.path, "/preview");
   assert.deepEqual(app.config.globalProperties.$config, { public: { baseURL: "/mock" } });
+});
+
+void test("installNuxtMuseaMocks keeps vue-router route, router, and link components", async () => {
+  const { installNuxtMuseaMocks, resetNuxtMuseaMocks } = await loadRuntime();
+  resetNuxtMuseaMocks();
+  const app = createApp({ render: () => h("div") });
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [{ path: "/", component: { render: () => null } }],
+  });
+  app.use(router);
+  const link = app.component("RouterLink");
+  const view = app.component("RouterView");
+  const routeDescriptor = Object.getOwnPropertyDescriptor(app.config.globalProperties, "$route");
+  assert.equal(routeDescriptor?.configurable, false);
+
+  installNuxtMuseaMocks(app, { route: { path: "/preview" } });
+
+  assert.equal(app.config.globalProperties.$route.path, "/");
+  assert.equal(app.config.globalProperties.$router, router);
+  assert.equal(app.component("RouterLink"), link);
+  assert.equal(app.component("RouterView"), view);
+});
+
+void test("installNuxtMuseaMocks does not overwrite a non-configurable $route", async () => {
+  const { installNuxtMuseaMocks, resetNuxtMuseaMocks } = await loadRuntime();
+  resetNuxtMuseaMocks();
+  const app = createApp({ render: () => h("div") });
+  const route = { path: "/from-router" };
+  const router = { push() {} };
+  Object.defineProperty(app.config.globalProperties, "$route", {
+    enumerable: true,
+    configurable: false,
+    get: () => route,
+  });
+  app.config.globalProperties.$router = router;
+
+  installNuxtMuseaMocks(app, { route: { path: "/preview" } });
+
+  assert.equal(app.config.globalProperties.$route, route);
+  assert.equal(app.config.globalProperties.$router, router);
+});
+
+void test("installNuxtMuseaMocks mocks RouterLink and RouterView when no router is installed", async () => {
+  const { installNuxtMuseaMocks, resetNuxtMuseaMocks, useRoute } = await loadRuntime();
+  resetNuxtMuseaMocks();
+  const app = createApp({ render: () => h("div") });
+  installNuxtMuseaMocks(app);
+
+  const routerLink = app.component("RouterLink") as unknown as {
+    setup: (
+      props: Record<string, unknown>,
+      context: { slots: Record<string, (...args: never[]) => unknown> },
+    ) => () => {
+      type?: unknown;
+      props?: { href?: string; onClick?: (event: MouseEvent) => void };
+    };
+  };
+  const routerView = app.component("RouterView") as unknown as {
+    setup: (
+      props: Record<string, unknown>,
+      context: { slots: Record<string, () => unknown> },
+    ) => () => { type?: unknown; props?: Record<string, unknown> };
+  };
+
+  const custom = routerLink.setup(
+    { to: "/about", custom: true },
+    {
+      slots: { default: ({ href }: { href: string }) => href },
+    },
+  )();
+  assert.equal(custom, "/about");
+
+  const link = routerLink.setup(
+    { to: "/about", external: false, replace: false, custom: false },
+    { slots: { default: () => "About" } },
+  )();
+  assert.equal(link.type, "a");
+  assert.equal(link.props?.href, "/about");
+  let prevented = false;
+  link.props?.onClick?.({
+    preventDefault: () => {
+      prevented = true;
+    },
+  } as MouseEvent);
+  assert.equal(prevented, true);
+  assert.equal(useRoute().path, "/about");
+
+  const view = routerView.setup({ name: "default" }, { slots: {} })();
+  assert.equal(view.type, "div");
+  assert.equal(view.props?.["data-router-view"], "default");
+});
+
+void test("installNuxtMuseaMocks does not replace a RouterLink the app already registered", async () => {
+  const { installNuxtMuseaMocks, resetNuxtMuseaMocks } = await loadRuntime();
+  resetNuxtMuseaMocks();
+  const app = createApp({ render: () => h("div") });
+  const existingLink = { name: "ExistingLink", setup: () => () => h("span", "kept") };
+  const existingView = { name: "ExistingView", setup: () => () => h("section") };
+  app.component("RouterLink", existingLink);
+  app.component("RouterView", existingView);
+
+  installNuxtMuseaMocks(app);
+
+  assert.equal(app.component("RouterLink"), existingLink);
+  assert.equal(app.component("RouterView"), existingView);
 });

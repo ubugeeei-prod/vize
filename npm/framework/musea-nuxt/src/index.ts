@@ -98,4 +98,6 @@ export {
   NuxtClientFallback,
   NuxtImg,
   NuxtPicture,
+  RouterLink,
+  RouterView,
 } from "./mocks/components.js";

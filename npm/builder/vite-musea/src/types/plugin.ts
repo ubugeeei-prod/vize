@@ -1,4 +1,5 @@
 import type { CaptureConfig, CiConfig, ComparisonConfig, VrtOptions } from "./vrt.js";
+import type { A11yOptions } from "./api.js";
 import type { MuseaTokenPreviewConfig } from "../tokens/preview.js";
 
 export type MuseaVueVersion = 0.11 | 1 | 2 | "2.7" | 3 | "legacy";
@@ -44,6 +45,15 @@ export interface MuseaVrtOptions extends VrtOptions {
   capture?: CaptureConfig;
   comparison?: ComparisonConfig;
   ci?: CiConfig;
+
+  /**
+   * axe-core options for `musea-vrt --a11y`.
+   *
+   * Only path: `musea({ vrt: { a11y: { excludeRules, includeRules, level } } })`.
+   * The CLI passes this object to `MuseaA11yRunner`. `--a11y` still decides
+   * whether audits run.
+   */
+  a11y?: A11yOptions;
 }
 
 /**

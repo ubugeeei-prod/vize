@@ -10,61 +10,89 @@ import { navigateTo } from "./navigation.js";
 import { useRoute } from "./composables.js";
 import type { NuxtMuseaNavigationTarget } from "../types.js";
 
+const anchorLinkProps = {
+  to: { type: [String, Object] as PropType<NuxtMuseaNavigationTarget>, default: "/" },
+  href: { type: String, default: undefined },
+  target: { type: String, default: undefined },
+  rel: { type: String, default: undefined },
+  external: { type: Boolean, default: false },
+  replace: { type: Boolean, default: false },
+  prefetch: { type: Boolean, default: true },
+  noPrefetch: { type: Boolean, default: false },
+  activeClass: { type: String, default: "router-link-active" },
+  exactActiveClass: { type: String, default: "router-link-exact-active" },
+  custom: { type: Boolean, default: false },
+};
+
 /**
- * Mock NuxtLink - renders as <RouterLink> or <a>.
+ * Anchor link used by the NuxtLink and RouterLink mocks.
+ * `custom` exposes the same slot props as NuxtLink.
  */
-export const NuxtLink = defineComponent({
-  name: "NuxtLink",
+function createAnchorLink(name: string, dataAttr: string) {
+  return defineComponent({
+    name,
+    props: anchorLinkProps,
+    setup(props, { slots }) {
+      return () => {
+        const target = props.href ?? props.to;
+        const href = typeof target === "string" ? target : routeTargetToHref(target);
+        const navigate = () => navigateTo(target, { replace: props.replace });
+
+        if (props.custom) {
+          return slots.default?.({
+            href,
+            navigate,
+            route: useRoute(),
+            isActive: false,
+            isExactActive: false,
+          });
+        }
+
+        return h(
+          "a",
+          {
+            [dataAttr]: "",
+            href,
+            target: props.target,
+            rel: props.rel ?? (props.target === "_blank" ? "noopener noreferrer" : undefined),
+            onClick: (event: MouseEvent) => {
+              if (props.external || props.target === "_blank" || isExternalHref(href)) return;
+              event.preventDefault();
+              void navigate();
+            },
+          },
+          slots.default?.(),
+        );
+      };
+    },
+  });
+}
+
+/** Mock NuxtLink. Renders an anchor, or the custom slot when `custom` is set. */
+export const NuxtLink = createAnchorLink("NuxtLink", "data-nuxt-link");
+
+/**
+ * Mock RouterLink for previews that have not installed vue-router.
+ * Same anchor rendering as NuxtLink, including the custom slot.
+ */
+export const RouterLink = createAnchorLink("RouterLink", "data-router-link");
+
+/**
+ * Mock RouterView for previews that have not installed vue-router.
+ * Renders a plain element so `<RouterView>` does not fall through as an unknown tag.
+ */
+export const RouterView = defineComponent({
+  name: "RouterView",
   props: {
-    to: { type: [String, Object] as PropType<NuxtMuseaNavigationTarget>, default: "/" },
-    href: { type: String, default: undefined },
-    target: { type: String, default: undefined },
-    rel: { type: String, default: undefined },
-    external: { type: Boolean, default: false },
-    replace: { type: Boolean, default: false },
-    prefetch: { type: Boolean, default: true },
-    noPrefetch: { type: Boolean, default: false },
-    activeClass: { type: String, default: "router-link-active" },
-    exactActiveClass: { type: String, default: "router-link-exact-active" },
-    custom: { type: Boolean, default: false },
+    name: { type: String, default: "default" },
   },
   setup(props, { slots }) {
-    return () => {
-      const target = props.href ?? props.to;
-      const href = typeof target === "string" ? target : routeTargetToHref(target);
-      const navigate = () => navigateTo(target, { replace: props.replace });
-
-      if (props.custom) {
-        return slots.default?.({
-          href,
-          navigate,
-          route: useRoute(),
-          isActive: false,
-          isExactActive: false,
-        });
-      }
-
-      return h(
-        "a",
-        {
-          "data-nuxt-link": "",
-          href,
-          target: props.target,
-          rel: props.rel ?? (props.target === "_blank" ? "noopener noreferrer" : undefined),
-          onClick: (event: MouseEvent) => {
-            if (props.external || props.target === "_blank" || isExternalHref(href)) return;
-            event.preventDefault();
-            void navigate();
-          },
-        },
-        slots.default?.(),
-      );
-    };
+    return () => h("div", { "data-router-view": props.name }, slots.default?.());
   },
 });
 
 /**
- * Mock NuxtPage - renders <RouterView> or slot content.
+ * Mock NuxtPage - renders slot content or a placeholder.
  */
 export const NuxtPage = defineComponent({
   name: "NuxtPage",
