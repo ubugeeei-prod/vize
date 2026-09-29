@@ -77,6 +77,23 @@ void test("auto-import addon emits the complete deterministically ordered global
   ]);
 });
 
+void test("auto-import addon skips registries whose auto-import is disabled", async () => {
+  const nuxt = createNuxtStub();
+  nuxt.options = {
+    imports: { autoImport: false },
+    nitro: { imports: false },
+  };
+  const resolveAddons = setupNuxtLintConfigAddons(nuxt);
+
+  await nuxt.callRegisteredHook("imports:context", importContext([{ from: "vue", name: "ref" }]));
+  await nuxt.callRegisteredHook("nitro:init", {
+    unimport: importContext([{ from: "nitropack/runtime", name: "defineEventHandler" }]),
+  });
+
+  const configs = await resolveAddons();
+  assert.deepEqual(configs[0]?.globals, {});
+});
+
 void test("auto-import addon remains valid before Nuxt publishes either registry", async () => {
   const configs = await setupNuxtLintConfigAddons(createNuxtStub())();
 
@@ -173,6 +190,21 @@ void test("the most recently published unimport contexts drive regeneration", as
   });
 });
 
+/** The recorded artifact is root-relative. The file is written under `.nuxt`. */
+function artifactInNuxtDir(artifact: string): string {
+  const config = JSON.parse(artifact) as {
+    ignorePatterns?: string[];
+    overrides?: Array<{ files?: string[]; excludeFiles?: string[] }>;
+  };
+  const rebase = (glob: string) => (path.posix.isAbsolute(glob) ? glob : `../${glob}`);
+  if (config.ignorePatterns) config.ignorePatterns = config.ignorePatterns.map(rebase);
+  for (const override of config.overrides ?? []) {
+    if (override.files) override.files = override.files.map(rebase);
+    if (override.excludeFiles) override.excludeFiles = override.excludeFiles.map(rebase);
+  }
+  return `${JSON.stringify(config, null, 2)}\n`;
+}
+
 void test("generation writes the recorded initial and regenerated artifacts byte for byte", async (t) => {
   const rootDir = await mkdtemp(path.join(os.tmpdir(), "vize-nuxt-lint-imports-"));
   t.after(() => rm(rootDir, { force: true, recursive: true }));
@@ -224,7 +256,7 @@ void test("generation writes the recorded initial and regenerated artifacts byte
   });
   assert.equal(
     await readFile(generation?.configFile ?? "", "utf8"),
-    recording.importGlobals.artifacts.initial,
+    artifactInNuxtDir(recording.importGlobals.artifacts.initial),
   );
 
   await nuxt.callHook("imports:context", importContext(corpus.importGlobals.nuxt));
@@ -234,7 +266,7 @@ void test("generation writes the recorded initial and regenerated artifacts byte
   await nuxt.callHook("builder:generateApp");
   assert.equal(
     await readFile(generation?.configFile ?? "", "utf8"),
-    recording.importGlobals.artifacts.regenerated,
+    artifactInNuxtDir(recording.importGlobals.artifacts.regenerated),
   );
 });
 
