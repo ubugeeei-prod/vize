@@ -24,6 +24,7 @@ use lightningcss::values::length::{LengthPercentage, LengthValue};
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
+use super::declaration_positions::DeclarationPositions;
 use super::{CssLintResult, CssRule, CssRuleMeta};
 
 static META: CssRuleMeta = CssRuleMeta {
@@ -87,37 +88,38 @@ impl CssRule for NoHardcodedValues {
 
     fn check<'i>(
         &self,
-        _source: &'i str,
+        source: &'i str,
         stylesheet: &StyleSheet<'i>,
         offset: usize,
         result: &mut CssLintResult,
     ) {
         for rule in &stylesheet.rules.0 {
-            self.check_rule(rule, offset, result);
+            self.check_rule(rule, source, offset, result);
         }
     }
 }
 
 impl NoHardcodedValues {
     #[inline]
-    fn check_rule(&self, rule: &LCssRule, offset: usize, result: &mut CssLintResult) {
+    fn check_rule(&self, rule: &LCssRule, source: &str, offset: usize, result: &mut CssLintResult) {
         match rule {
             LCssRule::Style(style_rule) => {
-                self.check_declarations(&style_rule.declarations, offset, result);
+                let mut positions = DeclarationPositions::new(source, style_rule);
+                self.check_declarations(&style_rule.declarations, &mut positions, offset, result);
             }
             LCssRule::Media(media) => {
                 for rule in &media.rules.0 {
-                    self.check_rule(rule, offset, result);
+                    self.check_rule(rule, source, offset, result);
                 }
             }
             LCssRule::Supports(supports) => {
                 for rule in &supports.rules.0 {
-                    self.check_rule(rule, offset, result);
+                    self.check_rule(rule, source, offset, result);
                 }
             }
             LCssRule::LayerBlock(layer) => {
                 for rule in &layer.rules.0 {
-                    self.check_rule(rule, offset, result);
+                    self.check_rule(rule, source, offset, result);
                 }
             }
             _ => {}
@@ -128,36 +130,51 @@ impl NoHardcodedValues {
     fn check_declarations(
         &self,
         declarations: &DeclarationBlock,
+        positions: &mut DeclarationPositions,
         offset: usize,
         result: &mut CssLintResult,
     ) {
         for decl in declarations.declarations.iter() {
-            self.check_property(decl, offset, result);
+            self.check_property(decl, positions, offset, result);
         }
         for decl in declarations.important_declarations.iter() {
-            self.check_property(decl, offset, result);
+            self.check_property(decl, positions, offset, result);
         }
     }
 
     #[inline]
-    fn check_property(&self, property: &Property, offset: usize, result: &mut CssLintResult) {
+    fn check_property(
+        &self,
+        property: &Property,
+        positions: &mut DeclarationPositions,
+        offset: usize,
+        result: &mut CssLintResult,
+    ) {
+        let Some(span) = positions.take(property.property_id().name(), offset) else {
+            return;
+        };
         // Check colors
         if self.config.colors {
-            self.check_color_property(property, offset, result);
+            self.check_color_property(property, span, result);
         }
 
         // Check font sizes
         if self.config.font_sizes {
-            self.check_font_size_property(property, offset, result);
+            self.check_font_size_property(property, span, result);
         }
 
         // Check z-index
         if self.config.z_index {
-            self.check_z_index_property(property, offset, result);
+            self.check_z_index_property(property, span, result);
         }
     }
 
-    fn check_color_property(&self, property: &Property, offset: usize, result: &mut CssLintResult) {
+    fn check_color_property(
+        &self,
+        property: &Property,
+        span: (u32, u32),
+        result: &mut CssLintResult,
+    ) {
         let is_hardcoded = match property {
             Property::Color(color) => self.is_hardcoded_color(color),
             Property::BackgroundColor(color) => self.is_hardcoded_color(color),
@@ -179,8 +196,8 @@ impl NoHardcodedValues {
                 LintDiagnostic::warn(
                     META.name,
                     "Consider using a CSS variable for this color value",
-                    offset as u32,
-                    (offset + 10) as u32,
+                    span.0,
+                    span.1,
                 )
                 .with_help("Use var(--color-name) for consistent theming"),
             );
@@ -190,7 +207,7 @@ impl NoHardcodedValues {
     fn check_font_size_property(
         &self,
         property: &Property,
-        offset: usize,
+        span: (u32, u32),
         result: &mut CssLintResult,
     ) {
         if let Property::FontSize(size) = property
@@ -200,8 +217,8 @@ impl NoHardcodedValues {
                 LintDiagnostic::warn(
                     META.name,
                     "Consider using a CSS variable for font-size",
-                    offset as u32,
-                    (offset + 10) as u32,
+                    span.0,
+                    span.1,
                 )
                 .with_help("Use var(--font-size-name) or relative units (rem, em)"),
             );
@@ -211,7 +228,7 @@ impl NoHardcodedValues {
     fn check_z_index_property(
         &self,
         property: &Property,
-        offset: usize,
+        span: (u32, u32),
         result: &mut CssLintResult,
     ) {
         if let Property::ZIndex(z_index) = property {
@@ -226,8 +243,8 @@ impl NoHardcodedValues {
                     LintDiagnostic::warn(
                         META.name,
                         "Consider using a CSS variable for z-index",
-                        offset as u32,
-                        (offset + 8) as u32,
+                        span.0,
+                        span.1,
                     )
                     .with_help("Use var(--z-index-name) for consistent layering"),
                 );
@@ -239,7 +256,7 @@ impl NoHardcodedValues {
     fn is_hardcoded_color(&self, color: &CssColor) -> bool {
         // Check for non-variable colors (CurrentColor, transparent, and var() are allowed).
         match color {
-            CssColor::CurrentColor => false,
+            CssColor::CurrentColor | CssColor::System(_) => false,
             CssColor::RGBA(rgba) if rgba.alpha == 0 => false,
             _ => true,
         }
@@ -313,6 +330,26 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint(".button { background-color: transparent; }", 0);
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_system_colors_follow_forced_colors() {
+        let result = create_linter().lint(
+            "@media (forced-colors: active) { .button { color: CanvasText; background-color: Canvas; } }",
+            0,
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_z_index_points_to_its_declaration() {
+        let source = ".note { color: var(--note); }\n.raised {\n  z-index: 1;\n}";
+        let result = create_linter().lint(source, 100);
+        assert_eq!(result.warning_count, 1);
+        assert_eq!(
+            result.diagnostics[0].start as usize,
+            100 + source.find("z-index").unwrap()
+        );
     }
 
     #[test]

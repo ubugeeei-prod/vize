@@ -6,10 +6,10 @@ use lightningcss::declaration::DeclarationBlock;
 use lightningcss::properties::PropertyId;
 use lightningcss::rules::CssRule as LCssRule;
 use lightningcss::stylesheet::StyleSheet;
-use vize_l0::FxHashSet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
+use super::declaration_positions::DeclarationPositions;
 use super::{CssLintResult, CssRule, CssRuleMeta};
 
 static META: CssRuleMeta = CssRuleMeta {
@@ -28,43 +28,37 @@ impl CssRule for PreferLogicalProperties {
 
     fn check<'i>(
         &self,
-        _source: &'i str,
+        source: &'i str,
         stylesheet: &StyleSheet<'i>,
         offset: usize,
         result: &mut CssLintResult,
     ) {
-        let mut reported = FxHashSet::default();
         for rule in &stylesheet.rules.0 {
-            self.check_rule(rule, offset, result, &mut reported);
+            self.check_rule(rule, source, offset, result);
         }
     }
 }
 
 impl PreferLogicalProperties {
-    fn check_rule(
-        &self,
-        rule: &LCssRule,
-        offset: usize,
-        result: &mut CssLintResult,
-        reported: &mut FxHashSet<u32>,
-    ) {
+    fn check_rule(&self, rule: &LCssRule, source: &str, offset: usize, result: &mut CssLintResult) {
         match rule {
             LCssRule::Style(style_rule) => {
-                self.check_declarations(&style_rule.declarations, offset, result, reported);
+                let mut positions = DeclarationPositions::new(source, style_rule);
+                self.check_declarations(&style_rule.declarations, &mut positions, offset, result);
             }
             LCssRule::Media(media) => {
                 for rule in &media.rules.0 {
-                    self.check_rule(rule, offset, result, reported);
+                    self.check_rule(rule, source, offset, result);
                 }
             }
             LCssRule::Supports(supports) => {
                 for rule in &supports.rules.0 {
-                    self.check_rule(rule, offset, result, reported);
+                    self.check_rule(rule, source, offset, result);
                 }
             }
             LCssRule::LayerBlock(layer) => {
                 for rule in &layer.rules.0 {
-                    self.check_rule(rule, offset, result, reported);
+                    self.check_rule(rule, source, offset, result);
                 }
             }
             _ => {}
@@ -74,16 +68,16 @@ impl PreferLogicalProperties {
     fn check_declarations(
         &self,
         declarations: &DeclarationBlock,
+        positions: &mut DeclarationPositions,
         offset: usize,
         result: &mut CssLintResult,
-        reported: &mut FxHashSet<u32>,
     ) {
         // Check all declarations (both regular and important)
         for decl in declarations.declarations.iter() {
-            self.check_property(decl.property_id(), offset, result, reported);
+            self.check_property(decl.property_id(), positions, offset, result);
         }
         for decl in declarations.important_declarations.iter() {
-            self.check_property(decl.property_id(), offset, result, reported);
+            self.check_property(decl.property_id(), positions, offset, result);
         }
     }
 
@@ -91,9 +85,9 @@ impl PreferLogicalProperties {
     fn check_property(
         &self,
         prop_id: PropertyId,
+        positions: &mut DeclarationPositions,
         offset: usize,
         result: &mut CssLintResult,
-        reported: &mut FxHashSet<u32>,
     ) {
         let (physical, logical) = match prop_id {
             PropertyId::MarginLeft => ("margin-left", "margin-inline-start"),
@@ -107,12 +101,9 @@ impl PreferLogicalProperties {
             _ => return,
         };
 
-        // Report at offset since PropertyId doesn't provide precise location
-        let start = offset as u32;
-        let end = (offset + physical.len()) as u32;
-        if !reported.insert(start) {
+        let Some((start, end)) = positions.take(physical, offset) else {
             return;
-        }
+        };
         let _ = logical; // suppress unused warnings
         result.add_diagnostic(
             LintDiagnostic::warn(
@@ -152,13 +143,13 @@ mod tests {
     }
 
     #[test]
-    fn test_deduplicates_same_fallback_range() {
+    fn test_reports_each_declaration_at_its_own_range() {
         let linter = create_linter();
         let result = linter.lint(
             ".button { margin-left: 10px; margin-left: 20px !important; }",
             0,
         );
-        assert_eq!(result.warning_count, 1);
-        assert_eq!(result.diagnostics.len(), 1);
+        assert_eq!(result.warning_count, 2);
+        assert!(result.diagnostics[0].start < result.diagnostics[1].start);
     }
 }

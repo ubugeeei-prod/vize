@@ -13,10 +13,12 @@ use lightningcss::declaration::DeclarationBlock;
 use lightningcss::properties::Property;
 use lightningcss::properties::display::{Display, DisplayKeyword};
 use lightningcss::rules::CssRule as LCssRule;
+use lightningcss::selector::Component;
 use lightningcss::stylesheet::StyleSheet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
+use super::declaration_positions::DeclarationPositions;
 use super::{CssLintResult, CssRule, CssRuleMeta};
 
 static META: CssRuleMeta = CssRuleMeta {
@@ -35,37 +37,35 @@ impl CssRule for NoDisplayNone {
 
     fn check<'i>(
         &self,
-        _source: &'i str,
+        source: &'i str,
         stylesheet: &StyleSheet<'i>,
         offset: usize,
         result: &mut CssLintResult,
     ) {
         for rule in &stylesheet.rules.0 {
-            self.check_rule(rule, offset, result);
+            self.check_rule(rule, source, offset, result);
         }
     }
 }
 
 impl NoDisplayNone {
     #[inline]
-    fn check_rule(&self, rule: &LCssRule, offset: usize, result: &mut CssLintResult) {
+    fn check_rule(&self, rule: &LCssRule, source: &str, offset: usize, result: &mut CssLintResult) {
         match rule {
             LCssRule::Style(style_rule) => {
-                self.check_declarations(&style_rule.declarations, offset, result);
-            }
-            LCssRule::Media(media) => {
-                for rule in &media.rules.0 {
-                    self.check_rule(rule, offset, result);
+                if style_rule.selectors.0.iter().any(|selector| {
+                    selector
+                        .iter()
+                        .any(|component| matches!(component, Component::PseudoElement(_)))
+                }) {
+                    return;
                 }
-            }
-            LCssRule::Supports(supports) => {
-                for rule in &supports.rules.0 {
-                    self.check_rule(rule, offset, result);
-                }
+                let mut positions = DeclarationPositions::new(source, style_rule);
+                self.check_declarations(&style_rule.declarations, &mut positions, offset, result);
             }
             LCssRule::LayerBlock(layer) => {
                 for rule in &layer.rules.0 {
-                    self.check_rule(rule, offset, result);
+                    self.check_rule(rule, source, offset, result);
                 }
             }
             _ => {}
@@ -76,30 +76,40 @@ impl NoDisplayNone {
     fn check_declarations(
         &self,
         declarations: &DeclarationBlock,
+        positions: &mut DeclarationPositions,
         offset: usize,
         result: &mut CssLintResult,
     ) {
         // Check all declarations
         for decl in declarations.declarations.iter() {
-            self.check_property(decl, offset, result);
+            self.check_property(decl, positions, offset, result);
         }
         for decl in declarations.important_declarations.iter() {
-            self.check_property(decl, offset, result);
+            self.check_property(decl, positions, offset, result);
         }
     }
 
     #[inline]
-    fn check_property(&self, property: &Property, offset: usize, result: &mut CssLintResult) {
+    fn check_property(
+        &self,
+        property: &Property,
+        positions: &mut DeclarationPositions,
+        offset: usize,
+        result: &mut CssLintResult,
+    ) {
         if let Property::Display(display) = property {
             let is_none = matches!(display, Display::Keyword(DisplayKeyword::None));
 
             if is_none {
+                let Some((start, end)) = positions.take("display", offset) else {
+                    return;
+                };
                 result.add_diagnostic(
                     LintDiagnostic::warn(
                         META.name,
                         "Consider using v-show directive instead of display: none",
-                        offset as u32,
-                        (offset + 13) as u32, // "display: none".len()
+                        start,
+                        end,
                     )
                     .with_help(
                         "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
@@ -140,5 +150,23 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint(".hidden { visibility: hidden; }", 0);
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_skips_pseudo_elements_and_conditional_rules() {
+        let source = ".marker::after { display: none; }\n@media print { .button { display: none; } }\n@supports (display: grid) { .button { display: none; } }";
+        let result = create_linter().lint(source, 0);
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_reports_plain_element_at_declaration() {
+        let source = ".marker { display: block; }\n.button { display: none; }";
+        let result = create_linter().lint(source, 50);
+        assert_eq!(result.warning_count, 1);
+        assert_eq!(
+            result.diagnostics[0].start as usize,
+            50 + source.rfind("display").unwrap()
+        );
     }
 }
