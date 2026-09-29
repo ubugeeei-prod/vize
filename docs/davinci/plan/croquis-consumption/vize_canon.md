@@ -72,7 +72,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `PropDefinition`               |     6 |    22 |
 | `PropsDestructuredBindings`    |     1 |     1 |
 | `ReactivityLossKind`           |     1 |    11 |
-| `SfcDescriptor`                |    10 |    25 |
+| `SfcDescriptor`                |    10 |    26 |
 | `SfcError`                     |     2 |     2 |
 | `SfcParseOptions`              |    13 |    19 |
 | `SfcTemplateBlock`             |     2 |     2 |

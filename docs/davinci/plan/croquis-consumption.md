@@ -159,6 +159,7 @@ Cross-crate aggregates — per-product totals, the products with no external con
 | `Croquis.re_exports`                   | field | `croquis`            |
 | `Croquis.reactivity`                   | field | `croquis`            |
 | `Croquis.scopes`                       | field | `croquis`            |
+| `Croquis.script_browser_globals`       | field | `croquis`            |
 | `Croquis.setup_context`                | field | `croquis`            |
 | `Croquis.symbols`                      | field | `croquis`            |
 | `Croquis.template_expressions`         | field | `croquis`            |

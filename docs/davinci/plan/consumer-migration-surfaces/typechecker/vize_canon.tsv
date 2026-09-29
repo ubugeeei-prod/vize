@@ -100,6 +100,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/no_unused/define_props_template_object.rs	74	l0	L0	stage	vize_carton	compat	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/options_api_required_props.rs	173	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/package_exports_types.rs	7	l0	L0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/art_variant.rs	1	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_options_index_signature.rs	13	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_vif_guard_ts7006.rs	56	l0	L0	stage	vize_l0	preferred	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/css_side_effect_import.rs	20	l0	L0	stage	vize_l0	preferred	2
@@ -131,6 +132,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_key_expressions.rs	23	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_key_expressions/dialect_baselines.rs	12	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/ts_extension_substitution.rs	4	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/unknown_checks.rs	1	l0	L0	stage	vize_carton	compat	3
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/unmapped_template_fallback.rs	7	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/v_for_source_callbacks.rs	4	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/vue27_render_h.rs	8	l0	L0	stage	vize_l0	preferred	1
@@ -138,7 +140,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/wide_props_type_complexity.rs	17	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/tsgo.rs	38	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project.rs	21	l0	L0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project.rs	274	l0	L0	stage	vize_carton	compat	2
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project.rs	282	l0	L0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/art_usage.rs	5	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/build.rs	7	l0	L0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/build/context.rs	4	l0	L0	stage	vize_carton	compat	2
@@ -161,6 +163,11 @@ typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/edito
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/external_mirror.rs	14	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/identity.rs	28	l0	L0	stage	vize_carton	compat	11
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/identity.rs	248	l0	L0	stage	vize_carton	compat	3
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/included_sources.rs	6	l0	L0	stage	vize_carton	compat	4
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/included_sources.rs	92	l0	L0	stage	vize_carton	compat	7
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/incomplete_expression_tests.rs	7	l0	L0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/incomplete_expression_tests.rs	7	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/incomplete_expression_tests.rs	7	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/incremental_graph.rs	10	l0	L0	stage	vize_carton	compat	4
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/javascript_sfc.rs	21	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/javascript_sfc.rs	218	l0	L0	stage	vize_carton	compat	1
@@ -252,7 +259,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tes
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/workspace_package_routes.rs	60	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/topology.rs	68	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/topology.rs	107	l0	L0	stage	vize_carton	compat	3
-typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen.rs	17	l0	L0	stage	vize_carton	compat	4
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen.rs	17	l0	L0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/base_url.rs	16	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/compiler_options_snapshot.rs	101	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/compiler_options.rs	6	l0	L0	stage	vize_carton	compat	2
@@ -265,8 +272,9 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tsc
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/remap.rs	6	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_alias.rs	15	l0	L0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options.rs	11	l0	L0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options.rs	250	l0	L0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tsconfig_gen/vue_compiler_options.rs	259	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/tsconfig_paths.rs	8	l0	L0	stage	vize_carton	compat	2
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/unknown_checks_tests.rs	14	l0	L0	stage	vize_carton	compat	4
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_codegen.rs	7	l0	L0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_codegen/style_modules.rs	15	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_codegen/types.rs	6	l0	L0	stage	vize_carton	compat	1
@@ -478,13 +486,16 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/expressions/di
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/expressions/directive_values_tests.rs	2	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/expressions/directive_values_tests.rs	2	old_ast	old AST/parser	old	vize_armature	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/expressions/directive_values_tests.rs	2	croquis	Croquis analysis	old	vize_croquis	legacy	2
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/directive_values.rs	9	l0	L0	stage	vize_carton	compat	3
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/directive_values.rs	9	l0	L0	stage	vize_carton	compat	4
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/directive_values.rs	9	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/directive_values.rs	9	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/dynamic_arguments.rs	4	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/dynamic_arguments.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/generic_props_call.rs	14	l0	L0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/generic_props_call.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/incomplete.rs	7	l0	L0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/incomplete.rs	7	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/incomplete.rs	7	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/model_update.rs	10	l0	L0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/model_update.rs	10	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/expressions/native_props_tests.rs	2	l0	L0	stage	vize_carton	compat	8
@@ -497,13 +508,13 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/nati
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/expressions/prop_name_casing_tests.rs	10	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/expressions/prop_name_casing_tests.rs	10	old_ast	old AST/parser	old	vize_armature	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/expressions/prop_name_casing_tests.rs	10	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	12	l0	L0	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	12	old_ast	old AST/parser	old	vize_relief	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	2
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	12	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	12	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	12	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	200	l0	L0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	13	l0	L0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	13	old_ast	old AST/parser	old	vize_relief	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	13	croquis	Croquis analysis	old	vize_croquis	legacy	2
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	13	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	13	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	13	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	204	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/props_literal.rs	19	l0	L0	stage	vize_carton	compat	5
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/props_literal.rs	19	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/props_literal/prop_entry.rs	12	l0	L0	stage	vize_carton	compat	1
@@ -880,9 +891,9 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/patterns/s
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/patterns/source.rs	2	raw_oxc	raw OXC	raw	oxc_syntax	raw	2
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/ref_instances.rs	14	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/ref_instances.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	3
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/scope/ref_instances.rs	206	l0	L0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/scope/ref_instances.rs	206	old_ast	old AST/parser	old	vize_armature	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/scope/ref_instances.rs	206	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/scope/ref_instances.rs	208	l0	L0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/scope/ref_instances.rs	208	old_ast	old AST/parser	old	vize_armature	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/scope/ref_instances.rs	208	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_outlet_props.rs	14	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_outlet_props.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_outlet_props.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	1

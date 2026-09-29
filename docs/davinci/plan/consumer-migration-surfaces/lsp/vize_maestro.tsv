@@ -119,7 +119,9 @@ lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/collect_virtual.rs	
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/collect.rs	15	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/log_preview.rs	11	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/message.rs	97	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	151	l0	L0	stage	vize_l0	preferred	4
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	151	l0	L0	stage	vize_l0	preferred	9
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	151	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	151	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/tests.rs	1	l0	L0	stage	vize_l0	preferred	3
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art_bindings.rs	5	l0	L0	stage	vize_l0	preferred	4
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art_bindings.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	9
