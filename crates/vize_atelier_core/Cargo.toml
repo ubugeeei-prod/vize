@@ -21,6 +21,8 @@ legacy = ["vize_relief/_legacy", "vize_armature/legacy"]
 # on divergence. `cfg(test)` arms it for this crate's own unit tests; this
 # feature arms it for integration/corpus binaries. Off in production builds.
 legacy-differential = []
+# Deprecated published feature spelling; keep as a compatibility alias.
+davinci-differential = ["legacy-differential"]
 
 [dependencies]
 vize_l0 = { workspace = true }

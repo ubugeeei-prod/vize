@@ -39,6 +39,8 @@ oxc_allocator.workspace = true
 # against the legacy re-parse paths and panics on divergence. Also active
 # under cfg(test); zero-cost when off. Deleted with the lane at P1-8.
 legacy-differential = []
+# Deprecated published feature spelling; keep as a compatibility alias.
+davinci-differential = ["legacy-differential"]
 
 [dev-dependencies]
 davinci_test_support.workspace = true

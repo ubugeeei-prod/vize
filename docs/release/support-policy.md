@@ -17,6 +17,8 @@ In-scope surfaces:
 - **Config**: `vize.config.*` keys and their value shapes.
 - **Public Rust crates**: items reachable through the `pub` API of a published crate in the
   `alpha-supported` or `compatibility-preview` tier.
+- **Cargo features**: feature names in published `alpha-supported` or
+  `compatibility-preview` Rust crate manifests.
 - **Public npm packages**: items in each package's exported entrypoints.
 - **Patina lint rules**: rule names, default severities, and message ids.
 - **Type-checker diagnostics**: error codes listed in the docs.
@@ -31,6 +33,7 @@ While Vize is in `0.x` alpha:
 | Remove or rename a config key                                  | Breaking       |
 | Tighten a config value's accepted shape                        | Breaking       |
 | Remove a `pub` item from an alpha/preview published Rust crate | Breaking       |
+| Remove or rename a published alpha/preview Cargo feature       | Breaking       |
 | Remove or rename an export from a published npm package        | Breaking       |
 | Promote a Patina rule from `warn` to `error` by default        | Breaking       |
 | Demote a Patina rule from `error` to `warn` by default         | Non-breaking   |
@@ -54,6 +57,7 @@ Vize keeps deprecated surfaces working for a minimum window before removal:
 | Surface                       | Minimum deprecation window before removal |
 | ----------------------------- | ----------------------------------------- |
 | Alpha/preview Rust crate item | One minor release with a `#[deprecated]`  |
+| Published Cargo feature       | One minor release with a manifest alias    |
 | npm package entrypoint        | One minor release with a console warning  |
 | CLI flag or subcommand        | One minor release with a stderr warning   |
 | Config key                    | One minor release with a stderr warning   |
@@ -62,6 +66,7 @@ Vize keeps deprecated surfaces working for a minimum window before removal:
 
 A "minor release" means one published version with `minor` or higher SemVer bump; weekly patches
 do not count. When two deprecations are linked, both removal points must satisfy this window.
+Announce Cargo feature aliases in the release notes when they are introduced.
 
 Every removal must appear in the release notes for the version that performs it, with a one-line
 "removed since X.Y" entry that includes a link to the migration guidance.

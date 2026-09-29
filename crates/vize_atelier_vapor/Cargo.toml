@@ -38,6 +38,8 @@ davinci-benchmark-profile = ["davinci-benchmark", "vize_l1_to_l2/davinci-benchma
 # Arms the Davinci P1-7 differential lane in this crate's retained resolve
 # path and in vize_atelier_core's migrated sites. Off in production builds.
 legacy-differential = ["vize_atelier_core/legacy-differential"]
+# Deprecated published feature spelling; keep as a compatibility alias.
+davinci-differential = ["legacy-differential"]
 
 [dev-dependencies]
 vize_davinci = { workspace = true }

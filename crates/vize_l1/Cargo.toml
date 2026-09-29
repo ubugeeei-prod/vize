@@ -20,6 +20,8 @@ metadata.vize.stability = "experimental"
 # the P1-6/P1-7 differential-lane shape: committed battery with pinned
 # counts, plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
 legacy-differential = []
+# Deprecated published feature spelling; keep as a compatibility alias.
+davinci-differential = ["legacy-differential"]
 native-markup-lex = []
 # Retain the moved tokenizer's Vue 1 raw-interpolation test lane.
 legacy = []

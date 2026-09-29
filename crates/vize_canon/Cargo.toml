@@ -28,6 +28,8 @@ native = [
 legacy = ["vize_armature/legacy", "vize_atelier_jsx/legacy"]
 # TS-25 lane: the L4 projection compared with the current virtual-TS generator.
 legacy-differential = []
+# Deprecated published feature spelling; keep as a compatibility alias.
+davinci-differential = ["legacy-differential"]
 
 [dependencies]
 vize_l0.workspace = true

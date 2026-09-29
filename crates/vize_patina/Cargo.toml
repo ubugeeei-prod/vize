@@ -13,6 +13,8 @@ metadata.vize.stability = "compatibility-preview"
 # facade's full hook trace over Relief vs over L2, exact, on the committed
 # battery plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
 legacy-differential = []
+# Deprecated published feature spelling; keep as a compatibility alias.
+davinci-differential = ["legacy-differential"]
 
 [dependencies]
 # Internal crates
