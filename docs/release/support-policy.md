@@ -57,7 +57,7 @@ Vize keeps deprecated surfaces working for a minimum window before removal:
 | Surface                       | Minimum deprecation window before removal |
 | ----------------------------- | ----------------------------------------- |
 | Alpha/preview Rust crate item | One minor release with a `#[deprecated]`  |
-| Published Cargo feature       | One minor release with a manifest alias    |
+| Published Cargo feature       | One minor release with a manifest alias   |
 | npm package entrypoint        | One minor release with a console warning  |
 | CLI flag or subcommand        | One minor release with a stderr warning   |
 | Config key                    | One minor release with a stderr warning   |

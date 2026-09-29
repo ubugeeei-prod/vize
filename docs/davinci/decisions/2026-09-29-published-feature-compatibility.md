@@ -7,20 +7,20 @@ The level rename changed the differential test feature to
 been published in Cargo manifests. Keep it as a deprecated alias in each
 affected crate, with exactly the new feature's dependency and `cfg` behavior:
 
-| Published crate | Deprecated feature | Forwarded feature |
-| --- | --- | --- |
-| `vize_atelier_core` | `davinci-differential` | `legacy-differential` |
-| `vize_atelier_dom` | `davinci-differential` | `legacy-differential` |
-| `vize_atelier_jsx` | `davinci-differential` | `legacy-differential` |
-| `vize_atelier_ssr` | `davinci-differential` | `legacy-differential` |
-| `vize_atelier_vapor` | `davinci-differential` | `legacy-differential` |
-| `vize_canon` | `davinci-differential` | `legacy-differential` |
-| `vize_croquis` | `davinci-differential` | `legacy-differential` |
-| `vize_atelier_sfc` | `davinci-differential` | `legacy-differential` |
-| `vize_atelier_sfc` | `davinci-dom-differential` | `legacy-dom-differential` |
-| `vize_l1` | `davinci-differential` | `legacy-differential` |
-| `vize_l1_to_l2` | `davinci-differential` | `legacy-differential` |
-| `vize_patina` | `davinci-differential` | `legacy-differential` |
+| Published crate      | Deprecated feature         | Forwarded feature         |
+| -------------------- | -------------------------- | ------------------------- |
+| `vize_atelier_core`  | `davinci-differential`     | `legacy-differential`     |
+| `vize_atelier_dom`   | `davinci-differential`     | `legacy-differential`     |
+| `vize_atelier_jsx`   | `davinci-differential`     | `legacy-differential`     |
+| `vize_atelier_ssr`   | `davinci-differential`     | `legacy-differential`     |
+| `vize_atelier_vapor` | `davinci-differential`     | `legacy-differential`     |
+| `vize_canon`         | `davinci-differential`     | `legacy-differential`     |
+| `vize_croquis`       | `davinci-differential`     | `legacy-differential`     |
+| `vize_atelier_sfc`   | `davinci-differential`     | `legacy-differential`     |
+| `vize_atelier_sfc`   | `davinci-dom-differential` | `legacy-dom-differential` |
+| `vize_l1`            | `davinci-differential`     | `legacy-differential`     |
+| `vize_l1_to_l2`      | `davinci-differential`     | `legacy-differential`     |
+| `vize_patina`        | `davinci-differential`     | `legacy-differential`     |
 
 Only the manifest alias retains the old spelling. Rust `cfg` sites and corpus
 target requirements use the new feature, so enabling either spelling arms the
