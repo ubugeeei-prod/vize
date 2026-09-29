@@ -15,16 +15,38 @@ if printf '%s\n' "$SEMVER_CHANGE_MARKER" | grep -Eq '^[[:alnum:]_-]+(\([^)]+\))?
   SEMVER_ARGS+=(--release-type major)
 fi
 semver_baseline_dir="$(mktemp -d "$RUNNER_TEMP/semver-baseline.XXXXXX")"
-trap 'rm -rf "$semver_baseline_dir"' EXIT
+semver_output="$(mktemp "$RUNNER_TEMP/semver-output.XXXXXX")"
+trap 'rm -rf "$semver_baseline_dir"; rm -f "$semver_output"' EXIT
 if [ -n "$BASELINE_REV" ]; then
   semver_baseline_root="$(rust-script tools/commands/ci/github/semver-baseline.rs "$1" "$semver_baseline_dir" "$BASELINE_REV")"
 else
   semver_baseline_root="$(rust-script tools/commands/ci/github/semver-baseline.rs "$1" "$semver_baseline_dir")"
 fi
 if [ -n "$semver_baseline_root" ]; then
-  cargo semver-checks check-release --package "$1" --baseline-root "$semver_baseline_root" "${SEMVER_ARGS[@]}"
+  SEMVER_ARGS+=(--baseline-root "$semver_baseline_root")
 elif [ -n "$BASELINE_REV" ]; then
-  cargo semver-checks check-release --package "$1" --baseline-rev "$BASELINE_REV" "${SEMVER_ARGS[@]}"
-else
-  cargo semver-checks check-release --package "$1" "${SEMVER_ARGS[@]}"
+  SEMVER_ARGS+=(--baseline-rev "$BASELINE_REV")
+fi
+
+semver_status=0
+cargo semver-checks check-release --package "$1" --color never "${SEMVER_ARGS[@]}" > "$semver_output" 2>&1 || semver_status=$?
+cat "$semver_output"
+if [ "$semver_status" -ne 0 ]; then
+  if [ "$semver_status" -ne 1 ]; then
+    exit "$semver_status"
+  fi
+  if [ "$1" != vize_armature ]; then
+    exit "$semver_status"
+  fi
+  python3 tools/commands/ci/github/allow-armature-tokenizer-reexports.py "$semver_output"
+fi
+
+if [ "$1" = vize_armature ]; then
+  # The same source must typecheck as a separate crate against the published
+  # 0.429.1 API and this candidate. This covers the re-exports rustdoc cannot
+  # resolve for cargo-semver-checks (upstream issue #355).
+  cargo check --locked --manifest-path tests/external-consumers/armature-tokenizer/baseline/Cargo.toml
+  # This path dependency changes version with the release branch, so resolve a
+  # fresh fixture lock rather than committing one pinned to the source version.
+  cargo check --manifest-path tests/external-consumers/armature-tokenizer/Cargo.toml
 fi
