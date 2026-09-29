@@ -17,6 +17,7 @@ import { getDetectedNuxtMajor } from "../builder.ts";
 import { setupNuxtLintConfigAddons, type NuxtLintConfigAddonNuxt } from "./addons.ts";
 import { renderNuxtOxlintConfig } from "./emitter.ts";
 import { toNuxtLintProjectState, type NuxtLintSourceOptions } from "./nuxt-state.ts";
+import { readProjectLintRules, type ProjectLintRules } from "./project-rules.ts";
 
 const GENERATED_CONFIG_NAME = "oxlint.config.json";
 
@@ -40,6 +41,8 @@ export interface NuxtLintGenerationDependencies {
   resolveAddons?: () => Awaitable<readonly NuxtLintConfigItem[]>;
   hasTypeScript?: (rootDir: string) => boolean;
   resolvePluginSpecifier?: (configDir: string) => string;
+  /** `vize.config.json` rules. Tests inject this so generation never loads the native preset binding. */
+  resolveProjectLintRules?: (rootDir: string) => Awaitable<ProjectLintRules | undefined>;
 }
 
 export interface NuxtLintConfigGeneration {
@@ -201,6 +204,7 @@ export async function setupNuxtLintConfigGeneration(
     ("callHook" in nuxt
       ? setupNuxtLintConfigAddons(nuxt as NuxtLintGenerationNuxt & NuxtLintConfigAddonNuxt)
       : undefined);
+  const resolveProjectRules = dependencies.resolveProjectLintRules ?? readProjectLintRules;
 
   let currentPlan: readonly NuxtLintConfigItem[] = [];
 
@@ -211,7 +215,12 @@ export async function setupNuxtLintConfigGeneration(
     });
     const plan = buildNuxtLintPlan(features, collectNuxtLintDirs(project));
     const addons = (await resolveAddons?.()) ?? [];
-    const nextPlan = [...plan, ...addons];
+    const projectRules = await resolveProjectRules(planRoot);
+    const projectItems =
+      projectRules && Object.keys(projectRules).length > 0
+        ? [{ name: "project/preset", rules: projectRules }]
+        : [];
+    const nextPlan = [...projectItems, ...plan, ...addons];
     const artifact = renderNuxtOxlintConfig(
       nextPlan,
       resolvePluginSpecifier(path.dirname(configFile)),
