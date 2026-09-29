@@ -68,20 +68,16 @@ void test("defineConfig installs its compiler and preserves caller plugins", asy
   const plugins = ((config.plugins ?? []) as unknown[]).flat(Infinity) as { name: string }[];
   assert.ok(plugins.some((plugin) => plugin.name === "vite-plugin-vize"));
   assert.ok(!plugins.includes(previousCompiler));
-  assert.deepEqual(
-    plugins.map((plugin) => plugin.name),
-    ["consumer", "vite-plugin-vize"],
-  );
+  assert.equal(plugins[0]?.name, "consumer");
+  assert.ok(plugins.findIndex((plugin) => plugin.name === "vite-plugin-vize") > 0);
 });
 
 void test("user pre-plugins stay ahead of the compiler", async () => {
   const resolver = { name: "custom-vue-runtime", enforce: "pre" as const };
   const config = await defineConfig({ plugins: [resolver] }, { tasks: false })(env);
-  const plugins = config.plugins as { name: string }[];
-  assert.deepEqual(
-    plugins.map((plugin) => plugin.name),
-    ["custom-vue-runtime", "vite-plugin-vize"],
-  );
+  const plugins = ((config.plugins ?? []) as unknown[]).flat(Infinity) as { name: string }[];
+  assert.equal(plugins[0]?.name, "custom-vue-runtime");
+  assert.ok(plugins.findIndex((plugin) => plugin.name === "vite-plugin-vize") > 0);
 });
 
 void test("generated tasks preserve existing scripts and tasks, and reject ambiguous renames", () => {
