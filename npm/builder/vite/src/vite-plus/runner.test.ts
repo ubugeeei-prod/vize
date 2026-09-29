@@ -80,7 +80,14 @@ void test("formatting owns only selected Vue files and never expands an empty li
     assert.deepEqual(calls[0].slice(4), ["--write", "App.vue"]);
     assert.equal(calls.length, 1);
     calls.length = 0;
-    await runTools("fmt:check", ["App.vue", "script.ts"], { config: {}, options: {} }, "vp", "native", execute);
+    await runTools(
+      "fmt:check",
+      ["App.vue", "script.ts"],
+      { config: {}, options: {} },
+      "vp",
+      "native",
+      execute,
+    );
     assert.deepEqual(calls[0].slice(4), ["--check", "App.vue"]);
     assert.deepEqual(calls[1], ["vp", "fmt", "--check", "script.ts"]);
   });
