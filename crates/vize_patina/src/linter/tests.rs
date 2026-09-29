@@ -2,6 +2,7 @@ use super::Linter;
 use crate::LintPreset;
 use vize_l0::{Allocator, ToCompactString};
 
+mod additional_rules;
 mod basic;
 mod css;
 mod directives;
