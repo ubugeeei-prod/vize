@@ -171,9 +171,9 @@ fn normalize_lexically(path: &Path) -> PathBuf {
     normalized
 }
 
-fn normalize_entry_glob(source: &str) -> std::string::String {
+fn normalize_entry_glob(source: &str) -> String {
     let escape_metacharacters = source.contains('/');
-    let mut normalized = std::string::String::with_capacity(source.len());
+    let mut normalized = String::with_capacity(source.len());
     let mut characters = source.chars().peekable();
     while let Some(character) = characters.next() {
         if character != '\\' {
@@ -195,7 +195,7 @@ fn is_glob_metacharacter(character: char) -> bool {
     matches!(character, '[' | ']' | '*' | '?' | '{' | '}')
 }
 
-fn push_literal_metacharacter(pattern: &mut std::string::String, character: char) {
+fn push_literal_metacharacter(pattern: &mut String, character: char) {
     match character {
         '[' => pattern.push_str("[[]"),
         ']' => pattern.push_str("[]]"),
