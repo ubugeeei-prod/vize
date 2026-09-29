@@ -10,7 +10,7 @@ pub(super) fn parse_plain_script_for_type_aware(source: &str) -> ScriptParseResu
     )
 }
 
-fn is_likely_legacy_vue2_script(source: &str) -> bool {
+pub(super) fn is_likely_legacy_vue2_script(source: &str) -> bool {
     source.contains("@nuxtjs/composition-api")
         || source.contains("nuxt-property-decorator")
         || source.contains("Vue.extend")

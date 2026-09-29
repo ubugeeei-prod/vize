@@ -432,7 +432,7 @@ impl Linter {
             }
         }
 
-        self.lint_jsx_script(source, &mut result);
+        self.lint_jsx_script(source, filename, &mut result);
         result
     }
 

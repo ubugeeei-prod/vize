@@ -83,8 +83,15 @@ pub(super) struct FloatingCandidate {
 }
 
 pub(super) fn collect_floating_candidates(source: &str) -> Vec<FloatingCandidate> {
+    collect_floating_candidates_from(source, "script.ts")
+}
+
+pub(super) fn collect_floating_candidates_from(
+    source: &str,
+    filename: &str,
+) -> Vec<FloatingCandidate> {
     let allocator = OxcAllocator::default();
-    let source_type = SourceType::from_path("script.ts").unwrap_or_default();
+    let source_type = SourceType::from_path(filename).unwrap_or_default();
     let parsed = profile!(
         "patina.type_aware.floating_candidates.parse",
         OxcParser::new(&allocator, source, source_type).parse()

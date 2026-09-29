@@ -16,8 +16,12 @@ use vize_relief::RootNode;
 
 impl Linter {
     /// Script rules on the JSX program, the same registry `<script>` uses.
-    pub(super) fn lint_jsx_script(&self, source: &str, result: &mut LintResult) {
+    pub(super) fn lint_jsx_script(&self, source: &str, filename: &str, result: &mut LintResult) {
         super::super::script_rules::append_builtin_script_rules_for_source(self, source, 0, result);
+        #[cfg(not(target_arch = "wasm32"))]
+        super::super::native_type_aware::plain_module::append_plain_module_type_diagnostics(
+            self, source, filename, result,
+        );
     }
 
     pub(super) fn jsx_ir_needs_analysis(&self) -> bool {

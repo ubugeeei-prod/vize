@@ -15,6 +15,7 @@ mod expression_bindings;
 mod markers;
 mod options_prop_shape;
 mod parsing;
+pub(in crate::linter) mod plain_module;
 mod reactivity_loss;
 mod relative_imports;
 mod rule_queries;
@@ -24,6 +25,8 @@ mod source_path;
 mod template_component_tests;
 mod template_queries;
 
+#[cfg(test)]
+mod plain_module_tests;
 #[cfg(test)]
 mod template_globals_tests;
 #[cfg(test)]
