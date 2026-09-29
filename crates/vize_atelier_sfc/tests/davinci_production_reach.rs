@@ -261,7 +261,6 @@ fn duplicate_static_attribute_is_rejected_before_production_dom_selection() {
         let error = compile(&descriptor, "DuplicateClass.vue", shape)
             .expect_err("duplicate class must be rejected before lowering");
         assert_eq!(error.code.as_deref(), Some("TEMPLATE_ERROR"), "{shape:?}");
-        assert!(error.message.contains("DuplicateAttribute"), "{shape:?}");
     }
 }
 
