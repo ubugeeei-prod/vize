@@ -10,6 +10,10 @@ deprecation contract that backs the entries below.
 
 ## [Unreleased]
 
+### Changed
+
+- Restore `davinci-differential` as a deprecated alias of `legacy-differential` and `davinci-dom-differential` as a deprecated alias of `legacy-dom-differential` (#7179).
+
 ## [0.362.0] - 2026-08-22
 
 ### Added
