@@ -603,14 +603,10 @@ fn transform_slotted(selector: &str, attr_selector: &str) -> String {
 /// Transform :global() to unscoped
 fn transform_global(selector: &str) -> String {
     // :global(.class) -> .class
-    if let Some((before, after)) = selector.split_once(":global(")
-        && let Some((inner, rest)) = split_parenthesized_argument(after)
+    if let Some((_, after)) = selector.split_once(":global(")
+        && let Some((inner, _)) = split_parenthesized_argument(after)
     {
-        let mut result = String::with_capacity(before.len() + inner.len() + rest.len());
-        result.push_str(before);
-        result.push_str(inner);
-        result.push_str(rest);
-        return result;
+        return inner.to_compact_string();
     }
 
     selector.to_compact_string()

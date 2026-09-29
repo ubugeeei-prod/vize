@@ -24,7 +24,7 @@ fn keeps_global_selectors_unscoped_in_mixed_style_blocks() {
             "data-v-x"
         )
         .as_str(),
-        ".host.probe:hover,.badge:is(.primary, .secondary){color: red;}"
+        ".probe,.badge:is(.primary, .secondary){color: red;}"
     );
 }
 
@@ -36,7 +36,31 @@ fn keeps_global_selectors_unscoped_inside_media_and_nested_rules() {
             "data-v-x"
         )
         .as_str(),
-        "@media (min-width: 1px) {  .host .probe{color: red;} .host .local[data-v-x]{color: blue;}}"
+        "@media (min-width: 1px) {  .probe{color: red;} .host .local[data-v-x]{color: blue;}}"
+    );
+}
+
+#[test]
+fn global_argument_replaces_the_entire_selector() {
+    assert_eq!(
+        scope_css_for_pipeline(
+            ".wrap :global(.msg), :global(.badge) .wrap, .a > ::v-global(.b) .c { color: red; }",
+            "data-v-x"
+        )
+        .as_str(),
+        ".msg,.badge,.b{color: red;}"
+    );
+}
+
+#[test]
+fn scopes_rules_inside_document_and_scope_at_rules() {
+    assert_eq!(
+        scope_css_for_pipeline(
+            "@scope (.card) { .child { color: red; } }@document url-prefix() { .doc { color: blue; } }@-moz-document url-prefix() { .moz { color: green; } }",
+            "data-v-x"
+        )
+        .as_str(),
+        "@scope (.card) { .child[data-v-x]{color: red;}}@document url-prefix() { .doc[data-v-x]{color: blue;}}@-moz-document url-prefix() { .moz[data-v-x]{color: green;}}"
     );
 }
 

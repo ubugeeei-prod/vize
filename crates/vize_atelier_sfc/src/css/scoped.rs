@@ -428,10 +428,8 @@ fn trailing_combinator_start(value: &str) -> Option<usize> {
 
 /// Transform :global() to unscoped
 pub(super) fn transform_global(out: &mut ArenaVec<u8>, selector: &str, start: usize) {
-    if let Some((before, inner, rest)) = split_pseudo_function(selector, start, ":global(") {
-        out.extend_from_slice(before.as_bytes());
+    if let Some((_, inner, _)) = split_pseudo_function(selector, start, ":global(") {
         out.extend_from_slice(inner.as_bytes());
-        out.extend_from_slice(rest.as_bytes());
     } else {
         out.extend_from_slice(selector.as_bytes());
     }

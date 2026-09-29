@@ -321,9 +321,9 @@ fn test_apply_scoped_css_preserves_deep_comment_inside_at_rule() {
 fn test_scope_global() {
     let bump = Allocator::new();
     let mut out = ArenaVec::new_in(&&bump);
-    transform_global(&mut out, ":global(.foo)", 0);
+    transform_global(&mut out, ".wrap :global(.msg) .tail", 6);
     let result = test_utf8(&out);
-    assert_eq!(result, ".foo");
+    assert_eq!(result, ".msg");
 }
 
 #[test]

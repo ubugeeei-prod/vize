@@ -175,6 +175,7 @@ fn test_apply_scoped_css_stray_closing_brace_keeps_scoping() {
 fn test_transform_global() {
     let result = transform_global(":global(.foo)");
     assert_eq!(result, ".foo");
+    assert_eq!(transform_global(".wrap :global(.msg) .tail"), ".msg");
 }
 
 #[test]
