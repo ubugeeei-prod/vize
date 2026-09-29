@@ -206,3 +206,60 @@ fn test_still_reports_runtime_browser_name_next_to_type() {
     );
     assert_eq!(result.len(), 1, "{result:?}");
 }
+
+fn lint_sfc_with_only_this_rule(source: &str) -> Vec<CompactString> {
+    let mut registry = RuleRegistry::new();
+    registry.add(Box::new(NoBrowserGlobalsInSsr));
+    Linter::with_registry(registry)
+        .lint_sfc(source, "Panel.vue")
+        .diagnostics
+        .into_iter()
+        .map(|diagnostic| diagnostic.message)
+        .collect()
+}
+
+#[test]
+fn script_setup_open_and_close_are_not_browser_globals() {
+    let result = lint_sfc_with_only_this_rule(
+        r#"<script setup lang="ts">
+const { open = false } = defineProps<{ open?: boolean }>();
+const emit = defineEmits<{ close: [] }>();
+function close(): void {
+  emit("close");
+}
+</script>
+<template>
+  <div v-if="open">
+    <button type="button" @click="close">Close</button>
+  </div>
+</template>
+"#,
+    );
+    assert!(
+        result
+            .iter()
+            .all(|message| !message.contains("'open'") && !message.contains("'close'")),
+        "{result:?}"
+    );
+}
+
+#[test]
+fn bare_open_stays_a_browser_global_when_only_this_rule_is_enabled() {
+    let result = lint_sfc_with_only_this_rule(
+        r#"<script setup lang="ts">
+const label = "panel";
+</script>
+<template>
+  <button type="button" @click="open(label)">Open</button>
+</template>
+"#,
+    );
+    assert!(
+        result.iter().any(|message| message.contains("'open'")),
+        "{result:?}"
+    );
+    assert!(
+        result.iter().all(|message| !message.contains("'label'")),
+        "{result:?}"
+    );
+}

@@ -20,6 +20,7 @@ pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
     "vue/prop-name-casing",
     "a11y/no-refer-to-non-existent-id",
     "ecosystem/router-link-require-to",
+    "ssr/no-browser-globals-in-ssr",
 ];
 
 pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
