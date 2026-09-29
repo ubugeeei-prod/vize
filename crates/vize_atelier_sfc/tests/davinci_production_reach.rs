@@ -1,17 +1,11 @@
 //! Davinci P3-17 production reach: how much of a real `compile_sfc` run the
 //! Davinci stages actually emit.
 //!
-//! The per-stage differential lanes (`davinci_dom_corpus*`,
-//! `davinci_ssr_corpus`, the Vapor artifact gates) prove parity for the
-//! template-compiler entry points. They do not say how many *production*
-//! compiles reach those stages: `compile_sfc` attaches a Croquis summary,
-//! inline render closures, binding metadata, scoped-style ids and module-mode
-//! hoisting, and each backend's selector may route such a compile back to the
-//! legacy lane. This gate compiles every committed fixture SFC through each
-//! shipping adapter shape ([`shapes::Shape`]) exactly as the adapter does,
-//! reads the backend's selection counters around each compile, and reports
-//! the fraction of templates each Davinci stage emitted, with a per-reason
-//! count for the rest.
+//! Differential lanes prove parity at template entry points. Production
+//! `compile_sfc` also passes Croquis, inline closures, bindings, scoped IDs
+//! and module hoisting; its selector may still route to legacy. This gate
+//! compiles committed SFCs through each shipping adapter shape, reads backend
+//! selections and reports accepted templates and fallback reasons.
 //!
 //! Two gates ride on the measurement:
 //!
@@ -57,7 +51,7 @@ use std::sync::Mutex;
 
 use davinci_production_reach::acceptance::report;
 use davinci_production_reach::diff::{divergence, error_divergence};
-use davinci_production_reach::parity::parity_failures;
+use davinci_production_reach::parity::{parity_failures, record_prebackend_template_error};
 use davinci_production_reach::shapes::{Shape, compile, explicit_vapor_source};
 use davinci_production_reach::tally::{Lane, Tally, classify, classify_route, floors};
 use vize_atelier_sfc::{SfcCompileResult, SfcParseOptions, parse_sfc};
@@ -490,6 +484,9 @@ fn measure(
             return;
         }
     };
+    if record_prebackend_template_error(descriptor, name, shape, tally, &selected, &lane) {
+        return;
+    }
     let accepted = lane == Lane::Accepted;
     let croquis = lane == Lane::Legacy("croquis".to_owned());
     if lane == Lane::Unrecorded && tally.unrecorded_samples.len() < 5 {
