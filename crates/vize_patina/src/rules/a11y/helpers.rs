@@ -119,6 +119,15 @@ pub fn get_static_or_bound_literal_attribute_value<'a>(
     None
 }
 
+/// `role="presentation"` / `role="none"` is an author opt-out: the element is
+/// not meant to be perceived (a scrim, a decorative row).
+pub fn is_presentation_role(element: &ElementNode) -> bool {
+    matches!(
+        get_static_attribute_value(element, "role"),
+        Some("presentation" | "none")
+    )
+}
+
 /// Whether the element is explicitly hidden from the accessibility tree.
 pub fn is_aria_hidden_true(element: &ElementNode) -> bool {
     if get_static_or_bound_literal_attribute_value(element, "aria-hidden") == Some("true") {

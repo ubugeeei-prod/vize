@@ -12,7 +12,7 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
-use super::helpers::{is_aria_hidden_true, is_component_like_element};
+use super::helpers::{is_aria_hidden_true, is_component_like_element, is_presentation_role};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/click-events-have-key-events",
@@ -114,7 +114,7 @@ impl Rule for ClickEventsHaveKeyEvents {
             return;
         }
 
-        if is_aria_hidden_true(element) {
+        if is_aria_hidden_true(element) || is_presentation_role(element) {
             return;
         }
 
@@ -198,6 +198,16 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<span @click="toggle">Toggle</span>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_presentation_and_none_click() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div role="presentation" @click="close" /><div role="none" @click="close" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]

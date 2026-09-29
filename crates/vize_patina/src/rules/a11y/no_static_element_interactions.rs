@@ -25,6 +25,7 @@ use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::helpers::{
     has_interactive_role, is_aria_hidden_true, is_component_like_element, is_interactive_element,
+    is_presentation_role,
 };
 
 static META: RuleMeta = RuleMeta {
@@ -73,7 +74,7 @@ impl Rule for NoStaticElementInteractions {
             return;
         }
 
-        if is_aria_hidden_true(element) {
+        if is_aria_hidden_true(element) || is_presentation_role(element) {
             return;
         }
 
@@ -156,6 +157,16 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<span @keydown="handle">Content</span>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_presentation_and_none_events() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<div role="presentation" @click="close" /><div role="none" @keydown="close" />"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]

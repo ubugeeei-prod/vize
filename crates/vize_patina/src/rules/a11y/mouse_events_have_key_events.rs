@@ -24,7 +24,8 @@ use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule}
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType};
 
-use super::helpers::has_event_handler;
+use super::helpers::{has_event_handler, is_aria_hidden_true, is_presentation_role};
+use super::markup_helpers;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/mouse-events-have-key-events",
@@ -50,6 +51,35 @@ impl MouseEventsHaveKeyEvents {
         });
         found
     }
+
+    /// Presentation/none and `aria-hidden="true"` opt the element out, the same
+    /// way the click and static-element rules do.
+    fn is_markup_opt_out(element: &MarkupElement<'_>) -> bool {
+        if matches!(
+            markup_helpers::get_static_markup_attribute_value(element, "role"),
+            Some("presentation" | "none")
+        ) {
+            return true;
+        }
+        if markup_helpers::get_static_or_bound_literal_markup_value(element, "aria-hidden")
+            == Some("true")
+        {
+            return true;
+        }
+        let mut hidden = false;
+        element.walk_bindings(&mut |binding| {
+            if !hidden
+                && binding.kind() == MarkupBindingKind::Bind
+                && binding.is_static_unqualified_arg_exact("aria-hidden")
+                && binding
+                    .expression()
+                    .is_some_and(|expression| expression.trim() == "true")
+            {
+                hidden = true;
+            }
+        });
+        hidden
+    }
 }
 
 impl MarkupRule for MouseEventsHaveKeyEvents {
@@ -58,7 +88,7 @@ impl MarkupRule for MouseEventsHaveKeyEvents {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        if element.is_component() {
+        if element.is_component() || Self::is_markup_opt_out(element) {
             return;
         }
 
@@ -98,7 +128,10 @@ impl Rule for MouseEventsHaveKeyEvents {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag_type == ElementType::Component {
+        if element.tag_type == ElementType::Component
+            || is_aria_hidden_true(element)
+            || is_presentation_role(element)
+        {
             return;
         }
 
@@ -197,6 +230,24 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div @[mouseenter]="show">Content</div>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_presentation_none_and_aria_hidden() {
+        let linter = create_linter();
+        for source in [
+            r#"<div role="presentation" @mouseover="highlight" @mouseout="unhighlight" />"#,
+            r#"<div role="none" @mouseenter="highlight" @mouseleave="unhighlight" />"#,
+            r#"<div aria-hidden="true" @mouseover="highlight" @mouseout="unhighlight" />"#,
+        ] {
+            let template = linter.lint_template(source, "test.vue");
+            assert_eq!(template.warning_count, 0, "{source}");
+            let sfc = linter.lint_sfc(
+                &format!("<template>\n  {source}\n</template>\n"),
+                "MyOverlay.vue",
+            );
+            assert_eq!(sfc.warning_count, 0, "{source}");
+        }
     }
 
     #[test]
