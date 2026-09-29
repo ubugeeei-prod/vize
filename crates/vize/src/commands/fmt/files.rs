@@ -21,6 +21,15 @@ pub(crate) fn collect_files(
 
     for pattern in patterns {
         let normalized = normalize_fmt_pattern(pattern.as_ref());
+        // File-based routes (`pages/[id].vue`) contain `[` but are literal files.
+        // A glob would treat the brackets as a character class and skip them.
+        let literal = PathBuf::from(normalized.as_str());
+        if literal.is_file() {
+            if should_include_format_file(&literal, ignore_set) {
+                files.push(literal);
+            }
+            continue;
+        }
         if should_walk_with_gitignore(&normalized) {
             if let Some(pattern) = FmtPattern::new(&normalized, &cwd) {
                 collect_walked_files(&pattern, ignore_set, &mut files);

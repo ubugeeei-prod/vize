@@ -92,6 +92,34 @@ fn relative_recursive_globs_include_dot_directories() {
     );
 }
 
+#[test]
+fn collect_files_includes_existing_bracket_paths() {
+    let root = unique_case_dir("bracket-pages");
+    let dynamic = root.join("pages/[id].vue");
+    let nested = root.join("pages/[id]/index.vue");
+    let plain = root.join("pages/plain.vue");
+    let _ = fs::remove_dir_all(&root);
+    fs::create_dir_all(nested.parent().unwrap()).unwrap();
+    let body = "<script setup lang=\"ts\">\nconst a = {b:1}\n</script>\n";
+    fs::write(&dynamic, body).unwrap();
+    fs::write(&nested, body).unwrap();
+    fs::write(&plain, body).unwrap();
+
+    let files = collect_files(
+        &[
+            dynamic.to_string_lossy().into_owned(),
+            plain.to_string_lossy().into_owned(),
+            nested.to_string_lossy().into_owned(),
+        ],
+        None,
+    );
+    let _ = fs::remove_dir_all(&root);
+
+    let mut expected = vec![dynamic, nested, plain];
+    expected.sort();
+    assert_eq!(files, expected);
+}
+
 fn unique_case_dir(name: &str) -> PathBuf {
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
