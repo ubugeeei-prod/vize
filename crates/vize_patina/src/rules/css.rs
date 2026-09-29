@@ -1,7 +1,6 @@
 //! CSS lint rules for Vue.js SFC style blocks.
 //!
-//! These rules check CSS/SCSS/Less code in `<style>` blocks using lightning-css
-//! for high-performance parsing.
+//! These rules check CSS/SCSS/Less in `<style>` blocks using lightning-css.
 //!
 //! ## Enabling CSS Rules
 //!
