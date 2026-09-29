@@ -17,7 +17,9 @@ fn is_define_props_destructure_local(
     prop_name: &str,
 ) -> bool {
     destructure.is_some_and(|destructure| {
-        destructure.get(prop_name).is_some()
+        destructure
+            .get(prop_name)
+            .is_some_and(|binding| binding.local.as_str() == prop_name)
             || destructure.rest_id.as_deref() == Some(prop_name)
             || destructure
                 .bindings
@@ -48,5 +50,35 @@ pub(super) fn emit_macro_template_prop_bindings(
             prop.default_value.is_some() || defaulted_prop_names.contains(&prop.name),
         );
         emitted_names.insert(prop.name.as_str().into());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    use super::should_skip_template_prop_binding;
+
+    #[test]
+    fn renamed_destructured_prop_keeps_its_authored_template_name() {
+        let script = "const { expanded: expandedProp } = defineProps<{ expanded: boolean }>();";
+        let allocator = vize_carton::Allocator::new();
+        let (root, errors) =
+            vize_armature::parse(&allocator, "<p v-if=\"expanded\">{{ expanded }}</p>");
+        assert!(errors.is_empty());
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        assert!(!should_skip_template_prop_binding(&summary, "expanded"));
+        assert!(should_skip_template_prop_binding(&summary, "expandedProp"));
+        let output = crate::virtual_ts::generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+        assert!(
+            output.code.contains("const expanded = props[\"expanded\"]"),
+            "{}",
+            output.code
+        );
     }
 }
