@@ -30,6 +30,38 @@ fn discovery_is_sorted_deduplicated_and_uses_standard_ignores() {
 }
 
 #[test]
+fn directory_discovery_skips_test_files_unless_a_file_is_named() {
+    let directory = tempfile::tempdir().unwrap();
+    write(directory.path(), "src/app.ts", "export const value = 1");
+    write(
+        directory.path(),
+        "src/counter.use.test.ts",
+        "export const fake = 1",
+    );
+    write(
+        directory.path(),
+        "src/__tests__/helper.spec.ts",
+        "export const helper = 1",
+    );
+
+    let walked = discover_sources(directory.path(), &["src".into()]).unwrap();
+    let paths = walked
+        .iter()
+        .map(|source| source.path.to_string_lossy().into_owned())
+        .collect::<Vec<_>>();
+    assert_eq!(paths, ["src/app.ts"]);
+
+    let named = discover_sources(directory.path(), &["src/counter.use.test.ts".into()]).unwrap();
+    assert_eq!(
+        named
+            .iter()
+            .map(|source| source.path.to_string_lossy().into_owned())
+            .collect::<Vec<_>>(),
+        ["src/counter.use.test.ts"]
+    );
+}
+
+#[test]
 fn duplicate_ids_use_authored_template_offsets() {
     let directory = tempfile::tempdir().unwrap();
     let first = r#"<script setup lang="ts">

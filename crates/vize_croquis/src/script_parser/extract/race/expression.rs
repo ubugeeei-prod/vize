@@ -5,7 +5,6 @@ use oxc_ast::ast::{
 use vize_carton::CompactString;
 
 use super::super::super::ScriptParseResult;
-use super::is_scheduler_api;
 use super::scan::RaceScan;
 
 pub(super) fn scan_expression_for_race(
@@ -16,19 +15,26 @@ pub(super) fn scan_expression_for_race(
     match expr {
         Expression::AwaitExpression(await_expr) => {
             scan.add_async_operation("await");
+            scan.async_generation = scan.async_generation.saturating_add(1);
+            // A guard only covers writes after the await it follows.
+            scan.guarded = false;
             scan_expression_for_race(result, &await_expr.argument, scan);
         }
         Expression::CallExpression(call) => {
             scan_call_expression_for_race(result, call, scan);
         }
         Expression::AssignmentExpression(assign) => {
-            if let Some(target) = assignment_target_root(result, &assign.left) {
+            if !scan.guarded
+                && let Some(target) = assignment_target_root(result, &assign.left)
+            {
                 scan.mutated_targets.insert(target);
             }
             scan_expression_for_race(result, &assign.right, scan);
         }
         Expression::UpdateExpression(update) => {
-            if let Some(target) = simple_assignment_target_root(result, &update.argument) {
+            if !scan.guarded
+                && let Some(target) = simple_assignment_target_root(result, &update.argument)
+            {
                 scan.mutated_targets.insert(target);
             }
         }
@@ -123,16 +129,19 @@ fn scan_call_expression_for_race(
             scan.add_async_operation("fetch");
         } else if matches!(name.as_str(), "then" | "catch" | "finally") {
             scan.add_async_operation("promise callback");
-        } else if is_scheduler_api(name.as_str()) {
-            scan.add_async_operation(name.as_str());
         }
+        // `setTimeout(...)` is synchronous bookkeeping. Its callback is a
+        // separate scheduled-mutation risk; it is not an async boundary of
+        // the function that stores the timer id.
 
         if name == "onWatcherCleanup" || scan.cleanup_names.contains(name.as_str()) {
             scan.has_cleanup_call = true;
         }
     }
 
-    if let Some(target) = mutation_call_target(result, call) {
+    if !scan.guarded
+        && let Some(target) = mutation_call_target(result, call)
+    {
         scan.mutated_targets.insert(target);
     }
 

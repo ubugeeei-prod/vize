@@ -96,6 +96,9 @@ fn discover_directory(
             source,
         })?;
         if entry.file_type().is_some_and(|kind| kind.is_file()) {
+            if is_default_skipped_test(entry.path()) {
+                continue;
+            }
             add_source_path(root, entry.path(), paths, seen)?;
         }
     }
@@ -122,6 +125,29 @@ fn add_source_path(
         paths.push(relative);
     }
     Ok(())
+}
+
+fn is_default_skipped_test(path: &Path) -> bool {
+    if path
+        .components()
+        .any(|component| component.as_os_str() == "__tests__")
+    {
+        return true;
+    }
+    let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    const SUFFIXES: &[&str] = &[
+        ".test.ts",
+        ".test.tsx",
+        ".test.js",
+        ".test.jsx",
+        ".spec.ts",
+        ".spec.tsx",
+        ".spec.js",
+        ".spec.jsx",
+    ];
+    SUFFIXES.iter().any(|suffix| name.ends_with(suffix))
 }
 
 fn is_supported_source(path: &Path) -> bool {

@@ -234,7 +234,12 @@ pub(in crate::script_parser) fn walk_expression(
                     );
                 }
             }
+            let previous = result.reactive_assignment_root.clone();
+            if let Some(root) = super::super::extract::member_assignment_root(&assign.left) {
+                result.reactive_assignment_root = Some(root);
+            }
             walk_expression(result, &assign.right, source);
+            result.reactive_assignment_root = previous;
         }
 
         Expression::UpdateExpression(update) => {

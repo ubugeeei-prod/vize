@@ -35,6 +35,10 @@ pub struct DoctorFilterSpec {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub targets: Vec<String>,
     /// Stable rule-code globs. Defaults to every rule.
+    ///
+    /// A pattern that starts with `!` excludes codes that match the rest.
+    /// Exclusions apply after the positive globs, and a filter made only of
+    /// exclusions still accepts every other code.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub rules: Vec<String>,
     /// Primary workspace-relative path globs. Defaults to every path.
@@ -82,7 +86,7 @@ impl DoctorFilterSpec {
 pub struct DoctorFilter {
     spec: DoctorFilterSpec,
     targets: PatternSet,
-    rules: PatternSet,
+    rules: RulePatterns,
     paths: PatternSet,
     routes: PatternSet,
     environments: PatternSet,
@@ -96,7 +100,7 @@ impl DoctorFilter {
         let spec = spec.normalized();
         Ok(Self {
             targets: PatternSet::compile(DoctorFilterDimension::Target, &spec.targets)?,
-            rules: PatternSet::compile(DoctorFilterDimension::Rule, &spec.rules)?,
+            rules: RulePatterns::compile(&spec.rules)?,
             paths: PatternSet::compile(DoctorFilterDimension::Path, &spec.paths)?,
             routes: PatternSet::compile(DoctorFilterDimension::Route, &spec.routes)?,
             environments: PatternSet::compile(
@@ -268,6 +272,41 @@ fn finding_paths(finding: &DoctorFinding) -> impl Iterator<Item = &str> {
                 .iter()
                 .map(String::as_str),
         )
+}
+
+#[derive(Debug, Clone)]
+struct RulePatterns {
+    include: PatternSet,
+    exclude: PatternSet,
+}
+
+impl RulePatterns {
+    fn compile(patterns: &[String]) -> Result<Self, DoctorFilterError> {
+        let mut include = Vec::new();
+        let mut exclude = Vec::new();
+        for pattern in patterns {
+            match pattern.strip_prefix('!') {
+                Some(negated) if !negated.is_empty() => exclude.push(String::from(negated)),
+                Some(_) => {
+                    return Err(DoctorFilterError::new(
+                        DoctorFilterDimension::Rule,
+                        pattern.as_str(),
+                        "a negated rule pattern needs a glob after !",
+                    ));
+                }
+                None => include.push(pattern.clone()),
+            }
+        }
+        Ok(Self {
+            include: PatternSet::compile(DoctorFilterDimension::Rule, &include)?,
+            exclude: PatternSet::compile(DoctorFilterDimension::Rule, &exclude)?,
+        })
+    }
+
+    fn matches(&self, code: &str) -> bool {
+        self.include.matches(code)
+            && (self.exclude.is_unrestricted() || !self.exclude.matches(code))
+    }
 }
 
 fn matches_enum<T: PartialEq>(accepted: &[T], value: T) -> bool {

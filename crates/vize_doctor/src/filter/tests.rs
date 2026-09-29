@@ -146,6 +146,42 @@ fn comma_separated_rule_globs_match_any_listed_code() {
 }
 
 #[test]
+fn negated_rule_globs_exclude_after_positive_matches() {
+    let report = fixture_report();
+    let exclusions_only = DoctorFilterSpec {
+        rules: vec!["!*ASYNC*".into()],
+        ..DoctorFilterSpec::default()
+    }
+    .compile()
+    .unwrap();
+    assert!(exclusions_only.matches(&report.findings()[0]));
+    assert!(exclusions_only.matches(&report.findings()[1]));
+
+    let narrowed = DoctorFilterSpec {
+        rules: vec!["VIZE_DOCTOR_*,!*SECURITY*".into()],
+        ..DoctorFilterSpec::default()
+    }
+    .compile()
+    .unwrap();
+    let codes = report
+        .findings()
+        .iter()
+        .filter(|finding| narrowed.matches(finding))
+        .map(|finding| finding.code.as_str())
+        .collect::<Vec<_>>();
+    assert_eq!(codes, ["VIZE_DOCTOR_PERFORMANCE_002"]);
+
+    let error = DoctorFilterSpec {
+        rules: vec!["!".into()],
+        ..DoctorFilterSpec::default()
+    }
+    .compile()
+    .unwrap_err();
+    assert_eq!(error.dimension(), DoctorFilterDimension::Rule);
+    assert!(error.reason().contains("negated"), "{error}");
+}
+
+#[test]
 fn compiling_normalizes_deduplicates_and_serializes_the_spec() {
     let filter = DoctorFilterSpec {
         categories: vec![DoctorCategory::Security, DoctorCategory::Security],

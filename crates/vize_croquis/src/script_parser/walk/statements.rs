@@ -31,9 +31,17 @@ pub(in crate::script_parser) fn walk_statement(
 
                     // Check for ref.value extraction: const x = someRef.value
                     // This also applies in block scopes (e.g., { const x = countRef.value })
-                    super::super::extract::check_ref_value_extraction(result, &decl.id, init);
+                    super::super::extract::check_ref_value_extraction(
+                        result,
+                        &decl.id,
+                        decl.type_annotation.as_deref(),
+                        init,
+                    );
                     super::super::extract::check_reactive_property_extraction(
-                        result, &decl.id, init,
+                        result,
+                        &decl.id,
+                        decl.type_annotation.as_deref(),
+                        init,
                     );
                     super::super::extract::check_getter_call_extraction(result, &decl.id, init);
                     super::super::extract::check_reactive_plain_alias_extraction(

@@ -131,6 +131,11 @@ pub struct ScriptParseResult {
     pub(crate) options_descriptor: Option<OptionsDescriptor>,
     /// Whether component options disable attribute inheritance.
     pub inherit_attrs_disabled: bool,
+    /// Reactive root of a member assignment while its right-hand side is walked.
+    ///
+    /// `open.value = [...open.value, index]` writes the copy back, so the spread
+    /// is not a lost subscription.
+    pub(crate) reactive_assignment_root: Option<CompactString>,
 }
 
 /// Options for plain script parsing.

@@ -31,11 +31,11 @@ pub(super) fn runtime_component_parents(
 
         for (index, usage) in usages.iter().enumerate() {
             match nearest_containing_usage(&usages, index) {
-                Some(host) if host.renders_slot => {
-                    add_component_parent(&mut component_parents, usage.target_id, host.target_id);
-                }
-                Some(_) => {}
-                None => add_component_parent(&mut component_parents, usage.target_id, entry.id),
+                // Content nested in a component with no `<slot>` is not mounted.
+                // Content in a `<slot>` is created by this file, not by the
+                // wrapper, so other uses of the wrapper are not extra branches.
+                Some(host) if !host.renders_slot => {}
+                _ => add_component_parent(&mut component_parents, usage.target_id, entry.id),
             }
         }
     }

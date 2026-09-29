@@ -165,7 +165,16 @@ pub(super) fn parse(resolver: &TypeResolver, content: &str) -> Vec<TypeProperty>
                 current.push(character);
             }
             ',' | ';' | '\n' if depth == 0 => {
-                push_property(resolver, &mut current, &mut properties);
+                // A leading `|` / `&` on the next line continues this property.
+                // Flushing at the newline stored `inputmode?:` as an empty type
+                // and dropped the union members.
+                if character == '\n' && union_continues(&chars) {
+                    if !current.ends_with(|ch: char| ch.is_whitespace()) {
+                        current.push(' ');
+                    }
+                } else {
+                    push_property(resolver, &mut current, &mut properties);
+                }
             }
             _ => current.push(character),
         }
@@ -186,6 +195,35 @@ fn push_newline(
         push_property(resolver, current, properties);
     } else {
         current.push('\n');
+    }
+}
+
+fn union_continues(chars: &std::iter::Peekable<std::str::Chars<'_>>) -> bool {
+    let mut look = chars.clone();
+    loop {
+        match look.next() {
+            None => return false,
+            Some(character) if character.is_whitespace() => {}
+            Some('/') if look.peek() == Some(&'/') => {
+                look.next();
+                for character in look.by_ref() {
+                    if character == '\n' {
+                        break;
+                    }
+                }
+            }
+            Some('/') if look.peek() == Some(&'*') => {
+                look.next();
+                while let Some(character) = look.next() {
+                    if character == '*' && look.peek() == Some(&'/') {
+                        look.next();
+                        break;
+                    }
+                }
+            }
+            Some('|' | '&') => return true,
+            _ => return false,
+        }
     }
 }
 

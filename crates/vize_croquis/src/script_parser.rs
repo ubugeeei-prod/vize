@@ -63,6 +63,9 @@ mod enum_tests;
 mod interface_extends_tests;
 
 #[cfg(test)]
+mod doctor_batch_tests;
+
+#[cfg(test)]
 mod legacy_vue2_tests;
 
 #[cfg(test)]

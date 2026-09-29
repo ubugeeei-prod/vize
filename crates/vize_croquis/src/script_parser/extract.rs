@@ -19,7 +19,6 @@ pub(in crate::script_parser) use emits::extract_runtime_emit_payload_type;
 pub use exports::{process_invalid_export, process_type_export};
 pub(in crate::script_parser) use macros::extract_define_art;
 pub use macros::process_call_expression;
-pub(in crate::script_parser) use plain_values::reactive_destructure_source;
 pub use plain_values::{
     check_getter_call_extraction, check_reactive_plain_alias_extraction,
     check_reactive_plain_assignment_alias, check_reactive_plain_assignment_mutation,
@@ -27,6 +26,9 @@ pub use plain_values::{
     check_reactive_property_extraction, check_reactive_spread_expression,
     check_ref_value_extraction, detect_call_argument_reactivity_loss,
     record_getter_context_from_call,
+};
+pub(in crate::script_parser) use plain_values::{
+    member_assignment_root, reactive_destructure_source, snapshot_in_reexecuted_scope,
 };
 pub(in crate::script_parser) use props::{
     detect_required_prop, extract_runtime_prop_default, extract_runtime_prop_type,

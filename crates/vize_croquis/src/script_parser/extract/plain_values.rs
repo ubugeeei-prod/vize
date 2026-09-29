@@ -7,6 +7,7 @@ use oxc_span::GetSpan;
 use vize_carton::{CompactString, FxHashMap};
 
 use super::super::{ReactiveGetterContext, ReactiveValueOrigin, ScriptParseResult};
+use crate::scope::ScopeKind;
 
 pub(super) struct ReactivePlainValue {
     pub(super) source_name: CompactString,
@@ -326,9 +327,25 @@ pub fn check_reactive_spread_expression(
     else {
         return;
     };
+    if snapshot_in_reexecuted_scope(result) || spread_writes_back(result, source_name.as_str()) {
+        return;
+    }
     result
         .reactivity
         .record_spread_expression(source_name, start, end);
+}
+
+/// Root of `open.value = ...` / `state[key] = ...`. Identifier assignment is
+/// a replacement of the binding, not an immutable update.
+pub(in crate::script_parser) fn member_assignment_root(
+    target: &AssignmentTarget<'_>,
+) -> Option<CompactString> {
+    let object = match target {
+        AssignmentTarget::StaticMemberExpression(member) => &member.object,
+        AssignmentTarget::ComputedMemberExpression(member) => &member.object,
+        _ => return None,
+    };
+    root_identifier(object)
 }
 
 #[inline]
@@ -358,6 +375,7 @@ pub(in crate::script_parser) fn reactive_destructure_source(
 pub fn check_ref_value_extraction(
     result: &mut ScriptParseResult,
     id: &oxc_ast::ast::BindingPattern<'_>,
+    type_annotation: Option<&oxc_ast::ast::TSTypeAnnotation<'_>>,
     init: &Expression<'_>,
 ) {
     if result.reactivity.count() == 0 {
@@ -369,6 +387,9 @@ pub fn check_ref_value_extraction(
         oxc_ast::ast::BindingPattern::BindingIdentifier(id) => id.name.as_str(),
         _ => return,
     };
+    if is_intentional_discard(id, type_annotation) {
+        return;
+    }
 
     // Check for ref.value pattern: someRef.value
     if let Expression::StaticMemberExpression(member) = init
@@ -377,15 +398,17 @@ pub fn check_ref_value_extraction(
     {
         let ref_name = CompactString::new(obj_id.name.as_str());
         if result.reactivity.needs_value_access(ref_name.as_str()) {
-            use crate::reactivity::{ReactivityLoss, ReactivityLossKind};
-            result.reactivity.add_loss(ReactivityLoss {
-                kind: ReactivityLossKind::RefValueExtract {
-                    source_name: ref_name.clone(),
-                    target_name: CompactString::new(target_name),
-                },
-                start: member.span.start,
-                end: member.span.end,
-            });
+            if !snapshot_in_reexecuted_scope(result) {
+                use crate::reactivity::{ReactivityLoss, ReactivityLossKind};
+                result.reactivity.add_loss(ReactivityLoss {
+                    kind: ReactivityLossKind::RefValueExtract {
+                        source_name: ref_name.clone(),
+                        target_name: CompactString::new(target_name),
+                    },
+                    start: member.span.start,
+                    end: member.span.end,
+                });
+            }
             result.reactive_value_origins.insert(
                 CompactString::new(target_name),
                 ReactiveValueOrigin::RefValue {
@@ -402,24 +425,30 @@ pub fn check_ref_value_extraction(
 pub fn check_reactive_property_extraction(
     result: &mut ScriptParseResult,
     id: &oxc_ast::ast::BindingPattern<'_>,
+    type_annotation: Option<&oxc_ast::ast::TSTypeAnnotation<'_>>,
     init: &Expression<'_>,
 ) {
     let target_name = match id {
         oxc_ast::ast::BindingPattern::BindingIdentifier(id) => id.name.as_str(),
         _ => return,
     };
+    if is_intentional_discard(id, type_annotation) {
+        return;
+    }
 
     if let Some((source_name, prop_name)) = sources::ref_value_property_extract(result, init) {
-        use crate::reactivity::{ReactivityLoss, ReactivityLossKind};
-        result.reactivity.add_loss(ReactivityLoss {
-            kind: ReactivityLossKind::ReactivePropertyExtract {
-                source_name: source_name.clone(),
-                prop_name: prop_name.clone(),
-                target_name: CompactString::new(target_name),
-            },
-            start: init.span().start,
-            end: init.span().end,
-        });
+        if !snapshot_in_reexecuted_scope(result) {
+            use crate::reactivity::{ReactivityLoss, ReactivityLossKind};
+            result.reactivity.add_loss(ReactivityLoss {
+                kind: ReactivityLossKind::ReactivePropertyExtract {
+                    source_name: source_name.clone(),
+                    prop_name: prop_name.clone(),
+                    target_name: CompactString::new(target_name),
+                },
+                start: init.span().start,
+                end: init.span().end,
+            });
+        }
         result.reactive_value_origins.insert(
             CompactString::new(target_name),
             ReactiveValueOrigin::ReactiveProperty {
@@ -442,13 +471,15 @@ pub fn check_reactive_property_extraction(
         return;
     }
 
-    result.reactivity.record_property_extract(
-        source_name.clone(),
-        prop_name.clone(),
-        CompactString::new(target_name),
-        init.span().start,
-        init.span().end,
-    );
+    if !snapshot_in_reexecuted_scope(result) {
+        result.reactivity.record_property_extract(
+            source_name.clone(),
+            prop_name.clone(),
+            CompactString::new(target_name),
+            init.span().start,
+            init.span().end,
+        );
+    }
     result.reactive_value_origins.insert(
         CompactString::new(target_name),
         ReactiveValueOrigin::ReactiveProperty {
@@ -456,6 +487,76 @@ pub fn check_reactive_property_extraction(
             prop_name,
         },
     );
+}
+
+fn root_identifier(expr: &Expression<'_>) -> Option<CompactString> {
+    match expr {
+        Expression::Identifier(identifier) => Some(CompactString::new(identifier.name.as_str())),
+        Expression::StaticMemberExpression(member) => root_identifier(&member.object),
+        Expression::ComputedMemberExpression(member) => root_identifier(&member.object),
+        Expression::ParenthesizedExpression(paren) => root_identifier(&paren.expression),
+        Expression::TSAsExpression(ts_as) => root_identifier(&ts_as.expression),
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            root_identifier(&ts_satisfies.expression)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => root_identifier(&ts_non_null.expression),
+        _ => None,
+    }
+}
+
+fn spread_writes_back(result: &ScriptParseResult, label: &str) -> bool {
+    let Some(root) = result.reactive_assignment_root.as_deref() else {
+        return false;
+    };
+    label == root
+        || label
+            .strip_prefix(root)
+            .is_some_and(|rest| rest.starts_with('.'))
+}
+
+/// Handlers, watchers, and computed getters run again and read the current value.
+pub(in crate::script_parser) fn snapshot_in_reexecuted_scope(result: &ScriptParseResult) -> bool {
+    let mut id = Some(result.scopes.current_id());
+    let mut depth = 0u8;
+    while let Some(current) = id {
+        if depth == 32 {
+            break;
+        }
+        depth += 1;
+        let Some(scope) = result.scopes.get_scope(current) else {
+            break;
+        };
+        if matches!(
+            scope.kind,
+            ScopeKind::Closure
+                | ScopeKind::Function
+                | ScopeKind::Callback
+                | ScopeKind::EventHandler
+        ) {
+            return true;
+        }
+        id = scope.parent();
+    }
+    false
+}
+
+fn is_intentional_discard(
+    pattern: &oxc_ast::ast::BindingPattern<'_>,
+    type_annotation: Option<&oxc_ast::ast::TSTypeAnnotation<'_>>,
+) -> bool {
+    let oxc_ast::ast::BindingPattern::BindingIdentifier(identifier) = pattern else {
+        return false;
+    };
+    if identifier.name.as_str().starts_with('_') {
+        return true;
+    }
+    // `const mode: never = ref.value` is an exhaustiveness discard, not a snapshot.
+    type_annotation.is_some_and(|annotation| {
+        matches!(
+            annotation.type_annotation,
+            oxc_ast::ast::TSType::TSNeverKeyword(_)
+        )
+    })
 }
 
 fn is_mutating_method(name: &str) -> bool {
