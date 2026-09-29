@@ -1,5 +1,47 @@
-use super::{import_targets_path, is_builtin_attr};
+use super::{
+    PassedPropInfo, actual_literal_type, import_targets_path, is_builtin_attr,
+    prop_type_accepts_actual,
+};
 use std::path::Path;
+use vize_carton::CompactString;
+use vize_croquis::types::TypeDefinitions;
+
+#[test]
+fn static_attribute_text_matches_a_literal_union_member() {
+    let mut definitions = TypeDefinitions::new();
+    definitions.add_type_alias("IconName", "\"check\" | \"close\"");
+    let check = PassedPropInfo {
+        name: CompactString::const_new("name"),
+        name_is_dynamic: false,
+        value: Some(CompactString::const_new("check")),
+        start: 0,
+        end: 0,
+        is_dynamic: false,
+    };
+    let actual = actual_literal_type(&check).unwrap();
+    assert_eq!(actual.as_str(), "\"check\"");
+    assert!(prop_type_accepts_actual(
+        "IconName",
+        actual.as_str(),
+        &definitions
+    ));
+    assert!(prop_type_accepts_actual(
+        "| \"text\" | \"decimal\" | \"numeric\"",
+        "\"decimal\"",
+        &definitions
+    ));
+    assert!(!prop_type_accepts_actual(
+        "\"check\" | \"close\"",
+        "\"nope\"",
+        &definitions
+    ));
+    assert!(!prop_type_accepts_actual("number", "\"1\"", &definitions));
+    assert!(prop_type_accepts_actual(
+        "string",
+        "\"check\"",
+        &definitions
+    ));
+}
 
 #[test]
 fn test_is_builtin_attr() {

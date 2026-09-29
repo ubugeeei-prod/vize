@@ -226,8 +226,11 @@ pub fn analyze_props_validation(
                 if let (Some(expected), Some(actual)) = (
                     prop_info.prop_type.as_ref(),
                     actual_literal_type(passed_prop),
-                ) && !prop_type_accepts_actual(expected.as_str(), actual.as_str())
-                {
+                ) && !prop_type_accepts_actual(
+                    expected.as_str(),
+                    actual.as_str(),
+                    child_entry.analysis.types.definitions(),
+                ) {
                     let issue = PropsValidationIssue {
                         parent_file: parent_id,
                         child_file: child_id,

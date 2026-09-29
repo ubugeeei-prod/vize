@@ -148,6 +148,34 @@ fn extract_properties_keeps_union_members_nested() {
 }
 
 #[test]
+fn extract_properties_keeps_a_leading_pipe_union_on_the_property() {
+    let resolver = TypeResolver::new();
+    let props = resolver.extract_properties(
+        r#"{
+  size?: "small" | "large";
+  inputmode?:
+    | "text"
+    | "decimal"
+    | "numeric";
+}"#,
+    );
+
+    assert_eq!(
+        props
+            .iter()
+            .map(|prop| prop.name.as_str())
+            .collect::<Vec<_>>(),
+        ["size", "inputmode"]
+    );
+    assert_eq!(props[0].prop_type.as_deref(), Some("\"small\" | \"large\""));
+    let inputmode = props[1].prop_type.as_deref().unwrap_or_default();
+    assert!(inputmode.contains("\"text\""), "{inputmode}");
+    assert!(inputmode.contains("\"decimal\""), "{inputmode}");
+    assert!(inputmode.contains("\"numeric\""), "{inputmode}");
+    assert!(!inputmode.is_empty());
+}
+
+#[test]
 fn test_extract_emits_call_signature() {
     let resolver = TypeResolver::new();
     let emits =
