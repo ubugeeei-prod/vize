@@ -107,6 +107,63 @@ emit('change')
 }
 
 #[test]
+fn test_emit_passed_to_a_call_uses_every_declared_event() {
+    let source = r#"
+import { useClose } from "./use-close";
+const emit = defineEmits<{ close: [] }>();
+const { close } = useClose(emit);
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_emit_stored_uses_every_declared_event() {
+    let source = r#"
+const emit = defineEmits(['close', 'save'])
+const handlers = { emit }
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_emit_returned_uses_every_declared_event() {
+    let source = r#"
+const emit = defineEmits(['close'])
+function use() {
+  return emit
+}
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_sfc_emit_passed_to_a_composable_is_used() {
+    let sfc = r#"<script setup lang="ts">
+import { useClose } from "./use-close";
+
+const emit = defineEmits<{ close: [] }>();
+const { close } = useClose(emit);
+</script>
+
+<template>
+  <button type="button" @click="close">Close</button>
+</template>
+"#;
+    let result = lint_sfc(sfc);
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "script/no-unused-emit-declarations"),
+        "{:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn test_runtime_object_form() {
     let source = r#"
 const emit = defineEmits({
