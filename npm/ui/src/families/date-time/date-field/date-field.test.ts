@@ -423,7 +423,7 @@ test("required fields participate in native constraint validation", async () => 
   assert.ok(input);
   assert.equal(input.required, true);
   assert.equal(input.type, "text");
-  assert.equal(input.getAttribute("aria-hidden"), "true");
+  assert.equal(input.getAttribute("aria-hidden"), null);
   assert.equal(input.getAttribute("tabindex"), "-1");
   assert.equal(input.name, "");
   assert.equal(form.checkValidity(), false);

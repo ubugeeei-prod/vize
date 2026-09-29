@@ -332,13 +332,17 @@ fn expand_top_level_commas(patterns: &mut Vec<String>) {
                 '{' => depth += 1,
                 '}' => depth = depth.saturating_sub(1),
                 ',' if depth == 0 => {
-                    push_trimmed(&mut expanded, &pattern[start..index]);
+                    if let Some(piece) = pattern.get(start..index) {
+                        push_trimmed(&mut expanded, piece);
+                    }
                     start = index + ch.len_utf8();
                 }
                 _ => {}
             }
         }
-        push_trimmed(&mut expanded, &pattern[start..]);
+        if let Some(piece) = pattern.get(start..) {
+            push_trimmed(&mut expanded, piece);
+        }
     }
     *patterns = expanded;
 }

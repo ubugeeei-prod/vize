@@ -64,11 +64,11 @@ fn condense_internal_whitespace<'a>(allocator: &'a Allocator, text: &str) -> Opt
     }
     let condensed = out.into_str();
     if super::current_legacy_line_breaks()
-        && condensed.ends_with(' ')
         && trailing_whitespace_has_line_break(text)
+        && let Some(without_trailing_space) = condensed.strip_suffix(' ')
     {
         let mut rewritten = StringBuilder::with_capacity_in(condensed.len(), allocator);
-        rewritten.push_str(&condensed[..condensed.len() - 1]);
+        rewritten.push_str(without_trailing_space);
         rewritten.push('\n');
         return Some(rewritten.into_str());
     }

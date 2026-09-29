@@ -45,7 +45,7 @@ test("submits the serialized `by` key through a hidden native select", async () 
   const { form, handle, native } = mountForm({ defaultValue: fruits[1] });
   await settle();
   assert.equal(native.hidden, true);
-  assert.equal(native.getAttribute("aria-hidden"), "true");
+  assert.equal(native.getAttribute("aria-hidden"), null);
   assert.equal(native.tabIndex, -1);
   assert.deepEqual([...new FormData(form).entries()], [["fruit", "2"]]);
   handle.unmount();

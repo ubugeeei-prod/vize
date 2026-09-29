@@ -104,7 +104,10 @@ async function readVizeMuseaOptions(
         },
         file,
       );
-      const musea = (loaded?.config as { musea?: Pick<MuseaOptions, "include" | "exclude"> }).musea;
+      const config = loaded?.config as
+        | { musea?: Pick<MuseaOptions, "include" | "exclude"> }
+        | undefined;
+      const musea = config?.musea;
       if (musea?.include || musea?.exclude) return musea;
     } catch {
       continue;
