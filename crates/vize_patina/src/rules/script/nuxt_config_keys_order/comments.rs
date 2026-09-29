@@ -123,7 +123,7 @@ fn comment_aware_ranges(
 
     let mut separators = Vec::with_capacity(owned.len().saturating_sub(1));
     for pair in owned.windows(2) {
-        let (Some(left), Some(right)) = (pair.get(0), pair.get(1)) else {
+        let (Some(left), Some(right)) = (pair.first(), pair.get(1)) else {
             return None;
         };
         if right.start < left.end {
