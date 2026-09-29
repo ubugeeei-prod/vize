@@ -241,16 +241,40 @@ fn macro_rank_of_expression(expression: &Expression<'_>) -> Option<MacroRank> {
 /// middle of the macro block. Imports and TS type-only declarations are exempt
 /// because they are hoisted / erased and conventionally precede the macros.
 fn is_runtime_statement(statement: &Statement<'_>) -> bool {
-    !matches!(
-        statement,
+    match statement {
         Statement::ImportDeclaration(_)
-            | Statement::TSTypeAliasDeclaration(_)
-            | Statement::TSInterfaceDeclaration(_)
-            | Statement::TSModuleDeclaration(_)
-            | Statement::TSImportEqualsDeclaration(_)
-            | Statement::TSExportAssignment(_)
-            | Statement::EmptyStatement(_)
-    )
+        | Statement::TSTypeAliasDeclaration(_)
+        | Statement::TSInterfaceDeclaration(_)
+        | Statement::TSModuleDeclaration(_)
+        | Statement::TSImportEqualsDeclaration(_)
+        | Statement::TSExportAssignment(_)
+        | Statement::EmptyStatement(_) => false,
+        // `export interface` / `export type` are still erased. A value export is not.
+        Statement::ExportNamedDeclaration(export) => !is_type_only_named_export(export),
+        _ => true,
+    }
+}
+
+fn is_type_only_named_export(export: &oxc_ast::ast::ExportNamedDeclaration<'_>) -> bool {
+    use oxc_ast::ast::{Declaration, ImportOrExportKind};
+
+    if export.export_kind == ImportOrExportKind::Type {
+        return true;
+    }
+    if let Some(declaration) = &export.declaration {
+        return matches!(
+            declaration,
+            Declaration::TSTypeAliasDeclaration(_)
+                | Declaration::TSInterfaceDeclaration(_)
+                | Declaration::TSModuleDeclaration(_)
+                | Declaration::TSImportEqualsDeclaration(_)
+        );
+    }
+    !export.specifiers.is_empty()
+        && export
+            .specifiers
+            .iter()
+            .all(|specifier| specifier.export_kind == ImportOrExportKind::Type)
 }
 
 #[cfg(test)]

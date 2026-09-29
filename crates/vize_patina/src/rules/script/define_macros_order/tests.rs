@@ -66,6 +66,30 @@ const emit = defineEmits<{ change: [] }>()
 }
 
 #[test]
+fn test_valid_exported_types_before_macros() {
+    let source = r#"
+import type { Item } from "./item";
+export type { Item };
+export interface Props { label: string }
+export type Emits = { change: [value: string] }
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_invalid_exported_value_before_macros() {
+    let source = r#"
+export const ready = true
+const props = defineProps<{ count: number }>()
+"#;
+    let result = create_linter().lint(source, 0);
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
 fn test_valid_type_alias_between_macros_is_ignored() {
     // A type-only statement between macros is not a runtime boundary.
     let source = r#"
