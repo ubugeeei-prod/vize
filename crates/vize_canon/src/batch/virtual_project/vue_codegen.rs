@@ -30,7 +30,7 @@ use super::diagnostics::{
     invalid_sfc_fallback_virtual_ts,
 };
 use super::{
-    art_usage::collect_art_template_referenced_names,
+    art_usage::{art_variant_check_source, collect_art_template_referenced_names},
     css_var_usage::collect_css_var_referenced_names,
     setup_props::{RuntimePropResolveCache, augment_type_based_props_from_script_context},
 };
@@ -82,11 +82,25 @@ pub(super) fn generate_vue_virtual_ts(
     };
     let descriptor = &*view;
 
-    let template_offset = descriptor
-        .template
-        .as_ref()
-        .map(|template| template.loc.start as u32)
-        .unwrap_or(0);
+    // `<variant>` markup is checked through the same template AST. The pad keeps
+    // every checked byte at its file offset, so the template offset stays 0.
+    let art_pad = art_variant_check_source(source, descriptor);
+    let template_offset = if art_pad.is_some() {
+        0
+    } else {
+        descriptor
+            .template
+            .as_ref()
+            .map(|template| template.loc.start as u32)
+            .unwrap_or(0)
+    };
+    let template_text = match art_pad.as_deref() {
+        Some(pad) => Some(pad),
+        None => descriptor
+            .template
+            .as_ref()
+            .map(|template| template.content.as_ref()),
+    };
     // Keep authored scripts even when OXC cannot recover their analysis AST.
     // The native TypeScript parser recovers incomplete expressions and can
     // still answer editor requests against their exact source mappings.
@@ -103,11 +117,11 @@ pub(super) fn generate_vue_virtual_ts(
     //     type diagnostic in it (#3323) — the same false-negative shape #3294
     //     fixed in the linter, keyed off the same shared classification.
     let mut template_hard_error = false;
-    let template_ast = descriptor.template.as_ref().and_then(|template| {
+    let template_ast = template_text.and_then(|template_content| {
         profile!("canon.template.parse", {
             let (root, errors) = parse_with_options_and_template_syntax(
                 &allocator,
-                &template.content,
+                template_content,
                 ParserOptions {
                     experimental_in_tag_comments: codegen_options.experimental_in_tag_comments,
                     ..ParserOptions::default()
