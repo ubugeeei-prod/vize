@@ -20,6 +20,29 @@ pub(crate) fn append_with_rule_overrides(
     recount(result);
 }
 
+pub(crate) fn apply_severity_overrides(
+    result: &mut LintResult,
+    overrides: &FxHashMap<String, Severity>,
+) {
+    if overrides.is_empty() || result.diagnostics.is_empty() {
+        return;
+    }
+
+    let mut changed = false;
+    for diagnostic in &mut result.diagnostics {
+        if diagnostic.rule_name.starts_with("type/")
+            && let Some(severity) = overrides.get(diagnostic.rule_name)
+            && diagnostic.severity != *severity
+        {
+            diagnostic.severity = *severity;
+            changed = true;
+        }
+    }
+    if changed {
+        recount(result);
+    }
+}
+
 fn recount(result: &mut LintResult) {
     result.error_count = result
         .diagnostics

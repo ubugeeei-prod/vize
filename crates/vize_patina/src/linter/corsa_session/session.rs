@@ -215,8 +215,11 @@ impl CorsaTypeAwareSession {
             return;
         }
         self.closed = true;
+        // Remove the directory even when closing the runtime panics. A successful
+        // lint used to return while this process's session was still live, so
+        // stale-pid cleanup left `.vize/patina/session-*` on disk.
+        let _cleanup = SessionRootCleanup::new(self.session_root.clone());
         let _ = block_on(self.session.close());
-        remove_session_root(&self.session_root);
     }
 }
 

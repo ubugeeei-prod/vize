@@ -14,7 +14,6 @@ use crate::{
     rule::RuleRegistry,
     rules::musea::PreferDesignTokensConfig,
 };
-#[cfg(not(target_arch = "wasm32"))]
 use std::path::PathBuf;
 #[cfg(not(target_arch = "wasm32"))]
 use std::sync::Mutex;
@@ -312,6 +311,30 @@ impl Linter {
     #[inline]
     pub(crate) fn rule_names(&self) -> &[&'static str] {
         self.registry.rule_names()
+    }
+
+    /// Close type-aware sessions and delete this process's session directories.
+    ///
+    /// `vize lint` exits with `process::exit` when diagnostics fail, which skips
+    /// `Drop`. Successful runs also keep the session until drop; callers finish
+    /// the run here so `.vize/patina/session-*` does not outlive the command.
+    pub fn finish_type_aware_lint(linters: &[Self], files: &[PathBuf]) {
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            for linter in linters {
+                if let Ok(mut guard) = linter.native_corsa.lock() {
+                    if let Some(session) = guard.as_mut() {
+                        session.close();
+                    }
+                    *guard = None;
+                }
+            }
+            super::corsa_session::remove_finished_process_sessions(files);
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            let _ = (linters, files);
+        }
     }
 }
 

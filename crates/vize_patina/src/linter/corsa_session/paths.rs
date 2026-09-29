@@ -222,6 +222,34 @@ fn source_directory(filename: &str) -> PathBuf {
     joined.parent().map(Path::to_path_buf).unwrap_or(cwd)
 }
 
+pub(super) fn remove_finished_process_sessions(project_root: &Path) {
+    let pid = u64::from(std::process::id());
+    remove_pid_sessions(&session_store_root(project_root), pid);
+    remove_pid_sessions(&legacy_session_store_root(project_root), pid);
+}
+
+fn remove_pid_sessions(session_store: &Path, pid: u64) {
+    let Ok(entries) = std::fs::read_dir(session_store) else {
+        return;
+    };
+    let prefix = cstr!("session-{pid}-");
+    for entry in entries.flatten() {
+        let Ok(file_type) = entry.file_type() else {
+            continue;
+        };
+        if !file_type.is_dir() {
+            continue;
+        }
+        let name = entry.file_name();
+        let Some(name) = name.to_str() else {
+            continue;
+        };
+        if name.starts_with(prefix.as_str()) {
+            remove_session_root(&entry.path());
+        }
+    }
+}
+
 fn push_u64(buffer: &mut String, value: u64) {
     let rendered = value.to_compact_string();
     buffer.push_str(rendered.as_str());
@@ -232,8 +260,8 @@ mod tests {
     #[cfg(unix)]
     use super::is_stale_session_directory;
     use super::{
-        cleanup_stale_session_roots, resolve_corsa_executable, session_store_root,
-        virtual_file_path,
+        cleanup_stale_session_roots, remove_finished_process_sessions, resolve_corsa_executable,
+        session_store_root, virtual_file_path,
     };
     use std::{
         path::{Path, PathBuf},
@@ -336,6 +364,32 @@ mod tests {
         cleanup_stale_session_roots(&root);
 
         assert!(live.exists());
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn removes_finished_process_session_directories() {
+        let root = case_dir("finished-session");
+        let _ = std::fs::remove_dir_all(&root);
+        let store = session_store_root(&root);
+        let live = store.join(format!("session-{}-7", std::process::id()));
+        let foreign = store.join("session-9999999999-7");
+        let legacy = root
+            .join("node_modules")
+            .join(".vize")
+            .join("patina")
+            .join(format!("session-{}-8", std::process::id()));
+
+        std::fs::create_dir_all(&live).unwrap();
+        std::fs::create_dir_all(&foreign).unwrap();
+        std::fs::create_dir_all(&legacy).unwrap();
+
+        remove_finished_process_sessions(&root);
+
+        assert!(!live.exists());
+        assert!(!legacy.exists());
+        assert!(foreign.exists());
 
         let _ = std::fs::remove_dir_all(&root);
     }
