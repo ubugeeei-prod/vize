@@ -11,7 +11,7 @@ import path from "node:path";
 import { MuseaVrtRunner, generateVrtReport, generateVrtJsonReport } from "../vrt.js";
 import type { ExtendedVrtOptions, VrtSummary } from "../vrt.js";
 import { normalizeVrtWorkerCount } from "../vrt.js";
-import type { ArtFileInfo } from "../types/index.js";
+import type { A11yOptions, ArtFileInfo, MuseaVrtOptions } from "../types/index.js";
 
 import type { CliOptions } from "./index.js";
 
@@ -24,7 +24,8 @@ export function isArtFileInput(filePath: string): boolean {
 }
 
 export function createVrtOptions(options: CliOptions): ExtendedVrtOptions {
-  const configured = options.vrt ?? {};
+  // `vrt.a11y` is MuseaA11yRunner config. ExtendedVrtOptions.a11y is a boolean.
+  const configured = withoutA11y(options.vrt);
   const vrtOptions: ExtendedVrtOptions = {
     ...configured,
     // run, approve, and clean all read this directory.
@@ -47,6 +48,18 @@ export function createVrtOptions(options: CliOptions): ExtendedVrtOptions {
 function resolveVrtSnapshotDir(options: CliOptions, snapshotDir: string | undefined): string {
   if (!snapshotDir) return path.join(options.output, "snapshots");
   return path.resolve(path.dirname(path.resolve(options.config)), snapshotDir);
+}
+
+function withoutA11y(vrt: MuseaVrtOptions | undefined): Omit<MuseaVrtOptions, "a11y"> {
+  if (!vrt) return {};
+  const configured: MuseaVrtOptions = { ...vrt };
+  delete configured.a11y;
+  return configured;
+}
+
+/** Options object `musea-vrt --a11y` passes to `MuseaA11yRunner`. */
+export function createA11yRunner<T>(options: CliOptions, Runner: new (a11y?: A11yOptions) => T): T {
+  return new Runner(options.vrt?.a11y);
 }
 
 export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Promise<void> {
@@ -88,7 +101,7 @@ export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Prom
       console.log("  Running accessibility audits...\n");
       try {
         const { MuseaA11yRunner } = await import("../a11y/index.js");
-        const a11yRunner = new MuseaA11yRunner();
+        const a11yRunner = createA11yRunner(options, MuseaA11yRunner);
         const a11yResults = await a11yRunner.runAudits(artFiles, options.baseUrl, runner);
         const a11ySummary = a11yRunner.getSummary(a11yResults);
 
