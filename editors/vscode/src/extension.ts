@@ -1194,4 +1194,3 @@ async function writeExtractedServer(contents: Buffer, serverPath: string): Promi
     await fs.promises.chmod(serverPath, 0o755);
   }
 }
-

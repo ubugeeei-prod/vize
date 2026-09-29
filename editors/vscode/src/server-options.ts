@@ -1,8 +1,4 @@
-import {
-  type Executable,
-  type ServerOptions,
-  TransportKind,
-} from "vscode-languageclient/node.js";
+import { type Executable, type ServerOptions, TransportKind } from "vscode-languageclient/node.js";
 
 export function createServerOptions(serverPath: string): ServerOptions {
   const run: Executable = {
