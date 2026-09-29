@@ -25,6 +25,9 @@ pub(crate) struct TemplateValueChecks<'a> {
     /// mappings that need bytes an expression record does not carry (a
     /// dynamic argument's directive prefix).
     pub(crate) template_source: Option<&'a str>,
+    /// `checkUnknownDirectives` for this file. Setup-local directives stay
+    /// ordinary bindings; only a registry lookup can be `TS2339`.
+    pub(crate) check_unknown_directives: bool,
 }
 
 /// Owning form of [`TemplateValueChecks`], collected once per file.
@@ -38,6 +41,7 @@ pub(crate) struct TemplateValueCheckTables {
     native_props: NativePropBindings,
     directive_values: DirectiveValueBindings,
     component_ref_callbacks: ComponentRefCallbackBindings,
+    check_unknown_directives: bool,
 }
 
 impl TemplateValueCheckTables {
@@ -60,6 +64,9 @@ impl TemplateValueCheckTables {
                 options.template_ast,
                 options.check_options.check_template_bindings && !legacy_vue2,
             ),
+            check_unknown_directives: options.check_options.check_unknown_directives
+                && options.check_options.check_template_bindings
+                && !legacy_vue2,
         }
     }
 
@@ -72,6 +79,7 @@ impl TemplateValueCheckTables {
             directive_values: &self.directive_values,
             component_ref_callbacks: &self.component_ref_callbacks,
             template_source,
+            check_unknown_directives: self.check_unknown_directives,
         }
     }
 }

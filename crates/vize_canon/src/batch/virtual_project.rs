@@ -114,6 +114,9 @@ mod vue_compiler_comments;
 #[cfg(test)]
 mod tests;
 
+#[cfg(test)]
+mod unknown_checks_tests;
+
 pub(super) const AUTO_IMPORT_STUBS_FILE: &str = "__vize_auto_imports.d.ts";
 pub(super) const MODULE_AUGMENTATION_STUBS_FILE: &str = "__vize_module_augmentations.d.ts";
 pub(super) const MODULE_AUGMENTATION_STUB_PREFIX: &str = "// @vize-module-augmentation\n";
