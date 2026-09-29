@@ -93,7 +93,6 @@ function viewComponent(artPath: string) {
           type="button"
           class="modal-backdrop"
           aria-label="Close token usage"
-          aria-hidden="true"
           tabindex="-1"
           @click="close"
         ></button>

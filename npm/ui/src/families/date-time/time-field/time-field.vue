@@ -181,7 +181,6 @@ defineExpose(exposed);
       :required="slotState.required"
       :disabled="slotState.disabled"
       tabindex="-1"
-      aria-hidden="true"
       :aria-labelledby="id"
       autocomplete="off"
       data-vize-ui="time-field-input"

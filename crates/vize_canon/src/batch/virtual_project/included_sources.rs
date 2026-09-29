@@ -161,7 +161,12 @@ mod tests {
                 continue;
             };
             assert!(
-                program_before.iter().any(|entry| entry.ends_with(name)),
+                program_before.iter().any(|entry| {
+                    std::path::Path::new(entry.as_str())
+                        .file_name()
+                        .and_then(|file_name| file_name.to_str())
+                        == Some(name)
+                }),
                 "diagnosed {name} is missing from the virtual program: {program_before:?}"
             );
         }
@@ -209,12 +214,19 @@ mod tests {
             covered += 1;
             let canonical = vize_carton::path::canonicalize_non_verbatim(path);
             assert!(
-                registered.contains(&canonical),
+                registered
+                    .iter()
+                    .any(|registered_path| registered_path == &canonical),
                 "include omitted {relative}"
             );
             let name = path.file_name().and_then(|name| name.to_str()).unwrap();
             assert!(
-                program_after.iter().any(|entry| entry.ends_with(name)),
+                program_after.iter().any(|entry| {
+                    std::path::Path::new(entry.as_str())
+                        .file_name()
+                        .and_then(|file_name| file_name.to_str())
+                        == Some(name)
+                }),
                 "included {relative} is not a program member: {program_after:?}"
             );
         }

@@ -140,9 +140,7 @@ export async function processMuseaArtFile(
     if (!parsed.variants || parsed.variants.length === 0) return null;
 
     const isInline = !filePath.endsWith(".art.vue");
-    const styles = isInline
-      ? { blocks: [] as string[] }
-      : extractStyleBlocks(source, filePath);
+    const styles = isInline ? { blocks: [] as string[] } : extractStyleBlocks(source, filePath);
 
     return {
       path: filePath,
@@ -158,9 +156,7 @@ export async function processMuseaArtFile(
       },
       variants: parsed.variants.map((v) => ({
         name: v.name,
-        template: styles.scopeAttr
-          ? stampScopeAttribute(v.template, styles.scopeAttr)
-          : v.template,
+        template: styles.scopeAttr ? stampScopeAttribute(v.template, styles.scopeAttr) : v.template,
         isDefault: v.isDefault,
         skipVrt: v.skipVrt,
       })),

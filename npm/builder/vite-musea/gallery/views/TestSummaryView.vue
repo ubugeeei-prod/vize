@@ -394,7 +394,7 @@ watch(
     </div>
 
     <!-- Iframe pool: POOL_SIZE reusable slots -->
-    <div class="hidden-iframes">
+    <div class="hidden-iframes" aria-hidden="true">
       <iframe
         v-for="(src, i) in poolSrcs"
         :key="`pool-${i}`"
@@ -402,7 +402,6 @@ watch(
         :src="safeUrl(src)"
         :title="`Accessibility test worker ${i + 1}`"
         sandbox="allow-scripts allow-same-origin"
-        aria-hidden="true"
         tabindex="-1"
       />
     </div>

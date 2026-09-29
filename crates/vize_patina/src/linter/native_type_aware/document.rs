@@ -234,7 +234,8 @@ mod tests {
         assert!(
             document
                 .content
-                .contains("export type Item = { name: string }"),
+                .lines()
+                .any(|line| line == "export type Item = { name: string }"),
             "sibling script export missing from {}",
             document.content
         );

@@ -502,7 +502,6 @@ defineExpose(exposed);
       data-vize-ui="select-native"
       part="native"
       hidden
-      aria-hidden="true"
       tabindex="-1"
       :aria-label="nativeLabel"
       :name

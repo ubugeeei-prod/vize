@@ -250,7 +250,7 @@
   "a11y/aria-role.help_suggestion": "**無効なrole:** `{invalid}`\n\n**もしかして:** `{valid}`?\n\n有効なroleの完全なリストはWAI-ARIA仕様を参照してください。",
   "a11y/no-aria-hidden-on-focusable.description": "フォーカス可能な要素でのaria-hidden=\"true\"を禁止する",
   "a11y/no-aria-hidden-on-focusable.message": "フォーカス可能な要素にaria-hidden=\"true\"を使用してはいけません",
-  "a11y/no-aria-hidden-on-focusable.help": "aria-hidden=\"true\"を削除するか、tabindex=\"-1\"で要素をフォーカス不可にしてください",
+  "a11y/no-aria-hidden-on-focusable.help": "aria-hidden=\"true\"を削除してください。tabindex=\"-1\"でもプログラムからはフォーカスできます",
   "a11y/no-access-key.description": "accesskey属性の使用を禁止する",
   "a11y/no-access-key.message": "accesskey属性は使用すべきではありません。キーボードショートカットの競合を引き起こします",
   "a11y/no-access-key.help": "accesskey属性を削除してください。アクセスキーはプラットフォーム間で不一致なキーボードショートカットを作成し、支援技術のショートカットと競合します",

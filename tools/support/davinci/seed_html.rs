@@ -51,7 +51,7 @@ pub const NESTING: &[(&str, &[&str])] = &[
     ),
     ("<div>@<tr><td>a</td></tr></div>", &["table-part-misplaced"]),
     (
-        "<table>@<tr><td>a</td></tr></table>",
+        "<table><tbody>@<td>a</td></tbody></table>",
         &["table-wrapper-inserted"],
     ),
     (

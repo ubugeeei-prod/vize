@@ -1293,6 +1293,7 @@ ScriptParseResult {
     setup_context: SetupContextTracker {
         violations: [],
     },
+    script_browser_globals: [],
     is_non_setup_script: false,
     import_statements: [],
     re_exports: [],
@@ -1320,4 +1321,5 @@ ScriptParseResult {
     runtime_object_literals: {},
     options_descriptor: None,
     inherit_attrs_disabled: false,
+    reactive_assignment_root: None,
 }

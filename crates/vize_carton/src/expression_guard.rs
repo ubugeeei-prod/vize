@@ -233,9 +233,10 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
             b'<' => {
                 angle_depth += 1;
                 pending_arrow_default_paren = speculative_arrow_default_paren(content, i);
+                if let Some(depth) = arrow_default_angles.last_mut() {
+                    *depth += 1;
+                }
                 if !arrow_default_angles.is_empty() {
-                    let current = arrow_default_angles.len() - 1;
-                    arrow_default_angles[current] += 1;
                     excessive_arrow_default_speculation |=
                         arrow_default_angle_product_exceeds(&arrow_default_angles);
                 }

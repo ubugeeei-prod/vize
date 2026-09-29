@@ -250,7 +250,7 @@
   "a11y/aria-role.help_suggestion": "**Invalid role:** `{invalid}`\n\n**Did you mean:** `{valid}`?\n\nRefer to the WAI-ARIA specification for a complete list of valid roles.",
   "a11y/no-aria-hidden-on-focusable.description": "Disallow aria-hidden=\"true\" on focusable elements",
   "a11y/no-aria-hidden-on-focusable.message": "aria-hidden=\"true\" must not be used on focusable elements",
-  "a11y/no-aria-hidden-on-focusable.help": "Remove aria-hidden=\"true\" or make the element non-focusable with tabindex=\"-1\"",
+  "a11y/no-aria-hidden-on-focusable.help": "Remove aria-hidden=\"true\". tabindex=\"-1\" is still programmatically focusable",
   "a11y/no-access-key.description": "Disallow the use of the accesskey attribute",
   "a11y/no-access-key.message": "The accesskey attribute should not be used. Access keys create keyboard shortcut conflicts",
   "a11y/no-access-key.help": "Remove the accesskey attribute. Access keys create inconsistent keyboard shortcuts across platforms and conflict with assistive technology shortcuts",

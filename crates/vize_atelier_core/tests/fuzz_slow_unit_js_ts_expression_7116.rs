@@ -54,9 +54,9 @@ fn nested_arrow_defaults_with_one_comparison_per_frame_stay_safe() {
     pure.push('1');
     pure.push_str(&")".repeat(7));
     assert!(expression_is_safe_to_parse(&pure), "{pure}");
-    assert!(
-        prefix_identifiers_in_expression(&pure).contains("_ctx.a0"),
-        "{pure}"
+    assert_eq!(
+        prefix_identifiers_in_expression(&pure).as_str(),
+        format!("_ctx.{pure}")
     );
 }
 
@@ -69,8 +69,7 @@ fn flat_comparison_tail_inside_two_arrow_defaults_stays_safe() {
     flat.push_str("x<y))");
     assert!(expression_is_safe_to_parse(&flat), "{flat}");
     let rewritten = prefix_identifiers_in_expression(&flat);
-    assert_ne!(rewritten.as_str(), flat);
-    assert!(rewritten.starts_with("_ctx.a<"), "{rewritten}");
+    assert_eq!(rewritten.as_str(), format!("_ctx.{flat}"));
 }
 
 #[test]
@@ -101,7 +100,10 @@ fn ordinary_arrow_defaults_and_parenthesized_comparisons_stay_safe() {
         chain.push_str("a < (b + 1)");
     }
     assert!(expression_is_safe_to_parse(&chain));
-    assert!(prefix_identifiers_in_expression(&chain).contains("_ctx.a < (_ctx.b + 1)"));
+    let expected = std::iter::repeat_n("_ctx.a < (_ctx.b + 1)", 40)
+        .collect::<Vec<_>>()
+        .join(" && ");
+    assert_eq!(prefix_identifiers_in_expression(&chain).as_str(), expected);
 }
 
 fn nested_arrow_defaults(levels: usize, chains: usize) -> String {

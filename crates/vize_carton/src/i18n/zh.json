@@ -250,7 +250,7 @@
   "a11y/aria-role.help_suggestion": "**无效role:** `{invalid}`\n\n**您是否想输入:** `{valid}`?\n\n请参阅WAI-ARIA规范获取有效role的完整列表。",
   "a11y/no-aria-hidden-on-focusable.description": "禁止在可聚焦元素上使用aria-hidden=\"true\"",
   "a11y/no-aria-hidden-on-focusable.message": "不能在可聚焦元素上使用aria-hidden=\"true\"",
-  "a11y/no-aria-hidden-on-focusable.help": "删除aria-hidden=\"true\"或使用tabindex=\"-1\"使元素不可聚焦",
+  "a11y/no-aria-hidden-on-focusable.help": "删除 aria-hidden=\"true\"。tabindex=\"-1\" 仍然可以通过程序聚焦",
   "a11y/no-access-key.description": "禁止使用accesskey属性",
   "a11y/no-access-key.message": "不应使用accesskey属性。访问键会导致键盘快捷键冲突",
   "a11y/no-access-key.help": "删除accesskey属性。访问键在不同平台上创建不一致的键盘快捷键，并与辅助技术快捷键冲突",

@@ -99,8 +99,11 @@ void test("the same canonical ID loads real client and SSR compilation caches in
       fs.writeFileSync(path.join(root, `${i}.mjs`), code);
     const clientModule = await import(pathToFileURL(path.join(root, "0.mjs")).href);
     const serverModule = await import(pathToFileURL(path.join(root, "1.mjs")).href);
-    assert.equal(typeof clientModule.default.render, "function");
+    // Client production inlines the render into setup, matching
+    // @vitejs/plugin-vue. SSR keeps a separate ssrRender.
+    assert.equal(clientModule.default.render, undefined);
     assert.equal(clientModule.default.ssrRender, undefined);
+    assert.equal(typeof clientModule.default.setup, "function");
     assert.equal(typeof serverModule.default.ssrRender, "function");
     assert.equal(serverModule.default.render, undefined);
     const { createSSRApp } = await import(pathToFileURL(requireFrom.resolve("vue")).href);

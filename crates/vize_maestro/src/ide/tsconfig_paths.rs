@@ -564,7 +564,7 @@ mod tests {
         )
         .unwrap();
         let paths = super::project_paths(&root.join("src/App.vue")).unwrap();
-        assert!(paths.anchor.ends_with("node_modules/@scope/pkg"));
+        assert_eq!(paths.anchor, package);
         assert_eq!(
             paths.entries,
             vec![("#c/*".to_string(), "../../src/*".to_string())]
