@@ -255,6 +255,10 @@ pub(super) fn session_tsconfig_contents(project_root: &Path, filename: &str) -> 
     let mut value = stub_tsconfig_value();
     if let Some(tsconfig) = nearest_tsconfig(filename) {
         overlay_user_compiler_options(&mut value, project_root, &tsconfig);
+        let declarations = ambient_declaration_files(&tsconfig);
+        if !declarations.is_empty() {
+            insert_files(&mut value, &declarations);
+        }
     }
     match serde_json::to_string_pretty(&value) {
         Ok(text) => {
@@ -314,12 +318,422 @@ fn overlay_user_compiler_options(value: &mut Value, project_root: &Path, tsconfi
     }
 }
 
+fn insert_files(value: &mut Value, declarations: &[String]) {
+    let Some(root) = value.as_object_mut() else {
+        return;
+    };
+    let files = declarations
+        .iter()
+        .map(|path| Value::String(json_string(path.as_str())))
+        .collect();
+    root.insert(json_string("files"), Value::Array(files));
+}
+
 #[expect(
     clippy::disallowed_types,
     reason = "serde_json object keys and string values are std String"
 )]
 fn json_string(text: &str) -> std::string::String {
     std::string::String::from(text)
+}
+
+fn ambient_declaration_files(tsconfig: &Path) -> Vec<String> {
+    let Some(base) = tsconfig.parent() else {
+        return Vec::new();
+    };
+    let Ok(content) = std::fs::read_to_string(tsconfig) else {
+        return Vec::new();
+    };
+    let Some(value) = parse_jsonc(&content) else {
+        return Vec::new();
+    };
+    let excludes = exclude_patterns(&value);
+    let mut matched = Vec::new();
+    if let Some(files) = value.get("files").and_then(Value::as_array) {
+        for entry in files.iter().filter_map(Value::as_str) {
+            let path = resolve_config_path(base, entry);
+            if path.is_file() {
+                matched.push(path);
+            }
+        }
+    }
+    if let Some(include) = value.get("include").and_then(Value::as_array) {
+        for entry in include.iter().filter_map(Value::as_str) {
+            collect_include_entry(base, entry, &mut matched);
+        }
+    }
+    if value.get("files").is_none() && value.get("include").is_none() {
+        walk_glob(base, &["**", "*.d.ts"], &mut matched);
+    }
+
+    let mut declarations = Vec::new();
+    for path in matched {
+        if !is_declaration_file(&path) {
+            continue;
+        }
+        let relative = path.strip_prefix(base).unwrap_or(path.as_path());
+        let relative = slash_path(relative);
+        if is_excluded(relative.as_str(), &excludes) {
+            continue;
+        }
+        let absolute = std::fs::canonicalize(&path).unwrap_or(path);
+        declarations.push(slash_path(&absolute));
+    }
+    declarations.sort();
+    declarations.dedup();
+    declarations
+}
+
+fn exclude_patterns(value: &Value) -> Vec<String> {
+    match value.get("exclude") {
+        Some(Value::Array(entries)) => entries
+            .iter()
+            .filter_map(Value::as_str)
+            .map(ToCompactString::to_compact_string)
+            .collect(),
+        Some(_) => Vec::new(),
+        None => ["node_modules", "bower_components", "jspm_packages"]
+            .into_iter()
+            .map(ToCompactString::to_compact_string)
+            .collect(),
+    }
+}
+
+fn is_excluded(relative: &str, patterns: &[String]) -> bool {
+    if patterns.is_empty() {
+        return false;
+    }
+    let mut prefix = relative;
+    loop {
+        if patterns
+            .iter()
+            .any(|pattern| glob_match(pattern.as_str(), prefix))
+        {
+            return true;
+        }
+        let Some((parent, _)) = prefix.rsplit_once('/') else {
+            return false;
+        };
+        prefix = parent;
+    }
+}
+
+fn collect_include_entry(base: &Path, pattern: &str, out: &mut Vec<PathBuf>) {
+    if pattern.contains('*') || pattern.contains('?') {
+        collect_glob(base, pattern, out);
+        return;
+    }
+    let path = resolve_config_path(base, pattern);
+    if path.is_file() {
+        out.push(path);
+    } else if path.is_dir() {
+        walk_glob(&path, &["**", "*.d.ts"], out);
+    }
+}
+
+fn resolve_config_path(base: &Path, pattern: &str) -> PathBuf {
+    let pattern = pattern.trim_start_matches("./");
+    let path = Path::new(pattern);
+    if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        base.join(pattern)
+    }
+}
+
+fn collect_glob(base: &Path, pattern: &str, out: &mut Vec<PathBuf>) {
+    let pattern = pattern.trim_start_matches("./");
+    let absolute = Path::new(pattern).is_absolute();
+    let mut root = if absolute {
+        PathBuf::from("/")
+    } else {
+        base.to_path_buf()
+    };
+    let raw_parts: Vec<&str> = pattern.split('/').filter(|part| !part.is_empty()).collect();
+    let mut index = 0usize;
+    if absolute {
+        while raw_parts
+            .get(index)
+            .is_some_and(|part| !part.contains('*') && !part.contains('?'))
+        {
+            let Some(part) = raw_parts.get(index) else {
+                break;
+            };
+            root.push(part);
+            index += 1;
+        }
+    }
+    let Some(parts) = raw_parts.get(index..) else {
+        return;
+    };
+    if parts.is_empty() {
+        if root.is_file() {
+            out.push(root);
+        }
+        return;
+    }
+    walk_glob(&root, parts, out);
+}
+
+fn walk_glob(dir: &Path, parts: &[&str], out: &mut Vec<PathBuf>) {
+    let Some((head, rest)) = parts.split_first() else {
+        return;
+    };
+    if *head == "**" {
+        walk_glob(dir, rest, out);
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return;
+        };
+        for entry in entries.flatten() {
+            if is_walkable_dir(&entry) {
+                walk_glob(&entry.path(), parts, out);
+            }
+        }
+        return;
+    }
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let Ok(name) = entry.file_name().into_string() else {
+            continue;
+        };
+        if !segment_match(head, &name) {
+            continue;
+        }
+        let path = entry.path();
+        if rest.is_empty() {
+            if path.is_file() {
+                out.push(path);
+            }
+            continue;
+        }
+        if is_walkable_dir(&entry) {
+            walk_glob(&path, rest, out);
+        }
+    }
+}
+
+fn is_walkable_dir(entry: &std::fs::DirEntry) -> bool {
+    let Ok(file_type) = entry.file_type() else {
+        return false;
+    };
+    if !file_type.is_dir() {
+        return false;
+    }
+    let Ok(name) = entry.file_name().into_string() else {
+        return false;
+    };
+    !matches!(
+        name.as_str(),
+        "node_modules"
+            | "bower_components"
+            | "jspm_packages"
+            | ".vize"
+            | ".git"
+            | "target"
+            | "dist"
+    )
+}
+
+fn is_declaration_file(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with(".d.ts"))
+}
+
+fn segment_match(pattern: &str, name: &str) -> bool {
+    segment_match_bytes(pattern.as_bytes(), name.as_bytes())
+}
+
+fn segment_match_bytes(pattern: &[u8], name: &[u8]) -> bool {
+    let mut pattern_index = 0usize;
+    let mut name_index = 0usize;
+    let mut star_pattern = None;
+    let mut star_name = 0usize;
+    while name_index < name.len() {
+        let Some(name_byte) = name.get(name_index).copied() else {
+            break;
+        };
+        if pattern
+            .get(pattern_index)
+            .is_some_and(|pattern_byte| *pattern_byte == b'?' || *pattern_byte == name_byte)
+        {
+            pattern_index += 1;
+            name_index += 1;
+            continue;
+        }
+        if pattern
+            .get(pattern_index)
+            .is_some_and(|pattern_byte| *pattern_byte == b'*')
+        {
+            star_pattern = Some(pattern_index);
+            star_name = name_index;
+            pattern_index += 1;
+            continue;
+        }
+        if let Some(star) = star_pattern {
+            pattern_index = star + 1;
+            star_name += 1;
+            name_index = star_name;
+            continue;
+        }
+        return false;
+    }
+    while pattern.get(pattern_index).is_some_and(|byte| *byte == b'*') {
+        pattern_index += 1;
+    }
+    pattern_index == pattern.len()
+}
+
+fn glob_match(pattern: &str, relative: &str) -> bool {
+    let pattern = pattern.trim_start_matches("./");
+    let pattern_parts: Vec<&str> = pattern.split('/').filter(|part| !part.is_empty()).collect();
+    let name_parts: Vec<&str> = relative
+        .split('/')
+        .filter(|part| !part.is_empty())
+        .collect();
+    glob_parts(&pattern_parts, &name_parts)
+}
+
+fn glob_parts(pattern: &[&str], name: &[&str]) -> bool {
+    let Some((head, pattern_rest)) = pattern.split_first() else {
+        return name.is_empty();
+    };
+    if *head == "**" {
+        if glob_parts(pattern_rest, name) {
+            return true;
+        }
+        return match name.split_first() {
+            Some((_, name_rest)) => glob_parts(pattern, name_rest),
+            None => false,
+        };
+    }
+    let Some((name_head, name_rest)) = name.split_first() else {
+        return false;
+    };
+    segment_match(head, name_head) && glob_parts(pattern_rest, name_rest)
+}
+
+fn slash_path(path: &Path) -> String {
+    let mut rendered = String::new("");
+    for component in path.components() {
+        match component {
+            std::path::Component::RootDir => rendered.push('/'),
+            std::path::Component::Normal(part) => {
+                if !rendered.is_empty() && !rendered.ends_with('/') {
+                    rendered.push('/');
+                }
+                rendered.push_str(&part.to_string_lossy());
+            }
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir => rendered.push_str("/.."),
+            std::path::Component::Prefix(prefix) => {
+                rendered.push_str(&prefix.as_os_str().to_string_lossy());
+            }
+        }
+    }
+    rendered
+}
+
+fn parse_jsonc(content: &str) -> Option<Value> {
+    let stripped = strip_json_comments(content);
+    let normalized = strip_trailing_commas(stripped.as_str());
+    serde_json::from_str(normalized.as_str()).ok()
+}
+
+fn strip_json_comments(content: &str) -> String {
+    let mut output = String::with_capacity(content.len());
+    let mut chars = content.chars().peekable();
+    let mut in_string = false;
+    let mut escaped = false;
+    let mut line_comment = false;
+    let mut block_comment = false;
+    while let Some(ch) = chars.next() {
+        if line_comment {
+            if ch == '\n' {
+                line_comment = false;
+                output.push('\n');
+            }
+            continue;
+        }
+        if block_comment {
+            if ch == '*' && chars.peek() == Some(&'/') {
+                let _ = chars.next();
+                block_comment = false;
+            } else if ch == '\n' {
+                output.push('\n');
+            }
+            continue;
+        }
+        if in_string {
+            output.push(ch);
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '"' {
+                in_string = false;
+            }
+            continue;
+        }
+        if ch == '"' {
+            in_string = true;
+            output.push(ch);
+            continue;
+        }
+        if ch == '/' && chars.peek() == Some(&'/') {
+            let _ = chars.next();
+            line_comment = true;
+            continue;
+        }
+        if ch == '/' && chars.peek() == Some(&'*') {
+            let _ = chars.next();
+            block_comment = true;
+            continue;
+        }
+        output.push(ch);
+    }
+    output
+}
+
+fn strip_trailing_commas(content: &str) -> String {
+    let mut output = String::with_capacity(content.len());
+    let mut chars = content.chars().peekable();
+    let mut in_string = false;
+    let mut escaped = false;
+    while let Some(ch) = chars.next() {
+        if in_string {
+            output.push(ch);
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '"' {
+                in_string = false;
+            }
+            continue;
+        }
+        if ch == '"' {
+            in_string = true;
+            output.push(ch);
+            continue;
+        }
+        if ch == ',' {
+            let mut lookahead = chars.clone();
+            let next = loop {
+                match lookahead.next() {
+                    Some(next) if next.is_whitespace() => continue,
+                    other => break other,
+                }
+            };
+            if matches!(next, Some('}' | ']')) {
+                continue;
+            }
+        }
+        output.push(ch);
+    }
+    output
 }
 
 fn push_u64(buffer: &mut String, value: u64) {
@@ -500,6 +914,60 @@ mod tests {
         assert_eq!(value["include"][0], "**/*.patina.ts");
 
         let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn session_tsconfig_includes_ambient_declarations_from_include() {
+        let root = case_dir("tsconfig-ambient");
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(root.join("src")).unwrap();
+        std::fs::write(
+            root.join("src/env.d.ts"),
+            "declare module \"vue\" { interface ComponentCustomProperties { $t: (key: string) => string } }\n",
+        )
+        .unwrap();
+        std::fs::write(root.join("src/skip.ts"), "export const skip = 1\n").unwrap();
+        std::fs::write(
+            root.join("src/hidden.d.ts"),
+            "declare module \"hidden\" { export const hidden: string }\n",
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("tsconfig.json"),
+            r#"{
+              // ambient augmentations only
+              "compilerOptions": { "strict": true },
+              "include": ["src/**/*.d.ts", "src/**/*.ts"],
+              "exclude": ["src/hidden.d.ts"]
+            }"#,
+        )
+        .unwrap();
+
+        let value: serde_json::Value = serde_json::from_str(&session_tsconfig_contents(
+            &root,
+            &root.join("src/App.vue").to_string_lossy(),
+        ))
+        .unwrap();
+        let files: Vec<_> = value["files"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter_map(|entry| entry.as_str())
+            .collect();
+        let env = slash_display(&std::fs::canonicalize(root.join("src/env.d.ts")).unwrap());
+        let hidden = slash_display(&std::fs::canonicalize(root.join("src/hidden.d.ts")).unwrap());
+        assert!(files.contains(&env.as_str()), "{files:?}");
+        assert!(
+            !files.iter().any(|file| file.ends_with("skip.ts")),
+            "{files:?}"
+        );
+        assert!(!files.contains(&hidden.as_str()), "{files:?}");
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    fn slash_display(path: &Path) -> std::string::String {
+        path.to_string_lossy().replace('\\', "/")
     }
 
     #[cfg(unix)]
