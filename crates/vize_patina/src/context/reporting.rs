@@ -140,6 +140,25 @@ impl<'a> LintContext<'a> {
     }
 }
 
+/// Drop diagnostics that an `eslint-*` / `oxlint-*` comment in a script or style
+/// block already covers. Template comments are applied when the template rule
+/// reports; script, CSS, and type-aware diagnostics are appended later and
+/// would otherwise ignore the same comments.
+pub(crate) fn retain_unless_sfc_suppressed(
+    descriptor: &SfcDescriptor<'_>,
+    diagnostics: &mut Vec<LintDiagnostic>,
+) -> bool {
+    let Some(directives) = SfcDirectiveState::scan_if_present(descriptor) else {
+        return false;
+    };
+    let before = diagnostics.len();
+    diagnostics.retain(|diagnostic| {
+        let line = directives.offset_to_line(diagnostic.start);
+        !directives.is_disabled_at(diagnostic.rule_name, line, diagnostic.start)
+    });
+    diagnostics.len() != before
+}
+
 /// Shift every range carried by a diagnostic into its containing source.
 pub(crate) fn offset_diagnostic(diagnostic: &mut LintDiagnostic, byte_offset: u32) {
     if byte_offset == 0 {

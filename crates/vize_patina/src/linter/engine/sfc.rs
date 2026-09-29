@@ -256,6 +256,23 @@ impl Linter {
             filename,
             &mut result,
         );
+        if (source.contains("eslint-") || source.contains("oxlint-"))
+            && let Ok(descriptor) = super::super::script_rules::parse_sfc_for_lint(source, filename)
+            && crate::context::retain_unless_sfc_suppressed(&descriptor, &mut result.diagnostics)
+        {
+            let error_count = result
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.severity == crate::Severity::Error)
+                .count();
+            let warning_count = result
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.severity == crate::Severity::Warning)
+                .count();
+            result.error_count = error_count;
+            result.warning_count = warning_count;
+        }
         result
     }
 }
