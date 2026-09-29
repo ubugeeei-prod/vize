@@ -50,9 +50,31 @@ fn truncate(line: &str) -> CompactString {
 }
 
 fn binding_context(line: &str, column: usize) -> Option<CompactString> {
+    if start_tag_end(line).is_some_and(|end| column >= end) {
+        return None;
+    }
     source_token_at(line, column)
         .and_then(|(start, token)| attribute_context(line, start, token))
         .or_else(|| binding_context_from_line(line, column))
+}
+
+fn start_tag_end(line: &str) -> Option<usize> {
+    if !line.trim_start().starts_with('<') {
+        return None;
+    }
+    let mut quote = None;
+    for (index, byte) in line.bytes().enumerate() {
+        if let Some(active_quote) = quote {
+            if byte == active_quote {
+                quote = None;
+            }
+        } else if matches!(byte, b'\'' | b'"') {
+            quote = Some(byte);
+        } else if byte == b'>' {
+            return Some(index + 1);
+        }
+    }
+    None
 }
 
 fn utf16_column_to_byte_offset(line: &str, column: usize) -> usize {
@@ -318,7 +340,24 @@ mod tests {
                 73,
             )
             .as_deref(),
-            Some("#default")
+            None
+        );
+    }
+
+    #[test]
+    fn binding_context_excludes_interpolations_after_start_tag() {
+        let event = r#"<div @click="onClick">{{ notDefined }}</div>"#;
+        assert_eq!(context_at(event, event.find("notDefined").unwrap()), None);
+        assert_eq!(
+            context_at(event, event.find("onClick").unwrap()).as_deref(),
+            Some("@click")
+        );
+
+        let prop = r#"<p :title="alsoMissing">{{ stillMissing }}</p>"#;
+        assert_eq!(context_at(prop, prop.find("stillMissing").unwrap()), None);
+        assert_eq!(
+            context_at(prop, prop.find("alsoMissing").unwrap()).as_deref(),
+            Some("'title'")
         );
     }
 
