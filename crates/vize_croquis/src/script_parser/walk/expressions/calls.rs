@@ -212,31 +212,37 @@ fn is_ident_byte(byte: u8) -> bool {
 
 #[inline(always)]
 pub(super) fn identifier_might_be_browser_global(name: &str) -> bool {
+    let bytes = name.as_bytes();
+    let Some((&first, &second)) = bytes.first().zip(bytes.get(1)) else {
+        return false;
+    };
+    // Each browser global is unique on (length, first byte, second byte), so
+    // the hot walk rejects ordinary identifiers before any string compare.
     matches!(
-        name.as_bytes().first(),
-        Some(
-            b'a' | b'c'
-                | b'd'
-                | b'f'
-                | b'g'
-                | b'h'
-                | b'l'
-                | b'm'
-                | b'n'
-                | b'p'
-                | b'r'
-                | b's'
-                | b'w'
-                | b'I'
-                | b'M'
-                | b'R'
-                | b'W'
-                | b'X'
-        )
+        (bytes.len(), first, second),
+        (5, b'a', b'l')
+            | (5, b'f', b'e')
+            | (6, b'p', b'r')
+            | (6, b'w', b'i')
+            | (7, b'c', b'o')
+            | (7, b'h', b'i')
+            | (8, b'd', b'o')
+            | (8, b'l', b'o')
+            | (9, b'W', b'e')
+            | (9, b'n', b'a')
+            | (10, b'm', b'a')
+            | (12, b'l', b'o')
+            | (14, b'X', b'M')
+            | (14, b's', b'e')
+            | (14, b'R', b'e')
+            | (16, b'M', b'u')
+            | (16, b'g', b'e')
+            | (20, b'I', b'n')
+            | (20, b'c', b'a')
+            | (21, b'r', b'e')
     )
 }
 
-#[inline(always)]
 pub(super) fn note_script_browser_global(result: &mut ScriptParseResult, name: &str, offset: u32) {
     if !is_browser_global(name) {
         return;
@@ -260,7 +266,6 @@ pub(super) fn note_script_browser_global(result: &mut ScriptParseResult, name: &
         .push((CompactString::new(name), offset));
 }
 
-#[inline(always)]
 fn is_browser_global(name: &str) -> bool {
     matches!(
         name,

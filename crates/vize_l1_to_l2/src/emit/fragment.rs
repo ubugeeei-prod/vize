@@ -264,13 +264,7 @@ fn is_root_fragment_whitespace_gap(parts: &[crate::lower::TextPart], index: usiz
     };
     !part.dynamic
         && part.text.chars().all(char::is_whitespace)
-        && (index == 0
-            || index + 1 == parts.len()
-            || (index
-                .checked_sub(1)
-                .and_then(|before| parts.get(before))
-                .is_some_and(|part| part.dynamic)
-                && parts.get(index + 1).is_some_and(|part| part.dynamic)))
+        && (index == 0 || index + 1 == parts.len())
 }
 
 fn meaningful_bounds(root: &Region<'_>) -> Option<(usize, usize)> {

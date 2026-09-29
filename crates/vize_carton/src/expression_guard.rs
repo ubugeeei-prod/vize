@@ -56,12 +56,12 @@ fn flush_speculative_type_angle_segment(cumulative: &mut usize, segment_depth: &
 
 /// `<(ident =` frames multiply OXC's speculative reparse. A single frame, or a
 /// nest whose other frames hold fewer than two `<`, stays on the linear path.
-fn arrow_default_angle_product_exceeds(frames: &[usize]) -> bool {
-    if frames.iter().filter(|&&count| count >= 2).count() < 2 {
+fn arrow_default_angle_product_exceeds(frames: &[(usize, usize)]) -> bool {
+    if frames.iter().filter(|&&(_, count)| count >= 2).count() < 2 {
         return false;
     }
     let mut product = 1usize;
-    for &count in frames {
+    for &(_, count) in frames {
         product = product.saturating_mul(count.max(1));
         if product > MAX_ARROW_DEFAULT_ANGLE_PRODUCT {
             return true;

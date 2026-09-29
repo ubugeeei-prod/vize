@@ -7,11 +7,21 @@ use super::{
     starts_valid_identifier_escape,
 };
 
+/// `<(ident =` only follows `<`, trivia, or a comment. Other next bytes skip the lookahead.
+fn arrow_default_paren_possible(bytes: &[u8], open: usize) -> bool {
+    match bytes.get(open + 1) {
+        Some(b'(' | b' ' | b'\t' | 0x0b | 0x0c | b'\n' | b'\r' | b'/') => true,
+        Some(byte) if *byte >= 0x80 => true,
+        Some(_) | None => false,
+    }
+}
+
 /// Returns the maximum parser-recursion depth in `content`.
 ///
 /// Brackets and unambiguous TypeScript angles are paired, while decorator markers
 /// accumulate for OXC's recursive parser. Strings, template text, comments, and
 /// regexes are skipped; `${...}` template interpolations are scanned.
+#[inline(always)]
 pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
     let bytes = content.as_bytes();
     let (mut angle_depth, mut decorator_depth) = (0usize, 0usize);
@@ -53,9 +63,9 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
     let mut cumulative_speculative_type_angle_depth = 0usize;
     let mut oversized_numeric_token = false;
     let mut track_type_angles = false;
-    // Parallel to `(`. `true` entries own a frame in `arrow_default_angles`.
-    let mut paren_opened_arrow_default = Vec::new();
-    let mut arrow_default_angles: Vec<usize> = Vec::new();
+    // `(delimiter depth at the opener, `<` count)` for each `<(ident =` frame.
+    // Ordinary parentheses do not push: the depth tells which `)` closes the frame.
+    let mut arrow_frames: Vec<(usize, usize)> = Vec::new();
     let mut pending_arrow_default_paren: Option<usize> = None;
     let mut excessive_arrow_default_speculation = false;
     let mut i = 0;
@@ -135,12 +145,10 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
             }
             b'(' | b'[' | b'{' => {
                 if b == b'(' {
-                    let opens_arrow = pending_arrow_default_paren == Some(i);
-                    pending_arrow_default_paren = None;
-                    paren_opened_arrow_default.push(opens_arrow);
-                    if opens_arrow {
-                        arrow_default_angles.push(0);
+                    if pending_arrow_default_paren == Some(i) {
+                        arrow_frames.push((delimiters.len(), 0));
                     }
+                    pending_arrow_default_paren = None;
                 }
                 delimiters.push(match b {
                     b'(' => b')',
@@ -150,8 +158,12 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
                 can_start_regex = true;
             }
             b')' | b']' => {
-                if b == b')' && paren_opened_arrow_default.pop() == Some(true) {
-                    arrow_default_angles.pop();
+                if b == b')'
+                    && arrow_frames
+                        .last()
+                        .is_some_and(|(depth, _)| depth.saturating_add(1) == delimiters.len())
+                {
+                    arrow_frames.pop();
                 }
                 delimiters_balanced &= delimiters.pop() == Some(b);
                 can_start_regex = false;
@@ -188,13 +200,17 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
             }
             b'<' => {
                 angle_depth += 1;
-                pending_arrow_default_paren = speculative_arrow_default_paren(content, i);
-                if let Some(depth) = arrow_default_angles.last_mut() {
-                    *depth += 1;
+                pending_arrow_default_paren = if arrow_default_paren_possible(bytes, i) {
+                    speculative_arrow_default_paren(content, i)
+                } else {
+                    None
+                };
+                if let Some((_, angles)) = arrow_frames.last_mut() {
+                    *angles += 1;
                 }
-                if !arrow_default_angles.is_empty() {
+                if !arrow_frames.is_empty() {
                     excessive_arrow_default_speculation |=
-                        arrow_default_angle_product_exceeds(&arrow_default_angles);
+                        arrow_default_angle_product_exceeds(&arrow_frames);
                 }
                 if let Some(kind) = speculative_type_angle_open_kind(content, i) {
                     speculative_type_angle_opens += 1;

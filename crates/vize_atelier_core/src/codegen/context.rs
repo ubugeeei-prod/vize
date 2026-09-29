@@ -235,20 +235,20 @@ impl CodegenContext {
     }
 
     /// Push string to buffer
-    #[inline]
+    #[inline(always)]
     pub fn push(&mut self, code: &str) {
         self.out.push_str(code);
     }
 
     /// Push code with newline
-    #[inline]
+    #[inline(always)]
     pub fn push_line(&mut self, code: &str) {
         self.push(code);
         self.newline();
     }
 
     /// Add newline with proper indentation
-    #[inline]
+    #[inline(always)]
     pub fn newline(&mut self) {
         self.out.push_char('\n');
         for _ in 0..self.indent_level {

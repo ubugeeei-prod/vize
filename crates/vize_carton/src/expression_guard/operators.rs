@@ -7,6 +7,7 @@
 
 use super::{MAX_EXPRESSION_NESTING_DEPTH, scan};
 
+#[inline(always)]
 pub(super) fn has_excessive_prefix_operator_run(content: &str) -> bool {
     let bytes = content.as_bytes();
     let mut can_start_operand = true;

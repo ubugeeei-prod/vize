@@ -178,6 +178,10 @@ pub(super) fn has_conditional_or_loop_slots(el: &ElementNode<'_>) -> bool {
     })
 }
 
+pub(super) fn has_authored_slot_template(el: &ElementNode<'_>) -> bool {
+    el.children.iter().any(child_is_slot_template)
+}
+
 pub(super) fn child_is_slot_template(child: &TemplateChildNode<'_>) -> bool {
     match child {
         TemplateChildNode::Element(el) => el.tag == "template" && has_v_slot(el),
