@@ -255,7 +255,9 @@ fn span_text(span: Span, source: &str) -> Option<String> {
         .map(ToCompactString::to_compact_string)
 }
 
-pub(super) fn property_text_ranges(
+pub(super) use super::comments::{PropertyText, property_text_ranges};
+
+pub(super) fn legacy_property_text_ranges(
     object: &ObjectExpression<'_>,
     source: &str,
 ) -> Option<(usize, usize, Vec<String>)> {
@@ -292,7 +294,7 @@ pub(super) fn property_text_ranges(
     Some((range_start, range_end, pieces))
 }
 
-fn next_token_offset(source: &str, mut offset: usize, limit: usize) -> usize {
+pub(super) fn next_token_offset(source: &str, mut offset: usize, limit: usize) -> usize {
     while offset < limit {
         let Some(tail) = source.get(offset..) else {
             break;

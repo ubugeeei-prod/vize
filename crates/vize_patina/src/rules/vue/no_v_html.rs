@@ -16,7 +16,11 @@
 //! ### Invalid
 //! ```vue
 //! <div v-html="userContent"></div>
-//! <span v-html="htmlFromApi"></span>
+//! <div :innerHTML="userContent"></div>
+//! <div v-bind:innerHTML="userContent"></div>
+//! <div .innerHTML="userContent"></div>
+//! <div v-bind="{ innerHTML: userContent }"></div>
+//! <div :outerHTML="userContent"></div>
 //! ```
 //!
 //! ### Valid
@@ -24,8 +28,8 @@
 //! <!-- Use text interpolation for user content -->
 //! <div>{{ userContent }}</div>
 //!
-//! <!-- Or sanitize HTML before rendering -->
-//! <div v-html="sanitizedHtml"></div> <!-- with proper sanitization -->
+//! <!-- A static attribute is not a binding -->
+//! <div innerHTML="static"></div>
 //! ```
 //!
 //! ## When to Allow
@@ -38,7 +42,11 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{DirectiveNode, ElementNode};
+use oxc_ast::ast::{Expression, ObjectProperty, ObjectPropertyKind, PropertyKey};
+use oxc_span::GetSpan;
+use vize_relief::{
+    DirectiveNode, ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation,
+};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-v-html",
@@ -64,24 +72,206 @@ impl Rule for NoVHtml {
         directive: &DirectiveNode<'a>,
     ) {
         if directive.name == "html" {
-            // An `eslint-disable-next-line vue/no-v-html` is written above the
-            // element, but the formatter may wrap a long opening tag so the
-            // `v-html` attribute no longer lands on the line the suppression
-            // covers. Anchor the suppression to the element's opening-tag
-            // start (which formatting keeps on the line right after the
-            // comment) so the suppression survives and `vize fmt` does not
-            // introduce a finding (lint-agreement, #3252). The diagnostic is
-            // still reported at the precise directive span.
-            if ctx.is_rule_disabled_at_offset(META.name, element.loc.span.start) {
-                return;
-            }
-            ctx.warn_with_help(
-                ctx.t("vue/no-v-html.message"),
-                &directive.loc,
-                ctx.t("vue/no-v-html.help"),
+            report_sink(
+                ctx,
+                element,
+                directive.loc.span.start,
+                directive.loc.span.end,
             );
+            return;
+        }
+
+        // Static `innerHTML="..."` is an attribute, not a directive, so it
+        // never reaches here. These are the bound forms of the same DOM sink.
+        if directive.name != "bind" {
+            return;
+        }
+
+        if let Some((start, end)) = bound_sink_argument(directive) {
+            report_sink(ctx, element, start, end);
+            return;
+        }
+
+        // `v-bind:title="{ innerHTML }"` assigns that object to `title`.
+        // Only an argument-less `v-bind` applies object keys as properties.
+        if directive.arg.is_some() {
+            return;
+        }
+
+        report_object_sinks(ctx, element, directive);
+    }
+}
+
+fn is_html_sink(name: &str) -> bool {
+    matches!(name, "innerHTML" | "outerHTML")
+}
+
+/// Report one raw-HTML binding.
+///
+/// An `eslint-disable-next-line vue/no-v-html` sits above the element, but
+/// the formatter may wrap a long opening tag so the binding is no longer on
+/// the line the suppression covers. Anchor the suppression to the element's
+/// opening-tag start (which formatting keeps on the line right after the
+/// comment) so the suppression survives and `vize fmt` does not introduce a
+/// finding (lint-agreement, #3252). The diagnostic itself stays on the
+/// binding.
+fn report_sink(ctx: &mut LintContext<'_>, element: &ElementNode<'_>, start: u32, end: u32) {
+    if end <= start || ctx.is_rule_disabled_at_offset(META.name, element.loc.span.start) {
+        return;
+    }
+    let loc = SourceLocation::new(start, end);
+    ctx.warn_with_help(
+        ctx.t("vue/no-v-html.message"),
+        &loc,
+        ctx.t("vue/no-v-html.help"),
+    );
+}
+
+/// `:innerHTML`, `v-bind:innerHTML`, `.innerHTML`, and the same for `outerHTML`.
+/// A dynamic argument counts only when it is a string literal (`:['innerHTML']`).
+fn bound_sink_argument(directive: &DirectiveNode<'_>) -> Option<(u32, u32)> {
+    let ExpressionNode::Simple(arg) = directive.arg.as_ref()? else {
+        return None;
+    };
+    let sink = if arg.is_static {
+        is_html_sink(arg.content)
+    } else {
+        arg.js_ast
+            .and_then(|parsed| literal_name(parsed.ast))
+            .is_some_and(is_html_sink)
+    };
+    sink.then_some((arg.loc.span.start, arg.loc.span.end))
+}
+
+fn literal_name<'a>(expression: &'a Expression<'a>) -> Option<&'a str> {
+    match expression.get_inner_expression() {
+        Expression::StringLiteral(literal) => Some(literal.value.as_str()),
+        Expression::TemplateLiteral(template) => {
+            template.single_quasi().map(|value| value.as_str())
+        }
+        _ => None,
+    }
+}
+
+fn report_object_sinks<'a>(
+    ctx: &mut LintContext<'a>,
+    element: &ElementNode<'a>,
+    directive: &DirectiveNode<'a>,
+) {
+    let Some(ExpressionNode::Simple(expression)) = directive.exp.as_ref() else {
+        return;
+    };
+    let Some(parsed) = expression.js_ast else {
+        return;
+    };
+    if !matches!(
+        parsed.ast.get_inner_expression(),
+        Expression::ObjectExpression(_)
+    ) {
+        return;
+    }
+
+    let base = expression_base(ctx, expression, parsed.raw);
+    let raw_len = u32::try_from(parsed.raw.len()).unwrap_or(u32::MAX);
+    let mut spans = Vec::new();
+    let mut mapped_all = true;
+    let saw = collect_object_sinks(parsed.ast, base, raw_len, &mut spans, &mut mapped_all);
+    if !saw {
+        return;
+    }
+    if !mapped_all {
+        report_sink(
+            ctx,
+            element,
+            directive.loc.span.start,
+            directive.loc.span.end,
+        );
+        return;
+    }
+    for (start, end) in spans {
+        report_sink(ctx, element, start, end);
+    }
+}
+
+fn expression_base(
+    ctx: &LintContext<'_>,
+    expression: &SimpleExpressionNode<'_>,
+    raw: &str,
+) -> Option<u32> {
+    let start = usize::try_from(expression.loc.span.start).ok()?;
+    let end = usize::try_from(expression.loc.span.end).ok()?;
+    (ctx.source.get(start..end) == Some(raw)).then_some(expression.loc.span.start)
+}
+
+fn collect_object_sinks(
+    expression: &Expression<'_>,
+    base: Option<u32>,
+    raw_len: u32,
+    spans: &mut Vec<(u32, u32)>,
+    mapped_all: &mut bool,
+) -> bool {
+    let Expression::ObjectExpression(object) = expression.get_inner_expression() else {
+        return false;
+    };
+    let mut saw = false;
+    for property in &object.properties {
+        match property {
+            ObjectPropertyKind::ObjectProperty(property) => {
+                if !property_is_sink(property) {
+                    continue;
+                }
+                saw = true;
+                match base.and_then(|base| translate_span(base, raw_len, property.key.span())) {
+                    Some(span) => spans.push(span),
+                    None => *mapped_all = false,
+                }
+            }
+            ObjectPropertyKind::SpreadProperty(spread) => {
+                if collect_object_sinks(&spread.argument, base, raw_len, spans, mapped_all) {
+                    saw = true;
+                }
+            }
         }
     }
+    saw
+}
+
+fn property_is_sink(property: &ObjectProperty<'_>) -> bool {
+    let name = if property.computed {
+        computed_key_name(&property.key)
+    } else {
+        static_key_name(&property.key)
+    };
+    name.is_some_and(is_html_sink)
+}
+
+fn static_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
+        PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
+        PropertyKey::TemplateLiteral(template) => {
+            template.single_quasi().map(|value| value.as_str())
+        }
+        _ => None,
+    }
+}
+
+fn computed_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+    match key {
+        PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
+        PropertyKey::TemplateLiteral(template) => {
+            template.single_quasi().map(|value| value.as_str())
+        }
+        _ => None,
+    }
+}
+
+fn translate_span(base: u32, raw_len: u32, span: oxc_span::Span) -> Option<(u32, u32)> {
+    if span.end > raw_len || span.end <= span.start {
+        return None;
+    }
+    let start = base.checked_add(span.start)?;
+    Some((start, base.checked_add(span.end)?))
 }
 
 #[cfg(test)]
@@ -141,5 +331,105 @@ mod tests {
         let src = "<div\n  class=\"a-really-long-class-name\"\n  v-html=\"content\"\n></div>";
         let result = linter.lint_template(src, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_inner_html_bindings_are_reported() {
+        let source = "\
+<div v-html=\"html\" />
+<div :innerHTML=\"html\" />
+<div v-bind:innerHTML=\"html\" />
+<div .innerHTML=\"html\" />
+<div v-bind=\"{ innerHTML: html }\" />
+<div :outerHTML=\"html\" />
+<div v-bind:outerHTML=\"html\" />
+<div .outerHTML=\"html\" />
+<div v-bind=\"{ outerHTML: html }\" />
+<div v-bind:innerHTML.prop=\"html\" />
+<div :['innerHTML']=\"html\" />
+<div v-bind=\"{ 'innerHTML': html, class: name }\" />
+<div v-bind=\"{ innerHTML }\" />
+<div v-bind=\"({ outerHTML: html })\" />
+<div v-bind=\"{ ...{ innerHTML: html } }\" />";
+        assert_eq!(
+            sink_slices(source),
+            vec![
+                "v-html=\"html\"",
+                "innerHTML",
+                "innerHTML",
+                "innerHTML",
+                "innerHTML",
+                "outerHTML",
+                "outerHTML",
+                "outerHTML",
+                "outerHTML",
+                "innerHTML",
+                "'innerHTML'",
+                "'innerHTML'",
+                "innerHTML",
+                "outerHTML",
+                "innerHTML",
+            ]
+        );
+    }
+
+    #[test]
+    fn test_unrelated_attributes_and_static_inner_html_are_not_reported() {
+        for source in [
+            r#"<div innerHTML="html" />"#,
+            r#"<div outerHTML="html" />"#,
+            r#"<div :class="html" />"#,
+            r#"<div v-bind:title="html" />"#,
+            r#"<div :id="innerHTML" />"#,
+            r#"<div v-bind="{ class: html }" />"#,
+            r#"<div :class="{ innerHTML: true }" />"#,
+            r#"<div :[innerHTML]="html" />"#,
+            r#"<div v-bind="html" />"#,
+            r#"<div v-bind="{ ...html }" />"#,
+            r#"<div v-bind="{ innerhtml: html }" />"#,
+            r#"<div v-bind="{ [innerHTML]: html }" />"#,
+            r#"<div v-bind:title="{ innerHTML: html }" />"#,
+            r#"<div>{{ innerHTML }}</div>"#,
+        ] {
+            assert_no_sinks(source);
+        }
+    }
+
+    #[test]
+    fn test_disable_next_line_suppresses_wrapped_inner_html() {
+        let linter = create_linter();
+        let src = "<!-- eslint-disable-next-line vue/no-v-html -->\n<div\n  :innerHTML=\"content\"\n></div>";
+        let result = linter.lint_template(src, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    fn sink_slices(source: &str) -> Vec<&str> {
+        let linter = create_linter();
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(result.error_count, 0, "{source}");
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_name == "vue/no-v-html"),
+            "{source}: {:?}",
+            result.diagnostics
+        );
+        result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| &source[diagnostic.start as usize..diagnostic.end as usize])
+            .collect()
+    }
+
+    fn assert_no_sinks(source: &str) {
+        let linter = create_linter();
+        let result = linter.lint_template(source, "test.vue");
+        assert_eq!(
+            result.warning_count, 0,
+            "{source}: {:?}",
+            result.diagnostics
+        );
+        assert_eq!(result.error_count, 0, "{source}");
     }
 }
