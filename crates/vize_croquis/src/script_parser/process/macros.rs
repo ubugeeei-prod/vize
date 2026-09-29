@@ -30,7 +30,7 @@ mod object_origins;
 
 use object_origins::record_object_pattern_property_origins;
 
-pub(in crate::script_parser) fn process_variable_declarator(
+pub(in crate::script_parser) fn process_variable_declarator<const SKIP: bool>(
     result: &mut ScriptParseResult,
     declarator: &oxc_ast::ast::VariableDeclarator<'_>,
     kind: VariableDeclarationKind,
@@ -74,7 +74,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     }
                     result.bindings.add(name, binding_type);
                     // Walk into the call's callback arguments to track nested scopes
-                    walk_call_arguments(result, call, source);
+                    walk_call_arguments::<SKIP>(result, call, source);
                     result.reactivity_aliases.remove(name);
                     return;
                 }
@@ -89,7 +89,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         .register(CompactString::new(name), reactive_kind, at);
                     result.bindings.add(name, binding_type);
                     // Walk into the call's callback arguments to track nested scopes
-                    walk_call_arguments(result, call, source);
+                    walk_call_arguments::<SKIP>(result, call, source);
                     result.reactivity_aliases.remove(name);
                     return;
                 }
@@ -120,7 +120,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             call.span.end,
                         );
                         // Walk into the call's callback arguments to track nested scopes
-                        walk_call_arguments(result, call, source);
+                        walk_call_arguments::<SKIP>(result, call, source);
                         // `inject()` can return either a plain value or a ref.
                         // Vue marks const inject bindings as maybe-ref so
                         // template expressions use `_unref()` at read sites.
@@ -142,7 +142,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 record_getter_context_from_call(result, name, call, source);
 
                 // Not a known macro/reactivity/inject, but still walk for nested scopes
-                walk_call_arguments(result, call, source);
+                walk_call_arguments::<SKIP>(result, call, source);
                 true // Call was extracted and processed
             } else {
                 false
@@ -155,7 +155,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
             // Walk other expression types for nested scopes
             // Skip if we already extracted and processed a call expression to avoid double processing
             if !call_extracted && let Some(init) = &declarator.init {
-                walk_expression(result, init, source);
+                walk_expression::<SKIP>(result, init, source);
 
                 // Check for ref.value extraction: const x = someRef.value
                 check_ref_value_extraction(

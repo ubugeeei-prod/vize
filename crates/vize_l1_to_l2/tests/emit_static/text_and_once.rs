@@ -104,6 +104,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn root_fragment_keeps_the_condensed_space_next_to_an_element() {
+    assert_shipped_parity("{{ loading }}\n<span></span>");
+    assert_shipped_parity("<input/>\n{{ foo }}");
+    assert_shipped_parity("<span></span>\n{{ mid }}\n<i></i>");
+}
+
+#[test]
 fn comment_bounded_dynamic_whitespace_matches_the_shipped_snapshot() {
     assert_eq!(
         assembled("<div>{{ a }} <!--c--></div>"),

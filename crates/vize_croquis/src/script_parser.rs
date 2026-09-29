@@ -31,11 +31,13 @@ mod unused;
 mod walk;
 
 pub use define_art::parse_define_art;
-pub(crate) use parse::parse_script_setup_for_unused;
 pub use parse::{
     analyze_script_setup_program, parse_script, parse_script_setup,
     parse_script_setup_with_generic, parse_script_setup_with_generic_and_jsx,
     parse_script_with_options, parse_script_with_options_and_jsx,
+};
+pub(crate) use parse::{
+    analyze_script_setup_program_skipping, parse_script_plain, parse_script_setup_for_unused,
 };
 pub use process::{collect_options_descriptor, collect_options_object, process_statement};
 pub use recovery::parse_program_for_analysis;

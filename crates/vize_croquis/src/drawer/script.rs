@@ -53,7 +53,8 @@ impl Drawer {
                 source,
                 generic,
                 jsx,
-                self.track_unused_bindings
+                self.track_unused_bindings,
+                !self.options.detect_undefined,
             )
         );
 
@@ -81,7 +82,12 @@ impl Drawer {
 
         let result = profile!(
             "croquis.drawer.script_setup_program",
-            crate::script_parser::analyze_script_setup_program(program, source, generic)
+            crate::script_parser::analyze_script_setup_program_skipping(
+                program,
+                source,
+                generic,
+                !self.options.detect_undefined,
+            )
         );
 
         let mut result = result;
@@ -110,13 +116,14 @@ impl Drawer {
         // Use OXC-based parser for non-script-setup
         let result = profile!(
             "croquis.drawer.script_plain",
-            crate::script_parser::parse_script_with_options_and_jsx(
+            crate::script_parser::parse_script_plain(
                 source,
                 crate::script_parser::ScriptParserOptions {
                     options_api: self.options_api,
                     legacy_vue2: self.legacy_vue2,
                 },
                 jsx,
+                !self.options.detect_undefined,
             )
         );
 

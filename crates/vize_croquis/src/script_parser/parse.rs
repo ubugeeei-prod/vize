@@ -31,7 +31,7 @@ pub fn parse_script_setup_with_generic_and_jsx(
     generic: Option<&str>,
     jsx: bool,
 ) -> ScriptParseResult {
-    parse_script_setup_for_unused(source, generic, jsx, false)
+    parse_script_setup_for_unused(source, generic, jsx, false, false)
 }
 
 pub(crate) fn parse_script_setup_for_unused(
@@ -39,6 +39,7 @@ pub(crate) fn parse_script_setup_for_unused(
     generic: Option<&str>,
     jsx: bool,
     unused: bool,
+    skip_diagnostics: bool,
 ) -> ScriptParseResult {
     let allocator = Allocator::default();
     let path = if jsx { "script.tsx" } else { "script.ts" };
@@ -53,11 +54,35 @@ pub(crate) fn parse_script_setup_for_unused(
         return ScriptParseResult::default();
     }
 
-    let mut result = analyze_script_setup_program(&ret.program, source, generic);
+    let mut result =
+        analyze_script_setup_program_skipping(&ret.program, source, generic, skip_diagnostics);
     if unused && ret.diagnostics.is_empty() {
         result.unused_bindings = super::unused_setup_bindings(&ret.program, &result);
     }
     result
+}
+
+fn walk_program_statements(
+    result: &mut ScriptParseResult,
+    program: &Program<'_>,
+    source: &str,
+    skip_diagnostics: bool,
+) {
+    if skip_diagnostics {
+        walk_program_statements_inner::<true>(result, program, source);
+    } else {
+        walk_program_statements_inner::<false>(result, program, source);
+    }
+}
+
+fn walk_program_statements_inner<const SKIP: bool>(
+    result: &mut ScriptParseResult,
+    program: &Program<'_>,
+    source: &str,
+) {
+    for stmt in program.body.iter() {
+        process::process_statement::<SKIP>(result, stmt, source);
+    }
 }
 
 /// Analyze an already-parsed script setup program.
@@ -71,6 +96,15 @@ pub fn analyze_script_setup_program(
     program: &Program<'_>,
     source: &str,
     generic: Option<&str>,
+) -> ScriptParseResult {
+    analyze_script_setup_program_skipping(program, source, generic, false)
+}
+
+pub(crate) fn analyze_script_setup_program_skipping(
+    program: &Program<'_>,
+    source: &str,
+    generic: Option<&str>,
+    skip_diagnostics: bool,
 ) -> ScriptParseResult {
     let source_len = source.len() as u32;
 
@@ -99,9 +133,7 @@ pub fn analyze_script_setup_program(
 
     // Process all statements
     profile!("croquis.script_setup.walk_statements", {
-        for stmt in program.body.iter() {
-            process::process_statement(&mut result, stmt, source);
-        }
+        walk_program_statements(&mut result, program, source, skip_diagnostics);
     });
 
     // After every binding is known, demote any `type` / `interface` that
@@ -183,6 +215,7 @@ pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> 
         source,
         options,
         SourceType::from_path("script.ts").unwrap_or_default(),
+        false,
     )
 }
 
@@ -192,11 +225,21 @@ pub fn parse_script_with_options_and_jsx(
     options: ScriptParserOptions,
     jsx: bool,
 ) -> ScriptParseResult {
+    parse_script_plain(source, options, jsx, false)
+}
+
+pub(crate) fn parse_script_plain(
+    source: &str,
+    options: ScriptParserOptions,
+    jsx: bool,
+    skip_diagnostics: bool,
+) -> ScriptParseResult {
     let path = if jsx { "script.tsx" } else { "script.ts" };
     parse_script_with_options_source_type(
         source,
         options,
         SourceType::from_path(path).unwrap_or_default(),
+        skip_diagnostics,
     )
 }
 
@@ -204,6 +247,7 @@ pub(crate) fn parse_script_with_options_source_type(
     source: &str,
     options: ScriptParserOptions,
     source_type: SourceType,
+    skip_diagnostics: bool,
 ) -> ScriptParseResult {
     let allocator = Allocator::default();
 
@@ -251,9 +295,7 @@ pub(crate) fn parse_script_with_options_source_type(
 
     // Process all statements
     profile!("croquis.script_plain.walk_statements", {
-        for stmt in ret.program.body.iter() {
-            process::process_statement(&mut result, stmt, source);
-        }
+        walk_program_statements(&mut result, &ret.program, source, skip_diagnostics);
     });
 
     // Mirror the setup path so non-setup scripts also keep typeof-anchored

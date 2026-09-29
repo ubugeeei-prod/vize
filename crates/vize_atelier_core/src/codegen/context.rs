@@ -247,12 +247,24 @@ impl CodegenContext {
         self.newline();
     }
 
-    /// Add newline with proper indentation
+    /// Add newline with proper indentation.
+    ///
+    /// One push covers the depths templates actually reach. Deeper trees
+    /// repeat that run so the bytes stay the same as a per-level `"  "`.
     #[inline(always)]
     pub fn newline(&mut self) {
+        const SPACES: &str = "                                                                                                                                ";
         self.out.push_char('\n');
-        for _ in 0..self.indent_level {
-            self.out.push_str("  ");
+        let mut spaces = (self.indent_level as usize).saturating_mul(2);
+        if spaces == 0 {
+            return;
+        }
+        while spaces > SPACES.len() {
+            self.out.push_str(SPACES);
+            spaces -= SPACES.len();
+        }
+        if let Some(indent) = SPACES.get(..spaces) {
+            self.out.push_str(indent);
         }
     }
 

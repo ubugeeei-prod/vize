@@ -98,7 +98,8 @@ fn collect_object(
                         continue;
                     }
                 };
-                output.removed.remove(&name);
+                // `removed` is copied only from another object's `removed`,
+                // which starts empty, so deleting here would hash an empty set.
                 output.values.insert(
                     name,
                     CompactString::new(property.value.span().source_text(source)),

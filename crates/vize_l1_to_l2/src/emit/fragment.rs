@@ -233,10 +233,7 @@ fn emit_interp(
                 ))?
                 .parts
                 .clone();
-            for (index, part) in parts.iter().enumerate() {
-                if is_root_fragment_whitespace_gap(&parts, index) {
-                    continue;
-                }
+            for part in &parts {
                 start_item(cx, first);
                 if part.dynamic {
                     emit_dynamic_part(cx, part.text.as_str(), Site::Expression)?;
@@ -256,15 +253,6 @@ fn emit_interp(
             emit_raw_interpolation_or_refuse(cx, interp.expression)
         }
     }
-}
-
-fn is_root_fragment_whitespace_gap(parts: &[crate::lower::TextPart], index: usize) -> bool {
-    let Some(part) = parts.get(index) else {
-        return false;
-    };
-    !part.dynamic
-        && part.text.chars().all(char::is_whitespace)
-        && (index == 0 || index + 1 == parts.len())
 }
 
 fn meaningful_bounds(root: &Region<'_>) -> Option<(usize, usize)> {
