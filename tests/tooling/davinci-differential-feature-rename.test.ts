@@ -65,3 +65,35 @@ test("v0.429.1 Cargo feature names remain temporary aliases", () => {
     new RegExp(`^${publishedDomAlias} = \\["legacy-dom-differential"\\]$`, "m"),
   );
 });
+
+test("published SFC benchmark retains old feature-name activation", () => {
+  const publishedDifferentialAlias = ["davinci", "differential"].join("-");
+  const publishedDomAlias = ["davinci", "dom", "differential"].join("-");
+  const sfc = read("crates/vize_atelier_sfc/Cargo.toml");
+  const bench = sfc.match(/^davinci-production-bench = \[\n([\s\S]*?)^\]$/m)?.[1];
+  assert.ok(bench);
+  assert.match(bench, new RegExp(`^  "${publishedDomAlias}",$`, "m"));
+  assert.match(
+    bench,
+    new RegExp(`^  "vize_atelier_ssr/${publishedDifferentialAlias}",$`, "m"),
+  );
+
+  const rewritten = execFileSync(
+    "python3",
+    [
+      "-c",
+      [
+        "import runpy, sys",
+        "from pathlib import Path",
+        'rewrite = runpy.run_path("tools/support/levels/rename-differential-features.py")["rewrite"]',
+        'sys.stdout.write(rewrite(sys.stdin.read(), Path("crates/vize_atelier_sfc/Cargo.toml")))',
+      ].join("\n"),
+    ],
+    {
+      cwd: root,
+      encoding: "utf8",
+      input: `${sfc}\nprobe = ["${publishedDomAlias}"]\n`,
+    },
+  );
+  assert.match(rewritten, /^probe = \["legacy-dom-differential"\]$/m);
+});

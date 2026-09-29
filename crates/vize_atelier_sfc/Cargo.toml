@@ -31,9 +31,9 @@ davinci-dom-differential = ["legacy-dom-differential"]
 # Controlled selected/retained adapter comparisons, without the retained-AST
 # differential dual-run instrumentation used by semantic corpus tests.
 davinci-production-bench = [
-  "legacy-dom-differential",
+  "davinci-dom-differential",
   "vize_atelier_vapor/davinci-benchmark",
-  "vize_atelier_ssr/legacy-differential",
+  "vize_atelier_ssr/davinci-differential",
 ]
 # Separate attribution executable; detailed spans are absent from timed pairs.
 davinci-production-profile = [

@@ -24,8 +24,9 @@ PROTECTED_MESSAGES = (
     "davinci-differential totals:",
     "vize_s1 --features davinci-differential",
 )
-# Published v0.429.1 Cargo feature names are retained only as manifest aliases
-# for the support-policy deprecation window. Active selectors still use legacy-*.
+# Published v0.429.1 Cargo feature names are retained as manifest aliases and
+# in the SFC benchmark composite for the support-policy deprecation window.
+# Active selectors still use legacy-*.
 PUBLISHED_ALIAS_MANIFESTS = {
     "crates/vize_atelier_core/Cargo.toml",
     "crates/vize_atelier_dom/Cargo.toml",
@@ -39,6 +40,11 @@ PUBLISHED_ALIAS_MANIFESTS = {
     "crates/vize_l1_to_l2/Cargo.toml",
     "crates/vize_patina/Cargo.toml",
 }
+PUBLISHED_SFC_BENCH = '''davinci-production-bench = [
+  "davinci-dom-differential",
+  "vize_atelier_vapor/davinci-benchmark",
+  "vize_atelier_ssr/davinci-differential",
+]'''
 
 
 def eligible(path: Path) -> bool:
@@ -53,7 +59,7 @@ def eligible(path: Path) -> bool:
 
 
 def rewrite(source: str, relative: Path) -> str:
-    protected_aliases = []
+    protected_literals = []
     manifest_path = relative.as_posix()
     if manifest_path in PUBLISHED_ALIAS_MANIFESTS:
         for old, new in RENAMES:
@@ -63,18 +69,25 @@ def rewrite(source: str, relative: Path) -> str:
             ):
                 continue
             alias = f'{old} = ["{new}"]'
-            token = f"__VIZE_PUBLISHED_FEATURE_ALIAS_{len(protected_aliases)}__"
+            token = f"__VIZE_PUBLISHED_FEATURE_ALIAS_{len(protected_literals)}__"
             source, count = re.subn(rf"(?m)^{re.escape(alias)}$", token, source)
             if count:
-                protected_aliases.append((token, alias))
+                protected_literals.append((token, alias))
+    if (
+        manifest_path == "crates/vize_atelier_sfc/Cargo.toml"
+        and source.count(PUBLISHED_SFC_BENCH) == 1
+    ):
+        token = "__VIZE_PUBLISHED_SFC_BENCH__"
+        source = source.replace(PUBLISHED_SFC_BENCH, token, 1)
+        protected_literals.append((token, PUBLISHED_SFC_BENCH))
     for index, message in enumerate(PROTECTED_MESSAGES):
         source = source.replace(message, f"__VIZE_PROTECTED_MESSAGE_{index}__")
     for old, new in RENAMES:
         source = source.replace(old, new)
     for index, message in enumerate(PROTECTED_MESSAGES):
         source = source.replace(f"__VIZE_PROTECTED_MESSAGE_{index}__", message)
-    for token, alias in protected_aliases:
-        source = source.replace(token, alias)
+    for token, literal in protected_literals:
+        source = source.replace(token, literal)
     return source
 
 

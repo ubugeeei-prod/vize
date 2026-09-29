@@ -22,11 +22,19 @@ affected crate, with exactly the new feature's dependency and `cfg` behavior:
 | `vize_l1_to_l2`      | `davinci-differential`     | `legacy-differential`     |
 | `vize_patina`        | `davinci-differential`     | `legacy-differential`     |
 
-Only the manifest alias retains the old spelling. Rust `cfg` sites and corpus
-target requirements use the new feature, so enabling either spelling arms the
-same comparator and required test targets. The SFC DOM alias is separate from
+Only the manifest aliases and published SFC benchmark edges retain the old
+spelling. Rust `cfg` sites and corpus target requirements use the new feature,
+so enabling either spelling arms the same comparator and required test targets.
+The SFC DOM alias is separate from
 the retained-AST differential lane, as it was before the rename. All aliases
 stay off by default and do not change product output or serialized strings.
+
+The published `vize_atelier_sfc/davinci-production-bench` composite also keeps
+its `davinci-dom-differential` and `vize_atelier_ssr/davinci-differential`
+feature edges. Those names forward to the renamed lanes through the aliases
+above. Replacing the composite edges with only new spellings drops the old
+feature activations even though the
+renamed runtime lanes remain enabled.
 
 For alpha/preview crates, the [support policy](../../release/support-policy.md)
 requires a full minor release with the manifest alias and a release note before
