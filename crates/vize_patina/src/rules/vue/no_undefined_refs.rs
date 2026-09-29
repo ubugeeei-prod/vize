@@ -53,6 +53,11 @@ impl Rule for NoUndefinedRefs {
             .collect();
 
         for (name, start, end) in undefined_refs {
+            // vue-router installs these on the component proxy. They are not
+            // script bindings, but templates may read them (#7214, #7235).
+            if matches!(name.as_str(), "$route" | "$router") {
+                continue;
+            }
             ctx.report(
                 crate::diagnostic::LintDiagnostic::warn(
                     ctx.current_rule,
