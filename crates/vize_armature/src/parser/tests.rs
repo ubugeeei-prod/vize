@@ -666,6 +666,66 @@ fn test_vue2_migration_line_break_after_interpolation() {
 }
 
 #[test]
+fn test_vue2_migration_line_break_inside_static_text_before_element() {
+    // #7046. The break before an element is inside the static text node, so
+    // the whitespace-only migration pass never sees it. `<pre>` stays raw.
+    let sources = [
+        "<p>\n  Label\n  <i />\n</p>",
+        "<button>\n  Label\n</button>",
+        "<Btn>\n  Label\n</Btn>",
+    ];
+    for source in sources {
+        let allocator = Allocator::new();
+        let parse_with = || parse_with_options(&allocator, source, ParserOptions::default());
+        let (default, errors) = parse_with();
+        assert!(
+            errors.iter().all(CompilerError::is_recoverable),
+            "{source}: {errors:?}"
+        );
+        let (legacy, errors) =
+            super::with_whitespace_mode(WhitespaceStrategy::Condense, true, parse_with);
+        assert!(
+            errors.iter().all(CompilerError::is_recoverable),
+            "{source}: {errors:?}"
+        );
+        let first_text = |root: &vize_relief::RootNode<'_>| {
+            let TemplateChildNode::Element(element) = &root.children[0] else {
+                panic!("expected element");
+            };
+            let TemplateChildNode::Text(text) = &element.children[0] else {
+                panic!("expected text, got {:?}", element.children[0]);
+            };
+            text.content.to_owned()
+        };
+        assert_eq!(first_text(&default), " Label ", "{source}");
+        assert_eq!(first_text(&legacy), " Label\n", "{source}");
+    }
+
+    let allocator = Allocator::new();
+    let (pre, errors) = super::with_whitespace_mode(WhitespaceStrategy::Condense, true, || {
+        parse_with_options(
+            &allocator,
+            "<pre>\n  Label\n</pre>",
+            ParserOptions {
+                is_pre_tag: |tag| tag == "pre",
+                ..ParserOptions::default()
+            },
+        )
+    });
+    assert!(
+        errors.iter().all(CompilerError::is_recoverable),
+        "{errors:?}"
+    );
+    let TemplateChildNode::Element(pre) = &pre.children[0] else {
+        panic!("expected pre");
+    };
+    let TemplateChildNode::Text(text) = &pre.children[0] else {
+        panic!("expected pre text");
+    };
+    assert_eq!(text.content, "\n  Label\n");
+}
+
+#[test]
 fn test_parse_whitespace_condense_skips_comment_gaps_when_comments_disabled() {
     let allocator = Allocator::new();
     let (root, errors) = parse_with_options(

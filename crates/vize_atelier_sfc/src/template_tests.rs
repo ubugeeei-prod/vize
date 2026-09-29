@@ -131,6 +131,57 @@ fn scoped_vue2_line_breaks_keep_issue_6518_text_before_icon() {
 }
 
 #[test]
+fn scoped_vue2_line_breaks_keep_issue_7046_static_text_before_element() {
+    use vize_atelier_core::{WhitespaceStrategy, parser::with_whitespace_mode};
+    // Same shapes as #7046: static text before an element, a last-child
+    // label, and the same label in a component slot. Condense emits
+    // `" Label "`; the migration mode keeps the authored break as `" Label\n"`.
+    let sources = [
+        "<template><p>\n  Label\n  <i />\n</p></template>",
+        "<template><button>\n  Label\n</button></template>",
+        "<template><Btn>\n  Label\n</Btn></template>",
+    ];
+    for source in sources {
+        let descriptor = parse_sfc(source, Default::default()).unwrap();
+        for ssr in [false, true] {
+            let mut options = SfcCompileOptions::default();
+            options.template.ssr = ssr;
+            let default = compile_sfc(&descriptor, options.clone()).unwrap();
+            let legacy = with_whitespace_mode(WhitespaceStrategy::Condense, true, || {
+                compile_sfc(&descriptor, options).unwrap()
+            });
+            assert_ne!(default.code, legacy.code, "ssr={ssr} source={source}");
+            assert!(
+                legacy.code.contains(" Label\\n") || legacy.code.contains(" Label\n"),
+                "ssr={ssr} source={source}: {}",
+                legacy.code
+            );
+            assert!(
+                default.code.contains(" Label ")
+                    && !default.code.contains(" Label\n")
+                    && !default.code.contains(" Label\\n"),
+                "ssr={ssr} source={source}: {}",
+                default.code
+            );
+        }
+        let vapor_options = SfcCompileOptions {
+            vapor: true,
+            ..SfcCompileOptions::default()
+        };
+        let vapor_default = compile_sfc(&descriptor, vapor_options.clone()).unwrap();
+        let vapor_legacy = with_whitespace_mode(WhitespaceStrategy::Condense, true, || {
+            compile_sfc(&descriptor, vapor_options).unwrap()
+        });
+        assert_ne!(vapor_default.code, vapor_legacy.code, "{source}");
+        assert!(
+            vapor_legacy.code.contains(" Label\\n") || vapor_legacy.code.contains(" Label\n"),
+            "{source}: {}",
+            vapor_legacy.code
+        );
+    }
+}
+
+#[test]
 fn test_compile_sfc_ts_ref_condition_and_handler_keep_value_access() {
     use vize_carton::ToCompactString;
 
