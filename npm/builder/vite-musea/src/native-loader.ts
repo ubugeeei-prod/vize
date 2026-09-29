@@ -43,8 +43,10 @@ export interface NativeBinding {
     options?: { filename?: string },
   ) => {
     code?: string;
+    css?: string;
     errors?: Array<string | { message?: string }>;
   };
+  scopeViteCssForPipeline?: (css: string, scopeId: string) => string;
   artToCsf: (
     source: string,
     options?: { filename?: string },

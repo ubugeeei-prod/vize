@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { extractScriptSetupContent, extractScriptSetupIsolated } from "../art-module.js";
+import { artScopeAttribute, stampScopeAttribute } from "../art-style.js";
 import { loadNative } from "../native-loader.js";
 import type { NativeBinding } from "../native-loader.js";
 import type { ArtFileInfo, ArtMetadata } from "../types/index.js";
@@ -53,8 +54,11 @@ function extractCustomArtMetadata(source: string): Pick<ArtMetadata, "actionEven
   };
 }
 
-function extractStyleBlocks(source: string): string[] {
-  const styles: string[] = [];
+function extractStyleBlocks(
+  source: string,
+  filePath: string,
+): { blocks: string[]; scopeAttr?: string } {
+  const styles: Array<{ content: string; scoped: boolean }> = [];
 
   for (const match of source.matchAll(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi)) {
     const attrs = match[1] ?? "";
@@ -62,12 +66,28 @@ function extractStyleBlocks(source: string): string[] {
     const lang = attrs.match(/\blang\s*=\s*["']([^"']+)["']/i)?.[1]?.toLowerCase();
 
     if (!content) continue;
-    if (lang && lang !== "css") continue;
+    if (lang && lang !== "css") {
+      console.warn(
+        `[musea] ${filePath}: <style lang="${lang}"> is not processed. Art styles are plain CSS.`,
+      );
+      continue;
+    }
 
-    styles.push(content);
+    styles.push({ content, scoped: /\bscoped\b/i.test(attrs) });
   }
 
-  return styles;
+  if (!styles.some((style) => style.scoped)) {
+    return { blocks: styles.map((style) => style.content) };
+  }
+
+  const scopeAttr = artScopeAttribute(filePath);
+  const scope = loadNative().scopeViteCssForPipeline;
+  return {
+    scopeAttr,
+    blocks: styles.map((style) =>
+      style.scoped && scope ? scope(style.content, scopeAttr) : style.content,
+    ),
+  };
 }
 
 function formatArtProcessingError(root: string, filePath: string, error: unknown): string {
@@ -120,6 +140,9 @@ export async function processMuseaArtFile(
     if (!parsed.variants || parsed.variants.length === 0) return null;
 
     const isInline = !filePath.endsWith(".art.vue");
+    const styles = isInline
+      ? { blocks: [] as string[] }
+      : extractStyleBlocks(source, filePath);
 
     return {
       path: filePath,
@@ -135,7 +158,9 @@ export async function processMuseaArtFile(
       },
       variants: parsed.variants.map((v) => ({
         name: v.name,
-        template: v.template,
+        template: styles.scopeAttr
+          ? stampScopeAttribute(v.template, styles.scopeAttr)
+          : v.template,
         isDefault: v.isDefault,
         skipVrt: v.skipVrt,
       })),
@@ -146,7 +171,7 @@ export async function processMuseaArtFile(
         !isInline && parsed.hasScriptSetup ? extractScriptSetupIsolated(source) : true,
       hasScript: parsed.hasScript,
       styleCount: parsed.styleCount,
-      styleBlocks: isInline ? [] : extractStyleBlocks(source),
+      styleBlocks: styles.blocks,
       isInline,
       componentPath: isInline ? filePath : undefined,
     };

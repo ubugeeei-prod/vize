@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import { artScopeAttribute } from "../art-style.js";
 import { processMuseaArtFile, reportArtStatusWarnings } from "./art-processing.js";
 
 void test("processMuseaArtFile forwards parser diagnostics during build", async () => {
@@ -27,6 +28,37 @@ void test("processMuseaArtFile forwards parser diagnostics during build", async 
         return true;
       },
     );
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+void test("processMuseaArtFile scopes art style blocks onto variant elements", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-scoped-art-"));
+  const artPath = path.join(tempDir, "my-card.art.vue");
+
+  try {
+    await fs.promises.writeFile(
+      artPath,
+      `<art title="MyCard">
+  <variant name="Default" default>
+    <div class="wrap"><span>content</span></div>
+  </variant>
+</art>
+<style scoped>
+.wrap { padding: 16px; }
+</style>
+`,
+      "utf8",
+    );
+
+    const info = await processMuseaArtFile(artPath, { root: tempDir, command: "build" });
+    assert.ok(info);
+    const scopeAttr = artScopeAttribute(artPath);
+    assert.match(info.variants[0]?.template ?? "", new RegExp(`<div class="wrap" ${scopeAttr}>`));
+    assert.match(info.variants[0]?.template ?? "", new RegExp(`<span ${scopeAttr}>`));
+    assert.match(info.styleBlocks?.[0] ?? "", new RegExp(`\\.${"wrap"}\\[${scopeAttr}\\]`));
+    assert.doesNotMatch(info.styleBlocks?.[0] ?? "", /^\.wrap \{/);
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }

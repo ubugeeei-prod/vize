@@ -61,6 +61,44 @@ export function matchGlob(filepath: string, pattern: string): boolean {
   return new RegExp(`^${regex}$`).test(normalizedFilepath);
 }
 
+async function readGitignoreDirectoryNames(bases: string[]): Promise<Set<string>> {
+  const names = new Set<string>();
+  for (const base of bases) {
+    let text = "";
+    try {
+      text = await fs.promises.readFile(path.join(base, ".gitignore"), "utf8");
+    } catch {
+      continue;
+    }
+    for (const line of text.split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#") || trimmed.startsWith("!")) continue;
+      const cleaned = trimmed.replace(/^\//, "").replace(/\/$/, "");
+      if (!cleaned || cleaned.includes("*") || cleaned.includes("/")) continue;
+      names.add(cleaned);
+    }
+  }
+  return names;
+}
+
+async function shouldSkipScanDirectory(
+  name: string,
+  fullPath: string,
+  scanRoots: string[],
+  ignoredDirNames: Set<string>,
+): Promise<boolean> {
+  if (scanRoots.some((scanRoot) => path.resolve(scanRoot) === path.resolve(fullPath))) {
+    return false;
+  }
+  if (name.startsWith(".") || ignoredDirNames.has(name)) return true;
+  try {
+    await fs.promises.lstat(path.join(fullPath, ".git"));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function resolveScanRoot(root: string, pattern: string): string {
   const absolutePattern = path.isAbsolute(pattern) ? pattern : path.resolve(root, pattern);
   const normalizedPattern = normalizeGlobPath(absolutePattern);
@@ -105,6 +143,7 @@ export async function scanArtFiles(
   const files = new Set<string>();
   const scanRoots = resolveScanRoots(root, include);
   const visitedDirs = new Set<string>();
+  const ignoredDirNames = await readGitignoreDirectoryNames([root, ...scanRoots]);
 
   async function scan(dir: string): Promise<void> {
     const resolvedDir = path.resolve(dir);
@@ -139,6 +178,9 @@ export async function scanArtFiles(
       }
 
       if (entry.isDirectory()) {
+        if (await shouldSkipScanDirectory(entry.name, fullPath, scanRoots, ignoredDirNames)) {
+          continue;
+        }
         await scan(fullPath);
       } else if (entry.isFile() && entry.name.endsWith(".art.vue")) {
         if (
