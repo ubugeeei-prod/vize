@@ -106,6 +106,9 @@ impl NoHardcodedValues {
             LCssRule::Style(style_rule) => {
                 let mut positions = DeclarationPositions::new(source, style_rule);
                 self.check_declarations(&style_rule.declarations, &mut positions, offset, result);
+                for rule in &style_rule.rules.0 {
+                    self.check_rule(rule, source, offset, result);
+                }
             }
             LCssRule::Media(media) => {
                 for rule in &media.rules.0 {
