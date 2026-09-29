@@ -8,9 +8,11 @@
 //! 1. **Parser** — the HTML parser would not build the element where the
 //!    template puts it, so the browser's DOM differs from the virtual DOM
 //!    (SSR hydration mismatches, `innerHTML`-built static content renders
-//!    differently): `<div>` closes an open `<p>`, `<tr>` gets an implied
-//!    `<tbody>`, a `<div>` in a `<table>` is foster-parented, `<span>` breaks
-//!    out of `<svg>`, a nested `<a>` or `<form>` is adopted or dropped.
+//!    differently): `<div>` closes an open `<p>`, a `<div>` in a `<table>` is
+//!    foster-parented, `<span>` breaks out of `<svg>`, a nested `<a>` or
+//!    `<form>` is adopted or dropped. `<tr>` directly inside `<table>` is not
+//!    reported: an SFC template never goes through the HTML parser, so Vue
+//!    renders that pair as written and no `<tbody>` is implied.
 //! 2. **Content model** — the DOM is built as written but a content model
 //!    forbids it: `<div>` in `<span>`, `<button>` in `<a>`, `<div>` in `<ul>`.
 //!
@@ -25,7 +27,6 @@
 //! ```vue
 //! <template>
 //!   <p><div>block in a paragraph</div></p>
-//!   <table><tr><td>row without tbody</td></tr></table>
 //!   <a href="#"><button>nested control</button></a>
 //!   <ul><div>not a list item</div></ul>
 //! </template>
@@ -36,6 +37,7 @@
 //! <template>
 //!   <p><span>inline in a paragraph</span></p>
 //!   <table><tbody><tr><td>cell</td></tr></tbody></table>
+//!   <table><tr><td>row</td></tr></table>
 //!   <ul><li>list item</li><MyItem /></ul>
 //! </template>
 //! ```
@@ -86,6 +88,14 @@ fn report_skeleton(ctx: &mut LintContext<'_>, skeleton: &Skeleton) {
         let parent_name = parent
             .as_ref()
             .map_or(CompactString::new(""), |(name, ..)| name.clone());
+        // `<tr>` in `<table>` is legal content. The HTML parser would insert
+        // `<tbody>`, but an SFC template is not parsed that way (#7211).
+        if class == ViolationClass::TableWrapperInserted
+            && child.eq_ignore_ascii_case("<tr>")
+            && parent_name.eq_ignore_ascii_case("<table>")
+        {
+            continue;
+        }
         let message = ctx.t_fmt(
             &cstr!("vue/permitted-contents.{}", class.id()),
             &[("child", child.as_str()), ("parent", parent_name.as_str())],
