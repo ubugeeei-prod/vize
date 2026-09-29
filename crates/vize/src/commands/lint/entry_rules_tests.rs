@@ -1,4 +1,4 @@
-use super::{GlobSequence, LinterRuleResolver, resolved_disabled_rules};
+use super::{GlobSequence, LintPlanScope, LinterRuleResolver, resolved_disabled_rules};
 use crate::config::{
     LintRuleSeverity as Severity, LinterConfig, LinterConfigEntry, LinterConfigPlan,
 };
@@ -64,6 +64,40 @@ fn directory_form_file_globs_select_their_whole_subtree() {
     assert!(directory.matches_files("src/pages/index.vue"));
     assert!(directory.matches_files("src/pages/nested/index.vue"));
     assert!(!directory.matches_files("src/components/Card.vue"));
+}
+
+#[test]
+fn escaped_metacharacters_match_literals_and_ignores_use_the_same_matcher() {
+    let brackets = GlobSequence::new(&["pages/users/\\[id\\].vue".into()]);
+    assert!(brackets.matches_files("pages/users/[id].vue"));
+    assert!(!brackets.matches_files("pages/users/id.vue"));
+    let closing = GlobSequence::new(&["pages/users/\\].vue".into()]);
+    assert!(closing.matches_files("pages/users/].vue"));
+    assert!(!closing.matches_files("pages/users/x.vue"));
+    let star = GlobSequence::new(&["pages/users/\\*.vue".into()]);
+    assert!(star.matches_files("pages/users/*.vue"));
+    assert!(!star.matches_files("pages/users/id.vue"));
+    let question = GlobSequence::new(&["pages/users/\\?.vue".into()]);
+    assert!(question.matches_files("pages/users/?.vue"));
+    assert!(!question.matches_files("pages/users/a.vue"));
+    let braces = GlobSequence::new(&["pages/users/\\{id\\}.vue".into()]);
+    assert!(braces.matches_files("pages/users/{id}.vue"));
+    assert!(!braces.matches_files("pages/users/id.vue"));
+    let class = GlobSequence::new(&["pages/users/[[]id].vue".into()]);
+    assert!(class.matches_files("pages/users/[id].vue"));
+    assert!(!class.matches_files("pages/users/id.vue"));
+
+    let project = tempfile::tempdir().unwrap();
+    let scope = LintPlanScope::new(
+        None,
+        None,
+        &["pages/users/\\[id\\].vue".into()],
+        project.path(),
+        project.path(),
+    );
+    let dynamic = project.path().join("pages/users/[id].vue");
+    assert!(scope.ignores(&dynamic));
+    assert!(!scope.ignores(&project.path().join("pages/users/index.vue")));
 }
 
 #[test]
