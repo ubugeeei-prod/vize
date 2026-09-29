@@ -4,7 +4,8 @@ expression: tree
 ---
 ## Provide/Inject Tree
 
-**Provider**
-  provide(`"count"`) → 1 consumer(s)
+**App**
   **Consumer**
-    inject(`"count"`) (provided)
+    inject(`"count"`) _no provider_
+**Provider**
+  provide(`"count"`) _unused_

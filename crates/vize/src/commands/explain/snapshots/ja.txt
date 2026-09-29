@@ -882,7 +882,7 @@ a11y/no-aria-hidden-on-focusable · lint ルール
 ドキュメント: docs/content/rules/accessibility.md
 
 ヒント:
-  aria-hidden="true"を削除するか、tabindex="-1"で要素をフォーカス不可にしてください
+  aria-hidden="true"を削除してください。tabindex="-1"でもプログラムからはフォーカスできます
 === a11y/no-autofocus
 a11y/no-autofocus · lint ルール
 autofocus属性の使用を禁止する
@@ -3802,6 +3802,7 @@ vue/no-deprecated-filter · lint ルール
   {{ capitalize(message) }}
   <div :id="toId(rawId)" />
   {{ a || b }}
+  <Draggable :item-key="(item: A | B | C) => item.id" />
 
 ヒント:
   フィルターをメソッド呼び出しまたは算出プロパティに置き換えてください（例: {{ message | capitalize }} ではなく {{ capitalize(message) }}）。
@@ -4782,14 +4783,18 @@ XSS攻撃を防ぐためにv-htmlの使用を禁止する
 
 不正な例:
   <div v-html="userContent"></div>
-  <span v-html="htmlFromApi"></span>
+  <div :innerHTML="userContent"></div>
+  <div v-bind:innerHTML="userContent"></div>
+  <div .innerHTML="userContent"></div>
+  <div v-bind="{ innerHTML: userContent }"></div>
+  <div :outerHTML="userContent"></div>
 
 正しい例:
   <!-- Use text interpolation for user content -->
   <div>{{ userContent }}</div>
   
-  <!-- Or sanitize HTML before rendering -->
-  <div v-html="sanitizedHtml"></div> <!-- with proper sanitization -->
+  <!-- A static attribute is not a binding -->
+  <div innerHTML="static"></div>
 
 ヒント:
   テキスト補間{{ }}またはサニタイゼーションライブラリの使用を検討してください
@@ -4848,7 +4853,6 @@ HTMLコンテンツモデルルールを強制
 不正な例:
   <template>
     <p><div>block in a paragraph</div></p>
-    <table><tr><td>row without tbody</td></tr></table>
     <a href="#"><button>nested control</button></a>
     <ul><div>not a list item</div></ul>
   </template>
@@ -4857,6 +4861,7 @@ HTMLコンテンツモデルルールを強制
   <template>
     <p><span>inline in a paragraph</span></p>
     <table><tbody><tr><td>cell</td></tr></tbody></table>
+    <table><tr><td>row</td></tr></table>
     <ul><li>list item</li><MyItem /></ul>
   </template>
 

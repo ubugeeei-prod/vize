@@ -931,7 +931,7 @@ autofix: no
 docs: docs/content/rules/accessibility.md
 
 help:
-  Remove aria-hidden="true" or make the element non-focusable with tabindex="-1"
+  Remove aria-hidden="true". tabindex="-1" is still programmatically focusable
 === a11y/no-autofocus
 a11y/no-autofocus · lint rule
 Disallow the use of the autofocus attribute
@@ -3857,6 +3857,7 @@ valid:
   {{ capitalize(message) }}
   <div :id="toId(rawId)" />
   {{ a || b }}
+  <Draggable :item-key="(item: A | B | C) => item.id" />
 
 help:
   Replace the filter with a method call or computed property (e.g. {{ capitalize(message) }} instead of {{ message | capitalize }}).
@@ -4860,14 +4861,18 @@ docs: docs/content/rules/vue.md
 
 invalid:
   <div v-html="userContent"></div>
-  <span v-html="htmlFromApi"></span>
+  <div :innerHTML="userContent"></div>
+  <div v-bind:innerHTML="userContent"></div>
+  <div .innerHTML="userContent"></div>
+  <div v-bind="{ innerHTML: userContent }"></div>
+  <div :outerHTML="userContent"></div>
 
 valid:
   <!-- Use text interpolation for user content -->
   <div>{{ userContent }}</div>
   
-  <!-- Or sanitize HTML before rendering -->
-  <div v-html="sanitizedHtml"></div> <!-- with proper sanitization -->
+  <!-- A static attribute is not a binding -->
+  <div innerHTML="static"></div>
 
 help:
   Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.
@@ -4942,7 +4947,6 @@ docs: docs/content/rules/vue.md
 invalid:
   <template>
     <p><div>block in a paragraph</div></p>
-    <table><tr><td>row without tbody</td></tr></table>
     <a href="#"><button>nested control</button></a>
     <ul><div>not a list item</div></ul>
   </template>
@@ -4951,6 +4955,7 @@ valid:
   <template>
     <p><span>inline in a paragraph</span></p>
     <table><tbody><tr><td>cell</td></tr></tbody></table>
+    <table><tr><td>row</td></tr></table>
     <ul><li>list item</li><MyItem /></ul>
   </template>
 

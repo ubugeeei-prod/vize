@@ -931,7 +931,7 @@ a11y/no-aria-hidden-on-focusable · lint 规则
 文档: docs/content/rules/accessibility.md
 
 帮助:
-  删除aria-hidden="true"或使用tabindex="-1"使元素不可聚焦
+  删除 aria-hidden="true"。tabindex="-1" 仍然可以通过程序聚焦
 === a11y/no-autofocus
 a11y/no-autofocus · lint 规则
 禁止使用autofocus属性
@@ -3972,6 +3972,7 @@ vue/no-deprecated-filter · lint 规则
   {{ capitalize(message) }}
   <div :id="toId(rawId)" />
   {{ a || b }}
+  <Draggable :item-key="(item: A | B | C) => item.id" />
 
 帮助:
   请将过滤器替换为方法调用或计算属性（例如用 {{ capitalize(message) }} 代替 {{ message | capitalize }}）。
@@ -5038,14 +5039,18 @@ vue/no-v-html · lint 规则
 
 错误示例:
   <div v-html="userContent"></div>
-  <span v-html="htmlFromApi"></span>
+  <div :innerHTML="userContent"></div>
+  <div v-bind:innerHTML="userContent"></div>
+  <div .innerHTML="userContent"></div>
+  <div v-bind="{ innerHTML: userContent }"></div>
+  <div :outerHTML="userContent"></div>
 
 正确示例:
   <!-- Use text interpolation for user content -->
   <div>{{ userContent }}</div>
   
-  <!-- Or sanitize HTML before rendering -->
-  <div v-html="sanitizedHtml"></div> <!-- with proper sanitization -->
+  <!-- A static attribute is not a binding -->
+  <div innerHTML="static"></div>
 
 帮助:
   安全风险: v-html渲染原始HTML，可能执行用户输入的恶意脚本。
@@ -5114,7 +5119,6 @@ vue/permitted-contents · lint 规则
 错误示例:
   <template>
     <p><div>block in a paragraph</div></p>
-    <table><tr><td>row without tbody</td></tr></table>
     <a href="#"><button>nested control</button></a>
     <ul><div>not a list item</div></ul>
   </template>
@@ -5123,6 +5127,7 @@ vue/permitted-contents · lint 规则
   <template>
     <p><span>inline in a paragraph</span></p>
     <table><tbody><tr><td>cell</td></tr></tbody></table>
+    <table><tr><td>row</td></tr></table>
     <ul><li>list item</li><MyItem /></ul>
   </template>
 

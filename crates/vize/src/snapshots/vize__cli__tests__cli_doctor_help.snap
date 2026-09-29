@@ -50,7 +50,7 @@ Options:
           Include target identifiers matching a glob. Defaults to every target
 
       --rule <RULES>
-          Include stable rule codes matching a glob. Defaults to every rule
+          Include stable rule codes matching a glob (repeat or comma-separate). Defaults to every rule
 
       --path <PATH_FILTERS>
           Include primary workspace-relative paths matching a glob. Defaults to every path
