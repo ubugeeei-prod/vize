@@ -61,7 +61,9 @@ impl GlobSequence {
         let steps = patterns
             .iter()
             .filter_map(|source| {
-                let slashed = source.replace('\\', "/");
+                // `\` stays a path separator for Windows patterns (`src\**\*.vue`).
+                // Once a pattern uses `/`, `\`, `[`, `*`, `?`, `{`, and `}` are escapes.
+                let slashed = normalize_entry_glob(source);
                 let (negated, rest) = slashed
                     .strip_prefix('!')
                     .map_or((false, slashed.as_str()), |pattern| (true, pattern));
@@ -169,6 +171,42 @@ fn normalize_lexically(path: &Path) -> PathBuf {
     normalized
 }
 
+fn normalize_entry_glob(source: &str) -> std::string::String {
+    let escape_metacharacters = source.contains('/');
+    let mut normalized = std::string::String::with_capacity(source.len());
+    let mut characters = source.chars().peekable();
+    while let Some(character) = characters.next() {
+        if character != '\\' {
+            normalized.push(character);
+            continue;
+        }
+        match characters.peek().copied() {
+            Some(next) if escape_metacharacters && is_glob_metacharacter(next) => {
+                characters.next();
+                push_literal_metacharacter(&mut normalized, next);
+            }
+            _ => normalized.push('/'),
+        }
+    }
+    normalized
+}
+
+fn is_glob_metacharacter(character: char) -> bool {
+    matches!(character, '[' | ']' | '*' | '?' | '{' | '}')
+}
+
+fn push_literal_metacharacter(pattern: &mut std::string::String, character: char) {
+    match character {
+        '[' => pattern.push_str("[[]"),
+        ']' => pattern.push_str("[]]"),
+        '*' => pattern.push_str("[*]"),
+        '?' => pattern.push_str("[?]"),
+        '{' => pattern.push_str("[{]"),
+        '}' => pattern.push_str("[}]"),
+        _ => pattern.push(character),
+    }
+}
+
 fn strip_leading_current_dir(pattern: &str) -> &str {
     let mut stripped = pattern;
     while let Some(rest) = stripped.strip_prefix("./") {
@@ -179,4 +217,77 @@ fn strip_leading_current_dir(pattern: &str) -> &str {
 
 pub fn normalize_path(path: &Path) -> String {
     path.to_string_lossy().replace('\\', "/").into()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::LintPlanScope;
+    use std::path::Path;
+
+    fn scope(files: Option<&[&str]>, ignores: &[&str]) -> LintPlanScope {
+        let files: Option<Vec<crate::String>> =
+            files.map(|patterns| patterns.iter().copied().map(Into::into).collect());
+        let ignores = ignores
+            .iter()
+            .copied()
+            .map(Into::into)
+            .collect::<Vec<crate::String>>();
+        let root = Path::new("/");
+        LintPlanScope::new(None, files.as_deref(), &ignores, root, root)
+    }
+
+    #[test]
+    fn escaped_metacharacters_match_literals_in_files_and_ignores() {
+        let root = Path::new("/");
+        for (pattern, matched, unmatched) in [
+            (
+                "pages/users/\\[id\\].vue",
+                "/pages/users/[id].vue",
+                "/pages/users/id.vue",
+            ),
+            (
+                "pages/users/\\].vue",
+                "/pages/users/].vue",
+                "/pages/users/x.vue",
+            ),
+            (
+                "pages/users/\\*.vue",
+                "/pages/users/*.vue",
+                "/pages/users/id.vue",
+            ),
+            (
+                "pages/users/\\?.vue",
+                "/pages/users/?.vue",
+                "/pages/users/a.vue",
+            ),
+            (
+                "pages/users/\\{id\\}.vue",
+                "/pages/users/{id}.vue",
+                "/pages/users/id.vue",
+            ),
+            (
+                "pages/users/[[]id].vue",
+                "/pages/users/[id].vue",
+                "/pages/users/id.vue",
+            ),
+        ] {
+            let files = scope(Some(&[pattern]), &[]);
+            assert!(files.matches(root.join(matched).as_path()), "{pattern}");
+            assert!(!files.matches(root.join(unmatched).as_path()), "{pattern}");
+            let ignored = scope(None, &[pattern]);
+            assert!(ignored.ignores(root.join(matched).as_path()), "{pattern}");
+            assert!(
+                !ignored.ignores(root.join(unmatched).as_path()),
+                "{pattern}"
+            );
+        }
+
+        let windows = scope(Some(&[r"src\**\*.vue"]), &[]);
+        assert!(windows.matches(Path::new("/src/components/App.vue")));
+        assert!(!windows.matches(Path::new("/packages/App.vue")));
+
+        let negated = scope(Some(&[r"src/**/*.vue", r"!.\src\generated\**"]), &[]);
+        assert!(negated.matches(Path::new("/src/App.vue")));
+        assert!(!negated.matches(Path::new("/src/generated/drop.vue")));
+    }
 }
