@@ -17,7 +17,7 @@ fn lint_at(source: &str, offset: usize) -> ScriptLintResult {
     linter.lint(source, offset)
 }
 
-fn lint(source: &str) -> ScriptLintResult {
+pub(super) fn lint(source: &str) -> ScriptLintResult {
     lint_at(source, 0)
 }
 
@@ -44,7 +44,7 @@ fn apply_non_overlapping_fixes(source: &str, result: &ScriptLintResult) -> Strin
     fixed
 }
 
-fn fix_until_stable(source: &str) -> String {
+pub(super) fn fix_until_stable(source: &str) -> String {
     let mut fixed = source.to_compact_string();
     for _ in 0..10 {
         let next = apply_non_overlapping_fixes(&fixed, &lint(&fixed));
@@ -88,16 +88,6 @@ fn exact_single_line_diagnostic_and_fix_contract() {
     assert_eq!(
         fix_until_stable(source),
         "export default defineNuxtConfig({ modules: [], ssr: true, })"
-    );
-}
-
-#[test]
-fn preserves_the_upstream_comment_and_comma_contract() {
-    let source =
-        "export default defineNuxtConfig({\n  ssr: true, // ssr\n  // modules\n  modules: []\n})";
-    assert_eq!(
-        fix_until_stable(source),
-        "export default defineNuxtConfig({\n // ssr\n  // modules\n  modules: [],\n  ssr: true,})"
     );
 }
 
@@ -267,6 +257,10 @@ fn keeps_the_recorded_nuxt_eslint_plugin_fix_oracle() {
     for case in cases {
         let id = case["id"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
+        // #7260 carries comments with their keys; comment_tests.rs pins this case.
+        if id == "nuxt-config-keys-order/comments-and-trailing-comma" {
+            continue;
+        }
         let upstream = &recorded[id];
         let expected_messages = upstream["messages"].as_array().unwrap();
         let result = lint(source);

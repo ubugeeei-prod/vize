@@ -14,10 +14,11 @@ use oxc_ast::ast::{
 use oxc_span::GetSpan;
 use vize_l0::{String, cstr};
 
+mod comments;
 mod support;
 use support::{
-    first_order_inversion, property_display_name, property_name, property_text_ranges,
-    sort_named_segments,
+    PropertyText, first_order_inversion, property_display_name, property_name,
+    property_text_ranges, sort_named_segments,
 };
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -219,16 +220,32 @@ fn report_sort(
     let mut reordered = (0..object.properties.len()).collect::<Vec<_>>();
     sort_named_segments(&mut reordered, &names);
 
-    let Some((range_start, range_end, pieces)) = property_text_ranges(object, source) else {
+    // `None` means the property text could not be sliced. An unfixable comment
+    // still reports; carrying it would attach the note to the wrong key.
+    let Some(text) = property_text_ranges(object, source) else {
         return;
     };
-    let mut replacement = String::new("");
-    for index in &reordered {
-        let Some(piece) = pieces.get(*index) else {
-            return;
-        };
-        replacement.push_str(piece);
-    }
+    let fix = match text {
+        PropertyText::Unfixable => None,
+        PropertyText::Fixable {
+            start,
+            end,
+            pieces,
+            separators,
+        } => {
+            let mut replacement = String::new("");
+            for (slot, index) in reordered.iter().copied().enumerate() {
+                let Some(piece) = pieces.get(index) else {
+                    return;
+                };
+                replacement.push_str(piece);
+                if let Some(separator) = separators.get(slot) {
+                    replacement.push_str(separator);
+                }
+            }
+            Some((start, end, replacement))
+        }
+    };
     let (Some(misplaced_property), Some(expected_after_property)) = (
         object.properties.get(misplaced_index),
         object.properties.get(expected_after_index),
@@ -245,22 +262,23 @@ fn report_sort(
     let misplaced_span = misplaced_property.span();
     let start = offset as u32 + misplaced_span.start;
     let end = offset as u32 + misplaced_span.end;
-    result.add_diagnostic(
-        LintDiagnostic::error(
-            META.name,
-            cstr!("Expected config key \"{misplaced}\" to come after \"{expected_after}\""),
-            start,
-            end,
-        )
-        .with_fix(Fix::new(
+    let mut diagnostic = LintDiagnostic::error(
+        META.name,
+        cstr!("Expected config key \"{misplaced}\" to come after \"{expected_after}\""),
+        start,
+        end,
+    );
+    if let Some((range_start, range_end, replacement)) = fix {
+        diagnostic = diagnostic.with_fix(Fix::new(
             "Sort Nuxt config keys",
             TextEdit::replace(
                 offset as u32 + range_start as u32,
                 offset as u32 + range_end as u32,
                 replacement,
             ),
-        )),
-    );
+        ));
+    }
+    result.add_diagnostic(diagnostic);
 }
 
 fn identifier_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
@@ -284,5 +302,7 @@ fn identifier_expression_name<'a>(expression: &'a Expression<'a>) -> Option<&'a 
     }
 }
 
+#[cfg(test)]
+mod comment_tests;
 #[cfg(test)]
 mod tests;
