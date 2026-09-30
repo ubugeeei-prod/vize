@@ -10,6 +10,7 @@ metadata.vize.stability = "experimental"
 readme = "README.md"
 
 [dependencies]
+vize_l0_derive.workspace = true
 # Arena allocator: one pool per compile, backing both the template containers
 # and the retained-AST parses (Davinci P1-10 collapsed the P1-1 two-pool handle).
 oxc_allocator = { workspace = true }

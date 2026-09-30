@@ -4606,20 +4606,10 @@ dependencies = [
  "vize_atelier_core",
  "vize_atelier_sfc",
  "vize_croquis",
- "vize_davinci_derive",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
-]
-
-[[package]]
-name = "vize_davinci_derive"
-version = "0.429.2"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.117",
 ]
 
 [[package]]
@@ -4760,8 +4750,18 @@ dependencies = [
  "smallvec",
  "stacker",
  "tempfile",
+ "vize_l0_derive",
  "which",
  "xxhash-rust",
+]
+
+[[package]]
+name = "vize_l0_derive"
+version = "0.429.2"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
 ]
 
 [[package]]

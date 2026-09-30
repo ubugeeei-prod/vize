@@ -19,10 +19,8 @@ _None._
 | product                   | resolved | grep |
 | ------------------------- | -------: | ---: |
 | `Croquis`                 |        0 |    2 |
-| `EffectGraph`             |        0 |    1 |
 | `Scope`                   |        0 |    1 |
-| `Span`                    |        0 |   80 |
-| `SymbolId`                |        0 |    2 |
+| `Span`                    |        0 |    7 |
 | `Croquis.bindings`        |        0 |   10 |
 | `Croquis.macros`          |        0 |    4 |
 | `Croquis.reactivity`      |        0 |    4 |

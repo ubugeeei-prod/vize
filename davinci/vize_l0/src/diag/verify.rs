@@ -13,13 +13,13 @@
 //!    outside its producer's demand trips the TS-35 detector,
 //! 3. a key of the group's shape under which a fact is stored,
 //! 4. the exact span that fact is about, and
-//! 5. a fact whose [`Verdict`](crate::diagnostic::Verdict) is proven.
+//! 5. a fact whose [`Verdict`](crate::diag::Verdict) is proven.
 //!
 //! The first link that fails yields the exact [`WitnessError`] — link index,
 //! group and the observed values — so a forged witness is a fixture with an
 //! exact oracle, never a boolean.
 //!
-//! A [`LegacyExempt`](crate::diagnostic::Witness::LegacyExempt) error has no
+//! A [`LegacyExempt`](crate::diag::Witness::LegacyExempt) error has no
 //! chain to re-check: it is counted by the exemption inventory instead, and
 //! [`WitnessAudit`] reports it separately.
 //!
@@ -39,7 +39,7 @@ pub use audit::{AuditReport, WitnessAudit, WitnessFailure, unverifiable_witnesse
 pub use check::{WitnessCheck, WitnessChecks, WitnessGroup};
 pub use error::WitnessError;
 
-use crate::diagnostic::{Diagnostic, WitnessChain};
+use crate::diag::{Diagnostic, WitnessChain};
 use crate::fact::{FactConsumer, FactManager, FactView};
 
 /// Re-check `diagnostic`'s witness chain against `facts`, the view of the

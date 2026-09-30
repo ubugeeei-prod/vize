@@ -1,11 +1,11 @@
 //! Code generation: a [`PageModel`] becomes the `Dump` impl.
 //!
 //! Everything the generated code names is fully qualified through
-//! `::vize_davinci` (the deriving crate reaches itself the same way via
-//! `extern crate self as vize_davinci`) or `::core` - never `::std` or
+//! `::vize_l0` (the deriving crate reaches itself the same way via
+//! `extern crate self as vize_l0`) or `::core` - never `::std` or
 //! `::alloc` - because the generated code runs inside `no_std + alloc`
-//! crates. The runtime halves live in `vize_davinci::dump::page` and
-//! `vize_davinci::dump::value`; this module only wires fields to them in
+//! crates. The runtime halves live in `vize_l0::dump::page` and
+//! `vize_l0::dump::value`; this module only wires fields to them in
 //! declaration order, which is what makes the field order stable.
 
 use proc_macro2::TokenStream;
@@ -22,18 +22,18 @@ pub fn expand(model: &PageModel) -> TokenStream {
 
     quote! {
         #[automatically_derived]
-        impl ::vize_davinci::dump::Dump for #ident {
+        impl ::vize_l0::dump::Dump for #ident {
             fn print<W: ::core::fmt::Write>(
                 &self,
                 w: &mut W,
-                _mode: ::vize_davinci::dump::Mode,
+                _mode: ::vize_l0::dump::Mode,
             ) -> ::core::fmt::Result {
                 #print_body
             }
 
             fn parse(
                 input: &str,
-            ) -> ::core::result::Result<Self, ::vize_davinci::dump::Error> {
+            ) -> ::core::result::Result<Self, ::vize_l0::dump::Error> {
                 #parse_body
             }
         }
@@ -63,7 +63,7 @@ fn print_body(model: &PageModel, page: &str) -> TokenStream {
         }
     }
     quote! {
-        let mut printer = ::vize_davinci::dump::page::PagePrinter::new(w, #page);
+        let mut printer = ::vize_l0::dump::page::PagePrinter::new(w, #page);
         printer.open()?;
         #header
         printer.close_header()?;
@@ -94,12 +94,12 @@ fn parse_body(model: &PageModel, page: &str) -> TokenStream {
                     let mut #slot: ::core::option::Option<#ty> = ::core::option::Option::None;
                 });
                 field_arms.extend(quote! {
-                    #name => ::vize_davinci::dump::page::set_scalar(
+                    #name => ::vize_l0::dump::page::set_scalar(
                         &mut #slot, #name, __value, __line_no,
                     )?,
                 });
                 build.extend(quote! {
-                    #ident: ::vize_davinci::dump::page::require_scalar(#slot, #name)?,
+                    #ident: ::vize_l0::dump::page::require_scalar(#slot, #name)?,
                 });
             }
             FieldKind::List | FieldKind::Map => {
@@ -113,13 +113,13 @@ fn parse_body(model: &PageModel, page: &str) -> TokenStream {
                 });
                 let insert = if field.kind == FieldKind::List {
                     quote! {
-                        #slot.push(::vize_davinci::dump::value::DumpValue::parse_value(
+                        #slot.push(::vize_l0::dump::value::DumpValue::parse_value(
                             __line, __line_no,
                         )?)
                     }
                 } else {
                     quote! {
-                        ::vize_davinci::dump::page::map_insert(&mut #slot, __line, __line_no)?
+                        ::vize_l0::dump::page::map_insert(&mut #slot, __line, __line_no)?
                     }
                 };
                 entry_arms.extend(quote! { #index => #insert, });
@@ -129,26 +129,26 @@ fn parse_body(model: &PageModel, page: &str) -> TokenStream {
     }
 
     quote! {
-        let mut state = ::vize_davinci::dump::page::ParseState::new(#page);
+        let mut state = ::vize_l0::dump::page::ParseState::new(#page);
         #slots
         let mut __line_no = 0usize;
         for __line in input.split('\n') {
             __line_no += 1;
             match state.classify(__line, __line_no)? {
-                ::vize_davinci::dump::page::LineEvent::Skip => {}
-                ::vize_davinci::dump::page::LineEvent::Field => {
+                ::vize_l0::dump::page::LineEvent::Skip => {}
+                ::vize_l0::dump::page::LineEvent::Field => {
                     let (__name, __value) =
-                        ::vize_davinci::dump::page::split_field(__line, __line_no)?;
+                        ::vize_l0::dump::page::split_field(__line, __line_no)?;
                     match __name {
                         #field_arms
                         _ => {
                             return ::core::result::Result::Err(
-                                ::vize_davinci::dump::page::unknown_field(__name, __line_no),
+                                ::vize_l0::dump::page::unknown_field(__name, __line_no),
                             );
                         }
                     }
                 }
-                ::vize_davinci::dump::page::LineEvent::Section(__name) => match __name {
+                ::vize_l0::dump::page::LineEvent::Section(__name) => match __name {
                     #section_arms
                     _ => {
                         return ::core::result::Result::Err(
@@ -156,7 +156,7 @@ fn parse_body(model: &PageModel, page: &str) -> TokenStream {
                         );
                     }
                 },
-                ::vize_davinci::dump::page::LineEvent::Entry(__index) => match __index {
+                ::vize_l0::dump::page::LineEvent::Entry(__index) => match __index {
                     #entry_arms
                     _ => ::core::unreachable!("entered sections have generated arms"),
                 },
@@ -185,7 +185,7 @@ mod tests {
         })
         .expect("a named struct derives");
         let expanded = super::expand(&model).to_string();
-        // The proof the expansion is *right* lives in vize_davinci's TS-16
+        // The proof the expansion is *right* lives in vize_l0's TS-16
         // suite, where the generated impls compile and hold the round-trip
         // laws; this test pins only that expansion succeeds and is non-empty.
         assert!(!expanded.is_empty(), "expansion must produce tokens");

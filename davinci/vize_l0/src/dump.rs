@@ -23,21 +23,20 @@ use core::fmt;
 
 use vize_l0::String;
 
+pub mod capture;
 pub mod collector;
-pub mod croquis;
-pub mod feed;
+pub mod json;
 pub mod page;
 pub mod plan;
 pub mod remarks;
-pub mod repro;
 pub mod value;
 
 /// `#[derive(Dump)]` - generates the mechanical trio (print / parse /
-/// field order) for an owned document struct; see `vize_davinci_derive`.
+/// field order) for an owned document struct; see `vize_l0_derive`.
 /// Anything semantic (`Display` elision, section meaning) stays
 /// hand-written, so derived pages print the same canonical text in both
 /// modes.
-pub use vize_davinci_derive::Dump;
+pub use vize_l0_derive::Dump;
 
 /// Print mode for a folio page.
 ///
@@ -139,3 +138,9 @@ macro_rules! assert_dump_snapshot {
         }
     }};
 }
+
+// Stable aliases for the earlier foundation surface.
+pub use Error as DumpError;
+pub use Mode as DumpMode;
+pub use collector::{Collector as DumpRuntime, Page as DumpPage};
+pub use value::DumpValue;

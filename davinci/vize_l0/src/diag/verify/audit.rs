@@ -14,7 +14,7 @@ use core::sync::atomic::{AtomicU64, Ordering};
 #[cfg(debug_assertions)]
 use super::verify_chain;
 use super::{WitnessChecks, WitnessError};
-use crate::diagnostic::Diagnostic;
+use crate::diag::Diagnostic;
 use crate::fact::FactView;
 
 /// How many witnesses have failed verification in this process — TS-36's

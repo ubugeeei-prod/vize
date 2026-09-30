@@ -11,8 +11,7 @@ behavior and std dependency. No-std isolation remains in #6834.
 
 The remaining level restructure is tracked in
 [#6833](https://github.com/ubugeeei-prod/vize/issues/6833) and
-[#6834](https://github.com/ubugeeei-prod/vize/issues/6834). Skeleton bodies remain
-subject to the existing `check-skeleton-todos.rs` ratchet.
+[#6834](https://github.com/ubugeeei-prod/vize/issues/6834). L0 has no skeleton bodies; the workspace ratchet prevents reintroducing them.
 
 Support and deprecation guarantees are defined in the
 [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).

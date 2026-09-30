@@ -50,15 +50,17 @@ extern crate alloc;
 // inside the crate itself.
 extern crate self as vize_davinci;
 
-pub mod diagnostic;
+pub use vize_l0::diag as diagnostic;
 pub mod dump;
-pub mod fact;
+pub use vize_l0::fact;
 pub use vize_l0::id;
-pub mod key;
+pub use vize_l0::key;
 pub mod legacy_plan;
-pub mod pass;
+pub use vize_l0::pass;
 pub mod render;
 pub use vize_l0::side_table;
 pub mod stage;
 pub mod summary;
-pub mod witness;
+pub use vize_l0::diag::verify as witness;
+
+pub use vize_l0::assert_dump_snapshot;

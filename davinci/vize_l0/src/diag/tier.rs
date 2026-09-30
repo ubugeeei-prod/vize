@@ -13,7 +13,7 @@
 //! rule that tries error on a heuristic verdict does not build:
 //!
 //! ```compile_fail,E0080
-//! use vize_davinci::diagnostic::{Domain, RuleContract, Severity, Tier};
+//! use vize_l0::diag::{Domain, RuleContract, Severity, Tier};
 //!
 //! static CANARY: RuleContract = RuleContract::new(
 //!     Tier::Heuristic,
@@ -27,7 +27,7 @@
 //! check the error code):
 //!
 //! ```
-//! use vize_davinci::diagnostic::{Domain, RuleContract, Severity, Tier};
+//! use vize_l0::diag::{Domain, RuleContract, Severity, Tier};
 //!
 //! static HEURISTIC: RuleContract = RuleContract::new(
 //!     Tier::Heuristic,

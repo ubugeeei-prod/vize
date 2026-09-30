@@ -35,11 +35,11 @@
 //! # Example
 //!
 //! ```
-//! use vize_davinci::fact::{
+//! use vize_l0::fact::{
 //!     Demand, FactConsumer, FactGroup, FactManager, FactProducer, FactRegistry, FactTable,
 //!     FactView, ProducerEntry,
 //! };
-//! use vize_davinci::pass::AnalysisId;
+//! use vize_l0::pass::AnalysisId;
 //!
 //! /// Stratum 0: the length of every word.
 //! struct Lengths;

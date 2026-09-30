@@ -12,9 +12,9 @@
 /// Ordered list of publishable crates. The order is topological because each
 /// crate can require exact versions of earlier workspace crates.
 let published_crates : Array[String] = [
+  "vize_l0_derive",
   "vize_l0",
   "vize_carton",
-  "vize_davinci_derive",
   "vize_davinci",
   "vize_relief",
   "vize_l1",

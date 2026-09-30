@@ -13,7 +13,7 @@
 //! checker can count its uses:
 //!
 //! ```
-//! use vize_davinci::diagnostic::{Advisory, Diagnostic, Exemption, Severity, Stage};
+//! use vize_l0::diag::{Advisory, Diagnostic, Exemption, Severity, Stage};
 //! use vize_l0::Span;
 //!
 //! static UNTERMINATED: Exemption = Exemption::new("doc_producer", "unterminated");

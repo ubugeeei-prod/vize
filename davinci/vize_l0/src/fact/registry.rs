@@ -163,8 +163,8 @@ fn eq_erased<A: ?Sized, G: FactProducer<A>>(
 /// depends on a group of its own stratum does not compile:
 ///
 /// ```compile_fail,E0080
-/// use vize_davinci::fact::{Demand, FactGroup, FactProducer, FactRegistry, FactTable, FactView, ProducerEntry};
-/// use vize_davinci::pass::AnalysisId;
+/// use vize_l0::fact::{Demand, FactGroup, FactProducer, FactRegistry, FactTable, FactView, ProducerEntry};
+/// use vize_l0::pass::AnalysisId;
 ///
 /// struct Scopes;
 /// impl FactGroup for Scopes {
@@ -198,8 +198,8 @@ fn eq_erased<A: ?Sized, G: FactProducer<A>>(
 /// higher stratum:
 ///
 /// ```compile_fail,E0080
-/// use vize_davinci::fact::{Demand, FactGroup, FactProducer, FactRegistry, FactTable, FactView, ProducerEntry};
-/// use vize_davinci::pass::AnalysisId;
+/// use vize_l0::fact::{Demand, FactGroup, FactProducer, FactRegistry, FactTable, FactView, ProducerEntry};
+/// use vize_l0::pass::AnalysisId;
 ///
 /// struct Low;
 /// impl FactGroup for Low {

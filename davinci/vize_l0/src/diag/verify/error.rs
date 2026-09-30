@@ -1,6 +1,6 @@
 //! [`WitnessError`] — why a witness link does not verify.
 
-use crate::diagnostic::{Verdict, WitnessKey};
+use crate::diag::{Verdict, WitnessKey};
 use crate::fact::FactError;
 use crate::pass::AnalysisId;
 use vize_l0::Span;

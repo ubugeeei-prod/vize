@@ -32,8 +32,9 @@ use core::fmt::Write as _;
 use vize_l0::String;
 
 use crate::dump::collector::Collector;
-use crate::dump::remarks::push_remark_fields;
 use crate::pass::observer::RecordedRemark;
+use vize_l0::dump::json::push_json_string;
+use vize_l0::dump::remarks::push_remark_fields;
 
 /// The feed format version. Incompatible shape changes bump this **and**
 /// the committed schema's `const` together.
@@ -189,25 +190,4 @@ impl StageFeed {
         out.push_str("]}\n");
         out
     }
-}
-
-/// Append `text` as a JSON string literal: `"` and `\` escaped, control
-/// characters as `\n`/`\r`/`\t` or `\u00XX`, everything else (multi-byte
-/// UTF-8 included) verbatim - the minimal escape set RFC 8259 requires.
-pub(crate) fn push_json_string(out: &mut String, text: &str) {
-    out.push('"');
-    for character in text.chars() {
-        match character {
-            '"' => out.push_str("\\\""),
-            '\\' => out.push_str("\\\\"),
-            '\n' => out.push_str("\\n"),
-            '\r' => out.push_str("\\r"),
-            '\t' => out.push_str("\\t"),
-            control if control < ' ' => {
-                let _ = write!(out, "\\u{:04x}", control as u32);
-            }
-            other => out.push(other),
-        }
-    }
-    out.push('"');
 }

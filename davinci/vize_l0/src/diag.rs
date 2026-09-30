@@ -21,7 +21,7 @@
 //!   error-on-unknown fails to compile":
 //!
 //! ```compile_fail,E0308
-//! use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+//! use vize_l0::diag::{Diagnostic, Severity, Stage};
 //! use vize_l0::Span;
 //!
 //! let unproven = Diagnostic::new(Severity::Error, Stage::Semantic, Span::new(0, 1), "maybe");
@@ -32,7 +32,7 @@
 //!   the twin is what pins the reason):
 //!
 //! ```
-//! use vize_davinci::diagnostic::{Advisory, Diagnostic, Stage};
+//! use vize_l0::diag::{Advisory, Diagnostic, Stage};
 //! use vize_l0::Span;
 //!
 //! let unproven = Diagnostic::new(Advisory::Warning, Stage::Semantic, Span::new(0, 1), "maybe");
@@ -42,7 +42,7 @@
 //!   so a struct literal cannot forge an unwitnessed error either:
 //!
 //! ```compile_fail,E0451
-//! use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
+//! use vize_l0::diag::{Diagnostic, Severity, Stage};
 //! use vize_l0::Span;
 //!
 //! let forged = Diagnostic {
@@ -60,7 +60,7 @@
 //!   error severity at compile time (see [`tier`]).
 //!
 //! Re-checking a witness against the fact base is P4-6b's verifier
-//! (`vize_davinci::witness`); this module only makes the unproven error
+//! (`vize_l0::diag::verify`); this module only makes the unproven error
 //! unrepresentable.
 //!
 //! # Coordinates
@@ -89,6 +89,7 @@
 pub mod severity;
 pub mod tier;
 pub mod verdict;
+pub mod verify;
 pub mod witness;
 
 use alloc::vec::Vec;
