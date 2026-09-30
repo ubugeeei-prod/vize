@@ -1,39 +1,144 @@
-//! L0 — foundation (codename: Carton, absorbing the Davinci substrate).
-//!
-//! **Experimental:** a compiling skeleton. The public API is laid down first
-//! and filled by moving code in from `vize_davinci` (#6833) and `vize_carton`
-//! (#6834). Unimplemented bodies are `todo!()` inside modules that carry
-//! `#![expect(clippy::todo, reason = "skeleton: #NNNN")]`; no product path
-//! reaches them, and a CI ratchet only lets their count go down.
-//!
-//! Levels are type boundaries, not runtime boundaries: every artifact shares
-//! one arena and dense `u32` ids, and nothing is serialized between levels.
-//! Dumps exist for `vize dump` and observers only.
-//!
-//! - Source text, byte spans, the arena and compact storage are re-exported
-//!   from `vize_carton` (`Span`, `Allocator`, `String`, `FxHashMap`,
-//!   `line_index`, …) until #6834 moves them here. The neutral extension wire
-//!   arrives the same way (#6976).
-//! - [`id`] — [`NodeId`](id::NodeId) and [`AnalysisId`](id::AnalysisId).
-//! - [`side_table`] — analysis results stored beside a tree, keyed by id.
-//! - [`key`] — span-relative content keys for cached artifacts.
-//! - [`dump`] — the textual dump contract ([`Dump`](dump::Dump),
-//!   [`DumpValue`](dump::DumpValue)) and the per-pass dump runtime.
-//! - [`diag`] — diagnostics and their witness chains.
-//! - [`pass`] — the pass manager and its observers (remarks, fusion, timing).
-//! - [`fact`] — fact groups and the fact manager.
-//! - [`level`] — the level registry: L0–L4 and the conversions between them.
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "vize_l0 defines and bridges the std types the rest of the workspace avoids"
+)]
 
-#![no_std]
+//! L0 — the shared foundation for Vize.
+//!
+//! **Experimental:** level APIs may change during the restructure.
+//! Legacy compatibility is provided by `vize_carton`.
+//!
+//! This crate provides the foundational utilities and data structures for the Vize compiler,
+//! much like a carton (artist's portfolio case) holds all the essential tools and materials
+//! an artist needs for their work.
+//!
+//! # Modules
+//!
+//! - **Allocator**: Arena-based memory allocation for efficient AST construction
+//! - **Shared utilities**: DOM configuration, optimization flags, and helper functions
+//! - **Telegraph**: Generic message fan-out for report emitters
+//!
+//! # Example
+//!
+//! ```
+//! use vize_l0::{Allocator, Box, Vec};
+//!
+//! let allocator = Allocator::default();
+//! let allocator = &allocator;
+//!
+//! // Allocate a boxed value
+//! let boxed = Box::new_in(42, &allocator);
+//! assert_eq!(*boxed, 42);
+//!
+//! // Create a vector
+//! let mut vec = Vec::new_in(&allocator);
+//! vec.push(1);
+//! vec.push(2);
+//! vec.push(3);
+//! assert_eq!(vec.len(), 3);
+//! ```
+
+// Allocator modules
+mod allocator;
+mod boxed;
+mod clone_in;
+mod vec;
+
+// Shared modules
+pub mod compiler_error;
+pub mod stage;
+pub use compiler_error::ErrorCode;
+mod namespace;
+pub use namespace::Namespace;
+pub mod config;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod corsa_api_mode;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod corsa_resolver;
+pub mod dialect;
+pub mod directive;
+pub mod dom_tag_config;
+pub mod expression_guard;
+#[cfg(feature = "extension")]
+pub mod extension;
+pub mod flags;
+pub mod general;
+pub mod hash;
+pub mod i18n;
+mod i18n_compiler;
+mod i18n_compiler_directive;
+mod i18n_compiler_template;
+mod i18n_croquis;
+mod i18n_croquis_last;
+mod i18n_croquis_more;
+mod i18n_croquis_rest;
+mod i18n_explain;
+mod i18n_l3;
+mod i18n_render;
+mod i18n_rules_ecosystem;
+mod i18n_rules_markup;
+mod i18n_rules_script;
+mod i18n_rules_script_more;
+mod i18n_supplemental;
+mod i18n_supplemental_extra;
+mod i18n_supplemental_extra2;
+mod i18n_supplemental_html;
+pub mod interner;
+pub mod line_index;
+pub mod lsp;
+pub mod path;
+pub mod pool;
+pub mod profiler;
+pub mod recursion;
+pub mod source_frame;
+pub mod source_io;
+pub mod source_range;
+pub mod span;
+pub mod string_builder;
+pub mod telegraph;
+
+// Re-export allocator types
+pub use allocator::{Allocator, ArenaStamp};
+pub use boxed::Box;
+pub use clone_in::CloneIn;
+pub use vec::Vec;
+
+// Re-export the recursion guard the recursive compiler passes wrap themselves in
+pub use recursion::ensure_sufficient_stack;
+
+// Re-export oxc's arena string builder: the build-then-freeze path for values
+// assembled incrementally before they are frozen into an `&'a str` node field.
+pub use oxc_allocator::StringBuilder;
+
+// Re-export compact_str::CompactString for convenience
+pub use compact_str::CompactString;
+pub use compact_str::CompactString as String;
+pub use compact_str::ToCompactString;
+
+// Re-export smallvec for stack-optimized collections
+pub use smallvec::{SmallVec, smallvec};
+
+// Re-export bitflags for flag types
+pub use bitflags::bitflags;
+
+// Re-export rustc-hash for fast hash maps/sets
+pub use rustc_hash::{FxHashMap, FxHashSet};
+
+// Re-export phf for compile-time perfect hash functions
+pub use phf::{Map as PhfMap, Set as PhfSet, phf_map, phf_set};
+
+// Re-export the Davinci source model types (L0 coordinates)
+pub use source_frame::{SourceBlock, SourceFrameError, SourceRoot};
+pub use span::Span;
+
+// Re-export shared utilities
+pub use dom_tag_config::*;
+pub use flags::*;
+pub use general::*;
 
 extern crate alloc;
-
-// Moved modules keep their `vize_l0::` paths (e.g. `vize_l0::FxHashMap`).
 extern crate self as vize_l0;
-
-// The storage foundation still lives in carton (#6834).
-pub use vize_carton::*;
-
 pub mod diag;
 pub mod dump;
 pub mod fact;

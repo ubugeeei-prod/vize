@@ -37,8 +37,8 @@ pub use report::{CounterEntry, CounterSummary, ProfileEntry, ProfileSummary};
 /// recording under its own `key × attribution` bucket:
 ///
 /// ```
-/// use vize_carton::profile;
-/// use vize_carton::profiler::SpanAttribution;
+/// use vize_l0::profile;
+/// use vize_l0::profiler::SpanAttribution;
 ///
 /// let plain = profile!("davinci.demo.plain", 1 + 1);
 /// let attributed = profile!(

@@ -6,7 +6,7 @@
 # `SourceLocation` consumer inventory
 
 Every textual read of the relief `SourceLocation` members that
-`vize_carton::Span` (`davinci/vize_carton/src/span.rs`) deleted —
+`vize_carton::Span` (`davinci/vize_l0/src/span.rs`) deleted —
 `source`, `start.line`, `start.column`, `end.line`, `end.column` —
 across `crates/*/src`, plus the migration group each consumer moved to as
 relief nodes switched to two-u32 byte spans instead of owned
@@ -78,7 +78,7 @@ migrated sites:
 
 Line/column exist only at diagnostic- or LSP-rendering time under Davinci:
 derived from byte offsets via `vize_carton::line_index::LineIndex`
-(`davinci/vize_carton/src/line_index.rs:28`) at the edge that needs them — exactly how the
+(`davinci/vize_l0/src/line_index.rs:28`) at the edge that needs them — exactly how the
 source-map `finish()` step and Patina's output layer already worked. The
 eagerly-stored `Position { line, column }` pairs deleted with the type.
 Where each read went:
@@ -112,7 +112,7 @@ representation:
 - `crates/vize_atelier_jsx/src/span.rs:15` — `SpanMapper` no longer expands oxc byte spans into
   eager positions; `location()` is a direct offset carry-over and the
   `LineIndex` it built per module is deleted
-- `crates/vize_relief/src/relief/core.rs:104` — `STUB_LOCATION` / `SourceLocation::STUB` collapsed to
+- `crates/vize_relief/src/relief/core.rs:96` — `STUB_LOCATION` / `SourceLocation::STUB` collapsed to
   `Span::new(0, 0)`
 - `crates/vize_relief/src/relief/expressions.rs:33` — `SimpleExpressionNode` stored `content: String`
   **and** `loc.source` duplicating it; since P1-3 the node keeps one span

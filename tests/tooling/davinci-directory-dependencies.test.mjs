@@ -32,7 +32,7 @@ function fixture() {
   return { metadata, add, report: () => inspectDirectoryDependencies(metadata) };
 }
 
-test("products consume Davinci and dev-only differential oracles remain permitted", () => {
+void test("products consume Davinci and dev-only differential oracles remain permitted", () => {
   const value = fixture();
   value.add("product", "native");
   value.add("native", "product", { kind: "dev" });
@@ -46,7 +46,7 @@ for (const extra of [
   { target: "cfg(windows)" },
   { rename: "vize_l0" },
 ]) {
-  test(`reverse declaration is rejected: ${JSON.stringify(extra)}`, () => {
+  void test(`reverse declaration is rejected: ${JSON.stringify(extra)}`, () => {
     const value = fixture();
     value.add("native", "product", extra);
     assert.deepEqual(
@@ -56,7 +56,7 @@ for (const extra of [
   });
 }
 
-test("an external helper cannot hide a transitive reverse edge or loop forever", () => {
+void test("an external helper cannot hide a transitive reverse edge or loop forever", () => {
   const value = fixture();
   value.add("native", "helper");
   value.add("helper", "native");

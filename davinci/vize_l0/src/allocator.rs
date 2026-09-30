@@ -56,7 +56,7 @@ pub use generation::ArenaStamp;
 /// # Example
 ///
 /// ```
-/// use vize_carton::{Allocator, Box, Vec};
+/// use vize_l0::{Allocator, Box, Vec};
 ///
 /// let allocator = Allocator::default();
 /// let allocator = &allocator;

@@ -4,6 +4,9 @@
 // crates, so two PRs touching different crates never edit the same file; the
 // cross-crate totals live in the on-demand `--summary` view instead.
 
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { repoRoot } from "./paths.mjs";
 import { formatTable } from "./markdown.mjs";
 import { byKey } from "./ordering.mjs";
 import {
@@ -81,13 +84,14 @@ function renderIndex(products, analysis, productIds) {
 }
 
 function renderShard(crate, group, productIds) {
+  const directory = existsSync(path.join(repoRoot, "davinci", crate)) ? "davinci" : "crates";
   const lines = header();
   lines.push("");
   lines.push(`# Croquis consumption: \`${crate}\``);
   lines.push("");
   lines.push(
     `One shard of the [Croquis consumption matrix](../${ARTIFACT_REL.split("/").pop()}):` +
-      ` every fact the matrix records about \`crates/${crate}/src\`. The method and` +
+      ` every fact the matrix records about \`${directory}/${crate}/src\`. The method and` +
       " the product set live on that page.",
   );
   lines.push("");

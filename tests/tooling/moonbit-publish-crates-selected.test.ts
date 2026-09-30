@@ -7,6 +7,7 @@ import { test } from "node:test";
 
 import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
 import { assertPublishManifestIsSanitized } from "./support/fake-cargo-publish.ts";
+import { getMetadata } from "./support/publish-crates-plan.ts";
 import { writeFakeCommand } from "./support/fake-command.ts";
 
 function workspaceVersion(): string {

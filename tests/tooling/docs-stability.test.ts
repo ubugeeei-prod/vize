@@ -175,7 +175,9 @@ test("Rust crate stability table matches Cargo metadata and crate documentation"
   ) as { packages: CargoPackage[] };
   const publishableCrates = metadata.packages.filter(
     (pkg) =>
-      path.relative(root, pkg.manifest_path).startsWith(`crates${path.sep}`) &&
+      ["crates", "davinci"].some((directory) =>
+        path.relative(root, pkg.manifest_path).startsWith(`${directory}${path.sep}`),
+      ) &&
       (pkg.publish === null || pkg.publish.length > 0),
   );
 

@@ -3,7 +3,7 @@
 //!
 //! ```sh
 //! cargo run -p vize_dialect_moonbit --features moonc --example moonbit_check -- \
-//!   crates/vize_dialect_moonbit/tests/fixtures/todo-typos.vue [--projection]
+//!   davinci/vize_dialect_moonbit/tests/fixtures/todo-typos.vue [--projection]
 //! ```
 //!
 //! Prints `moonc`'s diagnostics at their authored template positions;

@@ -102,7 +102,7 @@ test("no workspace crate is reachable from the SDK", () => {
 
 test("the SDK owns the canonical WIT and released surfaces", () => {
   assert.equal(fs.existsSync(path.join(root, "contracts")), false);
-  assert.deepEqual(fs.readdirSync(path.join(root, "crates/vize_guest/wit")).toSorted(), [
+  assert.deepEqual(fs.readdirSync(path.join(root, "davinci/vize_guest/wit")).toSorted(), [
     "expression-dialect.wit",
     "handshake.wit",
     "input-dialect.wit",
@@ -111,7 +111,7 @@ test("the SDK owns the canonical WIT and released surfaces", () => {
     "types.wit",
   ]);
   assert.match(
-    read("crates/vize_guest/wit/types.wit"),
+    read("davinci/vize_guest/wit/types.wit"),
     new RegExp(`^package vize:contracts@${newestSurface().version.replaceAll(".", "\\.")};$`, "mu"),
   );
 });
@@ -131,14 +131,14 @@ type Surface = {
 };
 
 function newestSurface(): Surface {
-  const files = fs.readdirSync(path.join(root, "crates/vize_guest/versions")).toSorted();
+  const files = fs.readdirSync(path.join(root, "davinci/vize_guest/versions")).toSorted();
   assert.deepEqual(files, [
     "vize-contracts@0.1.0.json",
     "vize-contracts@0.1.1.json",
     "vize-contracts@0.1.2.json",
     "vize-contracts@0.1.3.json",
   ]);
-  return JSON.parse(read("crates/vize_guest/versions", files.at(-1)!)) as Surface;
+  return JSON.parse(read("davinci/vize_guest/versions", files.at(-1)!)) as Surface;
 }
 
 const pascal = (name: string) =>
@@ -220,7 +220,7 @@ test("the JS and Rust SDK constants are the released handshake", async () => {
     string,
     unknown
   >;
-  const rust = read("crates/vize_guest/src/lib.rs");
+  const rust = read("davinci/vize_guest/src/lib.rs");
   const rustConst = (name: string) =>
     new RegExp(String.raw`^pub const ${name}: [^=]+ =\s*(?<value>[^;]+);$`, "mu")
       .exec(rust)

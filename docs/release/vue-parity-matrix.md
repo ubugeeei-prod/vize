@@ -80,7 +80,7 @@ Honest gaps:
 
 [petite-vue](https://github.com/vuejs/petite-vue) is supported as a **standalone HTML document**
 surface, not as a `.vue` SFC. A document is classified as petite-vue **structurally**
-(`davinci/vize_carton/src/dialect.rs`, `detect_petite_vue_document`): a `<script src>` resolving to
+(`davinci/vize_l0/src/dialect.rs`, `detect_petite_vue_document`): a `<script src>` resolving to
 the petite-vue package, an ES import of it, or a `PetiteVue.createApp` global call. A comment merely
 mentioning "petite-vue" never flips the dialect, and lookalikes such as `petite-vuex` do not match.
 

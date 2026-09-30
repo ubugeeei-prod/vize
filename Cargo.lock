@@ -4499,26 +4499,10 @@ dependencies = [
 name = "vize_carton"
 version = "0.429.1"
 dependencies = [
- "bitflags 2.13.1",
- "compact_str",
  "davinci_test_support",
- "globset",
  "insta",
- "memchr",
- "once_cell",
- "oxc_allocator",
- "oxc_syntax",
- "phf 0.13.1",
- "pklrust",
- "rustc-hash",
- "serde",
- "serde_json",
- "simdutf8",
- "smallvec",
- "stacker",
  "tempfile",
- "which",
- "xxhash-rust",
+ "vize_l0",
 ]
 
 [[package]]
@@ -4643,7 +4627,6 @@ version = "0.429.1"
 dependencies = [
  "serde_json",
  "sha2 0.11.0",
- "vize_croquis",
  "vize_davinci",
  "vize_extension_contract",
  "vize_extension_host",
@@ -4758,7 +4741,26 @@ dependencies = [
 name = "vize_l0"
 version = "0.429.1"
 dependencies = [
- "vize_carton",
+ "bitflags 2.13.1",
+ "compact_str",
+ "davinci_test_support",
+ "globset",
+ "insta",
+ "memchr",
+ "once_cell",
+ "oxc_allocator",
+ "oxc_syntax",
+ "phf 0.13.1",
+ "pklrust",
+ "rustc-hash",
+ "serde",
+ "serde_json",
+ "simdutf8",
+ "smallvec",
+ "stacker",
+ "tempfile",
+ "which",
+ "xxhash-rust",
 ]
 
 [[package]]

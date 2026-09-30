@@ -4,7 +4,7 @@
 
 # Croquis consumption: `vize_dialect_moonbit`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize_dialect_moonbit/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `davinci/vize_dialect_moonbit/src`. The method and the product set live on that page.
 
 ## Resolved product sites
 
@@ -12,15 +12,12 @@ _None._
 
 ## Non-product `vize_croquis` imports
 
-| item                         | files | sites |
-| ---------------------------- | ----: | ----: |
-| `BlockLocation`              |     1 |     1 |
-| `SfcParseOptions`            |     1 |     1 |
-| `parse_sfc_without_css_vars` |     1 |     1 |
+_None._
 
 ## Naive grep disagreements (resolved/grep)
 
 | product            | resolved | grep |
 | ------------------ | -------: | ---: |
-| `Span`             |        0 |   24 |
+| `Croquis`          |        0 |    1 |
+| `Span`             |        0 |   26 |
 | `Croquis.bindings` |        0 |    6 |

@@ -126,6 +126,38 @@ fn only_moonbit_script_blocks_select_the_dialect() {
 }
 
 #[test]
+fn native_container_preserves_authored_frames_and_prefers_setup() {
+    let source = "<!-- 日本語 -->\n<script lang=\"ts\">ordinary</script>\n<script setup lang=\"mbt\">setup</script>\n<template><template #default>{{ '\"</template>\"' }}</template></template>";
+    let sfc = split(source).unwrap();
+    assert_eq!(sfc.script.source(), "setup");
+    for frame in [sfc.script, sfc.template] {
+        assert_eq!(slice(source, frame.span()), frame.source());
+    }
+    assert_eq!(
+        sfc.template.source(),
+        "<template #default>{{ '\"</template>\"' }}</template>"
+    );
+}
+
+#[test]
+fn native_container_errors_and_external_blocks_are_rejected() {
+    for source in [
+        "<script lang=\"mbt\">x</script><template>a</template><template>b</template>",
+        "<script lang=\"mbt\">x</script><template>unclosed",
+    ] {
+        assert!(matches!(split(source), Err(SfcError::Container(_))));
+    }
+    assert_eq!(
+        split("<script lang=\"mbt\">x</script><template src=\"external.html\" />").unwrap_err(),
+        SfcError::TemplateNotInline
+    );
+    assert!(matches!(
+        split("<script lang=\"mbt\" src=\"external.mbt\" /><template>a</template>"),
+        Err(SfcError::NotMoonBit(_))
+    ));
+}
+
+#[test]
 fn positions_outside_the_subset_are_reported_not_dropped() {
     let source = "<script setup lang=\"moonbit\">let a : Ref[Int] = { val: 1 }</script>\n\
                   <template><input v-model=\"a.val\"><p v-for=\"(x, i, n) in xs\">{{ x }}</p></template>";

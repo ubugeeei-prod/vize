@@ -13,7 +13,7 @@ The durable witnesses are:
 
 - [`expression_retention.rs`](../../../../../crates/vize_armature/tests/expression_retention.rs)
   - pins the parser-side retention behavior.
-- [`expression_guard.rs`](../../../../../davinci/vize_carton/tests/expression_guard.rs)
+- [`expression_guard.rs`](../../../../../crates/vize_carton/tests/expression_guard.rs)
   - keeps the guard decision aligned with retained expressions.
 - [`davinci_s2_dom_namespace.rs`](../../../../../crates/vize_atelier_dom/tests/l2_dom_namespace.rs)
   - proves the DOM-facing witness no longer trips on this expression edge.

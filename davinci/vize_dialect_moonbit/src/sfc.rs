@@ -1,10 +1,9 @@
 //! L0: split a MoonBit SFC into its script and template frames.
 //!
-//! The split is the shared SFC container scan
-//! (`vize_croquis::sfc::parse_sfc_without_css_vars`, the one compile, lint
-//! and the LSP read), never a private substring search. Every frame is an
-//! L0 [`SourceBlock`] over the complete authored file, so each span the
-//! dialect hands on is file-absolute by construction.
+//! The split uses the native L1 Vue container, shared with stage capture.
+//! Every frame is an L0 [`SourceBlock`] over the complete authored file,
+//! so each span the dialect hands on is file-absolute by construction.
+//! Legacy product SFC parsing remains in Croquis under #6837.
 //!
 //! **Dialect selection is per file** (the capability contract's rule,
 //! `vize_l2::expr::capability`): a file's template expressions are MoonBit
@@ -13,8 +12,8 @@
 
 use core::fmt;
 
-use vize_croquis::sfc::{BlockLocation, SfcParseOptions, parse_sfc_without_css_vars};
-use vize_l0::{SourceBlock, SourceRoot, String, ToCompactString};
+use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, String, ToCompactString, cstr};
+use vize_l1::container::{ContainerFormat, Vue};
 
 /// The dialect id carried by every [`vize_l2::expr::ForeignExpr`] this
 /// crate builds.
@@ -79,37 +78,53 @@ impl fmt::Display for SfcError {
 /// block selects the MoonBit dialect.
 pub fn split(source: &str) -> Result<MoonBitSfc<'_>, SfcError> {
     let root = SourceRoot::new(source).map_err(|_| SfcError::TooLarge)?;
-    let descriptor = parse_sfc_without_css_vars(source, SfcParseOptions::default())
-        .map_err(|error| SfcError::Container(error.message.to_compact_string()))?;
-    let template = descriptor.template.as_ref().ok_or(SfcError::NoTemplate)?;
-    let html = template.lang.as_deref().is_none_or(|lang| lang == "html");
-    if template.src.is_some() || !html {
+    let allocator = Allocator::default();
+    let container = Vue.split(&allocator, source);
+    if let Some(error) = container.errors.first() {
+        return Err(SfcError::Container(cstr!(
+            "{:?} at byte {}",
+            error.code,
+            error.offset
+        )));
+    }
+    let template = container
+        .blocks
+        .iter()
+        .find(|block| block.name.eq_ignore_ascii_case("template"))
+        .ok_or(SfcError::NoTemplate)?;
+    let lang = template.attr("lang").and_then(|attr| attr.value);
+    if template.attr("src").is_some() || !lang.is_none_or(|lang| lang == "html") {
         return Err(SfcError::TemplateNotInline);
     }
-    let script = descriptor
-        .script_setup
-        .as_ref()
-        .or(descriptor.script.as_ref())
+    let scripts = || {
+        container
+            .blocks
+            .iter()
+            .filter(|block| block.name.eq_ignore_ascii_case("script"))
+    };
+    let script = scripts()
+        .find(|block| block.attr("setup").is_some())
+        .or_else(|| scripts().find(|block| block.attr("setup").is_none()))
         .ok_or(SfcError::NotMoonBit(None))?;
-    let lang = script.lang.as_deref();
-    if !lang.is_some_and(|lang| LANGS.contains(&lang)) || script.src.is_some() {
+    let lang = script.attr("lang").and_then(|attr| attr.value);
+    if !lang.is_some_and(|lang| LANGS.contains(&lang)) || script.attr("src").is_some() {
         return Err(SfcError::NotMoonBit(
             lang.map(ToCompactString::to_compact_string),
         ));
     }
     Ok(MoonBitSfc {
         root,
-        script: frame(root, &script.loc)?,
-        template: frame(root, &template.loc)?,
+        script: frame(root, script.content)?,
+        template: frame(root, template.content)?,
     })
 }
 
 /// The block's content as an L0 frame over the whole file.
-fn frame<'a>(root: SourceRoot<'a>, loc: &BlockLocation) -> Result<SourceBlock<'a>, SfcError> {
+fn frame<'a>(root: SourceRoot<'a>, span: Span) -> Result<SourceBlock<'a>, SfcError> {
     let content = root
         .source()
-        .get(loc.start..loc.end)
+        .get(span.start as usize..span.end as usize)
         .ok_or(SfcError::TooLarge)?;
-    let start = u32::try_from(loc.start).map_err(|_| SfcError::TooLarge)?;
-    root.block(content, start).map_err(|_| SfcError::TooLarge)
+    root.block(content, span.start)
+        .map_err(|_| SfcError::TooLarge)
 }

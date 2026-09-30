@@ -31,19 +31,19 @@ Measured on `origin/main` (2026-09-21):
 
 Lanes own disjoint paths within this phase; registration touchpoints (the workspace `Cargo.toml`, workspace members, `test-suites.md`) are the expected rebase conflicts. Lane A updates the released surface in `versions/` with each WIT change; lane B packages that surface without editing it. Lane F follows phase-4 lane O (`crates/vize_vitrine/src/napi/plugin*`) sequentially — P6-7 is gated behind P4-16 through P5-13.
 
-| Lane | Tasks               | Owns (only this lane edits)                                                                                                                  |
-| ---- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| A    | P6-1a, P6-1b, P6-1c | `crates/vize_guest/wit/`, `crates/vize_guest/versions/`                                                                                      |
-| B    | P6-2                | `crates/vize_guest/src/`, `crates/vize_guest/examples/`, `crates/vize_guest/Cargo.toml`, `crates/vize_guest/README.md`, `npm/extension-sdk/` |
-| C    | P6-3                | `davinci/vize_extension_host/`                                                                                                               |
-| D    | P6-4a, P6-4b, P6-5  | `crates/vize_dialect_moonbit/`, `docs/davinci/plan/exprref-validation.md`                                                                    |
-| E    | P6-6                | `examples/volt-target/`                                                                                                                      |
-| F    | P6-7                | `npm/plugin-sdk/`, `crates/vize_vitrine/src/napi/plugin_sdk*`                                                                                |
-| G    | P6-8                | `crates/vize_marquette/src/contracts*`, `docs/davinci/contracts-compat-policy.md`                                                            |
-| H    | P6-9                | `tests/external-consumers/`                                                                                                                  |
-| I    | P6-10, P6-11        | `docs/davinci/completion-metrics.md`, `docs/release/v1-alpha-go-no-go.md`                                                                    |
-| J    | P6-12               | `docs/davinci/communications.md`                                                                                                             |
-| X    | P6-13               | `docs/davinci/plan/phase-6-records/`                                                                                                         |
+| Lane | Tasks               | Owns (only this lane edits)                                                                                                                      |
+| ---- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A    | P6-1a, P6-1b, P6-1c | `davinci/vize_guest/wit/`, `davinci/vize_guest/versions/`                                                                                        |
+| B    | P6-2                | `davinci/vize_guest/src/`, `davinci/vize_guest/examples/`, `davinci/vize_guest/Cargo.toml`, `davinci/vize_guest/README.md`, `npm/extension-sdk/` |
+| C    | P6-3                | `davinci/vize_extension_host/`                                                                                                                   |
+| D    | P6-4a, P6-4b, P6-5  | `davinci/vize_dialect_moonbit/`, `docs/davinci/plan/exprref-validation.md`                                                                       |
+| E    | P6-6                | `examples/volt-target/`                                                                                                                          |
+| F    | P6-7                | `npm/plugin-sdk/`, `crates/vize_vitrine/src/napi/plugin_sdk*`                                                                                    |
+| G    | P6-8                | `crates/vize_marquette/src/contracts*`, `docs/davinci/contracts-compat-policy.md`                                                                |
+| H    | P6-9                | `tests/external-consumers/`                                                                                                                      |
+| I    | P6-10, P6-11        | `docs/davinci/completion-metrics.md`, `docs/release/v1-alpha-go-no-go.md`                                                                        |
+| J    | P6-12               | `docs/davinci/communications.md`                                                                                                                 |
+| X    | P6-13               | `docs/davinci/plan/phase-6-records/`                                                                                                             |
 
 ## Critical path
 

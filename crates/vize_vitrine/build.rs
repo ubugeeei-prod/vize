@@ -55,7 +55,7 @@ fn main() -> BuildResult {
         "crates/vize_vitrine/src/plugin_transform.rs",
         "crates/vize_vitrine/src/plugin_transform",
         "davinci/vize_davinci/src",
-        "davinci/vize_carton/src",
+        "crates/vize_carton/src",
         "davinci/vize_l1/src",
         "davinci/vize_l1_to_l2/src",
         "davinci/vize_l2/src",

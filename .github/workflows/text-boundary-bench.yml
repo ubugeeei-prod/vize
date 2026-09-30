@@ -3,9 +3,9 @@ name: Text boundary benchmark
 on:
   pull_request:
     paths:
-      - "davinci/vize_carton/src/source_io/**"
-      - "davinci/vize_carton/src/source_io.rs"
-      - "davinci/vize_carton/examples/source_io_bench.rs"
+      - "davinci/vize_l0/src/source_io/**"
+      - "davinci/vize_l0/src/source_io.rs"
+      - "crates/vize_carton/examples/source_io_bench.rs"
       - ".github/workflows/text-boundary-bench.yml"
   workflow_dispatch:
 

@@ -3,11 +3,11 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { moveFoundation } from "./move-foundation.mjs";
 import { moveSharedTypes } from "./move-shared-types.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const names = [
-  "vize_carton",
   "vize_davinci",
   "vize_davinci_derive",
   "vize_l0",
@@ -19,10 +19,25 @@ const names = [
   "vize_l2_to_l3",
   "vize_extension_contract",
   "vize_extension_host",
+  "vize_guest",
+  "vize_dialect_moonbit",
 ];
 const mode = process.argv[2];
-if (!["--move-only", "--references", "--shared-moves-only", "--shared-types"].includes(mode))
+if (
+  ![
+    "--move-only",
+    "--references",
+    "--shared-moves-only",
+    "--shared-types",
+    "--foundation-moves-only",
+    "--foundation",
+  ].includes(mode)
+)
   throw new Error("expected --move-only, --references, --shared-moves-only or --shared-types");
+if (mode.startsWith("--foundation")) {
+  moveFoundation(root, mode);
+  process.exit(0);
+}
 if (mode.startsWith("--shared")) {
   moveSharedTypes(root, mode);
   process.exit(0);
@@ -46,6 +61,7 @@ if (mode === "--move-only") {
     .filter(Boolean);
   for (const file of files) {
     // Captured oracle bytes and upstream provenance retain their original paths.
+    if (file.includes("/vize_guest/versions/")) continue;
     if (/\.(snap|input\.txt|expected\.json|bin)$/u.test(file)) continue;
     if (file.includes("/fixtures/") && !/\.(rs|toml)$/u.test(file)) continue;
     const absolute = path.join(root, file);
@@ -64,8 +80,11 @@ if (mode === "--move-only") {
       );
       next = next.replaceAll(`crates\\/${name}`, `davinci\\/${name}`);
     }
+    const legacyFoundation = "vize_" + "carton";
+    next = next.replaceAll(`crates/${legacyFoundation}/src/`, "davinci/vize_l0/src/");
+    next = next.replaceAll(`"crates", "${legacyFoundation}", "src"`, '"davinci", "vize_l0", "src"');
     // Synthetic historical metadata is independent of the live directory split.
-    next = next.replaceAll("/fixtures/davinci/", "/fixtures/crates/");
+    next = next.replaceAll("/fixtures/crates/", "/fixtures/crates/");
     if (next !== source) writeFileSync(absolute, next);
   }
 }

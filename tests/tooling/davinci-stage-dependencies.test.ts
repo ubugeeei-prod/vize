@@ -75,7 +75,7 @@ test("Davinci crates import retained packages through stage aliases", () => {
 
 test("Davinci stage dependencies are one-way and acyclic", () => {
   const tiers = new Map<string, number>([
-    ["vize_carton", 0],
+    ["vize_carton", 1],
     ["vize_l0", 0.5],
     ["vize_davinci", 1],
     ["vize_l1", 1],
@@ -85,8 +85,8 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
     ["vize_l2_to_l3", 4],
   ]);
   const expectedEdges = new Map<string, string[]>([
-    ["vize_carton", []],
-    ["vize_l0", ["vize_carton"]],
+    ["vize_carton", ["vize_l0"]],
+    ["vize_l0", []],
     ["vize_davinci", ["vize_l0"]],
     ["vize_l1", ["vize_l0"]],
     ["vize_l2", ["vize_davinci", "vize_l0"]],

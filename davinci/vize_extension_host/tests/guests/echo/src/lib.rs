@@ -12,7 +12,7 @@ use alloc::string::String;
 use alloc::vec::Vec;
 
 wit_bindgen::generate!({
-    path: "../../../../../crates/vize_guest/wit",
+    path: "../../../../../davinci/vize_guest/wit",
     world: "input-dialect",
 });
 

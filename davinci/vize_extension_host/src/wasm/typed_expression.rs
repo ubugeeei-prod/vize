@@ -12,7 +12,7 @@ use crate::typed_expression::{TypedExpressionBatch, TypedExpressionGuest};
 
 mod bindings {
     wasmtime::component::bindgen!({
-        path: "../../crates/vize_guest/wit",
+        path: "../../davinci/vize_guest/wit",
         world: "typed-expression-dialect",
         with: {
             "vize:contracts/types": crate::wasm::bindings::vize::contracts::types,

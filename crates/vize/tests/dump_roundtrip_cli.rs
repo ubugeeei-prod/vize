@@ -15,7 +15,7 @@ use vize_l2::dump::Page as L2Page;
 use vize_l3::dump::Page as L3Page;
 use vize_l3::op::{Op, OpId, OpKind, Phase, Program, Region, RegionId};
 
-const L2_FULL: &str = include_str!("../../vize_l2/tests/fixtures/reference.folio");
+const L2_FULL: &str = include_str!("../../../davinci/vize_l2/tests/fixtures/reference.folio");
 
 // Complete bodies captured from the actual source-built CLI. The only transport
 // mapping is the one authored temporary input path; all error text stays exact.

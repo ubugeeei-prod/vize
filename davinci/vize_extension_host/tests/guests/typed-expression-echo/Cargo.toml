@@ -8,7 +8,7 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-vize_guest = { path = "../../../../../crates/vize_guest", features = ["typed-expression"] }
+vize_guest = { path = "../../../../../davinci/vize_guest", features = ["typed-expression"] }
 
 [profile.release]
 codegen-units = 1

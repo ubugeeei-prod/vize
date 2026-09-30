@@ -2,7 +2,6 @@
 use crate::i18n::{Locale, translator};
 use crate::stage::Stage;
 use crate::{CompactString, cstr};
-#[path = "compiler_error_codes.rs"]
 mod codes;
 
 /// Error codes for compiler errors

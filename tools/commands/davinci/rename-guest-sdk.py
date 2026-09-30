@@ -40,7 +40,7 @@ for encoded in git("ls-files", "-z").split(b"\0"):
     relative = encoded.decode()
     if (
         relative.startswith(ARCHIVED)
-        or relative.startswith("crates/vize_guest/wit/")
+        or relative.startswith("davinci/vize_guest/wit/")
         or relative == "tools/commands/davinci/rename-guest-sdk.py"
         or relative == "docs/davinci/decisions/2026-09-28-guest-sdk-crate-axis.md"
     ):

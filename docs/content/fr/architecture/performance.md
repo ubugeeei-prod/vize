@@ -87,13 +87,13 @@ Contrairement aux compilateurs basés sur JavaScript qui s'exécutent dans V8, V
 
 ### Allocation par arène
 
-`vize_carton::Allocator` est un allocateur à pointeur glissant pour les nœuds de l'AST : il enveloppe [`oxc_allocator`](https://docs.rs/oxc_allocator) afin que les nœuds de template et les expressions JavaScript retenues partagent une seule arène et une seule durée de vie (`davinci/vize_carton/src/allocator.rs`). Cela signifie :
+`vize_carton::Allocator` est un allocateur à pointeur glissant pour les nœuds de l'AST : il enveloppe [`oxc_allocator`](https://docs.rs/oxc_allocator) afin que les nœuds de template et les expressions JavaScript retenues partagent une seule arène et une seule durée de vie (`davinci/vize_l0/src/allocator.rs`). Cela signifie :
 
 - **L'allocation est en O(1)** — Il suffit d'avancer un pointeur. Pas de parcours de liste libre, pas de gestion de fragmentation.
-- **La récupération est en O(1) et réutilisée** — À la fin d'une compilation, l'arène est remise à zéro par `reset()` et non détruite : le pointeur revient au début du bloc et l'arène retourne dans une liste libre propre au worker (`davinci/vize_carton/src/pool.rs`, plafonnée à 4 arènes inactives par worker). Le fichier suivant réutilise la même mémoire au lieu d'en redemander au système.
+- **La récupération est en O(1) et réutilisée** — À la fin d'une compilation, l'arène est remise à zéro par `reset()` et non détruite : le pointeur revient au début du bloc et l'arène retourne dans une liste libre propre au worker (`davinci/vize_l0/src/pool.rs`, plafonnée à 4 arènes inactives par worker). Le fichier suivant réutilise la même mémoire au lieu d'en redemander au système.
 - **La localité mémoire est excellente** — Les nœuds sont tassés de façon contiguë en mémoire, ce qui maximise les succès de cache L1/L2 lors du parcours de l'arbre.
 
-Les valeurs adossées à l'arène ne peuvent pas survivre à leur compilation. Ce contrat est imposé par le compilateur (`reset` prend `&mut self`, et le garde du pool possède son arène) et, dans les builds de débogage, par un marqueur de génération qui panique si une valeur est lue après le recyclage de son arène (`davinci/vize_carton/src/allocator/generation.rs`).
+Les valeurs adossées à l'arène ne peuvent pas survivre à leur compilation. Ce contrat est imposé par le compilateur (`reset` prend `&mut self`, et le garde du pool possède son arène) et, dans les builds de débogage, par un marqueur de génération qui panique si une valeur est lue après le recyclage de son arène (`davinci/vize_l0/src/allocator/generation.rs`).
 
 Rien dans l'AST n'implémente `Drop` — les types conteneurs de l'arène refusent les charges utiles nécessitant une destruction, ce qui en fait une erreur de compilation et non une convention.
 
@@ -110,7 +110,7 @@ Les noms qui reviennent au sein d'une compilation — noms de directives normali
 - Les noms calculés répétés partagent une seule allocation dans l'arène
 - Les recherches de noms bien connus utilisent un hachage parfait calculé à la compilation, sans allocation
 
-L'internement est la solution de repli, pas le cas courant. La plupart des noms ne sont jamais copiés : un nom de balise, un nom d'attribut et l'essentiel du contenu des expressions sont des tranches `&'a str` empruntées directement au code source du template, si bien que le chemin courant n'alloue rien (`davinci/vize_carton/src/interner.rs` documente la politique champ par champ).
+L'internement est la solution de repli, pas le cas courant. La plupart des noms ne sont jamais copiés : un nom de balise, un nom d'attribut et l'essentiel du contenu des expressions sont des tranches `&'a str` empruntées directement au code source du template, si bien que le chemin courant n'alloue rien (`davinci/vize_l0/src/interner.rs` documente la politique champ par champ).
 
 Les atomes sont de simples `&'a str` : les comparaisons de noms sont donc des comparaisons de contenu, et non d'identité de pointeur. L'internement apporte des économies d'allocation et de la localité de cache — ce n'est pas un raccourci pour `==`.
 

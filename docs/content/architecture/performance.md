@@ -103,19 +103,19 @@ addon (`@vizejs/native`) rather than as a separate process.
 
 `vize_carton::Allocator` is a bump allocator for AST nodes, wrapping
 [`oxc_allocator`](https://docs.rs/oxc_allocator) so template nodes and retained JavaScript
-expressions share one arena and one lifetime (`davinci/vize_carton/src/allocator.rs`). This means:
+expressions share one arena and one lifetime (`davinci/vize_l0/src/allocator.rs`). This means:
 
 - **Allocation is O(1)** — Just bump a pointer forward. No free list traversal, no fragmentation management.
 - **Reclamation is O(1) and reused** — At the end of a compile the arena is `reset()`, not dropped:
   the bump pointer returns to the start of the chunk and the arena goes back to a per-worker free
-  list (`davinci/vize_carton/src/pool.rs`, capped at 4 idle arenas per worker). The next file reuses
+  list (`davinci/vize_l0/src/pool.rs`, capped at 4 idle arenas per worker). The next file reuses
   the same memory instead of asking the OS for more.
 - **Memory locality is excellent** — Nodes are packed contiguously in memory, maximizing L1/L2 cache hits during tree traversal.
 
 Arena-backed values may not outlive their compile. That contract is enforced by the compiler
 (`reset` takes `&mut self`, and the pool guard owns its arena) and, in debug builds, by a
 generation stamp that panics if a value is read after its arena was recycled
-(`davinci/vize_carton/src/allocator/generation.rs`).
+(`davinci/vize_l0/src/allocator/generation.rs`).
 
 Nothing in the AST implements `Drop` — the arena container types reject payloads that need
 dropping, so this is a compile error rather than a convention.
@@ -145,7 +145,7 @@ literals without touching the arena at all. This means:
 
 Interning is the fallback, not the common case. Most names are never copied at all: a tag name, an
 attribute name, and most expression content are `&'a str` slices borrowed directly from the
-template source, so the common path allocates nothing (`davinci/vize_carton/src/interner.rs`
+template source, so the common path allocates nothing (`davinci/vize_l0/src/interner.rs`
 documents the per-field policy).
 
 Atoms are ordinary `&'a str`, so name comparisons are content comparisons, not pointer identity.

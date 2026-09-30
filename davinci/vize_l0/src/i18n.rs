@@ -18,7 +18,7 @@
 //! ## Usage
 //!
 //! ```rust,ignore
-//! use vize_carton::i18n::{Locale, Translator};
+//! use vize_l0::i18n::{Locale, Translator};
 //!
 //! let translator = Translator::new();
 //!

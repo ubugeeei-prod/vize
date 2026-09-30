@@ -4,7 +4,7 @@
 
 # Croquis consumption: `vize_l0`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize_l0/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `davinci/vize_l0/src`. The method and the product set live on that page.
 
 ## Resolved product sites
 
@@ -16,6 +16,9 @@ _None._
 
 ## Naive grep disagreements (resolved/grep)
 
-| product | resolved | grep |
-| ------- | -------: | ---: |
-| `Span`  |        0 |   11 |
+| product                   | resolved | grep |
+| ------------------------- | -------: | ---: |
+| `Croquis`                 |        0 |    1 |
+| `Span`                    |        0 |  107 |
+| `Symbol`                  |        0 |    3 |
+| `Croquis.unused_bindings` |        0 |    1 |

@@ -324,7 +324,7 @@ own).
 
 **Expr-ref liveness** is the one check with no code of its own: it reuses
 the P1-11 debug arena-generation stamp (`Allocator::stamp` /
-`assert_stamp_current`, `davinci/vize_carton/src/allocator/generation.rs`)
+`assert_stamp_current`, `davinci/vize_l0/src/allocator/generation.rs`)
 and fails with that mechanism's own panic. One stamp covers the whole
 artifact today because `ExprSlot` is zero-sized; the P2-5b seam is
 `VerifyObserver::check_live`, where the walk validates each expression

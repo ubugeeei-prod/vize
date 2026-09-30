@@ -105,7 +105,7 @@ pub fn well_known_atom(name: &str) -> Option<&'static str> {
 /// # Example
 ///
 /// ```
-/// use vize_carton::{Allocator, interner::Interner};
+/// use vize_l0::{Allocator, interner::Interner};
 ///
 /// let allocator = Allocator::default();
 /// let mut interner = Interner::new(&allocator);

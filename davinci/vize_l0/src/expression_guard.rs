@@ -1,6 +1,6 @@
 //! Expression nesting guard: whether text is safe to hand to OXC's recursive parser.
 //!
-//! Lives in `vize_carton` so armature, transform, and codegen entry points all
+//! Lives in `vize_l0` so armature, transform, and codegen entry points all
 //! share one guard through the existing re-export shim.
 
 mod analyze;

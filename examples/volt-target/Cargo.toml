@@ -13,7 +13,7 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-vize_guest = { path = "../../crates/vize_guest" }
+vize_guest = { path = "../../davinci/vize_guest" }
 wit-bindgen = { version = "=0.62.0", default-features = false, features = ["macros", "realloc"] }
 
 [profile.release]

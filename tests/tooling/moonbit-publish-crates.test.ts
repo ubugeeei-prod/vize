@@ -126,7 +126,7 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       assert.ok(curlCalls[0].includes(flag), `missing ${flag}`);
     }
     assert.match(curlCalls[0], /--write-out VIZE_HTTP_STATUS:%\{http_code\}/);
-    assert.ok(curlCalls[0].endsWith(`/vize_carton/${version}`));
+    assert.ok(curlCalls[0].endsWith(`/${publishedCrates[0]}/${version}`));
 
     const somePublished = publishedCrates.slice(0, 5);
     const partial = runDryRun(somePublished);
@@ -246,7 +246,7 @@ test("publish_crates treats a non-zero cargo publish exit as success when the cr
         "const args = process.argv.slice(2);",
         "fs.appendFileSync(process.env.CARGO_LOG, args.join(' ') + '\\n');",
         ...assertPublishManifestIsSanitized,
-        "if (args[0] === 'publish' && args.at(-1) === 'vize_carton') process.exit(1);",
+        "if (args[0] === 'publish' && args.at(-1) === 'vize_l0') process.exit(1);",
         "if (args[0] === 'publish' || args[0] === 'info') process.exit(0);",
         "process.exit(1);",
       ].join("\n"),
@@ -273,8 +273,8 @@ test("publish_crates treats a non-zero cargo publish exit as success when the cr
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     assert.match(result.stdout, /already resolvable despite a non-zero cargo publish exit/i);
     const logLines = fs.readFileSync(cargoLogPath, "utf8").trim().split("\n");
-    assert.equal(logLines[0], "publish --allow-dirty --no-verify -p vize_carton");
-    assert.match(logLines[1] ?? "", /^info --registry crates-io vize_carton@/);
+    assert.equal(logLines[0], "publish --allow-dirty --no-verify -p vize_l0");
+    assert.match(logLines[1] ?? "", /^info --registry crates-io vize_l0@/);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }

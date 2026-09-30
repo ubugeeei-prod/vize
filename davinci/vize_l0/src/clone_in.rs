@@ -9,7 +9,7 @@ use crate::{Allocator, Box, Vec};
 /// # Example
 ///
 /// ```
-/// use vize_carton::{Allocator, Box, CloneIn};
+/// use vize_l0::{Allocator, Box, CloneIn};
 ///
 /// let allocator = Allocator::default();
 /// let allocator = &allocator;

@@ -55,7 +55,7 @@ test("v0.429.1 Cargo feature names remain temporary aliases", () => {
   ];
   for (const name of manifests) {
     assert.match(
-      read(`crates/${name}/Cargo.toml`),
+      read(`${name.startsWith("vize_l") ? "davinci" : "crates"}/${name}/Cargo.toml`),
       new RegExp(`^${publishedDifferentialAlias} = \\["legacy-differential"\\]$`, "m"),
       `${name} lost its published feature alias`,
     );

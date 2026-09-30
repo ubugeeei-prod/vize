@@ -12,7 +12,7 @@ on:
     paths:
       - "davinci/vize_extension_contract/**"
       - "davinci/vize_extension_host/**"
-      - "crates/vize_guest/**"
+      - "davinci/vize_guest/**"
       - "npm/extension-sdk/**"
       - "crates/vize_marquette/**"
       - "davinci/vize_davinci/**"

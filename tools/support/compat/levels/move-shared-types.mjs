@@ -1,15 +1,16 @@
-import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 export function moveSharedTypes(root, mode) {
   const read = (file) => readFileSync(path.join(root, file), "utf8");
   const write = (file, source) => writeFileSync(path.join(root, file), source);
-  const carton = "davinci/vize_carton/src/",
+  const carton = "davinci/vize_l0/src/",
     substrate = "davinci/vize_davinci/src/";
   if (mode === "--shared-moves-only") {
+    mkdirSync(path.join(root, carton, "compiler_error"), { recursive: true });
     for (const [before, after] of [
       [substrate + "stage.rs", carton + "stage.rs"],
-      ["crates/vize_relief/src/errors/codes.rs", carton + "compiler_error_codes.rs"],
+      ["crates/vize_relief/src/errors/codes.rs", carton + "compiler_error/codes.rs"],
     ]) {
       if (!existsSync(path.join(root, after)))
         renameSync(path.join(root, before), path.join(root, after));
@@ -65,7 +66,6 @@ export function moveSharedTypes(root, mode) {
 use crate::stage::Stage;
 use crate::i18n::{Locale, translator};
 use crate::{CompactString, cstr};
-#[path = "compiler_error_codes.rs"]
 mod codes;
 \n${codes}${methods}${recoveryMethods}`,
   );

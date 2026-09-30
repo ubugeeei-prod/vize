@@ -1,7 +1,7 @@
 // SourceLocation consumer inventory (Davinci P0-9).
 //
 // Counts every textual read of the relief `SourceLocation` members that the
-// Davinci `Span` type (davinci/vize_carton/src/span.rs) deleted —
+// Davinci `Span` type (davinci/vize_l0/src/span.rs) deleted —
 // `source`, `start.line`, `start.column`, `end.line`, `end.column` — across
 // `crates/*/src/**/*.rs`, grouped by crate and member, and emits the
 // migration record as docs/davinci/plan/sourcelocation-inventory.md. The
@@ -113,7 +113,7 @@ function generate(scan) {
     "crates/vize_relief/src/errors/render.rs",
     /struct RenderedPosition/,
   );
-  const g2LineIndex = citeAnchor("davinci/vize_carton/src/line_index.rs", /pub struct LineIndex/);
+  const g2LineIndex = citeAnchor("davinci/vize_l0/src/line_index.rs", /pub struct LineIndex/);
   const g2ReliefTest = citeAnchor(
     "crates/vize_relief/src/relief/tests.rs",
     /fn source_location_stub/,
@@ -138,7 +138,7 @@ function generate(scan) {
 # \`SourceLocation\` consumer inventory
 
 Every textual read of the relief \`SourceLocation\` members that
-\`vize_carton::Span\` (\`davinci/vize_carton/src/span.rs\`) deleted —
+\`vize_carton::Span\` (\`davinci/vize_l0/src/span.rs\`) deleted —
 \`source\`, \`start.line\`, \`start.column\`, \`end.line\`, \`end.column\` —
 across \`crates/*/src\`, plus the migration group each consumer moved to as
 relief nodes switched to two-u32 byte spans instead of owned

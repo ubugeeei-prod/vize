@@ -113,6 +113,7 @@ test("a renamed package uses the exact Git parent source and version before regi
   ]);
   const base = git(["rev-parse", "HEAD"]);
   const newCrate = path.join(root, "davinci", "vize_l1_to_l2");
+  fs.mkdirSync(path.dirname(newCrate), { recursive: true });
   fs.renameSync(oldCrate, newCrate);
   fs.writeFileSync(
     path.join(newCrate, "Cargo.toml"),

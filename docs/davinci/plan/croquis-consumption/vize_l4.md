@@ -4,7 +4,7 @@
 
 # Croquis consumption: `vize_l4`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize_l4/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `davinci/vize_l4/src`. The method and the product set live on that page.
 
 ## Resolved product sites
 

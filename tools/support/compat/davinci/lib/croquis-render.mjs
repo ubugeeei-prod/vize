@@ -75,7 +75,9 @@ export function methodLines(products, analysis) {
       ".",
   );
   lines.push("");
-  lines.push("**Consumer resolution** — symbol-aware, per `crates/*/src/**/*.rs`:");
+  lines.push(
+    "**Consumer resolution** — symbol-aware, per `crates/*/src/**/*.rs` and `davinci/*/src/**/*.rs`:",
+  );
   lines.push("");
   lines.push(
     "- Rust `use` declarations are parsed (brace groups, `as` aliases, `pub use`)" +
@@ -100,7 +102,7 @@ export function methodLines(products, analysis) {
       " (`drawer.finish()`, `ctx.analysis()`), reads a workspace `pub` field" +
       " typed `Croquis` (`result.croquis`), or calls an associated function on" +
       " the `Croquis` type itself (`Croquis::default()`) — producer tables" +
-      " parsed from `crates/*/src`, matched by name. Inline chains through" +
+      " parsed from `crates/*/src` and `davinci/*/src`, matched by name. Inline chains through" +
       " those producers" +
       " (`entry.analysis.race_conditions`, `ctx.croquis().bindings`) are counted" +
       " too.",

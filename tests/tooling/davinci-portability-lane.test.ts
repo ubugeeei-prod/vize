@@ -72,14 +72,14 @@ test("the no_std claim stays on all six stage libraries and excludes the std L0 
   // A library joining the claim must appear here, in both lane commands above,
   // and in no-std-boundary.md's ledger.
   for (const [packageName, crateDir] of portableStageCrates) {
-    const lib = readRepoFile("crates", crateDir, "src", "lib.rs");
+    const lib = readRepoFile("davinci", crateDir, "src", "lib.rs");
     assert.match(lib, /^#!\[no_std\]$/m, `${packageName} must keep #![no_std]`);
     assert.match(lib, /^extern crate alloc;$/m, `${packageName} must keep extern crate alloc`);
   }
 
   const workspace = readRepoFile("Cargo.toml");
   assert.match(workspace, /^vize_l0 = \{ path = "davinci\/vize_l0", version = "=[^"]+" \}$/m);
-  const carton = readRepoFile("davinci", "vize_carton", "src", "lib.rs");
+  const carton = readRepoFile("davinci", "vize_l0", "src", "lib.rs");
   assert.doesNotMatch(carton, /^#!\[no_std\]$/m, "L0 is the accepted std host foundation");
 
   const davinciManifest = readRepoFile("davinci", "vize_davinci", "Cargo.toml");

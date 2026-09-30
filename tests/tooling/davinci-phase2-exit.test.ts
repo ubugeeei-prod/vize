@@ -73,7 +73,7 @@ test("Phase 2 old-path flags are absent from live source roots", () => {
     new RegExp(String.raw`\bDomLaneSelection\b`, "u"),
     new RegExp(String.raw`\bskipped_legacy_flag\b`, "u"),
   ];
-  const roots = ["crates", "tools", ".github"].map((root) => path.join(repoRoot, root));
+  const roots = ["crates", "davinci", "tools", ".github"].map((root) => path.join(repoRoot, root));
   const matches: string[] = [];
 
   for (const file of roots.flatMap(walkFiles)) {

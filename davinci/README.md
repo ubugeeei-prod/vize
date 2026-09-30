@@ -1,7 +1,7 @@
 # Davinci implementation
 
 This directory contains the native level crates, conversion crates and shared
-infrastructure. Legacy products and transitional product adapters live in
+infrastructure, guest SDK and MoonBit dialect. Carton and legacy products and transitional product adapters live in
 [`../crates`](../crates).
 
 `crates/` may depend on `davinci/`. Normal and build dependencies from `davinci/`

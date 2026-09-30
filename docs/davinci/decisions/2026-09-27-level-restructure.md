@@ -13,7 +13,7 @@ Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (res
 
 ## Levels and naming
 
-- **Directory split (2026-09-30):** the maintainer requested `davinci/` for level crates and shared infrastructure, with legacy products in `crates/`, in one PR. The [directory record](./2026-09-30-davinci-directory.md) defines the boundary and replay commands. This program root is the explicit exception to the codename directory rule.
+- **Directory split (2026-09-30):** the maintainer requested `davinci/` for levels, guest, dialect and extension infrastructure; Carton and legacy products stay in `crates/`, in one PR. The [directory record](./2026-09-30-davinci-directory.md) defines the boundary and replay commands. This program root is the explicit exception to the codename directory rule.
 - The stages are renamed **L0–L4** (levels). The rename is in progress.
 - **Internal Davinci crates are named by level only**: `vize_l0` … `vize_l4`, and conversions `vize_l1_to_l2` and `vize_l2_to_l3`. `vize_l0_derive` stays separate for proc macros. The independent external Rust guest product is the explicit `vize_guest` exception ([decision](./2026-09-28-guest-sdk-crate-axis.md)).
 - There are no functional internal crate names (no `vize_folio`, `vize_dialect`, …). Internal functional concerns are modules inside a level crate.

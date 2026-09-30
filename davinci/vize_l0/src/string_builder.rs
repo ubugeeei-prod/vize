@@ -11,7 +11,7 @@
 /// # Examples
 ///
 /// ```
-/// use vize_carton::appends;
+/// use vize_l0::appends;
 ///
 /// let mut s = String::new();
 /// appends!(s, "Hello, ", "world", "!");
@@ -21,7 +21,7 @@
 /// With numeric values (using write! internally):
 ///
 /// ```
-/// use vize_carton::appends;
+/// use vize_l0::appends;
 ///
 /// let mut s = String::new();
 /// let count = 42u32;
@@ -32,7 +32,7 @@
 /// With single characters:
 ///
 /// ```
-/// use vize_carton::appends;
+/// use vize_l0::appends;
 ///
 /// let mut s = String::new();
 /// appends!(s, "a", #':', "b");
@@ -72,7 +72,7 @@ macro_rules! appends {
 /// # Examples
 ///
 /// ```
-/// use vize_carton::appendln;
+/// use vize_l0::appendln;
 ///
 /// let mut s = String::new();
 /// appendln!(s, "Hello, world!");
@@ -94,7 +94,7 @@ macro_rules! appendln {
 /// # Examples
 ///
 /// ```
-/// use vize_carton::cstr;
+/// use vize_l0::cstr;
 ///
 /// let name = "world";
 /// let s = cstr!("Hello, {name}!");
@@ -115,7 +115,7 @@ macro_rules! cstr {
 /// # Examples
 ///
 /// ```
-/// use vize_carton::append;
+/// use vize_l0::append;
 ///
 /// let mut s = String::new();
 /// let name = "world";

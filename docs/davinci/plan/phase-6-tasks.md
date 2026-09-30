@@ -11,7 +11,7 @@
 
 **Lane:** A
 
-**Deliverable:** `crates/vize_guest/wit/input-dialect.wit`: block in → L1 surface tree and L2 page out, as coarse-grained calls (one call per block, canonical-ABI copy cost paid once), plus the `get-capability` handshake — integer protocol version and feature strings (the Swift import) — shared by every world.
+**Deliverable:** `davinci/vize_guest/wit/input-dialect.wit`: block in → L1 surface tree and L2 page out, as coarse-grained calls (one call per block, canonical-ABI copy cost paid once), plus the `get-capability` handshake — integer protocol version and feature strings (the Swift import) — shared by every world.
 
 **Steps:**
 
@@ -33,7 +33,7 @@
 
 **Lane:** A
 
-**Deliverable:** `crates/vize_guest/wit/expression-dialect.wit`: environment + expression body in → analysis facts (referenced bindings, const-ness, spans — P2-5b's capability contract) and a checkable projection with span links out (charter #14).
+**Deliverable:** `davinci/vize_guest/wit/expression-dialect.wit`: environment + expression body in → analysis facts (referenced bindings, const-ness, spans — P2-5b's capability contract) and a checkable projection with span links out (charter #14).
 
 **Steps:**
 
@@ -52,7 +52,7 @@
 
 **Lane:** A
 
-**Deliverable:** `crates/vize_guest/wit/output-target.wit`: canonical L3/L2 in → emitted document (P3-9's span-carrying L4 document) out.
+**Deliverable:** `davinci/vize_guest/wit/output-target.wit`: canonical L3/L2 in → emitted document (P3-9's span-carrying L4 document) out.
 
 **Steps:**
 
@@ -74,7 +74,7 @@
 
 **Lane:** B
 
-**Deliverable:** versioned, prebuilt contract artifacts published per release — WIT bindings, an independent Rust guest product crate `crates/vize_guest/`, JS/TS types in `npm/extension-sdk/` — so no consumer ever compiles vize internals (the Swift macro-crisis countermeasure). `vize_guest` is the explicit external-product exception to internal level-only crate names; it owns the guest WIT and bindings, not host implementation. Lane B owns the crate implementation, manifest, README, examples, and JS/TS package; lane A owns the WIT and released surface history that the SDK packages.
+**Deliverable:** versioned, prebuilt contract artifacts published per release — WIT bindings, an independent Rust guest product crate `davinci/vize_guest/`, JS/TS types in `npm/extension-sdk/` — so no consumer ever compiles vize internals (the Swift macro-crisis countermeasure). `vize_guest` is the explicit external-product exception to internal level-only crate names; it owns the guest WIT and bindings, not host implementation. Lane B owns the crate implementation, manifest, README, examples, and JS/TS package; lane A owns the WIT and released surface history that the SDK packages.
 
 **Steps:**
 
@@ -110,7 +110,7 @@
 
 ## P6-4a — MoonBit hosting spike
 
-**Landed 2026-09-22** — decided: the pinned native `moonc` as a child process behind the `MooncHost` boundary (no wasm build of `moonc` exists; the `moonc-worker` Node build is the fallback); the spike is kept with tests as `crates/vize_dialect_moonbit/` — full record: [phase-6-records/p6-4a.md](./phase-6-records/p6-4a.md). Review point open.
+**Landed 2026-09-22** — decided: the pinned native `moonc` as a child process behind the `MooncHost` boundary (no wasm build of `moonc` exists; the `moonc-worker` Node build is the fallback); the spike is kept with tests as `davinci/vize_dialect_moonbit/` — full record: [phase-6-records/p6-4a.md](./phase-6-records/p6-4a.md). Review point open.
 
 **Start gate:** startable now — no open earlier-phase dependency.
 
@@ -149,7 +149,7 @@ open; see [typed-world evidence](./phase-6-records/p6-4b-typed-world.md) and the
 
 **Steps:**
 
-- [ ] `crates/vize_dialect_moonbit/` over the P6-1b world and the P6-4a hosting choice
+- [ ] `davinci/vize_dialect_moonbit/` over the P6-1b world and the P6-4a hosting choice
 - [ ] Matrix fixtures with MoonBit expressions compiled and checked end to end
 - [x] Register the TS-49 command in [test-suites.md](./test-suites.md)
 

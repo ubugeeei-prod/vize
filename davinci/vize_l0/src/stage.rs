@@ -133,7 +133,7 @@ pub struct ConversionCrate {
 /// L0: the source, arena, compact-storage, and span foundation.
 pub const L0: LayerCrate = LayerCrate {
     id: "l0",
-    crate_alias: "vize_l0",
+    crate_alias: "vize_carton",
     package: "vize_carton",
     role: "source model and compiler storage foundation",
 };
@@ -241,7 +241,7 @@ mod tests {
 
     #[test]
     fn stage_aliases_are_the_preferred_implementation_names() {
-        assert_eq!(L0.crate_alias, "vize_l0");
+        assert_eq!(L0.crate_alias, "vize_carton");
         assert_eq!(L1.crate_alias, "vize_l1");
         assert_eq!(L2.crate_alias, "vize_l2");
         assert_eq!(L3.crate_alias, "vize_l3");

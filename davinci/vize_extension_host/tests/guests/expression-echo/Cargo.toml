@@ -14,7 +14,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 # The no_std guest runtime (allocator, cabi_realloc, memcmp, panic handler).
-vize_guest = { path = "../../../../../crates/vize_guest" }
+vize_guest = { path = "../../../../../davinci/vize_guest" }
 wit-bindgen = { version = "=0.62.0", default-features = false, features = ["macros", "realloc"] }
 
 [profile.release]

@@ -3,7 +3,7 @@
 //!
 //! The test packs `vize_guest` (`cargo package`), unpacks the
 //! tarball outside the source tree, copies the example's sources
-//! (`crates/vize_guest/examples/hello-dialect`) next to it with a
+//! (`davinci/vize_guest/examples/hello-dialect`) next to it with a
 //! manifest whose only vize dependency is that unpacked tarball — no path into
 //! the workspace — builds the component for `wasm32-wasip2`, and exchanges a
 //! block in both hosting modes with exact pages.
@@ -77,7 +77,7 @@ fn build_hello() -> PathBuf {
     );
     let sdk = unpacked.join(cstr!("vize_guest-{version}").as_str());
 
-    let example = root().join("crates/vize_guest/examples/hello-dialect");
+    let example = root().join("davinci/vize_guest/examples/hello-dialect");
     let project = target_root.join("project");
     std::fs::create_dir_all(project.join("src")).expect("creates the project");
     std::fs::copy(example.join("src/lib.rs"), project.join("src/lib.rs")).expect("copies lib.rs");

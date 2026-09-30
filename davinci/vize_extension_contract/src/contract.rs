@@ -1,7 +1,7 @@
 //! The host's mirror of the `vize:contracts@0.1.3` WIT types, and the
 //! [`InputDialectGuest`] trait every hosting mode implements.
 //!
-//! Field order and names follow `crates/vize_guest/wit/` exactly (serialized with
+//! Field order and names follow `davinci/vize_guest/wit/` exactly (serialized with
 //! the WIT kebab-case spellings). The wasmtime bindings convert to and from
 //! these types with exhaustive struct literals, so a WIT change that this
 //! mirror does not follow stops the `extension-host` build.

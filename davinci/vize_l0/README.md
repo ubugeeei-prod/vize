@@ -4,12 +4,15 @@
 node and analysis ids, side tables, artifact keys, the dump trait and runtime,
 diagnostics and witnesses, the pass and fact managers, and the level registry.
 
-The crate is a compiling skeleton ([#6833](https://github.com/ubugeeei-prod/vize/issues/6833),
-[#6834](https://github.com/ubugeeei-prod/vize/issues/6834)). Unimplemented bodies are
-`todo!()` inside modules that carry `#![expect(clippy::todo, reason = "skeleton: #NNNN")]`;
-`tools/commands/ci/check-skeleton-todos.rs` ratchets their count down as code moves in
-from `vize_davinci` and `vize_carton`. The `vize_l0` workspace dependency resolves to this
-package, which re-exports `vize_carton`'s public API until #6834 moves that storage here.
+L0 owns the shared foundation implementation. The legacy `vize_carton` package
+re-exports it from `crates/`, so Davinci has no reverse dependency on that tree.
+Its allocator, storage, configuration and platform helpers keep their existing
+behavior and std dependency. No-std isolation remains in #6834.
+
+The remaining level restructure is tracked in
+[#6833](https://github.com/ubugeeei-prod/vize/issues/6833) and
+[#6834](https://github.com/ubugeeei-prod/vize/issues/6834). Skeleton bodies remain
+subject to the existing `check-skeleton-todos.rs` ratchet.
 
 Support and deprecation guarantees are defined in the
 [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).

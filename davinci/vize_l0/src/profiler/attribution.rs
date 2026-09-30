@@ -29,7 +29,7 @@ pub struct SpanRange {
 /// integer ids, so a fully attributed key is assembled without allocation:
 ///
 /// ```
-/// use vize_carton::profiler::SpanAttribution;
+/// use vize_l0::profiler::SpanAttribution;
 ///
 /// const ATTRIBUTION: SpanAttribution = SpanAttribution::new()
 ///     .with_stage("s1")

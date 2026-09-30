@@ -54,7 +54,7 @@ export function catalogEntries(): Array<[string, Entry]> {
     "i18n_croquis_more.rs",
     "i18n_croquis_rest.rs",
     "i18n_croquis_last.rs",
-  ].flatMap((file) => parseEntries(read("davinci", "vize_carton", "src", file)));
+  ].flatMap((file) => parseEntries(read("davinci", "vize_l0", "src", file)));
 }
 
 /** Every translation shipped by the older sources: the per-locale JSON files
@@ -62,7 +62,7 @@ export function catalogEntries(): Array<[string, Entry]> {
 export function legacyTranslations(): Map<string, Partial<Entry>> {
   const merged = new Map<string, Partial<Entry>>();
   for (const locale of locales) {
-    const json = JSON.parse(read("davinci", "vize_carton", "src", "i18n", `${locale}.json`));
+    const json = JSON.parse(read("davinci", "vize_l0", "src", "i18n", `${locale}.json`));
     for (const [key, value] of Object.entries(json as Record<string, string>)) {
       merged.set(key, { ...merged.get(key), [locale]: value });
     }
@@ -72,7 +72,7 @@ export function legacyTranslations(): Map<string, Partial<Entry>> {
     "i18n_supplemental_extra.rs",
     "i18n_supplemental_extra2.rs",
   ]) {
-    for (const [key, entry] of parseEntries(read("davinci", "vize_carton", "src", file))) {
+    for (const [key, entry] of parseEntries(read("davinci", "vize_l0", "src", file))) {
       merged.set(key, entry);
     }
   }
@@ -238,8 +238,8 @@ export interface CompilerCodes {
 
 /** `vize_relief::ErrorCode`: variants, `ALL`, `code()` and `message()`. */
 export function parseCompilerCodes(): CompilerCodes {
-  const errors = read("davinci", "vize_carton", "src", "compiler_error.rs");
-  const codes = read("davinci", "vize_carton", "src", "compiler_error_codes.rs");
+  const errors = read("davinci", "vize_l0", "src", "compiler_error.rs");
+  const codes = read("davinci", "vize_l0", "src", "compiler_error", "codes.rs");
   const variants = [...block(errors, "pub enum ErrorCode").matchAll(/^\s*(\w+) = \d+,$/gmu)].map(
     (match) => match[1],
   );
