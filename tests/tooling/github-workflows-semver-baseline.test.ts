@@ -244,7 +244,9 @@ test("release SemVer invokes the required check with the immutable baseline and 
 
     const registered = run();
     assert.equal(registered.status, 0, registered.stderr);
-    assert.deepEqual(logged(), [["semver-checks", "check-release", "--package", "vize_l1_to_l2", "--color", "never"]]);
+    assert.deepEqual(logged(), [
+      ["semver-checks", "check-release", "--package", "vize_l1_to_l2", "--color", "never"],
+    ]);
 
     const failed = run({ SEMVER_TEST_FAIL: "1" });
     assert.notEqual(failed.status, 0);
