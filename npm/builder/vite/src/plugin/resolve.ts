@@ -484,7 +484,6 @@ function resolveVuePeerRuntimeEntryWithNode(
 }
 
 function resolveVuePeerRuntimeEntryFromBaseWithNode(
-  state: Pick<VizePluginState, "root">,
   id: string,
   base: string,
 ): string | null {
@@ -502,10 +501,6 @@ function resolveVuePeerRuntimeEntryFromBaseWithNode(
   }
 
   const packageRoot = path.dirname(packageJson);
-  if (!resolveProjectLocalResolvedPath(state, packageRoot)) {
-    return null;
-  }
-
   if (request === packageName) {
     for (const relativeEntry of VUE_PEER_RUNTIME_ESM_ENTRIES.get(packageName) ?? ["index.mjs"]) {
       const entry = path.join(packageRoot, relativeEntry);
@@ -517,7 +512,7 @@ function resolveVuePeerRuntimeEntryFromBaseWithNode(
 
   try {
     const resolved = createRequire(base).resolve(request);
-    return resolveProjectLocalResolvedPath(state, `${resolved}${querySuffix}`);
+    return `${resolved}${querySuffix}`;
   } catch {
     return null;
   }
@@ -540,12 +535,10 @@ function resolveProjectNuxtVuePeerRuntimeEntryWithNode(
   if (!nuxtPackageJson) return null;
 
   const nuxtPackageRoot = path.dirname(splitViteIdQuery(nuxtPackageJson).request);
-  if (!resolveProjectLocalResolvedPath(state, nuxtPackageRoot)) return null;
 
   return (
-    resolveVuePeerRuntimeEntryFromBaseWithNode(state, id, path.join(state.root, "package.json")) ??
+    resolveVuePeerRuntimeEntryFromBaseWithNode(id, path.join(state.root, "package.json")) ??
     resolveVuePeerRuntimeEntryFromBaseWithNode(
-      state,
       id,
       path.join(nuxtPackageRoot, "package.json"),
     )
@@ -597,19 +590,23 @@ async function resolveProjectVueRuntime(
   importer: string | undefined,
   isSsrRequest: boolean,
 ): Promise<string | null> {
-  if (isSsrRequest || !isProjectVueRuntimeRequest(id) || !isProjectLocalImporter(state, importer)) {
+  if (isSsrRequest || !isProjectVueRuntimeRequest(id)) {
     return null;
   }
 
-  const isBuild = state.server === null;
-  const viteImporter = normalizeViteRequireBase(importer) ?? importer;
   if (isVuePeerRuntimeRequest(id)) {
     const nuxtPeerEntry = resolveProjectNuxtVuePeerRuntimeEntryWithNode(state, id);
     if (nuxtPeerEntry) {
       state.logger.log(`resolveId: resolved Nuxt Vue peer runtime ${id} to ${nuxtPeerEntry}`);
       return nuxtPeerEntry;
     }
+  }
 
+  if (!isProjectLocalImporter(state, importer)) return null;
+
+  const isBuild = state.server === null;
+  const viteImporter = normalizeViteRequireBase(importer) ?? importer;
+  if (isVuePeerRuntimeRequest(id)) {
     if (!isBuild && isProjectSourceImporter(state.root, importer)) {
       state.logger.log(`resolveId: deferring source Vue peer runtime ${id} to Vite optimizer`);
       return null;

@@ -229,3 +229,77 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     );
   }
 }
+
+{
+  const workspaceRoot = createTempProject("workspace-nuxt-peer-runtime");
+  const projectRoot = path.join(workspaceRoot, "packages", "app");
+  const appImporter = path.join(projectRoot, "src", "app.ts");
+  const workspaceImporter = path.join(workspaceRoot, "packages", "ui", "src", "Widget.vue");
+  const nuxtPackage = path.join(
+    workspaceRoot,
+    "node_modules",
+    ".pnpm",
+    "nuxt@4.5.2",
+    "node_modules",
+    "nuxt",
+  );
+  const nuxtRouterPackage = path.join(
+    workspaceRoot,
+    "node_modules",
+    ".pnpm",
+    "vue-router@5.2.0_nuxt",
+    "node_modules",
+    "vue-router",
+  );
+  const workspaceRouterPackage = path.join(
+    workspaceRoot,
+    "node_modules",
+    ".pnpm",
+    "vue-router@5.2.0_workspace",
+    "node_modules",
+    "vue-router",
+  );
+  const workspaceRouterEntry = path.join(workspaceRouterPackage, "dist", "vue-router.mjs");
+
+  writeFixtureFile(path.join(projectRoot, "package.json"), '{"name":"workspace-app"}');
+  writeFixtureFile(appImporter, "import { useRoute } from 'vue-router';");
+  writeFixtureFile(workspaceImporter, "<script setup>import { useRoute } from 'vue-router'</script>");
+  for (const packageRoot of [nuxtPackage, nuxtRouterPackage, workspaceRouterPackage]) {
+    writeFixtureFile(
+      path.join(packageRoot, "package.json"),
+      JSON.stringify({ name: path.basename(packageRoot), main: "index.js" }),
+    );
+    writeFixtureFile(path.join(packageRoot, "index.js"), "module.exports = {};");
+  }
+  writeFixtureFile(path.join(nuxtPackage, "dist", "app", "nuxt.js"), "");
+  writeFixtureFile(path.join(nuxtRouterPackage, "dist", "vue-router.mjs"), "");
+  writeFixtureFile(workspaceRouterEntry, "");
+  fs.mkdirSync(path.join(projectRoot, "node_modules"), { recursive: true });
+  fs.mkdirSync(path.join(nuxtPackage, "node_modules"), { recursive: true });
+  fs.symlinkSync(nuxtPackage, path.join(projectRoot, "node_modules", "nuxt"), "dir");
+  fs.symlinkSync(
+    nuxtRouterPackage,
+    path.join(nuxtPackage, "node_modules", "vue-router"),
+    "dir",
+  );
+  fs.symlinkSync(
+    workspaceRouterPackage,
+    path.join(workspaceRoot, "node_modules", "vue-router"),
+    "dir",
+  );
+
+  for (const importer of [
+    appImporter,
+    workspaceImporter,
+    path.join(nuxtPackage, "dist", "app", "nuxt.js"),
+  ]) {
+    const state = createState(projectRoot);
+    state.server = null;
+    const resolved = await resolveIdHook(nullResolveContext, state, "vue-router", importer, undefined);
+    assert.equal(
+      expectResolvedId(resolved),
+      workspaceRouterEntry,
+      "A Nuxt runtime outside the app root must use the workspace's vue-router in a pnpm workspace",
+    );
+  }
+}
