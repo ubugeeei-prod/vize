@@ -3,14 +3,14 @@
 //! parse, and the verdict axis the witness verifier will read.
 //!
 //! The heuristic-error canary itself is a `compile_fail,E0080` doctest on
-//! `vize_davinci::diagnostic::tier`; the runtime panic pinned here is the
+//! `vize_l0::diag::tier`; the runtime panic pinned here is the
 //! same assertion reached outside a const context.
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use std::panic::catch_unwind;
 
-use vize_davinci::diagnostic::{Advisory, Domain, RuleContract, Severity, Tier, Verdict};
+use vize_l0::diag::{Advisory, Domain, RuleContract, Severity, Tier, Verdict};
 
 const DOMAIN: Domain = Domain::new("elements with a literal tag name in an SFC template");
 

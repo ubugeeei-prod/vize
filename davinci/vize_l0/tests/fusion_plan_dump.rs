@@ -6,9 +6,9 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::dump::plan::{Page as PlanPage, Pass as PlanPass};
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
-use vize_davinci::pass::{
+use vize_l0::dump::plan::{Page as PlanPage, Pass as PlanPass};
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::pass::{
     BudgetObserver, Fusability, PassDesc, PassEvent, PassKind, PassObserver, Pipeline, Preserved,
     run_pipeline,
 };

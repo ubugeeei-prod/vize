@@ -12,9 +12,9 @@
 //! these assertions pin: a message change has to be made in both places, on
 //! purpose.
 
-use vize_davinci::pass::pipeline::{PipelineSpec, PipelineSyntaxError};
-use vize_davinci::pass::{parse_pipelines, print_pipelines};
 use vize_l0::cstr;
+use vize_l0::pass::pipeline::{PipelineSpec, PipelineSyntaxError};
+use vize_l0::pass::{parse_pipelines, print_pipelines};
 
 /// Canonical strings, each of which must survive `print(parse(s)) == s`.
 const CANONICAL: [&str; 10] = [

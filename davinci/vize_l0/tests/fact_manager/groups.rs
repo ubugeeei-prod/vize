@@ -8,10 +8,10 @@
 
 use std::sync::{Mutex, MutexGuard};
 
-use vize_davinci::fact::{
+use vize_l0::fact::{
     Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView, ProducerEntry,
 };
-use vize_davinci::pass::AnalysisId;
+use vize_l0::pass::AnalysisId;
 
 /// Serializes the tests that read the process-global counters or the
 /// production log.

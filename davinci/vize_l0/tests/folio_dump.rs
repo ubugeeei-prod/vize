@@ -3,8 +3,8 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::dump::collector::Collector;
-use vize_davinci::pass::{Fusability, PassDesc, PassEvent, PassKind, Pipeline, Preserved};
+use vize_l0::dump::collector::Collector;
+use vize_l0::pass::{Fusability, PassDesc, PassEvent, PassKind, Pipeline, Preserved};
 
 const ALPHA: PassDesc = PassDesc::new(
     "alpha",

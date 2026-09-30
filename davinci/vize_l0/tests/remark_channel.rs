@@ -15,10 +15,10 @@
 
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
-use vize_davinci::pass::observer::{
+use vize_l0::pass::observer::{
     Pair, PassEvent, PassObserver, RecordedArg, RecordedRemark, RemarkArgValue,
 };
-use vize_davinci::pass::{
+use vize_l0::pass::{
     BudgetObserver, Fusability, NoObserver, PassDesc, PassKind, Pipeline, Preserved, Remark,
     RemarkArg, RemarkCollector, RemarkCounter, RemarkKind, RemarkSink, run_pipeline_remarked,
 };

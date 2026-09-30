@@ -14,7 +14,7 @@ use groups::{
     Impostor, PARTIAL, Parity, REGISTRY, SquareRule, Squares, Summary, SummaryRule, Unused,
     UnusedRule, Values, serial, take_log,
 };
-use vize_davinci::fact::{
+use vize_l0::fact::{
     Demand, FactConsumer, FactError, FactGroup, FactManager, FactTable, produced_count,
 };
 

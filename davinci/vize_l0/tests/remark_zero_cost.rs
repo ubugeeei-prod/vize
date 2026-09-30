@@ -17,12 +17,12 @@
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use davinci_harness::alloc::{CountingAllocator, mark_installed, measure};
-use vize_davinci::pass::{
+use vize_l0::Span;
+use vize_l0::pass::{
     BudgetObserver, Fusability, NoObserver, Pair, PassDesc, PassEvent, PassKind, PassObserver,
     Pipeline, Preserved, Remark, RemarkArg, RemarkCounter, RemarkSink, TimingObserver,
     run_pipeline_remarked,
 };
-use vize_l0::Span;
 
 #[global_allocator]
 static ALLOCATOR: CountingAllocator<std::alloc::System> = CountingAllocator::system();

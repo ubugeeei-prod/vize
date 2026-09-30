@@ -4,7 +4,7 @@
 //!
 //! The negative half (an unwitnessed error does not compile; a heuristic
 //! error rule does not compile) is the `compile_fail` doctests on
-//! `vize_davinci::diagnostic` and `diagnostic::tier`. This suite pins the
+//! `vize_l0::diag` and `diagnostic::tier`. This suite pins the
 //! positive half as exact values: what each constructor stores, what the
 //! accessors read back, and the witness types' own laws.
 
@@ -12,12 +12,12 @@
 
 use std::panic::catch_unwind;
 
-use vize_davinci::diagnostic::{
+use vize_l0::diag::{
     Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind, Severity, Stage, Witness,
     WitnessChain, WitnessKey, WitnessKeyed, WitnessLink,
 };
-use vize_davinci::id::NodeId;
-use vize_davinci::pass::AnalysisId;
+use vize_l0::id::NodeId;
+use vize_l0::pass::AnalysisId;
 use vize_l0::{Span, String};
 
 static FIXTURE_EXEMPTION: Exemption = Exemption::new("witness_law_fixture", "fixture/kind");

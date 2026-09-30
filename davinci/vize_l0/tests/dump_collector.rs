@@ -5,8 +5,8 @@
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;
-use vize_davinci::dump::collector::Collector;
-use vize_davinci::pass::{
+use vize_l0::dump::collector::Collector;
+use vize_l0::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, TimingObserver,
     run_pipeline,
 };

@@ -9,13 +9,13 @@
 mod groups;
 
 use groups::{Lengths, Longest, REGISTRY, Summary, Words, Words2};
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
-use vize_davinci::fact::{
+use vize_l0::String;
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::fact::{
     ALPHA_GROUPS, AlphaDesc, AlphaDocError, AlphaDocument, AlphaExport, FactGroup, FactManager,
     FactTable, check_alpha_schema_doc, ids,
 };
-use vize_davinci::pass::AnalysisId;
-use vize_l0::String;
+use vize_l0::pass::AnalysisId;
 
 const SCHEMA_DOC: &str = include_str!("../../../../docs/davinci/plan/fact-alpha-schemas.md");
 

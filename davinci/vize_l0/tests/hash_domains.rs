@@ -8,8 +8,8 @@
     reason = "fixture transport uses std strings and regressions fail closed"
 )]
 use serde_json::{Value, json};
-use vize_davinci::key::{CachedArtifact, KeyManifest, source_block_key};
 use vize_l0::hash::StableHasher128;
+use vize_l0::key::{CachedArtifact, KeyManifest, source_block_key};
 use vize_l2::summary::{
     AlphaEntry, AlphaPages, Facet, GlobalEntry, GlobalFacet, GlobalFacts, GlobalSummary,
     SfcSummary, Signature,

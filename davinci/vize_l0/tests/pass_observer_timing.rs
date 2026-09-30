@@ -22,8 +22,8 @@
 //! The profiler is process-global, so this file holds a single `#[test]` in
 //! its own binary — the `davinci_expr_reparse_floor.rs` shape.
 
-use vize_davinci::pass::observer::TimingObserver;
-use vize_davinci::pass::{
+use vize_l0::pass::observer::TimingObserver;
+use vize_l0::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, run_pipeline,
 };
 use vize_l0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};

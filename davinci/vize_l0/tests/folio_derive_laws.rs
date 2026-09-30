@@ -12,8 +12,8 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
-use vize_davinci::pass::BudgetObserver;
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::pass::BudgetObserver;
 use vize_l0::{FxHashMap, String, cstr};
 
 /// Every supported field kind on one page.

@@ -18,7 +18,7 @@
 //!    like the same block lowered as its own root.
 //!
 //! Regenerate the golden after a deliberate recipe change (which must bump
-//! the stage's `vize_davinci::key::schema` version in the same change):
+//! the stage's `vize_l0::key::schema` version in the same change):
 //!
 //! ```text
 //! UPDATE_KEY_GOLDENS=1 cargo test -p vize_davinci --test artifact_keys
@@ -35,7 +35,7 @@ use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_davinci::key::{ArtifactKey, source_block_key};
+use vize_l0::key::{ArtifactKey, source_block_key};
 use vize_l0::{Allocator, SourceRoot, String};
 use vize_l1_to_l2::key::SurfacePage;
 use vize_l2::dump::Page as L2Page;

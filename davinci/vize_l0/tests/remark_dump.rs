@@ -9,10 +9,10 @@
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;
-use vize_davinci::dump::remarks::{RemarkLog, RemarksSchemaMismatch};
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
-use vize_davinci::pass::RemarkKind;
-use vize_davinci::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
+use vize_l0::dump::remarks::{RemarkLog, RemarksSchemaMismatch};
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::pass::RemarkKind;
+use vize_l0::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
 use vize_l0::{Span, String};
 
 fn arg(key: &str, value: RemarkArgValue) -> RecordedArg {

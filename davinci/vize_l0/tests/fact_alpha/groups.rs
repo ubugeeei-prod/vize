@@ -1,12 +1,12 @@
 //! Fixture groups with α forms over a word list: a keyed number table, a
 //! keyed text table and a single scalar.
 
-use vize_davinci::dump::Dump;
-use vize_davinci::fact::{
+use vize_l0::dump::Dump;
+use vize_l0::fact::{
     AlphaExport, Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView,
     ProducerEntry,
 };
-use vize_davinci::pass::AnalysisId;
+use vize_l0::pass::AnalysisId;
 use vize_l0::{FxHashMap, String};
 
 pub type Words = [&'static str];

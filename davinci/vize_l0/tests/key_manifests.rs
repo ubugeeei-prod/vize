@@ -3,7 +3,7 @@
 //! Every declared input of every cached artifact changes its key; nothing
 //! else does; a manifest that declares a missing or an extra input cannot
 //! key the artifact at all; and `docs/davinci/plan/key-manifests.md` lists
-//! exactly the artifacts and inputs `vize_davinci::key::manifest` declares.
+//! exactly the artifacts and inputs `vize_l0::key::manifest` declares.
 
 #![expect(
     clippy::expect_used,
@@ -13,12 +13,12 @@
 
 use std::fmt::Write as _;
 
-use vize_davinci::key::{
+use vize_l0::String;
+use vize_l0::key::{
     AmbientInput, ArtifactKey, CachedArtifact, InputSet, KeyManifest, ManifestError,
     source_block_key,
 };
-use vize_davinci::stage::Stage;
-use vize_l0::String;
+use vize_l0::stage::Stage;
 
 const DOC: &str = include_str!("../../../docs/davinci/plan/key-manifests.md");
 
@@ -26,7 +26,7 @@ const DOC: &str = include_str!("../../../docs/davinci/plan/key-manifests.md");
 /// manifest alone.
 fn content_key(artifact: CachedArtifact) -> Option<ArtifactKey> {
     let stage = *artifact.content_stages().first()?;
-    let mut sink = vize_davinci::key::KeySink::new(stage, 1, 0);
+    let mut sink = vize_l0::key::KeySink::new(stage, 1, 0);
     sink.feed_str("content");
     Some(sink.finish())
 }

@@ -8,12 +8,12 @@
 //! `repeated-word` demands `words`, `repeats` and `sentence`; `hidden` is
 //! witness-capable but outside its demand.
 
-use vize_davinci::diagnostic::{Diagnostic, Stage, Verdict, WitnessChain, WitnessLink};
-use vize_davinci::fact::{
+use vize_l0::diag::verify::{WitnessCheck, WitnessChecks, WitnessGroup};
+use vize_l0::diag::{Diagnostic, Stage, Verdict, WitnessChain, WitnessLink};
+use vize_l0::fact::{
     Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView, ProducerEntry,
 };
-use vize_davinci::pass::AnalysisId;
-use vize_davinci::witness::{WitnessCheck, WitnessChecks, WitnessGroup};
+use vize_l0::pass::AnalysisId;
 use vize_l0::{Span, String, cstr};
 
 /// One word: where it is, and whether it is a proof (a trailing `?` makes

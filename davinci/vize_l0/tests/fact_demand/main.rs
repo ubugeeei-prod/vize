@@ -8,11 +8,11 @@
 
 mod words;
 
-use vize_davinci::fact::{
+use vize_l0::fact::{
     Demand, FactConsumer, FactError, FactGroup, FactManager, FactTable, GroupDesc, StrataError,
     check_strata, undeclared_accesses,
 };
-use vize_davinci::pass::AnalysisId;
+use vize_l0::pass::AnalysisId;
 use words::{
     Lengths, Longest, LongestRule, REGISTRY, SneakyRule, VowelRule, Vowels, Words, serial,
 };

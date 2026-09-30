@@ -5,8 +5,8 @@
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;
-use vize_davinci::dump::remarks::RemarkLog;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::remarks::RemarkLog;
+use vize_l0::dump::{Dump, Mode as DumpMode};
 
 fn load_schema() -> serde_json::Value {
     let path =

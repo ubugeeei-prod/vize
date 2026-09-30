@@ -2,11 +2,11 @@
 //! baseline page (canonical text, round trip, rejections) and the keyed
 //! remarks-diff's classification of every change class.
 
-use vize_davinci::dump::remarks::corpus::{CorpusRemark, ExplainedRegression, RemarkCorpus};
-use vize_davinci::dump::remarks::diff::{ChangeKind, diff_corpus};
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
-use vize_davinci::pass::RemarkKind;
-use vize_davinci::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
+use vize_l0::dump::remarks::corpus::{CorpusRemark, ExplainedRegression, RemarkCorpus};
+use vize_l0::dump::remarks::diff::{ChangeKind, diff_corpus};
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::pass::RemarkKind;
+use vize_l0::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
 use vize_l0::{Span, String};
 
 fn remark(kind: RemarkKind, name: &str, span: (u32, u32), blocker: Option<&str>) -> RecordedRemark {

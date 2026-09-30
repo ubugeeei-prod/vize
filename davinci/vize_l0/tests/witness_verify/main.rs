@@ -16,14 +16,14 @@ mod facts;
 use facts::{
     CHECKS, Hidden, Lengths, REGISTRY, RepeatedWord, Repeats, Sentence, Words, repeated_words,
 };
-use vize_davinci::diagnostic::{
-    Advisory, Diagnostic, Exemption, Stage, Verdict, WitnessChain, WitnessKey, WitnessLink,
-};
-use vize_davinci::fact::{Demand, FactError, FactGroup, FactManager};
-use vize_davinci::witness::{
+use vize_l0::diag::verify::{
     AuditReport, WitnessAudit, WitnessError, WitnessFailure, unverifiable_witnesses, verify,
     verify_as, verify_chain,
 };
+use vize_l0::diag::{
+    Advisory, Diagnostic, Exemption, Stage, Verdict, WitnessChain, WitnessKey, WitnessLink,
+};
+use vize_l0::fact::{Demand, FactError, FactGroup, FactManager};
 use vize_l0::{Span, String};
 
 /// Words: the@0..3 cat@4..7 saw@8..11 the@12..15 dog@16..19
@@ -48,7 +48,7 @@ enum AnalysisGroup {
 }
 
 impl AnalysisGroup {
-    fn id(self) -> vize_davinci::pass::AnalysisId {
+    fn id(self) -> vize_l0::pass::AnalysisId {
         match self {
             Self::Words => Words::ID,
             Self::Repeats => Repeats::ID,

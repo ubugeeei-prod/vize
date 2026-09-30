@@ -12,11 +12,11 @@ use numbers::{
     BindingsLike, Count, DOUBLE, Everything, LYING_DOUBLE, REGISTRY, RENAME, Total, UsagesLike,
     Values, double, serial,
 };
-use vize_davinci::fact::{
+use vize_l0::fact::{
     Demand, FactConsumer, FactError, FactGroup, FactManager, FactTable, FactVerifyObserver,
     NoFactVerify, PRESERVE_BINDINGS, PRESERVE_STRUCTURE, ids, produced_count,
 };
-use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
+use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
 
 fn total(manager: &FactManager<'_, Vec<u32>>) -> Result<u64, FactError> {
     let view = manager.view::<Everything>();

@@ -292,7 +292,7 @@ function assertP2_17MechanicalWitnesses(): void {
   assert.match(schemaWitness, /SchemaGateError::VersionMismatch/);
 
   const profileWitness = fs.readFileSync(
-    new URL("../../../davinci/vize_davinci/tests/dump_collector.rs", import.meta.url),
+    new URL("../../../davinci/vize_l0/tests/dump_collector.rs", import.meta.url),
     "utf8",
   );
   assert.match(profileWitness, /timing_json_satisfies_the_p0_11_schema/);

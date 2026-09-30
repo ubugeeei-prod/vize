@@ -14,8 +14,8 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::pass::observer::{AnalysisEvent, FailEvent, Pair, PassEvent, PassObserver};
-use vize_davinci::pass::{
+use vize_l0::pass::observer::{AnalysisEvent, FailEvent, Pair, PassEvent, PassObserver};
+use vize_l0::pass::{
     BudgetObserver, Fusability, NoObserver, PassDesc, PassFailure, PassKind, Pipeline, Preserved,
     run_pipeline,
 };
