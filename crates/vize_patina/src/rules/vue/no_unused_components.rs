@@ -223,18 +223,27 @@ impl Rule for NoUnusedComponents {
             let Some((start, end)) = component.span else {
                 continue;
             };
-            ctx.report_in_script(
-                crate::diagnostic::LintDiagnostic::warn(
-                    ctx.current_rule,
-                    cstr!(
-                        "Component '{}' is registered but never used in template",
-                        name
-                    ),
-                    start,
-                    end,
-                )
-                .with_help("Remove the unused import or use the component in your template"),
-            );
+            let mut diagnostic = crate::diagnostic::LintDiagnostic::warn(
+                ctx.current_rule,
+                cstr!(
+                    "Component '{}' is registered but never used in template",
+                    name
+                ),
+                start,
+                end,
+            )
+            .with_help("Remove the unused import or use the component in your template");
+            if component.is_script_setup_import {
+                ctx.report_in_script(diagnostic);
+            } else if let Some(script) = ctx
+                .sfc_descriptor()
+                .and_then(|descriptor| descriptor.script.as_ref())
+            {
+                let offset = script.loc.start as u32;
+                diagnostic.start += offset;
+                diagnostic.end += offset;
+                ctx.report_in_sfc(diagnostic);
+            }
         }
     }
 }
