@@ -191,6 +191,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/css.rs	32	l0	L0	stage	viz
 compiler	Compiler	source	crates/vize_atelier_sfc/src/css/parser.rs	14	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/css/parser/engine_boundary.rs	30	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/css/parser/engine_boundary/value_guard.rs	22	l0	L0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/css/scope_mode.rs	4	l0	L0	stage	vize_carton	compat	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/css/scoped.rs	9	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/css/scoped/slotted.rs	3	l0	L0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/css/scoped/where_selector.rs	1	l0	L0	stage	vize_carton	compat	1
