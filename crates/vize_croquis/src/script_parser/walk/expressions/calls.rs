@@ -12,11 +12,6 @@ pub(in crate::script_parser) fn walk_call_arguments(
     call: &CallExpression<'_>,
     source: &str,
 ) {
-    if matches!(&call.callee, Expression::Identifier(id) if id.name == "useAttrs")
-        || matches!(&call.callee, Expression::StaticMemberExpression(member) if member.property.name == "useAttrs")
-    {
-        result.uses_attrs_call = true;
-    }
     // First, walk the callee (might be a chained call like foo.bar().baz())
     walk_expression(result, &call.callee, source);
 
@@ -30,11 +25,21 @@ pub(in crate::script_parser) fn walk_call_arguments(
 
     // onScopeDispose is cleanup for onMounted, but it is not a client-only
     // lifecycle hook for race tracking.
-    let hook_name = if let Expression::Identifier(id) = &call.callee {
-        let name = id.name.as_str();
-        (is_client_only_hook(name) || name == "onScopeDispose").then_some(name)
-    } else {
-        None
+    let hook_name = match &call.callee {
+        Expression::Identifier(id) => {
+            let name = id.name.as_str();
+            if name == "useAttrs" {
+                result.uses_attrs_call = true;
+            }
+            (is_client_only_hook(name) || name == "onScopeDispose").then_some(name)
+        }
+        Expression::StaticMemberExpression(member) => {
+            if member.property.name == "useAttrs" {
+                result.uses_attrs_call = true;
+            }
+            None
+        }
+        _ => None,
     };
     let mut lifecycle_callback_scope_recorded = false;
 
