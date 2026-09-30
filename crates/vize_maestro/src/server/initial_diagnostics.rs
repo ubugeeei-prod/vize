@@ -181,7 +181,8 @@ fn run_worker(
             // Parsing and linting can be expensive on a cold SFC. Keep them
             // off the foreground didOpen handler while still publishing prompt
             // non-empty feedback before the delayed native type pass.
-            if let Some((uri, version)) = pending.lock().take_sync() {
+            let sync_job = { pending.lock().take_sync() };
+            if let Some((uri, version)) = sync_job {
                 crate::runtime::block_on(worker.publish_initial_sync_diagnostics(&uri, version));
                 continue;
             }
@@ -199,10 +200,20 @@ fn run_worker(
             let Some((uri, job)) = pending.lock().take_ready(Instant::now()) else {
                 continue;
             };
+            tracing::info!(
+                "starting initial type diagnostics for {} version {}",
+                uri,
+                job.version
+            );
             crate::runtime::block_on(async {
                 worker
                     .publish_diagnostics_if_version(&uri, job.version)
                     .await;
+                tracing::info!(
+                    "finished initial type diagnostics for {} version {}",
+                    uri,
+                    job.version
+                );
                 // Opening an unsaved dependency changes its importers too.
                 worker
                     .publish_importer_diagnostics(&uri, Some(job.version))
