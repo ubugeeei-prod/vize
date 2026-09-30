@@ -78,7 +78,20 @@ fn root_check_uses_each_package_tsconfig_and_solution_reference() {
     );
     let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     assert_eq!(report["errorCount"], 0, "{report:#}");
-    assert_eq!(report["files"].as_array().unwrap().len(), 2, "{report:#}");
+    assert_eq!(report["fileCount"], 4, "{report:#}");
+    for package in ["admin", "web"] {
+        for file in ["App.vue", "lib/greet/index.ts"] {
+            let path = format!("packages/{package}/src/{file}");
+            assert!(
+                report["files"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|entry| entry["file"] == path),
+                "missing {path}: {report:#}"
+            );
+        }
+    }
 }
 
 #[test]
