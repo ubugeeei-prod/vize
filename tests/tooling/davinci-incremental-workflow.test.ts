@@ -43,6 +43,7 @@ test("the incrementality workflow triggers on the resident tier and its keyers",
   for (const required of [
     "crates/vize_resident/**",
     "davinci/vize_davinci/**",
+    "davinci/vize_l0/**",
     "davinci/vize_l2/**",
     "davinci/vize_l1_to_l2/**",
     "tools/commands/davinci/incremental-equivalence/**",
@@ -94,7 +95,8 @@ test("TS-43 compares the golden keys on a Linux and a macOS lane", () => {
   assert.deepEqual(
     runs(job).filter((line) => line.startsWith("cargo test")),
     [
-      "cargo test -p vize_davinci --test artifact_keys --test key_manifests --test hash_domains --test sfc_summary --test global_summary -- --nocapture",
+      "cargo test -p vize_davinci --test artifact_keys --test key_manifests --test hash_domains -- --nocapture",
+      "cargo test -p vize_l2 --test sfc_summary --test global_summary -- --nocapture",
     ],
   );
 });

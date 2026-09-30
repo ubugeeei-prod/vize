@@ -26,3 +26,5 @@ hash-domain vectors (the separate capture-only test stays ignored). Actions
 must validate the consumer crates and full corpus before merge. #6833 remains
 open for renderer, Croquis/feed/repro pages, legacy test plans, other imports
 and final compatibility-package deletion.
+
+The cross-platform TS-43 workflow runs its moved summary laws under L2 and retained key laws under their existing owner. Its trigger covers the complete L0 key/fact foundation. The workflow contract test passed with both Linux/macOS commands retained.
