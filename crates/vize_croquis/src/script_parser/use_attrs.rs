@@ -2,6 +2,7 @@
 
 use oxc_ast::ast::{CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk};
+use oxc_span::GetSpan;
 
 use super::ScriptParseResult;
 
@@ -15,11 +16,40 @@ pub(super) fn has_vue_use_attrs_call(
     if !source.contains("useAttrs") {
         return false;
     }
+    let mut candidate_names = vec!["useAttrs"];
+    for (local, import_source) in &result.import_sources {
+        if import_source.as_str() == "vue"
+            && matches!(
+                result
+                    .types
+                    .definitions()
+                    .imported_type_export(local.as_str()),
+                Some("useAttrs" | "*")
+            )
+        {
+            candidate_names.push(local.as_str());
+        }
+    }
+
     let mut visitor = AttrsCallVisitor {
         result,
         found: false,
     };
-    visitor.visit_program(program);
+    // The parser already walked the whole program for bindings. Search only
+    // statements that mention a possible callee instead of walking every AST
+    // node a second time (the large-script instruction budget is tight).
+    for statement in &program.body {
+        let span = statement.span();
+        if source
+            .get(span.start as usize..span.end as usize)
+            .is_some_and(|text| candidate_names.iter().any(|name| text.contains(name)))
+        {
+            visitor.visit_statement(statement);
+            if visitor.found {
+                break;
+            }
+        }
+    }
     visitor.found
 }
 
