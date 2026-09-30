@@ -18,6 +18,7 @@ pub(super) fn apply<S: AsRef<str>>(
     results: &mut [LintResult],
     help_level: HelpLevel,
 ) {
+    let mut child_uses_attrs = FxHashMap::default();
     for usage in &analysis.fallthrough_usage_facts {
         let Some(&parent_index) = indexes.get(&usage.parent_file_id) else {
             continue;
@@ -51,11 +52,16 @@ pub(super) fn apply<S: AsRef<str>>(
                 None => continue,
             }
         };
+        let uses_attrs = *child_uses_attrs
+            .entry(usage.child_file_id)
+            .or_insert_with(|| {
+                files
+                    .get(child_index)
+                    .is_some_and(|(_, source)| source.as_ref().contains("useAttrs("))
+            });
         if child.template_info.uses_attrs
             || child.template_info.binds_attrs_explicitly
-            || files
-                .get(child_index)
-                .is_some_and(|(_, source)| source.as_ref().contains("useAttrs("))
+            || uses_attrs
         {
             continue;
         }
@@ -76,8 +82,13 @@ pub(super) fn apply<S: AsRef<str>>(
             {
                 continue;
             }
-            let start = (parent_offsets.template + attr.source_start).min(source_len);
-            let end = (parent_offsets.template + attr.source_end)
+            let start = parent_offsets
+                .template
+                .saturating_add(attr.source_start)
+                .min(source_len);
+            let end = parent_offsets
+                .template
+                .saturating_add(attr.source_end)
                 .max(start.saturating_add(1))
                 .min(source_len);
             let message = cstr!(

@@ -8,13 +8,14 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 ## Resolved product sites
 
-| product                               | kind | module         | files | sites |
-| ------------------------------------- | ---- | -------------- | ----: | ----: |
-| `Analyzer`                            | type | `analyzer`     |     1 |     1 |
-| `AnalyzerOptions`                     | type | `analyzer`     |     1 |     1 |
-| `Croquis`                             | type | `croquis`      |     1 |     1 |
-| `EffectGraphScript`                   | type | `effect_graph` |     1 |     2 |
-| `build_effect_graph_from_sfc_scripts` | type | `effect_graph` |     1 |     1 |
+| product                               | kind  | module         | files | sites |
+| ------------------------------------- | ----- | -------------- | ----: | ----: |
+| `Analyzer`                            | type  | `analyzer`     |     1 |     1 |
+| `AnalyzerOptions`                     | type  | `analyzer`     |     1 |     1 |
+| `Croquis`                             | type  | `croquis`      |     1 |     1 |
+| `EffectGraphScript`                   | type  | `effect_graph` |     1 |     2 |
+| `build_effect_graph_from_sfc_scripts` | type  | `effect_graph` |     1 |     1 |
+| `Croquis.template_info`               | field | `croquis`      |     1 |     3 |
 
 ## Non-product `vize_croquis` imports
 

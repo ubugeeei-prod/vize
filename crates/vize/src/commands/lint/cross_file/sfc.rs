@@ -87,8 +87,16 @@ fn fallthrough_root(root: &vize_relief::RootNode<'_>) -> Option<FallthroughRoot>
         return Some(FallthroughRoot::Fragment);
     }
     match first {
-        TemplateChildNode::Element(element) if element.tag == "Teleport" => {
+        TemplateChildNode::Element(element) if element.tag.eq_ignore_ascii_case("teleport") => {
             Some(FallthroughRoot::Teleport)
+        }
+        // The active branch and the actual rendered root are not known here.
+        TemplateChildNode::If(_) | TemplateChildNode::IfBranch(_) => None,
+        TemplateChildNode::Element(element)
+            if element.tag.eq_ignore_ascii_case("suspense")
+                || element.tag.eq_ignore_ascii_case("keepalive") =>
+        {
+            None
         }
         TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_) => {
             Some(FallthroughRoot::Text)

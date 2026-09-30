@@ -58,7 +58,7 @@ defineEmits(['close'])
 #[test]
 fn covers_fragment_text_and_disabled_inheritance_but_allows_explicit_attrs() {
     let parent = r#"<script setup>import Dialog from './Dialog.vue'</script>
-<template><Dialog class="overlay" /></template>"#;
+<template>日本語<Dialog class="overlay" /></template>"#;
     for child in [
         "<template><div /><div /></template>",
         "<template>{{ message }}</template>",
@@ -78,4 +78,13 @@ fn covers_fragment_text_and_disabled_inheritance_but_allows_explicit_attrs() {
     ] {
         assert!(diagnostics(parent, child).is_empty(), "{child}");
     }
+    let lowercase = diagnostics(
+        parent,
+        "<template><teleport to=\"body\"><div /></teleport></template>",
+    );
+    assert_eq!(lowercase.len(), 1, "{lowercase:?}");
+    assert_eq!(
+        lowercase[0].1 as usize,
+        parent.find("class=\"overlay\"").unwrap()
+    );
 }
