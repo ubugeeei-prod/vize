@@ -9,9 +9,9 @@
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;
-use vize_davinci::dump::collector::Collector;
-use vize_davinci::dump::feed::{StageFeed, StageFeedSchemaMismatch};
-use vize_davinci::pass::{
+use vize_curator::inspector::feed::{StageFeed, StageFeedSchemaMismatch};
+use vize_l0::dump::collector::Collector;
+use vize_l0::pass::{
     BudgetObserver, Fusability, PassDesc, PassEvent, PassKind, Pipeline, Preserved, run_pipeline,
 };
 
@@ -238,9 +238,9 @@ fn consumers_negotiate_schema_version_before_reading_pages() {
 
 #[test]
 fn the_feed_carries_remarks_beside_the_pages() {
-    use vize_davinci::dump::feed::StageRemark;
-    use vize_davinci::pass::RemarkKind;
-    use vize_davinci::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
+    use vize_curator::inspector::feed::StageRemark;
+    use vize_l0::pass::RemarkKind;
+    use vize_l0::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
     use vize_l0::{Span, String};
 
     let arg = |key: &str, value: &str| RecordedArg {

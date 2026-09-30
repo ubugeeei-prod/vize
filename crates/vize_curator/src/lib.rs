@@ -4,6 +4,8 @@
 //! generated. It is intentionally workspace-local and is not part of the
 //! published crate set.
 
+extern crate alloc;
+
 pub mod complexity;
 pub mod inspector;
 pub mod profile;

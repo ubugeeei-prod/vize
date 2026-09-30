@@ -20,7 +20,7 @@
 //! (the inspector's L1 pages, produced by a parse rather than a pass) push
 //! [`StagePage`]s directly, with `pass` naming the producing step.
 //!
-//! Like the dump, the feed is deliberately IO-free (`no_std + alloc`) and
+//! Like the dump, the feed is deliberately IO-free and
 //! transport-agnostic: [`StageFeed::to_json`] returns text, and whether
 //! that text becomes a file in the folio directory, a member of the
 //! inspector payload, or a protocol frame is the caller's decision (the
@@ -31,10 +31,10 @@ use core::fmt::Write as _;
 
 use vize_l0::String;
 
-use crate::dump::collector::Collector;
-use crate::pass::observer::RecordedRemark;
+use vize_l0::dump::collector::Collector;
 use vize_l0::dump::json::push_json_string;
 use vize_l0::dump::remarks::push_remark_fields;
+use vize_l0::pass::observer::RecordedRemark;
 
 /// The feed format version. Incompatible shape changes bump this **and**
 /// the committed schema's `const` together.
