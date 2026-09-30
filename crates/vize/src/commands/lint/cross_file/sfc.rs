@@ -11,11 +11,20 @@ use vize_atelier_sfc::{
 };
 use vize_croquis::Croquis;
 use vize_l0::Allocator;
+use vize_relief::TemplateChildNode;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum FallthroughRoot {
+    Teleport,
+    Fragment,
+    Text,
+}
 
 #[derive(Clone, Copy, Debug, Default)]
 pub(super) struct CrossFileSourceOffsets {
     pub(super) script: u32,
     pub(super) template: u32,
+    pub(super) fallthrough_root: Option<FallthroughRoot>,
 }
 
 pub(super) fn analyze_sfc_for_cross_file(
@@ -56,6 +65,7 @@ pub(super) fn analyze_sfc_for_cross_file(
         let template_ast = if parse_errors.iter().any(|error| !error.is_recoverable()) {
             None
         } else {
+            offsets.fallthrough_root = fallthrough_root(&root);
             Some(&root)
         };
         analyze_sfc_descriptor(&descriptor, template_ast, SfcCroquisOptions::full())
@@ -64,4 +74,26 @@ pub(super) fn analyze_sfc_for_cross_file(
     };
 
     Some((analysis, offsets))
+}
+
+fn fallthrough_root(root: &vize_relief::RootNode<'_>) -> Option<FallthroughRoot> {
+    let mut significant = root.children.iter().filter(|child| match child {
+        TemplateChildNode::Comment(_) => false,
+        TemplateChildNode::Text(text) => !text.content.trim().is_empty(),
+        _ => true,
+    });
+    let first = significant.next()?;
+    if significant.next().is_some() {
+        return Some(FallthroughRoot::Fragment);
+    }
+    match first {
+        TemplateChildNode::Element(element) if element.tag == "Teleport" => {
+            Some(FallthroughRoot::Teleport)
+        }
+        TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_) => {
+            Some(FallthroughRoot::Text)
+        }
+        TemplateChildNode::For(_) => Some(FallthroughRoot::Fragment),
+        _ => None,
+    }
 }

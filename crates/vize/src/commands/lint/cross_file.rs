@@ -2,6 +2,7 @@
 
 mod absent_props;
 mod component;
+mod fallthrough;
 mod sfc;
 
 use sfc::{CrossFileSourceOffsets, analyze_sfc_for_cross_file};
@@ -105,6 +106,14 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
     let cross_file_result = analyzer.analyze();
 
     for diagnostic in &cross_file_result.diagnostics {
+        if matches!(
+            diagnostic.kind,
+            CrossFileDiagnosticKind::UnusedFallthroughAttrs { .. }
+                | CrossFileDiagnosticKind::InheritAttrsDisabledUnused
+                | CrossFileDiagnosticKind::MultiRootMissingAttrs
+        ) {
+            continue;
+        }
         let Some(index) = file_indexes.get(&diagnostic.primary_file).copied() else {
             continue;
         };
@@ -122,6 +131,15 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
     }
 
     component::apply(files, &analyzer, &file_indexes, &mut results, help_level);
+    fallthrough::apply(
+        files,
+        &analyzer,
+        &cross_file_result,
+        &file_indexes,
+        &source_offsets,
+        &mut results,
+        help_level,
+    );
 
     for result in &mut results {
         result.error_count = result
@@ -169,6 +187,7 @@ fn combine_cross_file_report(tree: Option<&str>, complexity: Option<&str>) -> Op
 
 fn patina_cross_file_options() -> CrossFileOptions {
     CrossFileOptions::minimal()
+        .with_fallthrough_attrs(true)
         .with_provide_inject(true)
         .with_unique_ids(true)
         .with_server_client_boundary(true)
