@@ -4,11 +4,11 @@ use alloc::vec::Vec;
 
 use vize_l0::{String, cstr};
 
-use crate::dump::Error as DumpError;
-use crate::dump::croquis::{
+use crate::dump::{
     BindingGroup, ErrorEntry, ExternEntry, MacroEntry, Page, PropEntry, ScopeEntry, ScopeRef,
     SurfaceEntry, TypeEntry, TypeExportMark,
 };
+use vize_l0::dump::Error as DumpError;
 
 pub(super) fn err(line: usize, message: String) -> DumpError {
     DumpError::new(line, message)

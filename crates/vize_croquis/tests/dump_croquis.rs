@@ -8,9 +8,9 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::dump::croquis::Page as CroquisPage;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::pass::{parse_pipelines, print_pipelines};
+use vize_croquis::dump::Page as CroquisPage;
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::pass::{parse_pipelines, print_pipelines};
 
 fn committed_pages() -> Vec<PathBuf> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/croquis");

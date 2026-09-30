@@ -11,8 +11,8 @@ use alloc::vec::Vec;
 
 use vize_l0::FxHashMap;
 
-use crate::dump::Mode as DumpMode;
-use crate::dump::croquis::{Page, ScopeEntry, ScopeRef, SurfaceEntry};
+use crate::dump::{Page, ScopeEntry, ScopeRef, SurfaceEntry};
+use vize_l0::dump::Mode as DumpMode;
 
 /// Compute the sequential-per-prefix renumbering for scope entries, keyed
 /// by `(prefix, old index)`.

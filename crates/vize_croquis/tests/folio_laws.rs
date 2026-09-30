@@ -1,6 +1,6 @@
 //! Dump trait laws on hand-written croquis folio texts.
 //!
-//! The mode-explicit contract under test (see `davinci/vize_davinci/src/folio.rs`
+//! The mode-explicit contract under test (see `davinci/vize_l0/src/dump.rs`
 //! and `docs/davinci/plan/folio-format.md`):
 //!
 //! - `Full`: `print(parse(t)) == t` for canonical text, `parse(print(v)) == v`
@@ -10,9 +10,9 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::assert_dump_snapshot;
-use vize_davinci::dump::croquis::Page as CroquisPage;
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_croquis::dump::Page as CroquisPage;
+use vize_l0::assert_dump_snapshot;
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{String, cstr};
 
 /// A canonical text exercising every section of the croquis folio.

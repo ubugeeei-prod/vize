@@ -9,20 +9,20 @@
 //! Regenerate the committed folios after a deliberate renderer change:
 //!
 //! ```text
-//! UPDATE_FOLIO_FIXTURES=1 cargo test -p vize_davinci --test croquis_folio
+//! UPDATE_FOLIO_FIXTURES=1 cargo test -p vize_croquis --test croquis_dump
 //! ```
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use std::path::{Path, PathBuf};
 
-use vize_atelier_core::Allocator;
 use vize_atelier_sfc::{
     SfcParseOptions, croquis::SfcCroquisOptions, croquis::analyze_sfc_descriptor, parse_sfc,
 };
-use vize_davinci::dump::croquis::Page as CroquisPage;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_croquis::dump::Page as CroquisPage;
+use vize_l0::Allocator;
 use vize_l0::String;
+use vize_l0::dump::{Dump, Mode as DumpMode};
 
 /// Render the croquis VIR dump for an SFC source, mirroring the curator
 /// inspector recipe (`crates/vize_curator/src/inspector/payload.rs`).
@@ -32,7 +32,7 @@ fn vir_of(source: &str) -> String {
     let template_allocator = Allocator::default();
     let template_root = descriptor.template.as_ref().map(|template| {
         let (root, _parse_errors) =
-            vize_atelier_core::parser::parse(&template_allocator, template.content.as_ref());
+            vize_armature::parser::parse(&template_allocator, template.content.as_ref());
         root
     });
     let mut croquis_options = SfcCroquisOptions::lint_demand();

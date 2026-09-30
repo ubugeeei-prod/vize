@@ -3,7 +3,7 @@
 //!
 //! [`Page`] is a document model of the text
 //! `vize_croquis::Croquis::to_vir()` emits (the `[vir]` format). Printing
-//! in [`DumpMode::Full`](crate::dump::Mode) reproduces that format
+//! in [`DumpMode::Full`](vize_l0::dump::Mode) reproduces that format
 //! byte-for-byte for canonical content; parsing is the inverse. The live
 //! renderer stays in `crates/vize_croquis/src/croquis/vir.rs`; this module
 //! owns the format contract (see `docs/davinci/plan/folio-format.md`).
@@ -16,7 +16,7 @@ use alloc::vec::Vec;
 
 use vize_l0::String;
 
-use crate::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 
 mod parse;
 mod print;

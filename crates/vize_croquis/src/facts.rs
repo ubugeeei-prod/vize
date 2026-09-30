@@ -1,7 +1,7 @@
 //! Croquis products as fact groups (Davinci P4-3).
 //!
 //! Each tracker product a consumer reads becomes a fact group on the
-//! [`vize_davinci::fact`] query surface: the tracker code stays the
+//! [`vize_l0::fact`] query surface: the tracker code stays the
 //! population pass (semantic-engine.md #1), a registered producer turns its
 //! output into a key-sorted [`FactTable`], and a consumer reads the table
 //! through a [`FactView`] scoped to the demand it declared as const data
@@ -77,7 +77,7 @@ pub use access::{
 };
 pub use undefined_refs::UndefinedRefs;
 pub use unused_bindings::{UnusedBindingFact, UnusedBindings};
-pub use vize_davinci::fact::{
+pub use vize_l0::fact::{
     Demand, FactConsumer, FactError, FactGroup, FactManager, FactRegistry, FactTable, FactView,
     ProducerEntry,
 };
@@ -143,7 +143,7 @@ mod tests {
         UnusedBindings,
     };
     use crate::Croquis;
-    use vize_davinci::fact::ids;
+    use vize_l0::fact::ids;
 
     struct ReadsBindings;
     impl FactConsumer for ReadsBindings {

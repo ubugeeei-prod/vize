@@ -9,10 +9,10 @@
 use crate::Croquis;
 use crate::reactivity::{ReactiveKind, ReactivityLoss};
 use vize_carton::{CompactString, Span};
-use vize_davinci::fact::{
+use vize_l0::fact::{
     Demand, FactConsumer, FactGroup, FactProducer, FactTable, FactTableBuilder, FactView, ids,
 };
-use vize_davinci::pass::AnalysisId;
+use vize_l0::pass::AnalysisId;
 use vize_l3::lattice::{
     BindingId, EffectSet, ReactivityClass, SourceKind, Verdict, evaluate_binding,
 };

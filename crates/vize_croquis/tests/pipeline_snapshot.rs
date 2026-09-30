@@ -13,10 +13,10 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::assert_dump_snapshot;
-use vize_davinci::dump::croquis::Page as CroquisPage;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::pass::{
+use vize_croquis::dump::Page as CroquisPage;
+use vize_l0::assert_dump_snapshot;
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::pass::{
     BudgetObserver, Fusability, PassDesc, PassKind, Pipeline, Preserved, run_pipeline,
 };
 

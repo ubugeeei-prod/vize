@@ -17,8 +17,8 @@ use alloc::vec::Vec;
 
 use vize_l0::{FxHashSet, String, cstr};
 
-use crate::dump::Error as DumpError;
-use crate::dump::croquis::{Page, SurfaceEntry};
+use crate::dump::{Page, SurfaceEntry};
+use vize_l0::dump::Error as DumpError;
 
 mod entry;
 
