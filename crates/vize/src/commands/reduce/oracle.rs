@@ -12,7 +12,7 @@
 use std::process::{Command, Stdio};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_davinci::dump::repro::Page as ReproPage;
+use vize_curator::repro::Page as ReproPage;
 use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::pass::{BudgetObserver, Pair, RemarkCollector, RemarkKind};
 use vize_davinci::stage::pipeline_wire_id;

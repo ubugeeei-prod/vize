@@ -11,7 +11,7 @@
 //! the ratchet rule at the top of `budgets.toml`.
 //!
 //! The same run also pins Davinci's side of the tie: the walks measured here
-//! must equal `vize_atelier_core::legacy_plan::VAPOR.group_count()`, so the
+//! must equal `vize_curator::legacy_plan::VAPOR.group_count()`, so the
 //! pass-manager plan that *describes* the shipped pipeline cannot drift from
 //! it silently. The plans live in `vize_davinci` and are read from the dev-dependencies:
 //! a published crate cannot depend on an unpublished one.
@@ -29,7 +29,7 @@ use davinci_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::walk_probe::{WALK_STAGES, WalkCounts};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
-use vize_davinci::legacy_plan;
+use vize_curator::legacy_plan;
 
 /// fixture name -> (stage tree-walks, template-node visits) per fused compile.
 const BASELINE: [(&str, u64, u64); 6] = [
@@ -88,7 +88,7 @@ fn vapor_walk_baseline_holds() {
         // The Davinci plan and the pipeline it describes must agree on the
         // walk count. A plan that drifts from the compiler fails here, which
         // is why the plan is declared as data rather than written as a
-        // comment (`vize_davinci::legacy_plan`).
+        // comment (`vize_curator::legacy_plan`).
         assert_eq!(
             delta.total_walks() as usize,
             legacy_plan::VAPOR.group_count(),

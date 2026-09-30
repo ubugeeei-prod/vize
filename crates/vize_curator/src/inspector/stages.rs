@@ -1,6 +1,6 @@
 //! Spolvero feed construction for the inspector (Davinci P2-18).
 //!
-//! The inspector's stage pages, in the feed shape `vize_davinci` owns
+//! The inspector's stage pages, in the feed shape this inspector owns
 //! (`folio::feed::StageFeed`, committed schema
 //! `docs/davinci/plan/spolvero-feed.schema.json`). There is exactly one
 //! serializer of that shape - `StageFeed::to_json` - so this module
@@ -39,10 +39,10 @@
 mod ladder;
 mod profile;
 
+pub use super::feed::{StageFeed, StagePage, StageRemark};
 pub use ladder::{LadderClock, LadderRun, LadderStep, ladder_pages, ladder_run};
 pub use profile::{LADDER_STEP_KEY, LADDER_WALK_KEY, ladder_profile};
-pub use vize_davinci::dump::feed::{StageFeed, StagePage, StageRemark};
-use vize_davinci::pass::RemarkCollector;
+use vize_l0::pass::RemarkCollector;
 use vize_l0::{Allocator, String, cstr};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};

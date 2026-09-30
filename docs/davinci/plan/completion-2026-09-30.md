@@ -1,6 +1,6 @@
 # Davinci completion ledger (2026-09-30)
 
-Initial snapshot: main `507ac3cc683c044fc136016cd4bfb7d3bde44965`; completion evidence refreshed on 2026-10-01 at main `8edfb4e805bec5381f9e5e705313579892418ff5`. Issue status alone is not implementation evidence. A slice completes only after exact-head Actions, protected-queue success, actual merge, and a fresh-main check.
+Initial snapshot: main `507ac3cc683c044fc136016cd4bfb7d3bde44965`; completion evidence refreshed on 2026-10-01 at main `bd5564f669f88247c73d2805a7b585dfc48897e2`. Issue status alone is not implementation evidence. A slice completes only after exact-head Actions, protected-queue success, actual merge, and a fresh-main check.
 
 ## Completion conditions
 
@@ -16,6 +16,7 @@ Initial snapshot: main `507ac3cc683c044fc136016cd4bfb7d3bde44965`; completion ev
 - Dependency gate [#6831](https://github.com/ubugeeei-prod/vize/issues/6831): fresh-main [Actions](https://github.com/ubugeeei-prod/vize/actions/runs/36697179934/job/109827822993) passed; local locked metadata agrees: seven level roots, zero exceptions, zero witnesses, zero directory violations. Dev-only differential oracles remain allowed.
 - Historical optimizer host retirement: [#7277](https://github.com/ubugeeei-prod/vize/pull/7277), merged `95e65875bacba46e2ab15428a35a081617c1a323` after successful protected-queue Check; fresh-main ancestry verified. #6832's wider naming/CLI scope remains open.
 - L0 runtime and derive ownership: [#7283](https://github.com/ubugeeei-prod/vize/pull/7283), merged `8edfb4e805bec5381f9e5e705313579892418ff5`. All eleven L0 skeleton modules and 21 placeholder calls are gone. Exact-head PR Check, all 100 unchanged instruction ceilings and the protected-queue Check passed; fresh-main ancestry verified. Other #6833 owners/imports/tests and #6834 portability remain open.
+- Native imports, L2 summaries, CLI diagnostics and Croquis dump ownership: Stack #7288 ([#7284](https://github.com/ubugeeei-prod/vize/pull/7284), [#7285](https://github.com/ubugeeei-prod/vize/pull/7285), [#7286](https://github.com/ubugeeei-prod/vize/pull/7286), [#7287](https://github.com/ubugeeei-prod/vize/pull/7287)) actually merged after exact-head and protected-queue checks; all four merge commits are ancestors of fresh main `bd5564f669f88247c73d2805a7b585dfc48897e2`. [Top queue Check](https://github.com/ubugeeei-prod/vize/actions/runs/36763031420) passed with unchanged ceilings. Inspector/repro/plans, foundation tests, final legacy imports and package deletion remain unfinished until their own merge.
 
 ## Remaining roadmap issues at the snapshot
 

@@ -11,7 +11,7 @@
 
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
-use vize_davinci::dump::repro::Page as ReproPage;
+use vize_curator::repro::Page as ReproPage;
 use vize_davinci::pass::parse_pipelines;
 use vize_l0::{Allocator, String, cstr};
 

@@ -30,9 +30,9 @@ void test("real compiled Markdown and budget witnesses select both Rust planners
       "davinci/vize_l1_to_l2/src/pass/cfg/source.rs",
       "../../../../../docs/davinci/plan/complexity-metrics.md",
     ],
-    ["davinci/vize_davinci/tests/key_manifests.rs", "../../../docs/davinci/plan/key-manifests.md"],
+    ["davinci/vize_l0/tests/key_manifests.rs", "../../../docs/davinci/plan/key-manifests.md"],
     [
-      "davinci/vize_davinci/tests/fact_alpha/main.rs",
+      "davinci/vize_l0/tests/fact_alpha/main.rs",
       "../../../../docs/davinci/plan/fact-alpha-schemas.md",
     ],
     ["crates/vize_resident/src/summary.rs", "../../../docs/davinci/plan/budgets.toml"],
