@@ -245,6 +245,13 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
                 can_start_regex = true;
             }
             b'.' => can_start_regex = false,
+            // TypeScript's postfix non-null assertion leaves an expression on
+            // the left. In `value!/=...`, `/=` is division assignment, not a
+            // regex opener. Treating it as regex can hide an arbitrarily deep
+            // parenthesis run from the OXC recursion budget (#7275).
+            b'!' => {
+                can_start_regex = can_start_regex || bytes.get(i + 1) == Some(&b'=');
+            }
             b'+' | b'-' if bytes.get(i + 1) == Some(&b) => {
                 i += 1;
                 can_start_regex = false;
@@ -280,8 +287,8 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
                 i += 1;
                 can_start_regex = true;
             }
-            b',' | b';' | b':' | b'?' | b'!' | b'=' | b'+' | b'-' | b'*' | b'/' | b'%' | b'&'
-            | b'|' | b'^' | b'~' => can_start_regex = true,
+            b',' | b';' | b':' | b'?' | b'=' | b'+' | b'-' | b'*' | b'/' | b'%' | b'&' | b'|'
+            | b'^' | b'~' => can_start_regex = true,
             // A `\` in code position begins an identifier escape for OXC's
             // lexer (`\uXXXX` / `\u{...}`); invalid escapes recover without opening
             // a new literal. Either way OXC never starts a string at a `'`/`"` — or a
