@@ -127,17 +127,7 @@ impl ScriptRule for RequireExplicitSlots {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        // Direct rule checks exercise the script-setup behavior without an SFC.
-        self.check_program_with_sfc(
-            program,
-            source,
-            offset,
-            SfcScriptContext {
-                is_script_setup: true,
-                ..Default::default()
-            },
-            result,
-        );
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
     }
 
     fn check_program_with_sfc<'a>(
