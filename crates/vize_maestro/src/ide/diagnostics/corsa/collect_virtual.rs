@@ -56,7 +56,7 @@ pub(super) async fn fetch_finished_diagnostics(
         corsa_diags.len(),
         virtual_uri
     );
-    Ok(corsa_diags
+    let finished: Vec<_> = corsa_diags
         .into_iter()
         .enumerate()
         .filter_map(|(i, diag)| {
@@ -69,7 +69,9 @@ pub(super) async fn fetch_finished_diagnostics(
             );
             finished_from_lsp(&document.code, diag, index)
         })
-        .collect())
+        .collect();
+    tracing::info!("decoded {} Corsa diagnostics", finished.len());
+    Ok(finished)
 }
 
 /// Decode one LSP diagnostic of the synced (import-rewritten) document.
@@ -159,7 +161,9 @@ fn assemble_corsa_diagnostics_for_source(
     let policy = AssemblyPolicy {
         report_unused: true,
     };
-    assemble_diagnostics(authored, &projected, finished, policy)
+    let assembled = assemble_diagnostics(authored, &projected, finished, policy);
+    tracing::info!("assembled {} Corsa diagnostics", assembled.len());
+    assembled
         .into_iter()
         .map(|assembled| {
             let (start_line, start_character) =
