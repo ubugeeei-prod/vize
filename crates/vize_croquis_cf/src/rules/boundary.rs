@@ -228,6 +228,10 @@ fn find_browser_api_usage(
     }
 
     for (api, offset) in analysis.setup_context.browser_globals() {
+        // Empty names are mount-resource markers, not browser globals.
+        if api.is_empty() {
+            continue;
+        }
         let context = browser_apis
             .iter()
             .find(|(name, _)| *name == api.as_str())

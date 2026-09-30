@@ -1250,7 +1250,6 @@ Croquis {
     setup_context: SetupContextTracker {
         violations: [],
         browser_globals: [],
-        mounted_resources: [],
     },
     types: TypeResolver {
         definitions: TypeDefinitions {

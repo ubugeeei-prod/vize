@@ -55,12 +55,13 @@ pub(in crate::script_parser) fn walk_call_arguments(
                             Expression::ArrowFunctionExpression(arrow) => {
                                 lifecycle_callback_scope_recorded = true;
                                 // Enter client-only scope
-                                enter_client_only(
-                                    result,
-                                    name,
-                                    source,
-                                    arrow.span.start,
-                                    arrow.span.end,
+                                result.scopes.enter_client_only_scope(
+                                    client_only_data(
+                                        name,
+                                        source,
+                                        arrow.span.start,
+                                        arrow.span.end,
+                                    ),
                                     call.span.start,
                                     call.span.end,
                                 );
@@ -99,12 +100,8 @@ pub(in crate::script_parser) fn walk_call_arguments(
                             Expression::FunctionExpression(func) => {
                                 lifecycle_callback_scope_recorded = true;
                                 // Enter client-only scope
-                                enter_client_only(
-                                    result,
-                                    name,
-                                    source,
-                                    func.span.start,
-                                    func.span.end,
+                                result.scopes.enter_client_only_scope(
+                                    client_only_data(name, source, func.span.start, func.span.end),
                                     call.span.start,
                                     call.span.end,
                                 );
@@ -150,12 +147,8 @@ pub(in crate::script_parser) fn walk_call_arguments(
     if let Some(name) = hook_name
         && !lifecycle_callback_scope_recorded
     {
-        enter_client_only(
-            result,
-            name,
-            source,
-            call.span.start,
-            call.span.end,
+        result.scopes.enter_client_only_scope(
+            client_only_data(name, source, call.span.start, call.span.end),
             call.span.start,
             call.span.end,
         );
@@ -163,78 +156,10 @@ pub(in crate::script_parser) fn walk_call_arguments(
     }
 }
 
-/// Out of line so the call walker does not inline the resource scan.
-/// That scan was blowing the croquis analyze instruction ceilings.
-#[inline(never)]
-fn enter_client_only(
-    result: &mut ScriptParseResult,
-    name: &str,
-    source: &str,
-    probe_start: u32,
-    probe_end: u32,
-    call_start: u32,
-    call_end: u32,
-) {
-    result.scopes.enter_client_only_scope(
-        ClientOnlyScopeData {
-            hook_name: CompactString::new(name),
-        },
-        call_start,
-        call_end,
-    );
-    if name == "onMounted" && callback_acquires_resource(source, probe_start, probe_end) {
-        result.setup_context.note_mounted_resource(call_start);
+fn client_only_data(name: &str, _source: &str, _start: u32, _end: u32) -> ClientOnlyScopeData {
+    ClientOnlyScopeData {
+        hook_name: CompactString::new(name),
     }
-}
-
-#[inline(never)]
-fn callback_acquires_resource(source: &str, start: u32, end: u32) -> bool {
-    let Some(text) = source.get(start as usize..end as usize) else {
-        return false;
-    };
-    const NAMES: &[&str] = &[
-        "addEventListener",
-        "setInterval",
-        "setTimeout",
-        "requestAnimationFrame",
-        "subscribe",
-    ];
-    NAMES.iter().any(|name| contains_ident(text, name))
-        || text.contains("new WebSocket")
-        || text.contains("new EventSource")
-        || text.contains("new Worker")
-        || text.contains("new IntersectionObserver")
-        || text.contains("new ResizeObserver")
-        || text.contains("new MutationObserver")
-        || text.contains(".observe(")
-}
-
-fn contains_ident(haystack: &str, ident: &str) -> bool {
-    let bytes = haystack.as_bytes();
-    let needle = ident.as_bytes();
-    if needle.is_empty() {
-        return false;
-    }
-    let mut start = 0;
-    while start + needle.len() <= bytes.len() {
-        if bytes.get(start..start + needle.len()) == Some(needle) {
-            let before_ok = start == 0
-                || bytes
-                    .get(start - 1)
-                    .is_some_and(|byte| !is_ident_byte(*byte));
-            let after = start + needle.len();
-            let after_ok = bytes.get(after).is_none_or(|byte| !is_ident_byte(*byte));
-            if before_ok && after_ok {
-                return true;
-            }
-        }
-        start += 1;
-    }
-    false
-}
-
-fn is_ident_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
 }
 
 #[inline(always)]

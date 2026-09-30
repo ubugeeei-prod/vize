@@ -59,6 +59,7 @@ pub mod facts;
 pub mod hoist;
 pub mod import_resolver;
 pub mod macros;
+pub mod mounted;
 pub mod naming;
 pub mod optimization;
 pub mod provide;
@@ -116,6 +117,7 @@ pub use effect_graph::{
     EffectGraph, EffectGraphScript, EffectGraphSummary, build_effect_graph_from_script,
     build_effect_graph_from_script_setup, build_effect_graph_from_sfc_scripts,
 };
+pub use mounted::note_mounted_resources;
 pub use reactivity_overlay::{
     ReactivityEffectEdgeOverlay, ReactivityEffectGraphOverlay, ReactivityLossOverlay,
     ReactivityOverlay, ReactivityOverlaySummary, ReactivitySourceOverlay,

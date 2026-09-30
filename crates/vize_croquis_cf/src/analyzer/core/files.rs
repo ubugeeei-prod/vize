@@ -4,6 +4,7 @@ use crate::registry::FileId;
 use std::path::Path;
 use vize_croquis::{
     Croquis, EffectGraphScript, EffectGraphSummary, build_effect_graph_from_sfc_scripts,
+    note_mounted_resources,
 };
 
 impl CrossFileAnalyzer {
@@ -58,6 +59,7 @@ impl CrossFileAnalyzer {
         let path = path.as_ref();
 
         // Register in module registry (takes ownership of analysis)
+        let analysis = note_mounted_resources(source, analysis);
         let (file_id, is_new) = self.registry.register(path, source, analysis);
         self.record_effect_graph_summary(file_id, effect_summary);
         if path
