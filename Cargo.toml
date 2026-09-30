@@ -88,8 +88,8 @@ vize_guest = { path = "davinci/vize_guest" }
 vize_davinci = { path = "davinci/vize_davinci", version = "=0.429.1" }
 vize_davinci_derive = { path = "davinci/vize_davinci_derive", version = "=0.429.1" }
 
-# Level dependencies use physical package identities. L0 re-exports carton
-# until its storage modules move in (#6834).
+# Level dependencies use physical package identities. L0 owns the shared
+# foundation; the legacy Carton package re-exports it.
 vize_l0 = { path = "davinci/vize_l0", version = "=0.429.1" }
 vize_l1 = { path = "davinci/vize_l1", version = "=0.429.1" }
 vize_l2 = { path = "davinci/vize_l2", version = "=0.429.1" }

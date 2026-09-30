@@ -4501,6 +4501,7 @@ version = "0.429.1"
 dependencies = [
  "davinci_test_support",
  "insta",
+ "serde_json",
  "tempfile",
  "vize_l0",
 ]

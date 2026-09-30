@@ -17,6 +17,7 @@ extension = ["vize_l0/extension"]
 lint-glob = ["vize_l0/lint-glob"]
 
 [dev-dependencies]
+serde_json.workspace = true
 davinci_test_support.workspace = true
 insta.workspace = true
 tempfile.workspace = true
