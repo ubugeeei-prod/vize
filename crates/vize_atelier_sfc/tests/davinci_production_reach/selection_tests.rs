@@ -83,3 +83,36 @@ fn missing_dom_selection_still_fails_for_dom_and_unproven_vapor_routes() {
         expected
     );
 }
+
+#[test]
+fn script_sfc_template_error_is_not_an_unrecorded_dom_selection() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    let source = "<template><h4 :class=\"premium\" class=\"\" class=\"shop_title\">{{ name }}</h4></template>\n<script>export default { data() { return { name: 'Shop', premium: '' } } }</script>\n";
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+    for shape in [Shape::DomInline, Shape::DomModule] {
+        let selected = compile(&descriptor, "shoplist.vue", shape)
+            .expect("normal script keeps the template error on Ok");
+        assert!(
+            selected
+                .errors
+                .iter()
+                .any(|error| error.code.as_deref() == Some("TEMPLATE_ERROR")),
+            "{shape:?}: {:?}",
+            selected.errors
+        );
+        let mut tally = Tally::default();
+        crate::measure(&descriptor, "shoplist.vue", shape, &mut tally);
+        assert_eq!(
+            tally.sfc_errors.get("TEMPLATE_ERROR"),
+            Some(&1),
+            "{shape:?}"
+        );
+        assert_eq!(tally.templates, 0, "{shape:?}");
+        assert_eq!(tally.unrecorded, 0, "{shape:?}");
+        assert!(
+            tally.divergences.is_empty(),
+            "{shape:?}: {:?}",
+            tally.divergences
+        );
+    }
+}
