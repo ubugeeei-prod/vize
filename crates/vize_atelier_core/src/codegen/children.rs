@@ -5,6 +5,7 @@ use crate::{
     CommentNode, ElementNode, InterpolationNode, RuntimeHelper, TemplateChildNode, TextNode,
 };
 
+use super::comment_pragmas::is_pragma_comment;
 use super::context::CodegenContext;
 use super::element::helpers::{child_namespace, has_renderable_props};
 use super::expression::generate_expression;
@@ -23,11 +24,7 @@ pub fn generate_children_force_array(ctx: &mut CodegenContext, children: &[Templ
     generate_children_inner(ctx, children, true);
 }
 
-/// Check if a child node is a directive comment that should be stripped.
-#[inline]
-pub(crate) fn is_directive_comment(child: &TemplateChildNode<'_>) -> bool {
-    matches!(child, TemplateChildNode::Comment(c) if c.directive.is_some())
-}
+pub(crate) use super::comment_pragmas::is_directive_comment;
 
 fn generate_children_inner(
     ctx: &mut CodegenContext,
@@ -329,7 +326,7 @@ pub fn generate_text(ctx: &mut CodegenContext, text: &TextNode) {
 /// Directive comments (`@vize:` prefix) are stripped from output.
 pub fn generate_comment(ctx: &mut CodegenContext, comment: &CommentNode) {
     // Strip @vize: directive comments from build output
-    if comment.directive.is_some() {
+    if is_pragma_comment(comment) {
         return;
     }
     let helper = ctx.helper(RuntimeHelper::CreateComment);
