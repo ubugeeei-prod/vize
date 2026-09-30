@@ -33,11 +33,15 @@ export async function waitForDiagnostics(
   version: number,
   timeoutMs: number,
 ): Promise<PublishDiagnosticsParams> {
-  return (await session.waitForNotification(
-    "textDocument/publishDiagnostics",
-    (value) => diagnosticPayload(value, uri, version) != null,
-    timeoutMs,
-  )) as PublishDiagnosticsParams;
+  try {
+    return (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (value) => diagnosticPayload(value, uri, version) != null,
+      timeoutMs,
+    )) as PublishDiagnosticsParams;
+  } catch (error) {
+    throw new Error(`Waiting for diagnostics for ${uri} version ${version}: ${String(error)}`);
+  }
 }
 
 export async function requestCompletion(

@@ -179,11 +179,14 @@ export class LspSession {
         if (index >= 0) {
           this.notifications.splice(index, 1);
         }
-        // The server can log far more than Node's failure printer retains.
-        // Keep the latest activity so a timeout shows where it stopped.
+        const recentNotifications = this.notificationBacklog.slice(-10).map((notification) => {
+          const params = notification.params as { uri?: string; version?: number } | undefined;
+          return { method: notification.method, uri: params?.uri, version: params?.version };
+        });
         reject(
           new Error(
-            `Timed out waiting for notification ${method}\n${this.stderr.slice(-3_000)}`.trim(),
+            `Timed out waiting for notification ${method}; recent notifications: ` +
+              `${JSON.stringify(recentNotifications)}\n${this.stderr}`.trim(),
           ),
         );
       }, timeoutMs);

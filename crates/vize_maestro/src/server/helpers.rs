@@ -56,7 +56,17 @@ impl MaestroServer {
         if !self.state.is_lsp_typecheck_enabled() {
             return;
         }
+        tracing::info!(
+            "starting importer diagnostics after edit {} version {}",
+            uri,
+            version
+        );
         self.publish_importer_diagnostics(uri, Some(version)).await;
+        tracing::info!(
+            "finished importer diagnostics after edit {} version {}",
+            uri,
+            version
+        );
     }
 
     /// Refresh open typed documents that import `uri`, abandoning the fan-out
@@ -81,7 +91,18 @@ impl MaestroServer {
         version: Option<i32>,
     ) -> Vec<Url> {
         let mut refreshed = Vec::new();
-        for importer in super::importers::open_typecheck_dependents(&self.state, uri) {
+        tracing::info!(
+            "finding open typecheck dependents for {} version {:?}",
+            uri,
+            version
+        );
+        let dependents = super::importers::open_typecheck_dependents(&self.state, uri);
+        tracing::info!(
+            "refreshing {} open typecheck dependents for {}",
+            dependents.len(),
+            uri
+        );
+        for importer in dependents {
             if self.state.documents.version(uri) != version {
                 tracing::debug!(
                     "abandoning superseded importer refresh for {}: pass version {:?}, current {:?}",
@@ -91,7 +112,9 @@ impl MaestroServer {
                 );
                 break;
             }
+            tracing::info!("refreshing importer {} for {}", importer, uri);
             self.publish_diagnostics(&importer).await;
+            tracing::info!("refreshed importer {} for {}", importer, uri);
             refreshed.push(importer);
         }
         refreshed
