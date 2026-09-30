@@ -483,10 +483,7 @@ function resolveVuePeerRuntimeEntryWithNode(
   return nodeResolved ? resolveProjectLocalResolvedPath(state, nodeResolved) : null;
 }
 
-function resolveVuePeerRuntimeEntryFromBaseWithNode(
-  id: string,
-  base: string,
-): string | null {
+function resolveVuePeerRuntimeEntryFromBaseWithNode(id: string, base: string): string | null {
   const { request, querySuffix } = splitViteIdQuery(id);
   const packageName = getBarePackageName(request);
   if (!packageName || !VUE_PEER_RUNTIME_PACKAGES.has(packageName)) {
@@ -538,10 +535,7 @@ function resolveProjectNuxtVuePeerRuntimeEntryWithNode(
 
   return (
     resolveVuePeerRuntimeEntryFromBaseWithNode(id, path.join(state.root, "package.json")) ??
-    resolveVuePeerRuntimeEntryFromBaseWithNode(
-      id,
-      path.join(nuxtPackageRoot, "package.json"),
-    )
+    resolveVuePeerRuntimeEntryFromBaseWithNode(id, path.join(nuxtPackageRoot, "package.json"))
   );
 }
 

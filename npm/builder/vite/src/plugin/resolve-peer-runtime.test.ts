@@ -263,7 +263,10 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
   writeFixtureFile(path.join(projectRoot, "package.json"), '{"name":"workspace-app"}');
   writeFixtureFile(appImporter, "import { useRoute } from 'vue-router';");
-  writeFixtureFile(workspaceImporter, "<script setup>import { useRoute } from 'vue-router'</script>");
+  writeFixtureFile(
+    workspaceImporter,
+    "<script setup>import { useRoute } from 'vue-router'</script>",
+  );
   for (const packageRoot of [nuxtPackage, nuxtRouterPackage, workspaceRouterPackage]) {
     writeFixtureFile(
       path.join(packageRoot, "package.json"),
@@ -277,29 +280,33 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   fs.mkdirSync(path.join(projectRoot, "node_modules"), { recursive: true });
   fs.mkdirSync(path.join(nuxtPackage, "node_modules"), { recursive: true });
   fs.symlinkSync(nuxtPackage, path.join(projectRoot, "node_modules", "nuxt"), "dir");
-  fs.symlinkSync(
-    nuxtRouterPackage,
-    path.join(nuxtPackage, "node_modules", "vue-router"),
-    "dir",
-  );
+  fs.symlinkSync(nuxtRouterPackage, path.join(nuxtPackage, "node_modules", "vue-router"), "dir");
   fs.symlinkSync(
     workspaceRouterPackage,
     path.join(workspaceRoot, "node_modules", "vue-router"),
     "dir",
   );
 
-  for (const importer of [
-    appImporter,
-    workspaceImporter,
-    path.join(nuxtPackage, "dist", "app", "nuxt.js"),
-  ]) {
-    const state = createState(projectRoot);
-    state.server = null;
-    const resolved = await resolveIdHook(nullResolveContext, state, "vue-router", importer, undefined);
-    assert.equal(
-      expectResolvedId(resolved),
-      workspaceRouterEntry,
-      "A Nuxt runtime outside the app root must use the workspace's vue-router in a pnpm workspace",
-    );
+  for (const isProduction of [false, true]) {
+    for (const importer of [
+      appImporter,
+      workspaceImporter,
+      path.join(nuxtPackage, "dist", "app", "nuxt.js"),
+    ]) {
+      const state = createState(projectRoot);
+      if (isProduction) state.server = null;
+      const resolved = await resolveIdHook(
+        nullResolveContext,
+        state,
+        "vue-router",
+        importer,
+        undefined,
+      );
+      assert.equal(
+        expectResolvedId(resolved),
+        workspaceRouterEntry,
+        "Nuxt's router must be deduplicated across workspace importers in dev and build",
+      );
+    }
   }
 }
