@@ -1,9 +1,28 @@
 //! Comment and CDATA processing.
 
-use vize_l0::{Box, directive::parse_vize_directive};
+use vize_l0::{
+    Box,
+    directive::{DirectiveKind, parse_vize_directive},
+};
 use vize_relief::{CommentNode, ErrorCode, Namespace, TemplateChildNode};
 
 use super::super::Parser;
+
+fn is_lint_pragma_comment(content: &str) -> bool {
+    matches!(
+        content.trim_ascii_start().split_ascii_whitespace().next(),
+        Some(
+            "eslint-disable"
+                | "eslint-disable-line"
+                | "eslint-disable-next-line"
+                | "eslint-enable"
+                | "oxlint-disable"
+                | "oxlint-disable-line"
+                | "oxlint-disable-next-line"
+                | "oxlint-enable"
+        )
+    )
+}
 
 impl<'a> Parser<'a> {
     /// Process comment
@@ -18,7 +37,11 @@ impl<'a> Parser<'a> {
         // pass the constant line the retired parser tracking always reported
         // here. Consumers that need the real line (patina's visitor) derive it
         // from the offset at their edge.
-        let directive = parse_vize_directive(content, 1, loc.span.start);
+        let directive = parse_vize_directive(content, 1, loc.span.start)
+            .map(|directive| directive.kind)
+            // External lint pragmas are kept and stripped like non-rendering
+            // directives, without adding a Vize diagnostic action.
+            .or_else(|| is_lint_pragma_comment(content).then_some(DirectiveKind::Unknown));
 
         // Always preserve directive comments (even when options.comments = false)
         // so they can be explicitly handled by codegen and linter
@@ -27,7 +50,7 @@ impl<'a> Parser<'a> {
         }
 
         let mut comment = CommentNode::new(content, loc);
-        comment.directive = directive.map(|d| d.kind);
+        comment.directive = directive;
         let boxed = Box::new_in(comment, &self.allocator);
         self.add_child(TemplateChildNode::Comment(boxed));
     }
