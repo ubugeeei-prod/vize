@@ -163,6 +163,9 @@ pub(in crate::script_parser) fn walk_call_arguments(
     }
 }
 
+/// Out of line so the call walker does not inline the resource scan.
+/// That scan was blowing the croquis analyze instruction ceilings.
+#[inline(never)]
 fn enter_client_only(
     result: &mut ScriptParseResult,
     name: &str,
@@ -184,6 +187,7 @@ fn enter_client_only(
     }
 }
 
+#[inline(never)]
 fn callback_acquires_resource(source: &str, start: u32, end: u32) -> bool {
     let Some(text) = source.get(start as usize..end as usize) else {
         return false;
