@@ -7,8 +7,8 @@
 //! normalization-by-first-print for scrambled input, and every rejection
 //! asserted on the exact `DumpError`.
 
-use vize_davinci::dump::repro::{Page as ReproPage, failure_text};
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_curator::repro::{Page as ReproPage, failure_text};
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{FxHashMap, String};
 
 const CANONICAL: &str = "[repro]\n\

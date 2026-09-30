@@ -36,7 +36,7 @@
 //! round-trip law quantifies over normalized values (the `CroquisPage::
 //! normalize` precedent).
 //!
-//! Scalar values are line-atomic (the [`DumpValue`](crate::dump::value::DumpValue)
+//! Scalar values are line-atomic (the [`DumpValue`](vize_l0::dump::value::DumpValue)
 //! contract): a writer embedding a panic payload must normalize newlines out
 //! of `reason` before constructing the page.
 
@@ -44,9 +44,9 @@ use core::fmt;
 
 use vize_l0::{FxHashMap, String, cstr};
 
-use crate::dump::page::{PagePrinter, ParseState};
-use crate::dump::{Dump, Error as DumpError, Mode as DumpMode, page};
-use crate::pass::parse_pipelines;
+use vize_l0::dump::page::{PagePrinter, ParseState};
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode, page};
+use vize_l0::pass::parse_pipelines;
 
 /// Render a failure identity as one line: `{stage}.{pass}: {reason}`, with
 /// `?` standing in for an unattributable pass.

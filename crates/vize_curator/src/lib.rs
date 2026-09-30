@@ -9,3 +9,5 @@ extern crate alloc;
 pub mod complexity;
 pub mod inspector;
 pub mod profile;
+
+pub mod repro;

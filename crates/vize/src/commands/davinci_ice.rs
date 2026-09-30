@@ -34,7 +34,7 @@
 use std::path::{Path, PathBuf};
 use std::sync::Once;
 
-use vize_davinci::dump::repro::{Page as ReproPage, failure_text};
+use vize_curator::repro::{Page as ReproPage, failure_text};
 use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::legacy_plan;
 use vize_davinci::pass::{
