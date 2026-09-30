@@ -208,12 +208,10 @@ pub(super) fn collect_transitive_local_imports_with_session(
             }
             let mut discovery = registration::VirtualRegistrationDiscovery::default();
             let needs_registration = if let Some(route) = package_route {
-                // Private imports need their package manifest in the mirror
-                // even when the target is an ordinary TypeScript file.
-                let mut needs_registration =
+                let mut needs =
                     specifier.starts_with('#') || route.requires_workspace_source_shadow();
                 for candidate in route.all_source_paths() {
-                    needs_registration |= non_relative_import_needs_virtual_registration(
+                    needs |= non_relative_import_needs_virtual_registration(
                         candidate,
                         canonical_paths,
                         options,
@@ -223,7 +221,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
                         &mut discovery,
                     );
                 }
-                needs_registration
+                needs
             } else if relative_specifier {
                 materialized_parent
             } else {
@@ -314,10 +312,8 @@ pub(super) fn collect_transitive_local_imports_with_session(
             if first_visit {
                 authored.push(resolved.clone());
             }
-            // A bare package route is registered by Canon after the project
-            // root is fixed. Adding it (or its relative descendants) to the
-            // user's roots here would widen the project to the workspace and
-            // defeat the external mirror.
+            // Canon registers bare routes after fixing the project root. Adding
+            // them to user roots would widen the project to the workspace.
             if first_registration && !in_package_graph {
                 registrations.push(resolved.clone());
             }
