@@ -38,11 +38,12 @@ exports[`CSS Compilation > CSS Minification > should not minify by default 1`] =
 }
 `;
 
-exports[`CSS Compilation > Scoped CSS > should add scope attribute to selectors 1`] = `".container[data-v-abc123]{ display: flex; }"`;
+exports[`CSS Compilation > Scoped CSS > should add scope attribute to selectors 1`] = `".container[data-v-abc123]{display: flex;}"`;
 
 exports[`CSS Compilation > Scoped CSS > should scope multiple selectors 1`] = `
-".header[data-v-test]{ font-size: 24px; }.content[data-v-test]{ padding: 16px; }
 "
+.header[data-v-test]{font-size: 24px;}
+.content[data-v-test]{padding: 16px;}"
 `;
 
 exports[`CSS Compilation > v-bind in CSS > should detect v-bind() usage 1`] = `
