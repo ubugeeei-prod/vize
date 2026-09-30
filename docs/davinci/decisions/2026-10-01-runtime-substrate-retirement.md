@@ -23,7 +23,7 @@ only the four moved source paths and their hashes change in the registry.
 
 Only the five reviewed facade files are deleted: Cargo manifest, README and
 three re-export modules. The workspace/lock and publish order drop the package;
-source inventories drop its obsolete surface. A live metadata law prevents
+Source inventories and the public Rust support table drop its obsolete surface. A live metadata law prevents
 the retired package or any declared dependency from rejoining the workspace.
 Old identities in frozen captures, replay maps and synthetic historical graph
 fixtures remain evidence, rather than active imports or package declarations.

@@ -150,6 +150,8 @@ harness = false
         update(path, lambda s: s.replace(str(OLD / 'tests/fixtures'), str(NEW / 'tests/fixtures')))
     for path in ('tests/tooling/davinci-storage-policy.test.ts', 'tests/tooling/davinci-module-layout.test.ts'):
         update(path, lambda s: re.sub(r'^  "davinci/vize_davinci(?:/src)?",\n', '', s, flags=re.M))
+    update('docs/content/stability.md', lambda s: re.sub(
+        r'^\| `vize_davinci`[^\n]*\n', '', s, flags=re.M))
     for p in (ROOT / 'docs').rglob('*.md'):
         def links(s):
             def link(m):
