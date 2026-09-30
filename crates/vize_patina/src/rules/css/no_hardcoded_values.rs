@@ -215,6 +215,12 @@ impl NoHardcodedValues {
     ) {
         if let Property::FontSize(size) = property
             && Self::is_hardcoded_font_size(size)
+            && !(self.config.allowed.contains(&"0")
+                && matches!(
+                    size,
+                    FontSize::Length(LengthPercentage::Dimension(LengthValue::Px(value)))
+                        if *value == 0.0
+                ))
         {
             result.add_diagnostic(
                 LintDiagnostic::warn(
