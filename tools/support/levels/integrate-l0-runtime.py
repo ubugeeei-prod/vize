@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 import os
+import re
 root=Path(__file__).resolve().parents[3]; os.chdir(root);
 if 'pub use vize_l0::fact;' in Path('davinci/vize_davinci/src/lib.rs').read_text():
     raise SystemExit('L0 runtime integration already applied')
@@ -46,3 +47,12 @@ for line in lines[1:]:
  rows.append('\t'.join(fields))
 rows.append('infra\t-\tdavinci/vize_l0/src/dump/json.rs\t0\t0\t1\t1\t0\t0\t0\t0')
 p.write_text('\n'.join(rows)+'\n')
+# Keep live local links current without rewriting historical command transcripts.
+for p in Path('docs').rglob('*.md'):
+ s=p.read_text()
+ def moved_link(match):
+  link=match.group(0)
+  if link.startswith(('https:', 'http:')): return link
+  for old, new in moves.items(): link=link.replace(old, new)
+  return link
+ p.write_text(re.sub(r'(?<=\]\()[^)]*', moved_link, s))

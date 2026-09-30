@@ -72,7 +72,7 @@ Snapshot: main `507ac3cc683c044fc136016cd4bfb7d3bde44965`. Issue status alone is
 
 ## Active next steps
 
-1. Retire the old optimizer host under #6832 while retaining typed Dump/runtime law tests; hand off to the production capture in `vize dump`.
+1. The old optimizer host retirement [#7277](https://github.com/ubugeeei-prod/vize/pull/7277) merged as `95e65875bacba46e2ab15428a35a081617c1a323`, with successful protected merge-queue Check and fresh-main ancestry verified. Typed Dump/runtime law tests remain; production capture uses `vize dump`. #6832 remains open for its other naming/CLI contracts.
 2. Move the existing neutral runtime into L0, removing its 21 placeholder calls and eleven skeleton modules; finish #6833 foundation ownership and all active imports, then delete the old substrate and rename the derive crate. Replay moves on fresh main in move-only commits.
 3. Complete #6834 storage/platform separation, #6835 tokenizer inversion and #6841 per-level dialect ownership. Then complete the provider APIs before their dependent L2/L3/L4 and product slices.
 4. Keep the compiler/linter/etc. fix-history blockers and the full native-only acceptance evidence visible until they actually pass.

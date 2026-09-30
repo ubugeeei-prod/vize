@@ -167,7 +167,10 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       TEST_UNRESOLVED_CRATES: publishedCrates[2],
     });
     assert.notEqual(unresolvedPrefix.status, 0);
-    assert.match(unresolvedPrefix.stderr, /could not resolve .*vize_davinci/i);
+    assert.match(
+      unresolvedPrefix.stderr,
+      new RegExp(`could not resolve .*${publishedCrates[2]}`, "i"),
+    );
     assert.deepEqual(
       fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"),
       somePublished.slice(0, 3).map(expectedInfo),
@@ -273,8 +276,9 @@ test("publish_crates treats a non-zero cargo publish exit as success when the cr
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     assert.match(result.stdout, /already resolvable despite a non-zero cargo publish exit/i);
     const logLines = fs.readFileSync(cargoLogPath, "utf8").trim().split("\n");
-    assert.equal(logLines[0], "publish --allow-dirty --no-verify -p vize_l0");
-    assert.match(logLines[1] ?? "", /^info --registry crates-io vize_l0@/);
+    const failedPublish = logLines.indexOf("publish --allow-dirty --no-verify -p vize_l0");
+    assert.ok(failedPublish >= 0, "the non-zero publish fixture was exercised");
+    assert.match(logLines[failedPublish + 1] ?? "", /^info --registry crates-io vize_l0@/);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }

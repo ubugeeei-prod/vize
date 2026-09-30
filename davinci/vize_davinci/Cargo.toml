@@ -36,5 +36,10 @@ harness = false
 name = "davinci_fact"
 harness = false
 
+[[test]]
+name = "remark_zero_cost"
+# Process-wide allocation counters must not include libtest's reporting thread.
+harness = false
+
 [lints]
 workspace = true
