@@ -11,13 +11,8 @@ pub(super) fn has_vue_use_attrs_call(
     program: &Program<'_>,
     source: &str,
 ) -> bool {
-    // Vue imports are recorded by the first pass. For unimported calls and
-    // namespace members, use a fast source prefilter before visiting the AST.
-    // Escaped identifiers always contain a Unicode escape in their spelling.
-    if !result.uses_attrs_call
-        && memchr::memmem::find(source.as_bytes(), b"useAttrs").is_none()
-        && memchr::memmem::find(source.as_bytes(), b"\\u").is_none()
-    {
+    // The first pass records Vue imports and calls with a useAttrs callee.
+    if !result.uses_attrs_call {
         return false;
     }
     let mut candidate_names = vec!["useAttrs"];
