@@ -5,8 +5,8 @@
 //! observe a source and its fresh alpha pages together. Configuration changes
 //! invalidate every export, with lazy refresh before its next consumer read.
 
-use vize_davinci::summary::{AlphaPages, Facet, SfcSummary};
 use vize_l0::{FxHashMap, String, cstr};
+use vize_l2::summary::{AlphaPages, Facet, SfcSummary};
 
 use crate::{ResidentDocuments, SharedDescriptor, SummaryInput, sfc_summary};
 
@@ -126,7 +126,7 @@ impl ResidentDocuments {
         key: &str,
         facet: Facet,
         name: &str,
-    ) -> Option<vize_davinci::summary::Fingerprint> {
+    ) -> Option<vize_l2::summary::Fingerprint> {
         let input = self.interfaces.entries.get(key)?.input;
         crate::declaration_fingerprint(&self.db, input, facet, self.db.declaration_name(name))
     }
@@ -152,7 +152,7 @@ pub(crate) fn release_alpha(db: &mut crate::ResidentDatabase, input: SummaryInpu
     db.revise_alpha(
         input,
         AlphaPages {
-            signature: vize_davinci::summary::Signature {
+            signature: vize_l2::summary::Signature {
                 name: String::from("closed"),
                 params: String::default(),
             },

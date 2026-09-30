@@ -9,7 +9,7 @@ use vize_croquis::croquis::alpha::{
     ComponentContract, EmitContract, PropContract, ReactivityContract, SignatureContract,
     SlotContract,
 };
-use vize_davinci::summary::{AlphaEntry, AlphaPages, Facet};
+use vize_l2::summary::{AlphaEntry, AlphaPages, Facet};
 
 pub(super) fn project(
     pages: &AlphaPages,

@@ -4,7 +4,7 @@ use vize_croquis::croquis::alpha::{
     AlphaSchema, EmitContract, PropContract, SignatureContract, SlotContract, TypeEnvironment,
     declaration_key,
 };
-use vize_davinci::summary::{AlphaEntry, AlphaPages, Facet};
+use vize_l2::summary::{AlphaEntry, AlphaPages, Facet};
 
 use super::component_meta::emit::ComponentEmit;
 use super::component_meta::{ComponentMetadata, ComponentProp, ComponentSlot};

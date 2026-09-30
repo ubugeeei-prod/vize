@@ -10,7 +10,7 @@ use alloc::vec::Vec;
 use vize_l0::String;
 
 use super::{Fingerprint, digest};
-use crate::fact::ids::{COMPONENT_USAGES, PROVIDE_INJECT};
+use vize_l0::fact::ids::{COMPONENT_USAGES, PROVIDE_INJECT};
 
 const DOMAIN: &[u8] = b"vize.global-summary.v2\0";
 

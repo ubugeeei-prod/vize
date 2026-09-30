@@ -13,9 +13,9 @@ use alloc::vec::Vec;
 use vize_l0::{String, cstr};
 
 use super::{Declaration, Facet, SfcSummary, finish, folio_error, insert, schema};
-use crate::dump::page::{self, LineEvent, ParseState};
-use crate::dump::value::DumpValue;
-use crate::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::dump::page::{self, LineEvent, ParseState};
+use vize_l0::dump::value::DumpValue;
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 
 impl Dump for SfcSummary {
     fn print<W: fmt::Write>(&self, w: &mut W, _mode: DumpMode) -> fmt::Result {

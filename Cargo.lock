@@ -4536,6 +4536,7 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_carton",
  "vize_davinci",
+ "vize_l2",
  "vize_l3",
  "vize_relief",
 ]
@@ -4881,6 +4882,7 @@ dependencies = [
  "vize_davinci",
  "vize_glyph",
  "vize_l0",
+ "vize_l2",
  "vize_musea",
  "vize_patina",
  "vize_relief",

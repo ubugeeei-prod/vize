@@ -328,7 +328,7 @@ fn finish(mut declarations: Vec<Declaration>) -> SfcSummary {
     SfcSummary { declarations }
 }
 
-fn folio_error(err: SummaryError, line: usize) -> crate::dump::Error {
+fn folio_error(err: SummaryError, line: usize) -> vize_l0::dump::Error {
     let message = match err {
         SummaryError::BadName { name, .. } => cstr!("invalid declaration name `{name}`"),
         SummaryError::BadContract { name, .. } => cstr!("invalid contract of `{name}`"),
@@ -343,5 +343,5 @@ fn folio_error(err: SummaryError, line: usize) -> crate::dump::Error {
         SummaryError::EmptyConsumer => cstr!("empty consumer"),
         SummaryError::DuplicateUse { name, .. } => cstr!("duplicate use `{name}`"),
     };
-    crate::dump::Error::new(line, message)
+    vize_l0::dump::Error::new(line, message)
 }

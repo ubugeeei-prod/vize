@@ -47,4 +47,5 @@ pub mod lang;
 pub mod op;
 pub mod provenance;
 pub mod scope;
+pub mod summary;
 pub mod verify;

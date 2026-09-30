@@ -1,16 +1,16 @@
 //! P5-3 — the project summary.
 //!
-//! `cargo test -p vize_davinci --test global_summary`
+//! `cargo test -p vize_l2 --test global_summary`
 //!
 //! Adding a global component invalidates exactly the files that resolve it.
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::summary::{
+use vize_l0::String;
+use vize_l2::summary::{
     AlphaEntry, AlphaPages, Facet, GlobalEntry, GlobalError, GlobalFacet, GlobalFacts,
     GlobalResolution, GlobalSummary, SfcSummary, Signature,
 };
-use vize_l0::String;
 
 fn entry(name: &str, contract: &str) -> GlobalEntry {
     GlobalEntry {

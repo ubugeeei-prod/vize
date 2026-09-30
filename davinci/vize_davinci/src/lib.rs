@@ -27,8 +27,6 @@
 //! - [`dump`] — the textual stage-dump contract (`trait Dump`).
 //! - [`key`] — [`ArtifactKey`](key::ArtifactKey), the span-relative content
 //!   identity every cache of a stage artifact keys on (P5-1a).
-//! - [`summary`] — [`SfcSummary`](summary::SfcSummary), the per-SFC interface
-//!   fingerprinted per declaration (P5-2).
 //! - [`render`] — the rustc/Elm-grade terminal renderer every diagnostic
 //!   surface shares, localized through a caller-supplied catalog.
 //!
@@ -60,7 +58,6 @@ pub use vize_l0::pass;
 pub mod render;
 pub use vize_l0::side_table;
 pub mod stage;
-pub mod summary;
 pub use vize_l0::diag::verify as witness;
 
 pub use vize_l0::assert_dump_snapshot;

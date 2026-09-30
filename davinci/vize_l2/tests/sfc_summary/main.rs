@@ -1,6 +1,6 @@
 //! P5-2 — the per-SFC summary.
 //!
-//! `cargo test -p vize_davinci --test sfc_summary`
+//! `cargo test -p vize_l2 --test sfc_summary`
 //!
 //! The summary round-trips in `Full` mode (TS-16). A hot-path optimization
 //! inside the component body changes no fingerprint. A signature change
@@ -15,9 +15,9 @@
 mod fixture;
 
 use fixture::{BARE, BUTTON, button_pages, entry, replace_once, signature, summarize, users};
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
-use vize_davinci::summary::{AlphaPages, DeclarationId, Facet, SfcSummary, SummaryError, Usage};
 use vize_l0::String;
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l2::summary::{AlphaPages, DeclarationId, Facet, SfcSummary, SummaryError, Usage};
 
 const INLINE_BODY: &str = "const doubled = count.value * 2";
 const CACHED_BODY: &str = "const doubled = computed(() => count.value * 2)";
