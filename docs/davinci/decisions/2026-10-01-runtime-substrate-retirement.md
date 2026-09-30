@@ -15,6 +15,11 @@ Their functions and suite selectors follow those names. The four existing
 measurement IDs and all budget values remain pinned so instruction and exact
 allocation comparisons retain their baseline. File provenance follows the
 new bench paths; this introduces no pipeline stage or serialization.
+The four source identities are rebound from the actual [Actions measurement](https://github.com/ubugeeei-prod/vize/actions/runs/36778058361),
+source `001f3eee417b1522392233bf79b00f8fe32cf3d7`. All 100 probes produced
+three identical measurements and met the existing numeric ceilings. Pass
+counts stay 5/5 and fact counts are 10,841/10,692 below 11,290/11,141;
+only the four moved source paths and their hashes change in the registry.
 
 Only the five reviewed facade files are deleted: Cargo manifest, README and
 three re-export modules. The workspace/lock and publish order drop the package;
@@ -22,6 +27,11 @@ source inventories drop its obsolete surface. A live metadata law prevents
 the retired package or any declared dependency from rejoining the workspace.
 Old identities in frozen captures, replay maps and synthetic historical graph
 fixtures remain evidence, rather than active imports or package declarations.
+
+The plugin host build ID hashes the actual L0 and derive manifests and source
+files, replacing the retired source root. Dirty foundation or macro edits must
+still invalidate the native host identity; missing sources remain build errors.
+The retirement replay includes this source-closure update.
 
 TS-24 still builds six actual library packages: std L0 and five native level/
 conversion source libraries. All five retain their `no_std`/alloc attributes.

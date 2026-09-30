@@ -41,7 +41,6 @@ function rustFiles(root: string): string[] {
 
 function scopeFor(file: string): StorageScope {
   if (file.startsWith("davinci/vize_l0/")) return "infra";
-  if (file.startsWith("davinci/vize_davinci/")) return "infra";
   if (file.startsWith("davinci/vize_l1/")) return "l1";
   if (file.startsWith("davinci/vize_l2/")) return "l2";
   if (file.startsWith("davinci/vize_l3/")) return "l3";

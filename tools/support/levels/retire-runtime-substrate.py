@@ -76,6 +76,20 @@ def main():
             return re.sub(r'^vize_davinci(?:\s*=|\.workspace\s*=)[^\n]*\n',
                           '' if has_l0 else lambda m: m[0].replace('vize_davinci', 'vize_l0'), s, flags=re.M)
         update(p.relative_to(ROOT), manifest)
+    update('crates/vize_vitrine/build.rs', lambda s: s.replace(
+        '        "davinci/vize_davinci/src",\n',
+        '        "davinci/vize_l0/Cargo.toml",\n'
+        '        "davinci/vize_l0/src",\n'
+        '        "davinci/vize_l0_derive/Cargo.toml",\n'
+        '        "davinci/vize_l0_derive/src",\n'))
+    update('crates/vize_croquis/src/croquis/vir.rs', lambda s: s.replace(
+        'davinci/vize_davinci/tests/croquis_dump.rs', 'crates/vize_croquis/tests/croquis_dump.rs'))
+    for backend in ('dom', 'ssr', 'vapor'):
+        update(f'crates/vize_atelier_{backend}/tests/davinci_walk_baseline.rs',
+               lambda s: s.replace('The plans live in `vize_davinci`',
+                                   'The plans live in `vize_curator::legacy_plan`'))
+    update('tests/tooling/davinci-storage-policy.test.ts', lambda s: s.replace(
+        '  if (file.startsWith("davinci/vize_davinci/")) return "infra";\n', ''))
     update('Cargo.toml', lambda s: re.sub(r'^vize_davinci = [^\n]*\n', '',
            s.replace('  "davinci/vize_davinci",\n', ''), flags=re.M))
     def foundation_manifest(s):
@@ -108,6 +122,23 @@ harness = false
     update('tools/benchmarks/scripts/instruction-counts.mjs', lambda s: s.replace(
         '["vize_davinci", "davinci"]', '["vize_l0", "pass_runtime"]').replace(
         '["vize_davinci", "davinci_fact"]', '["vize_l0", "fact_runtime"]'))
+    def instruction_identities(s):
+        for old, new in MOVES.items():
+            s = s.replace(str(old), str(new))
+        for old, new in (
+            ('5119f62005613a194a828943ca2d9a6fb00d2db8cdde3bed2867d504b74a3c42',
+             'de92f1a3da8d0ec2e85d94062bddfbcd9cdd1a8775f0b0ed12915ccf692651a1'),
+            ('c454e98437ad2107d849c99236e9a7f79712cbc74dbb36b458500a5b3d9a4704',
+             'c60dc63e4e974698c11052c32c4e147b58f0695e4a674aec49f47199408fceb4'),
+        ):
+            s = s.replace(old, new)
+        if '# Runtime owner identities:' not in s:
+            s = s.replace('davinci_fact_query_observed =',
+                '# Runtime owner identities: three identical measurements, numeric ceilings unchanged.\n'
+                '# Source: 001f3eee417b1522392233bf79b00f8fe32cf3d7; Actions run 36778058361.\n'
+                'davinci_fact_query_observed =', 1)
+        return s
+    update('docs/davinci/plan/instruction-budgets.toml', instruction_identities)
     update('tools/moon/cmd/publish_crates/main.mbt', lambda s: s.replace('  "vize_davinci",\n', ''))
     update('tools/support/compat/davinci/lib/consumer-migration-scan.mjs', lambda s: s.replace(
         '  stageSurface("davinci", "Davinci", "vize_davinci"),\n', ''))
