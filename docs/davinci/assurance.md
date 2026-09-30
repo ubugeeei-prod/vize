@@ -173,7 +173,7 @@ owning the input space:
 | Tier         | Unit                        | Oracle                                                                        |
 | ------------ | --------------------------- | ----------------------------------------------------------------------------- |
 | Fixture      | one construct, one stage    | full normalized Folio snapshot (exact)                                        |
-| Pass         | typed pass-manager run     | full normalized Folio snapshot (exact)                                        |
+| Pass         | typed pass-manager run      | full normalized Folio snapshot (exact)                                        |
 | Verifier     | invalid artifact            | exact diagnostic (code + span + full message, pinned to the canonical locale) |
 | Matrix       | construct combinations      | generated expected outputs, exact                                             |
 | Property     | generated inputs            | invariant holds — no exceptions list                                          |
