@@ -208,7 +208,10 @@ pub(super) fn collect_transitive_local_imports_with_session(
             }
             let mut discovery = registration::VirtualRegistrationDiscovery::default();
             let needs_registration = if let Some(route) = package_route {
-                let mut needs_registration = route.requires_workspace_source_shadow();
+                // Private imports need their package manifest in the mirror
+                // even when the target is an ordinary TypeScript file.
+                let mut needs_registration =
+                    specifier.starts_with('#') || route.requires_workspace_source_shadow();
                 for candidate in route.all_source_paths() {
                     needs_registration |= non_relative_import_needs_virtual_registration(
                         candidate,
