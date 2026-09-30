@@ -39,7 +39,7 @@ pub(super) fn build(
     let root = environment
         .project_root
         .map(Path::to_path_buf)
-        .or(discovered_root)
+        .or(discovered_root.clone())
         .unwrap_or_else(|| source_path.parent().unwrap_or(source_path).to_path_buf());
     let root = vize_carton::path::canonicalize_non_verbatim(&root);
     let configured_tsconfig = environment.tsconfig_path.map(|path| {
@@ -57,11 +57,15 @@ pub(super) fn build(
     project.set_jsx_typecheck(options.jsx_typecheck);
     project.set_experimental_patterned_template(options.experimental_patterned_template);
     project.set_dialect(options.dialect);
-    if let Some(tsconfig) = configured_tsconfig {
+    // The workspace root selects the mirror's filesystem scope, not the
+    // compiler options for every package beneath it. Anchor the source to its
+    // nearest config before resolving a solution-style project's references.
+    if let Some(tsconfig) =
+        configured_tsconfig.or_else(|| discovered_root.map(|dir| dir.join("tsconfig.json")))
+    {
         project.set_tsconfig_path(Some(tsconfig));
-    } else {
-        project.use_effective_tsconfig_for_source(source_path);
     }
+    project.use_effective_tsconfig_for_source(source_path);
     let namespace_identity = super::namespace::editor_namespace_identity(
         options,
         environment.virtual_ts_options,

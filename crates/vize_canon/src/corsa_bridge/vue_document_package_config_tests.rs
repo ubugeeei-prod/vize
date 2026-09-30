@@ -2,7 +2,114 @@
 
 use std::path::{Path, PathBuf};
 
-use super::vue_document::{CorsaVueVirtualDocumentOptions, build_vue_virtual_project};
+use super::vue_document::{
+    CorsaProjectEnvironment, CorsaVueVirtualDocumentOptions, build_vue_virtual_project,
+    build_vue_virtual_project_with_overlays_and_options_and_package_routes,
+};
+
+#[test]
+fn editor_uses_nearest_package_tsconfig_beneath_a_monorepo_workspace() {
+    for solution in [false, true] {
+        let root = tempfile::tempdir().unwrap();
+        let app = root.path().join("packages/web");
+        let host = app.join("src/App.vue");
+        let dependency = app.join("src/lib/greet/index.ts");
+        let source = "<script setup lang=\"ts\">import { greet } from '#lib/greet'; const message = greet('vize')</script>";
+        write(&host, source);
+        write(
+            &dependency,
+            "export const greet = (name: string) => `hi ${name}`;",
+        );
+        write(
+            &root.path().join("tsconfig.json"),
+            r#"{"compilerOptions":{"moduleResolution":"bundler"},"include":["*.ts"]}"#,
+        );
+        let config = r##"{"compilerOptions":{"moduleResolution":"bundler","paths":{"#lib/*":["./src/lib/*"]}},"include":["src/**/*"]}"##;
+        if solution {
+            write(
+                &app.join("tsconfig.json"),
+                r#"{"files":[],"references":[{"path":"./tsconfig.app.json"}]}"#,
+            );
+            write(&app.join("tsconfig.app.json"), config);
+        } else {
+            write(&app.join("tsconfig.json"), config);
+        }
+
+        let virtual_options = crate::virtual_ts::VirtualTsOptions::default();
+        let routes = crate::PackageRouteResolver::default();
+        let project = build_vue_virtual_project_with_overlays_and_options_and_package_routes(
+            &host,
+            source,
+            CorsaVueVirtualDocumentOptions::default(),
+            &[],
+            CorsaProjectEnvironment {
+                virtual_ts_options: &virtual_options,
+                package_routes: &routes,
+                project_root: Some(root.path()),
+                tsconfig_path: None,
+                editor_session: super::editor_session::fallback_editor_session(),
+            },
+        )
+        .unwrap();
+        let mirror_root = project.session_project_root.unwrap();
+        let mirror_config = std::fs::read_to_string(mirror_root.join("tsconfig.json")).unwrap();
+        assert!(mirror_config.contains("#lib/*"), "{mirror_config}");
+        assert!(dependency.is_file());
+    }
+}
+
+#[test]
+fn native_editor_resolves_package_alias_from_monorepo_root() {
+    let Some(corsa_path) = std::env::var_os("CORSA_PATH").map(PathBuf::from) else {
+        return;
+    };
+    if !corsa_path.is_file() {
+        return;
+    }
+    let root = tempfile::tempdir().unwrap();
+    let app = root.path().join("packages/web");
+    let host = app.join("src/App.vue");
+    let source = "<script setup lang=\"ts\">import { greet } from '#lib/greet'; const message: string = greet('vize')</script><template>{{ message }}</template>";
+    write(
+        &root.path().join("tsconfig.json"),
+        r#"{"include":["*.ts"]}"#,
+    );
+    write(
+        &app.join("tsconfig.json"),
+        r#"{"files":[],"references":[{"path":"./tsconfig.app.json"}]}"#,
+    );
+    write(
+        &app.join("tsconfig.app.json"),
+        r##"{"compilerOptions":{"strict":true,"module":"preserve","moduleResolution":"bundler","noEmit":true,"paths":{"#lib/*":["./src/lib/*"]}},"include":["src/**/*"]}"##,
+    );
+    write(
+        &app.join("src/lib/greet/index.ts"),
+        "export const greet = (name: string): string => `hi ${name}`;",
+    );
+    write(&host, source);
+    install_runtime_stubs(root.path());
+    let bridge = super::CorsaBridge::with_config(super::CorsaBridgeConfig {
+        corsa_path: Some(corsa_path),
+        working_dir: Some(root.path().to_path_buf()),
+        timeout_ms: 30_000,
+        ..Default::default()
+    });
+    corsa::runtime::block_on(async {
+        bridge.spawn().await.unwrap();
+        let document = bridge
+            .open_vue_virtual_document(&host, source, CorsaVueVirtualDocumentOptions::default())
+            .await
+            .unwrap();
+        let diagnostics = bridge.get_diagnostics(&document.request_uri).await.unwrap();
+        assert!(
+            diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.code.as_ref().is_none_or(|code| code != 2307)),
+            "package alias was not resolved: {diagnostics:#?}"
+        );
+        bridge.shutdown().await.unwrap();
+    });
+}
 
 #[test]
 fn inferred_project_without_tsconfig_still_queries_an_importer_scoped_package_mirror() {

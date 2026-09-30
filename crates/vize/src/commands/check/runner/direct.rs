@@ -109,6 +109,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let candidates = split_program_candidates(
         collected,
         invocation_tsconfig_path.as_deref(),
+        !args.patterns.is_empty() && effective_tsconfig.is_none(),
         jsx_typecheck,
         &mut tsconfig_input_cache,
         &mut canonical_paths,
