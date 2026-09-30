@@ -405,4 +405,3 @@ const theme = inject('theme', 'light')
     ).toBe(true);
   });
 });
-
