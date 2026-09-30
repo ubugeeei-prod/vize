@@ -34,7 +34,8 @@ fn needs_vite_scoping(css: &str) -> bool {
         match bytes.get(index).copied() {
             Some(b'/') if bytes.get(index + 1) == Some(&b'*') => {
                 index += 2;
-                while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
+                while index + 1 < bytes.len()
+                    && !(bytes.get(index) == Some(&b'*') && bytes.get(index + 1) == Some(&b'/'))
                 {
                     index += 1;
                 }
