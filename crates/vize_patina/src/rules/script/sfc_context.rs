@@ -54,6 +54,9 @@ pub struct SfcScriptContext<'a> {
     /// SFC may omit `<template>`, and an inline HTML script has a non-zero
     /// source offset.
     pub is_sfc: bool,
+    /// Whether this is a `<script setup>` block. Some Vue macros are only
+    /// available there, even though ordinary scripts may call the same APIs.
+    pub is_script_setup: bool,
     /// Raw `<template>` block content, when the SFC declares a template.
     pub template_source: Option<&'a str>,
     /// Parsed `<template>` AST, when the SFC declares a template, some enabled

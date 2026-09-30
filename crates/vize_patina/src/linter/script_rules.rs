@@ -215,7 +215,10 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
                 source,
                 offset,
                 script_setup_parsed.as_ref(),
-                sfc_context,
+                SfcScriptContext {
+                    is_script_setup: true,
+                    ..sfc_context
+                },
                 result,
             );
         }

@@ -81,6 +81,33 @@ fn test_invalid_use_slots_without_define_slots() {
 }
 
 #[test]
+fn test_standalone_typescript_does_not_require_script_setup_macro() {
+    let result = Linter::new()
+        .with_enabled_rules(Some(vec!["script/require-explicit-slots".into()]))
+        .lint_script(
+            "const value: number = 1; const slots = useSlots()",
+            "slots.ts",
+        );
+    assert!(result.diagnostics.is_empty());
+}
+
+#[test]
+fn test_regular_sfc_script_does_not_require_script_setup_macro() {
+    let result = lint_sfc(
+        "<script lang=\"ts\">\nconst value: number = 1\nconst slots = useSlots()\n</script>",
+    );
+    assert!(result.diagnostics.is_empty());
+}
+
+#[test]
+fn test_script_setup_still_requires_explicit_slots() {
+    let result = lint_sfc(
+        "<script setup lang=\"ts\">\nconst value: number = 1\nconst slots = useSlots()\n</script>",
+    );
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
 fn test_invalid_use_slots_with_type_annotation() {
     // TS signalled by a plain type annotation.
     let result = create_linter().lint("const n: number = 1\nconst slots = useSlots()", 0);

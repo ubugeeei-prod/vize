@@ -127,9 +127,17 @@ impl ScriptRule for RequireExplicitSlots {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        // Keep the parse-owning `check` path functional: without SFC context
-        // only the script half is observable.
-        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
+        // Direct rule checks exercise the script-setup behavior without an SFC.
+        self.check_program_with_sfc(
+            program,
+            source,
+            offset,
+            SfcScriptContext {
+                is_script_setup: true,
+                ..Default::default()
+            },
+            result,
+        );
     }
 
     fn check_program_with_sfc<'a>(
@@ -140,6 +148,9 @@ impl ScriptRule for RequireExplicitSlots {
         sfc: SfcScriptContext<'_>,
         result: &mut ScriptLintResult,
     ) {
+        if !sfc.is_script_setup {
+            return;
+        }
         let slots = declared::collect(program);
         if !slots.has_ts_syntax {
             return;
