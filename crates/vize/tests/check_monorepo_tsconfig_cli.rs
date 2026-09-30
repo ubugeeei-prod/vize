@@ -81,6 +81,45 @@ fn root_check_uses_each_package_tsconfig_and_solution_reference() {
     assert_eq!(report["files"].as_array().unwrap().len(), 2, "{report:#}");
 }
 
+#[test]
+fn explicit_javascript_uses_its_package_config_even_when_root_denies_allow_js() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(
+        std::env::var_os("CORSA_PATH").map(|path| path.to_string_lossy().into_owned()),
+    ) else {
+        return;
+    };
+    let root = tempfile::tempdir().unwrap();
+    write(
+        root.path(),
+        "tsconfig.json",
+        r#"{"compilerOptions":{"allowJs":false}}"#,
+    );
+    write(
+        root.path(),
+        "packages/app/tsconfig.json",
+        r#"{"compilerOptions":{"allowJs":true,"checkJs":true,"noEmit":true},"include":["src/**/*"]}"#,
+    );
+    write(
+        root.path(),
+        "packages/app/src/value.js",
+        "export const value = 1;\n",
+    );
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(root.path())
+        .env("CORSA_PATH", corsa_path)
+        .args(["check", "packages/app/src/value.js", "--format", "json"])
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(output.status.success(), "{stdout}");
+    let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(report["fileCount"], 1, "{report:#}");
+    assert_eq!(
+        report["programs"][0]["tsconfig"],
+        "packages/app/tsconfig.json"
+    );
+}
+
 fn write(root: &Path, path: &str, content: &str) {
     let path = root.join(path);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
