@@ -259,13 +259,21 @@ impl Rule for NoUnusedComponents {
 fn registration_key_span(source: &str, name: &str) -> Option<(u32, u32)> {
     let from = source.find("components").unwrap_or(0);
     let property_key = |start: usize| {
-        source[start..]
+        source
+            .get(start..)
+            .unwrap_or_default()
             .match_indices(name)
             .find_map(|(relative, _)| {
                 let at = start + relative;
-                let previous = source[..at].trim_end().chars().next_back();
-                let next = source[at + name.len()..].trim_start().chars().next();
-                let starts_line = source[..at]
+                let prefix = source.get(..at).unwrap_or_default();
+                let previous = prefix.trim_end().chars().next_back();
+                let next = source
+                    .get(at + name.len()..)
+                    .unwrap_or_default()
+                    .trim_start()
+                    .chars()
+                    .next();
+                let starts_line = prefix
                     .rsplit_once('\n')
                     .is_some_and(|(_, line)| line.trim().is_empty());
                 ((starts_line || matches!(previous, Some('{' | ',' | '\'' | '"')))
@@ -275,8 +283,12 @@ fn registration_key_span(source: &str, name: &str) -> Option<(u32, u32)> {
     };
     let at = property_key(from).or_else(|| property_key(0)).or_else(|| {
         source.match_indices(name).find_map(|(at, _)| {
-            let before = source[..at].chars().next_back();
-            let after = source[at + name.len()..].chars().next();
+            let before = source.get(..at).unwrap_or_default().chars().next_back();
+            let after = source
+                .get(at + name.len()..)
+                .unwrap_or_default()
+                .chars()
+                .next();
             let ident = |ch: char| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$';
             (!before.is_some_and(ident) && !after.is_some_and(ident)).then_some(at)
         })
