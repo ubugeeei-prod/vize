@@ -22,8 +22,6 @@
 //!   stratified registry and the [`FactManager`](fact::FactManager).
 //! - [`pass`] — the pass manager: pipelines as const data, classified and
 //!   fused at build time.
-//! - [`legacy_plan`] — the shipped backends' template traversals, declared as
-//!   plans so a migration has something to be measured against.
 //! - [`dump`] — the textual stage-dump contract (`trait Dump`).
 //! - [`key`] — [`ArtifactKey`](key::ArtifactKey), the span-relative content
 //!   identity every cache of a stage artifact keys on (P5-1a).
@@ -51,7 +49,6 @@ pub mod dump;
 pub use vize_l0::fact;
 pub use vize_l0::id;
 pub use vize_l0::key;
-pub mod legacy_plan;
 pub use vize_l0::pass;
 pub use vize_l0::side_table;
 pub mod stage;

@@ -11,3 +11,5 @@ pub mod inspector;
 pub mod profile;
 
 pub mod repro;
+
+pub mod legacy_plan;

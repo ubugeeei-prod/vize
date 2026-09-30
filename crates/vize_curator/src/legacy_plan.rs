@@ -1,60 +1,17 @@
-//! The pipelines Davinci is replacing, described in Davinci's own terms.
+//! Historical template-traversal plans for inspected legacy compiles.
 //!
-//! Until this module existed, `Pipeline` described nothing that runs: the type
-//! was exercised only by fixtures it defined itself. Here the three shipped
-//! backends' template traversals are declared as [`Pipeline`] const data, so
-//! the pass manager is the authority on what the compiler walks **today** —
-//! before any pass body has moved onto L2, and therefore before there is
-//! anything to compare a migration against.
+//! The DOM, SSR and Vapor plans record the template walks pinned by the
+//! backends' `davinci_walk_baseline` laws. Each backend reads this inspection
+//! metadata through a path-only dev dependency. The CLI uses the same plans
+//! to describe its selected legacy compile when writing a crash report.
 //!
-//! # Why this lives in `vize_davinci` and not in `vize_atelier_core`
-//!
-//! It was written there first, as a normal dependency, and the release gate
-//! rejected it: `vize_atelier_core` is published to crates.io and
-//! `vize_davinci` is `publish = false`, so a published crate would have
-//! carried an unresolvable dependency
-//! (`tests/tooling/moonbit-publish-crates.test.ts`). The constraint is real
-//! and it is not a packaging detail — **no published crate can consume any
-//! Davinci crate until the program decides to publish them**, which is a
-//! question P2-11 has to answer before the DOM backend can actually run on
-//! L2, not after.
-//!
-//! So the plans live here and the backends read them from their
-//! **dev-dependencies**, which is the same shape `davinci_harness` already
-//! uses to instrument published crates. Davinci is exercised against the real
-//! pipeline without entering its release graph.
-//!
-//! # What is declared, and what it is measured against
-//!
-//! Exactly the walks `budgets.toml [traversal]` gates: traversals of the
-//! **template tree**. `vize_atelier_vapor::generate` walks Vapor IR rather
-//! than the template tree and `vize_croquis` walks the script AST; neither is
-//! a template traversal, so neither appears here, and
-//! `docs/davinci/plan/walk-baseline.md` records the same exclusion for the
-//! probe that measures these plans.
-//!
-//! The tie is a law, not a comment: each backend's
-//! `tests/davinci_walk_baseline.rs` asserts that the walks
-//! `vize_atelier_core::walk_probe` counted equal
-//! [`Pipeline::group_count`] of the plan below. A plan that drifts from the
-//! pipeline it describes fails there, which is the whole point of declaring
-//! it — a description nothing checks is a comment.
-//!
-//! # Why every pass here is a mandatory barrier
-//!
-//! Because that is what the pipeline is today, and the plan has to say so.
-//! Each stage owns its own full traversal: P2-12a measured `walks = 2` on
-//! every backend and every ladder fixture, and the transform column identical
-//! across all three. Declaring these fusable would make the plan claim one
-//! walk where the compiler makes two, and `PassDesc::new` would reject it
-//! anyway — mandatory passes are unfusable barriers by construction.
-//!
-//! Phase 2's DOM target (`budgets.toml`'s `[target.phase-2]`,
-//! `dom_walks_max = 1`) is exactly the claim that [`DOM`] below becomes one
-//! group once P2-11 moves the DOM backend onto L2. That is measurable against
-//! this declaration rather than against prose.
+//! The declarations describe traversals; the real pass bodies run in their
+//! backend owners. These plans retain the historical two-barrier baseline and
+//! do not attribute native per-pass execution. Vapor generation walks Vapor
+//! IR and Croquis walks the script AST, so both remain outside this template
+//! traversal baseline. See `docs/davinci/plan/walk-baseline.md`.
 
-use crate::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
+use vize_l0::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
 
 /// The template stage every plan here runs over.
 ///
