@@ -83,7 +83,8 @@ fn collect_roots(
     check_ignore_set: Option<&ignores::CheckIgnoreSet>,
     package_routes: &mut vize_canon::PackageRouteResolver,
 ) -> CollectedRoots {
-    let include_js = project_graph_allows_js(invocation_tsconfig_path, cache);
+    let include_js =
+        !args.patterns.is_empty() || project_graph_allows_js(invocation_tsconfig_path, cache);
     let import_options = ImportFileOptions {
         include_js,
         include_jsx: jsx_typecheck,
