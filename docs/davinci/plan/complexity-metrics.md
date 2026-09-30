@@ -3,8 +3,8 @@
 **Status:** decided by [P4-9a](./phase-4-tasks-later.md#p4-9a--template-cfg-complexity-facts-and-metric-spec)
 (2026-09-22), confirming the [open-question recommendation](../open-questions.md#complexity-metric-definition)
 with the amendments listed at the end. Production implementation:
-`crates/vize_l1_to_l2/src/pass/cfg.rs` (the `template-complexity` pass).
-Independent implementation: `crates/vize_l1_to_l2/tests/cfg_complexity_oracle/`
+`davinci/vize_l1_to_l2/src/pass/cfg.rs` (the `template-complexity` pass).
+Independent implementation: `davinci/vize_l1_to_l2/tests/cfg_complexity_oracle/`
 (TS-34). Cross-file attribution and the rule are
 [P4-9b](./phase-4-tasks-later.md#p4-9b--cross-file-complexity-rule-and-doctor-finding).
 

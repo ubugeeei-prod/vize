@@ -4768,7 +4768,6 @@ dependencies = [
  "davinci_test_support",
  "htmlize",
  "vize_l0",
- "vize_relief",
 ]
 
 [[package]]

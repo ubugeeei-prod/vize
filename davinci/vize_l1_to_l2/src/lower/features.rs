@@ -31,7 +31,7 @@
 //! # The one assumption left
 //!
 //! A family that gains a *new* construction site needs `observe` there
-//! too. `crates/vize_l1_to_l2/tests/lowering_features.rs` is the pin: it
+//! too. `davinci/vize_l1_to_l2/tests/lowering_features.rs` is the pin: it
 //! lowers a template per family — malformed spellings included — and
 //! fails if the bit is missing, then proves the planned run and the full
 //! four-pass table agree on every product an artifact has.

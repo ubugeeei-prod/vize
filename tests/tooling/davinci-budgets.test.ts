@@ -64,7 +64,7 @@ function ladderNames(): string[] {
 
 function benchSources(): { file: string; text: string }[] {
   const sources: { file: string; text: string }[] = [];
-  for (const root of ["crates", path.join("tools", "benchmarks", "crates")]) {
+  for (const root of ["crates", "davinci", path.join("tools", "benchmarks", "crates")]) {
     for (const pkg of fs.readdirSync(path.join(repoRoot, root))) {
       const benchesDir = path.join(repoRoot, root, pkg, "benches");
       if (!fs.existsSync(benchesDir)) continue;

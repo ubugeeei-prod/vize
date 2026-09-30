@@ -170,7 +170,7 @@ test("config keys stay exhaustive across Rust, Pkl, JSON Schema and generated Ty
 
     const rustKeys = section.rust
       .flatMap(({ file, structs }) =>
-        rustStructKeys(path.join("crates", "vize_carton", "src", "config", "model", file), [
+        rustStructKeys(path.join("davinci", "vize_carton", "src", "config", "model", file), [
           ...structs,
         ]),
       )

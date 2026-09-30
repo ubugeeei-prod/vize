@@ -4,7 +4,7 @@
 //! lets the existing callback contract be checked against `Lexer<P>` without
 //! putting legacy output rules into L1's native sink.
 
-use vize_relief::ErrorCode;
+use vize_l0::ErrorCode;
 
 use super::{Callbacks, QuoteType as CompatQuote};
 use crate::markup::entity::DecodedEntity;

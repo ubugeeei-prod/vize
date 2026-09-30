@@ -44,7 +44,7 @@ void test("unrelated guide docs omit audited heavy subprocesses while full merge
 
 void test("Rust corpus inputs include compiler, hydrated shards, matrix, harness and threshold specs", () => {
   for (const path of [
-    "crates/vize_l1/src/parser.rs",
+    "davinci/vize_l1/src/parser.rs",
     "crates/vize_croquis/tests/fact_spec/runner.rs",
     "Cargo.toml",
     "Cargo.lock",
@@ -73,7 +73,7 @@ void test("differential JavaScript harness changes do not select the Rust corpus
 });
 
 void test("Moon build inputs retain module, library, toolchain and imported helper without unrelated crates", () => {
-  assert.equal(selected("crates/vize_l1/src/parser.rs").has(moon), false);
+  assert.equal(selected("davinci/vize_l1/src/parser.rs").has(moon), false);
   for (const path of [
     "tools/moon/moon.mod",
     "tools/moon/lib/process.mbt",
@@ -89,7 +89,7 @@ void test("Moon build inputs retain module, library, toolchain and imported help
 });
 
 void test("standalone bench comparison retains Rust script, common helper and reports without workspace source", () => {
-  assert.equal(selected("crates/vize_l1/src/parser.rs").has(bench), false);
+  assert.equal(selected("davinci/vize_l1/src/parser.rs").has(bench), false);
   assert.equal(selected("docs/davinci/plan/phase-4.md").has(bench), false);
   for (const path of [
     "tools/commands/davinci/bench-compare.rs",

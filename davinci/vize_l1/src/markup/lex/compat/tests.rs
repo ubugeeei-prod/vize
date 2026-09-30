@@ -2,8 +2,8 @@ use super::{
     Tokenizer,
     types::{Callbacks, QuoteType, is_end_of_tag_section, is_tag_start_char, is_whitespace},
 };
+use vize_l0::ErrorCode;
 use vize_l0::SmallVec;
-use vize_relief::ErrorCode;
 
 // Test callback infrastructure
 

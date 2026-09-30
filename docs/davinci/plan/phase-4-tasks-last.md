@@ -132,7 +132,7 @@
 
 **Lane:** K
 
-**Deliverable:** charter #12 made real: a pug parser producing the lossless L1 surface with `Unexpected`/`Missing` holes (`crates/vize_l1/src/pug/`), an L1→L2 lowering (`crates/vize_l1_to_l2/src/lower/pug*`) so compile, lint, format and type-check share the lanes, and pug formatting in Glyph.
+**Deliverable:** charter #12 made real: a pug parser producing the lossless L1 surface with `Unexpected`/`Missing` holes (`davinci/vize_l1/src/pug/`), an L1→L2 lowering (`davinci/vize_l1_to_l2/src/lower/pug*`) so compile, lint, format and type-check share the lanes, and pug formatting in Glyph.
 
 **Steps:**
 
@@ -201,7 +201,7 @@ _Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lin
 
 **Lane:** M
 
-**Deliverable:** a rustc/Elm-grade renderer over `vize_davinci::Diagnostic` in `crates/vize_davinci/src/render.rs`: `error[code]: message`, `file:line:col`, a source excerpt with primary `^^^` and secondary `---` labels, help/note/suggestion parts with diff-style fixes, color and no-color, line/column derived at render time from the L0 line index (P2-1's contract), messages resolved through a caller-supplied `Catalog` generic (static dispatch; `vize_carton::i18n::Translator` implements it at the CLI edge), exposed as `vize lint --format rich`.
+**Deliverable:** a rustc/Elm-grade renderer over `vize_davinci::Diagnostic` in `davinci/vize_davinci/src/render.rs`: `error[code]: message`, `file:line:col`, a source excerpt with primary `^^^` and secondary `---` labels, help/note/suggestion parts with diff-style fixes, color and no-color, line/column derived at render time from the L0 line index (P2-1's contract), messages resolved through a caller-supplied `Catalog` generic (static dispatch; `vize_carton::i18n::Translator` implements it at the CLI edge), exposed as `vize lint --format rich`.
 
 **Steps:**
 

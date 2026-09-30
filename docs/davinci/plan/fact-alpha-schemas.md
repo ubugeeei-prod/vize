@@ -1,6 +1,6 @@
 # Fact-group α schemas
 
-Every fact group with an α form (P4-2, [`vize_davinci::fact::alpha`](../../../crates/vize_davinci/src/fact/alpha.rs))
+Every fact group with an α form (P4-2, [`vize_davinci::fact::alpha`](../../../davinci/vize_davinci/src/fact/alpha.rs))
 has one row here: its group name, its `fact::ids` id, its α schema version,
 and what its α page's keys and values mean. The α page is what the P5-2
 per-SFC summary serializes, so this table is the summary's contract.

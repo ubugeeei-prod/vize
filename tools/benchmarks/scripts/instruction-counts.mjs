@@ -41,7 +41,9 @@ const suites = [
   // stay fixed. Support either side until the move-only rename merges.
   if (pkg !== "vize_l1_to_l2") return [pkg, bench];
   const matches = [bench, "davinci_storage"].filter((name) =>
-    fs.existsSync(path.join(root, "crates", pkg, "benches", `${name}.rs`)),
+    ["crates", "davinci"].some((directory) =>
+      fs.existsSync(path.join(root, directory, pkg, "benches", `${name}.rs`)),
+    ),
   );
   assert.equal(matches.length, 1, "level storage target rename must be bijective");
   return [pkg, matches[0]];
@@ -157,7 +159,12 @@ function collect(out, registry) {
         row.reason === "compiler-artifact" && row.executable && row.target.kind.includes("bench"),
     );
   const binaries = suites.map(([pkg, bench]) => {
-    const directory = pkg === "davinci_harness" ? "tools/benchmarks/crates" : "crates";
+    const directory =
+      pkg === "davinci_harness"
+        ? "tools/benchmarks/crates"
+        : fs.existsSync(path.join(root, "davinci", pkg))
+          ? "davinci"
+          : "crates";
     const source = path.join(root, directory, pkg, "benches", `${bench}.rs`);
     const matches = artifacts.filter((row) => path.resolve(row.target.src_path) === source);
     assert.equal(matches.length, 1, `missing or duplicate build artifact ${pkg}/${bench}`);

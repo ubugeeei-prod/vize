@@ -207,10 +207,10 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
     assert.match(incremental, new RegExp(`^theorem ${name}\\b`, "mu"), `missing theorem ${name}`);
   }
   assert.match(
-    readRepoFile("crates", "vize_l2_to_l3", "tests", "lean_reference_fixture.rs"),
+    readRepoFile("davinci", "vize_l2_to_l3", "tests", "lean_reference_fixture.rs"),
     /^    mod schedule;$/mu,
   );
-  const bridge = readRepoFile("crates", "vize_l3", "tests", "lattice_reference_fixture.rs");
+  const bridge = readRepoFile("davinci", "vize_l3", "tests", "lattice_reference_fixture.rs");
   assert.match(bridge, /tests\/formal\/impeto\/fixtures\/reactivity-lattice\.folio/u);
   assert.match(bridge, /ReactivityPage::of\(&facts\)\.print_to_string\(DumpMode::Full\)/u);
 });

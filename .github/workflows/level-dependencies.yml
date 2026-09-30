@@ -35,6 +35,6 @@ jobs:
           git fetch --no-tags --depth=1 origin "$dependency_base"
           echo "DEPENDENCY_BASE=$dependency_base" >> "$GITHUB_ENV"
       - name: Test dependency policy mutations
-        run: node --test tests/tooling/davinci-level-dependencies.test.mjs
+        run: node --test tests/tooling/davinci-level-dependencies.test.mjs tests/tooling/davinci-directory-dependencies.test.mjs
       - name: Report and ratchet normal level dependencies
         run: node tools/support/compat/davinci/level-dependencies.mjs --base "$DEPENDENCY_BASE"

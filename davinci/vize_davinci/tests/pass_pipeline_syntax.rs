@@ -8,7 +8,7 @@
 //! Every rejection is asserted on its **full** rendered message, never a
 //! substring (assurance §4, "strict oracles — no partial matching", which
 //! TS-13 enforces mechanically). The table in
-//! `crates/vize_davinci/src/pass/pipeline.rs`'s module docs is the contract
+//! `davinci/vize_davinci/src/pass/pipeline.rs`'s module docs is the contract
 //! these assertions pin: a message change has to be made in both places, on
 //! purpose.
 

@@ -6,7 +6,7 @@
 # `SourceLocation` consumer inventory
 
 Every textual read of the relief `SourceLocation` members that
-`vize_carton::Span` (`crates/vize_carton/src/span.rs`) deleted —
+`vize_carton::Span` (`davinci/vize_carton/src/span.rs`) deleted —
 `source`, `start.line`, `start.column`, `end.line`, `end.column` —
 across `crates/*/src`, plus the migration group each consumer moved to as
 relief nodes switched to two-u32 byte spans instead of owned
@@ -78,7 +78,7 @@ migrated sites:
 
 Line/column exist only at diagnostic- or LSP-rendering time under Davinci:
 derived from byte offsets via `vize_carton::line_index::LineIndex`
-(`crates/vize_carton/src/line_index.rs:28`) at the edge that needs them — exactly how the
+(`davinci/vize_carton/src/line_index.rs:28`) at the edge that needs them — exactly how the
 source-map `finish()` step and Patina's output layer already worked. The
 eagerly-stored `Position { line, column }` pairs deleted with the type.
 Where each read went:

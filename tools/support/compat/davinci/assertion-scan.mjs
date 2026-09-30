@@ -250,12 +250,15 @@ function* walkRustFiles(dir) {
 export function collectTargets(root, defaultTree) {
   const targets = [];
   if (defaultTree) {
-    const cratesDir = path.join(root, "crates");
-    for (const file of walkRustFiles(cratesDir)) {
-      const rel = path.relative(root, file).split(path.sep).join("/");
-      if (/^crates\/[^/]+\/tests\//.test(rel)) targets.push({ file, rel, wholeFile: true });
-      else if (/^crates\/[^/]+\/src\//.test(rel)) targets.push({ file, rel, wholeFile: false });
-      // benches/, examples/, build.rs: out of scope for the test-assertion lint.
+    for (const directory of ["crates", "davinci"]) {
+      for (const file of walkRustFiles(path.join(root, directory))) {
+        const rel = path.relative(root, file).split(path.sep).join("/");
+        if (/^(?:crates|davinci)\/[^/]+\/tests\//.test(rel))
+          targets.push({ file, rel, wholeFile: true });
+        else if (/^(?:crates|davinci)\/[^/]+\/src\//.test(rel))
+          targets.push({ file, rel, wholeFile: false });
+        // benches/, examples/, build.rs: out of scope for the test-assertion lint.
+      }
     }
   } else {
     for (const file of walkRustFiles(root)) {

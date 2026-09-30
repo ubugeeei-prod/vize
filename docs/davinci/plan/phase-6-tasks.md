@@ -95,7 +95,7 @@
 
 **Lane:** C
 
-**Deliverable:** `crates/vize_extension_host/`: feature-gated (`extension-host`) in-process hosting of contract guests under wasmtime, sharing the WIT contract with the out-of-process transport, with per-guest fuel and memory limits. wasmtime is admitted under charter #39 (pinned, audited, only behind this feature).
+**Deliverable:** `davinci/vize_extension_host/`: feature-gated (`extension-host`) in-process hosting of contract guests under wasmtime, sharing the WIT contract with the out-of-process transport, with per-guest fuel and memory limits. wasmtime is admitted under charter #39 (pinned, audited, only behind this feature).
 
 **Steps:**
 

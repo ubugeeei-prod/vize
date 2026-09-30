@@ -66,25 +66,31 @@ const WALK_RECORDER = "tests/davinci_walk_baseline.rs";
 
 function walkRecorders(): { backend: string; rows: Map<string, [number, number]> }[] {
   const recorders: { backend: string; rows: Map<string, [number, number]> }[] = [];
-  for (const pkg of fs.readdirSync(path.join(repoRoot, "crates")).sort()) {
-    const file = path.join(repoRoot, "crates", pkg, WALK_RECORDER);
+  const crates = ["crates", "davinci"].flatMap((directory) =>
+    fs
+      .readdirSync(path.join(repoRoot, directory))
+      .sort()
+      .map((pkg) => ({ directory, pkg })),
+  );
+  for (const { directory, pkg } of crates) {
+    const file = path.join(repoRoot, directory, pkg, WALK_RECORDER);
     if (!fs.existsSync(file)) continue;
     const text = fs.readFileSync(file, "utf8");
     const backend = /fn ([a-z0-9_]+)_walk_baseline_holds\(/.exec(text)?.[1];
     assert.ok(
       backend,
-      `crates/${pkg}/${WALK_RECORDER} must name its backend via ` +
+      `${directory}/${pkg}/${WALK_RECORDER} must name its backend via ` +
         "`fn <backend>_walk_baseline_holds()` — the id prefix is derived from it",
     );
     const start = text.indexOf("const BASELINE");
-    assert.ok(start >= 0, `crates/${pkg}/${WALK_RECORDER} must declare a BASELINE table`);
+    assert.ok(start >= 0, `${directory}/${pkg}/${WALK_RECORDER} must declare a BASELINE table`);
     const table = text.slice(start, text.indexOf("];", start));
     const rows = new Map<string, [number, number]>();
     for (const [, fixture, walks, visits] of table.matchAll(/\("([^"]+)",\s*(\d+),\s*(\d+)\)/g)) {
       assert.ok(!rows.has(fixture), `${backend}: BASELINE lists ${fixture} twice`);
       rows.set(fixture, [Number(walks), Number(visits)]);
     }
-    assert.ok(rows.size > 0, `crates/${pkg}/${WALK_RECORDER}: BASELINE table is empty`);
+    assert.ok(rows.size > 0, `${directory}/${pkg}/${WALK_RECORDER}: BASELINE table is empty`);
     recorders.push({ backend, rows });
   }
   assert.ok(recorders.length > 0, `no walk-probe recorders found (crates/*/${WALK_RECORDER})`);

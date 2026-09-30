@@ -13,7 +13,7 @@ function readRepoFile(...parts: string[]): string {
 
 test("Davinci L1 uses the physical crate package and directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
-  assert.match(workspaceManifest, /^\s*"crates\/vize_l1",$/m);
+  assert.match(workspaceManifest, /^\s*"davinci\/vize_l1",$/m);
   const manifest = parseToml(workspaceManifest) as {
     workspace?: { dependencies?: { vize_l1?: unknown }; package?: { version?: unknown } };
   };
@@ -22,13 +22,13 @@ test("Davinci L1 uses the physical crate package and directory", () => {
     assert.fail("workspace package version must be declared");
   }
   assert.deepEqual(manifest.workspace?.dependencies?.vize_l1, {
-    path: "crates/vize_l1",
+    path: "davinci/vize_l1",
     version: `=${workspaceVersion}`,
   });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_sinopia/u);
   assert.doesNotMatch(workspaceManifest, /^vize_sinopia = /m);
 
-  const surfaceManifest = readRepoFile("crates", "vize_l1", "Cargo.toml");
+  const surfaceManifest = readRepoFile("davinci", "vize_l1", "Cargo.toml");
   assert.match(surfaceManifest, /^name = "vize_l1"$/m);
 
   const lockfile = readRepoFile("Cargo.lock");

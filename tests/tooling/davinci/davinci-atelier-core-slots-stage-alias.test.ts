@@ -271,7 +271,7 @@ test("Atelier core migrated compiler slices import L0 storage through the stage 
   const coreS0 = asRecord(coreDependencies.vize_l0);
 
   assert.equal(workspaceS0.package, undefined);
-  assert.equal(workspaceS0.path, "crates/vize_l0");
+  assert.equal(workspaceS0.path, "davinci/vize_l0");
   assert.equal(coreS0.workspace, true);
   assert.ok(!Object.hasOwn(coreDependencies, "vize_carton"));
 
@@ -284,7 +284,7 @@ test("Atelier core migrated compiler slices import L0 storage through the stage 
     (dependency) => dependency.name === "vize_l0" && dependency.rename === null,
   );
   assert.ok(s0Dependency);
-  assert.equal(s0Dependency.path, path.join(repoRoot, "crates", "vize_l0"));
+  assert.equal(s0Dependency.path, path.join(repoRoot, "davinci", "vize_l0"));
   assert.equal(s0Dependency.req, `=${cartonPackage.version}`);
   assert.equal(s0Dependency.kind, null);
   assert.equal(s0Dependency.optional, false);

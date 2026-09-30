@@ -15,7 +15,7 @@ treat `|` as a normal expression operator rather than a filter.
 
 The durable current witnesses are:
 
-- [`emit_filters.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_filters.rs)
+- [`emit_filters.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_filters.rs)
   — direct S2 emission snapshots for filter assets, wrapped calls, and Vue 3
   non-filter behavior.
 - [`davinci_s2_filters.rs`](../../../../../crates/vize_atelier_dom/tests/l2_filters.rs)

@@ -5,7 +5,7 @@
 > corruption bug, not a performance detail. Content is covered by the P5-1a
 > artifact key; every other input is **ambient** and is declared here, per
 > cached artifact. `vize_davinci::key::manifest` is the executable form of
-> these two tables and `crates/vize_davinci/tests/key_manifests.rs` reads this
+> these two tables and `davinci/vize_davinci/tests/key_manifests.rs` reads this
 > file to prove the two agree row for row.
 
 ## Rules

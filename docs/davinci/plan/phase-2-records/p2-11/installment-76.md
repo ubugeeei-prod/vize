@@ -11,7 +11,7 @@ global-constant prop hoists.
 
 The durable witnesses are:
 
-- [`emit_static_hoist.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_static_hoist.rs)
+- [`emit_static_hoist.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_static_hoist.rs)
   - pins static prop hoist behavior.
 - [`davinci_s2_static_vnode_hoist.rs`](../../../../../crates/vize_atelier_dom/tests/l2_static_vnode_hoist.rs)
   - compares the shipped static-vnode hoist surface.

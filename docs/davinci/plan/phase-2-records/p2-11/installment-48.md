@@ -12,7 +12,7 @@ The durable witnesses are:
 
 - [`davinci_s2_static_class_patch.rs`](../../../../../crates/vize_atelier_dom/tests/l2_static_class_patch.rs)
   - records the S2-vs-shipped byte and patch-site behavior for static classes.
-- [`props.rs`](../../../../../crates/vize_l1_to_l2/src/emit/props.rs)
+- [`props.rs`](../../../../../davinci/vize_l1_to_l2/src/emit/props.rs)
   - owns the prop emission path whose static-class behavior changed.
 - [`consumer-migration-surfaces.md`](../../consumer-migration-surfaces.md)
   - records the affected S2 DOM surface inventory.

@@ -122,13 +122,13 @@ fn davinci_fact(criterion: &mut Criterion) {
     davinci_harness::bench_with_metrics(
         criterion,
         "davinci_fact_query_unobserved",
-        "crates/vize_davinci/benches/davinci_fact.rs",
+        "davinci/vize_davinci/benches/davinci_fact.rs",
         run::<NoFactVerify>,
     );
     davinci_harness::bench_with_metrics(
         criterion,
         "davinci_fact_query_observed",
-        "crates/vize_davinci/benches/davinci_fact.rs",
+        "davinci/vize_davinci/benches/davinci_fact.rs",
         run::<FactVerifyObserver>,
     );
 }

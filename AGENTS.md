@@ -57,14 +57,20 @@ product fix-history gates still apply; use the [order record](./docs/davinci/dec
     [#6881](https://github.com/ubugeeei-prod/vize/issues/6881) linter,
     [#6882](https://github.com/ubugeeei-prod/vize/issues/6882) formatter,
     [#6883](https://github.com/ubugeeei-prod/vize/issues/6883) LSP.
-- **Dependencies:** level crates never take normal dependencies on legacy
+- **Layout:** Davinci levels and shared infrastructure live in `davinci/`;
+  legacy products and their transitional adapters live in `crates/`.
+- **Dependencies:** `crates/` may depend on `davinci/`. The reverse is forbidden
+  for normal and build dependencies, including optional and target-specific
+  declarations and transitive workspace paths. Dev-only differential oracles
+  are permitted. Level crates never take normal dependencies on legacy
   crates (`vize_armature`, `vize_relief`, `vize_atelier_*`,
   `vize_croquis`).
 - **Naming:**
   - Crates carry level names only (`vize_l0` … `vize_l4`, `vize_l1_to_l2`,
     `vize_l2_to_l3`, `vize_l0_derive`).
   - Codenames never appear in crate, file, module or type names, or in
-    serialized strings.
+    serialized strings. The maintainer-selected `davinci/` program root is
+    the directory exception alongside `docs/davinci/`.
 - **Performance:**
   - Add no extra pipeline stages and no serialization between levels.
   - Instruction-count gates run in the merge queue.

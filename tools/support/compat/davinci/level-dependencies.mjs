@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { inspectDirectoryDependencies } from "./directory-dependencies.mjs";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 import {
@@ -180,6 +181,7 @@ export function inspectLevelDependencies(metadata, policy) {
   );
   const rootDeclarations = [...roots].flatMap((root) => edges.get(root));
   return {
+    directoryViolations: inspectDirectoryDependencies(metadata),
     roots: [...roots]
       .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
       .map((name) => ({
@@ -207,6 +209,10 @@ export function inspectLevelDependencies(metadata, policy) {
 }
 
 export function assertDependencyReport(report) {
+  requireEvidence(
+    report.directoryViolations.length === 0,
+    "Davinci-to-crates dependency paths: " + JSON.stringify(report.directoryViolations),
+  );
   requireEvidence(
     report.unlisted.length === 0,
     "new level-to-legacy normal dependency paths: " + JSON.stringify(report.unlisted),

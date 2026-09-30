@@ -10,15 +10,15 @@ on:
   push:
     branches: [main, davinci]
     paths:
-      - "crates/vize_extension_contract/**"
-      - "crates/vize_extension_host/**"
+      - "davinci/vize_extension_contract/**"
+      - "davinci/vize_extension_host/**"
       - "crates/vize_guest/**"
       - "npm/extension-sdk/**"
       - "crates/vize_marquette/**"
-      - "crates/vize_davinci/**"
-      - "crates/vize_l1/**"
-      - "crates/vize_l1_to_l2/**"
-      - "crates/vize_l2/**"
+      - "davinci/vize_davinci/**"
+      - "davinci/vize_l1/**"
+      - "davinci/vize_l1_to_l2/**"
+      - "davinci/vize_l2/**"
       - "Cargo.toml"
       - "Cargo.lock"
       - "docs/davinci/plan/test-suites.md"

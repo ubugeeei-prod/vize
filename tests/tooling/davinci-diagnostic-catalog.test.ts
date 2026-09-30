@@ -37,7 +37,7 @@ import {
 // phrase, code or case without its translations fails here. The rendering
 // half is `cargo test -p vize_davinci --test diagnostic_render`.
 
-const vocabularySource = read("crates", "vize_davinci", "src", "render", "catalog.rs");
+const vocabularySource = read("davinci", "vize_davinci", "src", "render", "catalog.rs");
 
 /** `entries` with `key`'s entry replaced by `edit(entry)`, or dropped. */
 function edited(
@@ -183,7 +183,7 @@ test("TS-53: the catalog check fails on a removed, emptied or drifted entry", ()
 
 /** The TS-53 renderer case names, from the case list and its modules. */
 export function renderCaseNames(): string[] {
-  const dir = path.join("crates", "vize_davinci", "tests", "diagnostic_render");
+  const dir = path.join("davinci", "vize_davinci", "tests", "diagnostic_render");
   const cases = read(dir, "cases.rs");
   const listStart = cases.indexOf("pub const ALL: &[&Case] = &[");
   assert.notEqual(listStart, -1, "cases.rs declares the case list");
@@ -240,7 +240,7 @@ test("TS-53: witness-why snapshots for the P4-3c and P4-11b witnesses", () => {
   for (const name of ["witness_unused_binding", "witness_composed_nesting"]) {
     for (const locale of locales) {
       const text = read(
-        "crates",
+        "davinci",
         "vize_davinci",
         "tests",
         "snapshots",
@@ -253,7 +253,7 @@ test("TS-53: witness-why snapshots for the P4-3c and P4-11b witnesses", () => {
     }
   }
   const composed = read(
-    "crates",
+    "davinci",
     "vize_davinci",
     "tests",
     "snapshots",
@@ -262,7 +262,7 @@ test("TS-53: witness-why snapshots for the P4-3c and P4-11b witnesses", () => {
   );
   assert.equal(composed.split("\n").filter((line) => line.includes("= note:")).length, 2);
   const unused = read(
-    "crates",
+    "davinci",
     "vize_davinci",
     "tests",
     "snapshots",
@@ -283,7 +283,7 @@ test("TS-53: every renderer case is committed in every locale, and nothing else 
     .sort();
   const committed = fs
     .readdirSync(
-      path.join(repoRoot, "crates", "vize_davinci", "tests", "snapshots", "diagnostic_render"),
+      path.join(repoRoot, "davinci", "vize_davinci", "tests", "snapshots", "diagnostic_render"),
     )
     .sort();
   assert.deepEqual(committed, expected);

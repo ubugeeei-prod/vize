@@ -29,7 +29,6 @@ moonbit = []
 
 [dependencies]
 vize_l0 = { workspace = true }
-vize_relief = { workspace = true }
 htmlize = { workspace = true }
 
 [dev-dependencies]

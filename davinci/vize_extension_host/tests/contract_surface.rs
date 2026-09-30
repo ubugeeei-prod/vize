@@ -33,7 +33,7 @@ use vize_marquette::{
 const BLESS_ENV: &str = "VIZE_CONTRACT_SURFACE_BLESS";
 
 fn sdk() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../vize_guest")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../crates/vize_guest")
 }
 
 fn features(required: &[&str]) -> BTreeSet<String> {

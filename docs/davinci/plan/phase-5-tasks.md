@@ -15,7 +15,7 @@
 
 **Steps:**
 
-- [x] `crates/vize_davinci/src/key.rs` + `key/`: `ArtifactKey { stage, schema_version, hash: [u8; 16] }`; the hash walks the folio `Full` form with spans rebased to the block start _(L2: `impl KeyedArtifact for L2Folio`; L1: `vize_l1_to_l2::key::SurfacePage`, the lossless render; L0 source blocks: `source_block_key`)_
+- [x] `davinci/vize_davinci/src/key.rs` + `key/`: `ArtifactKey { stage, schema_version, hash: [u8; 16] }`; the hash walks the folio `Full` form with spans rebased to the block start _(L2: `impl KeyedArtifact for L2Folio`; L1: `vize_l1_to_l2::key::SurfacePage`, the lossless render; L0 source blocks: `source_block_key`)_
 - [x] Edit-locality fixtures: insert above, inside and below a block; reorder blocks; whitespace-only edits _(ten cases over `tests/fixtures/keys/base.vue`, each pinning its exact changed set)_
 - [x] Register the TS-43 command in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test artifact_keys`
 
@@ -37,7 +37,7 @@
 
 **Steps:**
 
-- [x] `KeyManifest` in `crates/vize_davinci/src/key/manifest.rs`, folded into `ArtifactKey` _(`ArtifactKey::with_manifest`; `KeyManifest::fingerprint` for the content-less Corsa session; both refuse a manifest that sets a missing or extra input)_
+- [x] `KeyManifest` in `davinci/vize_davinci/src/key/manifest.rs`, folded into `ArtifactKey` _(`ArtifactKey::with_manifest`; `KeyManifest::fingerprint` for the content-less Corsa session; both refuse a manifest that sets a missing or extra input)_
 - [x] A test flips each declared input and asserts the key changes, and asserts an unchanged manifest keeps the key
 
 **Acceptance:** `cargo test -p vize_davinci --test key_manifests` — every declared input changes the key, nothing else does; the manifest doc lists every artifact (a test reads it via `include_str!`); TS-43.
@@ -58,7 +58,7 @@
 
 **Steps:**
 
-- [x] `crates/vize_davinci/src/summary.rs`: `SfcSummary` over α pages with per-declaration fingerprints
+- [x] `davinci/vize_davinci/src/summary.rs`: `SfcSummary` over α pages with per-declaration fingerprints
 - [x] A fixture proves a hot-path optimization change inside a component body does not change any fingerprint
 
 **Acceptance:** `cargo test -p vize_davinci --test sfc_summary` — summary round trip exact (TS-16), the no-ripple fixture green, and a signature change invalidates exactly the recorded users.
@@ -79,7 +79,7 @@
 
 **Steps:**
 
-- [x] `crates/vize_davinci/src/summary/global.rs` over the P4-3b and P4-3f project groups
+- [x] `davinci/vize_davinci/src/summary/global.rs` over the P4-3b and P4-3f project groups
 
 **Acceptance:** a scenario test: adding a global component invalidates exactly the files that resolve it, and nothing else (TS-46 accounting).
 

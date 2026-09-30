@@ -52,15 +52,7 @@ pub enum ElementType {
     Template = 3,
 }
 
-/// Namespace for elements
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
-#[repr(u8)]
-pub enum Namespace {
-    #[default]
-    Html = 0,
-    Svg = 1,
-    MathMl = 2,
-}
+pub use vize_l0::Namespace;
 
 /// Constant type levels for static analysis
 #[derive(

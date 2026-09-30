@@ -25,7 +25,7 @@ pub fn backlog_markdown(corpus: &RemarkCorpus) -> String {
          > [!NOTE]\n\
          > Generated; do not edit. Mined from the TS-32 corpus baseline\n\
          > (`tests/_fixtures/davinci-remarks-baseline.folio`) by\n\
-         > `crates/vize_l1_to_l2/tests/davinci_remarks_corpus.rs`, which pins this file\n\
+         > `davinci/vize_l1_to_l2/tests/davinci_remarks_corpus.rs`, which pins this file\n\
          > and rewrites it under `UPDATE_REMARKS_BASELINE=1`. Each item is one missed\n\
          > reason (a remark's arguments after its subject, per\n\
          > [remarks-format.md](./remarks-format.md)), ranked by corpus hits: the\n\

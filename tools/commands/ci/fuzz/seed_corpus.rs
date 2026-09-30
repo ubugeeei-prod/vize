@@ -30,8 +30,8 @@ const VUE_GLOBS: &[&str] = &[
 ];
 
 const FOLIO_GLOBS: &[&str] = &[
-    "crates/vize_davinci/tests/fixtures/**/*.folio",
-    "crates/vize_l2/tests/fixtures/**/*.folio",
+    "davinci/vize_davinci/tests/fixtures/**/*.folio",
+    "davinci/vize_l2/tests/fixtures/**/*.folio",
 ];
 
 fn main() -> ExitCode {

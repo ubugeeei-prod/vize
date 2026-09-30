@@ -26,7 +26,7 @@ suite still enumerates and runs all 28 release tests.
 
 ## Evidence and limits
 
-On the current 640-file inventory, a `crates/vize_l1/src/parser.rs` edit
+On the current 640-file inventory, a `davinci/vize_l1/src/parser.rs` edit
 selects 458 PR tooling files, including the two unscoped release tests;
 without this scope it selects 484. Focused selector tests check all 26 import
 closures and assert that workflow, release script, manifest, documentation,

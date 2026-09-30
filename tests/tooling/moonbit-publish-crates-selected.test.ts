@@ -29,7 +29,9 @@ test("publish_crates can target the JSX and Patina handoff set", () => {
   assert.ok(version);
   const manifestSnapshots = new Map(
     selectedCrates.map((crateName) => {
-      const manifestPath = path.join(repoRoot, "crates", crateName, "Cargo.toml");
+      const manifestPath = getMetadata().packages.find(
+        (pkg) => pkg.name === crateName,
+      )!.manifest_path;
       return [manifestPath, fs.readFileSync(manifestPath, "utf8")] as const;
     }),
   );

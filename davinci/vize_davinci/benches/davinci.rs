@@ -80,7 +80,7 @@ fn davinci(criterion: &mut Criterion) {
     davinci_harness::bench_with_metrics(
         criterion,
         "davinci_pipeline_unobserved",
-        "crates/vize_davinci/benches/davinci.rs",
+        "davinci/vize_davinci/benches/davinci.rs",
         || {
             let mut total = 0usize;
             let group_count = PIPELINE.group_count();
@@ -99,7 +99,7 @@ fn davinci(criterion: &mut Criterion) {
     davinci_harness::bench_with_metrics(
         criterion,
         "davinci_pipeline_no_observer",
-        "crates/vize_davinci/benches/davinci.rs",
+        "davinci/vize_davinci/benches/davinci.rs",
         || {
             let mut total = 0usize;
             run_pipeline(&PIPELINE, &mut NoObserver, |event| {

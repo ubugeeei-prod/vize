@@ -1,4 +1,4 @@
-use vize_relief::ErrorCode;
+use vize_l0::ErrorCode;
 
 use super::char_codes::AMP;
 use super::sequences::Sequence;

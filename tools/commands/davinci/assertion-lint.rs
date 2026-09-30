@@ -53,7 +53,7 @@ enum TomlValue {
     Array(Vec<TomlValue>),
 }
 
-const USAGE: &str = "Usage: rust-script tools/commands/davinci/assertion-lint.rs [--list] [--root <dir>] [--allowlist <file>]\n\nScans Rust test code for banned weak-assertion patterns (Davinci assurance\ndoctrine). Without flags: scans crates/**, applies the committed allowlist,\nexits 1 on unlisted findings. --list ignores the allowlist and exits 0.\n--root scans an alternate directory tree (self-test hook) with no default\nallowlist.";
+const USAGE: &str = "Usage: rust-script tools/commands/davinci/assertion-lint.rs [--list] [--root <dir>] [--allowlist <file>]\n\nScans Rust test code for banned weak-assertion patterns (Davinci assurance\ndoctrine). Without flags: scans crates/** and davinci/**, applies the committed allowlist,\nexits 1 on unlisted findings. --list ignores the allowlist and exits 0.\n--root scans an alternate directory tree (self-test hook) with no default\nallowlist.";
 
 fn main() -> ExitCode {
     match run() {
@@ -463,6 +463,7 @@ fn collect_targets(root: &Path, default_tree: bool) -> Result<Vec<Target>, Strin
     let mut files = Vec::new();
     if default_tree {
         walk_rust_files(&root.join("crates"), &mut files)?;
+        walk_rust_files(&root.join("davinci"), &mut files)?;
     } else {
         walk_rust_files(root, &mut files)?;
     }
@@ -498,12 +499,18 @@ fn collect_targets(root: &Path, default_tree: bool) -> Result<Vec<Target>, Strin
 
 fn is_crate_integration_test(rel: &str) -> bool {
     let parts = rel.split('/').collect::<Vec<_>>();
-    parts.len() >= 4 && parts[0] == "crates" && parts[2] == "tests" && rel.ends_with(".rs")
+    parts.len() >= 4
+        && matches!(parts[0], "crates" | "davinci")
+        && parts[2] == "tests"
+        && rel.ends_with(".rs")
 }
 
 fn is_crate_source(rel: &str) -> bool {
     let parts = rel.split('/').collect::<Vec<_>>();
-    parts.len() >= 4 && parts[0] == "crates" && parts[2] == "src" && rel.ends_with(".rs")
+    parts.len() >= 4
+        && matches!(parts[0], "crates" | "davinci")
+        && parts[2] == "src"
+        && rel.ends_with(".rs")
 }
 
 fn walk_rust_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<(), String> {

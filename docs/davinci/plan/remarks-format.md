@@ -3,8 +3,8 @@
 > [!NOTE]
 > The P3-13 remark contract: what a remark is, how it travels, its two
 > serialized forms, and the registered per-pass vocabulary. Code:
-> `crates/vize_davinci/src/pass/observer/remark.rs` (the channel),
-> `crates/vize_davinci/src/folio/remarks.rs` (the page and the JSON
+> `davinci/vize_davinci/src/pass/observer/remark.rs` (the channel),
+> `davinci/vize_davinci/src/folio/remarks.rs` (the page and the JSON
 > document). JSON schema: [`remarks.schema.json`](./remarks.schema.json).
 > Record: [P3-13](./phase-3-records/p3-13.md).
 
@@ -44,7 +44,7 @@ monomorphization time and a pass guards blocker classification and argument
 construction on it. Under `NoObserver`, `BudgetObserver`, `TimingObserver`
 or any composition of them the remark path compiles away: pinned as an
 exact **zero** allocations under the counting allocator
-(`crates/vize_davinci/tests/remark_zero_cost.rs`), with an attached control
+(`davinci/vize_davinci/tests/remark_zero_cost.rs`), with an attached control
 that allocates exactly one label per pass. Pass bodies run outside the pass
 manager (the production DOM path) take the detached `NoRemarks` sink.
 
@@ -73,7 +73,7 @@ booleans are bare. Entry order is carried, never re-sorted — the collector
 already made it canonical. An empty log is the bare `[remarks]` header.
 Parse is strict except that any `\uXXXX` escape is accepted and normalized
 by the first print; every rejection message is pinned by
-`crates/vize_davinci/tests/remark_folio.rs`. `Display` drops the spans and
+`davinci/vize_davinci/tests/remark_folio.rs`. `Display` drops the spans and
 carries no round-trip law. `davinci-opt --roundtrip <file> --stage remarks`
 checks canonicity.
 
@@ -87,7 +87,7 @@ anything else. `davinci-opt --remarks <path>` writes it for a pipeline run.
 
 ## TS-32 — the corpus remarks-diff
 
-`crates/vize_l1_to_l2/tests/davinci_remarks_corpus.rs` (feature
+`davinci/vize_l1_to_l2/tests/davinci_remarks_corpus.rs` (feature
 `davinci-differential`, run by the required `clippy-and-test` job) sweeps
 every `.vue` file under `tests/_fixtures` (the `_git` submodules and
 `node_modules` excluded, so every checkout sweeps the same set), lowers each
@@ -137,7 +137,7 @@ Every remark name a pass may emit, with its arguments in emission order —
 subject first. Adding a name or an argument key is a registry change in the
 same PR.
 
-### `s2.hoist-static` (`crates/vize_l1_to_l2/src/pass/hoist/remarks.rs`)
+### `s2.hoist-static` (`davinci/vize_l1_to_l2/src/pass/hoist/remarks.rs`)
 
 An analysis pass: `applied` means the hoist-licensing fact holds; whether
 DOM realization then hoists is position/option-dependent and not claimed.
@@ -160,7 +160,7 @@ Blockers come from the same functions the facts do
 (`consts::binding_blocker` / `props_blocker`, the region summary), so a
 remark cannot explain a decision the analysis did not make. TS-17 pins the
 full page for the `hoist` fixtures and re-derives every kind from the
-published facts (`crates/vize_l1_to_l2/tests/hoist_pass_remarks.rs`).
+published facts (`davinci/vize_l1_to_l2/tests/hoist_pass_remarks.rs`).
 
 ### `s3.extract-placements` (`crates/vize_impeto/src/extract/report.rs`)
 
@@ -181,10 +181,10 @@ when the candidate was measured and committed.
 the trial measured (0 when the candidate was not measured); `budget-left` is
 the component's remaining candidate budget. The remarks mirror the
 `[s3-extraction-folio]` decision rows one for one; TS-17 pins both pages
-(`crates/vize_l2_to_l3/tests/extraction_snapshots.rs`), and a detached run
+(`davinci/vize_l2_to_l3/tests/extraction_snapshots.rs`), and a detached run
 must return the identical extraction.
 
-TS-32 gates the corpus too: `crates/vize_l2_to_l3/tests/davinci_l3_remarks_corpus.rs`
+TS-32 gates the corpus too: `davinci/vize_l2_to_l3/tests/davinci_l3_remarks_corpus.rs`
 runs the `-O3` pipeline over the same sweep as the L2 gate and compares with
 `tests/_fixtures/davinci-s3-remarks-baseline.folio` under the same bless and
 explanation rules. The baseline pins 147 remarks over 433 files: 10 `group`

@@ -2,9 +2,9 @@
 
 extern crate core;
 
-#[path = "../../../crates/vize_l3/src/lattice/class.rs"]
+#[path = "../../../davinci/vize_l3/src/lattice/class.rs"]
 mod class;
-#[path = "../../../crates/vize_l3/src/lattice/effect.rs"]
+#[path = "../../../davinci/vize_l3/src/lattice/effect.rs"]
 mod effect;
 
 pub use class::ReactivityClass;

@@ -75,7 +75,7 @@
 
 **Steps:**
 
-- [x] `crates/vize_l1_to_l2/src/partial.rs` exposes the kept fragments to the fact manager
+- [x] `davinci/vize_l1_to_l2/src/partial.rs` exposes the kept fragments to the fact manager
 - [x] TS-47 scenarios in `tests/tooling/lsp-broken-file*`: hover and completion in a file with a parse error elsewhere
 
 **Acceptance:** TS-47 scenarios exact; no diagnostic regression on the well-formed fixtures (TS-9).

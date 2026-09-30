@@ -4,8 +4,8 @@
 > The "test-mode printer" contract for Davinci folio dumps (P0-10): which
 > text is canonical, what normalization the printer applies, and what
 > `Display` mode elides. The trait lives in
-> `crates/vize_davinci/src/folio.rs`; the hand-written page is the croquis
-> folio (`crates/vize_davinci/src/folio/croquis.rs`), which absorbs the
+> `davinci/vize_davinci/src/folio.rs`; the hand-written page is the croquis
+> folio (`davinci/vize_davinci/src/folio/croquis.rs`), which absorbs the
 > croquis "VIR" dump (`crates/vize_croquis/src/croquis/vir.rs`), and since
 > P2-4 `#[derive(Folio)]` generates pages under the "Derived pages"
 > contract below.
@@ -80,7 +80,7 @@ every derived type `T`:
 - Scalar fields print as `name=value` lines inside the header, in field
   declaration order. All are required; parse accepts them in any order,
   each at most once. Values go through `FolioValue`
-  (`crates/vize_davinci/src/folio/value.rs`): `bool`, the integers, and
+  (`davinci/vize_davinci/src/folio/value.rs`): `bool`, the integers, and
   `vize_carton::String` — an unsupported field type is a compile error.
 - A `Vec<T>` field prints as a `[page.field]` section, one entry per line,
   **order preserved** (order-bearing lists are never sorted, rule 1).
@@ -108,13 +108,13 @@ section`) rather than silently misparsed; an empty-string list entry prints
 as a blank line and vanishes on reparse.
 
 The first derived page is `[budget-observer]` (P2-3's counter set), pinned
-by TS-16 in `crates/vize_davinci/tests/folio_derive_laws.rs` and reachable
+by TS-16 in `davinci/vize_davinci/tests/folio_derive_laws.rs` and reachable
 from the CLI as `davinci-opt --stage budget-observer`.
 
 ## The repro page (`[repro]`, P2-13)
 
 The crash reproducer the ICE policy writes
-(`crates/vize_davinci/src/folio/repro.rs`), hand-written because two of its
+(`davinci/vize_davinci/src/folio/repro.rs`), hand-written because two of its
 decisions are semantic: `failed-pass=` may print an **empty value** (a panic
 caught outside a driven pipeline is not attributable to a pass), and the
 `[repro.artifact]` section is **verbatim and terminal** — everything after
@@ -129,7 +129,7 @@ grammar at parse time), `failed-stage=`, `failed-pass=`, `reason=`
 a sorted `key=value` map. A missing final newline on the artifact is added
 by the first print, and `ReproFolio::normalize` applies the same to
 hand-built values — the `CroquisFolio::normalize` precedent. Round-trip
-laws pinned by `crates/vize_davinci/tests/repro_dump.rs`.
+laws pinned by `davinci/vize_davinci/tests/repro_dump.rs`.
 
 ## Croquis folio grammar
 
@@ -174,7 +174,7 @@ value.
 
 ## Fixtures
 
-`crates/vize_davinci/tests/fixtures/croquis/` holds `.vue` inputs with
+`davinci/vize_davinci/tests/fixtures/croquis/` holds `.vue` inputs with
 their committed canonical `.folio` dumps. The harness
 (`cargo test -p vize_davinci --test croquis_folio`) re-analyzes each input
 with the inspector recipe, checks the parser accepts the live renderer's
@@ -207,7 +207,7 @@ coverage):
 ## Disegno page (P2-5a; expression payloads P2-5b)
 
 The L2 stage dump: an owned document model (`DisegnoFolio`,
-`crates/vize_l2/src/folio.rs`) of one op tree. Hand-written under the
+`davinci/vize_l2/src/folio.rs`) of one op tree. Hand-written under the
 "Derived pages" boundary, because the derived grammar is flat (header
 scalars plus one-level sections) while the L2 artifact is region-nested by
 its central design decision — ops own their regions — and flattening the
@@ -275,8 +275,8 @@ embedding other control characters are outside the contract. The folio
 models the dump, not the analysis: tree shape is validated, semantic
 invariants (branch ordering, region well-formedness beyond the grammar)
 belong to the L2 verifier (P2-6). The committed reference page is
-`crates/vize_l2/tests/fixtures/reference.folio`, pinned by TS-16 in
-`crates/vize_l2/tests/dump_laws.rs` (which also pins every opaque
+`davinci/vize_l2/tests/fixtures/reference.folio`, pinned by TS-16 in
+`davinci/vize_l2/tests/dump_laws.rs` (which also pins every opaque
 reason spelling both directions) and mirrored from a live arena tree in
 `tests/dump_mirror.rs`; the arena-reset replay law is
 `tests/expr_replay.rs`. Provenance records get their own derived page,
@@ -309,7 +309,7 @@ offending pass (`` L2 verifier: {n} violation(s) after `{stage}.{pass}` ``).
 **Rigor follows `PassKind`.** The structural set holds after every pass;
 the canonical set additionally holds from the first `MandatoryLowering`
 pass on — the kind that canonicalizes
-(`crates/vize_davinci/src/pass/kind.rs`) — and `MandatoryDiagnostic` /
+(`davinci/vize_davinci/src/pass/kind.rs`) — and `MandatoryDiagnostic` /
 `Optional` passes never change the rigor. The set grows with the passes
 that establish more canonical form (P2-9); a new invariant lands here
 first, with its code.
@@ -324,17 +324,17 @@ own).
 
 **Expr-ref liveness** is the one check with no code of its own: it reuses
 the P1-11 debug arena-generation stamp (`Allocator::stamp` /
-`assert_stamp_current`, `crates/vize_carton/src/allocator/generation.rs`)
+`assert_stamp_current`, `davinci/vize_carton/src/allocator/generation.rs`)
 and fails with that mechanism's own panic. One stamp covers the whole
 artifact today because `ExprSlot` is zero-sized; the P2-5b seam is
 `VerifyObserver::check_live`, where the walk validates each expression
 position's stamp once `ExprRef` gives the positions identity.
 
-**Invalid fixtures (TS-18).** `crates/vize_l2/tests/fixtures/invalid/`
+**Invalid fixtures (TS-18).** `davinci/vize_l2/tests/fixtures/invalid/`
 holds hand-built pages that are grammar-valid and semantically invalid,
 each committed beside its exact expected rendering (`.expected`,
 whole-file equality, no partial matching). The harness is
-`crates/vize_l2/tests/verifier_fixtures.rs`; the id-resolution and
+`davinci/vize_l2/tests/verifier_fixtures.rs`; the id-resolution and
 liveness lanes, which no page text can encode, are pinned with the same
 exact oracles in `tests/verifier_observer.rs`.
 

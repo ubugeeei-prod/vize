@@ -25,7 +25,7 @@ void test("audited release contracts have complete imports and leave unresolved 
     assert.ok(releaseFiles.includes(file), `${file} must exist`);
     assert.equal(localImportInputs(file).complete, true, `${file} import closure`);
   }
-  assert.deepEqual(selected("crates/vize_l1/src/parser.rs"), unscoped);
+  assert.deepEqual(selected("davinci/vize_l1/src/parser.rs"), unscoped);
 });
 
 void test("release scripts, manifests, workflow, docs and copied fixture restore every contract", () => {
@@ -59,7 +59,7 @@ void test("direct, global and unknown changes remain broad; merge runs every rel
       );
     }
   }
-  const merge = planToolingTests(["crates/vize_l1/src/parser.rs"], { tier: "merge" });
+  const merge = planToolingTests(["davinci/vize_l1/src/parser.rs"], { tier: "merge" });
   assert.deepEqual(
     merge.tests.filter((file) => releaseFiles.includes(file)),
     releaseFiles,

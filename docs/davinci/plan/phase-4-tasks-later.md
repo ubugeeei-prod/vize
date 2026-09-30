@@ -13,7 +13,7 @@
 
 **Steps:**
 
-- [x] `crates/vize_davinci/src/diagnostic/tier.rs` and `diagnostic/witness.rs`; the existing `Diagnostic::new` stops accepting `Severity::Error`
+- [x] `davinci/vize_davinci/src/diagnostic/tier.rs` and `diagnostic/witness.rs`; the existing `Diagnostic::new` stops accepting `Severity::Error`
 - [x] Two `compile_fail` doctests: a heuristic rule declaring error severity, and an error diagnostic built without a witness (the provisional "canary rule that tries error-on-unknown fails to compile")
 - [x] `docs/davinci/plan/witness-exemptions.tsv` (producer, code, exempt count) with `tests/tooling/davinci-witness-exemptions.test.ts`: counts may only fall against the base revision, proven by an injected increase
 
@@ -35,7 +35,7 @@
 
 **Steps:**
 
-- [x] `crates/vize_davinci/src/witness.rs` + `witness/`; forged-witness fixtures (wrong group, wrong span, missing key) each committed with its exact `WitnessError`
+- [x] `davinci/vize_davinci/src/witness.rs` + `witness/`; forged-witness fixtures (wrong group, wrong span, missing key) each committed with its exact `WitnessError`
 - [x] Register the TS-36 command in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test witness_verify` plus the TS-9 lint fixtures run in debug
 
 **Acceptance:** every forged fixture rejected with the exact error, every valid witness verifies; zero unverifiable witnesses across TS-9; TS-1, TS-13.
@@ -181,7 +181,7 @@
 
 **Steps:**
 
-- [x] `crates/vize_l1_to_l2/src/pass/cfg.rs`: `Optional`/`Fusable`, `Preserved::ALL`; per component **own cyclomatic** = 1 + decisions (each `ui.if` branch beyond the first, plus one for an `ui.if` without `v-else`; each `ui.for`; each `&&`, `||`, `??` and `?:` in a retained expression AST; an `Opaque` expression adds 0 and is counted as unknown) and **own cognitive** (+1 per structure, + nesting depth for nested `ui.if`/`ui.for`/scoped-slot regions, +1 per run of like logical operators)
+- [x] `davinci/vize_l1_to_l2/src/pass/cfg.rs`: `Optional`/`Fusable`, `Preserved::ALL`; per component **own cyclomatic** = 1 + decisions (each `ui.if` branch beyond the first, plus one for an `ui.if` without `v-else`; each `ui.for`; each `&&`, `||`, `??` and `?:` in a retained expression AST; an `Opaque` expression adds 0 and is counted as unknown) and **own cognitive** (+1 per structure, + nesting depth for nested `ui.if`/`ui.for`/scoped-slot regions, +1 per run of like logical operators)
 - [x] TS-34 naive evaluator over the same definition
 - [x] Record the corpus distribution (p50/p90/p95/p99 of both metrics) with its command; pin the default thresholds at the recorded p95 (warn) in the spec
 

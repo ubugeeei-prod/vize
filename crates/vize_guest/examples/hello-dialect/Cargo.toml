@@ -4,7 +4,7 @@
 #   cargo build --release --target wasm32-wasip2 \
 #     --manifest-path crates/vize_guest/examples/hello-dialect/Cargo.toml
 # CI builds the same sources against the packed SDK tarball instead, with no
-# path into the workspace (`crates/vize_extension_host/tests/sdk_hello.rs`).
+# path into the workspace (`davinci/vize_extension_host/tests/sdk_hello.rs`).
 [package]
 name = "hello-dialect"
 version = "0.0.0"

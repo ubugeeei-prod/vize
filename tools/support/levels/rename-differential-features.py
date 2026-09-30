@@ -35,8 +35,8 @@ PUBLISHED_ALIAS_MANIFESTS = {
     "crates/vize_atelier_vapor/Cargo.toml",
     "crates/vize_canon/Cargo.toml",
     "crates/vize_croquis/Cargo.toml",
-    "crates/vize_l1/Cargo.toml",
-    "crates/vize_l1_to_l2/Cargo.toml",
+    "davinci/vize_l1/Cargo.toml",
+    "davinci/vize_l1_to_l2/Cargo.toml",
     "crates/vize_patina/Cargo.toml",
 }
 

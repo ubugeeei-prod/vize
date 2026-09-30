@@ -12,10 +12,10 @@ The durable witnesses are:
 
 - [`davinci_s2_text_facts.rs`](../../../../../crates/vize_atelier_dom/tests/l2_text_facts.rs)
   - compares slot text fact behavior against shipped output.
-- [`vslot_pass.rs`](../../../../../crates/vize_l1_to_l2/tests/vslot_pass.rs)
+- [`vslot_pass.rs`](../../../../../davinci/vize_l1_to_l2/tests/vslot_pass.rs)
   - pins the slot pass consumption law.
-- [`consume.rs`](../../../../../crates/vize_l1_to_l2/src/pass/vslot/consume.rs)
-  and [`group.rs`](../../../../../crates/vize_l1_to_l2/src/pass/vslot/group.rs)
+- [`consume.rs`](../../../../../davinci/vize_l1_to_l2/src/pass/vslot/consume.rs)
+  and [`group.rs`](../../../../../davinci/vize_l1_to_l2/src/pass/vslot/group.rs)
   - own the facts consumed by emission.
 
 This installment does not tick P2-11. Slot text facts are aligned; the hydrated

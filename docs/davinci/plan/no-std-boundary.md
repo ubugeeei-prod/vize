@@ -55,7 +55,7 @@ edges below. Embedded targets without `std` remain out of scope.
 
 ### The host binary is also outside the claim
 
-`davinci-opt` lives at `crates/vize_davinci/src/bin/davinci-opt/main.rs`.
+`davinci-opt` lives at `davinci/vize_davinci/src/bin/davinci-opt/main.rs`.
 It reads files, writes output, and returns process exit codes, so it is a std
 host tool. TS-24 passes `--lib` explicitly: a WASI build of this binary would
 not be evidence that it is `no_std` merely because WASI provides std.

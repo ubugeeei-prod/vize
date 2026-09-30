@@ -3,7 +3,7 @@
 Collapses the #6906..#6947 stack into one change. Level crates have no
 compatibility users, so no aliases or fallback readers are added.
 
-- **L3 package identity.** `crates/vize_impeto` moves to `crates/vize_l3`
+- **L3 package identity.** `crates/vize_impeto` moves to `davinci/vize_l3`
   (move-only commit) and the package/dependency name becomes `vize_l3`.
   First-name semver checks use the published `vize_impeto@0.429.0` baseline.
 - **Stage view paths and feed types.** Playground `features/davinci/` becomes

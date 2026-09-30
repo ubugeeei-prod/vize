@@ -10,7 +10,7 @@ versus dynamic-slot `v-show` ordering case.
 
 The durable witnesses are:
 
-- [`emit_dirs.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_dirs.rs)
+- [`emit_dirs.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_dirs.rs)
   - pins the codegen-only directive helper order.
 - [`davinci_s2_helper_order.rs`](../../../../../crates/vize_atelier_dom/tests/l2_helper_order.rs)
   - compares the shipped helper preamble surface.

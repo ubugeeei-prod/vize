@@ -87,13 +87,13 @@ Rust 的结构体布局和枚举判别值都很紧凑。`vize_relief` 中的 AST
 
 ### Arena 分配
 
-`vize_carton::Allocator` 是用于 AST 节点的 bump 分配器，它封装了 [`oxc_allocator`](https://docs.rs/oxc_allocator)，使模板节点与保留的 JavaScript 表达式共享同一个 arena 和同一个生命周期（`crates/vize_carton/src/allocator.rs`）。这意味着：
+`vize_carton::Allocator` 是用于 AST 节点的 bump 分配器，它封装了 [`oxc_allocator`](https://docs.rs/oxc_allocator)，使模板节点与保留的 JavaScript 表达式共享同一个 arena 和同一个生命周期（`davinci/vize_carton/src/allocator.rs`）。这意味着：
 
 - **分配是 O(1)** — 只需把指针向前推进。没有空闲链表遍历，没有碎片管理。
-- **回收是 O(1) 并且被复用** — 编译结束时 arena 是被 `reset()` 而不是被丢弃：bump 指针回到块的起点，arena 回到每个工作线程各自的空闲列表（`crates/vize_carton/src/pool.rs`，每个工作线程最多保留 4 个空闲 arena）。下一个文件复用同一块内存，而不是向操作系统再要一份。
+- **回收是 O(1) 并且被复用** — 编译结束时 arena 是被 `reset()` 而不是被丢弃：bump 指针回到块的起点，arena 回到每个工作线程各自的空闲列表（`davinci/vize_carton/src/pool.rs`，每个工作线程最多保留 4 个空闲 arena）。下一个文件复用同一块内存，而不是向操作系统再要一份。
 - **内存局部性极佳** — 节点在内存中连续排布，最大化树遍历时的 L1/L2 缓存命中率。
 
-arena 中的值不得比它所属的那次编译活得更久。该契约由编译器强制（`reset` 接受 `&mut self`，池的守卫拥有自己的 arena），并且在调试构建中还有一个代际标记：若某个值在其 arena 被回收后仍被读取，就会 panic（`crates/vize_carton/src/allocator/generation.rs`）。
+arena 中的值不得比它所属的那次编译活得更久。该契约由编译器强制（`reset` 接受 `&mut self`，池的守卫拥有自己的 arena），并且在调试构建中还有一个代际标记：若某个值在其 arena 被回收后仍被读取，就会 panic（`davinci/vize_carton/src/allocator/generation.rs`）。
 
 AST 中没有任何类型实现 `Drop` —— arena 的容器类型会拒绝需要析构的载荷，因此这是编译错误，而不是一条约定。
 
@@ -110,7 +110,7 @@ AST 中没有任何类型实现 `Drop` —— arena 的容器类型会拒绝需�
 - 重复出现的计算名称共享一次 arena 分配
 - 对已知名称的查找是编译期完美哈希，不涉及分配
 
-内联是回退路径，而不是常见情况。大多数名称根本不会被复制：标签名、属性名以及大部分表达式内容都是直接从模板源码借用的 `&'a str` 切片，因此常见路径不做任何分配（逐字段的策略记录在 `crates/vize_carton/src/interner.rs`）。
+内联是回退路径，而不是常见情况。大多数名称根本不会被复制：标签名、属性名以及大部分表达式内容都是直接从模板源码借用的 `&'a str` 切片，因此常见路径不做任何分配（逐字段的策略记录在 `davinci/vize_carton/src/interner.rs`）。
 
 原子就是普通的 `&'a str`，因此名称比较是内容比较，而非指针同一性比较。内联换来的是分配的节省和缓存局部性，它并不是 `==` 的快速路径。
 

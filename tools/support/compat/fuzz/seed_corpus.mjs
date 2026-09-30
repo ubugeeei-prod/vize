@@ -86,8 +86,8 @@ function extractInterpolations(template) {
 }
 
 const FOLIO_GLOBS = [
-  "crates/vize_davinci/tests/fixtures/**/*.folio",
-  "crates/vize_l2/tests/fixtures/**/*.folio",
+  "davinci/vize_davinci/tests/fixtures/**/*.folio",
+  "davinci/vize_l2/tests/fixtures/**/*.folio",
 ];
 
 function main() {

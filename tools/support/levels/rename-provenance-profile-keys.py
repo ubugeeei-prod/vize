@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
-TARGET = ROOT / "crates/vize_l1_to_l2/src/lower/benchmark.rs"
+TARGET = ROOT / "davinci/vize_l1_to_l2/src/lower/benchmark.rs"
 SUFFIXES = (
     "record",
     "records",

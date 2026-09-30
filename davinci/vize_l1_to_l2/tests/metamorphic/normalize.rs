@@ -16,7 +16,7 @@
 //!
 //! The P2-15 `merge_text` and `condense` rules are **gone — the P2-9
 //! ratchet**: installment 4 absorbed the text merge and the condense
-//! into the lowering itself (`crates/vize_l1_to_l2/src/lower/text.rs`),
+//! into the lowering itself (`davinci/vize_l1_to_l2/src/lower/text.rs`),
 //! so split/merge and whitespace mutants lower to the original's
 //! artifact with no declared rule at all, exactly as the P2-15 record's
 //! "left open" clause demanded ("turn them off and watch the suite stay

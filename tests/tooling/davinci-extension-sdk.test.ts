@@ -278,7 +278,7 @@ test("the JS and Rust SDK constants are the released handshake", async () => {
 });
 
 test("the compiled legacy guests use the exact frozen SDK/WIT 0.1.2 sources", () => {
-  const archive = path.join(root, "crates/vize_extension_host/tests/fixtures/sdk-0.1.2");
+  const archive = path.join(root, "davinci/vize_extension_host/tests/fixtures/sdk-0.1.2");
   const manifest = JSON.parse(
     fs.readFileSync(path.join(archive, "source-sha256.json"), "utf8"),
   ) as {
@@ -305,7 +305,7 @@ test("the compiled legacy guests use the exact frozen SDK/WIT 0.1.2 sources", ()
     );
   }
   for (const guest of ["sdk-hello-0-1-2", "expression-echo-0-1-2"]) {
-    const cargo = read("crates/vize_extension_host/tests/guests", guest, "Cargo.toml");
+    const cargo = read("davinci/vize_extension_host/tests/guests", guest, "Cargo.toml");
     assert.deepEqual(cargo.match(/^vize_extension_sdk = .*$/mu)?.slice(), [
       'vize_extension_sdk = { path = "../../fixtures/sdk-0.1.2" }',
     ]);

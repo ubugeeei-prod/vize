@@ -26,7 +26,7 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
     "action.yml",
   );
   const testReportJob = workflowJobBody(workflow, "test-report");
-  const manifest = readRepoFile("crates", "vize_l1_to_l2", "Cargo.toml");
+  const manifest = readRepoFile("davinci", "vize_l1_to_l2", "Cargo.toml");
   const suites = readRepoFile("docs/davinci", "plan", "test-suites.md");
 
   assert.match(

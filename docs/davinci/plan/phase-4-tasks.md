@@ -13,7 +13,7 @@
 
 **Steps:**
 
-- [x] `crates/vize_davinci/src/fact.rs` + `fact/`: `trait FactGroup { const ID: AnalysisId; const STRATUM: u8; const DEPENDS: Demand; type Key; type Value; }` — group identity **reuses** `pass::preserved::AnalysisId`, so a pass's `Preserved` mask names fact groups directly (one identity space, capped by `MAX_ANALYSES = 64` with its existing const assertion)
+- [x] `davinci/vize_davinci/src/fact.rs` + `fact/`: `trait FactGroup { const ID: AnalysisId; const STRATUM: u8; const DEPENDS: Demand; type Key; type Value; }` — group identity **reuses** `pass::preserved::AnalysisId`, so a pass's `Preserved` mask names fact groups directly (one identity space, capped by `MAX_ANALYSES = 64` with its existing const assertion)
 - [x] `Demand(u64)` built in `const` context (`Demand::NONE.with(G::ID)`); each consumer declares `const DEMAND: Demand`
 - [x] Stratification as a `const fn` over the registered group descriptors: a group may depend only on strictly lower strata, so a demand cycle is unrepresentable (the Swift anti-lesson); violations are compile errors proved by `compile_fail` doctests
 - [x] `FactManager` computes the transitive demand closure in stratum order through registered producers, each group at most once per artifact (a process-global counter pins it), and serves `get::<G>()` as a borrowed table
@@ -38,7 +38,7 @@
 
 **Steps:**
 
-- [x] `crates/vize_davinci/src/fact/preserve.rs`: `FactManager::after_pass(&PassDesc)` drops every group outside `desc.preserved`; named groups (`PRESERVE_STRUCTURE`, `PRESERVE_BINDINGS`) are `const Preserved` values
+- [x] `davinci/vize_davinci/src/fact/preserve.rs`: `FactManager::after_pass(&PassDesc)` drops every group outside `desc.preserved`; named groups (`PRESERVE_STRUCTURE`, `PRESERVE_BINDINGS`) are `const Preserved` values
 - [x] `FactVerifyObserver` (P2-3 static dispatch, release ZST): after each pass, recompute every group the pass claims to preserve and compare by exact equality
 - [x] A fixture pass that claims `Preserved::ALL` while mutating is rejected with the exact `FactError::StalePreserved { pass, group }`
 
@@ -60,7 +60,7 @@
 
 **Steps:**
 
-- [x] `trait AlphaExport: FactGroup { const ALPHA_SCHEMA: u16; type Alpha: Folio; fn export(..) -> Self::Alpha; fn import(Self::Alpha) -> FactTable<Self>; }` in `crates/vize_davinci/src/fact/alpha.rs`
+- [x] `trait AlphaExport: FactGroup { const ALPHA_SCHEMA: u16; type Alpha: Folio; fn export(..) -> Self::Alpha; fn import(Self::Alpha) -> FactTable<Self>; }` in `davinci/vize_davinci/src/fact/alpha.rs`
 - [x] α values are owned and `'static`-asserted (the P1-11 arena/cache contract); each α page prints `schema_version` (the P2-17 rule)
 - [x] `docs/davinci/plan/fact-alpha-schemas.md` documents every α group's key, value and version; a Rust test reads it via `include_str!` and fails on an undocumented group
 

@@ -23,10 +23,10 @@ void test("crate manifest deletion or move triggers the guard", () => {
       [
         "D\tcrates/vize_armature/Cargo.toml",
         "D\tcrates/vize_croquis_cf/Cargo.toml",
-        "R100\tcrates/vize_atelier_core/Cargo.toml\tcrates/vize_l2/Cargo.toml",
+        "R100\tcrates/vize_atelier_core/Cargo.toml\tdavinci/vize_l2/Cargo.toml",
         "D\tcrates/vize_relief/src/lib.rs",
         "M\tcrates/vize_croquis/Cargo.toml",
-        "D\tcrates/vize_l1/Cargo.toml",
+        "D\tdavinci/vize_l1/Cargo.toml",
       ].join("\n"),
     ),
     [

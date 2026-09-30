@@ -30,7 +30,7 @@ impl Croquis {
     /// `docs/davinci/plan/folio-format.md`; `davinci-opt --roundtrip`
     /// verifies canonical dumps. This renderer stays the producing side and
     /// must not drift from the folio parser - the fixture harness in
-    /// `crates/vize_davinci/tests/croquis_folio.rs` pins the two together.
+    /// `davinci/vize_davinci/tests/croquis_folio.rs` pins the two together.
     ///
     /// - Raw renderer output is near-canonical: the folio's first print
     ///   normalizes it (sorted map-derived name lists)

@@ -11,7 +11,7 @@
 //! ```
 //!
 //! CI builds it for `wasm32-wasip2` against the packed SDK tarball alone
-//! (`crates/vize_extension_host/tests/sdk_hello.rs`) and runs it through the
+//! (`davinci/vize_extension_host/tests/sdk_hello.rs`) and runs it through the
 //! host in both hosting modes.
 
 #![no_std]

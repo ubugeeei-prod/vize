@@ -154,7 +154,7 @@ async function runSelector(options: SelectionCase = {}) {
   const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
   const select = new AsyncFunction("context", "github", "core", script);
   const head = "a".repeat(40);
-  const files = options.files ?? [{ filename: "crates/vize_l1/src/lib.rs" }];
+  const files = options.files ?? [{ filename: "davinci/vize_l1/src/lib.rs" }];
   const changedFiles = options.changedFiles ?? files.length;
   const context = {
     eventName: options.eventName ?? "pull_request",

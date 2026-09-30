@@ -17,8 +17,8 @@ The durable witnesses are:
     model residuals.
 - [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/l2_slots.rs)
   - covers the slot-body side of the same residual program.
-- [`emit_model.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_model.rs) and
-  [`emit_on.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_on.rs)
+- [`emit_model.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_model.rs) and
+  [`emit_on.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_on.rs)
   - pin the direct emitter behavior before the atelier byte comparison.
 
 This installment does not tick P2-11. It removes a named residual class, while

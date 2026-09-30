@@ -177,8 +177,8 @@ async fn prepare_candidate(
   // These standalone workspaces depend on the in-tree SDK and build with
   // --locked. Updating the root workspace lockfile cannot refresh them.
   for manifest in [
-    "crates/vize_extension_host/tests/guests/expression-echo/Cargo.toml",
-    "crates/vize_extension_host/tests/guests/output-echo/Cargo.toml",
+    "davinci/vize_extension_host/tests/guests/expression-echo/Cargo.toml",
+    "davinci/vize_extension_host/tests/guests/output-echo/Cargo.toml",
     "examples/volt-target/Cargo.toml",
   ] {
     if !@tool.path_exists(manifest) {

@@ -14,12 +14,12 @@
 )]
 
 use davinci_test_support::surface_fixture as common;
+use vize_l0::ErrorCode;
 use vize_l0::{Allocator, String};
 use vize_l1::{
     ElementClose, HoleCounts, SurfaceChild, SurfaceParseOptions, SurfaceTree, check_fidelity,
     hole_counts, parse, parse_with_options, render,
 };
-use vize_relief::ErrorCode;
 
 fn rendered(tree: &SurfaceTree<'_>) -> String {
     let mut out = String::default();

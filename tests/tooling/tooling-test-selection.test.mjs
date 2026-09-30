@@ -33,7 +33,7 @@ function fixture() {
 void test("unrelated source edits omit audited plan contracts but keep broad runtime checks", () => {
   const f = fixture();
   try {
-    assert.deepEqual(planToolingTests(["crates/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, [
+    assert.deepEqual(planToolingTests(["davinci/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, [
       "tests/tooling/native.test.ts",
     ]);
     const docs = planToolingTests(["docs/davinci/plan/phase-4.md"], { cwd: f.cwd });
@@ -76,7 +76,7 @@ void test("unknown, dynamic, and shared dependency inputs restore the broad PR s
       assert.equal(planToolingTests(paths, { cwd: f.cwd }).tests.length, 2);
     }
     f.write("tests/tooling/davinci-phase4-contract-status.test.ts", "import(variable);");
-    assert.equal(planToolingTests(["crates/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests.length, 2);
+    assert.equal(planToolingTests(["davinci/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests.length, 2);
   } finally {
     f.cleanup();
   }

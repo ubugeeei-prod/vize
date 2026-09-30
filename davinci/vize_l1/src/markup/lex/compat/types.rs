@@ -1,4 +1,4 @@
-use vize_relief::ErrorCode;
+use vize_l0::ErrorCode;
 
 use super::char_codes::{
     CARRIAGE_RETURN, FORM_FEED, GT, LOWER_A, LOWER_Z, NEWLINE, SLASH, SPACE, TAB, UPPER_A, UPPER_Z,

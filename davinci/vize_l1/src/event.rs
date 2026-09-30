@@ -7,8 +7,8 @@
 //! function over data instead of a callback state machine.
 
 use crate::markup::lex::compat::{Callbacks, QuoteType};
+use vize_l0::ErrorCode;
 use vize_l0::Vec;
-use vize_relief::ErrorCode;
 
 use crate::parse::SurfaceError;
 

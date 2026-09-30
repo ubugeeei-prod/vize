@@ -30,7 +30,7 @@ pub use typed_expression::WasmTypedExpressionGuest;
 
 pub(crate) mod bindings {
     wasmtime::component::bindgen!({
-        path: "../vize_guest/wit",
+        path: "../../crates/vize_guest/wit",
         world: "input-dialect",
     });
 }

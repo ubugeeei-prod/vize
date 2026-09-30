@@ -26,7 +26,7 @@
 //! [`Rigor`] follows `PassKind`: the structural set holds after every
 //! pass; the canonical set additionally holds from the first
 //! `MandatoryLowering` pass on — the kind that canonicalizes
-//! (`crates/vize_davinci/src/pass/kind.rs`) — and diagnostic/optional
+//! (`davinci/vize_davinci/src/pass/kind.rs`) — and diagnostic/optional
 //! passes never change the rigor. Expr-ref liveness is the one check with
 //! no code of its own: it reuses the P1-11 arena-generation stamp
 //! ([`observer::VerifyObserver::check_live`]) rather than inventing a
@@ -65,7 +65,7 @@ mod walk;
 pub use observer::VerifyObserver;
 
 /// Which invariant set applies, tracking the artifact's raw → canonical
-/// state (`crates/vize_davinci/src/pass/canonical.rs`).
+/// state (`davinci/vize_davinci/src/pass/canonical.rs`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Rigor {
     /// No mandatory-lowering pass has run: structural invariants only.

@@ -82,8 +82,10 @@ fn run() -> Result<(), String> {
     else {
         return Ok(()); // Existing names keep cargo-semver-checks' registry baseline.
     };
-    let current_manifest =
-        fs::read_to_string(format!("crates/{package}/Cargo.toml")).map_err(|e| e.to_string())?;
+    let current_manifest = ["crates", "davinci"]
+        .iter()
+        .find_map(|directory| fs::read_to_string(format!("{directory}/{package}/Cargo.toml")).ok())
+        .ok_or("current package manifest is missing")?;
     let current: DocumentMut = current_manifest
         .parse()
         .map_err(|e: toml_edit::TomlError| e.to_string())?;

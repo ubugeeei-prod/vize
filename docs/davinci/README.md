@@ -34,10 +34,10 @@ The current numbered layers are L0–L4; see [layer names and compatibility](./l
    [phase plan](./plan/README.md) for the current task index. Open a phase file
    before its task contracts: the phase index shows completed work, start gates,
    and links to the implementation records.
-2. Follow the foundation in [`vize_davinci`](../../crates/vize_davinci/src/lib.rs),
-   then the lossless surface tree in [`vize_l1`](../../crates/vize_l1/src/lib.rs),
-   the semantic IR in [`vize_l2`](../../crates/vize_l2/src/lib.rs), and the
-   conversion in [`vize_l1_to_l2`](../../crates/vize_l1_to_l2/src/lib.rs).
+2. Follow the foundation in [`vize_davinci`](../../davinci/vize_davinci/src/lib.rs),
+   then the lossless surface tree in [`vize_l1`](../../davinci/vize_l1/src/lib.rs),
+   the semantic IR in [`vize_l2`](../../davinci/vize_l2/src/lib.rs), and the
+   conversion in [`vize_l1_to_l2`](../../davinci/vize_l1_to_l2/src/lib.rs).
    These are experimental stage crates; use the phase records to distinguish
    implemented contracts from production-connected paths.
 3. For a concrete behavior, start with the relevant phase record, follow its

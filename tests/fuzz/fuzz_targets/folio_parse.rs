@@ -6,7 +6,7 @@
 // under the invariant that *no input must panic*: parsers return
 // `Result<_, DumpError>` for malformed pages, so a panic here is always
 // a bug. Four parsers share the input — the L2 Disegno page
-// (`vize_l2`, path `crates/vize_l2`), the L3 Impeto page, the croquis page,
+// (`vize_l2`, path `davinci/vize_l2`), the L3 Impeto page, the croquis page,
 // and the repro page (`vize_davinci`).
 //
 // When an input does parse, the mode-explicit round-trip law is asserted

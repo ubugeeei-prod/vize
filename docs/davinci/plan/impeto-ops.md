@@ -148,7 +148,7 @@ spends one unit of the component's candidate budget; a candidate blocked by the
 committed plan (`subsumed`, `not-contiguous`) or reached after the budget is
 spent (`budget-exhausted`) is recorded as missed without measuring. Tiers are
 the `[optimization]` rows of `budgets.toml`, synced field for field by
-`crates/vize_l3/tests/optimization_budgets.rs`.
+`davinci/vize_l3/tests/optimization_budgets.rs`.
 
 The pass writes only `PlacementRecord::chosen` and is described as
 `Preserved::ALL`. `vize_l3::optimize::OPTIMIZE` is the `s3` pipeline

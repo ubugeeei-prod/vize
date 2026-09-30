@@ -13,9 +13,9 @@ The durable witnesses are:
 
 - [`davinci_s2_expression_residuals.rs`](../../../../../crates/vize_atelier_dom/tests/l2_expression_residuals.rs)
   - records the DOM byte witness for line-comment expression cases.
-- [`js.rs`](../../../../../crates/vize_l1_to_l2/src/emit/js.rs)
+- [`js.rs`](../../../../../davinci/vize_l1_to_l2/src/emit/js.rs)
   - owns the emitted JS expression rendering.
-- [`emit_unsupported_census.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_unsupported_census.rs)
+- [`emit_unsupported_census.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_unsupported_census.rs)
   - keeps the retired unsupported class from silently returning.
 
 This installment does not tick P2-11. It closes the line-comment expression

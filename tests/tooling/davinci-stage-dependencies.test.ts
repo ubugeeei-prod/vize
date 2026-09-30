@@ -138,11 +138,11 @@ test("Davinci stage crates are publishable with registry-resolvable dependencies
 
 test("Davinci fuzz harness imports stage packages through aliases", () => {
   const manifest = readRepoFile("tests", "fuzz", "Cargo.toml");
-  assert.match(manifest, /^vize_l0 = \{ path = "\.\.\/\.\.\/crates\/vize_l0" \}$/m);
-  assert.match(manifest, /^vize_l1_to_l2 = \{ path = "\.\.\/\.\.\/crates\/vize_l1_to_l2" \}$/m);
-  assert.match(manifest, /^vize_l2 = \{ path = "\.\.\/\.\.\/crates\/vize_l2" \}$/m);
-  assert.match(manifest, /^vize_l2_to_l3 = \{ path = "\.\.\/\.\.\/crates\/vize_l2_to_l3" \}$/m);
-  assert.match(manifest, /^vize_l3 = \{ path = "\.\.\/\.\.\/crates\/vize_l3" \}$/m);
+  assert.match(manifest, /^vize_l0 = \{ path = "\.\.\/\.\.\/davinci\/vize_l0" \}$/m);
+  assert.match(manifest, /^vize_l1_to_l2 = \{ path = "\.\.\/\.\.\/davinci\/vize_l1_to_l2" \}$/m);
+  assert.match(manifest, /^vize_l2 = \{ path = "\.\.\/\.\.\/davinci\/vize_l2" \}$/m);
+  assert.match(manifest, /^vize_l2_to_l3 = \{ path = "\.\.\/\.\.\/davinci\/vize_l2_to_l3" \}$/m);
+  assert.match(manifest, /^vize_l3 = \{ path = "\.\.\/\.\.\/davinci\/vize_l3" \}$/m);
   assert.doesNotMatch(manifest, /^vize_(?:carton|disegno|ricalco) = /m);
 
   for (const target of [
@@ -158,9 +158,9 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
 
 test("Davinci L2 uses the physical crate directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
-  assert.match(workspaceManifest, /^\s*"crates\/vize_l2",$/m);
+  assert.match(workspaceManifest, /^\s*"davinci\/vize_l2",$/m);
   assert.deepEqual(workspaceDependencyDeclaration("vize_l2"), {
-    path: "crates/vize_l2",
+    path: "davinci/vize_l2",
     version: `=${workspacePackage(metadata, "vize_l2").version}`,
   });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_disegno/u);
@@ -168,16 +168,16 @@ test("Davinci L2 uses the physical crate directory", () => {
 
 test("Davinci L1-to-L2 uses the physical crate package and directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
-  assert.match(workspaceManifest, /^\s*"crates\/vize_l1_to_l2",$/m);
+  assert.match(workspaceManifest, /^\s*"davinci\/vize_l1_to_l2",$/m);
   assert.deepEqual(workspaceDependencyDeclaration("vize_l1_to_l2"), {
-    path: "crates/vize_l1_to_l2",
+    path: "davinci/vize_l1_to_l2",
     version: `=${workspacePackage(metadata, "vize_l1_to_l2").version}`,
   });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_ricalco/u);
   assert.doesNotMatch(workspaceManifest, /^vize_ricalco = /m);
   assert.doesNotMatch(workspaceManifest, /package = "vize_ricalco"/u);
 
-  const loweringManifest = readRepoFile("crates", "vize_l1_to_l2", "Cargo.toml");
+  const loweringManifest = readRepoFile("davinci", "vize_l1_to_l2", "Cargo.toml");
   assert.match(loweringManifest, /^name = "vize_l1_to_l2"$/m);
 
   const lockfile = readRepoFile("Cargo.lock");
@@ -187,19 +187,19 @@ test("Davinci L1-to-L2 uses the physical crate package and directory", () => {
 
 test("Davinci L3 uses the physical crate package and directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
-  assert.match(workspaceManifest, /^\s*"crates\/vize_l3",$/m);
+  assert.match(workspaceManifest, /^\s*"davinci\/vize_l3",$/m);
   assert.deepEqual(workspaceDependencyDeclaration("vize_l3"), {
-    path: "crates/vize_l3",
+    path: "davinci/vize_l3",
     version: `=${workspacePackage(metadata, "vize_l3").version}`,
   });
   assert.doesNotMatch(workspaceManifest, /\bvize_impeto\b/u);
 
-  const l3Manifest = readRepoFile("crates", "vize_l3", "Cargo.toml");
+  const l3Manifest = readRepoFile("davinci", "vize_l3", "Cargo.toml");
   assert.match(l3Manifest, /^name = "vize_l3"$/m);
 });
 
 test("Davinci L1-to-L2 source paths use the physical L2 folio type", () => {
-  const sourceDir = path.join(repoRoot, "crates", "vize_l1_to_l2", "src");
+  const sourceDir = path.join(repoRoot, "davinci", "vize_l1_to_l2", "src");
   for (const fullPath of walkRustFiles(sourceDir)) {
     const source = fs.readFileSync(fullPath, "utf8");
     assert.doesNotMatch(

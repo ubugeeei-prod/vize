@@ -2,7 +2,7 @@ use super::{
     Tokenizer,
     tests::{TestCallbacks, TokenEvent},
 };
-use vize_relief::ErrorCode;
+use vize_l0::ErrorCode;
 
 fn tokenize(input: &str, open: &[u8], close: &[u8]) -> TestCallbacks {
     let callbacks = TestCallbacks::default();

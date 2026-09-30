@@ -14,7 +14,7 @@ use alloc::vec::Vec;
 use vize_guest as _;
 
 wit_bindgen::generate!({
-    path: "../../../../vize_guest/wit",
+    path: "../../../../../crates/vize_guest/wit",
     world: "expression-dialect",
 });
 

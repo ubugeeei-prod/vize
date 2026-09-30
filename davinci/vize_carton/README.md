@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/assets/crates/vize_carton.svg" alt="vize_carton logo" width="120" height="120" /><br>
+  <img src="https://raw.githubusercontent.com/ubugeeei-prod/vize/main/assets/davinci/vize_carton.svg" alt="vize_carton logo" width="120" height="120" /><br>
   vize_carton
 </h1>
 

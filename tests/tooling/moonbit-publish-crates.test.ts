@@ -19,7 +19,9 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
   assert.ok(version);
   const manifestSnapshots = new Map(
     publishedCrates.map((crateName) => {
-      const manifestPath = path.join(repoRoot, "crates", crateName, "Cargo.toml");
+      const manifestPath = getMetadata().packages.find(
+        (pkg) => pkg.name === crateName,
+      )!.manifest_path;
       return [manifestPath, fs.readFileSync(manifestPath, "utf8")] as const;
     }),
   );

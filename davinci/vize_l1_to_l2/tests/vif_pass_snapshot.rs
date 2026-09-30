@@ -1,6 +1,6 @@
 //! TS-17 for the `v-if` pass (P2-9 series 1): committed fixture in,
 //! pipeline out, **full normalized folio** snapshot — the P2-4 harness
-//! shape (`crates/vize_davinci/tests/pipeline_snapshot.rs`), applied to
+//! shape (`davinci/vize_davinci/tests/pipeline_snapshot.rs`), applied to
 //! the first landed pass body.
 //!
 //! The snapshot is the oracle; the walk accounting, facts and

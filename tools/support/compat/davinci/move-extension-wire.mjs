@@ -6,9 +6,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
-const contractPath = path.join(root, "crates/vize_extension_contract/src/contract.rs");
-const oldHandshake = path.join(root, "crates/vize_extension_contract/src/handshake.rs");
-const directory = path.join(root, "crates/vize_carton/src/extension");
+const contractPath = path.join(root, "davinci/vize_extension_contract/src/contract.rs");
+const oldHandshake = path.join(root, "davinci/vize_extension_contract/src/handshake.rs");
+const directory = path.join(root, "davinci/vize_carton/src/extension");
 const newHandshake = path.join(directory, "handshake.rs");
 let contract = readFileSync(contractPath, "utf8");
 
@@ -20,7 +20,7 @@ if (contract.includes("pub use vize_l0::extension::wire::{")) {
   }
   process.stdout.write("extension wire ownership is already integrated\n");
 } else {
-  const libPath = path.join(root, "crates/vize_carton/src/lib.rs");
+  const libPath = path.join(root, "davinci/vize_carton/src/lib.rs");
   const lib = readFileSync(libPath, "utf8");
   if (lib.split("pub mod expression_guard;\n").length !== 2) {
     throw new Error("foundation module registration changed");

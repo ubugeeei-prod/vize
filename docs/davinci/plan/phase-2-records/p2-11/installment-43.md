@@ -17,7 +17,7 @@ The durable witnesses are:
   - pins shipped DOM codegen against Vue-compatible dynamic argument prefixing.
 - [`davinci_s2_dynamic_bind_keys.rs`](../../../../../crates/vize_atelier_dom/tests/l2_dynamic_bind_keys.rs)
   - keeps S2 dynamic bind keys byte-identical to the shipped DOM lane.
-- [`emit_dynamic_on_keys.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_dynamic_on_keys.rs)
+- [`emit_dynamic_on_keys.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_dynamic_on_keys.rs)
   - keeps S2 dynamic `v-on` keys on the shipped helper shape, including
     compound names and local scope exceptions.
 

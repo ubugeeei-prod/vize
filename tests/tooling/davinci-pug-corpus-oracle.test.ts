@@ -2,7 +2,7 @@
 // baseline pins, for every inline `<template lang="pug">` SFC of the
 // registered corpus at its pinned revision, the sha256 of what the pinned
 // `pug@3.0.4` renders for the content `@vue/compiler-sfc` extracts. The Rust
-// corpus lane (`crates/vize_l1_to_l2/tests/davinci_pug_corpus.rs`) holds
+// corpus lane (`davinci/vize_l1_to_l2/tests/davinci_pug_corpus.rs`) holds
 // vize's derived template to those hashes and compiles each SFC against its
 // derived-HTML twin in the DOM, SSR and Vapor lanes, so together they are
 // the compile oracle over the corpus. Scope proof: for every hydrated

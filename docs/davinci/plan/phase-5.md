@@ -40,14 +40,14 @@ Lanes own disjoint paths within this phase. Cross-phase: lane D must not edit ph
 
 | Lane | Tasks               | Owns (only this lane edits)                                                                    |
 | ---- | ------------------- | ---------------------------------------------------------------------------------------------- |
-| A    | P5-1a, P5-1b        | `crates/vize_davinci/src/key*`, `docs/davinci/plan/key-manifests.md`                           |
-| B    | P5-2, P5-3          | `crates/vize_davinci/src/summary*`                                                             |
+| A    | P5-1a, P5-1b        | `davinci/vize_davinci/src/key*`, `docs/davinci/plan/key-manifests.md`                           |
+| B    | P5-2, P5-3          | `davinci/vize_davinci/src/summary*`                                                             |
 | C    | P5-4a, P5-4b, P5-5  | `crates/vize_resident/`                                                                        |
 | D    | P5-6a, P5-6b, P5-6c | `crates/vize_maestro/src/ide/`, `crates/vize_maestro/src/server/`                              |
 | E    | P5-7                | `crates/vize_canon/src/projection/reuse*`                                                      |
 | F    | P5-8                | `crates/vize_canon/src/corsa_session_cache*`, `crates/vize/src/commands/check_server*`         |
 | G    | P5-9                | `tools/commands/davinci/incremental-equivalence*`, `.github/workflows/davinci-incremental.yml` |
-| H    | P5-10               | `crates/vize_l1_to_l2/src/partial*`, `tests/tooling/lsp-broken-file*`                          |
+| H    | P5-10               | `davinci/vize_l1_to_l2/src/partial*`, `tests/tooling/lsp-broken-file*`                          |
 | I    | P5-11a, P5-11b      | `tools/commands/davinci/resource-budgets*`, `tests/tooling/davinci-resource-budgets*`          |
 | J    | P5-12               | `tests/editor-conformance/`, `tests/tooling/editor-conformance*`                               |
 | K    | P5-13               | `crates/vize_vitrine/src/napi/plugin_cache*`                                                   |

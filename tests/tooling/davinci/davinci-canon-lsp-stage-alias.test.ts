@@ -72,7 +72,7 @@ test("Canon LSP client imports L0 storage through the stage alias", () => {
   const canonS0 = asRecord(canonDependencies.vize_l0);
 
   assert.equal(workspaceS0.package, undefined);
-  assert.equal(workspaceS0.path, "crates/vize_l0");
+  assert.equal(workspaceS0.path, "davinci/vize_l0");
   assert.equal(canonS0.workspace, true);
   assert.ok(!Object.hasOwn(canonDependencies, "vize_carton"));
 
@@ -85,7 +85,7 @@ test("Canon LSP client imports L0 storage through the stage alias", () => {
     (dependency) => dependency.name === "vize_l0" && dependency.rename === null,
   );
   assert.ok(s0Dependency);
-  assert.equal(s0Dependency.path, path.join(repoRoot, "crates", "vize_l0"));
+  assert.equal(s0Dependency.path, path.join(repoRoot, "davinci", "vize_l0"));
   assert.equal(s0Dependency.req, `=${cartonPackage.version}`);
   assert.equal(s0Dependency.kind, null);
   assert.equal(s0Dependency.optional, false);

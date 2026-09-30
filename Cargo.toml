@@ -1,7 +1,7 @@
 [workspace]
 resolver = "3"
 members = [
-  "crates/vize_carton",
+  "davinci/vize_carton",
   "crates/vize_relief",
   "crates/vize_armature",
   "crates/vize_croquis",
@@ -20,20 +20,20 @@ members = [
   "crates/vize_musea",
   "crates/vize_maestro",
   "crates/vize_curator",
-  "crates/vize_davinci",
-  "crates/vize_davinci_derive",
-  "crates/vize_l2",
-  "crates/vize_l3",
-  "crates/vize_l1_to_l2",
-  "crates/vize_l2_to_l3",
-  "crates/vize_l1",
-  "crates/vize_l4",
-  "crates/vize_l0",
+  "davinci/vize_davinci",
+  "davinci/vize_davinci_derive",
+  "davinci/vize_l2",
+  "davinci/vize_l3",
+  "davinci/vize_l1_to_l2",
+  "davinci/vize_l2_to_l3",
+  "davinci/vize_l1",
+  "davinci/vize_l4",
+  "davinci/vize_l0",
   "crates/vize_fresco",
   "crates/vize_marquette",
   "crates/vize_doctor",
-  "crates/vize_extension_contract",
-  "crates/vize_extension_host",
+  "davinci/vize_extension_contract",
+  "davinci/vize_extension_host",
   "crates/vize_resident",
   "crates/vize_dialect_moonbit",
   "crates/vize_guest",
@@ -52,7 +52,7 @@ repository = "https://github.com/ubugeeei-prod/vize"
 
 [workspace.dependencies]
 # Publishable internal crates (path for local dev, version fallback for crates.io)
-vize_carton = { path = "crates/vize_carton", version = "=0.429.1" }
+vize_carton = { path = "davinci/vize_carton", version = "=0.429.1" }
 vize_relief = { path = "crates/vize_relief", version = "=0.429.1" }
 vize_armature = { path = "crates/vize_armature", version = "=0.429.1" }
 vize_croquis = { path = "crates/vize_croquis", version = "=0.429.1" }
@@ -78,25 +78,25 @@ vize_glyph = { path = "crates/vize_glyph" }
 vize_maestro = { path = "crates/vize_maestro" }
 vize_curator = { path = "crates/vize_curator" }
 vize_resident = { path = "crates/vize_resident" }
-vize_extension_contract = { path = "crates/vize_extension_contract" }
-vize_extension_host = { path = "crates/vize_extension_host" }
+vize_extension_contract = { path = "davinci/vize_extension_contract" }
+vize_extension_host = { path = "davinci/vize_extension_host" }
 vize_guest = { path = "crates/vize_guest" }
 
 # Publishable Davinci stage infrastructure. Stage crates keep their physical
 # names and version fallbacks so a publishable consumer can resolve the same
 # dependency graph from crates.io.
-vize_davinci = { path = "crates/vize_davinci", version = "=0.429.1" }
-vize_davinci_derive = { path = "crates/vize_davinci_derive", version = "=0.429.1" }
+vize_davinci = { path = "davinci/vize_davinci", version = "=0.429.1" }
+vize_davinci_derive = { path = "davinci/vize_davinci_derive", version = "=0.429.1" }
 
 # Level dependencies use physical package identities. L0 re-exports carton
 # until its storage modules move in (#6834).
-vize_l0 = { path = "crates/vize_l0", version = "=0.429.1" }
-vize_l1 = { path = "crates/vize_l1", version = "=0.429.1" }
-vize_l2 = { path = "crates/vize_l2", version = "=0.429.1" }
-vize_l3 = { path = "crates/vize_l3", version = "=0.429.1" }
-vize_l1_to_l2 = { path = "crates/vize_l1_to_l2", version = "=0.429.1" }
-vize_l2_to_l3 = { path = "crates/vize_l2_to_l3", version = "=0.429.1" }
-vize_l4 = { path = "crates/vize_l4", version = "=0.429.1" }
+vize_l0 = { path = "davinci/vize_l0", version = "=0.429.1" }
+vize_l1 = { path = "davinci/vize_l1", version = "=0.429.1" }
+vize_l2 = { path = "davinci/vize_l2", version = "=0.429.1" }
+vize_l3 = { path = "davinci/vize_l3", version = "=0.429.1" }
+vize_l1_to_l2 = { path = "davinci/vize_l1_to_l2", version = "=0.429.1" }
+vize_l2_to_l3 = { path = "davinci/vize_l2_to_l3", version = "=0.429.1" }
+vize_l4 = { path = "davinci/vize_l4", version = "=0.429.1" }
 
 # OXC dependencies (pinned to a specific upstream revision for reproducibility)
 oxc_parser = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }

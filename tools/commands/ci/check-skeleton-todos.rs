@@ -9,7 +9,7 @@
 //! opts out with a module-level
 //! `#![expect(clippy::todo, reason = "skeleton: #NNNN")]`. This check counts
 //! those `expect(clippy::todo` occurrences (outside comments) per crate
-//! under `crates/` and compares them with `tools/config/skeleton-todos.toml`:
+//! under `crates/` and `davinci/` and compares them with `tools/config/skeleton-todos.toml`:
 //!
 //! - a crate above its baseline (or missing from it) fails: counts only go down;
 //! - a crate below its baseline fails too, so each PR that fills a skeleton
@@ -45,7 +45,8 @@ fn main() -> ExitCode {
 fn run(check: bool, write: bool) -> Result<(), String> {
     let baseline_text = fs::read_to_string(BASELINE).map_err(|err| format!("{BASELINE}: {err}"))?;
     let baseline = parse_baseline(&baseline_text)?;
-    let counts = count_crates(Path::new("crates"))?;
+    let mut counts = count_crates(Path::new("crates"))?;
+    counts.extend(count_crates(Path::new("davinci"))?);
 
     let mut problems = Vec::new();
     let mut raised = false;
@@ -115,7 +116,10 @@ fn parse_baseline(text: &str) -> Result<BTreeMap<String, usize>, String> {
             (!key.is_empty()).then(|| (key.to_owned(), value))
         });
         let Some((key, value)) = parsed else {
-            return Err(format!("{BASELINE}:{}: expected `crate = count`", index + 1));
+            return Err(format!(
+                "{BASELINE}:{}: expected `crate = count`",
+                index + 1
+            ));
         };
         if entries.insert(key, value).is_some() {
             return Err(format!("{BASELINE}:{}: duplicate entry", index + 1));

@@ -14,9 +14,9 @@ NEW = "vize_guest"
 OLD_DIR = ROOT / "crates" / OLD
 NEW_DIR = ROOT / "crates" / NEW
 ARCHIVED = (
-    "crates/vize_extension_host/tests/fixtures/sdk-0.1.2/",
-    "crates/vize_extension_host/tests/guests/sdk-hello-0-1-2/",
-    "crates/vize_extension_host/tests/guests/expression-echo-0-1-2/",
+    "davinci/vize_extension_host/tests/fixtures/sdk-0.1.2/",
+    "davinci/vize_extension_host/tests/guests/sdk-hello-0-1-2/",
+    "davinci/vize_extension_host/tests/guests/expression-echo-0-1-2/",
 )
 
 

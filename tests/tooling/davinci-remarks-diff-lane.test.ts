@@ -18,7 +18,7 @@ test("the TS-32 remarks-diff lane is wired and documented", () => {
     "test-rust-workspace-differential",
     "action.yml",
   );
-  const manifest = readRepoFile("crates", "vize_l1_to_l2", "Cargo.toml");
+  const manifest = readRepoFile("davinci", "vize_l1_to_l2", "Cargo.toml");
   const suites = readRepoFile("docs/davinci", "plan", "test-suites.md");
   const baseline = readRepoFile("tests", "_fixtures", "davinci-remarks-baseline.folio");
 

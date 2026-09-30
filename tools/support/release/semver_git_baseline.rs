@@ -21,19 +21,21 @@ pub fn prepare(
         .map_err(|e| e.to_string())?
         .trim()
         .to_string();
-    let current_manifest = Command::new("git")
-        .args(["show", &format!("{sha}:crates/{package}/Cargo.toml")])
-        .output()
-        .map_err(|e| e.to_string())?;
-    if current_manifest.status.success() {
-        let document: DocumentMut = String::from_utf8(current_manifest.stdout)
-            .map_err(|e| e.to_string())?
-            .parse()
-            .map_err(|e: toml_edit::TomlError| e.to_string())?;
-        if document["package"]["name"].as_str() != Some(package) {
-            return Err("actual base new-package manifest identity mismatch".into());
+    for directory in ["crates", "davinci"] {
+        let current_manifest = Command::new("git")
+            .args(["show", &format!("{sha}:{directory}/{package}/Cargo.toml")])
+            .output()
+            .map_err(|e| e.to_string())?;
+        if current_manifest.status.success() {
+            let document: DocumentMut = String::from_utf8(current_manifest.stdout)
+                .map_err(|e| e.to_string())?
+                .parse()
+                .map_err(|e: toml_edit::TomlError| e.to_string())?;
+            if document["package"]["name"].as_str() != Some(package) {
+                return Err("actual base new-package manifest identity mismatch".into());
+            }
+            return Ok(None); // Preserve --baseline-rev when package lookup already works.
         }
-        return Ok(None); // Preserve --baseline-rev when package lookup already works.
     }
     let archive = destination.join("actual-base.tar");
     let output = Command::new("git")
@@ -59,7 +61,11 @@ pub fn prepare(
         return Err("cannot extract actual Git base".into());
     }
     let workspace_path = destination.join("Cargo.toml");
-    let root = destination.join("crates").join(old_name);
+    let root = ["crates", "davinci"]
+        .iter()
+        .map(|directory| destination.join(directory).join(old_name))
+        .find(|root| root.join("Cargo.toml").is_file())
+        .ok_or("actual base package manifest is missing")?;
     let manifest_path = root.join("Cargo.toml");
     let (manifest, workspace) = adapt_manifests(
         &fs::read_to_string(&manifest_path).map_err(|e| e.to_string())?,
@@ -99,8 +105,10 @@ fn adapt_manifests(
     let dependency = workspace["workspace"]["dependencies"][old_name]
         .as_table_like_mut()
         .ok_or("actual base workspace dependency lookup is missing")?;
-    if dependency.get("path").and_then(|path| path.as_str()) != Some(&format!("crates/{old_name}"))
-    {
+    if !["crates", "davinci"].iter().any(|directory| {
+        dependency.get("path").and_then(|path| path.as_str())
+            == Some(&format!("{directory}/{old_name}"))
+    }) {
         return Err("actual base workspace dependency path mismatch".into());
     }
     if let Some(name) = dependency.get("package") {

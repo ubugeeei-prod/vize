@@ -2,8 +2,8 @@
 //! with the byte-fidelity verifier asserted on every construction.
 
 use crate::markup::lex::compat::Tokenizer;
+use vize_l0::ErrorCode;
 use vize_l0::{Allocator, Vec};
-use vize_relief::ErrorCode;
 
 use crate::build::build;
 use crate::event::{Event, Recorder};

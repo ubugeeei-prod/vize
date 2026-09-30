@@ -134,9 +134,13 @@ export function deriveInventory(
       }
     }
   }
-  const cratesDir = path.join(root, "crates");
-  for (const crate of fs.readdirSync(cratesDir).sort()) {
-    const files = rustFiles(path.join(cratesDir, crate, "src"));
+  const crates = ["crates", "davinci"].flatMap((directory) =>
+    (fs.existsSync(path.join(root, directory)) ? fs.readdirSync(path.join(root, directory)) : [])
+      .sort()
+      .map((crate) => ({ directory, crate })),
+  );
+  for (const { directory, crate } of crates) {
+    const files = rustFiles(path.join(root, directory, crate, "src"));
     const declared: Array<ExemptionRow & { ident: string; at: string }> = [];
     for (const file of files) {
       const relative = path.relative(root, file);

@@ -21,10 +21,10 @@ test("registry failures cannot turn the first-publish baseline into a skipped ch
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-semver-registry-"));
   const bin = path.join(root, "bin");
   fs.mkdirSync(bin);
-  fs.mkdirSync(path.join(root, "crates", "vize_l1_to_l2"), { recursive: true });
+  fs.mkdirSync(path.join(root, "davinci", "vize_l1_to_l2"), { recursive: true });
   fs.writeFileSync(path.join(root, "Cargo.toml"), '[workspace.package]\nversion = "0.429.0"\n');
   fs.writeFileSync(
-    path.join(root, "crates", "vize_l1_to_l2", "Cargo.toml"),
+    path.join(root, "davinci", "vize_l1_to_l2", "Cargo.toml"),
     '[package]\nname = "vize_l1_to_l2"\nversion.workspace = true\n',
   );
   writeFakeCommand(
@@ -112,7 +112,7 @@ test("a renamed package uses the exact Git parent source and version before regi
     "exact API parent",
   ]);
   const base = git(["rev-parse", "HEAD"]);
-  const newCrate = path.join(root, "crates", "vize_l1_to_l2");
+  const newCrate = path.join(root, "davinci", "vize_l1_to_l2");
   fs.renameSync(oldCrate, newCrate);
   fs.writeFileSync(
     path.join(newCrate, "Cargo.toml"),

@@ -41,11 +41,11 @@ export function planSourceChecks(paths, eventName = "pull_request") {
       result.rust = true;
       continue;
     }
-    if (/^(crates\/|\.cargo\/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(path)) {
+    if (/^(crates\/|davinci\/|\.cargo\/|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(path)) {
       result.rust = true;
       result.js = true;
       if (
-        /^(crates\/vize_(atelier|s[12]|l[0-4]|davinci|impeto|armature)|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(
+        /^(davinci\/|crates\/vize_(atelier|s[12]|l[0-4]|davinci|impeto|armature)|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(
           path,
         )
       ) {

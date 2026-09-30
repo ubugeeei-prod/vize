@@ -10,12 +10,12 @@ on:
   push:
     branches: [main, davinci]
     paths:
-      - "crates/vize_extension_contract/**"
+      - "davinci/vize_extension_contract/**"
       - "crates/vize_dialect_moonbit/**"
       - "crates/vize_croquis/src/sfc/**"
-      - "crates/vize_l1/**"
-      - "crates/vize_l1_to_l2/**"
-      - "crates/vize_l2/**"
+      - "davinci/vize_l1/**"
+      - "davinci/vize_l1_to_l2/**"
+      - "davinci/vize_l2/**"
       - ".moonbit-version"
       - ".github/actions/setup-moonbit/**"
       - "Cargo.toml"

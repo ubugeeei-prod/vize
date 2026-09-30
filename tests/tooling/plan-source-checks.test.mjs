@@ -58,7 +58,7 @@ void test("merge groups run every source suite regardless of the changed paths",
     [],
     ["docs/guide/example.md"],
     ["npm/ui/src/index.ts"],
-    ["crates/vize_l1/src/lib.rs"],
+    ["davinci/vize_l1/src/lib.rs"],
   ]) {
     assert.deepEqual(planSourceChecks(paths, "merge_group"), {
       rust: true,

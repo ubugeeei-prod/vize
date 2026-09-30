@@ -14,39 +14,12 @@
 
 use super::{CompilerError, ErrorCode};
 use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind, Stage};
-use vize_l0::i18n::{Locale, translator};
-use vize_l0::{CompactString, Span, cstr};
+use vize_l0::i18n::Locale;
+use vize_l0::{CompactString, Span};
 
 /// The exemption compiler errors report under until the compiler produces
 /// witnesses (P4-6), counted in `docs/davinci/plan/witness-exemptions.tsv`.
 pub static COMPILER_ERROR: Exemption = Exemption::new("vize_relief", "compiler-error");
-
-impl ErrorCode {
-    /// The stage whose checks raise this code.
-    #[must_use]
-    pub fn stage(self) -> Stage {
-        match self {
-            Self::ExtendPoint => Stage::Surface,
-            _ if self.is_parse_error() => Stage::Surface,
-            _ if self.is_transform_error() => Stage::Lowered,
-            _ => Stage::Emit,
-        }
-    }
-
-    /// The catalogued headline for this code in `locale`.
-    #[must_use]
-    pub fn localized_message(self, locale: Locale) -> CompactString {
-        let key = cstr!("{}.message", self.code());
-        translator().get(locale, &key).as_ref().into()
-    }
-
-    /// The catalogued remedy for this code in `locale`.
-    #[must_use]
-    pub fn localized_help(self, locale: Locale) -> CompactString {
-        let key = cstr!("{}.help", self.code());
-        translator().get(locale, &key).as_ref().into()
-    }
-}
 
 impl CompilerError {
     /// This error's headline in `locale`: the catalogued text when it carries

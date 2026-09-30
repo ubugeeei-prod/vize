@@ -11,9 +11,9 @@ future unsupported cases stay named.
 
 The durable witnesses are:
 
-- [`emit_on_handler_body.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_on_handler_body.rs)
+- [`emit_on_handler_body.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_on_handler_body.rs)
   - pins the handler body forms directly at the S2 emitter boundary.
-- [`on_body.rs`](../../../../../crates/vize_l1_to_l2/src/emit/on_body.rs)
+- [`on_body.rs`](../../../../../davinci/vize_l1_to_l2/src/emit/on_body.rs)
   - centralizes the handler body rendering rules.
 - [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/l2_slots.rs)
   - keeps slot-facing handler cases byte-identical to the shipped lane.

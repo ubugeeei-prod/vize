@@ -23,13 +23,13 @@ The durable witnesses are:
 - [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/l2_slots.rs)
   — `bare_template_default` compares the S2 DOM lane against the shipped lane
   byte-for-byte.
-- [`emit_slots.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_slots.rs)
+- [`emit_slots.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_slots.rs)
   — the ricalco emitter pins the hoisted `_createElementVNode("template", ...)`
   default-slot output.
-- [`emit_unsupported_census.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_unsupported_census.rs)
+- [`emit_unsupported_census.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_unsupported_census.rs)
   — `SlotDefaultShape` remains source-covered by a real malformed slot
   template rather than the now-supported bare default child.
-- [`emit_unsupported_catalogue.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_unsupported_catalogue.rs)
+- [`emit_unsupported_catalogue.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_unsupported_catalogue.rs)
   — `CreateSlotsMissingSlotTemplate` is accounted as retired, not guard-only.
 
 This installment does not tick P2-11. Malformed slot fact gaps, the production

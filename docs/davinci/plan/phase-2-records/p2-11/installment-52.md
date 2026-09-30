@@ -13,10 +13,10 @@ The durable witnesses are:
 
 - [`davinci_s2_expression_residuals.rs`](../../../../../crates/vize_atelier_dom/tests/l2_expression_residuals.rs)
   - compares the expression residuals against shipped DOM output.
-- [`props_value.rs`](../../../../../crates/vize_l1_to_l2/src/emit/props_value.rs)
-  and [`children.rs`](../../../../../crates/vize_l1_to_l2/src/emit/children.rs)
+- [`props_value.rs`](../../../../../davinci/vize_l1_to_l2/src/emit/props_value.rs)
+  and [`children.rs`](../../../../../davinci/vize_l1_to_l2/src/emit/children.rs)
   - own the prop and text realization paths.
-- [`emit_unsupported_census.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_unsupported_census.rs)
+- [`emit_unsupported_census.rs`](../../../../../davinci/vize_l1_to_l2/tests/emit_unsupported_census.rs)
   - keeps unsupported expression classes explicitly counted.
 
 This installment does not tick P2-11. It narrows expression residuals; the

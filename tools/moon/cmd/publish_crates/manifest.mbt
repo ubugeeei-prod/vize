@@ -14,7 +14,12 @@ fn write_string_to_file(path : String, content : String) -> Bool {
 }
 
 fn crate_manifest_path(crate_name : String) -> String {
-  @tool.join_path(@tool.join_path("crates", crate_name), "Cargo.toml")
+  let native = @tool.join_path(@tool.join_path("davinci", crate_name), "Cargo.toml")
+  if @tool.path_exists(native) {
+    native
+  } else {
+    @tool.join_path(@tool.join_path("crates", crate_name), "Cargo.toml")
+  }
 }
 
 fn is_manifest_section_header(trimmed : String) -> Bool {

@@ -4,8 +4,8 @@ on:
   pull_request:
     paths:
       - ".github/workflows/davinci-kani.yml"
-      - "crates/vize_l3/src/lattice/class.rs"
-      - "crates/vize_l3/src/lattice/effect.rs"
+      - "davinci/vize_l3/src/lattice/class.rs"
+      - "davinci/vize_l3/src/lattice/effect.rs"
       - "tests/formal/kani/**"
   workflow_dispatch:
 

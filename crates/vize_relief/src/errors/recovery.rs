@@ -2,41 +2,7 @@
 
 use super::{CompilerError, ErrorCode};
 
-/// Parse error codes for which the template parser documents a concrete
-/// recovery strategy: parsing continues past the defect and still yields a
-/// complete tree, so semantic analysis over that tree stays meaningful
-/// (#3294).
-///
-/// This is the single source of truth for that contract. `vize_armature`'s
-/// `recovery_error_message` consults
-/// [`ErrorCode::has_documented_parse_recovery`] before building a message, so
-/// the parser cannot describe a recovery for a code this list does not
-/// classify, and a test there pins every entry below to a real message. Keep
-/// the two in sync by editing this list.
-pub const RECOVERED_PARSE_CODES: &[ErrorCode] = &[
-    ErrorCode::EofBeforeTagName,
-    ErrorCode::EofInTag,
-    ErrorCode::EofInComment,
-    ErrorCode::InvalidFirstCharacterOfTagName,
-    ErrorCode::MissingAttributeValue,
-    ErrorCode::MissingDynamicDirectiveArgumentEnd,
-    ErrorCode::MissingInterpolationEnd,
-    ErrorCode::UnexpectedCharacterInAttributeName,
-    ErrorCode::UnexpectedCharacterInUnquotedAttributeValue,
-    ErrorCode::UnexpectedEqualsSignBeforeAttributeName,
-    ErrorCode::MissingWhitespaceBetweenAttributes,
-    ErrorCode::IncorrectlyClosedComment,
-    ErrorCode::IncorrectlyOpenedComment,
-];
-
-impl ErrorCode {
-    /// Returns true when the template parser documents a concrete recovery
-    /// strategy for this code, i.e. it appears in [`RECOVERED_PARSE_CODES`].
-    #[must_use]
-    pub fn has_documented_parse_recovery(self) -> bool {
-        RECOVERED_PARSE_CODES.contains(&self)
-    }
-}
+pub use vize_l0::compiler_error::RECOVERED_PARSE_CODES;
 
 impl CompilerError {
     /// Returns true when the parse defect behind this error still left a

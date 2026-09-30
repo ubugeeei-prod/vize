@@ -72,7 +72,7 @@ a deliberate host change, not a relaxation of this rule.
 ## The conformance suite moves with the contracts
 
 TS-48's goldens and guests are pinned to the package version they exercise:
-`crates/vize_extension_host/tests/contract_surface.rs` holds every released
+`davinci/vize_extension_host/tests/contract_surface.rs` holds every released
 surface to this policy pairwise, and holds the newest one to what
 `crates/vize_guest/wit/` and the host's handshake constants describe today, byte for
 byte. Changing the WIT therefore means choosing the version this policy
