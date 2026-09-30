@@ -284,7 +284,7 @@ function assertP2_17MechanicalWitnesses(): void {
   assert.match(spanWitness, /assert_folio_spans_resolve/);
 
   const schemaWitness = fs.readFileSync(
-    new URL("../../../davinci/vize_davinci/tests/stage_feed.rs", import.meta.url),
+    new URL("../../../crates/vize_curator/tests/stage_feed.rs", import.meta.url),
     "utf8",
   );
   assert.match(schemaWitness, /consumers_negotiate_schema_version_before_reading_pages/);

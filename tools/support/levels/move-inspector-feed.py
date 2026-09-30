@@ -68,6 +68,8 @@ def main():
             return re.sub(r'(?<=\]\()[^)]*', link, s)
         update(p.relative_to(ROOT), links)
     update('docs/davinci/plan/test-suites.md', lambda s: s.replace('-p vize_davinci --test stage_feed', '-p vize_curator --test stage_feed'))
+    update('tests/tooling/support/davinci-phase2-ledger.ts', lambda s: s.replace(
+        str(OLD / 'tests/stage_feed.rs'), str(NEW / 'tests/stage_feed.rs')))
 
 
 if __name__ == '__main__':
