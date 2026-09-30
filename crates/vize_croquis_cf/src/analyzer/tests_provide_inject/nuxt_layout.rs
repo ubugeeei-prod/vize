@@ -61,13 +61,16 @@ fn nuxt_render_edges_do_not_cross_package_roots() {
     for package in ["web", "admin"] {
         analyzer.add_file_with_analysis(
             Path::new(&format!("packages/{package}/app/app.vue")),
-            "",
+            "<template><NuxtLayout><NuxtPage /></NuxtLayout></template>",
             script_analysis("", &["NuxtLayout", "NuxtPage"]),
         );
         analyzer.add_file_with_analysis(
             Path::new(&format!("packages/{package}/app/pages/index.vue")),
             "",
-            script_analysis("import { inject } from 'vue'; inject('theme')", &[]),
+            script_analysis(
+                "import { inject } from 'vue'; const theme = inject('theme')",
+                &[],
+            ),
         );
     }
     analyzer.rebuild_component_edges();
