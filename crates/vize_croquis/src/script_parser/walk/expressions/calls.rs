@@ -270,8 +270,8 @@ pub(super) fn note_script_browser_global(result: &mut ScriptParseResult, name: &
         return;
     }
     result
-        .script_browser_globals
-        .push((CompactString::new(name), offset));
+        .setup_context
+        .note_browser_global(CompactString::new(name), offset);
 }
 
 fn is_browser_global(name: &str) -> bool {

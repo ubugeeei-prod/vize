@@ -63,7 +63,7 @@ pub(super) fn emit_interpolation(
     if let Some(parts) = compound_parts(em.facts.texts, segment, interpolation)? {
         for part in parts {
             if part.dynamic {
-                let rewritten = em.text_expr(part.text.as_str())?;
+                let rewritten = decode_interpolation_js(em.text_expr(part.text.as_str())?);
                 let content = spans::interpolation_content(em.ctx.source, part.span);
                 push_interpolate(em, rewritten, content.unwrap_or(part.span));
             } else {
@@ -75,10 +75,22 @@ pub(super) fn emit_interpolation(
     let ExprRef::Js(js) = interpolation.expression else {
         return Err(LegacyReason::ExpressionOrEncoding.into());
     };
-    let rewritten = em.expr(&interpolation.expression, TransformContent::Padded)?;
+    let rewritten =
+        decode_interpolation_js(em.expr(&interpolation.expression, TransformContent::Padded)?);
     let content = spans::trimmed(em.ctx.source, js.span);
     push_interpolate(em, rewritten, content);
     Ok(())
+}
+
+/// HTML entities inside an interpolation are text, not JavaScript source.
+/// Decode after the transform so a string literal `'&nbsp;'` becomes the
+/// character the legacy parser stored.
+pub(super) fn decode_interpolation_js(text: vize_l0::String) -> vize_l0::String {
+    if text.contains('&') {
+        vize_l1_to_l2::decode_template_entities(&text)
+    } else {
+        text
+    }
 }
 
 /// `_ssrInterpolate(exp)`, anchored at the authored content `span` as the AST

@@ -140,6 +140,10 @@ pub struct SetupContextViolation {
 #[derive(Debug, Default)]
 pub struct SetupContextTracker {
     violations: ThinVec<SetupContextViolation>,
+    /// Browser globals read from script, as `(name, script offset)`.
+    /// Kept here, not as a new `Croquis` field: that struct is externally
+    /// constructible, so a field would be a major SemVer break in a patch.
+    browser_globals: Vec<(CompactString, u32)>,
 }
 
 impl SetupContextTracker {
@@ -183,17 +187,31 @@ impl SetupContextTracker {
         self.violations.len()
     }
 
+    /// Record a browser global read from this script.
+    pub fn note_browser_global(&mut self, name: CompactString, offset: u32) {
+        self.browser_globals.push((name, offset));
+    }
+
+    /// Browser globals read from script, as `(name, script offset)`.
+    pub fn browser_globals(&self) -> &[(CompactString, u32)] {
+        &self.browser_globals
+    }
+
     /// Shift all stored source offsets by `delta`.
     pub fn shift_offsets(&mut self, delta: u32) {
         for violation in &mut self.violations {
             violation.start = violation.start.saturating_add(delta);
             violation.end = violation.end.saturating_add(delta);
         }
+        for (_, offset) in &mut self.browser_globals {
+            *offset = offset.saturating_add(delta);
+        }
     }
 
     /// Merge another tracker into this one.
     pub fn extend(&mut self, other: Self) {
         self.violations.extend(other.violations);
+        self.browser_globals.extend(other.browser_globals);
     }
 }
 

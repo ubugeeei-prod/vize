@@ -35,6 +35,10 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<template><span v-if="count &gt; 0">positive</span><span v-else-if="count &lt; 0">negative</span></template>"#,
     ),
     (
+        "interpolation_html_entities",
+        r#"<template><p>{{ show ? ' &lt; ' : '&nbsp;' }}</p><span>{{ ok ? '&check;' : '&#x200E;' }}</span></template>"#,
+    ),
+    (
         "slot_template",
         r#"<template><Foo><template #default="{ item }"><span>{{ item }}</span></template></Foo></template>"#,
     ),

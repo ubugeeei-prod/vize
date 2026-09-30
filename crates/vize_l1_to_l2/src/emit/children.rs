@@ -204,7 +204,15 @@ pub(super) fn emit_to_display_string(cx: &mut EmitCx<'_>, source: &str) {
     cx.buf.use_to_display_string();
     cx.buf.push(Buf::to_display_string_alias());
     cx.buf.push("(");
-    cx.buf.push(source);
+    // The HTML parser decodes entities inside `{{ }}` before the expression
+    // is JavaScript. L2 still holds the authored text, so decode at the
+    // display-string boundary. `_toDisplayString('&nbsp;')` would render the
+    // letters, not a non-breaking space.
+    if source.contains('&') {
+        cx.buf.push(super::decode_html_entities(source).as_str());
+    } else {
+        cx.buf.push(source);
+    }
     cx.buf.push(")");
 }
 

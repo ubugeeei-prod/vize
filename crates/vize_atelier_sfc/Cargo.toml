@@ -32,6 +32,9 @@ davinci-dom-differential = ["legacy-dom-differential"]
 # differential dual-run instrumentation used by semantic corpus tests.
 davinci-production-bench = [
   "legacy-dom-differential",
+  # Published name of the line above. cargo-semver-checks requires the alias
+  # itself to stay enabled (0.429.1 turned this feature on by that name).
+  "davinci-dom-differential",
   "vize_atelier_vapor/davinci-benchmark",
   "vize_atelier_ssr/legacy-differential",
 ]

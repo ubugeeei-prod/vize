@@ -84,6 +84,10 @@ export default { data: () => ({ open: false, name: "x" }), methods: { toggle() {
   <template v-for="(row, i) in rows" :key="i"><b>{{ row }}</b><i>{{ i }}</i></template>
 </template>"#,
     ),
+    (
+        "Entities.vue",
+        r#"<template><p>{{ show ? ' &lt; ' : '&nbsp;' }}</p><span>{{ ok ? '&check;' : '&#x200E;' }}</span></template>"#,
+    ),
 ];
 
 #[derive(Default)]

@@ -66,7 +66,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                     Some(parts) => {
                         for part in parts {
                             if part.dynamic {
-                                let exp = self.text_expr(part.text.as_str())?;
+                                let exp = text::decode_interpolation_js(
+                                    self.text_expr(part.text.as_str())?,
+                                );
                                 out.push(self.vnode_display(&exp));
                             } else if let Some(expression) = self.vnode_text(&part.text)? {
                                 out.push(expression);
@@ -74,7 +76,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                         }
                     }
                     None => {
-                        let exp = self.expr(&interpolation.expression, TransformContent::Padded)?;
+                        let exp = text::decode_interpolation_js(
+                            self.expr(&interpolation.expression, TransformContent::Padded)?,
+                        );
                         out.push(self.vnode_display(&exp));
                     }
                 }

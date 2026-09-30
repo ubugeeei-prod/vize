@@ -227,7 +227,7 @@ fn find_browser_api_usage(
         }
     }
 
-    for (api, offset) in &analysis.script_browser_globals {
+    for (api, offset) in analysis.setup_context.browser_globals() {
         let context = browser_apis
             .iter()
             .find(|(name, _)| *name == api.as_str())
