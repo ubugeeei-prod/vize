@@ -1363,5 +1363,6 @@ ScriptParseResult {
     runtime_object_literals: {},
     options_descriptor: None,
     inherit_attrs_disabled: false,
+    uses_attrs_call: false,
     reactive_assignment_root: None,
 }
