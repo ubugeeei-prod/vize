@@ -16,14 +16,13 @@ _None._
 
 ## Naive grep disagreements (resolved/grep)
 
-| product                   | resolved | grep |
-| ------------------------- | -------: | ---: |
-| `Croquis`                 |        0 |    2 |
-| `Scope`                   |        0 |    1 |
-| `Span`                    |        0 |    7 |
-| `Croquis.bindings`        |        0 |   10 |
-| `Croquis.macros`          |        0 |    4 |
-| `Croquis.reactivity`      |        0 |    3 |
-| `Croquis.scopes`          |        0 |    9 |
-| `Croquis.types`           |        0 |    3 |
-| `Croquis.unused_bindings` |        0 |    1 |
+| product              | resolved | grep |
+| -------------------- | -------: | ---: |
+| `Croquis`            |        0 |    2 |
+| `Scope`              |        0 |    1 |
+| `Span`               |        0 |    4 |
+| `Croquis.bindings`   |        0 |   10 |
+| `Croquis.macros`     |        0 |    4 |
+| `Croquis.reactivity` |        0 |    3 |
+| `Croquis.scopes`     |        0 |    9 |
+| `Croquis.types`      |        0 |    3 |

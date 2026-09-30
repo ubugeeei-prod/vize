@@ -1,11 +1,11 @@
 // Exercise witness formatting through the public renderer.
 // Test-only exemptions live outside the production source inventory.
-use vize_davinci::diagnostic::{
+use vize::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
+use vize_l0::diag::{
     Advisory, Diagnostic, Exemption, Stage, WitnessChain, WitnessKey, WitnessLink,
 };
-use vize_davinci::fact::ids;
-use vize_davinci::pass::AnalysisId;
-use vize_davinci::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
+use vize_l0::fact::ids;
+use vize_l0::pass::AnalysisId;
 use vize_l0::{Span, String};
 
 /// Supplies one fact sentence, ahead of the built-in group phrases.
@@ -68,7 +68,7 @@ fn an_unproven_diagnostic_and_a_legacy_exemption_have_no_notes() {
     let file = SourceFile::new("a.vue", "x");
     let plain = Diagnostic::new(Advisory::Warning, Stage::Semantic, Span::new(0, 1), "w");
     assert_eq!(notes(&file, &EnglishCatalog, &plain), Vec::<String>::new());
-    static EXEMPT: Exemption = Exemption::new("vize_davinci", "render-why-fixture");
+    static EXEMPT: Exemption = Exemption::new("vize", "render-why-fixture");
     let exempt = Diagnostic::legacy_error(&EXEMPT, Stage::Semantic, Span::new(0, 1), "e");
     assert_eq!(notes(&file, &EnglishCatalog, &exempt), Vec::<String>::new());
 }

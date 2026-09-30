@@ -8,8 +8,8 @@
 //! renderings are the same bytes once escapes are stripped — a property the
 //! TS-53 test asserts for every snapshot.
 
-use crate::diagnostic::Severity;
 use vize_l0::String;
+use vize_l0::diag::Severity;
 
 /// How a run of output is styled.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -13,7 +13,7 @@
 //! missing locale fails, which is what keeps "exact per locale" enumerable.
 //!
 //! Regenerate with `DAVINCI_RENDER_SNAPSHOTS=overwrite cargo test -p
-//! vize_davinci --test diagnostic_render -- --test-threads=1` (the inventory
+//! vize --test diagnostic_render -- --test-threads=1` (the inventory
 //! test reads the directory the overwrite writes), then review every changed
 //! line: the committed snapshot is the oracle, and a regenerated one is only
 //! as true as that review.
@@ -40,7 +40,7 @@ use diagnostic_render::cases;
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 
-use vize_davinci::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
+use vize::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
 use vize_l0::i18n::{Locale, translator};
 
 /// The CLI edge's catalog, reproduced: phrases from the shipped translator,

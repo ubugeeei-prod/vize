@@ -27,8 +27,6 @@
 //! - [`dump`] — the textual stage-dump contract (`trait Dump`).
 //! - [`key`] — [`ArtifactKey`](key::ArtifactKey), the span-relative content
 //!   identity every cache of a stage artifact keys on (P5-1a).
-//! - [`render`] — the rustc/Elm-grade terminal renderer every diagnostic
-//!   surface shares, localized through a caller-supplied catalog.
 //!
 //! The stage IRs themselves land in their own crates (`vize_l2` for L2);
 //! see `docs/davinci/architecture.md`. New implementation code should prefer
@@ -55,7 +53,6 @@ pub use vize_l0::id;
 pub use vize_l0::key;
 pub mod legacy_plan;
 pub use vize_l0::pass;
-pub mod render;
 pub use vize_l0::side_table;
 pub mod stage;
 pub use vize_l0::diag::verify as witness;

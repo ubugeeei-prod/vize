@@ -1,6 +1,6 @@
 //! Machine-applicable fixes, shown as the edited source rather than described.
 //!
-//! A run of consecutive [`PartKind::Suggestion`](crate::diagnostic::PartKind)
+//! A run of consecutive [`PartKind::Suggestion`](vize_l0::diag::PartKind)
 //! parts is one fix: every edit applied together to the lines they touch.
 //! Two presentations, as rustc chooses them:
 //!

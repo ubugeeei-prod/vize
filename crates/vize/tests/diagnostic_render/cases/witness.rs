@@ -4,8 +4,8 @@
 //! footer per link, in proof order, ahead of help.
 
 use super::{Case, help, primary, secondary, span, tr};
-use vize_davinci::diagnostic::{Diagnostic, Stage, WitnessChain, WitnessKey, WitnessLink};
-use vize_davinci::fact::ids;
+use vize_l0::diag::{Diagnostic, Stage, WitnessChain, WitnessKey, WitnessLink};
+use vize_l0::fact::ids;
 
 const UNUSED_SOURCE: &str = r#"<script setup lang="ts">
 const total = ref(0)

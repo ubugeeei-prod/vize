@@ -14,8 +14,8 @@
 //! `tests/tooling/davinci-diagnostic-catalog.test.ts` fails when a key is
 //! missing from any of en/ja/zh.
 
-use crate::diagnostic::WitnessLink;
 use vize_l0::String;
+use vize_l0::diag::WitnessLink;
 
 /// A word or phrase the renderer prints around producer text.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

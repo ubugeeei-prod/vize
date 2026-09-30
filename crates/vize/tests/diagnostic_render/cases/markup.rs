@@ -2,8 +2,8 @@
 //! both fix styles.
 
 use super::{Case, Produced, after, diagnostic, fix, help, nth, primary, secondary, span, tr};
-use vize_davinci::diagnostic::Severity;
 use vize_l0::Span;
+use vize_l0::diag::Severity;
 use vize_l0::i18n::Locale;
 
 const V_FOR_KEY_SOURCE: &str = r#"<script setup lang="ts">

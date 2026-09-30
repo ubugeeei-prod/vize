@@ -57,7 +57,6 @@ mod why;
 
 use alloc::vec::Vec;
 
-use crate::diagnostic::{Diagnostic, PartKind, Severity};
 pub use catalog::{Catalog, EnglishCatalog, Phrase};
 use excerpt::{Annotation, Excerpt};
 use fix::{Edit, Fix};
@@ -65,6 +64,7 @@ use frame::Frame;
 use paint::{Painter, Style};
 pub use source::SourceFile;
 use vize_l0::String;
+use vize_l0::diag::{Diagnostic, PartKind, Severity};
 
 /// Renders diagnostics with one catalog's vocabulary.
 #[derive(Debug, Clone, Copy)]

@@ -2,7 +2,7 @@
 //!
 //! A proven diagnostic carries the fact chain that proves it, so the renderer
 //! says why in the facts' own terms: one `= note: because …` footer per
-//! [`WitnessLink`](crate::diagnostic::WitnessLink), in proof order. The
+//! [`WitnessLink`](vize_l0::diag::WitnessLink), in proof order. The
 //! P4-3c and P4-11b groups have a sentence in the [`Catalog`]; a group it
 //! does not know still names the group and the fact's subject. A legacy
 //! exemption is not a proof and adds no note.
@@ -12,10 +12,10 @@ use core::fmt::Write as _;
 
 use super::catalog::{Catalog, Phrase};
 use super::source::SourceFile;
-use crate::diagnostic::{Diagnostic, WitnessKey, WitnessLink};
-use crate::fact::ids;
-use crate::pass::AnalysisId;
 use vize_l0::String;
+use vize_l0::diag::{Diagnostic, WitnessKey, WitnessLink};
+use vize_l0::fact::ids;
+use vize_l0::pass::AnalysisId;
 
 /// Characters of a fact's source text quoted in a note before it is cut.
 const SUBJECT_LIMIT: usize = 40;

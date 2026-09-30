@@ -2,7 +2,7 @@
 //! sharing a margin column, long enough to elide — and labels across lines.
 
 use super::{Case, after, between, diagnostic, fix, help, primary, secondary, span, tr};
-use vize_davinci::diagnostic::Severity;
+use vize_l0::diag::Severity;
 
 const ELEMENT_SOURCE: &str = r#"<template>
   <header>
