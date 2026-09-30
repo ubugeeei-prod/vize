@@ -19,6 +19,8 @@ _None._
 | product                   | resolved | grep |
 | ------------------------- | -------: | ---: |
 | `Croquis`                 |        0 |    1 |
-| `Span`                    |        0 |  107 |
+| `EffectGraph`             |        0 |    1 |
+| `Span`                    |        0 |  172 |
 | `Symbol`                  |        0 |    3 |
+| `SymbolId`                |        0 |    2 |
 | `Croquis.unused_bindings` |        0 |    1 |

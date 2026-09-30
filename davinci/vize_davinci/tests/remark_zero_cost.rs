@@ -11,8 +11,8 @@
 //! zero in the detached runs is the observer's absence, not a guard that
 //! hides the work everywhere.
 //!
-//! This binary owns the process global allocator and holds a single test,
-//! so no concurrent test pollutes the counters.
+//! This is a standalone test executable (`harness = false`): libtest's
+//! reporting thread must not allocate inside the process-wide measured window.
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
@@ -64,8 +64,7 @@ fn run<O: PassObserver>(observer: &mut O) {
     .expect("no step fails");
 }
 
-#[test]
-fn a_detached_remark_path_allocates_nothing() {
+fn main() {
     mark_installed();
 
     let detached = measure(|| run(&mut NoObserver)).expect("counting allocator installed");

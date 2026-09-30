@@ -36,7 +36,7 @@ use core::fmt::{self, Write as _};
 
 use vize_l0::String;
 
-use crate::dump::feed::push_json_string;
+use crate::dump::json::push_json_string;
 use crate::dump::page::{LineEvent, ParseState};
 use crate::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use crate::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue, RemarkKind};
@@ -125,7 +125,8 @@ fn push_remark_json(out: &mut String, remark: &RecordedRemark) {
 
 /// A remark's JSON members without the braces, so the Spolvero feed can
 /// prefix its `path` and stay the same shape as the remark document.
-pub(crate) fn push_remark_fields(out: &mut String, remark: &RecordedRemark) {
+#[doc(hidden)]
+pub fn push_remark_fields(out: &mut String, remark: &RecordedRemark) {
     out.push_str("\"stage\":");
     push_json_string(out, remark.stage.as_str());
     out.push_str(",\"pass\":");

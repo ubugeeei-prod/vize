@@ -11,8 +11,8 @@ use crate::pass::{AnalysisId, MAX_ANALYSES, Preserved};
 /// check can read.
 ///
 /// ```
-/// use vize_davinci::fact::Demand;
-/// use vize_davinci::pass::AnalysisId;
+/// use vize_l0::fact::Demand;
+/// use vize_l0::pass::AnalysisId;
 ///
 /// const BINDINGS: AnalysisId = AnalysisId::new(3);
 /// const SCOPES: AnalysisId = AnalysisId::new(4);

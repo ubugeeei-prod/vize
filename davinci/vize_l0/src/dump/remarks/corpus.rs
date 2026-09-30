@@ -31,7 +31,7 @@ use core::fmt;
 use vize_l0::{Span, String, cstr};
 
 use super::{entry_line, parse::parse_string, parse_entry_line};
-use crate::dump::feed::push_json_string;
+use crate::dump::json::push_json_string;
 use crate::dump::page::{LineEvent, ParseState};
 use crate::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use crate::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue, RemarkKind};

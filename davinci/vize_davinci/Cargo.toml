@@ -10,9 +10,6 @@ metadata.vize.stability = "experimental"
 
 [dependencies]
 vize_l0 = { workspace = true }
-# Proc-macro: a host build dependency (never linked into any target, so the
-# wasm32/no_std claims are untouched) - the approved std edge P2-14 audits.
-vize_davinci_derive = { workspace = true }
 # Terminal display widths for the diagnostic renderer (no_std).
 unicode-width = { workspace = true }
 
@@ -37,6 +34,11 @@ harness = false
 
 [[bench]]
 name = "davinci_fact"
+harness = false
+
+[[test]]
+name = "remark_zero_cost"
+# Process-wide allocation counters must not include libtest's reporting thread.
 harness = false
 
 [lints]

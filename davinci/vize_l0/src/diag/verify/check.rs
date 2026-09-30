@@ -2,13 +2,13 @@
 //! [`WitnessChecks`] registry the verifier dispatches through.
 
 use super::WitnessError;
-use crate::diagnostic::{Verdict, WitnessKeyed, WitnessLink};
+use crate::diag::{Verdict, WitnessKeyed, WitnessLink};
 use crate::fact::{Demand, FactGroup, FactView};
 use crate::pass::AnalysisId;
 use vize_l0::Span;
 
 /// A fact group a witness link may cite: its key erases to a
-/// [`WitnessKey`](crate::diagnostic::WitnessKey), and every fact states the
+/// [`WitnessKey`](crate::diag::WitnessKey), and every fact states the
 /// span it is about and its verdict.
 ///
 /// The span is what makes a link checkable rather than merely nameable: a
@@ -124,10 +124,10 @@ fn check_link<G: WitnessGroup>(
 /// build:
 ///
 /// ```compile_fail,E0080
-/// use vize_davinci::diagnostic::Verdict;
-/// use vize_davinci::fact::{Demand, FactGroup};
-/// use vize_davinci::pass::AnalysisId;
-/// use vize_davinci::witness::{WitnessCheck, WitnessChecks, WitnessGroup};
+/// use vize_l0::diag::Verdict;
+/// use vize_l0::fact::{Demand, FactGroup};
+/// use vize_l0::pass::AnalysisId;
+/// use vize_l0::diag::verify::{WitnessCheck, WitnessChecks, WitnessGroup};
 /// use vize_l0::Span;
 ///
 /// struct Tags;
@@ -153,10 +153,10 @@ fn check_link<G: WitnessGroup>(
 /// the repeat (stable rustdoc does not check the error code):
 ///
 /// ```
-/// use vize_davinci::diagnostic::Verdict;
-/// use vize_davinci::fact::{Demand, FactGroup};
-/// use vize_davinci::pass::AnalysisId;
-/// use vize_davinci::witness::{WitnessCheck, WitnessChecks, WitnessGroup};
+/// use vize_l0::diag::Verdict;
+/// use vize_l0::fact::{Demand, FactGroup};
+/// use vize_l0::pass::AnalysisId;
+/// use vize_l0::diag::verify::{WitnessCheck, WitnessChecks, WitnessGroup};
 /// use vize_l0::Span;
 ///
 /// struct Tags;

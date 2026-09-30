@@ -47,7 +47,7 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
 
 const publishedDavinciStages = new Set([
   "vize_l0",
-  "vize_davinci_derive",
+  "vize_l0_derive",
   "vize_davinci",
   "vize_l1",
   "vize_l2",

@@ -96,7 +96,7 @@ details are not compatibility surfaces.
 | `vize_croquis`        | Compatibility preview | Semantic and type-aware tooling authors   | `vize_croquis::{Croquis, Drawer}`               | One minor with `#[deprecated]`         |
 | `vize_croquis_cf`     | Experimental          | Opt-in whole-project analysis experiments | `vize_croquis_cf::CrossFileAnalyzer`            | No minimum; note breaks when practical |
 | `vize_davinci`        | Experimental          | Davinci pipeline and dump-format authors  | `vize_davinci::{Dump, Diagnostic, NodeId}`      | No minimum; note breaks when practical |
-| `vize_davinci_derive` | Experimental          | Davinci dump-format authors               | `vize_davinci_derive::Dump`                     | No minimum; note breaks when practical |
+| `vize_l0_derive` | Experimental          | Davinci dump-format authors               | `vize_l0_derive::Dump`                     | No minimum; note breaks when practical |
 | `vize_doctor`         | Experimental          | Application health analyzer authors       | `vize_doctor::{DoctorFinding, FindingEvidence}` | No minimum; note breaks when practical |
 | `vize_l3`             | Experimental          | Davinci backend-scheduling authors        | `vize_l3::{dump::Page, op, verify}`             | No minimum; note breaks when practical |
 | `vize_atelier_core`   | Alpha-supported       | Custom Vue compiler backend authors       | `vize_atelier_core::{transform, generate}`      | One minor with `#[deprecated]`         |

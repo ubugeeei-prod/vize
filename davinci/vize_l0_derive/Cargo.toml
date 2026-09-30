@@ -1,5 +1,5 @@
 [package]
-name = "vize_davinci_derive"
+name = "vize_l0_derive"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
