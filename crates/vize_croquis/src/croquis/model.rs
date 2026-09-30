@@ -69,8 +69,8 @@ impl Croquis {
             span.1 = span.1.saturating_add(delta);
         }
         for registration in &mut self.component_registrations {
-            registration.start = registration.start.saturating_add(delta);
-            registration.end = registration.end.saturating_add(delta);
+            registration.start += delta;
+            registration.end += delta;
         }
     }
 
