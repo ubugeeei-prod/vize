@@ -25,7 +25,7 @@ fn root_check_uses_each_package_tsconfig_and_solution_reference() {
             root.path(),
             &format!("packages/{package}/package.json"),
             if solution {
-                r##"{"private":true,"type":"module","imports":{"#lib/*":"./src/lib/*"}}"##
+                r##"{"private":true,"type":"module","imports":{"#lib/*":"./src/lib/*/index.ts"}}"##
             } else {
                 r#"{"private":true,"type":"module"}"#
             },
