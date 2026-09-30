@@ -38,6 +38,7 @@ export interface ProjectDetection {
   readonly packageManager: PackageManager | null;
   readonly framework: Framework;
   readonly nuxtConfig: string | null;
+  readonly nuxtMajor: number | null;
   readonly viteConfigs: readonly string[];
   readonly usesVitePlus: boolean;
   readonly typescript: boolean;
@@ -138,6 +139,7 @@ export function detectProject(root: string): ProjectDetection {
     packageManager: detectPackageManager(root),
     framework: detectFramework(nuxtConfig, viteConfigs, dependencies),
     nuxtConfig,
+    nuxtMajor: declaredNuxtMajor(packageJson),
     viteConfigs,
     usesVitePlus: detectVitePlus(dependencies, viteSource, scripts),
     typescript: dependencies.has("typescript") || fs.existsSync(path.join(root, "tsconfig.json")),
@@ -151,6 +153,21 @@ export function detectProject(root: string): ProjectDetection {
     scripts,
     vscodeRecommendsVize: detectVscodeRecommendation(root),
   };
+}
+
+function declaredNuxtMajor(packageJson: Record<string, unknown>): number | null {
+  for (const field of ["dependencies", "devDependencies", "optionalDependencies"]) {
+    const group = packageJson[field];
+    if (group === null || typeof group !== "object" || Array.isArray(group)) {
+      continue;
+    }
+    const version = (group as Record<string, unknown>).nuxt;
+    const major = typeof version === "string" ? /^[~^<>=\s]*(\d+)(?:\.|$)/u.exec(version) : null;
+    if (major) {
+      return Number(major[1]);
+    }
+  }
+  return null;
 }
 
 function detectFramework(

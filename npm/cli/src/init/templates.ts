@@ -67,7 +67,19 @@ ${blocks.join("\n")}
 }
 
 /** Minimum project config written only when typechecking is selected and no config exists. */
-export function renderTypecheckTsconfig(typescript: boolean): string {
+export function renderTypecheckTsconfig(typescript: boolean, nuxtMajor?: number | null): string {
+  if (nuxtMajor !== undefined) {
+    const config =
+      nuxtMajor !== null && nuxtMajor >= 4
+        ? {
+            files: [],
+            references: ["app", "server", "shared", "node"].map((part) => ({
+              path: `./.nuxt/tsconfig.${part}.json`,
+            })),
+          }
+        : { extends: "./.nuxt/tsconfig.json" };
+    return `${JSON.stringify(config, null, 2)}\n`;
+  }
   const compilerOptions: Record<string, boolean | string> = {
     strict: true,
     target: "ES2022",

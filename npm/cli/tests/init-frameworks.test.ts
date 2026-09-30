@@ -62,6 +62,47 @@ test("a Nuxt project is configured through the Nuxt module, not the Vite plugin"
   assert.equal(result.plan?.lintTarget.kind, "oxlint");
 });
 
+test("Nuxt typecheck scaffolds its generated config and prepares types", async () => {
+  const args = [
+    "--yes",
+    "--no-lint",
+    "--no-bundler",
+    "--no-fmt",
+    "--typecheck",
+    "--no-editor",
+    "--no-install",
+  ] as const;
+  for (const major of [3, 4]) {
+    const root = temporaryProject(`nuxt-${major}-typecheck`);
+    writeManifest(root, {
+      name: "fixture",
+      private: true,
+      type: "module",
+      devDependencies: { nuxt: `^${major}.0.0`, typescript: "^6.0.0" },
+    });
+    write(root, "nuxt.config.ts", "export default defineNuxtConfig({});\n");
+
+    const result = await runInit(root, args);
+    assert.ok(result.written.includes("tsconfig.json"));
+    assert.deepEqual(
+      JSON.parse(read(root, "tsconfig.json")),
+      major === 4
+        ? {
+            files: [],
+            references: ["app", "server", "shared", "node"].map((part) => ({
+              path: `./.nuxt/tsconfig.${part}.json`,
+            })),
+          }
+        : { extends: "./.nuxt/tsconfig.json" },
+    );
+    assert.equal(
+      JSON.parse(read(root, "package.json")).scripts["vize:check"],
+      "nuxt prepare && vize check",
+    );
+    assert.deepEqual((await runInit(root, args)).written, []);
+  }
+});
+
 test("Nuxt wins when both configs exist, and --vite overrides that", async () => {
   const root = temporaryProject("bundler-override");
   writeManifest(root, {

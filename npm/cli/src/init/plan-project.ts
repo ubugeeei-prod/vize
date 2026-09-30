@@ -32,7 +32,10 @@ export function planVizeConfig(
   if (selection.typecheck && detection.tsconfig === null) {
     draft.files.push({
       filename: path.join(detection.root, "tsconfig.json"),
-      source: renderTypecheckTsconfig(detection.typescript),
+      source: renderTypecheckTsconfig(
+        detection.typescript,
+        detection.framework === "nuxt" ? detection.nuxtMajor : undefined,
+      ),
     });
     draft.createdFiles.push("tsconfig.json");
   }
@@ -101,7 +104,10 @@ export function planScripts(
   const packageJson = parsePackageJson(packagePath, source);
   const scripts = { ...detection.scripts } as Record<string, string>;
   for (const name of missing) {
-    scripts[name] = DEFAULT_SCRIPTS[name as keyof typeof DEFAULT_SCRIPTS];
+    scripts[name] =
+      name === "vize:check" && detection.framework === "nuxt"
+        ? "nuxt prepare && vize check"
+        : DEFAULT_SCRIPTS[name as keyof typeof DEFAULT_SCRIPTS];
   }
   packageJson.scripts = scripts;
   draft.files.push({
