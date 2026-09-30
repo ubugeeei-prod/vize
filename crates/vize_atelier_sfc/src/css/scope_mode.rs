@@ -31,8 +31,8 @@ fn needs_vite_scoping(css: &str) -> bool {
     let mut style_rule_depth = 0;
     let mut rule_stack = Vec::new();
     while index < bytes.len() {
-        match bytes[index] {
-            b'/' if bytes.get(index + 1) == Some(&b'*') => {
+        match bytes.get(index).copied() {
+            Some(b'/') if bytes.get(index + 1) == Some(&b'*') => {
                 index += 2;
                 while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
                 {
@@ -41,12 +41,12 @@ fn needs_vite_scoping(css: &str) -> bool {
                 index = (index + 2).min(bytes.len());
                 continue;
             }
-            quote @ (b'\'' | b'"') => {
+            Some(quote @ (b'\'' | b'"')) => {
                 index += 1;
                 while index < bytes.len() {
-                    if bytes[index] == b'\\' {
+                    if bytes.get(index) == Some(&b'\\') {
                         index += 2;
-                    } else if bytes[index] == quote {
+                    } else if bytes.get(index) == Some(&quote) {
                         index += 1;
                         break;
                     } else {
@@ -55,7 +55,7 @@ fn needs_vite_scoping(css: &str) -> bool {
                 }
                 continue;
             }
-            b'{' => {
+            Some(b'{') => {
                 let header = css.get(header_start..index).unwrap_or_default().trim();
                 let is_style = !header.starts_with('@');
                 if is_style && style_rule_depth > 0 {
@@ -65,13 +65,13 @@ fn needs_vite_scoping(css: &str) -> bool {
                 style_rule_depth += usize::from(is_style);
                 header_start = index + 1;
             }
-            b'}' => {
+            Some(b'}') => {
                 if rule_stack.pop() == Some(true) {
                     style_rule_depth -= 1;
                 }
                 header_start = index + 1;
             }
-            b';' => header_start = index + 1,
+            Some(b';') => header_start = index + 1,
             _ => {}
         }
         index += 1;
