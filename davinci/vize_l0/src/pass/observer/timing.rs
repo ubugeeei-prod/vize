@@ -32,7 +32,7 @@ use vize_l0::profiler::{SpanAttribution, global_profiler};
 use super::{FailEvent, PassEvent, PassObserver, Pipeline};
 
 /// Records one profile span per fused walk.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct TimingObserver {
     /// The dotted span key every walk records under.
     key: &'static str,
@@ -47,6 +47,12 @@ pub struct TimingObserver {
 struct WalkSpan {
     timer: vize_l0::profiler::Timer,
     attribution: SpanAttribution,
+}
+
+impl Default for TimingObserver {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl TimingObserver {

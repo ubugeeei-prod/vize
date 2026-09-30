@@ -23,7 +23,9 @@
 //! its own binary — the `davinci_expr_reparse_floor.rs` shape.
 
 use vize_davinci::pass::observer::TimingObserver;
-use vize_davinci::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved, run_pipeline};
+use vize_davinci::pass::{
+    BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, run_pipeline,
+};
 use vize_l0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
 
 const NORMALIZE: PassDesc = PassDesc::new(
@@ -65,6 +67,11 @@ fn the_timing_observer_records_one_attributed_span_per_walk() {
         "two walks were made, so two spans were recorded - not three, one per pass"
     );
 
+    let mut explicit = Pair(TimingObserver::new(), BudgetObserver::new());
+    let mut default = Pair::<TimingObserver, BudgetObserver>::default();
+    run_pipeline(&PIPELINE, &mut explicit, |_event| Ok(())).expect("explicit pair runs");
+    run_pipeline(&PIPELINE, &mut default, |_event| Ok(())).expect("default pair runs");
+
     let export = profiler.export_report(&ProfileExportOptions {
         command: "test",
         allocation: None,
@@ -75,6 +82,18 @@ fn the_timing_observer_records_one_attributed_span_per_walk() {
     });
 
     let ours: Vec<_> = export.spans.iter().filter(|span| span.key == KEY).collect();
+    let standard: Vec<_> = export
+        .spans
+        .iter()
+        .filter(|span| span.key == TimingObserver::WALK_KEY)
+        .collect();
+    assert_eq!(
+        standard.len(),
+        2,
+        "both constructors use the standard walk key"
+    );
+    assert!(standard.iter().all(|span| span.count == 2));
+    assert!(export.spans.iter().all(|span| !span.key.is_empty()));
     assert_eq!(
         ours.len(),
         2,

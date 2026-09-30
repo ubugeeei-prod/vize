@@ -163,14 +163,13 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       assert.equal(fs.readFileSync(curlLogPath, "utf8").trim().split("\n").length, 1);
     }
 
+    const unresolvedCrate = somePublished[2];
     const unresolvedPrefix = runDryRun(somePublished, {
-      TEST_UNRESOLVED_CRATES: publishedCrates[2],
+      TEST_UNRESOLVED_CRATES: unresolvedCrate,
     });
     assert.notEqual(unresolvedPrefix.status, 0);
-    assert.match(
-      unresolvedPrefix.stderr,
-      new RegExp(`could not resolve .*${publishedCrates[2]}`, "i"),
-    );
+    assert.match(unresolvedPrefix.stderr, /could not resolve published prerequisite/i);
+    assert.ok(unresolvedPrefix.stderr.includes(`${unresolvedCrate}@${version}`));
     assert.deepEqual(
       fs.readFileSync(cargoLogPath, "utf8").trim().split("\n"),
       somePublished.slice(0, 3).map(expectedInfo),
