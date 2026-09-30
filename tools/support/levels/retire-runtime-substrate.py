@@ -59,7 +59,7 @@ def main():
     updates = {}
     def update(path, transform):
         p = ROOT / path
-        before = updates.get(p, p.read_text())
+        before = updates.get(p, p.read_text(encoding="utf-8"))
         updates[p] = transform(before)
     def imports(s):
         s = re.sub(r'\bvize_davinci::', 'vize_l0::', s)
@@ -134,8 +134,8 @@ harness = false
             return re.sub(r'(?<=\]\()[^)]*', link, s)
         update(p.relative_to(ROOT), links)
     for p, changed in updates.items():
-        if p.read_text() != changed:
-            p.write_text(changed)
+        if p.read_text(encoding="utf-8") != changed:
+            p.write_text(changed, encoding="utf-8")
     if present:
         subprocess.run(['git', 'rm', *[str(OLD / rel) for rel in RETIRED]], cwd=ROOT, check=True)
 
