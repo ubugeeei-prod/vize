@@ -16,16 +16,14 @@ impl MaestroServer {
             .open(uri.clone(), content.clone(), version, language_id);
         self.state.update_virtual_docs(&uri, &content);
 
-        // Keep real parser/lint feedback immediate, but do not make the first
-        // completion wait behind Corsa startup and a full type-diagnostic
-        // pass. An empty intermediate result is withheld; the versioned worker
-        // publishes the terminal combined result after its interactive grace.
+        // The bounded worker starts parser/lint feedback promptly, then runs
+        // the full type-diagnostic pass after an interactive grace. Opening a
+        // file does not wait for either pass to finish.
         #[cfg(feature = "native")]
-        if self.state.is_lsp_typecheck_enabled() {
-            self.publish_initial_sync_diagnostics(&uri, version).await;
-            if self.schedule_initial_diagnostics(uri.clone(), version) {
-                return;
-            }
+        if self.state.is_lsp_typecheck_enabled()
+            && self.schedule_initial_diagnostics(uri.clone(), version)
+        {
+            return;
         }
 
         self.publish_diagnostics(&uri).await;

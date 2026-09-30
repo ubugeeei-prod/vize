@@ -94,6 +94,26 @@ impl WorkspaceFolderConfig {
 }
 
 impl ServerState {
+    /// Set the workspace root path.
+    #[cfg(feature = "native")]
+    pub fn set_workspace_root(&self, path: PathBuf) {
+        *self.workspace_root.write() = Some(path);
+        self.lint_hover_cache.clear();
+        self.package_route_resolver.lock().clear();
+        self.global_component_references.invalidate();
+        // Invalidate batch cache when workspace changes
+        self.batch_cache.invalidate();
+        // Overlays shadow files resolved relative to the workspace root, so a
+        // new root retargets them even though no document changed.
+        self.corsa_overlays.invalidate();
+    }
+
+    /// Get the workspace root path.
+    #[cfg(feature = "native")]
+    pub fn get_workspace_root(&self) -> Option<PathBuf> {
+        self.workspace_root.read().clone()
+    }
+
     /// Resolve the primary workspace root from `initialize`: `rootUri` when
     /// present, otherwise the first workspace folder. This root keeps driving
     /// process-wide config, the type-checker/Corsa session, and formatting.

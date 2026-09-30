@@ -26,6 +26,7 @@ struct InitialDiagnosticsJob {
     version: i32,
     not_before: Instant,
     sequence: u64,
+    sync_pending: bool,
 }
 
 #[derive(Default)]
@@ -69,8 +70,21 @@ impl PendingInitialDiagnostics {
                 version,
                 not_before,
                 sequence,
+                sync_pending: true,
             },
         );
+    }
+
+    fn take_sync(&mut self) -> Option<(Url, i32)> {
+        let uri = self
+            .jobs
+            .iter()
+            .filter(|(_, job)| job.sync_pending)
+            .min_by_key(|(_, job)| job.sequence)
+            .map(|(uri, _)| uri.clone())?;
+        let job = self.jobs.get_mut(&uri)?;
+        job.sync_pending = false;
+        Some((uri, job.version))
     }
 
     fn next_not_before(&self) -> Option<Instant> {
@@ -164,6 +178,13 @@ fn run_worker(
 ) {
     while receiver.recv().is_ok() {
         loop {
+            // Parsing and linting can be expensive on a cold SFC. Keep them
+            // off the foreground didOpen handler while still publishing prompt
+            // non-empty feedback before the delayed native type pass.
+            if let Some((uri, version)) = pending.lock().take_sync() {
+                crate::runtime::block_on(worker.publish_initial_sync_diagnostics(&uri, version));
+                continue;
+            }
             let Some(not_before) = pending.lock().next_not_before() else {
                 break;
             };
@@ -237,6 +258,26 @@ mod tests {
         assert_eq!(ready_uri, uri);
         assert_eq!(ready.version, 3);
         assert!(pending.jobs.is_empty());
+    }
+
+    #[test]
+    fn sync_feedback_runs_once_for_the_latest_open_version() {
+        let uri = Url::parse("file:///workspace/App.vue").unwrap();
+        let now = Instant::now();
+        let mut pending = PendingInitialDiagnostics::default();
+        pending.insert(uri.clone(), 1, now + Duration::from_secs(1));
+        pending.insert(uri.clone(), 2, now + Duration::from_secs(1));
+        assert_eq!(pending.take_sync(), Some((uri.clone(), 2)));
+        assert_eq!(pending.take_sync(), None);
+        assert!(pending.take_ready(now).is_none());
+        assert_eq!(
+            pending
+                .take_ready(now + Duration::from_secs(1))
+                .unwrap()
+                .1
+                .version,
+            2
+        );
     }
 
     #[test]
