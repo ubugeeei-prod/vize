@@ -16,10 +16,10 @@ MOVES = {
 
 def update(path, transform):
     p = ROOT / path
-    original = p.read_text()
+    original = p.read_text(encoding="utf-8")
     changed = transform(original)
     if changed != original:
-        p.write_text(changed)
+        p.write_text(changed, encoding="utf-8")
 
 
 def main():
