@@ -42,6 +42,7 @@ export function moveSharedTypes(root, mode) {
   write(
     diagnosticPath,
     diagnostic
+      .replace("Exemption, PartKind, Stage", "Exemption, PartKind")
       .replace("use vize_l0::i18n::{Locale, translator};", "use vize_l0::i18n::Locale;")
       .replace("use vize_l0::{CompactString, Span, cstr};", "use vize_l0::{CompactString, Span};"),
   );

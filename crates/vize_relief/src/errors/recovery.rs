@@ -1,6 +1,6 @@
 //! Classification of parse errors whose recovery yields a complete tree.
 
-use super::{CompilerError, ErrorCode};
+use super::CompilerError;
 
 pub use vize_l0::compiler_error::RECOVERED_PARSE_CODES;
 

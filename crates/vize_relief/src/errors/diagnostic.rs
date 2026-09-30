@@ -13,7 +13,7 @@
 //! enum's own text either way, so no English output moves.
 
 use super::{CompilerError, ErrorCode};
-use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind, Stage};
+use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind};
 use vize_l0::i18n::Locale;
 use vize_l0::{CompactString, Span};
 
