@@ -4,6 +4,8 @@ use super::{
     detect_race_condition_call, extract_function_params, is_client_only_hook, walk_expression,
     walk_statement,
 };
+mod use_attrs;
+use use_attrs::is_vue_use_attrs_call;
 
 /// Walk call expression arguments to find callbacks
 #[inline]
@@ -12,7 +14,7 @@ pub(in crate::script_parser) fn walk_call_arguments(
     call: &CallExpression<'_>,
     source: &str,
 ) {
-    if matches!(&call.callee, Expression::Identifier(id) if id.name == "useAttrs") {
+    if is_vue_use_attrs_call(result, call) {
         result.uses_attrs_call = true;
     }
     // First, walk the callee (might be a chained call like foo.bar().baz())

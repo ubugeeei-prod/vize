@@ -99,6 +99,17 @@ fn structural_roots_and_script_use_attrs_are_classified_from_syntax() {
         assert_eq!(diagnostics(parent, child).len(), 2, "{child}");
     }
     assert!(diagnostics(parent, "<script setup>useAttrs()</script><template><Teleport to=\"body\"><div /></Teleport></template>").is_empty());
+    for call in [
+        "import { useAttrs as attrs } from 'vue'; attrs()",
+        "import * as Vue from 'vue'; Vue.useAttrs()",
+    ] {
+        let child = format!(
+            "<script setup>{call}</script><template><Teleport to=\"body\"><div /></Teleport></template>"
+        );
+        assert!(diagnostics(parent, &child).is_empty(), "{child}");
+    }
+    let local = "<script setup>function useAttrs() {} useAttrs()</script><template><Teleport to=\"body\"><div /></Teleport></template>";
+    assert_eq!(diagnostics(parent, local).len(), 2);
     assert!(
         diagnostics(
             parent,
