@@ -6,6 +6,7 @@ mod where_selector;
 
 use vize_carton::{String, ToCompactString};
 use where_selector::add_scope_to_element;
+#[cfg(test)]
 pub(crate) use where_selector::scope_bare_where;
 
 use crate::types::{CssModuleMapping, SfcError, SfcStyleBlock, StyleCompileOptions};

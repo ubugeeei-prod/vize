@@ -173,6 +173,7 @@ fn parse_pseudo_sequence(selector: &str) -> bool {
     true
 }
 
+#[cfg(test)]
 pub(super) fn find_top_level_pseudo(selector: &str) -> Option<usize> {
     let mut depth: i32 = 0;
     for (i, byte) in selector.bytes().enumerate() {
