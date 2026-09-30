@@ -11,9 +11,9 @@ pub(super) fn has_vue_use_attrs_call(
     program: &Program<'_>,
     source: &str,
 ) -> bool {
-    // Imports are known already. The byte probe also catches unimported calls
-    // and escaped identifiers without visiting the AST for unrelated scripts.
-    if !result.uses_attrs_call && !has_source_use_attrs_candidate(source) {
+    // The first AST walk records unimported calls and Vue imports. Skip the
+    // second walk entirely for unrelated scripts.
+    if !result.uses_attrs_call {
         return false;
     }
     let mut candidate_names = vec!["useAttrs"];
@@ -53,15 +53,6 @@ pub(super) fn has_vue_use_attrs_call(
         }
     }
     visitor.found
-}
-
-fn has_source_use_attrs_candidate(source: &str) -> bool {
-    let bytes = source.as_bytes();
-    if memchr::memchr(b'\\', bytes).is_some() {
-        return true;
-    }
-    memchr::memchr_iter(b'A', bytes)
-        .any(|pos| pos >= 3 && bytes.get(pos - 3..pos + 5) == Some(b"useAttrs".as_slice()))
 }
 
 struct AttrsCallVisitor<'r> {

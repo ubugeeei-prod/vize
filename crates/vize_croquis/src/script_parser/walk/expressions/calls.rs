@@ -1,8 +1,7 @@
 use super::{
     Argument, CallExpression, ClientOnlyScopeData, ClosureScopeData, CompactString, Expression,
     ScriptParseResult, Statement, detect_call_argument_reactivity_loss, detect_provide_inject_call,
-    detect_race_condition_call, extract_function_params, is_client_only_hook, walk_expression,
-    walk_statement,
+    detect_race_condition_call, extract_function_params, walk_expression, walk_statement,
 };
 
 /// Walk call expression arguments to find callbacks
@@ -27,7 +26,15 @@ pub(in crate::script_parser) fn walk_call_arguments(
     // lifecycle hook for race tracking.
     let hook_name = if let Expression::Identifier(id) = &call.callee {
         let name = id.name.as_str();
-        (is_client_only_hook(name) || name == "onScopeDispose").then_some(name)
+        match name {
+            "useAttrs" => {
+                result.uses_attrs_call = true;
+                None
+            }
+            "onMounted" | "onBeforeMount" | "onUnmounted" | "onBeforeUnmount" | "onUpdated"
+            | "onBeforeUpdate" | "onActivated" | "onDeactivated" | "onScopeDispose" => Some(name),
+            _ => None,
+        }
     } else {
         None
     };
