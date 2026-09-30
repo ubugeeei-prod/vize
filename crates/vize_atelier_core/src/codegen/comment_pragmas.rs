@@ -2,10 +2,12 @@
 
 use crate::{CommentNode, TemplateChildNode};
 
+#[inline]
 pub(crate) fn is_directive_comment(child: &TemplateChildNode<'_>) -> bool {
     matches!(child, TemplateChildNode::Comment(comment) if is_pragma_comment(comment))
 }
 
+#[inline]
 pub(crate) fn is_pragma_comment(comment: &CommentNode<'_>) -> bool {
     if comment.directive.is_some() {
         return true;
