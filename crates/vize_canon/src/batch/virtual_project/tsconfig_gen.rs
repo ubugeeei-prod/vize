@@ -291,19 +291,19 @@ impl VirtualProject {
         jsx_files::needs_vue_jsx_compiler_options(self)
     }
 
-    /// In-project roots and diagnosed scripts join `include` (#7217).
-    /// Out-of-root mirrors stay out: the import already loads that script,
-    /// and a second copy is `TS2451`. Non-root `.d.ts` files stay out.
+    /// In-project roots, diagnosed scripts, and out-of-root `.d.ts` roots join
+    /// `include` (#7217, #5629). An out-of-root script stays out (`TS2451`).
     fn virtual_file_is_program_member(&self, file: &super::VirtualFile) -> bool {
         let original = vize_carton::path::canonicalize_non_verbatim(&file.original_path);
-        if !original.starts_with(&self.project_root) {
+        let declaration = crate::batch::declaration_path::is_declaration_file(&original);
+        if !declaration && !original.starts_with(&self.project_root) {
             return false;
         }
         self.is_declaration_root(&original)
             || (self
                 .source_file_policy()
                 .accepts_diagnostic_input(&file.virtual_path)
-                && !crate::batch::declaration_path::is_declaration_file(&original))
+                && !declaration)
     }
 
     pub(super) fn include_paths(
