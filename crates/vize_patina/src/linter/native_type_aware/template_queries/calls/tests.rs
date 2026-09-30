@@ -90,58 +90,63 @@ fn collects_statement_fallback_floating_promises_inside_control_flow() {
 }
 
 #[test]
-fn collects_bare_event_handler_references_as_floating_candidates() {
+fn returned_event_handler_references_are_observed_by_vue() {
     let source = "save";
     let ranges = collect_template_call_ranges(source, true, false, true);
 
-    assert_eq!(
-        promise_slices(source, &ranges.floating_promises),
-        vec!["save"]
-    );
+    assert!(ranges.floating_promises.is_empty());
 }
 
 #[test]
-fn collects_member_event_handler_references_as_floating_candidates() {
+fn returned_member_event_handler_references_are_observed_by_vue() {
     let source = "actions.save";
     let ranges = collect_template_call_ranges(source, true, false, true);
 
-    assert_eq!(
-        promise_slices(source, &ranges.floating_promises),
-        vec!["actions.save"]
-    );
+    assert!(ranges.floating_promises.is_empty());
 }
 
 #[test]
-fn collects_optional_member_event_handler_references_as_floating_candidates() {
+fn returned_optional_member_handler_references_are_observed_by_vue() {
     let source = "actions?.save";
     let ranges = collect_template_call_ranges(source, true, false, true);
 
-    assert_eq!(
-        promise_slices(source, &ranges.floating_promises),
-        vec!["actions?.save"]
-    );
+    assert!(ranges.floating_promises.is_empty());
 }
 
 #[test]
-fn collects_computed_member_event_handler_references_as_floating_candidates() {
+fn returned_computed_member_handler_references_are_observed_by_vue() {
     let source = "actions[method]";
     let ranges = collect_template_call_ranges(source, true, false, true);
 
-    assert_eq!(
-        promise_slices(source, &ranges.floating_promises),
-        vec!["actions[method]"]
-    );
+    assert!(ranges.floating_promises.is_empty());
 }
 
 #[test]
-fn collects_optional_computed_member_event_handler_references_as_floating_candidates() {
+fn returned_optional_computed_member_references_are_observed_by_vue() {
     let source = "actions?.[method]";
     let ranges = collect_template_call_ranges(source, true, false, true);
 
-    assert_eq!(
-        promise_slices(source, &ranges.floating_promises),
-        vec!["actions?.[method]"]
-    );
+    assert!(ranges.floating_promises.is_empty());
+}
+
+#[test]
+fn returned_event_promise_is_observed_but_discarded_calls_still_report() {
+    for source in ["save()", "() => save()", "enabled ? save() : track()"] {
+        let ranges = collect_template_call_ranges(source, true, false, true);
+        assert!(ranges.floating_promises.is_empty(), "{source}");
+    }
+
+    for (source, expected) in [
+        ("save(), track()", vec!["save()"]),
+        ("save() && track()", vec!["save()"]),
+        (
+            "if (enabled) { save(); track() }",
+            vec!["save()", "track()"],
+        ),
+    ] {
+        let ranges = collect_template_call_ranges(source, true, false, true);
+        assert_eq!(promise_slices(source, &ranges.floating_promises), expected);
+    }
 }
 
 #[test]

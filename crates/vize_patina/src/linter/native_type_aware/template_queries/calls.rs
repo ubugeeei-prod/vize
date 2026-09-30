@@ -21,13 +21,6 @@ pub(super) struct FloatingPromiseRange {
     pub end: u32,
     pub probe_start: u32,
     pub probe_end: u32,
-    pub probe_target: FloatingPromiseProbeTarget,
-}
-
-#[derive(Clone, Copy, Eq, Ord, PartialEq, PartialOrd)]
-pub(super) enum FloatingPromiseProbeTarget {
-    SourceText,
-    ExpressionBinding,
 }
 
 #[derive(Default)]
@@ -94,17 +87,19 @@ pub(super) fn collect_template_call_ranges(
                 collect_expression_call_callee_ranges(&expression, source.len() as u32);
         }
         if include_floating_promises {
-            if allow_statement_fallback
-                && let Some(range) = bare_handler_reference_range_for_expression(&expression)
-            {
-                ranges.floating_promises.push(range);
-            }
             profile!(
                 "patina.type_aware.template_floating.visit_expression",
-                collect_floating_promise_ranges_for_expression(
-                    &expression,
-                    &mut ranges.floating_promises
-                )
+                if allow_statement_fallback {
+                    collect_unhandled_returned_expression_ranges(
+                        &expression,
+                        &mut ranges.floating_promises,
+                    )
+                } else {
+                    collect_floating_promise_ranges_for_expression(
+                        &expression,
+                        &mut ranges.floating_promises,
+                    )
+                }
             );
         }
         return ranges;
@@ -147,96 +142,41 @@ fn expression_prefers_binding_probe(expression: &Expression<'_>) -> bool {
     }
 }
 
-fn bare_handler_reference_range_for_expression(
+fn collect_unhandled_returned_expression_ranges(
     expression: &Expression<'_>,
-) -> Option<FloatingPromiseRange> {
+    ranges: &mut Vec<FloatingPromiseRange>,
+) {
     match expression {
-        Expression::Identifier(_) => Some(floating_promise_range_from_span(expression.span())),
-        Expression::StaticMemberExpression(member) => is_member_handler_reference(&member.object)
-            .then(|| floating_promise_range_from_span(expression.span())),
-        Expression::ComputedMemberExpression(member) => is_member_handler_reference(&member.object)
-            .then(|| {
-                floating_promise_range_from_span_with_target(
-                    expression.span(),
-                    FloatingPromiseProbeTarget::ExpressionBinding,
-                )
-            }),
-        Expression::ChainExpression(chain) => {
-            chain_member_handler_reference_range(chain, expression.span())
-        }
         Expression::ParenthesizedExpression(paren) => {
-            bare_handler_reference_range_for_expression(&paren.expression)
+            collect_unhandled_returned_expression_ranges(&paren.expression, ranges);
         }
         Expression::TSAsExpression(ts_as) => {
-            bare_handler_reference_range_for_expression(&ts_as.expression)
+            collect_unhandled_returned_expression_ranges(&ts_as.expression, ranges);
         }
         Expression::TSSatisfiesExpression(ts_satisfies) => {
-            bare_handler_reference_range_for_expression(&ts_satisfies.expression)
+            collect_unhandled_returned_expression_ranges(&ts_satisfies.expression, ranges);
         }
         Expression::TSNonNullExpression(ts_non_null) => {
-            bare_handler_reference_range_for_expression(&ts_non_null.expression)
+            collect_unhandled_returned_expression_ranges(&ts_non_null.expression, ranges);
         }
-        _ => None,
-    }
-}
-
-fn chain_member_handler_reference_range(
-    chain: &oxc_ast::ast::ChainExpression<'_>,
-    span: Span,
-) -> Option<FloatingPromiseRange> {
-    match &chain.expression {
-        ChainElement::StaticMemberExpression(member) => is_member_handler_reference(&member.object)
-            .then(|| floating_promise_range_from_span(span)),
-        ChainElement::ComputedMemberExpression(member) => {
-            is_member_handler_reference(&member.object).then(|| {
-                floating_promise_range_from_span_with_target(
-                    span,
-                    FloatingPromiseProbeTarget::ExpressionBinding,
-                )
-            })
+        Expression::LogicalExpression(logical) => {
+            collect_floating_promise_ranges_for_expression(&logical.left, ranges);
+            collect_unhandled_returned_expression_ranges(&logical.right, ranges);
         }
-        ChainElement::TSNonNullExpression(non_null) => {
-            bare_handler_reference_range_for_expression(&non_null.expression)
+        Expression::ConditionalExpression(conditional) => {
+            collect_floating_promise_ranges_for_expression(&conditional.test, ranges);
+            collect_unhandled_returned_expression_ranges(&conditional.consequent, ranges);
+            collect_unhandled_returned_expression_ranges(&conditional.alternate, ranges);
         }
-        _ => None,
-    }
-}
-
-fn is_member_handler_reference(expression: &Expression<'_>) -> bool {
-    match expression {
-        Expression::Identifier(_) | Expression::ThisExpression(_) => true,
-        Expression::StaticMemberExpression(member) => is_member_handler_reference(&member.object),
-        Expression::ComputedMemberExpression(member) => is_member_handler_reference(&member.object),
-        Expression::ChainExpression(chain) => match &chain.expression {
-            ChainElement::StaticMemberExpression(member) => {
-                is_member_handler_reference(&member.object)
+        Expression::SequenceExpression(sequence) => {
+            if let Some((last, preceding)) = sequence.expressions.split_last() {
+                for expression in preceding {
+                    collect_floating_promise_ranges_for_expression(expression, ranges);
+                }
+                collect_unhandled_returned_expression_ranges(last, ranges);
             }
-            ChainElement::ComputedMemberExpression(member) => {
-                is_member_handler_reference(&member.object)
-            }
-            ChainElement::TSNonNullExpression(non_null) => {
-                is_member_handler_reference(&non_null.expression)
-            }
-            _ => false,
-        },
-        _ => false,
-    }
-}
-
-fn floating_promise_range_from_span(span: Span) -> FloatingPromiseRange {
-    floating_promise_range_from_span_with_target(span, FloatingPromiseProbeTarget::SourceText)
-}
-
-fn floating_promise_range_from_span_with_target(
-    span: Span,
-    probe_target: FloatingPromiseProbeTarget,
-) -> FloatingPromiseRange {
-    FloatingPromiseRange {
-        start: span.start,
-        end: span.end,
-        probe_start: span.start,
-        probe_end: span.end,
-        probe_target,
+        }
+        _ => {} // Vue observes the expression returned from the handler.
     }
 }
 
@@ -341,20 +281,13 @@ impl FloatingPromiseCollector {
     ) -> Vec<FloatingPromiseRange> {
         let mut ranges = Vec::with_capacity(self.ranges.len());
         let limit = base_offset + source_len;
-        self.ranges.sort_unstable_by_key(|range| {
-            (
-                range.start,
-                range.end,
-                range.probe_start,
-                range.probe_target,
-            )
-        });
+        self.ranges
+            .sort_unstable_by_key(|range| (range.start, range.end, range.probe_start));
         self.ranges.dedup_by(|left, right| {
             left.start == right.start
                 && left.end == right.end
                 && left.probe_start == right.probe_start
                 && left.probe_end == right.probe_end
-                && left.probe_target == right.probe_target
         });
         for range in self.ranges {
             if range.end <= range.start
@@ -371,7 +304,6 @@ impl FloatingPromiseCollector {
                 end: range.end - base_offset,
                 probe_start: range.probe_start - base_offset,
                 probe_end: range.probe_end - base_offset,
-                probe_target: range.probe_target,
             });
         }
         ranges
@@ -397,7 +329,6 @@ fn floating_promise_range_for_expression(
                 end: span.end,
                 probe_start: probe.start,
                 probe_end: probe.end,
-                probe_target: FloatingPromiseProbeTarget::SourceText,
             })
         }
         Expression::NewExpression(_) => {
@@ -407,7 +338,6 @@ fn floating_promise_range_for_expression(
                 end: span.end,
                 probe_start: span.start,
                 probe_end: span.end,
-                probe_target: FloatingPromiseProbeTarget::SourceText,
             })
         }
         Expression::ChainExpression(chain) => match &chain.expression {
@@ -419,7 +349,6 @@ fn floating_promise_range_for_expression(
                     end: span.end,
                     probe_start: probe.start,
                     probe_end: probe.end,
-                    probe_target: FloatingPromiseProbeTarget::SourceText,
                 })
             }
             ChainElement::TSNonNullExpression(non_null) => {

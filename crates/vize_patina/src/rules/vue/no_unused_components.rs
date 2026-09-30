@@ -63,6 +63,7 @@ struct ComponentCandidate {
     name: CompactString,
     local_name: CompactString,
     is_script_setup_import: bool,
+    span: Option<(u32, u32)>,
 }
 
 impl NoUnusedComponents {
@@ -104,7 +105,13 @@ impl NoUnusedComponents {
         {
             for (name, binding) in scope.bindings() {
                 if Self::is_component_binding(binding.binding_type) && is_pascal_case(name) {
-                    push_component_candidate(&mut candidates, name, name, true);
+                    push_component_candidate(
+                        &mut candidates,
+                        name,
+                        name,
+                        true,
+                        analysis.binding_spans.get(name).copied(),
+                    );
                 }
             }
         }
@@ -115,6 +122,7 @@ impl NoUnusedComponents {
                 registration.name.as_str(),
                 registration.local_name.as_str(),
                 false,
+                Some((registration.start, registration.end)),
             );
         }
 
@@ -212,15 +220,18 @@ impl Rule for NoUnusedComponents {
         // Report unused components
         for component in unused_components {
             let name = component.name.as_str();
-            ctx.report(
+            let Some((start, end)) = component.span else {
+                continue;
+            };
+            ctx.report_in_script(
                 crate::diagnostic::LintDiagnostic::warn(
                     ctx.current_rule,
                     cstr!(
                         "Component '{}' is registered but never used in template",
                         name
                     ),
-                    0,
-                    name.len() as u32,
+                    start,
+                    end,
                 )
                 .with_help("Remove the unused import or use the component in your template"),
             );
@@ -233,6 +244,7 @@ fn push_component_candidate(
     name: &str,
     local_name: &str,
     is_script_setup_import: bool,
+    span: Option<(u32, u32)>,
 ) {
     if candidates
         .iter()
@@ -244,5 +256,6 @@ fn push_component_candidate(
         name: name.to_compact_string(),
         local_name: local_name.to_compact_string(),
         is_script_setup_import,
+        span,
     });
 }

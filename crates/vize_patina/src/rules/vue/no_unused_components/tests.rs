@@ -58,6 +58,7 @@ export default {
     FourStyle: Style,
   },
 }
+
 </script>
 
 <template>
@@ -68,6 +69,36 @@ export default {
     assert_eq!(
         lint_messages(sfc),
         vec!["Component 'FourStyle' is registered but never used in template"]
+    );
+}
+
+#[test]
+fn unused_script_setup_import_points_to_import_name() {
+    let sfc = "<script setup>\nimport Child from './Child.vue'\n</script>\n<template><div /></template>\n";
+    let diagnostics = Linter::new()
+        .with_enabled_rules(Some(vec!["vue/no-unused-components".into()]))
+        .lint_sfc(sfc, "test.vue")
+        .diagnostics;
+    assert_eq!(diagnostics.len(), 1);
+    let start = sfc.find("Child from").unwrap();
+    assert_eq!(
+        (diagnostics[0].start, diagnostics[0].end),
+        (start as u32, (start + 5) as u32)
+    );
+}
+
+#[test]
+fn unused_options_registration_points_to_public_name() {
+    let sfc = "<script>\nimport Style from './style.vue'\nexport default { components: { FourStyle: Style } }\n</script>\n<template><div /></template>\n";
+    let diagnostics = Linter::new()
+        .with_enabled_rules(Some(vec!["vue/no-unused-components".into()]))
+        .lint_sfc(sfc, "test.vue")
+        .diagnostics;
+    assert_eq!(diagnostics.len(), 1);
+    let start = sfc.find("FourStyle:").unwrap();
+    assert_eq!(
+        (diagnostics[0].start, diagnostics[0].end),
+        (start as u32, (start + 9) as u32)
     );
 }
 
