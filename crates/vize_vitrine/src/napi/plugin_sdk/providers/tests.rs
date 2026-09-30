@@ -5,7 +5,7 @@ use super::super::facts::REGISTRY;
 use super::super::plugin_cache::{PluginCacheInput, content_key};
 use super::{ProviderCatalog, ProviderOutput, ProviderSpec, custom_batch};
 use serde_json::{Value, json};
-use vize_davinci::fact::FactManager;
+use vize_l0::fact::FactManager;
 
 fn names(items: &[&str]) -> Vec<String> {
     items.iter().map(|name| (*name).to_owned()).collect()

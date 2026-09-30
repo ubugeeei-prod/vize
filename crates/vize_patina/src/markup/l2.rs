@@ -13,8 +13,8 @@
 //! the view is built, so a walk does not scan that table per interpolation.
 
 use vize_atelier_jsx::l2::JsxL2Root;
-use vize_davinci::side_table::SideTable;
 use vize_l0::Allocator;
+use vize_l0::side_table::SideTable;
 use vize_l1::{SurfaceError, SurfaceTree};
 use vize_l1_to_l2::lower::TextParts;
 use vize_l1_to_l2::{Lowered, lower_preserving_comments};

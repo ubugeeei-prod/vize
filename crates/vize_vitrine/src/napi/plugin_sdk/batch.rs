@@ -21,7 +21,7 @@
 )]
 
 use serde::{Deserialize, Serialize};
-use vize_davinci::fact::FactManager;
+use vize_l0::fact::FactManager;
 
 use super::document::{PluginDocument, PluginNode};
 use super::error::HostError;
@@ -119,7 +119,7 @@ pub fn build_batch(
 }
 
 /// Reject unknown manifest inputs before a cache hit can skip batch building.
-pub fn validate_spec(spec: &PluginSpec<'_>) -> Result<vize_davinci::fact::Demand, HostError> {
+pub fn validate_spec(spec: &PluginSpec<'_>) -> Result<vize_l0::fact::Demand, HostError> {
     if let Some(kind) = spec
         .visit
         .into_iter()

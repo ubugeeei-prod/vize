@@ -2,10 +2,10 @@
 //!
 //! [`to_unified`] converts one [`LintDiagnostic`] — whose ranges are
 //! file-absolute by the time a result leaves the linter — into the
-//! `vize_davinci::diagnostic::Diagnostic` every renderer reads, under the
+//! `vize_l0::diag::Diagnostic` every renderer reads, under the
 //! witness law:
 //!
-//! - the rule's [`RuleContract`](vize_davinci::diagnostic::RuleContract)
+//! - the rule's [`RuleContract`](vize_l0::diag::RuleContract)
 //!   clamps the reported severity, so a heuristic rule can never reach the
 //!   channel as an error, whatever the configuration says;
 //! - an error carries the rule's counted [`Exemption`] (no Patina rule
@@ -19,9 +19,7 @@
 //! Labels become secondary parts, help a help part at the primary span, and
 //! each fix edit a suggestion part whose message is the replacement text.
 
-use vize_davinci::diagnostic::{
-    Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind, Severity, Stage,
-};
+use vize_l0::diag::{Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind, Severity, Stage};
 use vize_l0::{SourceRoot, Span};
 
 use crate::diagnostic::LintDiagnostic;

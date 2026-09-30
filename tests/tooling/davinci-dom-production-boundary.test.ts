@@ -11,7 +11,7 @@ import {
   workspacePackage,
 } from "./support/davinci-stage-dependencies.ts";
 
-const domStageDeps = new Set(["vize_davinci", "vize_l1_to_l2", "vize_l2"]);
+const domStageDeps = new Set(["vize_l0", "vize_l1_to_l2", "vize_l2"]);
 const compilerOptionsProjectedToS2 = [
   "mode",
   "prefix_identifiers",
@@ -73,13 +73,13 @@ test("DOM compiler keeps the published L2 renderer available for profiling", () 
     .filter((dependency) => dependency.kind === null && domStageDeps.has(dependency.name))
     .map((dependency) => dependency.name)
     .sort();
-  assert.deepEqual(productionStageDeps, ["vize_l1_to_l2"]);
+  assert.deepEqual(productionStageDeps, ["vize_l0", "vize_l1_to_l2"]);
 
   const witnessDeps = dependencies
     .filter((dependency) => dependency.kind === "dev" && domStageDeps.has(dependency.name))
     .map((dependency) => dependency.name)
     .sort();
-  assert.deepEqual(witnessDeps, ["vize_davinci"]);
+  assert.deepEqual(witnessDeps, []);
 });
 
 test("source-map-disabled DOM compile records the L2 profiling counter", () => {

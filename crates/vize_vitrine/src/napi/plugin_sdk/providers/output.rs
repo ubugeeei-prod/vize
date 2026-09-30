@@ -1,7 +1,7 @@
 //! Accept exactly declared fact tables and compare canonical audited results.
 use serde_json::{Map, Value};
 use std::collections::BTreeSet;
-use vize_davinci::key::source_block_key;
+use vize_l0::key::source_block_key;
 
 use super::{ProviderError, refusal};
 

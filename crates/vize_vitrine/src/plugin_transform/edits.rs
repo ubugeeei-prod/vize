@@ -4,8 +4,8 @@ use super::{
     walk,
 };
 use std::collections::BTreeSet;
-use vize_davinci::id::NodeId;
 use vize_l0::Allocator;
+use vize_l0::id::NodeId;
 use vize_l1_to_l2::Lowered;
 use vize_l2::op::Op;
 use vize_l2::provenance::ProvenanceRecord;

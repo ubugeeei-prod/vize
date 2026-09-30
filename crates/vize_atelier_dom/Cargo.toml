@@ -46,7 +46,6 @@ serde_json = { workspace = true }
 toml = { workspace = true }
 
 # L2 test and benchmark fixtures still use the stage diagnostics/types.
-vize_davinci = { workspace = true }
 
 [[bench]]
 name = "davinci"

@@ -139,7 +139,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// fact is `fact`: a `:key` stays on the L2 carrier, so its segment is
     /// dropped from the branch root like the legacy transform drops it.
     pub(super) fn branch_key_span(&self, fact: u32, index: usize) -> Result<Option<vize_l0::Span>> {
-        let node = vize_davinci::id::NodeId::from_index(fact).ok_or(AdmissionFailure::Invalid(
+        let node = vize_l0::id::NodeId::from_index(fact).ok_or(AdmissionFailure::Invalid(
             "string plan fact index is not a node id",
         ))?;
         Ok(self

@@ -1,6 +1,6 @@
 //! Typed roundtrip bindings. Dumps never become compiler pipeline inputs.
 
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{Allocator, String};
 use vize_l2::dump::Page as L2Page;
 use vize_l3::dump::Page as L3Page;

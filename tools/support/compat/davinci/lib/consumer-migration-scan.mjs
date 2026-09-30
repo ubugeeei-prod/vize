@@ -22,7 +22,6 @@ function stageSurface(id, label, preferredName, compatNames = []) {
 }
 
 export const SURFACES = [
-  stageSurface("davinci", "Davinci", "vize_davinci"),
   stageSurface("l0", "L0", "vize_l0", ["vize_carton"]),
   stageSurface("l1", "L1", "vize_l1", ["vize_sinopia"]),
   stageSurface("l2", "L2", "vize_l2", ["vize_disegno"]),

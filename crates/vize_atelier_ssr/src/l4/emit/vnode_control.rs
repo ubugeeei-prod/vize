@@ -2,7 +2,7 @@
 //! blocks.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l0::{FxHashSet, String, ToCompactString, cstr};
 use vize_l1_to_l2::lower::WrapperKey;
 use vize_l1_to_l2::{TransformContent, decode_template_entities};

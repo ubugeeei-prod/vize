@@ -13,7 +13,7 @@ import {
 
 test("Davinci SSR compile path imports the L4 string-plan bridge", () => {
   for (const [dependencyName, rename] of [
-    ["vize_davinci", null],
+    ["vize_l0", null],
     ["vize_l1", null],
     ["vize_l1_to_l2", null],
     ["vize_l2", null],

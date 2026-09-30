@@ -16,7 +16,6 @@ import { hasStorage, scanStorage, storageKinds, type FileStorage } from "./davin
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const libraryRoots = [
   "davinci/vize_l0/src",
-  "davinci/vize_davinci/src",
   "davinci/vize_l1/src",
   "davinci/vize_l2/src",
   "davinci/vize_l3/src",

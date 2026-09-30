@@ -5,7 +5,7 @@
 
 mod unicode;
 
-use vize_davinci::fact::{Demand, FactManager, FactProducer};
+use vize_l0::fact::{Demand, FactManager, FactProducer};
 
 use super::batch::{PluginSpec, build_batch, diagnostics};
 use super::document::PluginDocument;

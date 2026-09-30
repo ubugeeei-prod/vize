@@ -1,6 +1,6 @@
 use std::vec::Vec as StdVec;
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l0::{Allocator, Box, Span, String, Vec};
 use vize_l1_to_l2::lower::OpFamily;
 use vize_l2::expr::ExprRef;

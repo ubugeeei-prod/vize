@@ -11,7 +11,7 @@
 )]
 
 use vize_atelier_core::{ElementNode, ElementType, StaticType, TemplateChildNode, get_static_type};
-use vize_davinci::side_table::SideTable;
+use vize_l0::side_table::SideTable;
 use vize_l1_to_l2::pass::StaticFacts;
 use vize_l2::dump::{
     Component as DumpComponent, Element as DumpElement, Op as DumpOp, Slot as DumpSlot,

@@ -48,7 +48,6 @@ vize_croquis_cf = { workspace = true }
 vize_canon = { workspace = true }
 vize_curator = { workspace = true }
 # P4-16 JS plugin SDK spike: the S2 page and the fact API a JS plugin reads.
-vize_davinci = { workspace = true }
 vize_l3 = { workspace = true }
 vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true }

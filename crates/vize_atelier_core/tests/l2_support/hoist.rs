@@ -48,8 +48,8 @@
 #![expect(clippy::panic, reason = "tests assert by panicking")]
 
 use vize_atelier_core::TemplateChildNode;
-use vize_davinci::id::NodeId;
-use vize_davinci::side_table::SideTable;
+use vize_l0::id::NodeId;
+use vize_l0::side_table::SideTable;
 use vize_l1_to_l2::pass::{StaticFacts, StaticLevel};
 use vize_l2::dump::Op as DumpOp;
 

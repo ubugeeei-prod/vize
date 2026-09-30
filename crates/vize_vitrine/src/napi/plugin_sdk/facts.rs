@@ -2,7 +2,7 @@
 //!
 //! A JS manifest declares its demands as a static list of group **names**
 //! (`demands: ["templateScopes"]`). The host resolves each name against this
-//! registry's [`GroupDesc`](vize_davinci::fact::GroupDesc) names into one
+//! registry's [`GroupDesc`](vize_l0::fact::GroupDesc) names into one
 //! [`Demand`], computes exactly its closure with a [`FactManager`] (each
 //! group at most once per document, however many plugins demand it), and
 //! serializes only the declared groups into the plugin's batch. The host is
@@ -21,12 +21,12 @@
 )]
 
 use serde::Serialize;
-use vize_davinci::fact::ids::FIXTURE_BASE;
-use vize_davinci::fact::{
+use vize_l0::fact::ids::FIXTURE_BASE;
+use vize_l0::fact::{
     Demand, FactConsumer, FactGroup, FactManager, FactProducer, FactRegistry, FactTable, FactView,
     ProducerEntry,
 };
-use vize_davinci::pass::AnalysisId;
+use vize_l0::pass::AnalysisId;
 
 use super::document::{PluginDocument, PluginNode};
 use super::error::HostError;

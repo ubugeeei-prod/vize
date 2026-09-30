@@ -33,8 +33,8 @@ pub use path::{RouteParam, join_route_path, parse_route_params};
 pub use typing::{RouteDiagnostic, RouteTyping};
 
 use vize_carton::{CompactString, FxHashMap, Span};
-use vize_davinci::fact::{Demand, FactGroup, FactProducer, FactTable, FactView};
-use vize_davinci::pass::AnalysisId;
+use vize_l0::fact::{Demand, FactGroup, FactProducer, FactTable, FactView};
+use vize_l0::pass::AnalysisId;
 
 use super::{AmbientInput, ModuleId, ProjectSources, Provider, ids};
 

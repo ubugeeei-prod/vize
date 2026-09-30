@@ -59,7 +59,6 @@ insta = { workspace = true }
 # The Davinci L2 lane, test-space only (P2-9): dev-dependencies are stripped
 # on publish, so the release graph stays independent until a production lane
 # explicitly selects the published stage crates.
-vize_davinci = { workspace = true }
 vize_l2 = { workspace = true }
 vize_l1_to_l2 = { workspace = true }
 vize_l1 = { workspace = true }

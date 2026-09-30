@@ -1,6 +1,5 @@
 consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
 typechecker	Typechecker	test/dev	crates/vize_canon/benches/package_route.rs	36	l0	L0	stage	vize_l0	preferred	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	davinci	Davinci	stage	vize_davinci	preferred	1
 typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	l0	L0	stage	vize_l0	preferred	2
 typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	l1	L1	stage	vize_l1	preferred	2
 typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	l2	L2	stage	vize_l2	preferred	2
@@ -331,12 +330,12 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_server/reuse_tests.
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_server/sessions.rs	6	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_server/sessions.rs	86	l0	L0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_server/sfc_semantics.rs	5	l0	L0	stage	vize_carton	compat	2
-typechecker	Typechecker	source	crates/vize_canon/src/corsa_session_cache.rs	26	davinci	Davinci	stage	vize_davinci	preferred	1
+typechecker	Typechecker	source	crates/vize_canon/src/corsa_session_cache.rs	26	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_session_cache.rs	26	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_session_cache/chain.rs	7	l0	L0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_session_cache/lifecycle.rs	10	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_session_cache/lifecycle.rs	133	l0	L0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_session_cache/tests.rs	3	davinci	Davinci	stage	vize_davinci	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_session_cache/tests.rs	3	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_session_cache/tests.rs	3	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/diagnostic.rs	4	l0	L0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/file_uri.rs	3	l0	L0	stage	vize_carton	compat	1
@@ -912,7 +911,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_scope
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/slot_scope/payload.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/vif_guard.rs	1	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/vif_guard.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/script_facts.rs	7	davinci	Davinci	stage	vize_davinci	preferred	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/script_facts.rs	7	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/script_facts.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/strict_template_global_enum_tests.rs	2	l0	L0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/strict_template_global_enum_tests.rs	2	old_ast	old AST/parser	old	vize_armature	legacy	1

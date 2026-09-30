@@ -9,8 +9,8 @@
     reason = "tests assert by panicking"
 )]
 
-use vize_davinci::id::NodeId;
 use vize_l0::String;
+use vize_l0::id::NodeId;
 use vize_l2::dump::{
     Attribute as DumpAttribute, Binding as DumpBinding, Expr as DumpExpr, Name as DumpName,
     Op as DumpOp,

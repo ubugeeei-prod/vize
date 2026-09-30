@@ -2,8 +2,8 @@
 //! control flow, with the legacy lane's fragment-marker rules.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_davinci::id::NodeId;
 use vize_l0::FxHashSet;
+use vize_l0::id::NodeId;
 use vize_l1_to_l2::TransformContent;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, Op};

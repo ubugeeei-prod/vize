@@ -13,10 +13,10 @@ use std::borrow::Cow;
 use std::io::IsTerminal;
 
 use crate::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
-use vize_davinci::diagnostic::{Diagnostic, DiagnosticPart, PartKind};
 use vize_fresco::{
     ColorSupport, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
 };
+use vize_l0::diag::{Diagnostic, DiagnosticPart, PartKind};
 use vize_l0::i18n::{Locale, Translator, translator};
 use vize_l0::{FxHashMap, SourceRoot, String, cstr};
 use vize_patina::output::unified::{UnifiedError, to_unified};

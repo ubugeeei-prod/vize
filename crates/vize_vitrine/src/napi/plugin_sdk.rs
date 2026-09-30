@@ -50,7 +50,7 @@ use std::time::Instant;
 use napi::Env;
 use napi::bindgen_prelude::{Error, FunctionRef, Result, Status};
 use napi_derive::napi;
-use vize_davinci::fact::FactManager;
+use vize_l0::fact::FactManager;
 
 use batch::{
     PluginDiagnostic, PluginSpec, build_batch, diagnostics, sort, valid_cached, validate_spec,
