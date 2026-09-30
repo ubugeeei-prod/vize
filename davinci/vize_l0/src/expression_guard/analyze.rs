@@ -245,13 +245,9 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
                 can_start_regex = true;
             }
             b'.' => can_start_regex = false,
-            // TypeScript's postfix non-null assertion leaves an expression on
-            // the left. In `value!/=...`, `/=` is division assignment, not a
-            // regex opener. Treating it as regex can hide an arbitrarily deep
-            // parenthesis run from the OXC recursion budget (#7275).
-            b'!' => {
-                can_start_regex = can_start_regex || bytes.get(i + 1) == Some(&b'=');
-            }
+            // A postfix non-null assertion makes `value!/=...` division
+            // assignment; misreading `/=` as regex hides parser depth (#7275).
+            b'!' => can_start_regex |= bytes.get(i + 1) == Some(&b'='),
             b'+' | b'-' if bytes.get(i + 1) == Some(&b) => {
                 i += 1;
                 can_start_regex = false;
