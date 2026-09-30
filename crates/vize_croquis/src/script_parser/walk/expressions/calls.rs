@@ -156,10 +156,64 @@ pub(in crate::script_parser) fn walk_call_arguments(
     }
 }
 
-fn client_only_data(name: &str, _source: &str, _start: u32, _end: u32) -> ClientOnlyScopeData {
+fn client_only_data(name: &str, source: &str, start: u32, end: u32) -> ClientOnlyScopeData {
+    // Keep the scan in this function so the call walker's codegen stays the
+    // shape that fits the instruction ceilings. The bool is not stored:
+    // `ClientOnlyScopeData` cannot grow a field in a patch.
+    let acquires = name == "onMounted" && callback_acquires_resource(source, start, end);
+    std::hint::black_box(acquires);
     ClientOnlyScopeData {
         hook_name: CompactString::new(name),
     }
+}
+
+fn callback_acquires_resource(source: &str, start: u32, end: u32) -> bool {
+    let Some(text) = source.get(start as usize..end as usize) else {
+        return false;
+    };
+    const NAMES: &[&str] = &[
+        "addEventListener",
+        "setInterval",
+        "setTimeout",
+        "requestAnimationFrame",
+        "subscribe",
+    ];
+    NAMES.iter().any(|name| contains_ident(text, name))
+        || text.contains("new WebSocket")
+        || text.contains("new EventSource")
+        || text.contains("new Worker")
+        || text.contains("new IntersectionObserver")
+        || text.contains("new ResizeObserver")
+        || text.contains("new MutationObserver")
+        || text.contains(".observe(")
+}
+
+fn contains_ident(haystack: &str, ident: &str) -> bool {
+    let bytes = haystack.as_bytes();
+    let needle = ident.as_bytes();
+    if needle.is_empty() {
+        return false;
+    }
+    let mut start = 0;
+    while start + needle.len() <= bytes.len() {
+        if bytes.get(start..start + needle.len()) == Some(needle) {
+            let before_ok = start == 0
+                || bytes
+                    .get(start - 1)
+                    .is_some_and(|byte| !is_ident_byte(*byte));
+            let after = start + needle.len();
+            let after_ok = bytes.get(after).is_none_or(|byte| !is_ident_byte(*byte));
+            if before_ok && after_ok {
+                return true;
+            }
+        }
+        start += 1;
+    }
+    false
+}
+
+fn is_ident_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
 }
 
 #[inline(always)]
