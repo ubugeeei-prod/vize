@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { test } from "node:test";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
@@ -82,6 +83,16 @@ test("the no_std claim stays on all six stage libraries and excludes the std L0 
   const carton = readRepoFile("davinci", "vize_l0", "src", "lib.rs");
   assert.doesNotMatch(carton, /^#!\[no_std\]$/m, "L0 is the accepted std host foundation");
 
-  const substrateManifest = readRepoFile("davinci", "vize_davinci", "Cargo.toml");
-  assert.doesNotMatch(substrateManifest, /^\[\[bin\]\]$/m);
+  const resolved = JSON.parse(
+    execFileSync("cargo", ["metadata", "--no-deps", "--format-version", "1", "--locked"], {
+      encoding: "utf8",
+    }),
+  ) as { packages: Array<{ name: string; targets: Array<{ kind: string[] }> }> };
+  const substrate = resolved.packages.find((pkg) => pkg.name === "vize_davinci");
+  assert.ok(substrate, "the substrate package must be present in Cargo metadata");
+  assert.deepEqual(
+    substrate.targets.filter((target) => target.kind.includes("bin")),
+    [],
+    "Cargo must resolve no executable target for the retired host",
+  );
 });
