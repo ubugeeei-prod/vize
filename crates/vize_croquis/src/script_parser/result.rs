@@ -132,6 +132,8 @@ pub struct ScriptParseResult {
     pub(crate) options_descriptor: Option<OptionsDescriptor>,
     /// Whether component options disable attribute inheritance.
     pub inherit_attrs_disabled: bool,
+    /// Whether the script calls Vue's `useAttrs` helper.
+    pub uses_attrs_call: bool,
     /// Reactive root of a member assignment while its right-hand side is walked.
     ///
     /// `open.value = [...open.value, index]` writes the copy back, so the spread
@@ -271,6 +273,7 @@ impl ScriptParseResult {
         summary.binding_spans = self.binding_spans;
         summary.options_descriptor = self.options_descriptor;
         summary.template_info.inherit_attrs_disabled |= self.inherit_attrs_disabled;
+        summary.script_uses_attrs = self.uses_attrs_call;
     }
 
     /// Convert script analysis into a `Croquis` summary.

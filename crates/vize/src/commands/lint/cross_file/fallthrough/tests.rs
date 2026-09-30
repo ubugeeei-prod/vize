@@ -88,3 +88,30 @@ fn covers_fragment_text_and_disabled_inheritance_but_allows_explicit_attrs() {
         parent.find("class=\"overlay\"").unwrap()
     );
 }
+
+#[test]
+fn structural_roots_and_script_use_attrs_are_classified_from_syntax() {
+    let parent = "<script setup>import Dialog from './Dialog.vue'</script><template><Dialog class=\"x\" :style=\"style\" /></template>";
+    for child in [
+        "<script setup>// useAttrs()\n</script><template><Teleport to=\"body\"><div /></Teleport></template>",
+        "<script setup>const note = 'useAttrs()'</script><template><Teleport to=\"body\"><div /></Teleport></template>",
+    ] {
+        assert_eq!(diagnostics(parent, child).len(), 2, "{child}");
+    }
+    assert!(diagnostics(parent, "<script setup>useAttrs()</script><template><Teleport to=\"body\"><div /></Teleport></template>").is_empty());
+    assert!(
+        diagnostics(
+            parent,
+            "<template><div v-if=\"ready\" /><div v-else /></template>"
+        )
+        .is_empty()
+    );
+    assert_eq!(
+        diagnostics(
+            parent,
+            "<template><div v-for=\"item in items\" /></template>"
+        )
+        .len(),
+        2
+    );
+}

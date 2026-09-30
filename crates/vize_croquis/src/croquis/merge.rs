@@ -24,6 +24,7 @@ impl Croquis {
         // regular script disables fallthrough for the whole component, not just
         // for its own block; the setup block cannot re-enable it.
         self.template_info.inherit_attrs_disabled |= plain.template_info.inherit_attrs_disabled;
+        self.script_uses_attrs |= plain.script_uses_attrs;
 
         self.reactivity.extend(plain.reactivity);
         self.race_conditions.extend(plain.race_conditions);
@@ -89,12 +90,14 @@ mod tests {
     fn plain_script_inherit_attrs_false_survives_the_merge() {
         let mut plain = Croquis::new();
         plain.template_info.inherit_attrs_disabled = true;
+        plain.script_uses_attrs = true;
         let mut setup = Croquis::new();
         assert!(!setup.template_info.inherit_attrs_disabled);
 
         setup.merge_plain_script(plain);
 
         assert!(setup.template_info.inherit_attrs_disabled);
+        assert!(setup.script_uses_attrs);
 
         let mut setup = Croquis::new();
         setup.template_info.inherit_attrs_disabled = true;

@@ -122,6 +122,9 @@ pub struct Croquis {
     /// Template-level metadata (root count, $attrs usage, etc.)
     pub template_info: TemplateInfo,
 
+    /// Whether the script calls `useAttrs`, independent of template `$attrs` use.
+    pub script_uses_attrs: bool,
+
     /// Components used in template (names only, for quick lookup)
     pub used_components: FxHashSet<CompactString>,
 

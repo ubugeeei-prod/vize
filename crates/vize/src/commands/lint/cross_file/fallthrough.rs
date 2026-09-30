@@ -18,7 +18,6 @@ pub(super) fn apply<S: AsRef<str>>(
     results: &mut [LintResult],
     help_level: HelpLevel,
 ) {
-    let mut child_uses_attrs = FxHashMap::default();
     for usage in &analysis.fallthrough_usage_facts {
         let Some(&parent_index) = indexes.get(&usage.parent_file_id) else {
             continue;
@@ -39,9 +38,6 @@ pub(super) fn apply<S: AsRef<str>>(
         let Some(child_offsets) = offsets.get(&usage.child_file_id) else {
             continue;
         };
-        let Some(&child_index) = indexes.get(&usage.child_file_id) else {
-            continue;
-        };
         let reason = if child.template_info.inherit_attrs_disabled {
             "inheritAttrs: false"
         } else {
@@ -52,16 +48,9 @@ pub(super) fn apply<S: AsRef<str>>(
                 None => continue,
             }
         };
-        let uses_attrs = *child_uses_attrs
-            .entry(usage.child_file_id)
-            .or_insert_with(|| {
-                files
-                    .get(child_index)
-                    .is_some_and(|(_, source)| source.as_ref().contains("useAttrs("))
-            });
         if child.template_info.uses_attrs
             || child.template_info.binds_attrs_explicitly
-            || uses_attrs
+            || child.script_uses_attrs
         {
             continue;
         }

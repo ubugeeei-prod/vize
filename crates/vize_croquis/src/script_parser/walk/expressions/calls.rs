@@ -12,6 +12,9 @@ pub(in crate::script_parser) fn walk_call_arguments(
     call: &CallExpression<'_>,
     source: &str,
 ) {
+    if matches!(&call.callee, Expression::Identifier(id) if id.name == "useAttrs") {
+        result.uses_attrs_call = true;
+    }
     // First, walk the callee (might be a chained call like foo.bar().baz())
     walk_expression(result, &call.callee, source);
 

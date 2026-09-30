@@ -11,7 +11,7 @@ use vize_atelier_sfc::{
 };
 use vize_croquis::Croquis;
 use vize_l0::Allocator;
-use vize_relief::TemplateChildNode;
+use vize_relief::{PropNode, TemplateChildNode};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum FallthroughRoot {
@@ -77,16 +77,32 @@ pub(super) fn analyze_sfc_for_cross_file(
 }
 
 fn fallthrough_root(root: &vize_relief::RootNode<'_>) -> Option<FallthroughRoot> {
-    let mut significant = root.children.iter().filter(|child| match child {
-        TemplateChildNode::Comment(_) => false,
-        TemplateChildNode::Text(text) => !text.content.trim().is_empty(),
-        _ => true,
-    });
+    let mut significant = root
+        .children
+        .iter()
+        .filter(|child| match child {
+            TemplateChildNode::Comment(_) => false,
+            TemplateChildNode::Text(text) => !text.content.trim().is_empty(),
+            _ => true,
+        })
+        .peekable();
     let first = significant.next()?;
+    if has_root_directive(first, &["if"]) {
+        while significant
+            .peek()
+            .is_some_and(|child| has_root_directive(child, &["else-if", "else"]))
+        {
+            significant.next();
+        }
+        return significant.next().map(|_| FallthroughRoot::Fragment);
+    }
     if significant.next().is_some() {
         return Some(FallthroughRoot::Fragment);
     }
     match first {
+        TemplateChildNode::Element(_) if has_root_directive(first, &["for"]) => {
+            Some(FallthroughRoot::Fragment)
+        }
         TemplateChildNode::Element(element) if element.tag.eq_ignore_ascii_case("teleport") => {
             Some(FallthroughRoot::Teleport)
         }
@@ -104,4 +120,10 @@ fn fallthrough_root(root: &vize_relief::RootNode<'_>) -> Option<FallthroughRoot>
         TemplateChildNode::For(_) => Some(FallthroughRoot::Fragment),
         _ => None,
     }
+}
+
+fn has_root_directive(child: &TemplateChildNode<'_>, names: &[&str]) -> bool {
+    matches!(child, TemplateChildNode::Element(element) if element.props.iter().any(|prop| {
+        matches!(prop, PropNode::Directive(directive) if names.contains(&directive.name))
+    }))
 }
