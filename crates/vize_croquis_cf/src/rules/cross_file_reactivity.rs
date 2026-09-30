@@ -36,6 +36,7 @@ pub(crate) mod store_detection;
 mod types;
 
 pub use engine::CrossFileReactivityAnalyzer;
+pub(crate) use provide_helpers::provided_value_reactive_kind;
 pub use types::{CrossFileReactivityIssue, CrossFileReactivityIssueKind};
 
 use crate::diagnostics::CrossFileDiagnostic;

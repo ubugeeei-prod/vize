@@ -2,6 +2,7 @@ use super::keys::create_string_key_diagnostic;
 use crate::diagnostics::CrossFileDiagnostic;
 use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleRegistry};
+use crate::rules::cross_file_reactivity::provided_value_reactive_kind;
 use std::cmp::Ordering;
 use vize_carton::{FxHashMap, FxHashSet};
 use vize_croquis::provide::{InjectEntry, ProvideEntry, ProvideKey};
@@ -13,6 +14,7 @@ use parents::{runtime_component_parents, stable_file_order, stable_rank};
 pub(crate) struct ProvideInjectIndex {
     provides: FxHashMap<FileId, Vec<ProvideEntry>>,
     injects: FxHashMap<FileId, Vec<InjectEntry>>,
+    reactive_provides: FxHashSet<(FileId, u32)>,
     component_parents: FxHashMap<FileId, Vec<FileId>>,
     stable_file_order: FxHashMap<FileId, usize>,
 }
@@ -66,9 +68,15 @@ impl ProvideInjectIndex {
     pub(crate) fn new(registry: &ModuleRegistry, graph: &DependencyGraph) -> Self {
         let mut provides = FxHashMap::default();
         let mut injects = FxHashMap::default();
+        let mut reactive_provides = FxHashSet::default();
 
         for entry in registry.vue_components() {
             let (entry_provides, entry_injects) = extract_provide_inject(&entry.analysis);
+            for provide in &entry_provides {
+                if provided_value_reactive_kind(&entry.analysis, provide.value.as_str()).is_some() {
+                    reactive_provides.insert((entry.id, provide.id.as_u32()));
+                }
+            }
             if !entry_provides.is_empty() {
                 provides.insert(entry.id, entry_provides);
             }
@@ -83,6 +91,7 @@ impl ProvideInjectIndex {
         Self {
             provides,
             injects,
+            reactive_provides,
             component_parents,
             stable_file_order,
         }
@@ -94,6 +103,11 @@ impl ProvideInjectIndex {
 
     pub(crate) fn injects(&self) -> &FxHashMap<FileId, Vec<InjectEntry>> {
         &self.injects
+    }
+
+    pub(crate) fn provider_is_reactive(&self, provider: &ResolvedProvider) -> bool {
+        self.reactive_provides
+            .contains(&(provider.provider_id, provider.provide.id.as_u32()))
     }
 
     pub(crate) fn string_key_diagnostics(&self) -> Vec<CrossFileDiagnostic> {
@@ -416,7 +430,7 @@ mod tests {
     use super::ProvideInjectIndex;
     use crate::registry::FileId;
     use std::cmp::Ordering;
-    use vize_carton::FxHashMap;
+    use vize_carton::{FxHashMap, FxHashSet};
 
     #[test]
     fn shared_file_order_places_known_paths_before_missing_entries() {
@@ -427,6 +441,7 @@ mod tests {
         let index = ProvideInjectIndex {
             provides: FxHashMap::default(),
             injects: FxHashMap::default(),
+            reactive_provides: FxHashSet::default(),
             component_parents: FxHashMap::default(),
             stable_file_order: FxHashMap::from_iter([(first, 0), (second, 1)]),
         };
