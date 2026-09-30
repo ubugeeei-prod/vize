@@ -144,6 +144,10 @@ pub struct SetupContextTracker {
     /// Kept here, not as a new `Croquis` field: that struct is externally
     /// constructible, so a field would be a major SemVer break in a patch.
     browser_globals: Vec<(CompactString, u32)>,
+    /// `onMounted` call starts whose callback acquires a listener, timer,
+    /// socket, or observer. Not a field of `ClientOnlyScopeData`: that struct
+    /// is still externally constructible.
+    mounted_resources: Vec<u32>,
 }
 
 impl SetupContextTracker {
@@ -197,6 +201,16 @@ impl SetupContextTracker {
         &self.browser_globals
     }
 
+    /// Record an `onMounted` call that acquires a resource.
+    pub fn note_mounted_resource(&mut self, offset: u32) {
+        self.mounted_resources.push(offset);
+    }
+
+    /// Whether this `onMounted` call start acquires a resource.
+    pub fn mounted_resource(&self, offset: u32) -> bool {
+        self.mounted_resources.contains(&offset)
+    }
+
     /// Shift all stored source offsets by `delta`.
     pub fn shift_offsets(&mut self, delta: u32) {
         for violation in &mut self.violations {
@@ -206,12 +220,16 @@ impl SetupContextTracker {
         for (_, offset) in &mut self.browser_globals {
             *offset = offset.saturating_add(delta);
         }
+        for offset in &mut self.mounted_resources {
+            *offset = offset.saturating_add(delta);
+        }
     }
 
     /// Merge another tracker into this one.
     pub fn extend(&mut self, other: Self) {
         self.violations.extend(other.violations);
         self.browser_globals.extend(other.browser_globals);
+        self.mounted_resources.extend(other.mounted_resources);
     }
 }
 

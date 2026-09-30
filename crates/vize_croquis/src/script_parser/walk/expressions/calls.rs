@@ -55,13 +55,12 @@ pub(in crate::script_parser) fn walk_call_arguments(
                             Expression::ArrowFunctionExpression(arrow) => {
                                 lifecycle_callback_scope_recorded = true;
                                 // Enter client-only scope
-                                result.scopes.enter_client_only_scope(
-                                    client_only_data(
-                                        name,
-                                        source,
-                                        arrow.span.start,
-                                        arrow.span.end,
-                                    ),
+                                enter_client_only(
+                                    result,
+                                    name,
+                                    source,
+                                    arrow.span.start,
+                                    arrow.span.end,
                                     call.span.start,
                                     call.span.end,
                                 );
@@ -100,8 +99,12 @@ pub(in crate::script_parser) fn walk_call_arguments(
                             Expression::FunctionExpression(func) => {
                                 lifecycle_callback_scope_recorded = true;
                                 // Enter client-only scope
-                                result.scopes.enter_client_only_scope(
-                                    client_only_data(name, source, func.span.start, func.span.end),
+                                enter_client_only(
+                                    result,
+                                    name,
+                                    source,
+                                    func.span.start,
+                                    func.span.end,
                                     call.span.start,
                                     call.span.end,
                                 );
@@ -147,8 +150,12 @@ pub(in crate::script_parser) fn walk_call_arguments(
     if let Some(name) = hook_name
         && !lifecycle_callback_scope_recorded
     {
-        result.scopes.enter_client_only_scope(
-            client_only_data(name, source, call.span.start, call.span.end),
+        enter_client_only(
+            result,
+            name,
+            source,
+            call.span.start,
+            call.span.end,
             call.span.start,
             call.span.end,
         );
@@ -156,10 +163,24 @@ pub(in crate::script_parser) fn walk_call_arguments(
     }
 }
 
-fn client_only_data(name: &str, source: &str, start: u32, end: u32) -> ClientOnlyScopeData {
-    ClientOnlyScopeData {
-        hook_name: CompactString::new(name),
-        acquires_resource: name == "onMounted" && callback_acquires_resource(source, start, end),
+fn enter_client_only(
+    result: &mut ScriptParseResult,
+    name: &str,
+    source: &str,
+    probe_start: u32,
+    probe_end: u32,
+    call_start: u32,
+    call_end: u32,
+) {
+    result.scopes.enter_client_only_scope(
+        ClientOnlyScopeData {
+            hook_name: CompactString::new(name),
+        },
+        call_start,
+        call_end,
+    );
+    if name == "onMounted" && callback_acquires_resource(source, probe_start, probe_end) {
+        result.setup_context.note_mounted_resource(call_start);
     }
 }
 

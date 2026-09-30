@@ -80,7 +80,7 @@ fn lifecycle_pair_diagnostics(
         };
 
         match data.hook_name.as_str() {
-            "onMounted" if data.acquires_resource => {
+            "onMounted" if analysis.setup_context.mounted_resource(scope.span.start) => {
                 mounted_offset.get_or_insert(scope.span.start);
             }
             "onUnmounted" => has_unmounted = true,
