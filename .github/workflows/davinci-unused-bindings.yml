@@ -3,6 +3,7 @@ name: Davinci unused bindings
 on:
   pull_request:
     paths:
+      - "davinci/vize_l0/**"
       - "crates/vize_croquis/**"
       - "crates/vize_atelier_sfc/src/croquis/**"
       - "crates/vize_atelier_sfc/src/croquis.rs"
@@ -49,7 +50,7 @@ jobs:
         env:
           VIZE_DAVINCI_FACT_CORPUS: tests/_fixtures/_git/splitpanes,tests/_fixtures/_git/layoutit-grid,tests/_fixtures/_git/cssgridgenerator
         run: |
-          cargo test -p vize_davinci --test fact_demand
+          cargo test -p vize_l0 --test fact_demand
           cargo test -p vize_croquis --test fact_spec
           cargo test -p vize_patina unused_setup_bindings
       - name: Build the real CLI

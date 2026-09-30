@@ -75,7 +75,7 @@ jobs:
           cache-workspace-crates: "true"
       - name: Print and compare the TS-43 golden keys
         run: |
-          cargo test -p vize_davinci --test artifact_keys --test key_manifests --test hash_domains -- --nocapture
+          cargo test -p vize_l0 --test artifact_keys --test key_manifests --test hash_domains -- --nocapture
           cargo test -p vize_l2 --test sfc_summary --test global_summary -- --nocapture
 
   incremental-equivalence:

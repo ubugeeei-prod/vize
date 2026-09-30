@@ -24,7 +24,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 | product                   | resolved | grep |
 | ------------------------- | -------: | ---: |
-| `Croquis`                 |        0 |    1 |
+| `Croquis`                 |        0 |    2 |
 | `CroquisSemanticSnapshot` |        3 |    4 |
 | `CroquisSemanticSummary`  |        1 |    2 |
 | `Span`                    |        0 |    4 |

@@ -1,6 +1,7 @@
 //! Compiler inspector payload helpers.
 
 mod diff;
+pub mod feed;
 mod graph;
 mod imports;
 mod payload;

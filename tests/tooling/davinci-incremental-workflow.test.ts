@@ -95,7 +95,7 @@ test("TS-43 compares the golden keys on a Linux and a macOS lane", () => {
   assert.deepEqual(
     runs(job).filter((line) => line.startsWith("cargo test")),
     [
-      "cargo test -p vize_davinci --test artifact_keys --test key_manifests --test hash_domains -- --nocapture",
+      "cargo test -p vize_l0 --test artifact_keys --test key_manifests --test hash_domains -- --nocapture",
       "cargo test -p vize_l2 --test sfc_summary --test global_summary -- --nocapture",
     ],
   );

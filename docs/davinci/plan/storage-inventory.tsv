@@ -7,7 +7,6 @@ infra	-	davinci/vize_l0/src/fact/expression.rs	0	0	1	2	0	0	0	0
 infra	analysis	davinci/vize_l0/src/fact/table.rs	1	7	0	0	0	0	0	0
 infra	-	davinci/vize_l0/src/dump.rs	0	0	1	4	0	0	0	0
 infra	contract	davinci/vize_l0/src/dump/collector.rs	1	2	1	7	0	0	0	0
-infra	contract	davinci/vize_davinci/src/dump/feed.rs	1	5	1	10	0	0	0	0
 infra	contract	davinci/vize_l0/src/dump/page.rs	1	2	1	2	0	0	0	0
 infra	contract	davinci/vize_l0/src/dump/plan.rs	1	2	1	6	0	0	0	0
 infra	contract	davinci/vize_l0/src/dump/remarks.rs	1	3	1	10	0	0	0	0
@@ -15,7 +14,6 @@ infra	analysis	davinci/vize_l0/src/dump/remarks/backlog.rs	1	2	1	10	0	0	0	0
 infra	contract	davinci/vize_l0/src/dump/remarks/corpus.rs	1	3	1	12	0	0	0	0
 infra	analysis	davinci/vize_l0/src/dump/remarks/diff.rs	1	2	1	1	0	0	0	0
 infra	contract	davinci/vize_l0/src/dump/remarks/parse.rs	1	2	1	8	0	0	0	0
-infra	-	davinci/vize_davinci/src/dump/repro.rs	0	0	1	15	0	0	0	0
 infra	-	davinci/vize_l0/src/dump/value.rs	0	0	1	2	0	0	0	0
 infra	analysis	davinci/vize_l0/src/pass/observer/remark/record.rs	1	4	1	10	0	0	0	0
 infra	analysis	davinci/vize_l0/src/pass/pipeline.rs	1	4	1	2	0	0	0	0

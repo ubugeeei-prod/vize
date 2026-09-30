@@ -88,3 +88,48 @@ fn covers_fragment_text_and_disabled_inheritance_but_allows_explicit_attrs() {
         parent.find("class=\"overlay\"").unwrap()
     );
 }
+
+#[test]
+fn structural_roots_and_script_use_attrs_are_classified_from_syntax() {
+    let parent = "<script setup>import Dialog from './Dialog.vue'</script><template><Dialog class=\"x\" :style=\"style\" /></template>";
+    for child in [
+        "<script setup>// useAttrs()\n</script><template><Teleport to=\"body\"><div /></Teleport></template>",
+        "<script setup>const note = 'useAttrs()'</script><template><Teleport to=\"body\"><div /></Teleport></template>",
+    ] {
+        assert_eq!(diagnostics(parent, child).len(), 2, "{child}");
+    }
+    assert!(diagnostics(parent, "<script setup>useAttrs()</script><template><Teleport to=\"body\"><div /></Teleport></template>").is_empty());
+    assert!(diagnostics(parent, r#"<script setup>\u0075seAttrs()</script><template><Teleport to="body"><div /></Teleport></template>"#).is_empty());
+    for call in [
+        "import { useAttrs as attrs } from 'vue'; attrs()",
+        r"import { useAttrs as attrs } from 'vue'; \u0061ttrs()",
+        "attrs(); import { useAttrs as attrs } from 'vue'",
+        "import * as Vue from 'vue'; Vue.useAttrs()",
+        r"import * as Vue from 'vue'; Vue.\u0075seAttrs()",
+        "Vue.useAttrs(); import * as Vue from 'vue'",
+    ] {
+        let child = format!(
+            "<script setup>{call}</script><template><Teleport to=\"body\"><div /></Teleport></template>"
+        );
+        assert!(diagnostics(parent, &child).is_empty(), "{child}");
+    }
+    let local = "<script setup>function useAttrs() {} useAttrs()</script><template><Teleport to=\"body\"><div /></Teleport></template>";
+    assert_eq!(diagnostics(parent, local).len(), 2);
+    let later_local = "<script setup>useAttrs(); function useAttrs() {}</script><template><Teleport to=\"body\"><div /></Teleport></template>";
+    assert_eq!(diagnostics(parent, later_local).len(), 2);
+    assert!(
+        diagnostics(
+            parent,
+            "<template><div v-if=\"ready\" /><div v-else /></template>"
+        )
+        .is_empty()
+    );
+    assert_eq!(
+        diagnostics(
+            parent,
+            "<template><div v-for=\"item in items\" /></template>"
+        )
+        .len(),
+        2
+    );
+}

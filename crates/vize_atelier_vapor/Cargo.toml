@@ -42,6 +42,8 @@ legacy-differential = ["vize_atelier_core/legacy-differential"]
 davinci-differential = ["legacy-differential"]
 
 [dev-dependencies]
+# Inspection metadata is a dev-only, unpublished oracle; strip it on packaging.
+vize_curator = { path = "../vize_curator" }
 vize_davinci = { workspace = true }
 oxc_semantic = { workspace = true }
 criterion = { workspace = true }

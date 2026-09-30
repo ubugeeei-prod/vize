@@ -15,7 +15,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-use vize_davinci::dump::repro::Page as ReproPage;
+use vize_curator::repro::Page as ReproPage;
 use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::String as CartonString;
 
