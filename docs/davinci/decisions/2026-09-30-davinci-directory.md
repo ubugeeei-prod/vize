@@ -13,6 +13,11 @@ moves unchanged into L0; Carton re-exports it and forwards its extension and
 lint-glob features. This inverts the old L0→Carton edge without duplicating types
 or changing the legacy public API. The accepted std-bound foundation stays
 std-bound; this move does not complete the no-std isolation work in #6834.
+The [foundation storage inventory](../plan/foundation-storage-bridges.json)
+records each pre-existing std storage use now inside L0. The stage gate compares
+that exact list, including duplicate uses, so new std uses and opaque imports
+still fail. Native artifact storage inventory and instruction ceilings are
+unchanged; no directory or module is exempted wholesale.
 
 MoonBit's experimental SFC entry point uses the existing native L1 Vue container
 instead of Croquis. It refuses container errors and retains authored spans.

@@ -24,6 +24,11 @@ const libraryRoots = [
   "davinci/vize_l2_to_l3/src",
 ];
 const inventoryPath = path.join(repoRoot, "docs/davinci/plan/storage-inventory.tsv");
+// These existing std bridges were previously outside the stage gate in Carton.
+// Keep an exact inventory rather than exempting the whole L0 crate or a folder.
+const foundationBridges = JSON.parse(
+  fs.readFileSync(path.join(repoRoot, "docs/davinci/plan/foundation-storage-bridges.json"), "utf8"),
+) as { issues: string[] };
 const davinciOptRoot = "davinci/vize_davinci/src/bin/davinci-opt/";
 
 function rustFiles(root: string): string[] {
@@ -107,8 +112,14 @@ function format(value: { directPaths: number; boundUses: number }): string {
   return `${value.directPaths}/${value.boundUses}`;
 }
 
-test("stage storage has no opaque imports or std paths", () => {
-  assert.deepEqual(measureInventory().issues, []);
+test("stage storage has no opaque imports or unreviewed std paths", () => {
+  for (const issue of foundationBridges.issues) {
+    assert.match(
+      issue,
+      /^davinci\/vize_l0\/src\/(?:allocator(?:\/tests)?|config\/[^:]+|path|pool(?:\/tests)?|profiler\/core|source_io|telegraph)\.rs: forbidden std storage (?:path|import): /u,
+    );
+  }
+  assert.deepEqual(measureInventory().issues.toSorted(), foundationBridges.issues.toSorted());
 });
 
 test("all owned storage equals the reviewed per-file inventory", () => {

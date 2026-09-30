@@ -148,7 +148,7 @@ test("a renamed package uses the exact Git parent source and version before regi
     assert.match(exact.stderr, new RegExp(base));
     assert.notEqual(run("missing-base").status, 0);
     // Once the package already exists in the base, preserve --baseline-rev.
-    git(["add", "Cargo.toml", "crates"]);
+    git(["add", "Cargo.toml", "crates", "davinci"]);
     git([
       "-c",
       "user.name=Vize",

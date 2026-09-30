@@ -232,7 +232,7 @@ void test("real Cargo metadata supplies the current workspace aliases and revers
   const selected = planAffectedRust(metadata, [leafPath]);
   assert.ok(selected.packages.includes("vize_guest"));
   assert.ok(selected.packages.length < all.packages.length);
-  const foundation = workspace.find((pkg) => pkg.name === "vize_l0" || pkg.name === "vize_carton");
+  const foundation = workspace.find((pkg) => pkg.name === "vize_l0");
   const foundationPath = foundation.manifest_path.slice(metadata.workspace_root.length + 1);
   assert.ok(planAffectedRust(metadata, [foundationPath]).packages.includes("vize_l1"));
 });

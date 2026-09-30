@@ -1,0 +1,33 @@
+{
+  "legacy_base": "0ca9644bf2b168f021a2a35c337e5fe2d9cdfcd2",
+  "issues": [
+    "davinci/vize_l0/src/allocator.rs: forbidden std storage path: std::vec::Vec",
+    "davinci/vize_l0/src/allocator/tests.rs: forbidden std storage path: std::vec::Vec::new",
+    "davinci/vize_l0/src/config/loader.rs: forbidden std storage path: std::string::String",
+    "davinci/vize_l0/src/config/model/global_types.rs: forbidden std storage import: std::collections::BTreeMap",
+    "davinci/vize_l0/src/config/model/global_types.rs: forbidden std storage path: BTreeMap",
+    "davinci/vize_l0/src/config/model/global_types.rs: forbidden std storage path: BTreeMap",
+    "davinci/vize_l0/src/config/model/global_types.rs: forbidden std storage path: BTreeMap",
+    "davinci/vize_l0/src/config/model/global_types.rs: forbidden std storage path: BTreeMap::new",
+    "davinci/vize_l0/src/config/model/library.rs: forbidden std storage import: std::collections::BTreeMap",
+    "davinci/vize_l0/src/config/model/library.rs: forbidden std storage path: BTreeMap",
+    "davinci/vize_l0/src/config/model/library.rs: forbidden std storage path: BTreeMap",
+    "davinci/vize_l0/src/config/model/library.rs: forbidden std storage path: BTreeMap",
+    "davinci/vize_l0/src/path.rs: forbidden std storage path: std::string::String",
+    "davinci/vize_l0/src/path.rs: forbidden std storage path: std::string::String::with_capacity",
+    "davinci/vize_l0/src/path.rs: forbidden std storage path: std::string::String::with_capacity",
+    "davinci/vize_l0/src/pool.rs: forbidden std storage path: std::vec::Vec",
+    "davinci/vize_l0/src/pool.rs: forbidden std storage path: std::vec::Vec::new",
+    "davinci/vize_l0/src/pool/tests.rs: forbidden std storage path: std::vec::Vec",
+    "davinci/vize_l0/src/profiler/core.rs: forbidden std storage path: std::vec::Vec",
+    "davinci/vize_l0/src/profiler/core.rs: forbidden std storage path: std::vec::Vec::new",
+    "davinci/vize_l0/src/source_io.rs: forbidden std storage import: std::string::String",
+    "davinci/vize_l0/src/source_io.rs: forbidden std storage path: FileString",
+    "davinci/vize_l0/src/source_io.rs: forbidden std storage path: FileString::from_utf8_unchecked",
+    "davinci/vize_l0/src/telegraph.rs: forbidden std storage import: std::vec::Vec",
+    "davinci/vize_l0/src/telegraph.rs: forbidden std storage path: StdVec",
+    "davinci/vize_l0/src/telegraph.rs: forbidden std storage path: StdVec",
+    "davinci/vize_l0/src/telegraph.rs: forbidden std storage path: StdVec",
+    "davinci/vize_l0/src/telegraph.rs: forbidden std storage path: StdVec::new"
+  ]
+}
