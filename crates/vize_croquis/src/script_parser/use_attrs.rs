@@ -1,8 +1,45 @@
-//! Recognize Vue's `useAttrs` helper from a call's imported binding.
+//! Recognize Vue's `useAttrs` helper after all imports and bindings are known.
 
-use super::{CallExpression, Expression, ScriptParseResult};
+use oxc_ast::ast::{CallExpression, Expression, Program};
+use oxc_ast_visit::{Visit, walk};
 
-pub(super) fn is_vue_use_attrs_call(result: &ScriptParseResult, call: &CallExpression<'_>) -> bool {
+use super::ScriptParseResult;
+
+pub(super) fn has_vue_use_attrs_call(
+    result: &ScriptParseResult,
+    program: &Program<'_>,
+    source: &str,
+) -> bool {
+    // Both an aliased import and a namespace member contain this export name.
+    // Avoid a second AST walk for the usual case without useAttrs.
+    if !source.contains("useAttrs") {
+        return false;
+    }
+    let mut visitor = AttrsCallVisitor {
+        result,
+        found: false,
+    };
+    visitor.visit_program(program);
+    visitor.found
+}
+
+struct AttrsCallVisitor<'r> {
+    result: &'r ScriptParseResult,
+    found: bool,
+}
+
+impl<'a> Visit<'a> for AttrsCallVisitor<'_> {
+    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if !self.found {
+            self.found = is_vue_use_attrs_call(self.result, call);
+        }
+        if !self.found {
+            walk::walk_call_expression(self, call);
+        }
+    }
+}
+
+fn is_vue_use_attrs_call(result: &ScriptParseResult, call: &CallExpression<'_>) -> bool {
     match &call.callee {
         Expression::Identifier(id) => {
             let local = id.name.as_str();

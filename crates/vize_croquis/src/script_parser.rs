@@ -28,6 +28,7 @@ mod result;
 mod type_definitions;
 mod typeof_refs;
 mod unused;
+mod use_attrs;
 mod walk;
 
 pub use define_art::parse_define_art;
