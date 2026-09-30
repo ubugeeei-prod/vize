@@ -76,13 +76,13 @@ pub(super) fn analyze_sfc_for_cross_file(
 
     if offsets.fallthrough_root.is_some() || analysis.template_info.inherit_attrs_disabled {
         offsets.script_uses_attrs = descriptor.script.as_ref().is_some_and(|script| {
-            vize_croquis::script_parser::source_uses_vue_attrs(
+            super::uses_attrs::source_uses_vue_attrs(
                 script.content.as_ref(),
                 false,
                 matches!(script.lang.as_deref(), Some("jsx" | "tsx")),
             )
         }) || descriptor.script_setup.as_ref().is_some_and(|script| {
-            vize_croquis::script_parser::source_uses_vue_attrs(
+            super::uses_attrs::source_uses_vue_attrs(
                 script.content.as_ref(),
                 true,
                 matches!(script.lang.as_deref(), Some("jsx" | "tsx")),

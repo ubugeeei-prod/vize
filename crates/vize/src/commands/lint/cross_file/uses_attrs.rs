@@ -5,14 +5,14 @@ use oxc_ast::ast::{CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, SourceType};
 
-use super::{
-    ScriptParseResult, ScriptParserOptions, parse_script_setup_with_generic_and_jsx,
-    parse_script_with_options_and_jsx,
+use vize_croquis::script_parser::{
+    ScriptParseResult, ScriptParserOptions, parse_program_for_analysis,
+    parse_script_setup_with_generic_and_jsx, parse_script_with_options_and_jsx,
 };
 
 /// Check for Vue's `useAttrs` only when a consumer needs the answer. The
 /// ordinary Croquis script walk stays independent of this cross-file lint fact.
-pub fn source_uses_vue_attrs(source: &str, setup: bool, jsx: bool) -> bool {
+pub(super) fn source_uses_vue_attrs(source: &str, setup: bool, jsx: bool) -> bool {
     if !source.contains("useAttrs") && !source.contains('\\') {
         return false;
     }
@@ -25,7 +25,7 @@ pub fn source_uses_vue_attrs(source: &str, setup: bool, jsx: bool) -> bool {
     let allocator = Allocator::default();
     let path = if jsx { "script.tsx" } else { "script.ts" };
     let source_type = SourceType::from_path(path).unwrap_or_default();
-    let parsed = super::recovery::parse_program_for_analysis(&allocator, source, source_type);
+    let parsed = parse_program_for_analysis(&allocator, source, source_type);
     !parsed.panicked && has_vue_use_attrs_call(&result, &parsed.program, source)
 }
 
