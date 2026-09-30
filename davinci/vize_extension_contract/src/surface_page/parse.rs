@@ -10,7 +10,7 @@
 //!
 //! [`SurfacePage::check_tiles`]: super::SurfacePage::check_tiles
 
-use vize_davinci::dump::Error as DumpError;
+use vize_l0::dump::Error as DumpError;
 use vize_l0::{String, cstr};
 
 use super::{

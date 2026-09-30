@@ -17,8 +17,8 @@
 use core::fmt;
 
 use serde::{Deserialize, Serialize};
-use vize_davinci::fact::{AlphaDocument, ExpressionFacts};
 use vize_l0::String;
+use vize_l0::fact::{AlphaDocument, ExpressionFacts};
 
 use crate::accept::{AcceptError, read_page};
 use crate::contract::{Diagnostic, GuestError, Page, Span};

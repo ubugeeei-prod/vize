@@ -1,6 +1,6 @@
 //! Native element v-for item wrappers.
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l2::op::ElementOp;
 
 use super::buf::Buf;

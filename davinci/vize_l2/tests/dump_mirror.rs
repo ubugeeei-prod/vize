@@ -7,7 +7,7 @@
 //! `tests/dump_laws.rs`.
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, Vec as ArenaVec};
 use vize_l2::dump::Page as L2Page;
 use vize_l2::expr::{ExprRef, ForeignExpr, JsExpr, OpaqueExpr, OpaqueReason};

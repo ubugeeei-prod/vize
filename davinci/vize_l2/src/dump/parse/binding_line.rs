@@ -6,7 +6,7 @@
 
 use alloc::vec::Vec;
 
-use vize_davinci::dump::Error as DumpError;
+use vize_l0::dump::Error as DumpError;
 use vize_l0::{String, cstr};
 
 use crate::dump::owned::{

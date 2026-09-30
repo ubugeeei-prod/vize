@@ -42,7 +42,7 @@ pub fn content_hash(content: &str) -> String {
 }
 
 /// Streaming 128-bit XXH3 over explicitly fed bytes: the platform-stable
-/// fingerprint behind Davinci's stage artifact keys (`vize_davinci::key`).
+/// fingerprint behind Davinci's stage artifact keys (`vize_l0::key`).
 ///
 /// The digest is the XXH3-128 value of the concatenated input. XXH3 is
 /// specified over bytes, so the value is independent of endianness, pointer

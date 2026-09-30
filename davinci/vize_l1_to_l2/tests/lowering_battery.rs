@@ -14,8 +14,8 @@ mod support;
 
 use davinci_test_support::surface_fixture as battery;
 use support::{assert_authored_artifact, assert_sound, with_lowered};
-use vize_davinci::diagnostic::{Diagnostic, Stage};
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::diag::{Diagnostic, Stage};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::parse;
 use vize_l1_to_l2::exemptions;

@@ -2,7 +2,7 @@ mod scans;
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l2::op::{Attribute, BindingOp, ComponentOp, DynamicName, Op, Region};
 
 use super::super::EmitCx;

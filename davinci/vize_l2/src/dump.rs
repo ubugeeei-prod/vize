@@ -1,7 +1,7 @@
 //! The L2 folio: the stage dump.
 //!
 //! [`Page`] is an **owned document model** of an L2 op tree,
-//! printable and parseable under the `vize_davinci::dump` contract; the
+//! printable and parseable under the `vize_l0::dump` contract; the
 //! grammar is documented in `docs/davinci/plan/folio-format.md` ("Disegno
 //! page"). [`Page::of`] mirrors a live arena tree into the owned
 //! model, because arena references cannot persist across a compile
@@ -28,9 +28,9 @@
 
 use alloc::vec::Vec;
 
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
-use vize_davinci::key::{KeySink, KeyedArtifact, schema};
-use vize_davinci::stage::Stage;
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::key::{KeySink, KeyedArtifact, schema};
+use vize_l0::stage::Stage;
 
 mod codec;
 pub mod historical;

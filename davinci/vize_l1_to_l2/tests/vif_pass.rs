@@ -15,9 +15,9 @@
 
 mod support;
 
-use vize_davinci::diagnostic::{Severity, Stage};
-use vize_davinci::id::NodeId;
 use vize_l0::Span;
+use vize_l0::diag::{Severity, Stage};
+use vize_l0::id::NodeId;
 use vize_l1_to_l2::exemptions;
 use vize_l1_to_l2::pass::{BranchKey, BranchKeyKind, vif};
 
@@ -209,8 +209,7 @@ fn the_pipeline_reports_one_walk_per_barrier_pass() {
     // plan is only the fused analysis group: two passes, one walk.
     with_transformed(r#"<div v-if="a">x</div>"#, |_, _, _, budget| {
         assert_eq!(
-            vize_davinci::dump::Dump::print_to_string(budget, vize_davinci::dump::Mode::Full)
-                .as_str(),
+            vize_l0::dump::Dump::print_to_string(budget, vize_l0::dump::Mode::Full).as_str(),
             "[budget-observer]\nwalks=1\npasses=2\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
     });

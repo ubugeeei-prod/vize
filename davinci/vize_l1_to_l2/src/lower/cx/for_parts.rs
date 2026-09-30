@@ -1,6 +1,6 @@
 //! `ui.for` fact attachment for the lowering context.
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l0::{Span, cstr};
 
 use super::Cx;

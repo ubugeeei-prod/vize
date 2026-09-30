@@ -267,7 +267,7 @@ fn the_merge_mutator_holds_through_its_own_site_path() {
     let merged = vize_l2::dump::Page::of(&lowered.root.ops);
     // The re-merged slice is the original maximal run: byte-identical
     // `Full`-mode folios, no normalization needed at all.
-    use vize_davinci::dump::{Dump, Mode as DumpMode};
+    use vize_l0::dump::{Dump, Mode as DumpMode};
     assert_eq!(
         merged.print_to_string(DumpMode::Full),
         original.print_to_string(DumpMode::Full)

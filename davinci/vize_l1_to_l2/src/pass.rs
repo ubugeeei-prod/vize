@@ -27,7 +27,7 @@
 //! # Driving a run
 //!
 //! [`run_transform`] executes the artifact-selected L2 plan through the
-//! P2-2 pass manager (`vize_davinci::pass::run_pipeline`) with a
+//! P2-2 pass manager (`vize_l0::pass::run_pipeline`) with a
 //! caller-supplied observer, and wires the P2-6 [`VerifyObserver`] between
 //! passes in debug builds exactly as its module documents: `note` then
 //! `check` / `check_table` after every pass, so a broken invariant names
@@ -36,10 +36,10 @@
 //! through the same observer (P3-13 remarks, `hoist-static` first); an
 //! observer that consumes none compiles the explanation away.
 
-use vize_davinci::pass::{
+use vize_l0::pass::{
     PassDesc, PassEvent, PassFailure, PassObserver, Pipeline, run_pipeline_remarked,
 };
-use vize_davinci::side_table::SideTable;
+use vize_l0::side_table::SideTable;
 
 use crate::lower::Lowered;
 
@@ -246,7 +246,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::{L2_STAGE, TRANSFORM, TRANSFORM_PASSES, cfg, hoist, vif, vmodel, vslot};
-    use vize_davinci::pass::{Fusability, PassKind, Preserved};
+    use vize_l0::pass::{Fusability, PassKind, Preserved};
 
     #[test]
     fn the_pipeline_holds_exactly_the_landed_passes() {

@@ -38,7 +38,7 @@ mod view;
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::diagnostic::{Diagnostic, Severity};
+use vize_l0::diag::{Diagnostic, Severity};
 use vize_l0::{Allocator, Span, String};
 use vize_l1::pug::{PugError, PugErrorCode, PugTree, parse_pug};
 

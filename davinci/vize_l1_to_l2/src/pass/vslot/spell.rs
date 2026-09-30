@@ -6,7 +6,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l0::{String, cstr};
 use vize_l2::op::{DynamicName, SlotContentOp};
 use vize_l2::provenance::ProvenanceRecord;

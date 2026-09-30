@@ -34,7 +34,7 @@ pub use annotate::annotate;
 pub use kind::{Placement, PlacementSet};
 pub use record::PlacementRecord;
 
-use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
+use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
 
 /// [`annotate`] as a pass: optional, whole-program, and graph-preserving.
 pub const ANNOTATE: PassDesc = PassDesc::new(

@@ -1,7 +1,7 @@
 //! TS-16 laws for the L3 placement page.
 
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::cstr;
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l3::op::OpId;
 use vize_l3::placement::dump::{Page as PlacementPage, Record as DumpPlacement};
 use vize_l3::placement::{Placement, PlacementRecord, PlacementSet};

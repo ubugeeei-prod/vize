@@ -13,8 +13,8 @@
 
 mod support;
 
-use vize_davinci::id::NodeId;
 use vize_l0::Span;
+use vize_l0::id::NodeId;
 use vize_l1_to_l2::pass::{BranchKey, BranchKeyKind, vif};
 use vize_l2::dump::{
     Attribute as DumpAttribute, Element as DumpElement, Op as DumpOp, Page as L2Page,

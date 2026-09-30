@@ -7,8 +7,8 @@
 //! mirror does not follow stops the `extension-host` build.
 
 use serde::{Deserialize, Serialize};
-use vize_davinci::diagnostic as davinci;
-use vize_davinci::diagnostic::Exemption;
+use vize_l0::diag as davinci;
+use vize_l0::diag::Exemption;
 use vize_l0::{String, cstr};
 use vize_l1_to_l2::exemptions;
 

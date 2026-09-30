@@ -1,8 +1,8 @@
 //! Published schema1 acceptance keeps its old bytes and refusal envelopes.
 
-use vize_davinci::dump::{Dump, Error, Mode};
 use vize_extension_host::accept::{AcceptError, accept};
 use vize_extension_host::{LoweredBlock, Page, SourceBlock};
+use vize_l0::dump::{Dump, Error, Mode};
 use vize_l0::{String, cstr};
 use vize_l2::dump::Page as CurrentPage;
 

@@ -2,7 +2,7 @@
 //! binding. Split from `dump_laws.rs` so the Vue 3 family pin stays
 //! inside the source budget.
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, String, Vec as ArenaVec};
 use vize_l2::dump::{
     Binding as DumpBinding, Element as DumpElement, Expr as DumpExpr, Op as DumpOp, Page as L2Page,

@@ -4,7 +4,7 @@
 //! Vue 3 family pin and this file stays inside the source budget.
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, String, Vec as ArenaVec};
 use vize_l2::dump::{
     Binding as DumpBinding, Component as DumpComponent, Expr as DumpExpr,

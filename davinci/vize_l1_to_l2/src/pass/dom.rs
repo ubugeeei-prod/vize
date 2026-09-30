@@ -3,7 +3,7 @@
 //! The public pass-manager path remains in `pass.rs`; this module holds the
 //! DOM-specific shortcut that folds preserving products before codegen.
 
-use vize_davinci::pass::{PassDesc, PassFailure, PassObserver, Pipeline, run_pipeline};
+use vize_l0::pass::{PassDesc, PassFailure, PassObserver, Pipeline, run_pipeline};
 
 use crate::lower::Lowered;
 

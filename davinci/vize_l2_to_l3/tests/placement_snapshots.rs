@@ -4,7 +4,7 @@
 //! `annotate`. Annotation is an overlay: the graph page and the exported
 //! partition facts must be byte-identical before and after it.
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String};
 use vize_l2_to_l3::lower;
 use vize_l3::dump::Page as L3Page;

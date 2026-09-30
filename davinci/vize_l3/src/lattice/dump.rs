@@ -2,8 +2,8 @@ use alloc::vec::Vec;
 use core::fmt;
 use core::str::SplitWhitespace;
 
-use vize_davinci::dump::value::DumpValue;
-use vize_davinci::dump::{Dump, Error as DumpError};
+use vize_l0::dump::value::DumpValue;
+use vize_l0::dump::{Dump, Error as DumpError};
 use vize_l0::{Span, cstr};
 
 use super::{

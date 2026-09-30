@@ -66,7 +66,7 @@
 //!   pins.
 //! - *Why barrier:* law 1 forces it, and slot gathering is literally
 //!   the kind taxonomy's own example of what fusion breaks
-//!   (`vize_davinci::pass::Fusability` — "sibling `v-else` collection,
+//!   (`vize_l0::pass::Fusability` — "sibling `v-else` collection,
 //!   slot gathering"): a component's groups read across its whole
 //!   child list, and tag freshness is a fact across the artifact.
 //! - `Preserved::ALL`: nothing in the tree moves.
@@ -86,10 +86,10 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::id::NodeId;
-use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
-use vize_davinci::side_table::SideTable;
 use vize_l0::String;
+use vize_l0::id::NodeId;
+use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
+use vize_l0::side_table::SideTable;
 use vize_l2::scope::{ScopeOrigin, ScopeTag};
 
 mod consume;

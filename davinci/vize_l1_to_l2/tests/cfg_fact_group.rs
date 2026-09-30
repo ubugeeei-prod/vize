@@ -6,7 +6,7 @@
 
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
-use vize_davinci::fact::{
+use vize_l0::fact::{
     Demand, FactConsumer, FactError, FactGroup, FactManager, produced_count, undeclared_accesses,
 };
 use vize_l0::{Allocator, SourceRoot};

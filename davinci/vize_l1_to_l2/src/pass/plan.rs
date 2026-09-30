@@ -37,7 +37,7 @@
 //! emit declines hoist facts outright under `hoist_static: false`, and
 //! no emitter reads complexity facts at all.
 
-use vize_davinci::pass::{PassDesc, Pipeline};
+use vize_l0::pass::{PassDesc, Pipeline};
 
 use crate::lower::{LegacyCaps, LoweringFeatures};
 

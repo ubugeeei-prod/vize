@@ -1,7 +1,7 @@
 //! TS-16 for `vue.html` (P2-11): Vue's `v-html` raw-HTML surface as a
 //! dialect binding, parseable and mirrorable like the other L2 ops.
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, String, Vec as ArenaVec};
 use vize_l2::dump::{
     Binding as DumpBinding, Element as DumpElement, Expr as DumpExpr, Op as DumpOp, Page as L2Page,

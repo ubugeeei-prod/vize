@@ -13,8 +13,8 @@ mod support;
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::assert_dump_snapshot;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::assert_dump_snapshot;
+use vize_l0::dump::{Dump, Mode as DumpMode};
 
 use support::{assert_transformed_sound, with_transformed};
 

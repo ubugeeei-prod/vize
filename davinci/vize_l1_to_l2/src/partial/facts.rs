@@ -3,12 +3,12 @@
 //! Holes and regions share stratum 0. Scope names sit at stratum 1 and are
 //! a fact only when their introducing fragment was accepted as a region.
 
-use vize_davinci::fact::{
+use vize_l0::Span;
+use vize_l0::fact::{
     Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView,
     ProducerEntry, ids,
 };
-use vize_davinci::pass::AnalysisId;
-use vize_l0::Span;
+use vize_l0::pass::AnalysisId;
 
 use super::page::PartialPage;
 use super::{FragmentKind, HoleFact, HoleKind, RegionFact, ScopeKey, ScopeNameFact, ScopeRole};
@@ -156,8 +156,8 @@ mod tests {
     use super::*;
     use crate::lower::lower;
     use crate::partial::page::collect;
-    use vize_davinci::fact::{FactManager, produced_count};
     use vize_l0::Allocator;
+    use vize_l0::fact::{FactManager, produced_count};
     use vize_l1::parse;
 
     #[test]

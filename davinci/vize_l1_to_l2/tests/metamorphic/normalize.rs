@@ -28,8 +28,8 @@
 //! never invent one; the sensitivity pins in `main.rs` prove the
 //! remaining quotient does not collapse real differences.
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::String;
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l2::dump::{
     Attribute as DumpAttribute, Binding as DumpBinding, Op as DumpOp, Page as L2Page,
 };

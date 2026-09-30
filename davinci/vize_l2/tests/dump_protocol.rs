@@ -1,7 +1,7 @@
 //! Independent current and historical wire oracles over the same owned IR.
 
-use vize_davinci::dump::{Dump, Error, Mode};
-use vize_davinci::key::{ArtifactKey, KeyedArtifact};
+use vize_l0::dump::{Dump, Error, Mode};
+use vize_l0::key::{ArtifactKey, KeyedArtifact};
 use vize_l0::{Span, String, cstr};
 use vize_l2::dump::historical::v1::Page as HistoricalPage;
 use vize_l2::dump::provenance::{Page as ProvenancePage, Record};

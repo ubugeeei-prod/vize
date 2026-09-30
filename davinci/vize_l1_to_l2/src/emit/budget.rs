@@ -1,7 +1,7 @@
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::pass::{BudgetObserver, NoObserver, PassObserver};
 use vize_l0::dump::capture::{CaptureSink, NoCapture};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::level::Level;
+use vize_l0::pass::{BudgetObserver, NoObserver, PassObserver};
 use vize_l0::{Allocator, String, ensure_sufficient_stack};
 use vize_l1::{SurfaceParseOptions, parse_with_options};
 use vize_l2::dump::Page as L2Page;
@@ -188,7 +188,7 @@ pub fn emit_dom_source_patch_facts_observed_with_options<'a>(
     caps: LegacyCaps,
     options: &DomEmitOptions<'_>,
 ) -> Result<ObservedPatchFactsEmit, EmitError> {
-    let mut observer = vize_davinci::pass::NoObserver;
+    let mut observer = vize_l0::pass::NoObserver;
     let observed = emit_dom_source_with_options_and_observer(
         allocator,
         source,
