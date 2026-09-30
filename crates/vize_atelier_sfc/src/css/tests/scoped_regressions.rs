@@ -1,4 +1,4 @@
-use super::{compile_css, compile_scoped_css_without_whitespace, CssCompileOptions};
+use super::{CssCompileOptions, compile_css, compile_scoped_css_without_whitespace};
 
 #[test]
 fn direct_scoped_css_matches_vite_pipeline_for_nested_and_slotted_rules() {
