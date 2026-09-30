@@ -16,11 +16,6 @@ pub fn detect_provide_inject_call(
         _ => return,
     };
 
-    if callee_name == "useAttrs" {
-        result.uses_attrs_call = true;
-        return;
-    }
-
     // Check if this is a direct call or an alias call
     let is_provide = callee_name == "provide" || result.provide_aliases.contains(callee_name);
     let is_inject = callee_name == "inject" || result.inject_aliases.contains(callee_name);

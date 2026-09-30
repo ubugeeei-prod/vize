@@ -19,6 +19,7 @@ pub fn detect_race_condition_call(
     };
 
     match callee_name.as_str() {
+        "useAttrs" => result.uses_attrs_call = true,
         "watch" => {
             if let Some(callback) = call.arguments.get(1).and_then(argument_expression) {
                 record_watcher_risk(result, call, callback, "watch");
