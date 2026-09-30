@@ -57,7 +57,7 @@ use std::sync::Mutex;
 
 use davinci_production_reach::acceptance::report;
 use davinci_production_reach::diff::{divergence, error_divergence};
-use davinci_production_reach::parity::parity_failures;
+use davinci_production_reach::parity::{absorb_prebackend, parity_failures};
 use davinci_production_reach::shapes::{Shape, compile, explicit_vapor_source};
 use davinci_production_reach::tally::{Lane, Tally, classify, classify_route, floors};
 use vize_atelier_sfc::{SfcCompileResult, SfcParseOptions, parse_sfc};
@@ -490,12 +490,12 @@ fn measure(
             return;
         }
     };
+    if absorb_prebackend(descriptor, name, shape, tally, &selected, &lane) {
+        return;
+    }
     let accepted = lane == Lane::Accepted;
     let croquis = lane == Lane::Legacy("croquis".to_owned());
-    if lane == Lane::Unrecorded && tally.unrecorded_samples.len() < 5 {
-        tally.unrecorded_samples.push(name.to_owned());
-    }
-    tally.record(lane);
+    tally.note(name, lane);
     if accepted && shape.is_dom() {
         compare_with_legacy(descriptor, name, shape, &selected, tally);
     }

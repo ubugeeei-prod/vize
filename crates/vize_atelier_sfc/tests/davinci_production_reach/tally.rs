@@ -115,6 +115,14 @@ pub struct Tally {
 }
 
 impl Tally {
+    /// Record `lane`, keeping the first few unrecorded file names.
+    pub fn note(&mut self, name: &str, lane: Lane) {
+        if lane == Lane::Unrecorded && self.unrecorded_samples.len() < 5 {
+            self.unrecorded_samples.push(name.to_owned());
+        }
+        self.record(lane);
+    }
+
     pub fn record(&mut self, lane: Lane) {
         self.templates += 1;
         match lane {
