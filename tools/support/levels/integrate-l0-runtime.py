@@ -4,7 +4,7 @@ import os
 root=Path(__file__).resolve().parents[3]; os.chdir(root);
 if 'pub use vize_l0::fact;' in Path('davinci/vize_davinci/src/lib.rs').read_text():
     raise SystemExit('L0 runtime integration already applied')
- moves=json.loads(Path('tools/support/levels/l0-runtime-moves.json').read_text())
+moves=json.loads(Path('tools/support/levels/l0-runtime-moves.json').read_text())
 for target in moves.values():
  p=Path(target); s=p.read_text().replace('vize_davinci::diagnostic','vize_l0::diag').replace('vize_davinci::witness','vize_l0::diag::verify').replace('vize_davinci','vize_l0')
  s=s.replace('crate::diagnostic','crate::diag').replace('crate::witness','crate::diag::verify')
