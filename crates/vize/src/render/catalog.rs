@@ -6,7 +6,7 @@
 //! `help` of a footer, the title of a fix without its own — is vocabulary the
 //! renderer owns, and it is resolved here, through a caller-supplied
 //! [`Catalog`], never hard-coded. The CLI edge implements the trait over
-//! `vize_carton::i18n::Translator`; tests implement it over the same
+//! `vize_l0::i18n::Translator`; tests implement it over the same
 //! translator, so a snapshot pins the vocabulary that actually ships.
 //!
 //! The vocabulary is a closed enum rather than free-form keys so a catalog is

@@ -33,7 +33,7 @@ def main():
         return
     owned_sources = [ROOT / NEW / "src/render.rs"] + list((ROOT / NEW / "src/render").rglob("*.rs"))
     for p in owned_sources:
-        s = p.read_text().replace("crate::diagnostic", "vize_l0::diag")
+        s = p.read_text().replace("crate::diagnostic", "vize_l0::diag").replace("vize_carton::i18n", "vize_l0::i18n")
         p.write_text(s.replace("crate::fact", "vize_l0::fact").replace("crate::pass", "vize_l0::pass"))
     for p in (ROOT / NEW / "src/commands").rglob("*.rs"):
         s = p.read_text()
