@@ -9,7 +9,7 @@
 //! contract, the same documented-edges rule the quoted-string grammar
 //! uses).
 
-use vize_davinci::dump::Error as DumpError;
+use vize_l0::dump::Error as DumpError;
 use vize_l0::{Span, String, cstr};
 
 use crate::dump::owned::Expr;

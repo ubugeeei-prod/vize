@@ -8,8 +8,8 @@
 //! `_filter_*(...)`. Vue 3 never enters ([`pipeline_for`]): the 3-pass
 //! table is unchanged, a single `needs_sugar()` read.
 
-use vize_davinci::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
 use vize_l0::String;
+use vize_l0::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
 
 use crate::lower::{LegacyCaps, Lowered};
 
@@ -104,8 +104,8 @@ mod tests {
     use super::{DESC, LEGACY, LEGACY_PASSES, pipeline_for};
     use crate::lower::LegacyCaps;
     use crate::pass::{TRANSFORM, TRANSFORM_PASSES};
-    use vize_davinci::pass::{Fusability, PassKind, Preserved};
     use vize_l0::config::VueVersion;
+    use vize_l0::pass::{Fusability, PassKind, Preserved};
 
     #[test]
     fn vue3_keeps_the_four_pass_table() {

@@ -1,4 +1,4 @@
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{InterpolationOp, Op};
 

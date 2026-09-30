@@ -3,13 +3,13 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::fact::{AlphaDocument, ExpressionFact, ExpressionFacts, FactTable};
 use vize_extension_host::Span;
 use vize_extension_host::expression::{
     Binding, Expression, ExpressionBatch, ProjectionPage, ProjectionRow, Range,
 };
 use vize_l0::String;
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::fact::{AlphaDocument, ExpressionFact, ExpressionFacts, FactTable};
 
 /// Set to rewrite the committed expression goldens from [`facts`] and
 /// [`projection`].

@@ -8,7 +8,7 @@
 //! compatibility mirror that keeps existing pass consumers on the same
 //! public names without spending another L2 walk.
 
-use vize_davinci::side_table::SideTable;
+use vize_l0::side_table::SideTable;
 
 use crate::lower::Lowered;
 

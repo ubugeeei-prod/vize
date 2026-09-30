@@ -1,6 +1,6 @@
 //! TS-16 laws for the L3 extraction page.
 
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{Span, String, cstr};
 use vize_l3::extract::dump::{Page as ExtractionPage, Record as DumpDecision};
 use vize_l3::extract::{Decision, DecisionKind, Delta, Metric, Reason};

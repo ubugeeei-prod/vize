@@ -3,8 +3,8 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::summary::{AlphaEntry, AlphaPages, Facet, Fingerprint, Signature};
 use vize_l0::String;
+use vize_l2::summary::{AlphaEntry, AlphaPages, Facet, Fingerprint, Signature};
 use vize_resident::{
     Accounting, DeclarationName, QueryCounts, ResidentDatabase, ResidentSummaryError, SourceFile,
     SummaryCachePolicy, SummaryInput, declaration_fingerprint, sfc_summary,

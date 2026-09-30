@@ -7,8 +7,8 @@
 mod support;
 
 use support::artifact;
-use vize_davinci::diagnostic::{Diagnostic, Stage};
 use vize_l0::Span;
+use vize_l0::diag::{Diagnostic, Stage};
 use vize_l1_to_l2::exemptions;
 
 #[test]

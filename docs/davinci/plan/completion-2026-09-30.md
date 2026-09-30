@@ -1,6 +1,6 @@
 # Davinci completion ledger (2026-09-30)
 
-Snapshot: main `507ac3cc683c044fc136016cd4bfb7d3bde44965`. Issue status alone is not implementation evidence. A slice completes only after exact-head Actions, protected-queue success, actual merge, and a fresh-main check.
+Initial snapshot: main `507ac3cc683c044fc136016cd4bfb7d3bde44965`; completion evidence refreshed on 2026-10-01 at main `8edfb4e805bec5381f9e5e705313579892418ff5`. Issue status alone is not implementation evidence. A slice completes only after exact-head Actions, protected-queue success, actual merge, and a fresh-main check.
 
 ## Completion conditions
 
@@ -14,6 +14,8 @@ Snapshot: main `507ac3cc683c044fc136016cd4bfb7d3bde44965`. Issue status alone is
 
 - Directory separation: [#7271](https://github.com/ubugeeei-prod/vize/pull/7271), merged `507ac3cc683c044fc136016cd4bfb7d3bde44965`.
 - Dependency gate [#6831](https://github.com/ubugeeei-prod/vize/issues/6831): fresh-main [Actions](https://github.com/ubugeeei-prod/vize/actions/runs/36697179934/job/109827822993) passed; local locked metadata agrees: seven level roots, zero exceptions, zero witnesses, zero directory violations. Dev-only differential oracles remain allowed.
+- Historical optimizer host retirement: [#7277](https://github.com/ubugeeei-prod/vize/pull/7277), merged `95e65875bacba46e2ab15428a35a081617c1a323` after successful protected-queue Check; fresh-main ancestry verified. #6832's wider naming/CLI scope remains open.
+- L0 runtime and derive ownership: [#7283](https://github.com/ubugeeei-prod/vize/pull/7283), merged `8edfb4e805bec5381f9e5e705313579892418ff5`. All eleven L0 skeleton modules and 21 placeholder calls are gone. Exact-head PR Check, all 100 unchanged instruction ceilings and the protected-queue Check passed; fresh-main ancestry verified. Other #6833 owners/imports/tests and #6834 portability remain open.
 
 ## Remaining roadmap issues at the snapshot
 
@@ -73,7 +75,7 @@ Snapshot: main `507ac3cc683c044fc136016cd4bfb7d3bde44965`. Issue status alone is
 ## Active next steps
 
 1. The old optimizer host retirement [#7277](https://github.com/ubugeeei-prod/vize/pull/7277) merged as `95e65875bacba46e2ab15428a35a081617c1a323`, with successful protected merge-queue Check and fresh-main ancestry verified. Typed Dump/runtime law tests remain; production capture uses `vize dump`. #6832 remains open for its other naming/CLI contracts.
-2. Move the existing neutral runtime into L0, removing its 21 placeholder calls and eleven skeleton modules; finish #6833 foundation ownership and all active imports, then delete the old substrate and rename the derive crate. Replay moves on fresh main in move-only commits.
+2. Finish #6833's native and legacy imports, summary/renderer/Croquis/inspection owners and law tests, then delete the old substrate. The runtime and derive already belong to L0 after #7283. Prepared local followers are not merged evidence; rebase them on fresh main, validate exact-head Actions and register their dependency order as a native Stack. Replay file moves in move-only commits.
 3. Complete #6834 storage/platform separation, #6835 tokenizer inversion and #6841 per-level dialect ownership. Then complete the provider APIs before their dependent L2/L3/L4 and product slices.
 4. Keep the compiler/linter/etc. fix-history blockers and the full native-only acceptance evidence visible until they actually pass.
 

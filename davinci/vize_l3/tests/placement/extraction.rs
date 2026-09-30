@@ -6,11 +6,9 @@
 //! (5 edges), and update path 1 + 1 + 1 + (1 + 2 re-rendered) + 1 = 7.
 
 use super::fixture::{Build, JS, LIT, fixture};
-use vize_davinci::dump::remarks::RemarkLog;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::pass::{
-    Fusability, NoObserver, PassKind, Preserved, RemarkCollector, RemarkCounter,
-};
+use vize_l0::dump::remarks::RemarkLog;
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::pass::{Fusability, NoObserver, PassKind, Preserved, RemarkCollector, RemarkCounter};
 use vize_l0::{Allocator, Span};
 use vize_l3::extract::{
     Decision, DecisionKind, Delta, EXTRACT, Extraction, Metric, Metrics, OptTier, Reason, extract,

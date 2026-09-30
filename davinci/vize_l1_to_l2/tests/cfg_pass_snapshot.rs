@@ -19,7 +19,7 @@ mod support;
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l1_to_l2::pass::cfg::{self, print_facts};
 
 use support::{assert_transformed_sound, with_transformed};

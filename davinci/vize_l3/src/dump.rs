@@ -8,8 +8,8 @@ use alloc::vec::Vec;
 use core::fmt;
 use core::str::SplitWhitespace;
 
-use vize_davinci::dump::value::DumpValue;
-use vize_davinci::dump::{Dump, Error as DumpError};
+use vize_l0::dump::value::DumpValue;
+use vize_l0::dump::{Dump, Error as DumpError};
 use vize_l0::{Span, String, cstr};
 
 use crate::op::{EdgeKind, EffectId, OpId, OpKind, Program, RegionId};
@@ -300,7 +300,7 @@ fn parse_edge_kind(text: &str, line: usize) -> Result<EdgeKind, DumpError> {
 mod tests {
     use crate::dump::Page;
     use crate::op::Phase;
-    use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
+    use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
     use vize_l0::{String, cstr};
 
     #[test]

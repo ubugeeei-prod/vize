@@ -11,9 +11,9 @@
 
 use core::fmt;
 
-use vize_davinci::diagnostic as davinci;
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::String;
+use vize_l0::diag;
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l2::dump::Page as L2Page;
 use vize_l2::dump::historical::v1::Page as HistoricalL2Page;
 
@@ -30,7 +30,7 @@ pub struct Accepted {
     /// The parsed L2 page.
     pub semantic: L2Page,
     /// The diagnostics in the in-tree channel's type.
-    pub diagnostics: Vec<davinci::Diagnostic>,
+    pub diagnostics: Vec<diag::Diagnostic>,
 }
 
 /// Why the host refused a guest's answer.
@@ -116,7 +116,7 @@ pub fn accept(block: &SourceBlock, lowered: LoweredBlock) -> Result<Accepted, Ac
     let diagnostics = lowered
         .diagnostics
         .iter()
-        .map(davinci::Diagnostic::from)
+        .map(diag::Diagnostic::from)
         .collect();
     Ok(Accepted {
         lowered,

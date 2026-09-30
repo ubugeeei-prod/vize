@@ -10,8 +10,6 @@ metadata.vize.stability = "experimental"
 
 [dependencies]
 vize_l0 = { workspace = true }
-# Terminal display widths for the diagnostic renderer (no_std).
-unicode-width = { workspace = true }
 
 [dev-dependencies]
 criterion = { workspace = true }

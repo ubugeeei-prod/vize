@@ -73,8 +73,8 @@
 //! and ends at the same accounting assertion. Every fact leaves a
 //! provenance record (`pass.hoist-static.fact`).
 
-use vize_davinci::pass::{Fusability, NoRemarks, PassDesc, PassKind, Preserved, RemarkSink};
-use vize_davinci::side_table::SideTable;
+use vize_l0::pass::{Fusability, NoRemarks, PassDesc, PassKind, Preserved, RemarkSink};
+use vize_l0::side_table::SideTable;
 use vize_l2::op::Namespace;
 
 use super::walk::{PageWalk, assert_accounting};

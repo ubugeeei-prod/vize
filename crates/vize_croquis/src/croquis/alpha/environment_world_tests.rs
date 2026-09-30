@@ -6,7 +6,7 @@ use crate::types::world::{
     TypeModule, TypeModuleReference,
 };
 use vize_carton::{CompactString, cstr};
-use vize_davinci::summary::{Facet, SfcSummary};
+use vize_l2::summary::{Facet, SfcSummary};
 
 fn declaration(name: &str, body: &str) -> TypeDeclaration {
     TypeDeclaration {

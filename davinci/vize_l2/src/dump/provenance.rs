@@ -19,8 +19,8 @@
 use alloc::vec::Vec;
 use core::fmt;
 
-use vize_davinci::dump::value::DumpValue;
-use vize_davinci::dump::{Dump, Error as DumpError};
+use vize_l0::dump::value::DumpValue;
+use vize_l0::dump::{Dump, Error as DumpError};
 use vize_l0::{Span, String, cstr};
 
 use crate::dump::parse::{tail_span_value, take_quoted_value};

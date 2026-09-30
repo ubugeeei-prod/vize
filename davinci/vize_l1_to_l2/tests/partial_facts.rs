@@ -4,7 +4,7 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::diagnostic::Diagnostic;
+use vize_l0::diag::Diagnostic;
 use vize_l0::{Allocator, Span};
 use vize_l1::parse;
 use vize_l1_to_l2::lower;

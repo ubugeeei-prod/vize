@@ -25,7 +25,6 @@ moonc = ["dep:sha2"]
 [dependencies]
 serde_json = { workspace = true }
 sha2 = { workspace = true, optional = true }
-vize_davinci = { workspace = true }
 vize_extension_contract = { workspace = true }
 vize_l0 = { workspace = true }
 vize_l1 = { workspace = true, features = ["moonbit"] }

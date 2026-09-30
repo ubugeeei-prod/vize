@@ -1,6 +1,6 @@
 //! `vue.once` realization.
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l2::op::{BindingOp, ComponentOp, ElementOp, IfOp, Op};
 
 use super::buf::Buf;

@@ -1,7 +1,7 @@
 //! One-shot entry points: parse → lower → L2 transform → emit, and the
 //! two-half render module the dual-run compares.
 
-use vize_davinci::pass::NoObserver;
+use vize_l0::pass::NoObserver;
 use vize_l0::{Allocator, String};
 
 use crate::lower::LegacyCaps;

@@ -3,7 +3,7 @@
 //! round-trip holds for produced and dropped records, and malformed lines
 //! are refused with their line number.
 
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{Span, String, cstr};
 use vize_l2::dump::provenance::{Page as ProvenancePage, Record as DumpProvenance};
 

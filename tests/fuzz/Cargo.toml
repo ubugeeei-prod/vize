@@ -27,6 +27,7 @@ vize_atelier_sfc = { path = "../../crates/vize_atelier_sfc", default-features = 
   "native",
 ] }
 vize_atelier_dom = { path = "../../crates/vize_atelier_dom" }
+vize_croquis = { path = "../../crates/vize_croquis" }
 vize_davinci = { path = "../../davinci/vize_davinci" }
 vize_l0 = { path = "../../davinci/vize_l0" }
 vize_l1 = { path = "../../davinci/vize_l1" }

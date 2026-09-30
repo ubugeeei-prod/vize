@@ -1,6 +1,6 @@
 use serde_json::json;
-use vize_davinci::dump::value::DumpValue;
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::dump::value::DumpValue;
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{Allocator, Span, String, cstr};
 use vize_l3::op::{OpId, Phase, Program, RegionId};
 use vize_l3::operand::{Operand, OperandRole, OperandValue, ValueKind};

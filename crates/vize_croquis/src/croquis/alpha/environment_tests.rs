@@ -1,7 +1,7 @@
 use super::PropContract;
 use crate::Croquis;
 use crate::drawer::{Drawer, DrawerOptions};
-use vize_davinci::summary::{Facet, SfcSummary};
+use vize_l2::summary::{Facet, SfcSummary};
 
 fn draw(source: &str) -> Croquis {
     let mut drawer = Drawer::with_options(DrawerOptions::full());

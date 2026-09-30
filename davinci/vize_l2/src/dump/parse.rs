@@ -16,8 +16,8 @@
 
 use alloc::vec::Vec;
 
-use vize_davinci::dump::Error as DumpError;
 use vize_l0::cstr;
+use vize_l0::dump::Error as DumpError;
 
 use crate::dump::Page;
 use crate::dump::codec::Grammar;

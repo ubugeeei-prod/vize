@@ -13,7 +13,6 @@ readme = "README.md"
 vize_l0 = { workspace = true }
 # The Folio contract the partition page (`L3PartitionFolio`) derives; shared
 # infrastructure at tier 1, so the one-way stage graph is unchanged.
-vize_davinci = { workspace = true }
 vize_l2 = { workspace = true }
 vize_l3 = { workspace = true }
 

@@ -15,10 +15,10 @@
 )]
 
 use davinci_test_support::surface_fixture::{MALFORMED, WELL_FORMED};
-use vize_davinci::dump::{Dump, Error as DumpError};
 use vize_extension_host::accept::full_text;
 use vize_extension_host::surface_page::{PageNode, PageToken};
 use vize_extension_host::{SurfacePage, TileError};
+use vize_l0::dump::{Dump, Error as DumpError};
 use vize_l0::{Allocator, String};
 
 fn rendered(tree: &vize_l1::SurfaceTree<'_>) -> String {

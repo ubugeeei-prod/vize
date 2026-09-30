@@ -32,10 +32,7 @@ fn only(family: OpFamily) -> LoweringFeatures {
     LoweringFeatures::EMPTY.observing(family)
 }
 
-fn default_pipeline_for(
-    caps: LegacyCaps,
-    features: LoweringFeatures,
-) -> vize_davinci::pass::Pipeline {
+fn default_pipeline_for(caps: LegacyCaps, features: LoweringFeatures) -> vize_l0::pass::Pipeline {
     pipeline_for_profile(caps, features, TransformProfile::DEFAULT)
 }
 
@@ -44,7 +41,7 @@ fn default_pipeline_for(
 /// separate module, so `davinci-storage-policy`'s `cfg(test)` masking
 /// does not reach it.
 #[track_caller]
-fn assert_names(pipeline: &vize_davinci::pass::Pipeline, expected: &[&str]) {
+fn assert_names(pipeline: &vize_l0::pass::Pipeline, expected: &[&str]) {
     assert_eq!(
         pipeline.passes.len(),
         expected.len(),

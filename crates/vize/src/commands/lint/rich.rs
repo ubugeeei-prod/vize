@@ -12,8 +12,8 @@
 use std::borrow::Cow;
 use std::io::IsTerminal;
 
+use crate::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
 use vize_davinci::diagnostic::{Diagnostic, DiagnosticPart, PartKind};
-use vize_davinci::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
 use vize_fresco::{
     ColorSupport, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
 };

@@ -94,9 +94,9 @@ impl EscapeKind {
 /// Epistemic axis for a lattice classification.
 ///
 /// One axis for every fact group: P4-6a moved the type into
-/// `vize_davinci::diagnostic` so witnesses and the verifier share it, and the
+/// `vize_l0::diag` so witnesses and the verifier share it, and the
 /// lattice re-exports it with its folio spellings unchanged.
-pub use vize_davinci::diagnostic::Verdict;
+pub use vize_l0::diag::Verdict;
 
 /// Summary provided by the retained-AST analyzer.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -40,6 +40,8 @@
     )
 )]
 
+extern crate alloc;
+
 // Core modules
 mod scope;
 mod symbol;
@@ -54,6 +56,7 @@ pub mod css;
 pub mod declaration_ts;
 pub mod display;
 pub mod drawer;
+pub mod dump;
 pub mod effect_graph;
 pub mod facts;
 pub mod hoist;

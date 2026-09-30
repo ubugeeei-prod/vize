@@ -32,7 +32,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde::Serialize;
 use vize_carton::{CompactString, cstr};
-use vize_davinci::summary::{AlphaEntry, AlphaPages, Signature};
+use vize_l2::summary::{AlphaEntry, AlphaPages, Signature};
 
 use super::{ComponentShape, Croquis};
 use crate::BindingType;

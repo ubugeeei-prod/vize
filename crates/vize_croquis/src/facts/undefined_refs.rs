@@ -7,8 +7,8 @@
 //! TS-34 spec compares the relation as a multiset of `(name, offset,
 //! context)` facts ([`crate::facts::spec::undefined_refs`]).
 
-use vize_davinci::fact::{Demand, FactGroup, FactProducer, FactTable, FactView, ids};
-use vize_davinci::pass::AnalysisId;
+use vize_l0::fact::{Demand, FactGroup, FactProducer, FactTable, FactView, ids};
+use vize_l0::pass::AnalysisId;
 
 use crate::{Croquis, UndefinedRef};
 

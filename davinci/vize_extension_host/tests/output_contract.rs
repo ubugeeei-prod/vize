@@ -1,10 +1,10 @@
 //! Host acceptance of the output-target document, without a guest.
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_extension_host::contract::{Page, Span};
 use vize_extension_host::output::{
     EmitDocument, EmitError, EmitLink, EmitRequest, Emitted, accept_emitted,
 };
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{String, cstr};
 
 fn request() -> EmitRequest {

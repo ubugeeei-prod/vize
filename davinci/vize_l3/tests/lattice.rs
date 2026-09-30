@@ -1,4 +1,4 @@
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Span};
 use vize_l3::lattice::dump::Page as ReactivityPage;
 use vize_l3::lattice::{

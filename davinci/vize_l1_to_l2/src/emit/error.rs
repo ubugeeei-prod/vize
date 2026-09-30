@@ -6,8 +6,8 @@
 
 use core::fmt;
 
-use vize_davinci::id::NodeId;
 use vize_l0::Span;
+use vize_l0::id::NodeId;
 use vize_l2::op::{BindingOp, Op};
 
 /// Stable census bucket for an L2 DOM emission refusal.

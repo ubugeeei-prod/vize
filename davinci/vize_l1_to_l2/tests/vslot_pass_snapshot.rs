@@ -16,8 +16,8 @@ mod support;
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::assert_dump_snapshot;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::assert_dump_snapshot;
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l1_to_l2::pass::vslot::{SlotCarrier, SlotName, SlotParams};
 use vize_l2::scope::ScopeOrigin;
 

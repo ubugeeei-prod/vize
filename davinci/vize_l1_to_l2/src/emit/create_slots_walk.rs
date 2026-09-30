@@ -1,7 +1,7 @@
 //! Walk helpers for `createSlots` entry collection.
 
-use vize_davinci::id::NodeId;
 use vize_l0::ensure_sufficient_stack;
+use vize_l0::id::NodeId;
 use vize_l2::op::{BindingOp, ElementOp, ForOp, IfBranch, IfOp, Op, Region, SlotContentOp};
 
 use super::EmitCx;

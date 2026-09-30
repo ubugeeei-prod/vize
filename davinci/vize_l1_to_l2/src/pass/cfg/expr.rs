@@ -8,8 +8,8 @@
 
 use oxc_ast::ast::{ConditionalExpression, Expression, LogicalExpression, LogicalOperator};
 use oxc_ast_visit::{Visit, walk};
-use vize_davinci::id::NodeId;
 use vize_l0::Span;
+use vize_l0::id::NodeId;
 use vize_l2::expr::ExprRef;
 
 use super::{ComplexityFacts, Contribution, DecisionKind};

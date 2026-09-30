@@ -3,8 +3,8 @@
 //! post-pass L2 tree, and it only observes - the facts, diagnostics and
 //! folio equal the hook-free `run_transform` run exactly.
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::pass::BudgetObserver;
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::pass::BudgetObserver;
 use vize_l0::{Allocator, String};
 use vize_l1_to_l2::lower;
 use vize_l1_to_l2::pass::{TransformProfile, run_transform, run_transform_with_pass_hook};

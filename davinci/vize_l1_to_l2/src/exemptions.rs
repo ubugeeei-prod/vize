@@ -1,7 +1,7 @@
 //! The lowering's error kinds that carry no witness yet — exempt from P4-6's
 //! witness law **by inventory**, never silently.
 //!
-//! `vize_davinci::diagnostic` makes an unwitnessed error unrepresentable
+//! `vize_l0::diag` makes an unwitnessed error unrepresentable
 //! except through a declared [`Exemption`]. Each static below is one such
 //! declaration, counted in `docs/davinci/plan/witness-exemptions.tsv` with the
 //! number of construction sites that report under it. The inventory only
@@ -10,8 +10,8 @@
 //! structural fact about the authored template, so each is drained by a fact
 //! group over L1/L2 that proves it.
 
-use vize_davinci::diagnostic::{Diagnostic, Exemption, Stage};
 use vize_l0::Span;
+use vize_l0::diag::{Diagnostic, Exemption, Stage};
 
 // Producer names are opaque witness identities retained across the crate rename.
 

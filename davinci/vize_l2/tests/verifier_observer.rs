@@ -14,13 +14,13 @@
 #[cfg(debug_assertions)]
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
-use vize_davinci::dump::Dump;
-use vize_davinci::id::NodeId;
-use vize_davinci::pass::{
+use vize_l0::Allocator;
+use vize_l0::dump::Dump;
+use vize_l0::id::NodeId;
+use vize_l0::pass::{
     Fusability, Pair, PassDesc, PassEvent, PassKind, Pipeline, Preserved, run_pipeline,
 };
-use vize_davinci::side_table::SideTable;
-use vize_l0::Allocator;
+use vize_l0::side_table::SideTable;
 use vize_l2::dump::Page as L2Page;
 #[cfg(debug_assertions)]
 use vize_l2::verify::Rigor;

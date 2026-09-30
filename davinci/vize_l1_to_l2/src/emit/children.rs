@@ -4,8 +4,8 @@ mod slot_compound;
 mod slot_text;
 
 pub(super) use slot_text::{emit_slot_text_child, emit_slot_text_run};
-use vize_davinci::id::NodeId;
 use vize_l0::Span;
+use vize_l0::id::NodeId;
 use vize_l2::expr::{ExprRef, JsExpr, OpaqueReason};
 use vize_l2::op::{CommentOp, InterpolationOp, Op, Region};
 

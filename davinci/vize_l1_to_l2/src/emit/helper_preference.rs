@@ -3,8 +3,8 @@
 mod slot_order;
 mod unref;
 
-use vize_davinci::side_table::SideTable;
 use vize_l0::ensure_sufficient_stack;
+use vize_l0::side_table::SideTable;
 use vize_l2::op::{Op, Region};
 
 use crate::lower::ForWrapper;

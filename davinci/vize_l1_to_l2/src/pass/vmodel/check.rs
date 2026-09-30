@@ -2,9 +2,9 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::diagnostic::{Diagnostic, Stage};
-use vize_davinci::id::NodeId;
 use vize_l0::String;
+use vize_l0::diag::{Diagnostic, Stage};
+use vize_l0::id::NodeId;
 use vize_l2::op::ModelOp;
 
 use super::{ARG_ON_ELEMENT_MESSAGE, Channels, ModelFacts, ModelFault, ON_SCOPE_MESSAGE};

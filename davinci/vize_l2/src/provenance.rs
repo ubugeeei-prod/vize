@@ -33,7 +33,7 @@
 //! record already scopes it there). This type is the record's shape, not
 //! its retention policy.
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l0::{Span, String};
 
 /// One lowering decision: what rule fired, on what, producing what.
@@ -71,7 +71,7 @@ const _: () = assert!(core::mem::size_of::<ProvenanceRecord>() == 88);
 #[cfg(test)]
 mod tests {
     use super::ProvenanceRecord;
-    use vize_davinci::id::NodeId;
+    use vize_l0::id::NodeId;
     use vize_l0::{Span, String};
 
     #[test]

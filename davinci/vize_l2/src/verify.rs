@@ -54,7 +54,7 @@
 use alloc::vec::Vec;
 use core::fmt;
 
-use vize_davinci::side_table::SideTable;
+use vize_l0::side_table::SideTable;
 use vize_l0::{Span, String, cstr};
 
 use crate::dump::Page as L2Page;
@@ -110,7 +110,7 @@ impl ViolationCode {
 
 /// One rejected invariant.
 ///
-/// Not a `vize_davinci::diagnostic::Diagnostic` on purpose: the unified
+/// Not a `vize_l0::diag::Diagnostic` on purpose: the unified
 /// channel carries what the **user** must see about their source, while a
 /// verifier finding is a compiler-bug report about an artifact no user
 /// wrote ("checks the compiler's sanity, not yours"). It renders as one
@@ -161,7 +161,7 @@ pub fn verify(folio: &L2Page, rigor: Rigor) -> Vec<Violation> {
     out
 }
 
-/// Check that every [`NodeId`](vize_davinci::id::NodeId) `table`
+/// Check that every [`NodeId`](vize_l0::id::NodeId) `table`
 /// references resolves in `folio`.
 ///
 /// L2 ids are dense and page-ordered — every op line top to bottom, `attr`
@@ -190,8 +190,8 @@ mod tests {
     use super::{Rigor, Violation, ViolationCode, verify, verify_table};
     use crate::dump::Page as L2Page;
     use alloc::vec;
-    use vize_davinci::id::NodeId;
-    use vize_davinci::side_table::SideTable;
+    use vize_l0::id::NodeId;
+    use vize_l0::side_table::SideTable;
     use vize_l0::{Span, cstr};
 
     #[test]

@@ -9,8 +9,8 @@
 use alloc::vec::Vec;
 use core::fmt;
 
-use vize_davinci::pass::{Remark, RemarkArg, RemarkSink};
 use vize_l0::Span;
+use vize_l0::pass::{Remark, RemarkArg, RemarkSink};
 
 use super::measure::{Metric, Metrics};
 use super::tier::OptTier;

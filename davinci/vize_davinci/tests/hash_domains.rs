@@ -9,11 +9,11 @@
 )]
 use serde_json::{Value, json};
 use vize_davinci::key::{CachedArtifact, KeyManifest, source_block_key};
-use vize_davinci::summary::{
+use vize_l0::hash::StableHasher128;
+use vize_l2::summary::{
     AlphaEntry, AlphaPages, Facet, GlobalEntry, GlobalFacet, GlobalFacts, GlobalSummary,
     SfcSummary, Signature,
 };
-use vize_l0::hash::StableHasher128;
 
 fn fixture() -> Value {
     serde_json::from_str(include_str!("fixtures/keys/hash-domains-v2.json")).unwrap()

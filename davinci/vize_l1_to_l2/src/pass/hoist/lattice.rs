@@ -5,8 +5,8 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::pass::RemarkSink;
-use vize_davinci::side_table::SideTable;
+use vize_l0::pass::RemarkSink;
+use vize_l0::side_table::SideTable;
 use vize_l0::{cstr, ensure_sufficient_stack};
 use vize_l2::op::{BindingOp, ComponentOp, ElementOp, Namespace, Op};
 use vize_l2::provenance::ProvenanceRecord;
@@ -302,7 +302,7 @@ fn element_contribution(element: &ElementOp<'_>, fact: StaticFacts) -> Contribut
 fn publish(
     provenance: &mut StdVec<ProvenanceRecord>,
     facts: &mut SideTable<StaticFacts>,
-    id: Option<vize_davinci::id::NodeId>,
+    id: Option<vize_l0::id::NodeId>,
     owner: &str,
     span: vize_l0::Span,
     fact: StaticFacts,

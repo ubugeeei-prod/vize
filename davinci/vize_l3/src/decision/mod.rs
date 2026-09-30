@@ -8,7 +8,7 @@
 
 use alloc::vec::Vec;
 
-use vize_davinci::{id::NodeId, side_table::SideTable};
+use vize_l0::{id::NodeId, side_table::SideTable};
 
 use crate::placement::Placement;
 

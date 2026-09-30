@@ -5,7 +5,7 @@
 //! and the type declarations; nothing here is new behaviour.
 
 use alloc::vec::Vec as StdVec;
-use vize_davinci::diagnostic::Severity;
+use vize_l0::diag::Severity;
 use vize_l2::op::Namespace;
 
 use crate::lower::Lowered;

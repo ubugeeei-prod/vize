@@ -18,7 +18,7 @@ use std::{path::Path, sync::Arc};
 use parking_lot::Mutex;
 use tower_lsp::lsp_types::Url;
 use vize_atelier_sfc::script::TypeSourceSnapshot;
-use vize_davinci::summary::AlphaPages;
+use vize_l2::summary::AlphaPages;
 use vize_resident::{ComponentSurface, ParsedSfc, ResidentDocuments, SharedDescriptor};
 
 use super::ServerState;

@@ -10,7 +10,7 @@ mod preamble;
 use call_props::{has_rendered_attrs, has_rendered_binds, rendered_hoist_attrs};
 use checks::admit;
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l2::op::ComponentOp;
 
 use super::EmitCx;

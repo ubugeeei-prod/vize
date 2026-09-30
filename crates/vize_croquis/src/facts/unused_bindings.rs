@@ -3,8 +3,8 @@
 //! Population is an explicit Drawer demand. The producer only projects the
 //! stored relation; it never parses script text or guesses usage.
 
-use vize_davinci::fact::{Demand, FactGroup, FactProducer, FactTable, FactView, ids};
-use vize_davinci::pass::AnalysisId;
+use vize_l0::fact::{Demand, FactGroup, FactProducer, FactTable, FactView, ids};
+use vize_l0::pass::AnalysisId;
 
 use super::{Bindings, BindingsTable};
 use crate::Croquis;

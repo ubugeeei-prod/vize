@@ -5,7 +5,7 @@
 mod support;
 
 use support::{artifact, with_lowered};
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l0::{Span, String};
 use vize_l2::provenance::ProvenanceRecord;
 use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};

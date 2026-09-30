@@ -10,7 +10,7 @@
 
 mod support;
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l1_to_l2::pass::vslot::{
     DUPLICATE_MESSAGE, EXTRANEOUS_MESSAGE, MISPLACED_MESSAGE, MIXED_MESSAGE, RULE_DEFAULT_NAME,
     RULE_IMPLICIT_DEFAULT, SlotBound, SlotCarrier, SlotFacts, SlotGroup, SlotName, SlotParams,

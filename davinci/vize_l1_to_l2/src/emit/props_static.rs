@@ -4,8 +4,8 @@ mod hoist_pair;
 mod legacy_constant;
 mod root_hoist;
 
-use vize_davinci::id::NodeId;
 use vize_l0::String;
+use vize_l0::id::NodeId;
 use vize_l2::op::{Attribute, BindingOp};
 
 use crate::pass::{StaticFacts, StaticLevel};

@@ -1,6 +1,7 @@
 consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	45	davinci	Davinci	stage	vize_davinci	preferred	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	45	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	45	l2	L2	stage	vize_l2	preferred	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	45	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	45	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	45	croquis	Croquis analysis	old	vize_croquis	legacy	1
@@ -52,12 +53,12 @@ lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/bindings.rs	11	ol
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/bindings.rs	11	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/bindings.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	4
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_cache.rs	35	l0	L0	stage	vize_l0	preferred	2
-lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_interface.rs	3	davinci	Davinci	stage	vize_davinci	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_interface.rs	3	l2	L2	stage	vize_l2	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_interface.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface.rs	38	l0	L0	stage	vize_l0	preferred	3
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface.rs	38	old_ast	old AST/parser	old	vize_armature	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests.rs	8	davinci	Davinci	stage	vize_davinci	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/corpus.rs	5	davinci	Davinci	stage	vize_davinci	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests.rs	8	l2	L2	stage	vize_l2	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/corpus.rs	5	l2	L2	stage	vize_l2	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/corpus.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	4
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/edits.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/edits.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -315,7 +316,7 @@ lsp	LSP	test/dev	crates/vize_maestro/src/server/state/corsa_overlays_tests.rs	12
 lsp	LSP	source	crates/vize_maestro/src/server/state/corsa_overlays.rs	24	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/server/state/corsa.rs	66	l0	L0	stage	vize_l0	preferred	3
 lsp	LSP	source	crates/vize_maestro/src/server/state/features.rs	4	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/server/state/resident.rs	21	davinci	Davinci	stage	vize_davinci	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/server/state/resident.rs	21	l2	L2	stage	vize_l2	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/server/state/resident/sources.rs	11	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs.rs	72	l0	L0	stage	vize_l0	preferred	7
 lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs.rs	72	old_ast	old AST/parser	old	vize_armature	legacy	2

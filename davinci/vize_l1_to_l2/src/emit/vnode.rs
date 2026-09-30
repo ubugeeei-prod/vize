@@ -4,7 +4,7 @@ mod array_child;
 mod checks;
 
 pub(super) use array_child::{emit_array_child, emit_branch_root_element};
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l2::op::ElementOp;
 
 use super::buf::Buf;

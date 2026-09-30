@@ -16,9 +16,9 @@
 // The corpus is seeded from the committed .folio fixtures by
 // `tools/commands/ci/fuzz/seed_corpus.rs`.
 use libfuzzer_sys::fuzz_target;
-use vize_davinci::dump::croquis::Page as CroquisPage;
+use vize_croquis::dump::Page as CroquisPage;
 use vize_davinci::dump::repro::Page as ReproPage;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l2::dump::Page as L2Page;
 use vize_l3::dump::Page as L3Page;
 

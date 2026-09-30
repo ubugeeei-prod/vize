@@ -2,8 +2,8 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::id::NodeId;
-use vize_davinci::side_table::SideTable;
+use vize_l0::id::NodeId;
+use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Span, String};
 use vize_l2::expr::{ExprRef, OpaqueExpr, OpaqueReason, VueFilterExpr};
 use vize_l2::op::InterpolationOp;

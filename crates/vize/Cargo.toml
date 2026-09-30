@@ -26,6 +26,7 @@ profiling = []
 legacy = ["vize_atelier_core/legacy", "vize_canon/legacy", "vize_maestro?/legacy"]
 
 [dependencies]
+unicode-width.workspace = true
 # Vize crates (re-exported for unified documentation)
 vize_l0 = { workspace = true, features = ["lint-glob"] }
 vize_relief = { workspace = true }

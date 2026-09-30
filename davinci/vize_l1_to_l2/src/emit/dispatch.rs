@@ -4,7 +4,7 @@
 //! beside their own passes; split out of `emit.rs` under the 350-line
 //! source budget.
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l2::op::{ElementOp, ForOp, IfOp};
 
 use super::{EmitCx, EmitError, vfor, vfor_item, vif, vnode};

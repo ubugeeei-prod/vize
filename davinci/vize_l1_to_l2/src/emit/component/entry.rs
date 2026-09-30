@@ -3,7 +3,7 @@
 //! `hoist_static_inner` position its props are decided at. Split out of
 //! `component.rs` under the 350-line source budget.
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l2::op::ComponentOp;
 
 use super::super::EmitCx;

@@ -4,7 +4,7 @@
 //! covers every op and binding kind; `tests/dump_mirror.rs` builds the same
 //! tree in a live arena, and this file pins all opaque-reason spellings.
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Span, String};
 use vize_l2::dump::{
     Attribute, Bind, Binding, Branch, Comment, Component, Contract, Element, Expr, For, ForBinding,
