@@ -58,14 +58,23 @@ fn nuxt_render_edges_do_not_cross_package_roots() {
             &[],
         ),
     );
-    for package in ["web", "admin"] {
+    for (app, page) in [
+        (
+            "packages/web/app/app.vue",
+            "packages/web/app/pages/index.vue",
+        ),
+        (
+            "packages/admin/app/app.vue",
+            "packages/admin/app/pages/index.vue",
+        ),
+    ] {
         analyzer.add_file_with_analysis(
-            Path::new(&format!("packages/{package}/app/app.vue")),
+            Path::new(app),
             "<template><NuxtLayout><NuxtPage /></NuxtLayout></template>",
             script_analysis("", &["NuxtLayout", "NuxtPage"]),
         );
         analyzer.add_file_with_analysis(
-            Path::new(&format!("packages/{package}/app/pages/index.vue")),
+            Path::new(page),
             "",
             script_analysis(
                 "import { inject } from 'vue'; const theme = inject('theme')",
@@ -87,5 +96,26 @@ fn nuxt_render_edges_do_not_cross_package_roots() {
                 diagnostic.kind,
                 CrossFileDiagnosticKind::UnmatchedInject { .. }
             )
+    }));
+}
+
+#[test]
+fn symbol_injection_diagnostic_uses_identifier_syntax() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::minimal().with_provide_inject(true));
+    analyzer.add_file_with_analysis(
+        Path::new("app/components/Child.vue"),
+        "",
+        script_analysis(
+            "import { inject } from 'vue'; import { ToastKey } from '../composables/toast'; const toast = inject(ToastKey)",
+            &[],
+        ),
+    );
+    let result = analyzer.analyze();
+    assert!(result.diagnostics.iter().any(|diagnostic| {
+        matches!(
+            diagnostic.kind,
+            CrossFileDiagnosticKind::UnmatchedInject { .. }
+        ) && diagnostic.message.contains("inject(ToastKey)")
     }));
 }
