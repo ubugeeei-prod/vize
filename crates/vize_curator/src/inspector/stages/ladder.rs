@@ -36,10 +36,10 @@
 
 use core::cell::Cell;
 
-use vize_davinci::dump::collector::Collector;
-use vize_davinci::dump::plan::Page as PlanPage;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::pass::{Pair, PassEvent, PassObserver, Pipeline, RemarkCollector};
+use vize_l0::dump::collector::Collector;
+use vize_l0::dump::plan::Page as PlanPage;
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::pass::{Pair, PassEvent, PassObserver, Pipeline, RemarkCollector};
 use vize_l0::{Allocator, String};
 use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_pass_hook};
 use vize_l2::dump::Page as L2Page;
@@ -255,7 +255,7 @@ fn l2_text(ops: &[vize_l2::op::Op<'_>]) -> String {
 mod tests {
     use core::cell::Cell;
 
-    use vize_davinci::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved, run_pipeline};
+    use vize_l0::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved, run_pipeline};
 
     use super::{PassStart, PassWindows, step};
 

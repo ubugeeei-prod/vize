@@ -4312,6 +4312,7 @@ dependencies = [
  "toml",
  "vize_atelier_core",
  "vize_croquis",
+ "vize_curator",
  "vize_davinci",
  "vize_l0",
  "vize_l1_to_l2",
@@ -4400,6 +4401,7 @@ dependencies = [
  "vize_atelier_core",
  "vize_atelier_sfc",
  "vize_croquis",
+ "vize_curator",
  "vize_davinci",
  "vize_l0",
  "vize_l1",
@@ -4432,6 +4434,7 @@ dependencies = [
  "vize_atelier_ssr",
  "vize_carton",
  "vize_croquis",
+ "vize_curator",
  "vize_davinci",
  "vize_l0",
  "vize_l1",
@@ -4586,7 +4589,6 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_croquis",
  "vize_croquis_cf",
- "vize_davinci",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -4601,16 +4603,7 @@ version = "0.429.2"
 dependencies = [
  "criterion",
  "davinci_harness",
- "davinci_test_support",
- "insta",
- "serde_json",
- "vize_atelier_core",
- "vize_atelier_sfc",
- "vize_croquis",
  "vize_l0",
- "vize_l1",
- "vize_l1_to_l2",
- "vize_l2",
 ]
 
 [[package]]
@@ -4732,6 +4725,7 @@ version = "0.429.2"
 dependencies = [
  "bitflags 2.13.1",
  "compact_str",
+ "davinci_harness",
  "davinci_test_support",
  "globset",
  "insta",
@@ -4748,7 +4742,11 @@ dependencies = [
  "smallvec",
  "stacker",
  "tempfile",
+ "vize_atelier_sfc",
  "vize_l0_derive",
+ "vize_l1",
+ "vize_l1_to_l2",
+ "vize_l2",
  "which",
  "xxhash-rust",
 ]

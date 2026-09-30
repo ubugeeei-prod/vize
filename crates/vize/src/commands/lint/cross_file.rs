@@ -4,6 +4,7 @@ mod absent_props;
 mod component;
 mod fallthrough;
 mod sfc;
+mod uses_attrs;
 
 use sfc::{CrossFileSourceOffsets, analyze_sfc_for_cross_file};
 use std::path::{Path, PathBuf};

@@ -129,7 +129,7 @@ grammar at parse time), `failed-stage=`, `failed-pass=`, `reason=`
 a sorted `key=value` map. A missing final newline on the artifact is added
 by the first print, and `ReproFolio::normalize` applies the same to
 hand-built values — the `CroquisFolio::normalize` precedent. Round-trip
-laws pinned by `davinci/vize_davinci/tests/repro_dump.rs`.
+laws pinned by `crates/vize_curator/tests/repro_dump.rs`.
 
 ## Croquis folio grammar
 

@@ -32,6 +32,8 @@ vize_davinci = { workspace = true }
 serde = { workspace = true }
 
 [dev-dependencies]
+# Inspection metadata is a dev-only, unpublished oracle; strip it on packaging.
+vize_curator = { path = "../vize_curator" }
 criterion = { workspace = true }
 davinci_harness = { workspace = true }
 davinci_test_support.workspace = true
