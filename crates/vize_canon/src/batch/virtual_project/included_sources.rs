@@ -268,10 +268,18 @@ mod tests {
         project.register_path(&entry).unwrap();
         project.ensure_included_sources().unwrap();
 
-        let registered = project.registered_original_paths_sorted();
-        assert!(
-            registered.iter().all(|path| !path.ends_with("schema.d.ts")),
-            "declaration was mirrored: {registered:?}"
+        assert_eq!(
+            project.registered_original_paths_sorted(),
+            vec![entry.clone()],
+            "generated declarations stay on their authored path"
+        );
+        assert_eq!(
+            project.topology_program_files(),
+            [
+                "__vize_helpers.d.ts",
+                "__vize_vue_modules.d.ts",
+                "src/entry.ts",
+            ],
         );
         let _ = fs::remove_dir_all(&root);
     }
@@ -302,18 +310,17 @@ mod tests {
         project.register_path(&entry).unwrap();
         project.register_path(&outside).unwrap();
 
-        let program = project.topology_program_files();
-        assert!(
-            program.iter().all(|path| !path.ends_with("index.ts")),
-            "out-of-root script joined the program: {program:?}"
+        assert_eq!(
+            project.topology_program_files(),
+            [
+                "__vize_helpers.d.ts",
+                "__vize_vue_modules.d.ts",
+                "src/entry.ts",
+            ],
         );
-        assert!(
-            project
-                .registered_original_paths_sorted()
-                .iter()
-                .any(|path| path.ends_with("index.ts")),
-            "out-of-root script was not registered"
-        );
+        let mut registered = vec![entry, outside];
+        registered.sort();
+        assert_eq!(project.registered_original_paths_sorted(), registered);
         let _ = fs::remove_dir_all(&root);
     }
 }
