@@ -27,7 +27,6 @@ pub(in crate::script_parser) fn walk_call_arguments(
     // lifecycle hook for race tracking.
     let hook_name = if let Expression::Identifier(id) = &call.callee {
         let name = id.name.as_str();
-        result.uses_attrs_call |= name == "useAttrs";
         (is_client_only_hook(name) || name == "onScopeDispose").then_some(name)
     } else {
         None
