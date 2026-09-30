@@ -15,7 +15,6 @@ use vize_canon::virtual_ts::ProjectionMapping;
 use vize_l0::line_index::LineBreaks;
 
 use super::super::{VirtualTsResult, sources};
-use super::log_preview::log_preview;
 use super::message::strip_corsa_overlay_paths;
 
 /// One virtual document synced to Corsa, ready for assembly.
@@ -56,21 +55,16 @@ pub(super) async fn fetch_finished_diagnostics(
         corsa_diags.len(),
         virtual_uri
     );
+    let decode_started = std::time::Instant::now();
     let finished: Vec<_> = corsa_diags
         .into_iter()
-        .enumerate()
-        .filter_map(|(i, diag)| {
-            tracing::info!(
-                "  raw diag[{}]: line {}-{}, message: {}",
-                i,
-                diag.range.start.line,
-                diag.range.end.line,
-                log_preview(&diag.message, 100)
-            );
-            finished_from_lsp(&document.code, diag, index)
-        })
+        .filter_map(|diag| finished_from_lsp(&document.code, diag, index))
         .collect();
-    tracing::info!("decoded {} Corsa diagnostics", finished.len());
+    tracing::info!(
+        "decoded {} Corsa diagnostics in {:?}",
+        finished.len(),
+        decode_started.elapsed()
+    );
     Ok(finished)
 }
 
@@ -161,9 +155,14 @@ fn assemble_corsa_diagnostics_for_source(
     let policy = AssemblyPolicy {
         report_unused: true,
     };
+    let assembly_started = std::time::Instant::now();
     let assembled = assemble_diagnostics(authored, &projected, finished, policy);
-    tracing::info!("assembled {} Corsa diagnostics", assembled.len());
-    assembled
+    tracing::info!(
+        "assembled {} Corsa diagnostics in {:?}",
+        assembled.len(),
+        assembly_started.elapsed()
+    );
+    let rendered: Vec<_> = assembled
         .into_iter()
         .map(|assembled| {
             let (start_line, start_character) =
@@ -198,7 +197,9 @@ fn assemble_corsa_diagnostics_for_source(
                 ..Default::default()
             }
         })
-        .collect()
+        .collect();
+    tracing::info!("rendered {} Corsa diagnostics", rendered.len());
+    rendered
 }
 
 pub(in crate::ide) fn corsa_diagnostic_code(code: serde_json::Value) -> NumberOrString {

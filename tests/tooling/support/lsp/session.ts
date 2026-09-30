@@ -183,7 +183,7 @@ export class LspSession {
         // Keep the latest activity so a timeout shows where it stopped.
         reject(
           new Error(
-            `Timed out waiting for notification ${method}\n${this.stderr.slice(-16_000)}`.trim(),
+            `Timed out waiting for notification ${method}\n${this.stderr.slice(-3_000)}`.trim(),
           ),
         );
       }, timeoutMs);
