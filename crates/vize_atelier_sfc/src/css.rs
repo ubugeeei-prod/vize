@@ -14,7 +14,7 @@ use vize_carton::ToCompactString;
 use vize_carton::{FxHashMap, String};
 #[cfg(feature = "native")]
 mod parser;
-#[cfg(test)]
+pub(crate) mod scope_mode;
 mod scoped;
 pub(crate) mod scoped_selector;
 #[cfg(test)]
@@ -226,7 +226,7 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
         .scope_id
         .as_deref()
         .filter(|_| options.scoped)
-        .map(|scope_id| crate::vite_plugin::scope_css_for_pipeline(processed_css, scope_id));
+        .map(|scope_id| scope_mode::scope_css(processed_css, scope_id));
     let scoped_css = scoped_css.as_deref().unwrap_or(processed_css);
 
     // Apply targets for autoprefixing
@@ -270,7 +270,7 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
         .scope_id
         .as_deref()
         .filter(|_| options.scoped)
-        .map(|scope_id| crate::vite_plugin::scope_css_for_pipeline(processed_css, scope_id));
+        .map(|scope_id| scope_mode::scope_css(processed_css, scope_id));
     let scoped_css = scoped_css.as_deref().unwrap_or(processed_css);
 
     CssCompileResult {

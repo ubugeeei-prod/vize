@@ -6,7 +6,6 @@ mod where_selector;
 
 use vize_carton::{String, ToCompactString};
 use where_selector::add_scope_to_element;
-#[cfg(test)]
 pub(crate) use where_selector::scope_bare_where;
 
 use crate::types::{CssModuleMapping, SfcError, SfcStyleBlock, StyleCompileOptions};
@@ -70,7 +69,7 @@ pub(crate) fn compile_style_with_modules(
     let (mut output, _) = crate::css::transform_css_v_bind(&style.content, Some(&options.id));
     // Apply scoped transformation if needed
     if style.scoped || options.scoped {
-        output = crate::vite_plugin::scope_css_for_pipeline(&output, &options.id);
+        output = crate::css::scope_mode::scope_style_css(&output, &options.id);
     }
     // Trim if requested
     if options.trim {

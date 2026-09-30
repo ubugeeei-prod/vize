@@ -2,4 +2,4 @@
 source: crates/vize_atelier_sfc/tests/scoped_slotted.rs
 expression: result.css.unwrap()
 ---
-.card > .title[data-v-26fc8254-s]{ font-weight: bold; }
+.card[data-v-26fc8254] > .title[data-v-26fc8254-s]{ font-weight: bold; }
