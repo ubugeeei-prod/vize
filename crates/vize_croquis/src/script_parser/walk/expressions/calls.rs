@@ -30,9 +30,6 @@ pub(in crate::script_parser) fn walk_call_arguments(
         result.uses_attrs_call |= name == "useAttrs";
         (is_client_only_hook(name) || name == "onScopeDispose").then_some(name)
     } else {
-        if let Expression::StaticMemberExpression(member) = &call.callee {
-            result.uses_attrs_call |= member.property.name == "useAttrs";
-        }
         None
     };
     let mut lifecycle_callback_scope_recorded = false;

@@ -60,7 +60,11 @@ pub(super) fn process_import(result: &mut ScriptParseResult, import: &ImportDecl
                 ImportDeclarationSpecifier::ImportDefaultSpecifier(_) => "default",
                 ImportDeclarationSpecifier::ImportNamespaceSpecifier(_) => "*",
             };
-            if source_name == "vue" && !is_type_only && !is_type_spec && exported == "useAttrs" {
+            if source_name == "vue"
+                && !is_type_only
+                && !is_type_spec
+                && matches!(exported, "useAttrs" | "*")
+            {
                 result.uses_attrs_call = true;
             }
             result
