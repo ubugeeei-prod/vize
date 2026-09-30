@@ -83,7 +83,7 @@ source-map `finish()` step and Patina's output layer already worked. The
 eagerly-stored `Position { line, column }` pairs deleted with the type.
 Where each read went:
 
-- `crates/vize_armature/src/parser/element/comment.rs:21` — the only production read seeded
+- `crates/vize_armature/src/parser/element/comment.rs:40` — the only production read seeded
   `parse_vize_directive` with the comment's start line, which that caller
   discards (only the directive kind survives); it now passes the constant
   line the retired tracking always reported
