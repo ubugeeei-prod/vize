@@ -69,7 +69,7 @@ pub(crate) fn compile_style_with_modules(
     let (mut output, _) = crate::css::transform_css_v_bind(&style.content, Some(&options.id));
     // Apply scoped transformation if needed
     if style.scoped || options.scoped {
-        output = apply_scoped_css(&output, &options.id);
+        output = crate::vite_plugin::scope_css_for_pipeline(&output, &options.id);
     }
     // Trim if requested
     if options.trim {

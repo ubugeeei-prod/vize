@@ -79,6 +79,24 @@ fn test_compile_scoped_css() {
     insta::assert_debug_snapshot!(result);
 }
 
+#[test]
+fn direct_scoped_css_matches_vite_pipeline_for_nested_and_slotted_rules() {
+    let css = ".c { & .d { color: red; } }\n.a > :slotted(.b) { color: blue; }";
+    let scope_id = "data-v-x";
+    let pipeline = crate::vite_plugin::scope_css_for_pipeline(css, scope_id);
+    let expected = compile_css(&pipeline, &CssCompileOptions::default());
+    let actual = compile_css(
+        css,
+        &CssCompileOptions {
+            scoped: true,
+            scope_id: Some(scope_id.into()),
+            ..Default::default()
+        },
+    );
+    assert!(actual.errors.is_empty(), "{:?}", actual.errors);
+    assert_eq!(actual.code, expected.code);
+}
+
 #[cfg(feature = "native")]
 fn rewrite_url_nodes(value: &mut serde_json::Value, from: &str, to: &str) {
     match value {
