@@ -165,12 +165,8 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
             parsed
         });
 
-    // Cross-block context shared by every rule invocation for this SFC: rules
-    // that correlate script declarations with template usage read the raw
-    // `<template>` source (`script/no-unused-emit-declarations`, where an
-    // over-match only suppresses) or its parsed AST (rules that *create* a
-    // finding from template evidence, where an over-match would be a false
-    // positive). The validated AST comes from the preceding template pass.
+    // Share raw template text and the validated AST with rules that correlate
+    // script declarations and template evidence.
     let template_ast = template_ast.filter(|_| {
         template_context::descriptor_needs_template_ast(
             linter,
