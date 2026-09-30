@@ -67,6 +67,14 @@ def rewrite(source: str, relative: Path) -> str:
             source, count = re.subn(rf"(?m)^{re.escape(alias)}$", token, source)
             if count:
                 protected_aliases.append((token, alias))
+    # cargo-semver-checks requires this published name to stay enabled by
+    # davinci-production-bench. The alias definition above does not imply it.
+    if manifest_path == "crates/vize_atelier_sfc/Cargo.toml":
+        quoted = '"davinci-dom-differential"'
+        token = f"__VIZE_PUBLISHED_FEATURE_ALIAS_{len(protected_aliases)}__"
+        if quoted in source:
+            source = source.replace(quoted, token)
+            protected_aliases.append((token, quoted))
     for index, message in enumerate(PROTECTED_MESSAGES):
         source = source.replace(message, f"__VIZE_PROTECTED_MESSAGE_{index}__")
     for old, new in RENAMES:

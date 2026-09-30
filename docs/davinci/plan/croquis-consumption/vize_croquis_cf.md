@@ -35,8 +35,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.re_export_forwards`           | field | `croquis`           |     1 |     1 |
 | `Croquis.reactivity`                   | field | `croquis`           |     2 |     2 |
 | `Croquis.scopes`                       | field | `croquis`           |    12 |    16 |
-| `Croquis.script_browser_globals`       | field | `croquis`           |     1 |     1 |
-| `Croquis.setup_context`                | field | `croquis`           |     1 |     1 |
+| `Croquis.setup_context`                | field | `croquis`           |     2 |     2 |
 | `Croquis.template_expressions`         | field | `croquis`           |     2 |     4 |
 | `Croquis.template_info`                | field | `croquis`           |     5 |    14 |
 | `Croquis.type_exports`                 | field | `croquis`           |     1 |     1 |
@@ -117,5 +116,5 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.macros`                       |       25 |   27 |
 | `Croquis.provide_inject`               |        0 |    8 |
 | `Croquis.race_conditions`              |        0 |    3 |
-| `Croquis.setup_context`                |        1 |    4 |
+| `Croquis.setup_context`                |        2 |    5 |
 | `Croquis.template_info`                |       14 |   15 |

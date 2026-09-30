@@ -233,6 +233,8 @@ test("release SemVer invokes the required check with the immutable baseline and 
         "check-release",
         "--package",
         "vize_l1_to_l2",
+        "--color",
+        "never",
         "--baseline-root",
         baselineRoot,
       ],
@@ -242,7 +244,7 @@ test("release SemVer invokes the required check with the immutable baseline and 
 
     const registered = run();
     assert.equal(registered.status, 0, registered.stderr);
-    assert.deepEqual(logged(), [["semver-checks", "check-release", "--package", "vize_l1_to_l2"]]);
+    assert.deepEqual(logged(), [["semver-checks", "check-release", "--package", "vize_l1_to_l2", "--color", "never"]]);
 
     const failed = run({ SEMVER_TEST_FAIL: "1" });
     assert.notEqual(failed.status, 0);
@@ -257,6 +259,8 @@ test("release SemVer invokes the required check with the immutable baseline and 
         "check-release",
         "--package",
         "vize_l1_to_l2",
+        "--color",
+        "never",
         "--baseline-rev",
         "verified-base",
       ],
@@ -270,6 +274,8 @@ test("release SemVer invokes the required check with the immutable baseline and 
         "check-release",
         "--package",
         "vize_l1_to_l2",
+        "--color",
+        "never",
         "--baseline-root",
         baselineRoot,
       ],
