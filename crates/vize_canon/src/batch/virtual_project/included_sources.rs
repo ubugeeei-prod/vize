@@ -236,4 +236,84 @@ mod tests {
         );
         let _ = fs::remove_dir_all(&root);
     }
+
+    /// Generated declarations stay on the authored path (#2047). Mirroring
+    /// `types/codegen/schema.d.ts` gives that module two identities.
+    #[test]
+    fn included_declarations_stay_on_their_authored_path() {
+        let root = case_dir("included-declarations");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(root.join("types/codegen")).unwrap();
+        fs::create_dir_all(root.join("src")).unwrap();
+        fs::write(
+            root.join("tsconfig.json"),
+            r#"{
+  "compilerOptions": { "strict": true },
+  "include": ["src/**/*.ts", "types/**/*.d.ts"]
+}
+"#,
+        )
+        .unwrap();
+        let entry = root.join("src/entry.ts");
+        fs::write(&entry, "export const ready = true;\n").unwrap();
+        fs::write(
+            root.join("types/codegen/schema.d.ts"),
+            "export type Row = {}\n",
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&root).unwrap();
+        project.set_tsconfig_path(Some(root.join("tsconfig.json")));
+        project.set_declaration_roots(std::slice::from_ref(&entry));
+        project.register_path(&entry).unwrap();
+        project.ensure_included_sources().unwrap();
+
+        let registered = project.registered_original_paths_sorted();
+        assert!(
+            registered.iter().all(|path| !path.ends_with("schema.d.ts")),
+            "declaration was mirrored: {registered:?}"
+        );
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    /// A workspace script outside this project stays registered for the
+    /// import, but it is not a second program root (`TS2451`).
+    #[test]
+    fn out_of_root_scripts_stay_out_of_the_virtual_program() {
+        let root = case_dir("out-of-root-script");
+        let _ = fs::remove_dir_all(&root);
+        let app = root.join("app");
+        let package = root.join("packages/source");
+        fs::create_dir_all(app.join("src")).unwrap();
+        fs::create_dir_all(package.join("src")).unwrap();
+        fs::write(
+            app.join("tsconfig.json"),
+            r#"{ "compilerOptions": { "strict": true }, "include": ["src/entry.ts"] }"#,
+        )
+        .unwrap();
+        let entry = app.join("src/entry.ts");
+        fs::write(&entry, "export const ready = true;\n").unwrap();
+        let outside = package.join("src/index.ts");
+        fs::write(&outside, "const invalid: string = 42\nvoid invalid\n").unwrap();
+
+        let mut project = VirtualProject::new(&app).unwrap();
+        project.set_tsconfig_path(Some(app.join("tsconfig.json")));
+        project.set_declaration_roots(&[entry.clone(), outside.clone()]);
+        project.register_path(&entry).unwrap();
+        project.register_path(&outside).unwrap();
+
+        let program = project.topology_program_files();
+        assert!(
+            program.iter().all(|path| !path.ends_with("index.ts")),
+            "out-of-root script joined the program: {program:?}"
+        );
+        assert!(
+            project
+                .registered_original_paths_sorted()
+                .iter()
+                .any(|path| path.ends_with("index.ts")),
+            "out-of-root script was not registered"
+        );
+        let _ = fs::remove_dir_all(&root);
+    }
 }

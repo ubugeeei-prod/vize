@@ -60,6 +60,11 @@ pub(in super::super) fn included_sources(
         if !path.is_file() {
             continue;
         }
+        // Generated `.d.ts` keeps its authored path. Mirroring it loads the
+        // module twice (#2047).
+        if crate::batch::declaration_path::is_declaration_file(path) {
+            continue;
+        }
         let Some(kind) = included_source_kind(path) else {
             continue;
         };

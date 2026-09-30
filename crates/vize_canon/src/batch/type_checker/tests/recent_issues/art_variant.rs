@@ -54,8 +54,10 @@ const title = "heading"
         return;
     };
 
-    let normal = label_mismatch(&snapshot, "src/Normal.vue");
-    let art = label_mismatch(&snapshot, "src/Button.art.vue");
+    let normal = prop_type_mismatch(&snapshot, "src/Normal.vue");
+    let art = prop_type_mismatch(&snapshot, "src/Button.art.vue");
+    // The art file wraps the same element in `<variant>`, so the authored
+    // line differs. The contract is the same TS2322 text (#7219).
     assert_eq!(
         art, normal,
         "variant prop errors must match the template, got: {snapshot:#?}"
@@ -74,10 +76,12 @@ const title = "heading"
     );
 }
 
-fn label_mismatch(snapshot: &[(String, Option<u32>, String)], file: &str) -> Option<(u32, String)> {
+fn prop_type_mismatch(snapshot: &[(String, Option<u32>, String)], file: &str) -> Option<String> {
     snapshot.iter().find_map(|(candidate, code, message)| {
-        if candidate == file && message.contains("label") {
-            code.map(|code| (code, message.clone()))
+        if candidate == file && *code == Some(2322) && message.contains("not assignable") {
+            message
+                .split_once(":error ")
+                .map(|(_, body)| String::from(body))
         } else {
             None
         }

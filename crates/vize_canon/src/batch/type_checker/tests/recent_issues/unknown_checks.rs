@@ -15,8 +15,18 @@ import Child from './Child.vue'
 const CHILD: &str = r#"<script setup lang="ts">
 defineProps<{ label: string }>()
 </script>
-<template><span>{{ label }}</span></template>
+<template><span>{{ label }}</span><i /></template>
 "#;
+
+/// This fixture opts into the registries and a closed element map. The shared
+/// Vue stub leaves both absent: a missing `GlobalComponents` stays an ignored
+/// `TS2694`, and an open `NativeElements` index would accept `extra`.
+const REGISTRIES: &str = r#"
+export interface GlobalComponents {}
+export interface GlobalDirectives {}
+"#;
+const CLOSED_NATIVE_ELEMENTS: &str = "\
+export interface NativeElements { span: { id?: string }; i: { id?: string } }";
 
 fn tsconfig(vue_compiler_options: &str) -> String {
     if vue_compiler_options.is_empty() {
@@ -48,6 +58,14 @@ fn diagnostics_for(
         tsconfig(vue_compiler_options).as_str(),
     )
     .unwrap();
+    let runtime = root.join("node_modules/@vue/runtime-dom/index.d.ts");
+    let mut types = std::fs::read_to_string(&runtime).unwrap();
+    types = types.replace(
+        "export type NativeElements = Record<string, Record<string, unknown>>;",
+        CLOSED_NATIVE_ELEMENTS,
+    );
+    types.push_str(REGISTRIES);
+    std::fs::write(&runtime, types).unwrap();
     snapshot_project_diagnostics(&root)
 }
 

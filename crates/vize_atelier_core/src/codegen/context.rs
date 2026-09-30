@@ -247,30 +247,35 @@ impl CodegenContext {
         self.newline();
     }
 
-    /// Add newline with proper indentation.
-    ///
-    /// Shallow levels are one literal push. Deeper trees repeat a 128-space
-    /// run so the bytes stay the same as a per-level `"  "`.
+    /// Add a newline and the current indent. The space run is outlined so a
+    /// wide literal is not copied into every caller.
     #[inline(always)]
     pub fn newline(&mut self) {
-        const SPACES: &str = "                                                                                                                                ";
         self.out.push_char('\n');
-        match self.indent_level {
-            0 => {}
-            1 => self.out.push_str("  "),
-            2 => self.out.push_str("    "),
-            3 => self.out.push_str("      "),
-            4 => self.out.push_str("        "),
-            5 => self.out.push_str("          "),
-            6 => self.out.push_str("            "),
+        let level = self.indent_level;
+        if level != 0 {
+            Self::write_indent(&mut self.out, level);
+        }
+    }
+
+    #[inline(never)]
+    fn write_indent(out: &mut EmitDocument, level: u32) {
+        const SPACES: &str = "                                                                                                                                ";
+        match level {
+            1 => out.push_str("  "),
+            2 => out.push_str("    "),
+            3 => out.push_str("      "),
+            4 => out.push_str("        "),
+            5 => out.push_str("          "),
+            6 => out.push_str("            "),
             level => {
                 let mut spaces = (level as usize).saturating_mul(2);
                 while spaces > SPACES.len() {
-                    self.out.push_str(SPACES);
+                    out.push_str(SPACES);
                     spaces -= SPACES.len();
                 }
                 if let Some(indent) = SPACES.get(..spaces) {
-                    self.out.push_str(indent);
+                    out.push_str(indent);
                 }
             }
         }

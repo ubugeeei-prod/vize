@@ -291,18 +291,19 @@ impl VirtualProject {
         jsx_files::needs_vue_jsx_compiler_options(self)
     }
 
-    /// Declaration roots are program files. A diagnosed script that is not a
-    /// root still has to be in `include`: the diagnostic pass asks for it, and
-    /// a relative import of a file the program does not contain is `TS2307`.
-    /// Non-root `.d.ts` files stay out so they cannot shadow a package.
+    /// In-project roots and diagnosed scripts join `include` (#7217).
+    /// Out-of-root mirrors stay out: the import already loads that script,
+    /// and a second copy is `TS2451`. Non-root `.d.ts` files stay out.
     fn virtual_file_is_program_member(&self, file: &super::VirtualFile) -> bool {
         let original = vize_carton::path::canonicalize_non_verbatim(&file.original_path);
-        if self.is_declaration_root(&original) {
-            return true;
+        if !original.starts_with(&self.project_root) {
+            return false;
         }
-        self.source_file_policy()
-            .accepts_diagnostic_input(&file.virtual_path)
-            && !crate::batch::declaration_path::is_declaration_file(&original)
+        self.is_declaration_root(&original)
+            || (self
+                .source_file_policy()
+                .accepts_diagnostic_input(&file.virtual_path)
+                && !crate::batch::declaration_path::is_declaration_file(&original))
     }
 
     pub(super) fn include_paths(
