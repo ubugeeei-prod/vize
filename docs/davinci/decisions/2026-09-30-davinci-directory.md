@@ -40,8 +40,12 @@ Four benchmark fixture digests change because those probes identify their own
 source file, whose location labels changed. Three identical measurements from
 [Actions](https://github.com/ubugeeei-prod/vize/actions/runs/36679539802) stayed
 within every existing instruction ceiling. Only these source digests are
-refreshed; numeric ceilings and measurement methodology are unchanged. Fresh
-Actions and the protected merge queue must validate the final foundation move.
+refreshed; numeric ceilings and measurement methodology are unchanged. The final foundation move passed PR Actions and the protected merge queue in
+[#7271](https://github.com/ubugeeei-prod/vize/pull/7271), merged as
+`507ac3cc683c044fc136016cd4bfb7d3bde44965`. The fresh-main
+[dependency job](https://github.com/ubugeeei-prod/vize/actions/runs/36697179934/job/109827822993)
+passed with an empty allowlist and no normal/build reverse paths, satisfying
+[#6831](https://github.com/ubugeeei-prod/vize/issues/6831).
 
 Replay directory and ownership moves on fresh main:
 

@@ -1,6 +1,6 @@
 # Retire the historical dump driver host
 
-Decision for [#6832](https://github.com/ubugeeei-prod/vize/issues/6832), prepared locally on 2026-09-29. This decision is not merged until its PR passes Actions and the protected merge queue.
+Decision for [#6832](https://github.com/ubugeeei-prod/vize/issues/6832), prepared on 2026-09-29 and rebased onto directory-separated main `507ac3cc683c044fc136016cd4bfb7d3bde44965` on 2026-09-30. This decision is not merged until its PR passes Actions and the protected merge queue.
 
 `vize dump` is the product-facing host. Its `--all-levels --json` output comes from the compiler invocation that produced the selected output, and `--pipeline` selects an actual DOM, SSR, or Vapor backend. The retired `davinci-opt` program instead accepted arbitrary pipeline names and bound them to optional no-op passes over a supplied dump. Rebinding that historical behavior under `vize dump` would report unexecuted compiler work, so the new CLI rejects named pass expressions.
 
