@@ -500,12 +500,9 @@ fn collect_component_registrations_from_components_object<'a>(
                 };
                 let pair = (CompactString::new(name), CompactString::new(local_name));
                 if seen.insert(pair.clone()) {
-                    let span = property.key.span();
                     result.component_registrations.push(ComponentRegistration {
                         name: pair.0,
                         local_name: pair.1,
-                        start: span.start,
-                        end: span.end,
                     });
                 }
             }

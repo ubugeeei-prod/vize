@@ -95,7 +95,10 @@ impl NoUnusedComponents {
         matches!(binding_type, BindingType::SetupConst)
     }
 
-    fn component_candidates(analysis: &Croquis) -> Vec<ComponentCandidate> {
+    fn component_candidates(
+        analysis: &Croquis,
+        script_source: Option<&str>,
+    ) -> Vec<ComponentCandidate> {
         let mut candidates = Vec::new();
 
         for scope in analysis
@@ -122,7 +125,8 @@ impl NoUnusedComponents {
                 registration.name.as_str(),
                 registration.local_name.as_str(),
                 false,
-                Some((registration.start, registration.end)),
+                script_source
+                    .and_then(|source| registration_key_span(source, registration.name.as_str())),
             );
         }
 
@@ -173,7 +177,11 @@ impl Rule for NoUnusedComponents {
                 return;
             };
 
-            let registered_components = Self::component_candidates(analysis);
+            let script_source = ctx
+                .sfc_descriptor()
+                .and_then(|descriptor| descriptor.script.as_ref())
+                .map(|script| script.content.as_ref());
+            let registered_components = Self::component_candidates(analysis, script_source);
 
             let import_statement_ranges = analysis
                 .import_statements
@@ -246,6 +254,34 @@ impl Rule for NoUnusedComponents {
             }
         }
     }
+}
+
+fn registration_key_span(source: &str, name: &str) -> Option<(u32, u32)> {
+    let from = source.find("components").unwrap_or(0);
+    let property_key = |start: usize| {
+        source[start..]
+            .match_indices(name)
+            .find_map(|(relative, _)| {
+                let at = start + relative;
+                let previous = source[..at].trim_end().chars().next_back();
+                let next = source[at + name.len()..].trim_start().chars().next();
+                let starts_line = source[..at]
+                    .rsplit_once('\n')
+                    .is_some_and(|(_, line)| line.trim().is_empty());
+                ((starts_line || matches!(previous, Some('{' | ',' | '\'' | '"')))
+                    && matches!(next, Some(':' | ',' | '}' | '\'' | '"')))
+                .then_some(at)
+            })
+    };
+    let at = property_key(from).or_else(|| property_key(0)).or_else(|| {
+        source.match_indices(name).find_map(|(at, _)| {
+            let before = source[..at].chars().next_back();
+            let after = source[at + name.len()..].chars().next();
+            let ident = |ch: char| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$';
+            (!before.is_some_and(ident) && !after.is_some_and(ident)).then_some(at)
+        })
+    })?;
+    Some((at as u32, (at + name.len()) as u32))
 }
 
 fn push_component_candidate(

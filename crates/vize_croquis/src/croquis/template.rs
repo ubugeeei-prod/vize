@@ -47,9 +47,6 @@ pub struct ComponentRegistration {
     pub name: CompactString,
     /// Local script binding referenced by the registration.
     pub local_name: CompactString,
-    /// Registration key span relative to the plain script block.
-    pub start: u32,
-    pub end: u32,
 }
 
 /// Information about element IDs in template (for cross-file uniqueness checking).

@@ -26,8 +26,6 @@ fn semantic_summary_collects_template_and_export_counts() {
     croquis.component_registrations.push(ComponentRegistration {
         name: CompactString::new("Child"),
         local_name: CompactString::new("Child"),
-        start: 0,
-        end: 5,
     });
     croquis.component_usages.push(ComponentUsage {
         name: CompactString::new("Child"),
