@@ -180,6 +180,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     });
     let sfc_context = SfcScriptContext {
         is_sfc: true,
+        is_script_setup: false,
         template_source: descriptor
             .template
             .as_ref()
