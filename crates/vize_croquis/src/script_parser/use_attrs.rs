@@ -42,7 +42,9 @@ pub(super) fn has_vue_use_attrs_call(
         let span = statement.span();
         if source
             .get(span.start as usize..span.end as usize)
-            .is_some_and(|text| candidate_names.iter().any(|name| text.contains(name)))
+            .is_some_and(|text| {
+                text.contains('\\') || candidate_names.iter().any(|name| text.contains(name))
+            })
         {
             visitor.visit_statement(statement);
             if visitor.found {
