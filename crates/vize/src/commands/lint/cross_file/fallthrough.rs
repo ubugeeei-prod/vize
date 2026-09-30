@@ -50,7 +50,7 @@ pub(super) fn apply<S: AsRef<str>>(
         };
         if child.template_info.uses_attrs
             || child.template_info.binds_attrs_explicitly
-            || child.script_uses_attrs
+            || child_offsets.script_uses_attrs
         {
             continue;
         }

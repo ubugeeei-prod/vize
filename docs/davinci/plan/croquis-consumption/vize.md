@@ -15,19 +15,19 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis`                             | type  | `croquis`      |     1 |     1 |
 | `EffectGraphScript`                   | type  | `effect_graph` |     1 |     2 |
 | `build_effect_graph_from_sfc_scripts` | type  | `effect_graph` |     1 |     1 |
-| `Croquis.script_uses_attrs`           | field | `croquis`      |     1 |     1 |
 | `Croquis.template_info`               | field | `croquis`      |     1 |     3 |
 
 ## Non-product `vize_croquis` imports
 
-| item                   | files | sites |
-| ---------------------- | ----: | ----: |
-| `BlockLocation`        |     1 |     1 |
-| `SfcDescriptor`        |     3 |     5 |
-| `SfcParseOptions`      |    12 |    15 |
-| `SfcScriptBlock`       |     1 |     1 |
-| `component_usage_list` |     1 |     1 |
-| `to_pascal_case`       |     1 |     1 |
+| item                    | files | sites |
+| ----------------------- | ----: | ----: |
+| `BlockLocation`         |     1 |     1 |
+| `SfcDescriptor`         |     3 |     5 |
+| `SfcParseOptions`       |    12 |    15 |
+| `SfcScriptBlock`        |     1 |     1 |
+| `component_usage_list`  |     1 |     1 |
+| `source_uses_vue_attrs` |     1 |     2 |
+| `to_pascal_case`        |     1 |     1 |
 
 ## Naive grep disagreements (resolved/grep)
 
@@ -38,8 +38,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis`                             |        1 |    3 |
 | `EffectGraphScript`                   |        2 |    3 |
 | `Scope`                               |        0 |    1 |
-| `Span`                                |        0 |    6 |
+| `Span`                                |        0 |    9 |
 | `build_effect_graph_from_sfc_scripts` |        1 |    2 |
 | `Croquis.bindings`                    |        0 |    2 |
 | `Croquis.scopes`                      |        0 |    1 |
+| `Croquis.template_info`               |        3 |    4 |
 | `Croquis.types`                       |        0 |    3 |
+| `Croquis.unused_bindings`             |        0 |    1 |

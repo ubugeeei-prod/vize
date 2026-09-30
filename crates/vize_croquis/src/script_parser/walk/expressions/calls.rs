@@ -19,8 +19,6 @@ pub(in crate::script_parser) fn walk_call_arguments(
     detect_provide_inject_call(result, call, source);
     if !result.skip_diagnostics {
         detect_race_condition_call(result, call, source);
-    } else if let Expression::Identifier(id) = &call.callee {
-        result.uses_attrs_call |= id.name == "useAttrs";
     }
     detect_call_argument_reactivity_loss(result, call, source);
     super::super::super::extract::check_reactive_plain_call_mutation(result, call, source);

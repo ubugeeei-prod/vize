@@ -25,6 +25,7 @@ pub(super) struct CrossFileSourceOffsets {
     pub(super) script: u32,
     pub(super) template: u32,
     pub(super) fallthrough_root: Option<FallthroughRoot>,
+    pub(super) script_uses_attrs: bool,
 }
 
 pub(super) fn analyze_sfc_for_cross_file(
@@ -72,6 +73,22 @@ pub(super) fn analyze_sfc_for_cross_file(
     } else {
         analyze_sfc_descriptor(&descriptor, None, SfcCroquisOptions::full())
     };
+
+    if offsets.fallthrough_root.is_some() || analysis.template_info.inherit_attrs_disabled {
+        offsets.script_uses_attrs = descriptor.script.as_ref().is_some_and(|script| {
+            vize_croquis::script_parser::source_uses_vue_attrs(
+                script.content.as_ref(),
+                false,
+                matches!(script.lang.as_deref(), Some("jsx" | "tsx")),
+            )
+        }) || descriptor.script_setup.as_ref().is_some_and(|script| {
+            vize_croquis::script_parser::source_uses_vue_attrs(
+                script.content.as_ref(),
+                true,
+                matches!(script.lang.as_deref(), Some("jsx" | "tsx")),
+            )
+        });
+    }
 
     Some((analysis, offsets))
 }

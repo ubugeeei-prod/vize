@@ -115,7 +115,6 @@ pub(crate) fn analyze_script_setup_program_skipping(
             process::process_statement(&mut result, stmt, source);
         }
     });
-    result.uses_attrs_call = super::use_attrs::has_vue_use_attrs_call(&result, program, source);
 
     // After every binding is known, demote any `type` / `interface` that
     // references a setup-scope value via `typeof` so the virtual TS keeps
@@ -281,8 +280,6 @@ pub(crate) fn parse_script_with_options_source_type(
             process::process_statement(&mut result, stmt, source);
         }
     });
-    result.uses_attrs_call =
-        super::use_attrs::has_vue_use_attrs_call(&result, &ret.program, source);
 
     // Mirror the setup path so non-setup scripts also keep typeof-anchored
     // types adjacent to their value bindings in any downstream emitters.

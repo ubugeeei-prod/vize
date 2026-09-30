@@ -31,6 +31,8 @@ mod unused;
 mod use_attrs;
 mod walk;
 
+pub use use_attrs::source_uses_vue_attrs;
+
 pub use define_art::parse_define_art;
 pub use parse::{
     analyze_script_setup_program, parse_script, parse_script_setup,

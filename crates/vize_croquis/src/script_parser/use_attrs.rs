@@ -1,21 +1,39 @@
 //! Recognize Vue's `useAttrs` helper after all imports and bindings are known.
 
+use oxc_allocator::Allocator;
 use oxc_ast::ast::{CallExpression, Expression, Program};
 use oxc_ast_visit::{Visit, walk};
-use oxc_span::GetSpan;
+use oxc_span::{GetSpan, SourceType};
 
-use super::ScriptParseResult;
+use super::{
+    ScriptParseResult, ScriptParserOptions, parse_script_setup_with_generic_and_jsx,
+    parse_script_with_options_and_jsx,
+};
+
+/// Check for Vue's `useAttrs` only when a consumer needs the answer. The
+/// ordinary Croquis script walk stays independent of this cross-file lint fact.
+pub fn source_uses_vue_attrs(source: &str, setup: bool, jsx: bool) -> bool {
+    if !source.contains("useAttrs") && !source.contains('\\') {
+        return false;
+    }
+
+    let result = if setup {
+        parse_script_setup_with_generic_and_jsx(source, None, jsx)
+    } else {
+        parse_script_with_options_and_jsx(source, ScriptParserOptions::default(), jsx)
+    };
+    let allocator = Allocator::default();
+    let path = if jsx { "script.tsx" } else { "script.ts" };
+    let source_type = SourceType::from_path(path).unwrap_or_default();
+    let parsed = super::recovery::parse_program_for_analysis(&allocator, source, source_type);
+    !parsed.panicked && has_vue_use_attrs_call(&result, &parsed.program, source)
+}
 
 pub(super) fn has_vue_use_attrs_call(
     result: &ScriptParseResult,
     program: &Program<'_>,
     source: &str,
 ) -> bool {
-    // The first AST walk records unimported calls and Vue imports. Skip the
-    // second walk entirely for unrelated scripts.
-    if !result.uses_attrs_call {
-        return false;
-    }
     let mut candidate_names = vec!["useAttrs"];
     for (local, import_source) in &result.import_sources {
         if import_source.as_str() == "vue"

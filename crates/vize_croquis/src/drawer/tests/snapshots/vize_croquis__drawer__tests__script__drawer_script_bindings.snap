@@ -1281,7 +1281,6 @@ Croquis {
         content_start: 0,
         content_end: 0,
     },
-    script_uses_attrs: false,
     used_components: {},
     component_registrations: [],
     component_usages: [],
