@@ -54,11 +54,11 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `FactConsumer`               |     1 |     4 |
 | `FactGroup`                  |     1 |     1 |
 | `InjectEntry`                |     4 |     8 |
-| `InjectPattern`              |     4 |    17 |
+| `InjectPattern`              |     3 |    13 |
 | `MacroKind`                  |     1 |     1 |
 | `PropDefinition`             |     3 |     3 |
 | `ProvideEntry`               |     2 |     7 |
-| `ProvideKey`                 |     9 |    49 |
+| `ProvideKey`                 |     9 |    52 |
 | `RaceConditionRisk`          |     2 |     4 |
 | `RaceConditionRiskKind`      |     2 |     3 |
 | `ReactiveKind`               |     5 |    33 |
@@ -72,7 +72,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `component_identity`         |     1 |     1 |
 | `component_usage_list`       |     9 |    14 |
 | `composable_calls`           |     2 |     2 |
-| `inject_entries`             |     7 |    17 |
+| `inject_entries`             |     6 |    16 |
 | `parse_sfc`                  |     1 |     1 |
 | `parse_sfc_without_css_vars` |     1 |     1 |
 | `provide_entries`            |     4 |     7 |
@@ -84,7 +84,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `reactivity_sources`         |     2 |     2 |
 | `to_pascal_case`             |     1 |     2 |
 | `used_component_contains`    |     1 |     1 |
-| `used_component_name_list`   |     4 |     6 |
+| `used_component_name_list`   |     5 |     7 |
 
 ## Naive grep disagreements (resolved/grep)
 
@@ -92,7 +92,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | -------------------------------------- | -------: | ---: |
 | `Analyzer`                             |       42 |   52 |
 | `AnalyzerOptions`                      |       21 |   61 |
-| `ComponentUsage`                       |       38 |   85 |
+| `ComponentUsage`                       |       38 |   86 |
 | `Croquis`                              |       97 |  125 |
 | `EffectGraphScript`                    |        1 |    2 |
 | `EffectGraphSummary`                   |       19 |   31 |
@@ -106,7 +106,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeKind`                            |        8 |    9 |
 | `SlotUsage`                            |        2 |    7 |
 | `Span`                                 |        0 |   36 |
-| `Symbol`                               |        0 |   30 |
+| `Symbol`                               |        0 |   31 |
 | `SymbolId`                             |        0 |    6 |
 | `TemplateExpression`                   |        1 |    2 |
 | `TemplateExpressionKind`               |        1 |    2 |
