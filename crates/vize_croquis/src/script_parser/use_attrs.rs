@@ -11,9 +11,9 @@ pub(super) fn has_vue_use_attrs_call(
     program: &Program<'_>,
     source: &str,
 ) -> bool {
-    // Both an aliased import and a namespace member contain this export name.
-    // Avoid a second AST walk for the usual case without useAttrs.
-    if !source.contains("useAttrs") {
+    // The first pass records direct/member calls and Vue useAttrs imports.
+    // Avoid scanning a whole script when none of those AST facts appeared.
+    if !result.uses_attrs_call {
         return false;
     }
     let mut candidate_names = vec!["useAttrs"];
