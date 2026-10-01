@@ -17,11 +17,13 @@ use super::{Embed, EmbedSource, Grammar, Lang, Shape, SourceError};
 mod admission;
 mod coordinates;
 mod handoff;
+mod params;
 mod shapes;
 mod views;
 pub use admission::NATIVE_SYNTAX_UNIT_LIMIT;
 use coordinates::Coordinates;
 pub use handoff::RetainedExpression;
+pub use params::RetainedSlotParams;
 use shapes::Wrapper;
 pub use shapes::{HandlerBodyView, SlotParamsView};
 pub use views::{CommentView, DiagnosticLabel, DiagnosticView};
@@ -152,6 +154,16 @@ impl<'a> NativeSyntax<'a> {
         allocator: &'a Allocator,
     ) -> Result<RetainedExpression<'a>, Box<Self>> {
         handoff::into_expression(self, allocator)
+    }
+
+    /// Retain authored binding roots at the allocator's lifetime without
+    /// exposing the generated arrow or parameter-list container. Wrong shapes
+    /// return their original artifact intact; local holes keep observations.
+    pub fn into_slot_params(
+        self,
+        allocator: &'a Allocator,
+    ) -> Result<RetainedSlotParams<'a>, Box<Self>> {
+        params::into_slot_params(self, allocator)
     }
 }
 
