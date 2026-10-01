@@ -23,3 +23,10 @@ raw strict-reactivity rule activation/disable tests, and serialized Vite+ config
 with an exact Oxlint argument vector. Required Actions must pass on the PR and
 merge-group candidate before completion. No product provider is promoted and
 no performance or differential budget is loosened.
+
+The public-key audit follows `serde(flatten)` owners instead of counting the
+private `execution` field as a serialized key. It includes all fields of the
+typed execution options in each Pkl/schema/TypeScript comparison. Maestro reads
+strict-reactivity rules today; its existing cross-file lint gate still logs an
+unfinished analyzer integration. This change does not claim editor cross-file
+lint parity with the native CLI.
