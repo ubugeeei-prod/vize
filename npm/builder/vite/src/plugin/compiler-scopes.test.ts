@@ -207,8 +207,11 @@ void test("public plugin config resolution applies compiler entries to productio
         : plugin.configResolved!.handler;
     await resolve.call({} as never, resolved);
     const load = typeof plugin.load === "function" ? plugin.load : plugin.load!.handler;
-    const result = await load.call({} as never, toVirtualId(filename, ssr), { ssr });
+    const watched: string[] = [];
+    const context = { addWatchFile: (file: string) => watched.push(file) };
+    const result = await load.call(context as never, toVirtualId(filename, ssr), { ssr });
     assert.ok(result);
+    assert.deepEqual(watched, [filename]);
     return result;
   }
   const mixed: ResolvedVizeConfig = {
