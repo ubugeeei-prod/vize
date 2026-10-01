@@ -160,7 +160,7 @@ impl ServerState {
 
     /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.
     pub fn load_workspace_config(&self, dir: &Path) {
-        let loaded = vize_l0::config::load_lsp_config_snapshot(Some(dir));
+        let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
             let config = loaded.config;
@@ -187,7 +187,7 @@ impl ServerState {
 
     /// Load LSP options from `vize.config.pkl` (preferred) or `vize.config.json`.
     pub fn load_lsp_config(&self, dir: &Path) {
-        let loaded = vize_l0::config::load_lsp_config_snapshot(Some(dir));
+        let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
             let config = loaded.config;
@@ -217,7 +217,7 @@ impl ServerState {
     /// Load format options from `vize.config.json` in the given directory.
     #[cfg(feature = "glyph")]
     pub fn load_format_config(&self, dir: &Path) {
-        let loaded = vize_l0::config::load_config_with_source(Some(dir));
+        let loaded = vize_carton::config::load_config_with_source(Some(dir));
         if let Some(source_path) = loaded.source_path {
             *self.format_options.write() = format_options_from_config(&loaded.config.formatter);
             tracing::info!("Loaded format config from {}", source_path.display());

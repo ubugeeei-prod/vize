@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse as parseToml } from "@iarna/toml";
+import { withoutHostRuntimeReferences } from "./davinci-host-imports.ts";
 import { readMetadata as readCargoMetadata } from "../../../tools/support/compat/davinci/level-dependencies.mjs";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -137,7 +138,7 @@ export function assertL0AliasConsumer(options: {
     if (!filter(fullPath)) continue;
     const source = fs.readFileSync(fullPath, "utf8");
     const storageSource = hostRuntime
-      ? source.replace(/\bvize_carton::corsa_(?:api_mode|resolver)\b/gu, "host_runtime")
+      ? withoutHostRuntimeReferences(source, path.relative(repoRoot, fullPath))
       : source;
     if (/\bvize_carton::|use vize_carton\b/u.test(storageSource)) {
       offenders.push(path.relative(repoRoot, fullPath));

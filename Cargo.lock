@@ -4723,7 +4723,6 @@ dependencies = [
  "oxc_allocator",
  "oxc_syntax",
  "phf 0.13.1",
- "pklrust",
  "rustc-hash",
  "serde",
  "serde_json",

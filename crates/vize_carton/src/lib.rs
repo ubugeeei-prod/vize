@@ -2,6 +2,8 @@
 //! Canonical implementations live in `vize_l0`.
 pub use vize_l0::*;
 
+pub mod config;
+
 #[cfg(not(target_arch = "wasm32"))]
 pub mod corsa_api_mode;
 #[cfg(not(target_arch = "wasm32"))]
