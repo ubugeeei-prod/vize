@@ -54,7 +54,13 @@ impl<'a> SsrCodegenContext<'a> {
     ) -> String {
         if let Some(value) = self.model_attr_value(el, "true-value") {
             self.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
-            cstr!("_ssrLooseEqual({exp}, {value})")
+            self.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+            let input_value = self
+                .model_attr_value(el, "value")
+                .unwrap_or_else(|| "null".to_compact_string());
+            cstr!(
+                "Array.isArray({exp}) ? _ssrLooseContain({exp}, {input_value}) : _ssrLooseEqual({exp}, {value})"
+            )
         } else {
             self.use_ssr_helper(RuntimeHelper::SsrLooseContain);
             let value = self

@@ -76,7 +76,13 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
     fn checkbox_model_checked(&mut self, attached: &Attached<'_, '_>, exp: &str) -> Result<String> {
         if let Some(value) = self.model_attr_value(attached, "true-value")? {
             self.ctx.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
-            Ok(cstr!("_ssrLooseEqual({exp}, {value})"))
+            self.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+            let input_value = self
+                .model_attr_value(attached, "value")?
+                .unwrap_or_else(|| "null".to_compact_string());
+            Ok(cstr!(
+                "Array.isArray({exp}) ? _ssrLooseContain({exp}, {input_value}) : _ssrLooseEqual({exp}, {value})"
+            ))
         } else {
             self.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
             let value = self
