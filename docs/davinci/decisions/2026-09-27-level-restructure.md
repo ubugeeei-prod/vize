@@ -163,9 +163,7 @@ See the [l4: emission decisions](./2026-09-27-level-restructure-designs.md#l4-em
 
 ## Script side
 
-See the [script side decisions](./2026-09-27-level-restructure-designs.md#script-side) in the companion record.
-
-[Production expression allocation guard](./2026-10-01-expression-fuzz-allocation.md) records #7350's exact OOM reproducer and malformed slash-escape boundary, preserving the existing parser budgets.
+See the [script side decisions](./2026-09-27-level-restructure-designs.md#script-side) in the companion record and the [production expression allocation guard](./2026-10-01-expression-fuzz-allocation.md) for #7350's exact OOM reproducer and malformed slash-escape boundary, preserving the existing parser budgets.
 
 ## Dialects, languages, frameworks
 
