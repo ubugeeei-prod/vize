@@ -5,8 +5,6 @@
 
 mod block_identity;
 mod format;
-#[cfg(test)]
-pub use format::format_script_content_with_source_type;
 
 use crate::error::FormatError;
 use crate::options::FormatOptions;
@@ -29,7 +27,7 @@ pub fn format_script_content(
     options: &FormatOptions,
     _allocator: &Allocator,
 ) -> Result<String, FormatError> {
-    format_script_content_with_source_type(
+    format::format_script_content_with_source_type(
         source,
         options,
         _allocator,
@@ -185,10 +183,8 @@ fn format_js_expression_with_quote_style(
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        Allocator, FormatOptions, format_js_expression, format_script_content,
-        format_script_content_with_source_type,
-    };
+    use super::format::format_script_content_with_source_type;
+    use super::{Allocator, FormatOptions, format_js_expression, format_script_content};
     use oxc_span::SourceType;
     use vize_l0::String;
 
