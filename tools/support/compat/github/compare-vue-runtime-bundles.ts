@@ -8,6 +8,9 @@ type Timing = {
   production: boolean;
   cache: "built" | "hit" | "bypassed";
   inputMs: number;
+  inventoryMs: number;
+  hashMs: number;
+  abiMs: number;
   buildMs: number;
   bundleSha256: string;
   inputSha256: string | null;
@@ -119,6 +122,10 @@ for (const production of [false, true]) {
       freshProcesses: 27,
       builds: records.filter((record) => record.buildMs > 0).length,
       fingerprintMs: records.reduce((sum, record) => sum + record.inputMs, 0),
+      inventoryMs: records.reduce((sum, record) => sum + record.inventoryMs, 0),
+      hashMs: records.reduce((sum, record) => sum + record.hashMs, 0),
+      abiMs: records.reduce((sum, record) => sum + record.abiMs, 0),
+      inputFiles: records[0].inputFileCount,
       bundlingMs: records.reduce((sum, record) => sum + record.buildMs, 0),
       bundleSha256: expectedBundle,
     };

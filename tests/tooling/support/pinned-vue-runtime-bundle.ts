@@ -21,6 +21,9 @@ export async function pinnedVueRuntimeBundle(production: boolean) {
   const initialEnv = { ...process.env };
   const context = boundedRuntimeEnvironment(realpathSync(process.cwd()), initialEnv);
   let inputMs = 0,
+    inventoryMs = 0,
+    hashMs = 0,
+    abiMs = 0,
     buildMs = 0,
     inputFiles: string[] = [],
     identity: Record<string, unknown> | null = null;
@@ -28,6 +31,7 @@ export async function pinnedVueRuntimeBundle(production: boolean) {
     if (initialEnv.VIZE_VUE_RUNTIME_BUNDLE_CACHE === "off" || context === null) return null;
     const start = performance.now();
     try {
+      const inventoryStart = performance.now();
       const packages = packageInputFiles([vueVaporRuntimeEntry, fromRoot.resolve("vite-plus")]);
       const helpers = readdirSync(import.meta.dirname)
         .filter((name) => /\.(?:mjs|ts)$/.test(name))
@@ -48,6 +52,15 @@ export async function pinnedVueRuntimeBundle(production: boolean) {
         ...manifests,
         ...context.envFiles.map(({ path }) => path),
       ];
+      inventoryMs += performance.now() - inventoryStart;
+      const abiStart = performance.now();
+      const glibc =
+        (process.report.getReport() as { header?: { glibcVersionRuntime?: string } }).header
+          ?.glibcVersionRuntime ?? null;
+      abiMs += performance.now() - abiStart;
+      const hashStart = performance.now();
+      const files = fingerprintFiles(inputFiles);
+      hashMs += performance.now() - hashStart;
       identity = {
         options,
         context,
@@ -60,10 +73,8 @@ export async function pinnedVueRuntimeBundle(production: boolean) {
         nodeVersions: process.versions,
         nodeTarget: process.config.variables.node_target_type,
         shlibSuffix: process.config.variables.shlib_suffix,
-        glibc:
-          (process.report.getReport() as { header?: { glibcVersionRuntime?: string } }).header
-            ?.glibcVersionRuntime ?? null,
-        files: fingerprintFiles(inputFiles),
+        glibc,
+        files,
       };
       return identity;
     } catch {
@@ -118,6 +129,9 @@ export async function pinnedVueRuntimeBundle(production: boolean) {
         cwd: process.cwd(),
         cache: bundle.cache,
         inputMs,
+        inventoryMs,
+        hashMs,
+        abiMs,
         buildMs,
         versions,
         modules: bundle.modules,

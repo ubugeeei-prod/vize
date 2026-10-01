@@ -56,9 +56,28 @@ reuse disabled, cold and warm in both development and production. Each phase
 requires all 27 distinct subprocesses, the unchanged parity assertions and
 byte-identical bundles. Cold phases require one actual build and 26 hits; warm
 phases require 27 hits. Logs, complete receipts and separate fingerprint/bundling
-durations are retained. Fourteen synthetic laws pass; actual rc.9 runtime and
-timing results remain pending until these Actions finish.
+durations are retained. Fourteen synthetic laws pass.
 No existing gate, filter, retry, timeout or numerical ceiling is changed.
+
+## First controlled result and remaining acceptance
+
+[Run 36852084634](https://github.com/ubugeeei-prod/vize/actions/runs/36852084634)
+on consumer head `906b8cc9` passed all 162 fresh-process comparisons with identical
+development/production bytes, but showed a net regression:
+
+| Runtime     | Disabled |    Cold |    Warm | Warm fingerprinting | Disabled bundling |
+| ----------- | -------: | ------: | ------: | ------------------: | ----------------: |
+| Development |  90.757s | 94.753s | 94.323s |              7.577s |            4.304s |
+| Production  |   9.679s | 13.336s | 13.120s |              7.536s |            4.504s |
+
+The Stack remains unqueued. File metadata alone cannot replace actual byte
+identity: even nanosecond-shaped timestamps do not prove unique mutation times.
+The next controlled run separates Linux inventory, content hashing and ABI
+inspection costs while retaining complete fresh installed-file hashing. Any
+narrower input set must first audit the actual executable, resolution, native
+binding, harness and configuration load closure; no executable/package mutation
+may be silently ignored. Normal CI adoption requires a measured net gain in both
+modes. Otherwise the consumer must disable/remove live reuse instead of slowing CI.
 
 The two-minute whole-PR target remains unfinished. Rust archive transfer,
 duplicated native preparation and browser preparation are separate measured
