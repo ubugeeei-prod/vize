@@ -24,6 +24,9 @@ through a separate JSON probe for every case, including default fields and
 the actual internal single-pass flag.
 
 Public JSON and JSONC join the existing script, SFC, template and style APIs.
+An explicit Vue selector invokes the existing public versioned template and SFC
+APIs for Vue 2, 2.7 and 3. Its actual runtime value joins the options probe;
+unselected cases retain the existing default API and unchanged probe format.
 An expected-error observation requires an actual typed formatter error, writes
 its complete pretty Debug bytes and variant stream, and exits unsuccessfully.
 Successful output cannot satisfy an error fixture. Default success cases keep
