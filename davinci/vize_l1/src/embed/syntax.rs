@@ -8,7 +8,6 @@
 use alloc::boxed::Box;
 use oxc_ast::ast::{Expression, Program, Statement};
 use oxc_diagnostics::Diagnostics;
-use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, Span, String, expression_guard::expression_is_safe_to_parse};
 
@@ -19,6 +18,7 @@ mod coordinates;
 mod for_head;
 mod handoff;
 mod params;
+mod program;
 mod shapes;
 mod views;
 pub use admission::NATIVE_SYNTAX_UNIT_LIMIT;
@@ -28,6 +28,7 @@ pub use for_head::{
 };
 pub use handoff::RetainedExpression;
 pub use params::RetainedSlotParams;
+pub use program::{ProgramGoal, ProgramOptions, parse_program_once};
 use shapes::Wrapper;
 pub use shapes::{HandlerBodyView, SlotParamsView};
 pub use views::{CommentView, DiagnosticLabel, DiagnosticView};
@@ -55,6 +56,7 @@ pub enum EmbedHole {
 /// artifacts rather than semantic validation or resolved identifiers.
 pub struct NativeSyntax<'a> {
     grammar: Grammar,
+    source_type: SourceType,
     coordinates: Coordinates<'a>,
     program: Option<Program<'a>>,
     diagnostics: Diagnostics,
@@ -65,6 +67,7 @@ impl core::fmt::Debug for NativeSyntax<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("NativeSyntax")
             .field("grammar", &self.grammar)
+            .field("source_type", &self.source_type)
             .field("source", &self.source())
             .field("hole", &self.hole)
             .field("diagnostic_count", &self.diagnostics.len())
@@ -76,6 +79,13 @@ impl<'a> NativeSyntax<'a> {
     #[must_use]
     pub const fn grammar(&self) -> Grammar {
         self.grammar
+    }
+
+    /// The explicit compiler parse profile, retained even on a local hole.
+    /// This is never an OXC formatter-profile AST or an inferred module goal.
+    #[must_use]
+    pub const fn source_type(&self) -> SourceType {
+        self.source_type
     }
 
     #[must_use]
@@ -215,14 +225,23 @@ fn admitted_input<'a>(
 }
 
 /// Parse Program, Expr, HandlerBody or SlotParams exactly once into the shared
-/// arena. Composite shapes, Flow, inputs above the conservative token budget
-/// and inputs rejected by the shared OXC safety guard remain typed holes. Full
-/// admission, JSX/TSX and file language resolution remain unfinished. Actual
+/// arena. Program uses the ordinary parser with explicit JS/TS Module options.
+/// Wrapped shapes keep their conservative admission and OXC safety guard.
+/// Composite shapes, Flow and file language resolution remain unfinished. Actual
 /// syntax diagnostics are retained, not discarded on failure.
 pub fn parse_once<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> NativeSyntax<'a> {
+    if embed.grammar.shape == Shape::Program {
+        return parse_program_once(
+            allocator,
+            embed.source,
+            ProgramOptions::module(embed.grammar.lang),
+        );
+    }
     let wrapper = Wrapper::for_shape(embed.grammar.shape);
+    let source_type = ProgramOptions::module(embed.grammar.lang).source_type();
     let mut result = NativeSyntax {
         grammar: embed.grammar,
+        source_type,
         coordinates: Coordinates {
             source: embed.source,
             prefix: wrapper.map_or(0, |wrapper| wrapper.prefix.len() as u32),
@@ -247,11 +266,7 @@ pub fn parse_once<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> NativeSynta
             return result;
         }
     };
-    let source_type = match embed.grammar.lang {
-        Lang::Js => SourceType::mjs(),
-        Lang::Ts => SourceType::ts().with_module(true),
-    };
-    let parsed = Parser::new(allocator.as_oxc(), input, source_type).parse();
+    let parsed = program::parse_input(allocator, input, source_type);
     result.hole = if parsed.is_flow_language {
         Some(EmbedHole::UnsupportedFlow)
     } else if parsed.panicked || parsed.diagnostics.has_errors() {

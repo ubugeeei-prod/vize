@@ -58,6 +58,13 @@ doc = false
 bench = false
 
 [[bin]]
+name = "l1_program"
+path = "fuzz_targets/l1_program.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
 name = "css_parse"
 path = "fuzz_targets/css_parse.rs"
 test = false
