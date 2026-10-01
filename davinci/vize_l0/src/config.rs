@@ -19,6 +19,6 @@ pub use model::{
     ParseVueVersionError, QuoteProps, ResolvedLinterConfig,
     ResolvedLinterConfigWithConfigRuleOptions, RestrictedGlobal, RestrictedMember,
     SfcElementOrderGroup, SfcElementOrderOptions, SortImportsConfig, SortImportsSetting,
-    TemplateComponentNameCasing, TrailingComma, TypeCheckerConfig, VizeConfig, VueVersion,
+    StrictBooleanExpressionsOptions, TemplateComponentNameCasing, TrailingComma, TypeCheckerConfig, VizeConfig, VueVersion,
 };
 pub use normalize::normalize_public_config_value;
