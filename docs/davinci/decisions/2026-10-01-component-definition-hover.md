@@ -21,3 +21,5 @@ declared contract, unsaved edits and an aliased kebab tag through a barrel.
 Exact-head LSP tests and full merge-queue checks remain required.
 The packaged VS Code host compares all three hover locations with the same
 complete TypeScript contract, including the tag and the object-shaped model.
+The real-server Neovim scenario retains the same exact contract for its
+import and script references.
