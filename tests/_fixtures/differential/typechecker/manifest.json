@@ -663,6 +663,81 @@
           "sha256": "8030916c09e332cb30c2dd377f4530a1c34a6b1f7ce90c35a317fe44cdcf0588"
         }
       ]
+    },
+    {
+      "id": "typechecker/typed-import-meta/project-import-meta-types",
+      "targets": ["batch"],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "state": "active",
+      "pack": "typed-import-meta",
+      "case": "project-import-meta-types",
+      "test": "typed_import_meta_preserves_exact_authored_diagnostics",
+      "regressionCommit": "6e0f763bd0f5e986036244c2c17c9b658b0596bd",
+      "sourceRevision": "6e0f763bd0f5e986036244c2c17c9b658b0596bd",
+      "packReference": {
+        "path": "typed-import-meta/cases.json",
+        "sha256": "be70400aa044fc5c831cd7f98f60df7d84899335c2dbe70ebf623327d500a523"
+      },
+      "inputs": [
+        {
+          "file": "src/env.d.ts",
+          "path": "typed-import-meta/project-import-meta-types/src/env.d.ts.txt",
+          "sha256": "9c60e57557dcc891cdec791dc82a586ab7e0f369749cade91bec3debd20f45c7"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "typed-import-meta/project-import-meta-types/src/App.vue.txt",
+          "sha256": "6c84de921d92aa627903c1beae2a511ba63d204649427ffdd7cefcfb402f1e49"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "typed-import-meta/tsconfig.json.txt",
+          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/slot-outlet-key/declared-and-inferred-key-payload",
+      "targets": ["batch"],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "state": "active",
+      "pack": "slot-outlet-key",
+      "case": "declared-and-inferred-key-payload",
+      "test": "slot_outlet_keys_preserve_complete_project_diagnostics",
+      "regressionCommit": "c6e43ca98cbffe099a6ef323006139d796d62208",
+      "sourceRevision": "c6e43ca98cbffe099a6ef323006139d796d62208",
+      "packReference": {
+        "path": "slot-outlet-key/cases.json",
+        "sha256": "24e758d1d3dc76c122e15f0f19593e039c731c944510070d99e7b41bd3000adc"
+      },
+      "inputs": [
+        {
+          "file": "src/Declared.vue",
+          "path": "slot-outlet-key/declared-and-inferred-key-payload/src/Declared.vue.txt",
+          "sha256": "1ff0ae87a97a8a9fd22402f01424b972cbf43bae822973da1975253bf8cf77a5"
+        },
+        {
+          "file": "src/Inferred.vue",
+          "path": "slot-outlet-key/declared-and-inferred-key-payload/src/Inferred.vue.txt",
+          "sha256": "ef9942704deccd1f3e5d0e221cc52d7bf074b83f8bb96b1a4891dddf7ec3c6ba"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "slot-outlet-key/declared-and-inferred-key-payload/src/App.vue.txt",
+          "sha256": "0c7fbda6e55159c62594841b5af37327b002130039b5e3372cf01fae99b280e6"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "slot-outlet-key/tsconfig.json.txt",
+          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+        }
+      ]
     }
   ]
 }

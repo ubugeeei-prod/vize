@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "c6e43ca98cbffe099a6ef323006139d796d62208",
+  "historicalIssue": null,
+  "sourceRevision": "c6e43ca98cbffe099a6ef323006139d796d62208",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "declared-and-inferred-key-payload",
+      "inputs": [
+        {
+          "file": "src/Declared.vue",
+          "source": "declared-and-inferred-key-payload/src/Declared.vue.txt"
+        },
+        {
+          "file": "src/Inferred.vue",
+          "source": "declared-and-inferred-key-payload/src/Inferred.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "declared-and-inferred-key-payload/src/App.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

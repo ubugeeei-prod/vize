@@ -143,6 +143,28 @@ fn component_event_tuples_preserve_all_argument_diagnostics() {
     );
 }
 
+#[test]
+fn typed_import_meta_preserves_exact_authored_diagnostics() {
+    check_pack(
+        "typed-import-meta",
+        "typed_import_meta_preserves_exact_authored_diagnostics",
+        "6e0f763bd0f5e986036244c2c17c9b658b0596bd",
+        None,
+        &["project-import-meta-types"],
+    );
+}
+
+#[test]
+fn slot_outlet_keys_preserve_complete_project_diagnostics() {
+    check_pack(
+        "slot-outlet-key",
+        "slot_outlet_keys_preserve_complete_project_diagnostics",
+        "c6e43ca98cbffe099a6ef323006139d796d62208",
+        None,
+        &["declared-and-inferred-key-payload"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -164,7 +186,10 @@ fn check_pack(
     assert_eq!(pack.regression_commit, regression);
     assert_eq!(
         pack.source_revision,
-        "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943"
+        match name {
+            "typed-import-meta" | "slot-outlet-key" => regression,
+            _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
+        }
     );
     assert_eq!(pack.diagnostic_contract.position_base, 1);
     assert_eq!(pack.diagnostic_contract.positions, "authored UTF16 start");

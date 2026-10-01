@@ -15,7 +15,21 @@ export const TYPECHECKER_TESTS = {
   "unicode-reserved-props": "unicode_reserved_props_preserve_value_diagnostics",
   "reserved-expression-shapes": "reserved_prop_shapes_preserve_literal_and_member_diagnostics",
   "component-event-tuples": "component_event_tuples_preserve_all_argument_diagnostics",
+  "typed-import-meta": "typed_import_meta_preserves_exact_authored_diagnostics",
+  "slot-outlet-key": "slot_outlet_keys_preserve_complete_project_diagnostics",
 } as const;
+
+const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
+const sourceRevisions = {
+  "event-handler-narrowing": originalFixtureRevision,
+  "template-definite-assignment": originalFixtureRevision,
+  "required-props-edges": originalFixtureRevision,
+  "unicode-reserved-props": originalFixtureRevision,
+  "reserved-expression-shapes": originalFixtureRevision,
+  "component-event-tuples": originalFixtureRevision,
+  "typed-import-meta": "6e0f763bd0f5e986036244c2c17c9b658b0596bd",
+  "slot-outlet-key": "c6e43ca98cbffe099a6ef323006139d796d62208",
+} satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };
 export type Diagnostic = {
@@ -35,6 +49,7 @@ export type TypecheckerCase = {
   case: string;
   test: string;
   regressionCommit: string;
+  sourceRevision?: string;
   packReference: Artifact;
   inputs: Array<Artifact & { file: string }>;
   diagnostics: Diagnostic[];
@@ -112,7 +127,8 @@ export function loadTypecheckerManifest(manifestPath: string) {
     const pack: Pack = JSON.parse(bytes.toString("utf8"));
     assert.equal(pack.version, 1);
     assert.equal(pack.issue, 6879);
-    assert.equal(pack.sourceRevision, loaded.manifest.baseRevision);
+    assert.equal(pack.sourceRevision, sourceRevisions[fixture.pack]);
+    assert.equal(pack.sourceRevision, fixture.sourceRevision ?? loaded.manifest.baseRevision);
     assert.deepEqual(pack.diagnosticContract, contract);
     const original = pack.cases.find((item) => item.id === fixture.case);
     assert(original, "case is absent from its immutable fixture pack");

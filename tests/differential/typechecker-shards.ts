@@ -68,7 +68,7 @@ function receiptIdentity(bytes: Buffer, expected: { sha: string; tree: string })
   return receipt;
 }
 
-// Nextest emits a fixed, local JUnit format. Only this exact binary's six
+// Nextest emits a fixed, local JUnit format. Only this exact binary's registered
 // ASCII names are read; failures, skips and duplicate identities are rejected.
 export function passedFixtureTests(xml: string) {
   assert(!/<!DOCTYPE|<!ENTITY/.test(xml), "external XML declarations are unsupported");
@@ -226,7 +226,7 @@ export function aggregateTypecheckerWorkers({
     buildReceiptSha256: captures[0].archiveReceiptSha256,
     requiredStages: ["parse", "facts", "emit", "check"],
   });
-  assert.equal(report.summary.legacyMatches, 17);
+  assert.equal(report.summary.legacyMatches, loaded.cases.length);
   assert.equal(acceptance.total.nativeHandled, 0);
   assert.equal(acceptance.total.nativeEquivalent, 0);
   fs.mkdirSync(outputDir, { recursive: true });

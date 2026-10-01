@@ -29,6 +29,8 @@ const canonDeferred = [
     name: "component_event_tuples_preserve_all_argument_diagnostics",
     pack: "component-event-tuples",
   },
+  { name: "typed_import_meta_preserves_exact_authored_diagnostics", pack: "typed-import-meta" },
+  { name: "slot_outlet_keys_preserve_complete_project_diagnostics", pack: "slot-outlet-key" },
 ];
 type Step = { name?: string; run?: string };
 const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {

@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ messages: string[] }>()
+</script>
+<template>
+  <div v-for="(message, key) in messages" :key="key">
+    <slot name="message" :message="message" :key="key" />
+  </div>
+</template>
