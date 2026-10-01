@@ -176,7 +176,26 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
             (Kind::Comment, Source::Comment(comment)) => {
                 self.pos += 1;
-                if vize_l0::directive::parse_vize_directive(comment.content, 1, 0).is_none() {
+                let lint_pragma = matches!(
+                    comment
+                        .content
+                        .trim_ascii_start()
+                        .split_ascii_whitespace()
+                        .next(),
+                    Some(
+                        "eslint-disable"
+                            | "eslint-disable-line"
+                            | "eslint-disable-next-line"
+                            | "eslint-enable"
+                            | "oxlint-disable"
+                            | "oxlint-disable-line"
+                            | "oxlint-disable-next-line"
+                            | "oxlint-enable"
+                    )
+                );
+                if !lint_pragma
+                    && vize_l0::directive::parse_vize_directive(comment.content, 1, 0).is_none()
+                {
                     self.ctx.push_string_part_static("<!--");
                     self.ctx.push_string_part_static(comment.content);
                     self.ctx.push_string_part_static("-->");
