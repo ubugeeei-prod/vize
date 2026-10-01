@@ -55,7 +55,11 @@ without the builder's implicitly-closed-tag precedence. Preserve this regression
 law for the implementation:
 
 ```html
-<section><a><span><a></a><span v-pre>{{ inside }}</span>{{ tail }}</span></a></section>
+<section>
+  <a
+    ><span><a></a><span v-pre>{{ inside }}</span>{{ tail }}</span></a
+  >
+</section>
 ```
 
 Document tree rules, custom/raw delimiter framing, typed embeds, surface module
