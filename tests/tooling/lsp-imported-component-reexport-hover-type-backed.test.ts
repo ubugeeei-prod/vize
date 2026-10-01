@@ -161,7 +161,7 @@ test("script hover describes re-exported and package SFC component contracts", a
       [
         "emits: { choose: [tone: 'info' | 'warn'] };",
         "slots: { default(props: { tone: string }): unknown };",
-        'model: "query": string;',
+        'model: { "query": string };',
         "Vue component: PackageChild.vue",
       ],
     );
