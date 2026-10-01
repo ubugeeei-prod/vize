@@ -16,21 +16,25 @@
 //! over the same [`PageWalk`]: the mint/skip arithmetic still lives only
 //! here, and both shapes end at the same accounting assertion.
 
+use crate::op::Op;
 use vize_l0::ensure_sufficient_stack;
 use vize_l0::id::NodeId;
-use vize_l2::op::Op;
+
+mod nodes;
+pub use nodes::{NodeEvent, NodeLimit, NodeRef, visit_events, visit_nodes};
 
 /// The page-order id state of one pass run: a mirror of `Cx::mint_op`'s
 /// numbering, saturation included.
-#[derive(Clone)]
-pub(crate) struct PageWalk {
+#[derive(Debug, Clone, Default)]
+pub struct PageWalk {
     next: u32,
     visits: u32,
     exhausted: bool,
 }
 
 impl PageWalk {
-    pub(crate) fn new() -> Self {
+    #[must_use]
+    pub fn new() -> Self {
         Self {
             next: 0,
             visits: 0,
@@ -40,8 +44,13 @@ impl PageWalk {
 
     /// The current op's page-order id; `None` once the id space is
     /// exhausted (mirroring `Cx::mint_op`'s saturation).
-    pub(crate) fn mint(&mut self) -> Option<NodeId> {
+    pub fn mint(&mut self) -> Option<NodeId> {
         self.visits = self.visits.saturating_add(1);
+        self.mint_attached()
+    }
+
+    /// Mint an attached binding's id without dispatching a region-op visit.
+    pub fn mint_attached(&mut self) -> Option<NodeId> {
         if self.exhausted {
             return None;
         }
@@ -58,19 +67,21 @@ impl PageWalk {
     }
 
     /// How many ids this walk has minted (the page's `ops=` count).
-    pub(crate) fn minted(&self) -> u32 {
+    #[must_use]
+    pub fn minted(&self) -> u32 {
         self.next
     }
 
     /// How many real op visits this walk dispatched. Attached binding
     /// skips preserve id arithmetic but are not node visits.
-    pub(crate) fn visits(&self) -> u32 {
+    #[must_use]
+    pub fn visits(&self) -> u32 {
         self.visits
     }
 
     /// Skip `count` ids (an owner's attached bindings, numbered between
     /// its line and its children).
-    pub(crate) fn skip(&mut self, count: usize) {
+    pub fn skip(&mut self, count: usize) {
         if self.exhausted {
             return;
         }
@@ -82,13 +93,19 @@ impl PageWalk {
             None => self.exhausted = true,
         }
     }
+
+    /// Whether any numbered node could not receive an id.
+    #[must_use]
+    pub fn is_exhausted(&self) -> bool {
+        self.exhausted
+    }
 }
 
 /// Visit `ops` in page order, calling `visit` with each op's re-derived
 /// id **before** descending into its regions (passes mutate an op's
 /// surface, never its children's order, so pre-order is the one order
 /// every pass needs).
-pub(crate) fn visit_ops<'a>(
+pub fn visit_ops<'a>(
     walk: &mut PageWalk,
     ops: &mut [Op<'a>],
     visit: &mut impl FnMut(Option<NodeId>, &mut Op<'a>),
@@ -134,7 +151,7 @@ fn visit_ops_guarded<'a>(
 ///
 /// Panics when the walk and the lowering disagree — a compiler bug by
 /// the id law, never an input property.
-pub(crate) fn assert_accounting(walk: &PageWalk, op_count: u32, pass: &str) {
+pub fn assert_accounting(walk: &PageWalk, op_count: u32, pass: &str) {
     assert!(
         walk.exhausted || walk.next == op_count,
         "{pass} pass renumbering diverged from the minted accounting: \
