@@ -136,12 +136,18 @@ impl<'a> SsrCodegenContext<'a> {
             self.use_core_helper(RuntimeHelper::Unref);
         }
 
-        // Check if this is a fragment (multiple non-text children)
-        let is_fragment = root.children.len() > 1
-            && root
-                .children
-                .iter()
-                .any(|c| !matches!(c, TemplateChildNode::Text(_)));
+        // Directive comments are consumed by the linter and do not render.
+        // Keep them out of the legacy root shape, just as the L4 plan does.
+        let mut rendered_children = 0;
+        let mut has_non_text_child = false;
+        for child in &root.children {
+            if matches!(child, TemplateChildNode::Comment(comment) if comment.directive.is_some()) {
+                continue;
+            }
+            rendered_children += 1;
+            has_non_text_child |= !matches!(child, TemplateChildNode::Text(_));
+        }
+        let is_fragment = rendered_children > 1 && has_non_text_child;
 
         self.begin_render(root.loc.span.start);
         self.process_root_children(&root.children, is_fragment, false, false);
