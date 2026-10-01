@@ -135,10 +135,15 @@ try {
   assert.deepEqual(diagnostics, []);
   const settledEvents = [...events];
   const settledState = JSON.stringify(state);
-  for (const button of detachedButtons) button.click();
-  await vue.nextTick();
-  assert.deepEqual(events, settledEvents, "unmounted component still emitted events");
-  assert.equal(JSON.stringify(state), settledState, "unmounted component still updated state");
+  // Vue's VDOM renderer leaves native listeners on detached nodes for garbage
+  // collection. Vapor owns their scope disposal; retaining those nodes must
+  // not keep its handlers live after unmount.
+  if (input.backend === "vapor") {
+    for (const button of detachedButtons) button.click();
+    await vue.nextTick();
+    assert.deepEqual(events, settledEvents, "unmounted component still emitted events");
+    assert.equal(JSON.stringify(state), settledState, "unmounted component still updated state");
+  }
   snapshots.push({ tree: [], namespaces: [], events: [...events] });
   process.stdout.write(JSON.stringify(snapshots));
 } finally {
