@@ -4,10 +4,9 @@ import assert from "node:assert/strict";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import { Window } from "happy-dom";
-import { build } from "vite-plus";
 import { mountedScope } from "./davinci-mounted-scope.mjs";
 import { evaluateCompiledRender } from "./davinci-runtime-trace.mjs";
-import { vueVaporRuntimeEntry } from "./vue-vapor-release.mjs";
+import { pinnedVueRuntimeBundle } from "./pinned-vue-runtime-bundle.ts";
 
 /** One process owns one DOM and one Vue module, including its scheduler and effects. */
 export async function traceMountedBackend({
@@ -255,28 +254,8 @@ export async function loadRuntime({
   production = process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1",
 } = {}) {
   assert.equal(typeof production, "boolean", "production runtime mode must be explicit");
-  const result = await build({
-    configFile: false,
-    logLevel: "silent",
-    define: {
-      "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),
-      __VUE_OPTIONS_API__: "true",
-      __VUE_PROD_DEVTOOLS__: "false",
-      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: production ? "false" : "true",
-    },
-    build: {
-      write: false,
-      minify: production,
-      lib: {
-        entry: vueVaporRuntimeEntry,
-        formats: ["es"],
-      },
-    },
-  });
-  const outputs = Array.isArray(result) ? result : [result];
-  const chunks = outputs.flatMap((output) => output.output.filter((item) => item.type === "chunk"));
-  assert.equal(chunks.length, 1, "Vue runtime must bundle into one self-contained module");
-  return import(`data:text/javascript;base64,${Buffer.from(chunks[0].code).toString("base64")}`);
+  const code = await pinnedVueRuntimeBundle(production);
+  return import(`data:text/javascript;base64,${Buffer.from(code).toString("base64")}`);
 }
 
 /** Ignore backend anchor comments; retain text, attributes, and live form state. */

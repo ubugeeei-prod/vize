@@ -21,9 +21,11 @@ Input collection follows actual installed package resolution, including
 transitive dependencies, optional/peer presence and all installed package
 file contents. It also fingerprints workspace pins, harness implementation,
 exact bundler configuration, runtime mode, actual working directory, Node and
-platform context, and relevant build environment. The real build must prove
-its modules belong to the collected input set and produce one self-contained
-module without external imports or assets.
+platform context, and relevant build environment. Reusable output must prove
+its modules belong to the collected input set and contain one self-contained
+module without external imports or assets. Extra assets, external imports or
+uncovered modules retain the original one-code-chunk selection and fresh build
+without byte reuse; actual import/runtime errors still fail naturally.
 
 Reuse is deliberately bypassed for env files, custom native bindings, forced
 WASI, WebContainer or Node import/require/loader hooks. Those contexts retain
@@ -45,10 +47,17 @@ and fresh subprocess state.
 ## Delivery and measurement
 
 The provider is independently reviewable before its harness consumer.
-The consumer will replace the existing repeated build with this provider,
-keeping every assertion, snapshot, subprocess and runtime mode. Actions will
-replay the identical Transition command with reuse disabled, cold and warm,
-record bundle preparation separately and require all 27 comparisons each time.
+The consumer replaces the repeated build with this provider, preserving the
+original development/production options and fresh data-URL imports. A complete
+resolved module manifest must belong to the inventoried source set before reuse.
+Quoted environment hooks and direct Node loader arguments bypass reuse too.
+A dedicated Actions comparison replays the identical Transition command with
+reuse disabled, cold and warm in both development and production. Each phase
+requires all 27 distinct subprocesses, the unchanged parity assertions and
+byte-identical bundles. Cold phases require one actual build and 26 hits; warm
+phases require 27 hits. Logs, complete receipts and separate fingerprint/bundling
+durations are retained. Fourteen synthetic laws pass; actual rc.9 runtime and
+timing results remain pending until these Actions finish.
 No existing gate, filter, retry, timeout or numerical ceiling is changed.
 
 The two-minute whole-PR target remains unfinished. Rust archive transfer,
