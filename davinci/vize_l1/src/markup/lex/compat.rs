@@ -212,4 +212,6 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 #[cfg(test)]
 mod empty_delimiter_tests;
 #[cfg(test)]
+mod facade_tests;
+#[cfg(test)]
 mod tests;
