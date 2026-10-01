@@ -2,7 +2,7 @@ consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matc
 linter	Linter	test/dev	crates/vize/src/commands/lint.rs	36	l0	L0	stage	vize_l0	preferred	3
 linter	Linter	source	crates/vize/src/commands/lint/args.rs	5	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize/src/commands/lint/collect_tests.rs	157	l0	L0	stage	vize_l0	preferred	5
-linter	Linter	source	crates/vize/src/commands/lint/collect.rs	6	l0	L0	stage	vize_l0	preferred	6
+linter	Linter	source	crates/vize/src/commands/lint/collect.rs	6	l0	L0	stage	vize_l0	preferred	7
 linter	Linter	source	crates/vize/src/commands/lint/collect/node_modules_ignore.rs	14	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize/src/commands/lint/cross_file.rs	11	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize/src/commands/lint/cross_file.rs	11	croquis	Croquis analysis	old	vize_croquis_cf	legacy	1
