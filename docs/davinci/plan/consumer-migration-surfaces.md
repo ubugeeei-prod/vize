@@ -31,7 +31,6 @@ observational guard for planning only. It does not change rollout state.
 
 | surface          | group | matched name classes                                                                                                                               |
 | ---------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Davinci          | stage | preferred: `vize_davinci`                                                                                                                          |
 | L0               | stage | preferred: `vize_l0`<br>compat/code-name: `vize_carton`                                                                                            |
 | L1               | stage | preferred: `vize_l1`<br>compat/code-name: `vize_sinopia`                                                                                           |
 | L2               | stage | preferred: `vize_l2`<br>compat/code-name: `vize_disegno`                                                                                           |

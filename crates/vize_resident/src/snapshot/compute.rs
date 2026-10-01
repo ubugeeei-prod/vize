@@ -1,6 +1,6 @@
 //! A changed block's task: L1 whole, L2 by regions when the template splits.
 
-use vize_davinci::key::ArtifactKey;
+use vize_l0::key::ArtifactKey;
 use vize_l1_to_l2::LegacyCaps;
 
 use super::cancel::{CancelToken, Cancelled};

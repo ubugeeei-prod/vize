@@ -113,9 +113,9 @@ mod vnode_static;
 mod vtext;
 
 use alloc::vec::Vec as StdVec;
-use vize_davinci::id::NodeId;
-use vize_davinci::side_table::SideTable;
 use vize_l0::String;
+use vize_l0::id::NodeId;
+use vize_l0::side_table::SideTable;
 use vize_l2::op::Namespace;
 use vize_l2::scope::ScopeFacts;
 

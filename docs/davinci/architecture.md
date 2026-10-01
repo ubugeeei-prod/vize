@@ -304,16 +304,14 @@ Non-negotiable, inherited from "Be Fast Above All":
 
 ## Portability: `no_std` core, WASI as a first-class target
 
-Davinci-owned crates (`vize_davinci`, `vize_l1`, `vize_l2`, `vize_l3`, and `vize_l1_to_l2`) are
-written `no_std + alloc` from birth: stage data, passes, and emitters depend on
-the arena and core types only, with `std` gated to the edges (filesystem,
-threads/rayon, process spawning, clocks). CI builds the core for
-`wasm32-wasip2` alongside native targets. This is what "runs everywhere" means
-concretely: browsers and the playground via wasm, edge runtimes, and embedding
-inside non-JS hosts (an Elixir NIF, a MoonBit host) without dragging a
-platform layer along. Existing dependencies (oxc, lightningcss) set the
-practical boundary — where they require `std`, the seam is documented rather
-than fought (see [Open Questions](./open-questions.md)).
+L1, L2, L3 and both conversion libraries retain `no_std + alloc` source
+boundaries. Their shared foundation is the real `vize_l0` package and remains
+std-hosted; the retired compatibility substrate does not shield that dependency.
+TS-24 builds the five libraries and L0 for `wasm32-wasip2`, whose Rust target
+provides std. This validates those libraries and their accepted closure, rather
+than std-less embedding or portability of the host CLI. The
+[portability contract](./plan/no-std-boundary.md) records exact commands and
+dependencies. Platform/no-std isolation remains unfinished under #6834.
 
 ## Observability: Folio, the DevTool, and the AI optimization loop
 

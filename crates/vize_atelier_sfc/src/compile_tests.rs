@@ -29,9 +29,29 @@ fn test_compile_sfc_scopes_native_css_nesting_in_production_css() {
     .unwrap();
     let css = result.css.expect("production SFC CSS should be emitted");
 
-    assert!(css.starts_with(".box{"), "{css}");
-    assert!(css.contains(".label[data-v-abc123]"), "{css}");
+    assert!(css.contains(".box[data-v-abc123]{"), "{css}");
+    assert!(css.contains(".box .label[data-v-abc123]"), "{css}");
     assert!(!css.contains(".label {"), "{css}");
+}
+
+#[test]
+fn nested_and_slotted_sfc_css_matches_vite_pipeline() {
+    let css = ".c { & .d { color: red; } }\n.a > :slotted(.b) { color: blue; }";
+    let source = format!("<template><div /></template><style scoped>{css}</style>");
+    let descriptor = parse_sfc(&source, Default::default()).unwrap();
+    let result = compile_sfc(
+        &descriptor,
+        SfcCompileOptions {
+            scope_id: Some("x".into()),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let actual = result.css.expect("scoped CSS");
+    let expected = super::vite_plugin::scope_css_for_pipeline(css, "data-v-x");
+    assert_eq!(actual.trim(), expected.trim());
+    assert!(actual.contains(".c .d[data-v-x]"), "{actual}");
+    assert!(actual.contains(".a[data-v-x] >.b[data-v-x-s]"), "{actual}");
 }
 
 #[test]

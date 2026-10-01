@@ -21,10 +21,7 @@ vize_atelier_sfc = { workspace = true }
 vize_l0 = { workspace = true }
 vize_croquis = { workspace = true }
 vize_croquis_cf = { workspace = true }
-# The Spolvero feed shape (P2-18) and the L1 surface tree its inspector
-# pages are proven through; both `no_std + alloc`, so the wasm consumer
-# (`vize_vitrine --features wasm`) is untouched.
-vize_davinci = { workspace = true }
+# The L1 surface tree observed by the inspector.
 vize_l1 = { workspace = true }
 # The full stage ladder (L1 -> L2 -> L3) the Spolvero feed pages, produced by
 # the real lowerings and the L2 transform pass manager rather than re-derived,

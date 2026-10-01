@@ -9,10 +9,8 @@
 //! union, nothing is inferred.
 
 use vize_carton::CompactString;
-use vize_davinci::fact::{
-    Demand, FactGroup, FactProducer, FactTable, FactTableBuilder, FactView, ids,
-};
-use vize_davinci::pass::AnalysisId;
+use vize_l0::fact::{Demand, FactGroup, FactProducer, FactTable, FactTableBuilder, FactView, ids};
+use vize_l0::pass::AnalysisId;
 use vize_relief::BindingType;
 
 use crate::Croquis;

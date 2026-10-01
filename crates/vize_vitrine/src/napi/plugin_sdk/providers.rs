@@ -22,7 +22,7 @@ mod tests;
 
 use core::fmt;
 use serde_json::{Map, Value};
-use vize_davinci::fact::FactManager;
+use vize_l0::fact::FactManager;
 
 use super::batch::{BuiltBatch, PluginSpec, build_batch};
 use super::document::PluginDocument;

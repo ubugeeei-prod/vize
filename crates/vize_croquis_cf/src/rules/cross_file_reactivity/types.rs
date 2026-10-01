@@ -100,5 +100,6 @@ pub(super) struct ProvideDefinition {
     pub(super) key_identity: CompactString,
     pub(super) value_name: CompactString,
     pub(super) is_reactive: bool,
+    pub(super) is_function_service: bool,
     pub(super) offset: u32,
 }

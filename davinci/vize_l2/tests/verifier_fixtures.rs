@@ -13,8 +13,8 @@
 
 use std::path::PathBuf;
 
-use vize_davinci::dump::Dump;
 use vize_l0::cstr;
+use vize_l0::dump::Dump;
 use vize_l2::dump::Page as L2Page;
 use vize_l2::verify::{Rigor, verify};
 
@@ -97,7 +97,7 @@ fn every_invalid_page_is_committed_in_canonical_spelling() {
         let folio = L2Page::parse(&text).expect("grammar-valid fixture parses");
         let mut printed = vize_l0::String::default();
         folio
-            .print(&mut printed, vize_davinci::dump::Mode::Full)
+            .print(&mut printed, vize_l0::dump::Mode::Full)
             .expect("printing into a string cannot fail");
         assert_eq!(printed.as_str(), text.as_str(), "{name}");
     }

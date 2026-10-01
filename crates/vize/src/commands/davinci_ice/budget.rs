@@ -1,6 +1,6 @@
 //! Build-profile accounting for the selected Davinci plan.
 
-use vize_davinci::pass::{BudgetObserver, Pipeline, run_pipeline};
+use vize_l0::pass::{BudgetObserver, Pipeline, run_pipeline};
 
 /// Measure the selected build plan through the P2-3 budget observer.
 ///
@@ -19,7 +19,7 @@ pub(crate) fn plan_budget(plan: &Pipeline) -> BudgetObserver {
 mod tests {
     use super::plan_budget;
     use crate::commands::davinci_ice::compile_plan;
-    use vize_davinci::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
+    use vize_l0::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
 
     #[test]
     fn compile_plan_budget_matches_selected_backend_groups() {

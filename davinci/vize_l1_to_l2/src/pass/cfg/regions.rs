@@ -3,8 +3,8 @@
 //! attribute. The rules are `complexity-metrics.md`'s; each arm below
 //! names the rule it implements.
 
-use vize_davinci::id::NodeId;
 use vize_l0::ensure_sufficient_stack;
+use vize_l0::id::NodeId;
 use vize_l2::op::{BindingOp, DynamicName, IfOp, Op};
 
 use super::expr::score;

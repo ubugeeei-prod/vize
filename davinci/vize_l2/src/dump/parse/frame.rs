@@ -4,8 +4,8 @@
 //! outlet gained its props surface (a third phased frame) pushed the
 //! parser past the source budget.
 
-use vize_davinci::dump::Error as DumpError;
 use vize_l0::cstr;
+use vize_l0::dump::Error as DumpError;
 
 use crate::dump::owned::{
     Attribute, Binding, Branch, Component, Element, For, If, Model, Op, Slot,

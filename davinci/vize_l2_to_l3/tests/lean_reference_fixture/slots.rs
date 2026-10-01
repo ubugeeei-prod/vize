@@ -16,8 +16,8 @@
 
 use serde_json::{Value, json};
 use std::path::Path;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::Allocator;
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l3::dump::Page as L3Page;
 use vize_l3::values_dump::Page as ValuesPage;
 use vize_l3::verify::verify;

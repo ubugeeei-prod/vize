@@ -8,7 +8,7 @@
 //! containing `=`, ` ` or `"` are outside the contract (the
 //! derived-page "documented edges" rule).
 
-use vize_davinci::dump::Error as DumpError;
+use vize_l0::dump::Error as DumpError;
 use vize_l0::{Span, String, cstr};
 
 use crate::dump::owned::{

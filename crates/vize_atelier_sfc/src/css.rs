@@ -14,6 +14,7 @@ use vize_carton::ToCompactString;
 use vize_carton::{FxHashMap, String};
 #[cfg(feature = "native")]
 mod parser;
+pub(crate) mod scope_mode;
 mod scoped;
 pub(crate) mod scoped_selector;
 #[cfg(test)]
@@ -24,7 +25,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::types::SfcStyleBlock;
 
-use self::scoped::apply_scoped_css;
 use self::transform::extract_and_transform_v_bind_with_scope;
 pub(crate) use self::transform::{prod_scoped_v_bind_name, scoped_v_bind_name};
 
@@ -222,15 +222,12 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
         extract_and_transform_v_bind_with_scope(&bump, css, options.scope_id.as_deref());
 
     // Apply scoped transformation if needed
-    let scoped_css = if options.scoped {
-        if let Some(ref scope_id) = options.scope_id {
-            apply_scoped_css(&bump, processed_css, scope_id)
-        } else {
-            processed_css
-        }
-    } else {
-        processed_css
-    };
+    let scoped_css = options
+        .scope_id
+        .as_deref()
+        .filter(|_| options.scoped)
+        .map(|scope_id| scope_mode::scope_css(processed_css, scope_id));
+    let scoped_css = scoped_css.as_deref().unwrap_or(processed_css);
 
     // Apply targets for autoprefixing
     let targets = options
@@ -269,15 +266,12 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
         extract_and_transform_v_bind_with_scope(&bump, css, options.scope_id.as_deref());
 
     // Apply scoped transformation if needed
-    let scoped_css = if options.scoped {
-        if let Some(ref scope_id) = options.scope_id {
-            apply_scoped_css(&bump, processed_css, scope_id)
-        } else {
-            processed_css
-        }
-    } else {
-        processed_css
-    };
+    let scoped_css = options
+        .scope_id
+        .as_deref()
+        .filter(|_| options.scoped)
+        .map(|scope_id| scope_mode::scope_css(processed_css, scope_id));
+    let scoped_css = scoped_css.as_deref().unwrap_or(processed_css);
 
     CssCompileResult {
         code: scoped_css.to_compact_string(),

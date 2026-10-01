@@ -12,9 +12,9 @@
 //! every row and its per-stage breakdown).
 //!
 //! The same run also pins Davinci's side of the tie: the walks measured here
-//! must not exceed `vize_atelier_core::legacy_plan::SSR.group_count()`, so the
+//! must not exceed `vize_curator::legacy_plan::SSR.group_count()`, so the
 //! pass-manager plan that describes the legacy pipeline remains the upper
-//! bound. The plans live in `vize_davinci` and are read from the
+//! bound. The plans live in `vize_curator::legacy_plan` and are read from the
 //! dev-dependencies: a published crate cannot depend on an unpublished one.
 //!
 //! The probe is process-global and monotone, so this file holds a single
@@ -25,7 +25,7 @@ use davinci_harness::fixtures::{LADDER, template_block};
 use std::fmt::Write as _;
 use vize_atelier_core::walk_probe::{WALK_STAGES, WalkCounts};
 use vize_atelier_ssr::compile_ssr;
-use vize_davinci::legacy_plan;
+use vize_curator::legacy_plan;
 use vize_l0::{Allocator, String};
 
 /// fixture name -> (stage tree-walks, template-node visits) per fused compile.

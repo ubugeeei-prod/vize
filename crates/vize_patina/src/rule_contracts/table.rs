@@ -1,6 +1,6 @@
 //! The contract table: the declared domains and one row per rule.
 
-use vize_davinci::diagnostic::{Domain, RuleContract, Severity, Tier};
+use vize_l0::diag::{Domain, RuleContract, Severity, Tier};
 
 use super::RuleEntry;
 

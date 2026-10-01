@@ -41,8 +41,8 @@
 //! `Allocator::assert_stamp_current`, whose own P1-11 message names the
 //! outlived-compile contract; it stays that mechanism's panic on purpose.
 
-use vize_davinci::pass::{PassEvent, PassObserver};
-use vize_davinci::side_table::SideTable;
+use vize_l0::pass::{PassEvent, PassObserver};
+use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, ArenaStamp};
 
 use crate::dump::Page as L2Page;
@@ -50,7 +50,7 @@ use crate::dump::Page as L2Page;
 #[cfg(debug_assertions)]
 use super::{Rigor, Violation, verify, verify_table};
 #[cfg(debug_assertions)]
-use vize_davinci::pass::PassKind;
+use vize_l0::pass::PassKind;
 #[cfg(debug_assertions)]
 use vize_l0::{String, cstr};
 

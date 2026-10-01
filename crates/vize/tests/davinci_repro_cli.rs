@@ -15,9 +15,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-use vize_davinci::dump::repro::Page as ReproPage;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_curator::repro::Page as ReproPage;
 use vize_l0::String as CartonString;
+use vize_l0::dump::{Dump, Mode as DumpMode};
 
 const INJECTED_FAILURE: &str = "template.transform: injected davinci panic in pass `transform`";
 

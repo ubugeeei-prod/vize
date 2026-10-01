@@ -3,8 +3,8 @@
 //! The Linux runner samples this process with the shared TS-44 sampler.
 
 use std::{io::Write as _, process::ExitCode, time::Duration};
-use vize_davinci::summary::{AlphaEntry, AlphaPages, Facet, Fingerprint, SfcSummary, Signature};
 use vize_l0::{String, cstr};
+use vize_l2::summary::{AlphaEntry, AlphaPages, Facet, Fingerprint, SfcSummary, Signature};
 use vize_resident::{
     DeclarationName, ResidentDatabase, SourceFile, StageConfig, SummaryInput,
     compute_file_artifacts, declaration_fingerprint, sfc_summary,

@@ -2,8 +2,8 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::id::NodeId;
-use vize_davinci::side_table::SideTable;
+use vize_l0::id::NodeId;
+use vize_l0::side_table::SideTable;
 use vize_l2::op::{BindingOp, Op};
 
 use super::super::walk::{PageWalk, visit_ops};

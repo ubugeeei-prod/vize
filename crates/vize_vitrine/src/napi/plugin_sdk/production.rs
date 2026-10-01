@@ -28,9 +28,9 @@ use vize_croquis::{
         ProvideInject, RaceConditions, Reactivity, UndefinedRefs, UnusedBindings,
     },
 };
-use vize_davinci::fact::Demand;
-use vize_davinci::summary::{AlphaPages, Facet};
 use vize_l0::Allocator;
+use vize_l0::fact::Demand;
+use vize_l2::summary::{AlphaPages, Facet};
 
 pub const GROUPS: &[&str] = &[
     Bindings::NAME,

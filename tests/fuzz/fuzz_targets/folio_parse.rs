@@ -7,7 +7,7 @@
 // `Result<_, DumpError>` for malformed pages, so a panic here is always
 // a bug. Four parsers share the input — the L2 Disegno page
 // (`vize_l2`, path `davinci/vize_l2`), the L3 Impeto page, the croquis page,
-// and the repro page (`vize_davinci`).
+// and the repro page (`vize_curator`).
 //
 // When an input does parse, the mode-explicit round-trip law is asserted
 // on it: the canonical `Full`-mode print must re-parse to a document
@@ -16,9 +16,9 @@
 // The corpus is seeded from the committed .folio fixtures by
 // `tools/commands/ci/fuzz/seed_corpus.rs`.
 use libfuzzer_sys::fuzz_target;
-use vize_davinci::dump::croquis::Page as CroquisPage;
-use vize_davinci::dump::repro::Page as ReproPage;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_croquis::dump::Page as CroquisPage;
+use vize_curator::repro::Page as ReproPage;
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l2::dump::Page as L2Page;
 use vize_l3::dump::Page as L3Page;
 

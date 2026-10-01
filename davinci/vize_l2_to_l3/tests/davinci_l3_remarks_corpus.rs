@@ -16,11 +16,11 @@
 use std::path::{Path, PathBuf};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_davinci::dump::remarks::corpus::{CorpusRemark, RemarkCorpus};
-use vize_davinci::dump::remarks::diff::{ChangeKind, RemarkChange, diff_corpus};
-use vize_davinci::dump::remarks::entry_line;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::pass::{RemarkCollector, RemarkKind};
+use vize_l0::dump::remarks::corpus::{CorpusRemark, RemarkCorpus};
+use vize_l0::dump::remarks::diff::{ChangeKind, RemarkChange, diff_corpus};
+use vize_l0::dump::remarks::entry_line;
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::pass::{RemarkCollector, RemarkKind};
 use vize_l0::{Allocator, Span, String, cstr};
 use vize_l3::extract::OptTier;
 use vize_l3::optimize::optimize;
@@ -97,7 +97,7 @@ fn file_remarks(path: &str, source: &str, out: &mut Vec<CorpusRemark>) {
 }
 
 fn describe(change: &RemarkChange) -> String {
-    let side = |remark: Option<&vize_davinci::pass::observer::RecordedRemark>| {
+    let side = |remark: Option<&vize_l0::pass::observer::RecordedRemark>| {
         remark.map_or_else(|| String::from("-"), entry_line)
     };
     cstr!(

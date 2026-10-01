@@ -41,9 +41,9 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::id::NodeId;
-use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_l0::Span;
+use vize_l0::id::NodeId;
+use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
 
 use super::walk::{PageWalk, assert_accounting};
 use crate::lower::Lowered;

@@ -21,8 +21,8 @@
 //! facts do (`consts::props_blocker`, the region summary), so a remark
 //! cannot explain a decision the analysis did not make.
 
-use vize_davinci::pass::{Remark, RemarkArg, RemarkSink};
 use vize_l0::Span;
+use vize_l0::pass::{Remark, RemarkArg, RemarkSink};
 use vize_l2::op::{Attribute, BindingOp, ComponentOp, ElementOp};
 
 use super::consts::{PropsBlocker, props_blocker};

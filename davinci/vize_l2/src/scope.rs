@@ -25,8 +25,8 @@
 //! # Residency
 //!
 //! Facts live beside the tree in a
-//! [`SideTable<ScopeFacts>`](vize_davinci::side_table::SideTable) keyed by
-//! the introducing op's [`NodeId`](vize_davinci::id::NodeId) (dense
+//! [`SideTable<ScopeFacts>`](vize_l0::side_table::SideTable) keyed by
+//! the introducing op's [`NodeId`](vize_l0::id::NodeId) (dense
 //! page-order ids, `folio-format.md` "Node numbering"). The table is the
 //! sparse non-arena form, so names are owned [`String`]s and the facts are
 //! `'static` - they survive `Allocator::reset` the way diagnostics do

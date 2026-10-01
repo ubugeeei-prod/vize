@@ -5,8 +5,8 @@
 )]
 
 use std::path::Path;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::Allocator;
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l3::dump::Page as L3Page;
 use vize_l3::trace::{TraceBackend, backend_trace_text, reference_trace_text};
 use vize_l3::values_dump::Page as ValuesPage;

@@ -3,10 +3,10 @@
 //! Provides, injects, and composable calls in tracker order. Cross-file
 //! pairing reads this table; it does not walk `Croquis.provide_inject`.
 
-use vize_davinci::fact::{
+use vize_l0::fact::{
     Demand, FactConsumer, FactGroup, FactProducer, FactTable, FactTableBuilder, FactView, ids,
 };
-use vize_davinci::pass::AnalysisId;
+use vize_l0::pass::AnalysisId;
 
 use crate::Croquis;
 use crate::provide::{ComposableCall, InjectEntry, ProvideEntry};

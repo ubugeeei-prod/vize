@@ -17,12 +17,12 @@
 mod messages;
 
 use vize_carton::{CompactString, FxHashSet};
-use vize_davinci::diagnostic::{
+use vize_l0::diag::verify::{WitnessCheck, WitnessChecks, WitnessGroup};
+use vize_l0::diag::{
     Advisory, Diagnostic, DiagnosticPart, Domain, PartKind, RuleContract, Severity, Stage, Tier,
     WitnessChain, WitnessLink,
 };
-use vize_davinci::fact::{Demand, FactConsumer, FactError, FactGroup, FactManager, FactView};
-use vize_davinci::witness::{WitnessCheck, WitnessChecks, WitnessGroup};
+use vize_l0::fact::{Demand, FactConsumer, FactError, FactGroup, FactManager, FactView};
 
 use super::sites::{self, NavSite, Params, Target};
 use super::{NamedRoute, RouteParams, RouteTree, RouterTree};
@@ -67,11 +67,11 @@ impl WitnessGroup for RouteTree {
     }
 
     /// A router's tree proves "no such name" only while it is closed.
-    fn verdict(tree: &RouterTree) -> vize_davinci::diagnostic::Verdict {
+    fn verdict(tree: &RouterTree) -> vize_l0::diag::Verdict {
         if tree.is_closed() {
-            vize_davinci::diagnostic::Verdict::Proven
+            vize_l0::diag::Verdict::Proven
         } else {
-            vize_davinci::diagnostic::Verdict::Unknown
+            vize_l0::diag::Verdict::Unknown
         }
     }
 }
@@ -83,11 +83,11 @@ impl WitnessGroup for RouteParams {
 
     /// A route's params are proven when its path is static and the name is
     /// declared exactly once.
-    fn verdict(route: &NamedRoute) -> vize_davinci::diagnostic::Verdict {
+    fn verdict(route: &NamedRoute) -> vize_l0::diag::Verdict {
         if route.params.is_some() && route.declarations == 1 {
-            vize_davinci::diagnostic::Verdict::Proven
+            vize_l0::diag::Verdict::Proven
         } else {
-            vize_davinci::diagnostic::Verdict::Unknown
+            vize_l0::diag::Verdict::Unknown
         }
     }
 }

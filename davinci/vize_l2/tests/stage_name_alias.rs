@@ -1,4 +1,4 @@
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l2::dump::Page as L2Page;
 
 const EMPTY: &str = "[l2-dump-v2]\nops=0\n\n";

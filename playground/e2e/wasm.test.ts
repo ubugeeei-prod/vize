@@ -341,7 +341,7 @@ const theme = inject('theme', 'light')
     const destructuring = result.diagnostics.filter(
       (diagnostic) => diagnostic.code === "vize:croquis/cf/destructuring-breaks-reactivity",
     );
-    expect(destructuring.length).toBe(2);
+    expect(destructuring.length).toBe(1);
     expect(destructuring.every((diagnostic) => diagnostic.severity === "error")).toBe(true);
     expect(destructuring.every((diagnostic) => diagnostic.type === "reactivity-loss")).toBe(true);
     const stateDestructure = destructuring.find((diagnostic) =>

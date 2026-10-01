@@ -83,7 +83,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l0::{Span, String};
 use vize_l2::op::Op;
 

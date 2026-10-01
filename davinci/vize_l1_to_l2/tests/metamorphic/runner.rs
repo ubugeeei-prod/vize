@@ -10,7 +10,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String, append, cstr};
 use vize_l1::parse;
 use vize_l1_to_l2::lower;

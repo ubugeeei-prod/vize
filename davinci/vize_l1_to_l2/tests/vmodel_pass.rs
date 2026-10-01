@@ -10,7 +10,7 @@
 
 mod support;
 
-use vize_davinci::diagnostic::{Severity, Stage};
+use vize_l0::diag::{Severity, Stage};
 use vize_l1_to_l2::exemptions;
 use vize_l1_to_l2::pass::{ModelFacts, ModelFault, vmodel};
 

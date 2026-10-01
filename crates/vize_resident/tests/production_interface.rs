@@ -3,7 +3,7 @@
 #![expect(clippy::unwrap_used, reason = "test assertions")]
 
 use vize_croquis::{Drawer, DrawerOptions};
-use vize_davinci::summary::{AlphaPages, Facet, SfcSummary};
+use vize_l2::summary::{AlphaPages, Facet, SfcSummary};
 use vize_resident::{ResidentDocuments, SharedDescriptor};
 
 fn export(descriptor: &SharedDescriptor) -> Option<AlphaPages> {

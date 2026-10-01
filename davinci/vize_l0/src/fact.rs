@@ -1,86 +1,179 @@
-//! Fact groups and the fact manager: analyses computed on demand, once.
-#![expect(clippy::todo, reason = "skeleton: #6833")]
+//! The fact API — the one typed query surface of charter #5/#8 (P4-1a).
+//!
+//! Every analysis a consumer reads is a **fact group**: a table keyed by
+//! [`FactGroup::Key`], computed by a registered producer, never a field on a
+//! god struct. Consumers **declare** the groups they read as const data
+//! ([`FactConsumer::DEMAND`]); a run computes exactly the transitive closure of
+//! the declared union, in stratum order, each group at most once per artifact
+//! ([`FactManager`]).
+//!
+//! # Identity
+//!
+//! A group's identity is a pass-manager [`AnalysisId`], so a pass's
+//! [`Preserved`](crate::pass::Preserved) mask names fact groups directly: one
+//! identity space, capped by [`MAX_ANALYSES`](crate::pass::MAX_ANALYSES) and
+//! its existing const assertion. A [`Demand`] is the same 64-bit shape.
+//!
+//! # Stratification — demand cycles are unrepresentable
+//!
+//! A group names a [`FactGroup::STRATUM`] and may depend only on groups in
+//! **strictly lower** strata. [`FactRegistry::new`] checks that in a `const
+//! fn`, so a registry that breaks it is a compile error; with every edge
+//! pointing strictly downwards no cycle can be written down at all (the Swift
+//! request-evaluator anti-lesson: cycle detection at run time is a design
+//! that already failed).
+//!
+//! # The undeclared-access detector (TS-35)
+//!
+//! Under `debug_assertions` a [`FactView`] carries its consumer's declared
+//! demand; reading a group outside it returns the exact
+//! [`FactError::Undeclared`] and bumps a process-global counter
+//! ([`undeclared_accesses`]) even when another consumer's demand happened to
+//! compute the table. In release builds the declared demand is a zero-sized
+//! type (const-asserted) and the check compiles away.
+//!
+//! # Example
+//!
+//! ```
+//! use vize_l0::fact::{
+//!     Demand, FactConsumer, FactGroup, FactManager, FactProducer, FactRegistry, FactTable,
+//!     FactView, ProducerEntry,
+//! };
+//! use vize_l0::pass::AnalysisId;
+//!
+//! /// Stratum 0: the length of every word.
+//! struct Lengths;
+//! impl FactGroup for Lengths {
+//!     const ID: AnalysisId = AnalysisId::new(32);
+//!     const NAME: &'static str = "lengths";
+//!     const STRATUM: u8 = 0;
+//!     const DEPENDS: Demand = Demand::NONE;
+//!     type Key = u32;
+//!     type Value = usize;
+//! }
+//! impl FactProducer<[&str]> for Lengths {
+//!     fn produce(words: &[&str], _: &FactView<'_>) -> FactTable<Self> {
+//!         (0u32..).zip(words.iter().map(|word| word.len())).collect()
+//!     }
+//! }
+//!
+//! /// Stratum 1: the longest word, read off `Lengths`.
+//! struct Longest;
+//! impl FactGroup for Longest {
+//!     const ID: AnalysisId = AnalysisId::new(33);
+//!     const NAME: &'static str = "longest";
+//!     const STRATUM: u8 = 1;
+//!     const DEPENDS: Demand = Demand::NONE.with(Lengths::ID);
+//!     type Key = ();
+//!     type Value = u32;
+//! }
+//! impl FactProducer<[&str]> for Longest {
+//!     fn produce(_: &[&str], inputs: &FactView<'_>) -> FactTable<Self> {
+//!         let lengths = inputs.get::<Lengths>().expect("declared");
+//!         let longest = lengths.iter().max_by_key(|(_, len)| **len).map(|(at, _)| *at);
+//!         longest.map(|at| ((), at)).into_iter().collect()
+//!     }
+//! }
+//!
+//! const REGISTRY: FactRegistry<[&str]> =
+//!     FactRegistry::new(&[ProducerEntry::of::<Lengths>(), ProducerEntry::of::<Longest>()]);
+//!
+//! struct LongestWordRule;
+//! impl FactConsumer for LongestWordRule {
+//!     const NAME: &'static str = "longest-word";
+//!     const DEMAND: Demand = Demand::NONE.with(Longest::ID);
+//! }
+//!
+//! let words: &[&str] = &["fact", "demand", "view"];
+//! let mut manager = FactManager::new(&REGISTRY);
+//! let view = manager.prepare::<LongestWordRule>(words).unwrap();
+//! assert_eq!(view.get::<Longest>().unwrap().get(&()), Some(&1));
+//! ```
+//!
+//! # Module layout
+//!
+//! - [`demand`] — [`Demand`], the const-built group set
+//! - [`registry`] — [`GroupDesc`], [`FactRegistry`] and the stratification
+//!   check
+//! - [`table`] — [`FactTable`], the borrowed table a query returns
+//! - [`manager`] — [`FactManager`]
+//! - [`view`] — [`FactView`], [`FactError`] and the process-global counters
+//! - [`preserve`] — facts across passes: [`FactManager::after_pass`], the
+//!   named preservation groups and the verify mode (P4-1b)
+//! - [`ids`] — the production fact-group identity table
+//! - [`alpha`] — the α (exported, versioned) form of a group (P4-2)
 
-use core::marker::PhantomData;
+pub mod alpha;
+pub mod demand;
+pub mod expression;
+pub mod ids;
+pub mod manager;
+pub mod preserve;
+pub mod registry;
+pub mod table;
+pub mod view;
 
-use crate::id::AnalysisId;
+pub use alpha::{
+    ALPHA_GROUPS, AlphaDesc, AlphaDocError, AlphaDocument, AlphaExport, check_alpha_schema_doc,
+};
+pub use demand::Demand;
+pub use expression::{ExpressionFact, ExpressionFacts, ExpressionFactsAlpha};
+pub use manager::FactManager;
+pub use preserve::{
+    FactVerify, FactVerifyObserver, NoFactVerify, PRESERVE_BINDINGS, PRESERVE_STRUCTURE,
+};
+pub use registry::{FactRegistry, GroupDesc, ProducerEntry, StrataError, check_strata};
+pub use table::{FactTable, FactTableBuilder};
+pub use view::{FactError, FactView, produced_count, undeclared_accesses};
 
-/// A set of analyses, as a bitmask over [`AnalysisId`]s.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct Demand(u64);
+use crate::pass::AnalysisId;
 
-impl Demand {
-    /// Demands nothing.
-    pub const NONE: Self = Self(0);
-
-    /// This demand plus `group`.
-    #[must_use]
-    pub const fn with(self, group: AnalysisId) -> Self {
-        let _ = group;
-        todo!()
-    }
-
-    /// True when `group` is demanded.
-    #[must_use]
-    pub const fn contains(self, group: AnalysisId) -> bool {
-        let _ = group;
-        todo!()
-    }
-}
-
-/// A group of facts one analysis produces.
+/// One fact group: its identity, its stratum, what it reads, and the shape of
+/// its table.
+///
+/// Implemented by a unit type per group. Everything is `const` so the
+/// registry can check stratification at compile time and a consumer can
+/// build its demand in a `const` item.
 pub trait FactGroup: Sized + 'static {
-    /// The analysis identity.
+    /// The group's identity — shared with pass-manager preserved masks.
     const ID: AnalysisId;
-    /// Groups this one reads.
-    const DEPENDS_ON: Demand;
-    /// What a fact is keyed by.
-    type Key;
-    /// The fact value.
-    type Value;
+    /// The group's stable name, used in errors and dumps.
+    const NAME: &'static str;
+    /// The group's stratum. Every group in [`FactGroup::DEPENDS`] must sit in
+    /// a strictly lower one.
+    const STRATUM: u8;
+    /// The groups this group's producer reads.
+    const DEPENDS: Demand;
+    /// The key facts are stored under (`NodeId`, `SymbolId`, an artifact key).
+    type Key: Ord + Send + Sync + 'static;
+    /// One fact. Comparable, because every fact oracle is exact equality
+    /// (P4-1b's recompute-and-compare mode reads it).
+    type Value: PartialEq + Send + Sync + 'static;
+
+    /// This group as const registry data.
+    const DESC: GroupDesc = GroupDesc {
+        id: Self::ID,
+        name: Self::NAME,
+        stratum: Self::STRATUM,
+        depends: Self::DEPENDS,
+    };
 }
 
-/// Why facts could not be computed.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum FactError {
-    /// A demanded group has no producer registered.
-    Unregistered(AnalysisId),
-    /// The registry's dependencies form a cycle.
-    Cycle(AnalysisId),
+/// A consumer of facts: a lint rule, a lowering, a projection, an LSP
+/// feature. Its demand is const data, declared once, read by the detector.
+pub trait FactConsumer {
+    /// The consumer's stable name, reported by [`FactError::Undeclared`].
+    const NAME: &'static str;
+    /// Every group the consumer reads.
+    const DEMAND: Demand;
 }
 
-/// Computes demanded fact groups over one artifact, each at most once.
-#[derive(Debug)]
-pub struct FactManager<'a, A: ?Sized> {
-    computed: Demand,
-    _artifact: PhantomData<&'a A>,
-}
-
-impl<A: ?Sized> FactManager<'_, A> {
-    /// A manager with nothing computed.
-    #[must_use]
-    pub const fn new() -> Self {
-        Self {
-            computed: Demand::NONE,
-            _artifact: PhantomData,
-        }
-    }
-
-    /// The groups computed so far.
-    #[must_use]
-    pub const fn computed(&self) -> Demand {
-        self.computed
-    }
-
-    /// Compute `demand` (and its dependencies) over `artifact`.
-    pub fn compute(&mut self, artifact: &A, demand: Demand) -> Result<Demand, FactError> {
-        let _ = (artifact, demand);
-        todo!()
-    }
-}
-
-impl<A: ?Sized> Default for FactManager<'_, A> {
-    fn default() -> Self {
-        Self::new()
-    }
+/// How a registered producer computes its group over an artifact `A`.
+///
+/// The producer reads its inputs through a [`FactView`] whose declared
+/// demand is its own [`FactGroup::DEPENDS`], so a producer reading a group it
+/// did not declare trips the same detector a consumer does.
+pub trait FactProducer<A: ?Sized>: FactGroup {
+    /// Compute the whole table for `artifact`.
+    fn produce(artifact: &A, inputs: &FactView<'_>) -> FactTable<Self>;
 }

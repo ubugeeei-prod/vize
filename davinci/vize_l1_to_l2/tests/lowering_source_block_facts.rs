@@ -10,9 +10,9 @@
 mod support;
 
 use support::{Artifact, assert_authored_artifact};
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::id::NodeId;
-use vize_davinci::side_table::SideTable;
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::id::NodeId;
+use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, SourceRoot, Span, String};
 use vize_l2::dump::Page as L2Page;
 use vize_l2::provenance::ProvenanceRecord;

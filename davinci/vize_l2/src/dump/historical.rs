@@ -6,7 +6,7 @@
 pub mod v1 {
     use core::fmt;
 
-    use vize_davinci::dump::{Dump, Error, Mode};
+    use vize_l0::dump::{Dump, Error, Mode};
 
     use crate::dump::{Page as CurrentPage, parse, print};
 

@@ -2,7 +2,7 @@
 
 use super::EmitContract;
 use crate::{Croquis, Drawer, DrawerOptions};
-use vize_davinci::summary::{Facet, SfcSummary};
+use vize_l2::summary::{Facet, SfcSummary};
 
 fn draw(source: &str) -> Croquis {
     let mut drawer = Drawer::with_options(DrawerOptions::full());

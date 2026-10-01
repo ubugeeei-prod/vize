@@ -1,7 +1,7 @@
 //! Static child vnode hoist gates for native element emission.
 
-use vize_davinci::id::NodeId;
 use vize_l0::ensure_sufficient_stack;
+use vize_l0::id::NodeId;
 use vize_l2::op::{ElementOp, Namespace, Op};
 
 use super::EmitCx;

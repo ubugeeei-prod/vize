@@ -4,7 +4,7 @@
 use std::borrow::Cow;
 use std::io::IsTerminal;
 
-use vize_davinci::render::{Catalog, EnglishCatalog, Phrase};
+use crate::render::{Catalog, EnglishCatalog, Phrase};
 use vize_fresco::{
     ColorSupport, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
 };

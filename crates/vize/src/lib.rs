@@ -19,6 +19,10 @@
 //! - [`musea`] - Musea art parsing and documentation core
 //! - [`maestro`] - Language Server Protocol (LSP) implementation
 
+extern crate alloc;
+
+pub mod render;
+
 mod commands;
 mod config;
 mod profile_support;

@@ -13,7 +13,7 @@
 //! page"). `Display` prints the same text as `Full`: nothing is elidable
 //! from a page that is only offsets.
 
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 
 mod mirror;
 mod parse;

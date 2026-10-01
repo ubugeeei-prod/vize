@@ -1,4 +1,4 @@
-use super::NoHardcodedValues;
+use super::{NoHardcodedValues, NoHardcodedValuesConfig};
 use crate::rules::css::CssLinter;
 
 fn create_linter() -> CssLinter {
@@ -74,6 +74,21 @@ fn test_warns_absolute_font_size() {
     let linter = create_linter();
     let result = linter.lint(".button { font-size: 16px; }", 0);
     assert_eq!(result.warning_count, 1);
+}
+
+#[test]
+fn test_allowed_zero_font_size() {
+    let result = create_linter().lint(".button { font-size: 0; font-size: 0px; }", 0);
+    assert_eq!(result.warning_count, 0);
+
+    let mut config = NoHardcodedValuesConfig::default();
+    config.allowed.retain(|value| *value != "0");
+    let mut linter = CssLinter::new();
+    linter.add_rule(Box::new(NoHardcodedValues::with_config(config)));
+    assert_eq!(
+        linter.lint(".button { font-size: 0px; }", 0).warning_count,
+        1
+    );
 }
 
 #[test]

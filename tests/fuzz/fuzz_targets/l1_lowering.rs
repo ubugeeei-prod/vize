@@ -17,8 +17,8 @@
 // The corpus is seeded from the `<template>` blocks of repository .vue
 // fixtures by `tools/commands/ci/fuzz/seed_corpus.rs`.
 use libfuzzer_sys::fuzz_target;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::side_table::SideTable;
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::parse;
 use vize_l1_to_l2::{Lowered, lower};

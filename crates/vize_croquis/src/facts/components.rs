@@ -9,8 +9,8 @@
 //! The cross-file render tree is a later group.
 
 use vize_carton::CompactString;
-use vize_davinci::fact::{Demand, FactGroup, FactProducer, FactTable, FactView, ids};
-use vize_davinci::pass::AnalysisId;
+use vize_l0::fact::{Demand, FactGroup, FactProducer, FactTable, FactView, ids};
+use vize_l0::pass::AnalysisId;
 
 use crate::Croquis;
 use crate::croquis::ComponentRegistration;

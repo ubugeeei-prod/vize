@@ -6,7 +6,7 @@
 
 use alloc::vec::Vec;
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l0::{Span, String};
 use vize_l1::{Element, ElementClose, SurfaceChild, SurfaceTree, Token};
 use vize_l2::op::{BindingOp, Op};

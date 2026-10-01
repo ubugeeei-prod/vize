@@ -175,8 +175,7 @@ fn both_lanes_flag_the_duplicate_slot_name() {
     let l2_allocator = vize_l0::Allocator::new();
     let (tree, surface_errors) = vize_l1::parse(&l2_allocator, source);
     let mut lowered = vize_l1_to_l2::lower(&l2_allocator, &tree, &surface_errors);
-    let _facts =
-        vize_l1_to_l2::pass::run_transform(&mut lowered, &mut vize_davinci::pass::NoObserver);
+    let _facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut vize_l0::pass::NoObserver);
     assert!(
         lowered
             .diagnostics
@@ -231,8 +230,7 @@ fn both_lanes_flag_the_scoped_model() {
     let l2_allocator = vize_l0::Allocator::new();
     let (tree, surface_errors) = vize_l1::parse(&l2_allocator, source);
     let mut lowered = vize_l1_to_l2::lower(&l2_allocator, &tree, &surface_errors);
-    let _facts =
-        vize_l1_to_l2::pass::run_transform(&mut lowered, &mut vize_davinci::pass::NoObserver);
+    let _facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut vize_l0::pass::NoObserver);
     assert!(
         lowered
             .diagnostics
@@ -273,8 +271,7 @@ fn both_lanes_flag_the_duplicate_key() {
     let l2_allocator = vize_l0::Allocator::new();
     let (tree, surface_errors) = vize_l1::parse(&l2_allocator, source);
     let mut lowered = vize_l1_to_l2::lower(&l2_allocator, &tree, &surface_errors);
-    let _facts =
-        vize_l1_to_l2::pass::run_transform(&mut lowered, &mut vize_davinci::pass::NoObserver);
+    let _facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut vize_l0::pass::NoObserver);
     assert!(
         lowered
             .diagnostics

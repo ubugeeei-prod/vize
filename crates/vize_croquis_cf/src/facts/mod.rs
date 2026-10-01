@@ -9,7 +9,7 @@ mod render_tree;
 mod render_tree_tests;
 
 use vize_croquis::facts::{Bindings, Demand, FactConsumer, FactGroup};
-use vize_davinci::fact::{FactManager, FactRegistry};
+use vize_l0::fact::{FactManager, FactRegistry};
 
 pub(crate) use render_tree::resolve_module;
 pub use render_tree::{
@@ -45,7 +45,7 @@ impl FactConsumer for RenderTreeReader {
 
 /// Every project-level fact group.
 pub const PROJECT_FACTS: FactRegistry<ModuleRegistry> =
-    FactRegistry::new(&[vize_davinci::fact::ProducerEntry::of::<RenderTree>()]);
+    FactRegistry::new(&[vize_l0::fact::ProducerEntry::of::<RenderTree>()]);
 
 /// Facts computed over one module registry.
 pub struct ProjectFacts<'a> {
@@ -64,7 +64,7 @@ impl<'a> ProjectFacts<'a> {
     /// Compute `C`'s demand and return `C`'s view. A demand on an
     /// unregistered group computes nothing for it; `FactView::get` then
     /// reports that group as not computed.
-    pub fn prepare<C: FactConsumer>(&mut self) -> vize_davinci::fact::FactView<'_> {
+    pub fn prepare<C: FactConsumer>(&mut self) -> vize_l0::fact::FactView<'_> {
         // `prepare` returns exactly `view::<C>()` on success.
         let _ = self.manager.prepare::<C>(self.registry);
         self.manager.view::<C>()

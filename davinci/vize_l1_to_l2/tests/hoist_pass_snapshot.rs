@@ -12,8 +12,8 @@ mod support;
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::assert_dump_snapshot;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::assert_dump_snapshot;
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l1_to_l2::pass::{StaticFacts, StaticLevel};
 
 use support::{assert_transformed_sound, with_transformed};
@@ -28,7 +28,7 @@ fn fixture(name: &str) -> vize_l0::String {
     vize_l0::String::from(text.as_str())
 }
 
-fn rows(facts: &vize_davinci::side_table::SideTable<StaticFacts>) -> Vec<(u32, StaticFacts)> {
+fn rows(facts: &vize_l0::side_table::SideTable<StaticFacts>) -> Vec<(u32, StaticFacts)> {
     facts
         .sorted_entries()
         .into_iter()

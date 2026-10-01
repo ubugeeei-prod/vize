@@ -5,8 +5,8 @@
 //! `P` puts the body's first line at line 5.
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::dump::{Dump, Error as DumpError};
 use vize_l0::String;
+use vize_l0::dump::{Dump, Error as DumpError};
 use vize_l2::dump::Page as L2Page;
 
 /// Valid page prefix: `[l2-dump-v2]` header, `ops=0`, blank, `[l2-dump-v2.ops]`.

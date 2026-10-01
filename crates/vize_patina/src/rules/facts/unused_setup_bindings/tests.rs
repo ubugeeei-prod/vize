@@ -1,6 +1,6 @@
 use crate::linter::Linter;
 use crate::rule::RuleRegistry;
-use vize_davinci::diagnostic::Tier;
+use vize_l0::diag::Tier;
 
 const RULE: &str = "vue/no-unused-setup-bindings";
 

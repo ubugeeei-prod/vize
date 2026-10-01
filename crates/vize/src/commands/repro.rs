@@ -17,8 +17,8 @@ use std::path::PathBuf;
 use clap::Args;
 
 use super::davinci_ice::{self, IceFailure};
-use vize_davinci::dump::Dump;
-use vize_davinci::dump::repro::Page as ReproPage;
+use vize_curator::repro::Page as ReproPage;
+use vize_l0::dump::Dump;
 
 #[derive(Args, Default)]
 pub struct ReproArgs {

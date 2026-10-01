@@ -12,9 +12,9 @@
 use std::borrow::Cow;
 
 use vize_croquis::sfc::{SfcParseOptions, parse_sfc};
-use vize_davinci::diagnostic::Diagnostic;
-use vize_davinci::key::{ArtifactKey, source_block_key};
 use vize_l0::config::VueVersion;
+use vize_l0::diag::Diagnostic;
+use vize_l0::key::{ArtifactKey, source_block_key};
 use vize_l0::{Allocator, FxHashMap, String};
 use vize_l1_to_l2::key::SurfacePage;
 use vize_l1_to_l2::{LegacyCaps, lower_style_block, lower_with_caps};

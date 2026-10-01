@@ -12,8 +12,8 @@
 //! no offsets, so the page is block-relative by construction and the block
 //! start never enters the hash.
 
-use vize_davinci::key::{KeySink, KeyedArtifact, schema};
-use vize_davinci::stage::Stage;
+use vize_l0::key::{KeySink, KeyedArtifact, schema};
+use vize_l0::stage::Stage;
 use vize_l1::SurfaceTree;
 
 /// An L1 surface tree viewed as its keyed page.

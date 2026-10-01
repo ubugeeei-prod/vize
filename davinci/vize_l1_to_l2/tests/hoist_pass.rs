@@ -12,7 +12,7 @@ use support::{assert_transformed_sound, with_transformed};
 use vize_l1_to_l2::pass::{StaticFacts, StaticLevel};
 
 /// The facts as `(op index, level, props, nested, native)` rows.
-fn rows(facts: &vize_davinci::side_table::SideTable<StaticFacts>) -> Vec<(u32, StaticFacts)> {
+fn rows(facts: &vize_l0::side_table::SideTable<StaticFacts>) -> Vec<(u32, StaticFacts)> {
     facts
         .sorted_entries()
         .into_iter()

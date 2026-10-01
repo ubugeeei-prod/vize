@@ -40,17 +40,6 @@ impl<'a> IdeContext<'a> {
         Self::read(state, uri, offset, false)
     }
 
-    /// Reuse the text already read by a request while locating its cursor.
-    /// Large Vue files otherwise copy the whole buffer twice per hover.
-    pub(crate) fn with_content(
-        state: &'a ServerState,
-        uri: &'a Url,
-        offset: usize,
-        content: String,
-    ) -> Self {
-        Self::assemble(state, uri, offset, content, false)
-    }
-
     /// Completion context for an open document. Script-body ends stay insertion points.
     pub(crate) fn at_completion(
         state: &'a ServerState,

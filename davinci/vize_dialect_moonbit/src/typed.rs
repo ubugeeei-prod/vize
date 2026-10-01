@@ -4,8 +4,6 @@
 mod emit;
 mod validate;
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::fact::{AlphaDocument, ExpressionFact, ExpressionFacts, FactTable};
 use vize_extension_contract::contract::{
     Capability, Diagnostic, GuestError, Page, Severity, Stage,
 };
@@ -13,6 +11,8 @@ use vize_extension_contract::expression::{Analysis, ProjectionPage, ProjectionRo
 use vize_extension_contract::typed_expression::{
     REQUIRED_FEATURES, TypedExpressionBatch, TypedExpressionGuest,
 };
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::fact::{AlphaDocument, ExpressionFact, ExpressionFacts, FactTable};
 use vize_l0::{Allocator, String, cstr};
 use vize_l2::expr::capability::ExprDialect;
 use vize_l2::expr::{ExprRef, ForeignExpr};

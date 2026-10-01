@@ -129,7 +129,7 @@ grammar at parse time), `failed-stage=`, `failed-pass=`, `reason=`
 a sorted `key=value` map. A missing final newline on the artifact is added
 by the first print, and `ReproFolio::normalize` applies the same to
 hand-built values — the `CroquisFolio::normalize` precedent. Round-trip
-laws pinned by `davinci/vize_davinci/tests/repro_dump.rs`.
+laws pinned by `crates/vize_curator/tests/repro_dump.rs`.
 
 ## Croquis folio grammar
 
@@ -176,12 +176,12 @@ value.
 
 `davinci/vize_davinci/tests/fixtures/croquis/` holds `.vue` inputs with
 their committed canonical `.folio` dumps. The harness
-(`cargo test -p vize_davinci --test croquis_folio`) re-analyzes each input
+(`cargo test -p vize_croquis --test croquis_dump`) re-analyzes each input
 with the inspector recipe, checks the parser accepts the live renderer's
 output, and asserts the committed folio equals the canonical print plus
 both round-trip laws. Regenerate after a deliberate renderer change with
 `UPDATE_FOLIO_FIXTURES=1`. Verify the committed pages with
-`cargo test -p vize_davinci --test dump_croquis`.
+`cargo test -p vize_croquis --test dump_croquis`.
 
 Provenance (P0-2's fixture ladder had not landed when these were drawn, so
 the inputs come from the e2e project fixtures plus two written for

@@ -6,7 +6,7 @@
 //! from the running `PassEvent`, never from the pass body. Both passes are
 //! barriers that write only the placement overlay (`Preserved::ALL`).
 
-use vize_davinci::pass::{PassDesc, PassFailure, PassObserver, Pipeline, run_pipeline_remarked};
+use vize_l0::pass::{PassDesc, PassFailure, PassObserver, Pipeline, run_pipeline_remarked};
 
 use crate::extract::{EXTRACT, Extraction, OptTier, extract};
 use crate::op::Program;

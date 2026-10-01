@@ -55,7 +55,7 @@ void test("consumer migration scan classifies stage physical names separately fr
   const stageSurfaces = SURFACES.filter((surface) => surface.group === "stage");
   assert.deepEqual(
     stageSurfaces.map((surface) => surface.label),
-    ["Davinci", "L0", "L1", "L2", "L1->L2"],
+    ["L0", "L1", "L2", "L1->L2"],
   );
   assert.ok(stageSurfaces.every((surface) => !surface.label.includes("/")));
   const rawOxc = SURFACES.find((surface) => surface.id === "raw_oxc");

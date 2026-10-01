@@ -16,16 +16,9 @@ import {
 } from "./support/davinci-stage-dependencies.ts";
 
 const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>([
-  ["vize_davinci", [["vize_l0", null]]],
   ["vize_l1", [["vize_l0", null]]],
   ["vize_l2", [["vize_l0", null]]],
-  [
-    "vize_l3",
-    [
-      ["vize_l0", null],
-      ["vize_davinci", null],
-    ],
-  ],
+  ["vize_l3", [["vize_l0", null]]],
   [
     "vize_l1_to_l2",
     [
@@ -47,8 +40,7 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
 
 const publishedDavinciStages = new Set([
   "vize_l0",
-  "vize_davinci_derive",
-  "vize_davinci",
+  "vize_l0_derive",
   "vize_l1",
   "vize_l2",
   "vize_l3",
@@ -77,7 +69,6 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
   const tiers = new Map<string, number>([
     ["vize_carton", 1],
     ["vize_l0", 0.5],
-    ["vize_davinci", 1],
     ["vize_l1", 1],
     ["vize_l2", 2],
     ["vize_l3", 3],
@@ -87,12 +78,11 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
   const expectedEdges = new Map<string, string[]>([
     ["vize_carton", ["vize_l0"]],
     ["vize_l0", []],
-    ["vize_davinci", ["vize_l0"]],
     ["vize_l1", ["vize_l0"]],
-    ["vize_l2", ["vize_davinci", "vize_l0"]],
-    ["vize_l3", ["vize_davinci", "vize_l0"]],
-    ["vize_l1_to_l2", ["vize_davinci", "vize_l0", "vize_l1", "vize_l2", "vize_l3"]],
-    ["vize_l2_to_l3", ["vize_davinci", "vize_l0", "vize_l2", "vize_l3"]],
+    ["vize_l2", ["vize_l0"]],
+    ["vize_l3", ["vize_l0"]],
+    ["vize_l1_to_l2", ["vize_l0", "vize_l1", "vize_l2", "vize_l3"]],
+    ["vize_l2_to_l3", ["vize_l0", "vize_l2", "vize_l3"]],
   ]);
 
   for (const [packageName, packageTier] of tiers) {

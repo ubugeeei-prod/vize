@@ -5,7 +5,7 @@
 //! leaf bindings but did not close back into `DumpSlot::bindings`, so malformed
 //! fuzz input could panic when indentation closed a slot-owned model frame.
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l2::dump::Page as L2Page;
 
 const SLOT_MODEL: &str = "\

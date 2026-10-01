@@ -37,16 +37,12 @@ impl MaestroServer {
 
         drop(diagnostic_guard);
 
-        if let Some(diagnostics) = diagnostics
+        if let Some(diagnostics) = diagnostics.filter(|diagnostics| !diagnostics.is_empty())
             && self.state.documents.version(uri) == Some(expected)
         {
-            self.state
-                .cache_lint_hover_diagnostics(uri, expected, &diagnostics);
-            if !diagnostics.is_empty() {
-                self.client
-                    .publish_diagnostics(uri.clone(), diagnostics, None)
-                    .await;
-            }
+            self.client
+                .publish_diagnostics(uri.clone(), diagnostics, None)
+                .await;
         }
     }
 
@@ -113,8 +109,6 @@ impl MaestroServer {
             );
             return;
         }
-        self.state
-            .cache_lint_hover_diagnostics(uri, version, &diagnostics);
 
         // An importer refresh, save, or edit may satisfy a queued initial pass.
         // Retire that job only after collecting the complete current result;

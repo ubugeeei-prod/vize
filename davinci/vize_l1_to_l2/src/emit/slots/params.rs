@@ -53,7 +53,7 @@ pub(super) fn group_slot_content<'a>(
 fn template_slot_content<'a>(
     start_walk: &PageWalk,
     children: &'a Region<'a>,
-    id: Option<vize_davinci::id::NodeId>,
+    id: Option<vize_l0::id::NodeId>,
 ) -> Option<&'a SlotContentOp<'a>> {
     let mut walk = start_walk.clone();
     for op in children.ops.iter() {

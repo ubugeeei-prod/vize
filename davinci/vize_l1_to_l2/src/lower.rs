@@ -17,15 +17,15 @@
 //! `L2Page::of(&lowered.root.ops).op_count()` on every input —
 //! the law the side tables and the L2 verifier's `verify_table` key on.
 //!
-//! [`Diagnostic`]: vize_davinci::diagnostic::Diagnostic
+//! [`Diagnostic`]: vize_l0::diag::Diagnostic
 //! [`L2Page`]: vize_l2::dump::Page
 //! [`SurfaceError`]: vize_l1::SurfaceError
 
 use alloc::vec::Vec as StdVec;
 use core::fmt;
 
-use vize_davinci::diagnostic::Diagnostic;
-use vize_davinci::side_table::SideTable;
+use vize_l0::diag::Diagnostic;
+use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, String};
 use vize_l1::{SurfaceError, SurfaceTree};
 

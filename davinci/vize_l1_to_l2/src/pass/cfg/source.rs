@@ -9,7 +9,7 @@
 //! through the P4-1a fact API ([`super::group`]) under the consumer's own
 //! declared demand.
 
-use vize_davinci::fact::{FactConsumer, FactManager};
+use vize_l0::fact::{FactConsumer, FactManager};
 
 use super::ComplexityFacts;
 use super::group::{TEMPLATE_FACTS, TemplateComplexityGroup};
@@ -61,7 +61,7 @@ impl ComplexityFacts {
 mod tests {
     use super::super::group::TemplateComplexityGroup;
     use super::{COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE, template_facts};
-    use vize_davinci::fact::{Demand, FactConsumer, FactGroup};
+    use vize_l0::fact::{Demand, FactConsumer, FactGroup};
 
     struct Probe;
     impl FactConsumer for Probe {

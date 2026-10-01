@@ -2,9 +2,9 @@
 //! into one compound op; the SSR lane renders each recorded part in place.
 
 use vize_atelier_core::RuntimeHelper;
-use vize_davinci::id::NodeId;
-use vize_davinci::side_table::SideTable;
 use vize_l0::Span;
+use vize_l0::id::NodeId;
+use vize_l0::side_table::SideTable;
 use vize_l1_to_l2::lower::{TextPart, TextParts, rebuild_source};
 use vize_l1_to_l2::{TransformContent, decode_ssr_static_text};
 use vize_l2::expr::{ExprRef, OpaqueReason};

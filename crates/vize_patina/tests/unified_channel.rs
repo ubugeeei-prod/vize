@@ -1,11 +1,11 @@
 //! P4-6c: Patina diagnostics on the unified channel, pinned as whole
-//! `vize_davinci::diagnostic::Diagnostic` values — severity by the rule's
+//! `vize_l0::diag::Diagnostic` values — severity by the rule's
 //! contract, the exemption an unwitnessed error reports under, the stage,
 //! the span and every structured part.
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, PartKind, Stage};
+use vize_l0::diag::{Advisory, Diagnostic, DiagnosticPart, PartKind, Stage};
 use vize_l0::{SourceRoot, Span};
 use vize_patina::output::unified::{UnifiedError, to_unified};
 use vize_patina::rule_contracts::contract_for;
@@ -92,7 +92,7 @@ fn configuration_cannot_make_a_heuristic_rule_an_error() {
     let unified = to_unified(&demoted, root()).expect("convertible");
     assert_eq!(
         (unified.severity(), unified.exemption()),
-        (vize_davinci::diagnostic::Severity::Warning, None)
+        (vize_l0::diag::Severity::Warning, None)
     );
 }
 

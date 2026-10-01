@@ -13,7 +13,6 @@ oxc_ast = { workspace = true }
 oxc_parser = { workspace = true }
 oxc_span = { workspace = true }
 vize_l0 = { workspace = true }
-vize_davinci = { workspace = true }
 
 [lints]
 workspace = true

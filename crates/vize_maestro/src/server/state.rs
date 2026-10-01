@@ -8,7 +8,6 @@
 mod art_template_context;
 mod config;
 mod features;
-mod lint_hover;
 mod resident;
 mod virtual_docs;
 mod workspace_folders;
@@ -38,7 +37,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use dashmap::DashMap;
 use parking_lot::{Mutex, RwLock};
-use tower_lsp::lsp_types::{Diagnostic, Url};
+use tower_lsp::lsp_types::Url;
 use vize_l0::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
 use vize_l0::dialect::VueDialect;
 
@@ -73,9 +72,6 @@ pub struct ServerState {
     /// shard guard there deadlocks the whole server against the next
     /// `didOpen`/`didChange` write (#3377, same class as #3315/#3373).
     virtual_docs_cache: DashMap<Url, Arc<VirtualDocuments>>,
-    /// Published lint diagnostics for the current document revision. Hover
-    /// reads this instead of running the linter on every pointer movement.
-    lint_hover_cache: DashMap<Url, (i32, Arc<Vec<Diagnostic>>)>,
     pub(super) open_imports: super::importers::OpenImportIndex,
     /// Importer-scoped package routes reused by synchronous IDE requests.
     /// The resolver validates manifest, link, and source inputs before each
@@ -190,7 +186,6 @@ impl ServerState {
             resident: resident::ResidentCache::default(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
-            lint_hover_cache: DashMap::new(),
             open_imports: super::importers::OpenImportIndex::with_package_routes(
                 package_route_resolver.clone(),
             ),
@@ -240,10 +235,22 @@ impl ServerState {
         }
     }
 
+    /// Set the workspace root path.
+    #[cfg(feature = "native")]
+    pub fn set_workspace_root(&self, path: PathBuf) {
+        *self.workspace_root.write() = Some(path);
+        self.package_route_resolver.lock().clear();
+        self.global_component_references.invalidate();
+        // Invalidate batch cache when workspace changes
+        self.batch_cache.invalidate();
+        // Overlays shadow files resolved relative to the workspace root, so a
+        // new root retargets them even though no document changed.
+        self.corsa_overlays.invalidate();
+    }
+
     /// Close a document and release any cached Corsa overlay immediately.
     pub(crate) fn close_document(&self, uri: &Url) {
         self.documents.close(uri);
-        self.lint_hover_cache.remove(uri);
         self.resident.close_document(uri);
         #[cfg(feature = "native")]
         {
@@ -332,5 +339,11 @@ impl ServerState {
     #[inline]
     pub fn is_lsp_lint_enabled(&self) -> bool {
         self.lsp_features().lint
+    }
+
+    /// Get the workspace root path.
+    #[cfg(feature = "native")]
+    pub fn get_workspace_root(&self) -> Option<PathBuf> {
+        self.workspace_root.read().clone()
     }
 }

@@ -1,4 +1,4 @@
-use vize_davinci::dump::{Dump, Mode};
+use vize_l0::dump::{Dump, Mode};
 use vize_l3::dump::Page;
 use vize_l3::op::OpKind;
 

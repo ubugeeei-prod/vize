@@ -4218,6 +4218,7 @@ dependencies = [
  "sha2 0.11.0",
  "similar",
  "tempfile",
+ "unicode-width",
  "vize_armature",
  "vize_atelier_core",
  "vize_atelier_dom",
@@ -4227,7 +4228,6 @@ dependencies = [
  "vize_croquis",
  "vize_croquis_cf",
  "vize_curator",
- "vize_davinci",
  "vize_doctor",
  "vize_fresco",
  "vize_glyph",
@@ -4289,7 +4289,6 @@ dependencies = [
  "thiserror 2.0.20",
  "vize_armature",
  "vize_croquis",
- "vize_davinci",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -4311,7 +4310,7 @@ dependencies = [
  "toml",
  "vize_atelier_core",
  "vize_croquis",
- "vize_davinci",
+ "vize_curator",
  "vize_l0",
  "vize_l1_to_l2",
 ]
@@ -4338,7 +4337,6 @@ dependencies = [
  "vize_atelier_ssr",
  "vize_atelier_vapor",
  "vize_croquis",
- "vize_davinci",
  "vize_l0",
  "vize_l1_to_l2",
  "vize_l2",
@@ -4399,7 +4397,7 @@ dependencies = [
  "vize_atelier_core",
  "vize_atelier_sfc",
  "vize_croquis",
- "vize_davinci",
+ "vize_curator",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -4431,7 +4429,7 @@ dependencies = [
  "vize_atelier_ssr",
  "vize_carton",
  "vize_croquis",
- "vize_davinci",
+ "vize_curator",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -4486,7 +4484,6 @@ dependencies = [
  "vize_atelier_jsx",
  "vize_atelier_sfc",
  "vize_croquis",
- "vize_davinci",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -4535,7 +4532,8 @@ dependencies = [
  "vize_armature",
  "vize_atelier_sfc",
  "vize_carton",
- "vize_davinci",
+ "vize_l0",
+ "vize_l2",
  "vize_l3",
  "vize_relief",
 ]
@@ -4562,7 +4560,7 @@ dependencies = [
  "vize_armature",
  "vize_carton",
  "vize_croquis",
- "vize_davinci",
+ "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
 ]
@@ -4584,7 +4582,6 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_croquis",
  "vize_croquis_cf",
- "vize_davinci",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -4594,41 +4591,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "vize_davinci"
-version = "0.429.2"
-dependencies = [
- "criterion",
- "davinci_harness",
- "davinci_test_support",
- "insta",
- "serde_json",
- "unicode-width",
- "vize_atelier_core",
- "vize_atelier_sfc",
- "vize_croquis",
- "vize_davinci_derive",
- "vize_l0",
- "vize_l1",
- "vize_l1_to_l2",
- "vize_l2",
-]
-
-[[package]]
-name = "vize_davinci_derive"
-version = "0.429.2"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
-
-[[package]]
 name = "vize_dialect_moonbit"
 version = "0.429.2"
 dependencies = [
  "serde_json",
  "sha2 0.11.0",
- "vize_davinci",
  "vize_extension_contract",
  "vize_extension_host",
  "vize_l0",
@@ -4658,7 +4625,6 @@ name = "vize_extension_contract"
 version = "0.429.2"
 dependencies = [
  "serde",
- "vize_davinci",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -4673,7 +4639,6 @@ dependencies = [
  "serde",
  "serde_json",
  "vize_canon",
- "vize_davinci",
  "vize_extension_contract",
  "vize_guest",
  "vize_l0",
@@ -4744,6 +4709,8 @@ version = "0.429.2"
 dependencies = [
  "bitflags 2.13.1",
  "compact_str",
+ "criterion",
+ "davinci_harness",
  "davinci_test_support",
  "globset",
  "insta",
@@ -4760,8 +4727,22 @@ dependencies = [
  "smallvec",
  "stacker",
  "tempfile",
+ "vize_atelier_sfc",
+ "vize_l0_derive",
+ "vize_l1",
+ "vize_l1_to_l2",
+ "vize_l2",
  "which",
  "xxhash-rust",
+]
+
+[[package]]
+name = "vize_l0_derive"
+version = "0.429.2"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
 ]
 
 [[package]]
@@ -4797,7 +4778,6 @@ dependencies = [
  "vize_atelier_dom",
  "vize_atelier_sfc",
  "vize_croquis",
- "vize_davinci",
  "vize_l0",
  "vize_l1",
  "vize_l2",
@@ -4811,7 +4791,6 @@ dependencies = [
  "oxc_ast",
  "oxc_parser",
  "oxc_span",
- "vize_davinci",
  "vize_l0",
 ]
 
@@ -4823,7 +4802,6 @@ dependencies = [
  "insta",
  "serde_json",
  "vize_atelier_sfc",
- "vize_davinci",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -4837,7 +4815,6 @@ version = "0.429.2"
 dependencies = [
  "serde_json",
  "toml",
- "vize_davinci",
  "vize_l0",
 ]
 
@@ -4885,9 +4862,9 @@ dependencies = [
  "vize_canon",
  "vize_croquis",
  "vize_croquis_cf",
- "vize_davinci",
  "vize_glyph",
  "vize_l0",
+ "vize_l2",
  "vize_musea",
  "vize_patina",
  "vize_relief",
@@ -4949,7 +4926,6 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_canon",
  "vize_croquis",
- "vize_davinci",
  "vize_glyph",
  "vize_l0",
  "vize_l1",
@@ -4968,7 +4944,6 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.20",
- "vize_davinci",
  "vize_l0",
 ]
 
@@ -4979,7 +4954,6 @@ dependencies = [
  "salsa",
  "toml",
  "vize_croquis",
- "vize_davinci",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -5033,7 +5007,6 @@ dependencies = [
  "vize_croquis",
  "vize_croquis_cf",
  "vize_curator",
- "vize_davinci",
  "vize_glyph",
  "vize_l0",
  "vize_l1",

@@ -22,9 +22,9 @@
 mod authored;
 mod folio_spans;
 
-use vize_davinci::diagnostic::Diagnostic;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::side_table::SideTable;
+use vize_l0::diag::Diagnostic;
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, String};
 use vize_l1::parse;
 use vize_l1_to_l2::{LegacyCaps, Lowered, lower_with_caps};
@@ -99,7 +99,7 @@ pub fn with_transformed<R>(
         &Lowered<'_>,
         &L2Page,
         &vize_l1_to_l2::pass::L2Facts,
-        &vize_davinci::pass::BudgetObserver,
+        &vize_l0::pass::BudgetObserver,
     ) -> R,
 ) -> R {
     with_transformed_caps(source, LegacyCaps::VUE3, f)
@@ -124,13 +124,13 @@ pub fn with_transformed_caps<R>(
         &Lowered<'_>,
         &L2Page,
         &vize_l1_to_l2::pass::L2Facts,
-        &vize_davinci::pass::BudgetObserver,
+        &vize_l0::pass::BudgetObserver,
     ) -> R,
 ) -> R {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let mut lowered = lower_with_caps(&allocator, &tree, &errors, caps);
-    let mut budget = vize_davinci::pass::BudgetObserver::new();
+    let mut budget = vize_l0::pass::BudgetObserver::new();
     let facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut budget);
     let folio = L2Page::of(&lowered.root.ops);
     f(&lowered, &folio, &facts, &budget)

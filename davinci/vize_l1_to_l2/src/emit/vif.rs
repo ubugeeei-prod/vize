@@ -1,6 +1,6 @@
 //! Native HTML `ui.if` (`v-if` / `v-else-if` / `v-else`) emission.
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l0::{Span, String, ToCompactString};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{IfBranch, IfOp, Op};

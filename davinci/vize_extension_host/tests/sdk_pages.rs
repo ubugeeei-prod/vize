@@ -9,12 +9,12 @@
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
 use davinci_test_support::surface_fixture::{MALFORMED, WELL_FORMED};
-use vize_davinci::dump::Dump;
 use vize_extension_host::accept::full_text;
 use vize_extension_host::surface_page::{PageClose, PageNode, PageToken};
 use vize_extension_host::{SurfacePage, negotiate};
 use vize_guest::pages::{l1, l2};
 use vize_guest::types::Span;
+use vize_l0::dump::Dump;
 use vize_l0::{Allocator, String};
 use vize_l2::dump::historical::v1::Page as HistoricalL2Page;
 

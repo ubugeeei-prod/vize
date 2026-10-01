@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, VecDeque};
 use std::path::Path;
 use std::sync::{Mutex, OnceLock};
-use vize_davinci::key::{AmbientInput, CachedArtifact, KeyManifest, source_block_key};
+use vize_l0::key::{AmbientInput, CachedArtifact, KeyManifest, source_block_key};
 mod disk;
 #[cfg(test)]
 mod tests;

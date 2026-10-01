@@ -3,7 +3,7 @@
 mod support;
 
 use support::artifact;
-use vize_davinci::diagnostic::{Advisory, Diagnostic, Stage};
+use vize_l0::diag::{Advisory, Diagnostic, Stage};
 use vize_l0::{Span, cstr};
 
 #[test]

@@ -16,8 +16,8 @@
 //! over the same [`PageWalk`]: the mint/skip arithmetic still lives only
 //! here, and both shapes end at the same accounting assertion.
 
-use vize_davinci::id::NodeId;
 use vize_l0::ensure_sufficient_stack;
+use vize_l0::id::NodeId;
 use vize_l2::op::Op;
 
 /// The page-order id state of one pass run: a mirror of `Cx::mint_op`'s

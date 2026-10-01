@@ -9,7 +9,7 @@ use super::{
 };
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
-use vize_davinci::fact::FactManager;
+use vize_l0::fact::FactManager;
 
 /// The proxy arm the spike measured and rejected: the same document behind
 /// a handle whose every read is one napi call.

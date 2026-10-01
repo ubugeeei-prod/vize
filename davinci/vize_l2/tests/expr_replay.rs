@@ -13,7 +13,7 @@
 //! then re-parse the retained payload into a second pooled arena.
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, Vec as ArenaVec, pool};
 use vize_l2::dump::{
     Expr as DumpExpr, Interpolation as DumpInterpolation, Op as DumpOp, Page as L2Page,

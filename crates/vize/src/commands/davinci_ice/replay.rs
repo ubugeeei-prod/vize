@@ -11,8 +11,8 @@
 
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
-use vize_davinci::dump::repro::Page as ReproPage;
-use vize_davinci::pass::parse_pipelines;
+use vize_curator::repro::Page as ReproPage;
+use vize_l0::pass::parse_pipelines;
 use vize_l0::{Allocator, String, cstr};
 
 use super::{
@@ -65,7 +65,7 @@ pub(crate) fn replay(folio: &ReproPage) -> Result<Option<IceFailure>, String> {
     let segments = parse_pipelines(folio.pipeline.as_str())
         .map_err(|error| cstr!("invalid repro pipeline: {error:?}"))?;
     let stage = segments.first().map_or("", |segment| {
-        vize_davinci::stage::pipeline_wire_id(segment.stage)
+        vize_l0::stage::pipeline_wire_id(segment.stage)
     });
     match catch_unwind(AssertUnwindSafe(|| {
         compile_source(folio.artifact.as_str(), ssr, vapor);

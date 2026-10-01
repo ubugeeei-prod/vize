@@ -10,7 +10,7 @@
 mod support;
 
 use support::assert_authored_artifact;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, SourceBlock, SourceRoot};
 use vize_l1::parse;
 use vize_l1_to_l2::lower_source_block;

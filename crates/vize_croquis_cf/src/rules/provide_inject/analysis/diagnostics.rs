@@ -1,4 +1,5 @@
 use super::super::index::{ResolvedProvider, ResolvedProviderBranch};
+use super::super::keys::provide_key_argument;
 use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
 use crate::registry::FileId;
 use vize_carton::{CompactString, FxHashSet, cstr};
@@ -25,6 +26,7 @@ pub(super) fn unmatched_inject_diagnostic(
     unmatched_count: usize,
     branch_count: usize,
 ) -> CrossFileDiagnostic {
+    let key_argument = provide_key_argument(&inject.key);
     let partial = unmatched_count < branch_count;
     let has_default = inject.default_value.is_some();
     let severity = if has_default {
@@ -34,24 +36,24 @@ pub(super) fn unmatched_inject_diagnostic(
     };
     let message = match (partial, has_default) {
         (true, false) => cstr!(
-            "**Conditionally Unmatched Inject**: `inject('{}')` has no matching `provide()` in {} of {} ancestor branches. It returns `undefined` in those render contexts.",
-            key,
+            "**Conditionally Unmatched Inject**: `inject({})` has no matching `provide()` in {} of {} ancestor branches. It returns `undefined` in those render contexts.",
+            key_argument,
             unmatched_count,
             branch_count
         ),
         (true, true) => cstr!(
-            "**Conditionally Defaulted Inject**: `inject('{}')` falls back to its default value in {} of {} ancestor branches.",
-            key,
+            "**Conditionally Defaulted Inject**: `inject({})` falls back to its default value in {} of {} ancestor branches.",
+            key_argument,
             unmatched_count,
             branch_count
         ),
         (false, false) => cstr!(
-            "**Unmatched Inject**: `inject('{}')` has no matching `provide()` in any ancestor component and returns `undefined` at runtime.",
-            key
+            "**Unmatched Inject**: `inject({})` has no matching `provide()` in any ancestor component and returns `undefined` at runtime.",
+            key_argument
         ),
         (false, true) => cstr!(
-            "**Unmatched Inject Default**: `inject('{}')` falls back to its default value because no ancestor provides this key.",
-            key
+            "**Unmatched Inject Default**: `inject({})` falls back to its default value because no ancestor provides this key.",
+            key_argument
         ),
     };
     CrossFileDiagnostic::new(
@@ -63,8 +65,8 @@ pub(super) fn unmatched_inject_diagnostic(
     )
     .with_end_offset(inject.end)
     .with_suggestion(cstr!(
-        "Add `provide('{}', value)` on every render branch, or keep a default only if fallback is intentional",
-        key
+        "Add `provide({}, value)` on every render branch, or keep a default only if fallback is intentional",
+        key_argument
     ))
 }
 
@@ -75,6 +77,7 @@ pub(super) fn type_mismatch_diagnostic(
     key: &CompactString,
     providers: &[&ResolvedProvider],
 ) -> CrossFileDiagnostic {
+    let key_argument = provide_key_argument(&inject.key);
     let mut seen_types = FxHashSet::default();
     let provided_type = CompactString::new(
         providers
@@ -87,13 +90,13 @@ pub(super) fn type_mismatch_diagnostic(
     let injected_type = injected_type.clone();
     let message = if providers.len() == 1 {
         cstr!(
-            "inject('{}') expects a different type than its nearest provide()",
-            key
+            "inject({}) expects a different type than its nearest provide()",
+            key_argument
         )
     } else {
         cstr!(
-            "inject('{}') expects a different type than its nearest provide() branches ({})",
-            key,
+            "inject({}) expects a different type than its nearest provide() branches ({})",
+            key_argument,
             provided_type
         )
     };
@@ -113,7 +116,7 @@ pub(super) fn type_mismatch_diagnostic(
         diagnostic = diagnostic.with_related(
             provider.provider_id,
             provider.provide.start,
-            cstr!("provide('{key}') source"),
+            cstr!("provide({key_argument}) source"),
         );
     }
     diagnostic
@@ -122,13 +125,13 @@ pub(super) fn type_mismatch_diagnostic(
 pub(super) fn with_provider_relateds(
     mut diagnostic: CrossFileDiagnostic,
     provider_related: &[(FileId, u32)],
-    key: &CompactString,
+    key_argument: &CompactString,
 ) -> CrossFileDiagnostic {
     for (provider_id, provider_offset) in provider_related {
         diagnostic = diagnostic.with_related(
             *provider_id,
             *provider_offset,
-            cstr!("provide('{key}') source"),
+            cstr!("provide({key_argument}) source"),
         );
     }
     diagnostic

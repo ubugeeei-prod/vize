@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use vize_carton::String;
-use vize_davinci::key::manifest::{AmbientInput, CachedArtifact};
+use vize_l0::key::manifest::{AmbientInput, CachedArtifact};
 
 use super::{CorsaSessionKey, SessionInputs, corsa_build_identity, tsconfig_chain_digest};
 

@@ -8,7 +8,7 @@
 
 mod support;
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l1_to_l2::pass::vfor::{ForFacts, ForName};
 use vize_l2::dump::{Attribute as DumpAttribute, Op as DumpOp};
 use vize_l2::scope::ScopeOrigin;

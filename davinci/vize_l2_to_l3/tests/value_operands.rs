@@ -1,4 +1,4 @@
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String};
 use vize_l2_to_l3::lower;
 use vize_l3::operand::{OperandRole as Role, ValueKind};

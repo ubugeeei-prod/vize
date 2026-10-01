@@ -1,6 +1,6 @@
 //! The actual imported-component metadata consumer as a backdated query.
 
-use vize_davinci::summary::{AlphaEntry, Facet, SfcSummary};
+use vize_l2::summary::{AlphaEntry, Facet, SfcSummary};
 
 use crate::{ResidentDocuments, SharedDescriptor, SummaryInput, sfc_summary};
 
@@ -94,7 +94,7 @@ impl ResidentDocuments {
         filename: &str,
         text: &str,
         configuration: &str,
-        export: impl FnOnce(&SharedDescriptor) -> Option<vize_davinci::summary::AlphaPages>,
+        export: impl FnOnce(&SharedDescriptor) -> Option<vize_l2::summary::AlphaPages>,
     ) -> Option<ComponentSurface> {
         let _current = self.interface(key, filename, text, configuration, export)?;
         let input = self.interfaces.entries.get(key)?.input;

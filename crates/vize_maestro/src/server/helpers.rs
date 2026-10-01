@@ -13,6 +13,8 @@ use tower_lsp::lsp_types::{
     MarkupContent, MarkupKind, NumberOrString, Position, TextDocumentContentChangeEvent, Url,
 };
 
+use crate::ide::DiagnosticService;
+
 use super::MaestroServer;
 use vize_l0::append;
 
@@ -194,14 +196,17 @@ impl MaestroServer {
     pub(crate) fn get_lint_hover_at_position(
         &self,
         uri: &Url,
+        _content: &str,
         position: Position,
     ) -> Option<String> {
         if !self.state.is_lsp_lint_enabled() {
             return None;
         }
 
-        // Reuse the lint/musea diagnostics collected for this document version.
-        let diagnostics = self.state.lint_hover_diagnostics(uri);
+        // Hover only surfaces `vize/lint` / `vize/musea` diagnostics at the
+        // cursor, so collect just that subset instead of re-running the entire
+        // pipeline (full SFC type-check + ecosystem passes) on every hover.
+        let diagnostics = DiagnosticService::collect_lint_only(&self.state, uri);
 
         let lint_diags: Vec<_> = diagnostics
             .iter()

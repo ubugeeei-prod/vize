@@ -1,4 +1,22 @@
-use super::compile_scoped_css_without_whitespace;
+use super::{CssCompileOptions, compile_css, compile_scoped_css_without_whitespace};
+
+#[test]
+fn direct_scoped_css_matches_vite_pipeline_for_nested_and_slotted_rules() {
+    let css = ".c { & .d { color: red; } }\n.a > :slotted(.b) { color: blue; }";
+    let scope_id = "data-v-x";
+    let pipeline = crate::vite_plugin::scope_css_for_pipeline(css, scope_id);
+    let expected = compile_css(&pipeline, &CssCompileOptions::default());
+    let actual = compile_css(
+        css,
+        &CssCompileOptions {
+            scoped: true,
+            scope_id: Some(scope_id.into()),
+            ..Default::default()
+        },
+    );
+    assert!(actual.errors.is_empty(), "{:?}", actual.errors);
+    assert_eq!(actual.code, expected.code);
+}
 
 #[test]
 fn test_compile_scoped_css_keeps_functional_pseudo_selector_list_intact() {
@@ -47,9 +65,9 @@ fn test_compile_scoped_css_keeps_slotted_parent_combinator() {
 
     assert_eq!(
         code,
-        ".card>[data-v-123-s]{flex:1;}\
-         .card>.title[data-v-123-s],\
-         .card>.subtitle[data-v-123-s]{line-height:1.2;}\
-         .card>[data-v-123-s]:not(:last-child){margin-bottom:2px;}"
+        ".card[data-v-123]>[data-v-123-s]{flex:1;}\
+         .card[data-v-123]>.title[data-v-123-s],\
+         .card[data-v-123]>.subtitle[data-v-123-s]{line-height:1.2;}\
+         .card[data-v-123]>[data-v-123-s]:not(:last-child){margin-bottom:2px;}"
     );
 }

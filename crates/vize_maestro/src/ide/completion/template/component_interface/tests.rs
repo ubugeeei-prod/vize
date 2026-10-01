@@ -5,7 +5,7 @@ mod edits;
 mod legacy;
 
 use super::{component_metadata_from_interface, export_component_interface};
-use vize_davinci::summary::SfcSummary;
+use vize_l2::summary::SfcSummary;
 
 #[test]
 fn alpha_metadata_preserves_full_prop_and_slot_contracts() {

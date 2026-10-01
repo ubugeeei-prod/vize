@@ -17,7 +17,7 @@
 
 use core::fmt::{Result as FmtResult, Write};
 
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{String, cstr};
 
 use crate::contract::Span;

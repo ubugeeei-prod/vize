@@ -14,7 +14,7 @@
 //!
 //! [`ScopeFacts`]: vize_l2::scope::ScopeFacts
 
-use vize_davinci::side_table::SideTable;
+use vize_l0::side_table::SideTable;
 
 use crate::lower::Lowered;
 

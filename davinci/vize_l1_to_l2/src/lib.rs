@@ -47,7 +47,7 @@
 //!   materialized before/after provenance ([`vize_l2::provenance`])
 //!   that both survive failure, Lean-InfoTree style.
 //!
-//! [`Diagnostic`]: vize_davinci::diagnostic::Diagnostic
+//! [`Diagnostic`]: vize_l0::diag::Diagnostic
 //! [`SurfaceError`]: vize_l1::SurfaceError
 //! [`IfOp`]: vize_l2::op::IfOp
 //! [`ForOp`]: vize_l2::op::ForOp

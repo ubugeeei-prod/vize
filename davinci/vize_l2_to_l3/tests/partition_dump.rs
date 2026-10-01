@@ -2,7 +2,7 @@
 //! text is a print/parse fixed point, the live-fact mirror prints exactly,
 //! and malformed records are refused with their line.
 
-use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
+use vize_l0::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{Allocator, cstr};
 use vize_l2_to_l3::partition::dump::{Fact as DumpPartitionFact, Page as PartitionPage};
 use vize_l2_to_l3::{PartitionKind, lower};

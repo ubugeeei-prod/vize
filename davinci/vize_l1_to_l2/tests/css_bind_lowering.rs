@@ -3,7 +3,7 @@
 
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, SourceFrameError, SourceRoot};
 use vize_l1_to_l2::{lower_style_block, lower_style_block_in};
 use vize_l2::dump::{

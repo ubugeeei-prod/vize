@@ -10,8 +10,8 @@ use std::path::Path;
 
 use vize_carton::CompactString;
 use vize_croquis::facts::{FactGroup, component_identity};
-use vize_davinci::fact::{Demand, FactProducer, FactTable, FactTableBuilder, FactView};
-use vize_davinci::pass::AnalysisId;
+use vize_l0::fact::{Demand, FactProducer, FactTable, FactTableBuilder, FactView};
+use vize_l0::pass::AnalysisId;
 
 use crate::module_paths::import_candidates;
 use crate::registry::{FileId, ModuleEntry, ModuleRegistry};
@@ -35,7 +35,7 @@ pub struct RenderSite {
 pub struct RenderTree;
 
 impl FactGroup for RenderTree {
-    const ID: AnalysisId = vize_davinci::fact::ids::RENDER_TREE;
+    const ID: AnalysisId = vize_l0::fact::ids::RENDER_TREE;
     const NAME: &'static str = "render-tree";
     const STRATUM: u8 = 0;
     const DEPENDS: Demand = Demand::NONE;

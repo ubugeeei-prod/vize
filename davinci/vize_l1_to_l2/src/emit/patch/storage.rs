@@ -1,4 +1,4 @@
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l0::{SmallVec, String};
 
 use super::PatchFacts;

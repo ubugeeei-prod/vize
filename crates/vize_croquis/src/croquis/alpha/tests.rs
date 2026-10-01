@@ -7,7 +7,7 @@ use crate::drawer::{Drawer, DrawerOptions};
 use crate::macros::{EmitDefinition, ModelDefinition, PropDefinition, SlotsDefinition};
 use vize_armature::parse;
 use vize_carton::CompactString;
-use vize_davinci::summary::{Facet, SfcSummary};
+use vize_l2::summary::{Facet, SfcSummary};
 
 fn draw(script: &str, template: &str) -> Croquis {
     let allocator = vize_carton::Allocator::new();

@@ -75,9 +75,9 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::diagnostic::Diagnostic;
-use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
-use vize_davinci::side_table::SideTable;
+use vize_l0::diag::Diagnostic;
+use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
+use vize_l0::side_table::SideTable;
 use vize_l0::{String, ensure_sufficient_stack};
 use vize_l2::op::{BindingOp, Op};
 use vize_l2::provenance::ProvenanceRecord;

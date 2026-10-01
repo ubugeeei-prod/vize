@@ -2,10 +2,10 @@
 //!
 //! Parser-derived race risks in tracker order.
 
-use vize_davinci::fact::{
+use vize_l0::fact::{
     Demand, FactConsumer, FactGroup, FactProducer, FactTable, FactTableBuilder, FactView, ids,
 };
-use vize_davinci::pass::AnalysisId;
+use vize_l0::pass::AnalysisId;
 
 use crate::Croquis;
 use crate::race::RaceConditionRisk;

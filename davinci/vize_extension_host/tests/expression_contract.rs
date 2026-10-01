@@ -12,9 +12,9 @@ use vize_canon::virtual_ts::{
     ProjectionFeatures, ProjectionMapping, ProjectionMeta, ProjectionSpanKind, VizeMapping,
     VizeSubSpan,
 };
-use vize_davinci::dump::{Dump, Error as DumpError};
 use vize_extension_host::expression::{Analysis, ProjectionPage, accept_analysis};
 use vize_extension_host::{Diagnostic, Page, Severity, Span, Stage};
+use vize_l0::dump::{Dump, Error as DumpError};
 use vize_l0::{String, cstr};
 
 fn analysis() -> Analysis {

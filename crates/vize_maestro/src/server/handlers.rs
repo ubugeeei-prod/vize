@@ -133,10 +133,11 @@ impl LanguageServer for MaestroServer {
         let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+        let Some(ctx) = position_to_offset(&content, position.line, position.character)
+            .and_then(|offset| IdeContext::new(&self.state, uri, offset))
+        else {
             return Ok(None);
         };
-        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
 
         // Type-aware hover for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
         // Routed before the SFC path since JSX documents never produce an SFC
@@ -159,7 +160,7 @@ impl LanguageServer for MaestroServer {
         #[cfg(not(feature = "native"))]
         let mut hover_result: Option<Hover> = HoverService::hover(&ctx);
 
-        let lint_hover = self.get_lint_hover_at_position(uri, position);
+        let lint_hover = self.get_lint_hover_at_position(uri, &ctx.content, position);
         if let Some(lint_info) = lint_hover {
             hover_result = Some(Self::merge_hover_with_lint(hover_result, lint_info));
         }

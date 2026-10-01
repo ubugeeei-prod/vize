@@ -2,7 +2,7 @@
 
 #![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, Vec as ArenaVec};
 use vize_l2::dump::Page as L2Page;
 use vize_l2::op::{ElementOp, Namespace, Op, Region, TextOp};

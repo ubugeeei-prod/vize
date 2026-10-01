@@ -5,7 +5,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::diagnostic::Diagnostic;
+use vize_l0::diag::Diagnostic;
 use vize_l0::{Span, String, cstr};
 use vize_l1::Token;
 use vize_l1::pug::{

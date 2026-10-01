@@ -5,13 +5,13 @@
 //! holds exactly one row, keyed by `()`, with **block-relative** spans. A
 //! consumer that knows where the block sits in its file shifts the spans
 //! ([`ComplexityFacts::shifted`]). Consumers declare the group in their
-//! [`FactConsumer::DEMAND`](vize_davinci::fact::FactConsumer::DEMAND), so a
+//! [`FactConsumer::DEMAND`](vize_l0::fact::FactConsumer::DEMAND), so a
 //! read outside that declaration trips the TS-35 detector.
 
-use vize_davinci::fact::{
+use vize_l0::fact::{
     Demand, FactGroup, FactProducer, FactRegistry, FactTable, FactView, ProducerEntry,
 };
-use vize_davinci::pass::AnalysisId;
+use vize_l0::pass::AnalysisId;
 use vize_l0::{Allocator, Span};
 
 use super::ComplexityFacts;

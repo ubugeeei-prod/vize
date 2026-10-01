@@ -9,7 +9,7 @@ use std::{
     process::{Command, Output},
 };
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Span};
 use vize_l2::dump::Page as L2Page;
 use vize_l3::dump::Page as L3Page;

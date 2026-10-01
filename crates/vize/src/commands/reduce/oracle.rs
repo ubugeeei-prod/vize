@@ -12,10 +12,10 @@
 use std::process::{Command, Stdio};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_davinci::dump::repro::Page as ReproPage;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::pass::{BudgetObserver, Pair, RemarkCollector, RemarkKind};
-use vize_davinci::stage::pipeline_wire_id;
+use vize_curator::repro::Page as ReproPage;
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::pass::{BudgetObserver, Pair, RemarkCollector, RemarkKind};
+use vize_l0::stage::pipeline_wire_id;
 use vize_l0::{Allocator, String, cstr};
 
 use crate::commands::davinci_ice::{self, IceFailure};
@@ -54,7 +54,7 @@ pub(crate) enum Check {
 /// One L2 run's observable products.
 struct L2Run {
     folio: String,
-    remarks: Vec<vize_davinci::pass::observer::RecordedRemark>,
+    remarks: Vec<vize_l0::pass::observer::RecordedRemark>,
     diagnostics: Vec<String>,
     walks: u32,
 }

@@ -28,7 +28,7 @@ pub use tier::{OptTier, OptimizationBudget, TiePolicy};
 
 use alloc::vec::Vec;
 
-use vize_davinci::pass::{Fusability, PassDesc, PassKind, Preserved};
+use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
 
 use crate::op::Program;
 use crate::placement::facts::Index;

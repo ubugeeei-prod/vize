@@ -1,7 +1,7 @@
 //! TS-28 bridge from Rust L2->L3 lowering into the Lean reference fixture set.
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::Allocator;
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l2_to_l3::lower;
 use vize_l3::dump::Page as L3Page;
 use vize_l3::trace::{TraceBackend, backend_trace_text, reference_trace_text};

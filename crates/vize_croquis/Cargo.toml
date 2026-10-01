@@ -12,7 +12,8 @@ metadata.vize.stability = "compatibility-preview"
 vize_armature.workspace = true
 vize_carton.workspace = true
 vize_relief.workspace = true
-vize_davinci.workspace = true
+vize_l0.workspace = true
+vize_l2.workspace = true
 vize_l3.workspace = true
 phf.workspace = true
 once_cell.workspace = true
@@ -43,6 +44,13 @@ legacy-differential = []
 davinci-differential = ["legacy-differential"]
 
 [dev-dependencies]
+# Dev-only cycle (vize_atelier_sfc depends on this crate normally); cargo
+# permits it, and the fixture harness and host bench need the descriptor-level orchestration.
+# Path-only on purpose: the workspace entry pins `version = "=x.y.z"`, which
+# survives into the published manifest and would demand a vize_atelier_sfc
+# release before this crate. Version-less dev-deps are stripped when packaging.
+vize_atelier_sfc = { path = "../vize_atelier_sfc" }
+
 davinci_test_support.workspace = true
 tempfile.workspace = true
 insta.workspace = true
@@ -50,12 +58,6 @@ insta.workspace = true
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 criterion.workspace = true
 davinci_harness.workspace = true
-# Dev-only cycle (vize_atelier_sfc depends on this crate normally); cargo
-# permits it, and the davinci bench needs the descriptor-level orchestration.
-# Path-only on purpose: the workspace entry pins `version = "=x.y.z"`, which
-# survives into the published manifest and would demand a vize_atelier_sfc
-# release before this crate. Version-less dev-deps are stripped when packaging.
-vize_atelier_sfc = { path = "../vize_atelier_sfc" }
 
 [[bench]]
 name = "davinci"

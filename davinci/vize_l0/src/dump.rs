@@ -1,53 +1,146 @@
-//! The textual dump contract: every level artifact prints and parses back.
+//! Dump - the textual dump format every Davinci stage speaks.
 //!
-//! Dumps exist for `vize dump` and observers; they are never a transport
-//! between levels.
-#![expect(clippy::todo, reason = "skeleton: #6833")]
+//! A folio is a stage artifact rendered as text. The contract is defined by
+//! [`Dump`] together with the mode-explicit equality laws below; the
+//! normalization rules shared by every folio page are documented in
+//! `docs/davinci/plan/folio-format.md`.
+//!
+//! # Equality laws (mode-explicit)
+//!
+//! - [`Mode::Full`] is the injective, parseable form. The round-trip
+//!   laws apply: `print(parse(t)) == t` byte-for-byte for canonical
+//!   (normalized) text `t`, and `parse(print(v)) == v` structurally for
+//!   values. Non-canonical input is normalized by the first print, by
+//!   design - parse is lenient about section order and unsorted lists;
+//!   print always emits the canonical form.
+//! - [`Mode::Display`] elides spans and defaults for humans and
+//!   carries **no** round-trip law. Do not parse `Display` output.
+//!
+//! Normalization (stable sequential ids, sorted map iteration) applies to
+//! both modes.
 
-use alloc::boxed::Box;
 use core::fmt;
 
+use vize_l0::String;
+
 pub mod capture;
-pub mod runtime;
+pub mod collector;
+pub mod json;
+pub mod page;
+pub mod plan;
+pub mod remarks;
 pub mod value;
 
-pub use runtime::{DumpPage, DumpRuntime};
-pub use value::DumpValue;
+/// `#[derive(Dump)]` - generates the mechanical trio (print / parse /
+/// field order) for an owned document struct; see `vize_l0_derive`.
+/// Anything semantic (`Display` elision, section meaning) stays
+/// hand-written, so derived pages print the same canonical text in both
+/// modes.
+pub use vize_l0_derive::Dump;
 
-/// Which form [`Dump::print`] renders.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum DumpMode {
-    /// Canonical text that [`Dump::parse`] reads back.
+/// Print mode for a folio page.
+///
+/// See the module docs for the mode-explicit equality laws.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Mode {
+    /// Injective, parseable form. Round-trip laws apply.
     Full,
-    /// Human-oriented text; never parsed.
+    /// Human-oriented form: spans and defaults are elided. No round-trip
+    /// law.
     Display,
 }
 
-/// A parse failure with its 1-based line.
+/// Parse error for a folio page.
+///
+/// Carries the 1-based line number in the input at which parsing failed.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DumpError {
-    /// 1-based line of the failure.
+pub struct Error {
+    /// 1-based line number of the offending line (0 when the error is not
+    /// attributable to a single line, e.g. unexpected end of input).
     pub line: usize,
-    /// What went wrong.
-    pub message: Box<str>,
+    /// Human-readable description of the failure.
+    pub message: String,
 }
 
-impl fmt::Display for DumpError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let _ = f;
-        todo!()
+impl Error {
+    /// Create an error attributed to `line` (1-based).
+    pub fn new(line: usize, message: String) -> Self {
+        Self { line, message }
     }
 }
 
-impl core::error::Error for DumpError {}
-
-/// A level artifact that can be dumped as text and read back.
-///
-/// `print` in [`DumpMode::Full`] and `parse` form a round-trip pair.
-pub trait Dump: Sized {
-    /// Render into `w` in `mode`.
-    fn print<W: fmt::Write>(&self, w: &mut W, mode: DumpMode) -> fmt::Result;
-
-    /// Parse canonical `Full` text back into a value.
-    fn parse(input: &str) -> Result<Self, DumpError>;
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.line == 0 {
+            write!(f, "folio parse error: {}", self.message)
+        } else {
+            write!(
+                f,
+                "folio parse error at line {}: {}",
+                self.line, self.message
+            )
+        }
+    }
 }
+
+impl core::error::Error for Error {}
+
+/// A stage artifact that can be dumped as text and read back.
+///
+/// `print` with [`Mode::Full`] and `parse` form the round-trip pair;
+/// see the module docs for the exact laws. Both directions normalize:
+/// `parse` accepts non-canonical input where the format allows it, and
+/// `print` always emits canonical text.
+pub trait Dump: Sized {
+    /// Render this value into `w` in the requested mode.
+    ///
+    /// `Full` output is canonical: printing the same value twice yields
+    /// identical bytes, and distinct values yield distinct bytes.
+    fn print<W: fmt::Write>(&self, w: &mut W, mode: Mode) -> fmt::Result;
+
+    /// Parse canonical or near-canonical `Full`-mode text back into a
+    /// value.
+    ///
+    /// Never call this on `Display`-mode output.
+    fn parse(input: &str) -> Result<Self, Error>;
+
+    /// Convenience: render into an owned string.
+    ///
+    /// Infallible because writing into a growable string cannot fail.
+    fn print_to_string(&self, mode: Mode) -> String {
+        let mut out = String::default();
+        // Writing into a growable string cannot fail.
+        let _ = self.print(&mut out, mode);
+        out
+    }
+}
+
+/// Snapshot-assert a [`Dump`] value using the normalized `Full`-mode
+/// printer.
+///
+/// Expands to `insta::assert_snapshot!` over
+/// `Dump::print_to_string(&value, Mode::Full)`, so snapshots pin the
+/// canonical text and stay diffable. The expansion carries the workspace's
+/// `#[expect(clippy::disallowed_macros)]` insta convention; the consuming
+/// crate needs `insta` as a dev-dependency.
+#[macro_export]
+macro_rules! assert_dump_snapshot {
+    ($value:expr) => {{
+        #[expect(
+            clippy::disallowed_macros,
+            reason = "insta snapshots expand through std::format"
+        )]
+        {
+            ::insta::assert_snapshot!($crate::dump::Dump::print_to_string(
+                &$value,
+                $crate::dump::Mode::Full,
+            ));
+        }
+    }};
+}
+
+// Stable aliases for the earlier foundation surface.
+pub use Error as DumpError;
+pub use Mode as DumpMode;
+pub use collector::{Collector as DumpRuntime, Page as DumpPage};
+pub use value::DumpValue;

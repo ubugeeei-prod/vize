@@ -5,9 +5,9 @@
 //!
 //! VIR is absorbed into Davinci as the **croquis folio**: the parsing
 //! side and the format contract live in
-//! `vize_davinci::dump::croquis` (see
+//! `vize_croquis::dump` (see
 //! `docs/davinci/plan/folio-format.md`). Changes here must keep the folio
-//! round-trip green (`cargo test -p vize_davinci --test croquis_folio`).
+//! round-trip green (`cargo test -p vize_croquis --test croquis_dump`).
 
 use super::{Croquis, TypeExportKind};
 use std::fmt::Write;
@@ -26,11 +26,11 @@ impl Croquis {
     ///
     /// **VIR is the croquis folio.** The format contract (grammar,
     /// normalization, round-trip laws) lives in
-    /// `vize_davinci::dump::croquis::Page` and is documented in
+    /// `vize_croquis::dump::Page` and is documented in
     /// `docs/davinci/plan/folio-format.md`; the typed Croquis dump tests
     /// verify canonical bytes. This renderer stays the producing side and
     /// must not drift from the folio parser - the fixture harness in
-    /// `davinci/vize_davinci/tests/croquis_dump.rs` pins the two together.
+    /// `crates/vize_croquis/tests/croquis_dump.rs` pins the two together.
     ///
     /// - Raw renderer output is near-canonical: the folio's first print
     ///   normalizes it (sorted map-derived name lists)

@@ -6,8 +6,8 @@
 
 use vize_croquis_cf::providers::ProjectSources;
 use vize_croquis_cf::providers::vue_router::typing::{self, RouteDiagnostic};
-use vize_davinci::diagnostic::{PartKind, Severity};
 use vize_l0::CompactString;
+use vize_l0::diag::{PartKind, Severity};
 use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
 
 use super::cross_file::{CliLintFileResult, apply_sfc_cross_file_lint, merge_lint_result};

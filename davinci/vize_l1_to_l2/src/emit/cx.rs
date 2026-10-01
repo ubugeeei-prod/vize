@@ -1,6 +1,6 @@
 //! Shared emitter context helpers kept out of `emit.rs` for the source budget.
 
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l0::{String, ToCompactString};
 use vize_l2::expr::{ExprRef, JsExpr};
 use vize_l2::op::ForOp;

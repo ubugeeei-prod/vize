@@ -10,6 +10,7 @@ metadata.vize.stability = "experimental"
 readme = "README.md"
 
 [dependencies]
+vize_l0_derive.workspace = true
 # Arena allocator: one pool per compile, backing both the template containers
 # and the retained-AST parses (Davinci P1-10 collapsed the P1-1 two-pool handle).
 oxc_allocator = { workspace = true }
@@ -43,9 +44,30 @@ extension = []
 lint-glob = ["dep:globset"]
 
 [dev-dependencies]
+criterion.workspace = true
+# Foundation laws use higher-level and legacy producers only as dev oracles.
+# Version-less path declarations are stripped when this foundation is packaged.
+davinci_harness.workspace = true
+vize_atelier_sfc = { path = "../../crates/vize_atelier_sfc" }
+vize_l1 = { path = "../vize_l1" }
+vize_l1_to_l2 = { path = "../vize_l1_to_l2" }
+vize_l2 = { path = "../vize_l2" }
 davinci_test_support.workspace = true
 insta.workspace = true
 tempfile.workspace = true
+
+[[bench]]
+name = "pass_runtime"
+harness = false
+
+[[bench]]
+name = "fact_runtime"
+harness = false
+
+[[test]]
+name = "remark_zero_cost"
+# Exclude libtest's reporting thread from process-wide allocation counters.
+harness = false
 
 [lints]
 workspace = true

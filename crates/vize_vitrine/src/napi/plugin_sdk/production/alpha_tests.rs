@@ -33,7 +33,7 @@ fn projected(source: &str) -> Map<String, Value> {
     .unwrap()
 }
 
-fn raw_rows(entries: &[vize_davinci::summary::AlphaEntry]) -> Value {
+fn raw_rows(entries: &[vize_l2::summary::AlphaEntry]) -> Value {
     Value::Array(
         entries
             .iter()

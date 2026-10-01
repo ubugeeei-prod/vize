@@ -2,7 +2,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_davinci::side_table::SideTable;
+use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, String};
 use vize_l2::expr::{ExprRef, VueFilterApp, VueFilterExpr};
 use vize_l2::op::{BindingOp, DynamicName, Op};

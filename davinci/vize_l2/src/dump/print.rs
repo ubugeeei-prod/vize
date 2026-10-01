@@ -15,15 +15,15 @@ use crate::dump::Page;
 use crate::dump::codec::Grammar;
 use crate::dump::owned::{Attribute, Binding, Expr, Name, Op};
 use crate::op::Namespace;
-use vize_davinci::dump::Mode as DumpMode;
-use vize_davinci::key::rebase;
+use vize_l0::dump::Mode as DumpMode;
+use vize_l0::key::rebase;
 
 mod binding;
 
 use binding::{print_attribute, print_binding};
 
 /// How a page prints: its grammar and mode, plus the offset spans are rebased
-/// to. The public [`Dump`](vize_davinci::dump::Dump) print always uses
+/// to. The public [`Dump`](vize_l0::dump::Dump) print always uses
 /// base `0` (spans verbatim); only the P5-1a key feed passes a block start.
 #[derive(Debug, Clone, Copy)]
 pub(super) struct Style {

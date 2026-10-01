@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::summary::{Facet, SfcSummary};
+use vize_l2::summary::{Facet, SfcSummary};
 use vize_resident::{ResidentDocuments, parse_descriptor};
 
 use super::super::export_component_interface;

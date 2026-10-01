@@ -4,7 +4,7 @@
 //! facts. Targeted structural tests can miss a stale pass decision; the
 //! snapshot is the oracle for the whole lowered artifact.
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String};
 use vize_l2_to_l3::lower;
 use vize_l2_to_l3::partition::dump::Page as PartitionPage;

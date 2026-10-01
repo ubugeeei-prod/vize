@@ -8,7 +8,7 @@ use vize_atelier_sfc::{
 const CSS: &str = ".card > :slotted(.title) { font-weight: bold; }";
 
 #[test]
-fn scoped_slotted_selector_keeps_its_unscoped_parent() {
+fn scoped_slotted_selector_keeps_parent_combinator() {
     let source = "<template><div class=\"card\"><slot /></div></template>\n<style scoped>.card > :slotted(.title) { font-weight: bold; }</style>";
     let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
     let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();

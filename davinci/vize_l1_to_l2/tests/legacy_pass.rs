@@ -8,8 +8,8 @@ use support::{
     assert_transformed_sound, assert_transformed_sound_caps, with_transformed,
     with_transformed_caps,
 };
-use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::config::VueVersion;
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l1_to_l2::LegacyCaps;
 
 fn vue2() -> LegacyCaps {
