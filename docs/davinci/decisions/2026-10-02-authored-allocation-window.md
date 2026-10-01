@@ -46,6 +46,14 @@ scripts disabled. Cargo target accounting uses the existing `@iarna/toml`
 the fresh-runner module failure observed in the required report job on
 `59fa68836210274f5f906fb191addc9348ee33e1`, while preserving collection,
 artifact upload and the final required-job aggregate.
+The [hosted report on `d95bf12b8`](https://github.com/ubugeeei-prod/vize/actions/runs/36937207450/job/110622282693)
+successfully installed the pinned parser, collected the inventory and
+uploaded the artifact. Its final aggregate rejected the tooling failure
+caused by the older law's fixed collector and uploader step positions.
+The workflow law locates these stages by their names and checks their order:
+pinned setup, locked root install, collection, then upload. Each stage must
+run unconditionally and propagate failures; the same-job final aggregate
+and instruction-check failure, cancellation and skip rejection remain required.
 Fresh exact-head Actions and protected merge-queue checks remain required.
 No product route or native feature gains completion credit from this
 harness correction.
