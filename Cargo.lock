@@ -4753,6 +4753,10 @@ version = "0.429.2"
 dependencies = [
  "davinci_test_support",
  "htmlize",
+ "oxc_ast",
+ "oxc_diagnostics",
+ "oxc_parser",
+ "oxc_span",
  "vize_armature",
  "vize_l0",
 ]

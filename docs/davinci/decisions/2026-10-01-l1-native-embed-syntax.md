@@ -1,0 +1,81 @@
+# L1 retained native JS/TS syntax provider
+
+Tracked in [#6836](https://github.com/ubugeeei-prod/vize/issues/6836), following
+the [typed-embed design](https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929).
+This is a genuine dependent consumer of the
+[checked embedded source API](./2026-10-01-l1-embed-source.md), not a product
+switch or a completed container/dialect integration.
+
+`embed::syntax::parse_once` consumes caller-selected `Grammar` and validated
+`EmbedSource`. Expr and Program use the pinned OXC parser once in L0's shared
+arena, retaining the actual AST, comments and full diagnostic metadata.
+Program parses the original source directly. Expr uses a private `(` and
+newline wrapper because OXC's expression entry point discards its comment
+list. Removing only the generated outer parentheses preserves authored
+parentheses; an escaping wrapper or multiple statement shape cannot become a
+successful expression. No wrapper Program or wrapper text is exposed for Expr.
+
+AST spans use exact checked wrapper correction and the source map before they
+become authored coordinates. Comments expose corrected spans and decoded bytes.
+Parser diagnostics remain available even when a local syntax hole hides the
+recovery AST; message, severity, code, help, note, URL and label metadata are
+retained rather than replaced with a generic parse failure.
+
+Diagnostic labels are a covering view, separately from exact edit selection.
+A label intersecting generated delimiters is intersected with real source;
+wrapper-only labels anchor to the corresponding source start/end point.
+Labels splitting a UTF-8 scalar cover that scalar, then entity-interior
+boundaries conservatively cover the complete authored reference. Exact AST
+locations still reject wrapper bytes, non-UTF-8 boundaries and partial
+entities. A diagnostic highlight must never select rewrite bytes.
+
+This initial API is explicitly bounded: the complete parser input admits at
+most 31 conservative word/punctuation units, including generated delimiters,
+strings and comments. ASCII identifier/numeric runs count once; every other
+non-whitespace byte counts once. Whitespace ends a word run and non-ASCII UTF-8
+bytes overcount. Larger valid snippets return `TokenBudget`, preserving source.
+This avoids pretending that L0's expression nesting guard bounds unbraced
+statement recursion: OXC also recurses on nested if/loops, labels, new, class
+heritage, assignments/arrows and TS syntax without deep brackets. A complete,
+less conservative recursion admission provider remains unfinished.
+
+Other shapes, Flow and input rejected by L0's existing OXC safety guard return
+distinct typed local holes. Both admission checks see actual wrapped input.
+Unadmitted inputs are not parsed and do not manufacture parser diagnostics.
+Accepted malformed syntax retains OXC's real diagnostics and comments. OXC
+syntax acceptance is not semantic validation or identifier resolution.
+
+Normal dependencies are pinned workspace OXC libraries and L0. There is no
+normal/build dependency on a legacy crate, extra pipeline stage, inter-level
+serialization, new node allocator or root markup/product route change. The
+source API and this genuine child must use an actual native GitHub Stack;
+parent-base links or prose alone are insufficient. Publication remains held
+for root source review and current Stack delivery. Protected queue and actual
+merge proof are required before reporting integration as merged.
+
+TODO:
+
+- Implement HandlerBody and SlotParams entry points with corrected wrapper
+  laws; build ForHead and FilterChain from real dialect/language pieces.
+- Replace conservative whole-input admission only after complete JS/TS parser
+  recursion is bounded, including statement/type/operator nesting and escapes.
+- Admit JSX/TSX explicitly rather than infer them from current Js/Ts enums.
+- Resolve language once per file, diagnose script/setup mismatch, and attach
+  artifacts to existing L0 node identities in the actual markup/container path.
+- Use concrete dialect shape decomposition plus lexical diagnostics; malformed
+  recovered directive arguments do not alone admit a grammar.
+- Connect actual L2/L4 consumers without reparsing. Preserve held v-pre and
+  product fix-history gates before replacing production routes.
+
+Thirteen consumer/admission laws cover actual JS/TS programs and ASTs, expression comments
+and authored parentheses, decoded entity input, exact edit projection,
+retained failure diagnostics, UTF-8/wrapper diagnostic covering, unsupported
+shape and safety holes, language admission, checked parser lengths and the
+conservative recursion budget. Four admission laws pass under a lightweight
+rustc harness using the actual source/tests with a minimal formatter shell;
+this is admission evidence, not OXC parser execution.
+Formatting and offline locked Cargo metadata pass locally; no Cargo build or
+test suite runs because local disk is constrained. Actual compile, strict
+Clippy and all nine OXC consumer laws await authorized Actions. Source-derived Croquis
+inventory is regenerated without classifier changes. Instruction100 ceilings
+are unchanged; exact-head and protected queue validation remain required.

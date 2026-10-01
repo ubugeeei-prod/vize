@@ -6,6 +6,7 @@
 //! Existing markup parsing does not select grammars or produce typed trees yet.
 
 pub mod source;
+pub mod syntax;
 
 pub use source::{
     DecodeMap, DecodeSegment, DecodeSegmentKind, EmbedSource, SourceError, prepare_attribute_value,
@@ -26,8 +27,8 @@ pub enum Shape {
 
 /// Host language resolved once from the file's container syntax.
 ///
-/// Resolution, mismatched script-language diagnostics and language providers
-/// remain unimplemented under #6836. This enum does not select an emitter.
+/// File resolution and mismatched script-language diagnostics remain
+/// unimplemented under #6836. This enum does not select an emitter.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Lang {
     Js,
@@ -41,11 +42,11 @@ pub struct Grammar {
     pub lang: Lang,
 }
 
-/// Borrowed source contract for a future separate L1 embedded-tree artifact.
+/// Borrowed input for a separate L1 embedded-tree artifact.
 ///
-/// TODO (#6836): parse an OXC tree once, retain comments and typed holes, and
-/// register the artifact by the L0 node identity after #6833 extraction. No new
-/// identity allocator, tree parser or legacy-backed semantics is supplied here.
+/// `syntax::parse_once` retains an OXC expression/program with comments and
+/// typed holes. Registering artifacts by existing L0 node identity, remaining
+/// shapes and file-language resolution are still unfinished under #6836.
 #[derive(Debug, Clone, Copy)]
 pub struct Embed<'a> {
     pub grammar: Grammar,

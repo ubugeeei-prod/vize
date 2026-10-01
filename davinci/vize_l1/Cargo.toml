@@ -32,6 +32,10 @@ moonbit = []
 [dependencies]
 vize_l0 = { workspace = true }
 htmlize = { workspace = true }
+oxc_ast = { workspace = true }
+oxc_diagnostics = { workspace = true }
+oxc_parser = { workspace = true }
+oxc_span = { workspace = true }
 
 [dev-dependencies]
 davinci_test_support.workspace = true
