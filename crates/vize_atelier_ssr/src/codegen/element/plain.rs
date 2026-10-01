@@ -270,8 +270,11 @@ impl<'a> SsrCodegenContext<'a> {
                 // and the `:type` itself was ignored. (#962)
                 if let Some(type_exp) = self.get_dynamic_bind_exp(el, "type") {
                     self.use_ssr_helper(RuntimeHelper::SsrRenderDynamicModel);
+                    let value = self
+                        .model_attr_value(el, "value")
+                        .unwrap_or_else(|| "null".to_compact_string());
                     self.push_string_part_dynamic(&cstr!(
-                        "_ssrRenderDynamicModel({type_exp}, {exp}, null)"
+                        "_ssrRenderDynamicModel({type_exp}, {exp}, {value})"
                     ));
                     return;
                 }
@@ -281,18 +284,16 @@ impl<'a> SsrCodegenContext<'a> {
                 match input_type.as_deref() {
                     Some("checkbox") => {
                         self.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
-                        self.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+                        let checked = self.checkbox_model_checked(el, &exp);
                         self.push_string_part_dynamic(&cstr!(
-                            "(_ssrIncludeBooleanAttr(Array.isArray({exp}) ? _ssrLooseContain({exp}, null) : {exp})) ? \" checked\" : \"\""
+                            "(_ssrIncludeBooleanAttr({checked})) ? \" checked\" : \"\""
                         ));
                     }
                     Some("radio") => {
                         self.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
                         self.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
-                        let value = self.get_element_attr_value(el, "value");
-                        let value_exp = value
-                            .as_deref()
-                            .map(quoted_js_string)
+                        let value_exp = self
+                            .model_attr_value(el, "value")
                             .unwrap_or_else(|| "null".to_compact_string());
                         self.push_string_part_dynamic(&cstr!(
                             "(_ssrIncludeBooleanAttr(_ssrLooseEqual({exp}, {value_exp}))) ? \" checked\" : \"\""
@@ -383,6 +384,28 @@ impl<'a> SsrCodegenContext<'a> {
             }
         }
         None
+    }
+
+    /// Form model comparisons consume the bound expression, or the quoted
+    /// static attribute, rather than the serialized HTML attribute value.
+    pub(super) fn model_attr_value(&mut self, el: &ElementNode, name: &str) -> Option<String> {
+        self.get_dynamic_bind_exp(el, name).or_else(|| {
+            self.get_element_attr_value(el, name)
+                .map(|value| quoted_js_string(&value))
+        })
+    }
+
+    pub(super) fn checkbox_model_checked(&mut self, el: &ElementNode, exp: &str) -> String {
+        if let Some(value) = self.model_attr_value(el, "true-value") {
+            self.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
+            cstr!("_ssrLooseEqual({exp}, {value})")
+        } else {
+            self.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+            let value = self
+                .model_attr_value(el, "value")
+                .unwrap_or_else(|| "null".to_compact_string());
+            cstr!("Array.isArray({exp}) ? _ssrLooseContain({exp}, {value}) : {exp}")
+        }
     }
 
     /// Return the source expression bound by `:name` (or `v-bind:name`) on

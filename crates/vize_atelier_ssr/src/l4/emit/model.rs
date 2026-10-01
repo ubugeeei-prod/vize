@@ -50,6 +50,28 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             .map(|value| self.expr(value, TransformContent::Decoded))
             .transpose()
     }
+
+    fn model_attr_value(&self, attached: &Attached<'_, '_>, name: &str) -> Result<Option<String>> {
+        match bound_value(attached, name) {
+            Some(value) => self.expr(value, TransformContent::Decoded).map(Some),
+            None => Ok(static_value(attached, name).map(|value| quoted_js_string(&value))),
+        }
+    }
+
+    fn checkbox_model_checked(&mut self, attached: &Attached<'_, '_>, exp: &str) -> Result<String> {
+        if let Some(value) = self.model_attr_value(attached, "true-value")? {
+            self.ctx.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
+            Ok(cstr!("_ssrLooseEqual({exp}, {value})"))
+        } else {
+            self.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+            let value = self
+                .model_attr_value(attached, "value")?
+                .unwrap_or_else(|| "null".to_compact_string());
+            Ok(cstr!(
+                "Array.isArray({exp}) ? _ssrLooseContain({exp}, {value}) : {exp}"
+            ))
+        }
+    }
 }
 
 /// `process_v_model_on_element` at the directive's authored position.
@@ -67,24 +89,27 @@ pub(super) fn emit_inline(
         "input" => {
             if let Some(type_exp) = em.dynamic_type(attached)? {
                 em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderDynamicModel);
+                let value = em
+                    .model_attr_value(attached, "value")?
+                    .unwrap_or_else(|| "null".to_compact_string());
                 em.ctx.push_string_part_dynamic(&cstr!(
-                    "_ssrRenderDynamicModel({type_exp}, {exp}, null)"
+                    "_ssrRenderDynamicModel({type_exp}, {exp}, {value})"
                 ));
                 return Ok(());
             }
             match static_value(attached, "type").as_deref() {
                 Some("checkbox") => {
                     em.ctx.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
-                    em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+                    let checked = em.checkbox_model_checked(attached, &exp)?;
                     em.ctx.push_string_part_dynamic(&cstr!(
-                        "(_ssrIncludeBooleanAttr(Array.isArray({exp}) ? _ssrLooseContain({exp}, null) : {exp})) ? \" checked\" : \"\""
+                        "(_ssrIncludeBooleanAttr({checked})) ? \" checked\" : \"\""
                     ));
                 }
                 Some("radio") => {
                     em.ctx.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
                     em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
-                    let value = static_value(attached, "value")
-                        .map(|value| quoted_js_string(&value))
+                    let value = em
+                        .model_attr_value(attached, "value")?
                         .unwrap_or_else(|| "null".to_compact_string());
                     em.ctx.push_string_part_dynamic(&cstr!(
                         "(_ssrIncludeBooleanAttr(_ssrLooseEqual({exp}, {value}))) ? \" checked\" : \"\""
@@ -126,17 +151,17 @@ pub(super) fn collect_root(
     }
     match static_value(attached, "type").as_deref() {
         Some("checkbox") => {
-            em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+            let checked = em.checkbox_model_checked(attached, &exp)?;
             entries.push(component_prop_entry(
                 "checked",
-                &cstr!("(Array.isArray({exp}) ? _ssrLooseContain({exp}, null) : {exp})"),
+                &cstr!("({checked})"),
                 false,
             ));
         }
         Some("radio") => {
             em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
-            let value = static_value(attached, "value")
-                .map(|value| quoted_js_string(&value))
+            let value = em
+                .model_attr_value(attached, "value")?
                 .unwrap_or_else(|| "null".to_compact_string());
             entries.push(component_prop_entry(
                 "checked",

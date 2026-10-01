@@ -77,18 +77,17 @@ impl<'a> SsrCodegenContext<'a> {
             let input_type = self.get_element_attr_value(el, "type");
             match input_type.as_deref() {
                 Some("checkbox") => {
-                    self.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+                    let checked = self.checkbox_model_checked(el, &exp);
                     entries.push(component_prop_entry(
                         "checked",
-                        &cstr!("(Array.isArray({exp}) ? _ssrLooseContain({exp}, null) : {exp})"),
+                        &cstr!("({checked})"),
                         false,
                     ));
                 }
                 Some("radio") => {
                     self.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
                     let value = self
-                        .get_element_attr_value(el, "value")
-                        .map(|value| quoted_js_string(&value))
+                        .model_attr_value(el, "value")
                         .unwrap_or_else(|| "null".to_compact_string());
                     entries.push(component_prop_entry(
                         "checked",

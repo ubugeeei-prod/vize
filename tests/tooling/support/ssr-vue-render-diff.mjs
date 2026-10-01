@@ -146,12 +146,13 @@ for (const fixture of cases) {
   } else {
     result.vue = await render(upstream.code, fixture);
     result.vize = await render(fixture.vize, fixture);
-    result.legacy = await render(fixture.legacy, fixture);
+    if (fixture.legacy !== undefined) result.legacy = await render(fixture.legacy, fixture);
   }
   process.stdout.write(`${JSON.stringify(result)}\n`);
   const upstreamHtml = result.vue?.html;
   const aligned = upstreamHtml !== undefined && result.vize?.html === upstreamHtml;
   const legacyWrong =
+    fixture.legacy === undefined ||
     fixture.expectLegacyMismatch === false ||
     result.legacy?.error !== undefined ||
     result.legacy?.html !== upstreamHtml;
