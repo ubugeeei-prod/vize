@@ -70,6 +70,7 @@ pub mod emit;
 pub mod exemptions;
 pub mod key;
 pub mod lower;
+pub mod native;
 pub mod partial;
 pub mod pass;
 

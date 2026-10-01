@@ -178,6 +178,11 @@ l1_to_l2	-	davinci/vize_l1_to_l2/src/emit/transform_expr.rs	0	0	1	2	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/emit/vfor/keys.rs	0	0	1	5	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/emit/vif.rs	0	0	1	2	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower.rs	1	3	1	2	1	0	0	0
+l1_to_l2	lower	davinci/vize_l1_to_l2/src/native.rs	1	13	1	4	1	0	0	0
+l1_to_l2	-	davinci/vize_l1_to_l2/src/native/element.rs	0	0	0	0	1	0	0	0
+l1_to_l2	-	davinci/vize_l1_to_l2/src/native/expression.rs	0	0	0	0	1	1	0	0
+l1_to_l2	-	davinci/vize_l1_to_l2/src/native/text.rs	0	0	1	1	0	0	0	0
+l1_to_l2	analysis	davinci/vize_l1_to_l2/src/native/tests.rs	2	0	2	0	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/binding.rs	1	1	1	9	1	7	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/bindop.rs	0	0	1	2	1	6	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/cloak.rs	0	0	1	1	0	0	0	0

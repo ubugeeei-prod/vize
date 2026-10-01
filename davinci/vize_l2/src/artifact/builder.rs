@@ -48,6 +48,11 @@ pub struct Builder<'a> {
 }
 
 impl<'a> Builder<'a> {
+    /// Borrow the root factory scope without exposing owned construction state.
+    pub fn region(&mut self) -> RegionBuilder<'_, 'a> {
+        RegionBuilder { builder: self }
+    }
+
     pub fn new(allocator: &'a Allocator, source: &'a str) -> Result<Self, ArtifactError> {
         u32::try_from(source.len()).map_err(|_| ArtifactError::SourceLimit)?;
         Ok(Self {
