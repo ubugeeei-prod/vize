@@ -48,10 +48,10 @@ syntax acceptance is not semantic validation or identifier resolution.
 Normal dependencies are pinned workspace OXC libraries and L0. There is no
 normal/build dependency on a legacy crate, extra pipeline stage, inter-level
 serialization, new node allocator or root markup/product route change. The
-source API and this genuine child must use an actual native GitHub Stack;
-parent-base links or prose alone are insufficient. Publication remains held
-for root source review and current Stack delivery. Protected queue and actual
-merge proof are required before reporting integration as merged.
+source API and this genuine child use verified native GitHub Stack #7349;
+parent-base links or prose alone are insufficient. Root review authorized
+publication after the preceding configuration Stack actually merged. Protected
+queue and actual merge proof are required before reporting integration as merged.
 
 TODO:
 
@@ -72,10 +72,19 @@ and authored parentheses, decoded entity input, exact edit projection,
 retained failure diagnostics, UTF-8/wrapper diagnostic covering, unsupported
 shape and safety holes, language admission, checked parser lengths and the
 conservative recursion budget. Four admission laws pass under a lightweight
-rustc harness using the actual source/tests with a minimal formatter shell;
-this is admission evidence, not OXC parser execution.
-Formatting and offline locked Cargo metadata pass locally; no Cargo build or
-test suite runs because local disk is constrained. Actual compile, strict
-Clippy and all nine OXC consumer laws await authorized Actions. Source-derived Croquis
-inventory is regenerated without classifier changes. Instruction100 ceilings
-are unchanged; exact-head and protected queue validation remain required.
+rustc harness using the actual source/tests with a minimal formatter shell.
+Exact-head Actions subsequently passed all twenty-five source/OXC/admission
+laws, crate compile, Clippy, wasm32-wasip2 default and no-default-feature
+libraries, full Check and strict100. Fresh-main replay preserves the merged
+directive provider's dev-only oracle and removes L1's now-zero skeleton baseline;
+new exact-head Actions must pass before protected queue submission. Formatting
+and offline locked Cargo metadata pass locally without Cargo builds. Source-derived
+Croquis inventory is regenerated without classifier changes. Instruction100
+ceilings are unchanged; protected queue validation remains required.
+
+The initial published [full Check](https://github.com/ubugeeei-prod/vize/actions/runs/36852534851)
+failed the exact per-file storage preflight. The reviewed child rows record its
+temporary L0 wrapper String (one import/one bound use) and four test-owned
+comment/diagnostic collection sites (one import/four bound uses, analysis
+category). Parent map/source rows are inherited through the actual dependency.
+No storage types, policy classifier, gates or instruction ceilings change.
