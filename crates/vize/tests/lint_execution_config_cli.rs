@@ -58,7 +58,12 @@ fn config_cross_file_checks_match_cli_and_no_config_disables_them() {
     assert_eq!(flags.status.code(), Some(1));
     let baseline = lint(root, &["--no-config", "App.vue", "Child.vue"]);
     assert_ne!(report(&flags), report(&baseline));
-    for switch in ["crossFile", "crossFileTree", "crossFileComplexity"] {
+    for (switch, flag) in [
+        ("crossFile", "--cross-file"),
+        ("crossFileTree", "--cross-file-tree"),
+        ("crossFileComplexity", "--cross-file-complexity"),
+    ] {
+        let flags = lint(root, &["--no-config", flag, "App.vue", "Child.vue"]);
         config(root, json!({(switch): true}));
         let configured = lint(root, &["App.vue", "Child.vue"]);
         assert_eq!(configured.status.code(), flags.status.code());
