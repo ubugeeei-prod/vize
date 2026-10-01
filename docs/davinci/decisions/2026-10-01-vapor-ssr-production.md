@@ -17,10 +17,11 @@ static-before-bound and bound-before-static orders are registered fixtures.
 Merged prop objects likewise retain the first ordinary static key, as Vue
 does; class/style/listeners still combine and computed keys remain dynamic.
 The merge-queue instruction gate caught a quadratic scan of retained keys on
-wide prop objects. Normalization now retains entries in their input vector
-and borrows static keys into a pre-sized hash set before moving any entries.
-Only duplicate ordinary indices are retained for removal. This preserves source
-order and first-entry spans without raising instruction or allocation budgets.
+wide prop objects. Objects of at most eight entries keep a bounded scan. Wider
+objects borrow static keys into a pre-sized hash set before moving any entries;
+only duplicate ordinary indices are retained for removal. Wide objects without
+class/style/listeners retain their input vector. Source order and first-entry
+spans are preserved without raising instruction or allocation budgets.
 
 Vue 3.5's merged `ssrGetDynamicModelProps` helper ignores checkbox `true-value`
 and can check a nonmatching truthy model. The input corpus mounts official
