@@ -60,8 +60,8 @@ impl Profiler {
     }
 
     /// Snapshot every span bucket — plain dotted keys first, then attributed
-    /// keys — for the machine-readable export.
-    pub(super) fn span_snapshot(&self) -> Vec<(&'static str, SpanAttribution, Metrics)> {
+    /// keys. The returned metrics are owned readbacks of the existing stores.
+    pub fn span_snapshot(&self) -> Vec<(&'static str, SpanAttribution, Metrics)> {
         let _allocation_tracking = pause_allocation_tracking();
         let mut spans = Vec::new();
         for shard in &self.metrics {
@@ -89,8 +89,8 @@ impl Profiler {
         spans
     }
 
-    /// Snapshot every counter for the machine-readable export.
-    pub(super) fn counter_snapshot(&self) -> Vec<(&'static str, CounterMetrics)> {
+    /// Snapshot every counter as an owned readback of the existing stores.
+    pub fn counter_snapshot(&self) -> Vec<(&'static str, CounterMetrics)> {
         let _allocation_tracking = pause_allocation_tracking();
         let mut counters = Vec::new();
         for shard in &self.counters {
