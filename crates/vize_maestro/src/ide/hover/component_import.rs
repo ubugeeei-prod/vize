@@ -80,6 +80,7 @@ pub(super) fn component_contract_markdown(
     }
 
     if !fields.is_empty() {
+        lines[0].push_str(" &");
         lines.push("{".to_string());
         lines.extend(fields);
         lines.push("}".to_string());
