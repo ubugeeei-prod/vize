@@ -279,7 +279,7 @@ mod tests {
 
     #[test]
     fn long_closed_interpolation_has_no_artificial_limit() {
-        let mut source = alloc::string::String::from("<template>{{ ");
+        let mut source = vize_l0::String::from("<template>{{ ");
         source.push_str(&"x".repeat(8192));
         source.push_str(" }}</template>");
         let allocator = Allocator::default();

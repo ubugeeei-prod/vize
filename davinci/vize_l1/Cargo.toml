@@ -22,6 +22,8 @@ metadata.vize.stability = "experimental"
 legacy-differential = []
 # Deprecated published feature spelling; keep as a compatibility alias.
 davinci-differential = ["legacy-differential"]
+# Enable the legacy callback adapter for native lexer differential checks.
+# The generic lexer and entity decoder themselves are available by default.
 native-markup-lex = []
 # Retain the moved tokenizer's Vue 1 raw-interpolation test lane.
 legacy = []

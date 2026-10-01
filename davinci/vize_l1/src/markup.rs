@@ -11,11 +11,11 @@
 //! is a dialect syntax hook ([`directive::DirectiveSyntax`]), like an MLIR
 //! custom assembly format.
 //!
-//! The profile-generic implementation is compiled in L1 unit tests and with
-//! the `native-markup-lex` feature. Default builds retain that skeleton API,
-//! while the surface tree and compiler use the same L1-owned compatibility
-//! tokenizer. Switching products to the generic lexer waits for the compiler
-//! fix-history gate #6880 and parity validation.
+//! The profile-generic lexer and entity decoder are available in default
+//! builds. The `native-markup-lex` feature enables the compatibility callback
+//! adapter for differential validation. The surface tree and compiler still
+//! use the L1-owned compatibility tokenizer. Switching products to the
+//! generic lexer waits for the compiler fix-history gate #6880 and parity.
 //! The directive hook is still a skeleton.
 //! Design: <https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929>.
 
