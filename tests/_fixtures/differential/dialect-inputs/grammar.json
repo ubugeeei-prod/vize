@@ -10,7 +10,7 @@
       "production": "list",
       "tokens": { "loop": "v-repeat=\"item: items\"", "event": "v-on=\"click: select\"" },
       "witness": {
-        "file": "crates/vize_armature/src/legacy.rs",
+        "file": "davinci/vize_l1/src/dialect/vue.rs",
         "selector": "Templates iterate with `v-repeat` (no `v-for`; that arrives in 1.0),"
       }
     },
@@ -22,7 +22,7 @@
       "production": "list",
       "tokens": { "loop": "v-repeat=\"item: items\"", "event": "v-on=\"click: select\"" },
       "witness": {
-        "file": "crates/vize_armature/src/legacy.rs",
+        "file": "davinci/vize_l1/src/dialect/vue.rs",
         "selector": "Shares the clause-style directive surface with 0.10 (`v-repeat`,"
       }
     },
@@ -34,7 +34,7 @@
       "production": "list",
       "tokens": { "loop": "v-for=\"item in items\"", "event": "@click=\"select\"" },
       "witness": {
-        "file": "crates/vize_armature/src/legacy.rs",
+        "file": "davinci/vize_l1/src/dialect/vue.rs",
         "selector": "The 1.0 migration replaced `v-repeat` with `v-for` (`track-by`,"
       }
     },
@@ -58,7 +58,7 @@
       "production": "attribute-interpolation",
       "tokens": {},
       "witness": {
-        "file": "crates/vize_armature/src/legacy.rs",
+        "file": "davinci/vize_l1/src/dialect/vue.rs",
         "selector": "interpolation still works inside plain attribute values"
       }
     },

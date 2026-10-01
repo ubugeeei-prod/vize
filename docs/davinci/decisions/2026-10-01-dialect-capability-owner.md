@@ -24,7 +24,10 @@ generic modules, including grouped imports and references behind `cfg`.
 The existing conversion capability bridge remains transitional; removing
 inline `caps` branches and isolating all legalization policy is separate work.
 This slice introduces no pipeline stage, transport serialization, product-route
-switch, fixture change, snapshot change or instruction-budget change.
+switch, fixture-source or expected-output byte change, snapshot change or
+numeric instruction-budget change. Four rare-dialect grammar witness paths
+follow the unchanged selector prose to L1; the generated inventory keeps all
+seven input hashes, parser modes, selectors and input-only coverage states.
 
 ## Replay and validation
 
@@ -49,6 +52,11 @@ remain fresh, and the dependency gate reports no forbidden normal/build edge.
 Actions must validate the exact PR head and protected queue candidate. The
 existing differential corpus and all instruction ceilings remain acceptance
 gates; local relocation or unit validation is not merge proof.
+
+The first PR Check exposed the stale grammar-owner paths. Updating witness
+metadata and regenerating the inventory preserves every generated input byte;
+the corpus checker continues to validate witnesses and hashes without a new
+fixture or expected-output acceptance.
 
 ## Remaining work under #6841
 
