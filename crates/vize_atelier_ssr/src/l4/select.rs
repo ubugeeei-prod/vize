@@ -1,7 +1,7 @@
 //! The L2 -> L3 -> string plan -> emission half of the SSR L4 lane, shared by
 //! the template compile path and callers that build L2 themselves (JSX).
 
-use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String, cstr};
 use vize_l0::{dump::capture::CaptureSink, level::Level};
 use vize_l1_to_l2::TransformExpressions;

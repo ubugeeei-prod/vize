@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use vize_davinci::diagnostic::{Severity, Tier};
+use vize_l0::diag::{Severity, Tier};
 
 use super::{DEMOTED, RULE_CONTRACTS, contract_for};
 use crate::rules::css::{

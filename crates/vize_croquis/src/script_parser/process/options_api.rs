@@ -487,11 +487,9 @@ fn collect_component_registrations_from_components_object<'a>(
                 if property.computed {
                     continue;
                 }
-
                 let Some(name) = property_key_name(&property.key) else {
                     continue;
                 };
-
                 let local_name = if property.shorthand {
                     name
                 } else {
@@ -500,7 +498,6 @@ fn collect_component_registrations_from_components_object<'a>(
                     };
                     local_name
                 };
-
                 let pair = (CompactString::new(name), CompactString::new(local_name));
                 if seen.insert(pair.clone()) {
                     result.component_registrations.push(ComponentRegistration {

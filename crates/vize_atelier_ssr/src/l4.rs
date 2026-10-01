@@ -16,8 +16,8 @@ mod string_plan;
 pub use l2_input::compile_l2_to_ssr;
 
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::config::VueVersion;
+use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String, profile, profiler::global_profiler};
 use vize_l0::{dump::capture::CaptureSink, level::Level};
 use vize_l1::SurfaceParseOptions;
@@ -167,8 +167,8 @@ fn admitted_rule(record: &vize_l2::provenance::ProvenanceRecord) -> bool {
 
 /// The slot `v-model` and custom-directive errors note that the directive
 /// has no outlet op. The legacy SSR walker ignores them and renders the outlet.
-fn blocks_surface(diagnostic: &vize_davinci::diagnostic::Diagnostic) -> bool {
-    diagnostic.severity() != vize_davinci::diagnostic::Severity::Info
+fn blocks_surface(diagnostic: &vize_l0::diag::Diagnostic) -> bool {
+    diagnostic.severity() != vize_l0::diag::Severity::Info
         && !matches!(
             diagnostic.message.as_str(),
             "v-model is not supported on <slot> outlets."

@@ -13,7 +13,7 @@
 //! The same run also pins Davinci's side of the tie: the walks measured here
 //! must equal `vize_curator::legacy_plan::VAPOR.group_count()`, so the
 //! pass-manager plan that *describes* the shipped pipeline cannot drift from
-//! it silently. The plans live in `vize_davinci` and are read from the dev-dependencies:
+//! it silently. The plans live in `vize_curator::legacy_plan` and are read from the dev-dependencies:
 //! a published crate cannot depend on an unpublished one.
 //!
 //! The probe is process-global and monotone, so this file holds a single

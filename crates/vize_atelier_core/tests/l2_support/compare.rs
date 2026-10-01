@@ -7,10 +7,10 @@
 
 use vize_atelier_core::parser::parse_with_options as old_parse_with_options;
 use vize_atelier_core::{ParserOptions, TransformOptions, transform};
-use vize_davinci::diagnostic::Severity;
-use vize_davinci::pass::NoObserver;
 use vize_l0::Allocator;
 use vize_l0::config::VueVersion;
+use vize_l0::diag::Severity;
+use vize_l0::pass::NoObserver;
 use vize_l1_to_l2::LegacyCaps;
 use vize_l1_to_l2::pass::run_transform;
 use vize_l2::dump::Page as L2Page;
@@ -263,7 +263,7 @@ fn transform_options(dialect: VueVersion, hoist_static: bool) -> TransformOption
     }
 }
 
-fn blocks_l2_comparison(diagnostic: &vize_davinci::diagnostic::Diagnostic) -> bool {
+fn blocks_l2_comparison(diagnostic: &vize_l0::diag::Diagnostic) -> bool {
     diagnostic.severity() == Severity::Error
         && diagnostic.message.as_str() != vize_l1_to_l2::pass::vif::SAME_KEY_MESSAGE
 }

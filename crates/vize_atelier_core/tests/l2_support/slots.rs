@@ -37,9 +37,9 @@
     reason = "tests assert by panicking"
 )]
 
-use vize_davinci::id::NodeId;
-use vize_davinci::side_table::SideTable;
 use vize_l0::String;
+use vize_l0::id::NodeId;
+use vize_l0::side_table::SideTable;
 use vize_l1_to_l2::pass::SlotFacts;
 use vize_l1_to_l2::pass::vslot::{SlotName, SlotParams};
 use vize_l2::dump::{Binding as DumpBinding, Name as DumpName, Op as DumpOp};

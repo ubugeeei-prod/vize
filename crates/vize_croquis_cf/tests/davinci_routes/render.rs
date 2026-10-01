@@ -10,8 +10,8 @@ use vize_carton::line_index::LineIndex;
 use vize_croquis_cf::providers::vue_router::typing::RouteDiagnostic;
 use vize_croquis_cf::providers::vue_router::{OpenReason, RouteParams, RouteTree};
 use vize_croquis_cf::providers::{ModuleId, ProjectSources};
-use vize_davinci::diagnostic::{PartKind, Severity};
-use vize_davinci::fact::{FactGroup, FactView};
+use vize_l0::diag::{PartKind, Severity};
+use vize_l0::fact::{FactGroup, FactView};
 
 fn at(project: &ProjectSources, module: ModuleId, span: Span) -> String {
     let source = project.module(module).expect("module of this project");

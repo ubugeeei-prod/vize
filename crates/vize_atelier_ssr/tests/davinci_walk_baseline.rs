@@ -14,7 +14,7 @@
 //! The same run also pins Davinci's side of the tie: the walks measured here
 //! must not exceed `vize_curator::legacy_plan::SSR.group_count()`, so the
 //! pass-manager plan that describes the legacy pipeline remains the upper
-//! bound. The plans live in `vize_davinci` and are read from the
+//! bound. The plans live in `vize_curator::legacy_plan` and are read from the
 //! dev-dependencies: a published crate cannot depend on an unpublished one.
 //!
 //! The probe is process-global and monotone, so this file holds a single

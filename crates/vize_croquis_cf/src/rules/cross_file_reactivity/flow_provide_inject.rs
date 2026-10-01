@@ -26,53 +26,55 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                 {
                     // Check if inject result is destructured
                     use vize_croquis::provide::InjectPattern;
-                    match &inject.pattern {
-                        InjectPattern::ObjectDestructure(props) => {
-                            self.issues.push(CrossFileReactivityIssue {
-                                file_id: consumer_file_id,
-                                kind: CrossFileReactivityIssueKind::InjectValueDestructured {
-                                    key: key_str.clone(),
-                                    destructured_props: props.clone(),
-                                },
-                                offset: inject.start,
-                                related_file: Some(provider.file_id),
-                                severity: DiagnosticSeverity::Error,
-                            });
-                        }
-                        InjectPattern::ArrayDestructure(_) => {
-                            self.issues.push(CrossFileReactivityIssue {
-                                file_id: consumer_file_id,
-                                kind: CrossFileReactivityIssueKind::InjectValueDestructured {
-                                    key: key_str.clone(),
-                                    destructured_props: vec![CompactString::new(
-                                        "(array destructure)",
-                                    )],
-                                },
-                                offset: inject.start,
-                                related_file: Some(provider.file_id),
-                                severity: DiagnosticSeverity::Error,
-                            });
-                        }
-                        InjectPattern::IndirectDestructure { props, offset, .. } => {
-                            // Indirect destructuring also loses reactivity
-                            self.issues.push(CrossFileReactivityIssue {
-                                file_id: consumer_file_id,
-                                kind: CrossFileReactivityIssueKind::InjectValueDestructured {
-                                    key: key_str.clone(),
-                                    destructured_props: props.clone(),
-                                },
-                                offset: *offset,
-                                related_file: Some(provider.file_id),
-                                severity: DiagnosticSeverity::Error,
-                            });
-                        }
-                        InjectPattern::Simple => {
-                            // OK - inject is assigned to a variable
+                    if provider.is_reactive {
+                        match &inject.pattern {
+                            InjectPattern::ObjectDestructure(props) => {
+                                self.issues.push(CrossFileReactivityIssue {
+                                    file_id: consumer_file_id,
+                                    kind: CrossFileReactivityIssueKind::InjectValueDestructured {
+                                        key: key_str.clone(),
+                                        destructured_props: props.clone(),
+                                    },
+                                    offset: inject.start,
+                                    related_file: Some(provider.file_id),
+                                    severity: DiagnosticSeverity::Error,
+                                });
+                            }
+                            InjectPattern::ArrayDestructure(_) => {
+                                self.issues.push(CrossFileReactivityIssue {
+                                    file_id: consumer_file_id,
+                                    kind: CrossFileReactivityIssueKind::InjectValueDestructured {
+                                        key: key_str.clone(),
+                                        destructured_props: vec![CompactString::new(
+                                            "(array destructure)",
+                                        )],
+                                    },
+                                    offset: inject.start,
+                                    related_file: Some(provider.file_id),
+                                    severity: DiagnosticSeverity::Error,
+                                });
+                            }
+                            InjectPattern::IndirectDestructure { props, offset, .. } => {
+                                // Indirect destructuring also loses reactivity
+                                self.issues.push(CrossFileReactivityIssue {
+                                    file_id: consumer_file_id,
+                                    kind: CrossFileReactivityIssueKind::InjectValueDestructured {
+                                        key: key_str.clone(),
+                                        destructured_props: props.clone(),
+                                    },
+                                    offset: *offset,
+                                    related_file: Some(provider.file_id),
+                                    severity: DiagnosticSeverity::Error,
+                                });
+                            }
+                            InjectPattern::Simple => {
+                                // OK - inject is assigned to a variable
+                            }
                         }
                     }
 
                     // Check if provider provides non-reactive value
-                    if !provider.is_reactive {
+                    if !provider.is_reactive && !provider.is_function_service {
                         self.issues.push(CrossFileReactivityIssue {
                             file_id: provider.file_id,
                             kind: CrossFileReactivityIssueKind::NonReactiveProvide {

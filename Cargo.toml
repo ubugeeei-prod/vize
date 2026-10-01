@@ -20,7 +20,6 @@ members = [
   "crates/vize_musea",
   "crates/vize_maestro",
   "crates/vize_curator",
-  "davinci/vize_davinci",
   "davinci/vize_l0_derive",
   "davinci/vize_l2",
   "davinci/vize_l3",
@@ -85,7 +84,6 @@ vize_guest = { path = "davinci/vize_guest" }
 # Publishable Davinci stage infrastructure. Stage crates keep their physical
 # names and version fallbacks so a publishable consumer can resolve the same
 # dependency graph from crates.io.
-vize_davinci = { path = "davinci/vize_davinci", version = "=0.429.2" }
 vize_l0_derive = { path = "davinci/vize_l0_derive", version = "=0.429.2" }
 
 # Level dependencies use physical package identities. L0 owns the shared

@@ -7,7 +7,7 @@
 //! and the compiler say.
 
 use crate::render::{Catalog, Phrase};
-use vize_davinci::diagnostic::Severity as Claim;
+use vize_l0::diag::Severity as Claim;
 use vize_l0::i18n::Locale;
 use vize_l0::{String, cstr};
 use vize_patina::{HelpRenderTarget, render_help, rule_docs_path};

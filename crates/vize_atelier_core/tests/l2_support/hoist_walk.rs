@@ -12,7 +12,7 @@
 )]
 
 use vize_atelier_core::{ElementNode, ElementType, TemplateChildNode};
-use vize_davinci::side_table::SideTable;
+use vize_l0::side_table::SideTable;
 use vize_l1_to_l2::pass::StaticFacts;
 use vize_l2::dump::Op as DumpOp;
 

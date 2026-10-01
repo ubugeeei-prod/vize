@@ -103,7 +103,7 @@ impl<'a> SsrCodegenContext<'a> {
                 self.process_text(text);
             }
             TemplateChildNode::Comment(comment) => {
-                if !disable_comment {
+                if !disable_comment && comment.directive.is_none() {
                     self.process_comment(comment);
                 }
             }

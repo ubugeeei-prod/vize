@@ -25,7 +25,6 @@ _legacy = []
 [dependencies]
 vize_l0 = { workspace = true }
 # The unified diagnostic channel compiler errors adapt onto (P4-14b).
-vize_davinci = { workspace = true }
 
 oxc_ast = { workspace = true }
 oxc_ast_visit = { workspace = true }

@@ -294,5 +294,9 @@ mod tests {
             vec!["fetch(url)"]
         );
         assert_eq!(candidate_texts("fetch(url)"), vec!["fetch(url)"]);
+        assert!(
+            candidate_texts("await buildPreview(input, (folderId) => getFolderChildren(folderId))")
+                .is_empty()
+        );
     }
 }

@@ -1,6 +1,6 @@
 //! Davinci microbenches: the pass manager's zero-cost-when-unattached claim.
 //!
-//! Run with: cargo bench -p vize_davinci --bench davinci
+//! Run with: cargo bench -p vize_l0 --bench pass_runtime
 //!
 //! The pair exists to make P2-3's central claim measurable rather than
 //! asserted. Observers are dispatched statically, so `NoObserver`'s empty
@@ -32,7 +32,7 @@
 )]
 
 use criterion::{Criterion, criterion_group};
-use vize_davinci::pass::{
+use vize_l0::pass::{
     Fusability, NoObserver, PassDesc, PassKind, Pipeline, Preserved, run_pipeline,
 };
 
@@ -76,11 +76,11 @@ fn work(desc: PassDesc) -> usize {
     desc.name.len()
 }
 
-fn davinci(criterion: &mut Criterion) {
+fn pass_runtime(criterion: &mut Criterion) {
     davinci_harness::bench_with_metrics(
         criterion,
         "davinci_pipeline_unobserved",
-        "davinci/vize_davinci/benches/davinci.rs",
+        "davinci/vize_l0/benches/pass_runtime.rs",
         || {
             let mut total = 0usize;
             let group_count = PIPELINE.group_count();
@@ -99,7 +99,7 @@ fn davinci(criterion: &mut Criterion) {
     davinci_harness::bench_with_metrics(
         criterion,
         "davinci_pipeline_no_observer",
-        "davinci/vize_davinci/benches/davinci.rs",
+        "davinci/vize_l0/benches/pass_runtime.rs",
         || {
             let mut total = 0usize;
             run_pipeline(&PIPELINE, &mut NoObserver, |event| {
@@ -112,5 +112,5 @@ fn davinci(criterion: &mut Criterion) {
     );
 }
 
-criterion_group!(davinci_group, davinci);
-davinci_harness::main!(davinci_group);
+criterion_group!(pass_runtime_group, pass_runtime);
+davinci_harness::main!(pass_runtime_group);

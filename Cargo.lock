@@ -4228,7 +4228,6 @@ dependencies = [
  "vize_croquis",
  "vize_croquis_cf",
  "vize_curator",
- "vize_davinci",
  "vize_doctor",
  "vize_fresco",
  "vize_glyph",
@@ -4290,7 +4289,6 @@ dependencies = [
  "thiserror 2.0.20",
  "vize_armature",
  "vize_croquis",
- "vize_davinci",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -4313,7 +4311,6 @@ dependencies = [
  "vize_atelier_core",
  "vize_croquis",
  "vize_curator",
- "vize_davinci",
  "vize_l0",
  "vize_l1_to_l2",
 ]
@@ -4340,7 +4337,6 @@ dependencies = [
  "vize_atelier_ssr",
  "vize_atelier_vapor",
  "vize_croquis",
- "vize_davinci",
  "vize_l0",
  "vize_l1_to_l2",
  "vize_l2",
@@ -4402,7 +4398,6 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_croquis",
  "vize_curator",
- "vize_davinci",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -4435,7 +4430,6 @@ dependencies = [
  "vize_carton",
  "vize_croquis",
  "vize_curator",
- "vize_davinci",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -4490,7 +4484,6 @@ dependencies = [
  "vize_atelier_jsx",
  "vize_atelier_sfc",
  "vize_croquis",
- "vize_davinci",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -4567,7 +4560,7 @@ dependencies = [
  "vize_armature",
  "vize_carton",
  "vize_croquis",
- "vize_davinci",
+ "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
 ]
@@ -4595,15 +4588,6 @@ dependencies = [
  "vize_l2",
  "vize_l2_to_l3",
  "vize_l3",
-]
-
-[[package]]
-name = "vize_davinci"
-version = "0.429.2"
-dependencies = [
- "criterion",
- "davinci_harness",
- "vize_l0",
 ]
 
 [[package]]
@@ -4725,6 +4709,7 @@ version = "0.429.2"
 dependencies = [
  "bitflags 2.13.1",
  "compact_str",
+ "criterion",
  "davinci_harness",
  "davinci_test_support",
  "globset",
@@ -4877,7 +4862,6 @@ dependencies = [
  "vize_canon",
  "vize_croquis",
  "vize_croquis_cf",
- "vize_davinci",
  "vize_glyph",
  "vize_l0",
  "vize_l2",
@@ -4942,7 +4926,6 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_canon",
  "vize_croquis",
- "vize_davinci",
  "vize_glyph",
  "vize_l0",
  "vize_l1",
@@ -4961,7 +4944,6 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.20",
- "vize_davinci",
  "vize_l0",
 ]
 
@@ -4972,7 +4954,6 @@ dependencies = [
  "salsa",
  "toml",
  "vize_croquis",
- "vize_davinci",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
@@ -5026,7 +5007,6 @@ dependencies = [
  "vize_croquis",
  "vize_croquis_cf",
  "vize_curator",
- "vize_davinci",
  "vize_glyph",
  "vize_l0",
  "vize_l1",

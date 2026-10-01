@@ -26,8 +26,8 @@ use std::path::{Path, PathBuf};
 
 use clap::Args;
 use vize_curator::repro::Page as ReproPage;
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::pass::RemarkKind;
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::pass::RemarkKind;
 use vize_l0::{String, cstr};
 
 use super::davinci_ice::{self, ARTIFACT_STAGE_SOURCE, IceFailure};

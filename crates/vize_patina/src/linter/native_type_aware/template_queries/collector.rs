@@ -1,9 +1,8 @@
 use super::super::document::TypeAwareDocument;
 use super::{
     TemplateContext, TemplatePromiseQuery, TemplateQuery, TemplateQueryKind,
-    absolute_expression_range,
-    calls::{FloatingPromiseProbeTarget, collect_template_call_ranges},
-    generated_offset_for_text, v_for_source_binding_offset,
+    absolute_expression_range, calls::collect_template_call_ranges, generated_offset_for_text,
+    v_for_source_binding_offset,
 };
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_span::SourceType;
@@ -570,17 +569,6 @@ fn collect_expression_query_sets(
                 generated_offset_for_text(virtual_ts, probe_start, probe_source)
             else {
                 continue;
-            };
-            let generated_offset = match candidate.probe_target {
-                FloatingPromiseProbeTarget::SourceText => generated_offset,
-                FloatingPromiseProbeTarget::ExpressionBinding => {
-                    let Some(binding_offset) =
-                        expression_binding_generated_offset(&virtual_ts.content, generated_offset)
-                    else {
-                        continue;
-                    };
-                    binding_offset
-                }
             };
             queries.push(TemplatePromiseQuery {
                 context,

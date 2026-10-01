@@ -24,7 +24,7 @@ use core::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
 use vize_carton::String;
-use vize_davinci::key::manifest::{AmbientInput, CachedArtifact, KeyManifest};
+use vize_l0::key::manifest::{AmbientInput, CachedArtifact, KeyManifest};
 
 mod chain;
 mod lifecycle;

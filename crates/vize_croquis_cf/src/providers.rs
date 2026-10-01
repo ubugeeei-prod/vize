@@ -3,7 +3,7 @@
 //! Not everything a Vue project means lives inside one file: the route tree a
 //! `createRouter({ routes })` call declares, `definePageMeta`, i18n catalogs.
 //! A **provider** turns such a convention into ordinary fact groups on the
-//! P4-1 fact API ([`vize_davinci::fact`]), so a consumer demands "the route
+//! P4-1 fact API ([`vize_l0::fact`]), so a consumer demands "the route
 //! params of `user-posts`" exactly the way it demands bindings or scopes.
 //!
 //! # The contract (`docs/davinci/open-questions.md`, settled here)
@@ -21,7 +21,7 @@
 //!   `const` item, at compile time;
 //! - its groups are registered producers over the project artifact
 //!   ([`ProjectSources`]) in [`PROJECT_FACTS`], so consumers declare them in a
-//!   [`FactConsumer::DEMAND`](vize_davinci::fact::FactConsumer::DEMAND) and
+//!   [`FactConsumer::DEMAND`](vize_l0::fact::FactConsumer::DEMAND) and
 //!   the TS-35 detector polices every read.
 //!
 //! In-tree providers compile in behind cargo features (charter #15's first
@@ -42,15 +42,15 @@ pub use project::{
     ModuleId, ModuleKind, ProjectModule, ProjectSources, ScriptBlock, TemplateBlock,
 };
 
-use vize_davinci::fact::{Demand, FactRegistry, ProducerEntry};
-use vize_davinci::pass::AnalysisId;
+use vize_l0::fact::{Demand, FactRegistry, ProducerEntry};
+use vize_l0::pass::AnalysisId;
 
 /// Fact-group ids of the project-level (provider-owned) groups.
 ///
 /// `40..48` is reserved for providers; per-artifact groups (P4-3) allocate
 /// from the bottom of the id space.
 pub mod ids {
-    use vize_davinci::pass::AnalysisId;
+    use vize_l0::pass::AnalysisId;
 
     /// `vue-router` — one statically extracted route tree per router.
     pub const ROUTE_TREE: AnalysisId = AnalysisId::new(40);
@@ -208,7 +208,7 @@ pub const fn produced<A: ?Sized>(producers: &[ProducerEntry<A>]) -> Demand {
 ///     AmbientInput, PROJECT_FACTS, ProjectSources, Provider, ProviderRegistry,
 ///     vue_router::{RouteTree, VueRouterProvider},
 /// };
-/// use vize_davinci::fact::{Demand, FactGroup};
+/// use vize_l0::fact::{Demand, FactGroup};
 ///
 /// struct FileRoutes;
 /// impl Provider for FileRoutes {

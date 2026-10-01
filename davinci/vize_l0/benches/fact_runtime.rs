@@ -1,7 +1,7 @@
 //! Davinci fact microbenches: the fact verify mode's zero-cost-when-off
 //! claim (P4-1b, the P2-3 pair shape).
 //!
-//! Run with: cargo bench -p vize_davinci --bench davinci_fact
+//! Run with: cargo bench -p vize_l0 --bench fact_runtime
 //!
 //! Both cases run the same plan over the same artifact — compute a demand,
 //! run three passes with post-hoc `Preserved` invalidation, recompute, query
@@ -23,11 +23,11 @@
 )]
 
 use criterion::{Criterion, criterion_group};
-use vize_davinci::fact::{
+use vize_l0::fact::{
     Demand, FactConsumer, FactGroup, FactManager, FactProducer, FactRegistry, FactTable,
     FactVerify, FactVerifyObserver, FactView, NoFactVerify, ProducerEntry,
 };
-use vize_davinci::pass::{AnalysisId, Fusability, PassDesc, PassKind, Preserved};
+use vize_l0::pass::{AnalysisId, Fusability, PassDesc, PassKind, Preserved};
 
 struct Values;
 impl FactGroup for Values {
@@ -118,20 +118,20 @@ fn run<V: FactVerify>() -> u64 {
     total
 }
 
-fn davinci_fact(criterion: &mut Criterion) {
+fn fact_runtime(criterion: &mut Criterion) {
     davinci_harness::bench_with_metrics(
         criterion,
         "davinci_fact_query_unobserved",
-        "davinci/vize_davinci/benches/davinci_fact.rs",
+        "davinci/vize_l0/benches/fact_runtime.rs",
         run::<NoFactVerify>,
     );
     davinci_harness::bench_with_metrics(
         criterion,
         "davinci_fact_query_observed",
-        "davinci/vize_davinci/benches/davinci_fact.rs",
+        "davinci/vize_l0/benches/fact_runtime.rs",
         run::<FactVerifyObserver>,
     );
 }
 
-criterion_group!(davinci_fact_group, davinci_fact);
-davinci_harness::main!(davinci_fact_group);
+criterion_group!(fact_runtime_group, fact_runtime);
+davinci_harness::main!(fact_runtime_group);

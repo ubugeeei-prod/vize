@@ -42,7 +42,6 @@ vize_croquis = { workspace = true }
 vize_croquis_cf = { workspace = true }
 # Davinci ICE machinery (P2-13): repro folio + pass-manager driver. Both
 # crates are publish = false, so this edge stays out of every release graph.
-vize_davinci = { workspace = true }
 # `vize reduce` (P3-14): the L1 surface tree is the deletion vocabulary and
 # the L1->L2 pipeline answers the remark / folio / budget oracles.
 vize_l1 = { workspace = true }

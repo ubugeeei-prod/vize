@@ -25,7 +25,7 @@ provide(UserKey, readonly(user))
 provide(ConfigKey, { apiUrl: 'https://api.example.com' })
 
 // \u274C Untyped provide - consumers may use wrong type
-provide('legacyData', { foo: 'bar' })
+provide('legacyData', reactive({ foo: 'bar' }))
 
 // \u274C Provide without consumer
 provide('unusedKey', 'this is never injected')

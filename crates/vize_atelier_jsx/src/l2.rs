@@ -6,8 +6,8 @@
 //! realization have not landed yet. P2-16 expands the admitted family until
 //! this is the authoritative JSX lowering.
 
-use vize_davinci::id::NodeId;
-use vize_davinci::side_table::SideTable;
+use vize_l0::id::NodeId;
+use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Box, Vec};
 use vize_l1_to_l2::lower::{LoweringFeatures, OpFamily};
 use vize_l2::expr::ExprRef;

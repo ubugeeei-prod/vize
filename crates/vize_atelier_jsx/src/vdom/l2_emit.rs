@@ -1,6 +1,6 @@
 //! JSX VDOM bridge for the P2-16 L2 re-targeting slice.
 
-use vize_davinci::pass::NoObserver;
+use vize_l0::pass::NoObserver;
 use vize_l0::{Allocator, String};
 use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_profile};
 use vize_l1_to_l2::{

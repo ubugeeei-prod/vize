@@ -25,7 +25,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, OnceLock};
 
 use serde::{Deserialize, Serialize};
-use vize_davinci::key::{AmbientInput, CachedArtifact, KeyManifest, source_block_key};
+use vize_l0::key::{AmbientInput, CachedArtifact, KeyManifest, source_block_key};
 
 use super::batch::{BATCH_SCHEMA, PluginDiagnostic, PluginSpec};
 use super::error::HostError;

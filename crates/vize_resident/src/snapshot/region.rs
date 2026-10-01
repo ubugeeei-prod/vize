@@ -12,7 +12,7 @@
 //! results equals lowering the whole block — the equality TS-42 checks after
 //! every step (`EquivalenceReport` runs the snapshot path too).
 
-use vize_davinci::diagnostic::{Diagnostic, Stage};
+use vize_l0::diag::{Diagnostic, Stage};
 use vize_l0::{Allocator, SourceRoot, String};
 use vize_l1::{SurfaceChild, Token};
 use vize_l1_to_l2::{LegacyCaps, lower_source_block_with_caps};

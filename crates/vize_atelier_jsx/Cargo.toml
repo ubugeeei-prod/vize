@@ -11,7 +11,6 @@ metadata.vize.stability = "compatibility-preview"
 [dependencies]
 # Internal crates
 vize_l0 = { workspace = true }
-vize_davinci = { workspace = true }
 vize_l2 = { workspace = true }
 vize_relief = { workspace = true }
 vize_croquis = { workspace = true }

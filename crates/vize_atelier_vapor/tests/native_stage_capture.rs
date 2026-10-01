@@ -4,7 +4,7 @@ use vize_atelier_vapor::{
     compile_vapor_with_sfc_context_and_capture,
 };
 use vize_carton::Allocator;
-use vize_davinci::dump::{Dump, Mode};
+use vize_l0::dump::{Dump, Mode};
 use vize_l0::{
     dump::capture::{CaptureOutcome, StageCapture},
     level::Level,

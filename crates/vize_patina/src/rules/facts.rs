@@ -10,7 +10,7 @@ mod unused_setup_bindings;
 pub use max_template_complexity::MaxTemplateComplexity;
 pub use unused_setup_bindings::NoUnusedSetupBindings;
 
-use vize_davinci::fact::FactConsumer;
+use vize_l0::fact::FactConsumer;
 
 use crate::rule::RuleRegistry;
 

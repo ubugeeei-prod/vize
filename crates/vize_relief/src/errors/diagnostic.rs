@@ -1,7 +1,7 @@
 //! Compiler errors on the unified diagnostic channel (P4-14b).
 //!
 //! [`CompilerError::to_diagnostic`] is the one adapter from the template
-//! compiler's error type onto `vize_davinci::Diagnostic`, so every renderer —
+//! compiler's error type onto `vize_l0::Diagnostic`, so every renderer —
 //! the rich terminal renderer first — reads compiler errors the way it reads
 //! everything else: a byte span, a stage, a localized headline, and the
 //! code's catalogued help as a part.
@@ -13,7 +13,7 @@
 //! enum's own text either way, so no English output moves.
 
 use super::{CompilerError, ErrorCode};
-use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind};
+use vize_l0::diag::{Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind};
 use vize_l0::i18n::Locale;
 use vize_l0::{CompactString, Span};
 
@@ -59,8 +59,8 @@ impl CompilerError {
 mod tests {
     use super::{COMPILER_ERROR, CompilerError, ErrorCode};
     use crate::SourceLocation;
-    use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, PartKind, Stage};
     use vize_l0::Span;
+    use vize_l0::diag::{Advisory, Diagnostic, DiagnosticPart, PartKind, Stage};
     use vize_l0::i18n::Locale;
 
     #[test]

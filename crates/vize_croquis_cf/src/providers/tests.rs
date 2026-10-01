@@ -6,8 +6,8 @@ use super::{
     AmbientInput, PROJECT_FACTS, PROVIDERS, ProjectSources, Provider, ProviderDesc, ProviderError,
     check_providers, ids, produced,
 };
-use vize_davinci::fact::{Demand, FactGroup};
-use vize_davinci::pass::AnalysisId;
+use vize_l0::fact::{Demand, FactGroup};
+use vize_l0::pass::AnalysisId;
 
 struct FileRoutes;
 impl Provider for FileRoutes {

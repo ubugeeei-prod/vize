@@ -27,7 +27,6 @@ vize_l1_to_l2 = { workspace = true, features = ["typescript"] }
 vize_l2 = { workspace = true }
 vize_l2_to_l3 = { workspace = true }
 vize_l3 = { workspace = true }
-vize_davinci = { workspace = true }
 
 serde = { workspace = true }
 

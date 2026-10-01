@@ -3,7 +3,7 @@
 //!
 //! Every lint rule, compiler code, Canon type code, L3 invariant and cross-file
 //! code has a page, generated
-//! from the producer's own metadata, its [`RuleContract`](vize_davinci::diagnostic::RuleContract)
+//! from the producer's own metadata, its [`RuleContract`](vize_l0::diag::RuleContract)
 //! and the diagnostic catalogue. The page list is that generation — never a
 //! hand-written table.
 

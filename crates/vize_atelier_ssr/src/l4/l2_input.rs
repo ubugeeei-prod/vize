@@ -3,8 +3,8 @@
 //! emitter as the template path, with the transform's `prefix_identifiers`
 //! off because JSX render functions close over their setup scope.
 
-use vize_davinci::side_table::SideTable;
 use vize_l0::Allocator;
+use vize_l0::side_table::SideTable;
 use vize_l1_to_l2::TransformExpressions;
 use vize_l2::op::Region;
 

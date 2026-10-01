@@ -9,6 +9,13 @@ pub(super) fn provide_key_display(key: &ProvideKey) -> CompactString {
     }
 }
 
+pub(super) fn provide_key_argument(key: &ProvideKey) -> CompactString {
+    match key {
+        ProvideKey::String(key) => cstr!("'{key}'"),
+        ProvideKey::Symbol(key) => key.clone(),
+    }
+}
+
 pub(super) fn provide_key_identity(key: &ProvideKey) -> CompactString {
     match key {
         ProvideKey::String(s) => cstr!("string:{s}"),

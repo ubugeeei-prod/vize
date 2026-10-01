@@ -3,8 +3,8 @@
 //! with no `_` arm on purpose — a new op, binding or expression variant must
 //! break this file loudly, never be left unshifted.
 
-use vize_davinci::diagnostic::Diagnostic;
 use vize_l0::Span;
+use vize_l0::diag::Diagnostic;
 use vize_l2::dump::{
     Attribute as DumpAttribute, Binding as DumpBinding, Expr as DumpExpr,
     ForBinding as DumpForBinding, Name as DumpName, Op as DumpOp,
