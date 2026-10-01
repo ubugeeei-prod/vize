@@ -10,6 +10,9 @@ const host = "crates/vize_carton/src/config.rs";
 const coreManifest = "davinci/vize_l0/Cargo.toml";
 const hostManifest = "crates/vize_carton/Cargo.toml";
 const cliFacade = "crates/vize/src/lint_plan/matcher.rs";
+const cliCollection = "crates/vize/src/commands/lint/collect.rs";
+const oldCollectionCall = "vize_l0::config::matcher::absolute_path(config_dir, &cwd)";
+const hostCollectionCall = "crate::lint_plan::matcher::absolute_path(config_dir, &cwd)";
 const editor = "crates/vize_maestro/src/server/state/workspace_folders.rs";
 const declaration = '#[cfg(feature = "lint-glob")]\npub mod matcher;\n';
 const dependency = "globset = { workspace = true, optional = true }\n";
@@ -104,6 +107,11 @@ function integrate() {
     "unexpected CLI matcher facade",
   );
   requireCondition(
+    read(cliCollection).includes(oldCollectionCall) ||
+      read(cliCollection).includes(hostCollectionCall),
+    "unexpected CLI file-collection matcher call",
+  );
+  requireCondition(
     read(editor).includes("    matcher::LintPlanScope,") ||
       read(editor).includes("use vize_carton::config::matcher::LintPlanScope;"),
     "unexpected LSP matcher import",
@@ -145,6 +153,7 @@ function integrate() {
     );
   }
   replace(cliFacade, "vize_l0::config::matcher", "vize_carton::config::matcher");
+  replace(cliCollection, oldCollectionCall, hostCollectionCall);
   write(
     editor,
     read(editor)
@@ -192,6 +201,11 @@ function check() {
     !read(cliFacade).includes("vize_l0::config::matcher") &&
       read(cliFacade).includes("vize_carton::config::matcher"),
     "CLI must consume the host matcher",
+  );
+  requireCondition(
+    !read(cliCollection).includes("vize_l0::config::matcher") &&
+      read(cliCollection).includes(hostCollectionCall),
+    "CLI file collection must consume its host matcher facade",
   );
   requireCondition(
     !read(editor).includes("    matcher::LintPlanScope,") &&

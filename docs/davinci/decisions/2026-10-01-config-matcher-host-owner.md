@@ -5,7 +5,7 @@ Prerequisite: [configuration host ownership](./2026-10-01-config-host-owner.md).
 
 Carton owns the existing ordered glob matcher and its tests. The module
 moves unchanged in a move-only commit, and the actual CLI lint-plan facade
-and LSP workspace-folder scopes consume the host owner. L0 loses the
+and file collection, plus LSP workspace-folder scopes, consume the host owner. L0 loses the
 matcher module, optional `globset` dependency and `lint-glob` feature.
 Carton owns that optional dependency and feature, enabled by the actual
 CLI/LSP consumers. No normal or build dependency points back into `crates/`.

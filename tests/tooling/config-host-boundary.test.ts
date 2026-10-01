@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
@@ -15,6 +16,23 @@ const hostFiles = [
 const forbiddenCartonStorage = /\bvize_carton::|use vize_carton\b/u;
 const source = (path: string) =>
   readFileSync(fileURLToPath(new URL(`../../${path}`, import.meta.url)), "utf8");
+
+test("all Rust callers retire the old L0 matcher path", () => {
+  const root = fileURLToPath(new URL("../../", import.meta.url));
+  const files = execFileSync("git", ["ls-files", "-z", "--", "*.rs"], {
+    cwd: root,
+    encoding: "utf8",
+  })
+    .split("\0")
+    .filter(Boolean);
+  for (const file of files) {
+    assert.doesNotMatch(source(file), /\bvize_l0\s*::\s*config\s*::\s*matcher\b/u, file);
+  }
+  assert.match(
+    source("crates/vize/src/commands/lint/collect.rs"),
+    /crate::lint_plan::matcher::absolute_path\(config_dir, &cwd\)/u,
+  );
+});
 
 test("actual config hosts use only the reviewed Carton facade and loader calls", () => {
   for (const file of hostFiles) {
