@@ -332,26 +332,5 @@ pub(super) fn collect_transitive_local_imports_with_session(
 }
 
 #[cfg(test)]
-#[path = "imports_generated_tests.rs"]
-mod generated_tests;
-#[cfg(test)]
-#[path = "imports_js_tests.rs"]
-mod js_tests;
-#[cfg(test)]
-#[path = "imports_magic_comments_tests.rs"]
-mod magic_comments_tests;
-#[cfg(test)]
-#[path = "imports_package_cache_tests.rs"]
-mod package_cache_tests;
-#[cfg(test)]
-#[path = "imports_package_registration_cache_tests.rs"]
-mod package_registration_cache_tests;
-#[cfg(test)]
-#[path = "imports_package_registration_shadow_tests.rs"]
-mod package_registration_shadow_tests;
-#[cfg(test)]
-#[path = "imports_package_registration_tests.rs"]
-mod package_registration_tests;
-#[cfg(test)]
-#[path = "imports_tests.rs"]
-mod tests;
+#[path = "imports_test_modules.rs"]
+mod test_modules;
