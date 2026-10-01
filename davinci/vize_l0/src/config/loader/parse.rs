@@ -7,14 +7,14 @@
 
 use std::path::Path;
 
-use crate::config::model::RawVizeConfig;
+use crate::config::ConfigDocument;
 
 use super::{js::parse_js_config, pkl};
 
 /// Parse a single config file path without discovery fallback.
 pub(super) fn parse_raw_config_file(
     path: &Path,
-) -> Result<RawVizeConfig, Box<dyn std::error::Error>> {
+) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
     let config = match path.extension().and_then(|ext| ext.to_str()) {
         Some("pkl") => pkl::parse_pkl_config(path)?,
         Some("ts" | "js" | "mjs") => parse_js_config(path)?,
@@ -22,16 +22,16 @@ pub(super) fn parse_raw_config_file(
             let content = std::fs::read_to_string(path)?;
             // Share the same config deserializer as JS and PKL evaluation.
             // Keeping a separate str reader instantiates the entire model twice.
-            serde_json::from_slice::<RawVizeConfig>(content.as_bytes())?
+            serde_json::from_slice::<ConfigDocument>(content.as_bytes())?
         }
-        _ => return Ok(RawVizeConfig::default()),
+        _ => return Ok(ConfigDocument::default()),
     };
 
     Ok(config)
 }
 
 /// Parse a discovered candidate and map recoverable failures to `None`.
-pub(super) fn try_parse_raw_candidate(path: &Path) -> Option<RawVizeConfig> {
+pub(super) fn try_parse_raw_candidate(path: &Path) -> Option<ConfigDocument> {
     match parse_raw_config_file(path) {
         Ok(config) => Some(config),
         Err(error) => {
@@ -44,7 +44,7 @@ pub(super) fn try_parse_raw_candidate(path: &Path) -> Option<RawVizeConfig> {
             if should_try_next {
                 None
             } else {
-                Some(RawVizeConfig::default())
+                Some(ConfigDocument::default())
             }
         }
     }
@@ -79,9 +79,15 @@ mod tests {
         .unwrap();
 
         let config = parse_raw_config_file(&path).unwrap();
-        assert_eq!(config.base_path.as_deref(), Some("日本語/🎨"));
-        assert_eq!(config.files.unwrap()[0], "src/日本.vue");
-        let groups = config.formatter.attribute_groups.unwrap();
+        let entries = config.clone().into_entry_files();
+        assert_eq!(entries[0].base_path.as_deref(), Some("日本語/🎨"));
+        assert_eq!(entries[0].files[0], "src/日本.vue");
+        let groups = config
+            .into_config_and_features()
+            .0
+            .formatter
+            .attribute_groups
+            .unwrap();
         assert_eq!(groups[0][0], "é");
         assert_eq!(groups[0][1], "data-\"quoted\"");
     }

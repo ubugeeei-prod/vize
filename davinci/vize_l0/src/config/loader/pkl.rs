@@ -9,7 +9,7 @@ use std::fmt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::config::model::RawVizeConfig;
+use crate::config::ConfigDocument;
 
 #[derive(Debug)]
 enum PklError {
@@ -39,7 +39,7 @@ impl std::error::Error for PklError {
 }
 
 /// Evaluate a PKL config and deserialize it into the raw config model.
-pub(super) fn parse_pkl_config(path: &Path) -> Result<RawVizeConfig, Box<dyn std::error::Error>> {
+pub(super) fn parse_pkl_config(path: &Path) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
     let mut last_process_error = None;
 
     for command in pkl_command_candidates(path) {
@@ -69,7 +69,7 @@ pub(super) fn is_process_error_box(error: &(dyn std::error::Error + 'static)) ->
         .is_some_and(is_process_error)
 }
 
-fn parse_pkl_config_with_command(path: &Path, command: &Path) -> Result<RawVizeConfig, PklError> {
+fn parse_pkl_config_with_command(path: &Path, command: &Path) -> Result<ConfigDocument, PklError> {
     let mut process = Command::new(command);
     process.arg("eval").arg("-f").arg("json").arg(path);
     if let Some(parent) = path.parent() {
@@ -79,7 +79,7 @@ fn parse_pkl_config_with_command(path: &Path, command: &Path) -> Result<RawVizeC
     if !output.status.success() {
         return Err(PklError::Eval(format_pkl_failure(&output)));
     }
-    serde_json::from_slice::<RawVizeConfig>(&output.stdout).map_err(PklError::Json)
+    serde_json::from_slice::<ConfigDocument>(&output.stdout).map_err(PklError::Json)
 }
 
 fn is_process_error(error: &PklError) -> bool {

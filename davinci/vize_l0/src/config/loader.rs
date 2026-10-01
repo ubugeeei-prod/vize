@@ -28,9 +28,9 @@ use std::path::{Path, PathBuf};
 use discovery::{CONFIG_FILE_NAMES, resolve_dir_path, resolve_file_path};
 use parse::{parse_raw_config_file, try_parse_raw_candidate};
 
-use super::model::{
-    ConfigEntryFiles, ConfigEntryIgnore, ConfigExperimentalVueFlags, ConfigFeatureFlags,
-    LinterConfig, RawVizeConfig, VizeConfig,
+use super::{
+    ConfigDocument, ConfigEntryFiles, ConfigEntryIgnore, ConfigExperimentalVueFlags,
+    ConfigFeatureFlags, LinterConfig, VizeConfig,
 };
 pub use compiler_keys::*;
 pub use library::{LoadedLibConfig, load_lib_config_with_source};
@@ -70,7 +70,7 @@ pub struct LoadedConfigEntryFiles {
 }
 
 struct LoadedRawConfig {
-    config: RawVizeConfig,
+    config: ConfigDocument,
     source_path: Option<PathBuf>,
 }
 
@@ -155,7 +155,7 @@ pub fn load_config_experimental_vue_flags_with_source(
 /// both `VizeConfig` and `LinterConfig`, avoiding a double parse on every CLI run).
 pub fn load_config_and_linter_with_source(path: Option<&Path>) -> (LoadedConfig, LinterConfig) {
     let loaded = load_raw_config_with_source(path);
-    let linter = load_linter_from_raw_config(&loaded.config);
+    let linter = loaded.config.linter();
     let (config, _) = loaded.config.into_config_and_features();
     (
         LoadedConfig {
@@ -171,7 +171,7 @@ pub fn load_config_and_linter_with_features_and_source(
     path: Option<&Path>,
 ) -> (LoadedConfigWithFeatures, LinterConfig) {
     let loaded = load_raw_config_with_source(path);
-    let linter = load_linter_from_raw_config(&loaded.config);
+    let linter = loaded.config.linter();
     let (config, features) = loaded.config.into_config_and_features();
     (
         LoadedConfigWithFeatures {
@@ -186,54 +186,24 @@ pub fn load_config_and_linter_with_features_and_source(
 /// Load linter-specific configuration from a directory or file path.
 pub fn load_linter_config(path: Option<&Path>) -> LinterConfig {
     let loaded = load_raw_config_with_source(path);
-    load_linter_from_raw_config(&loaded.config)
+    loaded.config.linter()
 }
 
 /// Load the typed per-rule lint options (`linter.ruleOptions`); defaults when unset.
 pub fn load_config_lint_rule_options(path: Option<&Path>) -> crate::config::ConfigLintRuleOptions {
     let loaded = load_raw_config_with_source(path);
-    loaded.config.linter.rule_options().clone()
+    loaded.config.lint_rule_options().clone()
 }
 
 /// Load the stable per-rule lint options subset; defaults when unset.
 pub fn load_linter_rule_options(path: Option<&Path>) -> crate::config::LintRuleOptions {
     let loaded = load_raw_config_with_source(path);
-    loaded.config.linter.rule_options().stable_options().clone()
+    loaded.config.lint_rule_options().stable_options().clone()
 }
 
 pub fn load_config_entry_ignores_with_source(path: Option<&Path>) -> LoadedConfigEntryIgnores {
     let loaded = load_raw_config_with_source(path);
-    let top_level_ignores = loaded
-        .config
-        .ignores
-        .as_deref()
-        .unwrap_or_default()
-        .iter()
-        .cloned()
-        .map(|pattern| ConfigEntryIgnore {
-            base_path: None,
-            pattern,
-        });
-    let entry_ignores = loaded
-        .config
-        .entries
-        .as_deref()
-        .unwrap_or_default()
-        .iter()
-        .flat_map(|entry| {
-            entry
-                .ignores
-                .as_deref()
-                .unwrap_or_default()
-                .iter()
-                .cloned()
-                .map(|pattern| ConfigEntryIgnore {
-                    base_path: entry.base_path.clone(),
-                    pattern,
-                })
-        })
-        .collect::<Vec<_>>();
-    let ignores = top_level_ignores.chain(entry_ignores).collect();
+    let ignores = loaded.config.entry_ignores();
     LoadedConfigEntryIgnores {
         ignores,
         source_path: loaded.source_path,
@@ -242,59 +212,11 @@ pub fn load_config_entry_ignores_with_source(path: Option<&Path>) -> LoadedConfi
 
 pub fn load_config_entry_files_with_source(path: Option<&Path>) -> LoadedConfigEntryFiles {
     let loaded = load_raw_config_with_source(path);
-    let mut entries = Vec::new();
-    if let Some(files) = loaded.config.files.filter(|files| !files.is_empty()) {
-        entries.push(ConfigEntryFiles {
-            base_path: loaded.config.base_path,
-            files,
-        });
-    }
-    entries.extend(
-        loaded
-            .config
-            .entries
-            .unwrap_or_default()
-            .into_iter()
-            .filter_map(|entry| {
-                entry
-                    .files
-                    .filter(|files| !files.is_empty())
-                    .map(|files| ConfigEntryFiles {
-                        base_path: entry.base_path,
-                        files,
-                    })
-            }),
-    );
+    let entries = loaded.config.into_entry_files();
     LoadedConfigEntryFiles {
         entries,
         source_path: loaded.source_path,
     }
-}
-
-fn load_linter_from_raw_config(config: &RawVizeConfig) -> LinterConfig {
-    let mut linter = LinterConfig::from(config.linter.clone());
-    if linter.preset.is_none() {
-        linter.preset = common_entry_linter_preset(config);
-    }
-    linter
-}
-
-fn common_entry_linter_preset(config: &RawVizeConfig) -> Option<crate::String> {
-    let mut common_preset: Option<crate::String> = None;
-    for entry in config.entries.as_deref().unwrap_or_default() {
-        let entry_linter = LinterConfig::from(entry.linter.clone());
-        let Some(entry_preset) = entry_linter.preset else {
-            continue;
-        };
-        if common_preset
-            .as_ref()
-            .is_some_and(|preset| preset.as_str() != entry_preset.as_str())
-        {
-            return None;
-        }
-        common_preset = Some(entry_preset);
-    }
-    common_preset
 }
 
 fn load_raw_config_with_source(path: Option<&Path>) -> LoadedRawConfig {
@@ -311,7 +233,7 @@ fn load_raw_config_with_source(path: Option<&Path>) -> LoadedRawConfig {
 
     let Some(dir_path) = resolve_dir_path(&base) else {
         return LoadedRawConfig {
-            config: RawVizeConfig::default(),
+            config: ConfigDocument::default(),
             source_path: None,
         };
     };
@@ -331,7 +253,7 @@ fn load_raw_config_with_source(path: Option<&Path>) -> LoadedRawConfig {
     }
 
     LoadedRawConfig {
-        config: RawVizeConfig::default(),
+        config: ConfigDocument::default(),
         source_path: None,
     }
 }

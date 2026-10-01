@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use super::load_raw_config_with_source;
-use crate::config::model::LibConfig;
+use crate::config::LibConfig;
 
 /// `lib` config section plus the config file it came from.
 #[derive(Debug, Clone, Default)]
@@ -14,7 +14,7 @@ pub struct LoadedLibConfig {
 pub fn load_lib_config_with_source(path: Option<&Path>) -> LoadedLibConfig {
     let loaded = load_raw_config_with_source(path);
     LoadedLibConfig {
-        config: loaded.config.lib,
+        config: loaded.config.into_lib_config(),
         source_path: loaded.source_path,
     }
 }

@@ -11,9 +11,7 @@ use super::load_raw_config_with_source;
 pub fn load_compiler_template_syntax(path: Option<&Path>) -> Option<&'static str> {
     load_raw_config_with_source(path)
         .config
-        .compiler
-        .template_syntax
-        .map(|template_syntax| template_syntax.as_str())
+        .compiler_template_syntax()
 }
 
 /// Load the configured `vue.version` dialect from a directory or file path.
@@ -32,9 +30,7 @@ pub fn load_compiler_vue_version(path: Option<&Path>) -> Option<crate::config::V
 pub fn load_compiler_host_compiler(path: Option<&Path>) -> Option<bool> {
     load_raw_config_with_source(path)
         .config
-        .compiler
-        .compatibility
-        .host_compiler
+        .compiler_host_compiler()
 }
 
 /// Load the configured `compiler.jsxMode` default output mode (#1496).
@@ -53,8 +49,7 @@ pub fn load_compiler_jsx_mode(path: Option<&Path>) -> Option<crate::config::JsxM
 pub fn load_compiler_custom_elements(path: Option<&Path>) -> Vec<crate::String> {
     load_raw_config_with_source(path)
         .config
-        .compiler
-        .custom_elements
+        .into_compiler_custom_elements()
 }
 
 #[cfg(test)]

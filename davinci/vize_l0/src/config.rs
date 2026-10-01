@@ -1,5 +1,6 @@
 //! Shared Vize configuration loading.
 
+mod document;
 mod loader;
 #[cfg(feature = "lint-glob")]
 pub mod matcher;
@@ -7,6 +8,7 @@ mod model;
 mod normalize;
 mod project;
 pub use crate::dialect::VueDialect;
+pub use document::ConfigDocument;
 pub use loader::{
     LoadedConfig, LoadedConfigEntryFiles, LoadedConfigEntryIgnores,
     LoadedConfigExperimentalVueFlags, LoadedConfigWithFeatures, LoadedLibConfig, LoadedLspConfig,

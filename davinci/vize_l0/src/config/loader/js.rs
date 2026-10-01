@@ -11,10 +11,10 @@ use std::{
     process::Command,
 };
 
-use crate::config::model::RawVizeConfig;
+use crate::config::ConfigDocument;
 
 /// Evaluate a JS-like config file through Node and deserialize the result.
-pub(super) fn parse_js_config(path: &Path) -> Result<RawVizeConfig, Box<dyn std::error::Error>> {
+pub(super) fn parse_js_config(path: &Path) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
     let config_path = if path.is_absolute() {
         path.to_path_buf()
     } else {
@@ -48,5 +48,5 @@ process.stdout.write(JSON.stringify(config ?? {}));
         )));
     }
 
-    Ok(serde_json::from_slice::<RawVizeConfig>(&output.stdout)?)
+    Ok(serde_json::from_slice::<ConfigDocument>(&output.stdout)?)
 }
