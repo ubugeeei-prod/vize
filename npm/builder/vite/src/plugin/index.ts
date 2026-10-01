@@ -32,17 +32,12 @@ import { patchUnoCssBridge } from "./unocss.ts";
 import { patchQuasarBridge } from "./quasar.ts";
 import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
 import { installDevMiddleware } from "./dev-middleware.ts";
-import { resolveExperimentalCompilerOptions } from "./experimentals.ts";
+import { mergeCompilerOptions } from "./compiler-config.ts";
 import { createLegacyVueCompatibilityPlugin, isLegacyVueCompatibilityMode } from "./vue-version.ts";
 import { resolveSharedConfig } from "./shared-config.ts";
 import * as configBridge from "./config-lifecycle.ts";
 import { resolveVueFeatureDefines } from "./vue-feature-defines.ts";
-import {
-  aliasSortKey,
-  resolveCompatibilityOptions,
-  resolveHookSsr,
-  shouldExtractCssForBuild,
-} from "./index-helpers.ts";
+import { aliasSortKey, resolveHookSsr, shouldExtractCssForBuild } from "./index-helpers.ts";
 
 export type { VizePluginState } from "./state.ts";
 
@@ -157,36 +152,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         sharedConfigPromise,
       );
 
-      const viteConfig = sharedConfig?.vite ?? {};
-      const compilerConfig = sharedConfig?.compiler ?? {};
-      const compatibility = resolveCompatibilityOptions(options, compilerConfig);
-      const vueVersion = options.vueVersion ?? compatibility.vueVersion ?? 3;
-      const mode =
-        options.mode ??
-        compilerConfig.mode ??
-        (compatibility.scriptSetupInStandalone === true ? "function" : "module");
-      const templateSyntax = options.templateSyntax ?? compilerConfig.templateSyntax ?? "standard";
-
-      state.mergedOptions = {
-        ...options,
-        ssr: options.ssr ?? compilerConfig.ssr ?? false,
-        sourceMap: options.sourceMap ?? compilerConfig.sourceMap,
-        ...resolveExperimentalCompilerOptions(options, compilerConfig, sharedConfig?.experimentals),
-        customRenderer: options.customRenderer ?? compilerConfig.customRenderer ?? false,
-        customElements: options.customElements ?? compilerConfig.customElements,
-        templateSyntax,
-        whitespace: options.whitespace ?? compilerConfig.whitespace,
-        compatibility,
-        vueVersion,
-        mode,
-        runtimeModuleName: options.runtimeModuleName ?? compilerConfig.runtimeModuleName ?? "vue",
-        runtimeGlobalName: options.runtimeGlobalName ?? compilerConfig.runtimeGlobalName ?? "Vue",
-        include: options.include ?? viteConfig.include,
-        exclude: options.exclude ?? viteConfig.exclude,
-        scanPatterns: options.scanPatterns ?? viteConfig.scanPatterns,
-        precompileBatchSize: options.precompileBatchSize ?? viteConfig.precompileBatchSize,
-        ignorePatterns: options.ignorePatterns ?? viteConfig.ignorePatterns,
-      };
+      state.mergedOptions = mergeCompilerOptions(options, sharedConfig);
 
       state.dynamicImportAliasRules = [];
       for (const alias of resolvedConfig.resolve.alias) {
