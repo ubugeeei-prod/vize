@@ -1,7 +1,7 @@
 //! Dev-only legacy AST oracle; explicit coordinate goldens live separately.
 
 use vize_armature::{ExpressionNode, PropNode, TemplateChildNode, parse};
-use vize_l0::Allocator;
+use vize_l0::{Allocator, cstr};
 use vize_l1::markup::{ArgSyntax, DirectivePrefix, DirectiveSyntax, VueDirectives};
 
 #[test]
@@ -34,9 +34,9 @@ fn admitted_directive_heads_match_the_legacy_parser_ast() {
     ] {
         for argument in arguments {
             for modifiers in ["", ".foo.bar", ".prop"] {
-                let raw = format!("{prefix}{argument}{modifiers}");
-                let source = format!("<!--中🍣--><Child {raw}=\"value\" id=\"tail\"/>");
-                let offset = source.find(&raw).unwrap() as u32;
+                let raw = cstr!("{prefix}{argument}{modifiers}");
+                let source = cstr!("<!--中🍣--><Child {raw}=\"value\" id=\"tail\"/>");
+                let offset = source.find(raw.as_str()).unwrap() as u32;
                 let native = VueDirectives.decompose(&raw, offset).unwrap().unwrap();
                 let allocator = Allocator::new();
                 let (root, errors) = parse(&allocator, &source);
@@ -97,7 +97,7 @@ fn malformed_argument_recovery_preserves_the_legacy_argument_evidence() {
         "v-on:a[",
         ":[key]tail.mod",
     ] {
-        let source = format!("<Child {raw}=\"value\" id=\"tail\"/>");
+        let source = cstr!("<Child {raw}=\"value\" id=\"tail\"/>");
         let native = VueDirectives.decompose(raw, 7).unwrap().unwrap();
         let allocator = Allocator::new();
         let (root, _) = parse(&allocator, &source);
@@ -133,7 +133,7 @@ fn parsed_pre_name_matches_legacy_verbatim_policy_for_recovered_heads() {
         "v-pre:[",
         "v-pre:",
     ] {
-        let source = format!(
+        let source = cstr!(
             "<div {raw} :title=\"value\">{{{{ msg }}}}<span @click=\"handler\">{{{{ nested }}}}</span></div>"
         );
         let native = VueDirectives.decompose(raw, 5).unwrap().unwrap();

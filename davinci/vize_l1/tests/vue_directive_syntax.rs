@@ -1,6 +1,6 @@
 //! Independent source-coordinate goldens for the ordinary native library build.
 
-use vize_l0::Span;
+use vize_l0::{Span, String, cstr};
 use vize_l1::dialect::vue3::directive::MAX_DIRECTIVE_DELIMITER_RUNS;
 use vize_l1::markup::directive::DirectiveNameError;
 use vize_l1::markup::{ArgSyntax, DirectiveName, DirectivePrefix, DirectiveSyntax, VueDirectives};
@@ -144,7 +144,7 @@ fn explicit_goldens_pin_names_arguments_modifiers_and_absolute_utf8_offsets() {
         };
         let actual = VueDirectives.decompose(raw, offset).unwrap().unwrap();
         assert_eq!(actual, expected, "{raw}");
-        let authored = format!("{prefix}{raw}");
+        let authored = cstr!("{prefix}{raw}");
         let mut spans = vec![actual.name, actual.modifiers];
         if let Some(ArgSyntax::Static(span) | ArgSyntax::Dynamic(span)) = actual.arg {
             spans.push(span);
@@ -196,7 +196,7 @@ fn pre_is_the_parsed_full_name_including_modified_and_malformed_heads() {
         "v-pre:[",
         "v-pre:",
     ] {
-        let authored = format!("中{raw}");
+        let authored = cstr!("中{raw}");
         let shape = VueDirectives.decompose(raw, 3).unwrap().unwrap();
         assert_eq!(shape.prefix, DirectivePrefix::Full, "{raw}");
         assert_eq!(shape.name, Span::new(5, 8), "{raw}");
@@ -226,8 +226,8 @@ fn dynamic_argument_quotes_escapes_and_nested_templates_preserve_the_whole_expre
         "({a:`outer${{b:`inner${keys[']']}`}.b}`}).a",
         "鍵[索引['値.']]",
     ] {
-        let raw = format!("v-on:[{expression}].stop.prevent");
-        let source = format!("中{raw}");
+        let raw = cstr!("v-on:[{expression}].stop.prevent");
+        let source = cstr!("中{raw}");
         let shape = VueDirectives.decompose(&raw, 3).unwrap().unwrap();
         let Some(ArgSyntax::Dynamic(span)) = shape.arg else {
             panic!("{raw}: {shape:?}")
@@ -250,8 +250,8 @@ fn dynamic_argument_quotes_escapes_and_nested_templates_preserve_the_whole_expre
 
 #[test]
 fn repeated_brackets_use_scalar_counts_and_excess_distinct_runs_are_explicitly_unadmitted() {
-    let expression = format!("{}key{}", "[".repeat(20_000), "]".repeat(20_000));
-    let raw = format!(":[{expression}].prop");
+    let expression = cstr!("{}key{}", "[".repeat(20_000), "]".repeat(20_000));
+    let raw = cstr!(":[{expression}].prop");
     let shape = VueDirectives.decompose(&raw, 0).unwrap().unwrap();
     assert_eq!(shape.arg, Some(ArgSyntax::Dynamic(Span::new(2, 40_005))));
     assert_eq!(shape.modifiers, Span::new(40_006, 40_011));
@@ -265,7 +265,7 @@ fn repeated_brackets_use_scalar_counts_and_excess_distinct_runs_are_explicitly_u
             .rev()
             .map(|c| if c == '(' { ')' } else { ']' })
             .collect();
-        format!(":[{opens}key{closes}]")
+        cstr!(":[{opens}key{closes}]")
     };
     assert!(
         VueDirectives

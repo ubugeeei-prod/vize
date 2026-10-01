@@ -8,7 +8,7 @@ fn tokenize(input: &str, open: &[u8], close: &[u8]) -> TestCallbacks {
     let callbacks = TestCallbacks::default();
     let mut tokenizer = Tokenizer::with_delimiters(input, callbacks, open, close);
     tokenizer.tokenize();
-    tokenizer.callbacks
+    tokenizer.into_callbacks().expect("owned callbacks")
 }
 
 #[test]

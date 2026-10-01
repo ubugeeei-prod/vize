@@ -11,12 +11,12 @@
 //! is a dialect syntax hook ([`directive::DirectiveSyntax`]), like an MLIR
 //! custom assembly format.
 //!
-//! The profile-generic lexer and entity decoder are available in default
-//! builds. The `native-markup-lex` feature enables the compatibility callback
-//! adapter for differential validation. [`parse_component`] constructs a
-//! native surface tree; the root parse APIs and compiler products still
-//! use the L1-owned compatibility tokenizer. Switching products to the
-//! generic lexer waits for the compiler fix-history gate #6880 and parity.
+//! The profile-generic lexer, entity decoder and compatibility callback
+//! adapter are available in default builds. [`parse_component`] constructs a
+//! native surface tree. The root parse APIs and compiler products retain
+//! their existing parser routes through the published tokenizer facade;
+//! that facade executes this same lexer while preserving callback policy.
+//! Replacing product parser routes still requires fix-history and parity gates.
 //! The Vue dialect provides allocation-free directive decomposition with checked
 //! source admission; typed Shape dispatch remains unfinished.
 //! Design: <https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929>.

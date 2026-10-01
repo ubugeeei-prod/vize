@@ -13,24 +13,25 @@ fn interrupted_callback_and_non_eof_profile_change_keep_the_frozen_contract() {
     let mut result = String::default();
     let polls = Cell::new(0);
     let pause = Cell::new(false);
-    let probe = Probe {
-        trace: &mut result,
-        polls: &polls,
-        pause: Some(&pause),
-        live_mode: false,
-        verbatim: false,
-    };
-    let mut tokenizer = Tokenizer::new(source, probe);
-    assert!(catch_unwind(AssertUnwindSafe(|| tokenizer.tokenize())).is_err());
-    tokenizer.set_tolerate_declarations(true);
-    tokenizer.set_in_tag_comments(true);
-    tokenizer.set_triple_mustache(true);
-    tokenizer.tokenize();
-    tokenizer.set_tolerate_declarations(false);
-    tokenizer.set_in_tag_comments(false);
-    tokenizer.set_triple_mustache(false);
-    tokenizer.tokenize();
-    drop(tokenizer);
+    {
+        let probe = Probe {
+            trace: &mut result,
+            polls: &polls,
+            pause: Some(&pause),
+            live_mode: false,
+            verbatim: false,
+        };
+        let mut tokenizer = Tokenizer::new(source, probe);
+        assert!(catch_unwind(AssertUnwindSafe(|| tokenizer.tokenize())).is_err());
+        tokenizer.set_tolerate_declarations(true);
+        tokenizer.set_in_tag_comments(true);
+        tokenizer.set_triple_mustache(true);
+        tokenizer.tokenize();
+        tokenizer.set_tolerate_declarations(false);
+        tokenizer.set_in_tag_comments(false);
+        tokenizer.set_triple_mustache(false);
+        tokenizer.tokenize();
+    }
     result.push_str(&cstr!("mode-polls:{};", polls.get()));
     let mut hash = StableHasher128::new();
     cases.check(

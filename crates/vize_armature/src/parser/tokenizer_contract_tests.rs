@@ -21,12 +21,9 @@ impl Oracle {
         }
         let digest = hash.digest();
         let start = self.index * 16;
-        let expected = self
-            .expected
-            .get(start..start + 16)
-            .expect("frozen case count");
+        let expected = self.expected.get(start..start + 16);
         assert_eq!(
-            digest.as_slice(),
+            Some(digest.as_slice()),
             expected,
             "{context}; observed fields: {fields:?}"
         );

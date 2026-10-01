@@ -1,7 +1,7 @@
 //! Frozen callback contract captured before retiring the duplicate machine.
 //!
-//! The golden stream includes every callback and mode poll. It is independent
-//! of the candidate native lexer, not a facade-versus-its-own-engine oracle.
+//! Goldens include complete callback streams and exact mode-poll counts.
+//! They are independent of the candidate native lexer.
 
 use super::{Callbacks, QuoteType, Tokenizer};
 use core::cell::Cell;
@@ -100,12 +100,9 @@ impl Oracle {
         }
         let digest = hash.digest();
         let start = self.index * 16;
-        let expected = self
-            .expected
-            .get(start..start + 16)
-            .expect("frozen case count");
+        let expected = self.expected.get(start..start + 16);
         assert_eq!(
-            digest.as_slice(),
+            Some(digest.as_slice()),
             expected,
             "{context}; observed fields: {fields:?}"
         );
@@ -132,34 +129,35 @@ fn feed(hasher: &mut StableHasher128, bytes: &[u8]) {
 fn trace(source: &str, open: &[u8], close: &[u8], switches: Switches, repeat: bool) -> String {
     let mut result = String::default();
     let polls = Cell::new(0);
-    let probe = Probe {
-        trace: &mut result,
-        polls: &polls,
-        pause: None,
-        live_mode: switches.live_mode,
-        verbatim: false,
-    };
-    let mut tokenizer = Tokenizer::with_delimiters(source, probe, open, close);
-    tokenizer.set_tolerate_declarations(!switches.document);
-    tokenizer.set_tolerate_declarations(switches.document);
-    tokenizer.set_triple_mustache(!switches.raw);
-    tokenizer.set_triple_mustache(switches.raw);
-    tokenizer.set_in_tag_comments(!switches.comments);
-    tokenizer.set_in_tag_comments(switches.comments);
-    tokenizer.tokenize();
-    if repeat {
-        // Public mutators remain valid after EOF. A new lexer would reset the
-        // cursor and emit the source again, violating this frozen contract.
+    {
+        let probe = Probe {
+            trace: &mut result,
+            polls: &polls,
+            pause: None,
+            live_mode: switches.live_mode,
+            verbatim: false,
+        };
+        let mut tokenizer = Tokenizer::with_delimiters(source, probe, open, close);
         tokenizer.set_tolerate_declarations(!switches.document);
-        tokenizer.set_triple_mustache(!switches.raw);
-        tokenizer.set_in_tag_comments(!switches.comments);
-        tokenizer.tokenize();
         tokenizer.set_tolerate_declarations(switches.document);
+        tokenizer.set_triple_mustache(!switches.raw);
         tokenizer.set_triple_mustache(switches.raw);
+        tokenizer.set_in_tag_comments(!switches.comments);
         tokenizer.set_in_tag_comments(switches.comments);
         tokenizer.tokenize();
+        if repeat {
+            // Public mutators remain valid after EOF. A new lexer would reset the
+            // cursor and emit the source again, violating this frozen contract.
+            tokenizer.set_tolerate_declarations(!switches.document);
+            tokenizer.set_triple_mustache(!switches.raw);
+            tokenizer.set_in_tag_comments(!switches.comments);
+            tokenizer.tokenize();
+            tokenizer.set_tolerate_declarations(switches.document);
+            tokenizer.set_triple_mustache(switches.raw);
+            tokenizer.set_in_tag_comments(switches.comments);
+            tokenizer.tokenize();
+        }
     }
-    drop(tokenizer);
     result.push_str(&cstr!("mode-polls:{};", polls.get()));
     result
 }
