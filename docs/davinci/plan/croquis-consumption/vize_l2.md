@@ -22,7 +22,7 @@ _None._
 | -------------------- | -------: | ---: |
 | `Scope`              |        0 |    3 |
 | `ScopeBinding`       |        0 |   12 |
-| `Span`               |        0 |  312 |
-| `Croquis.bindings`   |        1 |   33 |
+| `Span`               |        0 |  321 |
+| `Croquis.bindings`   |        1 |   34 |
 | `Croquis.reactivity` |        0 |    1 |
 | `Croquis.scopes`     |        0 |   14 |
