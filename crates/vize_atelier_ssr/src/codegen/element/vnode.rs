@@ -120,6 +120,9 @@ impl<'a> SsrCodegenContext<'a> {
                 Some(out)
             }
             TemplateChildNode::Comment(comment) => {
+                if comment.directive.is_some() {
+                    return None;
+                }
                 self.use_core_helper(RuntimeHelper::CreateComment);
                 let mut out = String::from("_createCommentVNode(");
                 out.push_str(&quoted_js_string(comment.content));
