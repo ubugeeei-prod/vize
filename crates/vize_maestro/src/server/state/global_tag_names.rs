@@ -64,9 +64,6 @@ impl ServerState {
                 .ok()
                 .and_then(|uri| self.documents.get(&uri));
             let stamp = if let Some(document) = &document {
-                if document.text().len() > 4 * 1024 * 1024 {
-                    continue;
-                }
                 Stamp::Open(document.revision())
             } else if let Ok(metadata) = fs::metadata(path) {
                 if metadata.len() > 4 * 1024 * 1024 {
@@ -85,11 +82,21 @@ impl ServerState {
                 result.extend(cached.names.clone());
                 continue;
             }
-            missing.push((
-                path.clone(),
-                stamp,
-                document.map(|document| document.text()),
-            ));
+            let source = document.map(|document| document.text());
+            if source
+                .as_ref()
+                .is_some_and(|source| source.len() > 4 * 1024 * 1024)
+            {
+                cache.names.write().insert(
+                    path.clone(),
+                    CachedNames {
+                        stamp,
+                        names: Vec::new(),
+                    },
+                );
+                continue;
+            }
+            missing.push((path.clone(), stamp, source));
         }
         if !missing.is_empty() {
             let (sender, receiver) = oneshot::channel();
