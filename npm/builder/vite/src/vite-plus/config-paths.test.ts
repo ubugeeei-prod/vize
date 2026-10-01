@@ -5,7 +5,7 @@ import { test } from "node:test";
 import { relocateTaskConfig } from "./config-paths.ts";
 import { runNative } from "./runner.ts";
 
-test("task configs retain original scopes outside the project directory", async () => {
+void test("task configs retain original scopes outside the project directory", async () => {
   const root = process.cwd();
   const config = {
     ignores: ["gen/**"],
@@ -42,7 +42,7 @@ test("task configs retain original scopes outside the project directory", async 
   assert.throws(() => readFileSync(serialized));
 });
 
-test("absolute and negated patterns survive relocation and empty configs work", () => {
+void test("absolute and negated patterns survive relocation and empty configs work", () => {
   const root = process.cwd();
   const absolute = path.resolve(root, "src/**").replaceAll("\\", "/");
   assert.deepEqual(relocateTaskConfig({}, root).entries, []);
