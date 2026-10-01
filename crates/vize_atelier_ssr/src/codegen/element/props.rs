@@ -55,7 +55,8 @@ pub(crate) fn push_component_prop_entry(out: &mut String, entry: &VNodePropEntry
     out.push_str(&entry.value);
 }
 
-/// Merge static `class` and `style` entries so Vue sees one canonical value.
+/// Match Vue's prop deduplication: merge class/style/listeners, keep the first
+/// ordinary static key, and retain computed keys for runtime evaluation.
 pub(crate) fn normalize_prop_entries(
     entries: std::vec::Vec<VNodePropEntry>,
 ) -> std::vec::Vec<VNodePropEntry> {
@@ -76,7 +77,11 @@ pub(crate) fn normalize_prop_entries(
                 event_values.insert(entry.key.clone(), vec![entry.value.clone()]);
                 normalized.push(entry);
             }
-        } else {
+        } else if entry.dynamic
+            || !normalized
+                .iter()
+                .any(|prior: &VNodePropEntry| !prior.dynamic && prior.key == entry.key)
+        {
             normalized.push(entry);
         }
     }
