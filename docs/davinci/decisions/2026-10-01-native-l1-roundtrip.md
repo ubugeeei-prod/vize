@@ -27,7 +27,7 @@ embeds remain unfinished under the provider's explicit admission contract.
 
 Source-built CLI tests preserve exact output, input bytes and recoverable-error
 behavior for Unicode/CRLF, empty input, unterminated quotes, complete multi-scalar
-entity references, interactive recovery and the pending `v-pre` recovery law.
+entity references, nested-tag and `v-pre` byte-preservation fixtures.
 The provider independently checks tree fields, events, holes and ordered
 diagnostics across the 42 fixtures and every UTF-8 prefix/suffix.
 
