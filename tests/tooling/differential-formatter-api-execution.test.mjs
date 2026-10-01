@@ -37,6 +37,7 @@ void test("shared formatter API corpus observes all six exact outputs from a sou
       plannedCases: 6,
       legacyByteMatches: 4,
       legacyInternalObservations: 2,
+      legacyErrorMatches: 0,
       legacyFailures: 0,
       nativeUnsupported: 6,
       nativeHandled: 0,

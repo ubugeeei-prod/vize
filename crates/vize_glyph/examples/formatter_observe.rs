@@ -7,57 +7,134 @@
 )]
 
 use std::io::{self, Read, Write};
+use std::process::ExitCode;
 use vize_glyph::{
-    FormatError, FormatOptions, format_script, format_sfc, format_style, format_template,
+    FormatError, FormatOptions, format_json, format_jsonc, format_script, format_sfc, format_style,
+    format_template,
 };
 
-fn observe() -> Result<(), FormatError> {
-    let args: Vec<_> = std::env::args().skip(1).collect();
-    let (api, single_pass) = match args.as_slice() {
-        [api] => (api.as_str(), false),
-        [api, profile] if profile == "--legacy-single-pass" => (api.as_str(), true),
-        _ => {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "expected API and optional legacy profile",
-            )
-            .into());
+fn invalid(message: impl Into<std::string::String>) -> FormatError {
+    io::Error::new(io::ErrorKind::InvalidInput, message.into()).into()
+}
+
+fn configured_options(args: &[std::string::String]) -> Result<(FormatOptions, bool), FormatError> {
+    let mut options = FormatOptions::default();
+    let mut single_pass = false;
+    let mut expect_error = false;
+    let mut configured = false;
+    let mut remaining = args;
+    while let Some((flag, tail)) = remaining.split_first() {
+        match flag.as_str() {
+            "--options" if !configured => {
+                let Some((json, tail)) = tail.split_first() else {
+                    return Err(invalid("missing options JSON"));
+                };
+                let value: serde_json::Value =
+                    serde_json::from_str(json).map_err(|error| invalid(error.to_string()))?;
+                let Some(object) = value.as_object() else {
+                    return Err(invalid("formatter options must be an object"));
+                };
+                options = serde_json::from_value(value.clone())
+                    .map_err(|error| invalid(error.to_string()))?;
+                let actual =
+                    serde_json::to_value(&options).map_err(|error| invalid(error.to_string()))?;
+                for (key, value) in object {
+                    if actual.get(key) != Some(value) {
+                        return Err(invalid(format!("unknown or noncanonical option: {key}")));
+                    }
+                }
+                configured = true;
+                remaining = tail;
+                continue;
+            }
+            "--legacy-single-pass" if !single_pass => single_pass = true,
+            "--expect-error" if !expect_error => expect_error = true,
+            _ => return Err(invalid("unsupported or duplicate observer option")),
         }
+        remaining = tail;
+    }
+    options.skip_script_stabilization = single_pass;
+    Ok((options, expect_error))
+}
+
+fn error_kind(error: &FormatError) -> &'static str {
+    match error {
+        FormatError::ParseError(_) => "ParseError",
+        FormatError::ScriptParseError(_) => "ScriptParseError",
+        FormatError::ScriptFormatError(_) => "ScriptFormatError",
+        FormatError::TemplateParseError(_) => "TemplateParseError",
+        FormatError::TemplateFormatError(_) => "TemplateFormatError",
+        FormatError::StyleFormatError(_) => "StyleFormatError",
+        FormatError::JsonFormatError(_) => "JsonFormatError",
+        FormatError::IoError(_) => "IoError",
+    }
+}
+
+fn observe() -> Result<ExitCode, FormatError> {
+    let args: Vec<_> = std::env::args().skip(1).collect();
+    let Some((api, flags)) = args.split_first() else {
+        return Err(invalid("expected API"));
     };
+    let api = api.as_str();
+    let (options, expect_error) = configured_options(flags)?;
     if !matches!(
         api,
-        "--script" | "--sfc" | "--style" | "--template" | "--defaults"
-    ) || (single_pass && !matches!(api, "--script" | "--sfc" | "--defaults"))
+        "--script"
+            | "--sfc"
+            | "--style"
+            | "--template"
+            | "--json"
+            | "--jsonc"
+            | "--defaults"
+            | "--options-json"
+    ) || (options.skip_script_stabilization
+        && !matches!(api, "--script" | "--sfc" | "--defaults" | "--options-json"))
+        || (expect_error && matches!(api, "--defaults" | "--options-json"))
     {
         return Err(io::Error::new(io::ErrorKind::InvalidInput, "unsupported API/profile").into());
     }
-    let options = FormatOptions {
-        skip_script_stabilization: single_pass,
-        ..FormatOptions::default()
-    };
     if api == "--defaults" {
         writeln!(io::stdout().lock(), "{options:#?}")?;
-        return Ok(());
+        return Ok(ExitCode::SUCCESS);
+    }
+    if api == "--options-json" {
+        let mut value =
+            serde_json::to_value(&options).map_err(|error| invalid(error.to_string()))?;
+        value["skipScriptStabilization"] = options.skip_script_stabilization.into();
+        writeln!(io::stdout().lock(), "{value}")?;
+        return Ok(ExitCode::SUCCESS);
     }
     let mut source = std::string::String::new();
     io::stdin().read_to_string(&mut source)?;
-    let output = match api {
-        "--script" => format_script(&source, &options)?,
-        "--style" => format_style(&source, &options)?,
-        "--template" => format_template(&source, &options)?,
-        "--sfc" => {
-            let result = format_sfc(&source, &options)?;
-            writeln!(io::stderr().lock(), "changed={}", result.changed)?;
-            result.code
-        }
+    let observed = match api {
+        "--script" => format_script(&source, &options),
+        "--style" => format_style(&source, &options),
+        "--template" => format_template(&source, &options),
+        "--json" => format_json(&source, &options),
+        "--jsonc" => format_jsonc(&source, &options),
+        "--sfc" => format_sfc(&source, &options).and_then(|result| {
+            if !expect_error {
+                writeln!(io::stderr().lock(), "changed={}", result.changed)?;
+            }
+            Ok(result.code)
+        }),
         _ => {
             return Err(io::Error::new(io::ErrorKind::InvalidInput, "unsupported API").into());
         }
     };
+    if expect_error {
+        let error = observed
+            .err()
+            .ok_or_else(|| invalid("expected a real formatter error"))?;
+        writeln!(io::stdout().lock(), "{error:#?}")?;
+        writeln!(io::stderr().lock(), "error={}", error_kind(&error))?;
+        return Ok(ExitCode::FAILURE);
+    }
+    let output = observed?;
     io::stdout().lock().write_all(output.as_bytes())?;
-    Ok(())
+    Ok(ExitCode::SUCCESS)
 }
 
-fn main() -> Result<(), FormatError> {
+fn main() -> Result<ExitCode, FormatError> {
     observe()
 }
