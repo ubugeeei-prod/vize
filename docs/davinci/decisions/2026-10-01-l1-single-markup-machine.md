@@ -84,6 +84,8 @@ gap without a dead variant or runtime arm. Its frequent Text/RCDATA transition
 can use the original shift-and-add selection. A narrow x86 code-generation
 diagnostic supports that mechanism; exact-head Actions determine whether all
 100 actual benchmark ceilings pass. Frozen records and ceilings remain unchanged.
+After rebasing onto `9c36db024`, three inherited embed-source test slices use
+checked `get` access so strict Clippy can run without changing their assertions.
 
 ## Remaining scope
 

@@ -14,7 +14,7 @@ fn unchanged_values_borrow_without_arena_allocation() {
             prepare_attribute_value(&allocator, &authored, Span::new(1, 1 + raw.len() as u32))
                 .unwrap();
         assert_eq!(source.text(), raw);
-        assert_eq!(source.text().as_ptr(), authored[1..].as_ptr());
+        assert_eq!(source.text().as_ptr(), authored.get(1..).unwrap().as_ptr());
         assert!(source.decode_map().is_none());
         assert_eq!(allocator.allocated_bytes(), 0);
     }
@@ -57,9 +57,13 @@ fn prepared_maps_cover_both_streams_and_preserve_literal_bytes() {
     for segment in map.segments() {
         assert_eq!(segment.decoded().start, decoded);
         assert_eq!(segment.authored().start, original);
-        let value =
-            &source.text()[segment.decoded().start as usize..segment.decoded().end as usize];
-        let raw = &authored[segment.authored().start as usize..segment.authored().end as usize];
+        let value = source
+            .text()
+            .get(segment.decoded().start as usize..segment.decoded().end as usize)
+            .unwrap();
+        let raw = authored
+            .get(segment.authored().start as usize..segment.authored().end as usize)
+            .unwrap();
         match segment.kind() {
             Kind::Identity => assert_eq!(raw, value),
             Kind::Entity => assert!(raw.starts_with('&')),
