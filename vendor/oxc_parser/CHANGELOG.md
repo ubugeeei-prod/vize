@@ -424,7 +424,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 
 ### 🐛 Bug Fixes
 
-- 37482eb parser: Respect optional `TSNamedTupleMember`  for ts error 1266 &1257 (#18178) (Sysix)
+- 37482eb parser: Respect optional `TSNamedTupleMember` for ts error 1266 &1257 (#18178) (Sysix)
 - 2c6966d parser: Correct precedence handling for private-in expression (#18169) (Boshen)
 - 91126a0 parser: Reparse all statements with await identifier in unambiguous mode (#18163) (Boshen)
 - c98e5b7 parser: Parse `for (using of = ...)` as using declaration (#18142) (Boshen)
@@ -594,7 +594,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 
 - 384ea3c parser: Report err on missing function body in expression (#14946) (camc314)
 
-
 ## [0.95.0] - 2025-10-15
 
 ### 🚜 Refactor
@@ -609,7 +608,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 - 791c72a parser: Add separate token kinds for BigInt literals (#14405) (Boshen)
 - 266b982 parser: Cache `has_separator()` result in literal parsing (#14403) (Boshen)
 - beeb129 parser: Optimize comment annotation parsing (#14397) (Boshen)
-
 
 ## [0.94.0] - 2025-10-06
 
@@ -627,7 +625,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 - ff3c240 parser: Cleanup and optimize parsing jsx (#14234) (Ulrich Stark)
 - e6118fa parser: Optimize expect() to reduce branch misprediction (#14242) (Boshen)
 
-
 ## [0.93.0] - 2025-09-28
 
 ### ⚡ Performance
@@ -635,13 +632,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 - 5b74a81 parser: Apply #[cold] attribute to error handling functions (#14188) (Boshen)
 - af88e94 parser: Cleanup and optimize various parsing functions (#14160) (Ulrich Stark)
 
-
 ## [0.92.0] - 2025-09-24
 
 ### 🐛 Bug Fixes
 
 - f4d6790 parser: Forbid accessors named `constructor` (#14017) (Don Isaac)
-
 
 ## [0.91.0] - 2025-09-22
 
@@ -661,7 +656,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 
 - fb347da crates: V0.91.0 (#13961) (Boshen)
 
-
 ## [0.91.0] - 2025-09-21
 
 ### 🚀 Features
@@ -671,7 +665,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 ### 🐛 Bug Fixes
 
 - f067159 parser: Forbid readonly in parser instead of semantic (#13905) (Ulrich Stark)
-
 
 ## [0.90.0] - 2025-09-18
 
@@ -688,8 +681,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 
 - ca4a081 parser: Cache redundant token operations in hot paths (#13775) (Boshen)
 
-
-
 ## [0.88.0] - 2025-09-15
 
 ### 🚀 Features
@@ -699,7 +690,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 ### 🐛 Bug Fixes
 
 - f795d69 parser: Improve diagnostics around modifier checks (#13526) (Ulrich Stark)
-
 
 ## [0.87.0] - 2025-09-08
 
@@ -712,16 +702,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 
 - 3ead0dd parser: Store Option<diagnostic> for lexer errors (#13520) (camc314)
 
-
-
-
-
 ## [0.83.0] - 2025-08-29
 
 ### 🚀 Features
 
 - 903a150 parser: Report more invalid modifier locations (#13368) (Ulrich Stark)
-
 
 ## [0.82.3] - 2025-08-20
 
@@ -733,7 +718,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 
 - b2d59a2 parser: Improve safety of char to bytes conversions (#13193) (overlookmotel)
 
-
 ## [0.82.2] - 2025-08-17
 
 ### 🚜 Refactor
@@ -743,8 +727,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 ### 📚 Documentation
 
 - 56ae824 lexer: Update comment to match code (#13103) (overlookmotel)
-
-
 
 ## [0.82.0] - 2025-08-12
 
@@ -759,7 +741,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 ### ⚡ Performance
 
 - 47a565f lexer: Only check for hashbang at start of file (#12521) (overlookmotel)
-
 
 ## [0.81.0] - 2025-08-06
 
@@ -778,7 +759,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 - ae0137c lexer: Improve byte_handlers for `!` and `?` (#12831) (Boshen)
 - 5d96425 parser: Register `import` / `export` statements in module record directly (#12807) (overlookmotel)
 - 00bdfc0 parser: Remove a bound check in `match_keyword` (#12778) (Boshen)
-
 
 ## [0.80.0] - 2025-08-03
 
@@ -803,14 +783,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 - 45e2fe8 rust: Fix typos and grammar mistakes in Rust documentation comments (#12715) (Copilot)
 - de1de35 rust: Add comprehensive README.md documentation for all Rust crates (#12706) (Copilot)
 
-
-
 ## [0.79.0] - 2025-07-30
 
 ### 🎨 Styling
 
 - 977d3ba lexer: Reformat `Kind` matchers (#12520) (overlookmotel)
-
 
 ## [0.78.0] - 2025-07-24
 
@@ -818,14 +795,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 
 - c135beb codegen: Keep function expression PIFEs (#12470) (sapphi-red)
 
-
 ## [0.77.3] - 2025-07-20
 
 ### 🚀 Features
 
 - 0920e98 codegen: Keep arrow function PIFEs (#12353) (sapphi-red)
-
-
 
 ## [0.77.1] - 2025-07-16
 
@@ -838,13 +812,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 - 4d88252 parser: Remove unnecessary `unbox` (#12302) (overlookmotel)
 - 1058e8a parser: Shorten code (#12301) (overlookmotel)
 
-
 ## [0.77.0] - 2025-07-12
 
 ### 🐛 Bug Fixes
 
 - a46708f parser: Handle `%` token as a v8_intrinsic only if option is enabled (#12128) (leaysgur)
-
 
 ## [0.76.0] - 2025-07-08
 
@@ -852,7 +824,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 
 - 349d395 parser: Speed up simple lookaheads by introducing `Lexer::peek_token` (#11358) (Ulrich Stark)
 - 494c29d parser: Optimize around `parse_return_type` (#12095) (Ulrich Stark)
-
 
 ## [0.75.1] - 2025-07-03
 
@@ -864,7 +835,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 
 - 6c9c580 parser: Panic when parsing interface with missing implements (#11898) (camc314)
 
-
 ## [0.75.0] - 2025-06-25
 
 ### 💥 BREAKING CHANGES
@@ -874,7 +844,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 ### 🐛 Bug Fixes
 
 - 066c4c4 parser: Do not produce AST for incorrect rest parameter position (#11894) (Boshen)
-
 
 ## [0.74.0] - 2025-06-23
 
@@ -887,13 +856,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 
 - a8e4f01 parser: Avoid redundant Kind checks when parsing for loops (#11799) (Ulrich Stark)
 
-
 ## [0.73.2] - 2025-06-18
 
 ### 🚀 Features
 
 - 8c341a2 sema/check: Ts setters cannot have initializers (#11695) (Don Isaac)
-
 
 ## [0.73.1] - 2025-06-17
 
@@ -915,7 +882,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 ### ⚡ Performance
 
 - 2f25ca6 parser: Optimize code around parsing delimited list and object (#11755) (Ulrich Stark)
-
 
 ## [0.73.0] - 2025-06-13
 
@@ -960,7 +926,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0).
 - 78f1336 parser: Remove lookahead for checking for-let-of and for-async-of (#11655) (camchenry)
 - e389748 parser: Add early returns when eating modifiers before decorators (#11653) (camchenry)
 - f224585 parser: Improve perf of parse_template_lit (#11542) (camc314)
-
 
 # Changelog
 
@@ -1180,7 +1145,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Refactor
 
-
 ## [0.67.0] - 2025-04-27
 
 ### Features
@@ -1233,7 +1197,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - ac23773 parser: Update parser example (#10468) (overlookmotel)
 
 ### Refactor
-
 
 ## [0.64.0] - 2025-04-17
 
@@ -1361,7 +1324,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Features
 
-
 ### Performance
 
 - a83cebd parser: Do not call `ParserImpl::end_span` twice for `StringLiteral`s (#9737) (overlookmotel)
@@ -1428,7 +1390,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Performance
 
-
 ## [0.53.0] - 2025-02-26
 
 ### Performance
@@ -1465,7 +1426,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Features
 
-
 ### Bug Fixes
 
 - bc64c9d lexer: Fix decoding lone `\r` in template literals (#9066) (overlookmotel)
@@ -1482,13 +1442,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Refactor
 
-
 ## [0.49.0] - 2025-02-10
 
 - bbb075d ast: [**BREAKING**] Name `AstBuilder` enum builders after variant name not type name (#8890) (overlookmotel)
 
 ### Refactor
-
 
 ### Styling
 
@@ -1600,7 +1558,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Refactor
 
-
 ## [0.40.0] - 2024-12-10
 
 - 72eab6c parser: [**BREAKING**] Stage 3 `import source` and `import defer` (#7706) (Boshen)
@@ -1663,7 +1620,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Refactor
 
-
 ## [0.36.0] - 2024-11-09
 
 - b11ed2c ast: [**BREAKING**] Remove useless `ObjectProperty::init` field (#7220) (Boshen)
@@ -1677,7 +1633,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - 9d6cc9d estree: ESTree compatibility for all literals (#7152) (ottomated)
 
 ### Refactor
-
 
 ## [0.35.0] - 2024-11-04
 
@@ -1715,9 +1670,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Bug Fixes
 
-
 ### Refactor
-
 
 ## [0.32.0] - 2024-10-19
 
@@ -1821,9 +1774,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Features
 
-
 ### Performance
-
 
 ### Refactor
 
@@ -2015,13 +1966,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Refactor
 
-
 ## [0.19.0] - 2024-07-09
 
 - b936162 ast/ast_builder: [**BREAKING**] Shorter allocator utility method names. (#4122) (rzvxa)
 
 ### Refactor
-
 
 ## [0.18.0] - 2024-07-09
 
@@ -2220,6 +2169,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - 7768123 parser: [**BREAKING**] Drop TSImportEqualsDeclaration.is_export (#2654) (Arnaud Barré)
 
 ### Features
+
 - 697b6b7 Merge features `serde` and `wasm` to `serialize` (#2716) (Boshen)- 265b2fb Miette v7 (#2465) (Boshen)
 
 ### Bug Fixes
@@ -2476,4 +2426,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - 3516759 ast: Use `atom` for `Directive` and `Hashbang` (#701) (Yunfei He)
 - 56aaf31 benchmark: Use codspeed for all benchmarks (#839) (Boshen)- a2dbfee Clean up fuzzer, move it to repo root (#872) (Boshen)- 12798e0 Improve code coverage a little bit (Boshen)
-

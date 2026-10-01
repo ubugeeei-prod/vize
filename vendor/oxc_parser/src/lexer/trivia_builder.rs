@@ -59,7 +59,12 @@ impl<'a> TriviaBuilder<'a> {
 
     pub fn mark_pure_comment_not_applied(&mut self, index: usize) {
         if let Some(comment) = self.comments.get_mut(index) {
-            debug_assert!(comment.is_pure());
+            // Error recovery or speculation can revisit an annotation already
+            // marked not applied. Keep that terminal state idempotent.
+            debug_assert!(matches!(
+                comment.content,
+                CommentContent::Pure | CommentContent::PureNotApplied
+            ));
             comment.content = CommentContent::PureNotApplied;
         }
     }
@@ -207,7 +212,13 @@ impl<'a> TriviaBuilder<'a> {
         {
             // Duplicate from parser lookahead/rewind — update annotation flags
             // to point to the existing comment.
-            self.set_annotation_flags(&comment, self.comments.len() - 1);
+            if let Ok(index) = self
+                .comments
+                .binary_search_by_key(&comment.span.start, |existing| existing.span.start)
+                && self.comments[index].span == comment.span
+            {
+                self.set_annotation_flags(&comment, index);
+            }
             return;
         }
 

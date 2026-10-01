@@ -1,0 +1,22 @@
+===
+name: pure comment rewind keeps later ordinary comment
+options: vdom
+--- INPUT ---
+<div>{{ (/*#__PURE__*/ /* ordinary */ value) }}</div>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString((/*#__PURE__*/ /* ordinary */ _ctx.value)), 1 /* TEXT */))
+}
+===
+name: pure call rewind keeps authored comment ownership
+options: vdom
+--- INPUT ---
+<div>{{ (/*@__PURE__*/ invoke(/* ordinary */)) }}</div>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString((/*@__PURE__*/ _ctx.invoke(/* ordinary */))), 1 /* TEXT */))
+}
