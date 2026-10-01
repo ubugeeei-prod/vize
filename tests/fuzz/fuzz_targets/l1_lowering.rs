@@ -38,7 +38,7 @@ fuzz_target!(|data: &[u8]| {
     let (tree, errors) = parse(&allocator, source);
     let lowered = lower(&allocator, &tree, &errors);
     assert_fact_spans_resolve(source, &lowered);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops).expect("compatibility expression aliases");
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
     assert_eq!(verify(&folio, Rigor::Canonical), vec![]);
     assert_eq!(verify_table(&folio, &lowered.scopes), vec![]);

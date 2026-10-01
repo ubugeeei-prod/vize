@@ -106,7 +106,8 @@ pub fn lower_block(block: &SourceBlock, caps: LegacyCaps) -> Result<LoweredBlock
         semantic: Page {
             schema_version: L2_PAGE_SCHEMA,
             text: full_text(&HistoricalL2Page::from_current(
-                L2Page::of(&lowered.root.ops).map_err(|_| trap("native binding dump unsupported"))?,
+                L2Page::of(&lowered.root.ops)
+                    .map_err(|_| trap("native binding dump unsupported"))?,
             )),
         },
         diagnostics: lowered.diagnostics.iter().map(Diagnostic::from).collect(),
