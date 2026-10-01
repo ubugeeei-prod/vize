@@ -4,9 +4,12 @@ use vize_l0::Span;
 use vize_l1::dialect::vue3::VueDirectives;
 use vize_l1::embed::prepare_attribute_value;
 use vize_l1::markup::directive::DirectiveSyntax;
-use vize_l1::{Attribute as SurfaceAttribute, Element, ElementClose};
+use vize_l1::{Attribute as SurfaceAttribute, Element};
 use vize_l2::artifact::RegionBuilder;
 use vize_l2::op::{Attribute, Namespace};
+
+mod header;
+pub(super) use header::{HeaderAdmission, PreparedElement, StructuralHeadMask};
 
 enum PreparedAttribute<'a> {
     Static(Attribute<'a>),
@@ -18,75 +21,51 @@ impl<'a> Context<'a> {
         &mut self,
         region: &mut RegionBuilder<'_, 'a>,
         element: &Element<'a>,
-        parent: Namespace,
+        parent: (Namespace, Option<&'a str>),
     ) {
-        let start = self.token_span(&element.open.lt_name).start;
-        let end = match &element.close {
-            ElementClose::Present(close) if !close.gt.is_missing() => {
-                Some(self.token_span(&close.gt).end)
+        let header = self.prepare_element_header(region, element, parent.0);
+        let mask = match self.structural_mask(&header, &[]) {
+            Ok(mask) => mask,
+            Err(kind) => {
+                self.hole(region, kind, header.span);
+                StructuralHeadMask::default()
             }
-            ElementClose::NotExpected if !element.open.gt.is_missing() => {
-                Some(self.token_span(&element.open.gt).end)
-            }
-            _ => None,
         };
-        let span = Span::new(
-            start,
-            end.unwrap_or(self.token_span(&element.open.lt_name).end),
-        );
-        if end.is_none() {
-            // An unavailable owner extent is not guessed or rescanned.
-            self.hole(
-                region,
-                NativeHoleKind::MissingMarkup,
-                self.token_span(&element.open.lt_name),
-            );
-        }
-        if element.open.is_verbatim() {
-            // Consume the real L1 policy before any ignored head/value work.
-            self.hole(region, NativeHoleKind::PreCarrier, span);
-            return;
-        }
-        let mut attributes = vize_l0::Vec::new_in(&self.allocator);
-        let mut directives = vize_l0::Vec::new_in(&self.allocator);
-        for attribute in &element.open.attrs {
-            match self.attribute(region, attribute) {
-                Some(PreparedAttribute::Static(attribute)) => attributes.push(attribute),
-                Some(PreparedAttribute::Directive(directive)) => {
-                    directives.push(directive);
-                }
-                None => {}
+        self.element_body(region, header, mask, parent);
+    }
+
+    pub(super) fn element_body(
+        &mut self,
+        region: &mut RegionBuilder<'_, 'a>,
+        header: PreparedElement<'_, 'a>,
+        mask: StructuralHeadMask<'_>,
+        parent: (Namespace, Option<&'a str>),
+    ) {
+        let mask = if mask.belongs_to(header.carrier) {
+            mask
+        } else {
+            self.hole(region, NativeHoleKind::DirectiveSyntax, header.span);
+            StructuralHeadMask::default()
+        };
+        match header.admission {
+            HeaderAdmission::PreCarrier => return,
+            HeaderAdmission::MissingOwner | HeaderAdmission::UnsupportedTag => {
+                self.children(region, &header.carrier.children, parent);
+                return;
             }
+            HeaderAdmission::Ready => {}
         }
-        if end.is_none() {
-            self.children(region, &element.children, parent);
-            return;
-        }
-        let tag = element.tag();
-        if matches!(
+        let PreparedElement {
+            carrier,
+            span,
             tag,
-            "template" | "slot" | "component" | "script" | "style" | "annotation-xml"
-        ) {
-            self.hole(
-                region,
-                NativeHoleKind::UnsupportedTag,
-                self.token_span(&element.open.lt_name),
-            );
-            self.children(region, &element.children, parent);
-            return;
-        }
-        let namespace = match (parent, tag) {
-            (_, "svg") => Namespace::Svg,
-            (_, "math") => Namespace::MathMl,
-            _ => parent,
-        };
-        let children_ns = match (namespace, tag) {
-            (Namespace::Svg, "foreignObject" | "desc" | "title") => Namespace::Html,
-            (Namespace::MathMl, "mi" | "mo" | "mn" | "ms" | "mtext") => Namespace::Html,
-            _ => namespace,
-        };
-        let native =
-            vize_l0::is_html_tag(tag) || vize_l0::is_svg_tag(tag) || vize_l0::is_math_ml_tag(tag);
+            namespace,
+            children_namespace,
+            native,
+            attributes,
+            directives,
+            ..
+        } = header;
         let children = |region: &mut RegionBuilder<'_, 'a>, node| {
             self.record(
                 region,
@@ -100,9 +79,11 @@ impl<'a> Context<'a> {
                 if native { "ui.element" } else { "ui.component" },
             );
             for directive in directives {
-                self.directive(region, directive);
+                if !mask.consumes(directive.ordinal) {
+                    self.directive(region, directive);
+                }
             }
-            self.children(region, &element.children, children_ns);
+            self.children(region, &carrier.children, (children_namespace, Some(tag)));
         };
         let result = if native {
             region.element(tag, namespace, attributes, span, children)
@@ -117,6 +98,7 @@ impl<'a> Context<'a> {
     fn attribute(
         &mut self,
         region: &mut RegionBuilder<'_, 'a>,
+        ordinal: usize,
         attribute: &SurfaceAttribute<'a>,
     ) -> Option<PreparedAttribute<'a>> {
         let name_span = self.token_span(&attribute.name);
@@ -142,6 +124,7 @@ impl<'a> Context<'a> {
             Ok(Some(head)) => {
                 return Some(PreparedAttribute::Directive(Directive {
                     head,
+                    ordinal,
                     name_span,
                     span,
                     value: attribute

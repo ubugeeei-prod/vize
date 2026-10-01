@@ -27,7 +27,7 @@ impl<'a> Context<'a> {
     }
 }
 
-fn decode_text<'a>(allocator: &'a vize_l0::Allocator, raw: &'a str) -> &'a str {
+pub(super) fn decode_text<'a>(allocator: &'a vize_l0::Allocator, raw: &'a str) -> &'a str {
     if !needs_decoding(raw.as_bytes()) {
         return raw;
     }

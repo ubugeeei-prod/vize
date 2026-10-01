@@ -9,6 +9,7 @@ mod vue3;
 
 #[derive(Clone, Copy)]
 pub(super) struct Directive {
+    pub ordinal: usize,
     pub head: DirectiveName,
     pub name_span: Span,
     pub span: Span,

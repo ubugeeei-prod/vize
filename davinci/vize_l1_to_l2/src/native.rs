@@ -121,7 +121,11 @@ pub fn lower_component_native<'a>(
                 admission.span,
             );
         }
-        cx.children(&mut region, &component.tree.children, Namespace::Html);
+        cx.children(
+            &mut region,
+            &component.tree.children,
+            (Namespace::Html, None),
+        );
     }
     Ok(NativeLowered {
         artifact: builder.finish()?,
@@ -166,12 +170,12 @@ impl<'a> Context<'a> {
         &mut self,
         region: &mut RegionBuilder<'_, 'a>,
         children: &[SurfaceChild<'a>],
-        namespace: Namespace,
+        parent: (Namespace, Option<&'a str>),
     ) {
         vize_l0::ensure_sufficient_stack(|| {
             for child in children {
                 match child {
-                    SurfaceChild::Element(element) => self.element(region, element, namespace),
+                    SurfaceChild::Element(element) => self.element(region, element, parent),
                     SurfaceChild::Interpolation(interpolation) => {
                         self.interpolation(region, interpolation)
                     }
