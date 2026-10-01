@@ -155,38 +155,8 @@ impl From<u8> for DiagnosticSeverity {
     }
 }
 
-/// LSP position (0-based line and character).
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Position {
-    pub line: u32,
-    pub character: u32,
-}
-
-impl Position {
-    pub fn new(line: u32, character: u32) -> Self {
-        Self { line, character }
-    }
-}
-
-/// LSP range.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Range {
-    pub start: Position,
-    pub end: Position,
-}
-
-impl Range {
-    pub fn new(start: Position, end: Position) -> Self {
-        Self { start, end }
-    }
-
-    pub fn from_positions(start_line: u32, start_char: u32, end_line: u32, end_char: u32) -> Self {
-        Self {
-            start: Position::new(start_line, start_char),
-            end: Position::new(end_line, end_char),
-        }
-    }
-}
+/// UTF-16 source coordinates shared with host protocol adapters.
+pub use crate::line_index::{Position, Range};
 
 /// LSP location (URI + range).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
