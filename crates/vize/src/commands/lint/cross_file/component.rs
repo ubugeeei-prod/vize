@@ -11,8 +11,8 @@
 use std::path::{Path, PathBuf};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+use vize_carton::i18n::{Locale, t, t_fmt};
 use vize_croquis_cf::{CrossFileAnalyzer, FileId};
-use vize_l0::i18n::{Locale, t, t_fmt};
 use vize_l0::{Allocator, CompactString, FxHashMap, FxHashSet, cstr, line_index::LineIndex};
 use vize_patina::html_content_model::witness::{
     self, CrossComponentNesting, NestingEvidence, witnessed,

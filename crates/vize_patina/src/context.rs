@@ -19,13 +19,12 @@ use crate::diagnostic::{HelpLevel, LintDiagnostic, Severity};
 use memchr::memchr_iter;
 use std::borrow::Cow;
 use vize_atelier_sfc::SfcDescriptor;
+use vize_carton::i18n::{Locale, t, t_fmt};
 use vize_croquis::Croquis;
 use vize_l0::String;
 use vize_l0::{
-    Allocator, CompactString, FxHashMap, FxHashSet,
-    dialect::VueDialect,
+    Allocator, CompactString, FxHashMap, FxHashSet, dialect::VueDialect,
     directive::DirectiveSeverity,
-    i18n::{Locale, t, t_fmt},
 };
 
 use eslint_directive::InlineSuppressionState;

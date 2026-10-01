@@ -1,3 +1,5 @@
+import { withoutI18nHostImports } from "./davinci-i18n-host-imports.ts";
+
 /** Remove only reviewed legacy host APIs before checking L0 storage imports. */
 export function withoutHostRuntimeReferences(source: string, relativePath: string): string {
   const file = relativePath.replaceAll("\\", "/");
@@ -36,5 +38,5 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
       "host_project_selection",
     );
   }
-  return storage;
+  return withoutI18nHostImports(storage, file);
 }

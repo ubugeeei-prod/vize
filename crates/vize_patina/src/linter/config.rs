@@ -17,7 +17,8 @@ use crate::{
 use std::path::PathBuf;
 #[cfg(not(target_arch = "wasm32"))]
 use std::sync::Mutex;
-use vize_l0::{FxHashMap, FxHashSet, String, i18n::Locale};
+use vize_carton::i18n::Locale;
+use vize_l0::{FxHashMap, FxHashSet, String};
 
 /// Lint result for a single file.
 #[derive(Debug, Clone)]

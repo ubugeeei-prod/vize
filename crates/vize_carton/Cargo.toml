@@ -9,6 +9,8 @@ description = "Carton - The artist's toolbox for Vize compiler"
 metadata.vize.stability = "alpha-supported"
 
 [dependencies]
+once_cell.workspace = true
+rustc-hash.workspace = true
 globset = { workspace = true, optional = true }
 vize_l0 = { workspace = true }
 serde.workspace = true

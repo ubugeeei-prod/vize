@@ -302,7 +302,9 @@ for (const [packageName, label, parts] of s0AliasConsumers) {
       packageName,
       label,
       directory: path.join(repoRoot, ...parts),
-      hostRuntime: ["vize", "vize_patina", "vize_maestro"].includes(packageName),
+      hostRuntime: ["vize", "vize_patina", "vize_maestro", "vize_relief", "vize_vitrine"].includes(
+        packageName,
+      ),
     });
   });
 }

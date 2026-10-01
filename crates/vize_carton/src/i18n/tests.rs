@@ -1,7 +1,7 @@
 use super::load::unescape_json_string;
 use super::{Locale, Translator};
-use crate::diag::MessageLookup;
-use alloc::borrow::Cow;
+use std::borrow::Cow;
+use vize_l0::diag::MessageLookup;
 
 fn fixture_translator() -> Translator {
     let mut messages = std::array::from_fn(|_| rustc_hash::FxHashMap::default());

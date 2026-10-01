@@ -13,8 +13,8 @@
 //! enum's own text either way, so no English output moves.
 
 use super::{CompilerError, ErrorCode};
+use vize_carton::i18n::{Locale, translator};
 use vize_l0::diag::{Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind};
-use vize_l0::i18n::Locale;
 use vize_l0::{CompactString, Span};
 
 /// The exemption compiler errors report under until the compiler produces
@@ -27,7 +27,8 @@ impl CompilerError {
     #[must_use]
     pub fn localized_message(&self, locale: Locale) -> CompactString {
         if self.message == self.code.message() {
-            self.code.localized_message(locale)
+            self.code
+                .localized_message_with(&translator().for_locale(locale))
         } else {
             self.message.clone()
         }
@@ -48,7 +49,9 @@ impl CompilerError {
             Diagnostic::legacy_error(&COMPILER_ERROR, stage, span, message)
         };
         if self.code != ErrorCode::ExtendPoint {
-            let help = self.code.localized_help(locale);
+            let help = self
+                .code
+                .localized_help_with(&translator().for_locale(locale));
             diagnostic = diagnostic.with_part(DiagnosticPart::new(PartKind::Help, span, help));
         }
         diagnostic
@@ -59,18 +62,29 @@ impl CompilerError {
 mod tests {
     use super::{COMPILER_ERROR, CompilerError, ErrorCode};
     use crate::SourceLocation;
+    use vize_carton::i18n::{Locale, translator};
     use vize_l0::Span;
     use vize_l0::diag::{Advisory, Diagnostic, DiagnosticPart, PartKind, Stage};
-    use vize_l0::i18n::Locale;
 
     #[test]
     fn every_code_speaks_its_own_english_and_translates_in_ja_and_zh() {
         for code in ErrorCode::ALL {
-            assert_eq!(code.localized_message(Locale::En).as_str(), code.message());
-            let english_help = code.localized_help(Locale::En);
+            assert_eq!(
+                code.localized_message_with(&translator().for_locale(Locale::En))
+                    .as_str(),
+                code.message()
+            );
+            let english_help = code.localized_help_with(&translator().for_locale(Locale::En));
             for locale in [Locale::Ja, Locale::Zh] {
-                assert_ne!(code.localized_message(locale).as_str(), code.message());
-                assert_ne!(code.localized_help(locale), english_help);
+                assert_ne!(
+                    code.localized_message_with(&translator().for_locale(locale))
+                        .as_str(),
+                    code.message()
+                );
+                assert_ne!(
+                    code.localized_help_with(&translator().for_locale(locale)),
+                    english_help
+                );
             }
         }
     }

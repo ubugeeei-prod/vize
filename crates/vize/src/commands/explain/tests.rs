@@ -16,7 +16,7 @@ use super::catalog::LocaleCatalog;
 use super::page;
 use super::subjects::{self, Subject};
 use super::{all_pages, distance, nearest};
-use vize_l0::i18n::Locale;
+use vize_carton::i18n::Locale;
 
 fn snapshot(locale: Locale) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))

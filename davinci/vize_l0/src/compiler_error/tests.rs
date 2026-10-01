@@ -2,7 +2,6 @@ use alloc::borrow::Cow;
 use core::cell::RefCell;
 
 use crate::diag::MessageLookup;
-use crate::i18n::{Locale, translator};
 
 use super::ErrorCode;
 
@@ -54,22 +53,4 @@ fn unknown_provider_keys_remain_owned_after_the_provider_is_dropped() {
     };
     assert_eq!(message, "compiler/missing-end-tag.message");
     assert_eq!(help, "compiler/missing-end-tag.help");
-}
-
-#[test]
-fn all_existing_code_and_locale_wrappers_keep_the_catalog_text() {
-    let translator = translator();
-    for &locale in Locale::ALL {
-        let messages = translator.for_locale(locale);
-        for code in ErrorCode::ALL {
-            let message_key = crate::cstr!("{}.message", code.code());
-            let help_key = crate::cstr!("{}.help", code.code());
-            let message = translator.get(locale, &message_key);
-            let help = translator.get(locale, &help_key);
-            assert_eq!(code.localized_message_with(&messages).as_str(), message);
-            assert_eq!(code.localized_help_with(&messages).as_str(), help);
-            assert_eq!(code.localized_message(locale).as_str(), message);
-            assert_eq!(code.localized_help(locale).as_str(), help);
-        }
-    }
 }

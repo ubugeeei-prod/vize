@@ -1,6 +1,5 @@
 //! Stable compiler codes shared with the preserved parser.
 use crate::diag::MessageLookup;
-use crate::i18n::{Locale, translator};
 use crate::stage::Stage;
 use crate::{CompactString, cstr};
 mod codes;
@@ -192,18 +191,6 @@ impl ErrorCode {
             _ if self.is_transform_error() => Stage::Lowered,
             _ => Stage::Emit,
         }
-    }
-
-    /// The catalogued headline for this code in `locale`.
-    #[must_use]
-    pub fn localized_message(self, locale: Locale) -> CompactString {
-        self.localized_message_with(&translator().for_locale(locale))
-    }
-
-    /// The catalogued remedy for this code in `locale`.
-    #[must_use]
-    pub fn localized_help(self, locale: Locale) -> CompactString {
-        self.localized_help_with(&translator().for_locale(locale))
     }
 
     /// The headline supplied by `messages`, without consulting a global catalog.

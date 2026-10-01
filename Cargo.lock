@@ -4501,6 +4501,8 @@ dependencies = [
  "davinci_test_support",
  "globset",
  "insta",
+ "once_cell",
+ "rustc-hash",
  "serde",
  "serde_json",
  "tempfile",
@@ -4954,6 +4956,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.20",
+ "vize_carton",
  "vize_l0",
 ]
 
@@ -5014,6 +5017,7 @@ dependencies = [
  "vize_atelier_ssr",
  "vize_atelier_vapor",
  "vize_canon",
+ "vize_carton",
  "vize_croquis",
  "vize_croquis_cf",
  "vize_curator",

@@ -41,7 +41,7 @@ use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 
 use vize::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
-use vize_l0::i18n::{Locale, translator};
+use vize_carton::i18n::{Locale, translator};
 
 /// The CLI edge's catalog, reproduced: phrases from the shipped translator,
 /// with no fallback, so a missing entry fails loudly instead of rendering

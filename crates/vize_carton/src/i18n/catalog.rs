@@ -1,8 +1,8 @@
 //! Locale selection for the embedded translator's message provider.
 
-use alloc::borrow::Cow;
+use std::borrow::Cow;
 
-use crate::diag::MessageLookup;
+use vize_l0::diag::MessageLookup;
 
 use super::{Locale, Translator};
 

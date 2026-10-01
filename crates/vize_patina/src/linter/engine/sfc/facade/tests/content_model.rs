@@ -5,8 +5,8 @@ use crate::linter::Linter;
 use crate::markup::{MarkupContext, MarkupDocument, MarkupRule};
 use crate::rule::{Rule, RuleRegistry};
 use crate::rules::vue::PermittedContents;
+use vize_carton::i18n::Locale;
 use vize_l0::cstr;
-use vize_l0::i18n::Locale;
 
 #[test]
 fn authored_nesting_preserves_full_diagnostics_in_every_locale() {

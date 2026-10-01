@@ -18,7 +18,7 @@
 //! ## Usage
 //!
 //! ```rust,ignore
-//! use vize_l0::i18n::{Locale, Translator};
+//! use vize_carton::i18n::{Locale, Translator};
 //!
 //! let translator = Translator::new();
 //!
@@ -34,7 +34,7 @@ use rustc_hash::FxHashMap;
 use std::borrow::Cow;
 use std::str::FromStr;
 
-use crate::diag::MessageLookup;
+use vize_l0::diag::MessageLookup;
 
 mod catalog;
 mod load;
@@ -305,3 +305,6 @@ pub fn t_fmt(locale: Locale, key: &str, vars: &[(&str, &str)]) -> String {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod compiler_error_tests;
