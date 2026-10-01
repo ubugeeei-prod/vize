@@ -8,7 +8,7 @@
 use vize_l2::op::Region;
 use vize_l3::decision::DecisionTables;
 
-use crate::expr::{AccessStyle, ResolutionTable};
+use crate::expr::{AccessStyle, ResolvedExpressions};
 use crate::write::{LinkSink, Writer};
 
 /// Inputs of one DOM render emission.
@@ -21,7 +21,7 @@ pub struct DomInput<'s, 'a> {
     /// Shared L3 decisions under the DOM policy.
     pub decisions: &'s DecisionTables,
     /// L2 identifier resolution.
-    pub resolution: ResolutionTable<'s>,
+    pub resolution: ResolvedExpressions<'s, 'a>,
     /// Accessor spelling.
     pub style: AccessStyle,
 }

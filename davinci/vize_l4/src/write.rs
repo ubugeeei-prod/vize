@@ -232,6 +232,24 @@ impl<L: LinkSink> Writer<L> {
         self.push_recorded(text, authored, Some(name));
     }
 
+    /// Append pieces of one rewritten symbol without allocating a temporary.
+    #[inline]
+    pub fn push_named_parts<const N: usize>(
+        &mut self,
+        parts: [&str; N],
+        authored: Span,
+        name: &str,
+    ) {
+        let start = self.cursor();
+        for part in parts {
+            self.text.push_str(part);
+        }
+        if L::RECORDING {
+            self.links
+                .record(Span::new(start, self.cursor()), authored, Some(name));
+        }
+    }
+
     #[inline]
     fn push_recorded(&mut self, text: &str, authored: Span, name: Option<&str>) {
         if L::RECORDING {

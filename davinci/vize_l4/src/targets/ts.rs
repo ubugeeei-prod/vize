@@ -7,7 +7,7 @@
 
 use vize_l2::op::Region;
 
-use crate::expr::ResolutionTable;
+use crate::expr::ResolvedExpressions;
 use crate::write::{LinkSink, Writer};
 
 /// Inputs of one type-check projection.
@@ -18,7 +18,7 @@ pub struct TsInput<'s, 'a> {
     /// The template root.
     pub root: &'s Region<'a>,
     /// L2 identifier resolution.
-    pub resolution: ResolutionTable<'s>,
+    pub resolution: ResolvedExpressions<'s, 'a>,
 }
 
 /// Write the template's type-check projection for `input`.

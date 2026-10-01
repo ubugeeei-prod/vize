@@ -8,7 +8,7 @@
 use vize_l2::op::Region;
 use vize_l3::decision::DecisionTables;
 
-use crate::expr::ResolutionTable;
+use crate::expr::ResolvedExpressions;
 use crate::write::{LinkSink, Writer};
 
 /// Inputs of one server render emission.
@@ -21,7 +21,7 @@ pub struct SsrInput<'s, 'a> {
     /// Shared L3 decisions under the SSR policy.
     pub decisions: &'s DecisionTables,
     /// L2 identifier resolution.
-    pub resolution: ResolutionTable<'s>,
+    pub resolution: ResolvedExpressions<'s, 'a>,
 }
 
 /// Write the server render function body for `input`.
