@@ -1,0 +1,3 @@
+<div
+  class="a-very-long-block-element-class-name-that-alone-is-longer-than-the-print-width"
+>text</div>

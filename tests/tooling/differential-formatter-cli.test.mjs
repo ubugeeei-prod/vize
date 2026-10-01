@@ -10,6 +10,7 @@ import {
 } from "../differential/acceptance-rates.mjs";
 import { loadFormatterManifest } from "../differential/manifest.mjs";
 import { runFormatterPack } from "../differential/formatter.mjs";
+import { runFormatterHistoryCli } from "../differential/formatter-history-cli.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -57,6 +58,30 @@ void test("source-built formatter matches every exact reference and reaches a fi
       pairedComparisons: 0,
       nativeHandled: 0,
       nativeEquivalent: 0,
+    },
+    JSON.stringify(report.rows, null, 2),
+  );
+});
+
+void test("formatter history CLI checks preserve files and compare complete verdict streams", (t) => {
+  const report = runFormatterHistoryCli({
+    repoRoot: root,
+    binaryPath: path.join(root, "target/ci", process.platform === "win32" ? "vize.exe" : "vize"),
+  });
+  const artifact = path.join(root, "target/differential/formatter-api/cli-history-report.json");
+  fs.mkdirSync(path.dirname(artifact), { recursive: true });
+  fs.writeFileSync(artifact, `${JSON.stringify(report, null, 2)}\n`);
+  t.diagnostic(`Raw historical CLI check, dry-run, write and recheck observations: ${artifact}`);
+  assert.deepEqual(
+    report.summary,
+    {
+      plannedCases: 5,
+      legacyMatches: 5,
+      legacyFailures: 0,
+      nativeUnsupported: 5,
+      nativeHandled: 0,
+      nativeEquivalent: 0,
+      pairedComparisons: 0,
     },
     JSON.stringify(report.rows, null, 2),
   );

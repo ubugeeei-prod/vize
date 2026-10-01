@@ -1,0 +1,3 @@
+<script setup>
+const x = 1;
+</script>

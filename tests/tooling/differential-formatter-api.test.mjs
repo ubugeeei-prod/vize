@@ -269,3 +269,30 @@ void test("prepared history registers every binary output and keeps typed errors
   error.legacy.passes[0].exitStatus = 0;
   assert.throws(() => validateFormatterApiReport(loaded, report, {}));
 });
+
+void test("captured history binds real raw outputs, source and helper wrapper bytes", (t) => {
+  const sourcePath = path.join(
+    root,
+    "tests/_fixtures/differential/formatter-history/capture-manifest.json",
+  );
+  const loaded = loadFormatterApiManifest(sourcePath, root);
+  assert.equal(
+    validateFormatterApiReport(loaded, syntheticReport(loaded), {}).legacyErrorMatches,
+    20,
+  );
+  for (const mutate of [
+    (manifest) => {
+      manifest.source.revision = "0".repeat(40);
+    },
+    (manifest) => {
+      manifest.cases.reverse();
+    },
+    (manifest) => {
+      manifest.cases.find((row) => row.transport).transport.prefix = "<template> ";
+    },
+    (manifest) => {
+      manifest.cases.find((row) => row.outcome === "error").typedError = "IoError";
+    },
+  ])
+    assert.throws(alteredManifest(t, mutate, sourcePath));
+});

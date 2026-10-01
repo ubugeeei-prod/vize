@@ -1,0 +1,6 @@
+<template>
+<Textarea>
+  value
+</Textarea>
+<span>y</span>
+</template>

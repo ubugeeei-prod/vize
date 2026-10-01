@@ -1,0 +1,14 @@
+<template>
+  <div class="p" />
+</template>
+
+<style scoped>
+.p {
+  :deep(.child) {
+    color: red;
+  }
+  .q {
+    color: blue;
+  }
+}
+</style>

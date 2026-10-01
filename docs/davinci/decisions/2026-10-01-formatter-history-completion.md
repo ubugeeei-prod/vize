@@ -59,11 +59,29 @@ payload/event/malformed-pipe arms. Their expected bytes are authored assertions
 and include files; they are not described as fresh captures. The 118 default
 plans passed two local source-built replays. Versioned execution awaits Actions.
 
-## Remaining work
+## Complete observations and denominator reconciliation
 
-Register and actually execute every prepared byte fixture, reconcile every
-original fix to its complete public witness or explicit control/supersession
-proof, capture the remaining incomplete observations from unchanged product
-source, and compare actual CLI check verdicts and streams. Full Actions and
-the protected merge-queue corpus must pass before closing #6882. A pinned
-inventory, static hashes or an unmerged local capture cannot close this gate.
+Eighty further plans retain three actual source-bound capture receipts with
+repeated raw input, output, stderr and status. Each successful default output
+is a fixed point; typed JSON/JSONC errors and the internal small-const control
+remain distinct. Original helper bodies have explicit public SFC wrappers;
+wrapper bytes never masquerade as an original whole-file witness.
+
+The [audit](./2026-10-01-formatter-history-audit.md) reconciles all 56 original
+fixes and three supplementary semantic fixes to exact cases, retained Rust
+laws, engineering controls or explicit supersession proof. Its 300 API plans
+include all 87 retained binary references. Seven unversioned packs, 286 plans,
+passed two complete source-built local replays; the fourteen versioned plans
+await Actions. Native handled, equivalent and paired counts remain zero.
+
+Five historical CLI scenarios compare check, dry-run, write and recheck status,
+complete streams, unchanged check/dry files and full canonical writes. Expected
+streams are explicitly repository-authored; actual CLI execution awaits Actions.
+
+## Remaining validation
+
+Fresh exact-head Actions must execute all 300 API plans, actual historical CLI
+verdicts and retained Rust/helper laws. Full protected merge-group validation
+and actual merge are required before closing #6882. Static registration, local
+capture, auto-merge or a queue entry cannot close this gate or admit a native
+formatter route.

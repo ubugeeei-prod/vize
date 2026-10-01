@@ -1,0 +1,8 @@
+<template>
+  <div>
+    {{ mustache syntax, unclosed
+    <pre>
+x
+  </pre>
+  </div>
+</template>
