@@ -165,6 +165,34 @@ mod tests {
     use super::{ServerState, Url};
 
     #[test]
+    fn discovery_excludes_git_metadata_on_disk_and_in_open_buffers() {
+        crate::runtime::block_on(async {
+            let root = tempfile::tempdir().unwrap();
+            let source = root.path().join(".github/App.vue");
+            let metadata = root.path().join(".git/worktrees/cache/Snapshot.vue");
+            for path in [&source, &metadata] {
+                std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+                std::fs::write(path, "<template />").unwrap();
+            }
+            let source_uri = Url::from_file_path(&source).unwrap();
+            let metadata_uri = Url::from_file_path(&metadata).unwrap();
+            let state = ServerState::new();
+            state.set_workspace_root(root.path().to_path_buf());
+            state.documents.open(
+                metadata_uri.clone(),
+                "unsaved metadata".to_string(),
+                1,
+                "vue".to_string(),
+            );
+            assert!(!state.track_workspace_vue_files(metadata_uri.as_str()));
+            assert_eq!(
+                state.discover_workspace_vue_sources().await,
+                vec![(source_uri, "<template />".to_string())],
+            );
+        });
+    }
+
+    #[test]
     fn discovery_loads_closed_sources_and_prefers_open_buffers() {
         crate::runtime::block_on(async {
             let root = tempfile::tempdir().unwrap();
