@@ -198,7 +198,9 @@ jobs:
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
         run: vp run --workspace-root test:scripts
       - uses: ./.github/actions/upload-formatter-api-corpus-evidence
-        if: ${{ always() && github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ always() && needs.pr-source-plan.outputs.tooling == 'true' }}
+        with:
+          shard: ${{ matrix.index }}
 
   pr-playground-test:
     name: PR playground browser tests

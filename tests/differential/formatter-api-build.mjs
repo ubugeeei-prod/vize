@@ -3,23 +3,18 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { sha256 } from "./manifest.mjs";
+import { compileProductObserver, observerBuildArgs } from "./observer-build.ts";
 
 export const OBSERVER_SOURCE = "crates/vize_glyph/examples/formatter_observe.rs";
+const observerSpec = {
+  product: "formatter",
+  packageName: "vize_glyph",
+  exampleName: "formatter_observe",
+  sourcePath: OBSERVER_SOURCE,
+  probes: [["--defaults"], ["--defaults", "--legacy-single-pass"]],
+};
 function buildArgs(profile, offline) {
-  assert(["dev", "ci"].includes(profile), "unknown observer build profile");
-  assert.equal(typeof offline, "boolean");
-  return [
-    "build",
-    "--locked",
-    ...(offline ? ["--offline"] : []),
-    "--profile",
-    profile,
-    "-p",
-    "vize_glyph",
-    "--example",
-    "formatter_observe",
-    "--message-format=json-render-diagnostics",
-  ];
+  return observerBuildArgs(observerSpec, profile, offline);
 }
 
 function git(root, args) {
@@ -122,40 +117,15 @@ export function buildFormatterObserver({
   const source = observerSourceIdentity(repoRoot);
   fs.mkdirSync(evidenceDir, { recursive: true });
   const argv = buildArgs(profile, offline);
-  const result = spawnSync("cargo", argv, {
-    cwd: repoRoot,
-    env: { ...process.env, CARGO_TARGET_DIR: targetDir },
-    timeout: 180_000,
-    maxBuffer: 16 * 1024 * 1024,
+  const built = compileProductObserver({
+    spec: observerSpec,
+    repoRoot,
+    targetDir,
+    evidenceDir,
+    profile,
+    offline,
   });
-  const stdout = result.stdout ?? Buffer.alloc(0);
-  const stderr = result.stderr ?? Buffer.alloc(0);
-  fs.writeFileSync(path.join(evidenceDir, "cargo.jsonl"), stdout);
-  fs.writeFileSync(path.join(evidenceDir, "cargo.stderr.txt"), stderr);
-  assert.equal(result.error, undefined, result.error?.message);
-  assert.equal(result.signal, null);
-  assert.equal(result.status, 0, stderr.toString());
-  const artifacts = stdout
-    .toString()
-    .split("\n")
-    .flatMap((line) => {
-      try {
-        const item = JSON.parse(line);
-        return item.reason === "compiler-artifact" &&
-          item.target.name === "formatter_observe" &&
-          item.executable
-          ? [item]
-          : [];
-      } catch {
-        return [];
-      }
-    });
-  assert.equal(artifacts.length, 1, "exactly one selected observer artifact is required");
-  const selected = artifacts[0];
-  assert.equal(selected.target.src_path, path.join(fs.realpathSync(repoRoot), OBSERVER_SOURCE));
-  const frozen = path.join(evidenceDir, "formatter_observe");
-  fs.copyFileSync(selected.executable, frozen);
-  fs.chmodSync(frozen, 0o755);
+  const frozen = built.binaryPath;
   const options = [false, true].map((singlePass) => {
     const argv = ["--defaults", ...(singlePass ? ["--legacy-single-pass"] : [])];
     const result = spawnSync(frozen, argv, { timeout: 30_000 });
@@ -181,19 +151,16 @@ export function buildFormatterObserver({
       cargo: toolchainVersion("cargo", repoRoot),
     },
     options,
-    exitStatus: result.status,
+    exitStatus: built.exitStatus,
     artifact: {
-      target: selected.target,
-      profile: selected.profile,
-      features: selected.features,
+      target: built.artifact.target,
+      profile: built.artifact.profile,
+      features: built.artifact.features,
       executable: frozen,
-      cargoExecutable: selected.executable,
+      cargoExecutable: built.artifact.cargoExecutable,
       sha256: sha256(fs.readFileSync(frozen)),
     },
-    logs: {
-      stdout: { path: path.join(evidenceDir, "cargo.jsonl"), sha256: sha256(stdout) },
-      stderr: { path: path.join(evidenceDir, "cargo.stderr.txt"), sha256: sha256(stderr) },
-    },
+    logs: built.logs,
   };
   assert.deepEqual(observerSourceIdentity(repoRoot), source, "source changed during build");
   validateObserverReceipt(receipt, repoRoot, frozen);

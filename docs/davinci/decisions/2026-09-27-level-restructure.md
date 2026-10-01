@@ -199,7 +199,7 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 
   [#6881 linter history inventory](./2026-09-27-linter-history-inventory.md) pins full Git history and candidate snapshot blobs; enumeration never counts as fixture coverage or native acceptance.
 
-  [Selected current linter history oracles](./2026-09-27-lint-history-current-api.md) record [#6881](https://github.com/ubugeeei-prod/vize/issues/6881): complete public API results and actual independent fixes, with whole-history closure and native comparisons still pending.
+  [Selected current linter history oracles](./2026-09-27-lint-history-current-api.md) record [#6881](https://github.com/ubugeeei-prod/vize/issues/6881): complete public API results and actual independent fixes, with whole-history closure and native comparisons still pending. The [source-built observer decision](./2026-10-01-product-observer-source-binding.md) reuses the shared product result envelope and factors actual Cargo artifact capture from the formatter helper for compiler/linter consumers. Committed upstream/product/support inputs, exact package/example/source/features, successful build completion, executable/log hashes and repeated option probes bind observations. The existing uploader retains all product raw evidence and the selected CLI receipt after failed or successful tests, with unique run/attempt/job/shard names; receipt presence alone grants no fixture or native acceptance.
 
   [Static-class edit boundaries](./2026-09-27-static-class-fix-boundary.md) record [#6920](https://github.com/ubugeeei-prod/vize/issues/6920): use the end-exclusive binding span; preserve the original bad capture as evidence, not accepted coverage.
 
