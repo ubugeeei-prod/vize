@@ -25,4 +25,6 @@ export type {
   A11yOptions,
   A11yResult,
   A11yViolation,
+  A11yNode,
+  A11yCheck,
 } from "./api.js";

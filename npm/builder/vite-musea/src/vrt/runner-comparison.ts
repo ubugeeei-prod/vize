@@ -59,6 +59,7 @@ export async function captureAndCompare(
         height: viewport.height,
       },
       deviceScaleFactor: viewport.deviceScaleFactor ?? 1,
+      reducedMotion: capture.reducedMotion,
     });
     page = await context.newPage();
 
@@ -102,6 +103,8 @@ export async function captureAndCompare(
     await page.screenshot({
       path: currentPath,
       fullPage: capture.fullPage,
+      animations: capture.animations,
+      caret: capture.caret,
     });
 
     // Check if baseline exists

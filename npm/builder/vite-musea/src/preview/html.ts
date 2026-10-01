@@ -41,14 +41,13 @@ export function generatePreviewHtml(
       }
       html, body {
         width: 100%;
-        height: 100%;
+        min-height: 100%;
         margin: 0;
       }
       body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         background: #ffffff;
         padding: var(--musea-preview-padding);
-        overflow: auto;
       }
       .musea-variant {
         width: 100%;

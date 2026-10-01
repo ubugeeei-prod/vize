@@ -45,6 +45,12 @@ export interface VrtOptions {
  * Screenshot capture configuration.
  */
 export interface CaptureConfig {
+  /** Freeze finite/infinite animations during screenshots. @default "disabled" */
+  animations?: "disabled" | "allow";
+  /** Emulate prefers-reduced-motion. @default "no-preference" */
+  reducedMotion?: "reduce" | "no-preference";
+  /** Hide the text caret during screenshots. @default "hide" */
+  caret?: "hide" | "initial";
   /** Capture full page vs viewport only */
   fullPage?: boolean;
   /** Wait for network idle before capture */

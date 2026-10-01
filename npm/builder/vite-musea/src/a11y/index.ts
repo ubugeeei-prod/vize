@@ -4,6 +4,7 @@
  */
 
 import type { Page } from "playwright";
+import type { AxeResults, Result } from "axe-core";
 import type {
   ArtFileInfo,
   A11yResult,
@@ -31,21 +32,6 @@ export interface A11ySummary {
   seriousCount: number;
   moderateCount: number;
   minorCount: number;
-}
-
-/**
- * axe-core result shape (subset).
- */
-interface AxeResult {
-  violations: Array<{
-    id: string;
-    impact: string;
-    description: string;
-    helpUrl: string;
-    nodes: Array<unknown>;
-  }>;
-  passes: Array<unknown>;
-  incomplete: Array<unknown>;
 }
 
 /**
@@ -172,16 +158,25 @@ export class MuseaA11yRunner {
     const axeResult = (await page.evaluate((opts) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (window as any).axe.run(document, opts);
-    }, runOptions)) as AxeResult;
+    }, runOptions)) as AxeResults;
 
     // Map to our result format
-    const violations: A11yViolation[] = axeResult.violations.map((v) => ({
-      id: v.id,
-      impact: v.impact as A11yViolation["impact"],
-      description: v.description,
-      helpUrl: v.helpUrl,
-      nodes: v.nodes.length,
-    }));
+    const mapResult = (result: Result): A11yViolation => ({
+      id: result.id,
+      impact: result.impact ?? null,
+      description: result.description,
+      helpUrl: result.helpUrl,
+      nodes: result.nodes.length,
+      targets: result.nodes.map((node) => ({
+        target: node.target,
+        html: node.html,
+        failureSummary: node.failureSummary,
+        any: node.any.map(({ id, impact, message, data }) => ({ id, impact, message, data })),
+        all: node.all.map(({ id, impact, message, data }) => ({ id, impact, message, data })),
+        none: node.none.map(({ id, impact, message, data }) => ({ id, impact, message, data })),
+      })),
+    });
+    const violations = axeResult.violations.map(mapResult);
 
     return {
       artPath,
@@ -189,6 +184,7 @@ export class MuseaA11yRunner {
       violations,
       passes: axeResult.passes.length,
       incomplete: axeResult.incomplete.length,
+      incompleteResults: axeResult.incomplete.map(mapResult),
     };
   }
 
