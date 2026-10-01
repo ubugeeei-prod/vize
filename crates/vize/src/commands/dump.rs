@@ -6,10 +6,44 @@
 
 mod all_levels;
 mod roundtrip;
+mod script;
 
 use std::path::PathBuf;
 
 use clap::{ArgGroup, Args, ValueEnum};
+use vize_l1::embed::Lang;
+use vize_l1::embed::syntax::{ProgramGoal, ProgramOptions};
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+pub enum ScriptLanguage {
+    Js,
+    Ts,
+    Jsx,
+    Tsx,
+}
+
+#[derive(Clone, Copy, Debug, Default, ValueEnum)]
+pub enum ScriptGoal {
+    #[default]
+    Module,
+    Script,
+}
+
+impl ScriptLanguage {
+    fn options(self, goal: ScriptGoal) -> ProgramOptions {
+        ProgramOptions {
+            lang: match self {
+                Self::Js | Self::Jsx => Lang::Js,
+                Self::Ts | Self::Tsx => Lang::Ts,
+            },
+            jsx: matches!(self, Self::Jsx | Self::Tsx),
+            goal: match goal {
+                ScriptGoal::Module => ProgramGoal::Module,
+                ScriptGoal::Script => ProgramGoal::Script,
+            },
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
 pub enum Level {
@@ -46,6 +80,14 @@ pub struct DumpArgs {
     /// Read FILE and require byte identity after the selected level's roundtrip
     #[arg(long, value_name = "FILE", requires = "level")]
     pub roundtrip: Option<PathBuf>,
+
+    /// Inspect a native JS/TS/JSX/TSX Program while checking L1 source bytes
+    #[arg(long, value_enum, requires = "roundtrip")]
+    pub script: Option<ScriptLanguage>,
+
+    /// Select the script parse goal explicitly (default: module)
+    #[arg(long, value_enum, requires = "script")]
+    pub script_goal: Option<ScriptGoal>,
 
     /// Capture only the levels executed by one product compile
     #[arg(long, requires_all = ["json", "source"])]
@@ -89,6 +131,10 @@ pub fn run(args: DumpArgs) {
         eprintln!("dump: choose --level and --roundtrip together");
         std::process::exit(2);
     };
+    if args.script.is_some() && !matches!(level, Level::L1) {
+        eprintln!("dump: --script requires --level l1");
+        std::process::exit(2);
+    }
     let input = match std::fs::read_to_string(path) {
         Ok(input) => input,
         Err(error) => {
@@ -96,12 +142,28 @@ pub fn run(args: DumpArgs) {
             std::process::exit(1);
         }
     };
-    let printed = match roundtrip::reprint(level, &input) {
-        Ok(printed) => printed,
-        Err(error) => {
-            eprintln!("dump: {}: {error}", path.display());
-            std::process::exit(1);
+    let (printed, script_facts) = if let Some(language) = args.script {
+        match script::inspect(
+            &input,
+            language.options(args.script_goal.unwrap_or_default()),
+        ) {
+            Ok(inspected) => (inspected.printed, Some(inspected.facts)),
+            Err(error) => {
+                eprintln!("dump: {}: {error:?}", path.display());
+                std::process::exit(1);
+            }
         }
+    } else {
+        (
+            match roundtrip::reprint(level, &input) {
+                Ok(printed) => printed,
+                Err(error) => {
+                    eprintln!("dump: {}: {error}", path.display());
+                    std::process::exit(1);
+                }
+            },
+            None,
+        )
     };
     if printed.as_str() != input.as_str() {
         let line = roundtrip::first_divergent_line(&input, printed.as_str());
@@ -114,6 +176,9 @@ pub fn run(args: DumpArgs) {
             printed.len(),
         );
         std::process::exit(1);
+    }
+    if let Some(facts) = script_facts {
+        print!("{facts}");
     }
     println!(
         "dump: {} roundtrip OK: {} ({} bytes)",
