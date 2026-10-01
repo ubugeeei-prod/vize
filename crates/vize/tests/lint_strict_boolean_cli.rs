@@ -17,6 +17,11 @@ const RULE: &str = "type/strict-boolean-expressions";
 const STRICT: &str = r#"{"allowString":false,"allowNumber":false,"allowNullableObject":false}"#;
 const CASES: &[(&str, &str, &str)] = &[
     (
+        "both script blocks",
+        include_str!("fixtures/strict-boolean/DualScript.vue"),
+        include_str!("fixtures/strict-boolean/DualScript.json"),
+    ),
+    (
         "script",
         include_str!("fixtures/strict-boolean/ScriptConditions.vue"),
         include_str!("fixtures/strict-boolean/ScriptConditions.json"),
