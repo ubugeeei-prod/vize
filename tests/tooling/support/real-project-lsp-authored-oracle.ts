@@ -102,7 +102,10 @@ export async function exerciseAuthoredLspOracle(
     );
     const hoverText = hoverToText(hover);
     for (const expected of binding.hoverContains) {
-      assert.ok(hoverText.includes(expected), `hover for ${binding.symbol} is missing ${expected}`);
+      assert.ok(
+        hoverText.includes(expected),
+        `hover for ${binding.symbol} is missing ${expected}; actual hover: ${JSON.stringify(hoverText)}`,
+      );
     }
 
     const definitionRequest = await timedRequest<unknown>(

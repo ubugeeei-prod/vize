@@ -26,5 +26,6 @@ exercise malformed paths and absolute diagnostic-file rejection.
 
 The same matrix reported authored LSP completion-count differences without
 listing actual candidates. Include the complete candidate labels in the failure
-message to identify the next real discrepancy; keep every expected count,
+message and complete hover contents in missing-hover failures to identify the
+next real discrepancy; keep every expected count,
 ranking oracle, divergence allowance and performance ceiling unchanged.
