@@ -1,0 +1,4 @@
+<div>
+  <!-- eslint-disable-next-line -->
+  a <pre>  x  </pre> b
+</div>

@@ -1,0 +1,7 @@
+<template>
+  <i
+    :style="`
+            opacity:${aVeryLongConditionName || anotherVeryLongConditionName || aThirdOne ? 1 : 0}
+        `"
+  />
+</template>

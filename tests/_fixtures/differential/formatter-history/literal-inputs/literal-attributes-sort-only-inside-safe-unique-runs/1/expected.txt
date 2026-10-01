@@ -1,0 +1,1 @@
+<Widget class="first" class="second" :value="read()" />

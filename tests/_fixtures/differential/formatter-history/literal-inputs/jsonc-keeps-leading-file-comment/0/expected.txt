@@ -1,0 +1,4 @@
+// vize config
+{
+  "a": 1
+}

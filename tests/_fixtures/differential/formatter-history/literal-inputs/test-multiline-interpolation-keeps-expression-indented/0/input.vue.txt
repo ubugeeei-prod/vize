@@ -1,0 +1,13 @@
+<span>
+  {{
+    preview
+      ? [
+          preview.document.collectionLabel,
+          preview.document.publishedAt
+            ? formatDate(preview.document.publishedAt)
+            : "Frontmatter required",
+          isPreviewPending ? "Previewing" : "Ready",
+        ].join(" / ")
+      : (activePath ?? "No file selected")
+  }}
+</span>

@@ -1,0 +1,4 @@
+<p>
+  <!-- eslint-disable-next-line -->
+  a {{ x }} <b>c</b> d
+</p>

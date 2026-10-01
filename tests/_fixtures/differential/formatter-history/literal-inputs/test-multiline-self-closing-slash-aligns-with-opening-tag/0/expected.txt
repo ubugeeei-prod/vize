@@ -1,0 +1,7 @@
+<slot
+  name="slide"
+  :data="item"
+  :index="index"
+  :is-active="index === selectedIndex"
+  :is-in-view="slidesInView.includes(index)"
+/>
