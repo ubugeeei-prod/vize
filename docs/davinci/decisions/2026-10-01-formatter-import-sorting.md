@@ -26,3 +26,11 @@ output with the pinned Oxfmt API for five independent controls. The local Oxfmt
 controls match the authored references; source-built native validation is pending.
 Required Actions and merge-group validation remain
 pending; no provider is promoted and no fixture/performance budget is relaxed.
+
+Formatting now uses one checked configuration snapshot for sorting, file scopes,
+and ignores. Malformed discovered settings fail before writes, and explicit JS
+configs evaluate once instead of independently during validation, options,
+ignore discovery, and entry selection. The owning CLI regression checks an
+effectful config, full sorted output, an untouched ignored file, malformed
+sorting protection, and `--no-config`. The configuration key audit includes the
+private raw formatter wrapper while requiring each flattened owner to be covered.

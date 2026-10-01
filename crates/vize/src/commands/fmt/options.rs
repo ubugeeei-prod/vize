@@ -8,23 +8,18 @@ use vize_glyph::VueVersion;
 #[inline]
 pub(super) fn build_format_options(
     args: &FmtArgs,
+    snapshot: &config::LoadedFormatterSnapshot,
 ) -> (
     FormatOptions,
     VueVersion,
     Option<vize_glyph::ImportSortOptions>,
 ) {
-    // Load config file as base (zero-cost if no file exists)
-    let (loaded, sort_imports) = if args.no_config {
-        (config::LoadedConfigWithFeatures::default(), None)
-    } else {
-        config::load_config_with_formatter_options_and_source(args.config.as_deref())
-    };
-    let sort_imports =
-        vize_glyph::resolve_sort_imports(sort_imports.as_ref()).unwrap_or_else(|error| {
+    let sort_imports = vize_glyph::resolve_sort_imports(snapshot.sort_imports.as_ref())
+        .unwrap_or_else(|error| {
             eprintln!("Invalid formatter configuration: {error}");
             std::process::exit(2);
         });
-    let mut opts = config::to_glyph_format_options(&loaded.config.formatter);
+    let mut opts = config::to_glyph_format_options(&snapshot.loaded.config.formatter);
 
     // CLI flags override config values
     if let Some(v) = args.print_width {
@@ -57,7 +52,7 @@ pub(super) fn build_format_options(
     opts.skip_script_stabilization = !args.write;
     (
         opts,
-        loaded.features.vue_version.unwrap_or_default(),
+        snapshot.loaded.features.vue_version.unwrap_or_default(),
         sort_imports,
     )
 }

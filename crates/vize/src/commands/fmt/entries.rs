@@ -14,10 +14,13 @@ pub(super) struct FmtEntryFileSet {
     entries: Vec<FmtEntryFileScope>,
 }
 
-pub(super) fn resolve_patterns(args: &FmtArgs) -> ResolvedFmtPatterns {
+pub(super) fn resolve_patterns(
+    args: &FmtArgs,
+    snapshot: &config::LoadedFormatterSnapshot,
+) -> ResolvedFmtPatterns {
     let explicit = has_explicit_patterns(&args.patterns);
     let values = if explicit {
-        load_fmt_entry_file_set(args)
+        load_fmt_entry_file_set(snapshot)
             .as_ref()
             .map(|entry_file_set| entry_file_set.expand_patterns(&args.patterns))
             .unwrap_or_else(|| compact_patterns(&args.patterns))
@@ -44,23 +47,23 @@ impl FmtEntryFileSet {
     }
 }
 
-pub(super) fn load_fmt_entry_file_set(args: &FmtArgs) -> Option<FmtEntryFileSet> {
-    if args.no_config {
+pub(super) fn load_fmt_entry_file_set(
+    snapshot: &config::LoadedFormatterSnapshot,
+) -> Option<FmtEntryFileSet> {
+    if snapshot.entries.is_empty() {
         return None;
     }
-    let loaded = config::load_config_entry_files_with_source(args.config.as_deref());
-    if loaded.entries.is_empty() {
-        return None;
-    }
-    let config_dir = loaded
+    let config_dir = snapshot
+        .loaded
         .source_path
         .as_deref()
         .and_then(Path::parent)
         .map(Path::to_path_buf)
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
-    let entries = loaded
+    let entries = snapshot
         .entries
-        .into_iter()
+        .iter()
+        .cloned()
         .filter_map(|entry| FmtEntryFileScope::new(entry, &config_dir))
         .collect::<Vec<_>>();
     (!entries.is_empty()).then_some(FmtEntryFileSet { entries })

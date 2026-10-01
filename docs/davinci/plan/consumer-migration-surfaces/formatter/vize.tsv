@@ -7,6 +7,6 @@ formatter	Formatter	test/dev	crates/vize/src/commands/fmt/files_tests.rs	7	l0	L0
 formatter	Formatter	test/dev	crates/vize/src/commands/fmt/files.rs	21	l0	L0	stage	vize_l0	preferred	7
 formatter	Formatter	test/dev	crates/vize/src/commands/fmt/files/contract_tests.rs	8	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize/src/commands/fmt/format_source.rs	7	l0	L0	stage	vize_l0	preferred	1
-formatter	Formatter	source	crates/vize/src/commands/fmt/ignores.rs	80	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	source	crates/vize/src/commands/fmt/ignores.rs	79	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize/src/commands/fmt/patterns.rs	12	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize/src/commands/fmt/patterns.rs	35	l0	L0	stage	vize_l0	preferred	1

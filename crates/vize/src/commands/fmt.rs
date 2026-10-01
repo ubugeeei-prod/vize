@@ -100,15 +100,19 @@ pub struct FmtArgs {
 
 pub fn run(args: FmtArgs) {
     let start = Instant::now();
-    if let Some(path) = args.config.as_deref()
-        && !args.no_config
-        && let Err(error) = config::validate_explicit_config_path(path)
-    {
-        eprintln!("\x1b[31mError:\x1b[0m {}", error);
-        std::process::exit(2);
-    }
-    let (options, vue_version, sort_imports) = build_format_options(&args);
-    let (ignore_set, patterns) = (load_fmt_ignore_set(&args), entries::resolve_patterns(&args));
+    let snapshot = if args.no_config {
+        config::LoadedFormatterSnapshot::default()
+    } else {
+        config::try_load_formatter_snapshot(args.config.as_deref()).unwrap_or_else(|error| {
+            eprintln!("Invalid formatter configuration: {error}");
+            std::process::exit(2);
+        })
+    };
+    let (options, vue_version, sort_imports) = build_format_options(&args, &snapshot);
+    let (ignore_set, patterns) = (
+        load_fmt_ignore_set(&snapshot),
+        entries::resolve_patterns(&args, &snapshot),
+    );
 
     let collect_start = Instant::now();
     let files: Vec<PathBuf> = collect_files(&patterns.values, ignore_set.as_ref());

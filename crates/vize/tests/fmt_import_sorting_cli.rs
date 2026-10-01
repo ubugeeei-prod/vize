@@ -112,3 +112,70 @@ fn contradictory_sort_settings_cannot_write_authored_sources() {
         SOURCE
     );
 }
+
+#[test]
+fn malformed_sort_settings_fail_closed_and_no_config_bypasses_them() {
+    let dir = tempfile::tempdir().expect("project");
+    let root = dir.path();
+    fs::write(root.join("UserCard.vue"), SOURCE).expect("source");
+    for invalid in [r#"{"formatter":{"sortImports":{"groups":{}}}}"#, "{"] {
+        fs::write(root.join("vize.config.json"), invalid).expect("invalid config");
+        assert_eq!(
+            fmt(root, &["--write", "UserCard.vue"]).status.code(),
+            Some(2)
+        );
+        assert_eq!(
+            fs::read_to_string(root.join("UserCard.vue")).expect("protected source"),
+            SOURCE
+        );
+        assert_eq!(
+            fmt(root, &["--no-config", "--check", "UserCard.vue"])
+                .status
+                .code(),
+            Some(0)
+        );
+    }
+}
+
+#[test]
+fn sorting_entries_and_ignores_share_one_effectful_js_config_evaluation() {
+    let dir = tempfile::tempdir().expect("project");
+    let root = dir.path();
+    fs::create_dir(root.join("nested")).expect("scope");
+    for name in ["UserCard.vue", "Ignored.vue"] {
+        fs::write(root.join("nested").join(name), SOURCE).expect("source");
+    }
+    fs::write(root.join("eval-count.txt"), "0").expect("counter");
+    fs::write(
+        root.join("vize.config.mjs"),
+        r#"
+import { readFileSync, writeFileSync } from 'node:fs';
+const counter = new URL('./eval-count.txt', import.meta.url);
+export default () => {
+  const count = Number(readFileSync(counter, 'utf8')) + 1;
+  writeFileSync(counter, String(count));
+  return { formatter: { sortImports: count === 1 ? {} : false },
+    entries: [{ basePath: 'nested', files: ['*.vue'], ignores: ['Ignored.vue'] }] };
+};
+"#,
+    )
+    .expect("effectful config");
+    assert_eq!(
+        fmt(root, &["--config", "vize.config.mjs", "--write", "*.vue"])
+            .status
+            .code(),
+        Some(0)
+    );
+    assert_eq!(
+        fs::read_to_string(root.join("nested/UserCard.vue")).expect("sorted source"),
+        EXPECTED
+    );
+    assert_eq!(
+        fs::read_to_string(root.join("nested/Ignored.vue")).expect("ignored source"),
+        SOURCE
+    );
+    assert_eq!(
+        fs::read_to_string(root.join("eval-count.txt")).expect("counter"),
+        "1"
+    );
+}
