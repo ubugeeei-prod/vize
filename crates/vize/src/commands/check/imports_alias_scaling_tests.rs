@@ -6,7 +6,7 @@ fn write(root: &Path, relative: &str, content: &str) -> std::io::Result<PathBuf>
         std::fs::create_dir_all(parent)?;
     }
     std::fs::write(&path, content)?;
-    Ok(path)
+    path.canonicalize()
 }
 
 #[test]
