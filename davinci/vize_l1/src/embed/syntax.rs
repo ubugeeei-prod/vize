@@ -16,12 +16,16 @@ use super::{Embed, EmbedSource, Grammar, Lang, Shape, SourceError};
 
 mod admission;
 mod coordinates;
+mod for_head;
 mod handoff;
 mod params;
 mod shapes;
 mod views;
 pub use admission::NATIVE_SYNTAX_UNIT_LIMIT;
 use coordinates::Coordinates;
+pub use for_head::{
+    DenseForHeadView, ForHeadHole, ForHeadPart, ForKeyword, NativeForHead, parse_vue_for_head_once,
+};
 pub use handoff::RetainedExpression;
 pub use params::RetainedSlotParams;
 use shapes::Wrapper;

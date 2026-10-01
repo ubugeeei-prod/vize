@@ -3,8 +3,9 @@
 This private provider slice follows
 [#6836](https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929)
 and the [retained expression ownership](./2026-10-01-l1-retained-expression-handoff.md)
-contract. It prepares genuine bindings for a future dialect-built ForHead; the
-[ForHead proposal](./2026-10-01-l1-for-head-proposal.md) remains unimplemented.
+contract. It supplies genuine bindings for the dialect-built
+[dense ForHead slice](./2026-10-01-l1-native-dense-for-head.md); full sparse
+grammar remains unfinished.
 
 `NativeSyntax::into_slot_params` consumes the existing SlotParams artifact and
 returns `RetainedSlotParams`. Original FormalParameter roots retain their
@@ -33,6 +34,6 @@ intact wrong shapes. All 51 inherited/new laws and strict Clippy pass in the
 scoped actual-source harness with pinned OXC. This is module evidence; exact-head
 Actions, full suites and protected queue delivery remain pending.
 
-ForHead range partition, sparse binding positions, L2 scope resolution and
+Full ForHead grammar, sparse binding positions, L2 scope resolution and
 structural lowering remain unfinished. This handoff does not parse a sparse
 ForHead list as a SlotParams list or invent placeholders for absent aliases.
