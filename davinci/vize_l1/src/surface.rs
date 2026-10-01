@@ -26,7 +26,7 @@ pub enum TokenStatus {
 /// recovered source it may carry junk bytes under a reported diagnostic
 /// (hole policy clause 3). Both slices point into the parsed source, so
 /// `render == source` holds by construction and Drop-freedom is trivial.
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct Token<'a> {
     /// Verbatim source between the previous terminal and `text`.
     pub leading: &'a str,
@@ -34,14 +34,30 @@ pub struct Token<'a> {
     pub text: &'a str,
     /// Present source syntax, or a typed `Missing` hole.
     pub status: TokenStatus,
+    verbatim_opening: bool,
+}
+
+// Keep public diagnostics and dumps independent of private construction facts.
+impl core::fmt::Debug for Token<'_> {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        formatter
+            .debug_struct("Token")
+            .field("leading", &self.leading)
+            .field("text", &self.text)
+            .field("status", &self.status)
+            .finish()
+    }
 }
 
 impl<'a> Token<'a> {
-    pub(crate) fn present(leading: &'a str, text: &'a str) -> Self {
+    /// Construct raw source syntax without a resolved lexical policy fact.
+    /// Only native construction can mark a resolved opening-tag mode.
+    pub fn present(leading: &'a str, text: &'a str) -> Self {
         Self {
             leading,
             text,
             status: TokenStatus::Present,
+            verbatim_opening: false,
         }
     }
 
@@ -51,7 +67,12 @@ impl<'a> Token<'a> {
             leading,
             text: at,
             status: TokenStatus::Missing,
+            verbatim_opening: false,
         }
+    }
+
+    pub(crate) fn mark_verbatim_opening(&mut self, verbatim: bool) {
+        self.verbatim_opening = verbatim;
     }
 
     pub fn is_missing(&self) -> bool {
@@ -121,6 +142,15 @@ pub struct OpenTag<'a> {
     pub slash: Option<Token<'a>>,
     /// The closing `>`; a `Missing` hole at EOF-in-tag.
     pub gt: Token<'a>,
+}
+
+impl OpenTag<'_> {
+    /// The native dialect's resolved lexical mode for this opening tag.
+    /// Includes inherited mode after recovery; raw/compatibility construction
+    /// defaults to false. This fact does not admit L2 control semantics.
+    pub fn is_verbatim(&self) -> bool {
+        self.lt_name.verbatim_opening
+    }
 }
 
 /// How an element's extent ended (the node-level half of hole clause 1).

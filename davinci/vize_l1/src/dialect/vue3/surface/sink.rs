@@ -53,9 +53,9 @@ impl<'a, 'v> VueSink<'a, 'v> {
         }
     }
 
-    fn finish_tag(&mut self, self_closing: bool) {
+    fn finish_tag(&mut self, self_closing: bool) -> bool {
         let Some(tag) = self.tag.take() else {
-            return;
+            return false;
         };
         let (ns, implicit_depth) = self.recovery.open(&self.stack, tag, self_closing);
         if let Some(depth) = implicit_depth {
@@ -67,6 +67,7 @@ impl<'a, 'v> VueSink<'a, 'v> {
         if !self_closing && !is_void_tag(tag) {
             self.stack.push(ModeFrame { tag, ns, verbatim });
         }
+        verbatim
     }
 
     /// Consume the current tag's existing complete heads after structural
@@ -149,13 +150,15 @@ impl Sink for VueSink<'_, '_> {
     }
 
     fn on_open_tag_end(&mut self, end: usize) {
-        self.finish_tag(false);
-        self.recorder.on_open_tag_end(end);
+        let verbatim = self.finish_tag(false);
+        self.recorder
+            .opening_end(EventKind::OpenTagEnd, end, verbatim);
     }
 
     fn on_self_closing_tag(&mut self, end: usize) {
-        self.finish_tag(true);
-        self.recorder.on_self_closing_tag(end);
+        let verbatim = self.finish_tag(true);
+        self.recorder
+            .opening_end(EventKind::SelfClosingTag, end, verbatim);
     }
 
     fn on_close_tag(&mut self, start: usize, end: usize) {

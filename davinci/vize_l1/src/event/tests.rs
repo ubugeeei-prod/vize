@@ -91,3 +91,37 @@ fn full_entity_values_record_one_authored_span_each() {
     }
     assert_trace(source, false);
 }
+
+#[test]
+fn opening_mode_aux_preserves_quote_interpretation_and_event_layout() {
+    use crate::markup::token::QuoteType;
+    let allocator = Allocator::new();
+    let (mut events, mut errors) = record(&allocator, "", true, false);
+    let mut recorder = Recorder {
+        events: &mut events,
+        errors: &mut errors,
+    };
+    for quote in [
+        QuoteType::NoValue,
+        QuoteType::Unquoted,
+        QuoteType::Single,
+        QuoteType::Double,
+    ] {
+        recorder.attr_end(quote, 7);
+        assert_eq!(recorder.events.last().unwrap().quote(), quote);
+    }
+    for (kind, verbatim) in [
+        (EventKind::OpenTagEnd, true),
+        (EventKind::SelfClosingTag, true),
+        (EventKind::OpenTagEnd, false),
+    ] {
+        recorder.opening_end(kind, 11, verbatim);
+        let event = recorder.events.last().unwrap();
+        assert_eq!(event.kind, kind);
+        assert_eq!((event.start, event.end), (11, 11));
+        assert_eq!(event.is_verbatim_opening(), verbatim);
+    }
+    assert_eq!(core::mem::size_of::<Event>(), 12);
+    assert_eq!(events.len(), 7);
+    assert!(errors.is_empty());
+}

@@ -58,7 +58,8 @@ pub(crate) enum EventKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct Event {
     pub kind: EventKind,
-    /// [`QuoteType`] as `u8` for [`EventKind::AttrEnd`]; 0 otherwise.
+    /// Quote type on AttrEnd; resolved verbatim mode on opening-tag ends.
+    /// All other event kinds keep zero. These interpretations never overlap.
     pub aux: u8,
     pub start: u32,
     pub end: u32,
@@ -83,6 +84,14 @@ impl Event {
             _ => QuoteType::NoValue,
         }
     }
+
+    pub(crate) fn is_verbatim_opening(&self) -> bool {
+        debug_assert!(matches!(
+            self.kind,
+            EventKind::OpenTagEnd | EventKind::SelfClosingTag
+        ));
+        self.aux != 0
+    }
 }
 
 /// Records authored syntax spans and diagnostics without interpreting them.
@@ -100,6 +109,19 @@ impl Recorder<'_, '_> {
         self.events.push(Event {
             kind: EventKind::AttrEnd,
             aux: quote as u8,
+            start: end as u32,
+            end: end as u32,
+        });
+    }
+
+    pub(crate) fn opening_end(&mut self, kind: EventKind, end: usize, verbatim: bool) {
+        debug_assert!(matches!(
+            kind,
+            EventKind::OpenTagEnd | EventKind::SelfClosingTag
+        ));
+        self.events.push(Event {
+            kind,
+            aux: u8::from(verbatim),
             start: end as u32,
             end: end as u32,
         });

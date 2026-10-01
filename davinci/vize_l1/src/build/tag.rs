@@ -12,7 +12,7 @@ impl<'a> Builder<'a, '_> {
         self.i += 1;
         let lt = name_s.saturating_sub(1);
         self.flush_gap(lt);
-        let lt_name = self.token_at(lt, name_e);
+        let mut lt_name = self.token_at(lt, name_e);
         let tag = crate::slice::range(self.src, name_s, name_e);
         let mut attrs: Vec<'a, Attribute<'a>> = Vec::new_in(&self.allocator);
         let mut slash = None;
@@ -24,19 +24,19 @@ impl<'a> Builder<'a, '_> {
                     attrs.push(attr);
                 }
                 Some(EventKind::OpenTagEnd) => {
-                    let idx = self
-                        .events
-                        .get(self.i)
-                        .map_or(self.cursor, |ev| ev.start as usize);
+                    let idx = self.events.get(self.i).map_or(self.cursor, |event| {
+                        lt_name.mark_verbatim_opening(event.is_verbatim_opening());
+                        event.start as usize
+                    });
                     self.i += 1;
                     gt = self.open_gt(idx);
                     break;
                 }
                 Some(EventKind::SelfClosingTag) => {
-                    let idx = self
-                        .events
-                        .get(self.i)
-                        .map_or(self.cursor, |ev| ev.start as usize);
+                    let idx = self.events.get(self.i).map_or(self.cursor, |event| {
+                        lt_name.mark_verbatim_opening(event.is_verbatim_opening());
+                        event.start as usize
+                    });
                     self.i += 1;
                     let (found_slash, found_gt) = self.self_closing(idx);
                     slash = found_slash;

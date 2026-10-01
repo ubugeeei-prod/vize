@@ -105,8 +105,7 @@
 
 use vize_l0::{Allocator, Box, String, StringBuilder, Vec as ArenaVec};
 use vize_l1::{
-    Attribute, CloseTag, Element, ElementClose, OpenTag, SurfaceChild, SurfaceTree, Token,
-    TokenStatus, render,
+    Attribute, CloseTag, Element, ElementClose, OpenTag, SurfaceChild, SurfaceTree, Token, render,
 };
 
 use super::sites::{Detail, Site};
@@ -122,11 +121,7 @@ pub enum Mutant {
 }
 
 fn tok<'a>(text: &'a str) -> Token<'a> {
-    Token {
-        leading: "",
-        text,
-        status: TokenStatus::Present,
-    }
+    Token::present("", text)
 }
 
 fn render_to_string(tree: &SurfaceTree<'_>) -> String {
@@ -247,11 +242,7 @@ pub fn split_text<'a>(tree: &mut SurfaceTree<'a>, path: &[usize], at: usize) {
         (token.leading, token.text)
     };
     let children = children_of(tree, parent_path);
-    children[*index] = SurfaceChild::Text(Token {
-        leading,
-        text: &text[..at],
-        status: TokenStatus::Present,
-    });
+    children[*index] = SurfaceChild::Text(Token::present(leading, &text[..at]));
     children.insert(*index + 1, SurfaceChild::Text(tok(&text[at..])));
 }
 
@@ -268,11 +259,7 @@ pub fn merge_text<'a>(tree: &mut SurfaceTree<'a>, path: &[usize]) {
     let base = source.as_ptr() as usize;
     let start = first.text.as_ptr() as usize - base;
     let end = second.text.as_ptr() as usize + second.text.len() - base;
-    let merged = Token {
-        leading: first.leading,
-        text: &source[start..end],
-        status: TokenStatus::Present,
-    };
+    let merged = Token::present(first.leading, &source[start..end]);
     children[*index] = SurfaceChild::Text(merged);
     children.remove(*index + 1);
 }
