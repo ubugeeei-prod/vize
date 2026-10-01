@@ -35,6 +35,9 @@ const coreRoot = `${core}.rs`;
 const hostRoot = `${host}.rs`;
 const prefix = `//! Host discovery and evaluation of Vize configuration.\n\n#[expect(\n    clippy::disallowed_types,\n    clippy::disallowed_methods,\n    reason = "host config evaluation retains its existing std error and process strings"\n)]\nmod loader;\n`;
 const suffix = "pub use vize_l0::config::*;\n";
+const projectDeclarations = () => (exists(`${host}/project.rs`) ? "mod project;\n" : "");
+const projectExports = () =>
+  exists(`${host}/project.rs`) ? "pub use project::ProjectModel;\n" : "";
 const loaderExports = /pub use loader::\{[\s\S]*?\n\};\n/;
 const bridgeInventory = "docs/davinci/plan/foundation-storage-bridges.json";
 const retiredBridge =
@@ -87,7 +90,7 @@ function integrate() {
     value.match(loaderExports)?.[0] ??
     (exists(hostRoot) ? read(hostRoot).match(loaderExports)?.[0] : undefined);
   requireCondition(exports !== undefined, "missing host loader exports");
-  const expectedHost = prefix + exports + suffix;
+  const expectedHost = prefix + projectDeclarations() + exports + projectExports() + suffix;
   requireCondition(
     !exists(hostRoot) || read(hostRoot) === expectedHost,
     "unexpected existing Carton config module",
@@ -170,7 +173,8 @@ function check() {
   checkMoves();
   const exports = read(hostRoot).match(loaderExports)?.[0];
   requireCondition(
-    exports !== undefined && read(hostRoot) === prefix + exports + suffix,
+    exports !== undefined &&
+      read(hostRoot) === prefix + projectDeclarations() + exports + projectExports() + suffix,
     "unexpected Carton host exports",
   );
   requireCondition(

@@ -6,6 +6,7 @@
     reason = "host config evaluation retains its existing std error and process strings"
 )]
 mod loader;
+mod project;
 pub use loader::{
     LoadedConfig, LoadedConfigEntryFiles, LoadedConfigEntryIgnores,
     LoadedConfigExperimentalVueFlags, LoadedConfigWithFeatures, LoadedLibConfig, LoadedLspConfig,
@@ -23,4 +24,5 @@ pub use loader::{
     load_language_server_unstable_flags, load_lib_config_with_source, load_linter_config,
     load_linter_rule_options, load_lsp_config_snapshot, validate_explicit_config_path,
 };
+pub use project::ProjectModel;
 pub use vize_l0::config::*;

@@ -8,6 +8,8 @@ const hostFiles = [
   "crates/vize/src/config.rs",
   "crates/vize_maestro/src/server/state/config.rs",
   "crates/vize_maestro/src/server/state/workspace_folders.rs",
+  "crates/vize_maestro/src/server/state/batch_cache.rs",
+  "crates/vize_maestro/src/server/state/corsa.rs",
 ];
 const forbiddenCartonStorage = /\bvize_carton::|use vize_carton\b/u;
 const source = (path: string) =>
@@ -61,4 +63,24 @@ test("unreviewed config functions and similar function names remain forbidden", 
     ),
     forbiddenCartonStorage,
   );
+});
+
+test("project selection is allowed only at the two existing host callers", () => {
+  const call = "vize_carton::config::ProjectModel::new(None, None, &config)";
+  for (const file of hostFiles.slice(0, 3)) {
+    assert.match(withoutHostRuntimeReferences(call, file), forbiddenCartonStorage);
+  }
+  assert.match(
+    withoutHostRuntimeReferences(call, "davinci/vize_l1/src/config.rs"),
+    forbiddenCartonStorage,
+  );
+  for (const file of hostFiles.slice(3)) {
+    for (const unreviewed of [
+      "use vize_carton::config::ProjectModel;",
+      "vize_carton::config::ProjectModel::new_storage(None)",
+      "vize_carton::config::ProjectModel::default()",
+    ]) {
+      assert.match(withoutHostRuntimeReferences(unreviewed, file), forbiddenCartonStorage);
+    }
+  }
 });

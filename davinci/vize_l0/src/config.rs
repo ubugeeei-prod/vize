@@ -5,7 +5,6 @@ mod document;
 pub mod matcher;
 mod model;
 mod normalize;
-mod project;
 pub use crate::dialect::VueDialect;
 pub use document::ConfigDocument;
 pub use model::{
@@ -24,4 +23,3 @@ pub use model::{
     TypeCheckerConfig, VizeConfig, VueVersion,
 };
 pub use normalize::normalize_public_config_value;
-pub use project::ProjectModel;

@@ -17,5 +17,14 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
       "host_config_loader",
     );
   }
+  if (
+    file === "crates/vize_maestro/src/server/state/batch_cache.rs" ||
+    file === "crates/vize_maestro/src/server/state/corsa.rs"
+  ) {
+    storage = storage.replace(
+      /\bvize_carton::config::ProjectModel::new\b/gu,
+      "host_project_selection",
+    );
+  }
   return storage;
 }
