@@ -347,4 +347,4 @@ record #6921 owner history, shared parse facts, setter guards and registered typ
 records #6922 owner history, unbounded inferred payloads, string widening and required full diagnostic proof.
 
 [Extension wire ownership](./2026-09-28-extension-wire-ownership.md) starts the
-actual L0 neutral-code move for #6833; retiring the three old packages remains unfinished.
+actual L0 neutral-code move for #6833; retiring the three old packages remains unfinished. [Git metadata exclusion](./2026-10-01-git-metadata-discovery.md) records #7326's shared discovery boundary and CLI corpus.

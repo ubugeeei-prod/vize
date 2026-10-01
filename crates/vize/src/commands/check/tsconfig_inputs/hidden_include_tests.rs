@@ -42,6 +42,28 @@ fn relative_paths(root: &Path, files: &[PathBuf]) -> Vec<String> {
 }
 
 #[test]
+fn tsconfig_cannot_include_git_metadata_through_globs_or_files() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    fs::create_dir_all(root.join(".git/worktrees/cache")).unwrap();
+    fs::create_dir_all(root.join(".github")).unwrap();
+    fs::write(root.join(".git/worktrees/cache/cache.vue"), "invalid").unwrap();
+    let source = root.join(".github/App.vue");
+    fs::write(&source, "<template><div/></template>").unwrap();
+    let config = root.join("tsconfig.json");
+    for content in [
+        r#"{"include":[".git/**/*.vue",".github/**/*.vue"]}"#,
+        r#"{"files":[".git/worktrees/cache/cache.vue",".github/App.vue"]}"#,
+    ] {
+        fs::write(&config, content).unwrap();
+        assert_eq!(
+            collect_default_check_files(root, &config),
+            vec![source.clone()]
+        );
+    }
+}
+
+#[test]
 fn default_collection_checks_explicitly_included_hidden_directories() {
     // `tsc` drops dot-directories only while expanding wildcards. A literal
     // `.vitepress` segment in an include pattern is matched literally, so

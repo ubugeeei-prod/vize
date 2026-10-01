@@ -45,6 +45,9 @@ pub(super) fn discover_sources(
                 reason: "the path is outside the workspace root",
             });
         }
+        if vize_l0::path::is_git_metadata_path(&resolved) {
+            continue;
+        }
         if resolved.is_file() {
             if !is_supported_source(&resolved) {
                 return Err(DoctorError::InvalidInput {
@@ -89,6 +92,7 @@ fn discover_directory(
         .standard_filters(true)
         .hidden(true)
         .follow_links(false)
+        .filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()))
         .build()
     {
         let entry = entry.map_err(|source| DoctorError::WalkDirectory {

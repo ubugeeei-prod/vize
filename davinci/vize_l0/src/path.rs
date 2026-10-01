@@ -2,6 +2,15 @@
 
 use std::path::{Path, PathBuf};
 
+/// Git metadata is never a product source tree, even for an explicit glob.
+/// Match whole components so `.github`, `.gitignore` and `foo.git` remain
+/// ordinary paths. This lexical check is safe on every walker entry.
+#[inline]
+pub fn is_git_metadata_path(path: &Path) -> bool {
+    path.components()
+        .any(|component| component.as_os_str() == ".git")
+}
+
 /// Canonicalize a path while avoiding Windows extended-length prefixes in the
 /// returned path.
 ///

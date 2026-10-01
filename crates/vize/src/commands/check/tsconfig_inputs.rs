@@ -155,6 +155,9 @@ fn collect_default_check_files_for_tsconfig(
 
     for file in &spec.files {
         let resolved = normalize_input_path(&file.resolve());
+        if vize_l0::path::is_git_metadata_path(&resolved) {
+            continue;
+        }
         if resolved.is_file()
             && is_supported_check_file_with_options(
                 &resolved,

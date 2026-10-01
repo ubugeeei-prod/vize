@@ -1,4 +1,3 @@
-use glob::glob;
 use std::path::{Path, PathBuf};
 use vize_l0::String;
 
@@ -185,9 +184,7 @@ fn normalize_base_prefix(base_path: Option<&str>) -> Option<String> {
 fn local_pattern_has_match(pattern: &str) -> bool {
     let normalized = normalize_pattern_text(pattern);
     if contains_glob_char(normalized.as_str()) {
-        return glob(normalized.as_str())
-            .map(|paths| paths.filter_map(Result::ok).next().is_some())
-            .unwrap_or(false);
+        return !super::files::collect_files(&[normalized.as_str()], None).is_empty();
     }
     Path::new(normalized.as_str()).exists()
 }

@@ -36,6 +36,7 @@ pub(super) fn collect_plugin_injection_stubs(
         let walker = WalkBuilder::new(dir)
             .hidden(false)
             .standard_filters(false)
+            .filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()))
             .build();
 
         for entry in walker.flatten() {

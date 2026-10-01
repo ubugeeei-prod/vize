@@ -71,6 +71,7 @@ pub(super) fn collect_files<'a>(
     // unsupported file must not affect collection roots or scan other inputs.
     let inputs = patterns
         .iter()
+        .filter(|pattern| !vize_l0::path::is_git_metadata_path(Path::new(pattern)))
         .map(|pattern| classify_input(pattern))
         .collect::<Result<Vec<_>, _>>()?;
     let mut files = Vec::new();
@@ -132,7 +133,11 @@ fn classify_input(input: &str) -> Result<BuildInput<'_>, InputError<'_>> {
 }
 
 fn collect_walked_files(root: &Path, pattern: Option<&BuildGlob>, files: &mut Vec<PathBuf>) {
+    if vize_l0::path::is_git_metadata_path(&vize_l0::path::canonicalize_non_verbatim(root)) {
+        return;
+    }
     let mut walker = WalkBuilder::new(root);
+    walker.filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()));
     if pattern.is_some() {
         walker.hidden(false);
     }

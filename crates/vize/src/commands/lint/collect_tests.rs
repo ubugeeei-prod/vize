@@ -146,7 +146,7 @@ fn broad_discovery_skips_git_dependency_and_generated_trees_without_gitignore() 
 fn explicit_inputs_can_select_files_under_normally_excluded_directories() {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
-    for excluded in [".git", ".vize", "node_modules"] {
+    for excluded in [".vize", "node_modules"] {
         let file = root.join(excluded).join("probe.vue");
         fs::create_dir_all(file.parent().unwrap()).unwrap();
         fs::write(&file, "").unwrap();
@@ -162,6 +162,27 @@ fn explicit_inputs_can_select_files_under_normally_excluded_directories() {
             assert_eq!(collection.files, vec![file.clone()], "{excluded}");
             assert!(collection.unmatched_patterns.is_empty(), "{excluded}");
         }
+    }
+}
+
+#[test]
+fn git_metadata_is_excluded_from_literal_directory_and_glob_inputs() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    let file = root.join(".git/worktrees/cache/probe.vue");
+    fs::create_dir_all(file.parent().unwrap()).unwrap();
+    fs::write(&file, "").unwrap();
+    for input in [
+        file.display().to_string(),
+        root.join(".git").display().to_string(),
+        root.join("**/*.vue").display().to_string(),
+        root.join("**/.git/**/*.vue").display().to_string(),
+    ] {
+        assert!(
+            collect_lint_file_collection(&[input.into()], None)
+                .files
+                .is_empty()
+        );
     }
 }
 

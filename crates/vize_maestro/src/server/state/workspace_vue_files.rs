@@ -42,6 +42,9 @@ impl ServerState {
         let Ok(path) = uri.to_file_path() else {
             return false;
         };
+        if vize_l0::path::is_git_metadata_path(&path) {
+            return false;
+        }
         if path.is_file() {
             return is_vue_file(&path) && self.workspace_vue_files.insert(uri, ()).is_none();
         }
@@ -100,8 +103,9 @@ fn vue_files_below(root: &Path) -> impl Iterator<Item = DirEntry> {
         .parents(false)
         .follow_links(false)
         .filter_entry(|entry| {
-            !entry.file_type().is_some_and(|kind| kind.is_dir())
-                || !is_excluded_directory(entry.file_name())
+            !vize_l0::path::is_git_metadata_path(entry.path())
+                && (!entry.file_type().is_some_and(|kind| kind.is_dir())
+                    || !is_excluded_directory(entry.file_name()))
         });
     builder
         .build()
@@ -111,11 +115,15 @@ fn vue_files_below(root: &Path) -> impl Iterator<Item = DirEntry> {
 }
 
 fn is_vue_file(path: &Path) -> bool {
-    path.extension().is_some_and(|extension| extension == "vue")
+    !vize_l0::path::is_git_metadata_path(path)
+        && path.extension().is_some_and(|extension| extension == "vue")
 }
 
 fn is_vue_uri(uri: &Url) -> bool {
     uri.path().ends_with(".vue")
+        && uri
+            .to_file_path()
+            .is_ok_and(|path| !vize_l0::path::is_git_metadata_path(&path))
 }
 
 async fn discover_sources_in_background(
@@ -136,6 +144,7 @@ async fn discover_sources_in_background(
             uris.dedup();
             let sources = uris
                 .into_iter()
+                .filter(is_vue_uri)
                 .filter_map(|uri| {
                     let path = uri.to_file_path().ok()?;
                     let source = std::fs::read_to_string(path).ok()?;

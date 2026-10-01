@@ -1,4 +1,4 @@
-use glob::{MatchOptions, Pattern, glob};
+use glob::{MatchOptions, Pattern};
 use ignore::WalkBuilder;
 use std::path::{Component, Path, PathBuf};
 
@@ -18,29 +18,27 @@ pub(crate) fn collect_files(
 ) -> Vec<PathBuf> {
     let mut files = Vec::new();
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    if vize_l0::path::is_git_metadata_path(&cwd) {
+        return files;
+    }
 
     for pattern in patterns {
         let normalized = normalize_fmt_pattern(pattern.as_ref());
         // File-based routes (`pages/[id].vue`) contain `[` but are literal files.
         // A glob would treat the brackets as a character class and skip them.
         let literal = PathBuf::from(normalized.as_str());
+        if vize_l0::path::is_git_metadata_path(&literal) {
+            continue;
+        }
         if literal.is_file() {
             if should_include_format_file(&literal, ignore_set) {
                 files.push(literal);
             }
             continue;
         }
-        if should_walk_with_gitignore(&normalized) {
+        if contains_glob_char(&normalized) {
             if let Some(pattern) = FmtPattern::new(&normalized, &cwd) {
-                collect_walked_files(&pattern, ignore_set, &mut files);
-            }
-        } else if contains_glob_char(&normalized) {
-            if let Ok(paths) = glob(&normalized) {
-                for path in paths.flatten() {
-                    if should_include_format_file(&path, ignore_set) {
-                        files.push(path);
-                    }
-                }
+                collect_walked_files(&pattern, &normalized, ignore_set, &mut files);
             }
         } else {
             let path = PathBuf::from(&normalized);
@@ -58,14 +56,28 @@ pub(crate) fn collect_files(
 
 fn collect_walked_files(
     pattern: &FmtPattern,
+    input: &str,
     ignore_set: Option<&FmtIgnoreSet>,
     files: &mut Vec<PathBuf>,
 ) {
-    let walker = WalkBuilder::new(".")
+    let mut root = PathBuf::new();
+    for component in Path::new(input).components() {
+        if contains_glob_char(&component.as_os_str().to_string_lossy()) {
+            break;
+        }
+        root.push(component);
+    }
+    if root.as_os_str().is_empty() {
+        root.push(".");
+    }
+    let respect_ignores = should_walk_with_gitignore(input);
+    let walker = WalkBuilder::new(root)
         .hidden(false)
-        .git_ignore(true)
-        .git_global(true)
-        .git_exclude(true)
+        .ignore(respect_ignores)
+        .git_ignore(respect_ignores)
+        .git_global(respect_ignores)
+        .git_exclude(respect_ignores)
+        .filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()))
         .build();
 
     for entry in walker.filter_map(Result::ok) {
@@ -77,7 +89,8 @@ fn collect_walked_files(
 }
 
 fn should_include_format_file(path: &Path, ignore_set: Option<&FmtIgnoreSet>) -> bool {
-    path.is_file()
+    !vize_l0::path::is_git_metadata_path(path)
+        && path.is_file()
         && is_format_target(path)
         && !is_generated_path(path)
         && !ignore_set.is_some_and(|ignore_set| ignore_set.is_ignored(path))

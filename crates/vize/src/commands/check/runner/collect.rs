@@ -43,10 +43,14 @@ pub(super) fn collect_check_files_with_ignores(
 
     for pattern in patterns {
         let candidate = PathBuf::from(pattern);
+        if vize_l0::path::is_git_metadata_path(&candidate) {
+            continue;
+        }
         if candidate.exists() {
             if candidate.is_file() {
                 let candidate = normalize_input_path(&candidate);
-                if is_supported_check_file(&candidate, options)
+                if !vize_l0::path::is_git_metadata_path(&candidate)
+                    && is_supported_check_file(&candidate, options)
                     && !is_ignored(&candidate, ignore_set)
                     && seen.insert(candidate.clone())
                 {
@@ -83,13 +87,17 @@ pub(super) fn collect_vue_files(patterns: &[std::string::String]) -> Vec<PathBuf
 
     for pattern in patterns {
         let candidate = PathBuf::from(pattern);
+        if vize_l0::path::is_git_metadata_path(&candidate) {
+            continue;
+        }
         if candidate.exists() {
             if candidate.is_file() {
                 let candidate = normalize_input_path(&candidate);
-                if candidate
-                    .extension()
-                    .and_then(|extension| extension.to_str())
-                    == Some("vue")
+                if !vize_l0::path::is_git_metadata_path(&candidate)
+                    && candidate
+                        .extension()
+                        .and_then(|extension| extension.to_str())
+                        == Some("vue")
                     && seen.insert(candidate.clone())
                 {
                     files.push(candidate);
@@ -163,9 +171,13 @@ fn collect_from_dir_filtered(
     // the old hot path when checking large workspaces.
     let skip_generated = should_skip_generated_for_root(dir);
     let normalized_dir = normalize_input_path(dir);
+    if vize_l0::path::is_git_metadata_path(&normalized_dir) {
+        return;
+    }
     let walker = WalkBuilder::new(dir)
         .standard_filters(true)
         .hidden(matcher.is_none())
+        .filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()))
         .build_parallel();
 
     let collected = std::sync::Mutex::new(Vec::<PathBuf>::new());

@@ -34,6 +34,9 @@ fn write_file(root: &Path, rel: &str, contents: &str) -> PathBuf {
     path
 }
 
+#[path = "collect_tests/git_metadata.rs"]
+mod git_metadata;
+
 #[test]
 fn base_dir_from_glob_patterns() {
     assert_eq!(

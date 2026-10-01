@@ -9,6 +9,31 @@ use std::{
 use vize_l0::ToCompactString;
 
 #[test]
+fn build_never_selects_git_metadata() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    let source = root.join("src/App.vue");
+    let metadata = root.join(".git/worktrees/cache/App.vue");
+    for file in [&source, &metadata] {
+        fs::create_dir_all(file.parent().unwrap()).unwrap();
+        fs::write(file, "<template><div/>").unwrap();
+    }
+    for input in [
+        root.display().to_string(),
+        root.join("**/*.vue").display().to_string(),
+    ] {
+        assert_eq!(collect_files(&[input]).unwrap().files, vec![source.clone()]);
+    }
+    for input in [
+        metadata.display().to_string(),
+        root.join(".git").display().to_string(),
+        root.join("**/.git/**/*.vue").display().to_string(),
+    ] {
+        assert!(collect_files(&[input]).unwrap().files.is_empty());
+    }
+}
+
+#[test]
 fn collect_files_ignores_vue_extension_directories() {
     let root = unique_case_dir("build-vue-extension-directories");
     let src = root.join("src");
