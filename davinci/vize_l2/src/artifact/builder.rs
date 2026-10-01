@@ -6,7 +6,8 @@ use vize_l0::{Allocator, Box, Span, id::NodeId, side_table::SideTable};
 use super::{Artifact, ArtifactError, ArtifactParts, RejectedArtifact, check};
 use crate::expr::ExprRef;
 use crate::op::{
-    Attribute, CommentOp, ComponentOp, ElementOp, InterpolationOp, Namespace, Op, Region, TextOp,
+    Attribute, BindingOp, CommentOp, ComponentOp, ElementOp, InterpolationOp, Namespace, Op,
+    Region, TextOp,
 };
 use crate::provenance::ProvenanceRecord;
 use crate::walk::PageWalk;
@@ -15,6 +16,8 @@ struct Frame<'a> {
     id: NodeId,
     owner: Owner<'a>,
     span: Span,
+    bindings: vize_l0::Vec<'a, BindingOp<'a>>,
+    children_started: bool,
     ops: vize_l0::Vec<'a, Op<'a>>,
 }
 
@@ -30,13 +33,15 @@ enum Owner<'a> {
     },
 }
 
+mod binding;
 mod region;
 pub use region::RegionBuilder;
 
 /// A restricted canonical producer, with no arbitrary region or table insertion.
 ///
 /// The first native slice supports ordinary elements/components and text,
-/// comments and retained-expression interpolations. Every constructor checks
+/// comments, retained-expression interpolations and static named bindings.
+/// Attached bindings must precede children. Every constructor checks
 /// ownership and mints its page id before descending into children. Scope and
 /// control-flow factories require their own checked contracts before extension.
 /// `finish` directly seals this accounting; it never walks or reparses the tree.
@@ -201,6 +206,9 @@ impl<'a> Builder<'a> {
 
     fn mint(&mut self) {
         // prepare checked this exact next index; no mutation occurs between them.
+        if let Some(frame) = self.frames.last_mut() {
+            frame.children_started = true;
+        }
         let _ = self.walk.mint();
     }
 
@@ -216,6 +224,8 @@ impl<'a> Builder<'a> {
             id,
             owner,
             span,
+            bindings: vize_l0::Vec::new_in(&self.allocator),
+            children_started: false,
             ops: vize_l0::Vec::new_in(&self.allocator),
         });
         children(&mut RegionBuilder { builder: self }, id);
@@ -237,7 +247,7 @@ impl<'a> Builder<'a> {
 
     fn close(&mut self, frame: Frame<'a>) {
         let children = Region { ops: frame.ops };
-        let bindings = vize_l0::Vec::new_in(&self.allocator);
+        let bindings = frame.bindings;
         let span = frame.span;
         let op = match frame.owner {
             Owner::Element {

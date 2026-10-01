@@ -81,6 +81,12 @@ pub enum ArtifactError {
     NodeLimit,
     /// A producer's child callback unwound before completing an owner.
     UnfinishedOwner { node: NodeId },
+    /// An attached binding has no element or component owner.
+    BindingWithoutOwner { span: Span },
+    /// An attached binding would be numbered after its owner's child region.
+    BindingAfterChild { node: NodeId, span: Span },
+    /// A static binding name is empty or does not equal its authored range.
+    InvalidBindingName { node: NodeId, span: Span },
     /// An authored span is inverted, outside source, or cuts UTF-8.
     InvalidSpan { node: Option<NodeId>, span: Span },
     /// A node or payload span escapes its immediate source owner.

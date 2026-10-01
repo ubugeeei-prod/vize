@@ -12,6 +12,17 @@ pub struct RegionBuilder<'s, 'a> {
 }
 
 impl<'a> RegionBuilder<'_, 'a> {
+    /// Attach an explicit static named binding before this owner's children.
+    pub fn bind(
+        &mut self,
+        name: &'a str,
+        name_span: Span,
+        value: ExprRef<'a>,
+        span: Span,
+    ) -> Result<NodeId, ArtifactError> {
+        self.builder.bind(name, name_span, value, span)
+    }
+
     pub fn text(&mut self, content: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
         self.builder.text(content, span)
     }
