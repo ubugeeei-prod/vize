@@ -11,10 +11,13 @@ over the sealed canonical L2 artifact; it does not finish #6839.
 | Semantic tree and binding scopes                         | `vize_l2::artifact::Artifact`                  | Sealed native owner; product integration unfinished  |
 | Static, dynamic-binding, placement and control decisions | `vize_l3::decision`                            | Conservative facts; placement always Inline          |
 | Per-target eligibility criteria                          | `vize_l3::decision::policy::{dom, ssr, vapor}` | Cloak/event filtering only; full criteria unfinished |
-| Borrowed L2 to shared L3 decisions                       | `vize_l2_to_l3::build_decisions`               | Single canonical event walk; no production caller    |
+| Borrowed L2 to shared L3 decisions                       | `vize_l3::decision::build_decisions`           | Owner-bound result; conversion edge re-exports       |
 | Flat reactive program                                    | `vize_l3::op::Program`                         | Existing artifact; demand-only split unfinished      |
 | Decision encoding, helper numbering and emission         | Future `vize_l4`                               | Separate #6840 ownership work; not implemented here  |
 
+`NativeAnalysis` retains the actual immutable L2 artifact borrow and exposes
+its selected policy and complete `DecisionTables` read-only. It has no public
+constructor from independent tables; L4 consumes this sole bound input.
 `DecisionTables` uses the existing `NodeId` and `SideTable` infrastructure.
 Keys belong to the L2 artifact, including attached binding ids; they are
 not flat-program `OpId`s. Dynamic bindings retain authored order, and
@@ -25,8 +28,9 @@ separate from selected output meaning; every placement stays `Inline`.
 
 The existing sparse side table is a storage starting point, not a measured
 cost improvement. Empty tables are scratch state, not an analyzed result.
-The producer returns an explicit error if its shared walk or row accounting
-fails; incomplete scratch tables are not completed analysis. No compiler,
+The producer checks key bounds and replacements during supplied-node inserts,
+then finishes with cardinality only, without a second walk. An explicit error
+rejects incomplete scratch tables. No compiler,
 checker, linter, formatter or LSP enters this producer.
 The current `lower()` and its eager program construction remain unchanged.
 The producer therefore adds no production pipeline stage, serialization,
@@ -49,7 +53,7 @@ normal legacy dependency, extra analysis or observer work.
   place emission or identifier reparsing inside this decision module.
 
 Local verification includes formatting, source bounds, storage policy,
-two standalone Rust policy laws and all five native producer laws using
+two policy laws, three insertion/accounting laws and six native producer laws using
 actual selected L2/L3 sources with real cached L0/OXC. Full current-workspace
 integration, runtime checks and numeric acceptance remain unverified until
 Actions executes the concrete provider/consumer source.

@@ -133,15 +133,15 @@ See the [l3 is the decision layer decisions](./2026-09-27-level-restructure-desi
 
 The [native decision producer](./2026-10-01-l3-native-artifact-decisions.md)
 replaces the [ownership skeleton](../plan/native-decision-skeleton.md) TODO
-beside #6838's sealed native L2 artifact. A single canonical event walk
-accounts for every region op and attached binding, preserving authored
-binding order and if/for/slot-outlet containment. Neutral static meaning
-is separate from selected output meaning; SSR omits native-element events,
-and cloak markers are compile-time only. Placement remains `Inline`.
-Grouped slot scopes, hoist/cache decisions, complete target criteria,
-flat-program demand splitting and production selection remain unfinished.
-Native laws and paired #6839 records lower the filled skeleton baseline; full
-Actions, differential and unchanged instruction gates remain required.
+beside #6838's sealed native L2 artifact. Its [owner-bound result](./2026-10-01-l3-owner-bound-analysis.md)
+retains that exact immutable owner, policy and read-only tables; L3 owns the
+sole producer with a downward L2 dependency and the edge re-exports it.
+One canonical event walk accounts for all nodes with fused key/duplicate
+checks and finish cardinality only, preserving binding order and containment.
+Neutral/output meaning stays separate; SSR native events and cloak are omitted.
+Placement remains `Inline`; grouped slots, hoist/cache, complete target rules,
+flat-program demand splitting and product selection remain unfinished.
+Paired #6839 laws require full Actions, differential and unchanged instruction gates.
 
 ## L4: emission
 

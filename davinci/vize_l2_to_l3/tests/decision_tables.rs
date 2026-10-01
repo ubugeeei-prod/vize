@@ -35,9 +35,12 @@ fn every_attached_family_is_accounted_for_in_authored_order() {
         ),
         [id(4), id(8)],
     );
-    let dom = build_decisions(&artifact, TargetPolicy::Dom).expect("sealed owner");
-    let ssr = build_decisions(&artifact, TargetPolicy::Ssr).expect("sealed owner");
-    let vapor = build_decisions(&artifact, TargetPolicy::Vapor).expect("sealed owner");
+    let dom_analysis = build_decisions(&artifact, TargetPolicy::Dom).expect("sealed owner");
+    let dom = dom_analysis.tables();
+    let ssr_analysis = build_decisions(&artifact, TargetPolicy::Ssr).expect("sealed owner");
+    let ssr = ssr_analysis.tables();
+    let vapor_analysis = build_decisions(&artifact, TargetPolicy::Vapor).expect("sealed owner");
+    let vapor = vapor_analysis.tables();
     assert_eq!(artifact.node_count(), 16);
     assert_eq!(
         dom.nodes.get(id(0)).unwrap().dynamic_bindings,
@@ -51,7 +54,7 @@ fn every_attached_family_is_accounted_for_in_authored_order() {
             .collect::<std::vec::Vec<_>>()
     );
     assert_eq!(
-        vapor,
+        *vapor,
         vize_l3::decision::DecisionTables {
             policy: TargetPolicy::Vapor,
             ..dom.clone()
@@ -105,8 +108,10 @@ fn output_filtering_propagates_to_ancestors_without_changing_neutral_meaning() {
             component(&allocator, [event(&allocator)]),
         ],
     ));
-    let dom = build_decisions(&artifact, TargetPolicy::Dom).unwrap();
-    let ssr = build_decisions(&artifact, TargetPolicy::Ssr).unwrap();
+    let dom_analysis = build_decisions(&artifact, TargetPolicy::Dom).unwrap();
+    let dom = dom_analysis.tables();
+    let ssr_analysis = build_decisions(&artifact, TargetPolicy::Ssr).unwrap();
+    let ssr = ssr_analysis.tables();
     for index in 0..3 {
         assert_eq!(
             dom.nodes.get(id(index)).unwrap().static_level,
@@ -164,7 +169,8 @@ fn only_direct_interpolation_has_dynamic_text_classification() {
         ],
     ));
     for policy in [TargetPolicy::Dom, TargetPolicy::Ssr, TargetPolicy::Vapor] {
-        let table = build_decisions(&artifact, policy).unwrap();
+        let analysis = build_decisions(&artifact, policy).unwrap();
+        let table = analysis.tables();
         for (index, expected) in [
             (0, StaticLevel::Dynamic),
             (1, StaticLevel::DynamicText),
@@ -246,7 +252,8 @@ fn nested_if_for_and_slot_fallback_preserve_control_containment() {
     let artifact = seal_scoped(region(&allocator, [if_op, text(&allocator)]), [id(1)]);
     assert_eq!(artifact.node_count(), 10);
     for policy in [TargetPolicy::Dom, TargetPolicy::Ssr, TargetPolicy::Vapor] {
-        let table = build_decisions(&artifact, policy).unwrap();
+        let analysis = build_decisions(&artifact, policy).unwrap();
+        let table = analysis.tables();
         assert_eq!(table.nodes.len(), 10);
         assert_eq!(table.controls.len(), 3);
         for (index, kind, parent) in [
@@ -290,9 +297,52 @@ fn empty_owner_is_a_complete_empty_analysis_for_each_policy() {
     let allocator = &Allocator::default();
     let artifact = seal(region(&allocator, []));
     for policy in [TargetPolicy::Dom, TargetPolicy::Ssr, TargetPolicy::Vapor] {
-        let table = build_decisions(&artifact, policy).unwrap();
+        let analysis = build_decisions(&artifact, policy).unwrap();
+        let table = analysis.tables();
         assert_eq!(table.policy, policy);
         assert!(table.nodes.is_empty());
         assert!(table.controls.is_empty());
     }
+}
+
+#[test]
+fn analysis_retains_the_actual_owner_despite_equal_local_node_indices() {
+    let allocator = &Allocator::default();
+    let static_owner = seal(region(&allocator, [text(&allocator)]));
+    let dynamic_owner = seal(region(&allocator, [interpolation(&allocator)]));
+    assert_eq!(static_owner.node_count(), dynamic_owner.node_count());
+    let static_analysis = build_decisions(&static_owner, TargetPolicy::Ssr).unwrap();
+    let dynamic_analysis =
+        vize_l3::decision::build_decisions(&dynamic_owner, TargetPolicy::Dom).unwrap();
+    assert!(std::ptr::eq(static_analysis.artifact(), &static_owner));
+    assert!(std::ptr::eq(dynamic_analysis.artifact(), &dynamic_owner));
+    assert!(!std::ptr::eq(
+        static_analysis.artifact(),
+        dynamic_analysis.artifact()
+    ));
+    assert_eq!(static_analysis.policy(), TargetPolicy::Ssr);
+    assert_eq!(dynamic_analysis.policy(), TargetPolicy::Dom);
+    assert_eq!(
+        static_analysis
+            .tables()
+            .nodes
+            .get(id(0))
+            .unwrap()
+            .output_level,
+        StaticLevel::Static
+    );
+    assert_eq!(
+        dynamic_analysis
+            .tables()
+            .nodes
+            .get(id(0))
+            .unwrap()
+            .output_level,
+        StaticLevel::DynamicText
+    );
+    let mut detached_scratch = static_analysis.tables().clone();
+    detached_scratch.nodes.clear();
+    detached_scratch.policy = TargetPolicy::Vapor;
+    assert_eq!(static_analysis.tables().nodes.len(), 1);
+    assert_eq!(static_analysis.policy(), TargetPolicy::Ssr);
 }

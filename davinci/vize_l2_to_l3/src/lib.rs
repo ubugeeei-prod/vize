@@ -1,8 +1,8 @@
 //! L2→L3 — the Davinci Impeto lowering.
 //!
 //! This crate keeps the conversion-library shape: L2 stays independent of L3,
-//! L3 stays independent of L2, and this edge owns the lowering plus the shared
-//! partition facts later backends consume.
+//! the edge owns flat lowering and its partition facts. Native shared decisions
+//! are owned by L3 and retain a borrow of their canonical L2 artifact.
 //!
 //! **Experimental:** this Phase 3 bridge records allocation and ordering
 //! contracts before downstream backends depend on the L3 shape.
@@ -17,5 +17,5 @@ pub mod partition;
 
 pub use crate::partition::dump::{Fact as DumpPartitionFact, Page as PartitionPage};
 pub use crate::partition::{PartitionFact, PartitionFacts, PartitionKind};
-pub use decision::{DecisionBuildError, build_decisions};
+pub use decision::{DecisionBuildError, NativeAnalysis, build_decisions};
 pub use lower::{Lowered, lower};

@@ -6,18 +6,16 @@
 
 use alloc::vec::Vec;
 
+use super::{
+    ControlKind, ControlRegion, DecisionTables, NativeAnalysis, NodeDecision, StaticLevel,
+    policy::{BindingOwner, BindingRole, TargetPolicy},
+};
+use crate::placement::Placement;
 use vize_l0::{id::NodeId, side_table::SideTable};
 use vize_l2::{
     artifact::Artifact,
     op::{BindingOp, Op},
     walk::{NodeEvent, NodeRef},
-};
-use vize_l3::{
-    decision::{
-        ControlKind, ControlRegion, DecisionTables, NodeDecision, StaticLevel,
-        policy::{BindingOwner, BindingRole, TargetPolicy},
-    },
-    placement::Placement,
 };
 
 /// Compute conservative shared facts for every canonical L2 node.
@@ -26,12 +24,13 @@ use vize_l3::{
 /// filters compile-time cloak markers and SSR native-element events only.
 /// Authored comments, components and control ops stay dynamic. Slot-content
 /// grouping, hoist/cache eligibility and production selection are unfinished.
-pub fn build_decisions(
-    artifact: &Artifact<'_>,
+pub fn build_decisions<'owner, 'arena>(
+    artifact: &'owner Artifact<'arena>,
     policy: TargetPolicy,
-) -> Result<DecisionTables, DecisionBuildError> {
+) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
     let mut builder = Builder {
         policy,
+        node_count: artifact.node_count(),
         frames: Vec::new(),
         nodes: SideTable::new(),
         controls: SideTable::new(),
@@ -47,19 +46,9 @@ pub fn build_decisions(
     if let Some(error) = failure {
         return Err(error);
     }
-    if let Some(frame) = builder.frames.last() {
-        return Err(DecisionBuildError::InvalidTraversal { node: frame.id });
-    }
-    if builder.nodes.len() != artifact.node_count() as usize {
-        return Err(DecisionBuildError::NodeCountMismatch {
-            expected: artifact.node_count(),
-            actual: builder.nodes.len(),
-        });
-    }
-    Ok(DecisionTables {
-        policy,
-        nodes: builder.nodes,
-        controls: builder.controls,
+    Ok(NativeAnalysis {
+        artifact,
+        tables: builder.finish()?,
     })
 }
 
@@ -73,10 +62,17 @@ pub enum DecisionBuildError {
     InvalidTraversal { node: NodeId },
     /// The result does not account for the sealed owner's node count.
     NodeCountMismatch { expected: u32, actual: usize },
+    /// A supplied key is outside the sealed owner's dense node range.
+    InvalidNode { node: NodeId },
+    /// A supplied node would replace a decision instead of adding one row.
+    DuplicateNode { node: NodeId },
+    /// A control owner appeared more than once in the shared walk.
+    DuplicateControl { node: NodeId },
 }
 
 struct Builder {
     policy: TargetPolicy,
+    node_count: u32,
     frames: Vec<Frame>,
     nodes: SideTable<NodeDecision>,
     controls: SideTable<ControlRegion>,
@@ -93,6 +89,23 @@ struct Frame {
 }
 
 impl Builder {
+    fn finish(self) -> Result<DecisionTables, DecisionBuildError> {
+        if let Some(frame) = self.frames.last() {
+            return Err(DecisionBuildError::InvalidTraversal { node: frame.id });
+        }
+        if self.nodes.len() != self.node_count as usize {
+            return Err(DecisionBuildError::NodeCountMismatch {
+                expected: self.node_count,
+                actual: self.nodes.len(),
+            });
+        }
+        Ok(DecisionTables {
+            policy: self.policy,
+            nodes: self.nodes,
+            controls: self.controls,
+        })
+    }
+
     fn visit(&mut self, event: NodeEvent<'_, '_>) -> Result<(), DecisionBuildError> {
         match event {
             NodeEvent::Enter {
@@ -102,7 +115,7 @@ impl Builder {
                     return Err(DecisionBuildError::InvalidTraversal { node: id });
                 }
                 match node {
-                    NodeRef::Op(op) => self.enter_op(id, op),
+                    NodeRef::Op(op) => self.enter_op(id, op)?,
                     NodeRef::Binding(binding) => self.binding(id, binding)?,
                 }
             }
@@ -119,7 +132,7 @@ impl Builder {
         Ok(())
     }
 
-    fn enter_op(&mut self, id: NodeId, op: &Op<'_>) {
+    fn enter_op(&mut self, id: NodeId, op: &Op<'_>) -> Result<(), DecisionBuildError> {
         let control = self.frames.last().and_then(|frame| frame.child_control);
         let (levels, owner, kind) = match op {
             Op::Element(_) => (Levels::STATIC, Some(BindingOwner::Element), None),
@@ -136,13 +149,13 @@ impl Builder {
             ),
         };
         let child_control = if let Some(kind) = kind {
-            self.controls.insert(
+            self.insert_control(
                 id,
                 ControlRegion {
                     kind,
                     parent: control,
                 },
-            );
+            )?;
             Some(id)
         } else {
             control
@@ -155,6 +168,7 @@ impl Builder {
             child_control,
             dynamic_bindings: Vec::new(),
         });
+        Ok(())
     }
 
     fn binding(&mut self, id: NodeId, binding: &BindingOp<'_>) -> Result<(), DecisionBuildError> {
@@ -197,16 +211,17 @@ impl Builder {
             frame.dynamic_bindings.push(id);
         }
         frame.levels = frame.levels.join(levels);
-        self.nodes.insert(
+        let control = frame.child_control;
+        self.insert_node(
             id,
             NodeDecision {
                 static_level: levels.neutral,
                 output_level: levels.output,
                 dynamic_bindings: Vec::new(),
                 placement: Placement::Inline,
-                control: frame.child_control,
+                control,
             },
-        );
+        )?;
         Ok(())
     }
 
@@ -218,7 +233,7 @@ impl Builder {
         if frame.id != id {
             return Err(DecisionBuildError::InvalidTraversal { node: id });
         }
-        self.nodes.insert(
+        self.insert_node(
             id,
             NodeDecision {
                 static_level: frame.levels.neutral,
@@ -227,7 +242,7 @@ impl Builder {
                 placement: Placement::Inline,
                 control: frame.control,
             },
-        );
+        )?;
         if let Some(parent) = self.frames.last_mut() {
             // Direct interpolation yields DynamicText for its element;
             // text under a nested element makes the ancestor Dynamic.
@@ -237,6 +252,29 @@ impl Builder {
                 frame.levels
             };
             parent.levels = parent.levels.join(levels);
+        }
+        Ok(())
+    }
+
+    fn check_key(&self, id: NodeId) -> Result<(), DecisionBuildError> {
+        if id.index() >= self.node_count {
+            return Err(DecisionBuildError::InvalidNode { node: id });
+        }
+        Ok(())
+    }
+
+    fn insert_node(&mut self, id: NodeId, row: NodeDecision) -> Result<(), DecisionBuildError> {
+        self.check_key(id)?;
+        if self.nodes.insert(id, row).is_some() {
+            return Err(DecisionBuildError::DuplicateNode { node: id });
+        }
+        Ok(())
+    }
+
+    fn insert_control(&mut self, id: NodeId, row: ControlRegion) -> Result<(), DecisionBuildError> {
+        self.check_key(id)?;
+        if self.controls.insert(id, row).is_some() {
+            return Err(DecisionBuildError::DuplicateControl { node: id });
         }
         Ok(())
     }
@@ -291,3 +329,6 @@ fn nested(level: StaticLevel) -> StaticLevel {
         StaticLevel::Static | StaticLevel::Dynamic => level,
     }
 }
+
+#[cfg(test)]
+mod tests;

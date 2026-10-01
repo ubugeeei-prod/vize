@@ -5,9 +5,10 @@ Tracked in [#6839](https://github.com/ubugeeei-prod/vize/issues/6839), with
 artifact as the real provider. This is a bounded producer, not completion
 of #6839 or a product replacement.
 
-`vize_l2_to_l3::build_decisions(&Artifact, TargetPolicy)` borrows the checked
-L2 owner and returns shared `DecisionTables` or an explicit walk/accounting
-error. It consumes the owner's enter/leave events once. Every region op
+`vize_l3::decision::build_decisions(&Artifact, TargetPolicy)` borrows the checked
+L2 owner and returns [owner-bound `NativeAnalysis`](./2026-10-01-l3-owner-bound-analysis.md)
+or an explicit walk/accounting error. The conversion edge re-exports this sole
+producer. It consumes the owner's enter/leave events once. Every region op
 and attached binding receives exactly one row under the supplied `NodeId`;
 L3 never mints another numbering, reparses an expression, serializes the
 tree or constructs a flat L3 program.
@@ -48,7 +49,7 @@ comments, cloak, nested if/for/slot containment and an empty artifact.
 Two policy laws cover every target/owner combination. The implementation
 uses one owned traversal stack and the existing owned binding-id lists;
 the reviewed storage row adds one `alloc::vec::Vec` path and five bound
-uses. Sparse side tables are retained with no cost-reduction claim.
+uses in L3's `decision/build.rs`. Sparse side tables are retained with no cost-reduction claim.
 
 The existing instruction registry covers zero executions of this producer
 in its 100 pinned rows. Its collector has no `vize_l2_to_l3` suite: the

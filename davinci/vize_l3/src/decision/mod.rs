@@ -3,18 +3,79 @@
 //! This is the native decision boundary for issue #6839. It is separate
 //! from the flat [`crate::op::Program`]: DOM and SSR consume these facts
 //! beside L2, while Vapor requests the program separately. The borrowed
-//! conversion edge computes conservative static/binding/control facts;
+//! producer computes conservative static/binding/control facts;
 //! placement analysis and production selection remain unfinished.
 
 use alloc::vec::Vec;
 
 use vize_l0::{id::NodeId, side_table::SideTable};
+use vize_l2::artifact::Artifact;
 
 use crate::placement::Placement;
 
+mod build;
 pub mod policy;
 
+pub use build::{DecisionBuildError, build_decisions};
+
 use policy::TargetPolicy;
+
+/// Complete native decisions bound to their actual immutable L2 owner.
+///
+/// Only [`build_decisions`] can construct this result. A consumer takes this
+/// sole input and derives the artifact and read-only tables from it; equal
+/// local node indices in another artifact cannot establish that association.
+/// Keeping the borrow also prevents unsealing the owner while this result lives.
+///
+/// Arbitrary complete tables cannot claim an owner's identity:
+/// ```compile_fail
+/// use vize_l2::artifact::Artifact;
+/// use vize_l3::decision::{DecisionTables, NativeAnalysis};
+/// fn forge<'o, 'a>(artifact: &'o Artifact<'a>, tables: DecisionTables) {
+///     let _ = NativeAnalysis { artifact, tables };
+/// }
+/// ```
+/// Its tables cannot be modified through the analysis:
+/// ```compile_fail
+/// use vize_l3::decision::NativeAnalysis;
+/// fn edit(analysis: &mut NativeAnalysis<'_, '_>) {
+///     analysis.tables().nodes.clear();
+/// }
+/// ```
+/// Unsealing the owner cannot invalidate live decisions:
+/// ```compile_fail
+/// use vize_l2::artifact::Artifact;
+/// use vize_l3::decision::{build_decisions, policy::TargetPolicy};
+/// fn unseal(artifact: Artifact<'_>) {
+///     let analysis = build_decisions(&artifact, TargetPolicy::Ssr).unwrap();
+///     let _parts = artifact.into_parts();
+///     let _ = analysis.tables();
+/// }
+/// ```
+pub struct NativeAnalysis<'owner, 'arena> {
+    artifact: &'owner Artifact<'arena>,
+    tables: DecisionTables,
+}
+
+impl<'owner, 'arena> NativeAnalysis<'owner, 'arena> {
+    /// The exact sealed artifact used by the native producer.
+    #[must_use]
+    pub fn artifact(&self) -> &'owner Artifact<'arena> {
+        self.artifact
+    }
+
+    /// The target policy selected for these decisions.
+    #[must_use]
+    pub fn policy(&self) -> TargetPolicy {
+        self.tables.policy
+    }
+
+    /// Complete decisions, borrowed read-only with their owner retained.
+    #[must_use]
+    pub fn tables(&self) -> &DecisionTables {
+        &self.tables
+    }
+}
 
 /// Neutral static classification of one L2 subtree.
 ///
@@ -78,11 +139,11 @@ pub struct ControlRegion {
     pub parent: Option<NodeId>,
 }
 
-/// L3 decisions consumed beside the L2 artifact that owns every key.
+/// Mutable scratch records for native L3 decisions.
 ///
-/// An empty table is scratch state, not evidence that analysis completed.
-/// The native producer must account for all numbered L2 nodes and preserve
-/// authored binding order before any production caller selects this path.
+/// Completed consumer input is [`NativeAnalysis`], which retains the actual
+/// owner and exposes these tables read-only. An empty or independently built
+/// table cannot establish complete analysis or association with any artifact.
 /// Storage is the existing sparse side table; no storage-cost reduction is
 /// claimed by the native producer.
 #[derive(Debug, Clone, PartialEq, Eq)]
