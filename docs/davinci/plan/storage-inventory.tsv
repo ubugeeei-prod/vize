@@ -230,5 +230,5 @@ l1_to_l2	pass	davinci/vize_l1_to_l2/src/pass/vslot/group.rs	1	6	1	11	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/pass/vslot/spell.rs	1	1	1	10	0	0	0	0
 l1_to_l2	analysis	davinci/vize_l1_to_l2/src/partial.rs	1	7	1	1	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/partial/page.rs	1	12	1	2	0	0	0	0
-infra	contract	davinci/vize_l0/src/dump/capture.rs	1	9	0	0	0	0	0	0
+infra	contract	davinci/vize_l0/src/dump/capture.rs	1	11	0	0	0	0	0	0
 infra	-	davinci/vize_l0/src/dump/json.rs	0	0	1	1	0	0	0	0

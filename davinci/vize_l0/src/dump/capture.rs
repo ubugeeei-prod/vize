@@ -6,8 +6,9 @@
 //! the module; a legacy selection or a rejected emission discards them.
 
 use alloc::vec::Vec;
+use core::fmt::Display;
 
-use crate::{Span, String, level::Level};
+use crate::{Span, String, ToCompactString, level::Level};
 
 /// Whether the recorded stages actually produced the returned module.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -30,6 +31,14 @@ pub struct StageCapturePage {
     pub level: Level,
     pub step: &'static str,
     pub text: String,
+}
+
+/// An executed boundary whose inspection could not produce a valid page.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StageCaptureUnavailable {
+    pub level: Level,
+    pub step: &'static str,
+    pub reason: String,
 }
 
 /// An option that affected the product result, recorded at the host boundary.
@@ -80,6 +89,7 @@ pub struct StageCapture {
     pub outcome: CaptureOutcome,
     pub options: Vec<CaptureOption>,
     pub pages: Vec<StageCapturePage>,
+    pub unavailable: Vec<StageCaptureUnavailable>,
     pub timings: Vec<StageTiming>,
     pub remarks: Vec<CaptureRemark>,
     /// Whether the producer observed every eligible timing in this run.
@@ -96,6 +106,7 @@ impl StageCapture {
             outcome: CaptureOutcome::Pending,
             options: Vec::new(),
             pages: Vec::new(),
+            unavailable: Vec::new(),
             timings: Vec::new(),
             remarks: Vec::new(),
             timings_observed: false,
@@ -119,6 +130,14 @@ pub trait CaptureSink {
     const RECORDING: bool;
 
     fn page<F: FnOnce() -> String>(&mut self, level: Level, step: &'static str, render: F);
+
+    /// Retain a failed inspection separately from successfully rendered pages.
+    fn try_page<E: Display, F: FnOnce() -> Result<String, E>>(
+        &mut self,
+        level: Level,
+        step: &'static str,
+        render: F,
+    );
 
     /// Record an effective host option only for an observed compile.
     fn effective_option<F: FnOnce() -> String>(&mut self, name: &'static str, value: F);
@@ -145,6 +164,15 @@ impl CaptureSink for NoCapture {
 
     #[inline(always)]
     fn page<F: FnOnce() -> String>(&mut self, _: Level, _: &'static str, _: F) {}
+
+    #[inline(always)]
+    fn try_page<E: Display, F: FnOnce() -> Result<String, E>>(
+        &mut self,
+        _: Level,
+        _: &'static str,
+        _: F,
+    ) {
+    }
 
     #[inline(always)]
     fn effective_option<F: FnOnce() -> String>(&mut self, _: &'static str, _: F) {}
@@ -176,6 +204,22 @@ impl CaptureSink for StageCapture {
         });
     }
 
+    fn try_page<E: Display, F: FnOnce() -> Result<String, E>>(
+        &mut self,
+        level: Level,
+        step: &'static str,
+        render: F,
+    ) {
+        match render() {
+            Ok(text) => self.pages.push(StageCapturePage { level, step, text }),
+            Err(error) => self.unavailable.push(StageCaptureUnavailable {
+                level,
+                step,
+                reason: error.to_compact_string(),
+            }),
+        }
+    }
+
     fn effective_option<F: FnOnce() -> String>(&mut self, name: &'static str, value: F) {
         self.option(name, value());
     }
@@ -204,6 +248,7 @@ impl CaptureSink for StageCapture {
         let outcome = outcome();
         if !matches!(outcome, CaptureOutcome::Accepted) {
             self.pages.clear();
+            self.unavailable.clear();
             self.timings.clear();
             self.remarks.clear();
             self.timings_observed = false;
@@ -212,6 +257,10 @@ impl CaptureSink for StageCapture {
         self.outcome = outcome;
     }
 }
+
+#[cfg(test)]
+#[path = "capture/fallible_tests.rs"]
+mod fallible_tests;
 
 #[cfg(test)]
 mod tests {
