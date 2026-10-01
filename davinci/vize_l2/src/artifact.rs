@@ -18,7 +18,9 @@ use crate::provenance::ProvenanceRecord;
 use crate::scope::{ScopeFacts, ScopeTag};
 use crate::walk::{NodeEvent, NodeLimit, NodeRef, PageWalk};
 
+mod builder;
 mod check;
+pub use builder::{Builder, RegionBuilder};
 #[cfg(test)]
 mod tests;
 
@@ -77,6 +79,8 @@ pub enum ArtifactError {
     SourceLimit,
     /// At least one node did not fit in the shared NodeId space.
     NodeLimit,
+    /// A producer's child callback unwound before completing an owner.
+    UnfinishedOwner { node: NodeId },
     /// An authored span is inverted, outside source, or cuts UTF-8.
     InvalidSpan { node: Option<NodeId>, span: Span },
     /// A node or payload span escapes its immediate source owner.
