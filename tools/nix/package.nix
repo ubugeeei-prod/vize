@@ -81,9 +81,19 @@ let
     buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
   };
 
-  # Built once from a manifest-only source tree and reused by every later
-  # build, so editing a crate does not rebuild oxc and its dependents.
-  cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+  # Vize remains manifest-only, but the patched parser is a real dependency
+  # of official OXC crates. Its public API must survive Crane's local stubs.
+  patchedParser = lib.cleanSource (root + /vendor/oxc_parser);
+  cargoArtifacts = craneLib.buildDepsOnly (
+    commonArgs
+    // {
+      extraDummyScript = ''
+        rm -rf "$out/vendor/oxc_parser"
+        cp -R ${patchedParser} "$out/vendor/oxc_parser"
+        chmod -R +w "$out/vendor/oxc_parser"
+      '';
+    }
+  );
 in
 craneLib.buildPackage (
   commonArgs
