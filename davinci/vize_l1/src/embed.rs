@@ -1,12 +1,15 @@
-//! Unimplemented typed-embed boundary for the L1 redesign.
+//! Source preparation and the typed-embed boundary for the L1 redesign.
 //!
 //! Design: <https://github.com/ubugeeei-prod/vize/issues/6836>.
 //! These records describe syntax and source coordinates, not semantic facts.
-//! Existing markup parsing does not produce or consume them yet.
+//! Attribute preparation uses native entity decoding with checked coordinates.
+//! Existing markup parsing does not select grammars or produce typed trees yet.
 
 pub mod source;
 
-pub use source::{DecodeMap, DecodeSegment, EmbedSource, prepare_attribute_value};
+pub use source::{
+    DecodeMap, DecodeSegment, DecodeSegmentKind, EmbedSource, SourceError, prepare_attribute_value,
+};
 
 /// The syntactic role selected by the markup dialect, independently of language.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

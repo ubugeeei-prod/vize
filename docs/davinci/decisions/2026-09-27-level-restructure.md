@@ -117,7 +117,7 @@ Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835), [#6836](h
 
 - The [markup and container record](./2026-09-28-l1-markup-skeleton.md) tracks the `Profile`, `Sink`, lex error and directive-hook contracts: L1 surface parsing uses the relocated compatibility tokenizer; the generic-profile lexer is exposed by default while its compatibility callback adapter remains opt-in, and compiler consumers stay on the legacy route until #6880. The moved tokenizer adds storage rows, regenerates the v-on corpus and publishes L1 before Armature; source and decision-record length gates retain their limits.
 
-[The explicit L1 embed source skeleton](./2026-09-28-l1-embed-source-skeleton.md) records the maintainer's code-first request for #6836; source preparation remains `todo!()`, with typed trees, language resolution and dialect hooks unfinished.
+[The L1 embed source provider](./2026-10-01-l1-embed-source.md) replaces the [explicit skeleton](./2026-09-28-l1-embed-source-skeleton.md) with native, once-only attribute decoding and private validated UTF-8 maps. Exact projection rejects partial entities; separate diagnostic projection covers their authored spelling, including interior points. The merged directive provider makes the combined L1 skeleton count zero. Typed trees, file language resolution, identities and dialect integration remain unfinished.
 
 ## L1→L2 and L2
 
