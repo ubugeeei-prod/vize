@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
-import type { HmrContext } from "vite";
+import type { HmrContext, ResolvedConfig } from "vite";
+import { vize } from "./index.ts";
 import type { ResolvedVizeConfig } from "../types.ts";
 import { compilerConfigForFile, createFileCompilerOptions } from "./compiler-scopes.ts";
 import { mergeCompilerOptions } from "./compiler-config.ts";
@@ -174,5 +175,54 @@ void test("scoped compiler output survives batches, cold caches, client/SSR load
     assert.equal(onDemand.cache.get(scoped)?.code, expectedCode(scoped, "condense", false, edited));
     assert.equal(onDemand.ssrCache.size, 0);
     assert.equal(getCompileOptionsForRequest(onDemand, true, scoped).whitespace, "condense");
+  }
+});
+
+void test("public plugin config resolution applies compiler entries to production client and SSR loads", async () => {
+  const source = fs.readFileSync(
+    new URL("../test/fixtures/scoped-compiler.vue", import.meta.url),
+    "utf8",
+  );
+  const { root, file } = makeProject(source);
+  const scoped = path.join(root, "src/condensed/Bar.vue");
+  fs.mkdirSync(path.dirname(scoped), { recursive: true });
+  fs.writeFileSync(scoped, source);
+  const resolved = {
+    root,
+    base: "/",
+    mode: "production",
+    command: "build",
+    isProduction: true,
+    build: { assetsDir: "assets", ssr: false, sourcemap: false },
+    define: {},
+    plugins: [],
+    resolve: { alias: [] },
+  } as unknown as ResolvedConfig;
+  async function output(config: ResolvedVizeConfig, filename: string, ssr: boolean) {
+    fs.writeFileSync(path.join(root, "vize.config.json"), JSON.stringify(config));
+    const plugin = vize({ root }).find((candidate) => candidate.name === "vite-plugin-vize")!;
+    const resolve =
+      typeof plugin.configResolved === "function"
+        ? plugin.configResolved
+        : plugin.configResolved!.handler;
+    await resolve.call({} as never, resolved);
+    const load = typeof plugin.load === "function" ? plugin.load : plugin.load!.handler;
+    const result = await load.call({} as never, toVirtualId(filename, ssr), { ssr });
+    assert.ok(result);
+    return result;
+  }
+  const mixed: ResolvedVizeConfig = {
+    compiler: { whitespace: "preserve" },
+    entries: [{ files: ["src/condensed/**/*.vue"], compiler: { whitespace: "condense" } }],
+  };
+  for (const ssr of [false, true]) {
+    assert.deepEqual(
+      await output(mixed, file, ssr),
+      await output({ compiler: { whitespace: "preserve" }, entries: [] }, file, ssr),
+    );
+    assert.deepEqual(
+      await output(mixed, scoped, ssr),
+      await output({ compiler: { whitespace: "condense" }, entries: [] }, scoped, ssr),
+    );
   }
 });
