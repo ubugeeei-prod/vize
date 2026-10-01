@@ -61,6 +61,8 @@ Production SFC fixture inputs live in their owning crate's
 `tests/fixtures/vapor-production/` and are registered by the SFC runtime suite.
 They do not expand the generic L3 optimization-remarks fixture pack.
 
-Remaining acceptance work: obtain terminal exact-head full corpus, real-project
-and merge-queue evidence and fix every reproduced failure. This change does not
-promote an experimental backend or close the compiler fix-history gate (#6880).
+Canonical compiler evidence and remaining cross-product real-project failures
+are recorded in [the lint pragma acceptance record](2026-10-01-lint-pragma-production-layout.md).
+Terminal exact-head Actions and merge-queue checks remain required. This change
+does not promote an experimental backend or close the compiler fix-history
+gate (#6880).
