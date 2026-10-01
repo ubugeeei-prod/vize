@@ -4,6 +4,12 @@
 program shape and exports the shared static/dynamic partition facts computed
 during that lowering.
 
+`build_decisions(&vize_l2::artifact::Artifact, TargetPolicy)` separately
+borrows the sealed native tree and computes conservative L2-node static,
+output-binding and control-containment facts without constructing the flat
+program. Placement stays `Inline`; grouped slot scopes, hoist/cache analysis
+and production selection remain unfinished under #6839.
+
 Lowering copies tags, namespaces, attributes, expressions, binding targets,
 model read/write contracts, modifiers, branch conditions, loop aliases and slot
 parameters into L3-owned operands. L2 and its source arena can be released after

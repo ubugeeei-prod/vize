@@ -1,10 +1,10 @@
 //! Shared backend decisions keyed by the owning L2 artifact's node ids.
 //!
-//! This is the native ownership skeleton for issue #6839. It is separate
+//! This is the native decision boundary for issue #6839. It is separate
 //! from the flat [`crate::op::Program`]: DOM and SSR consume these facts
-//! beside L2, while Vapor requests the program separately. No producer or
-//! product selects this artifact yet; the conversion edge remains explicit
-//! about its unfinished analysis.
+//! beside L2, while Vapor requests the program separately. The borrowed
+//! conversion edge computes conservative static/binding/control facts;
+//! placement analysis and production selection remain unfinished.
 
 use alloc::vec::Vec;
 
@@ -23,7 +23,7 @@ use policy::TargetPolicy;
 /// producer computes the same facts and passes byte and instruction gates.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum StaticLevel {
-    /// Runtime-dependent surface or descendants.
+    /// Runtime-dependent or conservatively ineligible surface/descendants.
     Dynamic,
     /// A static surface whose text children require runtime values.
     DynamicText,
@@ -36,6 +36,12 @@ pub enum StaticLevel {
 pub struct NodeDecision {
     /// Neutral static classification, before target encoding.
     pub static_level: StaticLevel,
+    /// Static classification after this table's target policy filters
+    /// attached bindings. L4 still owns the encoding of this fact.
+    ///
+    /// SSR omits native-element event handlers, so an otherwise static
+    /// element can have dynamic neutral meaning and static output.
+    pub output_level: StaticLevel,
     /// Dynamic attached binding ids, in authored binding order.
     ///
     /// These are L2 ids from the same artifact, never flat-program op ids.
@@ -54,14 +60,15 @@ pub enum ControlKind {
     Conditional,
     /// Iteration bodies.
     Loop,
-    /// Slot content or fallback.
+    /// Slot outlet fallback. Grouped slot-content scopes are unfinished.
     Slot,
 }
 
 /// Control containment beside the L2 tree, keyed by its owning L2 node.
 ///
-/// Branch and scope analysis remains a producer TODO. This record names
-/// containment and does not invent a flat-program region id or reorder
+/// This record names conditional, loop and slot-outlet containment;
+/// grouped slot-content scopes and branch analysis remain unfinished. It
+/// does not invent a flat-program region id or reorder
 /// any branch, slot, cache, or effect.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ControlRegion {
@@ -76,8 +83,8 @@ pub struct ControlRegion {
 /// An empty table is scratch state, not evidence that analysis completed.
 /// The native producer must account for all numbered L2 nodes and preserve
 /// authored binding order before any production caller selects this path.
-/// Storage is the existing sparse side table; no new storage-cost claim is
-/// made by this skeleton.
+/// Storage is the existing sparse side table; no storage-cost reduction is
+/// claimed by the native producer.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DecisionTables {
     /// The policy under which these decisions were computed.

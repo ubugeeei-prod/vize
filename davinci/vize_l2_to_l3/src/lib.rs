@@ -17,5 +17,5 @@ pub mod partition;
 
 pub use crate::partition::dump::{Fact as DumpPartitionFact, Page as PartitionPage};
 pub use crate::partition::{PartitionFact, PartitionFacts, PartitionKind};
-pub use decision::build_decisions;
+pub use decision::{DecisionBuildError, build_decisions};
 pub use lower::{Lowered, lower};

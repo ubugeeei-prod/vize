@@ -131,17 +131,17 @@ Tracked in [#6836](https://github.com/ubugeeei-prod/vize/issues/6836) and [#6838
 
 See the [l3 is the decision layer decisions](./2026-09-27-level-restructure-designs.md#l3-is-the-decision-layer) in the companion record.
 
-The [native decision skeleton](../plan/native-decision-skeleton.md) records
-[#6839's paired decision](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5857255718) records the 2026-09-28 architecture-first follow-up:
-L3 owns L2-node decision types and target policy identities; the borrowed
-L2→L3 producer is an explicit `todo!()`, without a production caller.
-Current analysis, flat-program demand splitting and L4 extraction remain
-unfinished; no product coverage or performance acceptance is claimed.
-The first source Actions run typechecked the skeleton and passed all four
-Rust test workers; tooling had 4,648 passes, 12 skips and one missing storage
-inventory row. The reviewed new row records one owned `Vec<NodeId>` import
-and one bound use; all prior inventory rows, runtime budgets and gates stay
-unchanged. The fresh source and merge-queue checks remain required.
+The [native decision producer](./2026-10-01-l3-native-artifact-decisions.md)
+replaces the [ownership skeleton](../plan/native-decision-skeleton.md) TODO
+beside #6838's sealed native L2 artifact. A single canonical event walk
+accounts for every region op and attached binding, preserving authored
+binding order and if/for/slot-outlet containment. Neutral static meaning
+is separate from selected output meaning; SSR omits native-element events,
+and cloak markers are compile-time only. Placement remains `Inline`.
+Grouped slot scopes, hoist/cache decisions, complete target criteria,
+flat-program demand splitting and production selection remain unfinished.
+Native laws and the paired #6839 comment define this bounded slice; full
+Actions, differential and unchanged instruction gates remain required.
 
 ## L4: emission
 
