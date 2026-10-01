@@ -230,3 +230,56 @@ test("SFC crash regressions survive corpus regeneration byte-for-byte", () => {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("opaque native Program regressions seed all eight profiles with exact source bytes", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-program-regression-seeds-"));
+  try {
+    fs.writeFileSync(path.join(root, "Cargo.toml"), "[workspace]\n");
+    fs.writeFileSync(path.join(root, "pnpm-workspace.yaml"), "packages: []\n");
+    const directory = path.join(root, "tests/fuzz/regressions/l1_program");
+    fs.mkdirSync(directory, { recursive: true });
+    const witnesses = [
+      [
+        "native-module.js.input",
+        "734d3c83a5d641f07b083ba97036a71daa5fa74c09ef8de7897df0afa2c3243e",
+      ],
+      [
+        "native-module.tsx.input",
+        "a2fa37c7423b29f92f797b76abb06fab6ad3b365bbc2d854b3cb279086534d6e",
+      ],
+      [
+        "pure-recovery.js.input",
+        "70fa10164b219c26375100fa28b763bc12fce85423b19932c2969cdcfa2fb979",
+      ],
+      ["pure-rewind.js.input", "4d512b93149545b991c03f143efabaf7510feacff8125724edc6b0610ccf1ec7"],
+      [
+        "pure-ts-operator.ts.input",
+        "cb91e97e41d2202545925f335bd74794a9176bd2d0fd8c6dd29803ae7cce5e54",
+      ],
+    ] as const;
+    const inputs = witnesses.map(([name, digest]) => {
+      const bytes = fs.readFileSync(path.join(repoRoot, "tests/fuzz/regressions/l1_program", name));
+      assert.equal(createHash("sha256").update(bytes).digest("hex"), digest);
+      fs.writeFileSync(path.join(directory, name), bytes);
+      return bytes;
+    });
+    const result = spawnSync(
+      "rust-script",
+      [path.join(repoRoot, "tools/commands/ci/fuzz/seed_corpus.rs")],
+      { encoding: "utf8", env: { ...process.env, VIZE_REPO_ROOT: root } },
+    );
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+    assert.match(result.stdout, /5 native Program sources in eight explicit profiles/);
+    const corpus = path.join(root, "tests/fuzz/corpus/l1_program");
+    assert.equal(fs.readdirSync(corpus).length, 40);
+    for (const source of inputs) {
+      for (let profile = 0; profile < 8; profile++) {
+        const bytes = Buffer.concat([Buffer.from([profile]), source]);
+        const digest = createHash("sha1").update(bytes).digest("hex").slice(0, 16);
+        assert.deepEqual(fs.readFileSync(path.join(corpus, digest)), bytes);
+      }
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

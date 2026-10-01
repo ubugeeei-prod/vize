@@ -90,3 +90,9 @@ TODO:
 
 The issue remains open. Full Vue/dialect, JS/TS/JSX/TSX end-to-end product
 completion is not established by this standalone Program provider.
+
+The five frozen native Program fuzz sources use opaque `.input` filenames.
+The seeder reads every file in this directory and prefixes each unchanged
+source with all eight explicit profile selectors; filenames do not choose
+the language. The scripted move preserves all five inputs byte for byte,
+including malformed parser regressions, and adds no formatter exclusion.
