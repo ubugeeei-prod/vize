@@ -10,7 +10,7 @@
 import fs from "node:fs";
 import { glob } from "tinyglobby";
 
-import { compileBatch, formatCompileErrorMessage } from "../compiler.ts";
+import { formatCompileErrorMessage } from "../compiler.ts";
 import { buildCompileBatchOptions, type CompileBatchOptions } from "../compile-options.ts";
 import {
   chunkPrecompileFiles,
@@ -29,6 +29,7 @@ import {
   syncCollectedCssForFile,
   type VizePluginState,
 } from "./state.ts";
+import { compileScopedBatch } from "./precompile-scopes.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 
 /**
@@ -38,34 +39,7 @@ import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
  * that reaches the native compiler reaches the key with it.
  */
 function resolvePrecompileBatchOptions(state: VizePluginState): CompileBatchOptions {
-  const requestOptions = getCompileOptionsForRequest(state, false);
-  return {
-    // The batch fills the same caches `load` serves from, so it has to make the
-    // same source-map decision the on-demand path makes (#3399).
-    sourceMap: requestOptions.sourceMap,
-    ssr: false,
-    vapor: state.mergedOptions.vapor ?? false,
-    mode: state.mergedOptions.mode,
-    customRenderer: state.mergedOptions.customRenderer ?? false,
-    customElements: state.mergedOptions.customElements,
-    templateSyntax: state.mergedOptions.templateSyntax ?? "standard",
-    experimentalInTagComments: state.mergedOptions.experimentalInTagComments ?? false,
-    experimentalPatternedTemplate: state.mergedOptions.experimentalPatternedTemplate ?? false,
-    experimentalSelfComponent: state.mergedOptions.experimentalSelfComponent ?? false,
-    experimentalStrictSlotChildren: state.mergedOptions.experimentalStrictSlotChildren ?? false,
-    experimentalServerScript: state.mergedOptions.experimentalServerScript ?? false,
-    runtimeModuleName: state.mergedOptions.runtimeModuleName,
-    runtimeGlobalName: state.mergedOptions.runtimeGlobalName,
-    vueVersion: state.mergedOptions.vueVersion,
-    whitespace: requestOptions.whitespace,
-    styleTrim: requestOptions.styleTrim,
-    templateCacheHandlers: requestOptions.templateCacheHandlers,
-    templateComments: requestOptions.templateComments,
-    templateHoistStatic: requestOptions.templateHoistStatic,
-    templatePrefixIdentifiers: requestOptions.templatePrefixIdentifiers,
-    inlineTemplate: requestOptions.inlineTemplate,
-    isProd: requestOptions.isProd,
-  };
+  return getCompileOptionsForRequest(state, false);
 }
 
 function openCacheForRun(
@@ -77,7 +51,10 @@ function openCacheForRun(
   }
   return openPrecompileCache({
     root: state.root,
-    compileOptions: buildCompileBatchOptions(batchOptions),
+    compileOptions: {
+      options: buildCompileBatchOptions(batchOptions),
+      scopes: state.compilerScopeIdentity,
+    },
     onDiagnostic: (message, error) =>
       error === undefined ? state.logger.warn(message) : state.logger.warn(message, error),
   });
@@ -209,7 +186,7 @@ export async function compileAll(state: VizePluginState): Promise<void> {
       continue;
     }
 
-    const result = compileBatch(fileContents, state.cache, batchOptions);
+    const result = compileScopedBatch(fileContents, state);
 
     const chunkFailedCount = result.results.filter(
       (fileResult) => fileResult.errors.length > 0,

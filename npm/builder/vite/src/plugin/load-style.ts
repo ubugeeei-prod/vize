@@ -12,5 +12,5 @@ export function getCompiledStyleSource(state: VizePluginState, realPath: string,
   if (compiled || !shouldLoadCompiledVueSfcPath(state, realPath) || !fs.existsSync(realPath)) {
     return compiled;
   }
-  return compileFile(realPath, cache, getCompileOptionsForRequest(state, ssr));
+  return compileFile(realPath, cache, getCompileOptionsForRequest(state, ssr, realPath));
 }

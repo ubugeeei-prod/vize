@@ -86,7 +86,7 @@ For most projects, keep direct plugin options small and put stable compiler sett
 ## Shared Config
 
 The recommended shared entry point is `vize`. A single `vize.config.*` file is read by both the npm
-package commands and `@vizejs/vite-plugin`.
+package commands and `@vizejs/vite-plugin`. [Scoped compiler settings](./vite-scoped-compiler.md) apply `entries[].compiler` to matching files.
 
 ```bash
 vp install -D vize

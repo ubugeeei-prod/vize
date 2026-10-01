@@ -16,6 +16,7 @@ import "./utils.test.ts";
 import "./plugin/compat.test.ts";
 import "./plugin/compiled-module-cache.test.ts";
 import "./plugin/config-bridge.test.ts";
+import "./plugin/compiler-scopes.test.ts";
 import "./plugin/css-modules.test.ts";
 import "./plugin/dev-middleware.test.ts";
 import "./plugin/dep-scan.test.ts";

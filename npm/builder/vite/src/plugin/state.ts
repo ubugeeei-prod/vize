@@ -60,6 +60,8 @@ export interface VizePluginState {
   precompileBatchSize: number;
   ignorePatterns: string[];
   mergedOptions: VizeOptions;
+  fileCompilerOptions?: (file: string) => VizeOptions;
+  compilerScopeIdentity?: unknown;
   initialized: boolean;
   dynamicImportAliasRules: DynamicImportAliasRule[];
   cssAliasRules: CssAliasRule[];
@@ -103,51 +105,58 @@ export type CompileOptionsForRequest = {
   >;
 
 export function getCompileOptionsForRequest(
-  state: Pick<VizePluginState, "isProduction" | "mergedOptions" | "viteBuildSourcemap">,
+  state: Pick<
+    VizePluginState,
+    "isProduction" | "mergedOptions" | "viteBuildSourcemap" | "fileCompilerOptions"
+  >,
   ssr: boolean,
+  file?: string,
 ): CompileOptionsForRequest {
+  const mergedOptions =
+    file === undefined
+      ? state.mergedOptions
+      : (state.fileCompilerOptions?.(file) ?? state.mergedOptions);
   const options: CompileOptionsForRequest = {
-    sourceMap:
-      state.mergedOptions?.sourceMap ?? (!state.isProduction || !!state.viteBuildSourcemap),
+    sourceMap: mergedOptions?.sourceMap ?? (!state.isProduction || !!state.viteBuildSourcemap),
     ssr,
     // Vapor runtime is client-oriented today; use VDOM for SSR and Vapor on the client.
-    vapor: !ssr && (state.mergedOptions?.vapor ?? false),
-    customRenderer: state.mergedOptions?.customRenderer ?? false,
-    templateSyntax: state.mergedOptions?.templateSyntax ?? "standard",
+    vapor: !ssr && (mergedOptions?.vapor ?? false),
+    customRenderer: mergedOptions?.customRenderer ?? false,
+    templateSyntax: mergedOptions?.templateSyntax ?? "standard",
     // Vue keeps template comments in development and drops them in production.
     // An explicit template.compilerOptions.comments overrides this default.
     templateComments: !state.isProduction,
-    ...resolvePluginVueCompileOptions(state.mergedOptions ?? {}),
+    ...resolvePluginVueCompileOptions(mergedOptions ?? {}),
   };
 
-  if (state.mergedOptions?.customElements !== undefined) {
-    options.customElements = state.mergedOptions.customElements;
+  if (mergedOptions?.customElements !== undefined) {
+    options.customElements = mergedOptions.customElements;
   }
-  if (state.mergedOptions?.mode !== undefined) {
-    options.mode = state.mergedOptions.mode;
+  if (mergedOptions?.mode !== undefined) {
+    options.mode = mergedOptions.mode;
   }
-  if (state.mergedOptions?.runtimeModuleName !== undefined) {
-    options.runtimeModuleName = state.mergedOptions.runtimeModuleName;
+  if (mergedOptions?.runtimeModuleName !== undefined) {
+    options.runtimeModuleName = mergedOptions.runtimeModuleName;
   }
-  if (state.mergedOptions?.runtimeGlobalName !== undefined) {
-    options.runtimeGlobalName = state.mergedOptions.runtimeGlobalName;
+  if (mergedOptions?.runtimeGlobalName !== undefined) {
+    options.runtimeGlobalName = mergedOptions.runtimeGlobalName;
   }
-  if (state.mergedOptions?.vueVersion !== undefined) {
-    options.vueVersion = state.mergedOptions.vueVersion;
+  if (mergedOptions?.vueVersion !== undefined) {
+    options.vueVersion = mergedOptions.vueVersion;
   }
-  if (state.mergedOptions?.experimentalInTagComments) {
+  if (mergedOptions?.experimentalInTagComments) {
     options.experimentalInTagComments = true;
   }
-  if (state.mergedOptions?.experimentalPatternedTemplate) {
+  if (mergedOptions?.experimentalPatternedTemplate) {
     options.experimentalPatternedTemplate = true;
   }
-  if (state.mergedOptions?.experimentalSelfComponent) {
+  if (mergedOptions?.experimentalSelfComponent) {
     options.experimentalSelfComponent = true;
   }
-  if (state.mergedOptions?.experimentalStrictSlotChildren) {
+  if (mergedOptions?.experimentalStrictSlotChildren) {
     options.experimentalStrictSlotChildren = true;
   }
-  if (state.mergedOptions?.experimentalServerScript) {
+  if (mergedOptions?.experimentalServerScript) {
     options.experimentalServerScript = true;
   }
 

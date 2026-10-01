@@ -180,7 +180,7 @@ and the [falsy-child fix and oracle review](./2026-09-27-jsx-falsy-and.md).
 
 Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845](https://github.com/ubugeeei-prod/vize/issues/6845)–[#6851](https://github.com/ubugeeei-prod/vize/issues/6851).
 
-- One parse per file. Every product consumes the same artifacts.
+- One parse per file. Every product consumes the same artifacts. [Scoped Vite compiler settings](./2026-10-01-vite-scoped-compiler.md) records #7247 entry precedence, batch scopes, and cache identity.
 - **Formatter:** L1 only. A rewrite whose safety depends on L2 facts (for example component-dependent self-closing) is a linter autofix instead.
 
   [Formatter fix-history output fixtures](./2026-09-27-formatter-fix-history.md) records [#6882](https://github.com/ubugeeei-prod/vize/issues/6882); public script and CSS byte fixtures retain the actual invalid-CSS error separately. Full-history audit and shared corpus registration remain pending.

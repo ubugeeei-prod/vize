@@ -33,6 +33,7 @@ import { patchQuasarBridge } from "./quasar.ts";
 import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
 import { installDevMiddleware } from "./dev-middleware.ts";
 import { mergeCompilerOptions } from "./compiler-config.ts";
+import { createFileCompilerOptions } from "./compiler-scopes.ts";
 import { createLegacyVueCompatibilityPlugin, isLegacyVueCompatibilityMode } from "./vue-version.ts";
 import { resolveSharedConfig } from "./shared-config.ts";
 import * as configBridge from "./config-lifecycle.ts";
@@ -153,6 +154,8 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       );
 
       state.mergedOptions = mergeCompilerOptions(options, sharedConfig);
+      state.fileCompilerOptions = createFileCompilerOptions(sharedConfig, state.root, options);
+      state.compilerScopeIdentity = sharedConfig?.entries;
 
       state.dynamicImportAliasRules = [];
       for (const alias of resolvedConfig.resolve.alias) {

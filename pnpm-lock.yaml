@@ -677,6 +677,9 @@ importers:
       oxc-parser:
         specifier: catalog:oxc
         version: 0.144.0
+      picomatch:
+        specifier: 4.0.5
+        version: 4.0.5
       tinyglobby:
         specifier: catalog:repo-tooling
         version: 0.2.17

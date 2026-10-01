@@ -25,6 +25,15 @@ export function mergeCompilerOptions(
     customElements: options.customElements ?? compilerConfig.customElements,
     templateSyntax,
     whitespace: options.whitespace ?? compilerConfig.whitespace,
+    template: {
+      ...options.template,
+      compilerOptions: {
+        cacheHandlers: compilerConfig.cacheHandlers,
+        hoistStatic: compilerConfig.hoistStatic,
+        prefixIdentifiers: compilerConfig.prefixIdentifiers,
+        ...options.template?.compilerOptions,
+      },
+    },
     compatibility,
     vueVersion,
     mode,

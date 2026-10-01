@@ -184,7 +184,7 @@ export function createPostTransformPlugin(state: VizePluginState): Plugin {
           const compiled = compileFile(
             id,
             getEnvironmentCache(state, isSsr),
-            getCompileOptionsForRequest(state, isSsr),
+            getCompileOptionsForRequest(state, isSsr, id),
             code,
           );
           syncCollectedCssForFile({ ...state, extractCss }, id, compiled);
