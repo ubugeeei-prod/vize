@@ -1,0 +1,5 @@
+<template>
+  <listing>
+	 a
+ b</listing>
+</template>

@@ -1,0 +1,1673 @@
+{
+  "schema": "vize.formatter-history-fixtures",
+  "version": 1,
+  "issue": 6882,
+  "source": {
+    "revision": "cc87bb5960ea9e49e82672205df919de58bb4b24",
+    "formatterSourceTree": "a934722785f2ce91262b60da4e0b20c2e7971ec6",
+    "cargoLockSha256": "3d0dbb5fddf04c6f0e1269da05975b33f3bcb2866a62dba19910f3efffa4e548"
+  },
+  "execution": "not run; Actions pending",
+  "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+  "nativeHandled": 0,
+  "cases": [
+    {
+      "id": "literal-extra/comments-and-inline-sibling-whitespace-keep-their-boundaries/template-1b303ac801c4",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/comments-and-inline-sibling-whitespace-keep-their-boundaries/template-1b303ac801c4/input.vue.txt",
+        "sha256": "148606b86915047dfa7a588f071a2524cdec0bc5883ebf0dba185aeb8607ac09"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/comments-and-inline-sibling-whitespace-keep-their-boundaries/template-1b303ac801c4/expected.txt",
+        "sha256": "148606b86915047dfa7a588f071a2524cdec0bc5883ebf0dba185aeb8607ac09"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_runtime_semantics.rs",
+        "function": "comments_and_inline_sibling_whitespace_keep_their_boundaries",
+        "sourceSha256": "a76fe83befcecc19dad3e8d59da3e60eac811bd781c5c8309e02fd76e2e84a04"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3587,
+            3617
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3587,
+            3617
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/comments-and-inline-sibling-whitespace-keep-their-boundaries/template-4cfa2c74d961",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/comments-and-inline-sibling-whitespace-keep-their-boundaries/template-4cfa2c74d961/input.vue.txt",
+        "sha256": "15e05d1baec7a9bcf2efc571b9ced764b5ab4cec5e05813a2327e74b74c518fd"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/comments-and-inline-sibling-whitespace-keep-their-boundaries/template-4cfa2c74d961/expected.txt",
+        "sha256": "15e05d1baec7a9bcf2efc571b9ced764b5ab4cec5e05813a2327e74b74c518fd"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_runtime_semantics.rs",
+        "function": "comments_and_inline_sibling_whitespace_keep_their_boundaries",
+        "sourceSha256": "a76fe83befcecc19dad3e8d59da3e60eac811bd781c5c8309e02fd76e2e84a04"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3528,
+            3557
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3528,
+            3557
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/comments-and-inline-sibling-whitespace-keep-their-boundaries/template-50ab67fa521f",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/comments-and-inline-sibling-whitespace-keep-their-boundaries/template-50ab67fa521f/input.vue.txt",
+        "sha256": "da509d18a710b2bb095f8cbcc925dae216fca8a6679c26bfecfd2f96aa6a70ea"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/comments-and-inline-sibling-whitespace-keep-their-boundaries/template-50ab67fa521f/expected.txt",
+        "sha256": "148606b86915047dfa7a588f071a2524cdec0bc5883ebf0dba185aeb8607ac09"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_runtime_semantics.rs",
+        "function": "comments_and_inline_sibling_whitespace_keep_their_boundaries",
+        "sourceSha256": "a76fe83befcecc19dad3e8d59da3e60eac811bd781c5c8309e02fd76e2e84a04"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            3899,
+            3949
+          ],
+          "substitution": {
+            "variable": "horizontal",
+            "value": "\t"
+          }
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3587,
+            3617
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/comments-and-inline-sibling-whitespace-keep-their-boundaries/template-6bcf48cf6637",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/comments-and-inline-sibling-whitespace-keep-their-boundaries/template-6bcf48cf6637/input.vue.txt",
+        "sha256": "9492ad25d43f3cc8951cb5024b1f3d99bc71809233a6215bb21a0fa60af822ce"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/comments-and-inline-sibling-whitespace-keep-their-boundaries/template-6bcf48cf6637/expected.txt",
+        "sha256": "148606b86915047dfa7a588f071a2524cdec0bc5883ebf0dba185aeb8607ac09"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_runtime_semantics.rs",
+        "function": "comments_and_inline_sibling_whitespace_keep_their_boundaries",
+        "sourceSha256": "a76fe83befcecc19dad3e8d59da3e60eac811bd781c5c8309e02fd76e2e84a04"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            3899,
+            3949
+          ],
+          "substitution": {
+            "variable": "horizontal",
+            "value": "   "
+          }
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3587,
+            3617
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/eslint-disable-next-line-keeps-text-and-element-together/template-916f28780c16",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/eslint-disable-next-line-keeps-text-and-element-together/template-916f28780c16/input.vue.txt",
+        "sha256": "3ab03634acdf9ed839750e12a516611d9168568f6d7218272f10bf582f5817bd"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/eslint-disable-next-line-keeps-text-and-element-together/template-916f28780c16/expected.txt",
+        "sha256": "09bb31c5a6d3521ec0950646319f64c50e91307ce5e6abcb7038bf2f248fa017"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "eslint_disable_next_line_keeps_text_and_element_together",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "26e85e98df3f4922bc947d9630e35a0e23bd28af",
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "concat! source expression",
+          "rangeUtf16": [
+            1245,
+            1468
+          ]
+        },
+        "expected": {
+          "method": "concat! source expression",
+          "rangeUtf16": [
+            1478,
+            1697
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/joined-chunks-reuse-the-source-spacing/template-121547876c52",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/joined-chunks-reuse-the-source-spacing/template-121547876c52/input.vue.txt",
+        "sha256": "deb76cf1f32fb28a92ab31c445b04193bcbcf04b59615416f945c30ddf8d94ec"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/joined-chunks-reuse-the-source-spacing/template-121547876c52/expected.txt",
+        "sha256": "32f48fad63f2a2615b3afa2c2c84355807dd371c65d64c7a83c26496e30891f4"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "joined_chunks_reuse_the_source_spacing",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a",
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3243,
+            3318
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3328,
+            3401
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/joined-chunks-reuse-the-source-spacing/template-54972c457ace",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/joined-chunks-reuse-the-source-spacing/template-54972c457ace/input.vue.txt",
+        "sha256": "05a2691d4ad1bfbbfce33f60774cdc8af44b46e3cc088637d78bce3eebfff4bf"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/joined-chunks-reuse-the-source-spacing/template-54972c457ace/expected.txt",
+        "sha256": "05a2691d4ad1bfbbfce33f60774cdc8af44b46e3cc088637d78bce3eebfff4bf"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "joined_chunks_reuse_the_source_spacing",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a",
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3050,
+            3122
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3050,
+            3122
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/joined-chunks-reuse-the-source-spacing/template-5e20ed2334fe",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/joined-chunks-reuse-the-source-spacing/template-5e20ed2334fe/input.vue.txt",
+        "sha256": "9ada5442788ed494ed731b0e00efc477df37aefd45f5b97312e6f6ff39398661"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/joined-chunks-reuse-the-source-spacing/template-5e20ed2334fe/expected.txt",
+        "sha256": "ff5455d3eaf37f9d24d842885d989c14c3bccde6feb19e7957ffe14bb1a5e806"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "joined_chunks_reuse_the_source_spacing",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a",
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3520,
+            3590
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3600,
+            3672
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/object-directive-modifiers-are-also-ordering-barriers/template-6a786a13946b",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/object-directive-modifiers-are-also-ordering-barriers/template-6a786a13946b/input.vue.txt",
+        "sha256": "63dfe291c21c35107e17e66c2fe125806ce515102335eaaccff451742622aeac"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/object-directive-modifiers-are-also-ordering-barriers/template-6a786a13946b/expected.txt",
+        "sha256": "63dfe291c21c35107e17e66c2fe125806ce515102335eaaccff451742622aeac"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_directive_attributes.rs",
+        "function": "object_directive_modifiers_are_also_ordering_barriers",
+        "sourceSha256": "c94576cec7d6c5a665f3476f9424318a1402e5268ba0433399ea194976917e96"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {
+          "printWidth": 200
+        },
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "47344a8c23e8482bbdd7494b40a96c845e9a954c"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2699,
+            2764
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2699,
+            2764
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/object-directive-modifiers-are-also-ordering-barriers/template-9fed96500e6d",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/object-directive-modifiers-are-also-ordering-barriers/template-9fed96500e6d/input.vue.txt",
+        "sha256": "de33356ba376da0010297933c7f9f284174158311490923b008ab4302f10025a"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/object-directive-modifiers-are-also-ordering-barriers/template-9fed96500e6d/expected.txt",
+        "sha256": "de33356ba376da0010297933c7f9f284174158311490923b008ab4302f10025a"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_directive_attributes.rs",
+        "function": "object_directive_modifiers_are_also_ordering_barriers",
+        "sourceSha256": "c94576cec7d6c5a665f3476f9424318a1402e5268ba0433399ea194976917e96"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {
+          "printWidth": 200
+        },
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "47344a8c23e8482bbdd7494b40a96c845e9a954c"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2544,
+            2597
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2544,
+            2597
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/ordinary-same-line-spacing-is-preserved-without-a-suppression/template-09e881070d4f",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/ordinary-same-line-spacing-is-preserved-without-a-suppression/template-09e881070d4f/input.vue.txt",
+        "sha256": "9efc503fc19e742b853dd0e2c8ed70aed71d6e111f2183f1a4a6ec68acb603f6"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/ordinary-same-line-spacing-is-preserved-without-a-suppression/template-09e881070d4f/expected.txt",
+        "sha256": "9efc503fc19e742b853dd0e2c8ed70aed71d6e111f2183f1a4a6ec68acb603f6"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "ordinary_same_line_spacing_is_preserved_without_a_suppression",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a",
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            4179,
+            4233
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            4179,
+            4233
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/ordinary-same-line-spacing-is-preserved-without-a-suppression/template-2f5cee235fab",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/ordinary-same-line-spacing-is-preserved-without-a-suppression/template-2f5cee235fab/input.vue.txt",
+        "sha256": "72b64e8e5a88590f8ccefe14603af89bdcc0e712e6d959230ea24da64aa0a4db"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/ordinary-same-line-spacing-is-preserved-without-a-suppression/template-2f5cee235fab/expected.txt",
+        "sha256": "72b64e8e5a88590f8ccefe14603af89bdcc0e712e6d959230ea24da64aa0a4db"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "ordinary_same_line_spacing_is_preserved_without_a_suppression",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a",
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            4467,
+            4529
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            4467,
+            4529
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/ordinary-same-line-spacing-is-preserved-without-a-suppression/template-31e15d7a5770",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/ordinary-same-line-spacing-is-preserved-without-a-suppression/template-31e15d7a5770/input.vue.txt",
+        "sha256": "41bddec08f66b9f1ec498476b7346f29fe4ae32e343ef02ef393a43cc83c91ef"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/ordinary-same-line-spacing-is-preserved-without-a-suppression/template-31e15d7a5770/expected.txt",
+        "sha256": "8c18025bacc574a0921e7a4591ad1dddce945e33aaa14d4e4d249d7aa9e775e1"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "ordinary_same_line_spacing_is_preserved_without_a_suppression",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a",
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            4722,
+            4796
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            4806,
+            4878
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/ordinary-same-line-spacing-is-preserved-without-a-suppression/template-632019d09b1e",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/ordinary-same-line-spacing-is-preserved-without-a-suppression/template-632019d09b1e/input.vue.txt",
+        "sha256": "7e0466ad78048933c8ecb4eba70018e2238b2ab7ee8b4c52efb4dfa5fb9b3b2f"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/ordinary-same-line-spacing-is-preserved-without-a-suppression/template-632019d09b1e/expected.txt",
+        "sha256": "7e0466ad78048933c8ecb4eba70018e2238b2ab7ee8b4c52efb4dfa5fb9b3b2f"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "ordinary_same_line_spacing_is_preserved_without_a_suppression",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a",
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3990,
+            4039
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            3990,
+            4039
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/sfc-426498eea964",
+      "api": "format_sfc",
+      "kind": "Vue",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/sfc-426498eea964/input.vue.txt",
+        "sha256": "6ca7a8e030be32de0c9b28d05626c5d96ac89bf1733edb6fe885c5847442e992"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/sfc-426498eea964/expected.txt",
+        "sha256": "9c464cbb06f0d6da5e53545779acee2cf15deb2f63e406dc7593c35dd92d5efa"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_whitespace_significant.rs",
+        "function": "pascal_case_raw_names_remain_components_in_template_and_sfc_paths",
+        "sourceSha256": "a569ba0cd8c728fa249c6773283d3e91484291c9ecebf540d3b0df110c77199f"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            2599,
+            2727
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "Pre"
+          }
+        },
+        "expected": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            2756,
+            2890
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "Pre"
+          }
+        }
+      }
+    },
+    {
+      "id": "literal-extra/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/sfc-516cd53e81c2",
+      "api": "format_sfc",
+      "kind": "Vue",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/sfc-516cd53e81c2/input.vue.txt",
+        "sha256": "73b7443388d0e15522c59522c64c9f0e754e65826cf6bf9573643413f2bd3fa9"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/sfc-516cd53e81c2/expected.txt",
+        "sha256": "12d85b2b4b8c1fb9fc6b7e621f72366de4e196b8ef84cc68a11e08845ebfc0c0"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_whitespace_significant.rs",
+        "function": "pascal_case_raw_names_remain_components_in_template_and_sfc_paths",
+        "sourceSha256": "a569ba0cd8c728fa249c6773283d3e91484291c9ecebf540d3b0df110c77199f"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            2599,
+            2727
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "Listing"
+          }
+        },
+        "expected": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            2756,
+            2890
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "Listing"
+          }
+        }
+      }
+    },
+    {
+      "id": "literal-extra/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/sfc-fdf47b9350b6",
+      "api": "format_sfc",
+      "kind": "Vue",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/sfc-fdf47b9350b6/input.vue.txt",
+        "sha256": "6ca7d90bc315f189fcf2549053a65252d5418eeace54d0b0c8ebb2d475f17cbf"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/sfc-fdf47b9350b6/expected.txt",
+        "sha256": "4f2b7708d0408d3c790131661758a75790f610cc67e6c3110b51bdfa2623ce4d"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_whitespace_significant.rs",
+        "function": "pascal_case_raw_names_remain_components_in_template_and_sfc_paths",
+        "sourceSha256": "a569ba0cd8c728fa249c6773283d3e91484291c9ecebf540d3b0df110c77199f"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            2599,
+            2727
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "Textarea"
+          }
+        },
+        "expected": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            2756,
+            2890
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "Textarea"
+          }
+        }
+      }
+    },
+    {
+      "id": "literal-extra/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/template-19f1141a833b",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/template-19f1141a833b/input.vue.txt",
+        "sha256": "f2e393dc05a502d2e9c61c72d4c3fbcfb8e4075abcc2e4330fe17f973240f023"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/template-19f1141a833b/expected.txt",
+        "sha256": "11a8dc978b85d6efd90fc3c11aa64ddea18c510df23cc6295d427545031d6f94"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_whitespace_significant.rs",
+        "function": "pascal_case_raw_names_remain_components_in_template_and_sfc_paths",
+        "sourceSha256": "a569ba0cd8c728fa249c6773283d3e91484291c9ecebf540d3b0df110c77199f"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            2279,
+            2351
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "Textarea"
+          }
+        },
+        "expected": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            2376,
+            2448
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "Textarea"
+          }
+        }
+      }
+    },
+    {
+      "id": "literal-extra/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/template-a5f05094930a",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/template-a5f05094930a/input.vue.txt",
+        "sha256": "43a76384ef428b2999099b74bf3556377f6d64d11d9d5786f595c3ff466cf145"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/template-a5f05094930a/expected.txt",
+        "sha256": "52ff7ebcc2da1db7b412b63bbb7b52cc5e158d3e5c49fd78d3c44bb21a6efc1e"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_whitespace_significant.rs",
+        "function": "pascal_case_raw_names_remain_components_in_template_and_sfc_paths",
+        "sourceSha256": "a569ba0cd8c728fa249c6773283d3e91484291c9ecebf540d3b0df110c77199f"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            2279,
+            2351
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "Listing"
+          }
+        },
+        "expected": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            2376,
+            2448
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "Listing"
+          }
+        }
+      }
+    },
+    {
+      "id": "literal-extra/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/template-ad7673b8bd78",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/template-ad7673b8bd78/input.vue.txt",
+        "sha256": "a2b31a220f244d2936c5c3070044077bb1868ed5869dc0ab26977e9b8d727872"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pascal-case-raw-names-remain-components-in-template-and-sfc-paths/template-ad7673b8bd78/expected.txt",
+        "sha256": "185e4fb4170536cd15fecabcc0dad235f759a649259131a1e2bf87d2dc768b98"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_whitespace_significant.rs",
+        "function": "pascal_case_raw_names_remain_components_in_template_and_sfc_paths",
+        "sourceSha256": "a569ba0cd8c728fa249c6773283d3e91484291c9ecebf540d3b0df110c77199f"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            2279,
+            2351
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "Pre"
+          }
+        },
+        "expected": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            2376,
+            2448
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "Pre"
+          }
+        }
+      }
+    },
+    {
+      "id": "literal-extra/pinned-line-does-not-leak-into-neighbours/template-f212bdeab959",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pinned-line-does-not-leak-into-neighbours/template-f212bdeab959/input.vue.txt",
+        "sha256": "68d053b1da21566597c477af5a5ce1c671369fb4cf7a324508bd7b070d2929d8"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/pinned-line-does-not-leak-into-neighbours/template-f212bdeab959/expected.txt",
+        "sha256": "187d98113877928d5df369522738836d99be88e0fe18e36259006a958d5dd84f"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "pinned_line_does_not_leak_into_neighbours",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a",
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "concat! source expression",
+          "rangeUtf16": [
+            5446,
+            5741
+          ]
+        },
+        "expected": {
+          "method": "concat! source expression",
+          "rangeUtf16": [
+            5751,
+            6048
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/same-line-pragma-keeps-its-own-line-intact/template-b6c79537c70c",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/same-line-pragma-keeps-its-own-line-intact/template-b6c79537c70c/input.vue.txt",
+        "sha256": "0fb359363d7d8653eb8f60d82dc9f34a00fa81d47d38d9a5260aec47851a44ac"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/same-line-pragma-keeps-its-own-line-intact/template-b6c79537c70c/expected.txt",
+        "sha256": "0fb359363d7d8653eb8f60d82dc9f34a00fa81d47d38d9a5260aec47851a44ac"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "same_line_pragma_keeps_its_own_line_intact",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a",
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            5103,
+            5167
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            5103,
+            5167
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/self-closing-raw-tags-do-not-capture-following-sfc-lines/sfc-38a9b33649d8",
+      "api": "format_sfc",
+      "kind": "Vue",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/self-closing-raw-tags-do-not-capture-following-sfc-lines/sfc-38a9b33649d8/input.vue.txt",
+        "sha256": "196943e5f990a9478e4c88915877b370fd886f56d89983d8887e671040e3291a"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/self-closing-raw-tags-do-not-capture-following-sfc-lines/sfc-38a9b33649d8/expected.txt",
+        "sha256": "196943e5f990a9478e4c88915877b370fd886f56d89983d8887e671040e3291a"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_whitespace_significant.rs",
+        "function": "self_closing_raw_tags_do_not_capture_following_sfc_lines",
+        "sourceSha256": "a569ba0cd8c728fa249c6773283d3e91484291c9ecebf540d3b0df110c77199f"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            3967,
+            4046
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "pre"
+          }
+        },
+        "expected": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            3967,
+            4046
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "pre"
+          }
+        }
+      }
+    },
+    {
+      "id": "literal-extra/self-closing-raw-tags-do-not-capture-following-sfc-lines/sfc-8715dfe1969c",
+      "api": "format_sfc",
+      "kind": "Vue",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/self-closing-raw-tags-do-not-capture-following-sfc-lines/sfc-8715dfe1969c/input.vue.txt",
+        "sha256": "da209fdf9e5a00d3203040f63955e513e4a4c7e47e067ed44922513cc97fef04"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/self-closing-raw-tags-do-not-capture-following-sfc-lines/sfc-8715dfe1969c/expected.txt",
+        "sha256": "da209fdf9e5a00d3203040f63955e513e4a4c7e47e067ed44922513cc97fef04"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_whitespace_significant.rs",
+        "function": "self_closing_raw_tags_do_not_capture_following_sfc_lines",
+        "sourceSha256": "a569ba0cd8c728fa249c6773283d3e91484291c9ecebf540d3b0df110c77199f"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            3967,
+            4046
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "textarea"
+          }
+        },
+        "expected": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            3967,
+            4046
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "textarea"
+          }
+        }
+      }
+    },
+    {
+      "id": "literal-extra/self-closing-raw-tags-do-not-capture-following-sfc-lines/sfc-d5c85c5dc42c",
+      "api": "format_sfc",
+      "kind": "Vue",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/self-closing-raw-tags-do-not-capture-following-sfc-lines/sfc-d5c85c5dc42c/input.vue.txt",
+        "sha256": "e60768ef1ce67f76b30498b9eebb2deab6375a917541435cbe911a800f0116e2"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/self-closing-raw-tags-do-not-capture-following-sfc-lines/sfc-d5c85c5dc42c/expected.txt",
+        "sha256": "e60768ef1ce67f76b30498b9eebb2deab6375a917541435cbe911a800f0116e2"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_whitespace_significant.rs",
+        "function": "self_closing_raw_tags_do_not_capture_following_sfc_lines",
+        "sourceSha256": "a569ba0cd8c728fa249c6773283d3e91484291c9ecebf540d3b0df110c77199f"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "fb462face5f1d1827b70cd0a0167ce25f661e50a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            3967,
+            4046
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "listing"
+          }
+        },
+        "expected": {
+          "method": "exact format! loop substitution",
+          "rangeUtf16": [
+            3967,
+            4046
+          ],
+          "substitution": {
+            "variable": "tag",
+            "value": "listing"
+          }
+        }
+      }
+    },
+    {
+      "id": "literal-extra/suppression-pragma-variants-all-pin-the-next-line/template-2c996c64b489",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-2c996c64b489/input.vue.txt",
+        "sha256": "c3c49df3c0d81fa570c83ec5176ea9960ccc5baf8ff6516536bc1f957cbd8f94"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-2c996c64b489/expected.txt",
+        "sha256": "c3c49df3c0d81fa570c83ec5176ea9960ccc5baf8ff6516536bc1f957cbd8f94"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "suppression_pragma_variants_all_pin_the_next_line",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2192,
+            2266
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2192,
+            2266
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/suppression-pragma-variants-all-pin-the-next-line/template-32ea65ada84b",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-32ea65ada84b/input.vue.txt",
+        "sha256": "6454311b7d4cf796e8e5a47bed7701e026cabc53693042be474ed5de5af72077"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-32ea65ada84b/expected.txt",
+        "sha256": "6454311b7d4cf796e8e5a47bed7701e026cabc53693042be474ed5de5af72077"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "suppression_pragma_variants_all_pin_the_next_line",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2276,
+            2376
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2276,
+            2376
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/suppression-pragma-variants-all-pin-the-next-line/template-6e387cb8867c",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-6e387cb8867c/input.vue.txt",
+        "sha256": "4c611e5c5172e9de8a13f7420ff44302797c0d0c275976fc6caae3b4b6cba328"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-6e387cb8867c/expected.txt",
+        "sha256": "4c611e5c5172e9de8a13f7420ff44302797c0d0c275976fc6caae3b4b6cba328"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "suppression_pragma_variants_all_pin_the_next_line",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2611,
+            2673
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2611,
+            2673
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/suppression-pragma-variants-all-pin-the-next-line/template-7656ce2cd3a6",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-7656ce2cd3a6/input.vue.txt",
+        "sha256": "1332feed5f35c6a92d8b85f50b62bb2f736119380acca3766219e948e67d8802"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-7656ce2cd3a6/expected.txt",
+        "sha256": "1332feed5f35c6a92d8b85f50b62bb2f736119380acca3766219e948e67d8802"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "suppression_pragma_variants_all_pin_the_next_line",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2386,
+            2493
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2386,
+            2493
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/suppression-pragma-variants-all-pin-the-next-line/template-8de4a62fe399",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-8de4a62fe399/input.vue.txt",
+        "sha256": "daa0c8bff0e16d1bf4c6695ce336c773f8882c5c176f7b8683675c6ea1e3ca03"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-8de4a62fe399/expected.txt",
+        "sha256": "daa0c8bff0e16d1bf4c6695ce336c773f8882c5c176f7b8683675c6ea1e3ca03"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "suppression_pragma_variants_all_pin_the_next_line",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2683,
+            2747
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2683,
+            2747
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/suppression-pragma-variants-all-pin-the-next-line/template-9d4a877b4bad",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-9d4a877b4bad/input.vue.txt",
+        "sha256": "ccfea801638807c58ac78c5c2b2210511e98f9874a0476956e1eab300fbabf25"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-9d4a877b4bad/expected.txt",
+        "sha256": "ccfea801638807c58ac78c5c2b2210511e98f9874a0476956e1eab300fbabf25"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "suppression_pragma_variants_all_pin_the_next_line",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2030,
+            2100
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2030,
+            2100
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/suppression-pragma-variants-all-pin-the-next-line/template-9d64b4fbf10f",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-9d64b4fbf10f/input.vue.txt",
+        "sha256": "202b60468532e8ee1e163fba28aca93ef9d7e43665a156659990b25bffebea95"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-9d64b4fbf10f/expected.txt",
+        "sha256": "202b60468532e8ee1e163fba28aca93ef9d7e43665a156659990b25bffebea95"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "suppression_pragma_variants_all_pin_the_next_line",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2110,
+            2182
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2110,
+            2182
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/suppression-pragma-variants-all-pin-the-next-line/template-f75dce4dc94e",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-f75dce4dc94e/input.vue.txt",
+        "sha256": "db6649a074eef3c773ab4f2f9b55f7ce2618b5b3e51c5195a9c2de3e4fd385a1"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/suppression-pragma-variants-all-pin-the-next-line/template-f75dce4dc94e/expected.txt",
+        "sha256": "db6649a074eef3c773ab4f2f9b55f7ce2618b5b3e51c5195a9c2de3e4fd385a1"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "suppression_pragma_variants_all_pin_the_next_line",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2503,
+            2601
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            2503,
+            2601
+          ]
+        }
+      }
+    },
+    {
+      "id": "literal-extra/whitespace-significant-element-on-a-pinned-line-stays-verbatim/template-5008233a374c",
+      "api": "format_template",
+      "kind": "VueTemplate",
+      "profile": "default",
+      "input": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/whitespace-significant-element-on-a-pinned-line-stays-verbatim/template-5008233a374c/input.vue.txt",
+        "sha256": "f9b569a610c4c82ae3ee2cb5f42ff0329f92ec090e9cb648f3f0255c13aed431"
+      },
+      "expected": {
+        "path": "tests/_fixtures/differential/formatter-history/literal-extra-inputs/whitespace-significant-element-on-a-pinned-line-stays-verbatim/template-5008233a374c/expected.txt",
+        "sha256": "f9b569a610c4c82ae3ee2cb5f42ff0329f92ec090e9cb648f3f0255c13aed431"
+      },
+      "witness": {
+        "path": "crates/vize_glyph/tests/template_suppression_line.rs",
+        "function": "whitespace_significant_element_on_a_pinned_line_stays_verbatim",
+        "sourceSha256": "82d3c6dcef66561043935e5bcd455860845053f58fa61c3947f67a8fa26ace29"
+      },
+      "reference": "current-public-api-output",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
+      "native": "unsupported",
+      "options": {
+        "base": "FormatOptions::default()",
+        "userOverrides": {},
+        "internalOverrides": {}
+      },
+      "originalFixReferences": [
+        "2379fd4546d945cea53ba563567714b210e3df7a"
+      ],
+      "sourceExpressionProof": {
+        "input": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            7229,
+            7305
+          ]
+        },
+        "expected": {
+          "method": "exact Rust string literal",
+          "rangeUtf16": [
+            7229,
+            7305
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+<div>
+  before: <input />
+  <!-- eslint-disable-next-line -->
+  pinned: <input /><span>
+    inner: <input />
+  </span>
+  after: <input />
+</div>

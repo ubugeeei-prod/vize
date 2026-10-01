@@ -1,0 +1,6 @@
+<template>
+  <textarea />
+  <div>
+    value
+  </div>
+</template>

@@ -1,0 +1,1 @@
+<Widget v-bind:[name]="dynamic" id="literal" class="box" />

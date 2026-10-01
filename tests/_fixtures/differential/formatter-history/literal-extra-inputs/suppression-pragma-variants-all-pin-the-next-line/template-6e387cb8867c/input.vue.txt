@@ -1,0 +1,4 @@
+<div>
+  <!-- @vize:expected -->
+  label: <input />
+</div>

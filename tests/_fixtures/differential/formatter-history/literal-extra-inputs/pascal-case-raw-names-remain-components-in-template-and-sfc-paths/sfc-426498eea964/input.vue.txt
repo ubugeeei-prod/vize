@@ -1,0 +1,5 @@
+<template>
+  <Pre>
+<span class="value" id="child">value</span>
+</Pre>
+</template>

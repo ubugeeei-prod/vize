@@ -1,0 +1,5 @@
+<template>
+  <Listing>
+<span class="value" id="child">value</span>
+</Listing>
+</template>

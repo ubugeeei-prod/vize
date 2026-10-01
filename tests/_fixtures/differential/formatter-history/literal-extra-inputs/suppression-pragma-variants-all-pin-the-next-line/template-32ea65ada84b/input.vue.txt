@@ -1,0 +1,4 @@
+<div>
+  <!-- eslint-disable-next-line a11y/form-control-has-label -->
+  label: <input />
+</div>
