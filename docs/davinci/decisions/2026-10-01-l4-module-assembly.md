@@ -44,6 +44,10 @@ inline return semantics, safe statement boundaries, quoted imports and malformed
 contracts. All 35 crate tests and strict all-target Clippy pass locally; the
 existing writer and source-map laws remain in the same suite. Source-derived
 consumer and source-location inventories are unchanged and pass their checks.
+Actions detected the Croquis cross-check's extra L4 test `Span` names; regenerate
+that one observational shard (64 to 85 naive names, still zero resolved Croquis
+use). The complete 33-shard matrix then passes byte-exact checks. No source
+classifier, runtime dependency, fixture, method or instruction ceiling changes.
 A read-only review reproduced the ambiguous join in Node 24 and verified the
 separator in real ES modules, including a trailing line comment. The skeleton
 ratchet lowers L4 from seven unfinished modules to six. Actions and the protected
