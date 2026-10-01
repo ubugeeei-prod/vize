@@ -168,7 +168,7 @@ async fn classify(
                     None => false,
                 }
             } else {
-                true
+                index == 4
             };
             parts.push(part(variant, truthy, core.flags & ENUM != 0));
             return Ok(parts);
