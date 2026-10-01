@@ -65,8 +65,8 @@ function syntheticReport(loaded) {
               fixture.outcome === "error"
                 ? Buffer.from(`error=${fixture.typedError}\n`).toString("base64")
                 : fixture.api === "format_sfc"
-                ? Buffer.from(`changed=${!input.equals(fixture.expected)}\n`).toString("base64")
-                : "",
+                  ? Buffer.from(`changed=${!input.equals(fixture.expected)}\n`).toString("base64")
+                  : "",
             exitStatus: fixture.outcome === "error" ? 1 : 0,
             signal: null,
             processError: null,
@@ -77,9 +77,14 @@ function syntheticReport(loaded) {
     })),
     summary: {
       plannedCases: loaded.cases.length,
-      legacyByteMatches: loaded.cases.filter((item) => item.contract === "full-output-bytes-and-fixed-point").length,
-      legacyInternalObservations: loaded.cases.filter((item) => item.contract === "legacy-internal-observation").length,
-      legacyErrorMatches: loaded.cases.filter((item) => item.contract === "typed-error-bytes").length,
+      legacyByteMatches: loaded.cases.filter(
+        (item) => item.contract === "full-output-bytes-and-fixed-point",
+      ).length,
+      legacyInternalObservations: loaded.cases.filter(
+        (item) => item.contract === "legacy-internal-observation",
+      ).length,
+      legacyErrorMatches: loaded.cases.filter((item) => item.contract === "typed-error-bytes")
+        .length,
       legacyFailures: 0,
       nativeUnsupported: loaded.cases.length,
       nativeHandled: 0,
@@ -99,6 +104,12 @@ void test("API fixture loader rejects drift, duplicate plans and unregistered op
     },
     (manifest) => {
       manifest.cases[0].api = "private_helper";
+    },
+    (manifest) => {
+      manifest.cases[0].vueVersion = "4";
+    },
+    (manifest) => {
+      manifest.cases[0].vueVersion = "2";
     },
     (manifest) => {
       manifest.cases[0].options.internalOverrides.unknown = true;
