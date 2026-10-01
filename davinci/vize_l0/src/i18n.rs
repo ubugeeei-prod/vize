@@ -34,10 +34,12 @@ use rustc_hash::FxHashMap;
 use std::borrow::Cow;
 use std::str::FromStr;
 
+use crate::diag::MessageLookup;
+
+mod catalog;
 mod load;
+pub use catalog::LocaleMessages;
 use load::load_json;
-#[cfg(test)]
-use load::unescape_json_string;
 
 /// Supported locales
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -211,23 +213,7 @@ impl Translator {
     /// Returns the key itself if not found in any locale.
     #[inline]
     pub fn get(&self, locale: Locale, key: &str) -> Cow<'static, str> {
-        // Try requested locale first
-        if let Some(msg) = self
-            .locale_messages(locale)
-            .and_then(|messages| messages.get(key))
-        {
-            return Cow::Borrowed(*msg);
-        }
-
-        // Fall back to English
-        if locale != Locale::En
-            && let Some(msg) = self.messages[0].get(key)
-        {
-            return Cow::Borrowed(*msg);
-        }
-
-        // Return key as fallback (for debugging)
-        Cow::Owned(key.to_string())
+        self.for_locale(locale).lookup(key)
     }
 
     /// Get a message with variable substitution
@@ -318,65 +304,4 @@ pub fn t_fmt(locale: Locale, key: &str, vars: &[(&str, &str)]) -> String {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{Locale, Translator, unescape_json_string};
-
-    #[test]
-    fn test_locale_from_str() {
-        assert_eq!("en".parse::<Locale>(), Ok(Locale::En));
-        assert_eq!("EN".parse::<Locale>(), Ok(Locale::En));
-        assert_eq!("ja".parse::<Locale>(), Ok(Locale::Ja));
-        assert_eq!("JA-JP".parse::<Locale>(), Ok(Locale::Ja));
-        assert_eq!("zh".parse::<Locale>(), Ok(Locale::Zh));
-        assert_eq!("zh-CN".parse::<Locale>(), Ok(Locale::Zh));
-        assert!("unknown".parse::<Locale>().is_err());
-    }
-
-    #[test]
-    fn test_locale_parse() {
-        assert_eq!(Locale::parse("en"), Some(Locale::En));
-        assert_eq!(Locale::parse("ja"), Some(Locale::Ja));
-        assert_eq!(Locale::parse("zh"), Some(Locale::Zh));
-        assert_eq!(Locale::parse("unknown"), None);
-    }
-
-    #[test]
-    fn test_locale_code() {
-        assert_eq!(Locale::En.code(), "en");
-        assert_eq!(Locale::Ja.code(), "ja");
-        assert_eq!(Locale::Zh.code(), "zh");
-    }
-
-    #[test]
-    fn test_locale_display_name() {
-        assert_eq!(Locale::En.display_name(), "English");
-        assert_eq!(Locale::Ja.display_name(), "日本語");
-        assert_eq!(Locale::Zh.display_name(), "中文");
-    }
-
-    #[test]
-    fn test_translator_get() {
-        let t = Translator::new();
-        // Test that basic lookup works
-        let msg = t.get(Locale::En, "test.hello");
-        // Either returns the translation or the key as fallback
-        assert!(!msg.is_empty());
-    }
-
-    #[test]
-    fn test_translator_format() {
-        let t = Translator::new();
-        let msg = t.format(Locale::En, "test.greeting", &[("name", "World")]);
-        // Either contains the substitution or is the key
-        assert!(!msg.is_empty());
-    }
-
-    #[test]
-    fn test_unescape_json_string() {
-        assert_eq!(unescape_json_string("hello"), "hello");
-        assert_eq!(unescape_json_string("hello\\nworld"), "hello\nworld");
-        assert_eq!(unescape_json_string("hello\\tworld"), "hello\tworld");
-        assert_eq!(unescape_json_string("he said \\\"hi\\\""), "he said \"hi\"");
-        assert_eq!(unescape_json_string("path\\\\to\\\\file"), "path\\to\\file");
-    }
-}
+mod tests;

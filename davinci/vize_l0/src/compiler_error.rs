@@ -1,8 +1,11 @@
 //! Stable compiler codes shared with the preserved parser.
+use crate::diag::MessageLookup;
 use crate::i18n::{Locale, translator};
 use crate::stage::Stage;
 use crate::{CompactString, cstr};
 mod codes;
+#[cfg(test)]
+mod tests;
 
 /// Error codes for compiler errors
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -194,15 +197,27 @@ impl ErrorCode {
     /// The catalogued headline for this code in `locale`.
     #[must_use]
     pub fn localized_message(self, locale: Locale) -> CompactString {
-        let key = cstr!("{}.message", self.code());
-        translator().get(locale, &key).as_ref().into()
+        self.localized_message_with(&translator().for_locale(locale))
     }
 
     /// The catalogued remedy for this code in `locale`.
     #[must_use]
     pub fn localized_help(self, locale: Locale) -> CompactString {
+        self.localized_help_with(&translator().for_locale(locale))
+    }
+
+    /// The headline supplied by `messages`, without consulting a global catalog.
+    #[must_use]
+    pub fn localized_message_with(self, messages: &(impl MessageLookup + ?Sized)) -> CompactString {
+        let key = cstr!("{}.message", self.code());
+        messages.lookup(&key).as_ref().into()
+    }
+
+    /// The remedy supplied by `messages`, without consulting a global catalog.
+    #[must_use]
+    pub fn localized_help_with(self, messages: &(impl MessageLookup + ?Sized)) -> CompactString {
         let key = cstr!("{}.help", self.code());
-        translator().get(locale, &key).as_ref().into()
+        messages.lookup(&key).as_ref().into()
     }
 }
 
