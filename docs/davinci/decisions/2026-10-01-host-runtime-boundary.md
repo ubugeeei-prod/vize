@@ -30,7 +30,7 @@ directory and level gates continue checking normal/build, optional, target and
 transitive workspace edges without new exceptions. Plugin identity already
 hashes Carton's source directory, so moved host edits remain observable.
 
-Replay `python3 tools/support/levels/move-host-runtime.py moves`, commit
+Replay `vp node tools/support/levels/move-host-runtime.ts moves`, commit
 only the five moves, then run `integrate`, format, reconcile the existing
 lockfile and regenerate the source inventory shards. Replaying must reject
 missing sources, move collisions and an unmoved integration. Existing version
@@ -65,6 +65,12 @@ qualified host paths still migrate; import-like fixture data remains unchanged.
 Every generated import retains the original outer attributes, including cfg
 and cfg_attr. Disabled missing-symbol imports compile only if every split
 keeps its conditions; integration/check fixtures verify literal preservation.
+
+The maintainer requires replay tooling and regression laws in TypeScript or
+Rust Script. This host slice uses TypeScript directly with the repository's
+Node runtime; the seven Rust-compilation and integration/check laws run as
+native `node:test` cases. The default repository root follows the script's
+location, and isolated fixtures may select an explicit `--root`.
 
 The first protected-queue candidate failed one unchanged instruction ceiling:
 `croquis_analyze_full_stress-wide` measured 626302 against 626201, identically
