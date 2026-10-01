@@ -88,17 +88,11 @@ pub(super) fn complete(
         );
     }
     for item in super::components::builtin_component_completions() {
-        names.insert(
-            item.label.into(),
-            (CompletionItemKind::CLASS, "Vue component"),
-        );
+        component(&mut names, &item.label, "Vue component");
     }
     if ctx.state.lsp_features().legacy_vue2 {
         for item in super::components::legacy_vue2_component_completions() {
-            names.insert(
-                item.label.into(),
-                (CompletionItemKind::CLASS, "Vue component"),
-            );
+            component(&mut names, &item.label, "Vue component");
         }
     }
     if let Some((croquis, _)) = crate::ide::template_scope::analyze(ctx) {
