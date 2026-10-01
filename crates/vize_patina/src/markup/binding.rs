@@ -16,6 +16,7 @@ use vize_l2::op::Attribute;
 use vize_relief::{AttributeNode, DirectiveNode, ExpressionNode};
 
 mod argument;
+mod literal;
 
 /// The normalized class of a [`MarkupBinding`] (and the directive a JSX
 /// attribute projects to).

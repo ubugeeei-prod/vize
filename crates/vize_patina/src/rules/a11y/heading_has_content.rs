@@ -12,7 +12,6 @@ use crate::markup::{
     MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupNode, MarkupRule,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::rules::a11y::helpers::string_literal_value;
 use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
@@ -82,12 +81,9 @@ impl HeadingHasContent {
             let mut named = false;
             element.walk_bindings(&mut |binding| {
                 if binding.is_unqualified_arg_exact("alt") {
-                    named |= match binding.static_value() {
+                    named |= match binding.literal_string_value() {
                         Some(value) => !value.trim().is_empty(),
-                        None if binding.kind() == MarkupBindingKind::Bind => binding
-                            .expression()
-                            .and_then(string_literal_value)
-                            .is_none_or(|value| !value.trim().is_empty()),
+                        None if binding.kind() == MarkupBindingKind::Bind => true,
                         None => false,
                     };
                 }

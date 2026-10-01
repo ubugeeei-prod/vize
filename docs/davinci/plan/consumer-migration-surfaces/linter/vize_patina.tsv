@@ -179,6 +179,7 @@ linter	Linter	source	crates/vize_patina/src/markup/binding.rs	13	l2	L2	stage	viz
 linter	Linter	source	crates/vize_patina/src/markup/binding.rs	13	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/markup/binding.rs	13	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/markup/binding/argument.rs	6	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/markup/binding/literal.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/markup/context.rs	7	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/markup/context.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	1
 linter	Linter	test/dev	crates/vize_patina/src/markup/differential.rs	34	l0	L0	stage	vize_l0	preferred	1
@@ -353,7 +354,7 @@ linter	Linter	source	crates/vize_patina/src/rules/a11y/aria_role.rs	17	old_ast	o
 linter	Linter	source	crates/vize_patina/src/rules/a11y/aria_unsupported_elements.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs	13	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/form_control_has_label.rs	15	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/rules/a11y/heading_has_content.rs	16	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/a11y/heading_has_content.rs	15	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/helpers.rs	6	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/helpers.rs	6	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/iframe_has_title.rs	13	old_ast	old AST/parser	old	vize_relief	legacy	1
