@@ -46,25 +46,26 @@ mod tests {
     const PARENT: &str =
         include_str!("../../../tests/fixtures/component-definition-hover/Parent.vue");
 
-    fn markdown(parent: &str, unsaved_child: Option<&str>) -> String {
-        let directory = tempfile::tempdir().unwrap();
+    fn markdown(parent: &str, unsaved_child: Option<&str>) -> std::io::Result<String> {
+        let directory = tempfile::tempdir()?;
         let child_path = directory.path().join("Child.vue");
-        fs::write(&child_path, CHILD).unwrap();
+        fs::write(&child_path, CHILD)?;
         fs::write(
             directory.path().join("index.ts"),
             "export { default as Child } from './Child.vue';",
-        )
-        .unwrap();
+        )?;
         let parent_path = directory.path().join("Parent.vue");
-        fs::write(&parent_path, parent).unwrap();
-        let uri = Url::from_file_path(&parent_path).unwrap();
+        fs::write(&parent_path, parent)?;
+        let uri = Url::from_file_path(&parent_path)
+            .map_err(|()| std::io::Error::other("parent fixture URI"))?;
         let state = ServerState::new();
         state
             .documents
             .open(uri.clone(), parent.to_string(), 1, "vue".to_string());
         state.update_virtual_docs(&uri, parent);
         if let Some(child) = unsaved_child {
-            let child_uri = Url::from_file_path(&child_path).unwrap();
+            let child_uri = Url::from_file_path(&child_path)
+                .map_err(|()| std::io::Error::other("child fixture URI"))?;
             state
                 .documents
                 .open(child_uri.clone(), child.to_string(), 2, "vue".to_string());
@@ -73,20 +74,24 @@ mod tests {
         let offset = parent
             .find("<Child")
             .or_else(|| parent.find("<alias-child"))
-            .unwrap()
+            .ok_or_else(|| std::io::Error::other("component tag in parent fixture"))?
             + 2;
-        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-        let hover = HoverService::hover(&ctx).unwrap();
+        let ctx = IdeContext::new(&state, &uri, offset)
+            .ok_or_else(|| std::io::Error::other("fixture IDE context"))?;
+        let hover = HoverService::hover(&ctx)
+            .ok_or_else(|| std::io::Error::other("component contract hover"))?;
         let HoverContents::Markup(content) = hover.contents else {
-            panic!("expected Markdown contract")
+            return Err(std::io::Error::other("expected Markdown contract"));
         };
-        assert_eq!(content.kind, MarkupKind::Markdown);
-        content.value
+        if content.kind != MarkupKind::Markdown {
+            return Err(std::io::Error::other("expected Markdown kind"));
+        }
+        Ok(content.value)
     }
 
     #[test]
     fn tag_hover_shows_declared_typed_props_emits_slots_and_models() {
-        let value = markdown(PARENT, None);
+        let value = markdown(PARENT, None).expect("component definition hover");
         for expected in [
             "```typescript",
             "const Child: VueComponent",
@@ -122,7 +127,7 @@ mod tests {
         let changed = CHILD
             .replace("count?: number", "count?: boolean")
             .replace("row: string", "row: number");
-        let value = markdown(PARENT, Some(&changed));
+        let value = markdown(PARENT, Some(&changed)).expect("unsaved component definition hover");
         assert!(value.contains("count?: boolean"), "{value}");
         assert!(value.contains("row: number"), "{value}");
         assert!(!value.contains("count?: number"), "{value}");
@@ -137,7 +142,7 @@ mod tests {
         let parent = parent
             .replace("<Child", "<alias-child")
             .replace("</Child>", "</alias-child>");
-        let value = markdown(&parent, None);
+        let value = markdown(&parent, None).expect("aliased component definition hover");
         assert!(value.contains("const AliasChild: VueComponent"), "{value}");
         assert!(value.contains("slots:"), "{value}");
     }

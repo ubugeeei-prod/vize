@@ -1,5 +1,9 @@
 # Component definition hovers
 
+Full workspace validation also covers native hover tests. Their filesystem and
+hover setup helper returns contextual errors; assertions remain in the actual
+test functions, so the production panic lints do not need an exemption.
+
 For [#7319](https://github.com/ubugeeei-prod/vize/issues/7319), a component tag
 hover shows the imported SFC definition's props, emits, slots and models with
 their declared types. It uses the same contract analysis as an imported script
