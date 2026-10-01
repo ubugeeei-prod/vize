@@ -13,5 +13,7 @@
   { "name": "dynamic-checkbox", "props": ":type=\"type\" :value=\"value\"", "data": { "type": "checkbox", "model": ["yes"], "value": "yes" }, "checked": true },
   { "name": "dynamic-radio", "props": ":type=\"type\" :value=\"value\"", "data": { "type": "radio", "model": "yes", "value": "yes" }, "checked": true },
   { "name": "dynamic-static-value", "props": ":type=\"type\" value=\"yes\"", "data": { "type": "checkbox", "model": ["yes"] }, "checked": true },
-  { "name": "dynamic-unchecked", "props": ":type=\"type\" :value=\"value\"", "data": { "type": "checkbox", "model": ["no"], "value": "yes" }, "checked": false }
+  { "name": "dynamic-unchecked", "props": ":type=\"type\" :value=\"value\"", "data": { "type": "checkbox", "model": ["no"], "value": "yes" }, "checked": false },
+  { "name": "radio-static-before-bound", "props": "type=\"radio\" value=\"yes\" :value=\"value\"", "data": { "model": "yes", "value": "no" }, "checked": false, "inline_checked": true },
+  { "name": "radio-bound-before-static", "props": "type=\"radio\" :value=\"value\" value=\"yes\"", "data": { "model": "no", "value": "no" }, "checked": false, "inline_checked": true }
 ]

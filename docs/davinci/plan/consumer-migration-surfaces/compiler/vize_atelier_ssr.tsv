@@ -15,7 +15,7 @@ compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/component_p
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/component.rs	530	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/directive_props.rs	10	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/merged.rs	23	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/plain.rs	59	l0	L0	stage	vize_l0	preferred	5
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/plain.rs	61	l0	L0	stage	vize_l0	preferred	5
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/props.rs	4	l0	L0	stage	vize_l0	preferred	4
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/spanned_props.rs	13	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/helpers.rs	16	l0	L0	stage	vize_l0	preferred	1

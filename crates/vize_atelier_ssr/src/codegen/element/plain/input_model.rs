@@ -20,13 +20,27 @@ impl<'a> SsrCodegenContext<'a> {
         None
     }
 
-    /// Form model comparisons consume the bound expression, or the quoted
-    /// static attribute, rather than the serialized HTML attribute value.
+    /// Form model comparisons consume the first authored bound expression
+    /// or quoted static value, matching Vue's property lookup.
     pub(super) fn model_attr_value(&mut self, el: &ElementNode, name: &str) -> Option<String> {
-        self.get_dynamic_bind_exp(el, name).or_else(|| {
-            self.get_element_attr_value(el, name)
-                .map(|value| quoted_js_string(&value))
-        })
+        for prop in &el.props {
+            match prop {
+                PropNode::Attribute(attr) if attr.name == name => {
+                    if let Some(value) = &attr.value {
+                        return Some(quoted_js_string(&value.content));
+                    }
+                }
+                PropNode::Directive(dir) if dir.name == "bind" => {
+                    if matches!(&dir.arg, Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content == name)
+                        && let Some(exp) = &dir.exp
+                    {
+                        return Some(self.expression_to_string(exp));
+                    }
+                }
+                _ => {}
+            }
+        }
+        None
     }
 
     pub(super) fn checkbox_model_checked(&mut self, el: &ElementNode, exp: &str) -> String {

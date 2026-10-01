@@ -14,6 +14,8 @@ struct Fixture {
     props: String,
     data: Value,
     checked: bool,
+    #[serde(default)]
+    inline_checked: Option<bool>,
 }
 
 fn compile(template: &str) -> String {
@@ -61,7 +63,11 @@ fn input_models_match_vue_in_all_attribute_emission_paths() {
                 fixture.data,
                 fixture.props.contains("true-value")
             ));
-            expected.push(fixture.checked);
+            expected.push(if path == "inline" {
+                fixture.inline_checked.unwrap_or(fixture.checked)
+            } else {
+                fixture.checked
+            });
         }
     }
     let rendered = render_cases(&format!(

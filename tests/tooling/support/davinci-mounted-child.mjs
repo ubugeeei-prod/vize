@@ -38,4 +38,3 @@ export async function childComponent(backend, vue, name, { code, props = [], emi
     },
   };
 }
-
