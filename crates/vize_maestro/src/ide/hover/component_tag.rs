@@ -146,4 +146,19 @@ mod tests {
         assert!(value.contains("const AliasChild: VueComponent"), "{value}");
         assert!(value.contains("slots:"), "{value}");
     }
+
+    #[test]
+    fn runtime_contract_names_remain_valid_typescript() {
+        let child =
+            include_str!("../../../tests/fixtures/component-definition-hover/RuntimeChild.vue");
+        let value = markdown(PARENT, Some(child)).expect("runtime component definition hover");
+        for expected in [
+            r#""font-size": number"#,
+            r#""update:title": unknown[]"#,
+            "'header-title'(props: { value: string })",
+            r#""quoted\"model": boolean"#,
+        ] {
+            assert!(value.contains(expected), "missing {expected}: {value}");
+        }
+    }
 }

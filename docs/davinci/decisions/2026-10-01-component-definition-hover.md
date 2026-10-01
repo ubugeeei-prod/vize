@@ -28,3 +28,8 @@ every typed model declaration. Its language-service test parses the displayed
 contract as TypeScript to protect syntax highlighting and checks default and
 named models together. Editor scenario policy checks require definition-side
 slots and reject the retired usage card.
+Runtime contract keys use TypeScript string-literal names when they are not
+simple ASCII identifiers, including colon-bearing emits and hyphenated props.
+Model names are always escaped string literals. The native runtime-declaration
+fixture covers those names and a quoted model; the TypeScript plugin also shows
+an untyped model as `unknown` and parses its escaped contract in the service test.

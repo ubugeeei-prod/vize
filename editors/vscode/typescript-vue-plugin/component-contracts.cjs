@@ -43,12 +43,12 @@ function extractModelContract(ts, scriptText) {
   const models = [];
   for (const call of findMacroCalls(ts, scriptText, "defineModel")) {
     const typeArgument = call.typeArguments?.[0];
-    if (!typeArgument) continue;
     const firstArg = call.arguments?.[0];
     const name = firstArg && isStringLiteralLike(ts, firstArg) ? firstArg.text : "modelValue";
-    models.push(
-      `${JSON.stringify(name)}: ${compactType(typeArgument.getText(call.getSourceFile()))}`,
-    );
+    const modelType = typeArgument
+      ? compactType(typeArgument.getText(call.getSourceFile()))
+      : "unknown";
+    models.push(`${JSON.stringify(name)}: ${modelType}`);
   }
   return models.length > 0 ? `{ ${models.join("; ")} }` : undefined;
 }

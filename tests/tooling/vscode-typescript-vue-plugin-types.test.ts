@@ -51,7 +51,10 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
     assert.match(display, /emits: \{ save: \[id: string\] \}/);
     assert.match(display, /slots: \{ default\(props: \{ title: string \}\): unknown \}/);
     assert.match(display, /^const App: VueComponent &/);
-    assert.match(display, /model: \{ "modelValue": boolean; "title": string \};/);
+    assert.match(
+      display,
+      /model: \{ "modelValue": boolean; "title": string; "quoted\\"model": unknown \};/,
+    );
     assert.deepEqual(
       ts.transpileModule(display, { reportDiagnostics: true }).diagnostics,
       [],
@@ -175,6 +178,7 @@ function createProject() {
       "defineSlots<{ default(props: { title: string }): unknown }>();",
       "defineModel<boolean>();",
       'defineModel<string>("title");',
+      "defineModel('quoted\"model');",
       "</script>",
       "",
     ].join("\n"),
