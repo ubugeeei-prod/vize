@@ -3,7 +3,7 @@ use super::{Context, NativeHoleKind};
 use vize_l0::Span;
 use vize_l1::dialect::vue3::VueDirectives;
 use vize_l1::embed::prepare_attribute_value;
-use vize_l1::markup::directive::{DirectivePrefix, DirectiveSyntax};
+use vize_l1::markup::directive::DirectiveSyntax;
 use vize_l1::{Attribute as SurfaceAttribute, Element, ElementClose};
 use vize_l2::artifact::RegionBuilder;
 use vize_l2::op::{Attribute, Namespace};
@@ -42,30 +42,21 @@ impl<'a> Context<'a> {
                 self.token_span(&element.open.lt_name),
             );
         }
+        if element.open.is_verbatim() {
+            // Consume the real L1 policy before any ignored head/value work.
+            self.hole(region, NativeHoleKind::PreCarrier, span);
+            return;
+        }
         let mut attributes = vize_l0::Vec::new_in(&self.allocator);
         let mut directives = vize_l0::Vec::new_in(&self.allocator);
-        let mut pre = false;
         for attribute in &element.open.attrs {
             match self.attribute(region, attribute) {
                 Some(PreparedAttribute::Static(attribute)) => attributes.push(attribute),
                 Some(PreparedAttribute::Directive(directive)) => {
-                    pre |= directive.head.prefix == DirectivePrefix::Full
-                        && self.block.root_source().get(
-                            directive.head.name.start as usize..directive.head.name.end as usize,
-                        ) == Some("pre");
                     directives.push(directive);
                 }
                 None => {}
             }
-        }
-        if pre {
-            // Native v-pre is not admitted yet. Preserve the complete carrier
-            // source instead of reinterpreting retained raw descendant attrs.
-            // This must precede unsupported/missing-owner child fallbacks.
-            // Missing extents retain their original complete L1 carrier;
-            // the hole uses only its known opening-name range.
-            self.hole(region, NativeHoleKind::PreCarrier, span);
-            return;
         }
         if end.is_none() {
             self.children(region, &element.children, parent);
@@ -202,3 +193,6 @@ impl<'a> Context<'a> {
         }))
     }
 }
+
+#[cfg(test)]
+mod tests;

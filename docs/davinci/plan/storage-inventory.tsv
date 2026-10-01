@@ -182,6 +182,7 @@ l1_to_l2	-	davinci/vize_l1_to_l2/src/emit/vif.rs	0	0	1	2	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower.rs	1	3	1	2	1	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/native.rs	1	13	1	4	1	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/element.rs	0	0	0	0	2	0	0	0
+l1_to_l2	analysis	davinci/vize_l1_to_l2/src/native/element/tests.rs	1	2	1	3	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/expression.rs	0	0	0	0	1	1	0	0
 l1_to_l2	analysis	davinci/vize_l1_to_l2/src/native/pattern/tests.rs	1	0	0	0	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/text.rs	0	0	1	1	0	0	0	0

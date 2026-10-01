@@ -59,8 +59,8 @@ fn bind<'a>(cx: &mut Context<'a>, region: &mut RegionBuilder<'_, 'a>, directive:
         region,
         source,
         directive.span,
-        "native.bind",
-        "ui.bind",
+        ("native.bind", "ui.bind"),
+        |_| Ok(()),
         |region, value| region.bind(name, argument, value, directive.span),
     );
 }

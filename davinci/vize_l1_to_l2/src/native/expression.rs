@@ -3,6 +3,7 @@
 use super::{Context, NativeEmbed, NativeHoleKind};
 use vize_l0::{Allocator, Span, Vec};
 use vize_l1::Interpolation;
+use vize_l1::embed::prepare_vue_interpolation_in;
 use vize_l1::embed::syntax::{EmbedHole, RetainedExpression, parse_once};
 use vize_l1::embed::{DecodeSegmentKind, Embed, EmbedSource, Grammar, Shape};
 use vize_l2::artifact::{ArtifactError, RegionBuilder};
@@ -62,7 +63,11 @@ impl<'a> Context<'a> {
         );
         let content = interpolation.content.text;
         let source_span = self.block.span_of(content).unwrap_or(Span::new(0, 0));
-        let source = match EmbedSource::authored(self.block.root_source(), source_span) {
+        let source = match prepare_vue_interpolation_in(
+            self.allocator,
+            self.block.root_source(),
+            source_span,
+        ) {
             Ok(source) => source,
             Err(error) => {
                 self.hole(region, NativeHoleKind::Source(error), source_span);
@@ -73,8 +78,8 @@ impl<'a> Context<'a> {
             region,
             source,
             span,
-            "native.interpolation",
-            "ui.interpolation",
+            ("native.interpolation", "ui.interpolation"),
+            admit_interpolation,
             |region, expression| region.interpolation(expression, span),
         );
     }
@@ -84,8 +89,8 @@ impl<'a> Context<'a> {
         region: &mut RegionBuilder<'_, 'a>,
         source: EmbedSource<'a>,
         span: Span,
-        rule: &'static str,
-        after: &'static str,
+        (rule, after): (&'static str, &'static str),
+        admit: impl FnOnce(&RetainedExpression<'a>) -> Result<(), NativeHoleKind>,
         construct: impl FnOnce(
             &mut RegionBuilder<'_, 'a>,
             ExprRef<'a>,
@@ -114,7 +119,18 @@ impl<'a> Context<'a> {
                 return;
             }
         };
-        let node = match retain_expression_in(self.allocator, self.block.root_source(), &retained) {
+        let expression = match admit(&retained) {
+            Ok(()) => retain_expression_in(self.allocator, self.block.root_source(), &retained),
+            Err(kind) => {
+                self.hole(region, kind, source_span);
+                self.embeds.push(NativeEmbed {
+                    node: None,
+                    syntax: retained,
+                });
+                return;
+            }
+        };
+        let node = match expression {
             Ok(js) => {
                 let result = construct(region, ExprRef::Js(js));
                 self.produced(region, result, rule, span, after)
@@ -136,3 +152,23 @@ impl<'a> Context<'a> {
         });
     }
 }
+
+fn admit_interpolation(syntax: &RetainedExpression<'_>) -> Result<(), NativeHoleKind> {
+    // This is dialect spelling policy on the real parsed root and actual source
+    // edges, not a grammar heuristic. Characters inside comments and literals
+    // do not trigger the refusal, and generic retained expressions stay neutral.
+    if matches!(
+        syntax.expression(),
+        Some(oxc_ast::ast::Expression::Identifier(_))
+    ) {
+        let text = syntax.source().text();
+        let edge = |ch| matches!(ch, '\u{00a0}' | '\u{feff}');
+        if text.chars().next().is_some_and(edge) || text.chars().next_back().is_some_and(edge) {
+            return Err(NativeHoleKind::InterpolationIdentifierTrivia);
+        }
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests;

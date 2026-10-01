@@ -39,6 +39,8 @@ pub enum NativeHoleKind {
     Embed(EmbedHole),
     Source(SourceError),
     ExpressionCoordinates(vize_l2::expr::js::JsCoordinateError),
+    /// Vue's simple-identifier spelling for outer NBSP/BOM is not admitted yet.
+    InterpolationIdentifierTrivia,
     Construction(ArtifactError),
 }
 

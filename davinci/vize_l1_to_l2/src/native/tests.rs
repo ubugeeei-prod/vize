@@ -30,7 +30,7 @@ fn actual_native_component_keeps_the_once_ast_and_ordered_partial_ownership() {
                     panic!("once AST");
                 };
                 assert!(core::ptr::eq(js.ast, ast));
-                assert_eq!(js.source, " value /* kept */ ");
+                assert_eq!(js.source, "value /* kept */");
                 assert!(js.matches_authored_source(source));
             }
         })
@@ -196,9 +196,9 @@ fn token_budget_hole_never_falls_back_to_a_second_l2_parser() {
     assert_eq!(
         retained.source().text(),
         source
-            .strip_prefix("{{")
+            .strip_prefix("{{ ")
             .unwrap()
-            .strip_suffix("}}")
+            .strip_suffix(" }}")
             .unwrap()
     );
 }
