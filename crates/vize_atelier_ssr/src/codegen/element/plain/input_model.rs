@@ -22,7 +22,11 @@ impl<'a> SsrCodegenContext<'a> {
 
     /// Form model comparisons consume the first authored bound expression
     /// or quoted static value, matching Vue's property lookup.
-    pub(super) fn model_attr_value(&mut self, el: &ElementNode, name: &str) -> Option<String> {
+    pub(in crate::codegen::element) fn model_attr_value(
+        &mut self,
+        el: &ElementNode,
+        name: &str,
+    ) -> Option<String> {
         for prop in &el.props {
             match prop {
                 PropNode::Attribute(attr) if attr.name == name => {
@@ -43,7 +47,11 @@ impl<'a> SsrCodegenContext<'a> {
         None
     }
 
-    pub(super) fn checkbox_model_checked(&mut self, el: &ElementNode, exp: &str) -> String {
+    pub(in crate::codegen::element) fn checkbox_model_checked(
+        &mut self,
+        el: &ElementNode,
+        exp: &str,
+    ) -> String {
         if let Some(value) = self.model_attr_value(el, "true-value") {
             self.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
             cstr!("_ssrLooseEqual({exp}, {value})")
@@ -60,7 +68,11 @@ impl<'a> SsrCodegenContext<'a> {
     /// `el`, if any. Used by SSR v-model lowering to find `:type` on
     /// `<input :type="t" v-model>` so the dynamic-model helper kicks in.
     /// (#962)
-    pub(super) fn get_dynamic_bind_exp(&mut self, el: &ElementNode, name: &str) -> Option<String> {
+    pub(in crate::codegen::element) fn get_dynamic_bind_exp(
+        &mut self,
+        el: &ElementNode,
+        name: &str,
+    ) -> Option<String> {
         for prop in &el.props {
             let PropNode::Directive(dir) = prop else {
                 continue;
