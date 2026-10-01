@@ -21,7 +21,7 @@ const art: ArtFileInfo = {
   styleCount: 0,
 };
 
-test(
+void test(
   "tall preview content scrolls as a document without a body accessibility violation",
   browserTest,
   async () => {
@@ -72,7 +72,7 @@ test(
   },
 );
 
-test(
+void test(
   "real axe contrast results retain measured colors, ratio, selector, and HTML",
   browserTest,
   async () => {
@@ -106,7 +106,7 @@ test(
   },
 );
 
-test(
+void test(
   "animated variants capture identically and reduced motion reaches the browser",
   browserTest,
   async () => {

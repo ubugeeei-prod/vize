@@ -41,7 +41,7 @@ const result: A11yResult = {
   incompleteResults: [{ ...finding, id: "needs-manual-review", impact: null }],
 };
 
-test("JSON retains all target, HTML, failure, and check data for violations and review", () => {
+void test("JSON retains all target, HTML, failure, and check data for violations and review", () => {
   const report = JSON.parse(generateA11yJsonReport([result]));
   assert.deepEqual(report.results[0].violations, result.violations);
   assert.deepEqual(report.results[0].incompleteResults, result.incompleteResults);
@@ -49,7 +49,7 @@ test("JSON retains all target, HTML, failure, and check data for violations and 
   assert.equal(report.summary.totalViolations, 1);
 });
 
-test("HTML explains affected nodes and escapes selectors, markup, and check data", () => {
+void test("HTML explains affected nodes and escapes selectors, markup, and check data", () => {
   const html = generateA11yHtmlReport([result], computeA11ySummary([result]));
   for (const detail of ["iframe", "#label", "#bbbbbb", "#ffffff", "1.91", "4.5:1", "needs review"])
     assert.ok(html.includes(detail), detail);
@@ -58,7 +58,7 @@ test("HTML explains affected nodes and escapes selectors, markup, and check data
   assert.ok(html.includes("Insufficient contrast &lt;4.5:1"));
 });
 
-test("review-only results remain visible and older count-only reports still render", () => {
+void test("review-only results remain visible and older count-only reports still render", () => {
   const review = { ...result, violations: [] };
   const html = generateA11yHtmlReport([review], computeA11ySummary([review]));
   assert.ok(html.includes("needs-manual-review"));
