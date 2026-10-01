@@ -31,7 +31,7 @@ impl<'a> SsrCodegenContext<'a> {
             match prop {
                 PropNode::Attribute(attr) if attr.name == name => {
                     if let Some(value) = &attr.value {
-                        return Some(quoted_js_string(&value.content));
+                        return Some(quoted_js_string(value.content));
                     }
                 }
                 PropNode::Directive(dir) if dir.name == "bind" => {
