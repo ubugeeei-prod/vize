@@ -209,6 +209,27 @@
           "description": "Enable native type-aware lint rules from the active lint configuration",
           "type": "boolean"
         },
+        "crossFile": {
+          "description": "Analyze relationships between input components",
+          "type": "boolean"
+        },
+        "crossFileTree": {
+          "description": "Display the provide/inject tree; enables cross-file analysis",
+          "type": "boolean"
+        },
+        "crossFileComplexity": {
+          "description": "Display cross-file complexity; enables cross-file analysis",
+          "type": "boolean"
+        },
+        "strictReactivity": {
+          "description": "Enable the native reactivity-loss rule unless rules explicitly disable it",
+          "type": "boolean"
+        },
+        "maxWarnings": {
+          "description": "Fail when warnings exceed this limit; absent means unlimited",
+          "type": "integer",
+          "minimum": 0
+        },
         "rules": {
           "description": "Rules to enable/disable",
           "type": "object",

@@ -208,6 +208,26 @@ export interface LinterConfig {
    */
   typeAware?: boolean;
   /**
+   * Analyze relationships between input components
+   */
+  crossFile?: boolean;
+  /**
+   * Display the provide/inject tree; enables cross-file analysis
+   */
+  crossFileTree?: boolean;
+  /**
+   * Display cross-file complexity; enables cross-file analysis
+   */
+  crossFileComplexity?: boolean;
+  /**
+   * Enable the native reactivity-loss rule unless rules explicitly disable it
+   */
+  strictReactivity?: boolean;
+  /**
+   * Fail when warnings exceed this limit; absent means unlimited
+   */
+  maxWarnings?: number;
+  /**
    * Rules to enable/disable
    */
   rules?: {

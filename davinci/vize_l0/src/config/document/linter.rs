@@ -8,6 +8,11 @@ use crate::config::{
 };
 
 impl ConfigDocument {
+    /// Whole-run lint switches parsed with this document.
+    pub fn linter_execution(&self) -> crate::config::LinterExecutionOptions {
+        self.0.linter.execution()
+    }
+
     /// Derive the effective linter settings from this document.
     pub fn linter(&self) -> LinterConfig {
         load_linter_from_raw_config(&self.0)

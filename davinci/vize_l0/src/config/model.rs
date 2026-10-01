@@ -9,6 +9,7 @@ mod global_types;
 mod language_server;
 mod library;
 mod linter;
+mod linter_execution;
 mod linter_feature_flags;
 mod linter_rule_options;
 mod type_checker;
@@ -34,6 +35,7 @@ pub use language_server::{LanguageServerConfig, LanguageServerUnstableFlags, Lsp
 pub use library::{LibConfig, LibRegistryConfig};
 pub(crate) use linter::RawLinterConfig;
 pub use linter::{LintRuleSeverity, LinterConfig};
+pub use linter_execution::LinterExecutionOptions;
 pub use linter_feature_flags::LinterFeatureFlags;
 pub use linter_rule_options::{
     ComponentNameInTemplateCasingOptions, ConfigLintRuleOptions, CustomEventNameCasing,

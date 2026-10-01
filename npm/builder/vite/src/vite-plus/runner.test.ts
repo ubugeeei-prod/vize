@@ -237,3 +237,26 @@ void test("typecheck is standalone or composed with lint exactly once", async ()
     }
   });
 });
+
+void test("lint rejects native-only flags before invoking either checker", async () => {
+  for (const task of ["lint", "lint:fix"] as const) {
+    const calls: string[][] = [];
+    await assert.rejects(
+      runTools(
+        task,
+        ["--cross-file"],
+        { config: {}, options: {} },
+        "vp",
+        "native",
+        async (_command, args) => {
+          calls.push(args);
+          return 0;
+        },
+      ),
+      {
+        message: `Vize ${task} tasks accept paths and --fix. Put native tool options in lint.vize.`,
+      },
+    );
+    assert.deepEqual(calls, []);
+  }
+});

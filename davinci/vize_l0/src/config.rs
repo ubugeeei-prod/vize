@@ -13,11 +13,11 @@ pub use model::{
     HtmlSelfClosingStyle, HyphenationStyle, JsxCompat, JsxMode, LanguageServerConfig,
     LanguageServerUnstableFlags, LibConfig, LibRegistryConfig, LintRuleOptions, LintRuleSeverity,
     LinterConfig, LinterConfigEntry, LinterConfigPlan, LinterConfigPlanWithConfigRuleOptions,
-    LinterConfigPlanWithRuleOptions, LinterFeatureFlags, LspConfig, MuseaDesignToken,
-    MuseaPreferDesignTokensOptions, NoMutatingPropsOptions, NoRestrictedGlobalsOptions,
-    NoRestrictedMembersOptions, ParseVueVersionError, QuoteProps, ResolvedLinterConfig,
-    ResolvedLinterConfigWithConfigRuleOptions, RestrictedGlobal, RestrictedMember,
-    SfcElementOrderGroup, SfcElementOrderOptions, TemplateComponentNameCasing, TrailingComma,
-    TypeCheckerConfig, VizeConfig, VueVersion,
+    LinterConfigPlanWithRuleOptions, LinterExecutionOptions, LinterFeatureFlags, LspConfig,
+    MuseaDesignToken, MuseaPreferDesignTokensOptions, NoMutatingPropsOptions,
+    NoRestrictedGlobalsOptions, NoRestrictedMembersOptions, ParseVueVersionError, QuoteProps,
+    ResolvedLinterConfig, ResolvedLinterConfigWithConfigRuleOptions, RestrictedGlobal,
+    RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions, TemplateComponentNameCasing,
+    TrailingComma, TypeCheckerConfig, VizeConfig, VueVersion,
 };
 pub use normalize::normalize_public_config_value;

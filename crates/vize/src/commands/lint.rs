@@ -38,7 +38,7 @@ use vize_l0::source_io as fs;
 use vize_l0::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 use vize_patina::{HelpLevel, LintPreset, OutputFormat};
 
-pub fn run(args: LintArgs) {
+pub fn run(mut args: LintArgs) {
     let start = Instant::now();
     if let Some(path) = args.config.as_deref()
         && !args.no_config
@@ -52,7 +52,7 @@ pub fn run(args: LintArgs) {
     let render_details = aggregate::should_render_details(format, args.quiet);
     crate::config::write_schema(None);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let (loaded_config, linter_plan, linter_features) = config_load::load(&args);
+    let (loaded_config, linter_plan, linter_features) = config_load::load(&mut args);
     let linter_enabled = linter_plan.plan.base.enabled;
     let config_dir = loaded_config
         .source_path

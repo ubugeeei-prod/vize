@@ -27,6 +27,27 @@ linterConfigDef: JsonSchema = new JsonSchema {
       type = "boolean"
       description = "Enable native type-aware lint rules from the active lint configuration"
     }
+    ["crossFile"] = new JsonSchema {
+      type = "boolean"
+      description = "Analyze relationships between input components"
+    }
+    ["crossFileTree"] = new JsonSchema {
+      type = "boolean"
+      description = "Display the provide/inject tree; enables cross-file analysis"
+    }
+    ["crossFileComplexity"] = new JsonSchema {
+      type = "boolean"
+      description = "Display cross-file complexity; enables cross-file analysis"
+    }
+    ["strictReactivity"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable the native reactivity-loss rule unless rules explicitly disable it"
+    }
+    ["maxWarnings"] = new JsonSchema {
+      type = "integer"
+      minimum = 0
+      description = "Fail when warnings exceed this limit; absent means unlimited"
+    }
     ["rules"] = new JsonSchema {
       type = "object"
       description = "Rules to enable/disable"

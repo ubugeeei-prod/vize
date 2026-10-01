@@ -6,21 +6,25 @@ use crate::config::{
 };
 
 pub(super) fn load(
-    args: &LintArgs,
+    args: &mut LintArgs,
 ) -> (
     LoadedConfigWithFeatures,
     LinterConfigPlanWithConfigRuleOptions,
     LinterFeatureFlags,
 ) {
-    if args.no_config {
+    let (config, plan, features, execution) = if args.no_config {
         (
             crate::config::LoadedConfigWithFeatures::default(),
             crate::config::LinterConfigPlanWithConfigRuleOptions::default(),
             crate::config::LinterFeatureFlags::default(),
+            crate::config::LinterExecutionOptions::default(),
         )
     } else {
-        crate::config::load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source(
-            args.config.as_deref(),
-        )
-    }
+        crate::config::load_linter_execution_with_source(args.config.as_deref())
+    };
+    args.cross_file |= execution.cross_file;
+    args.cross_file_tree |= execution.cross_file_tree;
+    args.cross_file_complexity |= execution.cross_file_complexity;
+    args.max_warnings = args.max_warnings.or(execution.max_warnings);
+    (config, plan, features)
 }

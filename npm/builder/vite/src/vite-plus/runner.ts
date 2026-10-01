@@ -28,9 +28,10 @@ export async function runTools(
   const fix = task === "lint:fix" || args.includes("--fix");
   const formatCheck =
     task === "fmt:check" || (task === "check" && !fix) || args.includes("--check");
-  if (task === "check" && args.some((arg) => arg.startsWith("-") && arg !== "--fix")) {
+  if ((task === "check" || lint) && args.some((arg) => arg.startsWith("-") && arg !== "--fix")) {
+    const section = task === "check" ? "the corresponding config section" : "lint.vize";
     throw new Error(
-      "Vize check tasks accept paths and --fix. Put native tool options in defineConfig().",
+      `Vize ${task} tasks accept paths and --fix. Put native tool options in ${section}.`,
     );
   }
   let status = 0;

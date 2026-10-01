@@ -109,10 +109,24 @@ pub fn load_config_and_linter_plan_with_config_rule_options_and_lint_features_an
     LinterConfigPlanWithConfigRuleOptions,
     LinterFeatureFlags,
 ) {
+    let (config, plan, features, _) = load_linter_execution_with_source(path);
+    (config, plan, features)
+}
+
+/// Load the declaration-ordered linter plan with full entry-local rule options.
+pub fn load_linter_execution_with_source(
+    path: Option<&Path>,
+) -> (
+    LoadedConfigWithFeatures,
+    LinterConfigPlanWithConfigRuleOptions,
+    LinterFeatureFlags,
+    crate::config::LinterExecutionOptions,
+) {
     let loaded = load_raw_config_with_source(path);
     let compiler_compatibility_vue_version = loaded.config.compiler_compatibility_vue_version();
     let compiler_vapor = loaded.config.compiler_vapor();
     let linter = loaded.config.linter_plan_with_config_rule_options();
+    let execution = loaded.config.linter_execution();
     let (config, features) = loaded.config.into_config_and_features();
     let linter_features = LinterFeatureFlags::from_config_features(
         features,
@@ -128,5 +142,6 @@ pub fn load_config_and_linter_plan_with_config_rule_options_and_lint_features_an
         },
         linter,
         linter_features,
+        execution,
     )
 }
