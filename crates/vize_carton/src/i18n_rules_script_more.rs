@@ -5,6 +5,12 @@
 /// `(key, en, ja, zh)`.
 pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
     (
+        "type/strict-boolean-expressions.description",
+        "Require safe boolean expressions in script and template conditions",
+        "スクリプトとテンプレートの条件式に安全な真偽値を必須にする",
+        "要求脚本和模板条件使用安全的布尔表达式",
+    ),
+    (
         "script/no-restricted-globals.description",
         "Disallow references to runtime-environment globals that must go through a typed wrapper",
         "型付きラッパーを経由すべき実行環境のグローバル変数を直接参照することを禁止する",

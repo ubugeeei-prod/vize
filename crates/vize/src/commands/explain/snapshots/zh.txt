@@ -3486,6 +3486,16 @@ type/require-typed-props · lint 规则
   }
   const props = defineProps<Props>()
   </script>
+=== type/strict-boolean-expressions
+type/strict-boolean-expressions · lint 规则
+要求脚本和模板条件使用安全的布尔表达式
+
+精度层级: complete
+适用范围: checker-resolved if/while/do/for/ternary/negation/logical conditions in inline SFC scripts and v-if/v-else-if/v-show; assertion functions, array predicates and external/pug templates are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/type-and-script.md
 === vapor/no-inline-template
 vapor/no-inline-template · lint 规则
 禁止已弃用的inline-template属性

@@ -3354,6 +3354,16 @@ defineProps に型定義を必須にする
   }
   const props = defineProps<Props>()
   </script>
+=== type/strict-boolean-expressions
+type/strict-boolean-expressions · lint ルール
+スクリプトとテンプレートの条件式に安全な真偽値を必須にする
+
+精度: complete
+対象: checker-resolved if/while/do/for/ternary/negation/logical conditions in inline SFC scripts and v-if/v-else-if/v-show; assertion functions, array predicates and external/pug templates are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/type-and-script.md
 === vapor/no-inline-template
 vapor/no-inline-template · lint ルール
 非推奨のinline-template属性を禁止する

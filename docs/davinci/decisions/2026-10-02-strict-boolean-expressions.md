@@ -23,6 +23,8 @@ The current native checker projection already forces strict checking. This
 slice does not claim assertion-function or array-predicate ESLint parity.
 
 CLI, LSP, Pkl, JSON schema, and generated TypeScript must share these options.
+All three diagnostic catalogs and complete explain-page snapshots include the
+new rule; the catalog total increases from 250 to 251 without changing presets.
 Retain the stable public exhaustive config structs using additive wrappers.
 Move existing probe execution and option declarations in a move-only commit
 before implementation to keep the source-size ceiling unchanged.

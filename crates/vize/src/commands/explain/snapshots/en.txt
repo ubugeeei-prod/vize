@@ -3403,6 +3403,16 @@ valid:
   }
   const props = defineProps<Props>()
   </script>
+=== type/strict-boolean-expressions
+type/strict-boolean-expressions · lint rule
+Require safe boolean expressions in script and template conditions
+
+tier: complete
+domain: checker-resolved if/while/do/for/ternary/negation/logical conditions in inline SFC scripts and v-if/v-else-if/v-show; assertion functions, array predicates and external/pug templates are outside
+severity: warning
+category: type-aware
+autofix: no
+docs: docs/content/rules/type-and-script.md
 === vapor/no-inline-template
 vapor/no-inline-template · lint rule
 Disallow deprecated inline-template attribute

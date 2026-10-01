@@ -90,7 +90,7 @@
         "line": 15,
         "column": 7,
         "endLine": 15,
-        "endColumn": 11
+        "endColumn": 16
       },
       {
         "ruleId": "type/strict-boolean-expressions",
@@ -100,7 +100,7 @@
         "line": 16,
         "column": 7,
         "endLine": 16,
-        "endColumn": 16
+        "endColumn": 21
       },
       {
         "ruleId": "type/strict-boolean-expressions",
