@@ -13,7 +13,7 @@ pub enum SortImportsSetting {
 
 /// Import sorting controls passed to the native script formatter.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default, rename_all = "camelCase")]
+#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 #[non_exhaustive]
 pub struct SortImportsConfig {
     pub partition_by_newline: Option<bool>,
@@ -42,7 +42,7 @@ pub enum ImportSortGroup {
 
 /// Custom import category matched by module name, selector, and modifiers.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[non_exhaustive]
 pub struct ImportSortCustomGroup {
     pub group_name: String,

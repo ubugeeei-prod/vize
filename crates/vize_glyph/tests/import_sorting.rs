@@ -88,3 +88,30 @@ fn internal_patterns_descending_order_and_newline_partitions_apply() {
         expected
     );
 }
+
+#[test]
+fn misplaced_boundaries_fail_with_the_complete_validation_error() {
+    for source in [
+        r#"{"groups":[{"newlinesBetween":true},"external"]}"#,
+        r#"{"groups":["external",{"newlinesBetween":true}]}"#,
+        r#"{"groups":["external",{"newlinesBetween":true},{"newlinesBetween":false},"sibling"]}"#,
+    ] {
+        let setting: SortImportsSetting = serde_json::from_str(source).expect("setting");
+        assert_eq!(
+            resolve_sort_imports(Some(&setting))
+                .expect_err("misplaced boundary")
+                .to_string(),
+            "Failed to format script: sortImports boundary must sit between two groups",
+        );
+    }
+}
+
+#[test]
+fn unknown_sort_settings_and_custom_group_keys_are_rejected() {
+    for source in [
+        r#"{"newlineBetween":false}"#,
+        r#"{"customGroups":[{"groupName":"project","elementNamePatern":["project/**"]}]}"#,
+    ] {
+        assert!(serde_json::from_str::<SortImportsSetting>(source).is_err());
+    }
+}

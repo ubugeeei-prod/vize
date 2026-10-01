@@ -52,6 +52,9 @@ pub fn resolve_sort_imports(
                 ImportSortGroup::Name(name) => vec![name.as_str()],
                 ImportSortGroup::Names(names) => names.iter().map(|name| name.as_str()).collect(),
                 ImportSortGroup::Boundary { newlines_between } => {
+                    if options.groups.is_empty() || pending_boundary.is_some() {
+                        return Err(invalid("sortImports boundary must sit between two groups"));
+                    }
                     pending_boundary = Some(*newlines_between);
                     continue;
                 }
@@ -65,6 +68,9 @@ pub fn resolve_sort_imports(
             options
                 .groups
                 .push(names.into_iter().map(GroupEntry::parse).collect());
+        }
+        if pending_boundary.is_some() {
+            return Err(invalid("sortImports boundary must sit between two groups"));
         }
     }
     if let Some(groups) = &config.custom_groups {

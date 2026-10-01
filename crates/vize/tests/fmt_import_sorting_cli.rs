@@ -118,7 +118,15 @@ fn malformed_sort_settings_fail_closed_and_no_config_bypasses_them() {
     let dir = tempfile::tempdir().expect("project");
     let root = dir.path();
     fs::write(root.join("UserCard.vue"), SOURCE).expect("source");
-    for invalid in [r#"{"formatter":{"sortImports":{"groups":{}}}}"#, "{"] {
+    for invalid in [
+        r#"{"formatter":{"sortImports":{"groups":{}}}}"#,
+        r#"{"formatter":{"sortImports":{"newlineBetween":false}}}"#,
+        r#"{"formatter":{"sortImports":{"customGroups":[{"groupName":"local","selectorTypo":"type"}]}}}"#,
+        r#"{"formatter":{"sortImports":{"groups":[{"newlinesBetween":true},"external"]}}}"#,
+        r#"{"formatter":{"sortImports":{"groups":["external",{"newlinesBetween":true}]}}}"#,
+        r#"{"formatter":{"sortImports":{"groups":["external",{"newlinesBetween":true},{"newlinesBetween":false},"sibling"]}}}"#,
+        "{",
+    ] {
         fs::write(root.join("vize.config.json"), invalid).expect("invalid config");
         assert_eq!(
             fmt(root, &["--write", "UserCard.vue"]).status.code(),
