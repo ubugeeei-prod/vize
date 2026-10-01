@@ -39,6 +39,13 @@ Cargo's full workspace test command continues to execute this target.
 The static test inventory recognizes its explicit Cargo registration and
 actual main entrypoint as one case; ordinary tests retain their scanner,
 while benchmarks and unregistered helper mains receive no test credit.
+The report action sets up the existing pinned Vite+ action and Node runtime,
+then installs only the root package's locked dependencies with lifecycle
+scripts disabled. Cargo target accounting uses the existing `@iarna/toml`
+2.2.5 dependency; the report must install it before collection. This fixes
+the fresh-runner module failure observed in the required report job on
+`59fa68836210274f5f906fb191addc9348ee33e1`, while preserving collection,
+artifact upload and the final required-job aggregate.
 Fresh exact-head Actions and protected merge-queue checks remain required.
 No product route or native feature gains completion credit from this
 harness correction.
