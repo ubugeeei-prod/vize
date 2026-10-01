@@ -11,7 +11,46 @@ const APIS = {
   format_sfc: "--sfc",
   format_style: "--style",
   format_template: "--template",
+  format_json: "--json",
+  format_jsonc: "--jsonc",
 };
+const DEFAULT_OPTIONS = JSON.parse(
+  fs.readFileSync(new URL("../_fixtures/differential/formatter/format-options-reference.json", import.meta.url)),
+).formatOptions;
+
+function configuredOptions(fixture) {
+  const internal = fixture.profile === "skip_script_stabilization";
+  const overrides = fixture.options.userOverrides ?? {};
+  assert.equal(fixture.options.base, "FormatOptions::default()");
+  assert.deepEqual(fixture.options.internalOverrides, internal ? { skipScriptStabilization: true } : {});
+  assert(overrides && typeof overrides === "object" && !Array.isArray(overrides));
+  for (const [key, value] of Object.entries(overrides)) {
+    assert(Object.hasOwn(DEFAULT_OPTIONS, key), `unknown formatter option: ${key}`);
+    const initial = DEFAULT_OPTIONS[key];
+    if (typeof initial === "boolean") assert.equal(typeof value, "boolean");
+    else if (typeof initial === "number") {
+      assert(Number.isInteger(value) && value >= 0 && value <= (key === "tabWidth" ? 255 : 0xffffffff));
+    } else if (typeof initial === "string") {
+      const enums = {
+        trailingComma: ["none", "es5", "all"], arrowParens: ["always", "avoid"],
+        endOfLine: ["lf", "crlf", "cr", "auto"], quoteProps: ["as-needed", "consistent", "preserve"],
+        attributeSortOrder: ["alphabetical", "as-written"],
+      };
+      assert(enums[key]?.includes(value), `invalid formatter option: ${key}`);
+    } else if (key === "maxAttributesPerLine") {
+      assert(value === null || (Number.isInteger(value) && value >= 0 && value <= 0xffffffff));
+    } else {
+      assert(value === null || (Array.isArray(value) && value.every(
+        (group) => Array.isArray(group) && group.every((item) => typeof item === "string"),
+      )));
+    }
+  }
+  const flags = [
+    ...(Object.keys(overrides).length ? ["--options", JSON.stringify(overrides)] : []),
+    ...(internal ? ["--legacy-single-pass"] : []),
+  ];
+  return { flags, effective: { ...DEFAULT_OPTIONS, ...overrides, skipScriptStabilization: internal } };
+}
 
 function immutableArtifact(root, artifact) {
   assert.equal(typeof artifact.path, "string");
@@ -43,10 +82,13 @@ export function loadFormatterApiManifest(manifestPath, repoRoot) {
     assert(["default", "skip_script_stabilization"].includes(fixture.profile));
     const internal = fixture.profile === "skip_script_stabilization";
     assert(!internal || ["format_script", "format_sfc"].includes(fixture.api));
-    assert.deepEqual(fixture.options, {
-      base: "FormatOptions::default()",
-      internalOverrides: internal ? { skipScriptStabilization: true } : {},
-    });
+    const options = configuredOptions(fixture);
+    const error = fixture.outcome === "error";
+    assert(fixture.outcome === undefined || ["success", "error"].includes(fixture.outcome));
+    assert(!error || (!internal && (
+      (fixture.typedError === "StyleFormatError" && fixture.api === "format_style") ||
+      (fixture.typedError === "JsonFormatError" && ["format_json", "format_jsonc"].includes(fixture.api))
+    )));
     assert.equal(fixture.reference, "current-public-api-output");
     assert.equal(fixture.native, "unsupported");
     assert.equal(
@@ -54,25 +96,34 @@ export function loadFormatterApiManifest(manifestPath, repoRoot) {
       fixture.api === "format_sfc"
         ? "Vue"
         : fixture.api === "format_script"
-          ? "TypeScript"
+          ? (fixture.kind === "JavaScript" ? "JavaScript" : "TypeScript")
           : fixture.api === "format_style"
             ? "CSS"
-            : "VueTemplate",
+            : fixture.api === "format_json" ? "JSON"
+              : fixture.api === "format_jsonc" ? "JSONC" : "VueTemplate",
     );
+    if (fixture.sourceExpected) immutableArtifact(repoRoot, fixture.sourceExpected);
+    if (fixture.options.userOverrides) {
+      immutableArtifact(repoRoot, { path: fixture.witness.path, sha256: fixture.witness.sourceSha256 });
+    }
     return {
       ...fixture,
       input: immutableArtifact(repoRoot, fixture.input),
       expected: immutableArtifact(repoRoot, fixture.expected),
-      argv: [APIS[fixture.api], ...(internal ? ["--legacy-single-pass"] : [])],
-      passCount: internal ? 1 : 3,
-      contract: internal ? "legacy-internal-observation" : "full-output-bytes-and-fixed-point",
+      argv: [APIS[fixture.api], ...options.flags, ...(error ? ["--expect-error"] : [])],
+      optionsArgv: ["--options-json", ...options.flags],
+      effectiveOptions: options.effective,
+      passCount: internal || error ? 1 : 3,
+      contract: error ? "typed-error-bytes" : internal ? "legacy-internal-observation" : "full-output-bytes-and-fixed-point",
     };
   });
   return { manifest, cases, manifestSha256: sha256(raw) };
 }
 
 function expectedStderr(fixture, input, output) {
-  return fixture.api === "format_sfc"
+  return fixture.outcome === "error"
+    ? Buffer.from(`error=${fixture.typedError}\n`)
+    : fixture.api === "format_sfc"
     ? Buffer.from(`changed=${!input.equals(output)}\n`)
     : Buffer.alloc(0);
 }
@@ -82,11 +133,14 @@ function summary(rows) {
     plannedCases: rows.length,
     legacyByteMatches: rows.filter(
       (row) =>
-        row.contract !== "legacy-internal-observation" && row.legacy.state === "matched-reference",
+        row.contract === "full-output-bytes-and-fixed-point" && row.legacy.state === "matched-reference",
     ).length,
     legacyInternalObservations: rows.filter(
       (row) =>
         row.contract === "legacy-internal-observation" && row.legacy.state === "matched-reference",
+    ).length,
+    legacyErrorMatches: rows.filter(
+      (row) => row.contract === "typed-error-bytes" && row.legacy.state === "matched-reference",
     ).length,
     legacyFailures: rows.filter((row) => row.legacy.state === "failed").length,
     nativeUnsupported: rows.length,
@@ -110,6 +164,16 @@ export function validateFormatterApiReport(loaded, report, receipt) {
     assert(fixture, "unplanned result");
     assert.equal(row.contract, fixture.contract);
     assert.deepEqual(row.argv, fixture.argv);
+    assert.deepEqual(row.options.argv, fixture.optionsArgv);
+    const optionBytes = Buffer.from(row.options.stdoutBase64, "base64");
+    assert.equal(sha256(optionBytes), row.options.sha256);
+    if (row.legacy.state === "matched-reference") {
+      assert.equal(row.options.exitStatus, 0);
+      assert.equal(row.options.signal, null);
+      assert.equal(row.options.processError, null);
+      assert.equal(row.options.stderrBase64, "");
+      assert.deepEqual(JSON.parse(optionBytes.toString()), fixture.effectiveOptions, "actual effective formatter options changed");
+    }
     assert.equal(row.native.state, "unsupported");
     assert.equal(row.native.reason, "native formatter adapter unavailable");
     assert.equal(row.comparison.state, "not-compared");
@@ -127,7 +191,7 @@ export function validateFormatterApiReport(loaded, report, receipt) {
       assert.equal(pass.outputSha256, sha256(output));
       assert.deepEqual(pass.referenceComparison, compareBytes(fixture.expected, output));
       if (row.legacy.state === "matched-reference") {
-        assert.equal(pass.exitStatus, 0);
+        assert.equal(pass.exitStatus, fixture.outcome === "error" ? 1 : 0);
         assert.equal(pass.signal, null);
         assert.equal(pass.processError, null);
         assert.equal(pass.referenceComparison.state, "equal");
@@ -158,15 +222,28 @@ export function runFormatterApiPack({ manifestPath, repoRoot, binaryPath, receip
     rows: [],
   };
   for (const fixture of loaded.cases) {
+    const probe = spawnSync(binaryPath, fixture.optionsArgv, { timeout: 30_000 });
+    const optionBytes = probe.stdout ?? Buffer.alloc(0);
     const row = {
       id: fixture.id,
       argv: fixture.argv,
       contract: fixture.contract,
+      options: {
+        argv: fixture.optionsArgv, exitStatus: probe.status, signal: probe.signal,
+        processError: probe.error?.message ?? null,
+        stdoutBase64: optionBytes.toString("base64"), sha256: sha256(optionBytes),
+        stderrBase64: (probe.stderr ?? Buffer.alloc(0)).toString("base64"),
+      },
       legacy: { state: "matched-reference", passes: [] },
       native: { state: "unsupported", reason: "native formatter adapter unavailable" },
       comparison: { state: "not-compared" },
     };
     try {
+      assert.equal(probe.error, undefined, probe.error?.message);
+      assert.equal(probe.signal, null);
+      assert.equal(probe.status, 0);
+      assert.equal((probe.stderr ?? Buffer.alloc(0)).length, 0);
+      assert.deepEqual(JSON.parse(optionBytes.toString()), fixture.effectiveOptions, "actual effective formatter options changed");
       let input = fixture.input;
       for (let pass = 1; pass <= fixture.passCount; pass += 1) {
         const result = spawnSync(binaryPath, fixture.argv, {
@@ -191,7 +268,7 @@ export function runFormatterApiPack({ manifestPath, repoRoot, binaryPath, receip
         });
         assert.equal(result.error, undefined, result.error?.message);
         assert.equal(result.signal, null);
-        assert.equal(result.status, 0, stderr.toString());
+        assert.equal(result.status, fixture.outcome === "error" ? 1 : 0, stderr.toString());
         assert.equal(comparison.state, "equal", "complete output baseline drift");
         assert(
           stderr.equals(expectedStderr(fixture, input, output)),

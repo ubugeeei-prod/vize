@@ -40,6 +40,15 @@ function syntheticReport(loaded) {
       id: fixture.id,
       argv: fixture.argv,
       contract: fixture.contract,
+      options: {
+        argv: fixture.optionsArgv,
+        exitStatus: 0,
+        signal: null,
+        processError: null,
+        stderrBase64: "",
+        stdoutBase64: Buffer.from(JSON.stringify(fixture.effectiveOptions)).toString("base64"),
+        sha256: sha256(Buffer.from(JSON.stringify(fixture.effectiveOptions))),
+      },
       native: { state: "unsupported", reason: "native formatter adapter unavailable" },
       comparison: { state: "not-compared" },
       legacy: {
@@ -53,10 +62,12 @@ function syntheticReport(loaded) {
             stdoutBase64: fixture.expected.toString("base64"),
             outputSha256: sha256(fixture.expected),
             stderrBase64:
-              fixture.api === "format_sfc"
+              fixture.outcome === "error"
+                ? Buffer.from(`error=${fixture.typedError}\n`).toString("base64")
+                : fixture.api === "format_sfc"
                 ? Buffer.from(`changed=${!input.equals(fixture.expected)}\n`).toString("base64")
                 : "",
-            exitStatus: 0,
+            exitStatus: fixture.outcome === "error" ? 1 : 0,
             signal: null,
             processError: null,
             referenceComparison: { state: "equal" },
@@ -65,11 +76,12 @@ function syntheticReport(loaded) {
       },
     })),
     summary: {
-      plannedCases: 6,
-      legacyByteMatches: 4,
-      legacyInternalObservations: 2,
+      plannedCases: loaded.cases.length,
+      legacyByteMatches: loaded.cases.filter((item) => item.contract === "full-output-bytes-and-fixed-point").length,
+      legacyInternalObservations: loaded.cases.filter((item) => item.contract === "legacy-internal-observation").length,
+      legacyErrorMatches: loaded.cases.filter((item) => item.contract === "typed-error-bytes").length,
       legacyFailures: 0,
-      nativeUnsupported: 6,
+      nativeUnsupported: loaded.cases.length,
       nativeHandled: 0,
       nativeEquivalent: 0,
       pairedComparisons: 0,
@@ -90,6 +102,12 @@ void test("API fixture loader rejects drift, duplicate plans and unregistered op
     },
     (manifest) => {
       manifest.cases[0].options.internalOverrides.unknown = true;
+    },
+    (manifest) => {
+      manifest.cases[0].options.userOverrides = { skipScriptStabilization: true };
+    },
+    (manifest) => {
+      manifest.cases[0].options.userOverrides = { printWidth: -1 };
     },
     (manifest) => {
       manifest.cases[0].input.path = "/etc/hosts";
@@ -154,6 +172,12 @@ void test("API result validator requires complete bytes, actual pass chains and 
     },
     (report) => {
       report.rows[2].legacy.passes[0].stderrBase64 = "";
+    },
+    (report) => {
+      const row = report.rows[0];
+      const bytes = Buffer.from(JSON.stringify({ printWidth: 7 }));
+      row.options.stdoutBase64 = bytes.toString("base64");
+      row.options.sha256 = sha256(bytes);
     },
   ]) {
     const report = syntheticReport(loaded);
