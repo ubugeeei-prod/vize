@@ -22,6 +22,7 @@ struct CachedPaths {
 }
 
 pub(super) struct GlobalComponentReferences {
+    pub(super) tag_names: super::global_tag_names::GlobalTagNamesCache,
     paths: RwLock<Option<CachedPaths>>,
     scan_lock: AsyncMutex<()>,
     generation: AtomicU64,
@@ -35,6 +36,7 @@ pub(super) struct GlobalComponentReferences {
 impl GlobalComponentReferences {
     pub(super) fn new() -> Self {
         Self {
+            tag_names: Default::default(),
             paths: RwLock::new(None),
             scan_lock: AsyncMutex::new(()),
             generation: AtomicU64::new(0),
@@ -49,6 +51,7 @@ impl GlobalComponentReferences {
     pub(super) fn invalidate(&self) {
         self.generation.fetch_add(1, Ordering::AcqRel);
         *self.paths.write() = None;
+        self.tag_names.clear();
     }
 
     fn cached_paths(&self) -> Option<Vec<PathBuf>> {

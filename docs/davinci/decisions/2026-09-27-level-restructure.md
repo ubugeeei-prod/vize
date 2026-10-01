@@ -210,7 +210,7 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
   [NextTick arrow history oracles](./2026-09-27-next-tick-history.md) record [#6881](https://github.com/ubugeeei-prod/vize/issues/6881): ten exact private source/public API observations, including Unicode/CRLF SFC framing, complete diagnostics and unchanged requery, with one linter witness row refreshed; full history and native proof remain open.
 
 - **Type checker:** the virtual-TS projection is an L4 target mapped back through `EmitDocument` links. [Collection and workers](./2026-10-01-check-collection-and-workers.md) records #7324 alias closure work and #7325 explicit checker width.
-- **LSP:** holds level artifacts incrementally and never parses by itself. [Component definition hovers](./2026-10-01-component-definition-hover.md) records #7319's typed props/emits/slots/model contract and authored fixtures.
+- **LSP:** holds level artifacts incrementally and never parses by itself. [Component definition hovers](./2026-10-01-component-definition-hover.md) records #7319's typed props/emits/slots/model contract and authored fixtures. [Component tag completion](./2026-10-01-component-tag-completion.md) records #7194's imported, registered, global and native candidates with authored replacement ranges.
 
 ## Type check
 

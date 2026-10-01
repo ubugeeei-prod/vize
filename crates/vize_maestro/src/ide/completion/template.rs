@@ -28,6 +28,9 @@ mod native_tests;
 mod self_component;
 mod slot_outlets;
 mod tag_context;
+#[cfg(test)]
+mod tag_name_tests;
+mod tag_names;
 
 use tower_lsp::lsp_types::{CompletionItem, CompletionTextEdit, Position, Range, TextEdit};
 
@@ -43,6 +46,8 @@ pub(crate) use component_meta::component_metadata;
 #[cfg(feature = "native")]
 pub(super) use component_native::complete_with_corsa as complete_component_with_corsa;
 pub(crate) use directives::{contextual_directive_completions, vize_directive_completions};
+#[cfg(feature = "native")]
+pub(super) use tag_names::complete_with_globals as complete_tag_names_with_globals;
 // Consumed via `template::*` by unit tests in the parent completion module; the
 // expectation keeps non-test builds warning-free while preserving the public path.
 #[cfg_attr(
@@ -59,6 +64,10 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
     // If cursor is inside an HTML comment, offer @vize: directive completions only
     if is_inside_html_comment(&ctx.content, ctx.offset) {
         return vize_directive_completions();
+    }
+
+    if let Some(items) = tag_names::complete(ctx, &[]) {
+        return items;
     }
 
     // `$style.|` in a template expression should resolve to class names
