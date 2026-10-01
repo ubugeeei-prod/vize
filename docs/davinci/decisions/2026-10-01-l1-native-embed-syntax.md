@@ -29,7 +29,7 @@ boundaries conservatively cover the complete authored reference. Exact AST
 locations still reject wrapper bytes, non-UTF-8 boundaries and partial
 entities. A diagnostic highlight must never select rewrite bytes.
 
-This initial API is explicitly bounded: the complete parser input admits at
+The initial wrapped-shape API is explicitly bounded: the complete parser input admits at
 most 31 conservative word/punctuation units, including generated delimiters,
 strings and comments. ASCII identifier/numeric runs count once; every other
 non-whitespace byte counts once. Whitespace ends a word run and non-ASCII UTF-8
@@ -37,7 +37,13 @@ bytes overcount. Larger valid snippets return `TokenBudget`, preserving source.
 This avoids pretending that L0's expression nesting guard bounds unbraced
 statement recursion: OXC also recurses on nested if/loops, labels, new, class
 heritage, assignments/arrows and TS syntax without deep brackets. A complete,
-less conservative recursion admission provider remains unfinished.
+less conservative wrapped-shape admission provider remains unfinished.
+The [ordinary Program revision](./2026-10-02-l1-normal-program.md) removes this
+scaffold only for unwrapped Program, using explicit JS/TS/JSX/TSX and Module/Script
+profiles with the pinned production parser. Concrete PURE recovery defects must
+be repaired before its exact-head validation can pass. Universal hard memory,
+fuel and cancellation quotas are separate hardening work rather than a new
+prerequisite imposed on the original retained-AST design.
 
 Other shapes, Flow and input rejected by L0's existing OXC safety guard return
 distinct typed local holes. Both admission checks see actual wrapped input.
@@ -58,9 +64,9 @@ TODO:
 - [HandlerBody and SlotParams](./2026-10-01-l1-native-embed-shapes.md) extend
   this provider with corrected wrapper laws; ForHead and FilterChain still
   require real dialect/language pieces.
-- Replace conservative whole-input admission only after complete JS/TS parser
-  recursion is bounded, including statement/type/operator nesting and escapes.
-- Admit JSX/TSX explicitly rather than infer them from current Js/Ts enums.
+- Replace conservative wrapped-input admission after its actual syntax/context
+  and lifecycle proof; track measured deep-input defenses separately.
+- Extend the Program's explicit JSX/TSX identity into file/container resolution.
 - Resolve language once per file, diagnose script/setup mismatch, and attach
   artifacts to existing L0 node identities in the actual markup/container path.
 - Use concrete dialect shape decomposition plus lexical diagnostics; malformed

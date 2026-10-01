@@ -3,6 +3,7 @@
 use alloc::boxed::Box;
 use oxc_ast::ast::{Comment, Expression, Statement};
 use oxc_diagnostics::Diagnostics;
+use oxc_span::SourceType;
 use vize_l0::{Allocator, Span};
 
 use super::{
@@ -18,6 +19,7 @@ use super::{
 /// remain from the original single parse. A local hole exposes no recovery AST.
 pub struct RetainedExpression<'a> {
     grammar: Grammar,
+    source_type: SourceType,
     coordinates: Coordinates<'a>,
     expression: Option<&'a Expression<'a>>,
     comments: &'a [Comment],
@@ -40,6 +42,11 @@ impl<'a> RetainedExpression<'a> {
     #[must_use]
     pub const fn grammar(&self) -> Grammar {
         self.grammar
+    }
+
+    #[must_use]
+    pub const fn source_type(&self) -> SourceType {
+        self.source_type
     }
 
     #[must_use]
@@ -95,6 +102,7 @@ pub(super) fn into_expression<'a>(
     }
     let NativeSyntax {
         grammar,
+        source_type,
         coordinates,
         program,
         diagnostics,
@@ -117,6 +125,7 @@ pub(super) fn into_expression<'a>(
     }
     Ok(RetainedExpression {
         grammar,
+        source_type,
         coordinates,
         expression,
         comments,

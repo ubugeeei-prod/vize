@@ -3,6 +3,7 @@
 use alloc::boxed::Box;
 use oxc_ast::ast::{Comment, Expression, FormalParameter, FormalParameterRest, Statement};
 use oxc_diagnostics::Diagnostics;
+use oxc_span::SourceType;
 use vize_l0::{Allocator, Span};
 
 use super::{
@@ -18,6 +19,7 @@ use super::{
 /// hole exposes no recovery roots or generated parameter-list/arrow containers.
 pub struct RetainedSlotParams<'a> {
     grammar: Grammar,
+    source_type: SourceType,
     coordinates: Coordinates<'a>,
     parameters: Option<&'a [FormalParameter<'a>]>,
     rest: Option<&'a FormalParameterRest<'a>>,
@@ -41,6 +43,11 @@ impl<'a> RetainedSlotParams<'a> {
     #[must_use]
     pub const fn grammar(&self) -> Grammar {
         self.grammar
+    }
+
+    #[must_use]
+    pub const fn source_type(&self) -> SourceType {
+        self.source_type
     }
 
     #[must_use]
@@ -101,6 +108,7 @@ pub(super) fn into_slot_params<'a>(
     }
     let NativeSyntax {
         grammar,
+        source_type,
         coordinates,
         program,
         diagnostics,
@@ -125,6 +133,7 @@ pub(super) fn into_slot_params<'a>(
     }
     Ok(RetainedSlotParams {
         grammar,
+        source_type,
         coordinates,
         parameters,
         rest,
