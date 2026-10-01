@@ -82,10 +82,9 @@ impl ServerState {
                 result.extend(cached.names.clone());
                 continue;
             }
-            let source = document.map(|document| String::from(document.text()));
-            if source
+            if document
                 .as_ref()
-                .is_some_and(|source| source.len() > 4 * 1024 * 1024)
+                .is_some_and(|document| document.content.len_bytes() > 4 * 1024 * 1024)
             {
                 cache.names.write().insert(
                     path.clone(),
@@ -96,23 +95,28 @@ impl ServerState {
                 );
                 continue;
             }
+            let source = document.map(|document| String::from(document.text()));
             missing.push((path.clone(), stamp, source));
         }
         if !missing.is_empty() {
             let (sender, receiver) = oneshot::channel();
-            std::thread::spawn(move || {
-                let parsed = missing
-                    .into_iter()
-                    .filter_map(|(path, stamp, source)| {
-                        let source =
-                            source.or_else(|| fs::read_to_string(&path).ok().map(String::from))?;
-                        let names = declared_names(&source);
-                        Some((path, CachedNames { stamp, names }))
-                    })
-                    .collect::<Vec<_>>();
-                let _ = sender.send(parsed);
-            });
-            if let Ok(parsed) = receiver.await {
+            let spawned = std::thread::Builder::new()
+                .name("vize-global-tag-names".to_string())
+                .spawn(move || {
+                    let parsed = missing
+                        .into_iter()
+                        .filter_map(|(path, stamp, source)| {
+                            let source = source
+                                .or_else(|| fs::read_to_string(&path).ok().map(String::from))?;
+                            let names = declared_names(&source);
+                            Some((path, CachedNames { stamp, names }))
+                        })
+                        .collect::<Vec<_>>();
+                    let _ = sender.send(parsed);
+                });
+            if let Err(error) = spawned {
+                tracing::warn!("failed to spawn global tag name parsing: {error}");
+            } else if let Ok(parsed) = receiver.await {
                 let mut cached = cache.names.write();
                 for (path, entry) in parsed {
                     result.extend(entry.names.iter().cloned());
@@ -233,11 +237,19 @@ mod tests {
         assert_eq!(names(), [String::from("UnsavedCard")]);
         state.documents.close(&uri);
         state.documents.open(
-            uri,
+            uri.clone(),
             "declare module 'vue' { interface GlobalComponents { ReopenedCard: unknown } }".into(),
             1,
             "typescript".into(),
         );
         assert_eq!(names(), [String::from("ReopenedCard")]);
+        state.documents.open(
+            uri,
+            " ".repeat(4 * 1024 * 1024 + 1).into(),
+            2,
+            "typescript".into(),
+        );
+        assert_eq!(names(), Vec::<String>::new());
+        assert_eq!(names(), Vec::<String>::new());
     }
 }

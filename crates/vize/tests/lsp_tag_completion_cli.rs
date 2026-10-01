@@ -10,10 +10,12 @@ use serde_json::{Value, json};
 const SOURCE: &str = include_str!("fixtures/tag-completion/Parent.vue");
 
 fn completion(fixture: &mut Fixture, source: &str, needle: &str) -> Vec<Value> {
+    let offset = source.find(needle).expect("tag prefix") + needle.len();
+    let caret_suffix = source.get(offset..).expect("caret after tag prefix");
     let result = fixture.request_with(
         "textDocument/completion",
         source,
-        needle,
+        caret_suffix,
         json!({"context":{"triggerKind":1}}),
     );
     result

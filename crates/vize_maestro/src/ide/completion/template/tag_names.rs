@@ -149,7 +149,7 @@ fn component(
 ) {
     names.insert(name.into(), (CompletionItemKind::CLASS, detail));
     names.insert(
-        hyphenate(name).as_str().into(),
+        hyphenate(name).to_ascii_lowercase().as_str().into(),
         (CompletionItemKind::CLASS, detail),
     );
 }

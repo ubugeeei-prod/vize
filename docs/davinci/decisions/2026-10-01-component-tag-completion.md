@@ -18,6 +18,8 @@ Declaration names are cached by disk metadata or the open document revision;
 closing/reopening an editor buffer cannot reuse an earlier buffer's names.
 Cold declaration reads and parsing share one background batch, while unchanged
 requests reuse cached names. Declaration inputs are capped at 4 MiB.
+Open buffers are checked before copying their text. A failed background thread
+creation logs a warning and retains cached names without panicking the request.
 
 The owning `crates/vize/tests/fixtures/tag-completion` corpus reproduces the Issue.
 Unit checks cover exact UTF-16 edits, closing-name suffixes, type-only exclusion,

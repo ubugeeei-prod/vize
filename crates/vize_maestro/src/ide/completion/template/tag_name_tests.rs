@@ -12,7 +12,7 @@ fn items(source: &str, needle: &str) -> Option<Vec<CompletionItem>> {
     let ctx = IdeContext::new(
         &state,
         &uri,
-        source.find(needle).expect("caret") + needle.len(),
+        source.rfind(needle).expect("caret") + needle.len(),
     )
     .expect("context");
     tag_names::complete(&ctx, &[])
