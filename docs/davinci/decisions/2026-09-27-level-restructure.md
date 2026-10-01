@@ -347,4 +347,4 @@ record #6921 owner history, shared parse facts, setter guards and registered typ
 records #6922 owner history, unbounded inferred payloads, string widening and required full diagnostic proof.
 
 [Extension wire ownership](./2026-09-28-extension-wire-ownership.md) starts the
-actual L0 neutral-code move for #6833; retiring the three old packages remains unfinished. [Vapor and SSR production acceptance](./2026-10-01-vapor-ssr-production.md) records #6100's production runtime gates and input-model SSR repair corpus.
+actual L0 neutral-code move for #6833; retiring the three old packages remains unfinished. [Vapor and SSR production acceptance](./2026-10-01-vapor-ssr-production.md) and [lint pragma production layout](./2026-10-01-lint-pragma-production-layout.md) records #6100's production runtime gates and input-model SSR repair corpus.

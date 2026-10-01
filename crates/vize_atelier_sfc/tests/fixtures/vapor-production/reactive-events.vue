@@ -6,6 +6,7 @@ const doubled = computed(() => count.value * 2);
 </script>
 <template>
   <main>
+    <!-- eslint-disable-next-line vue/v-on-handler-style -->
     <button @click="count++; record(count)">{{ count }}:{{ doubled }}</button>
   </main>
 </template>

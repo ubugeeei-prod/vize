@@ -21,6 +21,8 @@
 mod fixtures;
 #[path = "vue_ssr_render/input_models.rs"]
 mod input_models;
+#[path = "vue_ssr_render/lint_pragmas.rs"]
+mod lint_pragmas;
 
 use std::io::Write;
 use std::path::Path;

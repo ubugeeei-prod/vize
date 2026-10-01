@@ -38,6 +38,10 @@ const BATTERY: &[(&str, &str)] = &[
         include_str!("fixtures/select-value-order.vue"),
     ),
     (
+        "LintPragmaLayout.vue",
+        include_str!("fixtures/lint-pragma-layout.vue"),
+    ),
+    (
         "Title.vue",
         "<template><title>{{ pageTitle }} — A &amp; B</title></template>",
     ),

@@ -39,9 +39,13 @@ impl<'a> Parser<'a> {
         // from the offset at their edge.
         let directive = parse_vize_directive(content, 1, loc.span.start)
             .map(|directive| directive.kind)
-            // External lint pragmas are kept and stripped like non-rendering
-            // directives, without adding a Vize diagnostic action.
-            .or_else(|| is_lint_pragma_comment(content).then_some(DirectiveKind::Unknown));
+            // Preserve lint pragmas only on comment-aware tool surfaces.
+            // In comments-off compiles they must not affect whitespace or
+            // branch shape before codegen removes non-rendering directives.
+            .or_else(|| {
+                (self.options.comments && is_lint_pragma_comment(content))
+                    .then_some(DirectiveKind::Unknown)
+            });
 
         // Always preserve directive comments (even when options.comments = false)
         // so they can be explicitly handled by codegen and linter
