@@ -1,0 +1,9 @@
+<template lang="pug">
+main
+  //- formatter must not parse this as HTML
+  button(@click="save" :title="'quoted value'") Save
+    span {{ message }}
+  :plain
+    a  b
+  | tail  text
+</template>

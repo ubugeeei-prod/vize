@@ -39,6 +39,16 @@ input/stdout/stderr bytes, status and hashes. Missing rows, option drift,
 incorrect error status, broken pass chains and invented native credit fail.
 Native handled, equivalent and paired counts remain zero.
 
+## Prepared output registration
+
+Register 82 additional API plans so that the existing six plans and this pack
+cover all 87 retained `history_*.snap.txt` references exactly once. Complete
+CSS error bytes and an unsuccessful typed error remain separate from 81
+successful outputs. Fifteen cases retain explicit user overrides, including
+false values, line endings, indentation and print widths. Original input
+bindings and additional branch counterparts are distinguished in each case.
+Two source-built replays passed locally; exact-head Actions remain pending.
+
 ## Remaining work
 
 Register and actually execute every prepared byte fixture, reconcile every
