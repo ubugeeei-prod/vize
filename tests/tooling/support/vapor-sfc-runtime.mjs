@@ -23,7 +23,9 @@ for (const key of [
 ])
   globalThis[key] = key === "window" ? window : window[key];
 
-const vue = await loadRuntime();
+const vue = await loadRuntime({
+  production: input.production ?? process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1",
+});
 const events = [];
 const state = vue.reactive({ label: "initial", ready: true, ...input.context });
 const record = (value) => events.push(value);
@@ -115,6 +117,8 @@ try {
       const selector = step.click ?? step.selector;
       const target = host.querySelector(selector);
       assert.ok(target, `missing event target: ${selector}`);
+      if (Object.hasOwn(step, "value")) target.value = step.value;
+      if (Object.hasOwn(step, "checked")) target.checked = step.checked;
       if (step.dispatch)
         target.dispatchEvent(new window.Event(step.dispatch, { bubbles: true, cancelable: true }));
       else target.click();

@@ -17,6 +17,7 @@ export async function traceMountedBackend({
   slots = null,
   components = {},
   externalTargets = [],
+  production = process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1",
 }) {
   assert.ok(backend === "vdom" || backend === "vapor", `unknown backend: ${backend}`);
   if (slots !== null) validateSuppliedSlots(slots);
@@ -38,7 +39,7 @@ export async function traceMountedBackend({
     globalThis[key] = key === "window" ? window : window[key];
   }
 
-  const vue = await loadRuntime();
+  const vue = await loadRuntime({ production });
   const render = await evaluateCompiledRender(code, vue);
   const events = [];
   const suppliedText = (spec, props) =>
@@ -248,19 +249,20 @@ export function validateLoopScenario(context, steps) {
   }
 }
 
-export async function loadRuntime() {
+export async function loadRuntime({ production = process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1" } = {}) {
+  assert.equal(typeof production, "boolean", "production runtime mode must be explicit");
   const result = await build({
     configFile: false,
     logLevel: "silent",
     define: {
-      "process.env.NODE_ENV": JSON.stringify("development"),
+      "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),
       __VUE_OPTIONS_API__: "true",
       __VUE_PROD_DEVTOOLS__: "false",
-      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: "true",
+      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: production ? "false" : "true",
     },
     build: {
       write: false,
-      minify: false,
+      minify: production,
       lib: {
         entry: vueVaporRuntimeEntry,
         formats: ["es"],

@@ -16,20 +16,22 @@ const {
   components = {},
   slots = null,
   externalTargets = [],
+  production = process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1",
 } = JSON.parse(Buffer.concat(chunks).toString("utf8"));
 assert.equal(typeof source, "string");
 assert.ok(source.length > 0);
 assert.ok(context && typeof context === "object" && !Array.isArray(context));
 assert.ok(Array.isArray(steps) && steps.length > 0);
 
-const compiled = compiler.compile(source, { mode: "module", prefixIdentifiers: true });
+const compilerOptions = { mode: "module", prefixIdentifiers: true, isProd: production };
+const compiled = compiler.compile(source, compilerOptions);
 assert.ok(typeof compiled.code === "string" && compiled.code.length > 0);
 const compiledComponents = Object.fromEntries(
   Object.entries(components).map(([name, spec]) => [
     name,
     {
       ...spec,
-      code: compiler.compile(spec.source, { mode: "module", prefixIdentifiers: true }).code,
+      code: compiler.compile(spec.source, compilerOptions).code,
     },
   ]),
 );
@@ -44,6 +46,7 @@ process.stdout.write(
       components: compiledComponents,
       slots,
       externalTargets,
+      production,
     }),
   )}\n`,
 );
