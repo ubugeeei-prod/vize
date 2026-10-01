@@ -1,0 +1,8 @@
+<template>
+  <QBtn
+    @click.stop="
+      selectWord(key);
+      editWord();
+    "
+  />
+</template>

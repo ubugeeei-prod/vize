@@ -1,0 +1,3 @@
+<template<%= useHtml ? ' lang="html"' : '' %>>
+<div>{{message}}</div>
+</template>
