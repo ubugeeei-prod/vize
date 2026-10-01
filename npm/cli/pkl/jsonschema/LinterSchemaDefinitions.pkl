@@ -72,4 +72,3 @@ linterConfigDef: JsonSchema = new JsonSchema {
   }
   additionalProperties = false
 }
-
