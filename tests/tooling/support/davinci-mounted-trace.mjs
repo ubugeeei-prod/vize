@@ -249,7 +249,9 @@ export function validateLoopScenario(context, steps) {
   }
 }
 
-export async function loadRuntime({ production = process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1" } = {}) {
+export async function loadRuntime({
+  production = process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1",
+} = {}) {
   assert.equal(typeof production, "boolean", "production runtime mode must be explicit");
   const result = await build({
     configFile: false,

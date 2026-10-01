@@ -131,6 +131,15 @@ fn compile_sfc_inner(
         warnings.push(create_vapor_ssr_fallback_warning(descriptor));
     }
     let is_vapor = !options.template.ssr && vapor_requested;
+    // The production Vapor runtime does not expose script-setup bindings
+    // through the component proxy. Every adapter must inline that template,
+    // including native API callers that retain the development default.
+    let script_output = if is_vapor && options.template.is_prod && descriptor.script_setup.is_some()
+    {
+        SfcScriptOutputMode::InlineTemplate
+    } else {
+        script_output
+    };
     stage_capture::configure(
         capture.as_deref_mut(),
         is_vapor,

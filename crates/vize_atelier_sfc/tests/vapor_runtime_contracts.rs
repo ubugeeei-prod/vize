@@ -36,6 +36,24 @@ fn compile(source: &str, backend: &str) -> String {
 }
 
 fn compile_for_mode(source: &str, backend: &str, production: bool) -> String {
+    compile_with_output(
+        source,
+        backend,
+        production,
+        if production {
+            SfcScriptOutputMode::InlineTemplate
+        } else {
+            SfcScriptOutputMode::SeparateTemplate
+        },
+    )
+}
+
+fn compile_with_output(
+    source: &str,
+    backend: &str,
+    production: bool,
+    script_output: SfcScriptOutputMode,
+) -> String {
     let descriptor = parse_sfc(source, Default::default()).unwrap();
     let options = SfcCompileOptions {
         vapor: backend == "vapor",
@@ -52,11 +70,7 @@ fn compile_for_mode(source: &str, backend: &str, production: bool) -> String {
         TemplateSyntaxMode::Standard,
         CustomElementMatcher::default(),
         CodegenOptions::default(),
-        if production {
-            SfcScriptOutputMode::InlineTemplate
-        } else {
-            SfcScriptOutputMode::SeparateTemplate
-        },
+        script_output,
     )
     .unwrap();
     assert!(result.errors.is_empty(), "{backend}: {:?}", result.errors);
@@ -70,12 +84,25 @@ fn trace(source: &str, backend: &str, extra: Value) -> Value {
         .unwrap_or_else(|| {
             std::env::var("VIZE_VUE_RUNTIME_PRODUCTION").is_ok_and(|value| value == "1")
         });
-    let code = compile_for_mode(source, backend, production);
+    let compile_request = |source| {
+        if extra.get("separateTemplate").and_then(Value::as_bool) == Some(true) {
+            compile_with_output(
+                source,
+                backend,
+                production,
+                SfcScriptOutputMode::SeparateTemplate,
+            )
+        } else {
+            compile_for_mode(source, backend, production)
+        }
+    };
+    let code = compile_request(source);
     let child_source = extra
         .get("childSource")
         .and_then(Value::as_str)
         .unwrap_or(CHILD);
-    let mut input = json!({"backend": backend, "code": code, "child": compile_for_mode(child_source, backend, production)});
+    let mut input =
+        json!({"backend": backend, "code": code, "child": compile_request(child_source)});
     input
         .as_object_mut()
         .unwrap()

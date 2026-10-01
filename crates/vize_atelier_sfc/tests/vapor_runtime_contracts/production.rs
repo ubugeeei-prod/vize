@@ -31,6 +31,18 @@ fn production_inline_setup_refs_computed_values_and_events_remain_live() {
         json!(["2:4"])
     );
     assert_eq!(actual[2]["events"], json!([1, 2]));
+    let native_default = trace(
+        source,
+        "vapor",
+        json!({
+            "production": true, "separateTemplate": true,
+            "steps": [{"click": "button"}, {"click": "button"}]
+        }),
+    );
+    assert_eq!(
+        native_default, actual,
+        "production adapters must inline script setup"
+    );
 }
 
 #[test]

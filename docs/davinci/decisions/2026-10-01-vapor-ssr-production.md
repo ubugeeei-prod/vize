@@ -20,6 +20,13 @@ ref/computed/event, keyed slot/scoped-style, native model, component model and
 disposal expectations alongside DOM comparisons. Ordinary PR checks retain
 development coverage and run the dedicated production cases.
 
+Production Vapor script-setup output is normalized to an inline template in
+the shared SFC compiler. The native APIs default to separate templates in
+development; relying only on Vite to select inline output left those production
+callers with bindings that the runtime cannot expose. The reactive-event
+fixture also mounts a production request using that native default. DOM, SSR
+and normal-script output retain their requested module shape.
+
 Remaining acceptance work: obtain terminal exact-head full corpus, real-project
 and merge-queue evidence and fix every reproduced failure. This change does not
 promote an experimental backend or close the compiler fix-history gate (#6880).
