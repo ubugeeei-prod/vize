@@ -151,9 +151,10 @@ test("replay checks the executable gate companions as well as the real Rust call
     const source = read(file);
     const compact = (text: string) => text.replace(/\s+/gu, "").replace(/,(?=[}\]])/gu, "");
     assert.ok(compact(source).includes(compact(after)));
-    const changed = file.endsWith("davinci-host-imports.ts")
-      ? source.replace(after, before)
-      : source.replace(/(hostRuntime:\s*\[[\s\S]*?)"vize_curator",?/u, '$1"unexpected_curator",');
+    const changed =
+      file !== "tests/tooling/davinci-stage-dependencies.test.ts"
+        ? source.replace(after, before)
+        : source.replace(/(hostRuntime:\s*\[[\s\S]*?)"vize_curator",?/u, '$1"unexpected_curator",');
     assert.notEqual(changed, source);
     assert.throws(() => prepare((path) => (path === file ? changed : read(path))), /gate/u);
   }
@@ -179,4 +180,16 @@ test("gate literal whitespace and blanket host companion replacement reject befo
       /gate|companion/u,
     );
   }
+});
+
+test("the SFC executable dependency law rejects literal drift and partial helpers", () => {
+  const file = "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs";
+  for (const changed of [
+    read(file).replace("vize_carton", "vize_car ton"),
+    read(file) + "\nfunction assertPreferredDependencies() {}\n",
+  ])
+    assert.throws(
+      () => prepare((path) => (path === file ? changed : read(path))),
+      /exact SFC dependency gate/u,
+    );
 });

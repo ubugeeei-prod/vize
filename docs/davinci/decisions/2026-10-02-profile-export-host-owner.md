@@ -23,6 +23,11 @@ dev-only host oracles. Curator declares its real normal host dependency; the
 SFC example uses a dev dependency. Optional/target/transitive normal and build
 dependency direction remains enforced.
 
+The SFC migration law parses dependency sections: its reviewed profiler-example
+dev edge is permitted while Carton normal/build edges, aliases and target scopes
+still fail. Replay updates that existing executable law before writing host
+callers, and mutation checks retain the forbidden-edge rejection.
+
 The host import gate admits only the exact JSON symbols at the three reviewed
 production callers. Carton storage, wildcard/group imports, other symbols and
 level source paths still fail. Windows path separators retain that policy.

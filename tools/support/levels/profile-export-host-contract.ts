@@ -99,6 +99,31 @@ export const edges: [string, string, "dependencies" | "dev-dependencies", string
 
 export const gateChanges: [string, string, string][] = [
   [
+    "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs",
+    'import { test } from "node:test";',
+    'import { test } from "node:test";\nimport { parse as parseToml } from "@iarna/toml";',
+  ],
+  [
+    "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs",
+    "function compiler() {",
+    `function assertPreferredDependencies(cargoToml) {
+  const manifest = parseToml(cargoToml);
+  assert.deepEqual(manifest.dependencies.vize_l0, { workspace: true });
+  assert.deepEqual(manifest["dev-dependencies"].vize_carton, { workspace: true });
+  for (const scope of [manifest, ...Object.values(manifest.target ?? {})])
+    for (const kind of ["dependencies", "build-dependencies"])
+      for (const [key, value] of Object.entries(scope[kind] ?? {}))
+        assert.ok(key !== "vize_carton" && value?.package !== "vize_carton");
+}
+
+function compiler() {`,
+  ],
+  [
+    "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs",
+    "  assert.match(cargoToml, /^vize_l0\\.workspace = true$/m);\n  assert.doesNotMatch(cargoToml, /^vize_carton\\.workspace = true$/m);",
+    "  assertPreferredDependencies(cargoToml);",
+  ],
+  [
     "tests/tooling/support/davinci-host-imports.ts",
     'import { withoutI18nHostImports } from "./davinci-i18n-host-imports.ts";',
     'import { withoutProfileHostImports } from "./davinci-profile-host-imports.ts";\nimport { withoutI18nHostImports } from "./davinci-i18n-host-imports.ts";',
@@ -117,6 +142,13 @@ export const gateChanges: [string, string, string][] = [
 
 // Exact reviewed bytes: pure source, precise replay output and Rustfmt output.
 export const hashes = {
+  sfcGate: [
+    "f7126a7c534d77663eb1437b179f2d6e251b2e72c900a309dec8a737266c6aa9",
+    [
+      "77c6abd1f3216fcccd5bcc5b65ad0110fbe297957d153bdac58c4ca86a661bcc",
+      "0039b68bc23fa3077a61407c0caf903a978e81027377c99563142120008829f1",
+    ],
+  ],
   companion: "fbe7a328369e33946c0393c9e017551b33abbd84112d8ffe38950ecfae292e09",
   provider: "0c8f8755bf717dee0f3dbfd1ca61d40d64b14857ea62304bb9217bbfa69933d8",
   exporter: [

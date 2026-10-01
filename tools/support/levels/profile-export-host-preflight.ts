@@ -80,6 +80,11 @@ export function prepare(read: Reader): Map<string, string> {
     ) &&
     occurrences(hostSource, hostDeclaration) === 1;
   requireState(old || next, "unexpected profile export module ownership");
+  const sfcGate = digest(read("tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs"));
+  requireState(
+    old ? sfcGate === hashes.sfcGate[0] : hashes.sfcGate[1].includes(sfcGate),
+    "unexpected exact SFC dependency gate",
+  );
   requireState(
     digest(read("davinci/vize_l0/src/profiler/snapshot.rs")) === hashes.provider,
     "unexpected metric readback body",
@@ -129,7 +134,7 @@ export function prepare(read: Reader): Map<string, string> {
   change("davinci/vize_l0/src/profiler/tests.rs", "mod export;\n\n", "");
   for (const [file, before, after] of gateChanges) {
     const source = get(file);
-    if (file.endsWith("davinci-host-imports.ts")) {
+    if (file !== "tests/tooling/davinci-stage-dependencies.test.ts") {
       const count = (text: string) => source.split(text).length - 1;
       requireState(
         old
