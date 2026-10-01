@@ -16,7 +16,7 @@
   },
   "requirements": {
     "path": "lsp-fix-history-requirements.tsv",
-    "sha256": "f647c7410a535ff433cf99d1543f13701607c3f9d610d21f057ad9069393c992"
+    "sha256": "1af917a51b47a40368b11c9a3e1af8a0a95fe165123299bc861b01767e3cabed"
   },
   "claims": {
     "sourceReviewOnly": true,
