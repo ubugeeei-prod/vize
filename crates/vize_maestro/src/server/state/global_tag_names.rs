@@ -243,12 +243,9 @@ mod tests {
             "typescript".into(),
         );
         assert_eq!(names(), [String::from("ReopenedCard")]);
-        state.documents.open(
-            uri,
-            " ".repeat(4 * 1024 * 1024 + 1).into(),
-            2,
-            "typescript".into(),
-        );
+        state
+            .documents
+            .open(uri, " ".repeat(4 * 1024 * 1024 + 1), 2, "typescript".into());
         assert_eq!(names(), Vec::<String>::new());
         assert_eq!(names(), Vec::<String>::new());
     }
