@@ -312,7 +312,7 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 
 [Affected Rust selection](./2026-09-27-affected-rust-ci.md) records the fail-closed dependency plan and shell-free package execution for #6862.
 
-[Tooling input selection](./2026-09-27-tooling-input-selection.md) records shared task inputs, audited Rust corpus fixtures, the T1 runtime inventory and conservative T0 fallback for [#6863](https://github.com/ubugeeei-prod/vize/issues/6863) and [#6864](https://github.com/ubugeeei-prod/vize/issues/6864). [Isolated PR tooling shards](./2026-10-01-tooling-pr-shards.md) partition the unchanged T0 selection across at most four serial checkouts for #6863; full T1/T2/T3 suites and required contexts remain intact. The two-minute target and actual latency improvement remain unproven.
+[Tooling input selection](./2026-09-27-tooling-input-selection.md) records shared task inputs, audited Rust corpus fixtures, the T1 runtime inventory and conservative T0 fallback for [#6863](https://github.com/ubugeeei-prod/vize/issues/6863) and [#6864](https://github.com/ubugeeei-prod/vize/issues/6864). [Isolated PR tooling shards](./2026-10-01-tooling-pr-shards.md) partition the unchanged T0 selection across at most four serial checkouts for #6863; full T1/T2/T3 suites and required contexts remain intact. The Actions consumer regenerates the same selection in each isolated runner and retains a fail-closed matrix aggregate. The two-minute target and actual latency improvement remain unproven.
 
 [Full tooling LSP source identity](./2026-09-27-lsp-source-binding.md) binds
 required runtime proof to the receipted current CLI without cached fallback.

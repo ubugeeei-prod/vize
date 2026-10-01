@@ -16,7 +16,7 @@ type Job = {
   needs?: string[] | string;
   steps?: Step[];
   outputs?: Record<string, string>;
-  strategy?: { "fail-fast": boolean; matrix: { shard: number[] } };
+  strategy?: { "fail-fast": boolean; matrix: { shard: number[] } | string };
   with?: Record<string, string>;
 };
 const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml")) as {
@@ -45,6 +45,10 @@ test("source planning installs the declared Node runtime before TypeScript impor
   assert.equal(steps[toolchain].with?.toolchain, "1.98.0");
   assert.equal(plan.outputs?.tooling, "${{ steps.tooling-plan.outputs.tooling }}");
   assert.equal(
+    plan.outputs?.["tooling-matrix"],
+    "${{ steps.tooling-plan.outputs.tooling-matrix }}",
+  );
+  assert.equal(
     steps[tooling].env?.TOOLING_TIER,
     "${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}",
   );
@@ -60,7 +64,13 @@ test("source planning installs the declared Node runtime before TypeScript impor
 });
 
 test("selected PR tooling regenerates its plan while merge tooling retains the full receipt path", () => {
-  const steps = source.jobs["pr-tooling-scripts"].steps ?? [];
+  const job = source.jobs["pr-tooling-scripts"];
+  assert.equal(job.strategy?.["fail-fast"], false);
+  assert.equal(
+    job.strategy?.matrix,
+    "${{ fromJSON(needs.pr-source-plan.outputs.tooling-matrix) }}",
+  );
+  const steps = job.steps ?? [];
   const regenerate = steps.findIndex((step) => step.name === "Regenerate PR tooling plan");
   const build = steps.findIndex((step) => step.name === "Build and install vize CLI");
   const selected = steps.findIndex((step) => step.name === "Test selected PR tooling scripts");
@@ -83,6 +93,10 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
   );
   assert.equal(steps[selected].env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
   assert.equal(
+    steps[selected].env?.VIZE_TOOLING_TEST_SHARD,
+    "${{ format('{0}/{1}', matrix.index, matrix.total) }}",
+  );
+  assert.equal(
     steps[selected].env?.SOURCE_LENGTH_BASE_REF,
     "${{ needs.pr-source-plan.outputs.comparison-base }}",
   );
@@ -93,6 +107,13 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
   );
   assert.equal(steps[full].run, "vp run --workspace-root test:scripts");
   assert.equal(steps[full].env?.SOURCE_LENGTH_BASE_REF, undefined);
+  assert.equal(steps[full].env?.VIZE_TOOLING_TEST_SHARD, undefined);
+  assert.equal(source.jobs["source-report"].if, "${{ always() }}");
+  assert.ok(source.jobs["source-report"].needs?.includes("pr-tooling-scripts"));
+  assert.equal(
+    source.jobs["source-report"].steps?.at(-1)?.run,
+    "node tools/support/compat/github/require-needs-success.mjs",
+  );
   assert.match(
     steps[build].run ?? "",
     /cargo build --profile ci -p vize && vp exec node tests\/differential\/build-receipt\.mjs/,
@@ -118,7 +139,10 @@ test("the Rust report waits for the builder and all four independently executing
   const shard = rust.jobs["pr-rust-shard"];
   assert.deepEqual(shard.needs, ["pr-rust-build", "merge-rust-source"]);
   assert.equal(shard.strategy?.["fail-fast"], false);
-  assert.deepEqual(shard.strategy?.matrix.shard, [1, 2, 3, 4]);
+  assert.deepEqual(
+    typeof shard.strategy?.matrix === "object" ? shard.strategy.matrix.shard : undefined,
+    [1, 2, 3, 4],
+  );
   const steps = shard.steps ?? [];
   const verify = steps.findIndex((step) => step.name === "Verify Rust archive identity");
   const run = steps.findIndex((step) => step.name === "Run Rust test shard without rebuilding");

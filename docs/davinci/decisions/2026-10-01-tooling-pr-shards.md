@@ -45,8 +45,12 @@ that whole-PR latency target.
 1. Add the validated matrix and serial runner provider, including disjoint and
    exhaustive selection laws and merge rejection. Existing workflow execution
    remains unchanged until a consumer uses these outputs.
-2. Wire the Actions consumer on a child branch, retain aggregate/context
-   parity, and validate the actual PR and protected merge-group heads.
+2. The Actions consumer uses the provider matrix on a child branch. Each PR
+   shard regenerates the same plan from the shared comparison base and receives
+   its index/count only in the selected-test step. Fail-fast is disabled. The
+   source report waits for the entire matrix; the full merge step receives no
+   shard coordinate. Actual PR and protected merge-group validation remains
+   required.
 
 The child depends on the provider and must be registered in a native GitHub
 Stack. Exact-head checks and an actual protected-queue merge are required
