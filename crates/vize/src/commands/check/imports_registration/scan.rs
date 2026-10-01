@@ -1,5 +1,5 @@
 use super::{
-    CanonicalPathCache, FxHashMap, ImportFileOptions, PackageReachabilityKey, Path,
+    CanonicalPathCache, FxHashMap, FxHashSet, ImportFileOptions, PackageReachabilityKey, Path,
     PathAliasResolver, RegistrationFrontier, extract_module_specifier_occurrences,
     is_declaration_file, is_relative_specifier, resolve_import_base,
     resolve_import_base_with_inputs, resolve_relative_import,
@@ -16,10 +16,14 @@ pub(super) fn source_needs_virtual_registration(
         vize_canon::batch::PackageRouteReachability,
     >,
     discovered_routes: &mut Vec<vize_canon::PackageRouteBinding>,
+    negative_alias_sources: &FxHashSet<std::path::PathBuf>,
 ) -> bool {
     let mut needs_registration = false;
     while let Some(file) = frontier.queue.pop() {
         if !frontier.visited.insert(file.clone()) {
+            continue;
+        }
+        if packages.is_none() && negative_alias_sources.contains(&file) {
             continue;
         }
         if file.extension().and_then(|extension| extension.to_str()) == Some("vue") {
@@ -27,6 +31,10 @@ pub(super) fn source_needs_virtual_registration(
             continue;
         }
 
+        #[cfg(test)]
+        {
+            frontier.source_reads += 1;
+        }
         let Ok(source) = std::fs::read_to_string(&file) else {
             continue;
         };

@@ -1,5 +1,7 @@
 use super::*;
 
+#[path = "imports_alias_scaling_tests.rs"]
+mod alias_scaling_tests;
 #[path = "imports_generated_tests.rs"]
 mod generated_tests;
 #[path = "imports_js_tests.rs"]

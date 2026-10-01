@@ -58,7 +58,7 @@ impl CorsaExecutor {
                 );
                 return profile!(
                     "canon.corsa.cli_fallback",
-                    check_with_cli(&self.corsa_path, project)
+                    check_with_cli(&self.corsa_path, project, self.checkers())
                 );
             }
             Err(error) => return Err(map_corsa_error(error)),

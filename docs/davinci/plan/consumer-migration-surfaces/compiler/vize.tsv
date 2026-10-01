@@ -10,7 +10,7 @@ compiler	Compiler	source	crates/vize/src/commands/build/runner/collect.rs	74	l0	
 compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/collect/tests.rs	9	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize/src/commands/build/runner/compile_stats.rs	15	l0	L0	stage	vize_l0	preferred	7
 compiler	Compiler	source	crates/vize/src/commands/build/runner/compile.rs	41	l0	L0	stage	vize_l0	preferred	8
-compiler	Compiler	source	crates/vize/src/commands/build/runner/declarations.rs	65	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize/src/commands/build/runner/declarations.rs	66	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize/src/commands/build/runner/output.rs	11	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	source	crates/vize/src/commands/build/runner/output/plan.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/output/tests.rs	5	l0	L0	stage	vize_l0	preferred	1

@@ -58,6 +58,9 @@ Options:
       --servers <SERVERS>
           Number of parallel Corsa servers to use (defaults to an auto-tuned value)
 
+      --checkers <CHECKERS>
+          Checker workers per Corsa CLI process (default: 1, or VIZE_CHECKERS)
+
       --declaration
           Emit `.d.ts` files using the materialized Corsa project
 

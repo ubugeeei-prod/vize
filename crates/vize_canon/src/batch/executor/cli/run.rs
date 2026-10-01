@@ -1,16 +1,15 @@
 use super::{
-    CorsaError, CorsaResult, Path, TypeCheckResult, VirtualProject, checker_count, is_vue_original,
+    CorsaError, CorsaResult, Path, TypeCheckResult, VirtualProject, is_vue_original,
     partition_virtual_files, profile, run_cli_for_config, shard_count,
 };
 
 pub(in crate::batch::executor) fn check_with_cli(
     corsa_path: &Path,
     project: &VirtualProject,
+    checkers: usize,
 ) -> CorsaResult<TypeCheckResult> {
     let config_path = project.virtual_root().join("tsconfig.json");
-    run_cli_for_config(corsa_path, project, &config_path, checker_count(), &|_| {
-        true
-    })
+    run_cli_for_config(corsa_path, project, &config_path, checkers, &|_| true)
 }
 
 /// Run the project check sharded across `servers` concurrent Corsa CLI
@@ -27,10 +26,11 @@ pub(in crate::batch::executor) fn check_with_cli_sharded(
     corsa_path: &Path,
     project: &VirtualProject,
     servers: usize,
+    checkers: usize,
 ) -> CorsaResult<TypeCheckResult> {
     let plan = partition_virtual_files(project, servers);
     if plan.shards.len() <= 1 {
-        return check_with_cli(corsa_path, project);
+        return check_with_cli(corsa_path, project, checkers);
     }
 
     let mut config_paths = Vec::with_capacity(plan.shards.len());
@@ -44,7 +44,6 @@ pub(in crate::batch::executor) fn check_with_cli_sharded(
     let owners = &plan.owners;
     // Shards already parallelize across processes; each process keeps the
     // deterministic per-program checker count (see `checker_count`).
-    let checkers = checker_count();
     let results = profile!("canon.corsa.cli.sharded", {
         std::thread::scope(|scope| {
             let handles: Vec<_> = config_paths
@@ -94,7 +93,10 @@ pub(in crate::batch::executor) fn check_with_cli_sharded(
 }
 
 /// Pick the shard count for a project when the caller did not request one.
-pub(in crate::batch::executor) fn auto_server_count(project: &VirtualProject) -> usize {
+pub(in crate::batch::executor) fn auto_server_count(
+    project: &VirtualProject,
+    checkers: usize,
+) -> usize {
     let vue_files = project
         .virtual_files_sorted()
         .iter()
@@ -103,5 +105,5 @@ pub(in crate::batch::executor) fn auto_server_count(project: &VirtualProject) ->
     let threads = std::thread::available_parallelism()
         .map(std::num::NonZero::get)
         .unwrap_or(1);
-    shard_count(threads, checker_count(), vue_files)
+    shard_count(threads, checkers, vue_files)
 }

@@ -120,6 +120,11 @@ impl BatchTypeChecker {
         self.server_count = servers;
     }
 
+    /// Set the checker workers within each CLI process. Defaults to the deterministic width.
+    pub fn set_checker_count(&mut self, count: Option<usize>) {
+        self.executor.set_checker_count(count);
+    }
+
     /// Resolve Vue 3 Options API template bindings (opt-in, standard build).
     pub fn enable_options_api(&mut self) {
         self.project.set_options_api(true);

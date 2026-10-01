@@ -172,6 +172,7 @@ fn check_args(args: &ReadyArgs) -> CheckArgs {
         profile: false,
         corsa_path: None,
         servers: None,
+        checkers: None,
         declaration: false,
         declaration_dir: None,
         profile_export: Default::default(),

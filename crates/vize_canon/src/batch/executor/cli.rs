@@ -20,7 +20,8 @@ mod project_diagnostics;
 mod shard_sizing;
 mod union_find;
 
-use checkers::{checker_count, rejects_checkers_flag};
+pub(super) use checkers::checker_count;
+use checkers::rejects_checkers_flag;
 use diagnostic_paths::normalize_cli_path;
 use file_diagnostics::{Decoded, parse_cli_diagnostic_line};
 use import_resolution::resolve_virtual_import;

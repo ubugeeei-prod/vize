@@ -23,6 +23,7 @@ pub(super) struct CheckerSettings {
     pub(super) virtual_ts_options: vize_canon::virtual_ts::VirtualTsOptions,
     pub(super) corsa_path: Option<PathBuf>,
     pub(super) servers: Option<usize>,
+    pub(super) checkers: Option<usize>,
     pub(super) options_api: bool,
     pub(super) legacy_vue2: bool,
     pub(super) jsx_typecheck: bool,
@@ -119,6 +120,7 @@ pub(super) fn execute_program(
     )
     .map_err(|error| cstr!("{}", error))?;
     checker.set_server_count(settings.servers);
+    checker.set_checker_count(settings.checkers);
     if settings.options_api {
         checker.enable_options_api();
     }

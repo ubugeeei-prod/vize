@@ -43,12 +43,20 @@ type PackageReachabilityKey = (
 pub(super) struct VirtualRegistrationCache {
     registrations: FxHashMap<(PathBuf, bool), CachedVirtualRegistration>,
     reachability: FxHashMap<PackageReachabilityKey, vize_canon::batch::PackageRouteReachability>,
+    negative_alias_sources: FxHashSet<PathBuf>,
+    #[cfg(test)]
+    source_reads: usize,
 }
 
 impl VirtualRegistrationCache {
     #[cfg(test)]
     pub(super) fn registration_entries(&self) -> usize {
         self.registrations.len()
+    }
+
+    #[cfg(test)]
+    pub(super) fn source_reads(&self) -> usize {
+        self.source_reads
     }
 }
 
@@ -57,6 +65,8 @@ impl VirtualRegistrationCache {
 struct RegistrationFrontier {
     visited: FxHashSet<PathBuf>,
     queue: Vec<PathBuf>,
+    #[cfg(test)]
+    source_reads: usize,
 }
 
 /// A file inside a package that imports that package's own name pulls the
@@ -85,6 +95,10 @@ pub(super) fn non_relative_import_needs_virtual_registration(
     cache: &mut VirtualRegistrationCache,
     discovery: &mut VirtualRegistrationDiscovery,
 ) -> bool {
+    let pure_alias = packages.is_none();
+    if pure_alias && cache.negative_alias_sources.contains(path) {
+        return false;
+    }
     let cache_key = (path.to_path_buf(), packages.is_some());
     if let Some(cached) = cache.registrations.get_mut(&cache_key) {
         // Route bindings are collection-global facts; sources are caller-local
@@ -102,8 +116,8 @@ pub(super) fn non_relative_import_needs_virtual_registration(
     }
 
     let mut frontier = RegistrationFrontier {
-        visited: FxHashSet::default(),
         queue: vec![path.to_path_buf()],
+        ..Default::default()
     };
     let mut discovered = Vec::new();
     let needs_registration = source_needs_virtual_registration(
@@ -114,7 +128,19 @@ pub(super) fn non_relative_import_needs_virtual_registration(
         packages,
         &mut cache.reachability,
         &mut discovered,
+        &cache.negative_alias_sources,
     );
+    #[cfg(test)]
+    {
+        cache.source_reads += frontier.source_reads;
+    }
+    // A completely scanned Vue-free closure proves every member negative.
+    // Package walks retain their full caller-specific invalidation inputs.
+    if pure_alias && !needs_registration {
+        cache
+            .negative_alias_sources
+            .extend(frontier.visited.iter().cloned());
+    }
     let resolved_discovery = VirtualRegistrationDiscovery {
         package_routes: discovered,
         package_sources: if needs_registration {
