@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -20,6 +21,20 @@ void test("shared formatter API corpus observes all six exact outputs from a sou
     profile: process.env.CI ? "ci" : "dev",
     offline: !process.env.CI,
   });
+  for (const argv of [
+    ["--options-json", "--options", '{"unknown":true}'],
+    ["--options-json", "--options", '{"skipScriptStabilization":true}'],
+    ["--options-json", "--vue-version", "4"],
+    ["--options-json", "--vue-version", "2", "--vue-version", "3"],
+    ["--style", "--vue-version", "2"],
+  ]) {
+    const observed = spawnSync(built.binaryPath, argv, { input: "", timeout: 30_000 });
+    assert.equal(observed.error, undefined);
+    assert.equal(observed.signal, null);
+    assert.equal(observed.status, 1);
+    assert.equal(observed.stdout.length, 0);
+    assert.match(observed.stderr.toString(), /^Error: IoError/);
+  }
   const report = runFormatterApiPack({
     manifestPath: path.join(
       root,
