@@ -344,9 +344,7 @@ async function waitForDiagnostics(
       (value) => {
         const diagnostics = diagnosticPayload(value, uri, version);
         if (diagnostics == null) return false;
-        observed.push(
-          diagnostics.diagnostics.map(({ code, message }) => ({ code, message })),
-        );
+        observed.push(diagnostics.diagnostics.map(({ code, message }) => ({ code, message })));
         return predicate == null || predicate(diagnostics);
       },
       timeoutMs,
