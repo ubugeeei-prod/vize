@@ -1,0 +1,264 @@
+{
+  "schema": "vize.formatter-capture-tables",
+  "version": 2,
+  "build": {
+    "path": "tests/_fixtures/differential/formatter-history/capture-build-receipt.json",
+    "sha256": "f61be5412f90157415decc70461080e60a5a210efa017dd9617eae45aec9c01a"
+  },
+  "arguments": {
+    "template": [
+      "--template"
+    ],
+    "sfc": [
+      "--sfc",
+      "--options",
+      "{\"attributeSortOrder\":\"as-written\"}"
+    ],
+    "style": [
+      "--style"
+    ],
+    "sfc-2": [
+      "--sfc"
+    ],
+    "sfc-3": [
+      "--sfc",
+      "--options",
+      "{\"singleAttributePerLine\":true}"
+    ],
+    "json": [
+      "--json"
+    ],
+    "json-error": [
+      "--json",
+      "--expect-error"
+    ],
+    "jsonc": [
+      "--jsonc"
+    ],
+    "jsonc-error": [
+      "--jsonc",
+      "--expect-error"
+    ],
+    "sfc-4": [
+      "--sfc",
+      "--options",
+      "{\"vueIndentScriptAndStyle\":true}"
+    ],
+    "sfc-5": [
+      "--sfc",
+      "--options",
+      "{\"vueIndentScriptAndStyle\":true,\"endOfLine\":\"crlf\"}"
+    ],
+    "sfc-6": [
+      "--sfc",
+      "--options",
+      "{\"vueIndentScriptAndStyle\":true,\"endOfLine\":\"lf\"}"
+    ],
+    "template-2": [
+      "--template",
+      "--options",
+      "{\"printWidth\":200}"
+    ],
+    "template-3": [
+      "--template",
+      "--options",
+      "{\"printWidth\":80}"
+    ],
+    "template-4": [
+      "--template",
+      "--options",
+      "{\"printWidth\":30}"
+    ],
+    "sfc-7": [
+      "--sfc",
+      "--legacy-single-pass"
+    ]
+  },
+  "processes": {
+    "success": {
+      "exitStatus": 0,
+      "signal": null,
+      "processError": null
+    },
+    "formatter-error": {
+      "exitStatus": 1,
+      "signal": null,
+      "processError": null
+    }
+  },
+  "streams": {
+    "capture-multiline-template-literal-in-interpolation-is-idempotent-template-0-initial-stderr": {
+      "path": "tests/_fixtures/differential/formatter-history/capture-streams/capture-multiline-template-literal-in-interpolation-is-idempotent-template-0-initial-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "capture-sfc-shorthand-spreads-preserve-order-with-as-written-sorting-sfc-0-initial-stderr": {
+      "path": "tests/_fixtures/differential/formatter-history/capture-streams/capture-sfc-shorthand-spreads-preserve-order-with-as-written-sorting-sfc-0-initial-stderr.txt",
+      "sha256": "991cf5d5ae1f556c17810d57eb0ac82f48ada1a586b043b43987373198419998"
+    },
+    "capture-keeps-comments-between-and-after-sfc-blocks-sfc-0-initial-stderr": {
+      "path": "tests/_fixtures/differential/formatter-history/capture-streams/capture-keeps-comments-between-and-after-sfc-blocks-sfc-0-initial-stderr.txt",
+      "sha256": "555ee53effc94b304652ebc53382d2e9c565ac48612b5e4c49da6944938785fe"
+    },
+    "capture-invalid-number-tokens-return-errors-json-0-initial-stderr": {
+      "path": "tests/_fixtures/differential/formatter-history/capture-streams/capture-invalid-number-tokens-return-errors-json-0-initial-stderr.txt",
+      "sha256": "4316933aa2982c9faab40281f62891a7b007110d93a0f916d03f79d57e088173"
+    },
+    "capture-invalid-number-tokens-return-errors-json-0-typed-error-stderr": {
+      "path": "tests/_fixtures/differential/formatter-history/capture-streams/capture-invalid-number-tokens-return-errors-json-0-typed-error-stderr.txt",
+      "sha256": "f43818e7a6176e71f0584a5afe6b6009d2814f05ec7cabdfba55d88c24094a8e"
+    },
+    "capture-invalid-number-tokens-return-errors-json-1-initial-stderr": {
+      "path": "tests/_fixtures/differential/formatter-history/capture-streams/capture-invalid-number-tokens-return-errors-json-1-initial-stderr.txt",
+      "sha256": "d10542805b9cdc7c6b859cfeb47e3053f2b875526792c02a79696e1b4a96de0b"
+    },
+    "capture-invalid-number-tokens-return-errors-json-2-initial-stderr": {
+      "path": "tests/_fixtures/differential/formatter-history/capture-streams/capture-invalid-number-tokens-return-errors-json-2-initial-stderr.txt",
+      "sha256": "1abfd09452ed3fabb022a08617ecedaf363c6199a3cc62b8318799a4fbb3263b"
+    },
+    "capture-invalid-number-tokens-return-errors-json-3-initial-stderr": {
+      "path": "tests/_fixtures/differential/formatter-history/capture-streams/capture-invalid-number-tokens-return-errors-json-3-initial-stderr.txt",
+      "sha256": "e962c6dfd4a1698c17fb3ab5201bb21247f453a20d759250709b539857d98fcd"
+    },
+    "capture-invalid-string-escapes-return-errors-json-0-initial-stderr": {
+      "path": "tests/_fixtures/differential/formatter-history/capture-streams/capture-invalid-string-escapes-return-errors-json-0-initial-stderr.txt",
+      "sha256": "5b5a1736a2b6286f7b2331c05d56a296342763b6e158cdfcc9390130b74209b9"
+    },
+    "capture-invalid-string-escapes-return-errors-json-1-initial-stderr": {
+      "path": "tests/_fixtures/differential/formatter-history/capture-streams/capture-invalid-string-escapes-return-errors-json-1-initial-stderr.txt",
+      "sha256": "d1f3852eb260a7c0d4f58ffacf3788da0f3015dd5ea73dba51e02820c895becc"
+    },
+    "capture-invalid-string-escapes-return-errors-json-2-initial-stderr": {
+      "path": "tests/_fixtures/differential/formatter-history/capture-streams/capture-invalid-string-escapes-return-errors-json-2-initial-stderr.txt",
+      "sha256": "5668325945f866c5ab51397880fe0192305f58e4d85fdfafd264bf5194bd995d"
+    }
+  },
+  "probes": {
+    "default": {
+      "argv": [
+        "--options-json"
+      ],
+      "process": "success",
+      "stdout": {
+        "path": "tests/_fixtures/differential/formatter-history/capture-streams/options-5e3c92fb891b.json.txt",
+        "sha256": "5e3c92fb891bbc78cd7242ca35242d79a50cf615dbc80f1472f8bd889152fc4c"
+      },
+      "stderr": "capture-multiline-template-literal-in-interpolation-is-idempotent-template-0-initial-stderr"
+    },
+    "default-2": {
+      "argv": [
+        "--options-json",
+        "--options",
+        "{\"attributeSortOrder\":\"as-written\"}"
+      ],
+      "process": "success",
+      "stdout": {
+        "path": "tests/_fixtures/differential/formatter-history/capture-streams/options-54f84190a6ea.json.txt",
+        "sha256": "54f84190a6ea78ea26675013cde188992792ac3ef87826715a10aed27d0c0ad6"
+      },
+      "stderr": "capture-multiline-template-literal-in-interpolation-is-idempotent-template-0-initial-stderr"
+    },
+    "default-3": {
+      "argv": [
+        "--options-json",
+        "--options",
+        "{\"singleAttributePerLine\":true}"
+      ],
+      "process": "success",
+      "stdout": {
+        "path": "tests/_fixtures/differential/formatter-history/capture-streams/options-cc4d36fdb13d.json.txt",
+        "sha256": "cc4d36fdb13d4e89b586e71ed5f0d4e9c854e1dfde5768ea67c92fb2d36899e7"
+      },
+      "stderr": "capture-multiline-template-literal-in-interpolation-is-idempotent-template-0-initial-stderr"
+    },
+    "default-4": {
+      "argv": [
+        "--options-json",
+        "--options",
+        "{\"vueIndentScriptAndStyle\":true}"
+      ],
+      "process": "success",
+      "stdout": {
+        "path": "tests/_fixtures/differential/formatter-history/capture-streams/options-5133c0340b07.json.txt",
+        "sha256": "5133c0340b07c42ab1858e28295bd486cfd2476367b9f5fbafc205a466b41d75"
+      },
+      "stderr": "capture-multiline-template-literal-in-interpolation-is-idempotent-template-0-initial-stderr"
+    },
+    "default-5": {
+      "argv": [
+        "--options-json",
+        "--options",
+        "{\"vueIndentScriptAndStyle\":true,\"endOfLine\":\"crlf\"}"
+      ],
+      "process": "success",
+      "stdout": {
+        "path": "tests/_fixtures/differential/formatter-history/capture-streams/options-f4fdf776016f.json.txt",
+        "sha256": "f4fdf776016f12d9b52696963f7a1d2d3202c54a7f32acf366b355d2559ff4b2"
+      },
+      "stderr": "capture-multiline-template-literal-in-interpolation-is-idempotent-template-0-initial-stderr"
+    },
+    "default-6": {
+      "argv": [
+        "--options-json",
+        "--options",
+        "{\"vueIndentScriptAndStyle\":true,\"endOfLine\":\"lf\"}"
+      ],
+      "process": "success",
+      "stdout": {
+        "path": "tests/_fixtures/differential/formatter-history/capture-streams/options-5133c0340b07.json.txt",
+        "sha256": "5133c0340b07c42ab1858e28295bd486cfd2476367b9f5fbafc205a466b41d75"
+      },
+      "stderr": "capture-multiline-template-literal-in-interpolation-is-idempotent-template-0-initial-stderr"
+    },
+    "default-7": {
+      "argv": [
+        "--options-json",
+        "--options",
+        "{\"printWidth\":200}"
+      ],
+      "process": "success",
+      "stdout": {
+        "path": "tests/_fixtures/differential/formatter-history/capture-streams/options-97de35002553.json.txt",
+        "sha256": "97de35002553a2ffb54ba3c426717638be635f14cbef1fe0ba1b0d4b3ee79ac1"
+      },
+      "stderr": "capture-multiline-template-literal-in-interpolation-is-idempotent-template-0-initial-stderr"
+    },
+    "default-8": {
+      "argv": [
+        "--options-json",
+        "--options",
+        "{\"printWidth\":80}"
+      ],
+      "process": "success",
+      "stdout": {
+        "path": "tests/_fixtures/differential/formatter-history/capture-streams/options-64bdbf6a9df5.json.txt",
+        "sha256": "64bdbf6a9df57fa6c373541a122037bacbced2261e52f8518b7f33ad4465db2e"
+      },
+      "stderr": "capture-multiline-template-literal-in-interpolation-is-idempotent-template-0-initial-stderr"
+    },
+    "default-9": {
+      "argv": [
+        "--options-json",
+        "--options",
+        "{\"printWidth\":30}"
+      ],
+      "process": "success",
+      "stdout": {
+        "path": "tests/_fixtures/differential/formatter-history/capture-streams/options-52ae1f7f59d1.json.txt",
+        "sha256": "52ae1f7f59d157b1bcf6f155d0b96b4dcac901f3d49bce3f49fc751edcbc20de"
+      },
+      "stderr": "capture-multiline-template-literal-in-interpolation-is-idempotent-template-0-initial-stderr"
+    },
+    "single-pass": {
+      "argv": [
+        "--options-json",
+        "--legacy-single-pass"
+      ],
+      "process": "success",
+      "stdout": {
+        "path": "tests/_fixtures/differential/formatter-history/capture-streams/options-b40aa7d4ee50.json.txt",
+        "sha256": "b40aa7d4ee50639ca56e2d71f2556f4da4f183cc84f990566b68ff4a18265848"
+      },
+      "stderr": "capture-multiline-template-literal-in-interpolation-is-idempotent-template-0-initial-stderr"
+    }
+  }
+}

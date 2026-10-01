@@ -1,0 +1,12 @@
+<!--
+SPDX-FileCopyrightText: Example Author
+SPDX-License-Identifier: MIT
+-->
+
+<script setup lang="ts">
+const message = "hello";
+</script>
+
+<template>
+  <div>Hello</div>
+</template>

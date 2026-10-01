@@ -3,6 +3,11 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { compareBytes } from "./compare.mjs";
+import { normalizeFormatterHistoryManifest } from "./formatter-api-provenance.ts";
+import {
+  loadFormatterCaptureReceipt,
+  validateFormatterCapturedCase,
+} from "./formatter-api-capture.ts";
 import { sha256 } from "./manifest.mjs";
 import { validateObserverReceipt } from "./formatter-api-build.mjs";
 import {
@@ -34,28 +39,14 @@ function immutableArtifact(root, artifact) {
 
 export function loadFormatterApiManifest(manifestPath, repoRoot) {
   const raw = fs.readFileSync(manifestPath);
-  const manifest = JSON.parse(raw.toString());
+  const manifest = normalizeFormatterHistoryManifest(JSON.parse(raw.toString()));
   assert.equal(manifest.schema, "vize.formatter-history-fixtures");
-  assert.equal(manifest.version, 1);
+  assert([1, 2].includes(manifest.version));
   assert.equal(manifest.issue, 6882);
   assert.match(manifest.source.revision, /^[a-f0-9]{40}$/);
   assert.equal(manifest.nativeHandled, 0);
   assert(Array.isArray(manifest.cases) && manifest.cases.length > 0);
-  const capture = manifest.captureReceipt
-    ? JSON.parse(immutableArtifact(repoRoot, manifest.captureReceipt).toString())
-    : null;
-  if (capture) {
-    assert.equal(capture.schema, "vize.formatter-history-capture");
-    assert.equal(capture.version, 1);
-    assert.equal(capture.source.sourceRevision, manifest.source.revision);
-    assert.equal(capture.source.formatterSourceTree, manifest.source.formatterSourceTree);
-    assert.equal(capture.source.cargoLockSha256, manifest.source.cargoLockSha256);
-    assert.deepEqual(capture.source, capture.buildReceipt.source);
-    assert.deepEqual(
-      capture.rows.map((row) => row.id),
-      manifest.cases.map((row) => row.id),
-    );
-  }
+  const capture = loadFormatterCaptureReceipt(repoRoot, manifest);
   const ids = new Set();
   const cases = manifest.cases.map((fixture) => {
     assert.match(fixture.id, /^[a-z0-9/-]+$/);
@@ -101,35 +92,15 @@ export function loadFormatterApiManifest(manifestPath, repoRoot) {
       assert(input.subarray(end).equals(Buffer.from(suffix)));
       assert.equal(sha256(input.subarray(start, end)), bodySha256);
     }
-    if (capture) {
-      const row = capture.rows.find((item) => item.id === fixture.id);
-      assert.deepEqual(
-        JSON.parse(Buffer.from(row.optionsProbe.stdoutBase64, "base64").toString()),
-        options.effective,
-      );
-      assert.equal(row.optionsProbe.exitStatus, 0);
-      assert.equal(row.optionsProbe.stderrBase64, "");
-      assert.equal(row.repeated.length, error || internal ? 2 : 4);
-      for (const [index, call] of row.repeated.entries()) {
-        assert.deepEqual(call.argv, [
-          APIS[fixture.api],
-          ...options.flags,
-          ...(error ? ["--expect-error"] : []),
-        ]);
-        assert.equal(call.exitStatus, error ? 1 : 0);
-        assert.equal(call.signal, null);
-        assert.equal(call.processError, null);
-        const observedInput = index < 2 ? input : expected;
-        assert.equal(call.inputBase64, observedInput.toString("base64"));
-        assert.equal(call.inputSha256, sha256(observedInput));
-        assert.equal(call.stdoutBase64, expected.toString("base64"));
-        assert.equal(call.stdoutSha256, sha256(expected));
-        assert.equal(
-          call.stderrBase64,
-          expectedStderr(fixture, observedInput, expected).toString("base64"),
-        );
-      }
-    }
+    validateFormatterCapturedCase(
+      repoRoot,
+      capture,
+      fixture,
+      options,
+      APIS[fixture.api],
+      input,
+      expected,
+    );
     return {
       ...fixture,
       input,

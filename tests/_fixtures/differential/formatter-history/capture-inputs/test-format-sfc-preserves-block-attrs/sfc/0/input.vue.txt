@@ -1,0 +1,15 @@
+<template functional>
+  <div>{{ msg }}</div>
+</template>
+
+<script setup lang="ts" generic="T extends string">
+const msg = 'hello'
+</script>
+
+<style scoped module lang="scss">
+.container { color: red; }
+</style>
+
+<i18n global locale="en">
+{"hello":"Hello"}
+</i18n>

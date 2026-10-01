@@ -1,0 +1,6 @@
+<template>
+  <my-code v-pre>
+  a
+</my-code>
+  <span>y</span>
+</template>
