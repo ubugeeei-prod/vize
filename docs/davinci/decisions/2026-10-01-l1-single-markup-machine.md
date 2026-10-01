@@ -75,6 +75,16 @@ Exact-head Actions must pass all 100 instruction ceilings without relaxation
 before queue admission. Local targeted L1 and Armature laws, source length,
 owned-storage inventory and module/dependency policies precede publication.
 
+The first exact-head measurement at `c830edd84` exceeded two unchanged ceilings:
+`armature_tokenize_small` used 4,081 instructions against 4,070, and
+`armature_tokenize_stress-interp` used 202,147 against 200,943. All three runs
+agreed; the other 98 probes passed. Removing an unentered enum variant had
+shifted private `InRCDATA` from 33 to 32. The native enum now retains that numeric
+gap without a dead variant or runtime arm. Its frequent Text/RCDATA transition
+can use the original shift-and-add selection. A narrow x86 code-generation
+diagnostic supports that mechanism; exact-head Actions determine whether all
+100 actual benchmark ceilings pass. Frozen records and ceilings remain unchanged.
+
 ## Remaining scope
 
 #6835 stays unfinished. The native component-surface constructor still admits
