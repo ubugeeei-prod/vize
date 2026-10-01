@@ -66,6 +66,30 @@ impl<'a> EmbedSource<'a> {
         self.decoded
     }
 
+    /// Borrow a checked decoded-relative piece without decoding again.
+    /// Complete entities keep their authored spelling and map; partial entity
+    /// boundaries remain errors. Identity-only pieces need no map allocation.
+    pub fn slice_in(self, allocator: &'a Allocator, relative: Span) -> Result<Self, SourceError> {
+        let text = self
+            .text
+            .get(relative.start as usize..relative.end as usize)
+            .ok_or(SourceError::InvalidDecodedSpan)?;
+        let span = self.authored_span(relative)?;
+        if relative.start == 0 && relative.end as usize == self.text.len() {
+            return Ok(self);
+        }
+        let decoded = self
+            .decoded
+            .map(|map| map.slice_in(allocator, relative))
+            .transpose()?
+            .flatten();
+        Ok(Self {
+            span,
+            text,
+            decoded,
+        })
+    }
+
     /// Exact decoded-relative to authored-file projection, suitable for edits.
     /// A partial entity expansion, including an interior point, is an explicit
     /// error; complete entities and their start/end boundary points are exact.
@@ -225,3 +249,6 @@ pub fn prepare_attribute_value<'a>(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod slice_tests;

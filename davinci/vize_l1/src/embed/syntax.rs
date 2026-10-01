@@ -5,6 +5,7 @@
 //! and typed local holes. Program source is unwrapped. No product route calls
 //! this provider yet; it neither selects file languages nor attaches identities.
 
+use alloc::boxed::Box;
 use oxc_ast::ast::{Expression, Program, Statement};
 use oxc_diagnostics::Diagnostics;
 use oxc_parser::Parser;
@@ -15,10 +16,12 @@ use super::{Embed, EmbedSource, Grammar, Lang, Shape, SourceError};
 
 mod admission;
 mod coordinates;
+mod handoff;
 mod shapes;
 mod views;
 pub use admission::NATIVE_SYNTAX_UNIT_LIMIT;
 use coordinates::Coordinates;
+pub use handoff::RetainedExpression;
 use shapes::Wrapper;
 pub use shapes::{HandlerBodyView, SlotParamsView};
 pub use views::{CommentView, DiagnosticLabel, DiagnosticView};
@@ -138,6 +141,17 @@ impl<'a> NativeSyntax<'a> {
     /// Exact projection suitable for edits; partial entities remain errors.
     pub fn authored_span(&self, span: oxc_span::Span) -> Result<Span, SourceError> {
         self.source().authored_span(self.decoded_span(span)?)
+    }
+
+    /// Move an Expr root into the arena without reparsing or cloning its AST.
+    /// Non-Expr artifacts are returned intact in a normally owned box. Local
+    /// Expr holes keep all source and observation metadata while exposing no
+    /// recovered expression.
+    pub fn into_expression(
+        self,
+        allocator: &'a Allocator,
+    ) -> Result<RetainedExpression<'a>, Box<Self>> {
+        handoff::into_expression(self, allocator)
     }
 }
 

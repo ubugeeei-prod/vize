@@ -1,4 +1,4 @@
-use vize_l0::Span;
+use vize_l0::{Allocator, Span, Vec};
 
 use super::{SourceError, checked_len};
 
@@ -104,6 +104,57 @@ impl<'a> DecodeMap<'a> {
             self.offset(span.start, covering, false)?,
             self.offset(span.end, covering, true)?,
         ))
+    }
+
+    /// Derive a private map from already checked parent segments. Boundary
+    /// projection rejects cuts inside entities; identity segments can shorten.
+    /// No authored bytes are decoded again, and no unchecked public constructor
+    /// is introduced. Returned segments cover the new relative text completely.
+    pub(super) fn slice_in(
+        self,
+        allocator: &'a Allocator,
+        span: Span,
+    ) -> Result<Option<Self>, SourceError> {
+        self.project(span, false)?;
+        let has_entity = self.segments.iter().any(|segment| {
+            segment.kind == DecodeSegmentKind::Entity
+                && segment.decoded.start < span.end
+                && span.start < segment.decoded.end
+        });
+        if !has_entity {
+            return Ok(None);
+        }
+        let mut segments = Vec::new_in(&allocator);
+        for segment in self.segments {
+            let start = segment.decoded.start.max(span.start);
+            let end = segment.decoded.end.min(span.end);
+            if start >= end {
+                continue;
+            }
+            let authored = match segment.kind {
+                DecodeSegmentKind::Identity => Span::new(
+                    segment
+                        .authored
+                        .start
+                        .checked_add(start - segment.decoded.start)
+                        .ok_or(SourceError::SourceTooLarge)?,
+                    segment
+                        .authored
+                        .start
+                        .checked_add(end - segment.decoded.start)
+                        .ok_or(SourceError::SourceTooLarge)?,
+                ),
+                DecodeSegmentKind::Entity => segment.authored,
+            };
+            segments.push(DecodeSegment::new(
+                Span::new(start - span.start, end - span.start),
+                authored,
+                segment.kind,
+            ));
+        }
+        Ok(Some(Self {
+            segments: segments.into_boxed_slice().into_arena_slice(),
+        }))
     }
 
     fn offset(self, at: u32, covering: bool, end: bool) -> Result<u32, SourceError> {
