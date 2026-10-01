@@ -262,6 +262,13 @@ pub(crate) fn quoted_js_string(value: &str) -> String {
 }
 
 pub(crate) fn escape_js_string(value: &str) -> String {
+    if !value
+        .as_bytes()
+        .iter()
+        .any(|byte| matches!(byte, b'\\' | b'"' | b'\n' | b'\r' | b'\t'))
+    {
+        return value.to_compact_string();
+    }
     let mut out = String::with_capacity(value.len());
     for ch in value.chars() {
         match ch {

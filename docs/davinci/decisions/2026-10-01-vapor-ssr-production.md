@@ -22,6 +22,8 @@ objects borrow static keys into a pre-sized hash set before moving any entries;
 only duplicate ordinary indices are retained for removal. Wide objects without
 class/style/listeners retain their input vector. Source order and first-entry
 spans are preserved without raising instruction or allocation budgets.
+Unescaped JavaScript keys and strings also return directly instead of copying
+each character through the escape builder; escaped strings retain that builder.
 
 Vue 3.5's merged `ssrGetDynamicModelProps` helper ignores checkbox `true-value`
 and can check a nonmatching truthy model. The input corpus mounts official
