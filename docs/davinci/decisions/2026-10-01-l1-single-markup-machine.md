@@ -96,6 +96,16 @@ and partial-closing bytes still enter the existing close state with the same
 state and delimiter cursor at every callback. All 10,767 frozen records and
 strict Clippy pass locally; exact-head all-100 Actions remain required.
 
+The scanning head `ca028b78b` brought small and stress-interp inside their limits,
+but medium (47,409 > 45,291), large (216,028 > 212,537), stress-deep
+(235,541 > 225,445) and stress-wide (121,047 > 118,325) exceeded theirs. Those
+four fixtures contain no mustaches, so the new scanning body does not execute
+in them. The run loop now holds the immutable source slice once, retaining
+cursor writes, state, live mode and callback order. Source bytes cannot be
+replaced through the safe lexer API. A narrow ARM diagnostic removes the two
+per-byte pointer/length reloads; actual x86 all-100 Actions must validate the
+complete result. No inlining hints or ceilings change.
+
 ## Remaining scope
 
 #6835 stays unfinished. The native component-surface constructor still admits

@@ -146,7 +146,8 @@ impl<'a, P: Profile, S: Sink> Lexer<'a, P, S> {
     /// Lex the whole input, pushing every event and finally `on_end` into
     /// the sink.
     pub fn run(&mut self) {
-        while let Some(&c) = self.input.get(self.index) {
+        let input = self.input;
+        while let Some(&c) = input.get(self.index) {
             match self.state {
                 State::Text => self.state_text(c),
                 State::InterpolationOpen => self.state_interpolation_open(c),
