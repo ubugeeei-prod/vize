@@ -65,3 +65,13 @@ qualified host paths still migrate; import-like fixture data remains unchanged.
 Every generated import retains the original outer attributes, including cfg
 and cfg_attr. Disabled missing-symbol imports compile only if every split
 keeps its conditions; integration/check fixtures verify literal preservation.
+
+The first protected-queue candidate failed one unchanged instruction ceiling:
+`croquis_analyze_full_stress-wide` measured 626302 against 626201, identically
+in three executions. Remove the known-red candidate before further validation.
+The move did not edit Croquis, so the regression's cause is not yet established.
+As a bounded correction, classify each template directive once before both
+setup-read handling and optional usage tracking. Custom-directive ordering and
+all analysis outputs stay unchanged; 436 existing Croquis laws pass. Validate
+all 100 measurements with the standalone instruction Actions before requeueing;
+no fixture, measurement window, methodology or numeric ceiling changes.

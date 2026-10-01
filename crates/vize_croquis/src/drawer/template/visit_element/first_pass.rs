@@ -27,13 +27,10 @@ impl Drawer {
 
                 if !is_builtin_directive(dir.name) {
                     self.read_setup_directive(dir.name);
-                }
-                if self.options.track_usage {
-                    let name = dir.name;
-                    if !is_builtin_directive(name) {
+                    if self.options.track_usage {
                         self.croquis
                             .used_directives
-                            .insert(CompactString::new(name));
+                            .insert(CompactString::new(dir.name));
                     }
                 }
 
