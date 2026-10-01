@@ -122,4 +122,3 @@ formatterConfigDef: JsonSchema = new JsonSchema {
   }
   additionalProperties = false
 }
-
