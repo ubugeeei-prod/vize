@@ -155,7 +155,9 @@ fn component(
 }
 
 #[cfg(feature = "native")]
-pub(super) async fn complete_with_globals(ctx: &IdeContext<'_>) -> Option<Vec<CompletionItem>> {
+pub(in crate::ide::completion) async fn complete_with_globals(
+    ctx: &IdeContext<'_>,
+) -> Option<Vec<CompletionItem>> {
     context(ctx)?;
     let globals = ctx.state.global_component_tag_names().await;
     complete(ctx, &globals)

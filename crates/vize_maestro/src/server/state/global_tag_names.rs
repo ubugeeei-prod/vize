@@ -65,7 +65,7 @@ impl ServerState {
                 .and_then(|uri| self.documents.get(&uri));
             let stamp = if let Some(document) = &document {
                 Stamp::Open(document.revision())
-            } else if let Ok(metadata) = fs::metadata(path) {
+            } else if let Ok(metadata) = std::fs::metadata(path) {
                 if metadata.len() > 4 * 1024 * 1024 {
                     continue;
                 }
@@ -82,7 +82,7 @@ impl ServerState {
                 result.extend(cached.names.clone());
                 continue;
             }
-            let source = document.map(|document| document.text());
+            let source = document.map(|document| String::from(document.text()));
             if source
                 .as_ref()
                 .is_some_and(|source| source.len() > 4 * 1024 * 1024)
