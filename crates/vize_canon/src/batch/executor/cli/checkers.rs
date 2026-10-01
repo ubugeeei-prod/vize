@@ -11,7 +11,7 @@ use crate::batch::Diagnostic;
 /// commit. Pinned to one until the upstream divergence is fixed;
 /// `VIZE_CHECKERS` opts back into width where throughput matters more than
 /// oracle fidelity.
-pub(super) fn checker_count() -> usize {
+pub(in crate::batch::executor) fn checker_count() -> usize {
     parse_checker_count(std::env::var("VIZE_CHECKERS").ok().as_deref())
 }
 
