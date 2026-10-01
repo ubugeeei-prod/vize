@@ -7,7 +7,8 @@
 use std::path::{Path, PathBuf};
 
 use clap::Args;
-use vize_l0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
+use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
+use vize_l0::profiler::global_profiler;
 
 use crate::profile_support;
 
@@ -66,10 +67,13 @@ impl ProfileExportArgs {
 }
 
 fn write_export(path: &Path, command: &'static str) -> std::io::Result<()> {
-    let export = global_profiler().export_report(&ProfileExportOptions {
-        command,
-        allocation: profile_support::allocation_snapshot(),
-        budget: ProfileExportBudget::default(),
-    });
+    let export = export_report(
+        global_profiler(),
+        &ProfileExportOptions {
+            command,
+            allocation: profile_support::allocation_snapshot(),
+            budget: ProfileExportBudget::default(),
+        },
+    );
     std::fs::write(path, export.to_json().as_bytes())
 }

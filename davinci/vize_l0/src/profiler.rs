@@ -8,7 +8,6 @@ mod attribution;
 mod cache;
 mod core;
 mod counters;
-mod export;
 mod metrics;
 mod report;
 mod shard;
@@ -21,12 +20,6 @@ pub use allocation::{
 pub use attribution::{SpanAttribution, SpanRange};
 pub use cache::CacheStats;
 pub use core::{ProfileGuard, Profiler, Timer, global_profiler};
-pub use export::{
-    PROFILE_EXPORT_SCHEMA_VERSION, ProfileExport, ProfileExportAllocCounts,
-    ProfileExportAllocation, ProfileExportAttribution, ProfileExportBudget, ProfileExportCounter,
-    ProfileExportOptions, ProfileExportSpan, ProfileExportSpanRange, ProfileExportTruncation,
-    ProfileExportWallNs,
-};
 pub use metrics::{CounterMetrics, Metrics};
 pub use report::{CounterEntry, CounterSummary, ProfileEntry, ProfileSummary};
 

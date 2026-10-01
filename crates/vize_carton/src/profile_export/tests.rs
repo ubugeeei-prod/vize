@@ -1,9 +1,8 @@
 //! Attribution and machine-readable export tests (P0-11).
 
-use super::super::{
-    ProfileExportBudget, ProfileExportOptions, Profiler, SpanAttribution, SpanRange,
-};
+use super::{ProfileExportBudget, ProfileExportOptions, export_report};
 use std::time::Duration;
+use vize_l0::profiler::{Profiler, SpanAttribution, SpanRange};
 
 fn export_options(budget: ProfileExportBudget) -> ProfileExportOptions {
     ProfileExportOptions {
@@ -50,7 +49,7 @@ fn attributed_records_stay_out_of_the_plain_key_space() {
     assert_eq!(summary.entries[0].name, "davinci.attr.plain");
 
     // The export sees both buckets, ranked by total wall time.
-    let export = profiler.export_report(&export_options(ProfileExportBudget::default()));
+    let export = export_report(&profiler, &export_options(ProfileExportBudget::default()));
     assert_eq!(export.spans.len(), 2);
     assert_eq!(export.spans[0].key, "davinci.attr.only");
     assert_eq!(
@@ -77,7 +76,7 @@ fn attributed_buckets_with_different_attribution_stay_distinct() {
     profiler.record_attributed("davinci.attr.pass", template, Duration::from_millis(1));
     profiler.record_attributed("davinci.attr.pass", script, Duration::from_millis(1));
 
-    let export = profiler.export_report(&export_options(ProfileExportBudget::default()));
+    let export = export_report(&profiler, &export_options(ProfileExportBudget::default()));
     assert_eq!(export.spans.len(), 2);
     // Equal keys: ranked by total descending, so the two-sample bucket wins.
     assert_eq!(export.spans[0].count, 2);
@@ -95,7 +94,7 @@ fn export_ranks_spans_deterministically_and_truncates_with_accounting() {
     profiler.record_counter("davinci.rank.counter.b", 2);
     profiler.record_counter("davinci.rank.counter.a", 1);
 
-    let full = profiler.export_report(&export_options(ProfileExportBudget::default()));
+    let full = export_report(&profiler, &export_options(ProfileExportBudget::default()));
     assert_eq!(full.spans.len(), 3);
     assert_eq!(full.spans[0].key, "davinci.rank.c");
     // Equal totals tie-break by key ascending.
@@ -107,10 +106,13 @@ fn export_ranks_spans_deterministically_and_truncates_with_accounting() {
     assert_eq!(full.truncation.dropped_spans, 0);
     assert_eq!(full.truncation.dropped_counters, 0);
 
-    let truncated = profiler.export_report(&export_options(ProfileExportBudget {
-        max_spans: 1,
-        max_counters: 1,
-    }));
+    let truncated = export_report(
+        &profiler,
+        &export_options(ProfileExportBudget {
+            max_spans: 1,
+            max_counters: 1,
+        }),
+    );
     assert_eq!(truncated.spans.len(), 1);
     assert_eq!(truncated.spans[0].key, "davinci.rank.c");
     assert_eq!(truncated.counters.len(), 1);
@@ -135,7 +137,7 @@ fn export_json_bytes_are_exact() {
     );
     profiler.record_counter("davinci.export.bytes", 10);
 
-    let export = profiler.export_report(&export_options(ProfileExportBudget::default()));
+    let export = export_report(&profiler, &export_options(ProfileExportBudget::default()));
     let expected = concat!(
         "{\n",
         "  \"schema_version\": 1,\n",
@@ -209,7 +211,7 @@ fn export_json_bytes_are_exact() {
 
 #[test]
 fn export_maps_the_global_allocation_window() {
-    use crate::profiler::AllocationSnapshot;
+    use vize_l0::profiler::AllocationSnapshot;
 
     let profiler = Profiler::enabled();
     profiler.record("davinci.alloc.window", Duration::from_millis(1));
@@ -228,11 +230,14 @@ fn export_maps_the_global_allocation_window() {
         realloc_old_bytes: 16,
         realloc_new_bytes: 48,
     };
-    let export = profiler.export_report(&ProfileExportOptions {
-        command: "build",
-        allocation: Some(snapshot),
-        budget: ProfileExportBudget::default(),
-    });
+    let export = export_report(
+        &profiler,
+        &ProfileExportOptions {
+            command: "build",
+            allocation: Some(snapshot),
+            budget: ProfileExportBudget::default(),
+        },
+    );
 
     let allocation = export.allocation.unwrap();
     assert_eq!(allocation.calls, 5);

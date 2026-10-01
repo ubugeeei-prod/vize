@@ -25,9 +25,9 @@ use std::path::PathBuf;
 
 use davinci_test_support::schema as schema_check;
 use vize_carton::profile;
-use vize_carton::profiler::{
-    ProfileExportBudget, ProfileExportOptions, ProfilingAllocator, SpanAttribution,
-    allocation_snapshot, global_profiler,
+use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
+use vize_l0::profiler::{
+    ProfilingAllocator, SpanAttribution, allocation_snapshot, global_profiler,
 };
 
 #[global_allocator]
@@ -60,11 +60,14 @@ fn per_span_allocation_counts_and_schema_validation() {
     });
     drop(outer_buffer);
 
-    let export = profiler.export_report(&ProfileExportOptions {
-        command: "build",
-        allocation: Some(allocation_snapshot()),
-        budget: ProfileExportBudget::default(),
-    });
+    let export = export_report(
+        profiler,
+        &ProfileExportOptions {
+            command: "build",
+            allocation: Some(allocation_snapshot()),
+            budget: ProfileExportBudget::default(),
+        },
+    );
     profiler.disable();
 
     // The outer span wraps the inner one, so it always ranks first.

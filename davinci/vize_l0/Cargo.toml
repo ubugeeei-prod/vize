@@ -38,6 +38,7 @@ default = []
 extension = []
 
 [dev-dependencies]
+vize_carton = { path = "../../crates/vize_carton" }
 criterion.workspace = true
 # Foundation laws use higher-level and legacy producers only as dev oracles.
 # Version-less path declarations are stripped when this foundation is packaged.

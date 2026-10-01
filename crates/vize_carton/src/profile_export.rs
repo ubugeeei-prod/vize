@@ -12,12 +12,8 @@ use std::time::Duration;
 
 use serde::Serialize;
 
-use crate::String;
-
-use super::allocation::AllocationSnapshot;
-use super::attribution::SpanAttribution;
-use super::core::Profiler;
-use super::metrics::Metrics;
+use vize_l0::String;
+use vize_l0::profiler::{AllocationSnapshot, Metrics, Profiler, SpanAttribution};
 
 /// Current `schema_version` stamped into every export.
 pub const PROFILE_EXPORT_SCHEMA_VERSION: u64 = 1;
@@ -53,7 +49,7 @@ pub struct ProfileExportTruncation {
     pub dropped_counters: u64,
 }
 
-/// Inputs for [`Profiler::export_report`].
+/// Inputs for [`export_report`].
 #[derive(Debug, Clone, Copy)]
 pub struct ProfileExportOptions {
     /// Producing CLI subcommand (for example `"build"`).
@@ -232,68 +228,66 @@ impl ProfileExport {
     }
 }
 
-impl Profiler {
-    /// Build the machine-readable export from the collected profile data.
-    ///
-    /// Deterministic for a given data set: spans are ranked by total wall
-    /// time descending with full tiebreaks, counters by key, and the budget
-    /// drops only the tail of each ranking, recording how much was dropped.
-    pub fn export_report(&self, options: &ProfileExportOptions) -> ProfileExport {
-        let mut ranked_spans = self.span_snapshot();
-        ranked_spans.sort_by(
-            |(left_name, left_attribution, left), (right_name, right_attribution, right)| {
-                right
-                    .total_duration
-                    .cmp(&left.total_duration)
-                    .then_with(|| left_name.cmp(right_name))
-                    .then_with(|| left_attribution.cmp(right_attribution))
-            },
-        );
-        let span_limit = usize::try_from(options.budget.max_spans).unwrap_or(usize::MAX);
-        let dropped_spans = ranked_spans.len().saturating_sub(span_limit) as u64;
-        ranked_spans.truncate(span_limit);
-        let spans = ranked_spans
-            .into_iter()
-            .map(|(name, attribution, metrics)| {
-                span_entry(name, attribution, &metrics, options.allocation.is_some())
-            })
-            .collect();
+/// Build the machine-readable export from the collected profile data.
+///
+/// Deterministic for a given data set: spans are ranked by total wall
+/// time descending with full tiebreaks, counters by key, and the budget
+/// drops only the tail of each ranking, recording how much was dropped.
+pub fn export_report(profiler: &Profiler, options: &ProfileExportOptions) -> ProfileExport {
+    let mut ranked_spans = profiler.span_snapshot();
+    ranked_spans.sort_by(
+        |(left_name, left_attribution, left), (right_name, right_attribution, right)| {
+            right
+                .total_duration
+                .cmp(&left.total_duration)
+                .then_with(|| left_name.cmp(right_name))
+                .then_with(|| left_attribution.cmp(right_attribution))
+        },
+    );
+    let span_limit = usize::try_from(options.budget.max_spans).unwrap_or(usize::MAX);
+    let dropped_spans = ranked_spans.len().saturating_sub(span_limit) as u64;
+    ranked_spans.truncate(span_limit);
+    let spans = ranked_spans
+        .into_iter()
+        .map(|(name, attribution, metrics)| {
+            span_entry(name, attribution, &metrics, options.allocation.is_some())
+        })
+        .collect();
 
-        let mut ranked_counters = self.counter_snapshot();
-        ranked_counters.sort_by_key(|(key, _)| *key);
-        let counter_limit = usize::try_from(options.budget.max_counters).unwrap_or(usize::MAX);
-        let dropped_counters = ranked_counters.len().saturating_sub(counter_limit) as u64;
-        ranked_counters.truncate(counter_limit);
-        let counters = ranked_counters
-            .into_iter()
-            .map(|(key, counter)| ProfileExportCounter {
-                key,
-                samples: counter.samples,
-                total: counter.total,
-                min: if counter.samples == 0 { 0 } else { counter.min },
-                max: counter.max,
-            })
-            .collect();
+    let mut ranked_counters = profiler.counter_snapshot();
+    ranked_counters.sort_by_key(|(key, _)| *key);
+    let counter_limit = usize::try_from(options.budget.max_counters).unwrap_or(usize::MAX);
+    let dropped_counters = ranked_counters.len().saturating_sub(counter_limit) as u64;
+    ranked_counters.truncate(counter_limit);
+    let counters = ranked_counters
+        .into_iter()
+        .map(|(key, counter)| ProfileExportCounter {
+            key,
+            samples: counter.samples,
+            total: counter.total,
+            min: if counter.samples == 0 { 0 } else { counter.min },
+            max: counter.max,
+        })
+        .collect();
 
-        ProfileExport {
-            schema_version: PROFILE_EXPORT_SCHEMA_VERSION,
-            tool: "vize",
-            tool_version: env!("CARGO_PKG_VERSION"),
-            command: options.command,
-            budget: options.budget,
-            truncation: ProfileExportTruncation {
-                dropped_spans,
-                dropped_counters,
-            },
-            spans,
-            counters,
-            allocation: options.allocation.map(|snapshot| ProfileExportAllocation {
-                calls: snapshot.allocation_calls(),
-                requested_bytes: snapshot.requested_bytes(),
-                released_bytes: snapshot.released_bytes(),
-                failures: snapshot.allocation_failures(),
-            }),
-        }
+    ProfileExport {
+        schema_version: PROFILE_EXPORT_SCHEMA_VERSION,
+        tool: "vize",
+        tool_version: env!("CARGO_PKG_VERSION"),
+        command: options.command,
+        budget: options.budget,
+        truncation: ProfileExportTruncation {
+            dropped_spans,
+            dropped_counters,
+        },
+        spans,
+        counters,
+        allocation: options.allocation.map(|snapshot| ProfileExportAllocation {
+            calls: snapshot.allocation_calls(),
+            requested_bytes: snapshot.requested_bytes(),
+            released_bytes: snapshot.released_bytes(),
+            failures: snapshot.allocation_failures(),
+        }),
     }
 }
 
@@ -329,3 +323,6 @@ fn span_entry(
 fn duration_ns(duration: Duration) -> u64 {
     duration.as_nanos().try_into().unwrap_or(u64::MAX)
 }
+
+#[cfg(test)]
+mod tests;

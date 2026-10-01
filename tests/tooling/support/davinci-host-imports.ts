@@ -1,3 +1,4 @@
+import { withoutProfileHostImports } from "./davinci-profile-host-imports.ts";
 import { withoutI18nHostImports } from "./davinci-i18n-host-imports.ts";
 
 /** Remove only reviewed legacy host APIs before checking L0 storage imports. */
@@ -38,5 +39,5 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
       "host_project_selection",
     );
   }
-  return withoutI18nHostImports(storage, file);
+  return withoutProfileHostImports(withoutI18nHostImports(storage, file), file);
 }

@@ -22,11 +22,12 @@
 //! The profiler is process-global, so this file holds a single `#[test]` in
 //! its own binary — the `davinci_expr_reparse_floor.rs` shape.
 
+use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
 use vize_l0::pass::observer::TimingObserver;
 use vize_l0::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, run_pipeline,
 };
-use vize_l0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
+use vize_l0::profiler::global_profiler;
 
 const NORMALIZE: PassDesc = PassDesc::new(
     "normalize",
@@ -72,14 +73,17 @@ fn the_timing_observer_records_one_attributed_span_per_walk() {
     run_pipeline(&PIPELINE, &mut explicit, |_event| Ok(())).expect("explicit pair runs");
     run_pipeline(&PIPELINE, &mut default, |_event| Ok(())).expect("default pair runs");
 
-    let export = profiler.export_report(&ProfileExportOptions {
-        command: "test",
-        allocation: None,
-        budget: ProfileExportBudget {
-            max_spans: 64,
-            max_counters: 64,
+    let export = export_report(
+        profiler,
+        &ProfileExportOptions {
+            command: "test",
+            allocation: None,
+            budget: ProfileExportBudget {
+                max_spans: 64,
+                max_counters: 64,
+            },
         },
-    });
+    );
 
     let ours: Vec<_> = export.spans.iter().filter(|span| span.key == KEY).collect();
     let standard: Vec<_> = export
