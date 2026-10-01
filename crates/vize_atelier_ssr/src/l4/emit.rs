@@ -176,9 +176,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
             (Kind::Comment, Source::Comment(comment)) => {
                 self.pos += 1;
-                self.ctx.push_string_part_static("<!--");
-                self.ctx.push_string_part_static(comment.content);
-                self.ctx.push_string_part_static("-->");
+                if vize_l0::directive::parse_vize_directive(comment.content, 1, 0).is_none() {
+                    self.ctx.push_string_part_static("<!--");
+                    self.ctx.push_string_part_static(comment.content);
+                    self.ctx.push_string_part_static("-->");
+                }
                 Ok(())
             }
             _ => Err(AdmissionFailure::Invalid(
