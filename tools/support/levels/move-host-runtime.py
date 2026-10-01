@@ -26,12 +26,23 @@ def update(path, change):
         p.write_text(after, encoding="utf-8")
 
 HOST = re.compile(r"^(?:r#)?corsa_(?:api_mode|resolver)\b")
-GROUP = re.compile(r"(?m)^([ \t]*)((?:pub(?:\([^)]*\))?\s+)?use)\s+vize_l0\s*::\s*\{")
+GROUP = re.compile(r"(?<!\w)([ \t]*)((?:pub(?:\([^)]*\))?\s+)?use)\s+vize_l0\s*::\s*\{")
 
-def mask_comments(text):
-    out = list(text)
-    i = 0
+RAW_STRING = re.compile(r'(?:br|cr|r)(#*)"')
+CHAR = re.compile(r"'(?:\\(?:x[0-9a-fA-F]{2}|u\{[0-9a-fA-F_]+\}|[^\n])|[^\\'\n])'")
+LEX_START = re.compile(r'//|/\*|(?<!\w)(?:br|cr|r)#*"|["\x27]')
+DIRECT = re.compile(r"\bvize_l0(?=\s*::\s*(?:r#)?corsa_(?:api_mode|resolver)\b)")
+
+def lexical_view(text):
+    """Mask Rust comments/literals without changing offsets or line boundaries."""
+    out, i = list(text), 0
     while i < len(text):
+        token = LEX_START.search(text, i)
+        if token is None:
+            break
+        i = token.start()
+        raw = RAW_STRING.match(text, i)
+        char = CHAR.match(text, i)
         if text.startswith("//", i):
             end = text.find("\n", i)
             end = len(text) if end == -1 else end
@@ -47,7 +58,22 @@ def mask_comments(text):
                 else:
                     end += 1
             if depth:
-                raise SystemExit("Unterminated import comment")
+                raise SystemExit("Unterminated Rust comment")
+        elif raw:
+            closing = '"' + raw.group(1)
+            end = text.find(closing, raw.end())
+            if end == -1:
+                raise SystemExit("Unterminated raw string")
+            end += len(closing)
+        elif text[i] == '"':
+            end = i + 1
+            while end < len(text) and text[end] != '"':
+                end += 2 if text[end] == "\\" else 1
+            if end >= len(text):
+                raise SystemExit("Unterminated string")
+            end += 1
+        elif char:
+            end = char.end()
         else:
             i += 1
             continue
@@ -55,34 +81,41 @@ def mask_comments(text):
         i = end
     return "".join(out)
 
+def import_attributes(text, view, start):
+    """Include every preceding outer attribute in a split import's prefix."""
+    first, cursor = start, start
+    while True:
+        cursor -= 1
+        while cursor >= 0 and view[cursor].isspace():
+            cursor -= 1
+        if cursor < 0 or view[cursor] != "]":
+            break
+        depth, opening = 1, cursor - 1
+        while opening >= 0 and depth:
+            depth += (view[opening] == "]") - (view[opening] == "[")
+            opening -= 1
+        while opening >= 0 and view[opening].isspace():
+            opening -= 1
+        if depth or opening < 0 or view[opening] != "#":
+            break
+        first = opening
+        while first > 0 and text[first - 1] in " \t":
+            first -= 1
+        cursor = first
+    return first, text[first:start]
+
 def grouped_imports(text):
-    for match in GROUP.finditer(text):
+    view = lexical_view(text)
+    for match in GROUP.finditer(view):
         depth, start, end = 1, match.end(), match.end()
-        while end < len(text):
-            if text.startswith("//", end):
-                newline = text.find("\n", end)
-                end = len(text) if newline == -1 else newline
-                continue
-            if text.startswith("/*", end):
-                comment, end = 1, end + 2
-                while end < len(text) and comment:
-                    if text.startswith("/*", end):
-                        comment += 1
-                        end += 2
-                    elif text.startswith("*/", end):
-                        comment -= 1
-                        end += 2
-                    else:
-                        end += 1
-                if comment:
-                    raise SystemExit("Unterminated import comment")
-                continue
-            depth += (text[end] == "{") - (text[end] == "}")
+        while end < len(view):
+            depth += (view[end] == "{") - (view[end] == "}")
             if depth == 0:
-                tail = re.match(r"\s*;", text[end + 1:])
+                tail = re.match(r"\s*;", view[end + 1:])
                 if not tail:
                     raise SystemExit("Malformed grouped import")
-                yield match, text[start:end], end + 1 + tail.end()
+                first, attributes = import_attributes(text, view, match.start())
+                yield match, text[start:end], end + 1 + tail.end(), first, attributes
                 break
             end += 1
         else:
@@ -90,37 +123,44 @@ def grouped_imports(text):
 
 def import_items(body):
     depth, start = 0, 0
-    for index, ch in enumerate(mask_comments(body)):
+    for index, ch in enumerate(lexical_view(body)):
         depth += (ch == "{") - (ch == "}")
         if ch == "," and depth == 0:
             item = body[start:index].strip()
-            if mask_comments(item).strip():
+            if lexical_view(item).strip():
                 yield item + ("\n" if "//" in item else "")
             start = index + 1
     item = body[start:].strip()
-    if mask_comments(item).strip():
+    if lexical_view(item).strip():
         yield item + ("\n" if "//" in item else "")
 
 def is_host(item):
-    return HOST.match(mask_comments(item).strip()) is not None
+    return HOST.match(lexical_view(item).strip()) is not None
 
 def rewrite_grouped_imports(text):
-    for match, body, end in reversed(list(grouped_imports(text))):
+    for match, body, end, first, attributes in reversed(list(grouped_imports(text))):
         items = list(import_items(body))
         host = [item for item in items if is_host(item)]
         if not host:
             continue
         storage = [item for item in items if not is_host(item)]
-        indent, prefix = match.groups()
+        indent = match.group(1)
+        prefix = text[match.start(2):match.end(2)]
         lines = [f"{indent}{prefix} vize_l0::{{{', '.join(storage)}}};"] if storage else []
         lines += [f"{indent}{prefix} vize_carton::{item};" for item in host]
-        text = text[:match.start()] + "\n".join(lines) + text[end:]
+        text = text[:first] + "\n".join(attributes + line for line in lines) + text[end:]
     return text
 
+def rewrite_host_imports(text):
+    """Rewrite real qualified host paths and grouped uses, never literal data."""
+    for match in reversed(list(DIRECT.finditer(lexical_view(text)))):
+        text = text[:match.start()] + "vize_carton" + text[match.end():]
+    return rewrite_grouped_imports(text)
+
 def has_host_import(text):
-    if re.search(r"\bvize_l0\s*::\s*(?:r#)?corsa_(?:api_mode|resolver)\b", text):
+    if DIRECT.search(lexical_view(text)):
         return True
-    return any(is_host(item) for _, body, _ in grouped_imports(text) for item in import_items(body))
+    return any(is_host(item) for _, body, _, _, _ in grouped_imports(text) for item in import_items(body))
 
 def integrate():
     update("crates/vize_carton/src/corsa_resolver/tests.rs", lambda s: s.replace("error.to_string()", 'crate::cstr!("{error}")'))
@@ -146,9 +186,9 @@ def integrate():
         for source in (ROOT / "crates" / name).rglob("*.rs"):
             text = source.read_text(encoding="utf-8")
             # Remove Canon's private storage alias, which otherwise shadows the real host owner.
-            text = text.replace("extern crate vize_l0 as vize_carton;\n", "")
-            text = re.sub(r'\bvize_l0::corsa_(api_mode|resolver)\b', r'vize_carton::corsa_\1', text)
-            text = rewrite_grouped_imports(text)
+            for alias in reversed(list(re.finditer(r"(?m)^extern crate vize_l0 as vize_carton;\n", lexical_view(text)))):
+                text = text[:alias.start()] + text[alias.end():]
+            text = rewrite_host_imports(text)
             if name == "vize" and source.name == "check_cli.rs":
                 text = text.replace('};\n\nuse vize_l0::{cstr, path::canonicalize_non_verbatim};\n\nuse vize_carton::corsa_resolver::platform_suffix;',
                                     '};\nuse vize_l0::{cstr, path::canonicalize_non_verbatim};\nuse vize_carton::corsa_resolver::platform_suffix;')

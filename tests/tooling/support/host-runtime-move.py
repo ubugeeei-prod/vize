@@ -78,5 +78,76 @@ mod vize_carton {
             self.assertFalse(move.has_host_import(source))
             self.assertEqual(move.rewrite_grouped_imports(source), source)
 
+    def test_import_examples_in_comments_and_literals_are_unchanged(self):
+        source = r'''// use vize_l0::{corsa_resolver, cstr};
+/* outer /* use vize_l0::corsa_resolver; */
+use vize_l0::{corsa_api_mode};
+*/
+const RAW: &str = r###"
+use vize_l0::{corsa_resolver, cstr};
+extern crate vize_l0 as vize_carton;
+vize_l0::corsa_api_mode
+"###;
+const BYTES: &[u8] = br#"
+use vize_l0::{corsa_api_mode};
+"#;
+const C: &std::ffi::CStr = cr#"
+use vize_l0::{corsa_resolver};
+"#;
+const NORMAL: &str = "escaped \" quote
+use vize_l0::{corsa_resolver};";
+const QUOTE: char = '"';
+const ESCAPED: char = '\'';
+const UNICODE: char = '\u{22}';
+fn borrowed<'a>(value: &'a str) -> &'a str { value }
+'''
+        self.assertEqual(len(move.lexical_view(source)), len(source))
+        self.assertFalse(move.has_host_import(source))
+        self.assertEqual(move.rewrite_host_imports(source), source)
+        self.compile(source)
+        actual = source + "use vize_l0::corsa_resolver::resolve as host;\n"
+        result = move.rewrite_host_imports(actual)
+        self.assertTrue(result.startswith(source))
+        self.assertFalse(move.has_host_import(result))
+        self.compile(result)
+
+    def test_split_imports_preserve_all_conditional_attributes(self):
+        source = '''#[cfg_attr(all(), cfg(any()))]
+#[cfg(not(all()))]
+pub(crate) use vize_l0::{missing_storage, corsa_api_mode::missing, corsa_resolver::missing};'''
+        result = move.rewrite_host_imports(source)
+        self.assertEqual(result.count("#[cfg_attr(all(), cfg(any()))]"), 3)
+        self.assertEqual(result.count("#[cfg(not(all()))]"), 3)
+        self.assertFalse(move.has_host_import(result))
+        self.compile(result)
+        self.assertEqual(move.rewrite_host_imports(result), result)
+        inline = "# [cfg(any())] use vize_l0::{missing_storage, corsa_resolver::missing};"
+        result = move.rewrite_host_imports(inline)
+        self.assertEqual(result.count("# [cfg(any())]"), 2)
+        self.assertFalse(move.has_host_import(result))
+        self.compile(result)
+
+    def test_integrate_and_check_preserve_literal_data(self):
+        source = '''const EXAMPLE: &str = r#"
+use vize_l0::{corsa_resolver, cstr};
+extern crate vize_l0 as vize_carton;
+vize_l0::corsa_api_mode
+"#;
+'''
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative in move.FILES:
+                destination = root / "crates/vize_carton/src" / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_text("")
+            consumer = root / "crates/vize/src/lib.rs"
+            consumer.parent.mkdir(parents=True, exist_ok=True)
+            consumer.write_text(source)
+            with patch.object(move, "ROOT", root), patch.object(move, "update"):
+                move.integrate()
+                self.assertEqual(consumer.read_text(), source)
+                with patch.object(sys, "argv", ["move-host-runtime.py", "check"]):
+                    move.main()
+
 if __name__ == "__main__":
     unittest.main()

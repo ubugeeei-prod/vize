@@ -55,6 +55,13 @@ host modules; it cannot restore its private L0-as-Carton alias.
 
 Replay review: preserve complete grouped import items, including aliases, bare
 modules and nested groups. The check phase rejects still-unmigrated grouped
-host roots as well as direct paths. Four regression laws compile representative
+host roots as well as direct paths. Seven regression laws compile representative
 rewritten Rust, preserve unrelated storage groups and reject deliberately
 unmigrated consumers; replaying the actual integrated tree changes no sources.
+
+Replay and checking share an offset-preserving lexical view that excludes Rust
+comments, raw/byte/C strings, quoted strings and character literals. Real
+qualified host paths still migrate; import-like fixture data remains unchanged.
+Every generated import retains the original outer attributes, including cfg
+and cfg_attr. Disabled missing-symbol imports compile only if every split
+keeps its conditions; integration/check fixtures verify literal preservation.
