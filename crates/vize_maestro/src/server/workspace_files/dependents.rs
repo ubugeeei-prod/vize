@@ -99,22 +99,11 @@ pub(super) async fn forget_corsa_vue_files(state: &ServerState, deleted: &[PathB
     if deleted.is_empty() {
         return;
     }
-    if !state.has_corsa_bridge() {
-        return;
-    }
-    let Some(bridge) = state.get_corsa_bridge().await else {
-        return;
-    };
-    if let Err(error) = bridge.forget_vue_virtual_documents(deleted).await {
-        tracing::warn!("failed to forget deleted Corsa Vue documents: {error}");
-        state.retire_corsa_bridge(&bridge);
-        return;
-    }
     // Deleted Vue sources can leave generated files inside Corsa's private
-    // materialized mirror. Retire the bridge so the next diagnostics pass
-    // rebuilds that mirror from the current filesystem instead of resolving a
-    // stale dependency.
-    state.retire_corsa_bridge(&bridge);
+    // materialized mirror. Retire the bridge without waiting on its worker:
+    // file-event notifications must not stall behind an in-flight typecheck.
+    // The next diagnostics pass rebuilds that mirror from the current disk.
+    state.retire_corsa_bridge_for_deleted_vue_files();
 }
 
 fn file_path(uri: &str) -> Option<PathBuf> {

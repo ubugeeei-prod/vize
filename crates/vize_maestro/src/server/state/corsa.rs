@@ -163,6 +163,16 @@ impl ServerState {
         self.is_lsp_typecheck_enabled() && self.corsa_bridge.read().is_some()
     }
 
+    /// Drop the cached editor session after a Vue file disappears on disk.
+    /// Its private mirror is rebuilt by the next Corsa request. This must not
+    /// wait for the old worker while handling the file-operation notification.
+    pub(crate) fn retire_corsa_bridge_for_deleted_vue_files(&self) {
+        let bridge = { self.corsa_bridge.read().clone() };
+        if let Some(bridge) = bridge {
+            self.retire_corsa_bridge(&bridge);
+        }
+    }
+
     /// Drop a Corsa bridge whose backend process died mid-session so the next
     /// [`Self::get_corsa_bridge`] call spawns a fresh session (#3240).
     ///
