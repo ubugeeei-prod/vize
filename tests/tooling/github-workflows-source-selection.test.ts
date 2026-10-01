@@ -154,10 +154,21 @@ test("the Rust report waits for the builder and all four independently executing
     "pr-rust-shard",
   ]);
   assert.equal(rust.jobs["rust-source-report"].if, "${{ always() }}");
-  assert.equal(
-    rust.jobs["rust-source-report"].steps?.at(-1)?.run,
-    "node tools/support/compat/github/require-rust-tier.mjs",
+  const reportSteps = rust.jobs["rust-source-report"].steps ?? [];
+  const gate = reportSteps.findIndex((step) => step.name === "Require the complete Rust tier");
+  const download = reportSteps.findIndex(
+    (step) => step.name === "Download the four current full Rust workers",
   );
+  const reconcile = reportSteps.findIndex(
+    (step) => step.name === "Require all registered typechecker observations",
+  );
+  assert.ok(gate >= 0 && gate < download && download < reconcile);
+  assert.equal(reportSteps[gate].if, undefined);
+  assert.equal(reportSteps[gate].run, "node tools/support/compat/github/require-rust-tier.mjs");
+  assert.deepEqual(reportSteps[gate].env, {
+    RUN_RUST: "${{ inputs.run-rust }}",
+    NEEDS_JSON: "${{ toJSON(needs) }}",
+  });
 });
 
 test("merge Rust timing receipts remain available after workspace failure", () => {

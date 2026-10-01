@@ -8,6 +8,11 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait};
 
+mod support {
+    pub(crate) mod fix_history_observation;
+}
+use support::fix_history_observation as observation;
+
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Input {
@@ -64,6 +69,7 @@ struct Pack {
 fn inline_event_assignments_preserve_exact_diagnostics() {
     check_pack(
         "event-handler-narrowing",
+        "inline_event_assignments_preserve_exact_diagnostics",
         "613ce3a5a31d22ec0dfd42feab25772e63fc54bf",
         Some(4996),
         &[
@@ -78,6 +84,7 @@ fn inline_event_assignments_preserve_exact_diagnostics() {
 fn deferred_template_reads_preserve_script_diagnostics() {
     check_pack(
         "template-definite-assignment",
+        "deferred_template_reads_preserve_script_diagnostics",
         "39bf60c0614c888ba82f962b944160ce839cf035",
         Some(4239),
         &["vue3-complete-project", "tsx-deferred-template"],
@@ -88,6 +95,7 @@ fn deferred_template_reads_preserve_script_diagnostics() {
 fn required_props_keep_exact_unicode_diagnostics() {
     check_pack(
         "required-props-edges",
+        "required_props_keep_exact_unicode_diagnostics",
         "f3a26b0e30c98b135a9e897c3584526eb0a2b96d",
         Some(3581),
         &["complete-attribute-boundaries"],
@@ -98,6 +106,7 @@ fn required_props_keep_exact_unicode_diagnostics() {
 fn unicode_reserved_props_preserve_value_diagnostics() {
     check_pack(
         "unicode-reserved-props",
+        "unicode_reserved_props_preserve_value_diagnostics",
         "13e5ec2a9752c5d8d41a9510f54e7096a583bb78",
         None,
         &["literal-values-valid", "literal-values-invalid"],
@@ -108,6 +117,7 @@ fn unicode_reserved_props_preserve_value_diagnostics() {
 fn reserved_prop_shapes_preserve_literal_and_member_diagnostics() {
     check_pack(
         "reserved-expression-shapes",
+        "reserved_prop_shapes_preserve_literal_and_member_diagnostics",
         "27ae56ea668fc6c94653894ec29d75f8339a04c7",
         Some(923),
         &["valid-expression-shapes", "invalid-expression-shapes"],
@@ -118,6 +128,7 @@ fn reserved_prop_shapes_preserve_literal_and_member_diagnostics() {
 fn component_event_tuples_preserve_all_argument_diagnostics() {
     check_pack(
         "component-event-tuples",
+        "component_event_tuples_preserve_all_argument_diagnostics",
         "e65154535ad5fb8645330848ea61f3fa8a65575b",
         Some(3085),
         &[
@@ -132,15 +143,21 @@ fn component_event_tuples_preserve_all_argument_diagnostics() {
     );
 }
 
-fn check_pack(name: &str, regression: &str, historical_issue: Option<u32>, case_ids: &[&str]) {
+fn check_pack(
+    name: &str,
+    test: &str,
+    regression: &str,
+    historical_issue: Option<u32>,
+    case_ids: &[&str],
+) {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let fixtures = root
         .join("tests/_fixtures/differential/typechecker")
         .join(name);
-    let pack: Pack = serde_json::from_slice(
-        &std::fs::read(fixtures.join("cases.json")).expect("the fixture pack must exist"),
-    )
-    .expect("the fixture pack must have the expected schema");
+    let fixture_pack =
+        std::fs::read(fixtures.join("cases.json")).expect("the fixture pack must exist");
+    let pack: Pack = serde_json::from_slice(&fixture_pack)
+        .expect("the fixture pack must have the expected schema");
     assert_eq!(pack.version, 1);
     assert_eq!(pack.issue, 6879);
     assert_eq!(pack.historical_issue, historical_issue);
@@ -171,6 +188,7 @@ fn check_pack(name: &str, regression: &str, historical_issue: Option<u32>, case_
     );
     let vue = std::fs::canonicalize(root.join("tests/node_modules/vue"))
         .expect("the pinned real Vue package must be installed");
+    let mut capture = observation::Capture::from_environment();
     for case in pack.cases {
         let project = tempfile::tempdir().expect("a project must be created");
         let project_root =
@@ -209,20 +227,17 @@ fn check_pack(name: &str, regression: &str, historical_issue: Option<u32>, case_
                 message: String::from(diagnostic.message.as_str()),
             })
             .collect();
-        if let Some(capture) = std::env::var_os("VIZE_TEST_FIX_HISTORY_CAPTURE_DIR") {
-            let directory = PathBuf::from(capture).join(name);
-            std::fs::create_dir_all(&directory).expect("capture directory must be created");
-            std::fs::write(
-                directory.join(&case.id).with_extension("json"),
-                serde_json::to_vec_pretty(&actual).expect("actual diagnostics must serialize"),
-            )
-            .expect("actual diagnostic capture must write");
-        }
         assert_eq!(
             actual, case.diagnostics,
             "complete diagnostic list for {}",
             case.id
         );
+        if let Some(capture) = &mut capture {
+            capture.record(case.id, &case.inputs, &project_root, actual, &result);
+        }
+    }
+    if let Some(capture) = capture {
+        capture.finish(name, test, &fixture_pack);
     }
 }
 

@@ -234,6 +234,11 @@ jobs:
           path: .artifacts/rust-test-archive
       - name: Verify Rust archive identity
         run: node tools/support/compat/github/rust-test-archive.mjs verify .artifacts/rust-test-archive/tests.tar.zst .artifacts/rust-test-archive/receipt.json
+      - name: Prepare required typechecker observations
+        if: ${{ github.event_name == 'merge_group' }}
+        run: |
+          mkdir -p target/nextest/full/typechecker-fixtures
+          printf 'VIZE_TEST_FIX_HISTORY_CAPTURE_DIR=%s\nVIZE_TEST_FIX_HISTORY_ARCHIVE_RECEIPT=%s\n' "$GITHUB_WORKSPACE/target/nextest/full/typechecker-fixtures" "$GITHUB_WORKSPACE/.artifacts/rust-test-archive/receipt.json" >> "$GITHUB_ENV"
       - name: Run Rust test shard without rebuilding
         # Baked env! paths still occur in tests. Extract to the original workspace
         # (checked by the receipt), preserving target/ci and CARGO_BIN_EXE paths.
@@ -246,6 +251,9 @@ jobs:
           if cargo nextest run --archive-file .artifacts/rust-test-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile "$NEXTEST_PROFILE" --partition "hash:$SHARD/4" --no-tests=pass; then phase_exit=0; else phase_exit=$?; fi
           printf '{"phase":"workspace-shard","shard":%s,"elapsed_seconds":%d,"exit_code":%d}\n' "$SHARD" "$((SECONDS - phase_started))" "$phase_exit" > "target/nextest/$NEXTEST_PROFILE/timing.json"
           exit "$phase_exit"
+      - name: Verify actual typechecker fixture observations
+        if: ${{ !cancelled() && github.event_name == 'merge_group' }}
+        run: vp node tests/differential/typechecker-shards.ts worker target/nextest/full/typechecker-fixtures .artifacts/rust-test-archive/receipt.json target/nextest/full/junit.xml "$SHARD"
       - name: Upload Rust shard results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -268,3 +276,25 @@ jobs:
           RUN_RUST: ${{ inputs.run-rust }}
           NEEDS_JSON: ${{ toJSON(needs) }}
         run: node tools/support/compat/github/require-rust-tier.mjs
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        if: ${{ github.event_name == 'merge_group' && inputs.run-rust && needs.pr-rust-shard.result == 'success' }}
+        with:
+          node-version-file: "package.json"
+          run-install: false
+      - name: Download the four current full Rust workers
+        if: ${{ github.event_name == 'merge_group' && inputs.run-rust && needs.pr-rust-shard.result == 'success' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: rust-test-shard-*-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .artifacts/typechecker-workers
+      - name: Require all registered typechecker observations
+        if: ${{ github.event_name == 'merge_group' && inputs.run-rust && needs.pr-rust-shard.result == 'success' }}
+        run: vp node tests/differential/typechecker-shards.ts aggregate .artifacts/typechecker-workers target/differential/typechecker
+      - name: Upload typechecker shared corpus evidence
+        if: ${{ !cancelled() && github.event_name == 'merge_group' && inputs.run-rust && needs.pr-rust-shard.result == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: typechecker-corpus-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/differential/typechecker/
+          if-no-files-found: error
+          retention-days: 14

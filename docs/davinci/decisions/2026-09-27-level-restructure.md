@@ -218,7 +218,7 @@ See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-ch
 
 [Type-checker history slices](./2026-09-27-typechecker-history-slices.md) record
 focused required T1 diagnostics for #6879; the [shared batch registry decision](./2026-10-01-typechecker-shared-batch-fixtures.md) binds 17 existing projects and 67 exact carriers to their original diagnostic projection and four-worker JUnit/archive accounting. All public result fields are retained; additional block/status fields remain observed and unbaselined.
-Whole-history, full-range/raw fields and native admission remain unfinished; expected fixtures, product routes, exact T0 deferrals and all required full tests remain unchanged.
+Required T1 captures reuse actual production checks with atomic packs and four-worker JUnit/source/archive receipts. The unconditional complete-Rust gate precedes worker download and reconciliation, checked by its actual step identity and runtime inputs. Whole-history, full-range/raw fields and native admission remain unfinished; expected fixtures, product routes, exact T0 deferrals and all required full tests remain unchanged. The first protected attempt retained six/eight-body legacy observations and four-worker source/archive/JUnit reports for the consumer and continuation; the provider has no capture consumer. The aggregate Check failed the common devalue audit; all PRs remain open with queue/auto-merge cleared. The original diagnostic projection alone matched; extra public fields remain observed/unbaselined and native credit stays zero. Replay and fresh protected candidates on security-fixed main remain required.
 
 ## Legacy deletion criteria
 
