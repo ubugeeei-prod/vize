@@ -102,7 +102,7 @@ fn invalid_discovered_settings_fail_before_fix_and_no_config_can_ignore_them() {
     let before = fs::read(root.join("Warning.vue")).expect("source");
     for invalid in [r#"{"linter":{"maxWarnings":-1}}"#, "{"] {
         fs::write(root.join("vize.config.json"), invalid).expect("invalid config");
-        let error = serde_json::from_str::<vize_carton::config::ConfigDocument>(invalid)
+        let error = serde_json::from_str::<vize_l0::config::ConfigDocument>(invalid)
             .expect_err("invalid typed config");
         let discovered = root
             .canonicalize()
