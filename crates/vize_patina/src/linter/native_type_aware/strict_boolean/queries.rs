@@ -1,25 +1,23 @@
 //! AST-defined boolean contexts; expressions retain their authored ranges.
 use oxc_ast::ast::{
-    ChainElement, ConditionalExpression, DoWhileStatement, Expression, ForStatement, IfStatement,
-    LogicalExpression, StaticMemberExpression, UnaryExpression, WhileStatement,
+    ConditionalExpression, DoWhileStatement, Expression, ForStatement, IfStatement,
+    LogicalExpression, UnaryExpression, WhileStatement,
 };
 use oxc_ast_visit::{Visit, walk};
-use oxc_span::{GetSpan, Span};
+use oxc_span::GetSpan;
 use oxc_syntax::operator::{LogicalOperator, UnaryOperator};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) struct Condition {
     pub start: u32,
     pub end: u32,
-    pub anchor: u32,
 }
 
-pub(super) struct Collector<'s> {
-    pub source: &'s str,
+pub(super) struct Collector {
     pub conditions: Vec<Condition>,
 }
 
-impl Collector<'_> {
+impl Collector {
     pub fn condition(&mut self, expression: &Expression<'_>) {
         match expression {
             Expression::ParenthesizedExpression(paren) => self.condition(&paren.expression),
@@ -43,7 +41,6 @@ impl Collector<'_> {
                     self.conditions.push(Condition {
                         start: span.start,
                         end: span.end,
-                        anchor: anchor(expression, self.source),
                     });
                 }
             }
@@ -51,7 +48,7 @@ impl Collector<'_> {
     }
 }
 
-impl<'a> Visit<'a> for Collector<'_> {
+impl<'a> Visit<'a> for Collector {
     fn visit_if_statement(&mut self, node: &IfStatement<'a>) {
         self.condition(&node.test);
         walk::walk_if_statement(self, node);
@@ -85,43 +82,5 @@ impl<'a> Visit<'a> for Collector<'_> {
             self.condition(&node.left);
         }
         walk::walk_logical_expression(self, node);
-    }
-}
-
-fn punctuation(source: &str, range: Span, token: char) -> u32 {
-    source
-        .get(range.start as usize..range.end as usize)
-        .and_then(|text| text.find(token))
-        .map_or(range.start, |index| range.start + index as u32)
-}
-
-fn member_anchor(member: &StaticMemberExpression<'_>) -> u32 {
-    member.property.span.end.saturating_sub(1)
-}
-
-fn anchor(expression: &Expression<'_>, source: &str) -> u32 {
-    match expression {
-        Expression::StaticMemberExpression(member) => member_anchor(member),
-        Expression::ChainExpression(chain) => match &chain.expression {
-            ChainElement::StaticMemberExpression(member) => member_anchor(member),
-            _ => chain.span.end.saturating_sub(1),
-        },
-        Expression::BinaryExpression(binary) => binary.left.span().end,
-        Expression::LogicalExpression(logical) => logical.left.span().end,
-        Expression::ConditionalExpression(conditional) => punctuation(
-            source,
-            Span::new(
-                conditional.test.span().end,
-                conditional.consequent.span().start,
-            ),
-            '?',
-        ),
-        Expression::TSAsExpression(assertion) => assertion.expression.span().end,
-        Expression::TSSatisfiesExpression(assertion) => assertion.expression.span().end,
-        Expression::UnaryExpression(unary) => unary.span.start,
-        Expression::ObjectExpression(object) => object.span.start,
-        Expression::ArrayExpression(array) => array.span.start,
-        Expression::ParenthesizedExpression(paren) => anchor(&paren.expression, source),
-        _ => expression.span().end.saturating_sub(1),
     }
 }

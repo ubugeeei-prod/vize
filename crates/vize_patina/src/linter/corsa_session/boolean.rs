@@ -8,6 +8,8 @@ use corsa::{
 use serde_json::{Value, json};
 use vize_l0::{FxHashMap, String};
 
+mod nodes;
+
 // TypeScript 7 TypeFlags, from microsoft/typescript-go internal/checker/types.go.
 // Aliases/unions are classified by assignability, not by their rendered names.
 const ANY: u32 = 1;
@@ -21,14 +23,14 @@ impl CorsaTypeAwareSession {
         &self,
         source: &str,
         targets: &[u32],
-        offsets: &[u32],
+        ranges: &[(u32, u32)],
     ) -> Result<Vec<Option<Vec<Value>>>, String> {
         block_on(classify_batch(
             &self.session,
             self.virtual_file_wire.as_str(),
             source,
             targets,
-            offsets,
+            ranges,
         ))
         .map_err(|error| {
             compact_error(
@@ -44,11 +46,10 @@ async fn classify_batch(
     file: &str,
     source: &str,
     targets: &[u32],
-    offsets: &[u32],
+    ranges: &[(u32, u32)],
 ) -> corsa::Result<Vec<Option<Vec<Value>>>> {
     let positions = targets
         .iter()
-        .chain(offsets)
         .map(|&at| byte_offset_to_utf16_offset(source, at))
         .collect();
     let responses = session
@@ -60,7 +61,7 @@ async fn classify_batch(
             positions,
         )
         .await?;
-    if responses.len() != targets.len() + offsets.len() {
+    if responses.len() != targets.len() {
         return Err(corsa::CorsaError::Protocol(
             "Incomplete boolean condition type batch".into(),
         ));
@@ -73,11 +74,43 @@ async fn classify_batch(
     let handles = handles.ok_or_else(|| {
         corsa::CorsaError::Protocol("Missing boolean intrinsic target type".into())
     })?;
+    let encoded = session
+        .client()
+        .get_source_file(
+            session.snapshot().handle.clone(),
+            session.project_handle(),
+            file,
+        )
+        .await?
+        .ok_or_else(|| corsa::CorsaError::Protocol("Missing boolean checker source file".into()))?;
+    let ranges: Vec<_> = ranges
+        .iter()
+        .map(|&(start, end)| {
+            (
+                byte_offset_to_utf16_offset(source, start),
+                byte_offset_to_utf16_offset(source, end),
+            )
+        })
+        .collect();
+    let locations = nodes::locations(encoded.as_bytes(), source, &ranges)?;
+    let responses = session
+        .client()
+        .get_type_at_locations(
+            session.snapshot().handle.clone(),
+            session.project_handle(),
+            locations,
+        )
+        .await?;
+    if responses.len() != ranges.len() {
+        return Err(corsa::CorsaError::Protocol(
+            "Incomplete boolean expression type batch".into(),
+        ));
+    }
     let mut cache = FxHashMap::<TypeHandle, Vec<Value>>::default();
-    let mut result = Vec::with_capacity(offsets.len());
-    for response in responses.into_iter().skip(targets.len()) {
+    let mut result = Vec::with_capacity(ranges.len());
+    for response in responses {
         let response = response.ok_or_else(|| {
-            corsa::CorsaError::Protocol("Missing boolean condition position type".into())
+            corsa::CorsaError::Protocol("Missing boolean expression node type".into())
         })?;
         let parts = match cache.get(&response.id) {
             Some(parts) => parts.clone(),

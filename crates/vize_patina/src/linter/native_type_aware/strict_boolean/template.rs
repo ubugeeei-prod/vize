@@ -25,7 +25,6 @@ fn expression(
         return;
     };
     let mut collector = Collector {
-        source: text,
         conditions: Vec::new(),
     };
     collector.condition(&parsed);
@@ -33,7 +32,6 @@ fn expression(
     out.extend(collector.conditions.into_iter().map(|condition| Condition {
         start: offset + span.start + condition.start,
         end: offset + span.start + condition.end,
-        anchor: offset + span.start + condition.anchor,
     }));
 }
 

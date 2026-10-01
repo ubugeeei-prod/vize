@@ -21,7 +21,7 @@ mod tests;
 
 pub(super) struct Plan {
     conditions: Vec<queries::Condition>,
-    offsets: Vec<u32>,
+    ranges: Option<Vec<(u32, u32)>>,
     targets: Vec<u32>,
 }
 
@@ -53,7 +53,6 @@ pub(super) fn plan(
             continue;
         }
         let mut collector = queries::Collector {
-            source: &block.content,
             conditions: Vec::new(),
         };
         collector.visit_program(&parsed.program);
@@ -65,7 +64,6 @@ pub(super) fn plan(
                 .map(|condition| queries::Condition {
                     start: origin + condition.start,
                     end: origin + condition.end,
-                    anchor: origin + condition.anchor,
                 }),
         );
     }
@@ -74,16 +72,19 @@ pub(super) fn plan(
     }
     conditions.sort_unstable_by_key(|condition| (condition.start, condition.end));
     conditions.dedup_by_key(|condition| (condition.start, condition.end));
-    let mut offsets = Vec::new();
-    conditions.retain(
-        |condition| match document.generated_offset(condition.anchor) {
-            Some(offset) => {
-                offsets.push(offset);
-                true
-            }
-            None => false,
-        },
-    );
+    // Projection rows are half-open: map the final authored byte and then
+    // restore the exclusive end, rather than looking up the unmapped boundary.
+    let ranges = conditions
+        .iter()
+        .map(|condition| {
+            Some((
+                document.generated_offset(condition.start)?,
+                document
+                    .generated_offset(condition.end.checked_sub(1)?)?
+                    .checked_add(1)?,
+            ))
+        })
+        .collect();
     let mut targets = Vec::new();
     if !conditions.is_empty() {
         let suffix = document.content.len();
@@ -113,7 +114,7 @@ pub(super) fn plan(
     }
     Plan {
         conditions,
-        offsets,
+        ranges,
         targets,
     }
 }
@@ -128,7 +129,10 @@ pub(super) fn evaluate(
     if plan.is_empty() {
         return Ok(());
     }
-    let parts = session.boolean_type_parts(source, &plan.targets, &plan.offsets)?;
+    let ranges = plan.ranges.as_ref().ok_or_else(|| {
+        String::from("Strict boolean condition has no complete checker projection")
+    })?;
+    let parts = session.boolean_type_parts(source, &plan.targets, ranges)?;
     for (condition, parts) in plan.conditions.iter().zip(parts) {
         let Some(parts) = parts else {
             continue;

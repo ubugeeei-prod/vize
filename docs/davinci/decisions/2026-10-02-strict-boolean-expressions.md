@@ -11,9 +11,14 @@ unions remain nullable. Owning template cases distinguish these semantics.
 Conditions include if/while/do/for/ternary tests, negation, and logical operands;
 the right operand of a value-producing logical expression is not a condition.
 
-Use position types with control-flow narrowing, checker assignability,
+Use checker-owned expression nodes with control-flow narrowing, checker assignability,
 non-nullable types, and intrinsic/literal type handles. Do not infer aliases,
 object unions, or nullability by spelling or by an identifier's declared type.
+The touching-token position API misclassifies computed access and calls, so
+resolve complete projected expression ranges in the same snapshot's encoded AST
+and batch `getTypeAtLocations`. The wire reader is guarded against truncation,
+invalid metadata, mismatched source, unsupported versions, and parent cycles;
+it uses the actual node indexes and path from the pinned TypeScript 7.0.2 worker.
 Opaque handles stay within their snapshot. Reuse Corsa's existing strict boolean
 policy with checker-derived condition facts and preserve authored byte ranges.
 

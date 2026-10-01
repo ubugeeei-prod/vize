@@ -13,7 +13,6 @@ fn syntax_contexts_include_logical_left_but_not_value_right_operands() {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
     let mut collector = Collector {
-        source,
         conditions: Vec::new(),
     };
     collector.visit_program(&parsed.program);
