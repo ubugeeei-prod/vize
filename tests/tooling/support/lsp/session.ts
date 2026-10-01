@@ -186,7 +186,7 @@ export class LspSession {
         reject(
           new Error(
             `Timed out waiting for notification ${method}; recent notifications: ` +
-              `${JSON.stringify(recentNotifications)}\n${this.stderr}`.trim(),
+              `${JSON.stringify(recentNotifications)}\n${this.stderr.slice(-12000)}`.trim(),
           ),
         );
       }, timeoutMs);

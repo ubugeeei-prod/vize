@@ -226,10 +226,17 @@ pub(super) async fn did_delete_files(server: &MaestroServer, params: &DeleteFile
         if !deleted_paths.is_empty() {
             dependents = include_open_typecheck_documents(&server.state, dependents);
         }
+        tracing::info!(
+            files = params.files.len(),
+            affected = deleted_paths.len(),
+            dependents = dependents.len(),
+            "refreshing after deleted workspace files"
+        );
         record_deleted_files(&server.state, params);
         forget_corsa_vue_files(&server.state, &deleted_paths);
         invalidate_corsa_disk_state(&server.state);
         publish_versioned_dependents(server, dependents).await;
+        tracing::info!("finished refreshing after deleted workspace files");
     }
     #[cfg(not(feature = "native"))]
     let _ = (server, params);
