@@ -208,7 +208,6 @@ Rules marked with `ruleOptions` accept typed project-local settings under `linte
 | `type/no-unsafe-template-binding` | `warning` | `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_unsafe_template_binding.rs#L12) | Disallow template bindings that resolve to unsafe types |
 | `type/require-typed-emits` | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_emits.rs#L54) | Require type definition for defineEmits |
 | `type/require-typed-props` | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57) | Require type definition for defineProps |
-
 | `type/strict-boolean-expressions` | `warning` | _none_ | No | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/strict_boolean_expressions.rs#L8) | Require safe boolean expressions in script and template conditions |
 
 ## Vapor (7)

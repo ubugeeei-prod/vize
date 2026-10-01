@@ -36,7 +36,9 @@ new rule; the catalog total increases from 250 to 251 without changing presets.
 The pinned rule-contract census adds exactly one complete warning row; existing
 rows and the 98 error exemptions remain unchanged. The tooling tier census
 also pins the resulting 251 total and 33 complete rows. The AST reader tests
-use ordinary module discovery under the existing layout gate.
+use ordinary module discovery under the existing layout gate. Repeated opt-in
+registration preserves every rule name and its order; the documentation
+references keep new rows within their existing complete Markdown tables.
 Retain the stable public exhaustive config structs using additive wrappers.
 Move existing probe execution and option declarations in a move-only commit
 before implementation to keep the source-size ceiling unchanged.

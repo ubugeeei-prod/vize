@@ -52,6 +52,7 @@ title: ルール オプション
 | `vue/v-on-event-hyphenation` | `"always" \| "never"` | component 上の static event listener 名を hyphenation するかを設定します。 |
 | `vue/attribute-hyphenation` | `"always" \| "never"` | template 内の component prop attribute を hyphenation するかを設定します。 |
 | `musea/prefer-design-tokens` | `{ tokens?: Array<{ path: string; value: string; tier?: string }> }` | token data が設定され、rule が有効か、空でない token list で暗黙に選択されたときだけ発火します。`tier` の既定は `primitive` です。 |
+| `type/strict-boolean-expressions` | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`、`allowNumber`、`allowNullableObject` の既定は `true`、その他は `false` です。rule を明示的に有効にする必要があります。 |
 
 ## Scoped Entries
 
@@ -59,7 +60,6 @@ title: ルール オプション
 同じ rule の option object は丸ごと置き換えられます。`globals`、`members`、`order`、`tokens`
 などの配列は entry 間で連結されません。
 
-| `type/strict-boolean-expressions` | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`, `allowNumber`, and `allowNullableObject` default to `true`; the other options default to `false`. Explicit rule enablement is required. |
 ## `script/no-restricted-globals`
 
 runtime global を project-owned wrapper 経由にしたいときに使います。option がない場合は

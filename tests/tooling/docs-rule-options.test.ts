@@ -143,3 +143,43 @@ function sectionFor(source: string, heading: string): string {
   const next = source.indexOf("\n## ", start + heading.length);
   return source.slice(start, next === -1 ? source.length : next);
 }
+
+test("strict boolean rows render within the complete option and type-aware tables", () => {
+  const expectedOptions = [
+    "script/no-restricted-globals",
+    "script/no-restricted-members",
+    "vue/component-name-in-template-casing",
+    "script/custom-event-name-casing",
+    "vue/no-mutating-props",
+    "vue/sfc-element-order",
+    "vue/html-self-closing",
+    "vue/v-on-event-hyphenation",
+    "vue/attribute-hyphenation",
+    "musea/prefer-design-tokens",
+    "type/strict-boolean-expressions",
+  ];
+  for (const locale of ["", "ja/"]) {
+    const source = fs.readFileSync(
+      path.join(repoRoot, `docs/content/${locale}rules/options.md`),
+      "utf8",
+    );
+    assert.deepEqual(tableRules(source), expectedOptions, locale || "en");
+  }
+  const allRules = fs.readFileSync(path.join(repoRoot, "docs/content/rules/all.md"), "utf8");
+  assert.deepEqual(tableRules(sectionFor(allRules, "## Type Aware (6)")), [
+    "type/no-floating-promises",
+    "type/no-reactivity-loss",
+    "type/no-unsafe-template-binding",
+    "type/require-typed-emits",
+    "type/require-typed-props",
+    "type/strict-boolean-expressions",
+  ]);
+});
+
+function tableRules(source: string): string[] {
+  const block = source
+    .split(/\n\s*\n/u)
+    .find((block) => /^\| (?:Rule|ルール) \|[^\n]*\n\| --- \|/u.test(block));
+  assert.ok(block, "table header and separator must share a block");
+  return [...block.matchAll(/^\| `([^`]+)` \|/gmu)].map((match) => match[1]!);
+}
