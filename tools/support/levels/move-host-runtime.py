@@ -25,6 +25,103 @@ def update(path, change):
     if before != after:
         p.write_text(after, encoding="utf-8")
 
+HOST = re.compile(r"^(?:r#)?corsa_(?:api_mode|resolver)\b")
+GROUP = re.compile(r"(?m)^([ \t]*)((?:pub(?:\([^)]*\))?\s+)?use)\s+vize_l0\s*::\s*\{")
+
+def mask_comments(text):
+    out = list(text)
+    i = 0
+    while i < len(text):
+        if text.startswith("//", i):
+            end = text.find("\n", i)
+            end = len(text) if end == -1 else end
+        elif text.startswith("/*", i):
+            end, depth = i + 2, 1
+            while end < len(text) and depth:
+                if text.startswith("/*", end):
+                    depth += 1
+                    end += 2
+                elif text.startswith("*/", end):
+                    depth -= 1
+                    end += 2
+                else:
+                    end += 1
+            if depth:
+                raise SystemExit("Unterminated import comment")
+        else:
+            i += 1
+            continue
+        out[i:end] = ["\n" if ch == "\n" else " " for ch in text[i:end]]
+        i = end
+    return "".join(out)
+
+def grouped_imports(text):
+    for match in GROUP.finditer(text):
+        depth, start, end = 1, match.end(), match.end()
+        while end < len(text):
+            if text.startswith("//", end):
+                newline = text.find("\n", end)
+                end = len(text) if newline == -1 else newline
+                continue
+            if text.startswith("/*", end):
+                comment, end = 1, end + 2
+                while end < len(text) and comment:
+                    if text.startswith("/*", end):
+                        comment += 1
+                        end += 2
+                    elif text.startswith("*/", end):
+                        comment -= 1
+                        end += 2
+                    else:
+                        end += 1
+                if comment:
+                    raise SystemExit("Unterminated import comment")
+                continue
+            depth += (text[end] == "{") - (text[end] == "}")
+            if depth == 0:
+                tail = re.match(r"\s*;", text[end + 1:])
+                if not tail:
+                    raise SystemExit("Malformed grouped import")
+                yield match, text[start:end], end + 1 + tail.end()
+                break
+            end += 1
+        else:
+            raise SystemExit("Unterminated grouped import")
+
+def import_items(body):
+    depth, start = 0, 0
+    for index, ch in enumerate(mask_comments(body)):
+        depth += (ch == "{") - (ch == "}")
+        if ch == "," and depth == 0:
+            item = body[start:index].strip()
+            if mask_comments(item).strip():
+                yield item + ("\n" if "//" in item else "")
+            start = index + 1
+    item = body[start:].strip()
+    if mask_comments(item).strip():
+        yield item + ("\n" if "//" in item else "")
+
+def is_host(item):
+    return HOST.match(mask_comments(item).strip()) is not None
+
+def rewrite_grouped_imports(text):
+    for match, body, end in reversed(list(grouped_imports(text))):
+        items = list(import_items(body))
+        host = [item for item in items if is_host(item)]
+        if not host:
+            continue
+        storage = [item for item in items if not is_host(item)]
+        indent, prefix = match.groups()
+        lines = [f"{indent}{prefix} vize_l0::{{{', '.join(storage)}}};"] if storage else []
+        lines += [f"{indent}{prefix} vize_carton::{item};" for item in host]
+        text = text[:match.start()] + "\n".join(lines) + text[end:]
+    return text
+
+def has_host_import(text):
+    if re.search(r"\bvize_l0\s*::\s*(?:r#)?corsa_(?:api_mode|resolver)\b", text):
+        return True
+    return any(is_host(item) for _, body, _ in grouped_imports(text) for item in import_items(body))
+
 def integrate():
     update("crates/vize_carton/src/corsa_resolver/tests.rs", lambda s: s.replace("error.to_string()", 'crate::cstr!("{error}")'))
     update("davinci/vize_l0/src/lib.rs", lambda s: re.sub(
@@ -51,21 +148,7 @@ def integrate():
             # Remove Canon's private storage alias, which otherwise shadows the real host owner.
             text = text.replace("extern crate vize_l0 as vize_carton;\n", "")
             text = re.sub(r'\bvize_l0::corsa_(api_mode|resolver)\b', r'vize_carton::corsa_\1', text)
-            # Split grouped imports so only host APIs come from Carton.
-            def imports(match):
-                indent, items = match.groups()
-                host = []
-                def extract(m):
-                    host.append(m.group(1))
-                    return ""
-                items = re.sub(r'(corsa_(?:api_mode|resolver)::(?:\{[^}]*\}|[A-Za-z_][A-Za-z_0-9]*)),?\s*',
-                               extract, items)
-                if not host:
-                    return match.group(0)
-                items = items.strip().strip(",").strip()
-                storage = f"{indent}use vize_l0::{{{items}}};" if items else ""
-                return storage + "".join(f"\n{indent}use vize_carton::{item};" for item in host)
-            text = re.sub(r'(?m)^([ \t]*)use vize_l0::\{((?:[^{}]|\{[^{}]*\})*)\};', imports, text)
+            text = rewrite_grouped_imports(text)
             if name == "vize" and source.name == "check_cli.rs":
                 text = text.replace('};\n\nuse vize_l0::{cstr, path::canonicalize_non_verbatim};\n\nuse vize_carton::corsa_resolver::platform_suffix;',
                                     '};\nuse vize_l0::{cstr, path::canonicalize_non_verbatim};\nuse vize_carton::corsa_resolver::platform_suffix;')
@@ -92,7 +175,7 @@ def main():
     else:
         for name in CONSUMERS:
             for source in (ROOT / "crates" / name).rglob("*.rs"):
-                if re.search(r'\bvize_l0::corsa_(api_mode|resolver)\b', source.read_text(encoding="utf-8")):
+                if has_host_import(source.read_text(encoding="utf-8")):
                     raise SystemExit("Unmigrated host import: " + str(source.relative_to(ROOT)))
         print("Host runtime ownership is integrated")
 
