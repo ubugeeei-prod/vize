@@ -49,13 +49,18 @@ jobs:
           set -euo pipefail
           cd "$RUNNER_TEMP"
           npm install --global pnpm@12.1.0 --ignore-scripts
-          test "$(pnpm --version)" = "12.1.0"
+          devalue_pnpm_prefix="$(npm prefix --global)"
+          devalue_pnpm_bin="$devalue_pnpm_prefix/bin/pnpm"
+          printf 'DEVALUE_PNPM_BIN=%s\n' "$devalue_pnpm_bin" >> "$GITHUB_ENV"
+          cd "$GITHUB_WORKSPACE"
+          printf 'Node: %s\npnpm: %s\n' "$(node --version)" "$("$devalue_pnpm_bin" --version)"
+          test "$("$devalue_pnpm_bin" --version)" = "12.1.0"
           test "$(node --version)" = "v24.14.0"
       - name: Generate and verify the lockfile
         shell: bash
         run: |
           set -euo pipefail
-          pnpm install --lockfile-only --ignore-scripts --no-frozen-lockfile
+          "$DEVALUE_PNPM_BIN" install --lockfile-only --ignore-scripts --no-frozen-lockfile
           node --input-type=module <<'JS'
           import assert from "node:assert/strict";
           import fs from "node:fs";
@@ -75,7 +80,7 @@ jobs:
             schema: "vize.dependency.lock-generation", version: 1,
             sourceRevision: process.env.EXPECTED_SOURCE_SHA,
             node: process.version,
-            pnpm: execFileSync("pnpm", ["--version"], { encoding: "utf8" }).trim(),
+            pnpm: execFileSync(process.env.DEVALUE_PNPM_BIN, ["--version"], { encoding: "utf8" }).trim(),
             workspaceSha256: hash("pnpm-workspace.yaml"), lockSha256: hash("pnpm-lock.yaml"),
           }));
           JS
