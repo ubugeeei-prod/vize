@@ -1,0 +1,6 @@
+<routeLeaveConfirm.ModalAlert
+  :is-opened="routeLeaveConfirm.alertCtx.isOpened.value"
+  @click:cancel="routeLeaveConfirm.alertCtx.close"
+>
+  <p>Unsaved changes</p>
+</routeLeaveConfirm.ModalAlert>

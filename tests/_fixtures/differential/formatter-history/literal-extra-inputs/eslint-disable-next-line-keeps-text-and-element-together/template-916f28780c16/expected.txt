@@ -1,0 +1,4 @@
+<div class="mt20">
+  <!--eslint-disable-next-line-->
+  custom space: <input @keyup.custom="keys('custom keycode space')" />
+</div>

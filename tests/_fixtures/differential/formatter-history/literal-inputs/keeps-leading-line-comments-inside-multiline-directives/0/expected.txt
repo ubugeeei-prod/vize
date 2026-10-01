@@ -1,0 +1,12 @@
+<main
+  :data-loading="
+    // explain why this flag is used here
+    loading
+  "
+  @close="
+    // always attach a close handler
+    () => close()
+  "
+>
+  body
+</main>

@@ -1,0 +1,4 @@
+<div>
+  <!-- @vize:level(off) -->
+  label: <input />
+</div>

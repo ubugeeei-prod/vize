@@ -1,0 +1,1 @@
+<Widget :[name]="dynamic" id="literal" class="box" />

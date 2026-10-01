@@ -1,0 +1,1 @@
+<div><span>Hello</span><strong>{{name}}</strong></div>

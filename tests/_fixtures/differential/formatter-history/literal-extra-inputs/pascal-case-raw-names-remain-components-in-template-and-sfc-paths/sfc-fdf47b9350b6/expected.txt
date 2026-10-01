@@ -1,0 +1,5 @@
+<template>
+  <Textarea>
+    <span id="child" class="value">value</span>
+  </Textarea>
+</template>

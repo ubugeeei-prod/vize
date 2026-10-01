@@ -1,0 +1,14 @@
+<template>
+  <path
+    :style="`
+                        opacity:${
+                            selectedNodes
+                                ? selectedNodes.includes(path.source) &&
+                                  selectedNodes.includes(path.target)
+                                    ? 1
+                                    : 0.3
+                                : 1
+                        }
+                    `"
+  />
+</template>

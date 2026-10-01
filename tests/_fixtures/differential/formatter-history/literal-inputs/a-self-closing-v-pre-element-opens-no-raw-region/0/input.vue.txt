@@ -1,0 +1,6 @@
+<template>
+  <Foo v-pre />
+  <span>
+    a
+  </span>
+</template>

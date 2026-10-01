@@ -1,0 +1,4 @@
+<div>
+  <!-- a note -->
+  space: <input />
+</div>
