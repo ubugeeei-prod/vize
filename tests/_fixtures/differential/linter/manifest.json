@@ -1,0 +1,233 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "product": "linter",
+  "baseRevision": "cc87bb5960ea9e49e82672205df919de58bb4b24",
+  "adapterOptions": {
+    "preset": "Incremental",
+    "locale": "En",
+    "helpLevel": "Full",
+    "fixes": "independent-original-input",
+    "repeatedProcesses": 2
+  },
+  "cohorts": [
+    {
+      "id": "current-api",
+      "api": "--current-api",
+      "cases": {
+        "path": "crates/vize_patina/tests/fixtures/lint-history/cases.json",
+        "sha256": "213da26d2a3a8b4f14b947dc711b786fa6568b51ac9cfc259fd7a253fab66c42"
+      }
+    },
+    {
+      "id": "next-tick",
+      "api": "--current-api",
+      "cases": {
+        "path": "crates/vize_patina/tests/fixtures/next-tick-history/cases.json",
+        "sha256": "96b1745c527e4a65fc0347566d015d5063271e90d7fdc8d21fe160c54856c5c2"
+      }
+    },
+    {
+      "id": "report",
+      "api": "--report",
+      "cases": {
+        "path": "crates/vize_patina/tests/fixtures/report-history/cases.json",
+        "sha256": "c10833e985b26e524cc9a0d0e469c3e651850fbe9dd6293d8f2854e692ef5622"
+      }
+    },
+    {
+      "id": "static-class",
+      "api": "--static-class",
+      "cases": {
+        "path": "tests/_fixtures/differential/lint-static-class/cases.json",
+        "sha256": "b409b01c2e7177419cafbdbbdb6257b11fe32e37e9a46acd9595d09d1f817116"
+      }
+    }
+  ],
+  "oracles": {
+    "path": "tests/_fixtures/differential/linter/oracle-index.json",
+    "sha256": "d268d3c18cac828675438e3e82f6c392551358d6dcb7426d3cccb9f2727f7d10"
+  },
+  "cases": [
+    {
+      "id": "linter/current-api/ref-string-untyped",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/ref-string-typed",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/ref-call-control",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/v-for-no-separator",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/v-for-separator-control",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/slot-compat-vue2",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/shorthand-compat-vue2",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/slot-compat-vue3",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/shorthand-compat-vue3",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/next-tick-unspecified",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/next-tick-disabled",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/static-class-empty-expression",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/current-api/static-class-utf8-fix-corrected",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/next-tick/valid-arrow-expression-return-script",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/next-tick/valid-arrow-expression-return-sfc",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/next-tick/valid-parenthesized-arrow-expression-return-script",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/next-tick/valid-parenthesized-arrow-expression-return-sfc",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/next-tick/invalid-arrow-block-bare-call-script",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/next-tick/invalid-arrow-block-bare-call-sfc",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/next-tick/invalid-arrow-expression-void-call-script",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/next-tick/invalid-arrow-expression-void-call-sfc",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/next-tick/nested-arrow-restores-statement-context-script",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/next-tick/nested-arrow-restores-statement-context-sfc",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/report/original-line-columns",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/report/unicode-crlf-columns",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/report/source-map-order-and-missing",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/report/no-findings-output-control",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/static-class/short-binding",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/static-class/long-binding",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/static-class/self-closing",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/static-class/adjacent-attribute",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/static-class/outer-single-quote",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/static-class/utf8-crlf-sfc",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/static-class/existing-static-class",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/static-class/dynamic-expression",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/static-class/empty-expression",
+      "state": "active",
+      "targets": ["lint"]
+    }
+  ]
+}
