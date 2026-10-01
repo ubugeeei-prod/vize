@@ -118,7 +118,7 @@ compiler	Compiler	source	crates/vize_atelier_ssr/src/stage_options.rs	14	l0	L0	s
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/steps.rs	93	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/component_spread_props.rs	10	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_expr_reparse_floor.rs	20	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_corpus.rs	115	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_corpus.rs	119	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_corpus/production.rs	53	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_production_cases.rs	22	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_walk_baseline.rs	29	l0	L0	stage	vize_l0	preferred	1
@@ -129,5 +129,6 @@ compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/native_stage_capture.rs
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/setup_component_parity.rs	8	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/ssr_snapshot.rs	9	l0	L0	stage	vize_l0	preferred	4
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/support/fix_history.rs	8	l0	L0	stage	vize_l0	preferred	2
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/vue_ssr_render.rs	31	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/vue_ssr_render.rs	33	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/vue_ssr_render/input_models.rs	8	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/vue_ssr_render/lint_pragmas.rs	8	l0	L0	stage	vize_l0	preferred	1
