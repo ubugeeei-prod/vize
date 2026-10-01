@@ -6,8 +6,8 @@ use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l2::op::{BindingOp, Op};
 
-use super::super::walk::{PageWalk, visit_ops};
 use crate::lower::Lowered;
+use crate::pass::walk::{PageWalk, visit_ops};
 
 /// Page-order ids of every `vue.sync` binding, collected **before**
 /// expansion so the shift `new = old + count(sync_id < old)` is exact.

@@ -11,7 +11,8 @@
 use vize_l0::String;
 use vize_l0::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
 
-use crate::lower::{LegacyCaps, Lowered};
+use super::LegacyCaps;
+use crate::lower::Lowered;
 
 mod filter;
 mod ids;
@@ -39,14 +40,14 @@ pub const DESC: PassDesc = PassDesc::new(
 /// Vue 2's pipeline: this pass, then the Vue 3 table.
 pub const LEGACY_PASSES: &[PassDesc] = &[
     DESC,
-    super::vslot::DESC,
-    super::vmodel::DESC,
-    super::hoist::DESC,
-    super::cfg::DESC,
+    crate::pass::vslot::DESC,
+    crate::pass::vmodel::DESC,
+    crate::pass::hoist::DESC,
+    crate::pass::cfg::DESC,
 ];
 
 /// The planned pipeline over [`LEGACY_PASSES`].
-pub const LEGACY: Pipeline = Pipeline::new(super::L2_STAGE, LEGACY_PASSES);
+pub const LEGACY: Pipeline = Pipeline::new(crate::pass::L2_STAGE, LEGACY_PASSES);
 
 // Five passes, four walks: the two optional analyses share the last one.
 const _: () = assert!(LEGACY.group_count() == 4);
@@ -69,7 +70,7 @@ pub const fn pipeline_for(caps: LegacyCaps) -> Pipeline {
     if caps.needs_sugar() {
         LEGACY
     } else {
-        super::TRANSFORM
+        crate::pass::TRANSFORM
     }
 }
 

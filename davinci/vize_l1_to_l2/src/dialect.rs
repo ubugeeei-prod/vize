@@ -3,4 +3,6 @@
 //! Capability derivation has one owner in L1. The compact projection preserves
 //! the existing lowering layout without importing a legacy product crate.
 
+pub mod legalize;
+
 pub use vize_l1::dialect::LegacyCaps;
