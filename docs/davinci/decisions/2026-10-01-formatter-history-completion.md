@@ -59,11 +59,76 @@ payload/event/malformed-pipe arms. Their expected bytes are authored assertions
 and include files; they are not described as fresh captures. The 118 default
 plans passed two local source-built replays. Versioned execution awaits Actions.
 
-## Remaining work
+## Complete observations and denominator reconciliation
 
-Register and actually execute every prepared byte fixture, reconcile every
-original fix to its complete public witness or explicit control/supersession
-proof, capture the remaining incomplete observations from unchanged product
-source, and compare actual CLI check verdicts and streams. Full Actions and
-the protected merge-queue corpus must pass before closing #6882. A pinned
-inventory, static hashes or an unmerged local capture cannot close this gate.
+Eighty further plans retain three actual source-bound capture receipts with
+complete input/output hashes, shared full stderr/probe assets, actual process
+states and explicit repetition counts. Each successful default output
+is a fixed point; typed JSON/JSONC errors and the internal small-const control
+remain distinct. Original helper bodies have explicit public SFC wrappers;
+wrapper bytes never masquerade as an original whole-file witness.
+
+The [audit](./2026-10-01-formatter-history-audit.md) reconciles all 56 original
+fixes and three supplementary semantic fixes to exact cases, retained Rust
+laws, engineering controls or explicit supersession proof. Its 300 API plans
+include all 87 retained binary references. Seven unversioned packs, 286 plans,
+passed two complete source-built local replays; the fourteen versioned plans
+await Actions. Native handled, equivalent and paired counts remain zero.
+
+Schema 2 replaces duplicated full outcome records with a 1,495-line semantic
+audit and 472 total receipt lines. It keeps all 87 full SHA/subject records,
+150 original requirement maps, 250 source identities, 502 named witnesses,
+118 independent Rust laws and 24 controls. Each of the 31 other commits has
+an explicit source/case/law/control classification; a non-fix subject is never
+a blanket waiver. All 300 input/options/expected/error assets and normalized
+original/current witness declarations remain unchanged.
+Git whitespace metadata preserves authored CR/LF and EOF spaces as fixture
+bytes, using the same exclusions as the retained binary references.
+
+The full pre-dedup committed evidence is preserved by
+`provenance/formatter-history-full-evidence-20261001` at
+`331f64feb9c6b9c0058789fcdedc94daec474e8c` and the archive SHA in the audit.
+The frozen source-built observer, raw build logs and seven repeated replay
+pairs remain separate historical evidence. Compact metadata hashes do not
+reinterpret the old executed manifest hashes. Exact-head Actions produce full
+raw outcomes under `target/differential/formatter-api/`, uploaded by the shared
+differential evidence action. Normal tests check the complete source/asset/
+process/probe hash chain and reject missing obligations or invented credit.
+
+Five historical CLI scenarios compare check, dry-run, write and recheck status,
+complete streams, unchanged check/dry files and full canonical writes. Expected
+streams are explicitly repository-authored; actual CLI execution awaits Actions.
+
+## Remaining validation
+
+Publication replays only the five owned formatter commits onto actual main,
+with direct observer-provider ancestry for every consumer. Historical capture
+source pins remain independent provenance.
+
+The later #7382 / #7258 import-sorting feature is inherited from actual main.
+It preserves the old public API defaults but changes two retained Rust test
+owner files. A bounded source transition pins their original/current full
+hashes and eleven original raw function signature/body hashes, including
+literals, assertions, comments and whitespace. Independent original/current
+Git blob comparison verified those constants before publication; current
+whole-owner and function checks require no historical Git objects. All eleven
+positive controls pass in a scratch directory without `.git`; unknown owners,
+functions, main-source and body drift are rejected. The original audit and
+corpus remain unchanged; this grants no execution or output credit. New import-sorting
+API/config/CLI corpus obligations remain unfinished outside the original pin,
+and old frozen captures provide no coverage for that feature.
+
+The [retained-law source contract](../../../tests/differential/formatter-history-current-witness.ts)
+records both complete source-owner SHA256 pins and all eleven original raw
+function hashes. Their authorities are original
+`cc87bb5960ea9e49e82672205df919de58bb4b24` and inherited main
+`d97d352940efe8ac95372b1288a51f0ede05afd1`; an independent second extraction
+confirmed complete raw signature/body byte equality for both owners. Known
+owner original SHA/revision checks precede the generic unchanged-owner path,
+so substituting the inherited SHA cannot bypass the original authority pin.
+
+Fresh exact-head Actions must execute all 300 API plans, actual historical CLI
+verdicts and retained Rust/helper laws. Full protected merge-group validation
+and actual merge are required before closing #6882. Static registration, local
+capture, auto-merge or a queue entry cannot close this gate or admit a native
+formatter route.

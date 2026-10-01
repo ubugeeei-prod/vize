@@ -1,0 +1,4 @@
+.a { color: red; }
+
+/* second */
+.b { color: blue; }

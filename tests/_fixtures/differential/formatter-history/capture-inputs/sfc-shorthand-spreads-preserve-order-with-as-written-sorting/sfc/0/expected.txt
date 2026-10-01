@@ -1,0 +1,3 @@
+<template>
+  <slot :name="column.key" :="{ column, record }" data-after="after" @="listeners" @click="click" />
+</template>

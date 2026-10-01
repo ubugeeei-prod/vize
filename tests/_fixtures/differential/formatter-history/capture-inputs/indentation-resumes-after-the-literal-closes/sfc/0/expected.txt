@@ -1,0 +1,6 @@
+<script>
+  const a = `
+x
+`;
+  const b = 2;
+</script>

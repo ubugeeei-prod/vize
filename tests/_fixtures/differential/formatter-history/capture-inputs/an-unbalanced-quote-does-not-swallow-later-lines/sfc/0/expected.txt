@@ -1,0 +1,10 @@
+<template>
+  <div>
+    {{ t('a) }}
+    {{
+      `
+x
+`
+    }}
+  </div>
+</template>
