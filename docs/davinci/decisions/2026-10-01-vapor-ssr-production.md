@@ -18,7 +18,8 @@ Merged prop objects likewise retain the first ordinary static key, as Vue
 does; class/style/listeners still combine and computed keys remain dynamic.
 The merge-queue instruction gate caught a quadratic scan of retained keys on
 wide prop objects. Normalization now retains entries in their input vector
-and tracks ordinary keys with a pre-sized hash set. This preserves source
+and borrows static keys into a pre-sized hash set before moving any entries.
+Only duplicate ordinary indices are retained for removal. This preserves source
 order and first-entry spans without raising instruction or allocation budgets.
 
 Vue 3.5's merged `ssrGetDynamicModelProps` helper ignores checkbox `true-value`

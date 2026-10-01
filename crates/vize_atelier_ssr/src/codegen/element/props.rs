@@ -1,7 +1,7 @@
 //! Shared JavaScript expression and prop-object builders for SSR element codegen.
 
 use super::{DirectiveNode, ExpressionNode, PropNode, String, ToCompactString, VNodePropEntry};
-use vize_l0::{FxHashMap, FxHashSet, is_on};
+use vize_l0::{FxHashMap, FxHashSet, SmallVec, is_on};
 
 /// Build an object literal from normalized prop entries.
 pub(crate) fn component_props_object(entries: &[VNodePropEntry]) -> String {
@@ -60,13 +60,39 @@ pub(crate) fn push_component_prop_entry(out: &mut String, entry: &VNodePropEntry
 pub(crate) fn normalize_prop_entries(
     mut entries: std::vec::Vec<VNodePropEntry>,
 ) -> std::vec::Vec<VNodePropEntry> {
-    let mut seen = FxHashSet::with_capacity_and_hasher(entries.len(), Default::default());
+    let mut duplicates = SmallVec::<[usize; 4]>::new();
+    {
+        // Borrow keys while their entries are stationary; cloning owned keys
+        // makes prop-heavy codegen pay for string bookkeeping twice.
+        let mut seen = FxHashSet::with_capacity_and_hasher(entries.len(), Default::default());
+        for (index, entry) in entries.iter().enumerate() {
+            if !entry.dynamic
+                && !seen.insert(entry.key.as_str())
+                && entry.key != "class"
+                && entry.key != "style"
+                && !is_on(&entry.key)
+            {
+                duplicates.push(index);
+            }
+        }
+    }
+    if !duplicates.is_empty() {
+        let mut duplicates = duplicates.into_iter().peekable();
+        let mut index = 0;
+        entries.retain(|_| {
+            let keep = duplicates.peek() != Some(&index);
+            if !keep {
+                duplicates.next();
+            }
+            index += 1;
+            keep
+        });
+    }
     let mut class_entries = std::vec::Vec::new();
     let mut style_entries = std::vec::Vec::new();
     let mut event_values: FxHashMap<String, std::vec::Vec<String>> = FxHashMap::default();
 
-    // Reuse the input allocation and hash ordinary keys once. Scanning the
-    // retained entries for every key makes wide prop objects quadratic.
+    // Reuse the input allocation for the retained and combined entries.
     entries.retain_mut(|entry| {
         if !entry.dynamic && entry.key == "class" {
             class_entries.push(core::mem::replace(
@@ -89,7 +115,7 @@ pub(crate) fn normalize_prop_entries(
                 true
             }
         } else {
-            entry.dynamic || seen.insert(entry.key.clone())
+            true
         }
     });
 
