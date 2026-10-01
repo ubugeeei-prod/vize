@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/router",
-  "version": "0.429.2",
+  "version": "0.430.0",
   "description": "Strongly typed SSR router foundations for Vize applications",
   "keywords": [
     "router",
