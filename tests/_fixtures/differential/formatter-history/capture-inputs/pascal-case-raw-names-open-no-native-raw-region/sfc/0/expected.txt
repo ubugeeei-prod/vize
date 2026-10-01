@@ -1,0 +1,6 @@
+<template>
+  <Pre>
+    value
+  </Pre>
+  <span>y</span>
+</template>

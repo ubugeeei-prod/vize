@@ -1,0 +1,19 @@
+<template>
+  <hr />
+</template>
+
+<style scoped>
+hr {
+  border: solid;
+  border-width: thin 0 0 0;
+  margin: 0 0 0 0;
+}
+
+.wrap {
+  color: red;
+
+  .item {
+    color: blue;
+  }
+}
+</style>

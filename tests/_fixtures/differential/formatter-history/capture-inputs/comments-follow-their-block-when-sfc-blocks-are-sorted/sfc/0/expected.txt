@@ -1,0 +1,11 @@
+<!-- template note -->
+
+<!-- script note -->
+
+<script setup>
+const ready = true;
+</script>
+
+<template>
+  <div>ok</div>
+</template>

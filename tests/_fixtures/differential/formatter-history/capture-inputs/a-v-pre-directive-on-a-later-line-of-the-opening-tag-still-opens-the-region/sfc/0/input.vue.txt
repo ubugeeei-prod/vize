@@ -1,0 +1,8 @@
+<template>
+<code
+  v-pre
+  class="a">
+  {{ variable }}
+</code>
+<span>y</span>
+</template>

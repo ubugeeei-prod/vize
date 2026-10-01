@@ -1,0 +1,6 @@
+<template>
+<div>
+  {{ /* ` */ a }}
+  <span>y</span>
+</div>
+</template>

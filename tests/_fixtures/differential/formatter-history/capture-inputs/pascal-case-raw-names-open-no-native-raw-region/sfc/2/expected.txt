@@ -1,0 +1,6 @@
+<template>
+  <Listing>
+    value
+  </Listing>
+  <span>y</span>
+</template>

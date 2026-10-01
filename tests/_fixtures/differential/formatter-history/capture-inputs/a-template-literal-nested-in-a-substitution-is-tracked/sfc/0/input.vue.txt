@@ -1,0 +1,9 @@
+<template>
+<div>
+  {{ `${ xs.map((x) => `
+a
+`) }
+b
+` }}
+</div>
+</template>

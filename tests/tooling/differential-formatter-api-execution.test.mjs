@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { buildFormatterObserver } from "../differential/formatter-api-build.mjs";
 import { runFormatterApiPack } from "../differential/formatter-api.mjs";
+import { validateFormatterHistoryExecution } from "../differential/formatter-history-audit.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const packs = [
@@ -14,6 +15,9 @@ const packs = [
   ["literal", 84, 84, 0, 0],
   ["literal-extra", 34, 34, 0, 0],
   ["vue-version", 14, 14, 0, 0],
+  ["capture", 51, 31, 20, 0],
+  ["capture-extra", 25, 24, 0, 1],
+  ["capture-final", 4, 4, 0, 0],
 ];
 
 void test("shared formatter API history observes complete source-built output and typed errors", (t) => {
@@ -72,4 +76,8 @@ void test("shared formatter API history observes complete source-built output an
   t.diagnostic("Raw public API observations and build receipt: " + evidenceDir);
   for (const { report, expected } of reports)
     assert.deepEqual(report.summary, expected, JSON.stringify(report.rows, null, 2));
+  validateFormatterHistoryExecution(
+    root,
+    reports.map(({ report }) => report),
+  );
 });

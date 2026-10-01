@@ -1,0 +1,7 @@
+<span>
+  {{
+    reallyQuiteLongConditionName
+      ? firstBranchValueHere
+      : secondBranchValueHere
+  }}
+</span>

@@ -1,0 +1,7 @@
+<template>
+  <div v-pre>
+  <div>x</div>
+  y
+</div>
+  <span>z</span>
+</template>
