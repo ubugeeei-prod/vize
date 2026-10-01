@@ -34,7 +34,9 @@ CLI, LSP, Pkl, JSON schema, and generated TypeScript must share these options.
 All three diagnostic catalogs and complete explain-page snapshots include the
 new rule; the catalog total increases from 250 to 251 without changing presets.
 The pinned rule-contract census adds exactly one complete warning row; existing
-rows and the 98 error exemptions remain unchanged.
+rows and the 98 error exemptions remain unchanged. The tooling tier census
+also pins the resulting 251 total and 33 complete rows. The AST reader tests
+use ordinary module discovery under the existing layout gate.
 Retain the stable public exhaustive config structs using additive wrappers.
 Move existing probe execution and option declarations in a move-only commit
 before implementation to keep the source-size ceiling unchanged.

@@ -168,5 +168,4 @@ pub(super) fn locations(
 }
 
 #[cfg(test)]
-#[path = "nodes/tests.rs"]
 mod tests;
