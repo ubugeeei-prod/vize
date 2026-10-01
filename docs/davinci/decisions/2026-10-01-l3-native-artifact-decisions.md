@@ -69,3 +69,17 @@ native laws, not full integration with the current workspace's L0 surface.
 Full crate tests, Clippy, legacy differential output and instruction gates
 require Actions on the actual provider/consumer source. Publication and
 product selection remain separate steps, and #6839 stays open.
+
+The filled native producer removes `vize_l2_to_l3` from the skeleton ratchet
+using the real tool's `--write` output. On the initial `cf47e857` head,
+seven modules remained in two crates. Replay on the repaired provider at
+`9c36db024` reported six remaining modules, all in `vize_l4`. After #7353
+actually merged as `3185ba57`, replay on that main preserves the independently
+filled runtime module and the real writer reports five, all in `vize_l4`;
+the actual current writer output is authoritative.
+The initial exact-head prefix failed inherited formatting/source inventory
+and unchanged DOM instruction gates; those provider repairs are separate.
+The provider's protected queue Check and all 100 unchanged instruction
+ceilings passed before its actual merge. The rebased consumer still requires
+fresh exact-head required/full Actions and unchanged instruction acceptance
+before queue admission. Owner-bound analysis remains a separate child.

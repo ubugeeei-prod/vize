@@ -6,14 +6,14 @@ before feature implementation, with ownership rearchitecture taking priority.
 That skeleton now has a [bounded native producer](../decisions/2026-10-01-l3-native-artifact-decisions.md)
 over the sealed canonical L2 artifact; it does not finish #6839.
 
-| Responsibility                                           | Native owner                                   | State                                               |
-| -------------------------------------------------------- | ---------------------------------------------- | --------------------------------------------------- |
-| Semantic tree and binding scopes                         | `vize_l2::artifact::Artifact`                  | Sealed native owner; product integration unfinished |
-| Static, dynamic-binding, placement and control decisions | `vize_l3::decision`                            | Conservative facts; placement always Inline         |
+| Responsibility                                           | Native owner                                   | State                                                |
+| -------------------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------- |
+| Semantic tree and binding scopes                         | `vize_l2::artifact::Artifact`                  | Sealed native owner; product integration unfinished  |
+| Static, dynamic-binding, placement and control decisions | `vize_l3::decision`                            | Conservative facts; placement always Inline          |
 | Per-target eligibility criteria                          | `vize_l3::decision::policy::{dom, ssr, vapor}` | Cloak/event filtering only; full criteria unfinished |
-| Borrowed L2 to shared L3 decisions                       | `vize_l2_to_l3::build_decisions`               | Single canonical event walk; no production caller   |
-| Flat reactive program                                    | `vize_l3::op::Program`                         | Existing artifact; demand-only split unfinished     |
-| Decision encoding, helper numbering and emission         | Future `vize_l4`                               | Separate #6840 ownership work; not implemented here |
+| Borrowed L2 to shared L3 decisions                       | `vize_l2_to_l3::build_decisions`               | Single canonical event walk; no production caller    |
+| Flat reactive program                                    | `vize_l3::op::Program`                         | Existing artifact; demand-only split unfinished      |
+| Decision encoding, helper numbering and emission         | Future `vize_l4`                               | Separate #6840 ownership work; not implemented here  |
 
 `DecisionTables` uses the existing `NodeId` and `SideTable` infrastructure.
 Keys belong to the L2 artifact, including attached binding ids; they are

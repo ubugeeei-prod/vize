@@ -140,7 +140,7 @@ is separate from selected output meaning; SSR omits native-element events,
 and cloak markers are compile-time only. Placement remains `Inline`.
 Grouped slot scopes, hoist/cache decisions, complete target criteria,
 flat-program demand splitting and production selection remain unfinished.
-Native laws and the paired #6839 comment define this bounded slice; full
+Native laws and paired #6839 records lower the filled skeleton baseline; full
 Actions, differential and unchanged instruction gates remain required.
 
 ## L4: emission
