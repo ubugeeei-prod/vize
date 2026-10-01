@@ -104,3 +104,21 @@ exact rows; no storage ceiling or benchmark budget is increased.
 Still unfinished: actual conversion ownership adoption; the once-parsed L1
 embed handoff; resolution/declaration production; neutral analyses and pass
 moves; dialect compatibility legalization; product fixture gates and routes.
+
+## Publication gate repair
+
+The first exact published provider head (`38b9967`) failed script formatting
+and the generated Croquis ledger gate. Its strict 100-benchmark run measured
+98 benchmarks within their unchanged ceilings; DOM compile medium and
+stress-deep exceeded their ceilings by 21,516 and 235,101 instructions.
+The canonical Stack remains outside the queue until a repaired exact head
+passes all required gates.
+
+The repair formats the actual replay script, regenerates the two affected
+Croquis shards from the current source, and marks the small PageWalk counter
+primitives/accounting helper inline across the newly introduced crate
+boundary. A separate-crate optimized Rust 1.98.0 AArch64 caller produced
+identical assembly before and after the hints, so that small caller does not
+establish the cause or fix of the real ci-opt ThinLTO regression. Fresh
+strict instruction Actions must establish whether the actual measured paths
+are repaired. No benchmark identity or instruction ceiling changes.

@@ -8,7 +8,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 ## Resolved product sites
 
-_None._
+| product            | kind  | module    | files | sites |
+| ------------------ | ----- | --------- | ----: | ----: |
+| `Croquis.bindings` | field | `croquis` |     1 |     1 |
 
 ## Non-product `vize_croquis` imports
 
@@ -18,8 +20,9 @@ _None._
 
 | product              | resolved | grep |
 | -------------------- | -------: | ---: |
-| `Scope`              |        0 |    1 |
-| `ScopeBinding`       |        0 |    9 |
-| `Span`               |        0 |  125 |
-| `Croquis.bindings`   |        0 |   21 |
+| `Scope`              |        0 |    2 |
+| `ScopeBinding`       |        0 |   12 |
+| `Span`               |        0 |  170 |
+| `Croquis.bindings`   |        1 |   29 |
 | `Croquis.reactivity` |        0 |    1 |
+| `Croquis.scopes`     |        0 |   14 |

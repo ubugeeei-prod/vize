@@ -34,6 +34,7 @@ pub struct PageWalk {
 
 impl PageWalk {
     #[must_use]
+    #[inline]
     pub fn new() -> Self {
         Self {
             next: 0,
@@ -44,12 +45,14 @@ impl PageWalk {
 
     /// The current op's page-order id; `None` once the id space is
     /// exhausted (mirroring `Cx::mint_op`'s saturation).
+    #[inline]
     pub fn mint(&mut self) -> Option<NodeId> {
         self.visits = self.visits.saturating_add(1);
         self.mint_attached()
     }
 
     /// Mint an attached binding's id without dispatching a region-op visit.
+    #[inline]
     pub fn mint_attached(&mut self) -> Option<NodeId> {
         if self.exhausted {
             return None;
@@ -68,6 +71,7 @@ impl PageWalk {
 
     /// How many ids this walk has minted (the page's `ops=` count).
     #[must_use]
+    #[inline]
     pub fn minted(&self) -> u32 {
         self.next
     }
@@ -75,12 +79,14 @@ impl PageWalk {
     /// How many real op visits this walk dispatched. Attached binding
     /// skips preserve id arithmetic but are not node visits.
     #[must_use]
+    #[inline]
     pub fn visits(&self) -> u32 {
         self.visits
     }
 
     /// Skip `count` ids (an owner's attached bindings, numbered between
     /// its line and its children).
+    #[inline]
     pub fn skip(&mut self, count: usize) {
         if self.exhausted {
             return;
@@ -96,6 +102,7 @@ impl PageWalk {
 
     /// Whether any numbered node could not receive an id.
     #[must_use]
+    #[inline]
     pub fn is_exhausted(&self) -> bool {
         self.exhausted
     }
@@ -151,6 +158,7 @@ fn visit_ops_guarded<'a>(
 ///
 /// Panics when the walk and the lowering disagree — a compiler bug by
 /// the id law, never an input property.
+#[inline]
 pub fn assert_accounting(walk: &PageWalk, op_count: u32, pass: &str) {
     assert!(
         walk.exhausted || walk.next == op_count,

@@ -34,7 +34,11 @@ function check(root: string): void {
   if (!fs.readFileSync(path.join(root, old), "utf8").includes("pub(crate) use vize_l2::walk::")) {
     throw new Error("conversion does not use the shared L2 page walk");
   }
-  if (!fs.readFileSync(path.join(root, "davinci/vize_l2/src/lib.rs"), "utf8").includes("pub mod walk;")) {
+  if (
+    !fs
+      .readFileSync(path.join(root, "davinci/vize_l2/src/lib.rs"), "utf8")
+      .includes("pub mod walk;")
+  ) {
     throw new Error("L2 page walk is not registered");
   }
 }
