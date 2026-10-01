@@ -315,5 +315,5 @@ fn resolve_tsgo_binary() -> Option<std::path::PathBuf> {
         }
     }
 
-    vize_l0::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
+    vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
 }

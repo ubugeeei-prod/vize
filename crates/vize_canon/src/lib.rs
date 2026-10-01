@@ -42,8 +42,6 @@
 //! └─────────────────────────────────────────────────────────────────┘
 //! ```
 
-extern crate vize_l0 as vize_carton;
-
 mod checker;
 mod context;
 #[cfg(feature = "native")]

@@ -4225,6 +4225,7 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_atelier_vapor",
  "vize_canon",
+ "vize_carton",
  "vize_croquis",
  "vize_croquis_cf",
  "vize_curator",
@@ -4483,6 +4484,7 @@ dependencies = [
  "vize_atelier_core",
  "vize_atelier_jsx",
  "vize_atelier_sfc",
+ "vize_carton",
  "vize_croquis",
  "vize_l0",
  "vize_l1",
@@ -4501,6 +4503,7 @@ dependencies = [
  "serde_json",
  "tempfile",
  "vize_l0",
+ "which",
 ]
 
 [[package]]
@@ -4732,7 +4735,6 @@ dependencies = [
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
- "which",
  "xxhash-rust",
 ]
 
@@ -4860,6 +4862,7 @@ dependencies = [
  "vize_atelier_jsx",
  "vize_atelier_sfc",
  "vize_canon",
+ "vize_carton",
  "vize_croquis",
  "vize_croquis_cf",
  "vize_glyph",
@@ -4925,6 +4928,7 @@ dependencies = [
  "vize_atelier_jsx",
  "vize_atelier_sfc",
  "vize_canon",
+ "vize_carton",
  "vize_croquis",
  "vize_glyph",
  "vize_l0",

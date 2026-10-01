@@ -17,6 +17,7 @@ native = ["vize_canon/native"]
 legacy = ["vize_canon/legacy"]
 
 [dependencies]
+vize_carton.workspace = true
 # LSP Framework
 tower-lsp.workspace = true
 # lsp-types is re-exported by tower-lsp, use that version

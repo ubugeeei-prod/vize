@@ -8,10 +8,8 @@ use serde::Deserialize;
 use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, IncrementalCheckMetrics,
 };
-use vize_l0::{
-    String,
-    corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable},
-};
+use vize_carton::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
+use vize_l0::String;
 
 #[path = "support/tier_l_incremental_artifact.rs"]
 mod artifact;

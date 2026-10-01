@@ -6,7 +6,8 @@
 Support and deprecation guarantees are defined in the
 [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
 
-`vize_carton` is the shared foundation crate for the Vize workspace.
+`vize_carton` provides legacy storage compatibility and host integrations.
+Canonical storage and shared foundation contracts live in `vize_l0`.
 
 ## Highlights
 
@@ -14,6 +15,7 @@ Support and deprecation guarantees are defined in the
 - Compact string and hash collection re-exports used throughout the workspace
 - DOM tag tables and directive helpers
 - Shared flags, profiler utilities, i18n helpers, and source-range utilities
+- Corsa executable discovery and transport classification for legacy products
 
 ## Common Exports
 
@@ -24,7 +26,8 @@ Support and deprecation guarantees are defined in the
 
 ## Related Crates
 
-Every other workspace crate depends on `vize_carton` either directly or indirectly.
+Legacy products may depend on `vize_carton`. Davinci levels use `vize_l0`
+directly and do not depend back on Carton.
 
 ## License
 

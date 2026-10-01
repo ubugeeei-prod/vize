@@ -14,7 +14,8 @@ use corsa::{
     },
     runtime::block_on,
 };
-use vize_l0::{String, ToCompactString, corsa_api_mode::uses_async_json_rpc_api, profile};
+use vize_carton::corsa_api_mode::uses_async_json_rpc_api;
+use vize_l0::{String, ToCompactString, profile};
 
 impl CorsaTypeAwareSession {
     pub(in crate::linter) fn new_with_corsa_path(

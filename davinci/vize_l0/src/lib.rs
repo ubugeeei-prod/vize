@@ -52,10 +52,6 @@ pub use compiler_error::ErrorCode;
 mod namespace;
 pub use namespace::Namespace;
 pub mod config;
-#[cfg(not(target_arch = "wasm32"))]
-pub mod corsa_api_mode;
-#[cfg(not(target_arch = "wasm32"))]
-pub mod corsa_resolver;
 pub mod dialect;
 pub mod directive;
 pub mod dom_tag_config;

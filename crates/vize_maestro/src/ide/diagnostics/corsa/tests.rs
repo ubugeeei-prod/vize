@@ -336,6 +336,6 @@ const speakerOptions = computed(() =>
             return Some(sibling_cache);
         }
 
-        vize_l0::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
+        vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
     }
 }

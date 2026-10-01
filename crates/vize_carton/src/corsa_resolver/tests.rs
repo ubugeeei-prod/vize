@@ -94,7 +94,7 @@ fn explicit_path_must_exist() {
             path: missing.clone(),
         }
     );
-    let message = error.to_string();
+    let message = crate::cstr!("{error}");
     assert!(message.contains("Configured Corsa executable does not exist"));
     assert!(message.contains("missing-corsa"));
 }

@@ -2,7 +2,7 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::path::{Path, PathBuf};
 
-use vize_l0::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
+use vize_carton::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
 
 const MISSING_REQUIRED_TSGO: &str =
     "VIZE_TEST_REQUIRE_TSGO is set, but no TypeScript 7/Corsa executable was found";
