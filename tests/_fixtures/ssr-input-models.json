@@ -17,5 +17,6 @@
   { "name": "radio-static-before-bound", "props": "type=\"radio\" value=\"yes\" :value=\"value\"", "data": { "model": "yes", "value": "no" }, "checked": true },
   { "name": "radio-bound-before-static", "props": "type=\"radio\" :value=\"value\" value=\"yes\"", "data": { "model": "no", "value": "no" }, "checked": true },
   { "name": "checkbox-array-true-value", "props": "type=\"checkbox\" value=\"yes\" true-value=\"active\"", "data": { "model": ["yes"] }, "checked": true },
+  { "name": "checkbox-scalar-true-value", "props": "type=\"checkbox\" value=\"yes\" true-value=\"active\"", "data": { "model": "active" }, "checked": true },
   { "name": "checkbox-array-true-value-miss", "props": "type=\"checkbox\" value=\"yes\" true-value=\"active\"", "data": { "model": ["no"] }, "checked": false }
 ]

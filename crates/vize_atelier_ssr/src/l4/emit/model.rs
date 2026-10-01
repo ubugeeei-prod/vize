@@ -206,13 +206,9 @@ pub(super) fn emit_option_selected(
     em.ctx.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
     em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
     em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
-    let value = match static_value(attached, "value") {
-        Some(value) => quoted_js_string(&value),
-        None => match bound_value(attached, "value") {
-            Some(value) => em.expr(value, TransformContent::Decoded)?,
-            None => "null".to_compact_string(),
-        },
-    };
+    let value = em
+        .model_attr_value(attached, "value")?
+        .unwrap_or_else(|| "null".to_compact_string());
     em.ctx.push_string_part_dynamic(&cstr!(
         "((_ssrIncludeBooleanAttr(Array.isArray({model}) ? _ssrLooseContain({model}, {value}) : _ssrLooseEqual({model}, {value}))) ? \" selected\" : \"\")"
     ));

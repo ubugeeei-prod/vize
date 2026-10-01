@@ -34,6 +34,10 @@ mod production;
 
 const BATTERY: &[(&str, &str)] = &[
     (
+        "SelectValueOrder.vue",
+        include_str!("fixtures/select-value-order.vue"),
+    ),
+    (
         "Title.vue",
         "<template><title>{{ pageTitle }} — A &amp; B</title></template>",
     ),

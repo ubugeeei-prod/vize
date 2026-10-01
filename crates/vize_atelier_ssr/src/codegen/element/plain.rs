@@ -36,22 +36,16 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         // `<option>` inside a `<select v-model>` ancestor needs a runtime
-        // `selected` injection. The option's `value` (a static attribute
-        // here — dynamic `:value` falls through and gets `selected`
-        // emitted via the bind path). (#962)
+        // `selected` injection using the first authored static or bound value.
         if *tag == "option"
             && let Some(model_exp) = self.select_v_model_stack.last().cloned()
         {
             self.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
             self.use_ssr_helper(RuntimeHelper::SsrLooseContain);
             self.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
-            let value_exp = if let Some(value) = self.get_element_attr_value(el, "value") {
-                quoted_js_string(&value)
-            } else if let Some(dyn_value) = self.get_dynamic_bind_exp(el, "value") {
-                dyn_value
-            } else {
-                "null".to_compact_string()
-            };
+            let value_exp = self
+                .model_attr_value(el, "value")
+                .unwrap_or_else(|| "null".to_compact_string());
             self.push_string_part_dynamic(&cstr!(
                 "((_ssrIncludeBooleanAttr(Array.isArray({model_exp}) ? _ssrLooseContain({model_exp}, {value_exp}) : _ssrLooseEqual({model_exp}, {value_exp}))) ? \" selected\" : \"\")"
             ));
