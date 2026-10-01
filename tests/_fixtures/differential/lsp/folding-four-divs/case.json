@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/folding-four-divs",
+  "provenance": {
+    "fixCommit": "89771a14f17fb535201f261ca154aa35c6f77d7e",
+    "witnessPath": "tests/tooling/lsp-folding-range.test.ts",
+    "witnessTest": "foldingRange folds elements and stops one line before every closing tag",
+    "inputOrigin": "exact source bytes from the original fix stdio regression",
+    "contractOrigin": "authored line regions and null controls from the original fix; complete serialized objects retain omitted optional fields"
+  },
+  "input": {
+    "source": "FourDivs.vue.txt",
+    "runtimePath": "FourDivs.vue",
+    "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "745946f18dd11d6151f46120d48ca0d1506e503f43578c39bd5cf446cad032ca"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "scope": "legacy response contract; selected witnesses do not establish full fix history or native acceptance"
+}

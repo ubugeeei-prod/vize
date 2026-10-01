@@ -7,8 +7,15 @@ At main `9aaa1fe458a09e0d0c6604dc8835ccf7c737d943`, the same narrow path scope
 has 239 nonmerge subjects beginning `fix`, among 424 nonmerge touch commits
 and four merges. Reproduce it
 with `git log --no-merges --format='%H%x09%s' --grep='^fix' <pin> -- crates/vize_maestro`.
-The [review ledger](../plan/lsp-fix-history.tsv) preserves every selected SHA and
-subject. `pending-response-audit` means unassessed, not proved missing or covered.
+The [review ledger](../plan/lsp-fix-history.tsv) now preserves all 255 selected
+SHAs at `cc87bb5960ea9e49e82672205df919de58bb4b24`, including 16 later fixes.
+The [source requirement ledger](../plan/lsp-fix-history-requirements.tsv) and
+[review receipt](../plan/lsp-fix-history-review.json) record source-derived
+response/control obligations and candidate historical/current test paths.
+Every SHA remains selected; scoped internal bookkeeping excludes no commit.
+Candidate retention and partial assertions grant no whole-fix coverage. The
+[shared response adapter](./2026-10-01-lsp-shared-response-adapter.md) adds bounded
+registration; fresh Actions/queue proof and complete history remain pending.
 
 Title matching is only the issue's initial denominator. Observable requirements
 also survive feature/refactor/chore changes, editor package moves and Canon
@@ -111,6 +118,11 @@ registration remain unfinished, and the selected witness gives no native L4
 parity or whole-fix-history credit.
 
 ## Reuse and remaining work
+
+TODO: reconcile the component tag completion fix merged in #7385 with a
+complete source-bound response/state fixture. Its current authored tests and
+new Maestro inventory surfaces do not extend the immutable 255-fix/447-touch
+historical ledger or confer native or whole-history acceptance credit.
 
 The first LF/CRLF observer pack (`1da2c5282a66693354c11929b5efab151140ee5e`)
 and surrogate/child-prop pack (`8dd742e62b47d5767778cd7fcb8420ec83e1970b`)

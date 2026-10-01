@@ -1,0 +1,19 @@
+<script setup lang="ts">
+const x = 1
+</script>
+
+<template>
+  <div>{{ x }}</div>
+</template>
+
+<style scoped>
+.a {
+  color: red;
+}
+</style>
+
+<style module="m">
+.b {
+  color: blue;
+}
+</style>

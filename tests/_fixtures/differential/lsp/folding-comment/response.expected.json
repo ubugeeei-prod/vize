@@ -1,0 +1,17 @@
+[
+  {
+    "startLine": 0,
+    "endLine": 6,
+    "kind": "region",
+    "collapsedText": "template"
+  },
+  {
+    "startLine": 1,
+    "endLine": 2,
+    "kind": "comment"
+  },
+  {
+    "startLine": 4,
+    "endLine": 5
+  }
+]
