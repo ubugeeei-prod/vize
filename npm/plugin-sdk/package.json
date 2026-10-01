@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/plugin-sdk",
-  "version": "0.429.2",
+  "version": "0.429.3",
   "description": "Deterministic authoring and isolated execution for Vize JavaScript plugins",
   "homepage": "https://github.com/ubugeeei-prod/vize",
   "bugs": {

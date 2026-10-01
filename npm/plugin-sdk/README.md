@@ -1,7 +1,7 @@
 # @vizejs/plugin-sdk
 
 Author synchronous rules, fact providers, native template transforms and compiled
-output hooks. Install `@vizejs/native` **0.429.2 or newer** to execute plugins.
+output hooks. Install `@vizejs/native` **0.429.3 or newer** to execute plugins.
 The optional native peer lets this package install independently for authoring;
 its helpers alone do not compile or lint Vue files. Node 22 or newer is required.
 
