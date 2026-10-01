@@ -3,6 +3,7 @@
 mod aggregate;
 mod args;
 mod collect;
+mod config_load;
 mod cross_file;
 mod entry_rules;
 mod fix;
@@ -51,17 +52,7 @@ pub fn run(args: LintArgs) {
     let render_details = aggregate::should_render_details(format, args.quiet);
     crate::config::write_schema(None);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let (loaded_config, linter_plan, linter_features) = if args.no_config {
-        (
-            crate::config::LoadedConfigWithFeatures::default(),
-            crate::config::LinterConfigPlanWithConfigRuleOptions::default(),
-            crate::config::LinterFeatureFlags::default(),
-        )
-    } else {
-        crate::config::load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source(
-            args.config.as_deref(),
-        )
-    };
+    let (loaded_config, linter_plan, linter_features) = config_load::load(&args);
     let linter_enabled = linter_plan.plan.base.enabled;
     let config_dir = loaded_config
         .source_path

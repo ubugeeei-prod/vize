@@ -1,0 +1,54 @@
+/// JSON Schema for native linter configuration.
+module vize.jsonschema.LinterSchemaDefinitions
+import "@json_schema/JsonSchema.pkl"
+local ruleSeverityEnum: JsonSchema = new JsonSchema {
+  type = "string"
+  enum = new Listing { "off"; "warn"; "error" }
+}
+local lintPresetEnum: JsonSchema = new JsonSchema {
+  type = "string"
+  enum = new Listing { "happy-path"; "opinionated"; "essential"; "incremental"; "ecosystem"; "nuxt" }
+}
+linterConfigDef: JsonSchema = new JsonSchema {
+  type = "object"
+  description = "Linter options"
+  properties {
+    ["enabled"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable linting"
+    }
+    ["preset"] = new JsonSchema {
+      type = lintPresetEnum.type
+      enum = lintPresetEnum.enum
+      description = "Built-in lint preset"
+      default = "happy-path"
+    }
+    ["typeAware"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable native type-aware lint rules from the active lint configuration"
+    }
+    ["rules"] = new JsonSchema {
+      type = "object"
+      description = "Rules to enable/disable"
+      additionalProperties = ruleSeverityEnum
+    }
+    ["ruleOptions"] = new JsonSchema {
+      `$ref` = "#/definitions/LintRuleOptions"
+    }
+    ["categories"] = new JsonSchema {
+      type = "object"
+      description = "Category-level severity overrides"
+      properties {
+        ["correctness"] = ruleSeverityEnum
+        ["suspicious"] = ruleSeverityEnum
+        ["style"] = ruleSeverityEnum
+        ["perf"] = ruleSeverityEnum
+        ["a11y"] = ruleSeverityEnum
+        ["security"] = ruleSeverityEnum
+      }
+      additionalProperties = false
+    }
+  }
+  additionalProperties = false
+}
+
