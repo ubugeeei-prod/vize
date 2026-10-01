@@ -337,12 +337,23 @@ async function waitForDiagnostics(
   timeoutMs: number,
   predicate?: (diagnostics: PublishDiagnosticsParams) => boolean,
 ): Promise<PublishDiagnosticsParams> {
-  return (await session.waitForNotification(
-    "textDocument/publishDiagnostics",
-    (value) => {
-      const diagnostics = diagnosticPayload(value, uri, version);
-      return diagnostics != null && (predicate == null || predicate(diagnostics));
-    },
-    timeoutMs,
-  )) as PublishDiagnosticsParams;
+  const observed: Array<Array<{ code: unknown; message: string }>> = [];
+  try {
+    return (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (value) => {
+        const diagnostics = diagnosticPayload(value, uri, version);
+        if (diagnostics == null) return false;
+        observed.push(
+          diagnostics.diagnostics.map(({ code, message }) => ({ code, message })),
+        );
+        return predicate == null || predicate(diagnostics);
+      },
+      timeoutMs,
+    )) as PublishDiagnosticsParams;
+  } catch (error) {
+    const summary = JSON.stringify(observed.slice(-4));
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Diagnostics observed for ${uri} version ${version}: ${summary}\n${detail}`);
+  }
 }
