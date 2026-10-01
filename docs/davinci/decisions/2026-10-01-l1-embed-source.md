@@ -67,3 +67,10 @@ after the actual directive-provider merge requires new exact-head Actions
 before protected queue validation. No instruction ceilings change. The combined
 L1 skeleton count is now zero, so its baseline entry is removed; eliminating
 panicking skeletons does not complete the unfinished integration listed above.
+
+The initial published [full Check](https://github.com/ubugeeei-prod/vize/actions/runs/36852526925)
+failed its exact storage-inventory preflight: new source files were absent from
+the ledger. Review records one arena map buffer and temporary L0 String (each
+one import/two bound uses), plus the test-only owned UTF-8-boundary list (one
+import/one bound use, analysis category). The existing file-based scanner also
+counts external unit-test files; no classifier, storage types or gates change.

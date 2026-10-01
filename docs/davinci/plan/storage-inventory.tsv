@@ -29,6 +29,8 @@ l1	-	davinci/vize_l1/src/build/tag.rs	0	0	0	0	1	4	0	0
 l1	-	davinci/vize_l1/src/container.rs	0	0	0	0	1	3	0	0
 l1	-	davinci/vize_l1/src/container/vue.rs	0	0	0	0	1	2	0	0
 l1	-	davinci/vize_l1/src/container/vue/scan.rs	0	0	0	0	1	2	0	0
+l1	-	davinci/vize_l1/src/embed/source.rs	0	0	1	2	1	2	0	0
+l1	analysis	davinci/vize_l1/src/embed/source/tests.rs	1	1	0	0	0	0	0	0
 l1	-	davinci/vize_l1/src/markup/lex/compat/dynamic_arg.rs	0	0	0	0	0	0	1	1
 l1	-	davinci/vize_l1/src/markup/lex/compat/dynamic_arg/tests.rs	0	0	0	0	0	0	1	2
 l1	-	davinci/vize_l1/src/markup/lex/compat/tests.rs	0	0	0	0	0	0	1	2
