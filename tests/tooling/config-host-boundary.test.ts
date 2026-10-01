@@ -10,6 +10,7 @@ const hostFiles = [
   "crates/vize_maestro/src/server/state/workspace_folders.rs",
   "crates/vize_maestro/src/server/state/batch_cache.rs",
   "crates/vize_maestro/src/server/state/corsa.rs",
+  "crates/vize/src/lint_plan/matcher.rs",
 ];
 const forbiddenCartonStorage = /\bvize_carton::|use vize_carton\b/u;
 const source = (path: string) =>
@@ -74,7 +75,7 @@ test("project selection is allowed only at the two existing host callers", () =>
     withoutHostRuntimeReferences(call, "davinci/vize_l1/src/config.rs"),
     forbiddenCartonStorage,
   );
-  for (const file of hostFiles.slice(3)) {
+  for (const file of hostFiles.slice(3, 5)) {
     for (const unreviewed of [
       "use vize_carton::config::ProjectModel;",
       "vize_carton::config::ProjectModel::new_storage(None)",
@@ -83,4 +84,30 @@ test("project selection is allowed only at the two existing host callers", () =>
       assert.match(withoutHostRuntimeReferences(unreviewed, file), forbiddenCartonStorage);
     }
   }
+});
+
+test("matcher imports allow only the existing scoped host symbols", () => {
+  for (const file of hostFiles) {
+    for (const unreviewed of [
+      "use vize_carton::config::matcher::GlobSequence;",
+      "use vize_carton::config::matcher::String;",
+      "use vize_carton::config::matcher::{LintPlanScope, String};",
+      "pub(crate) use vize_carton::config::matcher::{LintPlanScope, absolute_path, normalize_path, String};",
+    ]) {
+      assert.match(withoutHostRuntimeReferences(unreviewed, file), forbiddenCartonStorage);
+    }
+  }
+  for (const file of hostFiles.filter((file) => !file.endsWith("workspace_folders.rs"))) {
+    assert.match(
+      withoutHostRuntimeReferences("use vize_carton::config::matcher::LintPlanScope;", file),
+      forbiddenCartonStorage,
+    );
+  }
+  assert.match(
+    withoutHostRuntimeReferences(
+      "pub(crate) use vize_carton::config::matcher::GlobSequence;",
+      "davinci/vize_l1/src/config.rs",
+    ),
+    forbiddenCartonStorage,
+  );
 });

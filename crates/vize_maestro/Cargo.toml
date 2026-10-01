@@ -17,7 +17,7 @@ native = ["vize_canon/native"]
 legacy = ["vize_canon/legacy"]
 
 [dependencies]
-vize_carton.workspace = true
+vize_carton = { workspace = true, features = ["lint-glob"] }
 # LSP Framework
 tower-lsp.workspace = true
 # lsp-types is re-exported by tower-lsp, use that version
@@ -53,7 +53,7 @@ oxc_syntax.workspace = true
 oxc_diagnostics.workspace = true
 
 # Internal crates
-vize_l0 = { workspace = true, features = ["lint-glob"] }
+vize_l0 = { workspace = true }
 vize_relief.workspace = true
 vize_armature.workspace = true
 vize_atelier_sfc.workspace = true

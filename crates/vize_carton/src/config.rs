@@ -6,6 +6,8 @@
     reason = "host config evaluation retains its existing std error and process strings"
 )]
 mod loader;
+#[cfg(feature = "lint-glob")]
+pub mod matcher;
 mod project;
 pub use loader::{
     LoadedConfig, LoadedConfigEntryFiles, LoadedConfigEntryIgnores,

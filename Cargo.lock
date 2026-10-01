@@ -4499,6 +4499,7 @@ name = "vize_carton"
 version = "0.429.2"
 dependencies = [
  "davinci_test_support",
+ "globset",
  "insta",
  "serde",
  "serde_json",
@@ -4716,7 +4717,6 @@ dependencies = [
  "criterion",
  "davinci_harness",
  "davinci_test_support",
- "globset",
  "insta",
  "memchr",
  "once_cell",

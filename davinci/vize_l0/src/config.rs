@@ -1,8 +1,6 @@
 //! In-memory Vize configuration values and projections.
 
 mod document;
-#[cfg(feature = "lint-glob")]
-pub mod matcher;
 mod model;
 mod normalize;
 pub use crate::dialect::VueDialect;

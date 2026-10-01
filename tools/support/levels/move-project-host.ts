@@ -75,15 +75,15 @@ function integrate() {
   write(
     host,
     hostValue
-      .replace(/^mod loader;$/mu, "mod loader;\nmod project;")
+      .replace(
+        /^mod loader;$/mu,
+        hostValue.includes("mod project;\n") ? "mod loader;" : "mod loader;\nmod project;",
+      )
       .replace(
         "pub use vize_l0::config::*;",
-        "pub use project::ProjectModel;\npub use vize_l0::config::*;",
-      )
-      .replace("mod project;\nmod project;", "mod project;")
-      .replace(
-        "pub use project::ProjectModel;\npub use project::ProjectModel;",
-        "pub use project::ProjectModel;",
+        hostValue.includes("pub use project::ProjectModel;\n")
+          ? "pub use vize_l0::config::*;"
+          : "pub use project::ProjectModel;\npub use vize_l0::config::*;",
       ),
   );
   for (const file of callers) {

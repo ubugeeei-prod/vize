@@ -14,10 +14,8 @@
 use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::{InitializeParams, Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
-use vize_l0::config::{
-    ConfigLintRuleOptions, LinterConfig, LinterConfigPlanWithConfigRuleOptions,
-    matcher::LintPlanScope,
-};
+use vize_carton::config::matcher::LintPlanScope;
+use vize_l0::config::{ConfigLintRuleOptions, LinterConfig, LinterConfigPlanWithConfigRuleOptions};
 
 use super::ServerState;
 

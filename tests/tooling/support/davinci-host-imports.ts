@@ -16,6 +16,16 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
       /\bvize_carton::config::\s*load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source\b/gu,
       "host_config_loader",
     );
+    storage = storage.replace(
+      /^use vize_carton::config::matcher::LintPlanScope;$/gmu,
+      "host_config_matcher",
+    );
+  }
+  if (file === "crates/vize/src/lint_plan/matcher.rs") {
+    storage = storage.replace(
+      /^pub\(crate\) use vize_carton::config::matcher::(?:GlobSequence|\{LintPlanScope, absolute_path, normalize_path\});$/gmu,
+      "host_config_matcher",
+    );
   }
   if (
     file === "crates/vize_maestro/src/server/state/batch_cache.rs" ||

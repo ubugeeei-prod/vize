@@ -9,6 +9,7 @@ description = "Carton - The artist's toolbox for Vize compiler"
 metadata.vize.stability = "alpha-supported"
 
 [dependencies]
+globset = { workspace = true, optional = true }
 vize_l0 = { workspace = true }
 serde.workspace = true
 serde_json.workspace = true
@@ -19,7 +20,7 @@ which = { workspace = true }
 [features]
 default = []
 extension = ["vize_l0/extension"]
-lint-glob = ["vize_l0/lint-glob"]
+lint-glob = ["dep:globset"]
 
 [dev-dependencies]
 davinci_test_support.workspace = true

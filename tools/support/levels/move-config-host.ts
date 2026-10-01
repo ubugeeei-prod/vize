@@ -35,6 +35,8 @@ const coreRoot = `${core}.rs`;
 const hostRoot = `${host}.rs`;
 const prefix = `//! Host discovery and evaluation of Vize configuration.\n\n#[expect(\n    clippy::disallowed_types,\n    clippy::disallowed_methods,\n    reason = "host config evaluation retains its existing std error and process strings"\n)]\nmod loader;\n`;
 const suffix = "pub use vize_l0::config::*;\n";
+const matcherDeclaration = () =>
+  exists(`${host}/matcher.rs`) ? '#[cfg(feature = "lint-glob")]\npub mod matcher;\n' : "";
 const projectDeclarations = () => (exists(`${host}/project.rs`) ? "mod project;\n" : "");
 const projectExports = () =>
   exists(`${host}/project.rs`) ? "pub use project::ProjectModel;\n" : "";
@@ -90,7 +92,8 @@ function integrate() {
     value.match(loaderExports)?.[0] ??
     (exists(hostRoot) ? read(hostRoot).match(loaderExports)?.[0] : undefined);
   requireCondition(exports !== undefined, "missing host loader exports");
-  const expectedHost = prefix + projectDeclarations() + exports + projectExports() + suffix;
+  const expectedHost =
+    prefix + matcherDeclaration() + projectDeclarations() + exports + projectExports() + suffix;
   requireCondition(
     !exists(hostRoot) || read(hostRoot) === expectedHost,
     "unexpected existing Carton config module",
@@ -174,7 +177,8 @@ function check() {
   const exports = read(hostRoot).match(loaderExports)?.[0];
   requireCondition(
     exports !== undefined &&
-      read(hostRoot) === prefix + projectDeclarations() + exports + projectExports() + suffix,
+      read(hostRoot) ===
+        prefix + matcherDeclaration() + projectDeclarations() + exports + projectExports() + suffix,
     "unexpected Carton host exports",
   );
   requireCondition(
