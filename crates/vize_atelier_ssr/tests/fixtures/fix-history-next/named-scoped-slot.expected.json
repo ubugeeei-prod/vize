@@ -1,0 +1,34 @@
+{
+  "options": {
+    "bindingMetadata": null,
+    "croquis": null,
+    "customElements": "default",
+    "dialect": "V3",
+    "entrypoint": "compile_ssr",
+    "experimental": {
+      "componentName": null,
+      "selfComponent": false,
+      "sourceMap": false,
+      "sourceMapFilename": null
+    },
+    "publicOptions": {
+      "comments": false,
+      "componentName": null,
+      "customRenderer": false,
+      "experimentalInTagComments": false,
+      "experimentalPatternedTemplate": false,
+      "inline": false,
+      "isTs": false,
+      "scopeId": null,
+      "ssrCssVars": null
+    },
+    "rawTemplateSlotted": true,
+    "templateSyntax": "Standard"
+  },
+  "output": {
+    "code": "function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Outer\"), _attrs, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(_ssrRenderComponent(_resolveComponent(\"Inner\"), null, {\n          header: _withCtx(({ collapsed }, _push, _parent, _scopeId) => {\n            if (_push) {\n              _push(`<span>${_ssrInterpolate(collapsed)}</span>`)\n            } else {\n              return [_createElementVNode(\"span\", null, [_createTextVNode(_toDisplayString(collapsed))])]\n            }\n          }),\n          default: _withCtx(({ collapsed }, _push, _parent, _scopeId) => {\n            if (_push) {\n              _push(_ssrRenderComponent(_resolveComponent(\"Leaf\"), { collapsed: collapsed }, null, _parent, _scopeId))\n            } else {\n              return [_createVNode(_resolveComponent(\"Leaf\"), { collapsed: collapsed }, null)]\n            }\n          }),\n          _: 1\n        }, _parent, _scopeId))\n      } else {\n        return [_createVNode(_resolveComponent(\"Inner\"), null, { header: _withCtx(({ collapsed }) => [_createElementVNode(\"span\", null, [_createTextVNode(_toDisplayString(collapsed))])]), default: _withCtx(({ collapsed }) => [_createVNode(_resolveComponent(\"Leaf\"), { collapsed: collapsed }, null)]), _: 1 })]\n      }\n    }),\n    _: 1\n  }, _parent))\n}\n",
+    "diagnostics": [],
+    "map": null,
+    "preamble": "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { createVNode as _createVNode, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, withCtx as _withCtx } from \"vue\"\n"
+  }
+}

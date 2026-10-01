@@ -1,0 +1,55 @@
+{
+  "schema": "vize.compiler.historical-target-capture",
+  "version": 1,
+  "target": "vapor",
+  "sourceRevision": "b11eb54d83b3d8ed6333e2709b10112b45cd84b8",
+  "sourceTree": "e31411411d1b3e76a258e9c9065c3d3b7f864321",
+  "cargoLockSha256": "65c25b05347b3c75fd9eaeaafe3eaba48dc286c2f7a70f3f9d5ebd2c68da2f40",
+  "observerSources": [
+    {
+      "path": "crates/vize_atelier_vapor/examples/vapor_next_fixture_observer/main.rs",
+      "sha256": "cb4cc3696bbeb5c9256634ebba9708bd20897b453afc8885ebfffc3522a83e52",
+      "retainedPath": "observer-main.rs.txt"
+    },
+    {
+      "path": "crates/vize_atelier_vapor/examples/vapor_next_fixture_observer/fixtures.rs",
+      "sha256": "b0885febfa5972a8ba59d051bedef9980056e1122c81a7cc27853385e54679d7",
+      "retainedPath": "observer-fixtures.rs.txt"
+    }
+  ],
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--offline",
+    "--profile",
+    "ci",
+    "-p",
+    "vize_atelier_vapor",
+    "--example",
+    "vapor_next_fixture_observer",
+    "--message-format=json-render-diagnostics"
+  ],
+  "toolchain": {
+    "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+    "cargo": "cargo 1.98.0 (797e8a9bc 2026-08-05)"
+  },
+  "buildExitStatus": 0,
+  "binarySha256": "b923ddd92be3433af9a4e7c79ac10d79250efe45a2bc87c99dcde0baba241e32",
+  "selectedCargoArtifact": {
+    "path": "selected-cargo-artifact.json",
+    "sha256": "e28b092ff63ac58e7555ae48f74deb7ca666f56f05ad6a782f5b92113a685dc9"
+  },
+  "originalBuildLogs": {
+    "retained": "private audit archive; not committed here",
+    "stdoutSha256": "5d9d3b6f47e249ab157f115c9c94926745a529dffd8cbc7d85c647bf590eaf68",
+    "stderrSha256": "bb6d50aa81b986d14c684ca7da0b6d57d06a11040095c69d49537185b926b939"
+  },
+  "repeatedObservation": {
+    "bytes": 5398,
+    "sha256": "5b60b9b80a961a15e123a0ffe6c55d83038bb685f97f26e2fca28d7969935dc5",
+    "first": "first.stdout.json",
+    "repeat": "repeat.stdout.json"
+  },
+  "scope": "historical selected public target output; not fresh-head Actions, native acceptance or whole-history completion"
+}

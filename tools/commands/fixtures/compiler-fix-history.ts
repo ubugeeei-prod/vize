@@ -46,7 +46,9 @@ function fixtureReferences(root: string): Map<string, CaseReference[]> {
     "vize_atelier_sfc/tests/fixtures/fix-history/map-diagnostic-input-provenance.json",
     "vize_atelier_sfc/tests/fixtures/fix-history/next-provenance.json",
     "vize_atelier_ssr/tests/fixtures/fix-history/input-provenance.json",
+    "vize_atelier_ssr/tests/fixtures/fix-history-next/input-provenance.json",
     "vize_atelier_vapor/tests/fixtures/fix-history/input-provenance.json",
+    "vize_atelier_vapor/tests/fixtures/fix-history-next/input-provenance.json",
   ];
   for (const pack of packs) {
     const evidence = `crates/${pack}`;

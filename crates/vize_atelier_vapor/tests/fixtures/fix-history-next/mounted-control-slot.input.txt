@@ -1,0 +1,1 @@
+<section><p v-if="ready">ready</p><slot name="body"><span v-text="fallback"></span></slot></section>
