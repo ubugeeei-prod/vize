@@ -19,10 +19,10 @@ const manifestPath = path.join(
   "tests/_fixtures/differential/formatter-history/script-manifest.json",
 );
 
-function alteredManifest(t, mutate) {
+function alteredManifest(t, mutate, sourcePath = manifestPath) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "formatter-api-contract-"));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  const manifest = JSON.parse(fs.readFileSync(sourcePath, "utf8"));
   mutate(manifest);
   const file = path.join(dir, "manifest.json");
   fs.writeFileSync(file, JSON.stringify(manifest));
@@ -247,4 +247,25 @@ void test("real Cargo/API execution remains in T1 while contract and unknown inp
     const merge = planToolingTests(paths, { tier: "merge", cwd: root });
     assert(merge.tests.includes(execution) && merge.tests.includes(contract));
   }
+});
+
+void test("prepared history registers every binary output and keeps typed errors separate", () => {
+  const loaded = loadFormatterApiManifest(
+    path.join(root, "tests/_fixtures/differential/formatter-history/prepared-manifest.json"),
+    root,
+  );
+  const initial = loadFormatterApiManifest(manifestPath, root);
+  const manifestRows = [...initial.manifest.cases, ...loaded.manifest.cases]
+    .filter((item) => item.outcome !== "error")
+    .map((item) => path.basename(item.expected.path));
+  const snapshots = fs
+    .readdirSync(path.join(root, "crates/vize_glyph/tests/snapshots"))
+    .filter((file) => /^history_.*\.snap\.txt$/.test(file));
+  assert.equal(new Set(manifestRows).size, manifestRows.length);
+  assert.deepEqual(manifestRows.sort(), snapshots.sort());
+  const report = syntheticReport(loaded);
+  assert.equal(validateFormatterApiReport(loaded, report, {}).legacyErrorMatches, 1);
+  const error = report.rows.find((row) => row.contract === "typed-error-bytes");
+  error.legacy.passes[0].exitStatus = 0;
+  assert.throws(() => validateFormatterApiReport(loaded, report, {}));
 });

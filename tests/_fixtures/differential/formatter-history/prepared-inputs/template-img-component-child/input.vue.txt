@@ -1,0 +1,1 @@
+<Img><span>child</span></Img>

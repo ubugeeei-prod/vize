@@ -1,0 +1,5 @@
+<script>
+const a = `left\`right
+  tail`
+const b = 2
+</script>
