@@ -95,7 +95,7 @@ pub(super) fn invalidate_corsa_disk_state(state: &ServerState) {
     state.mark_corsa_disk_state_dirty();
 }
 
-pub(super) async fn forget_corsa_vue_files(state: &ServerState, deleted: &[PathBuf]) {
+pub(super) fn forget_corsa_vue_files(state: &ServerState, deleted: &[PathBuf]) {
     if deleted.is_empty() {
         return;
     }

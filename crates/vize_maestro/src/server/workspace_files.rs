@@ -126,7 +126,7 @@ pub(super) async fn did_change_watched_files(
             return;
         }
         server.state.invalidate_batch_cache();
-        forget_corsa_vue_files(&server.state, &deleted_paths).await;
+        forget_corsa_vue_files(&server.state, &deleted_paths);
         publish_versioned_dependents(server, dependents).await;
     }
     #[cfg(not(feature = "native"))]
@@ -227,7 +227,7 @@ pub(super) async fn did_delete_files(server: &MaestroServer, params: &DeleteFile
             dependents = include_open_typecheck_documents(&server.state, dependents);
         }
         record_deleted_files(&server.state, params);
-        forget_corsa_vue_files(&server.state, &deleted_paths).await;
+        forget_corsa_vue_files(&server.state, &deleted_paths);
         invalidate_corsa_disk_state(&server.state);
         publish_versioned_dependents(server, dependents).await;
     }
@@ -290,7 +290,7 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
                 .track_workspace_vue_files(file.new_uri.as_str());
         }
         server.state.invalidate_batch_cache();
-        forget_corsa_vue_files(&server.state, &renamed_paths).await;
+        forget_corsa_vue_files(&server.state, &renamed_paths);
         invalidate_corsa_disk_state(&server.state);
         publish_versioned_dependents(server, dependents).await;
     }
