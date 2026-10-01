@@ -297,12 +297,13 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
             // backtick: `skip_template_text` swallowed the bracket run behind a
             // phantom template literal while OXC kept every bracket live and
             // recursed to a stack overflow (#3274). Consuming the neutralized
-            // quote or backtick with the backslash keeps that following source
-            // visible to the depth budget. A `\` before any other byte falls
+            // quote, backtick, or slash with the backslash keeps the following
+            // source visible. OXC consumes the slash of an invalid `\/` escape,
+            // so it cannot open a comment or regex (#7350). A `\` before other bytes falls
             // through to the normal arms, so `\(` / `\[` / `\{` still count
             // their brackets exactly as OXC keeps them live.
             b'\\' => {
-                if matches!(bytes.get(i + 1), Some(b'\'' | b'"' | b'`')) {
+                if matches!(bytes.get(i + 1), Some(b'\'' | b'"' | b'`' | b'/')) {
                     i += 1;
                 } else if track_type_angles && !starts_valid_identifier_escape(bytes, i) {
                     malformed_type_escape_opens += 1;
