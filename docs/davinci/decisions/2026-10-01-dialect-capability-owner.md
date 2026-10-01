@@ -20,7 +20,10 @@ layout, public debug spelling and all existing flag values stay unchanged.
 
 The generic L1 tree, builder, renderer and lexer do not import dialect policy.
 The L1 construction/rendering isolation gate rejects policy references in its
-generic modules, including grouped imports and references behind `cfg`.
+generic modules, `markup/profile.rs` and the explicit `markup/lex` scope,
+including grouped imports and references behind `cfg`. A mutation law checks
+the generic profile, lexer module entry and nested implementations while
+retaining dialect hooks elsewhere in markup.
 The existing conversion capability bridge remains transitional; removing
 inline `caps` branches and isolating all legalization policy is separate work.
 This slice introduces no pipeline stage, transport serialization, product-route
