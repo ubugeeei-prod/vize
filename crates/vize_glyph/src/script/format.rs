@@ -10,6 +10,7 @@ use vize_l0::{Allocator, String, ToCompactString};
 /// `<script lang="jsx">` and `<script lang="tsx">` preserve JSX syntax instead
 /// of falling back through the non-JSX TypeScript parser.
 #[inline]
+#[cfg(test)]
 pub fn format_script_content_with_source_type(
     source: &str,
     options: &FormatOptions,

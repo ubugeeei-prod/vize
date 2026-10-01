@@ -5,6 +5,7 @@
 
 mod block_identity;
 mod format;
+#[cfg(test)]
 pub use format::format_script_content_with_source_type;
 
 use crate::error::FormatError;
