@@ -13,18 +13,14 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Analyzer`                     | type  | `analyzer`          |     3 |     3 |
 | `AnalyzerOptions`              | type  | `analyzer`          |     3 |     3 |
 | `ComponentShape`               | type  | `croquis`           |     1 |     1 |
-| `ComponentUsage`               | type  | `croquis::template` |     2 |     5 |
 | `Croquis`                      | type  | `croquis`           |     6 |    10 |
-| `Drawer`                       | type  | `drawer`            |    20 |    23 |
-| `DrawerOptions`                | type  | `drawer`            |    20 |    23 |
-| `EventListener`                | type  | `croquis::template` |     1 |     2 |
+| `Drawer`                       | type  | `drawer`            |    19 |    22 |
+| `DrawerOptions`                | type  | `drawer`            |    19 |    22 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     4 |
-| `PassedProp`                   | type  | `croquis::template` |     2 |     4 |
 | `ScopeBinding`                 | type  | `scope`             |     1 |     1 |
 | `ScopeData`                    | type  | `scope`             |     3 |     8 |
-| `ScopeId`                      | type  | `scope`             |     1 |     1 |
 | `ScopeKind`                    | type  | `scope`             |     9 |    65 |
-| `SlotUsage`                    | type  | `croquis::template` |     2 |     3 |
+| `SlotUsage`                    | type  | `croquis::template` |     1 |     1 |
 | `Croquis.component_shape`      | field | `croquis`           |     1 |     1 |
 | `Croquis.macros`               | field | `croquis`           |     7 |    14 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     3 |
@@ -52,7 +48,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `SignatureContract`           |     2 |     4 |
 | `SlotContract`                |     1 |     2 |
 | `TypeEnvironment`             |     1 |     1 |
-| `component_usage_list`        |     6 |     7 |
+| `component_usage_list`        |     5 |     6 |
 | `declaration_key`             |     1 |     1 |
 | `extract_identifier_refs_oxc` |     1 |     1 |
 | `extract_identifiers_oxc`     |     2 |     2 |
@@ -69,18 +65,14 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Analyzer`                    |        3 |    5 |
 | `AnalyzerOptions`             |        3 |    5 |
 | `ComponentShape`              |        1 |    2 |
-| `ComponentUsage`              |        5 |    8 |
 | `Croquis`                     |       10 |   31 |
-| `Drawer`                      |       23 |   40 |
-| `DrawerOptions`               |       23 |   41 |
-| `EventListener`               |        2 |    4 |
-| `PassedProp`                  |        4 |    7 |
+| `Drawer`                      |       22 |   38 |
+| `DrawerOptions`               |       22 |   39 |
 | `Scope`                       |        0 |    3 |
 | `ScopeBinding`                |        1 |    2 |
 | `ScopeData`                   |        8 |   11 |
-| `ScopeId`                     |        1 |    2 |
 | `ScopeKind`                   |       65 |   73 |
-| `SlotUsage`                   |        3 |    6 |
+| `SlotUsage`                   |        1 |    2 |
 | `Span`                        |        0 |   13 |
 | `Symbol`                      |        0 |    1 |
 | `SymbolId`                    |        0 |    5 |

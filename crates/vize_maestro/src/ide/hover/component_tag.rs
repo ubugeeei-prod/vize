@@ -1,308 +1,144 @@
+//! Component tags show the definition's contract, with the same typed
+//! presentation used for an imported SFC identifier.
+
 use tower_lsp::lsp_types::Hover;
-use vize_croquis::croquis::{ComponentUsage, PassedProp};
-use vize_croquis::{Drawer, DrawerOptions};
 
-mod items;
-
-use super::{HoverBuilder, HoverService};
-use crate::ide::completion::template::component_metadata;
-use crate::ide::definition::helpers;
-use crate::ide::template_excerpt::opening_tag_at;
-use crate::ide::{IdeContext, is_component_tag};
-use crate::virtual_code::{ArtCursorPosition, BlockType};
-use items::{event_items, prop_items, slot_items};
+use super::HoverService;
+#[cfg(feature = "native")]
+use super::{HoverBuilder, component_import::component_contract_markdown};
+use crate::ide::IdeContext;
+#[cfg(feature = "native")]
+use crate::ide::{definition::helpers, is_component_tag, kebab_to_pascal};
 
 impl HoverService {
     pub(super) fn hover_component_tag(ctx: &IdeContext<'_>) -> Option<Hover> {
-        let tag_name = helpers::get_tag_at_offset(&ctx.content, ctx.offset)?;
-        if !is_component_tag(&tag_name) {
-            return None;
-        }
-
-        let metadata = component_metadata(ctx, &tag_name);
-        if metadata.is_none() && !starts_with_uppercase(&tag_name) {
-            return None;
-        }
-
-        let (usage, opening_tag) = component_usage_at_cursor(ctx, &tag_name)?;
-        let mut builder = HoverBuilder::new().title(&tag_name).meta("Component usage");
-        if let Some(opening_tag) = opening_tag.as_deref() {
-            builder = builder.code("vue", opening_tag);
-        }
-
-        let props = prop_items(&usage);
-        if !props.is_empty() {
-            builder = section_from_items(builder, "Passed props", &props);
-        }
-
-        let events = event_items(&usage);
-        if !events.is_empty() {
-            builder = section_from_items(builder, "Listeners", &events);
-        }
-
-        let slots = slot_items(&usage);
-        if !slots.is_empty() {
-            builder = section_from_items(builder, "Slots", &slots);
-        }
-
-        if usage.has_spread_attrs {
-            builder = builder.section("Spread attrs", "`v-bind` receives an object expression.");
-        }
-
-        if let Some(guard) = usage.vif_guard.as_ref() {
-            builder = builder.section("Rendered when", &format!("`{}`", guard.as_str()));
-        }
-
-        if let Some(metadata) = metadata {
-            let has_dynamic_prop_name = usage.props.iter().any(|prop| prop.name_is_dynamic);
-            let missing_required = metadata
-                .props
-                .iter()
-                .filter(|prop| prop.required)
-                .filter(|prop| {
-                    !usage
-                        .props
-                        .iter()
-                        .any(|passed| prop_names_match(passed, prop.name.as_str()))
-                })
-                .map(|prop| prop.name.clone())
-                .collect::<Vec<_>>();
-            if !missing_required.is_empty() {
-                let heading = if usage.has_spread_attrs || has_dynamic_prop_name {
-                    "Required props not statically visible"
-                } else {
-                    "Required props not passed"
-                };
-                builder = section_from_items(builder, heading, &missing_required);
-                if !usage.has_spread_attrs && !has_dynamic_prop_name {
-                    builder = builder.code(
-                        "vue",
-                        &missing_required_example(tag_name.as_str(), &missing_required),
-                    );
-                }
+        #[cfg(feature = "native")]
+        {
+            let tag = helpers::get_tag_at_offset(&ctx.content, ctx.offset)?;
+            if !is_component_tag(&tag) {
+                return None;
             }
-
-            builder = builder.link(
-                "Vue Component Props",
-                "https://vuejs.org/guide/components/props.html",
-            );
+            let name = if tag.contains('-') {
+                kebab_to_pascal(&tag)
+            } else {
+                tag
+            };
+            let contract = component_contract_markdown(ctx, &name)?;
+            Some(HoverBuilder::new().description(&contract).build())
         }
-
-        Some(builder.build())
+        #[cfg(not(feature = "native"))]
+        {
+            let _ = ctx;
+            None
+        }
     }
 }
 
-fn component_usage_at_cursor(
-    ctx: &IdeContext<'_>,
-    tag_name: &str,
-) -> Option<(ComponentUsage, Option<String>)> {
-    let template = template_view(ctx)?;
-    let allocator = vize_l0::Allocator::new();
-    let (root, _) = if template.is_document {
-        vize_armature::parse_document(&allocator, template.content)
-    } else {
-        vize_armature::parse(&allocator, template.content)
-    };
-    let mut drawer = Drawer::with_options(DrawerOptions {
-        analyze_template_scopes: true,
-        track_usage: true,
-        ..Default::default()
-    });
-    drawer.draw_template(&root);
-    let croquis = drawer.finish();
-
-    vize_croquis::facts::component_usage_list(&croquis)
-        .iter()
-        .filter(|usage| {
-            usage.name == tag_name
-                && usage.start <= template.relative_offset
-                && template.relative_offset <= usage.end
-        })
-        .min_by_key(|usage| usage.end.saturating_sub(usage.start))
-        .cloned()
-        .map(|usage| {
-            let opening_tag =
-                opening_tag_at(template.content, usage.start as usize).map(str::to_string);
-            (usage, opening_tag)
-        })
-}
-
-struct TemplateView<'a> {
-    content: &'a str,
-    relative_offset: u32,
-    is_document: bool,
-}
-
-fn template_view<'a>(ctx: &'a IdeContext<'_>) -> Option<TemplateView<'a>> {
-    match ctx.block_type? {
-        BlockType::Template if crate::utils::is_standalone_html_path(ctx.uri.path()) => {
-            Some(TemplateView {
-                content: &ctx.content,
-                relative_offset: ctx.offset.min(ctx.content.len()) as u32,
-                is_document: true,
-            })
-        }
-        BlockType::Template => {
-            let descriptor = ctx.descriptor()?;
-            let template = descriptor.template.as_ref()?;
-            Some(TemplateView {
-                content: ctx.content.get(template.loc.start..template.loc.end)?,
-                relative_offset: ctx.offset.saturating_sub(template.loc.start) as u32,
-                is_document: false,
-            })
-        }
-        BlockType::Art(ArtCursorPosition::VariantTemplate(info)) => Some(TemplateView {
-            content: ctx.content.get(info.template_start..info.template_end)?,
-            relative_offset: info.relative_offset as u32,
-            is_document: false,
-        }),
-        _ => None,
-    }
-}
-
-fn section_from_items(builder: HoverBuilder, heading: &str, items: &[String]) -> HoverBuilder {
-    let refs = items.iter().map(String::as_str).collect::<Vec<_>>();
-    builder.bullets(heading, &refs)
-}
-
-fn prop_names_match(passed: &PassedProp, declared_name: &str) -> bool {
-    !passed.name_is_dynamic
-        && (passed.name == declared_name
-            || helpers::kebab_to_camel(passed.name.as_str()) == declared_name)
-}
-
-fn missing_required_example(tag_name: &str, missing_required: &[String]) -> String {
-    let attrs = missing_required
-        .iter()
-        .map(|name| format!(" :{}=\"...\"", crate::ide::pascal_to_kebab(name)))
-        .collect::<String>();
-    format!("<{tag_name}{attrs} />")
-}
-
-fn starts_with_uppercase(tag_name: &str) -> bool {
-    tag_name
-        .chars()
-        .next()
-        .is_some_and(|first| first.is_ascii_uppercase())
-}
-
-#[cfg(test)]
+#[cfg(all(test, feature = "native"))]
 mod tests {
-    use std::fs;
-
     use super::HoverService;
     use crate::{ide::IdeContext, server::ServerState};
+    use std::fs;
     use tower_lsp::lsp_types::{HoverContents, MarkupKind, Url};
 
-    #[test]
-    fn hover_component_tag_uses_croquis_usage() {
-        let dir = tempfile::tempdir().unwrap();
-        let source_path = dir.path().join("Parent.vue");
-        let source = r#"<script setup lang="ts">
-const msg = 'hello'
-</script>
+    const CHILD: &str =
+        include_str!("../../../tests/fixtures/component-definition-hover/Child.vue");
+    const PARENT: &str =
+        include_str!("../../../tests/fixtures/component-definition-hover/Parent.vue");
 
-<template>
-  <Child :message="msg" title="save > once">
-    <template #item="{ row, index }">
-      <span>{{ row }}</span>
-    </template>
-    <span>fallback</span>
-  </Child>
-</template>
-"#;
-        fs::write(&source_path, source).unwrap();
-
-        let uri = Url::from_file_path(&source_path).unwrap();
-        let state = ServerState::new();
-        state
-            .documents
-            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
-        state.update_virtual_docs(&uri, source);
-
-        let offset = source.find("<Child").unwrap() + "<Ch".len();
-        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-        let hover = HoverService::hover(&ctx).unwrap();
-        assert!(
-            matches!(&hover.contents, HoverContents::Markup(content) if content.kind == MarkupKind::Markdown)
-        );
-        let value = hover_markdown(hover);
-
-        assert!(value.contains("Component usage"), "got {value:?}");
-        assert!(
-            value.contains("```vue\n<Child :message=\"msg\" title=\"save > once\">\n```"),
-            "got {value:?}"
-        );
-        assert!(value.contains(":message=\"msg\""), "got {value:?}");
-        assert!(value.contains("title=\"save > once\""), "got {value:?}");
-        assert!(value.contains("#item { row, index }"), "got {value:?}");
-        assert!(value.contains("#default"), "got {value:?}");
-    }
-
-    #[test]
-    fn hover_component_tag_does_not_overstate_missing_props_with_spread_attrs() {
-        let dir = tempfile::tempdir().unwrap();
-        let child_path = dir.path().join("Child.vue");
+    fn markdown(parent: &str, unsaved_child: Option<&str>) -> String {
+        let directory = tempfile::tempdir().unwrap();
+        let child_path = directory.path().join("Child.vue");
+        fs::write(&child_path, CHILD).unwrap();
         fs::write(
-            &child_path,
-            r#"<script setup lang="ts">
-defineProps<{ requiredMessage: string }>()
-</script>
-<template><div /></template>
-"#,
+            directory.path().join("index.ts"),
+            "export { default as Child } from './Child.vue';",
         )
         .unwrap();
-
-        let source_path = dir.path().join("Parent.vue");
-        let source = r#"<script setup lang="ts">
-import Child from './Child.vue'
-const attrs = {}
-</script>
-
-<template>
-  <Child v-bind="attrs" />
-</template>
-"#;
-        fs::write(&source_path, source).unwrap();
-
-        let uri = Url::from_file_path(&source_path).unwrap();
+        let parent_path = directory.path().join("Parent.vue");
+        fs::write(&parent_path, parent).unwrap();
+        let uri = Url::from_file_path(&parent_path).unwrap();
         let state = ServerState::new();
         state
             .documents
-            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
-        state.update_virtual_docs(&uri, source);
-
-        let offset = source.find("<Child").unwrap() + "<Ch".len();
+            .open(uri.clone(), parent.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, parent);
+        if let Some(child) = unsaved_child {
+            let child_uri = Url::from_file_path(&child_path).unwrap();
+            state
+                .documents
+                .open(child_uri.clone(), child.to_string(), 2, "vue".to_string());
+            state.update_virtual_docs(&child_uri, child);
+        }
+        let offset = parent
+            .find("<Child")
+            .or_else(|| parent.find("<alias-child"))
+            .unwrap()
+            + 2;
         let ctx = IdeContext::new(&state, &uri, offset).unwrap();
         let hover = HoverService::hover(&ctx).unwrap();
-        let value = hover_markdown(hover);
-
-        assert!(value.contains("Spread attrs"), "got {value:?}");
-        assert!(
-            value.contains("Required props not statically visible"),
-            "got {value:?}"
-        );
-        assert!(
-            !value.contains("Required props not passed"),
-            "got {value:?}"
-        );
+        let HoverContents::Markup(content) = hover.contents else {
+            panic!("expected Markdown contract")
+        };
+        assert_eq!(content.kind, MarkupKind::Markdown);
+        content.value
     }
 
-    fn hover_markdown(hover: tower_lsp::lsp_types::Hover) -> String {
-        match hover.contents {
-            HoverContents::Markup(content) => content.value,
-            HoverContents::Scalar(marked) => match marked {
-                tower_lsp::lsp_types::MarkedString::String(value) => value,
-                tower_lsp::lsp_types::MarkedString::LanguageString(value) => value.value,
-            },
-            HoverContents::Array(items) => items
-                .into_iter()
-                .map(|item| match item {
-                    tower_lsp::lsp_types::MarkedString::String(value) => value,
-                    tower_lsp::lsp_types::MarkedString::LanguageString(value) => value.value,
-                })
-                .collect::<Vec<_>>()
-                .join("\n\n"),
+    #[test]
+    fn tag_hover_shows_declared_typed_props_emits_slots_and_models() {
+        let value = markdown(PARENT, None);
+        for expected in [
+            "```typescript",
+            "const Child: VueComponent",
+            "props:",
+            "message: string",
+            "count?: number",
+            "emits:",
+            "save: [value: number]",
+            "slots:",
+            "item(props: { row: string; index: number })",
+            "model:",
+            "\"title\": string",
+        ] {
+            assert!(value.contains(expected), "missing {expected}: {value}");
         }
+        for unwanted in [
+            "Passed props",
+            "Component usage",
+            "Listeners",
+            "Required props not passed",
+            "usage-only",
+            "#provided",
+        ] {
+            assert!(
+                !value.contains(unwanted),
+                "usage leaked into definition hover: {value}"
+            );
+        }
+    }
+
+    #[test]
+    fn tag_hover_reads_unsaved_definition_changes() {
+        let changed = CHILD
+            .replace("count?: number", "count?: boolean")
+            .replace("row: string", "row: number");
+        let value = markdown(PARENT, Some(&changed));
+        assert!(value.contains("count?: boolean"), "{value}");
+        assert!(value.contains("row: number"), "{value}");
+        assert!(!value.contains("count?: number"), "{value}");
+    }
+
+    #[test]
+    fn kebab_tag_hover_resolves_aliased_barrel_definition() {
+        let parent = PARENT.replace(
+            "import Child from './Child.vue'",
+            "import { Child as AliasChild } from './index'",
+        );
+        let parent = parent
+            .replace("<Child", "<alias-child")
+            .replace("</Child>", "</alias-child>");
+        let value = markdown(&parent, None);
+        assert!(value.contains("const AliasChild: VueComponent"), "{value}");
+        assert!(value.contains("slots:"), "{value}");
     }
 }

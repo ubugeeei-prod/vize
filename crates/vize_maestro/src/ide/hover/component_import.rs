@@ -200,11 +200,7 @@ fn model_contract(macros: &vize_croquis::macros::MacroTracker) -> Option<String>
         })
         .collect::<Vec<_>>();
 
-    if fields.len() == 1 {
-        fields.into_iter().next()
-    } else {
-        Some(format!("{{ {} }}", fields.join("; ")))
-    }
+    Some(format!("{{ {} }}", fields.join("; ")))
 }
 
 fn compact_type(source: &str) -> String {

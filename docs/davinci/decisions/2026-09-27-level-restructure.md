@@ -348,3 +348,6 @@ records #6922 owner history, unbounded inferred payloads, string widening and re
 
 [Extension wire ownership](./2026-09-28-extension-wire-ownership.md) starts the
 actual L0 neutral-code move for #6833; retiring the three old packages remains unfinished.
+
+[Component definition hovers](./2026-10-01-component-definition-hover.md)
+records #7319's typed props/emits/slots/model contract and authored fixtures.
