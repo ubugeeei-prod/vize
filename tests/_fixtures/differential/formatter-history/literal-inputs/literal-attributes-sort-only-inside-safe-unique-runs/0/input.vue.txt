@@ -1,0 +1,1 @@
+<Widget :value="read()" class="box" id="root" :next="write()" />

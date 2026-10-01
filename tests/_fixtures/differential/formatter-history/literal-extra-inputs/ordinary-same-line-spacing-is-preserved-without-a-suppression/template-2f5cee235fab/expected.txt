@@ -1,0 +1,4 @@
+<div>
+  <!-- eslint-disable -->
+  space: <input />
+</div>

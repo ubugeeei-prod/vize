@@ -49,6 +49,16 @@ false values, line endings, indentation and print widths. Original input
 bindings and additional branch counterparts are distinguished in each case.
 Two source-built replays passed locally; exact-head Actions remain pending.
 
+## Complete literal witnesses
+
+Register 118 additional complete literal/finite-loop references from the
+existing Rust witnesses, preserving original inputs, explicit options and
+source-expression proof. Fourteen supplementary Vue-version plans retain all
+three whole-SFC profiles, four hyphenated/default selectors and seven Vue 2
+payload/event/malformed-pipe arms. Their expected bytes are authored assertions
+and include files; they are not described as fresh captures. The 118 default
+plans passed two local source-built replays. Versioned execution awaits Actions.
+
 ## Remaining work
 
 Register and actually execute every prepared byte fixture, reconcile every
