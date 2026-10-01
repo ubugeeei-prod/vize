@@ -50,14 +50,19 @@ response ID in order, rejects duplicate/truncated/unplanned responses, and
 recomputes the complete JSON comparison. Only the workspace URI token in the
 reference is materialized; actual responses are never projected or sorted.
 
-The dependent source-built Actions consumer will write `target/differential/lsp.json` even
+The dependent source-built Actions consumer writes `target/differential/lsp.json` even
 when a comparison fails. The existing differential evidence upload recursively
 retains product reports, formatter/linter raw directories and the CLI receipt.
 Artifact names retain the formatter prefix and add workflow job/shard identity
 to the run/attempt identity. Extracted artifacts contain `differential/` and
-`ci/vize.differential-build.json`. PR and merge tooling retain the same evidence;
-no job, build stage, test deferral, instruction ceiling or differential window
-is added or changed by this registration.
+`ci/vize.differential-build.json`. PR and merge tooling retain the same evidence.
+The consumer runs the provider through existing merge and full tooling jobs,
+using the explicit T1 runtime inventory alongside the existing production LSP,
+formatter and linter scenarios. Pure adapter laws remain in the quick PR tier.
+It emits the report before asserting comparison success. The shared observer
+provider already merged as #7362 supplies this recursive evidence upload; the
+LSP consumer does not edit that action or either workflow caller. No job, build
+stage, instruction ceiling or differential window is added or changed.
 
 ## Proof and remaining work
 
