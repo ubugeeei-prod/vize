@@ -1,13 +1,14 @@
 //! Internal parser wrappers and views over their authored syntax only.
 
 use oxc_ast::ast::{
-    ArrowFunctionExpression, Directive, Expression, FormalParameter, FormalParameterRest,
-    ModuleDeclaration, Program, Statement, TSImportEqualsDeclaration,
+    ArrowFunctionExpression, AwaitExpression, Directive, Expression, FormalParameter,
+    FormalParameterRest, FormalParameters, FunctionBody, ModuleDeclaration, Program, Statement,
+    TSImportEqualsDeclaration,
 };
-use oxc_ast_visit::Visit;
+use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
 
-use super::{Shape, coordinates::Coordinates};
+use super::{EmbedHole, Shape, coordinates::Coordinates};
 
 #[derive(Clone, Copy)]
 pub(super) struct Wrapper {
@@ -147,23 +148,53 @@ pub(super) fn valid_wrapper(
 
 /// OXC's syntax parser retains module declarations in function bodies and
 /// normally leaves contextual rejection to its semantic builder. Reject that
-/// grammar here without a second parse or a semantic artifact. The standard
-/// visitor covers nested bodies and parameter-default expressions as well.
-pub(super) fn contains_module_declaration(program: &Program<'_>) -> bool {
-    struct ModuleContext(bool);
-    impl<'a> Visit<'a> for ModuleContext {
+/// grammar here without a second parse or a semantic artifact. The same walk
+/// rejects AwaitExpression in any function's parameters. Arrow heads inherit
+/// OXC's outer module Await setting, but parameter defaults cannot await. A
+/// nested async function body remains its own valid Await context.
+pub(super) fn context_hole(program: &Program<'_>) -> Option<EmbedHole> {
+    #[derive(Default)]
+    struct Context {
+        module_declaration: bool,
+        parameter_await: bool,
+        in_parameters: bool,
+    }
+    impl<'a> Visit<'a> for Context {
         fn visit_module_declaration(&mut self, _declaration: &ModuleDeclaration<'a>) {
-            self.0 = true;
+            self.module_declaration = true;
         }
 
         fn visit_ts_import_equals_declaration(
             &mut self,
             _declaration: &TSImportEqualsDeclaration<'a>,
         ) {
-            self.0 = true;
+            self.module_declaration = true;
+        }
+
+        fn visit_formal_parameters(&mut self, parameters: &FormalParameters<'a>) {
+            let outer = core::mem::replace(&mut self.in_parameters, true);
+            walk::walk_formal_parameters(self, parameters);
+            self.in_parameters = outer;
+        }
+
+        fn visit_function_body(&mut self, body: &FunctionBody<'a>) {
+            let outer = core::mem::replace(&mut self.in_parameters, false);
+            walk::walk_function_body(self, body);
+            self.in_parameters = outer;
+        }
+
+        fn visit_await_expression(&mut self, expression: &AwaitExpression<'a>) {
+            self.parameter_await |= self.in_parameters;
+            walk::walk_await_expression(self, expression);
         }
     }
-    let mut visitor = ModuleContext(false);
+    let mut visitor = Context::default();
     visitor.visit_program(program);
-    visitor.0
+    if visitor.module_declaration {
+        Some(EmbedHole::InvalidModuleContext)
+    } else if visitor.parameter_await {
+        Some(EmbedHole::InvalidParameterContext)
+    } else {
+        None
+    }
 }

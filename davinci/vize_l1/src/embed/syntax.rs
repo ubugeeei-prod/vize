@@ -40,6 +40,7 @@ pub enum EmbedHole {
     InvalidExpressionShape,
     InvalidWrappedShape,
     InvalidModuleContext,
+    InvalidParameterContext,
 }
 
 /// Actual OXC syntax, retained comments/diagnostics and one optional typed hole.
@@ -264,10 +265,8 @@ pub fn parse_once<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> NativeSynta
         && !shapes::valid_wrapper(&parsed.program, embed.grammar.shape, result.coordinates)
     {
         Some(EmbedHole::InvalidWrappedShape)
-    } else if matches!(embed.grammar.shape, Shape::HandlerBody | Shape::SlotParams)
-        && shapes::contains_module_declaration(&parsed.program)
-    {
-        Some(EmbedHole::InvalidModuleContext)
+    } else if matches!(embed.grammar.shape, Shape::HandlerBody | Shape::SlotParams) {
+        shapes::context_hole(&parsed.program)
     } else {
         None
     };
@@ -281,3 +280,6 @@ mod tests;
 
 #[cfg(test)]
 mod shape_tests;
+
+#[cfg(test)]
+mod parameter_context_tests;
