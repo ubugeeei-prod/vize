@@ -78,7 +78,7 @@ fn assert_lossless(source: &str, base: u32, context: &str) {
     );
     assert_eq!(
         accepted.semantic,
-        L2Page::of(&lowered.root.ops),
+        L2Page::of(&lowered.root.ops).expect("compatibility expression aliases"),
         "s2 page: {context}"
     );
     assert_eq!(

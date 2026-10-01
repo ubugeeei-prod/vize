@@ -74,6 +74,22 @@ fn check_node(
     if let Some(error) = error {
         return Err(error);
     }
+    node.for_each_binding(&mut |binding| {
+        if error.is_none()
+            && let Some(js) = binding.as_js()
+        {
+            error = owned_span(parts.source, id, binding.span(), Some(node.span())).err();
+            if error.is_none() && !js.matches_authored_source(parts.source) {
+                error = Some(ArtifactError::MismatchedBindingSource {
+                    node: id,
+                    span: binding.span(),
+                });
+            }
+        }
+    });
+    if let Some(error) = error {
+        return Err(error);
+    }
     if let NodeRef::Op(Op::If(if_op)) = node {
         if if_op.branches.is_empty() {
             return Err(ArtifactError::InvalidIf {

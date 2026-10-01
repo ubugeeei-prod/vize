@@ -95,15 +95,15 @@ impl<'a> JsCoordinates<'a> {
         })
     }
 
-    pub(super) fn matches(&self, source: &str, span: Span) -> bool {
+    pub(crate) fn matches(&self, source: &str, span: Span) -> bool {
         self.source == source && self.span == span
     }
 
-    pub(super) fn matches_authored_source(&self, file: &str) -> bool {
+    pub(crate) fn matches_authored_source(&self, file: &str) -> bool {
         file.get(self.span.start as usize..self.span.end as usize) == Some(self.authored)
     }
 
-    pub(super) fn decoded_span(&self, span: oxc_span::Span) -> Option<Span> {
+    pub(crate) fn decoded_span(&self, span: oxc_span::Span) -> Option<Span> {
         let span = Span::new(
             span.start.checked_sub(self.prefix)?,
             span.end.checked_sub(self.prefix)?,
@@ -112,7 +112,7 @@ impl<'a> JsCoordinates<'a> {
         Some(span)
     }
 
-    pub(super) fn authored_span(&self, span: Span) -> Option<Span> {
+    pub(crate) fn authored_span(&self, span: Span) -> Option<Span> {
         self.source.get(span.start as usize..span.end as usize)?;
         if self.segments.is_empty() {
             return Some(Span::new(

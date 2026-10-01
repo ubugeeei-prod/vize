@@ -138,7 +138,7 @@ pub fn both(source: &str, content: &str, start: u32) -> (Naive, Naive) {
     let (tree, errors) = parse(&allocator, content);
     let lowered = lower_source_block(&allocator, &tree, &errors, block);
     let facts = cfg::run(&lowered);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops).expect("compatibility expression aliases");
     (production(&facts), evaluate(&folio))
 }
 

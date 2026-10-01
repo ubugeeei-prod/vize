@@ -17,7 +17,7 @@ pub(super) fn spolvero_members(
 ) -> (serde_json::Value, serde_json::Value) {
     let run =
         template.map(|template| vize_curator::inspector::ladder_run(filename, template, clock));
-    let (pages, remarks, steps, walks) = run
+    let (pages, remarks, unavailable, steps, walks) = run
         .map(|run| {
             (
                 run.pages,
@@ -26,13 +26,19 @@ pub(super) fn spolvero_members(
                 } else {
                     Vec::new()
                 },
+                run.unavailable,
                 run.steps,
                 run.walks,
             )
         })
         .unwrap_or_default();
     (
-        vize_curator::inspector::spolvero_value_with_remarks("analyze-sfc", pages, remarks),
+        vize_curator::inspector::spolvero_value_with_observations(
+            "analyze-sfc",
+            pages,
+            remarks,
+            unavailable,
+        ),
         vize_curator::inspector::ladder_profile("analyze-sfc", &steps, &walks),
     )
 }

@@ -14,7 +14,7 @@ use vize_l2::op::Op;
 fn folio(css: &str, block_start: u32) -> L2Page {
     let arena = Allocator::default();
     let op = lower_style_block(&arena, css, block_start);
-    L2Page::of(core::slice::from_ref(&op))
+    L2Page::of(core::slice::from_ref(&op)).expect("compatibility expression aliases")
 }
 
 #[test]
@@ -138,7 +138,9 @@ fn validated_blocks_keep_equal_style_blocks_distinct() {
     let arena = Allocator::default();
     let op = lower_style_block_in(&arena, second_block);
     let DumpOp::Element(DumpElement { bindings, span, .. }) =
-        &L2Page::of(core::slice::from_ref(&op)).ops[0]
+        &L2Page::of(core::slice::from_ref(&op))
+            .expect("compatibility expression aliases")
+            .ops[0]
     else {
         panic!("carrier is ui.element");
     };
@@ -209,5 +211,10 @@ fn an_empty_block_is_a_carrier_with_no_binds() {
         panic!("carrier");
     };
     assert!(element.bindings.is_empty());
-    assert_eq!(L2Page::of(core::slice::from_ref(&op)).op_count(), 1);
+    assert_eq!(
+        L2Page::of(core::slice::from_ref(&op))
+            .expect("compatibility expression aliases")
+            .op_count(),
+        1
+    );
 }

@@ -75,7 +75,7 @@ fn owned_folio_expression_sources_resolve_through_sfc_block_offsets() {
     let allocator = Allocator::new();
     let (tree, errors) = vize_l1::parse(&allocator, template);
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, block);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops).expect("compatibility expression aliases");
 
     assert_folio_spans_resolve(source, &folio, "sfc-block-expression-slices");
 }

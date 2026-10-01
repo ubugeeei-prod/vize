@@ -3,6 +3,7 @@
 use vize_l0::Span;
 
 use super::NodeRef;
+use crate::binding::BindingRef;
 use crate::expr::ExprRef;
 use crate::op::{Attribute, BindingOp, DynamicName, Op};
 
@@ -96,9 +97,14 @@ impl<'s, 'a> NodeRef<'s, 'a> {
                 }
                 Op::For(it) => {
                     visit(it.binding.source);
-                    visit(it.binding.value);
-                    optional(it.binding.key, visit);
-                    optional(it.binding.index, visit);
+                    for binding in [Some(it.binding.value), it.binding.key, it.binding.index]
+                        .into_iter()
+                        .flatten()
+                    {
+                        if let Some(expr) = binding.as_expression() {
+                            visit(*expr);
+                        }
+                    }
                 }
                 Op::Slot(it) => name(Some(it.name), visit),
             },
@@ -133,6 +139,18 @@ impl<'s, 'a> NodeRef<'s, 'a> {
                 BindingOp::VueHtml(it) => optional(it.value, visit),
                 BindingOp::VueText(it) => optional(it.value, visit),
             },
+        }
+    }
+
+    /// Real binding positions are separate from expression positions.
+    pub fn for_each_binding(self, visit: &mut impl FnMut(BindingRef<'a>)) {
+        if let Self::Op(Op::For(it)) = self {
+            for binding in [Some(it.binding.value), it.binding.key, it.binding.index]
+                .into_iter()
+                .flatten()
+            {
+                visit(binding);
+            }
         }
     }
 }

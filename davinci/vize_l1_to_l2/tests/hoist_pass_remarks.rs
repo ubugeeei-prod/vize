@@ -52,7 +52,7 @@ fn run(source: &str) -> Run {
     let mut collector = RemarkCollector::new();
     let facts = run_transform(&mut lowered, &mut collector);
     Run {
-        folio: L2Page::of(&lowered.root.ops),
+        folio: L2Page::of(&lowered.root.ops).expect("compatibility expression aliases"),
         facts: facts
             .static_facts
             .sorted_entries()

@@ -4392,6 +4392,7 @@ dependencies = [
  "davinci_harness",
  "davinci_test_support",
  "insta",
+ "oxc_ast",
  "serde",
  "serde_json",
  "vize_armature",
@@ -4813,6 +4814,7 @@ version = "0.430.0"
 dependencies = [
  "davinci_test_support",
  "insta",
+ "oxc_ast",
  "serde_json",
  "vize_atelier_sfc",
  "vize_l0",

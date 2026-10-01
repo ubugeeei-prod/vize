@@ -38,9 +38,23 @@ fn expressions<'a>(ops: &[Op<'a>], out: &mut Vec<ExprRef<'a>>) {
             Op::Interpolation(interpolation) => out.push(interpolation.expression),
             Op::For(each) => {
                 out.push(each.binding.source);
-                out.push(each.binding.value);
-                out.extend(each.binding.key);
-                out.extend(each.binding.index);
+                out.push(
+                    *each
+                        .binding
+                        .value
+                        .as_expression()
+                        .expect("compatibility alias"),
+                );
+                out.extend(
+                    each.binding
+                        .key
+                        .and_then(|binding| binding.as_expression().copied()),
+                );
+                out.extend(
+                    each.binding
+                        .index
+                        .and_then(|binding| binding.as_expression().copied()),
+                );
                 expressions(&each.region.ops, out);
             }
             Op::If(chain) => {

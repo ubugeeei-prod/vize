@@ -210,3 +210,6 @@ pub(super) fn controlled_regions<'a>(
         &alloc,
     ))
 }
+
+#[cfg(test)]
+mod native_binding_tests;

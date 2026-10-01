@@ -84,7 +84,10 @@ fn template_keys(source: &str, block: &str, start: u32) -> (ArtifactKey, Artifac
         .and_then(|root| root.block(block, start))
         .expect("template block frame");
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, frame);
-    let s2 = ArtifactKey::of(&L2Page::of(&lowered.root.ops), start);
+    let s2 = ArtifactKey::of(
+        &L2Page::of(&lowered.root.ops).expect("compatibility expression aliases"),
+        start,
+    );
     (s1, s2)
 }
 

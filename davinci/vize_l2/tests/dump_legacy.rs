@@ -131,7 +131,7 @@ fn an_arena_tree_mirrors_the_legacy_dialect_ops() {
         ))],
         &allocator,
     );
-    let mirrored = L2Page::of(&ops);
+    let mirrored = L2Page::of(&ops).expect("compatibility expression aliases");
     assert_eq!(mirrored.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(mirrored, hand_built());
 }

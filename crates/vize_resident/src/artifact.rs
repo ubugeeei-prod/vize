@@ -289,7 +289,7 @@ pub fn page_artifact(source: &BlockSource, config: StageConfig) -> Option<PageAr
     let allocator = Allocator::default();
     if source.kind == BlockKind::Style {
         let op = lower_style_block(&allocator, source.text.as_str(), 0);
-        let folio = L2Page::of(core::slice::from_ref(&op));
+        let folio = L2Page::of(core::slice::from_ref(&op)).ok()?;
         return Some(PageArtifact {
             key: ArtifactKey::of(&folio, 0),
             folio,
@@ -302,7 +302,7 @@ pub fn page_artifact(source: &BlockSource, config: StageConfig) -> Option<PageAr
     let caps = LegacyCaps::for_version(config.vue_version);
     let (tree, errors) = vize_l1::parse(&allocator, source.text.as_str());
     let lowered = lower_with_caps(&allocator, &tree, &errors, caps);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops).ok()?;
     Some(PageArtifact {
         key: ArtifactKey::of(&folio, 0),
         folio,

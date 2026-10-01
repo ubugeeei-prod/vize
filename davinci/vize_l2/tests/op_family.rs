@@ -150,7 +150,7 @@ fn every_op<'a>(allocator: &'a Allocator) -> Vec<'a, Op<'a>> {
                 ForOp {
                     binding: ForBinding {
                         source: expr,
-                        value: expr,
+                        value: expr.into(),
                         key: None,
                         index: None,
                     },

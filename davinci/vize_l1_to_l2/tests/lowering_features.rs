@@ -241,7 +241,7 @@ fn run(source: &str, force_every_pass: bool) -> (Products, u32) {
     }
     let mut budget = BudgetObserver::new();
     let facts = run_transform(&mut lowered, &mut budget);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops).expect("compatibility expression aliases");
     let provenance = lowered.provenance.len();
     (
         products(&folio, &lowered.diagnostics, provenance, &facts),

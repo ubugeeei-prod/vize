@@ -223,8 +223,11 @@ impl Walk {
                     node.value = Some(binding.source.source().to_owned());
                     node.alias = Some(ForAlias {
                         value: binding.value.source().to_owned(),
-                        key: binding.key.as_ref().map(expr_text),
-                        index: binding.index.as_ref().map(expr_text),
+                        key: binding.key.as_ref().map(|alias| alias.source().to_owned()),
+                        index: binding
+                            .index
+                            .as_ref()
+                            .map(|alias| alias.source().to_owned()),
                     });
                 });
                 self.region(&for_op.region, Some(at as u32));

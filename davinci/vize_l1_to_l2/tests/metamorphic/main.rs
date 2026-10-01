@@ -156,7 +156,7 @@ fn the_normalization_does_not_collapse_real_differences() {
         let allocator = vize_l0::Allocator::new();
         let (tree, errors) = vize_l1::parse(&allocator, source);
         let lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-        vize_l2::dump::Page::of(&lowered.root.ops)
+        vize_l2::dump::Page::of(&lowered.root.ops).expect("compatibility expression aliases")
     };
     // Attribute sorting must not erase a value difference…
     assert_ne!(
@@ -252,7 +252,7 @@ fn the_merge_mutator_holds_through_its_own_site_path() {
     let (mut tree, errors) = vize_l1::parse(&allocator, source);
     let original = {
         let lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-        vize_l2::dump::Page::of(&lowered.root.ops)
+        vize_l2::dump::Page::of(&lowered.root.ops).expect("compatibility expression aliases")
     };
     mutators::split_text(&mut tree, &[0, 0], 5);
     let merge_sites: Vec<sites::Site> = sites::enumerate(&tree)
@@ -264,7 +264,8 @@ fn the_merge_mutator_holds_through_its_own_site_path() {
     let mutant = mutators::apply(&allocator, &mut tree, &merge_sites[0]);
     assert!(matches!(mutant, mutators::Mutant::InPlace));
     let lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
-    let merged = vize_l2::dump::Page::of(&lowered.root.ops);
+    let merged =
+        vize_l2::dump::Page::of(&lowered.root.ops).expect("compatibility expression aliases");
     // The re-merged slice is the original maximal run: byte-identical
     // `Full`-mode folios, no normalization needed at all.
     use vize_l0::dump::{Dump, Mode as DumpMode};

@@ -210,7 +210,7 @@ fn nested_if_for_and_slot_fallback_preserve_control_containment() {
         ForOp {
             binding: ForBinding {
                 source: expr,
-                value: expr,
+                value: expr.into(),
                 key: None,
                 index: None,
             },

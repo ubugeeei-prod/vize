@@ -140,7 +140,7 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
         return;
     }
     let facts = run_transform(&mut lowered, &mut NoObserver);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops).expect("compatibility expression aliases");
     let s2 = l2_lane::collect(
         &folio,
         &l2_lane::Tables {

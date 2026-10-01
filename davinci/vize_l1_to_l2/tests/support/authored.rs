@@ -5,9 +5,12 @@
 use vize_l0::{SourceRoot, Span};
 use vize_l1_to_l2::Lowered;
 use vize_l1_to_l2::lower::TextPart;
-use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{Attribute, BindingOp, DynamicName, ForBinding, Op, Region};
 use vize_l2::scope::{ScopeFacts, ScopeOrigin};
+use vize_l2::{
+    binding::BindingRef,
+    expr::{ExprRef, OpaqueReason},
+};
 
 pub fn assert_authored_artifact(source: &str, lowered: &Lowered<'_>) {
     let root = SourceRoot::new(source).expect("authored source");
@@ -190,12 +193,14 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[BindingOp<'_>
 
 fn assert_for_binding(source: &str, root: SourceRoot<'_>, binding: ForBinding<'_>) {
     assert_expr(source, root, binding.source);
-    assert_expr(source, root, binding.value);
-    if let Some(key) = binding.key {
-        assert_expr(source, root, key);
-    }
-    if let Some(index) = binding.index {
-        assert_expr(source, root, index);
+    for alias in [Some(binding.value), binding.key, binding.index]
+        .into_iter()
+        .flatten()
+    {
+        match alias {
+            BindingRef::Expr(expr) => assert_expr(source, root, expr),
+            BindingRef::Js(binding) => assert_span(source, root, binding.span(), "native binding"),
+        }
     }
 }
 

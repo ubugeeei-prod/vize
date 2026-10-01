@@ -75,3 +75,29 @@ describe("layerId", () => {
     expect(raw.pages[0].stage).toBe("s1");
   });
 });
+
+describe("fallible stage inspection", () => {
+  it("preserves complete failed inspections separately from valid pages", () => {
+    const failure = {
+      path: "Component.vue",
+      stage: "s2",
+      pass: "lower",
+      reason: "cannot dump λ binding",
+    };
+    const raw = {
+      schema_version: 1,
+      command: "analyze-sfc",
+      pages: [page],
+      unavailable: [failure],
+    };
+    expect(negotiateSpolveroFeed(raw)).toEqual({ ok: true, feed: raw });
+    expect(raw.pages).toEqual([page]);
+    expect(negotiateSpolveroFeed({ ...raw, unavailable: [{ ...failure, reason: 3 }] }).ok).toBe(
+      false,
+    );
+    expect(
+      negotiateSpolveroFeed({ ...raw, unavailable: [{ ...failure, text: "fake page" }] }).ok,
+    ).toBe(false);
+    expect(negotiateSpolveroFeed({ ...raw, unavailable: "none" }).ok).toBe(false);
+  });
+});

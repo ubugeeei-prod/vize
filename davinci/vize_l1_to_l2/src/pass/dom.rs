@@ -57,6 +57,8 @@ fn run_dom_legacy_transform<'a, O: PassObserver>(
 ) {
     #[cfg(debug_assertions)]
     let mut verify = vize_l2::verify::VerifyObserver::new();
+    #[cfg(debug_assertions)]
+    let mut dump_failure = None;
 
     let outcome = run_pipeline(&DOM_LEGACY_TRANSFORM, observer, |event| {
         if event.desc().name != legacy::DESC.name {
@@ -70,7 +72,10 @@ fn run_dom_legacy_transform<'a, O: PassObserver>(
         #[cfg(debug_assertions)]
         {
             verify.note(event);
-            let folio = vize_l2::dump::Page::of(&lowered.root.ops);
+            let folio = vize_l2::dump::Page::of(&lowered.root.ops).map_err(|error| {
+                dump_failure = Some(error);
+                PassFailure::new("native binding dump unsupported")
+            })?;
             verify.check(event, &folio);
             verify.check_table(event, &folio, &lowered.scopes);
             verify.check_table(event, &folio, &lowered.texts);
@@ -89,9 +94,14 @@ fn run_dom_legacy_transform<'a, O: PassObserver>(
         Ok(())
     });
     if let Err(failure) = outcome {
-        lowered.diagnostics.push(crate::exemptions::lowering(
-            vize_l0::Span::new(0, 0),
-            failure.reason,
-        ));
+        let span = vize_l0::Span::new(0, 0);
+        #[cfg(debug_assertions)]
+        let span = match dump_failure {
+            Some(vize_l2::dump::NativeDumpError::JsBindingUnsupported { span }) => span,
+            None => span,
+        };
+        lowered
+            .diagnostics
+            .push(crate::exemptions::lowering(span, failure.reason));
     }
 }

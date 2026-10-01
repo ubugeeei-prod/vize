@@ -69,9 +69,9 @@ pub(super) fn lower_for<'a>(
         .transpose()?;
     let binding = ForBinding {
         source: source_expr,
-        value,
-        key,
-        index,
+        value: value.into(),
+        key: key.map(Into::into),
+        index: index.map(Into::into),
     };
     attach_for_scope(cx, node, &binding);
     let ops = lower_children(allocator, source, &for_node.children, cx)?;
@@ -109,7 +109,7 @@ fn attach_for_scope(cx: &mut ProjectCx, node: Option<NodeId>, binding: &ForBindi
     .into_iter()
     .flatten()
     {
-        if let Some(name) = simple_identifier(expr) {
+        if let Some(name) = expr.as_expression().and_then(simple_identifier) {
             bindings.push(ScopeBinding {
                 name: String::from(name),
                 origin: ScopeOrigin::Authored { span: expr.span() },

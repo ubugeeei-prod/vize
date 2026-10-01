@@ -74,7 +74,9 @@ fn l2_run(source: &str) -> Option<L2Run> {
     let _facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut observers);
     let Pair(budget, remarks) = observers;
     Some(L2Run {
-        folio: vize_l2::dump::Page::of(&lowered.root.ops).print_to_string(DumpMode::Full),
+        folio: vize_l2::dump::Page::of(&lowered.root.ops)
+            .ok()?
+            .print_to_string(DumpMode::Full),
         remarks: remarks.finish(),
         diagnostics: lowered
             .diagnostics

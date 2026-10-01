@@ -129,8 +129,8 @@ fn lower_and_emit<C: CaptureSink>(
         text
     });
     let s2 = vize_l1_to_l2::lower(allocator, &tree, &surface_errors);
-    capture.page(Level::L2, "lower", || {
-        vize_l2::dump::Page::of(&s2.root.ops).print_to_string(DumpMode::Full)
+    capture.try_page(Level::L2, "lower", || {
+        vize_l2::dump::Page::of(&s2.root.ops).map(|page| page.print_to_string(DumpMode::Full))
     });
     capture.page(Level::L2, "provenance", || {
         vize_l2::dump::ProvenancePage::of(&s2.provenance).print_to_string(DumpMode::Full)

@@ -84,6 +84,20 @@
         }
       }
     },
+    "unavailable": {
+      "type": "array",
+      "description": "Executed inspections that could not produce a valid page; omitted when empty and absent for nonaccepted selection.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["level", "step", "reason"],
+        "properties": {
+          "level": { "type": "string", "pattern": "^l[0-4]$" },
+          "step": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
     "timings": {
       "type": "array",
       "items": {

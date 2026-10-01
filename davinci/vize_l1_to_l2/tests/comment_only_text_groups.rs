@@ -122,7 +122,7 @@ fn preserved_comments_remain_distinct_children_in_authored_order() {
     let (tree, errors) = vize_l1::parse(&allocator, source);
     assert!(errors.is_empty());
     let lowered = lower_preserving_comments(&allocator, &tree, &errors);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops).expect("compatibility expression aliases");
     let [DumpOp::Element(root)] = folio.ops.as_slice() else {
         panic!("expected the div root");
     };
@@ -177,7 +177,7 @@ fn recovered_leading_bytes_still_break_comment_text_groups() {
     comment.leading = gap.text;
     assert_eq!(vize_l1::check_fidelity(&tree), Ok(()));
     let lowered = lower(&allocator, &tree, &errors);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops).expect("compatibility expression aliases");
     let [DumpOp::Element(root)] = folio.ops.as_slice() else {
         panic!("expected the div root");
     };

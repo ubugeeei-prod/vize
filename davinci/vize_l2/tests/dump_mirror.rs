@@ -180,8 +180,8 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
         ForOp {
             binding: ForBinding {
                 source: opaque(allocator, OpaqueReason::ForValue, "a in b in c", 110, 121),
-                value: js(allocator, "a", 105, 106),
-                key: Some(js(allocator, "i", 108, 109)),
+                value: js(allocator, "a", 105, 106).into(),
+                key: Some(js(allocator, "i", 108, 109).into()),
                 index: None,
             },
             region: Region {
@@ -259,7 +259,7 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
 fn an_arena_tree_mirrors_into_the_same_folio() {
     let allocator = Allocator::default();
     let ops = arena_built(&allocator);
-    let mirrored = L2Page::of(&ops);
+    let mirrored = L2Page::of(&ops).expect("compatibility expression aliases");
     assert_eq!(mirrored.op_count(), 13);
     assert_eq!(mirrored.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(

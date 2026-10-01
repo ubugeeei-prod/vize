@@ -63,6 +63,27 @@ pub struct Page {
     pub ops: Vec<Op>,
 }
 
+/// A native payload has no contract in the existing owned dump grammar.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NativeDumpError {
+    /// A retained formal parameter cannot be serialized as an expression.
+    JsBindingUnsupported { span: vize_l0::Span },
+}
+
+impl core::fmt::Display for NativeDumpError {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            Self::JsBindingUnsupported { span } => write!(
+                formatter,
+                "native binding dump unsupported at bytes {}..{}",
+                span.start, span.end
+            ),
+        }
+    }
+}
+
+impl core::error::Error for NativeDumpError {}
+
 impl Dump for Page {
     fn print<W: core::fmt::Write>(&self, w: &mut W, mode: DumpMode) -> core::fmt::Result {
         print::print(self, w, print::Style::current(mode))

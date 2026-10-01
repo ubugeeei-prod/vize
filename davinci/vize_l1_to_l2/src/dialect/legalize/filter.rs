@@ -103,11 +103,23 @@ fn rewrite_ops<'a>(
             }
             Op::For(for_op) => {
                 rewrite_expr(allocator, &mut for_op.binding.source, &mut facts.filters);
-                rewrite_expr(allocator, &mut for_op.binding.value, &mut facts.filters);
-                if let Some(key) = &mut for_op.binding.key {
+                if let Some(value) = for_op.binding.value.as_expression_mut() {
+                    rewrite_expr(allocator, value, &mut facts.filters);
+                }
+                if let Some(key) = for_op
+                    .binding
+                    .key
+                    .as_mut()
+                    .and_then(|binding| binding.as_expression_mut())
+                {
                     rewrite_expr(allocator, key, &mut facts.filters);
                 }
-                if let Some(index) = &mut for_op.binding.index {
+                if let Some(index) = for_op
+                    .binding
+                    .index
+                    .as_mut()
+                    .and_then(|binding| binding.as_expression_mut())
+                {
                     rewrite_expr(allocator, index, &mut facts.filters);
                 }
                 rewrite_ops(

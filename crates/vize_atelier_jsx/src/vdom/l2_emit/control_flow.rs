@@ -20,17 +20,21 @@ fn if_branch_is_supported(branch: &IfBranch<'_>) -> bool {
 
 pub(super) fn for_is_supported(for_op: &ForOp<'_>) -> bool {
     matches!(&for_op.binding.source, ExprRef::Js(_))
-        && expr_is_js_or_raw_emittable(&for_op.binding.value)
         && for_op
             .binding
-            .key
-            .as_ref()
-            .is_none_or(expr_is_js_or_raw_emittable)
-        && for_op
-            .binding
-            .index
-            .as_ref()
-            .is_none_or(expr_is_js_or_raw_emittable)
+            .value
+            .as_expression()
+            .is_some_and(expr_is_js_or_raw_emittable)
+        && for_op.binding.key.as_ref().is_none_or(|binding| {
+            binding
+                .as_expression()
+                .is_some_and(expr_is_js_or_raw_emittable)
+        })
+        && for_op.binding.index.as_ref().is_none_or(|binding| {
+            binding
+                .as_expression()
+                .is_some_and(expr_is_js_or_raw_emittable)
+        })
         && branch_region_is_supported(&for_op.region)
 }
 

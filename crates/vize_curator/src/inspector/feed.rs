@@ -66,6 +66,15 @@ pub struct StagePage {
     pub text: String,
 }
 
+/// An executed inspection that could not represent its native payload.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StageUnavailable {
+    pub path: Option<String>,
+    pub stage: String,
+    pub pass: String,
+    pub reason: String,
+}
+
 /// One optimization remark in the feed (P3-13): the recorded remark plus
 /// the file it was produced for. Spans are byte offsets into the artifact
 /// the pipeline lowered - the same frame as that file's pages (the template
@@ -94,6 +103,8 @@ pub struct StageFeed {
     /// to v1: every producer emits the member (possibly empty), and the
     /// schema keeps it optional so earlier v1 documents stay valid.
     pub remarks: Vec<StageRemark>,
+    /// Separate failed inspections; omitted from the wire when empty.
+    pub unavailable: Vec<StageUnavailable>,
 }
 
 impl StageFeed {
@@ -116,6 +127,7 @@ impl StageFeed {
             command: String::from(command),
             pages: Vec::new(),
             remarks: Vec::new(),
+            unavailable: Vec::new(),
         }
     }
 
@@ -137,6 +149,7 @@ impl StageFeed {
                 })
                 .collect(),
             remarks: Vec::new(),
+            unavailable: Vec::new(),
         }
     }
 
@@ -187,7 +200,33 @@ impl StageFeed {
             push_remark_fields(&mut out, &entry.remark);
             out.push('}');
         }
-        out.push_str("]}\n");
+        out.push(']');
+        if !self.unavailable.is_empty() {
+            out.push_str(",\"unavailable\":[");
+            for (index, failure) in self.unavailable.iter().enumerate() {
+                if index > 0 {
+                    out.push(',');
+                }
+                out.push_str("{\"path\":");
+                match failure.path.as_deref() {
+                    Some(path) => push_json_string(&mut out, path),
+                    None => out.push_str("null"),
+                }
+                out.push_str(",\"stage\":");
+                push_json_string(&mut out, failure.stage.as_str());
+                out.push_str(",\"pass\":");
+                push_json_string(&mut out, failure.pass.as_str());
+                out.push_str(",\"reason\":");
+                push_json_string(&mut out, failure.reason.as_str());
+                out.push('}');
+            }
+            out.push(']');
+        }
+        out.push_str("}\n");
         out
     }
 }
+
+#[cfg(test)]
+#[path = "feed/fallible_tests.rs"]
+mod fallible_tests;

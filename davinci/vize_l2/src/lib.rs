@@ -42,6 +42,7 @@
 extern crate alloc;
 
 pub mod artifact;
+pub mod binding;
 pub mod dump;
 pub mod expr;
 pub mod lang;

@@ -6,8 +6,8 @@ use vize_l0::id::NodeId;
 use vize_l0::{FxHashSet, String, ToCompactString, cstr};
 use vize_l1_to_l2::lower::WrapperKey;
 use vize_l1_to_l2::{TransformContent, decode_template_entities};
-use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, DynamicName};
+use vize_l2::{binding::BindingRef, expr::ExprRef};
 
 use super::vnode::array;
 use super::{Emitter, Result};
@@ -22,7 +22,10 @@ fn node(fact: u32) -> Result<NodeId> {
     ))
 }
 
-fn alias_source<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
+pub(super) fn alias_source<'a>(binding: &BindingRef<'a>) -> Result<&'a str> {
+    let expr = binding
+        .as_expression()
+        .ok_or(LegacyReason::ExpressionOrEncoding)?;
     match expr {
         ExprRef::Js(js) => Ok(js.source),
         ExprRef::Opaque(opaque) => Ok(opaque.source),

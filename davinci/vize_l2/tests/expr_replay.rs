@@ -72,7 +72,7 @@ fn a_printed_folio_replays_across_an_arena_reset() {
         let ops = arena_built(&guard);
         // (`&guard` deref-coerces to `&Allocator`; the guard owns the
         // arena for this block.)
-        let mirrored = L2Page::of(&ops);
+        let mirrored = L2Page::of(&ops).expect("compatibility expression aliases");
         (mirrored.print_to_string(DumpMode::Full), mirrored)
         // `guard` drops here: the arena resets and every `ExprRef` above -
         // including the retained oxc AST - is gone. Only the owned folio
@@ -127,7 +127,10 @@ fn a_printed_folio_replays_across_an_arena_reset() {
         &allocator,
     );
     assert_eq!(
-        L2Page::of(&ops).print_to_string(DumpMode::Full).as_str(),
+        L2Page::of(&ops)
+            .expect("compatibility expression aliases")
+            .print_to_string(DumpMode::Full)
+            .as_str(),
         CANONICAL
     );
 }

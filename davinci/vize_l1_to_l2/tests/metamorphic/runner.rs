@@ -152,7 +152,7 @@ fn folio_of_source(source: &str) -> L2Page {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let lowered = lower(&allocator, &tree, &errors);
-    L2Page::of(&lowered.root.ops)
+    L2Page::of(&lowered.root.ops).expect("compatibility expression aliases")
 }
 
 /// Run every mutator over one source, accumulating into `report`.
@@ -191,7 +191,7 @@ fn check_site(source: &str, context: &str, site: &Site, original: &L2Page, repor
         Mutant::Source(mutant_source) => folio_of_source(mutant_source.as_str()),
         Mutant::InPlace => {
             let lowered = lower(&allocator, &tree, &errors);
-            L2Page::of(&lowered.root.ops)
+            L2Page::of(&lowered.root.ops).expect("compatibility expression aliases")
         }
     };
     let expected = normalized_display(original, rules);
@@ -210,7 +210,7 @@ fn check_site(source: &str, context: &str, site: &Site, original: &L2Page, repor
         // `Full`-mode folio byte-for-byte (no normalization at all).
         merge_text(&mut tree, &site.path);
         let lowered = lower(&allocator, &tree, &errors);
-        let remerged = L2Page::of(&lowered.root.ops);
+        let remerged = L2Page::of(&lowered.root.ops).expect("compatibility expression aliases");
         let expected_full = original.print_to_string(DumpMode::Full);
         let actual_full = remerged.print_to_string(DumpMode::Full);
         if expected_full != actual_full {

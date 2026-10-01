@@ -27,6 +27,6 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis`                 |        0 |    2 |
 | `CroquisSemanticSnapshot` |        3 |    4 |
 | `CroquisSemanticSummary`  |        1 |    2 |
-| `Span`                    |        0 |    4 |
+| `Span`                    |        0 |    7 |
 | `Croquis.bindings`        |        0 |    1 |
 | `Croquis.scopes`          |        0 |    1 |

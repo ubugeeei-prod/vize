@@ -109,6 +109,8 @@ pub enum ArtifactError {
     InvalidJsSpan { node: NodeId, span: Span },
     /// A native expression's decode coordinates belong to different source bytes.
     MismatchedJsSource { node: NodeId, span: Span },
+    /// Native alias coordinates do not belong to this authored file.
+    MismatchedBindingSource { node: NodeId, span: Span },
     /// Scope tags are not a unique dense set starting at zero.
     InvalidScopeTag { node: NodeId, tag: ScopeTag },
 }

@@ -2,6 +2,7 @@
 
 use vize_l0::ToCompactString;
 use vize_l0::id::NodeId;
+use vize_l2::binding::BindingRef;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{ForOp, Op, VueMemoOp};
 
@@ -286,7 +287,10 @@ pub(super) fn js_source<'a>(expr: &'a ExprRef<'a>) -> Result<RawJs<'a>, EmitErro
         .ok_or_else(|| EmitError::unsupported_at(Reason::ForSourceNotJs, expr.span()))
 }
 
-pub(super) fn value_alias<'a>(expr: &'a ExprRef<'a>) -> Result<&'a str, EmitError> {
+pub(super) fn value_alias<'a>(binding: &'a BindingRef<'a>) -> Result<&'a str, EmitError> {
+    let expr = binding
+        .as_expression()
+        .ok_or_else(|| EmitError::unsupported_at(Reason::ForAliasNotEmittable, binding.span()))?;
     match expr {
         ExprRef::Js(js) if js.source.is_empty() => Ok("_item"),
         ExprRef::Js(js) => Ok(js.source),
@@ -302,7 +306,7 @@ pub(super) fn value_alias<'a>(expr: &'a ExprRef<'a>) -> Result<&'a str, EmitErro
 }
 
 pub(super) fn optional_ident<'a>(
-    expr: &'a Option<ExprRef<'a>>,
+    expr: &'a Option<BindingRef<'a>>,
 ) -> Result<Option<&'a str>, EmitError> {
     match expr {
         None => Ok(None),
@@ -313,3 +317,6 @@ pub(super) fn optional_ident<'a>(
 fn is_numeric(source: &str) -> bool {
     !source.is_empty() && source.chars().all(|c| c.is_ascii_digit())
 }
+
+#[cfg(test)]
+mod native_binding_tests;

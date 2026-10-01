@@ -3,6 +3,7 @@
 
 use vize_l0::{Allocator, SourceBlock, Span, append};
 use vize_l1::SurfaceChild;
+use vize_l2::binding::BindingRef;
 use vize_l2::expr::capability::ExprDialect;
 use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueReason};
 use vize_l2::op::{BindingOp, DynamicName, ForOp, IfOp, Op};
@@ -191,7 +192,16 @@ impl<'a> Emitter<'a> {
 
     fn for_loop(&mut self, for_op: &ForOp<'a>) {
         let binding = for_op.binding;
-        if let Some(index) = binding.index {
+        let Some(value) = self.for_alias(binding.value) else {
+            return;
+        };
+        let key = binding.key.and_then(|key| self.for_alias(key));
+        let index = binding.index.and_then(|index| self.for_alias(index));
+        if (binding.key.is_some() && key.is_none()) || (binding.index.is_some() && index.is_none())
+        {
+            return;
+        }
+        if let Some(index) = index {
             self.projection.unsupported.push(Unsupported {
                 what: "ui.for (third alias)",
                 span: index.span(),
@@ -200,11 +210,11 @@ impl<'a> Emitter<'a> {
         let start = self.line_start();
         let first = self.projection.positions.len();
         self.projection.text.push_str("for ");
-        if let Some(key) = binding.key {
+        if let Some(key) = key {
             self.expr(PositionKind::IterKey, piece(key), start);
             self.projection.text.push_str(", ");
         }
-        self.expr(PositionKind::IterValue, piece(binding.value), start);
+        self.expr(PositionKind::IterValue, piece(value), start);
         self.projection.text.push_str(" in ");
         self.expr(PositionKind::IterSource, piece(binding.source), start);
         self.projection.text.push_str(" {\n");
@@ -212,6 +222,19 @@ impl<'a> Emitter<'a> {
         self.nested(|this| this.region(&for_op.region.ops));
         self.line_start();
         self.projection.text.push_str("}\n");
+    }
+
+    fn for_alias(&mut self, binding: BindingRef<'a>) -> Option<ExprRef<'a>> {
+        match binding {
+            BindingRef::Expr(expr) => Some(expr),
+            BindingRef::Js(native) => {
+                self.projection.unsupported.push(Unsupported {
+                    what: "ui.for (native binding)",
+                    span: native.span(),
+                });
+                None
+            }
+        }
     }
 
     /// One `helper(expr)` statement line.

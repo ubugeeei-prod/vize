@@ -1,5 +1,5 @@
 use vize_l0::Span;
-use vize_l2::{expr::ExprRef, op as l2};
+use vize_l2::{binding::BindingRef, expr::ExprRef, op as l2};
 use vize_l3::op::{OpId, RegionId};
 use vize_l3::operand::{Operand, OperandRole as Role, OperandValue, ValueKind};
 
@@ -150,18 +150,33 @@ impl<'a> Cx<'a> {
     }
 
     pub(super) fn capture_for(&mut self, op: OpId, binding: &l2::ForBinding<'_>) {
-        for (role, expression) in [
-            (Role::ForSource, Some(binding.source)),
+        self.add_operand(
+            op,
+            Role::ForSource,
+            None,
+            self.expression(Some(binding.source), binding.source.span()),
+        );
+        for (role, alias) in [
             (Role::ForValue, Some(binding.value)),
             (Role::ForKey, binding.key),
             (Role::ForIndex, binding.index),
         ] {
-            self.add_operand(
-                op,
-                role,
-                None,
-                self.expression(expression, binding.source.span()),
-            );
+            self.add_operand(op, role, None, self.for_alias(alias, binding.source.span()));
+        }
+    }
+
+    /// Transitional native binding facts remain explicitly unsupported operands.
+    /// They are never expression ASTs or absent bindings; execution must refuse them.
+    fn for_alias(&self, binding: Option<BindingRef<'_>>, fallback: Span) -> OperandValue<'a> {
+        match binding {
+            None => self.literal(None, fallback),
+            Some(BindingRef::Expr(expr)) => self.expression(Some(expr), fallback),
+            Some(BindingRef::Js(native)) => OperandValue {
+                kind: ValueKind::Opaque,
+                qualifier: "native-binding-unsupported",
+                text: self.allocator.alloc_str(native.source()),
+                span: native.span(),
+            },
         }
     }
 

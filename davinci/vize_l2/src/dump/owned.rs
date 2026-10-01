@@ -12,7 +12,8 @@ use alloc::vec::Vec;
 
 use vize_l0::{Span, String, ensure_sufficient_stack};
 
-use crate::dump::Page;
+use crate::binding::BindingRef;
+use crate::dump::{NativeDumpError, Page};
 use crate::op::{Attribute as IrAttribute, DynamicName, Namespace, Op as IrOp, Region};
 
 mod binding;
@@ -175,9 +176,8 @@ pub struct Slot {
 
 impl Page {
     /// Mirror a live arena tree into the owned document model.
-    #[must_use]
-    pub fn of(ops: &[IrOp<'_>]) -> Self {
-        ensure_sufficient_stack(|| Self { ops: own_ops(ops) })
+    pub fn of(ops: &[IrOp<'_>]) -> Result<Self, NativeDumpError> {
+        ensure_sufficient_stack(|| Ok(Self { ops: own_ops(ops)? }))
     }
 
     /// Total op count of the tree: region ops plus attached bindings, all
@@ -188,35 +188,35 @@ impl Page {
     }
 }
 
-fn own_ops(ops: &[IrOp<'_>]) -> Vec<Op> {
+fn own_ops(ops: &[IrOp<'_>]) -> Result<Vec<Op>, NativeDumpError> {
     ops.iter()
         .map(|op| ensure_sufficient_stack(|| own_op(op)))
         .collect()
 }
 
-fn own_region(region: &Region<'_>) -> Vec<Op> {
+fn own_region(region: &Region<'_>) -> Result<Vec<Op>, NativeDumpError> {
     ensure_sufficient_stack(|| own_ops(&region.ops))
 }
 
-fn own_op(op: &IrOp<'_>) -> Op {
+fn own_op(op: &IrOp<'_>) -> Result<Op, NativeDumpError> {
     ensure_sufficient_stack(|| own_op_guarded(op))
 }
 
-fn own_op_guarded(op: &IrOp<'_>) -> Op {
-    match op {
+fn own_op_guarded(op: &IrOp<'_>) -> Result<Op, NativeDumpError> {
+    Ok(match op {
         IrOp::Element(element) => Op::Element(Element {
             tag: String::from(element.tag),
             namespace: element.namespace,
             attributes: element.attributes.iter().map(own_attribute).collect(),
             bindings: element.bindings.iter().map(own_binding).collect(),
-            children: own_region(&element.children),
+            children: own_region(&element.children)?,
             span: element.span,
         }),
         IrOp::Component(component) => Op::Component(Component {
             name: String::from(component.name),
             attributes: component.attributes.iter().map(own_attribute).collect(),
             bindings: component.bindings.iter().map(own_binding).collect(),
-            children: own_region(&component.children),
+            children: own_region(&component.children)?,
             span: component.span,
         }),
         IrOp::Text(text) => Op::Text(Text {
@@ -235,30 +235,41 @@ fn own_op_guarded(op: &IrOp<'_>) -> Op {
             branches: if_op
                 .branches
                 .iter()
-                .map(|branch| Branch {
-                    condition: branch.condition.as_ref().map(own_expr),
-                    ops: own_region(&branch.region),
-                    span: branch.span,
+                .map(|branch| -> Result<_, NativeDumpError> {
+                    Ok(Branch {
+                        condition: branch.condition.as_ref().map(own_expr),
+                        ops: own_region(&branch.region)?,
+                        span: branch.span,
+                    })
                 })
-                .collect(),
+                .collect::<Result<_, _>>()?,
             span: if_op.span,
         }),
         IrOp::For(for_op) => Op::For(For {
             binding: ForBinding {
                 source: own_expr(&for_op.binding.source),
-                value: own_expr(&for_op.binding.value),
-                key: for_op.binding.key.as_ref().map(own_expr),
-                index: for_op.binding.index.as_ref().map(own_expr),
+                value: own_alias(for_op.binding.value)?,
+                key: for_op.binding.key.map(own_alias).transpose()?,
+                index: for_op.binding.index.map(own_alias).transpose()?,
             },
-            ops: own_region(&for_op.region),
+            ops: own_region(&for_op.region)?,
             span: for_op.span,
         }),
         IrOp::Slot(slot) => Op::Slot(Slot {
             name: own_name(&slot.name),
             attributes: slot.attributes.iter().map(own_attribute).collect(),
             bindings: slot.bindings.iter().map(own_binding).collect(),
-            fallback: own_region(&slot.fallback),
+            fallback: own_region(&slot.fallback)?,
             span: slot.span,
+        }),
+    })
+}
+
+fn own_alias(binding: BindingRef<'_>) -> Result<Expr, NativeDumpError> {
+    match binding {
+        BindingRef::Expr(expr) => Ok(own_expr(&expr)),
+        BindingRef::Js(binding) => Err(NativeDumpError::JsBindingUnsupported {
+            span: binding.span(),
         }),
     }
 }

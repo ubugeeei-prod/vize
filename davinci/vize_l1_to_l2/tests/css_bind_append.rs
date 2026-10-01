@@ -40,7 +40,7 @@ fn style_blocks_without_css_binds_do_not_append_a_carrier() {
             .expect("style block is a source slice"),
     );
 
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops).expect("compatibility expression aliases");
     assert_eq!(lowered.op_count, 2);
     assert_eq!(
         folio.print_to_string(DumpMode::Full).as_str(),

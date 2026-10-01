@@ -48,7 +48,7 @@ use vize_l2_to_l3::partition::dump::Page as PartitionPage;
 use vize_l3::dump::Page as L3Page;
 use vize_l3::values_dump::Page as ValuesPage;
 
-use super::{StagePage, StageRemark};
+use super::{StagePage, StageRemark, StageUnavailable, inspection};
 
 /// A monotonic clock in nanoseconds, supplied by the host. The library takes
 /// no clock of its own: native hosts can pass `Instant`, the browser build
@@ -74,6 +74,8 @@ pub struct LadderStep {
 pub struct LadderRun {
     /// Every stage page, in pipeline order (see the module table).
     pub pages: Vec<StagePage>,
+    /// Failed inspections from this run, separate from valid dump pages.
+    pub unavailable: Vec<StageUnavailable>,
     /// Optimization decisions collected during the same L2 pass execution.
     pub remarks: Vec<StageRemark>,
     /// Every step, in run order.
@@ -155,6 +157,7 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
         text,
     };
     let mut steps = Vec::new();
+    let mut unavailable = Vec::new();
     let allocator = Allocator::default();
     let started = clock();
     let (tree, errors) = vize_l1::parse(&allocator, template);
@@ -166,7 +169,15 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
     let started = clock();
     let mut lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     steps.push(step("s2", "lower", started, clock()));
-    pages.push(page("s2", "lower", l2_text(&lowered.root.ops)));
+    if let Some(text) = inspection::record(
+        &mut unavailable,
+        path,
+        "s2",
+        "lower",
+        l2_text(&lowered.root.ops),
+    ) {
+        pages.push(page("s2", "lower", text));
+    }
 
     let mut dump = Collector::new(false);
     let mut walks = Vec::new();
@@ -187,7 +198,15 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
             let (pass, walk) = windows.close(event, clock());
             steps.push(pass);
             walks.extend(walk);
-            dump.after_pass(event, l2_text(&lowered.root.ops).as_str());
+            if let Some(text) = inspection::record(
+                &mut unavailable,
+                path,
+                event.pipeline.stage,
+                event.desc().name,
+                l2_text(&lowered.root.ops),
+            ) {
+                dump.after_pass(event, text.as_str());
+            }
         },
     );
     if let Some(pipeline) = observer.0.pipeline {
@@ -241,14 +260,15 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
         .collect();
     LadderRun {
         pages,
+        unavailable,
         remarks,
         steps,
         walks,
     }
 }
 
-fn l2_text(ops: &[vize_l2::op::Op<'_>]) -> String {
-    L2Page::of(ops).print_to_string(DumpMode::Full)
+fn l2_text(ops: &[vize_l2::op::Op<'_>]) -> Result<String, vize_l2::dump::NativeDumpError> {
+    L2Page::of(ops).map(|page| page.print_to_string(DumpMode::Full))
 }
 
 #[cfg(test)]

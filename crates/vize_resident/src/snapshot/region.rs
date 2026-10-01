@@ -96,7 +96,7 @@ pub fn lower_region(
         .into_iter()
         .partition(|diagnostic| diagnostic.stage == Stage::Surface);
     Some(RegionLowering {
-        ops: L2Page::of(&lowered.root.ops).ops,
+        ops: L2Page::of(&lowered.root.ops).ok()?.ops,
         surface,
         semantic,
     })

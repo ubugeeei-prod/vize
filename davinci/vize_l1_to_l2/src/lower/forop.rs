@@ -119,7 +119,7 @@ pub(crate) fn lower_for<'a>(
             );
             let binding = ForBinding {
                 source,
-                value,
+                value: value.into(),
                 key: None,
                 index: None,
             };
@@ -164,9 +164,9 @@ pub(crate) fn lower_for<'a>(
             );
             let binding = ForBinding {
                 source,
-                value,
-                key,
-                index,
+                value: value.into(),
+                key: key.map(Into::into),
+                index: index.map(Into::into),
             };
             let scope = ScopeFacts { tag, bindings };
             let parts = derive_for_parts(tag, &binding, &scope, cx.foreign_dialect);
@@ -251,10 +251,22 @@ fn derive_for_parts(
     let value = if undecomposable {
         ForName::Pending
     } else {
-        position(Some(&binding.value), dialect)
+        position(binding.value.as_expression(), dialect)
     };
-    let key = position(binding.key.as_ref(), dialect);
-    let index = position(binding.index.as_ref(), dialect);
+    let key = position(
+        binding
+            .key
+            .as_ref()
+            .and_then(|binding| binding.as_expression()),
+        dialect,
+    );
+    let index = position(
+        binding
+            .index
+            .as_ref()
+            .and_then(|binding| binding.as_expression()),
+        dialect,
+    );
     #[cfg(debug_assertions)]
     {
         let expected: StdVec<ScopeBinding> = [

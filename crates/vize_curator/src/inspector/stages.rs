@@ -36,10 +36,11 @@
 //! contribute no page: the feed is a stage-dump channel, not a diagnostics
 //! channel (diagnostics stay on their own surfaces).
 
+mod inspection;
 mod ladder;
 mod profile;
 
-pub use super::feed::{StageFeed, StagePage, StageRemark};
+pub use super::feed::{StageFeed, StagePage, StageRemark, StageUnavailable};
 pub use ladder::{LadderClock, LadderRun, LadderStep, ladder_pages, ladder_run};
 pub use profile::{LADDER_STEP_KEY, LADDER_WALK_KEY, ladder_profile};
 use vize_l0::pass::RemarkCollector;
@@ -109,10 +110,22 @@ pub fn spolvero_value_with_remarks(
     pages: Vec<StagePage>,
     remarks: Vec<StageRemark>,
 ) -> serde_json::Value {
+    spolvero_value_with_observations(command, pages, remarks, Vec::new())
+}
+
+/// Preserve failed inspections beside the successful pages from the same run.
+#[must_use]
+pub fn spolvero_value_with_observations(
+    command: &str,
+    pages: Vec<StagePage>,
+    remarks: Vec<StageRemark>,
+    unavailable: Vec<StageUnavailable>,
+) -> serde_json::Value {
     let feed = StageFeed {
         command: String::from(command),
         pages,
         remarks,
+        unavailable,
     };
     // `StageFeed::to_json` emits valid JSON by the feed escaping law;
     // `null` is the unreachable fallback rather than an abort.

@@ -130,7 +130,7 @@ fn loops<'a>(a: &'a Allocator) -> ArtifactParts<'a> {
             ForOp {
                 binding: ForBinding {
                     source: opaque(a, span),
-                    value: opaque(a, span),
+                    value: opaque(a, span).into(),
                     key: None,
                     index: None,
                 },

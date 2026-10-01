@@ -48,7 +48,7 @@ fn deep_dump_mirror_count_and_print_survive_small_stack() {
         .spawn(|| {
             let allocator = Allocator::default();
             let ops = nested_tree(&allocator);
-            let folio = L2Page::of(&ops);
+            let folio = L2Page::of(&ops).expect("compatibility expression aliases");
 
             assert_eq!(folio.op_count(), DEPTH as u64 + 1);
             let printed = folio.print_to_string(DumpMode::Display);

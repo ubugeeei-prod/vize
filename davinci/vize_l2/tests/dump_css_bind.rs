@@ -108,7 +108,10 @@ fn an_arena_tree_mirrors_the_css_bind_op() {
         &allocator,
     );
     assert_eq!(
-        L2Page::of(&ops).print_to_string(DumpMode::Full).as_str(),
+        L2Page::of(&ops)
+            .expect("compatibility expression aliases")
+            .print_to_string(DumpMode::Full)
+            .as_str(),
         CANONICAL
     );
 }

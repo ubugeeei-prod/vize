@@ -29,6 +29,7 @@ pub use product_capture::{
 };
 pub use stages::{
     LADDER_STEP_KEY, LADDER_WALK_KEY, LadderClock, LadderRun, LadderStep, StageFeed, StagePage,
-    StageRemark, l1_page, ladder_pages, ladder_profile, ladder_run, spolvero_value,
-    spolvero_value_with_remarks, template_remarks,
+    StageRemark, StageUnavailable, l1_page, ladder_pages, ladder_profile, ladder_run,
+    spolvero_value, spolvero_value_with_observations, spolvero_value_with_remarks,
+    template_remarks,
 };

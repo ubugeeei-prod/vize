@@ -19,6 +19,7 @@ export interface ProductCaptureFeed {
   observed: { timings: boolean; remarks: boolean };
   options: { name: string; value: string }[];
   pages: { level: string; step: string; text: string }[];
+  unavailable?: { level: string; step: string; reason: string }[];
   timings: { level: string; step: string; nanos: number }[];
   remarks: {
     level: string;
@@ -74,6 +75,17 @@ function timing(value: unknown): boolean {
     text(value.step) &&
     Number.isSafeInteger(value.nanos) &&
     (value.nanos as number) >= 0
+  );
+}
+
+function unavailable(value: unknown): boolean {
+  return (
+    record(value) &&
+    text(value.level) &&
+    /^l[0-4]$/.test(value.level) &&
+    text(value.step) &&
+    text(value.reason) &&
+    Object.keys(value).every((key) => ["level", "step", "reason"].includes(key))
   );
 }
 
@@ -134,6 +146,8 @@ export function negotiateProductCapture(
     !raw.options.every((item) => record(item) && text(item.name) && text(item.value)) ||
     !Array.isArray(raw.pages) ||
     !raw.pages.every(page) ||
+    (raw.unavailable !== undefined &&
+      (!Array.isArray(raw.unavailable) || !raw.unavailable.every(unavailable))) ||
     !Array.isArray(raw.timings) ||
     !raw.timings.every(timing) ||
     !Array.isArray(raw.remarks) ||
@@ -149,7 +163,10 @@ export function negotiateProductCapture(
   }
   if (
     outcome.kind !== "accepted" &&
-    (raw.pages.length > 0 || raw.timings.length > 0 || raw.remarks.length > 0)
+    (raw.pages.length > 0 ||
+      raw.timings.length > 0 ||
+      raw.remarks.length > 0 ||
+      (Array.isArray(raw.unavailable) && raw.unavailable.length > 0))
   ) {
     return { ok: false, error: `${target} fallback capture unexpectedly contains native stages.` };
   }

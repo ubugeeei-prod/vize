@@ -55,7 +55,7 @@ fn the_sfc_fixture_folio_pins_template_and_css_bind() {
     let (tree, errors) = parse(&allocator, template);
     let mut lowered = lower_source_block(&allocator, &tree, &errors, template_block);
     lowered.push_style_block_in(&allocator, css_block);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops).expect("compatibility expression aliases");
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
     assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(verify(&folio, Rigor::Raw), Vec::<Violation>::new());
@@ -101,7 +101,7 @@ fn unicode_prefix_does_not_shift_authored_spans() {
     let mut lowered = lower_source_block(&allocator, &tree, &errors, template_block);
     lowered.push_style_block_in(&allocator, css_block);
 
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops).expect("compatibility expression aliases");
     assert_eq!(verify(&folio, Rigor::Raw), Vec::<Violation>::new());
     assert_authored_artifact(source, &lowered);
     assert!(lowered.root.ops.iter().any(|op| match op {

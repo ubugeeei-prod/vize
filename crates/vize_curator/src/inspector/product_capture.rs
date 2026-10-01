@@ -50,6 +50,13 @@ struct Page<'a> {
 }
 
 #[derive(Serialize)]
+struct Unavailable<'a> {
+    level: &'static str,
+    step: &'a str,
+    reason: &'a str,
+}
+
+#[derive(Serialize)]
 struct Timing<'a> {
     level: &'static str,
     step: &'a str,
@@ -82,6 +89,8 @@ struct Feed<'a> {
     observed: Observed,
     options: Vec<OptionValue<'a>>,
     pages: Vec<Page<'a>>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    unavailable: Vec<Unavailable<'a>>,
     timings: Vec<Timing<'a>>,
     remarks: Vec<Remark<'a>>,
 }
@@ -134,6 +143,19 @@ pub fn product_capture_value(
         } else {
             Vec::new()
         },
+        unavailable: if accepted {
+            capture
+                .unavailable
+                .iter()
+                .map(|failure| Unavailable {
+                    level: failure.level.id(),
+                    step: failure.step,
+                    reason: failure.reason.as_str(),
+                })
+                .collect()
+        } else {
+            Vec::new()
+        },
         timings: if accepted && capture.timings_observed {
             capture
                 .timings
@@ -177,6 +199,10 @@ pub fn product_capture_value(
     };
     serde_json::to_value(feed).unwrap_or_default()
 }
+
+#[cfg(test)]
+#[path = "product_capture/fallible_tests.rs"]
+mod fallible_tests;
 
 #[cfg(test)]
 mod tests {

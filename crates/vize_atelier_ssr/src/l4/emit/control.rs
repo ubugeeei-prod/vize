@@ -5,8 +5,8 @@ use vize_atelier_core::RuntimeHelper;
 use vize_l0::FxHashSet;
 use vize_l0::id::NodeId;
 use vize_l1_to_l2::TransformContent;
-use vize_l2::expr::ExprRef;
 use vize_l2::op::{self as l2, Op};
+use vize_l2::{binding::BindingRef, expr::ExprRef};
 
 use super::spans::{expression_span, quoted_value};
 use super::{Emitter, Flags, Result};
@@ -190,7 +190,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
 /// A callback parameter spelled exactly as authored. Empty or typed
 /// positions have no reproducible legacy spelling and keep the legacy lane.
-pub(super) fn alias<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
+pub(super) fn alias<'a>(binding: &BindingRef<'a>) -> Result<&'a str> {
+    let expr = binding
+        .as_expression()
+        .ok_or(LegacyReason::ExpressionOrEncoding)?;
     let source = match expr {
         ExprRef::Js(js) => js.source,
         ExprRef::Opaque(opaque) => opaque.source,
@@ -201,3 +204,6 @@ pub(super) fn alias<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
     }
     Ok(source)
 }
+
+#[cfg(test)]
+mod native_binding_tests;

@@ -17,6 +17,8 @@ vize_l2 = { workspace = true }
 vize_l3 = { workspace = true }
 
 [dev-dependencies]
+# Real retained-formal refusal fixtures use the same pinned AST provider.
+oxc_ast.workspace = true
 davinci_test_support = { workspace = true }
 vize_atelier_sfc = { workspace = true }
 insta = { workspace = true }

@@ -177,8 +177,8 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
             "atelier.vapor.bridge.s1_to_s2",
             vize_l1_to_l2::lower(&scratch, &tree, &errors)
         );
-        capture.page(Level::L2, "lower", || {
-            vize_l2::dump::render_full_page(&vize_l2::dump::Page::of(&s2.root.ops))
+        capture.try_page(Level::L2, "lower", || {
+            vize_l2::dump::Page::of(&s2.root.ops).map(|page| vize_l2::dump::render_full_page(&page))
         });
         capture.page(Level::L2, "provenance", || {
             vize_l2::dump::render_full_page(&vize_l2::dump::ProvenancePage::of(&s2.provenance))

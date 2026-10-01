@@ -87,7 +87,7 @@ pub fn with_lowered_caps<R>(
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let lowered = lower_with_caps(&allocator, &tree, &errors, caps);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops).expect("compatibility expression aliases");
     f(&lowered, &folio)
 }
 
@@ -132,7 +132,7 @@ pub fn with_transformed_caps<R>(
     let mut lowered = lower_with_caps(&allocator, &tree, &errors, caps);
     let mut budget = vize_l0::pass::BudgetObserver::new();
     let facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut budget);
-    let folio = L2Page::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops).expect("compatibility expression aliases");
     f(&lowered, &folio, &facts, &budget)
 }
 

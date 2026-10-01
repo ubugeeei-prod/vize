@@ -287,8 +287,8 @@ fn emit_dom_source_with_options_and_observer_captured<'a, O: PassObserver, C: Ca
             options.custom_element_patterns,
             options.custom_element_predicate,
         );
-        capture.page(Level::L2, "lower", || {
-            L2Page::of(&lowered.root.ops).print_to_string(DumpMode::Full)
+        capture.try_page(Level::L2, "lower", || {
+            L2Page::of(&lowered.root.ops).map(|page| page.print_to_string(DumpMode::Full))
         });
         let mut profile = TransformProfile::DEFAULT;
         if !options.hoist_static {

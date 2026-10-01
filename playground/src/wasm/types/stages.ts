@@ -37,12 +37,21 @@ export interface StageFeedRemark {
   args: { key: string; value: string | number | boolean }[];
 }
 
+/** An executed inspection whose native payload has no valid dump. */
+export interface StageUnavailable {
+  path: string | null;
+  stage: string;
+  pass: string;
+  reason: string;
+}
+
 export interface StageFeed {
   schema_version: number;
   command: string;
   pages: StagePage[];
   /** Additive to v1: absent means no remarks. */
   remarks?: StageFeedRemark[];
+  unavailable?: StageUnavailable[];
 }
 
 export type StageNegotiation = { ok: true; feed: StageFeed } | { ok: false; error: string };
@@ -62,6 +71,19 @@ function isPage(value: unknown): value is StagePage {
 }
 
 const REMARK_KINDS = new Set(["applied", "missed", "analysis"]);
+
+function isUnavailable(value: unknown): value is StageUnavailable {
+  return (
+    isRecord(value) &&
+    (value.path === null || typeof value.path === "string") &&
+    typeof value.stage === "string" &&
+    /^[a-z][a-z0-9-]*$/.test(value.stage) &&
+    typeof value.pass === "string" &&
+    /^[A-Za-z0-9._-]+$/.test(value.pass) &&
+    typeof value.reason === "string" &&
+    Object.keys(value).every((key) => ["path", "stage", "pass", "reason"].includes(key))
+  );
+}
 
 function isRemark(value: unknown): value is StageFeedRemark {
   return (
@@ -122,6 +144,16 @@ export function negotiateSpolveroFeed(raw: unknown): StageNegotiation {
     command: raw.command,
     pages: raw.pages as StagePage[],
   };
+  const unavailable = raw.unavailable;
+  if (unavailable !== undefined) {
+    const bad = Array.isArray(unavailable)
+      ? unavailable.findIndex((failure) => !isUnavailable(failure))
+      : 0;
+    if (bad !== -1) {
+      return { ok: false, error: `Spolvero feed unavailable ${bad} does not match the schema.` };
+    }
+    feed.unavailable = unavailable as StageUnavailable[];
+  }
   if (remarks !== undefined) feed.remarks = remarks as StageFeedRemark[];
   return { ok: true, feed };
 }

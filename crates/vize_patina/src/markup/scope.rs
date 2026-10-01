@@ -149,7 +149,9 @@ impl<'a> MarkupList<'a> {
             MarkupListInner::ReliefDirective { directive, .. } => {
                 split_directive(directive).and_then(|(value, _)| value)
             }
-            MarkupListInner::L2 { op, .. } => admitted_text(&op.binding.value),
+            MarkupListInner::L2 { op, .. } => {
+                op.binding.value.as_expression().and_then(admitted_text)
+            }
         }
     }
 

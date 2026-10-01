@@ -114,7 +114,7 @@ fn attached_ids_and_mutable_pass_accounting_share_exact_page_order() {
         ForOp {
             binding: ForBinding {
                 source: opaque(&a, span),
-                value: opaque(&a, span),
+                value: opaque(&a, span).into(),
                 key: None,
                 index: None,
             },
@@ -230,7 +230,7 @@ fn scope_origin_order_and_failed_provenance_survive_sealing_and_rejection() {
         ForOp {
             binding: ForBinding {
                 source: opaque(&a, span),
-                value: opaque(&a, span),
+                value: opaque(&a, span).into(),
                 key: None,
                 index: None,
             },

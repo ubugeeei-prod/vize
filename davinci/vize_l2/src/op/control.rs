@@ -8,6 +8,7 @@
 use vize_l0::{Span, Vec};
 
 use super::Region;
+use crate::binding::BindingRef;
 use crate::expr::ExprRef;
 
 /// `ui.if` - structured conditional.
@@ -55,19 +56,19 @@ pub struct ForOp<'a> {
 /// [`OpaqueReason::ForValue`](crate::expr::OpaqueReason::ForValue) text
 /// (Vue's `in`/`of` split grammar disagrees with JS `in` on
 /// `a in b in c`), and the positions here hold what the splitter
-/// produced - each an [`ExprRef`] that is `Js` when its text is admitted
-/// and `Opaque` otherwise. P2-8's lowering assigns the classes; the type
-/// only makes them representable.
+/// produced. Existing adapters preserve their expression classifications in
+/// [`BindingRef::Expr`]. Native construction instead retains actual formal
+/// parameters in [`BindingRef::Js`], without fabricating expression ASTs.
 #[derive(Debug, Clone, Copy)]
 pub struct ForBinding<'a> {
     /// The iterated collection, object, or range.
     pub source: ExprRef<'a>,
     /// The per-iteration value binding.
-    pub value: ExprRef<'a>,
+    pub value: BindingRef<'a>,
     /// The second binding position (object key), when authored.
-    pub key: Option<ExprRef<'a>>,
+    pub key: Option<BindingRef<'a>>,
     /// The third binding position (index), when authored.
-    pub index: Option<ExprRef<'a>>,
+    pub index: Option<BindingRef<'a>>,
 }
 
 /// See [`crate::op`] for the guard rationale.

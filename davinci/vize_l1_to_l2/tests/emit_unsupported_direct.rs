@@ -186,7 +186,7 @@ fn for_op<'a>(a: &'a Allocator, value: ExprRef<'a>, body: Region<'a>) -> Op<'a> 
         ForOp {
             binding: ForBinding {
                 source: js(a, "items"),
-                value,
+                value: value.into(),
                 key: None,
                 index: None,
             },
