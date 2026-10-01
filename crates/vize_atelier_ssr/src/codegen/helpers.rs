@@ -103,7 +103,6 @@ impl<'a> SsrCodegenContext<'a> {
                 self.process_text(text);
             }
             TemplateChildNode::Comment(comment) => {
-                // Parser-classified lint pragmas configure diagnostics, not SSR output.
                 if !disable_comment && comment.directive.is_none() {
                     self.process_comment(comment);
                 }

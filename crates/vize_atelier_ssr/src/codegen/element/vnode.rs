@@ -119,10 +119,8 @@ impl<'a> SsrCodegenContext<'a> {
                 out.push_str("))");
                 Some(out)
             }
+            TemplateChildNode::Comment(comment) if comment.directive.is_some() => None,
             TemplateChildNode::Comment(comment) => {
-                if comment.directive.is_some() {
-                    return None;
-                }
                 self.use_core_helper(RuntimeHelper::CreateComment);
                 let mut out = String::from("_createCommentVNode(");
                 out.push_str(&quoted_js_string(comment.content));
@@ -137,7 +135,6 @@ impl<'a> SsrCodegenContext<'a> {
             | TemplateChildNode::Hoisted(_) => None,
         }
     }
-
     fn vnode_element_expression(&mut self, el: &ElementNode<'a>) -> Option<String> {
         match el.tag_type {
             ElementType::Element => Some(self.vnode_plain_element_expression(el)),
