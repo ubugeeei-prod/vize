@@ -85,6 +85,16 @@ export function mountedRuntimeDevtools(
   return {
     active,
     hook,
+    attach(runtime: { setDevtoolsHook?: (observerHook: typeof hook, target: object) => void }) {
+      if (active) {
+        assert.equal(
+          typeof runtime.setDevtoolsHook,
+          "function",
+          "pinned Vue must expose its devtools attachment API",
+        );
+        runtime.setDevtoolsHook!(hook, target);
+      }
+    },
     complete(app: unknown, snapshots: unknown, diagnostics: unknown[]) {
       const record = lifecycle.get(app);
       if (active) {

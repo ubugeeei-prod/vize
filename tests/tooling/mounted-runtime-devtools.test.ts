@@ -7,6 +7,36 @@ import {
 
 const key = "__VUE_DEVTOOLS_GLOBAL_HOOK__";
 
+test("repeated traces reattach each fresh observer to an already-created renderer", () => {
+  const target = {};
+  let attached: ReturnType<typeof mountedRuntimeDevtools>["hook"] | undefined;
+  const runtime = {
+    setDevtoolsHook(hook: NonNullable<typeof attached>, receiver: object) {
+      assert.equal(receiver, target);
+      attached = hook;
+      hook.enabled = true;
+    },
+  };
+  let previous: typeof attached;
+  for (let trace = 0; trace < 2; trace++) {
+    const observer = mountedRuntimeDevtools(false, { target, enabled: true });
+    observer.attach(runtime);
+    assert.equal(attached, observer.hook);
+    assert.notEqual(attached, previous);
+    const app = {};
+    // An existing renderer emits through its module's current devtools pointer.
+    attached!.emit("app:init", app, "3.6.0-rc.9", {});
+    attached!.emit("app:unmount", app);
+    observer.complete(app, [{ tree: [] }], []);
+    observer.dispose();
+    assert.equal(Object.hasOwn(target, key), false);
+    previous = attached;
+  }
+  const refused = mountedRuntimeDevtools(false, { target, enabled: true });
+  assert.throws(() => refused.attach({}), /attachment API/);
+  refused.dispose();
+});
+
 test("failed async setup restores its hook even when DOM cleanup fails", async () => {
   const target = {};
   Object.defineProperty(target, key, { value: undefined, writable: false, configurable: true });

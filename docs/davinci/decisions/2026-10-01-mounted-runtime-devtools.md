@@ -49,10 +49,19 @@ their existing behavior. Production keeps its original devtools-disabled runtime
 The observer scope includes asynchronous runtime/render and app/scope setup. A
 setup failure closes its DOM and disposes its hook before rethrowing the identical
 original error, even if DOM cleanup also fails.
+The existing patterned-template helper invokes several mounted traces in one
+process. VDOM attaches devtools only when constructing its renderer, so each
+active observer is also attached with the pinned runtime's
+[exported `setDevtoolsHook` API](https://github.com/vuejs/core/blob/v3.6.0-rc.9/packages/runtime-core/src/index.ts)
+before rendering. This preserves the existing renderer lifetime and gives each
+trace its own exact lifecycle evidence; it does not relax the attachment assertion
+or force an additional app, renderer, module or subprocess into existing tests.
 
-All runtime builds, processes, DOMs, modules, scheduler state, diagnostics, render
-comparisons, transition callbacks, full snapshots and goldens remain fresh and
-unchanged. There is no forced process exit, timer interception, shortened timeout,
+The dedicated comparison keeps every runtime build, process, DOM, module and
+scheduler fresh. Existing mounted tests retain their original process and renderer
+ownership, including same-process patterned cases; each trace gets a fresh hook.
+All diagnostics, render comparisons, transition callbacks, complete snapshots and
+goldens remain unchanged. There is no forced process exit, timer interception, shortened timeout,
 Vue implementation patch, DEV flag change, or cached runtime state.
 
 ## Proof and remaining work
@@ -66,7 +75,7 @@ original native/retained/official goldens must pass. Production must continue to
 emit no devtools lifecycle events. Observer-off mode exists for this controlled
 baseline, rather than as a shorter required test path.
 
-The five observer laws cover failed asynchronous setup and cleanup, event listeners and fresh ownership, missing or
+The six observer laws cover repeated-renderer attachment, failed asynchronous setup and cleanup, event listeners and fresh ownership, missing or
 wrong lifecycle evidence, production/baseline/external-hook behavior, and exact
 descriptor restoration. Actual rc.9 timing and runtime semantics are validated
 in Actions rather than against the older local oracle installation.

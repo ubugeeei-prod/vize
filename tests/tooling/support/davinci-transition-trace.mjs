@@ -45,6 +45,7 @@ await withMountedRuntimeDevtools(
   () => window.happyDOM.close(),
   async (devtools) => {
     const vue = await loadRuntime();
+    devtools.attach(vue);
     const render = await evaluateCompiledRender(input.code ?? compile(input.source), vue);
     const events = [];
     const pending = [];

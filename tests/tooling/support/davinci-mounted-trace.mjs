@@ -47,6 +47,7 @@ export async function traceMountedBackend({
     () => window.happyDOM.close(),
     async (devtools) => {
       const vue = await loadRuntime({ production });
+      devtools.attach(vue);
       const render = await evaluateCompiledRender(code, vue);
       const events = [];
       const suppliedText = (spec, props) =>
