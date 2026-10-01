@@ -337,18 +337,12 @@ async function waitForDiagnostics(
   timeoutMs: number,
   predicate?: (diagnostics: PublishDiagnosticsParams) => boolean,
 ): Promise<PublishDiagnosticsParams> {
-  try {
-    return (await session.waitForNotification(
-      "textDocument/publishDiagnostics",
-      (value) => {
-        const diagnostics = diagnosticPayload(value, uri, version);
-        return diagnostics != null && (predicate == null || predicate(diagnostics));
-      },
-      timeoutMs,
-    )) as PublishDiagnosticsParams;
-  } catch (error) {
-    throw new Error(
-      `Waiting for file lifecycle diagnostics for ${uri} version ${version}: ${String(error)}`,
-    );
-  }
+  return (await session.waitForNotification(
+    "textDocument/publishDiagnostics",
+    (value) => {
+      const diagnostics = diagnosticPayload(value, uri, version);
+      return diagnostics != null && (predicate == null || predicate(diagnostics));
+    },
+    timeoutMs,
+  )) as PublishDiagnosticsParams;
 }
