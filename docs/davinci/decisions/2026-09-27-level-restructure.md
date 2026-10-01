@@ -287,7 +287,7 @@ Vize follows language-toolchain practice, not compiler-only practice. It stays l
   - Memory holds artifacts only for open files, plus `SfcSummary` for every file.
 - **Stale requests are cancelled on edit** ([#6873](https://github.com/ubugeeei-prod/vize/issues/6873)).
 - **The CLI and the LSP share one project model** ([#6874](https://github.com/ubugeeei-prod/vize/issues/6874)); the [first path-identity slice](./2026-09-28-shared-project-model.md) resolves configured tsconfig paths once per invocation or folder, while full config/workspace unification remains open. [The #7030 release compatibility correction](./2026-09-29-lsp-timeout-source-compat.md) keeps its editor timeout outside the public shared Rust config struct and holds Corsa options and timeout from one raw evaluation in one state snapshot.
-- **The formatter keeps its Doc IR separate from its printer** ([#6875](https://github.com/ubugeeei-prod/vize/issues/6875)).
+- **The formatter keeps its Doc IR separate from its printer** ([#6875](https://github.com/ubugeeei-prod/vize/issues/6875)). [Git metadata exclusion](./2026-10-01-git-metadata-discovery.md) records #7326's shared discovery boundary and CLI corpus.
 - **Edits have one representation.** Diagnostic fixes, code actions and lint autofixes are all L1 span edits tagged with a document version ([#6876](https://github.com/ubugeeei-prod/vize/issues/6876)).
 
 [Inspector comparison transport](./2026-09-27-inspector-compare-transport.md) preserves authoritative child failures when Node exits before input delivery.
@@ -347,4 +347,4 @@ record #6921 owner history, shared parse facts, setter guards and registered typ
 records #6922 owner history, unbounded inferred payloads, string widening and required full diagnostic proof.
 
 [Extension wire ownership](./2026-09-28-extension-wire-ownership.md) starts the
-actual L0 neutral-code move for #6833; retiring the three old packages remains unfinished. [Git metadata exclusion](./2026-10-01-git-metadata-discovery.md) records #7326's shared discovery boundary and CLI corpus.
+actual L0 neutral-code move for #6833; retiring the three old packages remains unfinished.
