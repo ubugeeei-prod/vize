@@ -177,12 +177,11 @@ fn package_walk_does_not_reuse_alias_negative_invalidation_shortcuts() {
             &mut discovery
         )
     );
-    assert!(
-        discovery
-            .package_sources
-            .contains(&paths.canonicalize(&leaf))
+    discovery.package_sources.sort();
+    assert_eq!(
+        discovery.package_sources,
+        [paths.canonicalize(&positive), paths.canonicalize(&leaf)]
     );
-    assert!(child.exists());
     assert_eq!(
         cache.source_reads(),
         3,
