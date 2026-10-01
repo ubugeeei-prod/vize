@@ -11,9 +11,18 @@ pub(super) fn reprint(level: Level, input: &str) -> Result<String, DumpError> {
     match level {
         Level::L1 => {
             let allocator = Allocator::default();
-            let (tree, _) = vize_l1::markup::parse_component(&allocator, input);
+            let parsed =
+                vize_l1::markup::parse_component(&allocator, input).map_err(
+                    |error| match error {
+                        vize_l1::markup::ComponentSourceError::SourceTooLarge => {
+                            DumpError::new(0, "L1 source exceeds the u32 coordinate space".into())
+                        }
+                    },
+                )?;
+            // This command checks authored byte fidelity, including retained
+            // recoveries and unsupported heads; it does not admit native syntax.
             let mut printed = String::default();
-            vize_l1::render::render(&tree, &mut |piece| printed.push_str(piece));
+            vize_l1::render::render(&parsed.tree, &mut |piece| printed.push_str(piece));
             Ok(printed)
         }
         Level::L2 => L2Page::parse(input).map(|page| page.print_to_string(DumpMode::Full)),

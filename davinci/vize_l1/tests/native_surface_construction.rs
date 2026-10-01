@@ -1,5 +1,7 @@
 //! Ordinary-library native construction: structure, recovery and source bytes.
 
+#![cfg(test)]
+
 use davinci_test_support::surface_fixture as common;
 use vize_l0::{Allocator, ErrorCode, cstr};
 use vize_l1::markup::{
@@ -12,7 +14,9 @@ use vize_l1::{
 
 fn assert_parity(source: &str, options: SurfaceParseOptions) {
     let allocator = Allocator::new();
-    let (native, native_errors) = parse_component_with_options(&allocator, source, options);
+    let parsed = parse_component_with_options(&allocator, source, options).unwrap();
+    assert!(parsed.unsupported.is_empty(), "{source}");
+    let (native, native_errors) = (parsed.tree, parsed.errors);
     let (compat, compat_errors) = parse_with_options(&allocator, source, options);
     // Debug includes every node, authored slice, token leading and hole status.
     assert_eq!(cstr!("{native:?}"), cstr!("{compat:?}"), "{source}");
@@ -32,7 +36,7 @@ fn native_public_constructor_matches_all_fixture_trees_and_pinned_holes() {
     for fixture in common::WELL_FORMED.iter().chain(common::MALFORMED) {
         assert_parity(fixture.source, SurfaceParseOptions::default());
         let allocator = Allocator::new();
-        let (tree, _) = parse_component(&allocator, fixture.source);
+        let tree = parse_component(&allocator, fixture.source).unwrap().tree;
         assert_eq!(
             hole_counts(&tree),
             HoleCounts {
@@ -87,32 +91,40 @@ fn native_authored_projection_shares_normal_recovery_and_diagnostics() {
         "<svg><a><a>foreign</a></a></svg>",
         "<math><button><button>foreign</button></button></math>",
         "<a><a broken= >{{ }}<span",
-        "<section><a><span><a></a><span v-pre>{{ inside }}</span>{{ tail }}</span></a></section>",
     ] {
         let allocator = Allocator::new();
-        let native = parse_component_with_authored(&allocator, source);
+        let native = parse_component_with_authored(&allocator, source).unwrap();
         let compat = parse_with_authored(&allocator, source);
-        assert_eq!(cstr!("{native:?}"), cstr!("{compat:?}"), "{source}");
-        assert_eq!(check_fidelity(&native.0), Ok(()));
-        if let Some(authored) = &native.1 {
+        assert!(native.unsupported.is_empty());
+        assert_eq!(
+            cstr!("{:?}", (&native.tree, &native.authored, &native.errors)),
+            cstr!("{compat:?}"),
+            "{source}"
+        );
+        assert_eq!(check_fidelity(&native.tree), Ok(()));
+        if let Some(authored) = &native.authored {
             assert_eq!(check_fidelity(authored), Ok(()));
         }
         let (normal, errors) = parse(&allocator, source);
-        assert_eq!(cstr!("{:?}", native.0), cstr!("{normal:?}"));
-        assert_eq!(cstr!("{:?}", native.2), cstr!("{errors:?}"));
+        assert_eq!(cstr!("{:?}", native.tree), cstr!("{normal:?}"));
+        assert_eq!(cstr!("{:?}", native.errors), cstr!("{errors:?}"));
     }
 }
 
 #[test]
-fn native_admission_keeps_component_default_delimiters_and_unfinished_v_pre() {
+fn native_admission_keeps_component_default_delimiters_and_scoped_v_pre() {
     let allocator = Allocator::new();
-    let (_, errors) = parse_component(&allocator, "<!DOCTYPE html><p>x</p>");
+    let errors = parse_component(&allocator, "<!DOCTYPE html><p>x</p>")
+        .unwrap()
+        .errors;
     assert!(
         errors
             .iter()
             .any(|error| error.code == ErrorCode::IncorrectlyOpenedComment)
     );
-    let (tree, _) = parse_component(&allocator, "[[ custom ]] {{{ raw }}}");
+    let tree = parse_component(&allocator, "[[ custom ]] {{{ raw }}}")
+        .unwrap()
+        .tree;
     let interpolation = tree.children.iter().find_map(|child| match child {
         SurfaceChild::Interpolation(node) => Some(node),
         _ => None,
@@ -123,7 +135,9 @@ fn native_admission_keeps_component_default_delimiters_and_unfinished_v_pre() {
     assert_eq!(interpolation.close.text, "}}");
     assert_eq!(check_fidelity(&tree), Ok(()));
 
-    let (tree, _) = parse_component(&allocator, "<div v-pre>{{ expression }}</div>");
+    let tree = parse_component(&allocator, "<div v-pre>{{ expression }}</div>")
+        .unwrap()
+        .tree;
     let element = tree.children.iter().find_map(|child| match child {
         SurfaceChild::Element(node) => Some(node),
         _ => None,
@@ -131,6 +145,6 @@ fn native_admission_keeps_component_default_delimiters_and_unfinished_v_pre() {
     let element = element.expect("v-pre element");
     assert!(matches!(
         element.children.first(),
-        Some(SurfaceChild::Interpolation(_))
+        Some(SurfaceChild::Text(token)) if token.text == "{{ expression }}"
     ));
 }

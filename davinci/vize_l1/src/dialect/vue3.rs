@@ -1,6 +1,7 @@
 //! Default Vue 3 template capability table.
 
 pub mod directive;
+pub mod surface;
 pub use directive::VueDirectives;
 
 use super::vue::{DirectiveArgStyle, LegacyDialectCapabilities};

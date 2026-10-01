@@ -10,7 +10,7 @@ use std::{
 };
 
 use vize_l0::dump::{Dump, Mode as DumpMode};
-use vize_l0::{Allocator, Span};
+use vize_l0::{Allocator, Span, String, cstr};
 use vize_l2::dump::Page as L2Page;
 use vize_l3::dump::Page as L3Page;
 use vize_l3::op::{Op, OpId, OpKind, Phase, Program, Region, RegionId};
@@ -86,11 +86,32 @@ fn l1_preserves_unicode_crlf_empty_and_recoverable_source() {
         assert_success("l1", input.as_bytes());
     }
     let allocator = Allocator::default();
-    let (_, errors) = vize_l1::markup::parse_component(&allocator, "<div title=\"unterminated");
+    let parsed = vize_l1::markup::parse_component(&allocator, "<div title=\"unterminated").unwrap();
     assert!(
-        !errors.is_empty(),
+        !parsed.errors.is_empty(),
         "fidelity success does not mean syntax is valid"
     );
+}
+
+#[test]
+fn l1_roundtrip_checks_bytes_of_typed_unsupported_heads_without_admitting_syntax() {
+    let opens: String = (0..64)
+        .map(|i| if i % 2 == 0 { '(' } else { '[' })
+        .collect();
+    let closes: String = opens
+        .chars()
+        .rev()
+        .map(|c| if c == '(' { ')' } else { ']' })
+        .collect();
+    let source = cstr!("<div v-pre:[{opens}key{closes}]>{{{{ unresolved }}}}</div>{{{{ tail }}}}");
+    let allocator = Allocator::default();
+    let parsed = vize_l1::markup::parse_component(&allocator, &source).unwrap();
+    assert_eq!(parsed.unsupported.len(), 1);
+    assert_eq!(
+        parsed.unsupported[0].error,
+        vize_l1::markup::DirectiveNameError::NestingLimit
+    );
+    assert_success("l1", source.as_bytes());
 }
 
 #[test]

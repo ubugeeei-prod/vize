@@ -13,6 +13,7 @@
 //! children-level nodes; tags live in [`tag`], attributes in [`attr`].
 
 mod attr;
+pub(crate) mod scope;
 mod tag;
 
 use vize_l0::Namespace;
@@ -42,16 +43,15 @@ struct Frame<'a> {
     ns: Namespace,
 }
 
-impl<'a> Frame<'a> {
+impl<'a> scope::Frame<'a> for Frame<'a> {
     fn tag(&self) -> &'a str {
         let text = self.open.lt_name.text;
         text.get(1..).unwrap_or(text)
     }
-}
 
-struct ImplicitlyClosedTag<'a> {
-    tag: &'a str,
-    depth: usize,
+    fn namespace(&self) -> Namespace {
+        self.ns
+    }
 }
 
 pub(crate) fn build<'a>(
@@ -68,8 +68,7 @@ pub(crate) fn build<'a>(
         cursor: 0,
         root: Vec::new_in(&allocator),
         stack: Vec::new_in(&allocator),
-        implicitly_closed_tags: Vec::new_in(&allocator),
-        repair_interactive,
+        recovery: scope::Recovery::new(allocator, repair_interactive),
         repaired: false,
     };
     b.run();
@@ -103,8 +102,7 @@ struct Builder<'a, 'e> {
     cursor: usize,
     root: Vec<'a, SurfaceChild<'a>>,
     stack: Vec<'a, Frame<'a>>,
-    implicitly_closed_tags: Vec<'a, ImplicitlyClosedTag<'a>>,
-    repair_interactive: bool,
+    recovery: scope::Recovery<'a>,
     repaired: bool,
 }
 

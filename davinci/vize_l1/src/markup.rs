@@ -13,7 +13,8 @@
 //!
 //! The profile-generic lexer, entity decoder and compatibility callback
 //! adapter are available in default builds. [`parse_component`] constructs a
-//! native surface tree. The root parse APIs and compiler products retain
+//! native surface tree with checked admission and dialect-owned `v-pre` scope.
+//! The root parse APIs and compiler products retain
 //! their existing parser routes through the published tokenizer facade;
 //! that facade executes this same lexer while preserving callback policy.
 //! Replacing product parser routes still requires fix-history and parity gates.
@@ -34,6 +35,9 @@ pub use directive::{
 };
 pub use grammar::{MarkupGrammar, Vue};
 pub use lex::{Delimiters, LexOptions, Lexer};
-pub use parse::{parse_component, parse_component_with_authored, parse_component_with_options};
+pub use parse::{
+    ComponentParse, ComponentSourceError, DirectiveAdmission, parse_component,
+    parse_component_with_authored, parse_component_with_options,
+};
 pub use profile::{Component, Document, Profile, ProfileKind};
 pub use token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
