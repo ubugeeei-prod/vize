@@ -48,7 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP"
-          npm install --global pnpm@12.1.0 --ignore-scripts
+          npm install --global pnpm@12.1.0 --ignore-scripts=false --foreground-scripts
           devalue_pnpm_prefix="$(npm prefix --global)"
           devalue_pnpm_bin="$devalue_pnpm_prefix/bin/pnpm"
           printf 'DEVALUE_PNPM_BIN=%s\n' "$devalue_pnpm_bin" >> "$GITHUB_ENV"
