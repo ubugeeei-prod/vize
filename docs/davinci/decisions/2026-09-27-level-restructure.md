@@ -214,7 +214,7 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 
 ## Type check
 
-See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-check) in the companion record.
+See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-check) in the companion record and the [external program-member fixture contract](./2026-10-02-fixture-program-evidence.md) for #7376's complete TypeScript graph evidence and unchanged checked-input coverage.
 
 [Type-checker history slices](./2026-09-27-typechecker-history-slices.md) record
 focused required T1 diagnostics for #6879; the [shared batch registry decision](./2026-10-01-typechecker-shared-batch-fixtures.md) binds 17 existing projects and 67 exact carriers to their original diagnostic projection and four-worker JUnit/archive accounting. All public result fields are retained; additional block/status fields remain observed and unbaselined.

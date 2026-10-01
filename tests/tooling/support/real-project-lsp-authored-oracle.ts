@@ -206,7 +206,7 @@ export async function exerciseAuthoredLspOracle(
     assert.equal(
       baselineLabels.length,
       boundary.completionItemCount,
-      `${boundary.importerFile} completion set size drifted`,
+      `${boundary.importerFile} completion set size drifted; actual labels: ${JSON.stringify(baselineLabels)}`,
     );
     assertRankedLabels(baselineLabels, boundary.completionItems, boundary.importerFile);
     const probe = boundary.dependencyEdit.completionLabel;
