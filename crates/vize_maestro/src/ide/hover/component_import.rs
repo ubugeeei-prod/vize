@@ -18,7 +18,7 @@ use crate::ide::markup;
 mod fallback;
 mod keys;
 pub(super) use fallback::vue_component_import_hover;
-use keys::field_name;
+use keys::field_name as key;
 
 pub(super) fn rewrite_vue_component_import_hover(
     ctx: &IdeContext<'_>,
@@ -132,11 +132,7 @@ fn props_contract(macros: &vize_croquis::macros::MacroTracker) -> Option<String>
         .map(|prop| {
             let optional = if prop.required { "" } else { "?" };
             let prop_type = prop.prop_type.as_deref().unwrap_or("unknown");
-            format!(
-                "{}{optional}: {}",
-                field_name(&prop.name),
-                compact_type(prop_type)
-            )
+            format!("{}{optional}: {}", key(&prop.name), compact_type(prop_type))
         })
         .collect::<Vec<_>>()
         .join("; ");
@@ -160,7 +156,7 @@ fn emits_contract(macros: &vize_croquis::macros::MacroTracker) -> Option<String>
         .iter()
         .map(|emit| {
             let payload = emit.payload_type.as_deref().unwrap_or("unknown[]");
-            format!("{}: {}", field_name(&emit.name), compact_type(payload))
+            format!("{}: {}", key(&emit.name), compact_type(payload))
         })
         .collect::<Vec<_>>()
         .join("; ");
@@ -188,7 +184,7 @@ fn slots_contract(macros: &vize_croquis::macros::MacroTracker) -> Option<String>
                 .as_deref()
                 .map(compact_type)
                 .unwrap_or_else(|| "{}".to_string());
-            format!("{}(props: {}): unknown", field_name(&slot.name), payload)
+            format!("{}(props: {}): unknown", key(&slot.name), payload)
         })
         .collect::<Vec<_>>()
         .join("; ");
