@@ -290,37 +290,8 @@ fn should_skip_generated_for_root(root: &Path) -> bool {
     !path_is_generated_root(root)
 }
 
-fn is_generated_path(path: &Path) -> bool {
-    let mut previous = None;
-    path.components().any(|component| {
-        let Some(name) = component.as_os_str().to_str() else {
-            previous = None;
-            return false;
-        };
-        let generated = is_generated_component(previous, name);
-        previous = Some(name);
-        generated
-    })
-}
-
-fn path_is_generated_root(path: &Path) -> bool {
-    let mut previous = None;
-    for component in path.components() {
-        let Some(name) = component.as_os_str().to_str() else {
-            previous = None;
-            continue;
-        };
-        if is_generated_component(previous, name) {
-            return true;
-        }
-        previous = Some(name);
-    }
-    false
-}
-
-fn is_generated_component(previous: Option<&str>, name: &str) -> bool {
-    name == TARGET_DIR || (previous == Some(NODE_MODULES_DIR) && name == VIZE_CACHE_DIR)
-}
+mod generated;
+use generated::{is_generated_path, path_is_generated_root};
 
 fn is_supported_collect_file(path: &Path, vue_only: bool, options: CheckFileOptions) -> bool {
     if vue_only {

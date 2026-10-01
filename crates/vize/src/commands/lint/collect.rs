@@ -335,17 +335,8 @@ fn absolute_config_dir(config_dir: &Path) -> PathBuf {
         .join(config_dir)
 }
 
-fn nested_node_modules_ignore(pattern: &Path) -> Option<PathBuf> {
-    let pattern_text = normalize_lint_path(pattern);
-    let suffix = "node_modules/**";
-    if !pattern_text.ends_with(suffix) || pattern_text.contains("**/node_modules/**") {
-        return None;
-    }
-    let prefix = pattern_text.trim_end_matches(suffix).trim_end_matches('/');
-    Some(PathBuf::from(
-        vize_l0::cstr!("{prefix}/**/{suffix}").as_str(),
-    ))
-}
+mod node_modules_ignore;
+use node_modules_ignore::nested_node_modules_ignore;
 
 fn lint_glob_match_options() -> MatchOptions {
     MatchOptions {
