@@ -6,13 +6,12 @@ import { validateBuildReceipt } from "../../../differential/build-receipt.mjs";
 import { sha256 } from "../../../differential/harness.mjs";
 import { decodeFrames } from "../../../differential/lsp-wire.ts";
 import type { VerifiedLspLaunch } from "./launch.ts";
+import { linkSessionSourceOrigins, type SourceWitness } from "./session-source-links.ts";
 
 const MAX_CAPTURE_BYTES = 16 * 1024 * 1024;
 const STREAMS = ["client", "server", "stderr"] as const;
 type Stream = (typeof STREAMS)[number];
 let nextSession = 0;
-
-type SourceWitness = { path: string; line: number; column: number; sha256: string };
 
 function sourceWitnesses(repoRoot: string, callerStack: string): SourceWitness[] {
   const witnesses: SourceWitness[] = [];
@@ -38,6 +37,7 @@ export class LspSessionCapture {
   readonly directory: string;
   private readonly launch: VerifiedLspLaunch;
   private readonly witnesses: SourceWitness[];
+  private readonly sourceOrigins: ReturnType<typeof linkSessionSourceOrigins>;
   private readonly chunks: Record<Stream, Buffer[]> = { client: [], server: [], stderr: [] };
   private readonly observedBytes: Record<Stream, number> = { client: 0, server: 0, stderr: 0 };
   private capturedBytes = 0;
@@ -71,6 +71,7 @@ export class LspSessionCapture {
     assert.equal(path.resolve(launch.binary), path.resolve(repoRoot, launch.expected.binaryPath));
     this.launch = launch;
     this.witnesses = sourceWitnesses(repoRoot, callerStack);
+    this.sourceOrigins = linkSessionSourceOrigins(repoRoot, this.witnesses);
     fs.mkdirSync(outputRoot, { recursive: true });
     this.directory = fs.mkdtempSync(path.join(outputRoot, `${process.pid}-${++nextSession}-`));
     this.writeMetadata(null, null, "awaiting-process-close");
@@ -155,6 +156,7 @@ export class LspSessionCapture {
       clientWireMeaning: "attempted-existing-stdin-write",
       captureByteLimit: MAX_CAPTURE_BYTES,
       sourceWitnesses: this.witnesses,
+      sourceOrigins: this.sourceOrigins,
       streams,
       process: { exitStatus, signal, error: this.error },
       acceptance: {
