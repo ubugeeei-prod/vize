@@ -50,7 +50,13 @@ test("TypeScript Vue plugin exposes generated SFC component types", () => {
     );
     assert.match(display, /emits: \{ save: \[id: string\] \}/);
     assert.match(display, /slots: \{ default\(props: \{ title: string \}\): unknown \}/);
-    assert.match(display, /model: "modelValue": boolean/);
+    assert.match(display, /^const App: VueComponent &/);
+    assert.match(display, /model: \{ "modelValue": boolean; "title": string \};/);
+    assert.deepEqual(
+      ts.transpileModule(display, { reportDiagnostics: true }).diagnostics,
+      [],
+      "the component contract must be valid TypeScript for syntax highlighting",
+    );
     assert.doesNotMatch(display, /ignored|notAnEmit/);
     assert.doesNotMatch(display, /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/);
     const sideEffectInfo = service.getQuickInfoAtPosition(
@@ -168,6 +174,7 @@ function createProject() {
       "defineEmits<{ save: [id: string] }>();",
       "defineSlots<{ default(props: { title: string }): unknown }>();",
       "defineModel<boolean>();",
+      'defineModel<string>("title");',
       "</script>",
       "",
     ].join("\n"),
