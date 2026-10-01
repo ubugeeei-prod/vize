@@ -16,7 +16,7 @@ struct Case {
 #[test]
 fn accessible_content_corpus_preserves_real_violations() {
     let cases: Vec<Case> = serde_json::from_str(include_str!(
-        "../../../tests/_fixtures/differential/lint-accessible-content/cases.json"
+        "fixtures/accessible-content/cases.json"
     ))
     .expect("strict accessible content corpus");
     assert_eq!(cases.len(), 23);

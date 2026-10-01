@@ -16,7 +16,7 @@ multiple landmarks within a branch, outside landmarks, and `v-show` still
 report actual duplicates.
 
 The 23-case public SFC corpus in
-`tests/_fixtures/differential/lint-accessible-content/cases.json` exercises
+`crates/vize_patina/tests/fixtures/accessible-content/cases.json` exercises
 positive and negative cases. Authored image and conditional SFCs also enter the
 repository differential sweep. Validation runs through the PR and merge-queue
 Actions; unrelated native migration and fix-history completion stay open.
