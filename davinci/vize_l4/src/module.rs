@@ -5,9 +5,9 @@
 //! function or an inline render expression. This module never parses or rewrites
 //! JavaScript. It joins their writers, preserving every authored link, then
 //! builds helper imports from the complete used-helper set. Runtime vocabulary
-//! tables and target generation remain separate providers (#6840).
+//! groups retain each export owner; target generation stays separate (#6840).
 
-use crate::runtime::{Helper, Vocabulary};
+use crate::runtime::{Helper, Runtime, Vocabulary, vocabulary_for};
 use crate::write::{Emitted, LinkSink, Writer};
 
 /// The component field a declared render function implements.
@@ -72,9 +72,32 @@ pub struct ModuleParts<'a, L: LinkSink> {
     pub component: &'a str,
 }
 
+impl<'a, L: LinkSink> ModuleParts<'a, L> {
+    /// Start a module with the audited target vocabulary. Prepared fragments
+    /// must use helper indices from this exact vocabulary.
+    pub fn for_runtime(
+        runtime: Runtime,
+        version: &str,
+        component: &'a str,
+    ) -> Result<Self, AssemblyError> {
+        Ok(Self {
+            vocabulary: vocabulary_for(runtime, version)
+                .ok_or(AssemblyError::UnsupportedRuntimeVersion)?,
+            prelude: None,
+            script: None,
+            render: None,
+            placement: RenderPlacement::None,
+            component,
+        })
+    }
+}
+
+mod imports;
+
 /// A mismatch between prepared fragments and their declared contracts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AssemblyError {
+    UnsupportedRuntimeVersion,
     MissingRender,
     UnexpectedRender,
     MissingInlineScript,
@@ -142,26 +165,7 @@ pub fn assemble<L: LinkSink>(parts: ModuleParts<'_, L>) -> Result<Emitted<L>, As
     body.push(component);
     body.push("\n");
 
-    let mut preamble = Writer::default();
-    if !body.helpers().is_empty() {
-        preamble.push("import { ");
-        for (index, &helper) in body.helpers().in_use_order().iter().enumerate() {
-            let name = vocabulary
-                .name(helper)
-                .ok_or(AssemblyError::UnknownHelper(helper))?;
-            if index != 0 {
-                preamble.push(", ");
-            }
-            preamble.push(name);
-            preamble.push(" as _");
-            preamble.push(name);
-        }
-        preamble.push(" } from ");
-        let specifier = serde_json::to_string(vocabulary.module)
-            .map_err(|_| AssemblyError::InvalidModuleSpecifier)?;
-        preamble.push(&specifier);
-        preamble.push("\n");
-    }
+    let preamble = imports::preamble(vocabulary, body.helpers())?;
     Ok(body.finish_with_preamble(preamble))
 }
 
@@ -199,3 +203,6 @@ fn separate_statement<L: LinkSink>(writer: &mut Writer<L>) {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod runtime_tests;

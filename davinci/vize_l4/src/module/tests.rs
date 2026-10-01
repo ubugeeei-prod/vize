@@ -1,12 +1,14 @@
 use vize_l0::Span;
 
 use super::{AssemblyError, ModuleParts, RenderPlacement, RenderProperty, ScriptPart, assemble};
-use crate::runtime::{Helper, Vocabulary};
+use crate::runtime::{Helper, HelperModule, Vocabulary};
 use crate::write::{LinkSink, NoLinks, Recorded, SpanLink, Writer};
 
 const VOCABULARY: Vocabulary = Vocabulary {
-    module: "vue",
-    names: &["createVNode", "ref", "toDisplayString"],
+    modules: &[HelperModule {
+        module: "vue",
+        names: &["createVNode", "ref", "toDisplayString"],
+    }],
 };
 
 fn fragment<L: LinkSink>(text: &str, authored: Span, helpers: &[u8]) -> Writer<L> {
@@ -131,8 +133,10 @@ fn linked_module_rebases_hoists_script_and_template_after_complete_preamble() {
 #[test]
 fn server_function_attaches_to_ssr_render_and_uses_its_supplied_vocabulary() {
     const SERVER: Vocabulary = Vocabulary {
-        module: "vue/server-renderer",
-        names: &["ssrInterpolate"],
+        modules: &[HelperModule {
+            module: "vue/server-renderer",
+            names: &["ssrInterpolate"],
+        }],
     };
     let mut parts = bare::<NoLinks>();
     parts.vocabulary = &SERVER;
@@ -208,8 +212,10 @@ fn inline_setup_insertion_preserves_return_semantics_and_fragment_link_order() {
 #[test]
 fn module_specifier_is_quoted_as_a_string_literal() {
     const ESCAPED: Vocabulary = Vocabulary {
-        module: "module\"with\\escapes\n",
-        names: &["ref"],
+        modules: &[HelperModule {
+            module: "module\"with\\escapes\n",
+            names: &["ref"],
+        }],
     };
     let mut parts = bare::<NoLinks>();
     parts.vocabulary = &ESCAPED;

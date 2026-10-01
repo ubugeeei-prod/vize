@@ -3,4 +3,4 @@
 # Checked by `tools/commands/ci/check-skeleton-todos.rs --check`. Counts only
 # go down; run the tool with `--write` after filling a skeleton module.
 vize_l2_to_l3 = 1
-vize_l4 = 6
+vize_l4 = 5

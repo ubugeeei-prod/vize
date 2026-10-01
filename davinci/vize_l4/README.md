@@ -17,12 +17,18 @@ the supplied helper vocabulary and preserves all fragment links. The script
 lane owns default-export rewriting and inline insertion points; the assembler
 does not parse JavaScript or admit a target.
 
-Expression rewriting (`expr`), the runtime helper tables (`runtime`) and the
-DOM, SSR, Vapor and type-check targets (`targets`) are unfinished skeletons in
-[#6840](https://github.com/ubugeeei-prod/vize/issues/6840); no product selects
-them yet. Module assembly currently requires all fragments to share one supplied
-vocabulary. Mixed runtime imports and product integration wait for their actual
-providers and the compiler fix-history gate.
+`runtime::vocabulary` owns compiler helper names for the workspace's selected
+Vue 3.5.35 DOM/SSR release and Vue 3.6.0-rc.9 Vapor release. Checked helper IDs
+are local to that exact vocabulary; `vocabulary_for` rejects other version
+pairs. `ModuleParts::for_runtime` selects this provider before assembly. SSR
+imports its helper group from `@vue/server-renderer` and shared helpers from
+`vue`, preserving first-use order within each group. Custom vocabularies may
+also describe multiple module groups.
+
+Expression rewriting (`expr`) and the DOM, SSR, Vapor and type-check targets
+(`targets`) remain unfinished in [#6840](https://github.com/ubugeeei-prod/vize/issues/6840).
+Older Vue runtimes, complete generated-script helper admission and product
+integration still need their actual providers and compiler fix-history gate.
 
 The crate remains unpublished while its targets and consumer migration are
 unfinished.
