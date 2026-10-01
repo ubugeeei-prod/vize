@@ -2,7 +2,7 @@ use super::{Context, Directive, NativeHoleKind, PreparedAttribute};
 use vize_l0::Span;
 use vize_l1::markup::directive::DirectivePrefix;
 use vize_l1::{Element, ElementClose};
-use vize_l2::artifact::RegionBuilder;
+use vize_l2::artifact::ComponentFactory;
 use vize_l2::op::{Attribute, Namespace};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -45,9 +45,9 @@ impl StructuralHeadMask<'_> {
 }
 
 impl<'a> Context<'a> {
-    pub(in crate::native) fn prepare_element_header<'surface>(
+    pub(in crate::native) fn prepare_element_header<'surface, R: ComponentFactory<'a>>(
         &mut self,
-        region: &mut RegionBuilder<'_, 'a>,
+        region: &mut R,
         carrier: &'surface Element<'a>,
         parent: Namespace,
     ) -> PreparedElement<'surface, 'a> {

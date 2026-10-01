@@ -20,7 +20,7 @@ use crate::walk::{NodeEvent, NodeLimit, NodeRef, PageWalk};
 
 mod builder;
 mod check;
-pub use builder::{Builder, RegionBuilder};
+pub use builder::{Builder, ComponentBody, ComponentFactory, RegionBuilder};
 #[cfg(test)]
 mod tests;
 

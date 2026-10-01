@@ -3,7 +3,7 @@
 use super::{Context, NativeHoleKind};
 use vize_l0::Span;
 use vize_l1::markup::directive::DirectiveName;
-use vize_l2::artifact::RegionBuilder;
+use vize_l2::artifact::ComponentFactory;
 
 mod vue3;
 
@@ -17,14 +17,18 @@ pub(super) struct Directive {
     pub missing: bool,
 }
 
-struct Pattern {
+struct Pattern<'a, R> {
     accepts: fn(&str, DirectiveName) -> bool,
-    lower: for<'s, 'a> fn(&mut Context<'a>, &mut RegionBuilder<'s, 'a>, Directive),
+    lower: fn(&mut Context<'a>, &mut R, Directive),
 }
 
 impl<'a> Context<'a> {
-    pub(super) fn directive(&mut self, region: &mut RegionBuilder<'_, 'a>, directive: Directive) {
-        for pattern in vue3::PATTERNS {
+    pub(super) fn directive<R: ComponentFactory<'a>>(
+        &mut self,
+        region: &mut R,
+        directive: Directive,
+    ) {
+        for pattern in vue3::Patterns::<'a, R>::TABLE {
             if (pattern.accepts)(self.block.root_source(), directive.head) {
                 (pattern.lower)(self, region, directive);
                 return;

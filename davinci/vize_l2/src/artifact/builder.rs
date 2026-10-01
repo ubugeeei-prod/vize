@@ -34,7 +34,9 @@ enum Owner<'a> {
 }
 
 mod binding;
+mod factory;
 mod region;
+pub use factory::{ComponentBody, ComponentFactory};
 pub use region::RegionBuilder;
 
 /// A restricted canonical producer, with no arbitrary region or table insertion.

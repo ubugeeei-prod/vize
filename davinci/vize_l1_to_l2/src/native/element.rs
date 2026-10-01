@@ -5,7 +5,7 @@ use vize_l1::dialect::vue3::VueDirectives;
 use vize_l1::embed::prepare_attribute_value;
 use vize_l1::markup::directive::DirectiveSyntax;
 use vize_l1::{Attribute as SurfaceAttribute, Element};
-use vize_l2::artifact::RegionBuilder;
+use vize_l2::artifact::{ComponentBody, ComponentFactory};
 use vize_l2::op::{Attribute, Namespace};
 
 mod header;
@@ -17,9 +17,9 @@ enum PreparedAttribute<'a> {
 }
 
 impl<'a> Context<'a> {
-    pub(super) fn element(
+    pub(super) fn element<R: ComponentFactory<'a>>(
         &mut self,
-        region: &mut RegionBuilder<'_, 'a>,
+        region: &mut R,
         element: &Element<'a>,
         parent: (Namespace, Option<&'a str>),
     ) {
@@ -34,9 +34,9 @@ impl<'a> Context<'a> {
         self.element_body(region, header, mask, parent);
     }
 
-    pub(super) fn element_body(
+    pub(super) fn element_body<R: ComponentFactory<'a>>(
         &mut self,
-        region: &mut RegionBuilder<'_, 'a>,
+        region: &mut R,
         header: PreparedElement<'_, 'a>,
         mask: StructuralHeadMask<'_>,
         parent: (Namespace, Option<&'a str>),
@@ -64,26 +64,17 @@ impl<'a> Context<'a> {
             native,
             attributes,
             directives,
-            ..
+            admission: _,
         } = header;
-        let children = |region: &mut RegionBuilder<'_, 'a>, node| {
-            self.record(
-                region,
-                if native {
-                    "native.element"
-                } else {
-                    "native.component"
-                },
-                Some(node),
-                span,
-                if native { "ui.element" } else { "ui.component" },
-            );
-            for directive in directives {
-                if !mask.consumes(directive.ordinal) {
-                    self.directive(region, directive);
-                }
-            }
-            self.children(region, &carrier.children, (children_namespace, Some(tag)));
+        let children = ElementBody {
+            cx: self,
+            carrier,
+            mask,
+            directives,
+            span,
+            native,
+            tag,
+            children_namespace,
         };
         let result = if native {
             region.element(tag, namespace, attributes, span, children)
@@ -95,9 +86,9 @@ impl<'a> Context<'a> {
         }
     }
 
-    fn attribute(
+    fn attribute<R: ComponentFactory<'a>>(
         &mut self,
-        region: &mut RegionBuilder<'_, 'a>,
+        region: &mut R,
         ordinal: usize,
         attribute: &SurfaceAttribute<'a>,
     ) -> Option<PreparedAttribute<'a>> {
@@ -174,6 +165,47 @@ impl<'a> Context<'a> {
             value,
             span,
         }))
+    }
+}
+
+struct ElementBody<'ctx, 'surface, 'mask, 'a> {
+    cx: &'ctx mut Context<'a>,
+    carrier: &'surface Element<'a>,
+    mask: StructuralHeadMask<'mask>,
+    directives: vize_l0::Vec<'a, Directive>,
+    span: Span,
+    native: bool,
+    tag: &'a str,
+    children_namespace: Namespace,
+}
+
+impl<'a> ComponentBody<'a> for ElementBody<'_, '_, '_, 'a> {
+    fn run<R: ComponentFactory<'a>>(self, region: &mut R, node: vize_l0::id::NodeId) {
+        self.cx.record(
+            region,
+            if self.native {
+                "native.element"
+            } else {
+                "native.component"
+            },
+            Some(node),
+            self.span,
+            if self.native {
+                "ui.element"
+            } else {
+                "ui.component"
+            },
+        );
+        for directive in self.directives {
+            if !self.mask.consumes(directive.ordinal) {
+                self.cx.directive(region, directive);
+            }
+        }
+        self.cx.children(
+            region,
+            &self.carrier.children,
+            (self.children_namespace, Some(self.tag)),
+        );
     }
 }
 

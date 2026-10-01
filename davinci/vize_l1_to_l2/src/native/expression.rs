@@ -6,9 +6,9 @@ use vize_l1::Interpolation;
 use vize_l1::embed::prepare_vue_interpolation_in;
 use vize_l1::embed::syntax::{EmbedHole, RetainedExpression, parse_once};
 use vize_l1::embed::{DecodeSegmentKind, Embed, EmbedSource, Grammar, Shape};
-use vize_l2::artifact::{ArtifactError, RegionBuilder};
+use vize_l2::artifact::{ArtifactError, ComponentFactory};
+use vize_l2::expr::JsExpr;
 use vize_l2::expr::js::{JsCoordinateError, JsCoordinates, JsSegment};
-use vize_l2::expr::{ExprRef, JsExpr};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeExpressionError {
@@ -52,9 +52,9 @@ pub fn retain_expression_in<'a>(
 }
 
 impl<'a> Context<'a> {
-    pub(super) fn interpolation(
+    pub(super) fn interpolation<R: ComponentFactory<'a>>(
         &mut self,
-        region: &mut RegionBuilder<'_, 'a>,
+        region: &mut R,
         interpolation: &Interpolation<'a>,
     ) {
         let span = Span::new(
@@ -84,17 +84,14 @@ impl<'a> Context<'a> {
         );
     }
 
-    pub(super) fn expression(
+    pub(super) fn expression<R: ComponentFactory<'a>>(
         &mut self,
-        region: &mut RegionBuilder<'_, 'a>,
+        region: &mut R,
         source: EmbedSource<'a>,
         span: Span,
         (rule, after): (&'static str, &'static str),
         admit: impl FnOnce(&RetainedExpression<'a>) -> Result<(), NativeHoleKind>,
-        construct: impl FnOnce(
-            &mut RegionBuilder<'_, 'a>,
-            ExprRef<'a>,
-        ) -> Result<vize_l0::id::NodeId, ArtifactError>,
+        construct: impl FnOnce(&mut R, &'a JsExpr<'a>) -> Result<vize_l0::id::NodeId, ArtifactError>,
     ) {
         let source_span = source.span();
         let syntax = parse_once(
@@ -132,7 +129,7 @@ impl<'a> Context<'a> {
         };
         let node = match expression {
             Ok(js) => {
-                let result = construct(region, ExprRef::Js(js));
+                let result = construct(region, js);
                 self.produced(region, result, rule, span, after)
             }
             Err(error) => {

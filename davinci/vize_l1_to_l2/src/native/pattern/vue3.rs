@@ -1,13 +1,20 @@
 //! Actual Vue 3 directive patterns; no legacy capability or parser route.
 
-use super::{Context, Directive, NativeHoleKind, Pattern, RegionBuilder};
+use super::{ComponentFactory, Context, Directive, NativeHoleKind, Pattern};
 use vize_l1::embed::prepare_attribute_value;
 use vize_l1::markup::directive::{ArgSyntax, DirectiveName, DirectivePrefix};
 
-pub(super) const PATTERNS: &[Pattern] = &[Pattern {
-    accepts: is_bind,
-    lower: bind,
-}];
+pub(super) struct Patterns<'a, R>(core::marker::PhantomData<(&'a (), R)>);
+
+impl<'a, R: ComponentFactory<'a>> Patterns<'a, R> {
+    // The identical function-pointer table is a const value: a static slice
+    // would incorrectly require compile-local source and factory borrows to
+    // outlive 'static. No table allocation or dynamic dispatch is introduced.
+    pub(super) const TABLE: [Pattern<'a, R>; 1] = [Pattern {
+        accepts: is_bind,
+        lower: bind::<R>,
+    }];
+}
 
 fn is_bind(source: &str, head: DirectiveName) -> bool {
     head.prefix == DirectivePrefix::Bind
@@ -15,7 +22,7 @@ fn is_bind(source: &str, head: DirectiveName) -> bool {
             && source.get(head.name.start as usize..head.name.end as usize) == Some("bind")
 }
 
-fn bind<'a>(cx: &mut Context<'a>, region: &mut RegionBuilder<'_, 'a>, directive: Directive) {
+fn bind<'a, R: ComponentFactory<'a>>(cx: &mut Context<'a>, region: &mut R, directive: Directive) {
     let head = directive.head;
     let expected = match head.prefix {
         DirectivePrefix::Bind => directive.name_span.start.checked_add(1),

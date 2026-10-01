@@ -14,11 +14,13 @@ use vize_l1::embed::{Lang, SourceError};
 use vize_l1::markup::{ComponentParse, DirectiveNameError};
 use vize_l1::{SurfaceChild, Token};
 use vize_l2::artifact::{
-    Artifact, ArtifactError, ArtifactParts, Builder, RegionBuilder, RejectedArtifact,
+    Artifact, ArtifactError, ArtifactParts, Builder, ComponentFactory, RejectedArtifact,
 };
 use vize_l2::op::{Namespace, Region};
 use vize_l2::provenance::ProvenanceRecord;
 
+mod block;
+pub use block::{NativeComponent, NativeProduced, RejectedNativeComponent};
 mod element;
 mod expression;
 mod pattern;
@@ -95,45 +97,18 @@ pub fn lower_component_native<'a>(
     let block = SourceRoot::new(source)
         .map_err(|_| empty_rejection(allocator, source, ArtifactError::SourceLimit))?
         .whole_block();
-    let component = vize_l1::markup::parse_component(allocator, source)
+    let component = NativeComponent::parse_in(allocator, block)
         .map_err(|_| empty_rejection(allocator, source, ArtifactError::SourceLimit))?;
-    let mut cx = Context {
-        allocator,
-        block,
-        lang,
-        holes: Vec::new(),
-        diagnostics: Vec::new(),
-        embeds: Vec::new(),
-        rejected_syntax: Vec::new(),
-    };
-    {
-        let mut region = builder.region();
-        for error in &component.errors {
-            let span = block
-                .span_of(block.zero_width_at(error.offset))
-                .unwrap_or(Span::new(0, 0));
-            cx.hole(&mut region, NativeHoleKind::Surface(error.code), span);
-        }
-        for admission in &component.unsupported {
-            cx.hole(
-                &mut region,
-                NativeHoleKind::DirectiveAdmission(admission.error),
-                admission.span,
-            );
-        }
-        cx.children(
-            &mut region,
-            &component.tree.children,
-            (Namespace::Html, None),
-        );
-    }
+    let produced = component
+        .construct_in(&mut builder.region(), lang)
+        .map_err(|_| empty_rejection(allocator, source, ArtifactError::SourceLimit))?;
     Ok(NativeLowered {
         artifact: builder.finish()?,
-        holes: cx.holes,
-        diagnostics: cx.diagnostics,
-        component,
-        embeds: cx.embeds,
-        rejected_syntax: cx.rejected_syntax,
+        holes: produced.holes,
+        diagnostics: produced.diagnostics,
+        component: produced.component.into_carrier(),
+        embeds: produced.embeds,
+        rejected_syntax: produced.rejected_syntax,
     })
 }
 
@@ -166,9 +141,9 @@ struct Context<'a> {
 }
 
 impl<'a> Context<'a> {
-    fn children(
+    fn children<R: ComponentFactory<'a>>(
         &mut self,
-        region: &mut RegionBuilder<'_, 'a>,
+        region: &mut R,
         children: &[SurfaceChild<'a>],
         parent: (Namespace, Option<&'a str>),
     ) {
@@ -197,9 +172,9 @@ impl<'a> Context<'a> {
         self.block.span_of(token.text).unwrap_or(Span::new(0, 0))
     }
 
-    fn record(
+    fn record<R: ComponentFactory<'a>>(
         &mut self,
-        region: &mut RegionBuilder<'_, 'a>,
+        region: &mut R,
         rule: &'static str,
         node: Option<NodeId>,
         span: Span,
@@ -224,7 +199,7 @@ impl<'a> Context<'a> {
         }
     }
 
-    fn hole(&mut self, region: &mut RegionBuilder<'_, 'a>, kind: NativeHoleKind, span: Span) {
+    fn hole<R: ComponentFactory<'a>>(&mut self, region: &mut R, kind: NativeHoleKind, span: Span) {
         self.holes.push(NativeHole { span, kind });
         self.diagnostics.push(Diagnostic::new(
             Advisory::Warning,
@@ -237,9 +212,9 @@ impl<'a> Context<'a> {
         self.record(region, "native.unsupported", None, span, "");
     }
 
-    fn produced(
+    fn produced<R: ComponentFactory<'a>>(
         &mut self,
-        region: &mut RegionBuilder<'_, 'a>,
+        region: &mut R,
         result: Result<NodeId, ArtifactError>,
         rule: &'static str,
         span: Span,
