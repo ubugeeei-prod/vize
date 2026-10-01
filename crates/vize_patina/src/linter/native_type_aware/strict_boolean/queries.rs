@@ -95,19 +95,15 @@ fn punctuation(source: &str, range: Span, token: char) -> u32 {
         .map_or(range.start, |index| range.start + index as u32)
 }
 
-fn member_anchor(member: &StaticMemberExpression<'_>, source: &str) -> u32 {
-    punctuation(
-        source,
-        Span::new(member.object.span().end, member.property.span.start),
-        '.',
-    )
+fn member_anchor(member: &StaticMemberExpression<'_>) -> u32 {
+    member.property.span.end.saturating_sub(1)
 }
 
 fn anchor(expression: &Expression<'_>, source: &str) -> u32 {
     match expression {
-        Expression::StaticMemberExpression(member) => member_anchor(member, source),
+        Expression::StaticMemberExpression(member) => member_anchor(member),
         Expression::ChainExpression(chain) => match &chain.expression {
-            ChainElement::StaticMemberExpression(member) => member_anchor(member, source),
+            ChainElement::StaticMemberExpression(member) => member_anchor(member),
             _ => chain.span.end.saturating_sub(1),
         },
         Expression::BinaryExpression(binary) => binary.left.span().end,

@@ -5,6 +5,9 @@ Issue: [#7377](https://github.com/ubugeeei-prod/vize/issues/7377).
 Add `type/strict-boolean-expressions` to the opt-in catalog without changing
 any preset. Native type-aware lint uses the existing Corsa project and Canon
 projection for both script blocks and template `v-if`, `v-else-if`, and `v-show`.
+The projection retains Vue's boolean-prop coercion: an optional boolean prop
+without an explicit undefined default resolves to boolean. Nullable boolean
+unions remain nullable. Owning template cases distinguish these semantics.
 Conditions include if/while/do/for/ternary tests, negation, and logical operands;
 the right operand of a value-producing logical expression is not a condition.
 

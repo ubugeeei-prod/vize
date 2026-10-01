@@ -27,19 +27,19 @@
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly.",
-        "line": 7,
+        "line": 8,
         "column": 14,
-        "endLine": 7,
-        "endColumn": 21
+        "endLine": 8,
+        "endColumn": 22
       },
       {
         "ruleId": "type/strict-boolean-expressions",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected nullable object value in conditional. Please handle the nullish case explicitly.",
-        "line": 8,
+        "line": 9,
         "column": 12,
-        "endLine": 8,
+        "endLine": 9,
         "endColumn": 18
       },
       {
@@ -47,9 +47,9 @@
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 2,
         "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
-        "line": 10,
+        "line": 11,
         "column": 39,
-        "endLine": 10,
+        "endLine": 11,
         "endColumn": 49
       }
     ],
