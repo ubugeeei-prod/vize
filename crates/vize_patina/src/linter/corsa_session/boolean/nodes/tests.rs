@@ -1,8 +1,10 @@
 //! Captured from the pinned TypeScript 7.0.2 worker, not fabricated handles.
 use super::{NODE, locations, word};
 
-const SOURCE: &str = include_str!("fixtures/conditions.ts");
-const ENCODED: &[u8] = include_bytes!("fixtures/conditions.bin");
+const SOURCE: &str =
+    include_str!("../../../../../tests/fixtures/strict-boolean-nodes/conditions.ts");
+const ENCODED: &[u8] =
+    include_bytes!("../../../../../tests/fixtures/strict-boolean-nodes/conditions.bin");
 
 fn range(expression: &str) -> (u32, u32) {
     let start = SOURCE.find(expression).expect("authored expression");

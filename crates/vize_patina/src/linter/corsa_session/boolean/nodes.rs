@@ -49,8 +49,8 @@ impl<'a> Tree<'a> {
                 && extended <= structured
                 && structured <= nodes)
             || nodes > data.len()
-            || (text - strings) % 8 != 0
-            || (data.len() - nodes) % NODE != 0
+            || !(text - strings).is_multiple_of(8)
+            || !(data.len() - nodes).is_multiple_of(NODE)
             || data.len() - nodes < NODE * 2
         {
             return Err(invalid("invalid section bounds"));
@@ -67,7 +67,7 @@ impl<'a> Tree<'a> {
 
     fn string(&self, index: u32) -> corsa::Result<&'a [u8]> {
         // The encoder indexes the u32 offset table, whose entries are pairs.
-        if index % 2 != 0 {
+        if !index.is_multiple_of(2) {
             return Err(invalid("unaligned string index"));
         }
         let offset = self
