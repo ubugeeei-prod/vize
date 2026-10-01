@@ -127,7 +127,6 @@ fn parsed_pre_name_matches_legacy_verbatim_policy_for_recovered_heads() {
         "v-pre.foo",
         "v-pre:arg",
         "v-pre:[broken",
-        "v-pre[broken",
         "v-pre:.",
         "v-pre..",
         "v-pre:[",

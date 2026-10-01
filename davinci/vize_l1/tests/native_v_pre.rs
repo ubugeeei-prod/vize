@@ -29,7 +29,6 @@ fn full_parsed_pre_heads_suppress_nested_content_and_keep_every_authored_attribu
         "v-pre:arg",
         "v-pre:[keys['a.b']]",
         "v-pre:[broken",
-        "v-pre[broken",
         "v-pre:.",
         "v-pre..",
         "v-pre:[",
@@ -73,7 +72,16 @@ fn full_parsed_pre_heads_suppress_nested_content_and_keep_every_authored_attribu
 #[test]
 fn shorthand_and_similar_names_do_not_start_verbatim_scopes() {
     for head in [
-        "v-pretty", "v-prefix", "v-PRE", ":pre", "@pre", "#pre", ".pre", "class",
+        "v-pre[broken",
+        "v-pre[key].foo",
+        "v-pretty",
+        "v-prefix",
+        "v-PRE",
+        ":pre",
+        "@pre",
+        "#pre",
+        ".pre",
+        "class",
     ] {
         let source =
             cstr!("<div {head}>{{{{ msg }}}}<span>{{{{ nested }}}}</span></div>{{{{ tail }}}}");

@@ -190,7 +190,6 @@ fn pre_is_the_parsed_full_name_including_modified_and_malformed_heads() {
         "v-pre.foo",
         "v-pre:arg",
         "v-pre:[broken",
-        "v-pre[broken",
         "v-pre:.",
         "v-pre..",
         "v-pre:[",
@@ -203,7 +202,15 @@ fn pre_is_the_parsed_full_name_including_modified_and_malformed_heads() {
         assert_eq!(shape.name.slice(&authored), "pre", "{raw}");
     }
     for raw in [
-        "v-pretty", "v-prefix", "v-PRE", ":pre", "@pre", "#pre", ".pre",
+        "v-pre[broken",
+        "v-pre[key].foo",
+        "v-pretty",
+        "v-prefix",
+        "v-PRE",
+        ":pre",
+        "@pre",
+        "#pre",
+        ".pre",
     ] {
         let shape = VueDirectives.decompose(raw, 0).unwrap().unwrap();
         assert!(
@@ -211,6 +218,23 @@ fn pre_is_the_parsed_full_name_including_modified_and_malformed_heads() {
             "{raw}"
         );
     }
+}
+
+#[test]
+fn bracket_without_colon_is_full_name_syntax_not_a_dynamic_argument() {
+    for (raw, name, modifiers) in [
+        ("v-pre[broken", "pre[broken", ""),
+        ("v-pre[key].foo", "pre[key]", ".foo"),
+    ] {
+        let shape = VueDirectives.decompose(raw, 0).unwrap().unwrap();
+        assert_eq!(shape.name.slice(raw), name);
+        assert_eq!(shape.arg, None);
+        assert_eq!(shape.modifiers.slice(raw), modifiers);
+    }
+    let raw = cstr!("v-pre[{}{}]", "([".repeat(33), "])".repeat(33));
+    let shape = VueDirectives.decompose(&raw, 0).unwrap().unwrap();
+    assert_eq!(shape.name.slice(&raw), &raw[2..]);
+    assert_eq!(shape.arg, None);
 }
 
 #[test]

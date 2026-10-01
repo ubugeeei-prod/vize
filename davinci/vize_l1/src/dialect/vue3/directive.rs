@@ -37,7 +37,7 @@ impl DirectiveSyntax for VueDirectives {
         let name_end = if prefix == DirectivePrefix::Full {
             while bytes
                 .get(index)
-                .is_some_and(|byte| !matches!(byte, b':' | b'.' | b'['))
+                .is_some_and(|byte| !matches!(byte, b':' | b'.'))
             {
                 index += 1;
             }

@@ -52,7 +52,6 @@ fn native_mode_uses_the_actual_legacy_parsed_name_policy() {
         "v-pre:arg",
         "v-pre:[keys['a.b']]",
         "v-pre:[broken",
-        "v-pre[broken",
         "v-pre:.",
         "v-pre..",
         "v-pre:[",
@@ -71,6 +70,26 @@ fn native_mode_uses_the_actual_legacy_parsed_name_policy() {
         );
         assert_ast_policy(&source);
     }
+}
+
+#[test]
+fn no_colon_bracket_name_keeps_native_interpolations_while_legacy_retains_its_old_policy() {
+    let source = "<div v-pre[broken>{{msg}}<span>{{nested}}</span></div>{{tail}}";
+    let allocator = Allocator::new();
+    let parsed = parse_component(&allocator, source).unwrap();
+    assert!(parsed.unsupported.is_empty());
+    assert_eq!(check_fidelity(&parsed.tree), Ok(()));
+    let mut native_values = Vec::new();
+    native_interpolations(&parsed.tree.children, &mut native_values);
+    assert_eq!(native_values, ["msg", "nested", "tail"]);
+
+    // The preserved legacy tokenizer accepts '[' without ':' as an argument.
+    // The pinned upstream Vue 3.5.35 oracle proves the native full-name rule.
+    let legacy_allocator = vize_armature::Allocator::new();
+    let (legacy, _) = parse(&legacy_allocator, source);
+    let mut legacy_values = Vec::new();
+    legacy_interpolations(&legacy.children, &mut legacy_values);
+    assert_eq!(legacy_values, ["tail"]);
 }
 
 #[test]
