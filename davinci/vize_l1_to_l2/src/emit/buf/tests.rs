@@ -2,6 +2,93 @@ use super::super::options::DomEmitOptions;
 use super::{Buf, Helper};
 
 #[test]
+fn newline_preserves_indentation_bytes_at_chunk_boundaries() {
+    for (levels, spaces) in [
+        (0, 0),
+        (1, 2),
+        (31, 62),
+        (32, 64),
+        (33, 66),
+        (63, 126),
+        (64, 128),
+        (127, 254),
+        (128, 256),
+        (129, 258),
+        (1024, 2048),
+    ] {
+        let mut buf = Buf::new(false);
+        buf.push("é界");
+        for _ in 0..levels {
+            buf.indent();
+        }
+        buf.newline();
+        assert_eq!(&buf.code[..6], "é界\n");
+        assert_eq!(buf.code.len(), 6 + spaces);
+        assert!(buf.code.as_bytes()[6..].iter().all(|byte| *byte == b' '));
+        assert_eq!(buf.indent_width(), spaces);
+    }
+}
+
+#[test]
+fn newline_keeps_multiline_body_and_generated_byte_offsets() {
+    let mut buf = Buf::new(false);
+    buf.push("render(){");
+    buf.indent();
+    buf.newline();
+    let assets_start = buf.code.len();
+    buf.push("const 名 = 1;");
+    buf.newline();
+    let assets_end = buf.code.len();
+    buf.push("return ");
+    let return_start = buf.code.len();
+    buf.push("['é', '界']");
+    let return_end = buf.code.len();
+    buf.deindent();
+    buf.newline();
+    buf.push("}");
+
+    assert_eq!(
+        buf.code,
+        "render(){\n  const 名 = 1;\n  return ['é', '界']\n}"
+    );
+    assert_eq!(
+        (assets_start, assets_end, return_start, return_end),
+        (12, 29, 36, 49)
+    );
+    assert_eq!(&buf.code[return_start..return_end], "['é', '界']");
+}
+
+#[test]
+fn newline_keeps_empty_and_zero_indent_lines() {
+    let mut buf = Buf::new(false);
+    buf.newline();
+    buf.indent();
+    buf.deindent();
+    buf.deindent();
+    buf.newline();
+    assert_eq!(buf.code, "\n\n");
+    assert_eq!(buf.indent_width(), 0);
+}
+
+#[test]
+fn multiline_indentation_keeps_helper_import_membership_and_order() {
+    let mut buf = Buf::new(false);
+    buf.use_helper(Helper::NormalizeStyle);
+    buf.use_helper(Helper::NormalizeClass);
+    for _ in 0..33 {
+        buf.indent();
+    }
+    buf.newline();
+    buf.push("_normalizeClass(cls)");
+    buf.newline();
+    buf.push("_normalizeStyle(style)");
+    assert_eq!(
+        buf.preamble(&DomEmitOptions::DEFAULT),
+        "const { normalizeClass: _normalizeClass, normalizeStyle: _normalizeStyle } = Vue\n"
+    );
+}
+
+#[test]
 fn helper_preamble_uses_final_body_order_within_one_rank() {
     let mut buf = Buf::new(false);
     buf.use_helper(Helper::NormalizeStyle);

@@ -8,8 +8,10 @@ and stress-deep DOM compile ceilings. The earlier single-markup-machine
 candidate (`ca028b7`) had four token-workload regressions; its final candidate
 subsequently passed all one hundred ceilings and merged. Archive download
 transport is unavailable in the current local runtime while decoded Actions
-logs remain readable. The L2 performance repair still needs actual measured
-function evidence.
+logs remain readable. The actual reporter run now exposes the two L2
+over-budget function tables; their largest exclusive cost is CompactString
+appending. The [bounded indentation candidate](./2026-10-01-native-indent-perf.md)
+uses this evidence without claiming the relocation's cause or a proven fix.
 
 After the existing three executions complete, the strict comparator reads
 the already-produced first-run Callgrind files and reports only workloads
@@ -42,4 +44,5 @@ strict CLI. The CLI probe proves that successful diagnostics and unavailable
 diagnostics both preserve the original hard failure, while within-budget
 input neither reads dumps nor emits diagnostics. All seventeen diagnostic
 and existing comparator laws pass locally. These are parser/runner proofs;
-actual x86-64 function hotspots and any performance fix still require Actions.
+the actual x86-64 diagnostic now reports eighty rows for the two failing
+workloads. Any performance fix still requires unchanged-ceiling Actions.

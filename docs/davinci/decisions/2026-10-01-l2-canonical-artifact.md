@@ -122,3 +122,10 @@ identical assembly before and after the hints, so that small caller does not
 establish the cause or fix of the real ci-opt ThinLTO regression. Fresh
 strict instruction Actions must establish whether the actual measured paths
 are repaired. No benchmark identity or instruction ceiling changes.
+
+Those inline hints did not repair the two instruction failures. The actual
+reporter head retains both measured regressions and exposes the largest
+exclusive string-output costs. The [indentation candidate](./2026-10-01-native-indent-perf.md)
+batches only the existing newline's spaces and preserves its bytes and
+generated offsets. It requires fresh full checks and all one hundred
+unchanged ceilings; the Stack remains outside the queue until those pass.

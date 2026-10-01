@@ -59,9 +59,15 @@ impl Buf {
     }
 
     pub(super) fn newline(&mut self) {
+        const SPACES: &str = "                                                                ";
         self.code.push('\n');
-        for _ in 0..self.indent {
-            self.code.push_str("  ");
+        let mut remaining = self.indent;
+        while remaining >= 32 {
+            self.code.push_str(SPACES);
+            remaining -= 32;
+        }
+        if remaining != 0 {
+            self.code.push_str(&SPACES[..remaining as usize * 2]);
         }
     }
 
