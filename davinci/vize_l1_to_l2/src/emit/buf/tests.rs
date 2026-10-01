@@ -22,7 +22,7 @@ fn newline_preserves_indentation_bytes_at_chunk_boundaries() {
             buf.indent();
         }
         buf.newline();
-        assert_eq!(&buf.code[..6], "é界\n");
+        assert_eq!(buf.code.get(..6), Some("é界\n"));
         assert_eq!(buf.code.len(), 6 + spaces);
         assert!(buf.code.as_bytes()[6..].iter().all(|byte| *byte == b' '));
         assert_eq!(buf.indent_width(), spaces);
@@ -55,7 +55,7 @@ fn newline_keeps_multiline_body_and_generated_byte_offsets() {
         (assets_start, assets_end, return_start, return_end),
         (12, 29, 36, 49)
     );
-    assert_eq!(&buf.code[return_start..return_end], "['é', '界']");
+    assert_eq!(buf.code.get(return_start..return_end), Some("['é', '界']"));
 }
 
 #[test]

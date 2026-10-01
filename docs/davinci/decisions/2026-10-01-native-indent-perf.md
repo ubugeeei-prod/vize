@@ -16,8 +16,8 @@ per-function delta. Inclusive recursive rows overlap and are not summed.
 
 Only the existing native DOM buffer's `newline` indentation loop changes.
 Instead of appending two spaces for every level, it appends a constant
-64-space string for each complete group of 32 levels, then the final ASCII
-slice for fewer than 32 levels. The final multiplication is bounded below
+64-space string for each complete group of 32 levels, then the checked ASCII
+prefix for fewer than 32 levels. The final multiplication is bounded below
 64, including on 32-bit targets. At zero indentation it appends only the
 existing newline, without an empty string append. No scratch allocation, buffer
 field, walk, node identity, pipeline stage or serialization is introduced.
@@ -32,8 +32,21 @@ module proof is not a full current-workspace build or product-corpus result.
 The buffer carries no SourceLinks state; its DOM producer records section
 offsets from the emitted byte length. Native L4 SourceLinks are unaffected.
 
-The candidate remains unproven for instruction performance. Fresh exact-head
-Actions must pass the full output/corpus checks and all one hundred unchanged
+The initial candidate's PR build failed the workspace `clippy::string_slice`
+contract; the narrow rustc proof did not enforce that lint. Checked `get`
+replaces direct indexing without a suppression, panic or unsafe operation.
+The constant is 64 ASCII bytes and the remaining positive level count is
+below 32, so the checked prefix is always present. The actual Clippy driver
+now passes on these exact production and test modules with every workspace deny lint;
+only selected-module dead-code reporting is allowed because the minimal
+harness does not include all callers. The same nineteen byte/output laws
+still pass. Whole-workspace Actions and instruction measurements remain gates.
+
+The initial batching head `fc72aa6` passes the [actual fixed-guest instruction run](https://github.com/ubugeeei-prod/vize/actions/runs/36882441648):
+all one hundred benchmarks match across three executions, the pinned ceilings
+and ratchet verify, and all one hundred ceilings hold. Its PR still fails
+the direct-string-slice lint. The checked-access follow-up requires its own
+fresh exact-head full output/corpus checks and all one hundred unchanged
 instruction ceilings before the canonical Stack may enter the merge queue.
 Benchmark fixtures, identities, windows, three-run equality, guest/profile
 methodology and numeric ceilings remain unchanged. Actual conversion artifact

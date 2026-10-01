@@ -66,8 +66,10 @@ impl Buf {
             self.code.push_str(SPACES);
             remaining -= 32;
         }
-        if remaining != 0 {
-            self.code.push_str(&SPACES[..remaining as usize * 2]);
+        if remaining != 0
+            && let Some(spaces) = SPACES.get(..remaining as usize * 2)
+        {
+            self.code.push_str(spaces);
         }
     }
 
