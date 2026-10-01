@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { validateTypecheckerOutput } from "../../tools/support/compat/fixtures/tool-matrix-typechecker.mjs";
 
@@ -108,7 +109,7 @@ test("malformed program members remain rejected without weakening diagnostic pat
 
 test("canonical Rust fixture oracle validates the same external-program regression and path controls", () => {
   const tool = new URL("../../tools/commands/fixtures/tool-matrix-report.rs", import.meta.url);
-  const result = spawnSync("rust-script", ["--test", tool.pathname], { encoding: "utf8" });
+  const result = spawnSync("rust-script", ["--test", fileURLToPath(tool)], { encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr + result.stdout);
 });
 
