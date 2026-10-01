@@ -7,6 +7,7 @@ import { appendFileSync, writeFileSync } from "node:fs";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { collectRustTests, customRustTestTargets } from "./rust-test-inventory.mjs";
 
 const IGNORED_DIRS = new Set([
   ".git",
@@ -155,36 +156,6 @@ function collectJsTests(root, absolute) {
   };
 }
 
-function collectRustTests(root, absolute) {
-  const relativePath = normalizePath(root, absolute);
-  const content = fs.readFileSync(absolute, "utf8");
-  if (!content.includes("#[test") && !content.includes("::test") && !content.includes("#[rstest")) {
-    return null;
-  }
-
-  const tests = [];
-  const pattern =
-    /#\[\s*(?:tokio::)?test(?:\s*\([^)]*\))?\s*\][\s\r\n]*(?:#\[[^\]]+\][\s\r\n]*)*(?:pub(?:\([^)]*\))?\s+)?(?:async\s+)?fn\s+([A-Za-z_][A-Za-z0-9_]*)/g;
-  for (const match of content.matchAll(pattern)) {
-    tests.push({
-      name: match[1],
-      line: lineNumberForIndex(content, match.index),
-    });
-  }
-
-  if (tests.length === 0) {
-    return null;
-  }
-
-  return {
-    area: "Rust",
-    runner: "cargo test",
-    file: relativePath,
-    count: tests.length,
-    tests,
-  };
-}
-
 function collectFixtureCases(root, absolute) {
   const relativePath = normalizePath(root, absolute);
   if (!relativePath.startsWith("tests/fixtures/")) {
@@ -247,6 +218,7 @@ function collectPklFixtureCases(content) {
 
 export function collectInventory(root = process.cwd()) {
   const files = walkFiles(root);
+  const customTargets = customRustTestTargets(files);
   const groups = [];
 
   for (const absolute of files) {
@@ -260,7 +232,7 @@ export function collectInventory(root = process.cwd()) {
     ) {
       group = collectFixtureCases(root, absolute);
     } else if (extension === ".rs") {
-      group = collectRustTests(root, absolute);
+      group = collectRustTests(root, absolute, customTargets, lineNumberForIndex);
     } else if (JS_EXTENSIONS.has(extension)) {
       group = collectJsTests(root, absolute);
     }

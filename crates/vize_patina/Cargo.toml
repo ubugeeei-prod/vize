@@ -90,5 +90,9 @@ harness = false
 name = "davinci_markup_differential"
 required-features = ["legacy-differential"]
 
+[[test]]
+name = "davinci_authored_markup_budget"
+harness = false
+
 [lints]
 workspace = true

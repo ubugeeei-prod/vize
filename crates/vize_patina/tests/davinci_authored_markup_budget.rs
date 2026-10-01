@@ -1,4 +1,6 @@
-//! P4-7b allocation gates run in one process because the counters are global.
+//! P4-7b allocation gates run directly on the process main thread.
+//! The counters also include allocations on spawned threads, so libtest's
+//! concurrent result-channel bookkeeping must stay outside these windows.
 
 use davinci_harness::alloc::{CountingAllocator, mark_installed, measure, measure_returning};
 use vize_l0::Allocator;
@@ -15,7 +17,10 @@ const GALLERY: &str = r#"<section class="gallery">
 </section>
 "#;
 
-#[test]
+fn main() {
+    authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget();
+}
+
 fn authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget() {
     mark_installed();
     for source in [
