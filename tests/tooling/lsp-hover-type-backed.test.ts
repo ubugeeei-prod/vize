@@ -153,7 +153,7 @@ test("hover and definition answer authored template anchors with backend type te
       "component tag hover must select the authored tag token",
     );
     const childTagText = hoverToText(childTagHover);
-    assert.match(childTagText, /^\`\`\`typescript\n/);
+    assert.match(childTagText, /^```typescript\n/);
     assert.match(childTagText, /props: \{ label: string \};/);
     assert.match(childTagText, /emits: \{ save: \[value: string\] \};/);
     assert.match(childTagText, /slots: \{ default\(props: \{ value: string \}\): unknown \};/);
