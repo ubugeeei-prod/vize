@@ -1,18 +1,18 @@
 mod planning;
+mod probes;
 use super::super::engine::{SfcTemplateLintInput, TemplateAnalysis};
 use super::document::project_type_aware;
 use super::{
     LintResult, Linter, RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS,
     RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
-    has_promise_like_return, push_warning, should_warn_for_emit_validator,
-    should_warn_for_prop_access, should_warn_for_reactivity_loss, with_corsa_session,
+    push_warning, with_corsa_session,
 };
 use super::{
     markers::{QueryKind, push_promise_marker},
     parsing::collect_floating_candidates,
     reactivity_loss::collect_reactivity_loss_queries,
     rule_queries::{MacroWarning, collect_emit_queries, collect_prop_queries, push_macro_warning},
-    template_queries::{TemplateQueryKind, collect_template_query_sets},
+    template_queries::collect_template_query_sets,
 };
 use crate::diagnostic::LintDiagnostic;
 use planning::{
@@ -21,7 +21,7 @@ use planning::{
 };
 use vize_armature::Parser as TemplateParser;
 use vize_croquis::script_parser;
-use vize_l0::{FxHashSet, profile};
+use vize_l0::profile;
 pub(super) fn lint_with_descriptor<'a>(
     linter: &Linter,
     source: &str,
@@ -249,8 +249,6 @@ pub(super) fn lint_with_descriptor<'a>(
 
     let mut should_warn_for_props = false;
     let mut should_warn_for_emits = false;
-    let mut warned_template_owners = FxHashSet::default();
-    let mut warned_reactivity_loss_owners = FxHashSet::default();
     let corsa_result = profile!(
         "patina.type_aware.corsa_session",
         with_corsa_session(linter, filename, |session| {
@@ -258,124 +256,21 @@ pub(super) fn lint_with_descriptor<'a>(
                 "patina.type_aware.corsa.open_virtual_project",
                 session.open_virtual_project(&virtual_ts.content, filename)
             )?;
-            for query in &macro_queries {
-                let probe = profile!(
-                    "patina.type_aware.corsa.probe_macro",
-                    session.probe_type_at_offset(
-                        &virtual_ts.content,
-                        query.generated_offset,
-                        false,
-                        matches!(query.kind, QueryKind::EmitValidator | QueryKind::Promise),
-                    )
-                )?;
-
-                match query.kind {
-                    QueryKind::PropType => {
-                        should_warn_for_props |= should_warn_for_prop_access(probe.as_ref());
-                    }
-                    QueryKind::EmitValidator => {
-                        should_warn_for_emits |= should_warn_for_emit_validator(probe.as_ref());
-                    }
-                    QueryKind::Promise => {
-                        if let Some(probe) = probe.as_ref()
-                            && (has_promise_like_return(probe)
-                                || corsa::utils::is_promise_like_type_texts(
-                                    &probe.type_texts,
-                                    &probe.property_names,
-                                ))
-                        {
-                            push_warning(
-                                &mut result,
-                                LintDiagnostic::warn(
-                                    RULE_NO_FLOATING_PROMISES,
-                                    "Floating Promise must be awaited, returned, or explicitly ignored with `void`",
-                                    script_block.loc.start as u32 + query.source_start,
-                                    script_block.loc.start as u32 + query.source_end,
-                                )
-                                .with_help(
-                                    "Add `await`, return the Promise, or prefix it with `void` when the fire-and-forget behavior is intentional.",
-                                ),
-                            );
-                        }
-                    }
-                }
-            }
-
-            for query in &template_queries {
-                let probe = profile!(
-                    "patina.type_aware.corsa.probe_template",
-                    session.probe_type_at_offset(
-                        &virtual_ts.content,
-                        query.generated_offset,
-                        false,
-                        matches!(query.kind, TemplateQueryKind::CallReturn),
-                    )
-                )?;
-                if !super::expression_bindings::template_binding_is_unsafe(
+            probes::evaluate(
+                session,
+                probes::ProbeBatch {
+                    content: &virtual_ts.content,
                     source,
-                    query,
-                    probe.as_ref(),
-                ) {
-                    continue;
-                }
-
-                let owner_key = query.owner_key();
-                if matches!(
-                    query.kind,
-                    TemplateQueryKind::Expression | TemplateQueryKind::CallReturn
-                ) && warned_template_owners.contains(&owner_key)
-                {
-                    continue;
-                }
-
-                push_warning(&mut result, query.diagnostic());
-                if matches!(query.kind, TemplateQueryKind::CallCallee) {
-                    warned_template_owners.insert(owner_key);
-                }
-            }
-
-            for query in &template_promise_queries {
-                let probe = profile!(
-                    "patina.type_aware.corsa.probe_template_promise",
-                    session.probe_type_at_offset(
-                        &virtual_ts.content,
-                        query.generated_offset,
-                        false,
-                        true,
-                    )
-                )?;
-                let Some(probe) = probe.as_ref() else {
-                    continue;
-                };
-                if has_promise_like_return(probe)
-                    || corsa::utils::is_promise_like_type_texts(
-                        &probe.type_texts,
-                        &probe.property_names,
-                    )
-                {
-                    push_warning(&mut result, query.diagnostic());
-                }
-            }
-
-            for query in &reactivity_loss_queries {
-                let probe = profile!(
-                    "patina.type_aware.corsa.probe_reactivity_loss",
-                    session.probe_type_at_offset(
-                        &virtual_ts.content,
-                        query.generated_offset,
-                        false,
-                        false,
-                    )
-                )?;
-                if !should_warn_for_reactivity_loss(probe.as_ref()) {
-                    continue;
-                }
-
-                let owner_key = query.owner_key();
-                if warned_reactivity_loss_owners.insert(owner_key) {
-                    push_warning(&mut result, query.diagnostic(script_block.loc.start as u32));
-                }
-            }
+                    script_offset: script_block.loc.start as u32,
+                    macros: &macro_queries,
+                    templates: &template_queries,
+                    promises: &template_promise_queries,
+                    reactivities: &reactivity_loss_queries,
+                },
+                &mut result,
+                &mut should_warn_for_props,
+                &mut should_warn_for_emits,
+            )?;
             Ok(())
         })
     );
