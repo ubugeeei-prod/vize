@@ -204,6 +204,21 @@ class FormatterConfig {
   semi: Boolean? = null
   singleQuote: Boolean? = null
   trailingComma: TrailingComma? = null
+  jsxSingleQuote: Boolean? = null
+  bracketSpacing: Boolean? = null
+  bracketSameLine: Boolean? = null
+  arrowParens: ("always"|"avoid")? = null
+  endOfLine: ("lf"|"crlf"|"cr"|"auto")? = null
+  quoteProps: ("as-needed"|"consistent"|"preserve")? = null
+  singleAttributePerLine: Boolean? = null
+  vueIndentScriptAndStyle: Boolean? = null
+  sortAttributes: Boolean? = null
+  attributeSortOrder: ("alphabetical"|"as-written")? = null
+  mergeBindAndNonBindAttrs: Boolean? = null
+  maxAttributesPerLine: Int? = null
+  attributeGroups: Listing<Listing<String>>? = null
+  normalizeDirectiveShorthands: Boolean? = null
+  sortBlocks: Boolean? = null
 }
 
 class LspConfig {

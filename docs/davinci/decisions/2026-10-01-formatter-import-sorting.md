@@ -34,3 +34,9 @@ ignore discovery, and entry selection. The owning CLI regression checks an
 effectful config, full sorted output, an untouched ignored file, malformed
 sorting protection, and `--no-config`. The configuration key audit includes the
 private raw formatter wrapper while requiring each flattened owner to be covered.
+
+The expanded key audit also exposed older missing formatter fields in the
+compatibility `vize.pkl` module. It now accepts the complete primary formatter
+key set while retaining nullable defaults, so omitted keys do not change entry
+merging. The audit compares identical keys across both Pkl modules, JSON Schema,
+generated TypeScript and all serialized Rust formatter fields.
