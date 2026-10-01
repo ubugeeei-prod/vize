@@ -81,6 +81,26 @@ fn parse_projection<'a>(
     Option<SurfaceTree<'a>>,
     Vec<'a, SurfaceError>,
 ) {
+    construct(allocator, source, authored, |events, errors| {
+        let recorder = Recorder { events, errors };
+        let mut tokenizer = Tokenizer::new(source, recorder);
+        tokenizer.set_in_tag_comments(options.experimental_in_tag_comments);
+        tokenizer.tokenize();
+    })
+}
+
+/// Both lexer entry points share the source limit, recovery and projection
+/// construction. Recording remains one pass with no intervening serialization.
+pub(crate) fn construct<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    authored: bool,
+    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),
+) -> (
+    SurfaceTree<'a>,
+    Option<SurfaceTree<'a>>,
+    Vec<'a, SurfaceError>,
+) {
     let mut events: Vec<'a, Event> = Vec::new_in(&allocator);
     let mut errors: Vec<'a, SurfaceError> = Vec::new_in(&allocator);
     // L1 addresses sources with `u32` offsets. A larger source keeps byte
@@ -91,15 +111,7 @@ fn parse_projection<'a>(
         children.push(SurfaceChild::Unexpected(hole));
         return (SurfaceTree { source, children }, None, errors);
     }
-    {
-        let recorder = Recorder {
-            events: &mut events,
-            errors: &mut errors,
-        };
-        let mut tokenizer = Tokenizer::new(source, recorder);
-        tokenizer.set_in_tag_comments(options.experimental_in_tag_comments);
-        tokenizer.tokenize();
-    }
+    record(&mut events, &mut errors);
     let (tree, repaired) = build(allocator, source, &events, true);
     let authored = (authored && repaired).then(|| build(allocator, source, &events, false).0);
     debug_assert!(

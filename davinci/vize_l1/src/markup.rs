@@ -13,7 +13,8 @@
 //!
 //! The profile-generic lexer and entity decoder are available in default
 //! builds. The `native-markup-lex` feature enables the compatibility callback
-//! adapter for differential validation. The surface tree and compiler still
+//! adapter for differential validation. [`parse_component`] constructs a
+//! native surface tree; the root parse APIs and compiler products still
 //! use the L1-owned compatibility tokenizer. Switching products to the
 //! generic lexer waits for the compiler fix-history gate #6880 and parity.
 //! The directive hook is still a skeleton.
@@ -23,11 +24,13 @@ pub mod directive;
 pub mod entity;
 pub mod grammar;
 pub mod lex;
+pub mod parse;
 pub mod profile;
 pub mod token;
 
 pub use directive::{ArgSyntax, DirectiveName, DirectivePrefix, DirectiveSyntax, VueDirectives};
 pub use grammar::{MarkupGrammar, Vue};
 pub use lex::{Delimiters, LexOptions, Lexer};
+pub use parse::{parse_component, parse_component_with_authored, parse_component_with_options};
 pub use profile::{Component, Document, Profile, ProfileKind};
 pub use token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
