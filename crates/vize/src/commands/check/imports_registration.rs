@@ -126,9 +126,8 @@ pub(super) fn non_relative_import_needs_virtual_registration(
         options,
         aliases,
         packages,
-        &mut cache.reachability,
+        cache,
         &mut discovered,
-        &cache.negative_alias_sources,
     );
     #[cfg(test)]
     {

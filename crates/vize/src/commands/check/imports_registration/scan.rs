@@ -1,8 +1,8 @@
 use super::{
-    CanonicalPathCache, FxHashMap, FxHashSet, ImportFileOptions, PackageReachabilityKey, Path,
-    PathAliasResolver, RegistrationFrontier, extract_module_specifier_occurrences,
-    is_declaration_file, is_relative_specifier, resolve_import_base,
-    resolve_import_base_with_inputs, resolve_relative_import,
+    CanonicalPathCache, ImportFileOptions, Path, PathAliasResolver, RegistrationFrontier,
+    VirtualRegistrationCache, extract_module_specifier_occurrences, is_declaration_file,
+    is_relative_specifier, resolve_import_base, resolve_import_base_with_inputs,
+    resolve_relative_import,
 };
 
 pub(super) fn source_needs_virtual_registration(
@@ -11,19 +11,15 @@ pub(super) fn source_needs_virtual_registration(
     options: ImportFileOptions,
     aliases: Option<&PathAliasResolver>,
     mut packages: Option<&mut vize_canon::PackageRouteResolver>,
-    reachability_cache: &mut FxHashMap<
-        PackageReachabilityKey,
-        vize_canon::batch::PackageRouteReachability,
-    >,
+    cache: &mut VirtualRegistrationCache,
     discovered_routes: &mut Vec<vize_canon::PackageRouteBinding>,
-    negative_alias_sources: &FxHashSet<std::path::PathBuf>,
 ) -> bool {
     let mut needs_registration = false;
     while let Some(file) = frontier.queue.pop() {
         if !frontier.visited.insert(file.clone()) {
             continue;
         }
-        if packages.is_none() && negative_alias_sources.contains(&file) {
+        if packages.is_none() && cache.negative_alias_sources.contains(&file) {
             continue;
         }
         if file.extension().and_then(|extension| extension.to_str()) == Some("vue") {
@@ -93,7 +89,7 @@ pub(super) fn source_needs_virtual_registration(
                             context.clone(),
                             vize_canon::batch::PACKAGE_REACHABILITY_BUDGET_REVISION,
                         );
-                        let reachability = match reachability_cache.get(&reachability_key) {
+                        let reachability = match cache.reachability.get(&reachability_key) {
                             Some(cached) => cached.clone(),
                             None => {
                                 let scanned = scan_route_reachability(
@@ -104,7 +100,7 @@ pub(super) fn source_needs_virtual_registration(
                                     packages,
                                 );
                                 scanned.record_work(packages);
-                                reachability_cache.insert(reachability_key, scanned.clone());
+                                cache.reachability.insert(reachability_key, scanned.clone());
                                 scanned
                             }
                         };
