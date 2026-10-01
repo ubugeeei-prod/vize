@@ -135,6 +135,11 @@ function rustStructKeys(file: string, structNames: string[], owners: readonly st
 
 const configSections = [
   {
+    name: "FormatterConfig",
+    pkl: "FormatterConfig.pkl",
+    rust: [{ file: "formatter.rs", structs: ["FormatterConfig", "RawFormatterConfig"] }],
+  },
+  {
     name: "CompilerConfig",
     pkl: "CompilerConfig.pkl",
     rust: [{ file: "compiler.rs", structs: ["RawCompilerConfig"] }],
