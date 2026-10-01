@@ -12,6 +12,7 @@ use crate::markup::{
     MarkupBindingKind, MarkupContext, MarkupElement, MarkupElementKind, MarkupNode, MarkupRule,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::a11y::helpers::string_literal_value;
 use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
@@ -70,8 +71,28 @@ impl HeadingHasContent {
     }
 
     fn has_accessible_content(element: &MarkupElement<'_>) -> bool {
+        if Self::is_hidden_from_accessibility_tree(element) {
+            return false;
+        }
         if Self::has_accessible_name(element) {
             return true;
+        }
+
+        if element.is_unqualified_tag_exact("img") {
+            let mut named = false;
+            element.walk_bindings(&mut |binding| {
+                if binding.is_unqualified_arg_exact("alt") {
+                    named |= match binding.static_value() {
+                        Some(value) => !value.trim().is_empty(),
+                        None if binding.kind() == MarkupBindingKind::Bind => binding
+                            .expression()
+                            .and_then(string_literal_value)
+                            .is_none_or(|value| !value.trim().is_empty()),
+                        None => false,
+                    };
+                }
+            });
+            return named;
         }
 
         let mut has_content = false;

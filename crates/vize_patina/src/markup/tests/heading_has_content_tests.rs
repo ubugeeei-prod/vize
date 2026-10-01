@@ -244,3 +244,25 @@ fn heading_has_content_jsx_direct_matches_lowered_boundaries() {
         );
     }
 }
+
+#[test]
+fn heading_image_names_match_direct_and_lowered_jsx() {
+    let rule = HeadingHasContent;
+    for (source, expected) in [
+        (r#"const A = () => <h1><img alt="Product" /></h1>;"#, 0),
+        (r#"const A = () => <h1><img alt={name} /></h1>;"#, 0),
+        (r#"const A = () => <h1><img alt={''} /></h1>;"#, 1),
+        (r#"const A = () => <h1><img alt="" /></h1>;"#, 1),
+        (
+            r#"const A = () => <h1><img alt="Product" aria-hidden="true" /></h1>;"#,
+            1,
+        ),
+        (
+            r#"const A = () => <h1><span aria-hidden="true"><img alt="Product" /></span></h1>;"#,
+            1,
+        ),
+    ] {
+        assert_eq!(run_over_jsx_oxc(&rule, source), expected, "{source}");
+        assert_eq!(run_over_jsx_lowered(&rule, source), expected, "{source}");
+    }
+}
