@@ -10,11 +10,19 @@ generated-to-authored links; `write::source_map` serializes them as Source
 Map v3. The production compiler keeps its own document until its fix-history
 fixture gate closes ([#6880](https://github.com/ubugeeei-prod/vize/issues/6880)).
 
-Expression rewriting (`expr`), module assembly (`module`), the runtime helper
-tables (`runtime`) and the DOM, SSR, Vapor and type-check targets (`targets`)
-are unfinished skeletons tracked in
+`module::assemble` joins prepared hoist/cache, script and render writers into
+one document. It supports script-only components, declared client/server render
+functions and inline setup render expressions. Its late import preamble uses
+the supplied helper vocabulary and preserves all fragment links. The script
+lane owns default-export rewriting and inline insertion points; the assembler
+does not parse JavaScript or admit a target.
+
+Expression rewriting (`expr`), the runtime helper tables (`runtime`) and the
+DOM, SSR, Vapor and type-check targets (`targets`) are unfinished skeletons in
 [#6840](https://github.com/ubugeeei-prod/vize/issues/6840); no product selects
-them yet.
+them yet. Module assembly currently requires all fragments to share one supplied
+vocabulary. Mixed runtime imports and product integration wait for their actual
+providers and the compiler fix-history gate.
 
 The crate remains unpublished while its targets and consumer migration are
 unfinished.

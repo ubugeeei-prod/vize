@@ -1,8 +1,10 @@
 //! L4 — emission (codename: Stesura).
 //!
-//! **Experimental skeleton (#6840).** The module layout and signatures follow
-//! the [#6840 design](https://github.com/ubugeeei-prod/vize/issues/6840#issuecomment-5847908963);
-//! unfinished bodies are explicit `todo!()`s and no product reaches them.
+//! **Experimental (#6840).** The module layout follows the
+//! [#6840 design](https://github.com/ubugeeei-prod/vize/issues/6840#issuecomment-5847908963).
+//! The writer and prepared-fragment module assembler are implemented. Expression
+//! rewriting, runtime tables and targets remain explicit `todo!()`s; no product
+//! selects those unfinished providers.
 //!
 //! L4 writes output text directly. There is no JS AST plus codegen step:
 //!
