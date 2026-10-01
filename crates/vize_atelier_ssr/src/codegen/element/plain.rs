@@ -115,6 +115,12 @@ impl<'a> SsrCodegenContext<'a> {
         let has_v_show = crate::get_v_show_exp(el).is_some();
 
         for prop in &el.props {
+            if el.tag == "input"
+                && (is_static_named_prop(prop, "true-value")
+                    || is_static_named_prop(prop, "false-value"))
+            {
+                continue;
+            }
             match prop {
                 PropNode::Attribute(attr) => {
                     if (attr.name == "class" && has_dynamic_class)

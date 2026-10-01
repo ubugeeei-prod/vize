@@ -54,11 +54,12 @@ fn input_models_match_vue_in_all_attribute_emission_paths() {
                 fixture.name
             );
             cases.push(format!(
-                "{{\"name\":{},\"template\":{},\"vize\":{},\"data\":{}}}",
+                "{{\"name\":{},\"template\":{},\"vize\":{},\"data\":{},\"compareCheckedWithClient\":{}}}",
                 json(&format!("{}-{path}", fixture.name)),
                 json(&template),
                 json(&code),
-                fixture.data
+                fixture.data,
+                fixture.props.contains("true-value")
             ));
             expected.push(fixture.checked);
         }

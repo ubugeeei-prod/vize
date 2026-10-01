@@ -17,7 +17,7 @@ fn assert_modes(source: &str, mut extra: Value) -> Value {
 
 #[test]
 fn production_inline_setup_refs_computed_values_and_events_remain_live() {
-    let source = include_str!("../../../../tests/_fixtures/vapor-production/reactive-events.vue");
+    let source = include_str!("../fixtures/vapor-production/reactive-events.vue");
     let actual = assert_modes(
         source,
         json!({"steps": [{"click": "button"}, {"click": "button"}]}),
@@ -47,7 +47,7 @@ fn production_inline_setup_refs_computed_values_and_events_remain_live() {
 
 #[test]
 fn production_keyed_components_slots_scope_and_remount_preserve_behavior() {
-    let source = include_str!("../../../../tests/_fixtures/vapor-production/keyed-slots.vue");
+    let source = include_str!("../fixtures/vapor-production/keyed-slots.vue");
     let child = r#"<script setup>
 defineProps({ label: String });
 const emit = defineEmits(['example']);
@@ -92,7 +92,7 @@ fn production_component_models_switch_keys_and_ignore_stale_listeners() {
 
 #[test]
 fn production_native_models_keep_live_values_and_checked_state() {
-    let source = include_str!("../../../../tests/_fixtures/vapor-production/native-models.vue");
+    let source = include_str!("../fixtures/vapor-production/native-models.vue");
     let actual = assert_modes(
         source,
         json!({
