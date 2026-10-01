@@ -1,6 +1,6 @@
 //! Checked authored and decoded UTF-8 coordinates for L1 embedded syntax.
 //!
-//! HTML decoding happens once here, on authored attribute bytes. Language
+//! HTML decoding happens once here, on construct-selected authored bytes. Language
 //! providers only receive the resulting text. Exact projection never invents
 //! positions inside an authored entity; diagnostic projection can conservatively
 //! highlight the entire reference instead. Neither operation reparses syntax.
@@ -11,6 +11,8 @@ use crate::markup::entity::{EntityContext, decode_one, needs_decoding};
 
 mod map;
 pub use map::{DecodeMap, DecodeSegment, DecodeSegmentKind};
+mod interpolation;
+pub use interpolation::prepare_vue_interpolation_in;
 
 /// Invalid source coordinates or a request that splits one authored entity.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -178,6 +180,15 @@ pub fn prepare_attribute_value<'a>(
     authored_source: &'a str,
     span: Span,
 ) -> Result<EmbedSource<'a>, SourceError> {
+    prepare_decoded_value(allocator, authored_source, span, EntityContext::Attribute)
+}
+
+fn prepare_decoded_value<'a>(
+    allocator: &'a Allocator,
+    authored_source: &'a str,
+    span: Span,
+    context: EntityContext,
+) -> Result<EmbedSource<'a>, SourceError> {
     let plain = EmbedSource::authored(authored_source, span)?;
     let raw = plain.text();
     if !needs_decoding(raw.as_bytes()) {
@@ -193,7 +204,7 @@ pub fn prepare_attribute_value<'a>(
         let Some((value, consumed)) = raw
             .as_bytes()
             .get(at..)
-            .and_then(|bytes| decode_one(bytes, EntityContext::Attribute))
+            .and_then(|bytes| decode_one(bytes, context))
         else {
             continue;
         };

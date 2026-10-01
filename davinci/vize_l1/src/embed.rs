@@ -2,7 +2,7 @@
 //!
 //! Design: <https://github.com/ubugeeei-prod/vize/issues/6836>.
 //! These records describe syntax and source coordinates, not semantic facts.
-//! Attribute preparation uses native entity decoding with checked coordinates.
+//! Construct source preparation uses native entity decoding with checked coordinates.
 //! Existing markup parsing does not select grammars or produce typed trees yet.
 
 pub mod source;
@@ -10,6 +10,7 @@ pub mod syntax;
 
 pub use source::{
     DecodeMap, DecodeSegment, DecodeSegmentKind, EmbedSource, SourceError, prepare_attribute_value,
+    prepare_vue_interpolation_in,
 };
 
 /// The syntactic role selected by the markup dialect, independently of language.
