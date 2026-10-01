@@ -41,7 +41,7 @@ overrides:
   # 5.0.9 is still inside GHSA-qhr7-859c-m2p7 / GHSA-6j4f-fj2g-mc7p / GHSA-q2hr-2g5m-vwhr.
   "brace-expansion@>=5.0.0 <5.0.12": "5.0.12"
   defu: "6.1.7"
-  devalue: "5.9.2"
+  devalue: "5.9.3"
   dompurify: "3.4.13"
   esbuild: "0.28.1"
   fast-uri: "3.1.8"
