@@ -1,5 +1,8 @@
 //! Default Vue 3 template capability table.
 
+pub mod directive;
+pub use directive::VueDirectives;
+
 use super::vue::{DirectiveArgStyle, LegacyDialectCapabilities};
 
 /// No legacy syntax; colon-style directive arguments.

@@ -4754,6 +4754,7 @@ version = "0.429.2"
 dependencies = [
  "davinci_test_support",
  "htmlize",
+ "vize_armature",
  "vize_l0",
 ]
 

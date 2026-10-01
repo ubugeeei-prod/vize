@@ -36,6 +36,7 @@ htmlize = { workspace = true }
 [dev-dependencies]
 davinci_test_support.workspace = true
 htmlize.workspace = true
+vize_armature.workspace = true
 
 [[test]]
 name = "davinci_surface_corpus"

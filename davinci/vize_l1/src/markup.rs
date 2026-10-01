@@ -16,7 +16,8 @@
 //! adapter for differential validation. The surface tree and compiler still
 //! use the L1-owned compatibility tokenizer. Switching products to the
 //! generic lexer waits for the compiler fix-history gate #6880 and parity.
-//! The directive hook is still a skeleton.
+//! The Vue dialect provides allocation-free directive decomposition with checked
+//! source admission; typed Shape dispatch remains unfinished.
 //! Design: <https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929>.
 
 pub mod directive;
@@ -26,7 +27,9 @@ pub mod lex;
 pub mod profile;
 pub mod token;
 
-pub use directive::{ArgSyntax, DirectiveName, DirectivePrefix, DirectiveSyntax, VueDirectives};
+pub use directive::{
+    ArgSyntax, DirectiveName, DirectiveNameError, DirectivePrefix, DirectiveSyntax, VueDirectives,
+};
 pub use grammar::{MarkupGrammar, Vue};
 pub use lex::{Delimiters, LexOptions, Lexer};
 pub use profile::{Component, Document, Profile, ProfileKind};
