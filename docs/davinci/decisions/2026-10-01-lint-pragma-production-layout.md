@@ -16,6 +16,8 @@ battery and the production Vue render oracle. Exact HTML assertions cover
 conditional raw HTML, fragment boundaries and loop-interpolation whitespace.
 The production Vapor reactive/event fixture also carries a lint pragma.
 Parser coverage verifies all eight pragma forms in both comment modes.
+The raw-HTML fixture uses an explicit paragraph end tag so the strict
+render test requires zero diagnostics without a self-closing HTML repair.
 
 The fresh [canonical sweep](https://github.com/ubugeeei-prod/vize/actions/runs/36832691488)
 at `229cd356d20eab8ad7989ffc0fa789d8a44e6693` passed its compiler corpus job:

@@ -5,7 +5,7 @@
     </template>
     <template v-else>
       <!-- eslint-disable-next-line vue/no-v-html -->
-      <p v-html="html" />
+      <p v-html="html"></p>
     </template>
     <!-- oxlint-disable vue/require-v-for-key -->
     <ul>
