@@ -1,0 +1,5 @@
+script: js module; hole=None
+statement ImportDeclaration @Span { start: 9, end: 35 }
+statement ExportNamedDeclaration @Span { start: 37, end: 65 }
+comment SingleLineBlock @Span { start: 0, end: 8 } "/* α */"
+dump: l1 roundtrip OK: capture/cases/js-module.input (65 bytes)

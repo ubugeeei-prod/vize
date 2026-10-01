@@ -37,8 +37,8 @@ Three scoped inspection laws cover real JS/TS/JSX/TSX statement children above
 the former Program scaffold, malformed Unicode and every UTF-8 prefix, and
 ordinary diagnostic retention. Separate source-built CLI laws cover explicit
 language/goal options, observable syntax holes, exact authored-file bytes and
-invalid level/options. The complete existing help snapshot must be captured
-from the source-built CLI after the new options are added.
+invalid level/options. Complete expected stdout/stderr and the updated help
+snapshot come from the actual source-built hosted capture.
 
 The bounded `Native Script CLI Capture` workflow can be opted into on the PR
 with the `native-script-capture` label before its first merge, or dispatched
@@ -53,6 +53,20 @@ combinations. Its bounded lossless file exporter preserves raw bytes, source
 identity and per-file/pack SHA256 in framed logs plus a separate gzip artifact.
 The original complete ZIP artifacts remain retained; no partial-match oracle
 or help reconstruction is admitted when the artifact download route is blocked.
+
+The successful [hosted capture](https://github.com/ubugeeei-prod/vize/actions/runs/36919093494)
+retained 34 files and 5,185 exact source/output bytes. Its validated log frames
+recovered the identical 4,220-byte gzip pack, SHA256
+`19d243925785e48b5f118398534d684469b3f7657822dc871167acb2a2d2ad25`.
+The signed PR merge checkout `6e79572df5729e80861ab2d93f56e65b529d27ee`
+has the reviewed consumer `712afb0895322cd5b2ddb2e56a15e8317f205071` as
+its second parent. The retained 1,454-byte help agrees with the independent
+earlier full-CI observation, and the previous 1,126-byte help remains beside
+the active fixture. `dump_script_cli/provenance.json` records complete case
+hashes, exits and source identity. CLI laws compare the entire four-language
+and recovering output, including diagnostics, and all three rejected errors;
+only the single authored temporary input path is substituted. Fresh full
+source-built checks and strict instruction gates remain required.
 
 TODO: retain the wrapped-shape admission limits, then connect real file
 language/container identity and typed native script Documents through actual

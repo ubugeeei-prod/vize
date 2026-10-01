@@ -42,7 +42,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis`                             |        1 |    4 |
 | `EffectGraphScript`                   |        2 |    3 |
 | `Scope`                               |        0 |    1 |
-| `Span`                                |        0 |    9 |
+| `Span`                                |        0 |   11 |
 | `build_effect_graph_from_sfc_scripts` |        1 |    2 |
 | `Croquis.bindings`                    |        0 |    4 |
 | `Croquis.import_statements`           |        0 |    1 |
