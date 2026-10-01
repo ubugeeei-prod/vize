@@ -198,7 +198,7 @@ mod tests {
     fn missing_vue_import_sentinel_reports_the_authored_specifier() {
         assert_eq!(
             crate::batch::virtual_specifier_message::missing_vue_import_specifier_source(
-                "Cannot find module './Missing.vue.ts/__vize_missing_vue_import__'."
+                "Cannot find module './Missing.vue.ts/__vize_missing_vue_import__.js'."
             ),
             Some("./Missing.vue")
         );

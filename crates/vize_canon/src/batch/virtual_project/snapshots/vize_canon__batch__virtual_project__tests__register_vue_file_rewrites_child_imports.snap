@@ -12,7 +12,7 @@ expression: virtual_file.content.as_str()
 
 // Shared preamble hoisted to the program-wide __vize_helpers.d.ts
 // ========== Module Scope (imports) ==========
-import Child from './Child.vue.ts/__vize_missing_vue_import__'
+import Child from './Child.vue.ts/__vize_missing_vue_import__.js'
 
 // ========== Exported Types ==========
 export type Props = {};

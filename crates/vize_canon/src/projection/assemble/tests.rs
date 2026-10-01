@@ -258,7 +258,7 @@ fn template_directives_suppress_and_report_unused_expectations() {
 #[test]
 fn missing_vue_imports_land_on_the_authored_specifier() {
     let source = "<script setup lang=\"ts\">\nimport Missing from './Missing.vue'\n</script>\n";
-    let message = "Cannot find module './Missing.vue.ts/__vize_missing_vue_import__' or its corresponding type declarations.";
+    let message = "Cannot find module './Missing.vue.ts/__vize_missing_vue_import__.js' or its corresponding type declarations.";
     let mut diagnostic = finished("void", 2307, message);
     diagnostic.end = diagnostic.start + 1;
     let assembled = assemble(source, vec![diagnostic], REPORT_UNUSED);

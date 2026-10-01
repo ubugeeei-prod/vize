@@ -6,7 +6,9 @@ use vize_carton::{String, ToCompactString, cstr};
 /// TypeScript cannot accidentally resolve the generated SFC mirror.
 pub const AUTHORED_VUE_TS_SENTINEL: &str = "/__vize_authored_vue_ts__";
 pub(crate) const AUTHORED_VUE_TS_ALIAS_SENTINEL: &str = ".__vize_authored_vue_ts_alias__";
-pub(crate) const MISSING_VUE_IMPORT_SENTINEL: &str = "/__vize_missing_vue_import__";
+// The trailing extension lets NodeNext report TS2307 for a missing import
+// instead of TS2834 (an extensionless ESM import).
+pub(crate) const MISSING_VUE_IMPORT_SENTINEL: &str = "/__vize_missing_vue_import__.js";
 
 /// The quote pairs a checker message may wrap a specifier in.
 pub(crate) const QUOTE_PAIRS: [(char, char); 3] =
