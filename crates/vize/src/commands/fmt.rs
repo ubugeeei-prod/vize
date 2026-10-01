@@ -107,7 +107,7 @@ pub fn run(args: FmtArgs) {
         eprintln!("\x1b[31mError:\x1b[0m {}", error);
         std::process::exit(2);
     }
-    let (options, vue_version) = build_format_options(&args);
+    let (options, vue_version, sort_imports) = build_format_options(&args);
     let (ignore_set, patterns) = (load_fmt_ignore_set(&args), entries::resolve_patterns(&args));
 
     let collect_start = Instant::now();
@@ -147,7 +147,7 @@ pub fn run(args: FmtArgs) {
             match process_file(
                 path,
                 &options,
-                vue_version,
+                (vue_version, sort_imports.as_ref()),
                 allocator,
                 args.check,
                 args.write,
@@ -336,12 +336,13 @@ pub fn run(args: FmtArgs) {
 fn process_file(
     path: &PathBuf,
     options: &FormatOptions,
-    vue_version: VueVersion,
+    formatting: (VueVersion, Option<&vize_glyph::ImportSortOptions>),
     allocator: &Allocator,
     check: bool,
     write: bool,
     profile: bool,
 ) -> Result<FormatFileResult, String> {
+    let (vue_version, sort_imports) = formatting;
     let file_start = profile.then(Instant::now);
     let read_start = profile.then(Instant::now);
     let source = match profile!("cli.fmt.file.read", fs::read_to_string(path)) {
@@ -359,7 +360,7 @@ fn process_file(
         .unwrap_or(Duration::ZERO);
 
     let format_start = profile.then(Instant::now);
-    let result = format_file_source(path, &source, options, allocator, vue_version)
+    let result = format_file_source(path, &source, options, allocator, vue_version, sort_imports)
         .map_err(|e| vize_l0::cstr!("Format error: {}", e))?;
     let format_time = format_start
         .map(|start| start.elapsed())
@@ -446,6 +447,7 @@ mod tests {
             &options,
             &allocator,
             super::VueVersion::V3,
+            None,
         )
         .unwrap();
 

@@ -16,6 +16,16 @@ pub fn format_script_content_with_source_type(
     _allocator: &Allocator,
     source_type: SourceType,
 ) -> Result<String, FormatError> {
+    format_script_content_with_sort_imports(source, options, _allocator, source_type, None)
+}
+
+pub(super) fn format_script_content_with_sort_imports(
+    source: &str,
+    options: &FormatOptions,
+    _allocator: &Allocator,
+    source_type: SourceType,
+    sort_imports: Option<&crate::ImportSortOptions>,
+) -> Result<String, FormatError> {
     // Fast path for empty content
     let trimmed = source.trim();
     if trimmed.is_empty() {
@@ -43,7 +53,8 @@ pub fn format_script_content_with_source_type(
     }
 
     // Convert options and format
-    let oxc_options = options.to_oxc_format_options();
+    let mut oxc_options = options.to_oxc_format_options();
+    oxc_options.sort_imports = sort_imports.cloned();
     let formatted = format_program(&oxc_allocator, &parsed.program, oxc_options, None);
     let printed = formatted
         .print()

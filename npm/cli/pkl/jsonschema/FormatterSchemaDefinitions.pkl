@@ -1,10 +1,12 @@
 /// JSON Schema for native formatter configuration.
 module vize.jsonschema.FormatterSchemaDefinitions
 import "@json_schema/JsonSchema.pkl"
+import "ImportSortSchemaDefinitions.pkl"
 formatterConfigDef: JsonSchema = new JsonSchema {
   type = "object"
   description = "Formatter options"
   properties {
+    ["sortImports"] = ImportSortSchemaDefinitions.sortImportsSettingDef
     ["printWidth"] = new JsonSchema {
       type = "integer"
       description = "Max line width"

@@ -22,10 +22,10 @@ pub use loader::{
     load_config_and_linter_with_lint_features_and_source, load_config_and_linter_with_source,
     load_config_entry_files_with_source, load_config_entry_ignores_with_source,
     load_config_experimental_vue_flags_with_source, load_config_lint_rule_options,
-    load_config_with_features_and_source, load_config_with_source,
-    load_language_server_unstable_flags, load_lib_config_with_source, load_linter_config,
-    load_linter_execution_with_source, load_linter_rule_options, load_lsp_config_snapshot,
-    try_load_linter_execution_with_source, validate_explicit_config_path,
+    load_config_with_features_and_source, load_config_with_formatter_options_and_source,
+    load_config_with_source, load_language_server_unstable_flags, load_lib_config_with_source,
+    load_linter_config, load_linter_execution_with_source, load_linter_rule_options,
+    load_lsp_config_snapshot, try_load_linter_execution_with_source, validate_explicit_config_path,
 };
 pub use project::ProjectModel;
 pub use vize_l0::config::*;

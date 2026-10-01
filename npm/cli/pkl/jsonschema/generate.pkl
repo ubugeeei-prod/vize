@@ -5,6 +5,7 @@ import "ConfigArtifactDefinitions.pkl"
 import "MuseaSchemaDefinitions.pkl"
 import "LinterSchemaDefinitions.pkl"
 import "FormatterSchemaDefinitions.pkl"
+import "ImportSortSchemaDefinitions.pkl"
 local stringListDef: JsonSchema = new JsonSchema {
   type = "array"
   items = new JsonSchema { type = "string" }
@@ -380,6 +381,8 @@ output {
       ["CompilerConfig"] = ConfigArtifactDefinitions.compilerConfigDef
       ["VitePluginConfig"] = vitePluginConfigDef
       ["LinterConfig"] = LinterSchemaDefinitions.linterConfigDef
+      ["SortImportsConfig"] = ImportSortSchemaDefinitions.sortImportsConfigDef
+      ["ImportSortCustomGroup"] = ImportSortSchemaDefinitions.customGroupDef
       ["RestrictedGlobal"] = ConfigArtifactDefinitions.restrictedGlobalDef
       ["RestrictedMember"] = ConfigArtifactDefinitions.restrictedMemberDef
       ["NoRestrictedGlobalsOptions"] = ConfigArtifactDefinitions.noRestrictedGlobalsOptionsDef

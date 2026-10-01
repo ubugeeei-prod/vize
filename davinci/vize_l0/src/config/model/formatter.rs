@@ -114,3 +114,12 @@ impl Default for FormatterConfig {
         }
     }
 }
+
+/// Retain extra formatter controls without changing the published exhaustive model.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub(crate) struct RawFormatterConfig {
+    #[serde(flatten)]
+    pub(crate) config: FormatterConfig,
+    pub(crate) sort_imports: Option<super::sort_imports::SortImportsSetting>,
+}

@@ -3,7 +3,7 @@ use super::data;
 use super::{Allocator, FormatOptions, FormatResult, VueVersion};
 use oxc_span::SourceType;
 use std::path::Path;
-use vize_glyph::{format_script_with_source_type, format_sfc_with_allocator_and_vue_version};
+use vize_glyph::{GlyphFormatter, format_script_with_sort_imports};
 use vize_l0::profile;
 
 pub(super) fn format_file_source(
@@ -12,11 +12,12 @@ pub(super) fn format_file_source(
     options: &FormatOptions,
     allocator: &Allocator,
     vue_version: VueVersion,
+    sort_imports: Option<&vize_glyph::ImportSortOptions>,
 ) -> Result<FormatResult, vize_glyph::FormatError> {
     if let Some(source_type) = script_source_type_for_path(path) {
         let code = profile!(
             "cli.fmt.file.format_script",
-            format_script_with_source_type(source, options, allocator, source_type)
+            format_script_with_sort_imports(source, options, allocator, source_type, sort_imports)
         )?;
         return Ok(FormatResult {
             changed: code.as_str() != source,
@@ -29,7 +30,9 @@ pub(super) fn format_file_source(
     }
     profile!(
         "cli.fmt.file.format_sfc",
-        format_sfc_with_allocator_and_vue_version(source, options, allocator, vue_version)
+        GlyphFormatter::new_with_vue_version(options, allocator, vue_version)
+            .with_sort_imports(sort_imports)
+            .format(source)
     )
 }
 

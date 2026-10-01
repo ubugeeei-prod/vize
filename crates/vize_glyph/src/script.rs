@@ -41,9 +41,15 @@ pub(crate) fn format_script_content_stable(
     options: &FormatOptions,
     allocator: &Allocator,
     source_type: SourceType,
+    sort_imports: Option<&crate::ImportSortOptions>,
 ) -> Result<String, FormatError> {
-    let mut current =
-        format_script_content_with_source_type(source, options, allocator, source_type)?;
+    let mut current = format::format_script_content_with_sort_imports(
+        source,
+        options,
+        allocator,
+        source_type,
+        sort_imports,
+    )?;
     // Skip the second (idempotence) pass when the caller only needs change
     // detection (`fmt --check`), or when the first pass was already a no-op:
     // the input is then a fixed point, so re-formatting cannot change it.
@@ -52,11 +58,12 @@ pub(crate) fn format_script_content_stable(
     }
 
     for _ in 1..MAX_SCRIPT_STABILIZATION_PASSES {
-        let next = match format_script_content_with_source_type(
+        let next = match format::format_script_content_with_sort_imports(
             current.as_str(),
             options,
             allocator,
             source_type,
+            sort_imports,
         ) {
             Ok(next) => next,
             Err(_) => return Ok(current),
@@ -80,6 +87,7 @@ pub(crate) fn format_ts_script_content_stable(
         options,
         allocator,
         SourceType::ts().with_module(true),
+        None,
     )
 }
 

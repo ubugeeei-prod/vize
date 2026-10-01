@@ -35,6 +35,7 @@ pub struct GlyphFormatter<'a> {
     options: &'a FormatOptions,
     allocator: &'a Allocator,
     vue_version: VueVersion,
+    sort_imports: Option<&'a crate::ImportSortOptions>,
 }
 
 enum Block<'b> {
@@ -72,7 +73,14 @@ impl<'a> GlyphFormatter<'a> {
             options,
             allocator,
             vue_version,
+            sort_imports: None,
         }
+    }
+
+    /// Apply validated import sorting to both script blocks.
+    pub fn with_sort_imports(mut self, options: Option<&'a crate::ImportSortOptions>) -> Self {
+        self.sort_imports = options;
+        self
     }
 
     /// Format a Vue SFC source string
@@ -184,6 +192,7 @@ impl<'a> GlyphFormatter<'a> {
                     self.options,
                     self.allocator,
                     source,
+                    self.sort_imports,
                 )?,
                 Block::Template(template) => template_block::write_template_block(
                     &mut output,

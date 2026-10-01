@@ -275,6 +275,94 @@
       },
       "additionalProperties": false
     },
+    "SortImportsConfig": {
+      "type": "object",
+      "properties": {
+        "partitionByNewline": {
+          "type": "boolean"
+        },
+        "partitionByComment": {
+          "type": "boolean"
+        },
+        "sortSideEffects": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "string",
+          "enum": ["asc", "desc"]
+        },
+        "ignoreCase": {
+          "type": "boolean"
+        },
+        "newlinesBetween": {
+          "type": "boolean"
+        },
+        "internalPattern": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "newlinesBetween": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false,
+                "required": ["newlinesBetween"]
+              }
+            ]
+          }
+        },
+        "customGroups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ImportSortCustomGroup"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ImportSortCustomGroup": {
+      "type": "object",
+      "properties": {
+        "groupName": {
+          "type": "string"
+        },
+        "elementNamePattern": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "selector": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": ["groupName"]
+    },
     "RestrictedGlobal": {
       "type": "object",
       "properties": {
@@ -569,6 +657,18 @@
       "description": "Formatter options",
       "type": "object",
       "properties": {
+        "sortImports": {
+          "description": "Oxfmt-compatible import sorting; false disables it",
+          "oneOf": [
+            {
+              "type": "boolean",
+              "enum": [false]
+            },
+            {
+              "$ref": "#/definitions/SortImportsConfig"
+            }
+          ]
+        },
         "printWidth": {
           "description": "Max line width",
           "default": 100,

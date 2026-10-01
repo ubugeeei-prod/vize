@@ -385,6 +385,10 @@ export interface TypeCheckerConfig {
  */
 export interface FormatterConfig {
   /**
+   * Oxfmt-compatible import sorting; false disables it
+   */
+  sortImports?: false | SortImportsConfig;
+  /**
    * Max line width
    */
   printWidth?: number;
@@ -468,6 +472,29 @@ export interface FormatterConfig {
    * Sort SFC blocks in canonical order
    */
   sortBlocks?: boolean;
+}
+export interface SortImportsConfig {
+  partitionByNewline?: boolean;
+  partitionByComment?: boolean;
+  sortSideEffects?: boolean;
+  order?: "asc" | "desc";
+  ignoreCase?: boolean;
+  newlinesBetween?: boolean;
+  internalPattern?: string[];
+  groups?: (
+    | string
+    | string[]
+    | {
+        newlinesBetween: boolean;
+      }
+  )[];
+  customGroups?: ImportSortCustomGroup[];
+}
+export interface ImportSortCustomGroup {
+  groupName: string;
+  elementNamePattern?: string[];
+  selector?: string;
+  modifiers?: string[];
 }
 /**
  * Language server options

@@ -22,6 +22,11 @@ use super::model::{
 pub struct ConfigDocument(RawVizeConfig);
 
 impl ConfigDocument {
+    /// Borrow configured import sorting without changing the stable formatter model.
+    pub fn formatter_sort_imports(&self) -> Option<&crate::config::SortImportsSetting> {
+        self.0.formatter.sort_imports.as_ref()
+    }
+
     /// Normalize the effective model and its feature flags once.
     pub fn into_config_and_features(self) -> (VizeConfig, ConfigFeatureFlags) {
         self.0.into_config_and_features()

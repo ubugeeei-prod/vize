@@ -5,6 +5,11 @@ mod compiler;
 mod entries;
 mod experimentals;
 mod formatter;
+mod sort_imports;
+use formatter::RawFormatterConfig;
+pub use sort_imports::{
+    ImportSortCustomGroup, ImportSortGroup, SortImportsConfig, SortImportsSetting,
+};
 mod global_types;
 mod language_server;
 mod library;
@@ -155,7 +160,7 @@ pub(crate) struct RawVizeConfig {
     pub base_path: Option<String>,
     pub files: Option<Vec<String>>,
     pub dialect: Option<VueDialect>,
-    pub formatter: FormatterConfig,
+    pub formatter: RawFormatterConfig,
     pub(crate) compiler: RawCompilerConfig,
     pub(crate) compatibility: compatibility::RawCompatibilityConfig,
     pub(crate) experimentals: RawExperimentalsConfig,
@@ -290,6 +295,7 @@ impl RawVizeConfig {
             }
         }
 
+        let formatter = formatter.config;
         let formatter = if formatter == FormatterConfig::default() {
             legacy_formatter.unwrap_or(formatter)
         } else {

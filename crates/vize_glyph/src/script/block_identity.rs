@@ -20,8 +20,10 @@ pub(crate) fn format_sfc_script_content_stable(
     options: &FormatOptions,
     allocator: &Allocator,
     source_type: SourceType,
+    sort_imports: Option<&crate::ImportSortOptions>,
 ) -> Result<String, FormatError> {
-    let formatted = format_script_content_stable(source, options, allocator, source_type)?;
+    let formatted =
+        format_script_content_stable(source, options, allocator, source_type, sort_imports)?;
     if source.trim().is_empty() || !formatted.trim().is_empty() {
         return Ok(formatted);
     }

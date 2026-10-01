@@ -8,6 +8,7 @@ pub(super) fn write_script_block(
     options: &FormatOptions,
     allocator: &Allocator,
     source: &str,
+    sort_imports: Option<&crate::ImportSortOptions>,
 ) -> Result<(), FormatError> {
     let opening_tag = opening_tag::raw_templated_opening_tag(source, &block.loc);
     let content = opening_tag::content_after_opening_tag(
@@ -19,9 +20,14 @@ pub(super) fn write_script_block(
     let trimmed = content.trim();
     let source_type =
         script::source_type_for_script_lang(block.lang.as_ref().map(|lang| lang.as_ref()));
-    let formatted_content =
-        script::format_sfc_script_content_stable(trimmed, options, allocator, source_type)
-            .unwrap_or_else(|_| trimmed.to_compact_string());
+    let formatted_content = script::format_sfc_script_content_stable(
+        trimmed,
+        options,
+        allocator,
+        source_type,
+        sort_imports,
+    )
+    .unwrap_or_else(|_| trimmed.to_compact_string());
 
     if let Some(opening_tag) = &opening_tag {
         opening_tag::write_raw(output, opening_tag);

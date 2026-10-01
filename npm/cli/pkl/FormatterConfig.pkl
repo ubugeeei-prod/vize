@@ -1,7 +1,11 @@
 /// Formatter configuration for Vize.
 module vize.FormatterConfig
+import "SortImportsConfig.pkl"
 
 class FormatterConfig {
+  /// Oxfmt-compatible import sorting; false disables it.
+  sortImports: Boolean(this == false) | SortImportsConfig.SortImportsConfig? = null
+
   /// Maximum line width.
   printWidth: Int = 100
 
