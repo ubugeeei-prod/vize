@@ -21,5 +21,8 @@ Acceptance uses authored source and whole-byte references, idempotence, custom
 groups/newline boundaries, descending/internal groups, safe side-effect ordering,
 comment/newline partitions, CLI check/write/no-config/disabled behavior, invalid
 config write protection, a native-binding full reference, and Vite+ inheritance
-and false-override tests. Required Actions and merge-group validation remain
+and false-override tests. The package test also compares complete native script
+output with the pinned Oxfmt API for five independent controls. The local Oxfmt
+controls match the authored references; source-built native validation is pending.
+Required Actions and merge-group validation remain
 pending; no provider is promoted and no fixture/performance budget is relaxed.
