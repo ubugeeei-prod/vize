@@ -97,6 +97,8 @@ pub enum ArtifactError {
     MissingScope { node: NodeId },
     /// A retained JS root span does not index its own expression source.
     InvalidJsSpan { node: NodeId, span: Span },
+    /// A native expression's decode coordinates belong to different source bytes.
+    MismatchedJsSource { node: NodeId, span: Span },
     /// Scope tags are not a unique dense set starting at zero.
     InvalidScopeTag { node: NodeId, tag: ScopeTag },
 }

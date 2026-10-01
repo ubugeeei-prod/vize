@@ -179,6 +179,7 @@ fn retained_js_root_uses_its_own_text_coordinates_without_reparsing() {
         ast: parsed.ast,
         source: "x",
         span: Span::new(0, 1),
+        coordinates: None,
     });
     let root = region(
         &a,

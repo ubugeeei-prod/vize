@@ -32,6 +32,9 @@ use vize_l0::{Allocator, Span};
 
 use super::opaque::OpaqueReason;
 
+pub mod coordinates;
+pub use coordinates::{JsCoordinateError, JsCoordinates, JsSegment};
+
 /// TypeScript expression dialect (superset of the template's JS) - the
 /// exact `SourceType` the armature retained-parse site uses, so both
 /// sites admit the same language.
@@ -48,16 +51,81 @@ const EXPR_SOURCE_TYPE: SourceType = SourceType::ts();
 /// `docs/davinci/plan/phase-2-records/p2-5b.md`.
 #[derive(Debug, Clone, Copy)]
 pub struct JsExpr<'a> {
-    /// The retained AST. Covers [`JsExpr::source`] entirely; its internal
-    /// oxc spans are relative to that text, not to the compiled file.
+    /// The retained AST. Native wrapper offsets pass through
+    /// [`JsExpr::ast_span_to_source`]; identity load-path offsets stay relative
+    /// to this expression's source, never to the compiled file.
     pub ast: &'a oxc_ast::ast::Expression<'a>,
-    /// The exact text `ast` was parsed from (the P1-5 `raw` contract).
+    /// The decoded expression text, without any internal parser wrapper.
     pub source: &'a str,
     /// The authored range of `source` in the compiled file.
     pub span: Span,
+    /// Native once-parsed syntax has checked wrapper/decode coordinates.
+    /// Identity load-path expressions retain their original layout semantics.
+    pub coordinates: Option<&'a JsCoordinates<'a>>,
 }
 
 impl<'a> JsExpr<'a> {
+    /// Transfer an existing AST, retaining its children without parsing or walking.
+    pub fn from_retained_in(
+        allocator: &'a Allocator,
+        ast: &'a oxc_ast::ast::Expression<'a>,
+        source: &'a str,
+        span: Span,
+        coordinates: JsCoordinates<'a>,
+    ) -> Result<&'a Self, JsCoordinateError> {
+        let decoded = coordinates
+            .decoded_span(ast.span())
+            .ok_or(JsCoordinateError::OutsideExpression)?;
+        if !coordinates.matches(source, span)
+            || !source
+                .get(..decoded.start as usize)
+                .is_some_and(is_expression_trailing_trivia)
+            || !source
+                .get(decoded.end as usize..)
+                .is_some_and(is_expression_trailing_trivia)
+        {
+            return Err(JsCoordinateError::OutsideExpression);
+        }
+        Ok(allocator.alloc(Self {
+            ast,
+            source,
+            span,
+            coordinates: Some(allocator.alloc(coordinates)),
+        }))
+    }
+
+    /// Correct parser offsets to decoded expression bytes before reading text.
+    #[must_use]
+    pub fn ast_span_to_source(&self, span: oxc_span::Span) -> Option<Span> {
+        if let Some(coordinates) = self.coordinates {
+            return coordinates.decoded_span(span);
+        }
+        self.source.get(span.start as usize..span.end as usize)?;
+        Some(Span::new(span.start, span.end))
+    }
+
+    /// Exact authored projection. Partial entity expansions cannot select edits.
+    #[must_use]
+    pub fn authored_span(&self, span: Span) -> Option<Span> {
+        if let Some(coordinates) = self.coordinates {
+            return coordinates.authored_span(span);
+        }
+        self.source.get(span.start as usize..span.end as usize)?;
+        let span = Span::new(
+            self.span.start.checked_add(span.start)?,
+            self.span.start.checked_add(span.end)?,
+        );
+        (span.end <= self.span.end).then_some(span)
+    }
+
+    /// Verify that the emitter received the same authoritative authored bytes.
+    #[must_use]
+    pub fn matches_authored_source(&self, file: &str) -> bool {
+        if let Some(coordinates) = self.coordinates {
+            return coordinates.matches_authored_source(file);
+        }
+        file.get(self.span.start as usize..self.span.end as usize) == Some(self.source)
+    }
     /// Parse `source` as one complete TS-dialect expression into the
     /// arena, or classify why that is impossible.
     ///
@@ -93,6 +161,7 @@ impl<'a> JsExpr<'a> {
             ast: allocator.alloc(parsed),
             source,
             span,
+            coordinates: None,
         }))
     }
 }
@@ -100,4 +169,4 @@ impl<'a> JsExpr<'a> {
 /// See [`crate::op`] for both guard rationales.
 const _: () = assert!(!core::mem::needs_drop::<JsExpr<'static>>());
 #[cfg(target_pointer_width = "64")]
-const _: () = assert!(core::mem::size_of::<JsExpr<'_>>() == 32);
+const _: () = assert!(core::mem::size_of::<JsExpr<'_>>() == 40);

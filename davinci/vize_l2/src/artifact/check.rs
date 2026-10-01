@@ -120,7 +120,7 @@ fn check_node(
     Ok(())
 }
 
-fn expression(
+pub(super) fn expression(
     source: &str,
     id: NodeId,
     expr: ExprRef<'_>,
@@ -138,13 +138,14 @@ fn expression(
         current = filter.base;
     }
     if let ExprRef::Js(js) = current {
+        if js.coordinates.is_some() && !js.matches_authored_source(source) {
+            return Err(ArtifactError::MismatchedJsSource {
+                node: id,
+                span: js.span,
+            });
+        }
         let ast = js.ast.span();
-        if ast.start > ast.end
-            || js
-                .source
-                .get(ast.start as usize..ast.end as usize)
-                .is_none()
-        {
+        if js.ast_span_to_source(ast).is_none() {
             return Err(ArtifactError::InvalidJsSpan {
                 node: id,
                 span: Span::new(ast.start, ast.end),
@@ -154,7 +155,7 @@ fn expression(
     Ok(())
 }
 
-fn owned_span(
+pub(super) fn owned_span(
     source: &str,
     id: NodeId,
     range: Span,
@@ -173,7 +174,7 @@ fn owned_span(
     Ok(())
 }
 
-fn span(source: &str, node: Option<NodeId>, range: Span) -> Result<(), ArtifactError> {
+pub(super) fn span(source: &str, node: Option<NodeId>, range: Span) -> Result<(), ArtifactError> {
     if range.start > range.end
         || source
             .get(range.start as usize..range.end as usize)
