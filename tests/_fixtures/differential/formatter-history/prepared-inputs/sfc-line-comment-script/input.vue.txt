@@ -1,0 +1,4 @@
+<script setup>
+; // keep line
+;
+</script>
