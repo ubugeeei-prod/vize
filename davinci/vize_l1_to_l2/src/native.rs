@@ -1,7 +1,8 @@
 //! Native Component surface → canonical L2, with one retained L1 expression parse.
 //!
 //! This bounded producer preserves whitespace and supports ordinary markup,
-//! static attributes and mustaches. Unsupported Vue constructs stay explicit
+//! static attributes, mustaches and explicit static named binds.
+//! Unsupported Vue constructs stay explicit
 //! holes beside real fragments. No product route selects this entry point yet.
 
 use alloc::boxed::Box;
@@ -20,6 +21,7 @@ use vize_l2::provenance::ProvenanceRecord;
 
 mod element;
 mod expression;
+mod pattern;
 mod text;
 pub use expression::{NativeExpressionError, retain_expression_in};
 
@@ -33,6 +35,7 @@ pub enum NativeHoleKind {
     Directive,
     DirectiveSyntax,
     DirectiveAdmission(DirectiveNameError),
+    PreCarrier,
     Embed(EmbedHole),
     Source(SourceError),
     ExpressionCoordinates(vize_l2::expr::js::JsCoordinateError),
@@ -77,7 +80,7 @@ impl NativeLowered<'_> {
 /// Use the actual native L1 Component parser, then construct canonical nodes.
 ///
 /// The caller supplies JS/TS; file language selection remains unfinished.
-/// Scope/directive/control-flow semantics, Vue-special carriers, recovered
+/// Remaining directive/scope/control-flow semantics, Vue-special carriers, recovered
 /// missing owners, condense whitespace and product integration remain holes
 /// or later contracts. L1 comments and full parser diagnostics stay retained.
 pub fn lower_component_native<'a>(

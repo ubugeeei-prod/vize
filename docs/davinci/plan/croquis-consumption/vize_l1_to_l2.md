@@ -22,11 +22,11 @@ _None._
 | ------------------ | -------: | ---: |
 | `BindingMetadata`  |        0 |    1 |
 | `Croquis`          |        0 |    5 |
-| `Scope`            |        0 |    7 |
+| `Scope`            |        0 |    6 |
 | `ScopeBinding`     |        0 |   11 |
 | `ScopeChain`       |        0 |    1 |
-| `Span`             |        0 |  223 |
+| `Span`             |        0 |  234 |
 | `Symbol`           |        0 |    1 |
-| `Croquis.bindings` |        4 |  251 |
+| `Croquis.bindings` |        4 |  256 |
 | `Croquis.hoists`   |        0 |    6 |
 | `Croquis.scopes`   |        0 |   14 |

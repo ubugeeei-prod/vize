@@ -95,7 +95,7 @@ fn missing_owner_retains_actual_admitted_descendants_without_guessing_extent() {
 #[test]
 fn unsupported_directive_does_not_parse_its_value_or_claim_native_semantics() {
     let a = Allocator::default();
-    let source = "<div :title=\"a &amp;&amp; b\">{{good}}</div>";
+    let source = "<div @click=\"a &amp;&amp; b\">{{good}}</div>";
     let lowered = lower_component_native(&a, source, Lang::Js).unwrap();
     assert!(!lowered.is_supported());
     assert!(

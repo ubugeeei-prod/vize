@@ -5,7 +5,7 @@ use vize_l0::{Allocator, Span, Vec};
 use vize_l1::Interpolation;
 use vize_l1::embed::syntax::{EmbedHole, RetainedExpression, parse_once};
 use vize_l1::embed::{DecodeSegmentKind, Embed, EmbedSource, Grammar, Shape};
-use vize_l2::artifact::RegionBuilder;
+use vize_l2::artifact::{ArtifactError, RegionBuilder};
 use vize_l2::expr::js::{JsCoordinateError, JsCoordinates, JsSegment};
 use vize_l2::expr::{ExprRef, JsExpr};
 
@@ -69,6 +69,29 @@ impl<'a> Context<'a> {
                 return;
             }
         };
+        self.expression(
+            region,
+            source,
+            span,
+            "native.interpolation",
+            "ui.interpolation",
+            |region, expression| region.interpolation(expression, span),
+        );
+    }
+
+    pub(super) fn expression(
+        &mut self,
+        region: &mut RegionBuilder<'_, 'a>,
+        source: EmbedSource<'a>,
+        span: Span,
+        rule: &'static str,
+        after: &'static str,
+        construct: impl FnOnce(
+            &mut RegionBuilder<'_, 'a>,
+            ExprRef<'a>,
+        ) -> Result<vize_l0::id::NodeId, ArtifactError>,
+    ) {
+        let source_span = source.span();
         let syntax = parse_once(
             self.allocator,
             Embed {
@@ -93,14 +116,8 @@ impl<'a> Context<'a> {
         };
         let node = match retain_expression_in(self.allocator, self.block.root_source(), &retained) {
             Ok(js) => {
-                let result = region.interpolation(ExprRef::Js(js), span);
-                self.produced(
-                    region,
-                    result,
-                    "native.interpolation",
-                    span,
-                    "ui.interpolation",
-                )
+                let result = construct(region, ExprRef::Js(js));
+                self.produced(region, result, rule, span, after)
             }
             Err(error) => {
                 let kind = match error {

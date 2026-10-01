@@ -1,11 +1,17 @@
+use super::pattern::Directive;
 use super::{Context, NativeHoleKind};
 use vize_l0::Span;
 use vize_l1::dialect::vue3::VueDirectives;
 use vize_l1::embed::prepare_attribute_value;
-use vize_l1::markup::directive::DirectiveSyntax;
+use vize_l1::markup::directive::{DirectivePrefix, DirectiveSyntax};
 use vize_l1::{Attribute as SurfaceAttribute, Element, ElementClose};
 use vize_l2::artifact::RegionBuilder;
 use vize_l2::op::{Attribute, Namespace};
+
+enum PreparedAttribute<'a> {
+    Static(Attribute<'a>),
+    Directive(Directive),
+}
 
 impl<'a> Context<'a> {
     pub(super) fn element(
@@ -17,24 +23,54 @@ impl<'a> Context<'a> {
         let start = self.token_span(&element.open.lt_name).start;
         let end = match &element.close {
             ElementClose::Present(close) if !close.gt.is_missing() => {
-                self.token_span(&close.gt).end
+                Some(self.token_span(&close.gt).end)
             }
             ElementClose::NotExpected if !element.open.gt.is_missing() => {
-                self.token_span(&element.open.gt).end
+                Some(self.token_span(&element.open.gt).end)
             }
-            _ => {
-                // An unavailable owner extent is not guessed or rescanned. Its
-                // admitted descendants remain fragments beside the typed hole.
-                self.hole(
-                    region,
-                    NativeHoleKind::MissingMarkup,
-                    self.token_span(&element.open.lt_name),
-                );
-                self.children(region, &element.children, parent);
-                return;
-            }
+            _ => None,
         };
-        let span = Span::new(start, end);
+        let span = Span::new(
+            start,
+            end.unwrap_or(self.token_span(&element.open.lt_name).end),
+        );
+        if end.is_none() {
+            // An unavailable owner extent is not guessed or rescanned.
+            self.hole(
+                region,
+                NativeHoleKind::MissingMarkup,
+                self.token_span(&element.open.lt_name),
+            );
+        }
+        let mut attributes = vize_l0::Vec::new_in(&self.allocator);
+        let mut directives = vize_l0::Vec::new_in(&self.allocator);
+        let mut pre = false;
+        for attribute in &element.open.attrs {
+            match self.attribute(region, attribute) {
+                Some(PreparedAttribute::Static(attribute)) => attributes.push(attribute),
+                Some(PreparedAttribute::Directive(directive)) => {
+                    pre |= directive.head.prefix == DirectivePrefix::Full
+                        && self.block.root_source().get(
+                            directive.head.name.start as usize..directive.head.name.end as usize,
+                        ) == Some("pre");
+                    directives.push(directive);
+                }
+                None => {}
+            }
+        }
+        if pre {
+            // Native v-pre is not admitted yet. Preserve the complete carrier
+            // source instead of reinterpreting retained raw descendant attrs.
+            // This must precede unsupported/missing-owner child fallbacks.
+            // Missing extents retain their original complete L1 carrier;
+            // the hole uses only its known opening-name range.
+            self.hole(region, NativeHoleKind::PreCarrier, span);
+            return;
+        }
+        if end.is_none() {
+            self.children(region, &element.children, parent);
+            return;
+        }
         let tag = element.tag();
         if matches!(
             tag,
@@ -47,12 +83,6 @@ impl<'a> Context<'a> {
             );
             self.children(region, &element.children, parent);
             return;
-        }
-        let mut attributes = vize_l0::Vec::new_in(&self.allocator);
-        for attribute in &element.open.attrs {
-            if let Some(attribute) = self.attribute(region, attribute) {
-                attributes.push(attribute);
-            }
         }
         let namespace = match (parent, tag) {
             (_, "svg") => Namespace::Svg,
@@ -78,6 +108,9 @@ impl<'a> Context<'a> {
                 span,
                 if native { "ui.element" } else { "ui.component" },
             );
+            for directive in directives {
+                self.directive(region, directive);
+            }
             self.children(region, &element.children, children_ns);
         };
         let result = if native {
@@ -94,7 +127,7 @@ impl<'a> Context<'a> {
         &mut self,
         region: &mut RegionBuilder<'_, 'a>,
         attribute: &SurfaceAttribute<'a>,
-    ) -> Option<Attribute<'a>> {
+    ) -> Option<PreparedAttribute<'a>> {
         let name_span = self.token_span(&attribute.name);
         let span = Span::new(
             name_span.start,
@@ -115,9 +148,23 @@ impl<'a> Context<'a> {
         );
         match VueDirectives.decompose(attribute.name.text, name_span.start) {
             Ok(None) => {}
-            Ok(Some(_)) => {
-                self.hole(region, NativeHoleKind::Directive, span);
-                return None;
+            Ok(Some(head)) => {
+                return Some(PreparedAttribute::Directive(Directive {
+                    head,
+                    name_span,
+                    span,
+                    value: attribute
+                        .value
+                        .as_ref()
+                        .map(|value| self.token_span(&value.content)),
+                    missing: attribute.value.as_ref().is_some_and(|value| {
+                        value.content.is_missing()
+                            || value
+                                .close_quote
+                                .as_ref()
+                                .is_some_and(|quote| quote.is_missing())
+                    }),
+                }));
             }
             Err(_) => {
                 self.hole(region, NativeHoleKind::DirectiveSyntax, span);
@@ -148,10 +195,10 @@ impl<'a> Context<'a> {
         } else {
             None
         };
-        Some(Attribute {
+        Some(PreparedAttribute::Static(Attribute {
             name: attribute.name.text,
             value,
             span,
-        })
+        }))
     }
 }

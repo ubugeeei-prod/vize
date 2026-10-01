@@ -22,7 +22,11 @@ Each admission failure also creates a source hole, so a nonempty unsupported
 list cannot become a false `is_supported` result. Surface errors are not copied
 into another collection or discarded when fragments are admitted.
 
-Unsupported directives, Vue-special carriers and recovered unavailable owner
+The subsequent [native Vue bind pattern](./2026-10-01-native-vue-bind-pattern.md)
+adds explicit static-argument bindings using the same once-AST handoff and
+checked attached factories, while retaining all other forms as holes.
+
+Other unsupported directives, Vue-special carriers and recovered unavailable owner
 extents remain typed source holes, ordered failed provenance and advisories.
 Admitted descendants survive missing carriers as canonical partial fragments;
 their owner extent is neither guessed nor obtained through a second subtree
