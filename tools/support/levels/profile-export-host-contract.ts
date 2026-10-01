@@ -13,12 +13,7 @@ export const removedExports = `pub use export::{
     ProfileExportWallNs,
 };
 `;
-export const hostDeclaration = `#[expect(
-    clippy::disallowed_types,
-    reason = "host profile JSON preserves its existing owned span and counter vectors"
-)]
-pub mod profile_export;
-`;
+export const hostDeclaration = "pub mod profile_export;\n";
 export const hostImport =
   "use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};";
 export const commonOldImport =

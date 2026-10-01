@@ -28,10 +28,6 @@ mod i18n_supplemental_extra;
 mod i18n_supplemental_extra2;
 mod i18n_supplemental_html;
 
-#[expect(
-    clippy::disallowed_types,
-    reason = "host profile JSON preserves its existing owned span and counter vectors"
-)]
 pub mod profile_export;
 
 #[cfg(not(target_arch = "wasm32"))]

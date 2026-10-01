@@ -75,6 +75,9 @@ export function prepare(read: Reader): Map<string, string> {
     !hostSource.includes("pub mod profile_export;");
   const next =
     !/\bmod export;|\bProfileExport/u.test(coreSource) &&
+    !hostSource.includes(
+      "host profile JSON preserves its existing owned span and counter vectors",
+    ) &&
     occurrences(hostSource, hostDeclaration) === 1;
   requireState(old || next, "unexpected profile export module ownership");
   requireState(
