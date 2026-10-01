@@ -1,5 +1,8 @@
 //! AST-defined boolean contexts; expressions retain their authored ranges.
-use oxc_ast::ast::*;
+use oxc_ast::ast::{
+    ChainElement, ConditionalExpression, DoWhileStatement, Expression, ForStatement, IfStatement,
+    LogicalExpression, StaticMemberExpression, UnaryExpression, WhileStatement,
+};
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::operator::{LogicalOperator, UnaryOperator};

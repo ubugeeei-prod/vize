@@ -1,5 +1,7 @@
 //! Existing linter constructors, shared by opt-in configuration.
-use super::*;
+#[cfg(not(target_arch = "wasm32"))]
+use super::Mutex;
+use super::{FxHashMap, FxHashSet, HelpLevel, LintPreset, Linter, Locale, RuleRegistry};
 use crate::preset::{
     builtin_css_rule_names, builtin_script_rule_names, ecosystem_builtin_script_rule_names,
 };
