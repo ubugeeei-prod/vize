@@ -29,9 +29,12 @@ Reasons use the foundation's compact string through generic formatting. No
 storage or instruction ceiling is waived; the unchanged protected 100-probe
 gate remains mandatory before merge.
 
-Seven actual capture-module laws cover the old infallible API, lazy no-capture
+Seven actual capture-module laws in the ordinary child module
+`dump/capture/fallible_tests.rs` cover the old infallible API, lazy no-capture
 rendering and formatting, exactly-once renderer/error drop, complete Unicode
-failure reasons, later valid pages and all four nonaccepted outcomes. A direct
+failure reasons, later valid pages and all four nonaccepted outcomes. Discovery
+uses `#[cfg(test)] mod fallible_tests;` without a path attribute, as required by
+the existing module-layout gate. A direct
 Rust harness compiles the actual capture source and test module against cached
 real L0 exported primitives; strict production Clippy passes. This scoped
 evidence does not claim a current whole-workspace Cargo build. Exact-head

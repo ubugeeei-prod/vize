@@ -259,7 +259,6 @@ impl CaptureSink for StageCapture {
 }
 
 #[cfg(test)]
-#[path = "capture/fallible_tests.rs"]
 mod fallible_tests;
 
 #[cfg(test)]
