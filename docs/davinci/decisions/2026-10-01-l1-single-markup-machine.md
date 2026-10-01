@@ -87,6 +87,15 @@ diagnostic supports that mechanism; exact-head Actions determine whether all
 After rebasing onto `9c36db024`, three inherited embed-source test slices use
 checked `get` access so strict Clippy can run without changing their assertions.
 
+The gap-only exact head `2f9ebc4de` improved those probes to 4,077 and 202,045 but
+still exceeded their ceilings. Interpolation now reuses `fast_forward_to` to
+scan up to the closing delimiter's first byte. The skipped expression bytes
+previously emitted no callbacks or mode polls. Empty closing delimiters retain
+their behavior, and an unsuccessful scan leaves the same EOF cursor; matching
+and partial-closing bytes still enter the existing close state with the same
+state and delimiter cursor at every callback. All 10,767 frozen records and
+strict Clippy pass locally; exact-head all-100 Actions remain required.
+
 ## Remaining scope
 
 #6835 stays unfinished. The native component-surface constructor still admits

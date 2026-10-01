@@ -131,11 +131,6 @@ impl<'a, P: Profile, S: Sink> Lexer<'a, P, S> {
         self.delimiter_open.first() == Some(&c)
     }
 
-    #[inline]
-    fn at_closing_delimiter(&self, c: u8) -> bool {
-        self.delimiter_close.first() == Some(&c)
-    }
-
     /// Skip through the buffer until a target byte is found.
     fn fast_forward_to(&mut self, c: u8) -> bool {
         while self.index + 1 < self.input.len() {

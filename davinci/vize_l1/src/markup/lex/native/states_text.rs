@@ -216,11 +216,17 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
     }
 
     pub(super) fn state_interpolation(&mut self, c: u8) {
-        if self.at_closing_delimiter(c) {
-            self.state = State::InterpolationClose;
-            self.delimiter_index = 0;
-            self.state_interpolation_close(c);
+        let Some(&closing_byte) = self.delimiter_close.first() else {
+            return;
+        };
+        // Expression bytes emit no callbacks or mode polls. Reuse the bounded
+        // byte loop rather than dispatching their unchanged state per byte.
+        if c != closing_byte && !self.fast_forward_to(closing_byte) {
+            return;
         }
+        self.state = State::InterpolationClose;
+        self.delimiter_index = 0;
+        self.state_interpolation_close(closing_byte);
     }
 
     pub(super) fn state_interpolation_close(&mut self, c: u8) {
