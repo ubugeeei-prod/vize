@@ -16,6 +16,10 @@ Vue's `findProp` does; merged routes consume the final props object. Both
 static-before-bound and bound-before-static orders are registered fixtures.
 Merged prop objects likewise retain the first ordinary static key, as Vue
 does; class/style/listeners still combine and computed keys remain dynamic.
+The merge-queue instruction gate caught a quadratic scan of retained keys on
+wide prop objects. Normalization now retains entries in their input vector
+and tracks ordinary keys with a pre-sized hash set. This preserves source
+order and first-entry spans without raising instruction or allocation budgets.
 
 Vue 3.5's merged `ssrGetDynamicModelProps` helper ignores checkbox `true-value`
 and can check a nonmatching truthy model. The input corpus mounts official

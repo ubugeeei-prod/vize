@@ -1,7 +1,7 @@
 //! Shared JavaScript expression and prop-object builders for SSR element codegen.
 
 use super::{DirectiveNode, ExpressionNode, PropNode, String, ToCompactString, VNodePropEntry};
-use vize_l0::{FxHashMap, is_on};
+use vize_l0::{FxHashMap, FxHashSet, is_on};
 
 /// Build an object literal from normalized prop entries.
 pub(crate) fn component_props_object(entries: &[VNodePropEntry]) -> String {
@@ -58,50 +58,59 @@ pub(crate) fn push_component_prop_entry(out: &mut String, entry: &VNodePropEntry
 /// Match Vue's prop deduplication: merge class/style/listeners, keep the first
 /// ordinary static key, and retain computed keys for runtime evaluation.
 pub(crate) fn normalize_prop_entries(
-    entries: std::vec::Vec<VNodePropEntry>,
+    mut entries: std::vec::Vec<VNodePropEntry>,
 ) -> std::vec::Vec<VNodePropEntry> {
-    let mut normalized = std::vec::Vec::with_capacity(entries.len());
+    let mut seen = FxHashSet::with_capacity_and_hasher(entries.len(), Default::default());
     let mut class_entries = std::vec::Vec::new();
     let mut style_entries = std::vec::Vec::new();
     let mut event_values: FxHashMap<String, std::vec::Vec<String>> = FxHashMap::default();
 
-    for entry in entries {
+    // Reuse the input allocation and hash ordinary keys once. Scanning the
+    // retained entries for every key makes wide prop objects quadratic.
+    entries.retain_mut(|entry| {
         if !entry.dynamic && entry.key == "class" {
-            class_entries.push(entry);
+            class_entries.push(core::mem::replace(
+                entry,
+                component_prop_entry("", "", false),
+            ));
+            false
         } else if !entry.dynamic && entry.key == "style" {
-            style_entries.push(entry);
+            style_entries.push(core::mem::replace(
+                entry,
+                component_prop_entry("", "", false),
+            ));
+            false
         } else if !entry.dynamic && is_on(&entry.key) {
             if let Some(values) = event_values.get_mut(&entry.key) {
-                values.push(entry.value);
+                values.push(core::mem::take(&mut entry.value));
+                false
             } else {
                 event_values.insert(entry.key.clone(), vec![entry.value.clone()]);
-                normalized.push(entry);
+                true
             }
-        } else if entry.dynamic
-            || !normalized
-                .iter()
-                .any(|prior: &VNodePropEntry| !prior.dynamic && prior.key == entry.key)
-        {
-            normalized.push(entry);
+        } else {
+            entry.dynamic || seen.insert(entry.key.clone())
+        }
+    });
+
+    if !event_values.is_empty() {
+        for entry in &mut entries {
+            if !entry.dynamic
+                && is_on(&entry.key)
+                && let Some(values) = event_values.remove(&entry.key)
+            {
+                // A merged value no longer is the first entry's authored value.
+                if values.len() > 1 {
+                    entry.spans = None;
+                }
+                entry.value = merge_prop_values(values);
+            }
         }
     }
 
-    for entry in &mut normalized {
-        if !entry.dynamic
-            && is_on(&entry.key)
-            && let Some(values) = event_values.remove(&entry.key)
-        {
-            // A merged value no longer is the first entry's authored value.
-            if values.len() > 1 {
-                entry.spans = None;
-            }
-            entry.value = merge_prop_values(values);
-        }
-    }
-
-    normalized.extend(merged_entry("class", class_entries));
-    normalized.extend(merged_entry("style", style_entries));
-    normalized
+    entries.extend(merged_entry("class", class_entries));
+    entries.extend(merged_entry("style", style_entries));
+    entries
 }
 
 /// One entry for `key`: a lone entry is kept whole (with its spans); several
