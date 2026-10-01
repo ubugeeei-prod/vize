@@ -376,7 +376,7 @@ overrides:
   fast-uri: 3.1.8
   glob>minimatch: 10.2.5
   h3: 1.15.11
-  hono: 4.13.5
+  hono: 4.13.7
   ip-address: 10.7.1
   launch-editor: 2.14.1
   nanoid@>=3.0.0 <3.3.17: 3.3.17
@@ -2497,7 +2497,7 @@ packages:
     resolution: {integrity: sha512-bjD221KPLoJTWUwso1J6fGKiTXEUFedG/s0visavY4zakFPkeGURMRNly+FhBHs7T8Dz4qHaZIMX9ZoJHSJtKA==}
     engines: {node: '>=20'}
     peerDependencies:
-      hono: 4.13.5
+      hono: 4.13.7
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -9306,8 +9306,8 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  hono@4.13.5:
-    resolution: {integrity: sha512-O6+/eCYRkzzzy0rPWwKLiGBR1nFuUPZynnwjxN1MBA62NNqbT0wQEzQyK2gSO5yDIDB336sXQleAhOHrzlYyKw==}
+  hono@4.13.7:
+    resolution: {integrity: sha512-c8/gF9ac8Y78/agExVocyLevgR+JlpNB444Py0FSX8pJoPdYUfUzRcXtYEYGwt6l19qIlVZPN5Mfsw9jFShmQQ==}
     engines: {node: '>=16.9.0'}
 
   hookable@5.5.3:
@@ -13949,9 +13949,9 @@ snapshots:
     dependencies:
       tailwindcss: 4.3.3
 
-  '@hono/node-server@2.0.11(hono@4.13.5)':
+  '@hono/node-server@2.0.11(hono@4.13.7)':
     dependencies:
-      hono: 4.13.5
+      hono: 4.13.7
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -14276,7 +14276,7 @@ snapshots:
 
   '@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.4.3)':
     dependencies:
-      '@hono/node-server': 2.0.11(hono@4.13.5)
+      '@hono/node-server': 2.0.11(hono@4.13.7)
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       content-type: 1.0.5
@@ -14286,7 +14286,7 @@ snapshots:
       eventsource-parser: 3.1.1
       express: 5.2.1(supports-color@10.2.2)
       express-rate-limit: 8.6.2(express@5.2.1(supports-color@10.2.2))(supports-color@10.2.2)
-      hono: 4.13.5
+      hono: 4.13.7
       jose: 6.2.8
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -20989,7 +20989,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono@4.13.5: {}
+  hono@4.13.7: {}
 
   hookable@5.5.3: {}
 
