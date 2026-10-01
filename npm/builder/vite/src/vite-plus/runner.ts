@@ -9,6 +9,7 @@ import type { ConfigWithVizeTasks, VizeTask, VizeTaskConfig } from "./types.ts";
 import { taskConfigKey } from "./types.ts";
 import { loadConfig, resolveConfigExport } from "../config.ts";
 import { resolveVitePlus } from "./runtime.ts";
+import { relocateTaskConfig } from "./config-paths.ts";
 
 export type Execute = (command: string, args: string[]) => Promise<number>;
 
@@ -152,7 +153,10 @@ export async function runNative(
       : await resolveConfigExport(metadata.config, env);
   const file = path.join(os.tmpdir(), `.vize-vp-${randomUUID()}.json`);
   try {
-    await writeFile(file, JSON.stringify(config), { flag: "wx", mode: 0o600 });
+    await writeFile(file, JSON.stringify(relocateTaskConfig(config, process.cwd())), {
+      flag: "wx",
+      mode: 0o600,
+    });
     const lintOptions =
       command === "lint"
         ? [
