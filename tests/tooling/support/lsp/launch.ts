@@ -8,6 +8,19 @@ import {
 } from "../../../differential/build-receipt.mjs";
 import { root } from "./paths.ts";
 
+export type VerifiedLspLaunch = {
+  binary: string;
+  expected: ReturnType<typeof expectedBuildIdentity>;
+  receipt: Record<string, unknown>;
+  versionProbe?: {
+    exitStatus: number | null;
+    signal: string | null;
+    stdoutBase64: string;
+    stderrBase64: string;
+    processError: string | null;
+  };
+};
+
 /**
  * Resolves the fastest available way to launch `vize lsp` for smoke tests.
  *
@@ -19,14 +32,29 @@ import { root } from "./paths.ts";
  * or launch failure before trying another candidate.
  */
 export function resolveVizeLaunchCommand(
-  canLaunch: (command: string) => boolean = (command) =>
-    spawnSync(command, ["--version"], {
-      cwd: root,
-      encoding: "utf8",
-    }).status === 0,
+  canLaunch?: (command: string) => boolean,
   envBinary = process.env.VIZE_LSP_BIN,
-  sourceBinding: { required?: boolean; repoRoot?: string } = {},
+  sourceBinding: {
+    required?: boolean;
+    repoRoot?: string;
+    onVerifiedLaunch?: (launch: VerifiedLspLaunch) => void;
+  } = {},
 ): string[] {
+  let versionProbe: VerifiedLspLaunch["versionProbe"];
+  const probe = (command: string): boolean => {
+    if (canLaunch) return canLaunch(command);
+    const result = spawnSync(command, ["--version"], {
+      cwd: sourceBinding.repoRoot ?? root,
+    });
+    versionProbe = {
+      exitStatus: result.status,
+      signal: result.signal,
+      stdoutBase64: result.stdout?.toString("base64") ?? "",
+      stderrBase64: result.stderr?.toString("base64") ?? "",
+      processError: result.error?.message ?? null,
+    };
+    return result.status === 0;
+  };
   if (sourceBinding.required ?? process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD === "1") {
     const repoRoot = sourceBinding.repoRoot ?? root;
     assert.ok(envBinary, "VIZE_LSP_BIN is required for source-built LSP validation");
@@ -37,7 +65,8 @@ export function resolveVizeLaunchCommand(
       fs.readFileSync(`${binary}.differential-build.json`, "utf8"),
     ) as Record<string, unknown>;
     validateBuildReceipt(receipt, expected);
-    assert.ok(canLaunch(binary), "the verified source-built LSP binary cannot launch");
+    assert.ok(probe(binary), "the verified source-built LSP binary cannot launch");
+    sourceBinding.onVerifiedLaunch?.({ binary, expected, receipt, versionProbe });
     return [binary, "lsp"];
   }
   const candidates = [
@@ -48,7 +77,7 @@ export function resolveVizeLaunchCommand(
   ];
 
   for (const candidate of candidates) {
-    if (canLaunch(candidate[0])) {
+    if (probe(candidate[0])) {
       return candidate;
     }
   }
