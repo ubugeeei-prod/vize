@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+type Menu = { id: number }
+
+const menus = ref<Menu[][]>([[{ id: 1 }]])
+const menuList = ref<unknown[]>([])
+</script>
+
+<template>
+  <Child
+    v-for="(menu, index) in menus"
+    :key="index"
+    :ref="(item) => (menuList[index] = item as unknown)"
+    :nodes="[...menu]"
+  />
+</template>

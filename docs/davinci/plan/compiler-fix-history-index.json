@@ -1,0 +1,66 @@
+{
+  "schema": "vize.compiler.fix-history-index",
+  "version": 1,
+  "sourceRevision": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
+  "paths": [
+    "crates/vize_atelier_core",
+    "crates/vize_atelier_dom",
+    "crates/vize_atelier_ssr",
+    "crates/vize_atelier_vapor",
+    "crates/vize_atelier_sfc",
+    "crates/vize_atelier_jsx",
+    "crates/vize_armature",
+    "crates/vize_croquis"
+  ],
+  "command": [
+    "git",
+    "log",
+    "--full-history",
+    "--format=%H%x09%P%x09%s",
+    "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
+    "--",
+    "crates/vize_atelier_core",
+    "crates/vize_atelier_dom",
+    "crates/vize_atelier_ssr",
+    "crates/vize_atelier_vapor",
+    "crates/vize_atelier_sfc",
+    "crates/vize_atelier_jsx",
+    "crates/vize_armature",
+    "crates/vize_croquis"
+  ],
+  "historySha256": "a1e2ad366d00f44ba837c05df9ccf68bcc8414e873b71f28fbaa272ad4948fdb",
+  "touchingCommits": 1321,
+  "conventionalFixSubjects": 661,
+  "nonMergeFixSubjects": 626,
+  "fixtureLinkedFixSubjects": 20,
+  "nonIndexedFixtureReferences": [
+    {
+      "sha": "0de7787aeac48a931e15bc590a3e3b803286dcb8",
+      "subject": "fix(vapor): restore destructured v-for keys (#428)",
+      "references": [
+        {
+          "id": "destructured-key",
+          "evidence": "crates/vize_atelier_vapor/tests/fixtures/fix-history/input-provenance.json"
+        }
+      ],
+      "sourceCommit": "14a4ff375bc1a31dac829da5c650347353130331",
+      "review": "merge-source-patch-equivalence-verified;target-review-pending"
+    }
+  ],
+  "patchEquivalentGroups": [
+    ["06832158b8ffe13276ed1fde1a639ebfa476ccbd", "f65ff81259657e5ca5fa3f06283834ec925bfa08"],
+    ["18488f435043193640aacc09156372ea13436c49", "9758d3f77dc6913225e21d9a1462149ac1b8f08e"]
+  ],
+  "index": {
+    "path": "docs/davinci/plan/compiler-fix-history.tsv",
+    "sha256": "c376e084c8adf1346a52757e6f257e7c4c982877d17dd7f2666de6ab5c548769"
+  },
+  "semanticDenominator": null,
+  "nativeAcceptance": 0,
+  "limitations": [
+    "The original 609-fix snapshot has no verified source revision.",
+    "Changed witness paths and stable patch equivalence are candidates, not coverage or automatic duplicate exclusions.",
+    "Fixture references cover only their recorded entrypoint, target, options and public output facets.",
+    "Every row retains pending semantic and target review; historical or local execution does not certify current Actions or a native route."
+  ]
+}

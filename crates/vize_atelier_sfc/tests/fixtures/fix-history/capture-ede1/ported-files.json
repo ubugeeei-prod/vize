@@ -1,0 +1,126 @@
+{
+  "schema": "vize.compiler.ported-capture",
+  "version": 1,
+  "files": [
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/selected-cargo-artifact.json",
+      "path": "selected-cargo-artifact.json",
+      "sha256": "6714bab8dadfd18c94e0a02b2dc12cef4323b04b4c168449de556b26a6be3daf"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/repeat/imported-component-before-prop.observation.json",
+      "path": "imported-component-before-prop.repeat.observation.json",
+      "sha256": "c37bffbae08fa05462ca3d541ad4e5aae0d6e18cf27295b6f876e6db6615521d"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/repeat/imported-component-before-prop.stderr.txt",
+      "path": "imported-component-before-prop.repeat.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/capture/imported-component-before-prop.stderr.txt",
+      "path": "imported-component-before-prop.first.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/repeat/scoped-css-v-bind.observation.json",
+      "path": "scoped-css-v-bind.repeat.observation.json",
+      "sha256": "4f41449746a6ce82c860de220ca017df911946e7141d3ede3ecf3590a8ea338c"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/repeat/scoped-css-v-bind.stderr.txt",
+      "path": "scoped-css-v-bind.repeat.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/capture/scoped-css-v-bind.stderr.txt",
+      "path": "scoped-css-v-bind.first.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/repeat/dynamic-loop-ref-for.observation.json",
+      "path": "dynamic-loop-ref-for.repeat.observation.json",
+      "sha256": "cadeb8ff277ab8cf09ce1be830dea79856befbc589dc297bc8fda3c7fb69bf58"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/repeat/dynamic-loop-ref-for.stderr.txt",
+      "path": "dynamic-loop-ref-for.repeat.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/capture/dynamic-loop-ref-for.stderr.txt",
+      "path": "dynamic-loop-ref-for.first.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/repeat/computed-component-unref.observation.json",
+      "path": "computed-component-unref.repeat.observation.json",
+      "sha256": "08127c2f5df0e902518f6b3270b2d1b23bbfd45a512ec5c98e02f3d653cad37b"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/repeat/computed-component-unref.stderr.txt",
+      "path": "computed-component-unref.repeat.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/capture/computed-component-unref.stderr.txt",
+      "path": "computed-component-unref.first.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/repeat/custom-directive-child-patch.observation.json",
+      "path": "custom-directive-child-patch.repeat.observation.json",
+      "sha256": "0ccbce84c3b60cf5e332db625e78006639a16ba9562e084565e17a234dc29bc7"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/repeat/custom-directive-child-patch.stderr.txt",
+      "path": "custom-directive-child-patch.repeat.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "revision": "026214e44302c5a48533bf5f527e8d6ba96f7e8c",
+      "sourcePath": "tests/_fixtures/differential/compiler/baseline-ede1/capture/custom-directive-child-patch.stderr.txt",
+      "path": "custom-directive-child-patch.first.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "revision": "ede1ea23d0781e380cf5e0cb7661d8040897d8f7",
+      "sourcePath": "crates/vize_atelier_sfc/examples/compiler_fixture_observer.rs",
+      "path": "archived-compiler_fixture_observer.rs.txt",
+      "sha256": "248fce9662fe8214172af983dbef118540e7116d0512def05b6b259fbdc44a14"
+    },
+    {
+      "revision": "ede1ea23d0781e380cf5e0cb7661d8040897d8f7",
+      "sourcePath": "crates/vize_atelier_sfc/examples/compiler_fixture_observer/observe.rs",
+      "path": "archived-compiler_fixture_observer-observe.rs.txt",
+      "sha256": "d551788bebab135a2dc7e8c62760d11a865c6850f32057838d7e691d189e6caa"
+    },
+    {
+      "revision": "ede1ea23d0781e380cf5e0cb7661d8040897d8f7",
+      "sourcePath": "crates/vize_atelier_sfc/examples/compiler_fixture_observer/options.rs",
+      "path": "archived-compiler_fixture_observer-options.rs.txt",
+      "sha256": "203dbe3bfc9eef2da2cdc953eb65e8c18c6c6ef648f5ed6c57240a917ea4b2b7"
+    },
+    {
+      "revision": "ede1ea23d0781e380cf5e0cb7661d8040897d8f7",
+      "sourcePath": "crates/vize_atelier_sfc/examples/compiler_fixture_observer/profile.rs",
+      "path": "archived-compiler_fixture_observer-profile.rs.txt",
+      "sha256": "9910330e4b24150c9d10cd924983156b6f7b2c084d6ef80f02a6b6639ec69627"
+    }
+  ]
+}
