@@ -1,0 +1,41 @@
+{
+  "schema": "vize.lsp.fix-history.review",
+  "version": 1,
+  "sourceRevision": "cc87bb5960ea9e49e82672205df919de58bb4b24",
+  "originalSelectionRevision": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
+  "originalLedgerBlobRevision": "cc87bb5960ea9e49e82672205df919de58bb4b24",
+  "selectionCounts": {
+    "fixSubjects": 255,
+    "nonmergeTouches": 447,
+    "totalTouches": 451
+  },
+  "categories": {
+    "required-response": 207,
+    "control": 43,
+    "internal": 5
+  },
+  "requirements": {
+    "path": "lsp-fix-history-requirements.tsv",
+    "sha256": "f647c7410a535ff433cf99d1543f13701607c3f9d610d21f057ad9069393c992"
+  },
+  "claims": {
+    "sourceReviewOnly": true,
+    "productionRuntimeExecuted": false,
+    "actionsVerifiedThisAudit": false,
+    "wholeFixesClosed": 0,
+    "nativeAcceptanceCredit": 0,
+    "internalRowsExcluded": 0,
+    "coverageFromFeatureNames": 0,
+    "coverageFromPartialAssertions": 0,
+    "coverageFromProjectionSnapshots": 0
+  },
+  "limitations": [
+    "Categories describe Maestro scoped changes, not whole-commit denominator exclusions; all 255 SHAs remain.",
+    "Requirements are source-derived obligations, not a claim that every cross-product provider obligation is exhaustively reconciled.",
+    "Candidate test functions intersect changed hunks; unchanged neighboring functions can occur. Deleted test signatures are recovered from the parent blob.",
+    "Current retention uses exact function/test names in repository production/test roots; another file with the same name is a candidate, not proved semantic equivalence. Missing-at-pin may be renamed and still requires reconciliation.",
+    "Snapshot path retention does not prove content equivalence, passing execution, or a complete LSP response. Generated TS40 projections are explicitly not response fixtures.",
+    "Only four source-inspected selected response examples are established here; none proves an entire historical fix, JSON-RPC state trace, shared runner registration, or native provider parity.",
+    "The narrower fix-title selection does not replace reconciliation of all 447 nonmerge Maestro-touch commits and relevant shared provider history."
+  ]
+}

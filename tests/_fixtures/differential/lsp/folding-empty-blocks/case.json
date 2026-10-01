@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/folding-empty-blocks",
+  "provenance": {
+    "fixCommit": "89771a14f17fb535201f261ca154aa35c6f77d7e",
+    "witnessPath": "tests/tooling/lsp-folding-range.test.ts",
+    "witnessTest": "foldingRange returns null when nothing hides a line",
+    "inputOrigin": "exact source bytes from the original fix stdio regression",
+    "contractOrigin": "authored line regions and null controls from the original fix; complete serialized objects retain omitted optional fields"
+  },
+  "input": {
+    "source": "Empty.vue.txt",
+    "runtimePath": "Empty.vue",
+    "sha256": "af1d9435bac0798f57df520559be64df0300ccfb5fd7c3bd6a383344bcdc764d"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "scope": "legacy response contract; selected witnesses do not establish full fix history or native acceptance"
+}

@@ -1,0 +1,203 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "product": "lsp",
+  "baseRevision": "cc87bb5960ea9e49e82672205df919de58bb4b24",
+  "cases": [
+    {
+      "id": "lsp/fix-history/inactive-imports",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "inactive-imports",
+        "files": [
+          {
+            "path": "Host.vue.txt",
+            "sha256": "e8736c9c802ea1884a3902497927fa5fb0e039cf0a6a5dddcb018a32544b90a8"
+          },
+          {
+            "path": "Multi.vue.txt",
+            "sha256": "2f68c54b563ba299788771fed28c8985f9e9f06d385e85b97ac7de833c1d27ac"
+          },
+          {
+            "path": "Real.vue.txt",
+            "sha256": "2f68c54b563ba299788771fed28c8985f9e9f06d385e85b97ac7de833c1d27ac"
+          },
+          {
+            "path": "Exported.vue.txt",
+            "sha256": "2f68c54b563ba299788771fed28c8985f9e9f06d385e85b97ac7de833c1d27ac"
+          }
+        ]
+      },
+      "case": {
+        "path": "inactive-imports/case.json",
+        "sha256": "287d441ea77d4873462701ba9682ce137ca8670a3d8e768145b088b0a2ff3e3e"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/on-type-crlf",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "on-type-crlf",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "6cb908dd3f570e647113f3e905b8d3da379003d3e6547e042681fd777d8d9487"
+          }
+        ]
+      },
+      "case": {
+        "path": "on-type-crlf/case.json",
+        "sha256": "c7d77329e66ffb7c5f385baabc0dcc7fcc4b0adc6535396412d7f87ddb4a99b5"
+      },
+      "requestCount": 4,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false,
+        "formatting": true
+      }
+    },
+    {
+      "id": "lsp/fix-history/folding-four-divs",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-four-divs",
+        "files": [
+          {
+            "path": "FourDivs.vue.txt",
+            "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-four-divs/case.json",
+        "sha256": "6687e4af24188a5dbcff3c6cf65fbcbe85f647a55bd10093f580bc648d73673b"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/folding-multi-block",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-multi-block",
+        "files": [
+          {
+            "path": "MultiBlock.vue.txt",
+            "sha256": "cd404728c92e2d7ffe6b1a931b32ba64cda9a08e5dc54e2641f8fd0a9b861f2a"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-multi-block/case.json",
+        "sha256": "452c7eb2c3cf0a696c1f8900ac205a419543966f00574ac4beb7e13265fa6a08"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/folding-comment",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-comment",
+        "files": [
+          {
+            "path": "Comment.vue.txt",
+            "sha256": "4abc84fa40fdec42bbc0a3f0cc8dc1bfe6025a4a0f487bfc024550f77fb05a1a"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-comment/case.json",
+        "sha256": "c46177da28954d9d19d67b9fa5fafb4c7911d10d00551fe270ff6fee6aaf6fa4"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/folding-one-line",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-one-line",
+        "files": [
+          {
+            "path": "OneLine.vue.txt",
+            "sha256": "c9e1de85a8540a1adcf0c3cc1f3332a85e4b8f197edb66954cc8ce10f67c318e"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-one-line/case.json",
+        "sha256": "6a78a8ba7559eebd08cc77fdd186b320d140cfd13e8087e52b3be9dc9557f213"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/folding-empty-blocks",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "folding-empty-blocks",
+        "files": [
+          {
+            "path": "Empty.vue.txt",
+            "sha256": "af1d9435bac0798f57df520559be64df0300ccfb5fd7c3bd6a383344bcdc764d"
+          }
+        ]
+      },
+      "case": {
+        "path": "folding-empty-blocks/case.json",
+        "sha256": "5e4d4019317ac60d49fd299ea66effb06d8af25553e0d1d70cbc00f2ff5161e4"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    }
+  ]
+}

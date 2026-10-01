@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/folding-comment",
+  "provenance": {
+    "fixCommit": "89771a14f17fb535201f261ca154aa35c6f77d7e",
+    "witnessPath": "tests/tooling/lsp-folding-range.test.ts",
+    "witnessTest": "foldingRange folds a multi-line comment as a comment region",
+    "inputOrigin": "exact source bytes from the original fix stdio regression",
+    "contractOrigin": "authored line regions and null controls from the original fix; complete serialized objects retain omitted optional fields"
+  },
+  "input": {
+    "source": "Comment.vue.txt",
+    "runtimePath": "Comment.vue",
+    "sha256": "4abc84fa40fdec42bbc0a3f0cc8dc1bfe6025a4a0f487bfc024550f77fb05a1a"
+  },
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "9356420f3c84f2f75730054a3d49d72d8c310009f766651a2acbc2dabf9f901e"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "scope": "legacy response contract; selected witnesses do not establish full fix history or native acceptance"
+}
