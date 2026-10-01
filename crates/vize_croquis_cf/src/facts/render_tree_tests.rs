@@ -5,7 +5,7 @@ use std::path::Path;
 use vize_carton::{CompactString, smallvec};
 use vize_croquis::facts::spec::agreement::Agreement;
 use vize_croquis::{AnalyzerOptions, ScopeId, analysis::ComponentUsage};
-use vize_davinci::fact::FactGroup;
+use vize_l0::fact::FactGroup;
 
 use super::{ProjectFacts, RenderTree, RenderTreeReader, render_tree::evaluate};
 use crate::{CrossFileAnalyzer, CrossFileOptions, PropsValidationIssueKind};

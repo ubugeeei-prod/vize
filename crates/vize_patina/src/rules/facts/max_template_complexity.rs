@@ -43,7 +43,7 @@
 //! </template>
 //! ```
 
-use vize_davinci::fact::{Demand, FactConsumer, FactGroup};
+use vize_l0::fact::{Demand, FactConsumer, FactGroup};
 use vize_l1_to_l2::pass::cfg::{
     COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE, Contribution, TemplateComplexityGroup,
     template_facts,

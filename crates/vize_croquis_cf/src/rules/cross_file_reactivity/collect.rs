@@ -1,6 +1,7 @@
 use super::engine::CrossFileReactivityAnalyzer;
 use super::provide_helpers::{
-    provide_key_display, provide_key_identity, provided_value_reactive_kind,
+    is_function_only_object, provide_key_display, provide_key_identity,
+    provided_value_reactive_kind,
 };
 use super::types::ProvideDefinition;
 
@@ -28,6 +29,7 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                         key_identity,
                         value_name: provide.value.clone(),
                         is_reactive,
+                        is_function_service: is_function_only_object(provide.value.as_str()),
                         offset: provide.start,
                     });
             }

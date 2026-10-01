@@ -24,7 +24,7 @@
 //! not resolve is `Complete`; a pattern that guesses intent is `Heuristic`.
 //! Narrowing a domain or weakening a tier is a breaking change reviewed here.
 
-use vize_davinci::diagnostic::{Exemption, RuleContract, Severity};
+use vize_l0::diag::{Exemption, RuleContract, Severity};
 
 macro_rules! row {
     ($name:literal, $tier:ident, $domain:ident, $severity:ident) => {

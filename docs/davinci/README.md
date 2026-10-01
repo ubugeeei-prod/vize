@@ -34,7 +34,7 @@ The current numbered layers are L0–L4; see [layer names and compatibility](./l
    [phase plan](./plan/README.md) for the current task index. Open a phase file
    before its task contracts: the phase index shows completed work, start gates,
    and links to the implementation records.
-2. Follow the foundation in [`vize_davinci`](../../davinci/vize_davinci/src/lib.rs),
+2. Follow the foundation in [`vize_davinci`](../../davinci/vize_l0/src/lib.rs),
    then the lossless surface tree in [`vize_l1`](../../davinci/vize_l1/src/lib.rs),
    the semantic IR in [`vize_l2`](../../davinci/vize_l2/src/lib.rs), and the
    conversion in [`vize_l1_to_l2`](../../davinci/vize_l1_to_l2/src/lib.rs).

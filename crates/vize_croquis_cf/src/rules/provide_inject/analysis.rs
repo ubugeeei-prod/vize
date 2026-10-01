@@ -1,5 +1,5 @@
 use super::index::{ProvideInjectIndex, ResolvedProvider, ResolvedProviderBranch};
-use super::keys::{provide_key_display, provide_key_identity};
+use super::keys::{provide_key_argument, provide_key_display, provide_key_identity};
 use super::types::{ProvideInjectBranch, ProvideInjectMatch};
 use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
 use crate::registry::FileId;
@@ -39,6 +39,7 @@ pub(crate) fn analyze_provide_inject_with_index(
         let consumer_injects = &index.injects()[&consumer_id];
         for inject in consumer_injects {
             let key_str = provide_key_display(&inject.key);
+            let key_argument = provide_key_argument(&inject.key);
             let key_identity = provide_key_identity(&inject.key);
             let resolution = resolution_cache
                 .entry((consumer_id, key_identity.clone()))
@@ -47,13 +48,18 @@ pub(crate) fn analyze_provide_inject_with_index(
             let provider_branches = resolution.branches.clone();
             let provider_related = provider_relateds(&provider_branches);
 
-            // Check for destructured inject - this causes reactivity loss
-            match &inject.pattern {
-                InjectPattern::ObjectDestructure(props) => {
-                    let diagnostic =
+            // Destructuring loses reactivity only when the provided value is
+            // actually reactive. Plain service objects can expose functions.
+            let has_reactive_provider = provider_branches.iter().any(|branch| {
+                matches!(branch, ResolvedProviderBranch::Matched(provider) if index.provider_is_reactive(provider))
+            });
+            if has_reactive_provider {
+                match &inject.pattern {
+                    InjectPattern::ObjectDestructure(props) => {
+                        let diagnostic =
                         CrossFileDiagnostic::new(
                             CrossFileDiagnosticKind::DestructuringBreaksReactivity {
-                                source_name: cstr!("inject('{key_str}')"),
+                                source_name: cstr!("inject({key_argument})"),
                                 destructured_keys: props.clone(),
                                 suggestion: CompactString::new("toRefs"),
                             },
@@ -61,28 +67,28 @@ pub(crate) fn analyze_provide_inject_with_index(
                             consumer_id,
                             inject.start,
                             cstr!(
-                                "Destructuring inject('{}') into {{ {} }} breaks reactivity connection",
-                                key_str,
+                                "Destructuring inject({}) into {{ {} }} breaks reactivity connection",
+                                key_argument,
                                 props.iter().map(|p| p.as_str()).collect::<Vec<_>>().join(", ")
                             ),
                         )
                         .with_end_offset(inject.end)
                         .with_suggestion(cstr!(
-                            "Store inject result first: `const {} = inject('{}')`, then access properties",
+                            "Store inject result first: `const {} = inject({})`, then access properties",
                             inject.local_name,
-                            key_str
+                            key_argument
                         ));
-                    diagnostics.push(with_provider_relateds(
-                        diagnostic,
-                        &provider_related,
-                        &key_str,
-                    ));
-                }
-                InjectPattern::ArrayDestructure(items) => {
-                    let diagnostic =
+                        diagnostics.push(with_provider_relateds(
+                            diagnostic,
+                            &provider_related,
+                            &key_argument,
+                        ));
+                    }
+                    InjectPattern::ArrayDestructure(items) => {
+                        let diagnostic =
                         CrossFileDiagnostic::new(
                             CrossFileDiagnosticKind::DestructuringBreaksReactivity {
-                                source_name: cstr!("inject('{key_str}')"),
+                                source_name: cstr!("inject({key_argument})"),
                                 destructured_keys: items.clone(),
                                 suggestion: CompactString::new("toRefs"),
                             },
@@ -90,30 +96,30 @@ pub(crate) fn analyze_provide_inject_with_index(
                             consumer_id,
                             inject.start,
                             cstr!(
-                                "Array destructuring inject('{}') into [{}] breaks reactivity connection",
-                                key_str,
+                                "Array destructuring inject({}) into [{}] breaks reactivity connection",
+                                key_argument,
                                 items.iter().map(|p| p.as_str()).collect::<Vec<_>>().join(", ")
                             ),
                         )
                         .with_end_offset(inject.end)
                         .with_suggestion(cstr!(
-                            "Store inject result first: `const {} = inject('{}')`, then access indices",
+                            "Store inject result first: `const {} = inject({})`, then access indices",
                             inject.local_name,
-                            key_str
+                            key_argument
                         ));
-                    diagnostics.push(with_provider_relateds(
-                        diagnostic,
-                        &provider_related,
-                        &key_str,
-                    ));
-                }
-                InjectPattern::IndirectDestructure {
-                    inject_var,
-                    props,
-                    offset,
-                } => {
-                    // Indirect destructuring also loses reactivity
-                    let diagnostic =
+                        diagnostics.push(with_provider_relateds(
+                            diagnostic,
+                            &provider_related,
+                            &key_argument,
+                        ));
+                    }
+                    InjectPattern::IndirectDestructure {
+                        inject_var,
+                        props,
+                        offset,
+                    } => {
+                        // Indirect destructuring also loses reactivity
+                        let diagnostic =
                         CrossFileDiagnostic::new(
                             CrossFileDiagnosticKind::DestructuringBreaksReactivity {
                                 source_name: inject_var.clone(),
@@ -124,9 +130,9 @@ pub(crate) fn analyze_provide_inject_with_index(
                             consumer_id,
                             *offset,
                             cstr!(
-                                "Destructuring '{}' (from inject('{}')) into {{ {} }} breaks reactivity connection",
+                                "Destructuring '{}' (from inject({})) into {{ {} }} breaks reactivity connection",
                                 inject_var,
-                                key_str,
+                                key_argument,
                                 props.iter().map(|p| p.as_str()).collect::<Vec<_>>().join(", ")
                             ),
                         )
@@ -134,14 +140,15 @@ pub(crate) fn analyze_provide_inject_with_index(
                             "Access properties directly: `{}.prop` instead of destructuring",
                             inject_var
                         ));
-                    diagnostics.push(with_provider_relateds(
-                        diagnostic,
-                        &provider_related,
-                        &key_str,
-                    ));
-                }
-                InjectPattern::Simple => {
-                    // No reactivity loss issue
+                        diagnostics.push(with_provider_relateds(
+                            diagnostic,
+                            &provider_related,
+                            &key_argument,
+                        ));
+                    }
+                    InjectPattern::Simple => {
+                        // No reactivity loss issue
+                    }
                 }
             }
 
@@ -165,7 +172,7 @@ pub(crate) fn analyze_provide_inject_with_index(
                 diagnostics.push(with_provider_relateds(
                     diagnostic,
                     &provider_related,
-                    &key_str,
+                    &key_argument,
                 ));
             }
 
@@ -233,6 +240,7 @@ pub(crate) fn analyze_provide_inject_with_index(
     for (&provider_id, provider_provides) in index.provides() {
         for provide in provider_provides {
             let key_str = provide_key_display(&provide.key);
+            let key_argument = provide_key_argument(&provide.key);
 
             if !used_provides.contains(&(provider_id, provide.id.as_u32())) {
                 diagnostics.push(
@@ -244,8 +252,8 @@ pub(crate) fn analyze_provide_inject_with_index(
                         provider_id,
                         provide.start,
                         cstr!(
-                            "provide('{}') is not used by any descendant component",
-                            key_str
+                            "provide({}) is not used by any descendant component",
+                            key_argument
                         ),
                     )
                     .with_end_offset(provide.end)

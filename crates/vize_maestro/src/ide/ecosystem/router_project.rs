@@ -11,8 +11,8 @@ use std::path::{Path, PathBuf};
 
 use vize_croquis_cf::providers::vue_router::{NamedRoute, RouteParams};
 use vize_croquis_cf::providers::{PROJECT_FACTS, ProjectSources};
-use vize_davinci::fact::{Demand, FactConsumer, FactGroup, FactManager};
 use vize_l0::String;
+use vize_l0::fact::{Demand, FactConsumer, FactGroup, FactManager};
 
 /// How many ancestors are searched for the project's `package.json`.
 const MAX_ANCESTORS: usize = 16;

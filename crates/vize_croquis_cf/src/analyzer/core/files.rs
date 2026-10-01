@@ -110,6 +110,7 @@ impl CrossFileAnalyzer {
         for file_id in file_ids {
             self.update_dependency_edges(file_id);
         }
+        self.add_nuxt_render_edges();
     }
 
     /// Rebuild component usage edges.

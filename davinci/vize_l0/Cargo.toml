@@ -44,6 +44,7 @@ extension = []
 lint-glob = ["dep:globset"]
 
 [dev-dependencies]
+criterion.workspace = true
 # Foundation laws use higher-level and legacy producers only as dev oracles.
 # Version-less path declarations are stripped when this foundation is packaged.
 davinci_harness.workspace = true
@@ -54,6 +55,14 @@ vize_l2 = { path = "../vize_l2" }
 davinci_test_support.workspace = true
 insta.workspace = true
 tempfile.workspace = true
+
+[[bench]]
+name = "pass_runtime"
+harness = false
+
+[[bench]]
+name = "fact_runtime"
+harness = false
 
 [[test]]
 name = "remark_zero_cost"

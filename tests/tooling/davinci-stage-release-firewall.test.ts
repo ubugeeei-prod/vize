@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { metadata, workspacePackage, type Package } from "./support/davinci-stage-dependencies.ts";
 
 const publishedDavinciStages = new Set([
-  "vize_davinci",
+  "vize_l0",
   "vize_l1",
   "vize_l2",
   "vize_l3",
@@ -99,9 +99,9 @@ test("DOM production keeps the published L2 renderer available for profiling", (
 
   assert.deepEqual(stageEdges, [
     {
-      name: "vize_davinci",
-      kind: "dev",
-      req: versionRequirement("vize_davinci"),
+      name: "vize_l0",
+      kind: null,
+      req: versionRequirement("vize_l0"),
       rename: null,
       optional: false,
       features: [],
@@ -134,6 +134,13 @@ test("Vapor production selects only published stages for the L3 bridge", () => {
     .sort((left, right) => left.name.localeCompare(right.name));
 
   assert.deepEqual(stageEdges, [
+    {
+      name: "vize_l0",
+      req: versionRequirement("vize_l0"),
+      rename: null,
+      optional: false,
+      features: [],
+    },
     {
       name: "vize_l1",
       req: versionRequirement("vize_l1"),
@@ -187,13 +194,13 @@ test("SSR production selects only published stages for the L4 bridge", () => {
     }))
     .sort((left, right) => left.name.localeCompare(right.name));
 
-  // P3-8 emits from the L4 plan: L2 side tables are keyed by `vize_davinci`
+  // P3-8 emits from the L4 plan: L2 side tables are keyed by `vize_l0`
   // node ids, and the transform expression rewrite erases TypeScript exactly
   // like the L2 DOM lane.
   assert.deepEqual(stageEdges, [
     {
-      name: "vize_davinci",
-      req: versionRequirement("vize_davinci"),
+      name: "vize_l0",
+      req: versionRequirement("vize_l0"),
       rename: null,
       optional: false,
       features: [],

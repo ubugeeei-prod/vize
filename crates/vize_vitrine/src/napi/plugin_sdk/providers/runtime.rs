@@ -6,7 +6,7 @@ use serde_json::{Map, Value};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
-use vize_davinci::fact::FactManager;
+use vize_l0::fact::FactManager;
 
 use super::super::PluginCacheInputNapi;
 use super::super::batch::{BuiltBatch, PluginSpec};
@@ -14,7 +14,7 @@ use super::super::document::PluginDocument;
 use super::super::plugin_cache::{PluginCacheInput, content_key};
 use super::cache::cache;
 use super::{ProviderCatalog, ProviderError, ProviderOutput, ProviderSpec, custom_batch, refusal};
-use vize_davinci::key::source_block_key;
+use vize_l0::key::source_block_key;
 
 #[napi(object, object_to_js = false)]
 pub struct JsFactProviderNapi {

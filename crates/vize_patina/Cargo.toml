@@ -27,7 +27,6 @@ vize_atelier_jsx.workspace = true
 # Davinci stages: the markup facade views L2 (P4-7), reading L1 for the
 # authored surface L2 normalizes away. Pug templates lower through the
 # same L1→L2 dependency.
-vize_davinci.workspace = true
 vize_l1.workspace = true
 # The L2 template-complexity pass behind `vue/max-template-complexity`.
 vize_l1_to_l2.workspace = true

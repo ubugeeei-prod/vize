@@ -3,7 +3,7 @@
 //! say where the complexity comes from without re-reading the file.
 
 use vize_croquis::sfc::{SfcParseOptions, parse_sfc};
-use vize_davinci::fact::{Demand, FactConsumer, FactGroup};
+use vize_l0::fact::{Demand, FactConsumer, FactGroup};
 use vize_l1_to_l2::pass::cfg::{self, ComplexityFacts, DecisionKind, TemplateComplexityGroup};
 
 /// The cross-file analyzer as a fact consumer: it reads the template

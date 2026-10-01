@@ -8,7 +8,7 @@ use vize_croquis::facts::{
     Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup, UndefinedRefs,
 };
 use vize_croquis::{BindingType, Croquis, UndefinedRef};
-use vize_davinci::fact::FactTable;
+use vize_l0::fact::FactTable;
 
 struct CanonBindings;
 

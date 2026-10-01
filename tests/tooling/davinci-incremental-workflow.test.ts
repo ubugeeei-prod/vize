@@ -42,7 +42,6 @@ test("the incrementality workflow triggers on the resident tier and its keyers",
   const paths = workflow.on.push.paths;
   for (const required of [
     "crates/vize_resident/**",
-    "davinci/vize_davinci/**",
     "davinci/vize_l0/**",
     "davinci/vize_l2/**",
     "davinci/vize_l1_to_l2/**",

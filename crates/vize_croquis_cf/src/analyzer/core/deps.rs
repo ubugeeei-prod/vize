@@ -5,6 +5,48 @@ use crate::registry::FileId;
 use std::path::Path;
 
 impl CrossFileAnalyzer {
+    /// Nuxt renders files in `pages/` through `app.vue` and its default layout.
+    /// These components have no static import edge, so the runtime ancestry
+    /// must be recorded after all SFCs have been registered.
+    pub(super) fn add_nuxt_render_edges(&mut self) {
+        let mut edges = Vec::new();
+        for app in self.registry.vue_components() {
+            if app.path.file_name().and_then(|name| name.to_str()) != Some("app.vue") {
+                continue;
+            }
+            let component_names = vize_croquis::facts::used_component_name_list(&app.analysis);
+            let has_nuxt_page = component_names
+                .iter()
+                .any(|name| matches!(name.as_str(), "NuxtPage" | "nuxt-page"));
+            if !has_nuxt_page {
+                continue;
+            }
+            let has_nuxt_layout = component_names
+                .iter()
+                .any(|name| matches!(name.as_str(), "NuxtLayout" | "nuxt-layout"));
+            let Some(root) = app.path.parent() else {
+                continue;
+            };
+            let pages_dir = root.join("pages");
+            let layout = has_nuxt_layout
+                .then(|| self.registry.get_by_path(root.join("layouts/default.vue")))
+                .flatten()
+                .map(|entry| entry.id);
+            if let Some(layout) = layout {
+                edges.push((app.id, layout));
+            }
+            for page in self.registry.vue_components() {
+                if page.path.starts_with(&pages_dir) {
+                    edges.push((layout.unwrap_or(app.id), page.id));
+                }
+            }
+        }
+        for (parent, child) in edges {
+            self.graph
+                .add_edge(parent, child, DependencyEdge::ComponentUsage);
+        }
+    }
+
     pub(super) fn update_dependency_edges(&mut self, file_id: FileId) {
         let Some(entry) = self.registry.get(file_id) else {
             return;

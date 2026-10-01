@@ -6,8 +6,8 @@ use std::sync::OnceLock;
 
 use vize_canon::TypeErrorCode;
 use vize_croquis_cf::CrossFileDiagnostic;
-use vize_davinci::diagnostic::Severity as Claim;
 use vize_l0::FxHashSet;
+use vize_l0::diag::Severity as Claim;
 use vize_l3::verify::ViolationCode;
 use vize_patina::rule_contracts::contract_for;
 use vize_patina::rules::css::{
@@ -20,7 +20,7 @@ use vize_patina::{
 };
 use vize_relief::ErrorCode;
 
-/// A lint rule, as its metadata and its [`RuleContract`](vize_davinci::diagnostic::RuleContract)
+/// A lint rule, as its metadata and its [`RuleContract`](vize_l0::diag::RuleContract)
 /// declare it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct Rule {

@@ -5,15 +5,15 @@ import { test } from "node:test";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
 // TS-24 (docs/davinci/plan/test-suites.md): the wasm32-wasip2 portability
-// lanes for the six Davinci `no_std` stage libraries. The lanes ride `clippy-and-test`
+// lanes for std L0 and five `no_std` stage libraries. The lanes ride `clippy-and-test`
 // as steps rather than as their own job because `.github/workflows/check.yml`
 // is over the 350-line ratchet and must not grow
 // (docs/davinci/plan/phase-2-records/p2-14.md); this file is what keeps that
-// placement from silently dissolving. L0 (`vize_l0`, package `vize_carton`)
+// placement from silently dissolving. L0 (`vize_l0`, with the legacy Carton facade)
 // remains the approved `std` foundation recorded in no-std-boundary.md.
 
 const portableStageCrates = [
-  ["vize_davinci", "vize_davinci"],
+  ["vize_l0", "vize_l0"],
   ["vize_l1", "vize_l1"],
   ["vize_l2", "vize_l2"],
   ["vize_l3", "vize_l3"],
@@ -59,20 +59,20 @@ test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
     job.includes(`        run: ${defaultLane} && ${noDefaultLane}`),
     "TS-24 must build all six stage libraries with and without default features",
   );
-  assert.doesNotMatch(job, /cargo build[^\n]*-p (?:vize_l0|vize_carton)[^\n]*wasm32-wasip2/);
+  assert.doesNotMatch(job, /cargo build[^\n]*-p vize_carton[^\n]*wasm32-wasip2/);
   assert.match(
     job,
     /cargo bench -p vize_l1_to_l2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root/u,
   );
 });
 
-test("the no_std claim stays on all six stage libraries and excludes the std L0 foundation", () => {
+test("the no_std claim stays on five stage libraries and excludes the std L0 foundation", () => {
   // The lane's target carries std (wasm32-wasip2 is not a std-less build), so
   // the `no_std` half of the claim is held by these attributes; the build
   // proves they are honest (a `std::` path in either crate stops compiling).
   // A library joining the claim must appear here, in both lane commands above,
   // and in no-std-boundary.md's ledger.
-  for (const [packageName, crateDir] of portableStageCrates) {
+  for (const [packageName, crateDir] of portableStageCrates.slice(1)) {
     const lib = readRepoFile("davinci", crateDir, "src", "lib.rs");
     assert.match(lib, /^#!\[no_std\]$/m, `${packageName} must keep #![no_std]`);
     assert.match(lib, /^extern crate alloc;$/m, `${packageName} must keep extern crate alloc`);
@@ -88,8 +88,9 @@ test("the no_std claim stays on all six stage libraries and excludes the std L0 
       encoding: "utf8",
     }),
   ) as { packages: Array<{ name: string; targets: Array<{ kind: string[] }> }> };
-  const substrate = resolved.packages.find((pkg) => pkg.name === "vize_davinci");
-  assert.ok(substrate, "the substrate package must be present in Cargo metadata");
+  assert.ok(resolved.packages.every((pkg) => pkg.name !== "vize_davinci"));
+  const substrate = resolved.packages.find((pkg) => pkg.name === "vize_l0");
+  assert.ok(substrate, "the foundation must be present in Cargo metadata");
   assert.deepEqual(
     substrate.targets.filter((target) => target.kind.includes("bin")),
     [],

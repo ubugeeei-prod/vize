@@ -16,7 +16,6 @@ import { hasStorage, scanStorage, storageKinds, type FileStorage } from "./davin
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const libraryRoots = [
   "davinci/vize_l0/src",
-  "davinci/vize_davinci/src",
   "davinci/vize_l1/src",
   "davinci/vize_l2/src",
   "davinci/vize_l3/src",
@@ -42,7 +41,6 @@ function rustFiles(root: string): string[] {
 
 function scopeFor(file: string): StorageScope {
   if (file.startsWith("davinci/vize_l0/")) return "infra";
-  if (file.startsWith("davinci/vize_davinci/")) return "infra";
   if (file.startsWith("davinci/vize_l1/")) return "l1";
   if (file.startsWith("davinci/vize_l2/")) return "l2";
   if (file.startsWith("davinci/vize_l3/")) return "l3";

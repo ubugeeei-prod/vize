@@ -14,13 +14,13 @@
 //! skeleton-relative (template content offsets), as every fact of a group
 //! is about one kind of span.
 
-use vize_davinci::diagnostic::{Diagnostic, Stage, WitnessChain, WitnessLink};
-use vize_davinci::fact::{
+use vize_l0::diag::verify::{AuditReport, WitnessAudit, WitnessCheck, WitnessChecks, WitnessGroup};
+use vize_l0::diag::{Diagnostic, Stage, WitnessChain, WitnessLink};
+use vize_l0::fact::{
     Demand, FactConsumer, FactError, FactGroup, FactManager, FactProducer, FactRegistry, FactTable,
     FactView, ProducerEntry, ids,
 };
-use vize_davinci::pass::AnalysisId;
-use vize_davinci::witness::{AuditReport, WitnessAudit, WitnessCheck, WitnessChecks, WitnessGroup};
+use vize_l0::pass::AnalysisId;
 use vize_l0::{Span, String};
 
 use super::class::ViolationClass;

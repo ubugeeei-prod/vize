@@ -19,7 +19,7 @@
 
 use serde::Serialize;
 use vize_croquis::sfc::{SfcParseOptions, parse_sfc};
-use vize_davinci::id::NodeId;
+use vize_l0::id::NodeId;
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1_to_l2::lower_source_block;
 use vize_l2::expr::ExprRef;

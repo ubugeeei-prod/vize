@@ -9,8 +9,8 @@ use vize_atelier_core::{
     codegen::{CodegenResult, generate},
     options::{CodegenMode, CodegenOptions, TransformOptions},
 };
-use vize_davinci::pass::NoObserver;
 use vize_l0::Allocator;
+use vize_l0::pass::NoObserver;
 use vize_l1_to_l2::{DomEmitMode, DomEmitOptions};
 
 #[derive(Debug, Clone, Copy, Default)]

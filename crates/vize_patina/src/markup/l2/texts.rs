@@ -5,8 +5,8 @@
 //! interpolation is quadratic when a walk reruns. One index per [`L2Markup`]
 //! makes the lookup a binary search.
 
-use vize_davinci::id::NodeId;
-use vize_davinci::side_table::SideTable;
+use vize_l0::id::NodeId;
+use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Span};
 use vize_l1_to_l2::lower::TextParts;
 
@@ -59,7 +59,7 @@ mod tests {
     use vize_l2::op::Op;
 
     fn brute(
-        texts: &vize_davinci::side_table::SideTable<TextParts>,
+        texts: &vize_l0::side_table::SideTable<TextParts>,
         span: vize_l0::Span,
     ) -> Option<&TextParts> {
         texts.iter().map(|(_, parts)| parts).find(|parts| {

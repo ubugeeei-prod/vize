@@ -36,8 +36,8 @@ use std::sync::Once;
 
 use vize_curator::legacy_plan;
 use vize_curator::repro::{Page as ReproPage, failure_text};
-use vize_davinci::dump::{Dump, Mode as DumpMode};
-use vize_davinci::pass::{
+use vize_l0::dump::{Dump, Mode as DumpMode};
+use vize_l0::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassFailure, PassKind, Pipeline, Preserved,
     TimingObserver, parse_pipelines, pipeline::PipelineSpec, run_pipeline,
 };
@@ -69,7 +69,7 @@ impl IceFailure {
     /// The one-line rendering every reporting surface shares.
     pub(crate) fn text(&self) -> String {
         failure_text(
-            vize_davinci::stage::pipeline_display_id(self.stage.as_str()),
+            vize_l0::stage::pipeline_display_id(self.stage.as_str()),
             self.pass.as_str(),
             self.reason.as_str(),
         )
@@ -209,7 +209,7 @@ fn build_plans(segments: &[PipelineSpec<'_>]) -> Vec<Pipeline> {
                 })
                 .collect();
             Pipeline::new(
-                leak(vize_davinci::stage::pipeline_wire_id(segment.stage)),
+                leak(vize_l0::stage::pipeline_wire_id(segment.stage)),
                 passes.leak(),
             )
         })

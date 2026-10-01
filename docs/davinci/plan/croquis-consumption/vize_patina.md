@@ -19,6 +19,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeData`                       | type  | `scope`             |     2 |     2 |
 | `ScopeKind`                       | type  | `scope`             |     2 |     3 |
 | `UnusedVarContext`                | type  | `croquis`           |     1 |     4 |
+| `Croquis.binding_spans`           | field | `croquis`           |     1 |     1 |
 | `Croquis.component_registrations` | field | `croquis`           |     2 |     2 |
 | `Croquis.element_ids`             | field | `croquis`           |     1 |     2 |
 | `Croquis.import_statements`       | field | `croquis`           |     1 |     1 |
@@ -80,7 +81,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeData`             |        2 |    4 |
 | `ScopeId`               |        0 |    1 |
 | `ScopeKind`             |        3 |    5 |
-| `Span`                  |        0 |  224 |
+| `Span`                  |        0 |  221 |
 | `Symbol`                |        0 |   15 |
 | `SymbolId`              |        0 |    3 |
 | `UnusedVarContext`      |        4 |    5 |

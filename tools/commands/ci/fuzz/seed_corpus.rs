@@ -31,7 +31,7 @@ const VUE_GLOBS: &[&str] = &[
 
 const FOLIO_GLOBS: &[&str] = &[
     "crates/vize_croquis/tests/fixtures/**/*.folio",
-    "davinci/vize_davinci/tests/fixtures/**/*.folio",
+    "davinci/vize_l0/tests/fixtures/**/*.folio",
     "davinci/vize_l2/tests/fixtures/**/*.folio",
 ];
 

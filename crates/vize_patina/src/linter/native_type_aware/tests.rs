@@ -8,6 +8,12 @@ use super::{
 };
 use crate::{LintPreset, Linter};
 
+fn has_floating_promise(diagnostics: &[crate::diagnostic::LintDiagnostic]) -> bool {
+    diagnostics
+        .iter()
+        .any(|d| d.rule_name == RULE_NO_FLOATING_PROMISES)
+}
+
 pub(super) fn corsa_available() -> bool {
     let mut session = match super::CorsaTypeAwareSession::new_with_corsa_path("Component.vue", None)
     {
@@ -270,7 +276,7 @@ loadData().catch()
 }
 
 #[test]
-fn no_floating_promises_reports_template_event_calls() {
+fn no_floating_promises_ignores_returned_template_event_calls() {
     if !corsa_available() {
         return;
     }
@@ -284,10 +290,22 @@ async function save(): Promise<void> {}
   <button @click="save()">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(result.diagnostics.iter().any(|diag| {
-        diag.rule_name == RULE_NO_FLOATING_PROMISES
-            && diag.message.contains("Template event handler")
-    }));
+    assert!(!has_floating_promise(&result.diagnostics));
+}
+
+#[test]
+fn no_floating_promises_ignores_returned_inline_arrow_calls() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+async function save(): Promise<void> {}
+</script>
+<template><button @click="() => save()">Save</button></template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(!has_floating_promise(&result.diagnostics));
 }
 
 #[test]
@@ -316,7 +334,7 @@ async function save(): Promise<void> {}
 }
 
 #[test]
-fn no_floating_promises_reports_bare_template_event_handlers() {
+fn no_floating_promises_ignores_bare_template_event_handlers() {
     if !corsa_available() {
         return;
     }
@@ -330,14 +348,11 @@ async function save(): Promise<void> {}
   <button @click="save">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(result.diagnostics.iter().any(|diag| {
-        diag.rule_name == RULE_NO_FLOATING_PROMISES
-            && diag.message.contains("Template event handler")
-    }));
+    assert!(!has_floating_promise(&result.diagnostics));
 }
 
 #[test]
-fn no_floating_promises_reports_member_template_event_handlers() {
+fn no_floating_promises_ignores_member_template_event_handlers() {
     if !corsa_available() {
         return;
     }
@@ -353,10 +368,7 @@ const actions = {
   <button @click="actions.save">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(result.diagnostics.iter().any(|diag| {
-        diag.rule_name == RULE_NO_FLOATING_PROMISES
-            && diag.message.contains("Template event handler")
-    }));
+    assert!(!has_floating_promise(&result.diagnostics));
 }
 
 #[test]
@@ -385,7 +397,7 @@ const actions = {
 }
 
 #[test]
-fn no_floating_promises_reports_optional_member_template_event_handlers() {
+fn no_floating_promises_ignores_optional_member_template_event_handlers() {
     if !corsa_available() {
         return;
     }
@@ -404,14 +416,11 @@ const actions: Actions | undefined = {
   <button @click="actions?.save">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(result.diagnostics.iter().any(|diag| {
-        diag.rule_name == RULE_NO_FLOATING_PROMISES
-            && diag.message.contains("Template event handler")
-    }));
+    assert!(!has_floating_promise(&result.diagnostics));
 }
 
 #[test]
-fn no_floating_promises_reports_computed_member_template_event_handlers() {
+fn no_floating_promises_ignores_computed_member_template_event_handlers() {
     if !corsa_available() {
         return;
     }
@@ -428,10 +437,7 @@ const actions = {
   <button @click="actions[method]">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(result.diagnostics.iter().any(|diag| {
-        diag.rule_name == RULE_NO_FLOATING_PROMISES
-            && diag.message.contains("Template event handler")
-    }));
+    assert!(!has_floating_promise(&result.diagnostics));
 }
 
 #[test]
@@ -461,7 +467,7 @@ const actions = {
 }
 
 #[test]
-fn no_floating_promises_reports_optional_computed_member_template_event_handlers() {
+fn no_floating_promises_ignores_optional_computed_member_template_event_handlers() {
     if !corsa_available() {
         return;
     }
@@ -481,10 +487,7 @@ const actions: Actions | undefined = {
   <button @click="actions?.[method]">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(result.diagnostics.iter().any(|diag| {
-        diag.rule_name == RULE_NO_FLOATING_PROMISES
-            && diag.message.contains("Template event handler")
-    }));
+    assert!(!has_floating_promise(&result.diagnostics));
 }
 
 #[test]
@@ -511,7 +514,7 @@ async function loadLabel(): Promise<string> {
 }
 
 #[test]
-fn no_floating_promises_reports_nested_template_event_calls() {
+fn no_floating_promises_ignores_returned_nested_template_event_calls() {
     if !corsa_available() {
         return;
     }
@@ -526,10 +529,7 @@ async function save(): Promise<void> {}
   <button @click="enabled && save()">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(result.diagnostics.iter().any(|diag| {
-        diag.rule_name == RULE_NO_FLOATING_PROMISES
-            && diag.message.contains("Template event handler")
-    }));
+    assert!(!has_floating_promise(&result.diagnostics));
 }
 
 #[test]
@@ -579,7 +579,7 @@ async function loadLabel(): Promise<string> {
 }
 
 #[test]
-fn no_floating_promises_reports_template_finally_only_calls() {
+fn no_floating_promises_ignores_returned_template_finally_only_calls() {
     if !corsa_available() {
         return;
     }
@@ -594,12 +594,7 @@ function cleanup() {}
   <button @click="save().finally(cleanup)">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(
-        result
-            .diagnostics
-            .iter()
-            .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES)
-    );
+    assert!(!has_floating_promise(&result.diagnostics));
 }
 
 #[test]
@@ -1185,7 +1180,7 @@ async function save(): Promise<void> {}
 }
 
 #[test]
-fn template_then_without_rejection_handler_reports_floating_promise() {
+fn returned_template_then_without_rejection_handler_is_observed() {
     if !corsa_available() {
         return;
     }
@@ -1199,10 +1194,7 @@ async function save(): Promise<void> {}
   <button @click="save().then(() => {})">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert!(result.diagnostics.iter().any(|diag| {
-        diag.rule_name == RULE_NO_FLOATING_PROMISES
-            && diag.message.contains("Template event handler")
-    }));
+    assert!(!has_floating_promise(&result.diagnostics));
 }
 
 #[test]

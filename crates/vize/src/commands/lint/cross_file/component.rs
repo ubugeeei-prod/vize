@@ -109,7 +109,7 @@ pub(super) fn apply<S: AsRef<str>>(
             let view = manager.view::<CrossComponentNesting>();
             proofs
                 .iter()
-                .map(|proof| vize_davinci::witness::verify(proof, &view, &witness::CHECKS).is_ok())
+                .map(|proof| vize_l0::diag::verify::verify(proof, &view, &witness::CHECKS).is_ok())
                 .collect()
         }
         Err(_) => vec![false; proofs.len()],

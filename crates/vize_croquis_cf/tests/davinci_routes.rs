@@ -17,8 +17,8 @@ use std::path::{Path, PathBuf};
 
 use vize_croquis_cf::providers::vue_router::typing::{RouteTyping, WITNESS_CHECKS, check};
 use vize_croquis_cf::providers::{PROJECT_FACTS, ProjectSources};
-use vize_davinci::fact::{FactManager, undeclared_accesses};
-use vize_davinci::witness::verify;
+use vize_l0::diag::verify::verify;
+use vize_l0::fact::{FactManager, undeclared_accesses};
 
 fn fixtures_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/davinci-routes")
@@ -135,9 +135,9 @@ fn every_fixture_renders_exactly_and_every_witness_verifies() {
 #[test]
 fn a_forged_unknown_route_witness_against_an_open_tree_fails_verification() {
     use vize_croquis_cf::providers::vue_router::{RouteParams, RouteTree};
-    use vize_davinci::diagnostic::{Verdict, WitnessChain, WitnessLink};
-    use vize_davinci::fact::FactGroup;
-    use vize_davinci::witness::{WitnessError, verify_chain};
+    use vize_l0::diag::verify::{WitnessError, verify_chain};
+    use vize_l0::diag::{Verdict, WitnessChain, WitnessLink};
+    use vize_l0::fact::FactGroup;
 
     let project = project_of(&fixtures_root().join("open-tree"));
     let mut manager = FactManager::new(&PROJECT_FACTS);

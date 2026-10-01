@@ -1,5 +1,5 @@
-use vize_davinci::id::NodeId;
 use vize_l0::Allocator;
+use vize_l0::id::NodeId;
 use vize_l2::op::{BindingOp, DynamicName, Op};
 use vize_l2::scope::ScopeOrigin;
 

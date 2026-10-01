@@ -27,7 +27,7 @@ mod vnode_control;
 mod vnode_create_slots;
 mod vnode_props;
 
-use vize_davinci::side_table::SideTable;
+use vize_l0::side_table::SideTable;
 use vize_l0::{FxHashSet, String};
 use vize_l1_to_l2::lower::{ForWrapper, IfFacts, TextParts, WrapperKeys};
 use vize_l1_to_l2::{TransformContent, TransformExpressions};

@@ -15,7 +15,6 @@ on:
       - "davinci/vize_guest/**"
       - "npm/extension-sdk/**"
       - "crates/vize_marquette/**"
-      - "davinci/vize_davinci/**"
       - "davinci/vize_l1/**"
       - "davinci/vize_l1_to_l2/**"
       - "davinci/vize_l2/**"
