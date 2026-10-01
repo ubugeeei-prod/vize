@@ -79,11 +79,14 @@ fn l1_preserves_unicode_crlf_empty_and_recoverable_source() {
         "<div>日本語 🌈 {{ value }}</div>\r\n",
         "",
         "<div title=\"unterminated",
+        "<p title='&fjlig;&acE;&nGt;'>&fjlig;&acE;&nGt;</p>",
+        "<a><span><a>日本語😀</a></span></a>",
+        "<section><a><span><a></a><span v-pre>{{ inside }}</span>{{ tail }}</span></a></section>",
     ] {
         assert_success("l1", input.as_bytes());
     }
     let allocator = Allocator::default();
-    let (_, errors) = vize_l1::parse(&allocator, "<div title=\"unterminated");
+    let (_, errors) = vize_l1::markup::parse_component(&allocator, "<div title=\"unterminated");
     assert!(
         !errors.is_empty(),
         "fidelity success does not mean syntax is valid"

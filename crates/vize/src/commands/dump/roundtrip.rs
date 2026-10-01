@@ -11,7 +11,7 @@ pub(super) fn reprint(level: Level, input: &str) -> Result<String, DumpError> {
     match level {
         Level::L1 => {
             let allocator = Allocator::default();
-            let (tree, _) = vize_l1::parse(&allocator, input);
+            let (tree, _) = vize_l1::markup::parse_component(&allocator, input);
             let mut printed = String::default();
             vize_l1::render::render(&tree, &mut |piece| printed.push_str(piece));
             Ok(printed)
