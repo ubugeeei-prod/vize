@@ -3,10 +3,10 @@ use vize_l0::line_index::{LineIndex, Position, Range, offset_to_position};
 
 #[test]
 fn indexed_positions_keep_the_legacy_host_identity_and_json() {
-    fn host_position(position: vize_l0::lsp::Position) -> Position {
+    fn host_position(position: vize_carton::lsp::Position) -> Position {
         position
     }
-    fn host_range(range: vize_l0::lsp::Range) -> Range {
+    fn host_range(range: vize_carton::lsp::Range) -> Range {
         range
     }
 

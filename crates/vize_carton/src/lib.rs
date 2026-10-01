@@ -10,3 +10,10 @@ pub mod corsa_api_mode;
     reason = "legacy host discovery retains its environment and path collections"
 )]
 pub mod corsa_resolver;
+
+#[expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "host JSON-RPC records retain the existing std String and Vec contract"
+)]
+pub mod lsp;

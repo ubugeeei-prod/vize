@@ -156,7 +156,7 @@ impl From<u8> for DiagnosticSeverity {
 }
 
 /// UTF-16 source coordinates shared with host protocol adapters.
-pub use crate::line_index::{Position, Range};
+pub use vize_l0::line_index::{Position, Range};
 
 /// LSP location (URI + range).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

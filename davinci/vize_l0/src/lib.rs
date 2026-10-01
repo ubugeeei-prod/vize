@@ -82,7 +82,6 @@ mod i18n_supplemental_extra2;
 mod i18n_supplemental_html;
 pub mod interner;
 pub mod line_index;
-pub mod lsp;
 pub mod path;
 pub mod pool;
 pub mod profiler;

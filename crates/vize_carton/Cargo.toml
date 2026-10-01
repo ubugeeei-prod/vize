@@ -10,10 +10,11 @@ metadata.vize.stability = "alpha-supported"
 
 [dependencies]
 vize_l0 = { workspace = true }
+serde.workspace = true
+serde_json.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 which = { workspace = true }
-serde_json.workspace = true
 
 [features]
 default = []
@@ -21,7 +22,6 @@ extension = ["vize_l0/extension"]
 lint-glob = ["vize_l0/lint-glob"]
 
 [dev-dependencies]
-serde_json.workspace = true
 davinci_test_support.workspace = true
 insta.workspace = true
 tempfile.workspace = true
