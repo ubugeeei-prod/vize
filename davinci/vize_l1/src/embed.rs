@@ -44,9 +44,10 @@ pub struct Grammar {
 
 /// Borrowed input for a separate L1 embedded-tree artifact.
 ///
-/// `syntax::parse_once` retains an OXC expression/program with comments and
-/// typed holes. Registering artifacts by existing L0 node identity, remaining
-/// shapes and file-language resolution are still unfinished under #6836.
+/// `syntax::parse_once` retains OXC programs, expressions, handler bodies and
+/// slot parameters with comments and typed holes. Registering artifacts by
+/// existing L0 node identity, composite shapes and file language resolution
+/// are still unfinished under #6836.
 #[derive(Debug, Clone, Copy)]
 pub struct Embed<'a> {
     pub grammar: Grammar,

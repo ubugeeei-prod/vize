@@ -55,8 +55,9 @@ queue and actual merge proof are required before reporting integration as merged
 
 TODO:
 
-- Implement HandlerBody and SlotParams entry points with corrected wrapper
-  laws; build ForHead and FilterChain from real dialect/language pieces.
+- [HandlerBody and SlotParams](./2026-10-01-l1-native-embed-shapes.md) extend
+  this provider with corrected wrapper laws; ForHead and FilterChain still
+  require real dialect/language pieces.
 - Replace conservative whole-input admission only after complete JS/TS parser
   recursion is bounded, including statement/type/operator nesting and escapes.
 - Admit JSX/TSX explicitly rather than infer them from current Js/Ts enums.

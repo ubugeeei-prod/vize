@@ -173,12 +173,7 @@ fn exact_coordinates_reject_utf8_splits_and_diagnostic_coordinates_cover_scalars
 #[test]
 fn unsupported_shapes_and_bounded_admission_are_typed_local_holes() {
     let allocator = Allocator::default();
-    for shape in [
-        Shape::HandlerBody,
-        Shape::ForHead,
-        Shape::SlotParams,
-        Shape::FilterChain,
-    ] {
+    for shape in [Shape::ForHead, Shape::FilterChain] {
         let tree = parse_once(&allocator, raw_embed("count", shape, Lang::Js));
         assert_eq!(tree.hole(), Some(EmbedHole::UnsupportedShape));
         assert_eq!(tree.grammar().shape, shape);

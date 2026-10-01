@@ -1,9 +1,9 @@
 //! One retained JS/TS parse over checked embedded source.
 //!
-//! Expr uses one private parenthesized Program wrapper to retain OXC comments.
-//! Consumers receive the original expression, corrected coordinate views and
-//! typed local holes. Program source is unwrapped. No product route calls this
-//! provider yet; it neither selects file languages nor attaches node identities.
+//! Private wrappers retain comments for expressions, handler bodies and slot
+//! parameters. Consumers receive authored syntax, corrected coordinate views
+//! and typed local holes. Program source is unwrapped. No product route calls
+//! this provider yet; it neither selects file languages nor attaches identities.
 
 use oxc_ast::ast::{Expression, Program, Statement};
 use oxc_diagnostics::Diagnostics;
@@ -15,9 +15,12 @@ use super::{Embed, EmbedSource, Grammar, Lang, Shape, SourceError};
 
 mod admission;
 mod coordinates;
+mod shapes;
 mod views;
 pub use admission::NATIVE_SYNTAX_UNIT_LIMIT;
 use coordinates::Coordinates;
+use shapes::Wrapper;
+pub use shapes::{HandlerBodyView, SlotParamsView};
 pub use views::{CommentView, DiagnosticLabel, DiagnosticView};
 
 /// A malformed or unadmitted embed stays local; its source is always retained.
@@ -30,6 +33,8 @@ pub enum EmbedHole {
     UnsupportedFlow,
     SourceTooLarge,
     InvalidExpressionShape,
+    InvalidWrappedShape,
+    InvalidModuleContext,
 }
 
 /// Actual OXC syntax, retained comments/diagnostics and one optional typed hole.
@@ -73,7 +78,7 @@ impl<'a> NativeSyntax<'a> {
         self.hole
     }
 
-    /// Unwrapped programs only; Expr never exposes the wrapper Program/text.
+    /// Unwrapped programs only; other shapes never expose wrapper Program/text.
     #[must_use]
     pub fn program(&self) -> Option<&Program<'a>> {
         (self.hole.is_none() && self.grammar.shape == Shape::Program)
@@ -88,6 +93,24 @@ impl<'a> NativeSyntax<'a> {
             return None;
         }
         expression(self.program.as_ref()?)
+    }
+
+    /// Authored directives/statements only, in an ordinary non-async arrow body.
+    #[must_use]
+    pub fn handler_body(&self) -> Option<HandlerBodyView<'_, 'a>> {
+        if self.hole.is_some() || self.grammar.shape != Shape::HandlerBody {
+            return None;
+        }
+        shapes::handler_body(self.program.as_ref()?)
+    }
+
+    /// Authored formal parameters/rest only; the synthetic arrow stays private.
+    #[must_use]
+    pub fn slot_params(&self) -> Option<SlotParamsView<'_, 'a>> {
+        if self.hole.is_some() || self.grammar.shape != Shape::SlotParams {
+            return None;
+        }
+        shapes::slot_params(self.program.as_ref()?)
     }
 
     pub fn comments(&self) -> impl Iterator<Item = CommentView<'_, 'a>> {
@@ -136,7 +159,7 @@ fn parser_length(length: usize, extra: usize) -> Option<usize> {
 fn admitted_input<'a>(
     allocator: &'a Allocator,
     source: &'a str,
-    prefix: u32,
+    wrapper: Wrapper,
     length: usize,
 ) -> Result<&'a str, EmbedHole> {
     let admit = |text: &str| {
@@ -148,49 +171,45 @@ fn admitted_input<'a>(
         }
         Ok(())
     };
-    if prefix == 0 {
+    if wrapper.prefix.is_empty() {
         admit(source)?;
         return Ok(source);
     }
     let mut wrapped = String::with_capacity(length);
-    wrapped.push_str("(\n");
+    wrapped.push_str(wrapper.prefix);
     wrapped.push_str(source);
-    wrapped.push_str("\n)");
+    wrapped.push_str(wrapper.suffix);
     admit(wrapped.as_str())?;
     Ok(allocator.alloc_str(wrapped.as_str()))
 }
 
-/// Parse Expr or Program exactly once into the shared arena. Other shapes,
-/// Flow, inputs above the conservative token budget and inputs rejected by the
-/// shared OXC safety guard remain typed holes. Full Program admission is pending.
-/// JSX/TSX admission, composite shapes and per-file language resolution are
-/// still unfinished. Syntax diagnostics are retained, not discarded on failure.
+/// Parse Program, Expr, HandlerBody or SlotParams exactly once into the shared
+/// arena. Composite shapes, Flow, inputs above the conservative token budget
+/// and inputs rejected by the shared OXC safety guard remain typed holes. Full
+/// admission, JSX/TSX and file language resolution remain unfinished. Actual
+/// syntax diagnostics are retained, not discarded on failure.
 pub fn parse_once<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> NativeSyntax<'a> {
-    let prefix = if embed.grammar.shape == Shape::Expr {
-        2
-    } else {
-        0
-    };
+    let wrapper = Wrapper::for_shape(embed.grammar.shape);
     let mut result = NativeSyntax {
         grammar: embed.grammar,
         coordinates: Coordinates {
             source: embed.source,
-            prefix,
+            prefix: wrapper.map_or(0, |wrapper| wrapper.prefix.len() as u32),
         },
         program: None,
         diagnostics: Diagnostics::default(),
         hole: None,
     };
-    if !matches!(embed.grammar.shape, Shape::Expr | Shape::Program) {
+    let Some(wrapper) = wrapper else {
         result.hole = Some(EmbedHole::UnsupportedShape);
         return result;
-    }
-    let extra = if prefix == 0 { 0 } else { 4 };
+    };
+    let extra = wrapper.prefix.len() + wrapper.suffix.len();
     let Some(length) = parser_length(embed.source.text().len(), extra) else {
         result.hole = Some(EmbedHole::SourceTooLarge);
         return result;
     };
-    let input = match admitted_input(allocator, embed.source.text(), prefix, length) {
+    let input = match admitted_input(allocator, embed.source.text(), wrapper, length) {
         Ok(input) => input,
         Err(hole) => {
             result.hole = Some(hole);
@@ -206,7 +225,7 @@ pub fn parse_once<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> NativeSynta
         Some(EmbedHole::UnsupportedFlow)
     } else if parsed.panicked || parsed.diagnostics.has_errors() {
         Some(EmbedHole::Syntax)
-    } else if prefix != 0
+    } else if embed.grammar.shape == Shape::Expr
         && expression(&parsed.program)
             .and_then(|expression| {
                 use oxc_span::GetSpan;
@@ -215,6 +234,14 @@ pub fn parse_once<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> NativeSynta
             .is_none()
     {
         Some(EmbedHole::InvalidExpressionShape)
+    } else if matches!(embed.grammar.shape, Shape::HandlerBody | Shape::SlotParams)
+        && !shapes::valid_wrapper(&parsed.program, embed.grammar.shape, result.coordinates)
+    {
+        Some(EmbedHole::InvalidWrappedShape)
+    } else if matches!(embed.grammar.shape, Shape::HandlerBody | Shape::SlotParams)
+        && shapes::contains_module_declaration(&parsed.program)
+    {
+        Some(EmbedHole::InvalidModuleContext)
     } else {
         None
     };
@@ -225,3 +252,6 @@ pub fn parse_once<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> NativeSynta
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod shape_tests;
