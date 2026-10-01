@@ -146,7 +146,7 @@ fn package_walk_does_not_reuse_alias_negative_invalidation_shortcuts() {
         "export * from './leaf'; export { default } from './Child.vue';",
     )
     .unwrap();
-    let child = write(
+    write(
         root,
         "Child.vue",
         include_str!("../../../tests/fixtures/import-registration/Child.vue"),

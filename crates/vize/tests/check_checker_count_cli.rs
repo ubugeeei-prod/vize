@@ -70,12 +70,11 @@ fn cli_checker_count_overrides_environment_for_single_and_sharded_programs() {
         let output = command.output().unwrap();
         assert!(output.status.success(), "{output:?}");
         let counts = fs::read_to_string(log).unwrap();
-        assert!(!counts.is_empty());
-        assert!(counts.lines().all(|value| value == expected), "{counts}");
+        let expected_counts = vec![expected; if servers == "2" { 2 } else { 1 }];
         assert_eq!(
-            counts.lines().count(),
-            if servers == "2" { 2 } else { 1 },
-            "every disjoint shard receives the same explicit width"
+            counts.lines().collect::<Vec<_>>(),
+            expected_counts,
+            "each disjoint shard receives the selected worker count"
         );
         let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
         assert_eq!(report["errorCount"], 0);
