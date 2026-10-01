@@ -30,3 +30,12 @@ typed execution options in each Pkl/schema/TypeScript comparison. Maestro reads
 strict-reactivity rules today; its existing cross-file lint gate still logs an
 unfinished analyzer integration. This change does not claim editor cross-file
 lint parity with the native CLI.
+
+The checked lint loader rejects malformed discovered settings before source
+fixes, instead of warning and discarding configured rules or warning limits.
+Absent config still means defaults; an unavailable auto-detected Pkl runtime
+retains its lower-priority format fallback. Explicit JS configuration is parsed
+once, so an effectful config function cannot change between validation and use.
+CLI regression cases assert exit status, diagnostics, untouched source,
+`--no-config`, and an exact one-evaluation counter. Existing tolerant loaders
+retain their public contracts for other consumers.

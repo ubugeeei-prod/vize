@@ -94,3 +94,67 @@ fn warning_limit_config_fails_and_cli_can_override_it() {
     assert_eq!(report(&configured)[0]["warningCount"], json!(1));
     assert_eq!(report(&configured)[0]["errorCount"], json!(0));
 }
+
+#[test]
+fn invalid_discovered_settings_fail_before_fix_and_no_config_can_ignore_them() {
+    let project = project();
+    let root = project.path();
+    let before = fs::read(root.join("Warning.vue")).expect("source");
+    for invalid in [r#"{"linter":{"maxWarnings":-1}}"#, "{"] {
+        fs::write(root.join("vize.config.json"), invalid).expect("invalid config");
+        let error = serde_json::from_str::<vize_carton::config::ConfigDocument>(invalid)
+            .expect_err("invalid typed config");
+        let discovered = root.join("vize.config.json");
+        for (args, path) in [
+            (vec!["--fix", "Warning.vue"], discovered.as_path()),
+            (
+                vec!["--config", "vize.config.json", "Warning.vue"],
+                Path::new("vize.config.json"),
+            ),
+        ] {
+            let output = lint(root, &args);
+            assert_eq!(output.status.code(), Some(2));
+            assert!(output.stdout.is_empty());
+            let expected = vize_l0::cstr!(
+                "\x1b[31mError:\x1b[0m failed to parse {}: {error}\n",
+                path.display()
+            );
+            assert_eq!(String::from_utf8_lossy(&output.stderr), expected.as_str());
+            assert_eq!(
+                fs::read(root.join("Warning.vue")).expect("unchanged source"),
+                before
+            );
+        }
+        assert_ne!(
+            lint(root, &["--no-config", "Warning.vue"]).status.code(),
+            Some(2)
+        );
+    }
+}
+
+#[test]
+fn explicit_javascript_config_is_evaluated_once() {
+    let project = project();
+    let root = project.path();
+    fs::write(root.join("eval-count.txt"), "0").expect("counter");
+    fs::write(
+        root.join("vize.config.mjs"),
+        r#"
+import { readFileSync, writeFileSync } from 'node:fs';
+const counter = new URL('./eval-count.txt', import.meta.url);
+export default () => {
+  const count = Number(readFileSync(counter, 'utf8')) + 1;
+  writeFileSync(counter, String(count));
+  return { linter: { maxWarnings: count === 1 ? 0 : 100, rules: { 'a11y/alt-text': 'warn' } } };
+};
+"#,
+    )
+    .expect("JS config");
+    let output = lint(root, &["--config", "vize.config.mjs", "Warning.vue"]);
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(report(&output)[0]["warningCount"], json!(1));
+    assert_eq!(
+        fs::read_to_string(root.join("eval-count.txt")).expect("counter"),
+        "1"
+    );
+}

@@ -1,6 +1,8 @@
 use std::path::Path;
 
-use super::{LoadedConfigWithFeatures, load_raw_config_with_source};
+use super::{
+    LoadedConfigWithFeatures, LoadedRawConfig, load_raw_config_checked, load_raw_config_with_source,
+};
 use crate::config::{
     LinterConfig, LinterConfigPlan, LinterConfigPlanWithConfigRuleOptions,
     LinterConfigPlanWithRuleOptions, LinterFeatureFlags,
@@ -122,7 +124,26 @@ pub fn load_linter_execution_with_source(
     LinterFeatureFlags,
     crate::config::LinterExecutionOptions,
 ) {
-    let loaded = load_raw_config_with_source(path);
+    linter_execution_snapshot(load_raw_config_with_source(path))
+}
+
+/// Configuration values derived from a single lint config evaluation.
+pub type LoadedLintExecutionConfig = (
+    LoadedConfigWithFeatures,
+    LinterConfigPlanWithConfigRuleOptions,
+    LinterFeatureFlags,
+    crate::config::LinterExecutionOptions,
+);
+
+/// Reject invalid discovered settings; only an unavailable auto-detected Pkl
+/// runtime may fall back to another format. No config means defaults.
+pub fn try_load_linter_execution_with_source(
+    path: Option<&Path>,
+) -> Result<LoadedLintExecutionConfig, std::string::String> {
+    load_raw_config_checked(path).map(linter_execution_snapshot)
+}
+
+fn linter_execution_snapshot(loaded: LoadedRawConfig) -> LoadedLintExecutionConfig {
     let compiler_compatibility_vue_version = loaded.config.compiler_compatibility_vue_version();
     let compiler_vapor = loaded.config.compiler_vapor();
     let linter = loaded.config.linter_plan_with_config_rule_options();

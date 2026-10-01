@@ -5,6 +5,7 @@
 //! here and avoids letting JavaScript, PKL, and path-search details crowd the
 //! main flow.
 
+mod checked;
 mod compiler_keys;
 mod discovery;
 #[cfg(test)]
@@ -25,6 +26,7 @@ mod vapor;
 
 use std::path::{Path, PathBuf};
 
+pub(super) use checked::load_raw_config_checked;
 use discovery::{CONFIG_FILE_NAMES, resolve_dir_path, resolve_file_path};
 use parse::{parse_raw_config_file, try_parse_raw_candidate};
 

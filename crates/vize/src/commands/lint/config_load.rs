@@ -20,7 +20,12 @@ pub(super) fn load(
             crate::config::LinterExecutionOptions::default(),
         )
     } else {
-        crate::config::load_linter_execution_with_source(args.config.as_deref())
+        crate::config::try_load_linter_execution_with_source(args.config.as_deref()).unwrap_or_else(
+            |error| {
+                eprintln!("\x1b[31mError:\x1b[0m {error}");
+                std::process::exit(2);
+            },
+        )
     };
     args.cross_file |= execution.cross_file;
     args.cross_file_tree |= execution.cross_file_tree;
