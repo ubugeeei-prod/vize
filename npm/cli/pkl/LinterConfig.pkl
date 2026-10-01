@@ -99,7 +99,19 @@ class MuseaPreferDesignTokensOptions {
 }
 
 /// Typed per-rule options for rules that accept project-local configuration.
+class StrictBooleanExpressionsOptions {
+  allowString: Boolean = true
+  allowNumber: Boolean = true
+  allowNullableObject: Boolean = true
+  allowNullableBoolean: Boolean = false
+  allowNullableString: Boolean = false
+  allowNullableNumber: Boolean = false
+  allowNullableEnum: Boolean = false
+  allowAny: Boolean = false
+}
+
 class LintRuleOptions {
+  `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null
   `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null

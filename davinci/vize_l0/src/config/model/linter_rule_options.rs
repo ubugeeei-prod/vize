@@ -17,6 +17,7 @@ mod hyphenation;
 mod no_mutating_props;
 mod restrictions;
 mod sfc_element_order;
+mod strict_boolean;
 
 pub use casing::{
     ComponentNameInTemplateCasingOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
@@ -32,6 +33,7 @@ pub use restrictions::{
     NoRestrictedMembersOptions, RestrictedGlobal, RestrictedMember,
 };
 pub use sfc_element_order::{SfcElementOrderGroup, SfcElementOrderOptions};
+pub use strict_boolean::StrictBooleanExpressionsOptions;
 
 /// Per-rule configuration keyed by rule name.
 ///
@@ -113,6 +115,8 @@ impl LintRuleOptions {
 pub struct ConfigLintRuleOptions {
     #[serde(flatten)]
     stable: LintRuleOptions,
+    #[serde(rename = "type/strict-boolean-expressions")]
+    strict_boolean_expressions: Option<StrictBooleanExpressionsOptions>,
     /// Options for `vue/component-name-in-template-casing`.
     #[serde(rename = "vue/component-name-in-template-casing")]
     component_name_in_template_casing: Option<ComponentNameInTemplateCasingOptions>,
@@ -149,6 +153,11 @@ impl ConfigLintRuleOptions {
         }
     }
 
+    /// Configured allowances; options alone do not enable the rule.
+    pub fn strict_boolean_expressions(&self) -> Option<StrictBooleanExpressionsOptions> {
+        self.strict_boolean_expressions
+    }
+
     /// Stable subset exposed by the original `load_linter_rule_options` API.
     #[inline]
     pub fn stable_options(&self) -> &LintRuleOptions {
@@ -158,7 +167,8 @@ impl ConfigLintRuleOptions {
     /// Whether no rule options are configured.
     #[inline]
     pub fn is_empty(&self) -> bool {
-        self.stable.is_empty()
+        self.strict_boolean_expressions.is_none()
+            && self.stable.is_empty()
             && self.component_name_in_template_casing.is_none()
             && self.custom_event_name_casing.is_none()
             && self.no_mutating_props.is_none()
@@ -246,6 +256,9 @@ impl ConfigLintRuleOptions {
     /// Apply a later config layer to this option set.
     pub fn merge_from(&mut self, overlay: &Self) {
         self.stable.merge_from(&overlay.stable);
+        if let Some(options) = overlay.strict_boolean_expressions {
+            self.strict_boolean_expressions = Some(options);
+        }
         if let Some(options) = &overlay.component_name_in_template_casing {
             self.component_name_in_template_casing = Some(*options);
         }

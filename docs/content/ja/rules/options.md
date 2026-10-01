@@ -1,14 +1,13 @@
 ---
 title: ルール オプション
 ---
-
 <!-- Generated translation; source: rules/options.md -->
 
 # ルール オプション
+<!-- Type-aware reference: [型ルール オプション](./options-type.md) -->
 
 `linter.ruleOptions` は、オプションを受け取るルールの project-local な型付き設定です。
-未知の option field は拒否されます。同じ rule に対して後から一致した config entry がある場合、
-その rule の option object 全体を置き換えます。重大度は `linter.rules` で設定し、
+未知の option field は拒否されます。同じ rule に対して後から一致した config entry がある場合、その rule の option object 全体を置き換えます。重大度は `linter.rules` で設定し、
 `ruleOptions` は有効なルールの振る舞いだけを決めます。
 
 ```json
@@ -60,6 +59,7 @@ title: ルール オプション
 同じ rule の option object は丸ごと置き換えられます。`globals`、`members`、`order`、`tokens`
 などの配列は entry 間で連結されません。
 
+| `type/strict-boolean-expressions` | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`, `allowNumber`, and `allowNullableObject` default to `true`; the other options default to `false`. Explicit rule enablement is required. |
 ## `script/no-restricted-globals`
 
 runtime global を project-owned wrapper 経由にしたいときに使います。option がない場合は

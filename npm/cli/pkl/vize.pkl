@@ -136,7 +136,19 @@ class MuseaPreferDesignTokensOptions {
   tokens: Listing<MuseaDesignToken>? = null
 }
 
+class StrictBooleanExpressionsOptions {
+  allowString: Boolean = true
+  allowNumber: Boolean = true
+  allowNullableObject: Boolean = true
+  allowNullableBoolean: Boolean = false
+  allowNullableString: Boolean = false
+  allowNullableNumber: Boolean = false
+  allowNullableEnum: Boolean = false
+  allowAny: Boolean = false
+}
+
 class LintRuleOptions {
+  `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null
   `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null

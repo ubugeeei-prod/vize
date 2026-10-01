@@ -10,6 +10,7 @@ const configurableRuleOptions = [
   "script/custom-event-name-casing",
   "script/no-restricted-globals",
   "script/no-restricted-members",
+  "type/strict-boolean-expressions",
   "vue/attribute-hyphenation",
   "vue/component-name-in-template-casing",
   "vue/html-self-closing",
@@ -24,6 +25,7 @@ test("rule option docs enumerate every typed lint rule option", () => {
     path.join(repoRoot, "docs/content/rules/options-script.md"),
     path.join(repoRoot, "docs/content/rules/options-vue.md"),
     path.join(repoRoot, "docs/content/rules/options-musea.md"),
+    path.join(repoRoot, "docs/content/rules/options-type.md"),
   ]);
 
   assertRuleOptionsReference(optionsDoc, {
@@ -36,10 +38,10 @@ test("rule option docs enumerate every typed lint rule option", () => {
 });
 
 test("Japanese rule option docs mirror every typed lint rule option", () => {
-  const optionsDoc = fs.readFileSync(
+  const optionsDoc = readDocs([
     path.join(repoRoot, "docs/content/ja/rules/options.md"),
-    "utf8",
-  );
+    path.join(repoRoot, "docs/content/ja/rules/options-type.md"),
+  ]);
 
   assertRuleOptionsReference(optionsDoc, {
     title: /# ルール オプション/,

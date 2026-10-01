@@ -2,6 +2,7 @@ use corsa::api::ProjectSession;
 use std::path::PathBuf;
 use vize_l0::String;
 
+mod boolean;
 mod errors;
 mod paths;
 mod probe;

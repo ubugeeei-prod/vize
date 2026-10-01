@@ -5,7 +5,7 @@ use super::document::project_type_aware;
 use super::{
     LintResult, Linter, RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS,
     RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
-    push_warning, with_corsa_session,
+    RULE_STRICT_BOOLEAN, push_warning, strict_boolean, with_corsa_session,
 };
 use super::{
     markers::{QueryKind, push_promise_marker},
@@ -93,16 +93,14 @@ pub(super) fn lint_with_descriptor<'a>(
             .as_ref()
             .and_then(|(root, offset, _, fatal)| (!*fatal).then_some((root, *offset))),
     );
-    let Some(script_block) = descriptor
+    let script_block = descriptor
         .script_setup
         .as_ref()
-        .or(descriptor.script.as_ref())
-    else {
-        return result;
-    };
-
-    let script_content = script_block.content.as_ref();
-    if script_content.is_empty() {
+        .or(descriptor.script.as_ref());
+    let include_boolean_queries = is_type_rule_active(linter, RULE_STRICT_BOOLEAN);
+    let script_content = script_block.map_or("", |block| block.content.as_ref());
+    let script_offset = script_block.map_or(0, |block| block.loc.start as u32);
+    if script_content.is_empty() && !include_boolean_queries {
         return result;
     }
 
@@ -122,6 +120,7 @@ pub(super) fn lint_with_descriptor<'a>(
         && !include_template_queries
         && !include_template_promise_queries
         && !include_reactivity_queries
+        && !include_boolean_queries
     {
         return result;
     }
@@ -151,7 +150,7 @@ pub(super) fn lint_with_descriptor<'a>(
             template_ast
                 .as_ref()
                 .and_then(|(root, _, _, has_fatal)| (!*has_fatal).then_some(root)),
-            script_block.loc.start as u32,
+            script_offset,
             template_offset,
             filename,
         )
@@ -206,7 +205,7 @@ pub(super) fn lint_with_descriptor<'a>(
             &mut result,
             &parse_result,
             script_content,
-            script_block.loc.start as u32,
+            script_offset,
             &mut virtual_ts,
         )
     });
@@ -239,10 +238,23 @@ pub(super) fn lint_with_descriptor<'a>(
             }
         });
 
+    let boolean_plan = include_boolean_queries.then(|| {
+        strict_boolean::plan(
+            descriptor,
+            template_ast
+                .as_ref()
+                .and_then(|(root, offset, _, fatal)| (!*fatal).then_some((root, *offset))),
+            &mut virtual_ts,
+        )
+    });
+
     if macro_queries.is_empty()
         && template_queries.is_empty()
         && template_promise_queries.is_empty()
         && reactivity_loss_queries.is_empty()
+        && boolean_plan
+            .as_ref()
+            .is_none_or(strict_boolean::Plan::is_empty)
     {
         return result;
     }
@@ -261,7 +273,7 @@ pub(super) fn lint_with_descriptor<'a>(
                 probes::ProbeBatch {
                     content: &virtual_ts.content,
                     source,
-                    script_offset: script_block.loc.start as u32,
+                    script_offset,
                     macros: &macro_queries,
                     templates: &template_queries,
                     promises: &template_promise_queries,
@@ -271,6 +283,15 @@ pub(super) fn lint_with_descriptor<'a>(
                 &mut should_warn_for_props,
                 &mut should_warn_for_emits,
             )?;
+            if let Some(plan) = &boolean_plan {
+                strict_boolean::evaluate(
+                    session,
+                    &virtual_ts.content,
+                    plan,
+                    linter.strict_boolean_options,
+                    &mut result,
+                )?;
+            }
             Ok(())
         })
     );
@@ -288,7 +309,7 @@ pub(super) fn lint_with_descriptor<'a>(
         &macro_queries,
         MacroWarning {
             kind: QueryKind::PropType,
-            base_offset: script_block.loc.start as u32,
+            base_offset: script_offset,
             rule_name: RULE_REQUIRE_TYPED_PROPS,
             message: "Prop should have a type definition",
             help: "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
@@ -300,7 +321,7 @@ pub(super) fn lint_with_descriptor<'a>(
         &macro_queries,
         MacroWarning {
             kind: QueryKind::EmitValidator,
-            base_offset: script_block.loc.start as u32,
+            base_offset: script_offset,
             rule_name: RULE_REQUIRE_TYPED_EMITS,
             message: "Emit should have a type definition",
             help: "Use `defineEmits<...>()` or a validator object with typed payload parameters.",

@@ -48,7 +48,7 @@ pub use linter_rule_options::{
     HtmlSelfClosingStyle, HyphenationStyle, LintRuleOptions, MuseaDesignToken,
     MuseaPreferDesignTokensOptions, NoMutatingPropsOptions, NoRestrictedGlobalsOptions,
     NoRestrictedMembersOptions, RestrictedGlobal, RestrictedMember, SfcElementOrderGroup,
-    SfcElementOrderOptions, TemplateComponentNameCasing,
+    SfcElementOrderOptions, StrictBooleanExpressionsOptions, TemplateComponentNameCasing,
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};

@@ -498,16 +498,8 @@ impl DiagnosticService {
                         vize_patina::Severity::Warning => DiagnosticSeverity::WARNING,
                     }),
                     code: Some(NumberOrString::String(lint_diag.rule_name.to_string())),
-                    code_description: Url::parse(&format!(
-                        "https://eslint.vuejs.org/rules/{}.html",
-                        lint_diag
-                            .rule_name
-                            .strip_prefix("vue/")
-                            .unwrap_or(lint_diag.rule_name)
-                    ))
-                    .or_else(|_| Url::parse("https://eslint.vuejs.org/rules/"))
-                    .ok()
-                    .map(|href| CodeDescription { href }),
+                    code_description: super::linter_options::rule_docs_url(lint_diag.rule_name)
+                        .map(|href| CodeDescription { href }),
                     source: Some(sources::LINTER.to_string()),
                     message,
                     ..Default::default()

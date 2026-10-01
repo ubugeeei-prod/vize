@@ -1,5 +1,8 @@
 //! Existing linter constructors, shared by opt-in configuration.
 use super::*;
+use crate::preset::{
+    builtin_css_rule_names, builtin_script_rule_names, ecosystem_builtin_script_rule_names,
+};
 
 impl Linter {
     /// Default initial capacity for the arena (64KB).
@@ -26,6 +29,7 @@ impl Linter {
             musea_design_tokens: None,
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
+            strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]
@@ -53,6 +57,7 @@ impl Linter {
             musea_design_tokens: None,
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
+            strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]
@@ -80,6 +85,7 @@ impl Linter {
             musea_design_tokens: None,
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
+            strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]
@@ -107,6 +113,7 @@ impl Linter {
             musea_design_tokens: None,
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
+            strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]

@@ -451,6 +451,44 @@
     "LintRuleOptions": {
       "type": "object",
       "properties": {
+        "type/strict-boolean-expressions": {
+          "type": "object",
+          "properties": {
+            "allowString": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNumber": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNullableObject": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNullableBoolean": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allowNullableString": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allowNullableNumber": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allowNullableEnum": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allowAny": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
         "script/no-restricted-globals": {
           "$ref": "#/definitions/NoRestrictedGlobalsOptions"
         },

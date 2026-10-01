@@ -247,6 +247,16 @@ export interface LinterConfig {
   };
 }
 export interface LintRuleOptions {
+  "type/strict-boolean-expressions"?: {
+    allowString?: boolean;
+    allowNumber?: boolean;
+    allowNullableObject?: boolean;
+    allowNullableBoolean?: boolean;
+    allowNullableString?: boolean;
+    allowNullableNumber?: boolean;
+    allowNullableEnum?: boolean;
+    allowAny?: boolean;
+  };
   "script/no-restricted-globals"?: NoRestrictedGlobalsOptions;
   "script/no-restricted-members"?: NoRestrictedMembersOptions;
   "vue/component-name-in-template-casing"?: {

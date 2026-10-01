@@ -7,10 +7,7 @@
 use super::corsa_session::CorsaTypeAwareSession;
 use crate::{
     diagnostic::{HelpLevel, LintDiagnostic, Severity},
-    preset::{
-        LintPreset, builtin_css_rule_names, builtin_script_rule_names,
-        ecosystem_builtin_script_rule_names,
-    },
+    preset::LintPreset,
     rule::RuleRegistry,
     rules::musea::PreferDesignTokensConfig,
 };
@@ -91,6 +88,7 @@ pub struct Linter {
     pub(crate) musea_design_tokens: Option<PreferDesignTokensConfig>,
     /// Whether native type-aware lint rules may run.
     pub(crate) type_aware_enabled: bool,
+    pub(crate) strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions,
     /// Lazily initialized native corsa session for type-aware lint.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) native_corsa: Mutex<Option<CorsaTypeAwareSession>>,
