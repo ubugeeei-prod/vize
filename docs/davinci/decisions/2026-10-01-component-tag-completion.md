@@ -12,6 +12,10 @@ component names. It accepts opening and closing names, replaces the complete
 authored name, and leaves the existing `<` or `</` in place. UTF-16 replacement
 ranges include the suffix after the caret. Attribute values, comments, and Vue
 expressions continue through their existing providers.
+Bare `<` and `</` positions offer element/component names and exclude attribute
+directives. The prior directive-snippet assertions at these tag-name positions
+are replaced by authored native-name inclusion and directive exclusion controls;
+attribute-position directive/event checks retain their existing expectations.
 
 Workspace declaration discovery keeps its `.git` exclusion and existing cache.
 Declaration names are cached by disk metadata or the open document revision;
