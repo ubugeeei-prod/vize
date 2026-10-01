@@ -32,10 +32,7 @@ pub(super) fn walk_elements<'a>(
             TemplateChildNode::Element(element) if has_directive(element, "if") => {
                 let if_start = element.loc.span.start;
                 let mut branch_index = 0;
-                loop {
-                    let Some(TemplateChildNode::Element(branch)) = children.get(index) else {
-                        break;
-                    };
+                while let Some(TemplateChildNode::Element(branch)) = children.get(index) {
                     branches.push(BranchChoice {
                         if_start,
                         index: branch_index,

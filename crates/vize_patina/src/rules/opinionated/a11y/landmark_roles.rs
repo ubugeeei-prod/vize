@@ -163,8 +163,9 @@ impl Rule for LandmarkRoles {
         let mains: Vec<&LandmarkInfo> = landmarks.iter().filter(|l| l.role == "main").collect();
         if mains.len() > 1 {
             for (index, main) in mains.iter().enumerate().skip(1) {
-                if !mains[..index]
+                if !mains
                     .iter()
+                    .take(index)
                     .any(|prior| can_coexist(&prior.branches, &main.branches))
                 {
                     continue;
