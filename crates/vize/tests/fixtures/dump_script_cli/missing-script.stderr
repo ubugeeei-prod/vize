@@ -1,0 +1,6 @@
+error: the following required arguments were not provided:
+  --script <SCRIPT>
+
+Usage: vize dump --level <LEVEL> --script <SCRIPT> --script-goal <SCRIPT_GOAL> <--roundtrip <FILE>|--all-levels> [FILE]
+
+For more information, try '--help'.

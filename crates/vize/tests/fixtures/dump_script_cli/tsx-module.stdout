@@ -1,0 +1,4 @@
+script: tsx module; hole=None
+statement TSTypeAliasDeclaration @Span { start: 0, end: 31 }
+statement ExportNamedDeclaration @Span { start: 32, end: 95 }
+dump: l1 roundtrip OK: capture/cases/tsx-module.input (95 bytes)

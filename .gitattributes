@@ -7,6 +7,10 @@ npm/fresco-native/index.d.ts linguist-generated=true text eol=lf
 tests/_fixtures/differential/formatter-history/** -text
 crates/vize_glyph/tests/snapshots/history_*.snap.txt -text whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
 
+# Native script CLI oracles retain exact captured bytes and authored CRLF.
+crates/vize/tests/fixtures/dump_script_cli/** -text whitespace=cr-at-eol
+crates/vize/tests/fixtures/dump_cli/help*.stdout -text
+
 # Embedded third-party repositories are fixtures, not part of the project source.
 tests/_fixtures/_git/** linguist-vendored=true
 

@@ -1,33 +1,41 @@
-//! Source-built explicit native Program inspection and byte fidelity laws.
-#![expect(
-    clippy::disallowed_macros,
-    reason = "CLI expected bytes use std format"
-)]
+//! Complete source-built native Program output and authored-byte fidelity laws.
+use std::{fs, path::Path, process::Command};
+use vize_l0::{String, cstr};
 
-use std::{fs, process::Command};
+fn expected_stdout(captured: &[u8], name: &str, path: &Path) -> String {
+    let text = std::str::from_utf8(captured).unwrap();
+    let captured_path = cstr!("capture/cases/{name}.input");
+    let (before, after) = text.split_once(captured_path.as_str()).unwrap();
+    assert_eq!(after.matches(captured_path.as_str()).count(), 0);
+    cstr!("{before}{}{after}", path.display())
+}
 
 #[test]
-fn explicit_script_languages_observe_real_programs_without_rewriting() {
-    for (language, input, kind) in [
+fn explicit_script_languages_observe_complete_real_programs_without_rewriting() {
+    for (name, language, input, stdout) in [
         (
+            "js-module",
             "js",
-            "/* α */ import { ref } from 'vue';\r\nexport const value = ref(0);",
-            "ImportDeclaration",
+            include_bytes!("fixtures/dump_script_cli/js-module.input").as_slice(),
+            include_bytes!("fixtures/dump_script_cli/js-module.stdout").as_slice(),
         ),
         (
+            "ts-module",
             "ts",
-            "interface Props { value: number } export const value: Props = { value: 1 };",
-            "TSInterfaceDeclaration",
+            include_bytes!("fixtures/dump_script_cli/ts-module.input").as_slice(),
+            include_bytes!("fixtures/dump_script_cli/ts-module.stdout").as_slice(),
         ),
         (
+            "jsx-module",
             "jsx",
-            "const View = () => <section>{values.map(value => <span>{value}</span>)}</section>;",
-            "VariableDeclaration",
+            include_bytes!("fixtures/dump_script_cli/jsx-module.input").as_slice(),
+            include_bytes!("fixtures/dump_script_cli/jsx-module.stdout").as_slice(),
         ),
         (
+            "tsx-module",
             "tsx",
-            "type Props = { value: number }; export const View = ({ value }: Props) => <span>{value}</span>;",
-            "TSTypeAliasDeclaration",
+            include_bytes!("fixtures/dump_script_cli/tsx-module.input").as_slice(),
+            include_bytes!("fixtures/dump_script_cli/tsx-module.stdout").as_slice(),
         ),
     ] {
         let directory = tempfile::tempdir().unwrap();
@@ -39,22 +47,19 @@ fn explicit_script_languages_observe_real_programs_without_rewriting() {
             .output()
             .unwrap();
         assert_eq!(output.status.code(), Some(0), "{output:?}");
-        assert!(output.stderr.is_empty());
-        let stdout = std::str::from_utf8(&output.stdout).unwrap();
-        assert!(stdout.starts_with(&format!("script: {language} module; hole=None\n")));
-        assert!(stdout.contains(&format!("statement {kind} @Span {{")));
-        assert!(stdout.ends_with(&format!(
-            "dump: l1 roundtrip OK: {} ({} bytes)\n",
-            path.display(),
-            input.len()
-        )));
-        assert_eq!(fs::read(&path).unwrap(), input.as_bytes());
+        assert_eq!(output.stderr, b"");
+        assert_eq!(
+            output.stdout,
+            expected_stdout(stdout, name, &path).as_bytes()
+        );
+        assert_eq!(fs::read(&path).unwrap(), input);
     }
 }
 
 #[test]
-fn explicit_script_goal_and_recovery_preserve_source_and_report_actual_diagnostics() {
-    let input = "/* α */ const value: number = ;\r\n// β";
+fn explicit_script_goal_and_recovery_keep_full_actual_diagnostics_and_source() {
+    let input = include_bytes!("fixtures/dump_script_cli/tsx-script-hole.input");
+    let stdout = include_bytes!("fixtures/dump_script_cli/tsx-script-hole.stdout");
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("malformed.tsx");
     fs::write(&path, input).unwrap();
@@ -73,50 +78,53 @@ fn explicit_script_goal_and_recovery_preserve_source_and_report_actual_diagnosti
         .output()
         .unwrap();
     assert_eq!(output.status.code(), Some(0), "{output:?}");
-    assert!(output.stderr.is_empty());
-    let stdout = std::str::from_utf8(&output.stdout).unwrap();
-    assert!(stdout.starts_with("script: tsx script; hole=Some(Syntax)\n"));
-    assert!(stdout.contains("comment SingleLineBlock @Span { start: 0, end: 8 }"));
-    assert!(stdout.contains("diagnostic Error: Unexpected token\n"));
-    assert!(stdout.contains("label @Span { start: 31, end: 32 }"));
-    assert!(stdout.contains("dump: l1 roundtrip OK:"));
-    assert_eq!(fs::read(&path).unwrap(), input.as_bytes());
+    assert_eq!(output.stderr, b"");
+    assert_eq!(
+        output.stdout,
+        expected_stdout(stdout, "tsx-script-hole", &path).as_bytes()
+    );
+    assert_eq!(fs::read(&path).unwrap(), input);
 }
 
 #[test]
-fn script_inspection_requires_l1_before_reading_or_mutating_any_file() {
-    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .args([
-            "dump",
-            "--level",
-            "l2",
-            "--script",
-            "ts",
-            "--roundtrip",
-            "missing",
-        ])
-        .output()
-        .unwrap();
-    assert_eq!(output.status.code(), Some(2));
-    assert!(output.stdout.is_empty());
-    assert_eq!(output.stderr, b"dump: --script requires --level l1\n");
-    for arguments in [
-        vec!["dump", "--script", "ts"],
-        vec![
-            "dump",
-            "--level",
-            "l1",
-            "--roundtrip",
-            "missing",
-            "--script-goal",
-            "script",
-        ],
-    ] {
-        let rejected = Command::new(env!("CARGO_BIN_EXE_vize"))
-            .args(arguments)
+fn invalid_script_options_keep_complete_errors_and_read_no_authored_file() {
+    let cases: &[(&[&str], &[u8])] = &[
+        (
+            &[
+                "dump",
+                "--level",
+                "l2",
+                "--script",
+                "ts",
+                "--roundtrip",
+                "missing",
+            ],
+            include_bytes!("fixtures/dump_script_cli/wrong-level.stderr"),
+        ),
+        (
+            &["dump", "--script", "ts"],
+            include_bytes!("fixtures/dump_script_cli/missing-roundtrip.stderr"),
+        ),
+        (
+            &[
+                "dump",
+                "--level",
+                "l1",
+                "--roundtrip",
+                "missing",
+                "--script-goal",
+                "script",
+            ],
+            include_bytes!("fixtures/dump_script_cli/missing-script.stderr"),
+        ),
+    ];
+    for (arguments, stderr) in cases {
+        let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+            .args(*arguments)
             .output()
             .unwrap();
-        assert_eq!(rejected.status.code(), Some(2), "{rejected:?}");
-        assert!(rejected.stdout.is_empty());
+        assert_eq!(output.status.code(), Some(2), "{output:?}");
+        assert_eq!(output.stdout, b"");
+        assert_eq!(output.stderr, *stderr);
     }
 }
