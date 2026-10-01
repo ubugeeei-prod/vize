@@ -144,6 +144,13 @@ function withoutChecked(html) {
   return normalize(fragment.innerHTML);
 }
 
+function inputChecked(html) {
+  const fragment = window.document.createElement("template");
+  fragment.innerHTML = html;
+  assert.equal(fragment.content.querySelectorAll("input").length, 1);
+  return fragment.content.querySelector("input").checked;
+}
+
 async function clientChecked(fixture) {
   const compiled = compileTemplate({
     source: fixture.template,
@@ -186,6 +193,8 @@ for (const fixture of cases) {
   } else {
     result.vue = await render(upstream.code, fixture);
     result.vize = await render(fixture.vize, fixture);
+    if (fixture.observeInput && result.vize.html !== undefined)
+      result.vize.inputChecked = inputChecked(result.vize.html);
     if (fixture.compareCheckedWithClient) result.clientChecked = await clientChecked(fixture);
     if (fixture.legacy !== undefined) result.legacy = await render(fixture.legacy, fixture);
   }
@@ -197,7 +206,7 @@ for (const fixture of cases) {
   const clientAligned =
     fixture.compareCheckedWithClient &&
     result.vize?.html !== undefined &&
-    result.vize.html.includes(" checked") === result.clientChecked &&
+    result.vize.inputChecked === result.clientChecked &&
     upstreamHtml !== undefined &&
     withoutChecked(result.vize.html) === withoutChecked(upstreamHtml);
   const aligned =

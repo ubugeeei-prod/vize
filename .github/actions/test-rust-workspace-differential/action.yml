@@ -30,7 +30,7 @@ runs:
         VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_patina --features legacy-differential --test davinci_markup_differential -- --nocapture
     - name: Test Vapor and SFC contracts in production
       shell: bash
-      env: { VIZE_VUE_RUNTIME_PRODUCTION: "1" }
+      env: { VIZE_VUE_RUNTIME_PRODUCTION: "1", VIZE_TEST_REQUIRE_TSGO: "1" }
       run: |
         cargo test -p vize_atelier_vapor --test davinci_vapor_upstream_parity
         cargo test -p vize_atelier_sfc --test vapor_runtime_contracts

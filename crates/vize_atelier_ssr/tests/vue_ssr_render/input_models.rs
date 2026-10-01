@@ -56,7 +56,7 @@ fn input_models_match_vue_in_all_attribute_emission_paths() {
                 fixture.name
             );
             cases.push(format!(
-                "{{\"name\":{},\"template\":{},\"vize\":{},\"data\":{},\"compareCheckedWithClient\":{}}}",
+                "{{\"name\":{},\"template\":{},\"vize\":{},\"data\":{},\"observeInput\":true,\"compareCheckedWithClient\":{}}}",
                 json(&format!("{}-{path}", fixture.name)),
                 json(&template),
                 json(&code),
@@ -81,7 +81,9 @@ fn input_models_match_vue_in_all_attribute_emission_paths() {
             .as_str()
             .expect("rendered model HTML");
         assert_eq!(
-            html.contains(" checked"),
+            result["vize"]["inputChecked"]
+                .as_bool()
+                .expect("input checked state"),
             checked,
             "{}: {html}",
             result["name"]
