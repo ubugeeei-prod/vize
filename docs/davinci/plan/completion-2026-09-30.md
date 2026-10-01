@@ -1,6 +1,6 @@
 # Davinci completion ledger (2026-09-30)
 
-Initial snapshot: main `507ac3cc683c044fc136016cd4bfb7d3bde44965`; completion evidence refreshed on 2026-10-01 at main `89de7338e677499c0e43e67f8aad4ea559a22b3c`. Issue status alone is not implementation evidence. A slice completes only after exact-head Actions, protected-queue success, actual merge, and a fresh-main check.
+Initial snapshot: main `507ac3cc683c044fc136016cd4bfb7d3bde44965`; completion evidence refreshed on 2026-10-01 at main `cb806ff4fcbbfe93971a23007a9e62df2252e679`. Issue status alone is not implementation evidence. A slice completes only after exact-head Actions, protected-queue success, actual merge, and a fresh-main check.
 
 ## Completion conditions
 

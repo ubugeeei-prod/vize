@@ -22,7 +22,13 @@ function stageSurface(id, label, preferredName, compatNames = []) {
 }
 
 export const SURFACES = [
-  stageSurface("l0", "L0", "vize_l0", ["vize_carton"]),
+  stageSurface("l0", "L0", "vize_l0"),
+  {
+    id: "carton",
+    label: "Carton host/compatibility",
+    group: "old",
+    names: ["vize_carton"],
+  },
   stageSurface("l1", "L1", "vize_l1", ["vize_sinopia"]),
   stageSurface("l2", "L2", "vize_l2", ["vize_disegno"]),
   stageSurface("l1_to_l2", "L1->L2", "vize_l1_to_l2", ["vize_ricalco"]),

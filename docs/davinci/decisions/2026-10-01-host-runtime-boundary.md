@@ -2,7 +2,7 @@
 
 Decision for [#6834](https://github.com/ubugeeei-prod/vize/issues/6834), after
 [#7298](https://github.com/ubugeeei-prod/vize/pull/7298) actually merged and
-#6833 closed. Refreshed main `89de7338e677499c0e43e67f8aad4ea559a22b3c`
+#6833 closed. Refreshed main `cb806ff4fcbbfe93971a23007a9e62df2252e679`
 contains retirement `d457f95dbc9c079c73919a258e0bbbb1cfe24e48`; its
 [protected queue Check](https://github.com/ubugeeei-prod/vize/actions/runs/36790341706)
 passed. Fresh Git transport and the GitHub API confirm the main ancestry.
@@ -45,3 +45,10 @@ merge are required before reporting this slice complete.
 GitHub authentication and Git transport were restored before publication.
 The paired issue comment and independent PR carry this decision; exact-head
 Actions and the actual protected-queue merge remain completion requirements.
+
+Review corrections for #6832: the stage catalogue identifies L0 as `vize_l0`,
+not its legacy Carton facade, and includes the actual L4 package. Registration
+does not claim unfinished L4 emission complete. Consumer inventories retain
+Carton mentions as legacy host/compatibility infrastructure, not L0 aliases.
+Canon keeps explicit L0 storage imports and admits only the two named Corsa
+host modules; it cannot restore its private L0-as-Carton alias.

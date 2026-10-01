@@ -21,6 +21,8 @@ observational guard for planning only. It does not change rollout state.
 - Stage names are split into preferred physical names and compatibility
   code-name aliases so L0/L1/L2 migration work is measurable without changing
   rollout state.
+- Carton is legacy host/compatibility infrastructure, not a level alias; its
+  references remain visible separately and receive no native-stage credit.
 - `source/manifest` includes production Rust files plus crate manifests.
   `test/dev` includes crate `tests`, `benches`, `tests.rs`,
   `*_tests.rs`, and Rust sites after the first `#[cfg(test)]` in a file.
@@ -29,15 +31,16 @@ observational guard for planning only. It does not change rollout state.
 
 ## Surface legend
 
-| surface          | group | matched name classes                                                                                                                               |
-| ---------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| L0               | stage | preferred: `vize_l0`<br>compat/code-name: `vize_carton`                                                                                            |
-| L1               | stage | preferred: `vize_l1`<br>compat/code-name: `vize_sinopia`                                                                                           |
-| L2               | stage | preferred: `vize_l2`<br>compat/code-name: `vize_disegno`                                                                                           |
-| L1->L2           | stage | preferred: `vize_l1_to_l2`<br>compat/code-name: `vize_ricalco`                                                                                     |
-| old AST/parser   | old   | legacy: `vize_relief`, `vize_armature`                                                                                                             |
-| Croquis analysis | old   | legacy: `vize_croquis`, `vize_croquis_cf`                                                                                                          |
-| raw OXC          | raw   | raw: `oxc_allocator`, `oxc_ast`, `oxc_ast_visit`, `oxc_codegen`, `oxc_formatter`, `oxc_formatter_core`, `oxc_parser`, `oxc_semantic`, `oxc_syntax` |
+| surface                   | group | matched name classes                                                                                                                               |
+| ------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| L0                        | stage | preferred: `vize_l0`                                                                                                                               |
+| Carton host/compatibility | old   | legacy: `vize_carton`                                                                                                                              |
+| L1                        | stage | preferred: `vize_l1`<br>compat/code-name: `vize_sinopia`                                                                                           |
+| L2                        | stage | preferred: `vize_l2`<br>compat/code-name: `vize_disegno`                                                                                           |
+| L1->L2                    | stage | preferred: `vize_l1_to_l2`<br>compat/code-name: `vize_ricalco`                                                                                     |
+| old AST/parser            | old   | legacy: `vize_relief`, `vize_armature`                                                                                                             |
+| Croquis analysis          | old   | legacy: `vize_croquis`, `vize_croquis_cf`                                                                                                          |
+| raw OXC                   | raw   | raw: `oxc_allocator`, `oxc_ast`, `oxc_ast_visit`, `oxc_codegen`, `oxc_formatter`, `oxc_formatter_core`, `oxc_parser`, `oxc_semantic`, `oxc_syntax` |
 
 ## Consumers
 

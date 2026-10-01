@@ -51,7 +51,7 @@ void test("consumer migration scan classifies stage physical names separately fr
   assert.ok(s0);
   assert.equal(s0.label, "L0");
   assert.equal(surfaceNameKind(s0, "vize_l0"), "preferred");
-  assert.equal(surfaceNameKind(s0, "vize_carton"), "compat");
+  assert.ok(!s0.names.includes("vize_carton"));
   const stageSurfaces = SURFACES.filter((surface) => surface.group === "stage");
   assert.deepEqual(
     stageSurfaces.map((surface) => surface.label),
@@ -109,9 +109,8 @@ void test("consumer migration TSV exposes matched names and name kind", () => {
   }
 });
 
-void test("consumer migration TSV serializes every stage label and name class", () => {
+void test("consumer migration TSV serializes retained compatibility stage names", () => {
   const stages = [
-    { id: "l0", label: "L0", preferred: "vize_l0", compat: "vize_carton" },
     { id: "l1", label: "L1", preferred: "vize_l1", compat: "vize_sinopia" },
     { id: "l2", label: "L2", preferred: "vize_l2", compat: "vize_disegno" },
     { id: "l1_to_l2", label: "L1->L2", preferred: "vize_l1_to_l2", compat: "vize_ricalco" },
