@@ -167,7 +167,7 @@ See the [script side decisions](./2026-09-27-level-restructure-designs.md#script
 
 ## Dialects, languages, frameworks
 
-See the [dialects, languages, frameworks decisions](./2026-09-27-level-restructure-designs.md#dialects-languages-frameworks), the [MoonBit L2 move](./2026-09-28-moonbit-l2-move.md), and the [MoonBit L1 position move](./2026-09-29-moonbit-l1-positions.md) with its opt-in `moonbit` L1 module feature for MoonBit consumers.
+See the [dialects, languages, frameworks decisions](./2026-09-27-level-restructure-designs.md#dialects-languages-frameworks), the [MoonBit L2 move](./2026-09-28-moonbit-l2-move.md), and the [MoonBit L1 position move](./2026-09-29-moonbit-l1-positions.md) with its opt-in `moonbit` L1 module feature for MoonBit consumers. The [2026-10-01 shared Vue capability slice](./2026-10-01-dialect-capability-owner.md) moves the parser capability model and compact legalization projection into L1 dialect modules, with existing Vue 0/1/2/3 tables owned per version. Armature and L1→L2 retain narrow compatibility re-exports; capability derivation now has one version resolver, while lowering retains its three-boolean layout and dialect wiring stays in the conversion dialect module. No product route, fixture, snapshot, pipeline stage, or instruction ceiling changes. #6841 remains open for a file descriptor covering petite/quirks/markup/languages, core isolation/legalization cleanup, residual dialect-op/L4 options, and MoonBit dissolution.
 
 [Legacy formatter Vue 2 filters](./2026-09-27-glyph-vue2-filters.md) records [#6845](https://github.com/ubugeeei-prod/vize/issues/6845), explicit version selection and the native FilterChain follow-up in #6836.
 

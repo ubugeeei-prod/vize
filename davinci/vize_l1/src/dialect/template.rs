@@ -1,11 +1,8 @@
-//! Vue dialect capabilities the L1→L2 lowering consults.
+//! Compact legalization projection of the shared Vue capability table.
 //!
-//! A copy of the three template-sugar bits
-//! [`vize_armature::legacy::LegacyDialectCapabilities`] names, kept
-//! here so this crate never grows an armature edge. Resolved once per
-//! file from [`vize_l0::config::VueVersion`]. Vue 3 is every flag
-//! off — a single field-read short-circuit, the same zero-cost shape
-//! the shipped `desugar_legacy_template` uses.
+//! Retains the existing three-boolean layout and public `LegacyCaps` spelling.
+//! Version-specific capability derivation belongs to the per-version tables;
+//! this projection carries only facts that lowering and its sugar pass read.
 
 use vize_l0::config::VueVersion;
 
@@ -32,18 +29,11 @@ impl LegacyCaps {
     /// non-legacy line) is [`Self::VUE3`].
     #[must_use]
     pub const fn for_version(version: VueVersion) -> Self {
-        match version {
-            VueVersion::V3 => Self::VUE3,
-            VueVersion::V2 | VueVersion::V2_7 => Self {
-                supports_filters: true,
-                scoped_slot_attrs: true,
-                v2_event_sugar: true,
-            },
-            VueVersion::V1 | VueVersion::V0_11 | VueVersion::V0_10 => Self {
-                supports_filters: true,
-                scoped_slot_attrs: false,
-                v2_event_sugar: false,
-            },
+        let caps = super::LegacyDialectCapabilities::for_dialect(version);
+        Self {
+            supports_filters: caps.supports_filters,
+            scoped_slot_attrs: caps.scoped_slot_attrs,
+            v2_event_sugar: caps.v2_event_sugar,
         }
     }
 
@@ -82,5 +72,31 @@ mod tests {
         assert!(v1.supports_filters);
         assert!(!v1.scoped_slot_attrs && !v1.v2_event_sugar);
         assert!(v1.needs_sugar());
+    }
+
+    #[test]
+    fn every_supported_line_preserves_the_legalization_contract() {
+        let expected = [
+            (VueVersion::V0_10, (true, false, false)),
+            (VueVersion::V0_11, (true, false, false)),
+            (VueVersion::V1, (true, false, false)),
+            (VueVersion::V2, (true, true, true)),
+            (VueVersion::V2_7, (true, true, true)),
+            (VueVersion::V3, (false, false, false)),
+        ];
+        for (version, expected) in expected {
+            let caps = LegacyCaps::for_version(version);
+            assert_eq!(
+                (
+                    caps.supports_filters,
+                    caps.scoped_slot_attrs,
+                    caps.v2_event_sugar
+                ),
+                expected,
+                "{}",
+                version.as_str(),
+            );
+        }
+        assert_eq!(core::mem::size_of::<LegacyCaps>(), 3);
     }
 }

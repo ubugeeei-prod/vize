@@ -1,26 +1,8 @@
-//! Legacy Vue (v0.10 / v0.11 / v1 / v2) support surface.
+//! Shared Vue template capability model.
 //!
-//! This module is the consolidation point for pre-Vue-3 ("legacy") parsing and
-//! tokenization in `vize_armature`. It is gated behind the `legacy` cargo
-//! feature and is **not** compiled into the default Vue 3 (`vize`) binary:
-//! legacy support is strictly opt-in.
-//!
-//! The companion `legacy` modules in `vize_canon` (type checking) and
-//! `vize_maestro` (editor / LSP) build on the [`LegacyVueVersion`] model
-//! defined here, so all three layers agree on which legacy line is in play.
-//!
-//! # Dialect resolution model
-//!
-//! A document's dialect is selected by config (`vue.version`, normalized to
-//! [`VueVersion`] in `vize_l0`) and resolved **once per file** into a
-//! [`LegacyDialectCapabilities`] set via [`LegacyDialectCapabilities::for_dialect`].
-//! Hot paths (tokenizer states, attribute classification, directive
-//! finalization, transforms) must only read capability fields; they must never
-//! re-match on [`LegacyVueVersion`] per token or per node. This keeps legacy
-//! support zero-cost for the default dialect: the Vue 3 capability set is the
-//! all-off [`LegacyDialectCapabilities::VUE3`], so every capability test
-//! short-circuits exactly like today's unconditional Vue 3 code paths — and
-//! without the `legacy` feature this module is not compiled at all.
+//! Per-version modules own the capability tables. Both compatibility parser
+//! options and L1→L2 legalization resolve the same table once per file.
+//! Historical public names remain available through Armature's adapter.
 
 use vize_l0::config::VueVersion;
 
@@ -131,54 +113,10 @@ impl LegacyVueVersion {
     /// options; see [`LegacyDialectCapabilities`] for the zero-cost contract.
     pub const fn capabilities(self) -> LegacyDialectCapabilities {
         match self {
-            Self::V0_10 => LegacyDialectCapabilities {
-                supports_filters: true,
-                space_separated_filter_args: true,
-                v_repeat_syntax: true,
-                directive_arg_style: DirectiveArgStyle::Clause,
-                v_with_directive: true,
-                v_component_directive: true,
-                computed_dollar_get_set: true,
-                attr_value_interpolation: true,
-                scoped_slot_attrs: false,
-                raw_html_interpolation: true,
-            },
-            Self::V0_11 => LegacyDialectCapabilities {
-                supports_filters: true,
-                space_separated_filter_args: true,
-                v_repeat_syntax: true,
-                directive_arg_style: DirectiveArgStyle::Clause,
-                v_with_directive: true,
-                v_component_directive: true,
-                computed_dollar_get_set: false,
-                attr_value_interpolation: true,
-                scoped_slot_attrs: false,
-                raw_html_interpolation: true,
-            },
-            Self::V1 => LegacyDialectCapabilities {
-                supports_filters: true,
-                space_separated_filter_args: true,
-                v_repeat_syntax: false,
-                directive_arg_style: DirectiveArgStyle::Colon,
-                v_with_directive: false,
-                v_component_directive: false,
-                computed_dollar_get_set: false,
-                attr_value_interpolation: true,
-                scoped_slot_attrs: false,
-                raw_html_interpolation: true,
-            },
-            Self::V2 => LegacyDialectCapabilities {
-                supports_filters: true,
-                space_separated_filter_args: false,
-                v_repeat_syntax: false,
-                directive_arg_style: DirectiveArgStyle::Colon,
-                v_with_directive: false,
-                v_component_directive: false,
-                computed_dollar_get_set: false,
-                attr_value_interpolation: false,
-                scoped_slot_attrs: true,
-                raw_html_interpolation: false,
-            },
+            Self::V0_10 => super::vue0::V0_10,
+            Self::V0_11 => super::vue0::V0_11,
+            Self::V1 => super::vue1::CAPABILITIES,
+            Self::V2 => super::vue2::CAPABILITIES,
         }
     }
 }
@@ -207,7 +145,7 @@ pub enum DirectiveArgStyle {
 /// [`LegacyVueVersion`] per token or per node. The default dialect resolves to
 /// the all-off [`VUE3`](Self::VUE3) set, so every capability check
 /// short-circuits to the same branch the unconditional Vue 3 code takes today;
-/// without the `legacy` cargo feature none of this is compiled at all.
+/// The compatibility parser adapter remains gated by its `legacy` feature.
 ///
 /// Each field documents the version lines it covers and the upstream Vue
 /// changelog / migration-guide entry that introduced or removed the surface.
@@ -256,6 +194,8 @@ pub struct LegacyDialectCapabilities {
     /// mustache containing a stray brace, which is also the default (Vue 3)
     /// behavior.
     pub raw_html_interpolation: bool,
+    /// `.native` and numeric key-code event sugar. Vue 2 / 2.7 only.
+    pub v2_event_sugar: bool,
 }
 
 impl LegacyDialectCapabilities {
@@ -265,18 +205,7 @@ impl LegacyDialectCapabilities {
     /// This is the set a `legacy`-enabled build resolves for Vue 3 sources,
     /// guaranteeing they take branch-identical paths to a build without the
     /// feature.
-    pub const VUE3: LegacyDialectCapabilities = LegacyDialectCapabilities {
-        supports_filters: false,
-        space_separated_filter_args: false,
-        v_repeat_syntax: false,
-        directive_arg_style: DirectiveArgStyle::Colon,
-        v_with_directive: false,
-        v_component_directive: false,
-        computed_dollar_get_set: false,
-        attr_value_interpolation: false,
-        scoped_slot_attrs: false,
-        raw_html_interpolation: false,
-    };
+    pub const VUE3: LegacyDialectCapabilities = super::vue3::CAPABILITIES;
 
     /// Resolve a config-selected [`VueVersion`] straight to its capability
     /// set ([`VUE3`](Self::VUE3) for the default dialect).
@@ -297,98 +226,4 @@ impl Default for LegacyDialectCapabilities {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn as_str_round_trips_all_variants_through_config_parsing() {
-        assert_eq!(LegacyVueVersion::ALL.len(), 4);
-        for version in LegacyVueVersion::ALL {
-            let dialect = VueVersion::from_config_str(version.as_str())
-                .unwrap_or_else(|error| panic!("{}: {error}", version.as_str()));
-            assert_eq!(LegacyVueVersion::from_dialect(dialect), Some(version));
-        }
-    }
-
-    #[test]
-    fn config_string_resolves_to_version_and_capabilities() {
-        // The full plumbing a config consumer runs once per file:
-        // raw string -> dialect -> legacy line -> capability set.
-        let dialect = VueVersion::from_config_str("0.10").unwrap();
-        let version = LegacyVueVersion::from_dialect(dialect).unwrap();
-        assert_eq!(version, LegacyVueVersion::V0_10);
-        let caps = version.capabilities();
-        assert!(caps.computed_dollar_get_set);
-        assert_eq!(caps, LegacyDialectCapabilities::for_dialect(dialect));
-    }
-
-    #[test]
-    fn v0_10_differs_from_v0_11_only_in_documented_surfaces() {
-        let v0_10 = LegacyVueVersion::V0_10.capabilities();
-        let v0_11 = LegacyVueVersion::V0_11.capabilities();
-        // 0.10 keeps the pre-rewrite computed `$get`/`$set` form.
-        assert!(v0_10.computed_dollar_get_set);
-        assert!(!v0_11.computed_dollar_get_set);
-        // Both 0.x lines share the clause-style directive surface.
-        assert_eq!(v0_10.directive_arg_style, DirectiveArgStyle::Clause);
-        assert_eq!(v0_11.directive_arg_style, DirectiveArgStyle::Clause);
-        assert!(v0_10.v_repeat_syntax && v0_11.v_repeat_syntax);
-        assert!(v0_10.v_with_directive && v0_11.v_with_directive);
-        assert!(v0_10.v_component_directive && v0_11.v_component_directive);
-        // Both 0.x lines support `{{{ html }}}` raw-HTML interpolation.
-        assert!(v0_10.raw_html_interpolation && v0_11.raw_html_interpolation);
-    }
-
-    #[test]
-    fn v1_modernizes_directive_surface_but_keeps_old_filters() {
-        let v0_11 = LegacyVueVersion::V0_11.capabilities();
-        let v1 = LegacyVueVersion::V1.capabilities();
-        assert!(v0_11.v_repeat_syntax && !v1.v_repeat_syntax);
-        assert_eq!(v0_11.directive_arg_style, DirectiveArgStyle::Clause);
-        assert_eq!(v1.directive_arg_style, DirectiveArgStyle::Colon);
-        assert!(!v1.v_with_directive && !v1.v_component_directive);
-        assert!(v1.supports_filters && v1.space_separated_filter_args);
-        assert!(v1.attr_value_interpolation);
-        // Vue 1.x keeps the `{{{ html }}}` raw-HTML interpolation.
-        assert!(v1.raw_html_interpolation);
-    }
-
-    #[test]
-    fn v2_keeps_filters_but_drops_v1_interpolation_surfaces() {
-        let v1 = LegacyVueVersion::V1.capabilities();
-        let v2 = LegacyVueVersion::V2.capabilities();
-        assert!(v2.supports_filters);
-        assert!(v1.space_separated_filter_args && !v2.space_separated_filter_args);
-        assert!(v1.attr_value_interpolation && !v2.attr_value_interpolation);
-        assert!(!v1.scoped_slot_attrs && v2.scoped_slot_attrs);
-        // Vue 2 dropped triple-mustache raw-HTML interpolation in favor of `v-html`.
-        assert!(v1.raw_html_interpolation && !v2.raw_html_interpolation);
-    }
-
-    #[test]
-    fn v2_and_v2_7_share_the_template_dialect() {
-        let v2 = LegacyVueVersion::from_dialect(VueVersion::V2).unwrap();
-        let v2_7 = LegacyVueVersion::from_dialect(VueVersion::V2_7).unwrap();
-        assert_eq!(v2, v2_7);
-        assert_eq!(
-            LegacyDialectCapabilities::for_dialect(VueVersion::V2),
-            LegacyDialectCapabilities::for_dialect(VueVersion::V2_7),
-        );
-    }
-
-    #[test]
-    fn default_dialect_resolves_to_the_all_off_vue3_set() {
-        let caps = LegacyDialectCapabilities::for_dialect(VueVersion::V3);
-        assert_eq!(caps, LegacyDialectCapabilities::VUE3);
-        assert_eq!(caps, LegacyDialectCapabilities::default());
-        assert!(!caps.supports_filters);
-        assert!(!caps.v_repeat_syntax);
-        assert!(!caps.raw_html_interpolation);
-        assert_eq!(caps.directive_arg_style, DirectiveArgStyle::Colon);
-        // Every legacy line differs from the default set, so a capability
-        // check can never confuse a legacy document with a Vue 3 one.
-        for version in LegacyVueVersion::ALL {
-            assert_ne!(version.capabilities(), LegacyDialectCapabilities::VUE3);
-        }
-    }
-}
+mod tests;

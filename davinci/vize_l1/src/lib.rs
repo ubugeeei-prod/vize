@@ -63,6 +63,7 @@
 extern crate alloc;
 
 pub mod container;
+pub mod dialect;
 pub mod embed;
 #[cfg(feature = "moonbit")]
 pub mod lang;
