@@ -17,8 +17,39 @@ const GALLERY: &str = r#"<section class="gallery">
 </section>
 "#;
 
-fn main() {
+const CASE: &str = "authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget";
+
+fn main() -> Result<(), &'static str> {
+    let mut args = std::env::args().skip(1);
+    let (mut list, mut ignored, mut exact) = (false, false, false);
+    let mut filter = None;
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--list" => list = true,
+            "--ignored" => ignored = true,
+            "--exact" => exact = true,
+            "--nocapture" => {}
+            "--format" if args.next().as_deref() == Some("terse") => {}
+            value if !value.starts_with('-') && filter.is_none() => filter = Some(arg),
+            _ => return Err("unsupported harness argument"),
+        }
+    }
+    let selected = filter.as_ref().is_none_or(|filter| {
+        if exact {
+            filter == CASE
+        } else {
+            CASE.contains(filter)
+        }
+    });
+    if ignored || !selected {
+        return Ok(());
+    }
+    if list {
+        println!("{CASE}: test");
+        return Ok(());
+    }
     authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget();
+    Ok(())
 }
 
 fn authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget() {

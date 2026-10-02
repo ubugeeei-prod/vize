@@ -4,7 +4,7 @@ Issue: [#6830](https://github.com/ubugeeei-prod/vize/issues/6830).
 
 The authored-markup allocation test runs as an explicit Cargo integration
 target with `harness = false`. Its main function executes the existing
-assertion body directly. Every cold parse, arena comparison, markup rule,
+assertion body directly when that case is selected. Every cold parse, arena comparison, markup rule,
 and allocation ceiling remains unchanged. This follows L0's existing
 `remark_zero_cost` standalone integration-test contract.
 
@@ -35,7 +35,8 @@ channel's pthread mutex; Linux uses an inline futex mutex. This scoped
 diagnostic establishes the measurement contamination, not full Linux
 workspace acceptance.
 
-Cargo's full workspace test command continues to execute this target.
+Cargo's full workspace test command executes this target directly; that
+observation alone does not establish nextest runtime coverage.
 The static test inventory recognizes its explicit Cargo registration and
 actual main entrypoint as one case; ordinary tests retain their scanner,
 while benchmarks and unregistered helper mains receive no test credit.
@@ -57,3 +58,31 @@ and instruction-check failure, cancellation and skip rejection remain required.
 Fresh exact-head Actions and protected merge-queue checks remain required.
 No product route or native feature gains completion credit from this
 harness correction.
+
+The [nextest custom-harness contract](https://nexte.st/docs/design/custom-test-harnesses/)
+also requires runtime discovery and exact case selection. The former main
+executed assertions even during `--list` and emitted no case name. Historical
+direct Cargo execution remains a real observation, but earlier green nextest
+runs provide no runtime case credit for this target.
+
+The CLI now advertises exactly
+`authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget: test`
+for `--list --format terse`, and nothing for ignored discovery. Listing and
+excluded selections return before entering the measurement body.
+Default execution and the advertised `CASE --nocapture --exact` invocation
+execute that same body once on process main. Argument parsing precedes every
+window and adds no parse warm-up or counter narrowing. Unsupported arguments
+fail before entry; assertion failures remain nonzero process exits.
+
+The tooling law compiles the actual CASE and main with an instrumented
+callback. It verifies discovery never enters a failing callback, selected
+execution enters exactly once, excluded selections never enter, malformed
+arguments fail, and callback assertions propagate failure. This scoped CLI
+proof does not claim that the real allocation windows ran locally.
+The complete measurement body is byte-identical to actual main
+`dd6beada6373fc58af149e7e19cf0204710ec022`; all process-global counters,
+cold parses, arena comparisons, markup rules and budgets remain unchanged.
+Fresh exact-head Actions must show this case in the nextest inventory and
+successful execution by its assigned unfiltered worker before queue runtime
+credit. Full Check, unchanged instruction gates and actual merge remain
+pending for this correction.
