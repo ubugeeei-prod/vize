@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Predefine from './components/predefine.vue'
+
+defineProps<{ predefine?: string[] }>()
+</script>
+
+<template>
+  <predefine v-if="predefine" ref="predefine" />
+</template>

@@ -1,0 +1,122 @@
+{
+  "sourceRevision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+  "entrypoint": "compile_sfc_for_adapter",
+  "descriptorParseOptions": {
+    "filename": "",
+    "source_map": false,
+    "pad": "None",
+    "ignore_empty": false,
+    "template_parse_options": null
+  },
+  "compileOptions": {
+    "parse": {
+      "filename": "",
+      "source_map": false,
+      "pad": "None",
+      "ignore_empty": false,
+      "template_parse_options": null
+    },
+    "script": {
+      "id": null,
+      "inline_template": false,
+      "is_ts": true,
+      "reactive_props_destructure": false,
+      "props_destructure": "False",
+      "define_model": false
+    },
+    "template": {
+      "id": null,
+      "ssr": false,
+      "ssr_css_vars": null,
+      "scoped": false,
+      "is_prod": false,
+      "is_ts": false,
+      "custom_renderer": false,
+      "dialect": "V3",
+      "compiler_options": null
+    },
+    "style": {
+      "id": "",
+      "scoped": false,
+      "trim": false,
+      "source_map": false,
+      "preprocessor_lang": null,
+      "data_attrs": []
+    },
+    "vapor": false,
+    "scope_id": null
+  },
+  "effectiveAdapterInputs": {
+    "templateSyntax": "Standard",
+    "customElements": {
+      "construction": "CustomElementMatcher::default()",
+      "exactDefaultPinnedBySourceRevision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac"
+    },
+    "codegen": {
+      "mode": "Function",
+      "prefix_identifiers": false,
+      "source_map": false,
+      "filename": "template.vue",
+      "component_name": null,
+      "scope_id": null,
+      "ssr": false,
+      "optimize_imports": false,
+      "runtime_module_name": "vue",
+      "runtime_global_name": "Vue",
+      "is_ts": false,
+      "inline": false,
+      "binding_metadata": null,
+      "cache_handlers": false
+    },
+    "scriptOutput": "SeparateTemplate",
+    "experimental": {
+      "self_component": false
+    }
+  },
+  "optionReferences": [
+    {
+      "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+      "path": "crates/vize_atelier_sfc/src/types.rs",
+      "sha256": "32c9667db989725b21f1beb215640392e52ea23733010c59ba853cb90bbbb952"
+    },
+    {
+      "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+      "path": "crates/vize_atelier_sfc/src/compile/entry.rs",
+      "sha256": "f183aff0cb2f28f4def39e4635a766df8c7bfcaee23d99006713181a0bbbc3d6"
+    },
+    {
+      "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+      "path": "crates/vize_croquis/src/sfc/types.rs",
+      "sha256": "bf6e08b04df948189eecddd8686479dfe1a87fa762ddb420f5b7d37156ba2e6d"
+    },
+    {
+      "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+      "path": "crates/vize_relief/src/options.rs",
+      "sha256": "2ce579b56bc312d8e8154412a80dab3b9734216bd5d9b6a15c0aa567171eb001"
+    },
+    {
+      "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+      "path": "crates/vize_relief/src/options/bindings.rs",
+      "sha256": "8f4a4b77acec3e892bfbf062d1e4e86f7e68402635bf2a2bb61b74bc502dd8e2"
+    },
+    {
+      "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+      "path": "crates/vize_carton/src/config/model/vue.rs",
+      "sha256": "1b6fabdeb232236734afb7b18c78f0ed9ffcc7a7072505368d18285a7a31792b"
+    },
+    {
+      "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+      "path": "crates/vize_relief/src/options/custom_elements.rs",
+      "sha256": "ce5a45ac99baaa034a157e988f5ba7bf1a06686c0ef7fd7af340cb132cfe9124"
+    }
+  ],
+  "execution": "not-run; strict profile preparation only; actual full output pending a new source-bound observer build",
+  "note": "Descriptor parser defaults are distinct from compileOptions.parse. No imported auxiliary modules or filesystem context supplied by current executable witness.",
+  "authoredWitness": {
+    "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+    "path": "crates/vize_atelier_sfc/tests/component_tag_binding.rs",
+    "symbol": "script_setup_module_component_tag_prefers_import_over_same_name_prop",
+    "sourceFileSha256": "0c53c2b0bd8e91632f5a3e439042ad6e70c4eb2fa33dbd7a5bd6c9bcfe06be40",
+    "inputSha256": "d00747c81ac5139a87bc504682233ab4076b0dc46e3d1e569463ab6775f9d0f1"
+  }
+}

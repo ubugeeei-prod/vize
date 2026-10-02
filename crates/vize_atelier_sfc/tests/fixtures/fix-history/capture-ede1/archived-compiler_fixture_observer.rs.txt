@@ -1,0 +1,29 @@
+//! One-request observer for the two authored compiler differential profiles.
+
+mod compiler_fixture_observer {
+    pub mod observe;
+    pub mod options;
+    pub mod profile;
+}
+
+use compiler_fixture_observer::{observe, profile::Request};
+use std::io::{self, Read, Write};
+
+const MAX_REQUEST_BYTES: u64 = 2 * 1024 * 1024;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut input = Vec::new();
+    io::stdin()
+        .take(MAX_REQUEST_BYTES + 1)
+        .read_to_end(&mut input)?;
+    if input.len() as u64 > MAX_REQUEST_BYTES {
+        return Err("compiler observer request exceeds 2 MiB".into());
+    }
+    let request: Request = serde_json::from_slice(&input)?;
+    let observation = observe::run(request)?;
+    let stdout = io::stdout();
+    let mut output = stdout.lock();
+    serde_json::to_writer(&mut output, &observation)?;
+    output.write_all(b"\n")?;
+    Ok(())
+}

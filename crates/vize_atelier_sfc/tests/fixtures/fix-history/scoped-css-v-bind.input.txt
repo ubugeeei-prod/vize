@@ -1,0 +1,15 @@
+<script setup>
+const height = 12
+const color = 'tomato'
+</script>
+
+<template>
+  <div class="box">Box</div>
+</template>
+
+<style scoped>
+.box {
+  height: v-bind("height + 'px'");
+  color: v-bind(color);
+}
+</style>
