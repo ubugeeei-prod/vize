@@ -29,6 +29,11 @@ allocator source, both actual host call sites and the Carton module declaration
 before writing. Missing/partial/colliding or changed input rejects with zero
 writes, and repeating integration preserves every byte.
 
+The existing SFC preferred-L0 source gate admits only the exact System factory
+initializer in its allocation-budget binary. It still rejects Carton storage,
+alternate allocator types, additional calls and the same host call in compiler
+source. Replay validates and updates this executable gate before any write.
+
 Finite source proof compares the original allocator hooks and actual callers
 with signed main. The public host doctest verifies const construction and exact
 L0 return-type identity. Actual current-source Actions must execute both

@@ -26,10 +26,23 @@ export const contracts = [
     old: "9f18a586da1dee0097ad38c042caea7e52e31508b0747c42e1d6565cd12f7aae",
     next: "e35f20d09549d359661f8b054dcc6e5533f31adc07d5d45ffcd76289ccde9e8b",
   },
+  {
+    file: "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs",
+    old: "0039b68bc23fa3077a61407c0caf903a978e81027377c99563142120008829f1",
+    next: "26f13cc77bf1f531f4aea165ebdf96d9b3b5629500fd09664e84ba077d2f4172",
+  },
 ];
 export const hostModule = "crates/vize_carton/src/profile_allocator.rs";
 export const hostModuleText =
   "//! Host allocator selection for allocation profiling.\n\nuse std::alloc::System;\n\nuse vize_l0::profiler::ProfilingAllocator;\n\n/// Select the host system allocator without another allocator wrapper.\n///\n/// The returned value is the exact L0 accounting wrapper around [`System`].\n/// Native callers selecting another allocator continue to use\n/// [`ProfilingAllocator::from_allocator`] directly.\n///\n/// ```\n/// const ALLOCATOR: vize_l0::profiler::ProfilingAllocator<std::alloc::System> =\n///     vize_carton::profile_allocator::system_allocator();\n/// let _ = ALLOCATOR;\n/// ```\npub const fn system_allocator() -> ProfilingAllocator<System> {\n    ProfilingAllocator::from_allocator(System)\n}\n";
+export const sfcImportGate = "tests/tooling/davinci/davinci-atelier-sfc-stage-alias.test.mjs";
+const sfcGateAnchor = '\nvoid test("Atelier SFC declares';
+const sfcGateHelper =
+  '\nfunction assertPreferredSource(source, relPath) {\n  const selected =\n    relPath === "crates/vize_atelier_sfc/tests/allocation_budget.rs"\n      ? source.replace(\n          /^static GLOBAL: ProfilingAllocator<System> = vize_carton::profile_allocator::system_allocator\\(\\);$/mu,\n          "",\n        )\n      : source;\n  assert.doesNotMatch(selected, /\\bvize_carton\\b/u, relPath);\n}\n';
+const sfcGateLaws =
+  '\nvoid test("Atelier SFC admits only its exact host allocator selection and rejects Carton storage", () => {\n  const relPath = "crates/vize_atelier_sfc/tests/allocation_budget.rs";\n  const source = fs.readFileSync(path.join(repoRoot, relPath), "utf8");\n  assertPreferredSource(source, relPath);\n  assert.throws(() =>\n    assertPreferredSource(source, "crates/vize_atelier_sfc/src/compile_template.rs"),\n  );\n  for (const changed of [\n    source.replace("ProfilingAllocator<System>", "ProfilingAllocator<WrongAllocator>"),\n    source.replace("system_allocator()", "system_allocator(WrongAllocator)"),\n    source.replace("profile_allocator::system_allocator", "profile_export::system_allocator"),\n    source + "\\nuse vize_carton::String;\\n",\n    source + "\\nuse vize_carton::profiler::ProfilingAllocator;\\n",\n    source +\n      "\\nstatic OTHER: ProfilingAllocator<System> = vize_carton::profile_allocator::system_allocator();\\n",\n    source +\n      "\\nstatic GLOBAL: ProfilingAllocator<System> = vize_carton::profile_allocator::system_allocator();\\n",\n  ]) {\n    assert.throws(() => assertPreferredSource(changed, relPath), { code: "ERR_ASSERTION" });\n  }\n});\n';
+const sfcGateOldCall = "assert.doesNotMatch(source, /\\bvize_carton\\b/u, relPath);";
+const sfcGateNewCall = "assertPreferredSource(source, relPath);";
 const removedSystem =
   "impl ProfilingAllocator<System> {\n    /// Create a profiling allocator backed by [`System`].\n    pub const fn new() -> Self {\n        Self { inner: System }\n    }\n}\n\nimpl Default for ProfilingAllocator<System> {\n    fn default() -> Self {\n        Self::new()\n    }\n}\n\n";
 const digest = (text: string) => createHash("sha256").update(text).digest("hex");
@@ -67,6 +80,11 @@ export function prepareAllocatorSelection(read: Reader): Map<string, string> {
         "pub mod profile_export;",
         "pub mod profile_allocator;\npub mod profile_export;",
       );
+    else if (contract.file === sfcImportGate)
+      text =
+        text
+          .replace(sfcGateAnchor, sfcGateHelper + sfcGateAnchor)
+          .replace(sfcGateOldCall, sfcGateNewCall) + sfcGateLaws;
     else
       text = text.replace(
         "ProfilingAllocator::new()",
@@ -100,6 +118,11 @@ export function originalAllocatorSelection(read: Reader): Map<string, string> {
         );
     else if (contract.file === "crates/vize_carton/src/lib.rs")
       text = text.replace("pub mod profile_allocator;\n", "");
+    else if (contract.file === sfcImportGate)
+      text = text
+        .replace(sfcGateHelper, "")
+        .replace(sfcGateNewCall, sfcGateOldCall)
+        .replace(sfcGateLaws, "");
     else
       text = text.replace(
         "vize_carton::profile_allocator::system_allocator()",

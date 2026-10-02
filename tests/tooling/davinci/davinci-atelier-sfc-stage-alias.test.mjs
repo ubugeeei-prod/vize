@@ -52,6 +52,17 @@ function compiler() {
   return consumer;
 }
 
+function assertPreferredSource(source, relPath) {
+  const selected =
+    relPath === "crates/vize_atelier_sfc/tests/allocation_budget.rs"
+      ? source.replace(
+          /^static GLOBAL: ProfilingAllocator<System> = vize_carton::profile_allocator::system_allocator\(\);$/mu,
+          "",
+        )
+      : source;
+  assert.doesNotMatch(selected, /\bvize_carton\b/u, relPath);
+}
+
 void test("Atelier SFC declares the L0 dependency through the preferred name", () => {
   const cargoToml = fs.readFileSync(
     path.join(repoRoot, "crates", "vize_atelier_sfc", "Cargo.toml"),
@@ -91,6 +102,28 @@ void test("Atelier SFC selected compiler and integration test slices import L0 t
     assert.equal(row.surfaceNameCounts.l0.vize_carton ?? 0, 0, relPath);
 
     const source = fs.readFileSync(path.join(repoRoot, relPath), "utf8");
-    assert.doesNotMatch(source, /\bvize_carton\b/u, relPath);
+    assertPreferredSource(source, relPath);
+  }
+});
+
+void test("Atelier SFC admits only its exact host allocator selection and rejects Carton storage", () => {
+  const relPath = "crates/vize_atelier_sfc/tests/allocation_budget.rs";
+  const source = fs.readFileSync(path.join(repoRoot, relPath), "utf8");
+  assertPreferredSource(source, relPath);
+  assert.throws(() =>
+    assertPreferredSource(source, "crates/vize_atelier_sfc/src/compile_template.rs"),
+  );
+  for (const changed of [
+    source.replace("ProfilingAllocator<System>", "ProfilingAllocator<WrongAllocator>"),
+    source.replace("system_allocator()", "system_allocator(WrongAllocator)"),
+    source.replace("profile_allocator::system_allocator", "profile_export::system_allocator"),
+    source + "\nuse vize_carton::String;\n",
+    source + "\nuse vize_carton::profiler::ProfilingAllocator;\n",
+    source +
+      "\nstatic OTHER: ProfilingAllocator<System> = vize_carton::profile_allocator::system_allocator();\n",
+    source +
+      "\nstatic GLOBAL: ProfilingAllocator<System> = vize_carton::profile_allocator::system_allocator();\n",
+  ]) {
+    assert.throws(() => assertPreferredSource(changed, relPath), { code: "ERR_ASSERTION" });
   }
 });

@@ -9,6 +9,7 @@ import {
   hostModuleText,
   originalAllocatorSelection,
   prepareAllocatorSelection,
+  sfcImportGate,
 } from "../../tools/support/levels/select-profile-allocator-host.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -28,7 +29,7 @@ test("host allocator selection checks and repeats without writing", () => {
 
 test("original allocator selection replays to exact current bytes", () => {
   const planned = prepareAllocatorSelection(reader(original));
-  assert.equal(planned.size, 5);
+  assert.equal(planned.size, 6);
   for (const [file, text] of planned) assert.equal(text, current.get(file));
   const replayed = new Map([...original, ...planned]);
   assert.equal(prepareAllocatorSelection(reader(replayed)).size, 0);
@@ -70,7 +71,7 @@ test("changed allocator arguments and host selection reject before writes", () =
       state.get(file)!.replace("self.inner.alloc(layout)", "self.inner.alloc_zeroed(layout)"),
     );
     rejectsBeforeWrites(alteredHook);
-    for (const { file } of contracts.slice(2)) {
+    for (const { file } of contracts.slice(2, 4)) {
       const alteredCaller = new Map(state);
       alteredCaller.set(
         file,
@@ -98,4 +99,20 @@ test("removing host convenience preserves every existing allocator hook", () => 
   assert.match(after, /use std::alloc::\{GlobalAlloc, Layout\};/u);
   assert.doesNotMatch(after, /\bSystem\b|pub const fn new\(|impl Default for ProfilingAllocator/u);
   assert.match(hostModuleText, /pub const fn system_allocator\(\) -> ProfilingAllocator<System>/u);
+});
+
+test("allocator replay preflights the real SFC source gate before writes", () => {
+  for (const state of [original, current]) {
+    for (const altered of [
+      state
+        .get(sfcImportGate)!
+        .replace("manifest.dependencies.vize_l0", "manifest.dependencies.vize_carton"),
+      state.get(sfcImportGate)!.replace("assert.doesNotMatch", "assert.match"),
+      state.get(sfcImportGate)! + "\n// stale source policy\n",
+    ]) {
+      const changed = new Map(state);
+      changed.set(sfcImportGate, altered);
+      rejectsBeforeWrites(changed);
+    }
+  }
 });
