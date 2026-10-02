@@ -9,7 +9,7 @@ const [specFile, output] = process.argv.slice(2);
 assert(specFile && output && !fs.existsSync(output));
 const spec = JSON.parse(fs.readFileSync(specFile, "utf8"));
 assert.equal(spec.repository, "ubugeeei-prod/vize");
-assert.equal(spec.cohort, "ordinary-pr");
+assert.equal(spec.cohort, "merge-queue");
 assert.equal(spec.artifacts.length, 2);
 assert.equal(process.env.GITHUB_REPOSITORY, spec.repository);
 const token = process.env.GITHUB_TOKEN;
@@ -38,7 +38,7 @@ assert.equal(run.id, spec.runId);
 assert.equal(run.run_attempt, spec.attempt);
 assert.equal(run.head_sha, spec.source);
 assert.equal(run.head_branch, spec.branch);
-assert.equal(run.event, "pull_request");
+assert.equal(run.event, "merge_group");
 assert.equal(run.path, ".github/workflows/check.yml");
 assert.equal(run.status, "completed");
 assert.equal(run.conclusion, "success");
@@ -46,11 +46,30 @@ retain("authority/source-run.json", runBytes);
 const commitBytes = await get(`/git/commits/${spec.source}`);
 assert.equal(JSON.parse(commitBytes.toString()).tree.sha, spec.tree);
 retain("authority/source-commit.json", commitBytes);
-const mergeBytes = await get(`/git/commits/${spec.mergeCommit}`);
-const merge = JSON.parse(mergeBytes.toString());
-assert.equal(merge.tree.sha, spec.tree);
-assert.deepEqual(merge.parents.map((parent: { sha: string }) => parent.sha), [spec.base, spec.source]);
-retain("authority/pr-merge-commit.json", mergeBytes);
+const candidate = JSON.parse(commitBytes.toString());
+assert.deepEqual(candidate.parents.map((parent: { sha: string }) => parent.sha), [spec.base]);
+assert.equal(candidate.verification.verified, true);
+assert.equal(spec.originalSource, "0252e59f1462e57bc1d50507af0266a9912a4484");
+const originalBytes = await get(`/git/commits/${spec.originalSource}`);
+const original = JSON.parse(originalBytes.toString());
+assert.equal(original.tree.sha, "7d763b34612f022d4ba0c1b101e153caf7e9b643");
+retain("authority/original-pr-source.json", originalBytes);
+for (const owned of spec.ownedCaseBlobs) {
+  let tree = spec.tree;
+  const parts = owned.path.split("/");
+  for (const [index, part] of parts.entries()) {
+    const treeBytes = await get(`/git/trees/${tree}`);
+    const data = JSON.parse(treeBytes.toString());
+    assert.equal(data.sha, tree);
+    assert.equal(data.truncated, false);
+    const matches = data.tree.filter((entry: any) => entry.path === part);
+    assert.equal(matches.length, 1);
+    retain(`authority/case-${owned.label}-tree-${index}.json`, treeBytes);
+    tree = matches[0].sha;
+    assert.equal(matches[0].type, index === parts.length - 1 ? "blob" : "tree");
+  }
+  assert.equal(tree, owned.sha, "actual queue test source byte-identical to reviewed PR");
+}
 const jobs: any[] = [];
 let total = -1;
 for (let page = 1; page <= 10; page++) {
@@ -162,6 +181,7 @@ for (const expected of spec.artifacts) {
   const log = logBytes.toString().replace(/\u001b\[[\d;]*m/g, "");
   const pass = log.split("\n").filter(line => line.includes("PASS") && line.includes(expected.binary) && line.includes(expected.case));
   assert.equal(pass.length, 1, "authentic named worker PASS");
+  assert(log.split("\n").some(line => /Z\s+NEXTEST_PROFILE: full$/.test(line)), "actual full-profile runtime envelope");
   const prefix = `artifact-${expected.id}`;
   retain(`${prefix}/service-metadata.json`, metadataBytes);
   retain(`${prefix}/literal.zip`, zip);
