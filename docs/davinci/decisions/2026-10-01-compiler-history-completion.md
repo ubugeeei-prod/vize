@@ -71,8 +71,64 @@ Read-only archive checks do not certify fresh current-head execution.
 
 Publication requires exact-head Actions for the ordinary five-case product
 test, unchanged all-100 gates, protected queue and actual main merge. These
-five links remain prepared until then. Next: real shared SFC API registration,
-the five prepared SSR and five Vapor cohorts, every remaining semantic
+five links remain prepared until then. The dependent target layer preserves
+five SSR and five Vapor cases and registers their original fix links through
+this manual index API; 30 linked rows still all await semantic review. Next:
+exact-head execution of the shared API registration, every remaining semantic
 history review and target/dialect fixture gap. Native acceptance stays zero;
 the whole-product native compiler is still unavailable. No product route,
 output golden, instruction ceiling or old shape/runtime witness changes.
+
+## Shared public compiler API registration
+
+The SFC, SSR and Vapor manifests in `tests/_fixtures/differential/compiler/`
+reference the same five original inputs/options per target and complete
+observed public outputs in the parent layers' product fixture directories.
+They use the existing shared manifest/result v1 contract and retain every
+planned case ID and `dom`, `ssr` or `vapor` coordinate. Fixtures are not copied
+or regenerated from current output. Both parent fixture layers are actual
+dependencies of this registration.
+
+The three `*_fix_history_observer` examples invoke the original public
+entrypoints with their original options, including SFC filename/scope/
+TypeScript/script-output context and Vapor's mounted-case identifier prefix.
+They record all seven SFC Result fields, all four SSR fields (`code`, `preamble`,
+`map`, `diagnostics`) and all four Vapor fields (`code`, `templates`, `map`,
+`errorMessages`), plus source bytes and exhaustive actual option snapshots.
+Examples include inputs only, never expected Results. The observer-build
+provider genuinely merged in #7362 binds each real Cargo-selected executable
+and probe transcript to the committed source tree, lockfile, toolchain and
+observer source; this consumer adds no competing build framework.
+
+The adapter captures two fresh full stdout observations, requires exact repeat
+bytes and empty stderr, compares the complete public Result with its historical
+reference, then reobserves the source-bound executable when validating a report.
+JSON object ordering is transport-only; module/CSS bytes, nulls, scalar values,
+array ordering, maps, diagnostics, bindings, macro artifacts, SSR preamble and
+Vapor template bytes are preserved.
+Missing builds, missing/duplicate cases, altered options or failed processes
+retain all five failed planned rows per target. Native rows stay `unsupported`, comparison
+stays `not-compared` and whole-product native acceptance remains zero.
+The Actions wrapper catches build and contract-probe failures, writes those
+failed rows with the original error, then fails the test. Each actual first,
+repeat and final revalidation attempt is saved before comparison; a final
+receipt or observation failure saves a failed report without native credit.
+The prevalidation report is explicitly retained as unverified evidence.
+
+Eight pure adapter contracts pass locally. Actual source-built execution of
+all three observers remains pending exact-head Actions. The existing merge-only
+tooling execution law builds each observer, requires five matching references
+per target, and retains zero handled/equivalent native rows. Build logs,
+selected artifacts, receipts and repeat bytes
+are Actions artifacts under `target/differential/compiler-api/`, not committed
+whole-repository evidence ledgers. The immutable original sources are now
+published as [SSR `c2451a0fb`](https://github.com/ubugeeei-prod/vize/commit/c2451a0fb39bf7390c51630cfe28ae0c1b06a870)
+and [Vapor `b11eb54d8`](https://github.com/ubugeeei-prod/vize/commit/b11eb54d83b3d8ed6333e2709b10112b45cd84b8)
+through the provenance heads recorded in the target companion. Original tree,
+parent, raw commit and `+0900` identities matched before those references were
+created; their timestamps were not normalized or substituted. Fresh-clone
+captures can inspect the actual original objects. The private SFC `ede1ea23d` ancestry
+contains an excluded research ledger and must remain unpublished. These
+historical pins and fresh Actions are separate evidence. Whole-history
+semantic review, remaining target/dialect gaps and the product-switch gate
+remain unfinished; #6880 stays open and native compiler credit stays zero.

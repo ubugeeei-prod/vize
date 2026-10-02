@@ -117,5 +117,9 @@ required-features = ["native"]
 name = "davinci_production_perf"
 required-features = ["davinci-production-bench"]
 
+[[example]]
+name = "sfc_fix_history_observer"
+required-features = ["native"]
+
 [lints]
 workspace = true

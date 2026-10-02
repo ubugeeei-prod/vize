@@ -1,0 +1,259 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "baseRevision": "b11eb54d83b3d8ed6333e2709b10112b45cd84b8",
+  "product": "compiler",
+  "artifactRoot": "repository",
+  "cases": [
+    {
+      "id": "compiler/vapor/once-directive",
+      "state": "active",
+      "targets": ["vapor"],
+      "inputs": {
+        "files": [
+          {
+            "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/once-directive.input.txt",
+            "sha256": "48b75c6816ef978fc5cd7067128c6030b30cd3c72a5cac46dca8935a20799851",
+            "role": "entry"
+          }
+        ]
+      },
+      "options": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/once-directive.expected.json",
+        "sha256": "1756b5d7de2917058c60e1a389c3fb4f497ec4a42fd634a946eaf8b58c50f521"
+      },
+      "reference": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/once-directive.expected.json",
+        "sha256": "1756b5d7de2917058c60e1a389c3fb4f497ec4a42fd634a946eaf8b58c50f521"
+      },
+      "historicalObservation": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/capture-b11eb/first.stdout.json",
+        "sha256": "5b60b9b80a961a15e123a0ffe6c55d83038bb685f97f26e2fca28d7969935dc5"
+      },
+      "provenance": {
+        "commits": [
+          {
+            "sha": "866be7b96ed336704bd1fd3a2f3dc2ad6e699151",
+            "role": "fix"
+          }
+        ],
+        "witness": {
+          "path": "crates/vize_atelier_vapor/src/lib.rs",
+          "symbol": "test_compile_v_once_lowers_without_runtime_directives",
+          "fileSha256": "ca5f193fae39f53f58d0f7b32450d298b524cee762e946bbb546f09aa9ef419e"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-public-vapor-api-v1",
+        "native": null,
+        "reasons": {
+          "native": "whole-product native compiler path unavailable"
+        }
+      },
+      "comparison": {
+        "contract": "compiler-complete-public-vapor-result-v1",
+        "requiredFacets": ["code", "templates", "map", "errorMessages"]
+      }
+    },
+    {
+      "id": "compiler/vapor/insertion-placeholder",
+      "state": "active",
+      "targets": ["vapor"],
+      "inputs": {
+        "files": [
+          {
+            "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/insertion-placeholder.input.txt",
+            "sha256": "3b93a1c770bd2426b9816074226116bcf06b072a3f511c67cc75d1b2911739af",
+            "role": "entry"
+          }
+        ]
+      },
+      "options": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/insertion-placeholder.expected.json",
+        "sha256": "a956a9d2163fe0da040a28eccefe96146858eed94df62d4d055ec6d01d962d46"
+      },
+      "reference": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/insertion-placeholder.expected.json",
+        "sha256": "a956a9d2163fe0da040a28eccefe96146858eed94df62d4d055ec6d01d962d46"
+      },
+      "historicalObservation": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/capture-b11eb/first.stdout.json",
+        "sha256": "5b60b9b80a961a15e123a0ffe6c55d83038bb685f97f26e2fca28d7969935dc5"
+      },
+      "provenance": {
+        "commits": [
+          {
+            "sha": "af1079858fe8b74f623f459483d3a676e9bbb74c",
+            "role": "fix"
+          }
+        ],
+        "witness": {
+          "path": "crates/vize_atelier_vapor/src/tests_insertion_state.rs",
+          "symbol": "a_block_before_rendered_siblings_is_inserted_before_its_placeholder",
+          "fileSha256": "feba5458554a56140df29e64c55576ad281a3eb8794ad8d19ad23c2078707a19"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-public-vapor-api-v1",
+        "native": null,
+        "reasons": {
+          "native": "whole-product native compiler path unavailable"
+        }
+      },
+      "comparison": {
+        "contract": "compiler-complete-public-vapor-result-v1",
+        "requiredFacets": ["code", "templates", "map", "errorMessages"]
+      }
+    },
+    {
+      "id": "compiler/vapor/root-document-order",
+      "state": "active",
+      "targets": ["vapor"],
+      "inputs": {
+        "files": [
+          {
+            "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/root-document-order.input.txt",
+            "sha256": "aab80cda6015249603921060a52bc204d2e1fb66c0994adf3331748b61ed8407",
+            "role": "entry"
+          }
+        ]
+      },
+      "options": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/root-document-order.expected.json",
+        "sha256": "d81f13baf5899fe5d332c2b62bc694feea6f71d6a7c75bd785e2660283efa77a"
+      },
+      "reference": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/root-document-order.expected.json",
+        "sha256": "d81f13baf5899fe5d332c2b62bc694feea6f71d6a7c75bd785e2660283efa77a"
+      },
+      "historicalObservation": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/capture-b11eb/first.stdout.json",
+        "sha256": "5b60b9b80a961a15e123a0ffe6c55d83038bb685f97f26e2fca28d7969935dc5"
+      },
+      "provenance": {
+        "commits": [
+          {
+            "sha": "dfea039416f95ae63e1662344f7da0cf8c203e4d",
+            "role": "fix"
+          }
+        ],
+        "witness": {
+          "path": "crates/vize_atelier_vapor/src/tests_insertion_state.rs",
+          "symbol": "alternating_root_nodes_are_created_in_document_order",
+          "fileSha256": "b0adccefac067a35383e506fa8abc4d961bfafade56bf3df7f3138fb9104c4c4"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-public-vapor-api-v1",
+        "native": null,
+        "reasons": {
+          "native": "whole-product native compiler path unavailable"
+        }
+      },
+      "comparison": {
+        "contract": "compiler-complete-public-vapor-result-v1",
+        "requiredFacets": ["code", "templates", "map", "errorMessages"]
+      }
+    },
+    {
+      "id": "compiler/vapor/hydration-sibling-element",
+      "state": "active",
+      "targets": ["vapor"],
+      "inputs": {
+        "files": [
+          {
+            "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/hydration-sibling-element.input.txt",
+            "sha256": "830e61bc2e5c9b96df312704ba8972430031610a909d361b676fafabbba34e3e",
+            "role": "entry"
+          }
+        ]
+      },
+      "options": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/hydration-sibling-element.expected.json",
+        "sha256": "3fb50a06f2ca32161d4eefe7322fb02e868180c8a5aa9474e8257dc7aa74473c"
+      },
+      "reference": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/hydration-sibling-element.expected.json",
+        "sha256": "3fb50a06f2ca32161d4eefe7322fb02e868180c8a5aa9474e8257dc7aa74473c"
+      },
+      "historicalObservation": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/capture-b11eb/first.stdout.json",
+        "sha256": "5b60b9b80a961a15e123a0ffe6c55d83038bb685f97f26e2fca28d7969935dc5"
+      },
+      "provenance": {
+        "commits": [
+          {
+            "sha": "8a6c88b343fa3dba948ea11bcd37d027d6ca473a",
+            "role": "fix"
+          }
+        ],
+        "witness": {
+          "path": "crates/vize_atelier_vapor/src/tests_sibling_navigation.rs",
+          "symbol": "input_between_interpolations_uses_element_sibling_navigation",
+          "fileSha256": "4fca39419686a82f465d023bf0e3ab310641c8f7181dd3f15184a985d919fc9b"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-public-vapor-api-v1",
+        "native": null,
+        "reasons": {
+          "native": "whole-product native compiler path unavailable"
+        }
+      },
+      "comparison": {
+        "contract": "compiler-complete-public-vapor-result-v1",
+        "requiredFacets": ["code", "templates", "map", "errorMessages"]
+      }
+    },
+    {
+      "id": "compiler/vapor/mounted-control-slot",
+      "state": "active",
+      "targets": ["vapor"],
+      "inputs": {
+        "files": [
+          {
+            "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/mounted-control-slot.input.txt",
+            "sha256": "d7253e27cc48f5811028d780c5895b072ae26b3db996b02f30b889cdd075576d",
+            "role": "entry"
+          }
+        ]
+      },
+      "options": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/mounted-control-slot.expected.json",
+        "sha256": "2093a2c17875b5e0e65aa138fdae1993f7b2b9a4b3fbbdc0e6240b6b09e0dbdd"
+      },
+      "reference": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/mounted-control-slot.expected.json",
+        "sha256": "2093a2c17875b5e0e65aa138fdae1993f7b2b9a4b3fbbdc0e6240b6b09e0dbdd"
+      },
+      "historicalObservation": {
+        "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/capture-b11eb/first.stdout.json",
+        "sha256": "5b60b9b80a961a15e123a0ffe6c55d83038bb685f97f26e2fca28d7969935dc5"
+      },
+      "provenance": {
+        "commits": [
+          {
+            "sha": "1679959a38f6170133111118a06dd29dffd8901c",
+            "role": "fix"
+          }
+        ],
+        "witness": {
+          "path": "crates/vize_atelier_vapor/tests/davinci_mounted_behavior.rs",
+          "symbol": "mounted_branch_and_slot_fallback_update_together",
+          "fileSha256": "1a64502702823ad94b9263c5552c798d105db4c72daf3f984c1e6106deaa9c1f"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-public-vapor-api-v1",
+        "native": null,
+        "reasons": {
+          "native": "whole-product native compiler path unavailable"
+        }
+      },
+      "comparison": {
+        "contract": "compiler-complete-public-vapor-result-v1",
+        "requiredFacets": ["code", "templates", "map", "errorMessages"]
+      }
+    }
+  ]
+}
