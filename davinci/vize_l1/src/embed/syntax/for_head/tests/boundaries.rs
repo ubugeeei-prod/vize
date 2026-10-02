@@ -19,7 +19,10 @@ fn collection_trailing_line_comment_bytes_and_first_separator_refusals_stay_exac
     assert_eq!(part, ForHeadPart::Collection);
     assert_eq!(comment.text().unwrap(), "// tail  ");
     let span = comment.authored_span().unwrap();
-    assert_eq!(&input[span.start as usize..span.end as usize], "// tail  ");
+    assert_eq!(
+        input.get(span.start as usize..span.end as usize).unwrap(),
+        "// tail  "
+    );
     // The selected grammar is the first textual separator. A keyword inside
     // alias literal/comment spelling is not silently reinterpreted as a later
     // separator in search of a successful JavaScript parse.
