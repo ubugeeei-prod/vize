@@ -1,0 +1,94 @@
+# Native Program comment folding on the actual Shared provider
+
+The optional projection consumes genuine Shared source
+`a04fdf81bad61ad32d1bd96a7cfd816e4796cb70`, actually merged through
+Stock #7427 / Shared #7428. The original functional source chain used provider
+1850119; this own-only delivery follows signed actual main
+`d87109e65ef77e12d9a19f1d096804bddddd6694`, retaining every incoming
+LSP/Pending/File/allocator/Vue 1 path. The original full source campaign c2a14de6
+is recorded below; this replay still requires fresh exact-head Actions.
+
+The adapter consumes original parser-owned admission, retained block comments and exact
+authored spans, without a parser invocation or legacy product lookup. Its
+coordinate scope is an admitted, undecoded, zero-origin Program input. A real
+selected prefix is allowed only as Program-local evidence. These checks confer
+no sealed File ownership or complete on-disk document authority. SFC integration
+requires the producer-owned full-file bridge; #6883 remains open before replacing
+the production LSP route.
+
+One L0 LSP line table handles CR/LF/CRLF and leaves Unicode LS/PS inside a line.
+The current accepted-main coordinate source bytes match this provider's source,
+but no cached L0 library is credited as a whole-current Cargo build. The retained
+whole-L1 artifact `24fd046e4cf02cc2d7edca9123b64f974dc9a7f495db2f05c137a4644c3982b1`
+uses actual AST068/parser ea545 and explicitly records historical L0700 ABI.
+No stand-in protocol types or helper provider are used as execution evidence.
+
+The original seven parser test functions remain unchanged. Two additional
+functions cover original Flow/nonfatal recovery refusal and rejection of an
+admitted decoded Program without its authored-coordinate bridge. All nine were originally
+source-ready; their later actual execution is recorded below. Fresh whole-Cargo Actions must compile actual
+Maestro, tower-lsp, L1, L0 and OXC together and execute every named adapter test.
+The opt-in dependency points from crates to davinci; default features and
+existing request dispatch remain unchanged.
+
+The first actual whole-source Check run `37031030307` at
+`744cae470fd924928faa216e53c932d754d9a0c1` failed in job `110917600638`
+before any of the nine adapter tests executed. The pinned Oxc 0.142 parser
+produces `SingleLineBlock` and `MultiLineBlock`; `CommentKind::Block` does not
+exist. The retained original job log preserves that E0599 diagnostic. The
+narrow correction matches both real block variants and moves the unchanged
+three-command feature gate before workspace tests inside the existing composite
+job. No assertion, default route or performance ceiling changes. A fresh
+exact-head whole-source Actions run must execute all nine tests, check the
+no-default feature combination and pass warning-denying Clippy before this
+provider receives execution credit.
+
+The actual corrected campaign `37035550062` at
+`5e4b117e000e4014410c463751a3183bd6614f0a`, Rust job `110932761960`,
+compiled genuine Oxc/L1/L0/tower-lsp/Maestro together and passed all nine named
+adapter tests at 16:48:29Z, with zero failed or ignored. The no-default feature
+check passed at 16:48:42Z. Warning-denying feature Clippy then rejected two
+`std::format!` test-input constructors; its original complete job log is retained.
+The shared `cstr!` correction changes only those constructors, retaining their
+literal/interpolated UTF-8 inputs and every assertion. These nine bounded Program
+results do not turn the failed full run green. The next exact source head still
+requires its own full Actions, feature tests/check/Clippy and all100 before merge.
+
+Before publishing, pair this record and the existing LSP paragraph with a #6883
+issue comment. The frozen four-layer LSP packet and captured 514b runtime evidence
+remain untouched. This source draft gives no native runtime/comparison,
+whole-history closure, protected acceptance or actual merge credit.
+
+The actual campaign `37037019953` at
+`55a3cc81e7f8803f4718197898599ff5550f1ad0` passed the complete Rust job
+`110937635295`: all nine named adapter tests, the no-default feature check,
+warning-denying feature Clippy and the unchanged workspace/differential recipe.
+Its exact-head all100 run `37037023540` also passed every existing ceiling.
+Whole Check still failed tooling job `110937634723`: two CI witnesses assumed
+the workspace and differential steps occupied positions zero and one. The new
+feature step made those positions invalid. The correction finds the two original
+steps by their exact names and keeps their original condition, eleven commands,
+argument/count checks, TSGO requirement and simulated failure exit intact. The
+new native step carries the same TSGO environment. All four affected tooling
+tests pass locally; no Cargo build or dependency installation was performed
+locally. The original failed logs remain retained. A new source head needs its
+own whole Actions and all100; the prior failed full run receives no green credit.
+
+The actual c2a14de69151abc05c0e1828e14f302d1847d6d5 source Check
+`37041108093` succeeded with nineteen jobs, five skips and zero failures. Rust
+job `110951202154` passed all nine named tests, minimal feature check,
+warning-denying feature Clippy and the full existing Rust recipe. Tooling job
+`110951202212` passed 5,443 tests with twelve skips and zero failures, including
+the four complete CI witnesses. Source all100 `37041111779`, job
+`110951193266`, verified one hundred benchmarks identical across three
+executions, all pinned ceilings and the ratchet. The original logs and qualified
+receipt 035f5751 remain retained. Every original failed campaign stays failed.
+
+This fresh-main replay copies only the two owned adapter/test sources, performs
+semantic feature/dependency/module/CI witness edits and appends the bounded
+decision to the current central LSP paragraph. The current Cargo.lock and
+all other incoming files are retained; only the Maestro L1 dependency entry is
+added. Only Maestro-generated inventory outputs are regenerated. Native File,
+complete LSP response history and production selection remain separately
+unavailable. A new exact source head still requires full Actions, all100 and
+protected terminal merge before its delivery is complete.

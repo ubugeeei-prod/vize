@@ -107,8 +107,10 @@ test("queue Rust retains full doctests and the unchanged feature tail beside req
   assert.equal(manual?.with?.["workspace-already-tested"], undefined);
   assert.equal(recipe.inputs["workspace-already-tested"].default, "false");
   assert.equal(recipe.runs.using, "composite");
-  assert.equal(recipe.runs.steps[0].if, "${{ inputs.workspace-already-tested != 'true' }}");
-  assert.equal(recipe.runs.steps[0].run, "cargo test --workspace");
+  const workspaceStep = recipe.runs.steps.find((step) => step.name === "Test Rust workspace");
+  assert.ok(workspaceStep);
+  assert.equal(workspaceStep.if, "${{ inputs.workspace-already-tested != 'true' }}");
+  assert.equal(workspaceStep.run, "cargo test --workspace");
   for (const step of recipe.runs.steps) {
     assert.equal(step.env?.VIZE_TEST_REQUIRE_TSGO, "1");
     assert.notEqual(step["continue-on-error"], true);
@@ -132,6 +134,10 @@ test("both queue reports reject failed, cancelled, skipped and missing actual de
 });
 
 test("the shared bash recipe stops at a failed feature command (simulated cargo)", () => {
+  const differentialStep = recipe.runs.steps.find(
+    (step) => step.name === "Test feature-enabled differential corpora",
+  );
+  assert.ok(differentialStep);
   const cwd = mkdtempSync(join(tmpdir(), "vize-queue-recipe-"));
   try {
     const log = join(cwd, "commands.log");
@@ -149,7 +155,7 @@ test("the shared bash recipe stops at a failed feature command (simulated cargo)
       writeFileSync(argvLog, "");
       const run = spawnSync(
         "/bin/bash",
-        ["--noprofile", "--norc", "-eo", "pipefail", "-c", recipe.runs.steps[1].run!],
+        ["--noprofile", "--norc", "-eo", "pipefail", "-c", differentialStep.run!],
         {
           cwd: root,
           encoding: "utf8",
