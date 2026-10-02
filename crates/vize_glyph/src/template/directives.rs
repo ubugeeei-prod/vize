@@ -9,8 +9,6 @@ use vize_l0::{String, ToCompactString, cstr};
 use super::helpers::template_literal_state_after_line_from;
 
 mod normalize;
-#[cfg(test)]
-pub(crate) use normalize::normalize_attribute;
 pub(crate) use normalize::normalize_attribute_with_vue_version;
 
 /// Determine if an attribute's value should be formatted as a JS expression.
