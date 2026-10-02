@@ -20,6 +20,7 @@ use crate::write::{NoLinks, Recorded};
 use super::{DomErrorKind, emit};
 
 mod fixture;
+mod props;
 
 const CONTEXT: &[&str] = &[
     "msg", "x", "y", "tip", "count", "offset", "classes", "styles",

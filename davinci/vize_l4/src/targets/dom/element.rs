@@ -1,6 +1,7 @@
 //! Native element spelling from checked semantic L3 facts.
 
 use vize_l0::id::NodeId;
+use vize_l2::expr::ExprRef;
 use vize_l2::op::{BindingOp, DynamicName, ElementOp};
 use vize_l3::decision::dom::{DomChildren, DomNode, PropertyRole};
 
@@ -114,15 +115,17 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         bindings: &[NodeId],
         branch_key: Option<u32>,
     ) -> Result<u8, DomError> {
-        let normalized = bindings.iter().any(|&id| {
+        let complex_value = bindings.iter().any(|&id| {
             self.facts.binding(id).is_some_and(|fact| {
                 fact.role == PropertyRole::Class
                     || (fact.role == PropertyRole::Style && fact.value.is_dynamic())
+                    || matches!(fact.binding(), BindingOp::Bind(bind)
+                        if bind.value.is_some_and(|value| !inline_value(value)))
             })
         });
         let multiline =
             element.attributes.len() + bindings.len() + usize::from(branch_key.is_some()) > 1
-                || normalized;
+                || complex_value;
         self.writer.push(if multiline { "{" } else { "{ " });
         if multiline {
             self.writer.indent();
@@ -222,4 +225,18 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         }
         self.writer.push(" */");
     }
+}
+
+// This is output shape only. Eligibility, binding access and patch demands
+// remain L3 facts. Inspect only the retained root: no trimming or AST walk.
+fn inline_value(value: ExprRef<'_>) -> bool {
+    let ExprRef::Js(expression) = value else {
+        return false;
+    };
+    expression.ast.is_literal()
+        || (expression.ast.is_identifier_reference()
+            && expression
+                .ast
+                .get_identifier_reference()
+                .is_some_and(|identifier| expression.source == identifier.name.as_str()))
 }

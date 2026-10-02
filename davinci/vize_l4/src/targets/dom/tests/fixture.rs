@@ -243,6 +243,31 @@ pub(super) fn build<'a>(arena: &'a Allocator, id: &str, source: &'a str) -> Arti
     .unwrap()
 }
 
+pub(super) fn property_value<'a>(
+    arena: &'a Allocator,
+    source: &'a str,
+    value: &'a str,
+) -> Artifact<'a> {
+    Artifact::try_new(ArtifactParts {
+        source,
+        root: region(
+            arena,
+            [element(
+                arena,
+                source,
+                source,
+                "p",
+                [],
+                [bind(arena, source, source, "title", value)],
+                [],
+            )],
+        ),
+        provenance: OwnedVec::new(),
+        scopes: SideTable::new(),
+    })
+    .unwrap()
+}
+
 pub(super) fn rejected_event(arena: &Allocator) -> Artifact<'_> {
     let source = "<button @click=\"handler\"/>";
     let at = span(source, "@click=\"handler\"");
