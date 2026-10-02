@@ -480,9 +480,9 @@ linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_unused_refs
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_useless_mustaches.rs	35	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_useless_v_bind.rs	27	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_v_text.rs	29	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs	32	old_ast	old AST/parser	old	vize_relief	legacy	2
-linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs	32	croquis	Croquis analysis	old	vize_croquis	legacy	1
-linter	Linter	test/dev	crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs	140	l0	L0	stage	vize_l0	preferred	2
+linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs	36	old_ast	old AST/parser	old	vize_relief	legacy	2
+linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs	36	croquis	Croquis analysis	old	vize_croquis	legacy	1
+linter	Linter	test/dev	crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs	135	l0	L0	stage	vize_l0	preferred	3
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs	35	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs	35	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs	47	l0	L0	stage	vize_l0	preferred	2
