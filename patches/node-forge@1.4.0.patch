@@ -1,0 +1,28 @@
+diff --git a/lib/rsa.js b/lib/rsa.js
+index a4264822b4dcd6dca44ca3e59e410c982eed7183..71da68d9df596e50696f79c5d6cbf90ca0e9b023 100644
+--- a/lib/rsa.js
++++ b/lib/rsa.js
+@@ -1172,7 +1172,10 @@ pki.setRsaPublicKey = pki.rsa.setPublicKey = function(n, e) {
+           var capture = {};
+           var errors = [];
+           if(!asn1.validate(obj, digestInfoValidator, capture, errors) ||
+-            obj.value.length !== 2) {
++            obj.value.length !== 2 ||
++            obj.value[0].value.length !==
++              (('parameters' in capture) ? 2 : 1) ||
++            ('parameters' in capture && capture.parameters !== '')) {
+             var error = new Error(
+               'ASN.1 object does not contain a valid RSASSA-PKCS1-v1_5 ' +
+               'DigestInfo value.');
+@@ -1183,6 +1186,11 @@ pki.setRsaPublicKey = pki.rsa.setPublicKey = function(n, e) {
+           // see PKCS1-v1-5DigestAlgorithms in RFC 8017
+           // FIXME: add support to validator for strict value choices
+           var oid = asn1.derToOid(capture.algorithmIdentifier);
++          if(asn1.oidToDer(oid).getBytes() !== capture.algorithmIdentifier) {
++            throw new Error(
++              'ASN.1 object does not contain a valid RSASSA-PKCS1-v1_5 ' +
++              'DigestInfo value.');
++          }
+           if(!(oid === forge.oids.md2 ||
+             oid === forge.oids.md5 ||
+             oid === forge.oids.sha1 ||

@@ -22,8 +22,8 @@ test("npm audit command retries transient transport failures", () => {
 
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(readArgs(fixture.argsFile), [
-    ["exec", "pnpm", "audit", "--prod", "--audit-level", "moderate"],
-    ["exec", "pnpm", "audit", "--prod", "--audit-level", "moderate"],
+    ["node", "tools/commands/ci/npm-audit.ts"],
+    ["node", "tools/commands/ci/npm-audit.ts"],
   ]);
   assert.match(result.stderr, /attempt 1 failed; retrying/);
 });
