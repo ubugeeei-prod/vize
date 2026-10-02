@@ -19,6 +19,12 @@ privacy/refusal laws pass. All six original reference sources remain visible,
 including the two refused compounds. Earlier native/File/property proofs stay
 immutable. Reference script code is a dev oracle, with no native script credit.
 
+The own-only current-main replay also executes the genuine current L1/File/
+native/L3 source lineage: strict whole L3/L4, 52 L4 unit laws, three native
+laws, two privacy failures and eight Node laws pass. This fresh four-module/
+eight-native-render proof preserves the original frozen evidence. Owned
+Markdown and TypeScript pass the repository-pinned formatter before transport.
+
 Scoped whole-source strict Clippy and Rust/Node/privacy checks are separate
 from hosted Cargo, exact-head full/100 and queue/terminal merge gates. Native
 template custody is a genuine frontend requirement; declaration membership

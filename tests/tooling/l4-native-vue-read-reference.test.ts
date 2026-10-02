@@ -18,11 +18,13 @@ const fromVue = createRequire(fromUi.resolve("vue/package.json"));
 const sfc = fromVue("@vue/compiler-sfc");
 const dom = fromVue("@vue/compiler-dom");
 const vue = fromVue("vue");
-const url = (source: string) => `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
+const url = (source: string) =>
+  `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
 const runtimeUrl = url(
   `import runtime from ${JSON.stringify(pathToFileURL(fromVue.resolve("vue")).href)};\n` +
     ["toDisplayString", "openBlock", "createElementBlock", "normalizeClass", "normalizeStyle"]
-      .map((name) => `export const ${name}=runtime.${name};`).join("\n"),
+      .map((name) => `export const ${name}=runtime.${name};`)
+      .join("\n"),
 );
 
 test("six original setup-let references preserve complete pinned modules, options and maps", () => {
@@ -42,11 +44,15 @@ test("six original setup-let references preserve complete pinned modules, option
     assert.deepEqual(parsed.errors, []);
     for (const block of [parsed.descriptor.scriptSetup, parsed.descriptor.template]) {
       const key = block === parsed.descriptor.scriptSetup ? "script" : "template";
-      assert.deepEqual({
-        utf16Start: block.loc.start.offset, utf16End: block.loc.end.offset,
-        authoredByteStart: Buffer.byteLength(fixture.source.slice(0, block.loc.start.offset)),
-        authoredByteEnd: Buffer.byteLength(fixture.source.slice(0, block.loc.end.offset)),
-      }, fixture.windows[key]);
+      assert.deepEqual(
+        {
+          utf16Start: block.loc.start.offset,
+          utf16End: block.loc.end.offset,
+          authoredByteStart: Buffer.byteLength(fixture.source.slice(0, block.loc.start.offset)),
+          authoredByteEnd: Buffer.byteLength(fixture.source.slice(0, block.loc.end.offset)),
+        },
+        fixture.windows[key],
+      );
     }
     const script = sfc.compileScript(parsed.descriptor, fixture.compiledScript.options);
     assert.deepEqual(script.bindings, fixture.compiledScript.bindings);
@@ -67,25 +73,45 @@ test("six original setup-let references preserve complete pinned modules, option
 
 function shape(node: any): any {
   assert(vue.isVNode(node));
-  return { type: node.type, props: node.props, children: node.children, patchFlag: node.patchFlag,
-    dynamicProps: node.dynamicProps, dynamicChildren: node.dynamicChildren?.map(shape) ?? null,
-    key: node.key, ref: node.ref, shapeFlag: node.shapeFlag };
+  return {
+    type: node.type,
+    props: node.props,
+    children: node.children,
+    patchFlag: node.patchFlag,
+    dynamicProps: node.dynamicProps,
+    dynamicChildren: node.dynamicChildren?.map(shape) ?? null,
+    key: node.key,
+    ref: node.ref,
+    shapeFlag: node.shapeFlag,
+  };
 }
 
 async function execute(fixture: any, code: string) {
   const component = (await import(url(fixture.compiledScript.code))).default;
   const state = vue.proxyRefs(component.setup(Object.create(null), { expose() {} }));
-  const render = (await import(url(code.replace('from "vue"', `from ${JSON.stringify(runtimeUrl)}`)))).render;
+  const render = (
+    await import(url(code.replace('from "vue"', `from ${JSON.stringify(runtimeUrl)}`)))
+  ).render;
   const outcomes = [];
   for (const reference of fixture.executions) {
     if (reference.context === "actual-setup-mutated")
       for (const [name, value] of Object.entries(fixture.update)) state[name] = value;
     const attemptedForeignReads: Array<{ slot: string; key: string }> = [];
-    const forbidden = (slot: string) => new Proxy(Object.create(null), { get(_, key) {
-      attemptedForeignReads.push({ slot, key: String(key) });
-      throw Error(`unexpected ${slot}.${String(key)}`);
-    } });
-    const node = render(forbidden("context"), [], forbidden("props"), state, forbidden("data"), forbidden("options"));
+    const forbidden = (slot: string) =>
+      new Proxy(Object.create(null), {
+        get(_, key) {
+          attemptedForeignReads.push({ slot, key: String(key) });
+          throw Error(`unexpected ${slot}.${String(key)}`);
+        },
+      });
+    const node = render(
+      forbidden("context"),
+      [],
+      forbidden("props"),
+      state,
+      forbidden("data"),
+      forbidden("options"),
+    );
     assert.deepEqual(shape(node), reference.vnode);
     assert.deepEqual(JSON.parse(JSON.stringify(node)), reference.rawVNode);
     assert.deepEqual(attemptedForeignReads, []);
@@ -105,7 +131,10 @@ test("actual native modules and typed refusals retain the six-source denominator
   if (!capturePath) return;
   const captures = JSON.parse(fs.readFileSync(capturePath, "utf8"));
   assert.equal(captures.length, 6);
-  assert.deepEqual(captures.map((row: any) => row.id), fixtures.map((row: any) => row.id));
+  assert.deepEqual(
+    captures.map((row: any) => row.id),
+    fixtures.map((row: any) => row.id),
+  );
   const runtime = [];
   let complete = 0;
   let refused = 0;
@@ -123,15 +152,29 @@ test("actual native modules and typed refusals retain the six-source denominator
     assert.equal(capture.code, fixture.code);
     assert.deepEqual(capture.map.sourcesContent, [fixture.source]);
     assert.notDeepEqual(capture.map.names, fixture.referenceMap.names);
-    runtime.push({ id: fixture.id, codeSha256: hash(capture.code),
-      mapSha256: hash(JSON.stringify(capture.map)), executions: await execute(fixture, capture.code) });
+    runtime.push({
+      id: fixture.id,
+      codeSha256: hash(capture.code),
+      mapSha256: hash(JSON.stringify(capture.map)),
+      executions: await execute(fixture, capture.code),
+    });
     complete++;
   }
   assert.deepEqual({ complete, refused }, { complete: 4, refused: 2 });
   if (process.env.VIZE_L4_VUE_READ_RUNTIME_CAPTURE)
-    fs.writeFileSync(process.env.VIZE_L4_VUE_READ_RUNTIME_CAPTURE, JSON.stringify({
-      sourceCapture: { path: capturePath, sha256: hash(fs.readFileSync(capturePath, "utf8")) },
-      completeModules: complete, typedRefusals: refused, nativeRuntimeContexts: 8,
-      completeUpstreamMapParity: false, runtime,
-    }, null, 2) + "\n");
+    fs.writeFileSync(
+      process.env.VIZE_L4_VUE_READ_RUNTIME_CAPTURE,
+      JSON.stringify(
+        {
+          sourceCapture: { path: capturePath, sha256: hash(fs.readFileSync(capturePath, "utf8")) },
+          completeModules: complete,
+          typedRefusals: refused,
+          nativeRuntimeContexts: 8,
+          completeUpstreamMapParity: false,
+          runtime,
+        },
+        null,
+        2,
+      ) + "\n",
+    );
 });

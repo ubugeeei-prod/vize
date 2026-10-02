@@ -76,6 +76,18 @@ from whole converter Cargo, hosted Actions, numeric instruction ceilings and
 terminal publication/merge. Earlier 8-module/16-render and 14-module/28-render
 File/property proofs remain immutable and are not relabeled as this family.
 
+## Current-main source replay
+
+An own-only replay on authenticated main `3290e828` retains the callable
+original-SFC provider, checked File exposure and sealed L3 READ child. Fresh
+whole L3/L4 strict builds use its actual whole L1 and one matching L2/native
+library lineage. The three native laws, fifty-two L4 unit laws, two privacy
+failures and eight Node laws pass again: four complete native modules, eight
+actual native renders and two typed compound refusals. All six complete
+reference modules and unfiltered raw maps remain pinned. The repository-pinned
+formatter also checks the owned Markdown and reference-test layout before
+publication. This source-library replay does not claim hosted or queue success.
+
 ## Remaining work
 
 - Deliver/replay the actual L2 exposure, sealed L3 classifier and callable
