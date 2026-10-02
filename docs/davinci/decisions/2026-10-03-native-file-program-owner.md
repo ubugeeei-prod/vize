@@ -74,3 +74,9 @@ allocation ceilings, native Stack membership, protected queue and terminal
 merge remain delivery requirements. Product routes, legacy output and all
 performance budgets retain their existing contracts. Full Vue dialect, macro,
 runtime exposure, JSX/TSX semantic admission and product acceptance are TODOs.
+
+The hosted locked harness rejected the first candidate before instruction
+measurement because the L2 admission tests added the existing L1 dev edge without
+its lock-list entry. The repair adds only `vize_l1` to the actual `vize_l2` locked
+dependency list, preserving all package versions and unrelated entries. Full
+locked hosted validation remains required; no-deps metadata was insufficient.

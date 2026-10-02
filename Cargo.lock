@@ -4808,6 +4808,7 @@ dependencies = [
  "oxc_parser",
  "oxc_span",
  "vize_l0",
+ "vize_l1",
 ]
 
 [[package]]
