@@ -55,6 +55,12 @@ struct Contract {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct CheckerOptions {
+    options_api: bool,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Pack {
     version: u32,
     issue: u32,
@@ -62,6 +68,7 @@ struct Pack {
     historical_issue: Option<u32>,
     source_revision: String,
     diagnostic_contract: Contract,
+    checker_options: Option<CheckerOptions>,
     cases: Vec<Case>,
 }
 
@@ -165,6 +172,17 @@ fn slot_outlet_keys_preserve_complete_project_diagnostics() {
     );
 }
 
+#[test]
+fn options_api_any_instance_preserves_complete_original_diagnostics() {
+    check_pack(
+        "options-api-any-instance",
+        "options_api_any_instance_preserves_complete_original_diagnostics",
+        "35bdad84760e6251edd52bb2e3e52701974a9d63",
+        Some(6680),
+        &["typed-props-control", "loose-and-concrete-mixins"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -187,7 +205,7 @@ fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
-            "typed-import-meta" | "slot-outlet-key" => regression,
+            "typed-import-meta" | "slot-outlet-key" | "options-api-any-instance" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );
@@ -203,6 +221,13 @@ fn check_pack(
     );
     assert_eq!(pack.diagnostic_contract.native, "unsupported");
     assert_eq!(pack.diagnostic_contract.required_tier, "T1");
+    assert_eq!(
+        pack.checker_options
+            .as_ref()
+            .map(|options| options.options_api),
+        (name == "options-api-any-instance").then_some(true),
+        "the original explicit checker options must be retained"
+    );
     assert_eq!(
         pack.cases
             .iter()
@@ -231,6 +256,13 @@ fn check_pack(
                 .expect("exact fixture bytes must copy");
         }
         let mut checker = BatchTypeChecker::new(&project_root).expect("the checker must start");
+        if pack
+            .checker_options
+            .as_ref()
+            .is_some_and(|options| options.options_api)
+        {
+            checker.enable_options_api();
+        }
         checker.scan_project().expect("the project must scan");
         let result = checker
             .check_project()

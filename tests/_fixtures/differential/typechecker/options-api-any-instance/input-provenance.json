@@ -1,0 +1,86 @@
+{
+  "schema": "vize.typechecker.originalProjectProvenance",
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "35bdad84760e6251edd52bb2e3e52701974a9d63",
+  "pullRequest": 6680,
+  "originalTests": [
+    "options_api_props_reach_template_dollar_props",
+    "options_api_any_instance_keeps_template_dollar_props_unchecked"
+  ],
+  "originalTestSource": {
+    "revision": "35bdad84760e6251edd52bb2e3e52701974a9d63",
+    "path": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_instance_props/options_api.rs",
+    "blob": "51e900b3ea014869ae412a0cce8ca3669f138d0f",
+    "sha256": "c447e7483ad77ed4ee1e93be6963c0a1b813cc697aeae2a57749c56335186ed0",
+    "carrier": "original-test.rs.txt"
+  },
+  "projectHelperSource": {
+    "revision": "35bdad84760e6251edd52bb2e3e52701974a9d63",
+    "path": "crates/vize_canon/src/batch/type_checker/tests.rs",
+    "blob": "4caefb7832c5dee4c93dd90ef1268cdc6b4bfe8b",
+    "sha256": "6501764dede187110cf31ffd3140da4ba2a785e8d748f3f2e5525d07dd0ec453",
+    "excerpt": {
+      "carrier": "original-helper.rs.txt",
+      "utf8Start": 51537,
+      "utf8End": 53084,
+      "sha256": "5dca5d40fd99fbf093f3d7dcf95b2e9f38f62bf6d31bc40d948c36747be454f8"
+    }
+  },
+  "configLiteralUtf8Start": 52827,
+  "originalCheckerOptions": {
+    "optionsApi": true
+  },
+  "originalMethod": "BatchTypeChecker::enable_options_api before scan_project/check_project in both original test bodies",
+  "expectedContract": "complete original vector: exact two TS2339 tuples for typed control and an empty mixin project; original helper sorts, fresh returned order must be verified",
+  "originalRuntimePolicy": "optional original runtime/Vue guards; no fresh execution credit",
+  "execution": "pending fresh required T1 source-built Actions",
+  "native": "unsupported",
+  "inputs": [
+    {
+      "case": "typed-props-control",
+      "file": "src/OptionsValid.vue",
+      "source": "typed-props-control/src/OptionsValid.vue.txt",
+      "sha256": "6bd6d38d5aa1007cf6fd61f1630d8a9b1c75dd147a0f524d6832da1573ad3c22",
+      "originalConstant": "VALID",
+      "originalLiteralUtf8Start": 714
+    },
+    {
+      "case": "typed-props-control",
+      "file": "src/OptionsInvalid.vue",
+      "source": "typed-props-control/src/OptionsInvalid.vue.txt",
+      "sha256": "bf77315a4d08f1ed85974a6d4dd457bf6a95da652a4cec1377c64543fe8b973d",
+      "originalConstant": "INVALID",
+      "originalLiteralUtf8Start": 1048
+    },
+    {
+      "case": "loose-and-concrete-mixins",
+      "file": "src/devices.ts",
+      "source": "loose-and-concrete-mixins/src/devices.ts.txt",
+      "sha256": "894502d4b05ce6e51bb2b3a1beee17156be409c68d84e5c63c822bc393c90d5f",
+      "originalConstant": "LOOSE_MIXIN",
+      "originalLiteralUtf8Start": 4700
+    },
+    {
+      "case": "loose-and-concrete-mixins",
+      "file": "src/routing.ts",
+      "source": "loose-and-concrete-mixins/src/routing.ts.txt",
+      "sha256": "23272f7b4a19344cf069d1a9c99c43684b4e8994d3663d6eb2a16435200257b2",
+      "originalConstant": "CONCRETE_MIXIN",
+      "originalLiteralUtf8Start": 4839
+    },
+    {
+      "case": "loose-and-concrete-mixins",
+      "file": "src/TwoMixins.vue",
+      "source": "loose-and-concrete-mixins/src/TwoMixins.vue.txt",
+      "sha256": "27e16c5f42dc2fdafc9c879bfc5d320cdb612199f7ada84a9bd3bfa7786c33ea",
+      "originalConstant": "TWO_MIXINS",
+      "originalLiteralUtf8Start": 5029
+    }
+  ],
+  "configuration": {
+    "file": "tsconfig.json",
+    "source": "tsconfig.json.txt",
+    "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+  }
+}

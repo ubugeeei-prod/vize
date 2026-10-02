@@ -1,0 +1,9 @@
+import { defineComponent } from 'vue'
+
+export const routing = defineComponent({
+  methods: {
+    go(name: string): string {
+      return name
+    },
+  },
+})

@@ -17,6 +17,7 @@ export const TYPECHECKER_TESTS = {
   "component-event-tuples": "component_event_tuples_preserve_all_argument_diagnostics",
   "typed-import-meta": "typed_import_meta_preserves_exact_authored_diagnostics",
   "slot-outlet-key": "slot_outlet_keys_preserve_complete_project_diagnostics",
+  "options-api-any-instance": "options_api_any_instance_preserves_complete_original_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -29,6 +30,7 @@ const sourceRevisions = {
   "component-event-tuples": originalFixtureRevision,
   "typed-import-meta": "6e0f763bd0f5e986036244c2c17c9b658b0596bd",
   "slot-outlet-key": "c6e43ca98cbffe099a6ef323006139d796d62208",
+  "options-api-any-instance": "35bdad84760e6251edd52bb2e3e52701974a9d63",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };
@@ -50,6 +52,7 @@ export type TypecheckerCase = {
   test: string;
   regressionCommit: string;
   sourceRevision?: string;
+  checkerOptions?: { optionsApi: boolean };
   packReference: Artifact;
   inputs: Array<Artifact & { file: string }>;
   diagnostics: Diagnostic[];
@@ -60,6 +63,7 @@ type Pack = {
   sourceRevision: string;
   diagnosticContract: typeof contract;
   regressionCommit: string;
+  checkerOptions?: { optionsApi: boolean };
   cases: Array<{
     id: string;
     inputs: Array<{ file: string; source: string }>;
@@ -130,6 +134,12 @@ export function loadTypecheckerManifest(manifestPath: string) {
     assert.equal(pack.sourceRevision, sourceRevisions[fixture.pack]);
     assert.equal(pack.sourceRevision, fixture.sourceRevision ?? loaded.manifest.baseRevision);
     assert.deepEqual(pack.diagnosticContract, contract);
+    assert.deepEqual(
+      pack.checkerOptions,
+      fixture.pack === "options-api-any-instance" ? { optionsApi: true } : undefined,
+      "the original explicit checker options must be retained",
+    );
+    assert.deepEqual(fixture.checkerOptions, pack.checkerOptions);
     const original = pack.cases.find((item) => item.id === fixture.case);
     assert(original, "case is absent from its immutable fixture pack");
     assert.equal(fixture.id, `typechecker/${fixture.pack}/${fixture.case}`);

@@ -738,6 +738,87 @@
           "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
         }
       ]
+    },
+    {
+      "id": "typechecker/options-api-any-instance/typed-props-control",
+      "state": "active",
+      "targets": ["batch"],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "options-api-any-instance",
+      "case": "typed-props-control",
+      "test": "options_api_any_instance_preserves_complete_original_diagnostics",
+      "regressionCommit": "35bdad84760e6251edd52bb2e3e52701974a9d63",
+      "sourceRevision": "35bdad84760e6251edd52bb2e3e52701974a9d63",
+      "checkerOptions": {
+        "optionsApi": true
+      },
+      "packReference": {
+        "path": "options-api-any-instance/cases.json",
+        "sha256": "1973c27748075adebfd1f8455a5af9ec4d35c6963e33727a99b3a2aba0b97cd0"
+      },
+      "inputs": [
+        {
+          "file": "src/OptionsValid.vue",
+          "path": "options-api-any-instance/typed-props-control/src/OptionsValid.vue.txt",
+          "sha256": "6bd6d38d5aa1007cf6fd61f1630d8a9b1c75dd147a0f524d6832da1573ad3c22"
+        },
+        {
+          "file": "src/OptionsInvalid.vue",
+          "path": "options-api-any-instance/typed-props-control/src/OptionsInvalid.vue.txt",
+          "sha256": "bf77315a4d08f1ed85974a6d4dd457bf6a95da652a4cec1377c64543fe8b973d"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "options-api-any-instance/tsconfig.json.txt",
+          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+        }
+      ]
+    },
+    {
+      "id": "typechecker/options-api-any-instance/loose-and-concrete-mixins",
+      "state": "active",
+      "targets": ["batch"],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "options-api-any-instance",
+      "case": "loose-and-concrete-mixins",
+      "test": "options_api_any_instance_preserves_complete_original_diagnostics",
+      "regressionCommit": "35bdad84760e6251edd52bb2e3e52701974a9d63",
+      "sourceRevision": "35bdad84760e6251edd52bb2e3e52701974a9d63",
+      "checkerOptions": {
+        "optionsApi": true
+      },
+      "packReference": {
+        "path": "options-api-any-instance/cases.json",
+        "sha256": "1973c27748075adebfd1f8455a5af9ec4d35c6963e33727a99b3a2aba0b97cd0"
+      },
+      "inputs": [
+        {
+          "file": "src/devices.ts",
+          "path": "options-api-any-instance/loose-and-concrete-mixins/src/devices.ts.txt",
+          "sha256": "894502d4b05ce6e51bb2b3a1beee17156be409c68d84e5c63c822bc393c90d5f"
+        },
+        {
+          "file": "src/routing.ts",
+          "path": "options-api-any-instance/loose-and-concrete-mixins/src/routing.ts.txt",
+          "sha256": "23272f7b4a19344cf069d1a9c99c43684b4e8994d3663d6eb2a16435200257b2"
+        },
+        {
+          "file": "src/TwoMixins.vue",
+          "path": "options-api-any-instance/loose-and-concrete-mixins/src/TwoMixins.vue.txt",
+          "sha256": "27e16c5f42dc2fdafc9c879bfc5d320cdb612199f7ada84a9bd3bfa7786c33ea"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "options-api-any-instance/tsconfig.json.txt",
+          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+        }
+      ]
     }
   ]
 }

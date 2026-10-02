@@ -31,6 +31,10 @@ const canonDeferred = [
   },
   { name: "typed_import_meta_preserves_exact_authored_diagnostics", pack: "typed-import-meta" },
   { name: "slot_outlet_keys_preserve_complete_project_diagnostics", pack: "slot-outlet-key" },
+  {
+    name: "options_api_any_instance_preserves_complete_original_diagnostics",
+    pack: "options-api-any-instance",
+  },
 ];
 type Step = { name?: string; run?: string };
 const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
