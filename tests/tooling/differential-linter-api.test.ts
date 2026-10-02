@@ -10,6 +10,39 @@ import { sha256 } from "../differential/harness.mjs";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const manifestPath = path.join(repoRoot, "tests/_fixtures/differential/linter/manifest.json");
 
+void test("component filename history retains the eight original input and option witnesses", () => {
+  const file = path.join(
+    repoRoot,
+    "crates/vize_patina/tests/fixtures/component-name-history/cases.json",
+  );
+  const bytes = fs.readFileSync(file);
+  assert.equal(sha256(bytes), "867a29d7c0a92c17d59fcaa6063be1e3649fb92375024fcd2932a57f27fe062c");
+  const cases = JSON.parse(bytes.toString());
+  assert.equal(new Set(cases.map((fixture: any) => fixture.id)).size, 8);
+  assert.deepEqual(
+    cases.map((fixture: any) => [fixture.filename, fixture.diagnostics]),
+    [
+      ["my-component.vue", 0],
+      ["src/components/job-board.vue", 0],
+      ["grid-2-col.vue", 0],
+      ["my-Component.vue", 1],
+      ["-my-component.vue", 1],
+      ["my-component-.vue", 1],
+      ["my--component.vue", 1],
+      ["page.block.vue", 1],
+    ],
+  );
+  for (const fixture of cases) {
+    assert.equal(fixture.history, "eaafa5a1f67883277407fcf1c5f3f2b2101ef2ed");
+    assert.equal(fixture.source, "<div>Content</div>");
+    assert.equal(fixture.entry, "template");
+    assert.equal(fixture.rule, "vue/component-definition-name-casing");
+    assert.equal(fixture.vue_version, null);
+    assert.equal(fixture.vapor, null);
+    assert.equal(fixture.fixes, 0);
+  }
+});
+
 void test("linter registry pins every authored input and complete oracle, including real fixes and reports", () => {
   const loaded = loadLinterManifest(manifestPath, repoRoot);
   assert.equal(loaded.cases.length, 36);

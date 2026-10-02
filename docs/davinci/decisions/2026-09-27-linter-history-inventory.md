@@ -84,3 +84,17 @@ Five focused tooling tests use real temporary Git repositories to exercise
 discarded side-branch history, merge topology, removed snapshot blob identity,
 stable artifacts, unusual filenames, rename edges, and rejection of incomplete history.
 They verify enumeration only. They are not product fixture acceptance.
+
+## Separately reviewed original filename witnesses
+
+`eaafa5a1f67883277407fcf1c5f3f2b2101ef2ed` (#4447) is a behavior change
+with a `feat` title. Its six changed or added test functions supply eight original
+filename witnesses for kebab-case acceptance and rejection of mixed case,
+empty segments and dots. The [bounded semantic record](./2026-10-02-linter-component-name-history.md)
+retains their exact `<div>Content</div>` source, filenames and sole rule;
+the existing public observer prepares complete current English diagnostics,
+help, spans, no-edit and unchanged-requery captures. The old 36 published
+observations remain unchanged. Raw capture is awaiting complete oracle
+registration and source-built comparison, so this preparation changes none
+of the enumeration's acceptance counters. All-locale coverage, repository
+snapshot deltas, whole-commit/history closure and native proof remain open.
