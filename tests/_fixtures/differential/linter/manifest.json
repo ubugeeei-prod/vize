@@ -42,11 +42,19 @@
         "path": "tests/_fixtures/differential/lint-static-class/cases.json",
         "sha256": "b409b01c2e7177419cafbdbbdb6257b11fe32e37e9a46acd9595d09d1f817116"
       }
+    },
+    {
+      "id": "component-name",
+      "api": "--current-api",
+      "cases": {
+        "path": "crates/vize_patina/tests/fixtures/component-name-history/cases.json",
+        "sha256": "867a29d7c0a92c17d59fcaa6063be1e3649fb92375024fcd2932a57f27fe062c"
+      }
     }
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "d268d3c18cac828675438e3e82f6c392551358d6dcb7426d3cccb9f2727f7d10"
+    "sha256": "e7f94e48d54af4a5956b9e67e45b1322cb4e0a2f74ae063907fed899fa9f0509"
   },
   "cases": [
     {
@@ -226,6 +234,46 @@
     },
     {
       "id": "linter/static-class/empty-expression",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/component-name/valid-kebab-case",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/component-name/valid-kebab-case-with-path",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/component-name/valid-kebab-case-with-digits",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/component-name/invalid-mixed-kebab-and-pascal",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/component-name/invalid-leading-hyphen",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/component-name/invalid-trailing-hyphen",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/component-name/invalid-doubled-hyphen",
+      "state": "active",
+      "targets": ["lint"]
+    },
+    {
+      "id": "linter/component-name/invalid-dotted-name",
       "state": "active",
       "targets": ["lint"]
     }

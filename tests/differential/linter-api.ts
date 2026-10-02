@@ -28,6 +28,7 @@ const OPTIONS = {
 const APIS: Record<string, string> = {
   "current-api": "--current-api",
   "next-tick": "--current-api",
+  "component-name": "--current-api",
   report: "--report",
   "static-class": "--static-class",
 };

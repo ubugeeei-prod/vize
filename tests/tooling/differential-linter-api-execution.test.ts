@@ -8,7 +8,7 @@ import { LINTER_OBSERVER, runLinterApiPack } from "../differential/linter-api.ts
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-void test("shared linter corpus retains all 36 complete actual public observations from source-built Rust", (t) => {
+void test("shared linter corpus retains all 44 complete actual public observations from source-built Rust", (t) => {
   const evidenceDir = path.resolve(
     root,
     process.env.VIZE_LINTER_API_EVIDENCE_DIR ?? "target/differential/linter-api",
@@ -33,11 +33,11 @@ void test("shared linter corpus retains all 36 complete actual public observatio
   assert.deepEqual(
     report.summary,
     {
-      plannedCases: 36,
-      legacyMatches: 36,
+      plannedCases: 44,
+      legacyMatches: 44,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: 36,
+      nativeUnsupported: 44,
       nativeHandled: 0,
       nativeEquivalent: 0,
       pairedComparisons: 0,

@@ -142,5 +142,37 @@
   "linter/static-class/empty-expression": {
     "path": "crates/vize_patina/tests/snapshots/static_class_fix__empty-expression.snap",
     "sha256": "18d585f61e4514996c6280b5d9fb92191a69006480f20f4b28233cd4d28938ba"
+  },
+  "linter/component-name/valid-kebab-case": {
+    "path": "tests/_fixtures/differential/linter/component-name/valid-kebab-case.snap",
+    "sha256": "42d8377c91e3cb886a517f19d8b5d500042547ee2ee1656a4489d8d152f3094e"
+  },
+  "linter/component-name/valid-kebab-case-with-path": {
+    "path": "tests/_fixtures/differential/linter/component-name/valid-kebab-case-with-path.snap",
+    "sha256": "afb7d832936c0c267ef2124e0b210ac20a7d93374b8f9092ee6e131bc250539f"
+  },
+  "linter/component-name/valid-kebab-case-with-digits": {
+    "path": "tests/_fixtures/differential/linter/component-name/valid-kebab-case-with-digits.snap",
+    "sha256": "21c16ca3d6aac6145aaedd0040a4f5922073dca8a652d856f7cad50911818261"
+  },
+  "linter/component-name/invalid-mixed-kebab-and-pascal": {
+    "path": "tests/_fixtures/differential/linter/component-name/invalid-mixed-kebab-and-pascal.snap",
+    "sha256": "2aeb2b134c6c45a2fff93b7296c5aff84c6354d22736db0a3c1c2c26bb3649c3"
+  },
+  "linter/component-name/invalid-leading-hyphen": {
+    "path": "tests/_fixtures/differential/linter/component-name/invalid-leading-hyphen.snap",
+    "sha256": "d7b2b0298c4de1b9f37fa494830dedf4e91a9bb9752a1088b731017e11fc4bd1"
+  },
+  "linter/component-name/invalid-trailing-hyphen": {
+    "path": "tests/_fixtures/differential/linter/component-name/invalid-trailing-hyphen.snap",
+    "sha256": "f80ddc6569f7550c2da4082bae74a92bde34d83f34204744803e5c1799520102"
+  },
+  "linter/component-name/invalid-doubled-hyphen": {
+    "path": "tests/_fixtures/differential/linter/component-name/invalid-doubled-hyphen.snap",
+    "sha256": "db54e3388486a8500ed924c40b722e24c84b7407b05280d29359785ca93f45a7"
+  },
+  "linter/component-name/invalid-dotted-name": {
+    "path": "tests/_fixtures/differential/linter/component-name/invalid-dotted-name.snap",
+    "sha256": "ba8a8b32879d5126004d06b86fa7ec8971360afd5b9fd00ae34fb9abd045b3fd"
   }
 }

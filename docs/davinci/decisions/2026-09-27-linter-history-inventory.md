@@ -84,3 +84,19 @@ Five focused tooling tests use real temporary Git repositories to exercise
 discarded side-branch history, merge topology, removed snapshot blob identity,
 stable artifacts, unusual filenames, rename edges, and rejection of incomplete history.
 They verify enumeration only. They are not product fixture acceptance.
+
+## Separately reviewed original filename witnesses
+
+`eaafa5a1f67883277407fcf1c5f3f2b2101ef2ed` (#4447) has a `feat` title.
+Its six changed or added tests supply eight exact original filename witnesses
+with `<div>Content</div>`, unchanged filenames and the sole rule. The
+[bounded semantic record](./2026-10-02-linter-component-name-history.md) binds
+two actual fresh-process complete public observations per input to source-built
+[Actions capture](https://github.com/ubugeeei-prod/vize/actions/runs/36967214570),
+its original artifact, build receipt and authenticated lossless transport.
+The eight immutable full output bodies enter the existing shared runner beside
+all 36 unchanged inputs/oracles. Current explicit English/preset/help options
+remain distinct from the original count-only test helper. Final-head and queue
+comparison are still required; enumeration counters stay unchanged. All-locale
+coverage, snapshot deltas, whole-commit/history closure and native proof remain
+open. Native handled/equivalent/paired comparisons remain zero.
