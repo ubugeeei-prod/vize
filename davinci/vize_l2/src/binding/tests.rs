@@ -168,7 +168,7 @@ fn checked_artifact_retains_real_binding_and_dump_refusal_preserves_authored_spa
         }
     );
     assert_eq!(
-        std::format!("{error}"),
+        vize_l0::cstr!("{error}"),
         "native binding dump unsupported at bytes 1..2"
     );
     assert_eq!(

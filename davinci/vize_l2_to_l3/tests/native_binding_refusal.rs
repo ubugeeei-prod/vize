@@ -12,7 +12,7 @@ fn retained_native_binding_survives_as_explicit_unsupported_operand_after_l2_dro
     let l3 = Allocator::default();
     let lowered = {
         let l2 = Allocator::default();
-        let actual = fixture::native(&l2);
+        let actual = fixture::native(&l2).unwrap();
         assert!(actual.binding.as_expression().is_none());
         lower(&l3, &actual.root)
     };

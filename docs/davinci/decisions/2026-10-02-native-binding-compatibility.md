@@ -102,6 +102,28 @@ four-law module, full compatibility and Fuzz suites, and unchanged 100-probe
 instruction gates require fresh exact-head Actions before protected merge.
 This CI correction supplies no native admission or completion credit.
 
+## Strict fixture correction and current-main replay
+
+The 2026-10-03 replay retains the four owned bridge/policy changes on signed
+main `e648610c51f79aeeefe08a20b936c0ae1ed39ad0`. The original registered
+retained-formal fixture reproduces six strict unwrap/panic findings. Its helper
+now returns the actual parse/root/parameter/span/coordinate/binding failures;
+the original test asserts that preparation succeeds before checking the same
+unsupported operand, retained span and compatibility ordering. No fixture
+input, expected diagnostic, assertion or lint scope is weakened. The existing
+dump-error display assertion uses `cstr!` with the same expected bytes.
+
+Complete replayed L2, L3 and L2-to-L3 production source compiles with strict
+`clippy::all` and the thirteen workspace panic/scope denies. All 47 L2 unit
+laws, seven expression-resolution laws and the original two binding-refusal
+laws pass with those same strict flags. The registered edge unit target also
+compiles strictly and contains zero tests; it supplies no additional law count.
+These finite checks use cached historical L0 and pinned stock OXC primitives,
+so current whole-workspace ABI, product/frontend suites and unchanged full
+instruction gates still require fresh exact-head Actions. Prior hosted results
+are evidence for their original heads, not acceptance of this replay. The
+canonical consumption shards are regenerated from the actual replayed source.
+
 ## Remaining work
 
 - Native binding emission and a real native-binding dump grammar remain

@@ -13,21 +13,30 @@ pub struct Fixture<'a> {
     pub root: Region<'a>,
 }
 
-pub fn native(allocator: &Allocator) -> Fixture<'_> {
-    let expression =
-        JsExpr::parse_in(allocator, SOURCE, Span::new(0, SOURCE.len() as u32)).unwrap();
+pub fn native(allocator: &Allocator) -> Result<Fixture<'_>, &'static str> {
+    let expression = JsExpr::parse_in(allocator, SOURCE, Span::new(0, SOURCE.len() as u32))
+        .map_err(|_| "actual arrow fixture parse")?;
     let Expression::ArrowFunctionExpression(arrow) = expression.ast else {
-        panic!("actual arrow fixture root")
+        return Err("actual arrow fixture root");
     };
-    let parameter = arrow.params.items.first().unwrap();
+    let parameter = arrow
+        .params
+        .items
+        .first()
+        .ok_or("actual arrow fixture parameter")?;
     let span = Span::new(parameter.span.start, parameter.span.end);
-    let source = SOURCE.get(span.start as usize..span.end as usize).unwrap();
-    let coordinates = allocator
-        .alloc(JsCoordinates::checked(SOURCE, source, span, parameter.span.start, &[]).unwrap());
-    let binding = BindingRef::Js(
-        JsBinding::from_retained_in(allocator, parameter, source, span, coordinates).unwrap(),
+    let source = SOURCE
+        .get(span.start as usize..span.end as usize)
+        .ok_or("actual arrow fixture span")?;
+    let coordinates = allocator.alloc(
+        JsCoordinates::checked(SOURCE, source, span, parameter.span.start, &[])
+            .map_err(|_| "actual arrow fixture coordinates")?,
     );
-    root(allocator, binding)
+    let binding = BindingRef::Js(
+        JsBinding::from_retained_in(allocator, parameter, source, span, coordinates)
+            .map_err(|_| "actual arrow fixture binding")?,
+    );
+    Ok(root(allocator, binding))
 }
 
 pub fn compatibility(allocator: &Allocator) -> Fixture<'_> {
