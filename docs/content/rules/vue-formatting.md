@@ -230,7 +230,8 @@ Good:
 
 ## `vue/prefer-props-shorthand`
 
-Reports a prop binding whose name matches the value expression. Vue 3.4
+Reports a binding whose name matches the value expression on components,
+native elements, and custom elements. Vue 3.4
 writes that as `:foo` instead of `:foo="foo"`. A kebab-case attribute matches
 its camelCase value: `:user-name="userName"` is the same case.
 
@@ -243,6 +244,8 @@ Bad:
 <template>
   <MyComponent :foo="foo" />
   <MyComponent :user-name="userName" />
+  <span :style="style" />
+  <div :aria-label="ariaLabel" />
 </template>
 ```
 
@@ -252,6 +255,8 @@ Good:
 <template>
   <MyComponent :foo />
   <MyComponent :user-name />
+  <span :style />
+  <div :aria-label />
   <MyComponent :foo="bar" />
 </template>
 ```

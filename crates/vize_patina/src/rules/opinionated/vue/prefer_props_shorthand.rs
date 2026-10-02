@@ -1,6 +1,6 @@
 //! vue/prefer-props-shorthand
 //!
-//! Recommend using shorthand syntax for props when the prop name matches the variable name.
+//! Recommend same-name binding shorthand on components and native elements.
 //!
 //! Vue 3.4+ supports shorthand syntax where `:foo="foo"` can be written as just `:foo`.
 //! This makes the template more concise and easier to read.
@@ -12,6 +12,8 @@
 //! <MyComponent :foo="foo" />
 //! <MyComponent :user-name="userName" />
 //! <MyComponent :count="count" :name="name" />
+//! <span :style="style" />
+//! <div :aria-label="ariaLabel" />
 //! ```
 //!
 //! ### Valid
@@ -20,6 +22,8 @@
 //! <MyComponent :foo />
 //! <MyComponent :user-name />
 //! <MyComponent :count :name />
+//! <span :style />
+//! <div :aria-label />
 //!
 //! <!-- Different names are fine -->
 //! <MyComponent :foo="bar" />
@@ -50,15 +54,6 @@ impl Rule for PreferPropsShorthand {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        // Only check on component elements (PascalCase or kebab-case with -)
-        let tag = element.tag;
-        let is_component =
-            tag.contains('-') || tag.chars().next().is_some_and(|c| c.is_uppercase());
-
-        if !is_component {
-            return;
-        }
-
         for attr in &element.props {
             if let vize_relief::PropNode::Directive(dir) = attr
                 && dir.name == "bind"
@@ -67,7 +62,7 @@ impl Rule for PreferPropsShorthand {
             {
                 // Get the prop name
                 let prop_name = match arg {
-                    ExpressionNode::Simple(s) => s.content,
+                    ExpressionNode::Simple(s) if s.is_static => s.content,
                     _ => continue,
                 };
 
@@ -200,6 +195,79 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<MyComponent :foo="foo + bar" />"#, "test.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn same_name_bindings_apply_to_every_element_kind() {
+        let linter = create_linter();
+        for (source, expected) in [
+            (r#"<span :style="style" />"#, r#"<span :style />"#),
+            (
+                r#"<div :aria-label="ariaLabel" />"#,
+                r#"<div :aria-label />"#,
+            ),
+            (
+                r#"<my-element :value="value" />"#,
+                r#"<my-element :value />"#,
+            ),
+            (r#"<child :items="items" />"#, r#"<child :items />"#),
+            (r#"<svg :view-box="viewBox" />"#, r#"<svg :view-box />"#),
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(result.warning_count, 1, "{source}");
+            let fix = result.diagnostics[0].fix.as_ref().expect("shorthand fix");
+            assert_eq!(fix.apply(source), expected);
+            assert_eq!(linter.lint_template(expected, "test.vue").warning_count, 0);
+        }
+    }
+
+    #[test]
+    fn native_binding_controls_remain_unchanged() {
+        let linter = create_linter();
+        for source in [
+            r#"<span :style />"#,
+            r#"<span :style="otherStyle" />"#,
+            r#"<div :aria-label="getLabel()" />"#,
+            r#"<div :[label]="label" />"#,
+            r#"<MyComponent :[foo]="foo" />"#,
+        ] {
+            assert_eq!(
+                linter.lint_template(source, "test.vue").warning_count,
+                0,
+                "{source}"
+            );
+        }
+        let linter = linter.with_vue_version(Some(VueVersion::V2_7));
+        assert_eq!(
+            linter
+                .lint_template(r#"<span :style="style" />"#, "test.vue")
+                .warning_count,
+            0
+        );
+    }
+
+    #[test]
+    fn community_same_name_sfc_reports_and_fixes_all_three_bindings() {
+        let linter = create_linter();
+        let source = include_str!("../../../../tests/fixtures/same-name-native.vue");
+        let result = linter.lint_sfc(source, "SameName.vue");
+        assert_eq!(result.warning_count, 3);
+        let mut fixed = vize_l0::String::from(source);
+        for diagnostic in result.diagnostics.iter().rev() {
+            fixed = diagnostic
+                .fix
+                .as_ref()
+                .expect("shorthand fix")
+                .apply(&fixed);
+        }
+        assert_eq!(
+            fixed,
+            source
+                .replace(":items=\"items\"", ":items")
+                .replace(":style=\"style\"", ":style")
+                .replace(":aria-label=\"ariaLabel\"", ":aria-label")
+        );
+        assert_eq!(linter.lint_sfc(&fixed, "SameName.vue").warning_count, 0);
     }
 
     #[test]

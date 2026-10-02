@@ -1,5 +1,12 @@
 # Decision Record — Level Restructure (2026-09-27)
 
+Community lint fix [#7417](https://github.com/ubugeeei-prod/vize/issues/7417):
+`vue/prefer-props-shorthand` applies to static same-name bindings on every
+element, matching Vue 3.4+. Remove the component-name heuristic and retain
+the Vue 2 compatibility guard. Dynamic arguments keep their explicit values.
+The reported SFC is retained as a legacy regression fixture; this gives no
+native-stage credit.
+
 > [!NOTE]
 > This record and its linked companion pages collect the decisions from the maintainer's 2026-09-27 design session. It is the working source of truth for crate layout, naming, level
 > responsibilities and CI tiers. Where it conflicts with older pages (S0–S4
