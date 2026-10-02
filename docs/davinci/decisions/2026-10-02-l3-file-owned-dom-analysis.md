@@ -75,6 +75,8 @@ real lower `FileProducer`, `ProgramScope` and `TemplateScope` APIs. Diagnostic
 construction does not certify Vue script roles, original template custody or
 native SFC admission. Full L3 rustdoc checks include the three new
 ownership/type-boundary compile-fail cases.
+The File integration oracle compares the complete ordered semantic dependency
+sequence; partial membership assertions are rejected by the committed lint.
 
 Local evidence compiles the complete owned L3 source against the genuine first
 File provider's unchanged L2 source and coherent retained Shared L1/OXC/L0 and

@@ -61,12 +61,15 @@ fn genuine_file_rows_keep_original_ast_coordinates_scope_and_dynamic_facts() {
             assert_eq!(binding.value, ValueKind::FileDependent);
         }
     }
-    assert!(
-        facts
-            .dependencies()
-            .contains(&DomDependency::StyleNormalization)
+    assert_eq!(
+        facts.dependencies(),
+        &[
+            DomDependency::DisplayValue,
+            DomDependency::StyleNormalization,
+            DomDependency::BlockBoundary,
+            DomDependency::NativeElementBlock,
+        ]
     );
-    assert!(facts.dependencies().contains(&DomDependency::DisplayValue));
     assert_eq!(syntax.diagnostics().count(), 0);
 }
 
