@@ -19,9 +19,9 @@ its separately obtained `text()` values are distinct owned snapshots. A future
 adapter must capture those host identities with its retained parsed source,
 and must not substitute an independently copied equal-text buffer.
 
-| Retained 64-bit payload | Before | After | Change |
-| --- | ---: | ---: | ---: |
-| `EmbedSource` | 40 bytes | 56 bytes | one 16-byte borrowed `str` |
+| Retained 64-bit payload |   Before |    After |                     Change |
+| ----------------------- | -------: | -------: | -------------------------: |
+| `EmbedSource`           | 40 bytes | 56 bytes | one 16-byte borrowed `str` |
 
 The source remains Copy and has no Drop. The reviewed production storage row
 stays exactly one L0 String import/two bound uses and one arena Vec import/two
