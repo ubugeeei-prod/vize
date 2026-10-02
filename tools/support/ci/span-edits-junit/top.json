@@ -1,14 +1,14 @@
 {
   "repository": "ubugeeei-prod/vize",
   "cohort": "pull-request",
-  "runId": 37027771862,
+  "runId": 37037590949,
   "attempt": 1,
-  "source": "81382c1e5af399cdb6d7358420890ebdaccef23f",
-  "tree": "230e2ab187c27f08f16e231af70dc695ae70cc48",
-  "base": "6d1e91cafe54ad902cb21a217f90977e4a483ce7",
+  "source": "860dfb87802d871352e9a6bbb95ba33605eaa607",
+  "tree": "9cca42d6ad5970dc8224150bf4fb1eca8c1781dc",
+  "base": "c8500067a66dcf960fbb4e212df79d4d3e8c17bf",
   "originalSource": "4341acd9ad6df6bc8eb5d2ea45aca0daca436709",
-  "checkout": "8fd9f3439130ca74739d0e897eebf4f7b2db427d",
-  "archiveName": "rust-test-archive-37027771862-8fd9f3439130ca74739d0e897eebf4f7b2db427d",
+  "checkout": "28d2d6ffc01fbb7f3d9d3111e6b17ee82b0183ba",
+  "archiveName": "rust-test-archive-37037590949-28d2d6ffc01fbb7f3d9d3111e6b17ee82b0183ba",
   "branch": "feat/l1-versioned-span-edits-20261003",
   "expectedCaseCount": 13,
   "ownedCaseBlobs": [
@@ -40,11 +40,11 @@
   ],
   "artifacts": [
     {
-      "id": 11236471404,
-      "name": "rust-test-shard-1-37027771862-1",
-      "bytes": 94121,
-      "sha256": "fcb94d902decd0bb6b76b9ad4748afca26f85bff230522726b0b24b450aee053",
-      "jobId": 110908324613,
+      "id": 11240408737,
+      "name": "rust-test-shard-1-37037590949-1",
+      "bytes": 93938,
+      "sha256": "54a8c3f67c5e416792889d17f3fd58257143d77235e23857fd1e1b4558f1e472",
+      "jobId": 110940809481,
       "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (1/4)",
       "shard": 1,
       "binary": "vize_l1",
@@ -54,50 +54,50 @@
       ]
     },
     {
-      "id": 11236291396,
-      "name": "rust-test-shard-2-37027771862-1",
-      "bytes": 93635,
-      "sha256": "f8218aeac1c56966e01ae91281d4912b5eb7ef4137444051f4cd161bfffdc0bc",
-      "jobId": 110908324639,
+      "id": 11241142847,
+      "name": "rust-test-shard-2-37037590949-1",
+      "bytes": 93758,
+      "sha256": "84f2026db578cbe0e4181e34c3bc17c32d00b5d045878303fb83a21b5056abe2",
+      "jobId": 110940809455,
       "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (2/4)",
       "shard": 2,
       "binary": "vize_l1",
       "cases": [
-        "embed::source::origin_tests::shared_and_empty_buffers_do_not_create_document_identity",
-        "embed::source::origin_tests::root_metadata_adds_one_borrow_without_plain_preparation_allocations",
-        "edit::tests::ordered_adjacent_edits_and_boundary_insertions_apply_once_to_original_bytes",
         "edit::tests::conflicts_and_unsorted_edits_are_explicit_refusals_without_source_mutation",
+        "edit::tests::exact_projection_rejects_entity_interior_even_when_diagnostic_cover_is_valid",
+        "edit::tests::ordered_adjacent_edits_and_boundary_insertions_apply_once_to_original_bytes",
         "edit::tests::native_expression_span_projects_from_retained_preparation_without_reparse",
-        "edit::tests::exact_projection_rejects_entity_interior_even_when_diagnostic_cover_is_valid"
+        "embed::source::origin_tests::root_metadata_adds_one_borrow_without_plain_preparation_allocations",
+        "embed::source::origin_tests::shared_and_empty_buffers_do_not_create_document_identity"
       ]
     },
     {
-      "id": 11236466493,
-      "name": "rust-test-shard-3-37027771862-1",
-      "bytes": 92561,
-      "sha256": "4cc3564684a7e27b45e3c10ae23013384dc6b1822301d8362df52cfeeb7193e8",
-      "jobId": 110908324583,
+      "id": 11240313788,
+      "name": "rust-test-shard-3-37037590949-1",
+      "bytes": 91005,
+      "sha256": "b96ce099b216fae057c3074b5cbe417600de5d3b1b23924d4684b5b63bc1bb56",
+      "jobId": 110940809434,
       "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (3/4)",
       "shard": 3,
       "binary": "vize_l1",
       "cases": [
-        "edit::tests::stale_version_reopened_key_and_equal_foreign_buffer_never_apply",
-        "edit::tests::prepared_identity_slices_interpolation_and_foreign_equal_roots_stay_bound"
+        "edit::tests::prepared_identity_slices_interpolation_and_foreign_equal_roots_stay_bound",
+        "edit::tests::stale_version_reopened_key_and_equal_foreign_buffer_never_apply"
       ]
     },
     {
-      "id": 11236581327,
-      "name": "rust-test-shard-4-37027771862-1",
-      "bytes": 96820,
-      "sha256": "29fb0a5dfd3ef01b848a78e17072968e890d2e6ccbabd56ad044eb0ae272a704",
-      "jobId": 110908324547,
+      "id": 11240733500,
+      "name": "rust-test-shard-4-37037590949-1",
+      "bytes": 96375,
+      "sha256": "2bf78f321304c1df5de466532c618b64bcd6a3027ad88ec5301dfadcd8212f67",
+      "jobId": 110940809463,
       "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (4/4)",
       "shard": 4,
       "binary": "vize_l1",
       "cases": [
-        "embed::source::origin_tests::trimmed_interpolation_retains_whole_input_and_entity_spelling",
         "edit::tests::checked_spans_reject_reversed_out_of_bounds_and_non_utf8_ranges",
-        "edit::tests::shared_and_empty_bytes_still_require_actual_distinct_snapshot_keys"
+        "edit::tests::shared_and_empty_bytes_still_require_actual_distinct_snapshot_keys",
+        "embed::source::origin_tests::trimmed_interpolation_retains_whole_input_and_entity_spelling"
       ]
     }
   ]
