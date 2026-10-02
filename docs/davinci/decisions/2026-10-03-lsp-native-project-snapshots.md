@@ -66,3 +66,17 @@ Program/component receipts are still required. Production LSP replacement waits
 for #6883 closure; native File/product/runtime comparison, whole-history closure,
 all instruction ceilings, fresh Actions, protected queue and actual merge remain
 pending. Publish this decision with the paired #6883 comment in the same change.
+
+Current provider publication is independently verified at
+`860dfb87802d871352e9a6bbb95ba33605eaa607` in native Stack #7436
+(#7434/#7435); terminal provider merge is still pending. The original consumer
+receipt preserves its preparation-time public-verification false value. This
+additive record corrects that current transport fact without claiming execution.
+The native Program campaign exposed two inherited tooling witnesses that assumed
+fixed workspace/differential step positions. This consumer applies the same
+exact named-step lookup and TSGO envelope; the original workspace condition,
+eleven differential commands, argument/count checks and simulated failure exit
+remain intact. All four affected tooling tests pass locally. Original eighteen
+host/edit/parser test functions and all actual provider source bytes remain
+unchanged. Whole feature Actions, all100, actual provider merge and protected
+consumer acceptance are still pending; no Cargo build or installation ran locally.

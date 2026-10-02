@@ -10,6 +10,7 @@ runs:
   steps:
     - name: Test actual host snapshots and native source edits
       shell: bash
+      env: { VIZE_TEST_REQUIRE_TSGO: "1" }
       run: |
         cargo test --locked -p vize_maestro --lib source_project::tests:: -- --nocapture
         cargo test --locked -p vize_maestro --features experimental-source-project --lib source_project:: -- --nocapture
