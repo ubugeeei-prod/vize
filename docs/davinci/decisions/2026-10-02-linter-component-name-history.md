@@ -78,3 +78,17 @@ snapshot deltas, the whole original commit or the history denominator. The
 503 candidate touches are still an inventory, not accepted requirements.
 Native handled/equivalent/paired comparisons remain zero; #6881 stays open.
 No parser, production rule, observer mode or product route is changed.
+
+## Temporary authenticated artifact transport
+
+Original capture head `9c08df5812d24f164254abfa727b02c9d583c41f` ran in
+[Check full 36967214570](https://github.com/ubugeeei-prod/vize/actions/runs/36967214570),
+attempt 1. Its `test-scripts` job `110713462355` succeeded, including actual
+source-built tests and upload. Artifact `11210836312` has service ZIP SHA256
+`709774db6915323ff5a87f14bb564398928e36efef0ea351b7f26e6ca222fb1d`.
+A temporary read-only Node transport verifies the literal ZIP, every entry's
+CRC and full inventory, source/run/job identity and host observer binary hash.
+It emits complete selected observations, receipts, logs and original input
+bytes as lossless hash frames. The binary stays on the host and does not run.
+Transport supplies no new observations, fixture equivalence or native credit;
+local validation, immutable registration and final source/queue checks remain.

@@ -1,0 +1,16 @@
+{
+  "repository": "ubugeeei-prod/vize",
+  "runId": 36967214570,
+  "attempt": 1,
+  "jobId": 110713462355,
+  "jobName": "test-scripts",
+  "artifactId": 11210836312,
+  "artifactName": "formatter-api-corpus-36967214570-1-test-scripts-full",
+  "artifactBytes": 19576089,
+  "artifactSha256": "709774db6915323ff5a87f14bb564398928e36efef0ea351b7f26e6ca222fb1d",
+  "source": "9c08df5812d24f164254abfa727b02c9d583c41f",
+  "tree": "165b91787d2515e69657ca0bacd1bde082bf940a",
+  "branch": "test/linter-component-name-capture-4c-20261002",
+  "casesBlob": "74442325157e5d9af85df9a654c124d7e24f99be",
+  "casesSha256": "867a29d7c0a92c17d59fcaa6063be1e3649fb92375024fcd2932a57f27fe062c"
+}
