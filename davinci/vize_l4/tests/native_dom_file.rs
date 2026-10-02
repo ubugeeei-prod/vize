@@ -5,7 +5,7 @@ mod support;
 use support::{construct, script};
 use vize_l0::Allocator;
 use vize_l1_to_l2::vue_file::VueFileProducer;
-use vize_l2::lang::js::ProgramInput;
+use vize_l2::{file::Namespace, lang::js::ProgramInput};
 use vize_l3::decision::{build_dom_file_decisions, dom::DomUnsupported};
 use vize_l4::module::assemble_template;
 use vize_l4::runtime::{Runtime, vocabulary};
@@ -159,8 +159,27 @@ fn const_initializers_and_setup_shadowing_never_authorize_context_access() {
         .unwrap()
         .declaration()
         .unwrap();
-    assert_eq!(declaration.unit, vue.setup().unwrap().unit());
-    assert_ne!(declaration.unit, vue.ordinary().unwrap().unit());
+    assert_eq!(declaration.scope, vue.setup().unwrap().scope());
+    assert_eq!(
+        row.binding(use_site.binding).unwrap().id(),
+        vue.file()
+            .lookup(vue.setup().unwrap().scope(), "msg", Namespace::Value)
+            .unwrap()
+            .id()
+    );
+    assert_ne!(
+        use_site.binding,
+        vue.file()
+            .lookup(vue.ordinary().unwrap().scope(), "msg", Namespace::Value)
+            .unwrap()
+            .id()
+    );
+    assert!(declaration.span.start >= setup_block.span().start);
+    assert!(declaration.span.end <= setup_block.span().end);
+    assert_eq!(
+        source.get(declaration.span.start as usize..declaration.span.end as usize),
+        Some("msg")
+    );
     let recorded = emit_file::<Recorded>(&analysis).unwrap_err();
     let plain = emit_file::<NoLinks>(&analysis).unwrap_err();
     assert_eq!(recorded, plain);

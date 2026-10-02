@@ -15,7 +15,7 @@ return no partial writer and retain the original analysis/source observations.
 Eight genuine Program/Vue Component/File/L3 pipelines match every complete
 Vue 3.5.35 template-module byte under the recorded six-parameter render options.
 Recorded/NoLinks agree. Real runtime execution, entity/Unicode/comment links,
-setup shadowing, equal numeric foreign owners and L3 special/zero-ref refusals
+setup scope/binding shadowing, equal numeric foreign owners and L3 special/zero-ref refusals
 are covered. Fifty-one L4 unit laws, four genuine file integration laws and
 strict whole-source production Clippy pass; the DOM skeleton ratchet falls from
 four to three. Evidence uses authenticated source libraries, not a whole-current

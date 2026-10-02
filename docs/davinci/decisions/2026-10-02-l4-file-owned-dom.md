@@ -58,7 +58,8 @@ Real owner laws retain each factory scope and original AST. Equal numeric node
 or binding IDs in separate files never authenticate a foreign owner. Foreign
 ASTs and referenced expressions refuse before expression-writer mutation,
 preserving existing text, indentation, helpers and links. A genuine setup
-declaration shadowing an ordinary declaration is resolved to its actual unit,
+declaration shadowing an ordinary declaration is resolved to its actual setup
+scope, same-file binding identity and authored declaration location,
 then refused for missing runtime access even after an earlier literal binding.
 Zero-reference arrays and special attributes retain the existing L3 refusal
 kind, original binding/expression span and whole source.
@@ -94,6 +95,11 @@ these fixtures. File-family completeness does not certify an entire SFC:
 carrying all descriptor/native holes through the authentic whole driver into
 the final file owner is an upstream prerequisite. No public boolean or receipt
 is introduced to imitate that capability.
+
+The setup-shadow law uses genuine same-file scope/binding lookups and authored
+declaration spans. It does not depend on the older direct `Declaration.unit`
+field; the corrected provider's separate Script/Template origins grant no
+additional runtime access or template admission here.
 
 ## TODO
 
