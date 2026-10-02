@@ -129,6 +129,10 @@ sink and produces no links. Product/test-owned output and fixture vectors stay
 outside the existing level storage inventory's scope; no classifier extension,
 fabricated product rows, allocation exemption or budget change is introduced.
 
+The existing compiler consumer migration shard is regenerated with its original
+scanner. It adds seven observed manifest/source/test records for the native entry;
+the current inventory check passes without a classifier or scope extension.
+
 The adapter adds no route selection or performance allowance. Existing product
 defaults and all five fix-history gates remain in force. Final current-source
 provider publication ancestry, whole product Cargo/Actions, full 100 performance probes,

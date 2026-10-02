@@ -1,6 +1,7 @@
 consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	l1	L1	stage	vize_l1	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	old_ast	old AST/parser	old	vize_armature	legacy	1
 compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	croquis	Croquis analysis	old	vize_croquis	legacy	1
@@ -210,6 +211,12 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/module_shape.rs	43	carton	C
 compiler	Compiler	source	crates/vize_atelier_sfc/src/module_shape.rs	43	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/module_shape.rs	43	raw_oxc	raw OXC	raw	oxc_ast	raw	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/module_shape.rs	43	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/native.rs	6	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/native.rs	6	l1	L1	stage	vize_l1	preferred	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/native.rs	6	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/native/tests.rs	2	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/native/tests.rs	2	l1	L1	stage	vize_l1	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/native/tests.rs	2	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/parse_tests.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/rewrite_default.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/rewrite_default.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
