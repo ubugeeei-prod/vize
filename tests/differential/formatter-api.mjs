@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { compareBytes } from "./compare.mjs";
 import { sha256 } from "./manifest.mjs";
+import { resolvePreservedFormatterSource } from "./formatter-history-source-artifact.ts";
 import { validateObserverReceipt } from "./formatter-api-build.mjs";
 import {
   assertFormatterError,
@@ -27,6 +28,8 @@ function immutableArtifact(root, artifact) {
   const relative = path.relative(fs.realpathSync(root), resolved);
   assert(relative && !relative.startsWith("..") && !path.isAbsolute(relative));
   assert.match(artifact.sha256, /^[a-f0-9]{64}$/);
+  const preserved = resolvePreservedFormatterSource(root, artifact);
+  if (preserved) return preserved;
   const bytes = fs.readFileSync(resolved);
   assert.equal(sha256(bytes), artifact.sha256, `fixture bytes changed: ${artifact.path}`);
   return bytes;

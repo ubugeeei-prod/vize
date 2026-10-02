@@ -12,6 +12,7 @@ use vize_glyph::{
     FormatError, FormatOptions, VueVersion, format_json, format_jsonc, format_script, format_sfc,
     format_sfc_with_vue_version, format_style, format_template, format_template_with_vue_version,
 };
+use vize_l0::{ToCompactString, cstr};
 
 fn invalid(message: impl Into<std::string::String>) -> FormatError {
     io::Error::new(io::ErrorKind::InvalidInput, message.into()).into()
@@ -45,18 +46,18 @@ fn configured_options(
                 let Some((json, tail)) = tail.split_first() else {
                     return Err(invalid("missing options JSON"));
                 };
-                let value: serde_json::Value =
-                    serde_json::from_str(json).map_err(|error| invalid(error.to_string()))?;
+                let value: serde_json::Value = serde_json::from_str(json)
+                    .map_err(|error| invalid(error.to_compact_string()))?;
                 let Some(object) = value.as_object() else {
                     return Err(invalid("formatter options must be an object"));
                 };
                 options = serde_json::from_value(value.clone())
-                    .map_err(|error| invalid(error.to_string()))?;
-                let actual =
-                    serde_json::to_value(&options).map_err(|error| invalid(error.to_string()))?;
+                    .map_err(|error| invalid(error.to_compact_string()))?;
+                let actual = serde_json::to_value(&options)
+                    .map_err(|error| invalid(error.to_compact_string()))?;
                 for (key, value) in object {
                     if actual.get(key) != Some(value) {
-                        return Err(invalid(format!("unknown or noncanonical option: {key}")));
+                        return Err(invalid(cstr!("unknown or noncanonical option: {key}")));
                     }
                 }
                 configured = true;
@@ -120,10 +121,16 @@ fn observe() -> Result<ExitCode, FormatError> {
     }
     if api == "--options-json" {
         let mut value =
-            serde_json::to_value(&options).map_err(|error| invalid(error.to_string()))?;
-        value["skipScriptStabilization"] = options.skip_script_stabilization.into();
+            serde_json::to_value(&options).map_err(|error| invalid(error.to_compact_string()))?;
+        let Some(object) = value.as_object_mut() else {
+            return Err(invalid("serialized formatter options must be an object"));
+        };
+        object.insert(
+            "skipScriptStabilization".into(),
+            options.skip_script_stabilization.into(),
+        );
         if let Some(version) = vue_version {
-            value["vueVersion"] = version.as_str().into();
+            object.insert("vueVersion".into(), version.as_str().into());
         }
         writeln!(io::stdout().lock(), "{value}")?;
         return Ok(ExitCode::SUCCESS);

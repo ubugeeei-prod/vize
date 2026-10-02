@@ -5,16 +5,6 @@ use super::{custom_attribute_priority, format_directive_value, should_format_exp
 use crate::options::FormatOptions;
 use vize_l0::{String, ToCompactString, cstr};
 
-/// Normalize directive shorthands and assign sort priority.
-#[cfg(test)]
-pub(crate) fn normalize_attribute(
-    name: &str,
-    value: Option<String>,
-    options: &FormatOptions,
-) -> (String, Option<String>, u8, bool) {
-    normalize_attribute_with_vue_version(name, value, options, crate::VueVersion::V3)
-}
-
 pub(crate) fn normalize_attribute_with_vue_version(
     name: &str,
     value: Option<String>,
