@@ -78,6 +78,30 @@ whole current workspace or production SSR/Vapor build. Exact-head Actions,
 frontend/full compatibility suites and unchanged strict instructions remain
 required before actual merge.
 
+## SSR emitter source policy
+
+The SSR emitter policy inventories every nested Rust source and follows
+ordinary module registrations from `emit.rs`. Only actual attached
+`#[cfg(test)]` module edges and their exclusively reachable descendants
+establish a test-only fixture allowance. Any production route overrides it;
+unregistered files remain checked regardless of file or directory names.
+The existing token and item masker also handles inline test-only items.
+Path metadata, including `cfg_attr`, includes and symbolic entry or
+descendant routing fail closed. The original forbidden legacy-AST pattern,
+bridge fixture assertions, Rust implementation and budgets remain unchanged.
+
+Two exact-source local policy laws pass: the actual emitter and a filesystem
+fixture that accepts a genuine test-only oracle subtree and rejects nested
+production reads, spoofed or removed test gates, mixed production conditions,
+additional production routes, unregistered files and unknown routing. The
+unchanged compile-bridge and counter laws passed on hosted
+`64570ac854076a8835e3aef9f3e26cae9ac12979`. The local runner extracts only
+the two policy-law bodies to avoid the original module's unrelated eager
+Cargo metadata import; it uses no mock metadata or Cargo build. The whole
+four-law module, full compatibility and Fuzz suites, and unchanged 100-probe
+instruction gates require fresh exact-head Actions before protected merge.
+This CI correction supplies no native admission or completion credit.
+
 ## Remaining work
 
 - Native binding emission and a real native-binding dump grammar remain
