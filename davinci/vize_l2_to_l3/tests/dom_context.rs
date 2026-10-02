@@ -31,16 +31,16 @@ fn js<'a>(expression: ExprRef<'a>) -> Option<&'a JsExpr<'a>> {
     }
 }
 
-fn id(index: u32) -> NodeId {
-    NodeId::from_index(index).expect("fixture id fits")
+fn id(index: u32) -> Option<NodeId> {
+    NodeId::from_index(index)
 }
 
 #[test]
 fn complete_context_refs_supply_semantics_for_text_and_ordered_properties() {
     let a = Allocator::default();
-    let x = expression(&a, "x");
-    let y = expression(&a, "y");
-    let sum = expression(&a, "x + y");
+    let x = expression(&a, "x").unwrap();
+    let y = expression(&a, "y").unwrap();
+    let sum = expression(&a, "x + y").unwrap();
     let tables = [
         resolve_expression(js(x).expect("retained JS"), &ContextBindings).unwrap(),
         resolve_expression(js(y).expect("retained JS"), &ContextBindings).unwrap(),
@@ -60,21 +60,25 @@ fn complete_context_refs_supply_semantics_for_text_and_ordered_properties() {
             ],
             [text(&a), interpolation(&a, sum)],
         )],
-    ));
+    ))
+    .unwrap();
     let analysis = build_dom_decisions(&artifact, &policy).unwrap();
     let facts = analysis.dom().unwrap();
     assert!(facts.unsupported().is_empty());
-    let node = facts.node(id(0)).unwrap();
+    let node = facts.node(id(0).unwrap()).unwrap();
     assert!(
         node.changes.text && node.changes.class && node.changes.style && node.changes.properties
     );
-    assert_eq!(node.dynamic_property_bindings, [id(1), id(2)]);
+    assert_eq!(
+        node.dynamic_property_bindings,
+        [id(1).unwrap(), id(2).unwrap()]
+    );
     assert!(
-        matches!(&node.children, DomChildren::Text(group) if group.dynamic && group.nodes == [id(5),id(6)])
+        matches!(&node.children, DomChildren::Text(group) if group.dynamic && group.nodes == [id(5).unwrap(),id(6).unwrap()])
     );
     for index in 1..=4 {
         assert_eq!(
-            facts.binding(id(index)).unwrap().value,
+            facts.binding(id(index).unwrap()).unwrap().value,
             ValueKind::ContextDependent
         );
     }
@@ -83,15 +87,15 @@ fn complete_context_refs_supply_semantics_for_text_and_ordered_properties() {
 #[test]
 fn missing_or_nondeclared_bindings_reject_the_whole_expression_semantics() {
     let a = Allocator::default();
-    let sum = expression(&a, "x + y");
+    let sum = expression(&a, "x + y").unwrap();
     let tables = [resolve_expression(js(sum).expect("retained JS"), &ContextBindings).unwrap()];
     let declared = [BindingId::new(1)];
     let policy = ContextOnly::new(&tables, &declared);
     assert!(!policy.is_context_only(js(sum).expect("retained JS")));
-    let artifact = seal(region(&a, [interpolation(&a, sum)]));
+    let artifact = seal(region(&a, [interpolation(&a, sum)])).unwrap();
     let analysis = build_dom_decisions(&artifact, &policy).unwrap();
     let rejection = analysis.dom().unwrap().unsupported().first().unwrap();
-    assert_eq!(rejection.node, id(0));
+    assert_eq!(rejection.node, id(0).unwrap());
     assert_eq!(rejection.span, sum.span());
     assert_eq!(rejection.reason, DomUnsupported::Expression);
     assert!(
@@ -103,8 +107,8 @@ fn missing_or_nondeclared_bindings_reject_the_whole_expression_semantics() {
 #[test]
 fn equal_source_with_another_retained_ast_never_borrows_resolution_facts() {
     let a = Allocator::default();
-    let first = expression(&a, "x");
-    let second = expression(&a, "x");
+    let first = expression(&a, "x").unwrap();
+    let second = expression(&a, "x").unwrap();
     let tables = [resolve_expression(js(first).expect("retained JS"), &ContextBindings).unwrap()];
     let declared = [BindingId::new(1)];
     let policy = ContextOnly::new(&tables, &declared);
@@ -120,7 +124,7 @@ fn equal_source_with_another_retained_ast_never_borrows_resolution_facts() {
 #[test]
 fn coordinate_bridges_must_be_the_exact_retained_identity() {
     let a = Allocator::default();
-    let expression = expression(&a, "x");
+    let expression = expression(&a, "x").unwrap();
     let original = js(expression).expect("retained JS");
     let bridge = JsCoordinates::checked(SOURCE, "x", original.span, 0, &[]).unwrap();
     let retained = JsExpr::from_retained_in(&a, original.ast, "x", original.span, bridge).unwrap();
@@ -144,10 +148,10 @@ fn zero_reference_nonliterals_do_not_gain_const_or_dynamic_proof() {
     let tables = [resolve_expression(zero, &ContextBindings).unwrap()];
     assert!(tables.first().unwrap().occurrences().is_empty());
     assert!(!ContextOnly::new(&tables, &[]).is_context_only(zero));
-    let literal = expression(&a, "1");
+    let literal = expression(&a, "1").unwrap();
     let tables = [resolve_expression(js(literal).expect("retained JS"), &ContextBindings).unwrap()];
     let policy = ContextOnly::new(&tables, &[]);
-    let artifact = seal(region(&a, [interpolation(&a, literal)]));
+    let artifact = seal(region(&a, [interpolation(&a, literal)])).unwrap();
     let analysis = build_dom_decisions(&artifact, &policy).unwrap();
     assert!(analysis.dom().unwrap().unsupported().is_empty());
 }
@@ -155,7 +159,7 @@ fn zero_reference_nonliterals_do_not_gain_const_or_dynamic_proof() {
 #[test]
 fn mixed_child_text_is_dynamic_without_changing_parent_direct_text_eligibility() {
     let a = Allocator::default();
-    let x = expression(&a, "x");
+    let x = expression(&a, "x").unwrap();
     let tables = [resolve_expression(js(x).expect("retained JS"), &ContextBindings).unwrap()];
     let declared = [BindingId::new(1)];
     let policy = ContextOnly::new(&tables, &declared);
@@ -166,9 +170,10 @@ fn mixed_child_text_is_dynamic_without_changing_parent_direct_text_eligibility()
             [],
             [comment(&a), element(&a, [], []), interpolation(&a, x)],
         )],
-    ));
+    ))
+    .unwrap();
     let analysis = build_dom_decisions(&artifact, &policy).unwrap();
-    let node = analysis.dom().unwrap().node(id(0)).unwrap();
+    let node = analysis.dom().unwrap().node(id(0).unwrap()).unwrap();
     assert!(!node.changes.text);
     assert!(matches!(&node.children, DomChildren::Array(groups)
         if matches!(groups.last(), Some(vize_l3::decision::dom::DomChild::Text(group)) if group.dynamic)));

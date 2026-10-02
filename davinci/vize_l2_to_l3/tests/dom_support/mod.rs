@@ -11,11 +11,13 @@ use vize_l2::{
 pub const SOURCE: &str = "x + y 1 'a' id class style";
 pub const SPAN: Span = Span::new(0, SOURCE.len() as u32);
 
-pub fn expression<'a>(allocator: &'a Allocator, text: &'a str) -> ExprRef<'a> {
-    let start = SOURCE
-        .find(text)
-        .expect("expression exists in fixture source") as u32;
-    ExprRef::parse_js_in(allocator, text, Span::new(start, start + text.len() as u32))
+pub fn expression<'a>(allocator: &'a Allocator, text: &'a str) -> Option<ExprRef<'a>> {
+    let start = SOURCE.find(text)? as u32;
+    Some(ExprRef::parse_js_in(
+        allocator,
+        text,
+        Span::new(start, start + text.len() as u32),
+    ))
 }
 
 pub fn region<'a>(allocator: &'a Allocator, ops: impl IntoIterator<Item = Op<'a>>) -> Region<'a> {
@@ -24,14 +26,14 @@ pub fn region<'a>(allocator: &'a Allocator, ops: impl IntoIterator<Item = Op<'a>
     }
 }
 
-pub fn seal(root: Region<'_>) -> Artifact<'_> {
+pub fn seal(root: Region<'_>) -> Result<Artifact<'_>, &'static str> {
     Artifact::try_new(ArtifactParts {
         source: SOURCE,
         root,
         scopes: Default::default(),
         provenance: Default::default(),
     })
-    .expect("canonical DOM fixture")
+    .map_err(|_| "canonical DOM fixture")
 }
 
 pub fn element<'a>(
