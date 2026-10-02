@@ -58,3 +58,18 @@ Before publishing, pair this record and the existing LSP paragraph with a #6883
 issue comment. The frozen four-layer LSP packet and captured 514b runtime evidence
 remain untouched. This source draft gives no native runtime/comparison,
 whole-history closure, protected acceptance or actual merge credit.
+
+The actual campaign `37037019953` at
+`55a3cc81e7f8803f4718197898599ff5550f1ad0` passed the complete Rust job
+`110937635295`: all nine named adapter tests, the no-default feature check,
+warning-denying feature Clippy and the unchanged workspace/differential recipe.
+Its exact-head all100 run `37037023540` also passed every existing ceiling.
+Whole Check still failed tooling job `110937634723`: two CI witnesses assumed
+the workspace and differential steps occupied positions zero and one. The new
+feature step made those positions invalid. The correction finds the two original
+steps by their exact names and keeps their original condition, eleven commands,
+argument/count checks, TSGO requirement and simulated failure exit intact. The
+new native step carries the same TSGO environment. All four affected tooling
+tests pass locally; no Cargo build or dependency installation was performed
+locally. The original failed logs remain retained. A new source head needs its
+own whole Actions and all100; the prior failed full run receives no green credit.

@@ -10,6 +10,7 @@ runs:
   steps:
     - name: Test native Program comment projection
       shell: bash
+      env: { VIZE_TEST_REQUIRE_TSGO: "1" }
       run: |
         cargo test --locked -p vize_maestro --features experimental-source-folding --lib source_folding::tests:: -- --nocapture
         cargo check --locked -p vize_maestro --no-default-features --features experimental-source-folding
