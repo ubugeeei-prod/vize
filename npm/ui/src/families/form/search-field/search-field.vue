@@ -250,8 +250,8 @@ defineExpose(exposed);
   <div
     role="search"
     data-vize-ui="search-field"
-    :data-state="dataState"
-    :data-empty="dataEmpty"
+    :data-state
+    :data-empty
     :data-composing="composing ? 'true' : 'false'"
   >
     <input
@@ -267,14 +267,14 @@ defineExpose(exposed);
       :autocomplete
       :inputmode="inputMode"
       :enterkeyhint="enterKeyHint"
-      :aria-label="ariaLabel"
-      :aria-labelledby="ariaLabelledby"
-      :aria-describedby="ariaDescribedby"
+      :aria-label
+      :aria-labelledby
+      :aria-describedby
       :aria-errormessage="ariaInvalidValue === undefined ? undefined : ariaErrormessage"
       :aria-invalid="ariaInvalidValue"
       data-vize-ui="search-field-input"
-      :data-state="dataState"
-      :data-empty="dataEmpty"
+      :data-state
+      :data-empty
       :data-composing="composing ? 'true' : 'false'"
       @input="onInput"
       @change="onChange"
@@ -289,7 +289,7 @@ defineExpose(exposed);
       :disabled="clearDisabled"
       :aria-label="clearLabel"
       data-vize-ui="search-field-clear"
-      :data-empty="dataEmpty"
+      :data-empty
       @click="onClearClick"
     >
       <slot name="clear" v-bind="clearSlotState" />

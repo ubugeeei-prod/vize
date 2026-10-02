@@ -64,8 +64,8 @@ function onChange(event: Event): void {
     :checked="state === 'checked'"
     :disabled="context.selectAllDisabled.value"
     :aria-checked="state === 'indeterminate' ? 'mixed' : state === 'checked' ? 'true' : 'false'"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     part="select-all"
     data-vize-ui="checkbox-group-select-all"
     :data-state="state"

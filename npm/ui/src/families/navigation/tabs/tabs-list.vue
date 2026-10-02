@@ -88,9 +88,9 @@ defineExpose(exposed);
     :id="context.listId.value"
     ref="element"
     role="tablist"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-orientation="context.orientation.value"
     data-vize-ui="tabs-list"
     part="list"

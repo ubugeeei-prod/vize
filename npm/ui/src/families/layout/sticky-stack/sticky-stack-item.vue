@@ -105,7 +105,7 @@ defineExpose({ element, top, stuck, measure });
     :data-disabled="disabled ? '' : undefined"
     :style="itemStyle"
   >
-    <slot :top="top" :stuck="stuck" />
+    <slot :top :stuck />
   </component>
 </template>
 

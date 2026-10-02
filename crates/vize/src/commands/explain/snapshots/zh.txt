@@ -5163,12 +5163,16 @@ vue/prefer-props-shorthand · lint 规则
   <MyComponent :foo="foo" />
   <MyComponent :user-name="userName" />
   <MyComponent :count="count" :name="name" />
+  <span :style="style" />
+  <div :aria-label="ariaLabel" />
 
 正确示例:
   <!-- Shorthand syntax (Vue 3.4+) -->
   <MyComponent :foo />
   <MyComponent :user-name />
   <MyComponent :count :name />
+  <span :style />
+  <div :aria-label />
   
   <!-- Different names are fine -->
   <MyComponent :foo="bar" />

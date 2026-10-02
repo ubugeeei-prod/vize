@@ -263,8 +263,8 @@ defineExpose(exposed);
       aria-roledescription="2D slider"
       v-bind="thumbProps"
       :aria-label="label"
-      :aria-labelledby="ariaLabelledby"
-      :aria-describedby="ariaDescribedby"
+      :aria-labelledby
+      :aria-describedby
       :aria-valuemin="xMin"
       :aria-valuemax="xMax"
       :aria-valuenow="xValue"

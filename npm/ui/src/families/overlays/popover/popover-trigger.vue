@@ -84,7 +84,7 @@ defineExpose(exposed);
     ref="element"
     :type
     :disabled="disabledState"
-    :aria-label="ariaLabel"
+    :aria-label
     aria-haspopup="dialog"
     :aria-expanded="context.open.value ? 'true' : 'false'"
     :aria-controls="context.contentId.value"

@@ -76,9 +76,9 @@ function onClick(event: MouseEvent): void {
     :data-state="active ? 'active' : 'inactive'"
     @click="onClick"
   >
-    <slot :active="active" />
+    <slot :active />
     <span v-if="badge !== undefined" part="badge" data-vize-ui="bottom-navigation-badge">
-      <slot name="badge" :badge="badge">{{ badge }}</slot>
+      <slot name="badge" :badge>{{ badge }}</slot>
     </span>
   </component>
 </template>

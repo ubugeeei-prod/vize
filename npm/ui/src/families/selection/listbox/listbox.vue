@@ -316,9 +316,9 @@ defineExpose(exposed);
     :id="context.id.value"
     ref="element"
     :aria-activedescendant="listboxActiveDescendant"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-orientation="orientationState"
     :aria-multiselectable="selectionModeState === 'multiple' ? 'true' : undefined"
     :aria-errormessage="ariaInvalidValue === undefined ? undefined : ariaErrormessage"
@@ -334,7 +334,7 @@ defineExpose(exposed);
     :data-orientation="orientationState"
     :data-selection-mode="selectionModeState"
     :data-selection-count="selectionCount"
-    :data-value="dataValue"
+    :data-value
   >
     <slot v-bind="slotState" />
     <slot v-if="registry.items.value.length === 0" name="empty" v-bind="slotState" />

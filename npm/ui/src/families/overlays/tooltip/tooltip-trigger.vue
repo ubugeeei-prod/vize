@@ -94,7 +94,7 @@ defineExpose(exposed);
     v-bind="hover.hoverProps"
     :type
     :disabled="disabledState"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-describedby="context.open.value ? context.contentId.value : undefined"
     data-vize-ui="tooltip-trigger"
     part="trigger"

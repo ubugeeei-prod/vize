@@ -203,7 +203,7 @@ defineExpose(exposed);
               ref="element"
               v-bind="menu.contentProps"
               :dir="tree.dir.value"
-              :aria-label="ariaLabel"
+              :aria-label
               :aria-labelledby="labelledby"
               data-vize-ui="menu-content"
               :data-menu-kind="tree.kind"

@@ -80,7 +80,7 @@ defineExpose({ total, refresh });
 
 <template>
   <component :is="as" data-vize-ui="sticky-stack" :style="rootStyle">
-    <slot :total="total" />
+    <slot :total />
   </component>
 </template>
 

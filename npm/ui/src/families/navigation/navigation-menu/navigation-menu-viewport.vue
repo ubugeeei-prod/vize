@@ -64,7 +64,7 @@ onScopeDispose(() => {
 <template>
   <div
     aria-hidden="true"
-    :style="style"
+    :style
     data-vize-ui="navigation-menu-viewport"
     part="viewport"
     :data-state="state"

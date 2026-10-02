@@ -282,7 +282,7 @@ defineExpose(exposed);
     ref="root"
     data-vize-ui="slider"
     part="root"
-    :data-state="dataState"
+    :data-state
     :data-orientation="orientationState"
     :data-dir="directionState"
     :data-value="currentValue"
@@ -308,9 +308,9 @@ defineExpose(exposed);
       :disabled="disabledState"
       :required="requiredState"
       :dir="directionState"
-      :aria-label="ariaLabel"
-      :aria-labelledby="ariaLabelledby"
-      :aria-describedby="ariaDescribedby"
+      :aria-label
+      :aria-labelledby
+      :aria-describedby
       :aria-errormessage="ariaInvalidValue === undefined ? undefined : ariaErrormessage"
       :aria-invalid="ariaInvalidValue"
       :aria-orientation="orientationState"
@@ -319,7 +319,7 @@ defineExpose(exposed);
       :orient="orientationState === 'vertical' ? 'vertical' : undefined"
       data-vize-ui="slider-input"
       part="control"
-      :data-state="dataState"
+      :data-state
       :data-orientation="orientationState"
       :data-dir="directionState"
       :data-value="currentValue"

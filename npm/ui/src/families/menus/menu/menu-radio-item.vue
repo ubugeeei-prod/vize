@@ -111,10 +111,10 @@ defineExpose({
     :data-highlighted="item.highlighted.value ? 'true' : undefined"
   >
     <slot
-      :checked="checked"
+      :checked
       :disabled="item.disabled.value"
       :highlighted="item.highlighted.value"
-      :state="state"
+      :state
     />
   </div>
 </template>

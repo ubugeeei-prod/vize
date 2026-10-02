@@ -317,7 +317,7 @@ defineExpose(exposed);
     :is="as"
     part="root"
     data-vize-ui="swipe-actions"
-    :data-state="dataState"
+    :data-state
     :data-open="state.value.value ?? undefined"
     :data-full-swipe="fullSwipeSide ?? undefined"
     :data-dir="dir"

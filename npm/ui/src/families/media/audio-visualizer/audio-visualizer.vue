@@ -173,7 +173,7 @@ defineExpose(exposed);
   <div
     ref="element"
     :role="ariaLabel === undefined ? undefined : 'img'"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-hidden="ariaLabel === undefined ? 'true' : undefined"
     data-vize-ui="audio-visualizer-root"
     part="root"

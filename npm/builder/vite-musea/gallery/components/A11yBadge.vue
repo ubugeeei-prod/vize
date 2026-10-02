@@ -71,7 +71,7 @@ const title = computed(() => {
 </script>
 
 <template>
-  <span v-show="count !== null" class="a11y-badge" :class="'severity-' + severity" :title="title">
+  <span v-show="count !== null" class="a11y-badge" :class="'severity-' + severity" :title>
     {{ count }}
   </span>
 </template>

@@ -71,7 +71,7 @@ function onKeydown(event: KeyboardEvent): void {
     ref="element"
     role="slider"
     tabindex="0"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-labelledby="ariaLabel === undefined ? context.ariaLabelledby.value : undefined"
     :aria-describedby="context.ariaDescribedby.value"
     :aria-errormessage="

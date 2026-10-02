@@ -276,7 +276,7 @@ defineExpose(exposed);
               ref="element"
               v-bind="contentBindings"
               tabindex="-1"
-              :aria-label="ariaLabel"
+              :aria-label
               :aria-labelledby="labelledby"
               :aria-multiselectable="context.multiple.value ? 'true' : undefined"
               :aria-required="context.required.value ? 'true' : undefined"

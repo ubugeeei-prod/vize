@@ -183,7 +183,7 @@ defineExpose(exposed);
     ref="element"
     type="button"
     :hidden="visible || focused ? undefined : true"
-    :aria-label="ariaLabel"
+    :aria-label
     data-vize-ui="back-to-top"
     part="root"
     :data-state="state"

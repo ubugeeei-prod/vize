@@ -171,7 +171,7 @@ function hasText(value: string | undefined): boolean {
     :aria-busy="loadingValue ? 'true' : undefined"
     :aria-label="ariaLabelledbyValue === undefined ? ariaLabelValue : undefined"
     :aria-labelledby="ariaLabelledbyValue"
-    :aria-describedby="ariaDescribedby"
+    :aria-describedby
     data-vize-ui="icon-button"
     part="root"
     :data-state="state"

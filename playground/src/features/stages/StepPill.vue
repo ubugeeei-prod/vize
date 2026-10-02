@@ -22,7 +22,7 @@ const emit = defineEmits<{
       `rung-${step.rung}`,
       { producer: step.producer, changed: step.changed, current },
     ]"
-    :title="title"
+    :title
     @click="() => emit('select')"
   >
     <span class="davinci-step-mark" aria-hidden="true"></span>

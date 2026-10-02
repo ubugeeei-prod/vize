@@ -135,7 +135,7 @@ defineExpose({ element, invalid: isInvalid, id: wiring.fieldId });
     :aria-describedby="describedBy"
     part="root"
     data-vize-ui="fieldset"
-    :data-state="dataState"
+    :data-state
     :data-invalid="isInvalid ? 'true' : 'false'"
   >
     <slot v-bind="slotState" />

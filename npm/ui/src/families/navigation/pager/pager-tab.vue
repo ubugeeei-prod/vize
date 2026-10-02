@@ -50,7 +50,7 @@ const tabProps = computed(() => ({
     :data-state="selected ? 'active' : 'inactive'"
     @click="onClick"
   >
-    <slot :selected="selected" />
+    <slot :selected />
   </button>
 </template>
 

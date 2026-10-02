@@ -113,9 +113,9 @@ defineExpose({ element, focus });
     :aria-expanded="context.open.value ? 'true' : 'false'"
     :aria-controls="context.open.value ? context.listboxId.value : undefined"
     :aria-activedescendant="context.activeDescendant.value"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-required="context.required.value ? 'true' : undefined"
     :aria-invalid="context.invalid.value ? 'true' : undefined"
     :aria-errormessage="context.invalid.value ? ariaErrormessage : undefined"

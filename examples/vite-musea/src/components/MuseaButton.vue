@@ -19,7 +19,7 @@ defineArt("./MuseaButton.vue", {
     type="button"
     class="btn"
     :class="[`btn--${variant ?? 'default'}`, `btn--${size ?? 'md'}`, { 'btn--disabled': disabled }]"
-    :disabled="disabled"
+    :disabled
   >
     <slot />
   </button>

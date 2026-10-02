@@ -195,7 +195,7 @@ defineExpose(exposed);
     :tabindex="tabIndex"
     :aria-label="ariaLabelledbyValue === undefined ? ariaLabelValue : undefined"
     :aria-labelledby="ariaLabelledbyValue"
-    :aria-describedby="ariaDescribedby"
+    :aria-describedby
     :aria-disabled="unavailable && (!isNativeButton || writingValue) ? 'true' : undefined"
     :aria-busy="writingValue ? 'true' : undefined"
     data-vize-ui="copy-button"

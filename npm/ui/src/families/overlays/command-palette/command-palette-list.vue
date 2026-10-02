@@ -40,7 +40,7 @@ const listboxRole = { role: "listbox" } as const;
     :id="context.listId.value"
     ref="element"
     v-bind="listboxRole"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-busy="context.loading.value ? 'true' : undefined"
     :hidden="context.open.value ? undefined : true"
     data-vize-ui="command-palette-list"

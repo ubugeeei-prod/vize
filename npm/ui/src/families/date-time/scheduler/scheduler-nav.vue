@@ -37,7 +37,7 @@ function onClick(): void {
     :data-action="action"
     @click="onClick"
   >
-    <slot :action="action">{{
+    <slot :action>{{
       action === "previous" ? "‹" : action === "next" ? "›" : label
     }}</slot>
   </button>

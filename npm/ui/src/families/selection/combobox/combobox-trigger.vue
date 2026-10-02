@@ -48,7 +48,7 @@ defineExpose({ element });
     type="button"
     tabindex="-1"
     :disabled="context.disabled.value"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-expanded="context.open.value ? 'true' : 'false'"
     :aria-controls="context.open.value ? context.listboxId.value : undefined"
     data-vize-ui="combobox-trigger"

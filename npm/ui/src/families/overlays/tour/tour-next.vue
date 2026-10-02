@@ -55,7 +55,7 @@ function onClick(event: MouseEvent): void {
   <button
     type="button"
     :disabled="controlDisabled"
-    :aria-label="ariaLabel"
+    :aria-label
     data-vize-ui="tour-next"
     part="next"
     :data-state="context.state.value"

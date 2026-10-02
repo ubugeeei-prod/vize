@@ -358,16 +358,16 @@ defineExpose(exposed);
     :aria-valuemin="bounds.min"
     :aria-valuemax="bounds.max"
     :aria-valuetext="getValueText?.(value)"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-errormessage="ariaInvalidValue === undefined ? undefined : ariaErrormessage"
     :aria-invalid="ariaInvalidValue"
     :aria-disabled="disabled ? 'true' : undefined"
     :aria-readonly="readOnly ? 'true' : undefined"
     part="root"
     data-vize-ui="knob"
-    :data-state="dataState"
+    :data-state
     :style="rootStyle"
     @keydown="onKeydown"
     @pointerdown="drag.onPointerdown"

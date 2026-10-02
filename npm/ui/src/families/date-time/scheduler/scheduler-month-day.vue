@@ -89,7 +89,7 @@ function onKeydown(event: KeyboardEvent): void {
       part="more"
       :data-count="overflow"
     >
-      <slot name="more" :count="overflow" :day="day">+{{ overflow }}</slot>
+      <slot name="more" :count="overflow" :day>+{{ overflow }}</slot>
     </span>
   </td>
 </template>

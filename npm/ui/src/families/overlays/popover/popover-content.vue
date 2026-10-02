@@ -306,9 +306,9 @@ defineExpose(exposed);
               :role
               tabindex="-1"
               :aria-modal="context.modal.value ? 'true' : undefined"
-              :aria-label="ariaLabel"
-              :aria-labelledby="ariaLabelledby"
-              :aria-describedby="ariaDescribedby"
+              :aria-label
+              :aria-labelledby
+              :aria-describedby
               data-vize-ui="popover-content"
               part="content"
               :hidden="context.open.value ? undefined : true"

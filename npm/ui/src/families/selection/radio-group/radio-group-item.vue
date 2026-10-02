@@ -111,9 +111,9 @@ defineExpose(exposed);
     :checked
     :disabled="itemDisabled"
     :required="context.required.value"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     data-vize-ui="radio-group-item"
     part="item"
     :data-state="itemState"

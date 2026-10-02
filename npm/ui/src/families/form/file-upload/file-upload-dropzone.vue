@@ -285,9 +285,9 @@ defineExpose(exposed);
     :role="roleValue"
     :tabindex="interactive ? 0 : undefined"
     :aria-disabled="openOnClick && disabled ? 'true' : undefined"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     data-vize-ui="file-upload-dropzone"
     part="dropzone"
     :data-state="state"

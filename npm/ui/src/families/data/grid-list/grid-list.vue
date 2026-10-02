@@ -356,8 +356,8 @@ defineExpose(exposed);
     :id="listId"
     ref="element"
     role="grid"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :aria-rowcount="items.length"
     :aria-multiselectable="selectionMode === 'multiple' ? 'true' : undefined"
     data-vize-ui="grid-list"

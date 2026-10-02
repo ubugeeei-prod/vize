@@ -265,8 +265,8 @@ defineExpose(exposed);
     :id="baseId"
     ref="element"
     :role="feed ? 'feed' : undefined"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :aria-busy="busy ? 'true' : 'false'"
     data-vize-ui="infinite-scroll-root"
     part="root"

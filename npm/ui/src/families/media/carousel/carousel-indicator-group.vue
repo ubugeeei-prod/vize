@@ -41,8 +41,8 @@ defineExpose(exposed);
   <div
     ref="element"
     role="tablist"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :aria-orientation="context.orientation.value"
     data-vize-ui="carousel-indicator-group"
     part="indicator-group"

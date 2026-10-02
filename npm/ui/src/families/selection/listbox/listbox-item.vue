@@ -184,9 +184,9 @@ defineExpose(exposed);
     ref="element"
     :aria-selected="selected ? 'true' : 'false'"
     :aria-disabled="itemDisabled ? 'true' : undefined"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     data-vize-ui="listbox-item"
     part="item"
     :data-state="itemState"

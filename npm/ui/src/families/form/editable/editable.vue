@@ -333,7 +333,7 @@ defineExpose(exposed);
     ref="root"
     part="root"
     data-vize-ui="editable"
-    :data-state="dataState"
+    :data-state
     :data-empty="valueState.value.value.length === 0 ? 'true' : undefined"
     :data-disabled="disabled ? 'true' : undefined"
     :data-invalid="ariaInvalidValue === undefined ? undefined : 'true'"

@@ -118,7 +118,7 @@ defineExpose(exposed);
     ref="element"
     v-bind="menuProps"
     :aria-orientation="orientation"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-labelledby="ariaLabel ? undefined : context.triggerId.value"
     :hidden="context.open.value ? undefined : true"
     data-vize-ui="speed-dial-content"

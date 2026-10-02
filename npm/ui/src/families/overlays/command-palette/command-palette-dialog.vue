@@ -152,7 +152,7 @@ defineExpose(exposed);
       <DialogPortal :to :disabled="portalDisabled">
         <DialogOverlay />
         <DialogContent :aria-label>
-          <slot :open="isOpen" :close="close" />
+          <slot :open="isOpen" :close />
         </DialogContent>
       </DialogPortal>
     </DialogRoot>

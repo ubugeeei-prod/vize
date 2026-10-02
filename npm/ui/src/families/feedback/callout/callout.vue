@@ -179,7 +179,7 @@ defineExpose(exposed);
 <template>
   <component
     :is="as"
-    :id="id"
+    :id
     ref="element"
     part="root"
     :role="ariaState === 'decorative' ? undefined : role"

@@ -50,7 +50,7 @@ defineExpose(exposed);
     ref="element"
     type="button"
     :disabled
-    :aria-label="ariaLabel"
+    :aria-label
     data-vize-ui="pan-zoom-zoom-in"
     part="zoom-in"
     @click="onClick"

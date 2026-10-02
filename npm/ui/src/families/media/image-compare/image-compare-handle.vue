@@ -95,8 +95,8 @@ defineExpose(exposed);
     ref="element"
     v-bind="handleProps"
     :aria-label="label"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-labelledby
+    :aria-describedby
     :aria-orientation="context.orientation.value"
     aria-valuemin="0"
     aria-valuemax="100"

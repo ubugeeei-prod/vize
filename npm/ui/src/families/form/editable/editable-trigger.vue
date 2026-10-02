@@ -46,7 +46,7 @@ function onClick(): void {
     type="button"
     :hidden="!shown"
     :disabled="!context.interactive.value"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-controls="context.inputId.value"
     :part="`${action}-trigger`"
     data-vize-ui="editable-trigger"

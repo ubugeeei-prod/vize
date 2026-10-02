@@ -62,7 +62,7 @@ defineExpose({ scrollOnce: scroll.scrollOnce, update: scroll.update, visible: sc
     part="scroll-button"
     :data-direction="direction"
   >
-    <slot v-if="scroll.visible.value" :direction="direction" />
+    <slot v-if="scroll.visible.value" :direction />
   </div>
 </template>
 

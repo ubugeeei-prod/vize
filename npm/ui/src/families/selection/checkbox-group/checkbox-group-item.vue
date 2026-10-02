@@ -88,8 +88,8 @@ function onChange(event: Event): void {
     :checked
     :disabled="itemDisabled"
     :required="nativeRequired"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :aria-describedby="context.ariaDescribedby.value"
     :aria-invalid="context.ariaInvalid.value"
     :aria-errormessage="

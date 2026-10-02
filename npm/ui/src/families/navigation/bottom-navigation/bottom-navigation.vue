@@ -82,7 +82,7 @@ bottomNavigationContext.provide({
 <template>
   <nav
     :aria-label="ariaLabelledby === undefined ? ariaLabel : undefined"
-    :aria-labelledby="ariaLabelledby"
+    :aria-labelledby
     part="root"
     data-vize-ui="bottom-navigation"
     :data-count="destinations.length"

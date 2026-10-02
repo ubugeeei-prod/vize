@@ -49,7 +49,7 @@ const handlers = computed(() => ({
     part="action"
     :data-action="action"
   >
-    <slot :enabled="enabled" />
+    <slot :enabled />
   </button>
 </template>
 

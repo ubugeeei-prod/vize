@@ -100,7 +100,7 @@ defineExpose({
             :href="'#' + field.id"
             @click="(event) => onFieldLink(field, event)"
           >
-            <slot name="field" :field="field">{{ linkText(field) }}</slot>
+            <slot name="field" :field>{{ linkText(field) }}</slot>
           </a>
         </li>
       </ul>

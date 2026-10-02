@@ -4991,12 +4991,16 @@ invalid:
   <MyComponent :foo="foo" />
   <MyComponent :user-name="userName" />
   <MyComponent :count="count" :name="name" />
+  <span :style="style" />
+  <div :aria-label="ariaLabel" />
 
 valid:
   <!-- Shorthand syntax (Vue 3.4+) -->
   <MyComponent :foo />
   <MyComponent :user-name />
   <MyComponent :count :name />
+  <span :style />
+  <div :aria-label />
   
   <!-- Different names are fine -->
   <MyComponent :foo="bar" />

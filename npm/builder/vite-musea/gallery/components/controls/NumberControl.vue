@@ -23,7 +23,7 @@ const inputId = useId();
       v-model.number="model"
       type="number"
       class="control-input"
-      :required="required"
+      :required
     />
     <span v-if="description" class="control-desc">{{ description }}</span>
   </div>

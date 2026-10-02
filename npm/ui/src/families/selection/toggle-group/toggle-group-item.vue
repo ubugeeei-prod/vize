@@ -198,9 +198,9 @@ defineExpose(exposed);
     :disabled="isNativeButton ? itemDisabled : undefined"
     :role="isNativeButton ? undefined : 'button'"
     :tabindex="tabIndex"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-disabled="itemDisabled && !isNativeButton ? 'true' : undefined"
     :aria-pressed="pressed ? 'true' : 'false'"
     data-vize-ui="toggle-group-item"

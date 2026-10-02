@@ -74,7 +74,7 @@ defineExpose(exposed);
     ref="element"
     :type
     :disabled
-    :aria-label="ariaLabel"
+    :aria-label
     data-vize-ui="dialog-close"
     part="close"
     :data-state="context.state.value"

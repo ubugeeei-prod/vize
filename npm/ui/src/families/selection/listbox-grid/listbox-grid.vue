@@ -286,9 +286,9 @@ defineExpose(exposed);
     :aria-multiselectable="multipleState ? 'true' : undefined"
     :aria-disabled="disabledState ? 'true' : undefined"
     :aria-required="required ? 'true' : undefined"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     data-vize-ui="listbox-grid"
     part="root"
     :data-state="state"

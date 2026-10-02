@@ -115,7 +115,7 @@ defineExpose(exposed);
     :aria-disabled="unavailable ? 'true' : undefined"
     :inert="inert ? true : undefined"
     data-vize-ui="link"
-    :data-state="dataState"
+    :data-state
     @click="onClick"
     @keydown="onKeydown"
   >

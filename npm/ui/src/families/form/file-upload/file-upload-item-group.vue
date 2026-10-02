@@ -37,8 +37,8 @@ const slotState = computed<FileUploadItemGroupSlotState>(() => ({
 
 <template>
   <ul
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     data-vize-ui="file-upload-item-group"
     part="item-group"
     :data-state="state"

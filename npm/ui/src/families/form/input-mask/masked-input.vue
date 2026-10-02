@@ -117,14 +117,14 @@ defineExpose(exposed);
     :placeholder
     :autocomplete
     :inputmode="inputMode ?? controller.inputMode.value"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-errormessage="ariaInvalidValue === undefined ? undefined : ariaErrormessage"
     :aria-invalid="ariaInvalidValue"
     part="input"
     data-vize-ui="masked-input"
-    :data-state="dataState"
+    :data-state
     :data-complete="controller.complete.value ? 'true' : 'false'"
     @input="onInput"
   />

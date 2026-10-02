@@ -62,11 +62,11 @@ defineExpose(exposed);
     :is="as"
     ref="element"
     data-vize-ui="aspect-ratio"
-    :data-state="dataState"
+    :data-state
     :data-vize-aspect-ratio="ratioText"
     v-bind="intrinsicProps"
   >
-    <slot :ratio="normalizedRatio" :invalid="invalid" />
+    <slot :ratio="normalizedRatio" :invalid />
   </component>
 </template>
 

@@ -210,7 +210,7 @@ defineExpose(exposed);
     :dir="direction"
     :aria-label="accessibleLabel"
     :aria-labelledby="labelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-describedby
     :aria-valuemin="currentMin"
     :aria-valuemax="currentMax"
     :aria-valuenow="currentValue ?? undefined"

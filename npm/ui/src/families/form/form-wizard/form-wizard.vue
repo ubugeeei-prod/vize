@@ -342,12 +342,12 @@ defineExpose(exposed);
     :id="baseId"
     ref="root"
     role="group"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :aria-busy="validating ? 'true' : undefined"
     part="root"
     data-vize-ui="form-wizard"
-    :data-state="dataState"
+    :data-state
     :data-step="current"
   >
     <slot v-bind="slotState" />

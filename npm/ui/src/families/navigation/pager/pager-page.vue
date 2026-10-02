@@ -33,7 +33,7 @@ const active = computed(() => context.active.value === page);
     :data-page="page"
     :data-state="active ? 'active' : 'inactive'"
   >
-    <slot :active="active" />
+    <slot :active />
   </section>
 </template>
 

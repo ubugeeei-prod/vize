@@ -148,7 +148,7 @@ defineExpose({ element, focus } satisfies Omit<MenubarTriggerExpose, "element"> 
     <slot
       :dir="tree.dir.value"
       :disabled="disabledState"
-      :highlighted="highlighted"
+      :highlighted
       :modal="tree.modal.value"
       :open="level.open.value"
       :state="level.state.value"

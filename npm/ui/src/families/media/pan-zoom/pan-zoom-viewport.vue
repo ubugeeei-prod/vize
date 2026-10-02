@@ -244,9 +244,9 @@ defineExpose(exposed);
     role="group"
     :tabindex="context.disabled.value ? undefined : 0"
     :aria-roledescription="context.messages.value.roleDescription"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-disabled="context.disabled.value ? 'true' : undefined"
     data-vize-ui="pan-zoom-viewport"
     part="viewport"

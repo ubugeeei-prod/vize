@@ -40,7 +40,7 @@ function toggle(id: string): void {
 
 <template>
   <nav :aria-label="label" data-vize-ui="window-dock">
-    <slot :windows="windows">
+    <slot :windows>
       <button
         v-for="window in windows"
         :key="window.id"

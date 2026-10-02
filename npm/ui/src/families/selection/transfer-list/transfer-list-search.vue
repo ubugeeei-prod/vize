@@ -51,7 +51,7 @@ const handlers = computed(() => ({
     type="search"
     :value="state.query.value"
     :placeholder
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-controls="root.panelId(side)"
     :disabled="root.disabled.value"
     autocomplete="off"

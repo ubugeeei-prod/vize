@@ -166,7 +166,7 @@ defineExpose(exposed);
     :disabled="isNativeButton ? disabled : undefined"
     :role="isNativeButton ? undefined : 'button'"
     :tabindex="tabIndex"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-disabled="disabled && !isNativeButton ? 'true' : undefined"
     :aria-pressed="pressed ? 'true' : 'false'"
     data-vize-ui="toggle"

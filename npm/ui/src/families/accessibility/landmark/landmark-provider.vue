@@ -77,7 +77,7 @@ defineExpose(exposed);
 </script>
 
 <template>
-  <slot :landmarks="landmarks" />
+  <slot :landmarks />
 </template>
 
 <style scoped>

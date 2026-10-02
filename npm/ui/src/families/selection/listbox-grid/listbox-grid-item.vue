@@ -121,7 +121,7 @@ defineExpose({ element, selected, active });
     v-bind="interactiveProps"
     :aria-selected="selected ? 'true' : 'false'"
     :aria-disabled="itemDisabled ? 'true' : undefined"
-    :aria-label="ariaLabel"
+    :aria-label
     data-vize-ui="listbox-grid-item"
     part="item"
     :data-state="state"

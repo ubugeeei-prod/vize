@@ -49,7 +49,7 @@ const style = computed(() =>
   <div
     aria-hidden="true"
     :hidden="datum === undefined ? true : undefined"
-    :style="style"
+    :style
     data-vize-ui="chart-tooltip"
     part="tooltip"
     :data-state="datum === undefined ? 'closed' : 'open'"
@@ -57,9 +57,9 @@ const style = computed(() =>
   >
     <slot
       v-if="datum !== undefined && point !== null"
-      :datum="datum"
+      :datum
       :index="point.index"
-      :point="point"
+      :point
     />
   </div>
 </template>

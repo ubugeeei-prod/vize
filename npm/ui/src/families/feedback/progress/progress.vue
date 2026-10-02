@@ -81,9 +81,9 @@ defineExpose(exposed);
     ref="element"
     :value="currentValue ?? undefined"
     :max="currentMax"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-valuetext="ariaValueText"
     data-vize-ui="progress"
     part="root"
@@ -97,10 +97,10 @@ defineExpose(exposed);
     <slot
       :value="currentValue"
       :max="currentMax"
-      :percent="percent"
-      :indeterminate="indeterminate"
-      :complete="complete"
-      :state="state"
+      :percent
+      :indeterminate
+      :complete
+      :state
     />
   </progress>
 </template>

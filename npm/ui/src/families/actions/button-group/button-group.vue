@@ -271,9 +271,9 @@ defineExpose(exposed);
     :is="as"
     ref="element"
     :role="context.role.value"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-orientation="context.role.value === 'toolbar' ? orientationState : undefined"
     :aria-disabled="disabledState ? 'true' : undefined"
     data-vize-ui="button-group"

@@ -64,7 +64,7 @@ const interactiveProps = computed(() => ({
     :aria-expanded="branch ? (expanded ? 'true' : 'false') : undefined"
     :aria-disabled="disabled ? 'true' : undefined"
     :aria-busy="loading ? 'true' : undefined"
-    :aria-label="ariaLabel"
+    :aria-label
     data-vize-ui="cascader-item"
     part="item"
     :data-state="state"

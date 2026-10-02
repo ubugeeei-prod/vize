@@ -97,7 +97,7 @@ defineExpose({ element });
       <div
         ref="element"
         v-bind="menuProps"
-        :aria-label="ariaLabel"
+        :aria-label
         :aria-controls="editor.contentId.value"
         data-vize-ui="rich-text-bubble-menu"
         part="bubble-menu"

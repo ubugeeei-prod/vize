@@ -265,11 +265,11 @@ defineExpose(exposed);
   <span
     ref="root"
     role="group"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     part="root"
     data-vize-ui="range-slider"
-    :data-state="dataState"
+    :data-state
     :data-orientation="orientation"
     :data-dir="dir"
     :data-disabled="disabled ? 'true' : undefined"

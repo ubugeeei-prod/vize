@@ -36,7 +36,7 @@ onScopeDispose(() => context.registerTray(side, null));
     :data-side="side"
     :data-state="open ? 'open' : 'closed'"
   >
-    <slot :open="open" />
+    <slot :open />
   </div>
 </template>
 

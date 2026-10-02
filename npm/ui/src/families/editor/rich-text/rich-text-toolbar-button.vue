@@ -86,7 +86,7 @@ const buttonProps = computed(() => ({
     ref="element"
     v-bind="buttonProps"
     type="button"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-pressed="pressed === null ? undefined : pressed ? 'true' : 'false'"
     :aria-disabled="unavailable ? 'true' : undefined"
     data-vize-ui="rich-text-toolbar-button"

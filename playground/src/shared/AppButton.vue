@@ -10,7 +10,7 @@ defineProps<{
     type="button"
     class="btn"
     :class="[`btn--${variant ?? 'default'}`, { 'btn--disabled': disabled }]"
-    :disabled="disabled"
+    :disabled
   >
     <slot />
   </button>

@@ -201,7 +201,7 @@ defineExpose(exposed);
             ref="element"
             v-bind="dismissableLayer.layerProps"
             role="tooltip"
-            :aria-label="ariaLabel"
+            :aria-label
             data-vize-ui="tooltip-content"
             part="content"
             :hidden="context.open.value ? undefined : true"

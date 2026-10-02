@@ -97,7 +97,7 @@ const triggerProps = computed<{
     :id="triggerId"
     ref="element"
     type="button"
-    :disabled="disabled"
+    :disabled
     :aria-expanded="item.open.value ? 'true' : 'false'"
     :aria-controls="contentId"
     data-navigation-menu-entry=""

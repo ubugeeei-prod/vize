@@ -97,7 +97,7 @@ defineExpose(exposed);
     v-else
     :id="context.sidebarId.value"
     ref="element"
-    :aria-label="ariaLabel"
+    :aria-label
     :inert="offcanvasHidden ? true : undefined"
     data-vize-ui="sidebar-root"
     part="root"

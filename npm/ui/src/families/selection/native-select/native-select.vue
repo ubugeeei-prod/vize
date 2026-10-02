@@ -228,9 +228,9 @@ defineExpose(exposed);
     :disabled
     :required
     :dir="direction"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-errormessage="ariaInvalidValue === undefined ? undefined : ariaErrormessage"
     :aria-invalid="ariaInvalidValue"
     data-vize-ui="native-select"
@@ -242,7 +242,7 @@ defineExpose(exposed);
     :data-selection-mode="selectionMode"
     :data-selection-count="selectedCount"
     :data-direction="direction"
-    :data-value="dataValue"
+    :data-value
     @change="onChange"
   >
     <option

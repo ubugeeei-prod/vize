@@ -298,7 +298,7 @@ defineExpose(exposed);
     ref="root"
     part="root"
     data-vize-ui="password-field"
-    :data-state="dataState"
+    :data-state
     :data-visible="visibleState.value.value ? 'true' : 'false'"
     :data-caps-lock="capsLock ? 'true' : undefined"
     :data-disabled="disabled ? 'true' : undefined"

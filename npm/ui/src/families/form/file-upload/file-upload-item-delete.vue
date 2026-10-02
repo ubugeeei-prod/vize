@@ -57,8 +57,8 @@ function onClick(event: MouseEvent): void {
   <button
     ref="element"
     type="button"
-    :disabled="disabled"
-    :aria-label="ariaLabel"
+    :disabled
+    :aria-label
     data-vize-ui="file-upload-item-delete"
     part="item-delete"
     @click="onClick"

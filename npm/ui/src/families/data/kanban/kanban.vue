@@ -310,7 +310,7 @@ defineExpose(exposed);
     :id="boardId"
     ref="element"
     role="group"
-    :aria-label="ariaLabel"
+    :aria-label
     aria-roledescription="board"
     :dir
     data-vize-ui="kanban"

@@ -146,7 +146,7 @@ defineExpose({ element, layout: state.value, rows });
     :data-disabled="disabled ? '' : undefined"
     :style="gridStyle"
   >
-    <slot :rows="rows" />
+    <slot :rows />
   </div>
 </template>
 

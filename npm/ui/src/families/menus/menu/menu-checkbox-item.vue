@@ -128,7 +128,7 @@ defineExpose({
     v-bind="item.interactiveProps"
     :id="item.id.value"
     ref="element"
-    :aria-checked="ariaChecked"
+    :aria-checked
     :aria-disabled="item.disabled.value ? 'true' : undefined"
     data-vize-ui="menu-checkbox-item"
     part="item"
@@ -140,7 +140,7 @@ defineExpose({
       :checked="checkedState.value.value"
       :disabled="item.disabled.value"
       :highlighted="item.highlighted.value"
-      :state="state"
+      :state
     />
   </div>
 </template>

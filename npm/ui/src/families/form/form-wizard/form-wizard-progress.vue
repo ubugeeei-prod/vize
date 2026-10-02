@@ -42,13 +42,13 @@ const valueText = computed(() =>
   <progress
     :max="context.count.value"
     :value="step"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-valuetext="valueText"
     part="progress"
     data-vize-ui="form-wizard-progress"
     :style="{ '--vize-form-wizard-progress': `${context.progress.value * 100}%` }"
   >
-    <slot :step="step" :count="context.count.value" :progress="context.progress.value">{{
+    <slot :step :count="context.count.value" :progress="context.progress.value">{{
       valueText
     }}</slot>
   </progress>

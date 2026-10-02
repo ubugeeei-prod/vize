@@ -216,21 +216,21 @@ defineExpose(exposed);
     type="button"
     role="switch"
     :disabled
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-errormessage="ariaInvalidValue === undefined ? undefined : ariaErrormessage"
     :aria-invalid="ariaInvalidValue"
-    :aria-checked="ariaChecked"
+    :aria-checked
     :aria-disabled="disabled ? 'true' : undefined"
     :aria-readonly="readOnly ? 'true' : undefined"
     :aria-required="required ? 'true' : undefined"
     data-vize-ui="switch"
-    :data-state="dataState"
+    :data-state
     :data-checked="ariaChecked"
     @click="onClick"
   >
-    <slot :checked :disabled :invalid :read-only="readOnly" :required />
+    <slot :checked :disabled :invalid :read-only :required />
     <input v-if="submitsValue" type="hidden" :name :value />
   </button>
 </template>

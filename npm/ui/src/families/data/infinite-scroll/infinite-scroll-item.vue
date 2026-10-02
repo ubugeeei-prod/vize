@@ -68,8 +68,8 @@ defineExpose(exposed);
     :tabindex="context.feed.value ? 0 : undefined"
     :aria-posinset="context.feed.value ? position : undefined"
     :aria-setsize="context.feed.value ? context.setSize.value : undefined"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-labelledby
+    :aria-describedby
     data-vize-ui="infinite-scroll-item"
     part="item"
     :data-position="position"

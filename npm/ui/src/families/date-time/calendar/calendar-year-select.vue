@@ -51,10 +51,10 @@ function onChange(event: Event): void {
 
 <template>
   <select
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-controls="context.id.value"
     :value="context.visibleStart.value ? String(context.visibleStart.value.year) : undefined"
-    :disabled="disabled"
+    :disabled
     data-vize-ui="calendar-year-select"
     part="year-select"
     :data-year="context.visibleStart.value?.year"

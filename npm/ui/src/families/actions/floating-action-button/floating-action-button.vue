@@ -77,7 +77,7 @@ defineExpose(exposed);
     ref="element"
     type="button"
     :disabled
-    :aria-label="ariaLabel"
+    :aria-label
     data-vize-ui="floating-action-button"
     part="root"
     :data-placement="placement"

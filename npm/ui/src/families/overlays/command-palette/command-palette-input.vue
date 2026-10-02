@@ -118,7 +118,7 @@ defineExpose(exposed);
     spellcheck="false"
     aria-autocomplete="list"
     aria-haspopup="listbox"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-expanded="context.open.value ? 'true' : 'false'"
     :aria-controls="context.listId.value"
     :aria-activedescendant="activeDescendant"

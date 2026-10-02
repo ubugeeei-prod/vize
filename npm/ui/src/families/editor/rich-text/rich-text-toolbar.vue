@@ -34,7 +34,7 @@ defineExpose({ element });
   <div
     ref="element"
     v-bind="toolbarProps"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-controls="editor.contentId.value"
     data-vize-ui="rich-text-toolbar"
     part="toolbar"

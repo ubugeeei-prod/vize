@@ -211,7 +211,7 @@ defineExpose({ element });
               :id="context.contentId.value"
               ref="element"
               v-bind="contentBindings"
-              :aria-label="ariaLabel"
+              :aria-label
               data-vize-ui="cascader-content"
               part="content"
               :hidden="context.open.value ? undefined : true"

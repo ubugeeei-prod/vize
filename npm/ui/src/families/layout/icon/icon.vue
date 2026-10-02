@@ -121,22 +121,22 @@ function hasText(value: string | undefined): boolean {
 <template>
   <component
     :is="as"
-    :id="id"
+    :id
     ref="element"
     :role="ariaState === 'img' ? 'img' : undefined"
     :aria-hidden="ariaState === 'decorative' ? 'true' : undefined"
     :aria-label="ariaLabelValue"
     :aria-labelledby="ariaLabelledbyValue"
     :aria-describedby="ariaDescribedbyValue"
-    :viewBox="viewBox"
-    :width="width"
-    :height="height"
+    :viewBox
+    :width
+    :height
     :focusable="focusable ? 'true' : 'false'"
-    :fill="fill"
-    :stroke="stroke"
-    :stroke-width="strokeWidth"
-    :stroke-linecap="strokeLinecap"
-    :stroke-linejoin="strokeLinejoin"
+    :fill
+    :stroke
+    :stroke-width
+    :stroke-linecap
+    :stroke-linejoin
     data-vize-ui="icon"
     part="root"
     :data-aria-state="ariaState"

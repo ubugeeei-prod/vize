@@ -84,8 +84,8 @@ defineExpose(exposed);
     ref="element"
     :type
     :disabled="triggerDisabled"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :aria-expanded="context.open.value ? 'true' : 'false'"
     :aria-controls="context.contentId.value"
     data-vize-ui="collapsible-trigger"

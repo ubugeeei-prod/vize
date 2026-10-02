@@ -80,7 +80,7 @@ defineExpose({ visible, width: breakpoint.width });
     :hidden="!visible"
     :style="wrapperStyle"
   >
-    <slot v-if="visible || hideMode === 'hidden'" :visible="visible" />
+    <slot v-if="visible || hideMode === 'hidden'" :visible />
   </div>
 </template>
 

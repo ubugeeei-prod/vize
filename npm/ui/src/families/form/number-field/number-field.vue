@@ -319,7 +319,7 @@ defineExpose(exposed);
     ref="root"
     part="root"
     data-vize-ui="number-field"
-    :data-state="dataState"
+    :data-state
     :data-disabled="disabled ? 'true' : undefined"
     :data-readonly="readOnly ? 'true' : undefined"
     :data-required="required ? 'true' : undefined"

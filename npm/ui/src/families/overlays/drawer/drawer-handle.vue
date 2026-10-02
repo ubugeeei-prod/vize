@@ -96,7 +96,7 @@ defineExpose(exposed);
     ref="element"
     type="button"
     :disabled
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-controls="context.contentId.value"
     data-vize-ui="drawer-handle"
     part="handle"

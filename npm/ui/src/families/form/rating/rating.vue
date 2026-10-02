@@ -111,7 +111,7 @@ defineExpose(exposed);
     :aria-required="requiredState ? 'true' : undefined"
     data-vize-ui="rating"
     part="root"
-    :data-state="dataState"
+    :data-state
     :data-value="currentValue ?? undefined"
     :data-min="minValue"
     :data-max="maxValue"
@@ -191,8 +191,8 @@ defineExpose(exposed);
       :min="minValue"
       :max="maxValue"
       :count="itemCount"
-      :items="items"
-      :percent="percent"
+      :items
+      :percent
       :direction="directionState"
       :disabled="disabledState"
       :read-only="readOnlyState"

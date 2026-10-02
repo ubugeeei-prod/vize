@@ -348,11 +348,11 @@ defineExpose(exposed);
   <div
     ref="root"
     role="group"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     part="root"
     data-vize-ui="pin-input"
-    :data-state="dataState"
+    :data-state
     :data-complete="complete ? 'true' : 'false'"
     :data-disabled="disabled ? 'true' : undefined"
     :data-invalid="ariaInvalidValue === undefined ? undefined : 'true'"

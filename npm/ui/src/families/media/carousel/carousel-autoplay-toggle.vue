@@ -49,7 +49,7 @@ defineExpose(exposed);
     ref="element"
     type="button"
     :disabled
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-controls="context.viewportId.value"
     data-vize-ui="carousel-autoplay-toggle"
     part="autoplay-toggle"

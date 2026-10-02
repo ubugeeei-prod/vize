@@ -158,8 +158,8 @@ transferListPanelContext.provide({
     :aria-activedescendant="
       root.disabled.value ? undefined : containerProps['aria-activedescendant']
     "
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :aria-disabled="root.disabled.value ? 'true' : undefined"
     data-vize-ui="transfer-list-panel"
     part="panel"

@@ -192,7 +192,7 @@ defineExpose({
               ref="element"
               v-bind="menu.contentProps"
               :dir="tree.dir.value"
-              :aria-label="ariaLabel"
+              :aria-label
               :aria-labelledby="ariaLabel ? undefined : level.triggerId.value"
               data-vize-ui="menu-sub-content"
               :data-menu-kind="tree.kind"

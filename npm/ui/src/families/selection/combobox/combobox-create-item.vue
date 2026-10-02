@@ -63,7 +63,7 @@ onUnmounted(() => {
     part="create-item"
     :data-highlighted="active ? 'true' : undefined"
   >
-    <slot v-if="visible" :query="context.query.value" :active="active" />
+    <slot v-if="visible" :query="context.query.value" :active />
   </div>
 </template>
 

@@ -328,9 +328,9 @@ defineExpose(exposed);
     :is="as"
     ref="element"
     role="group"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-disabled="disabledState ? 'true' : undefined"
     data-vize-ui="toggle-group"
     part="root"
@@ -338,7 +338,7 @@ defineExpose(exposed);
     :data-disabled="disabledState ? 'true' : undefined"
     :data-orientation="orientationState"
     :data-type="typeState"
-    :data-value="dataValue"
+    :data-value
   >
     <slot v-bind="slotState" />
   </component>

@@ -47,7 +47,7 @@ onScopeDispose(() => context.registerPanel(step, null));
     :data-step="step"
     :data-state="active ? 'active' : context.isVisited(step) ? 'visited' : 'upcoming'"
   >
-    <slot :active="active" :index="index" />
+    <slot :active :index />
   </section>
 </template>
 

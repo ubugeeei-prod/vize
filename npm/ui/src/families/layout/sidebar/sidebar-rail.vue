@@ -64,7 +64,7 @@ defineExpose(exposed);
     type="button"
     tabindex="-1"
     :disabled
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-expanded="expanded ? 'true' : 'false'"
     :aria-controls="context.sidebarId.value"
     data-vize-ui="sidebar-rail"

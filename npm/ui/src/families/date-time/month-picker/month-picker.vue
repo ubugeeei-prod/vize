@@ -111,7 +111,7 @@ defineExpose(exposed);
 
 <template>
   <div
-    :id="id"
+    :id
     ref="root"
     part="root"
     role="group"

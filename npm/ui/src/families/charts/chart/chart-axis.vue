@@ -127,7 +127,7 @@ const dominantBaseline = computed(() => {
 <template>
   <g
     aria-hidden="true"
-    :transform="transform"
+    :transform
     data-vize-ui="chart-axis"
     part="axis"
     :data-orientation="orientation"
@@ -148,8 +148,8 @@ const dominantBaseline = computed(() => {
       <text
         :x="vertical ? labelOffset : 0"
         :y="vertical ? 0 : labelOffset"
-        :text-anchor="textAnchor"
-        :dominant-baseline="dominantBaseline"
+        :text-anchor
+        :dominant-baseline
         data-vize-ui="chart-axis-tick-label"
       >
         <slot name="tick" v-bind="tick">{{ tick.label }}</slot>

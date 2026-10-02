@@ -101,9 +101,9 @@ defineExpose(exposed);
     role="tabpanel"
     :hidden="selected ? undefined : true"
     :tabindex="selected ? 0 : undefined"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-labelledby="labelledBy"
-    :aria-describedby="ariaDescribedby"
+    :aria-describedby
     data-vize-ui="tabs-content"
     part="content"
     :data-state="contentState"

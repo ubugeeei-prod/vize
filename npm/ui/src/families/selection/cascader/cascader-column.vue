@@ -56,7 +56,7 @@ cascaderColumnContext.provide({ level: computed(() => level) });
     :data-level="level"
     :data-loading="loading ? 'true' : undefined"
   >
-    <slot :level="level" :loading="loading" />
+    <slot :level :loading />
   </div>
 </template>
 

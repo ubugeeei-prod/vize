@@ -82,7 +82,7 @@ defineExpose({ element, focus } satisfies Omit<MenuTriggerExpose, "element"> & {
     ref="element"
     type="button"
     :disabled="disabledState"
-    :aria-label="ariaLabel"
+    :aria-label
     aria-haspopup="menu"
     :aria-expanded="level.open.value ? 'true' : 'false'"
     :aria-controls="level.open.value ? level.contentId.value : undefined"

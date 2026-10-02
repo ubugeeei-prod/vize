@@ -87,7 +87,7 @@ defineExpose(exposed);
     :data-density="density"
     :data-orientation="orientation"
   >
-    <slot :density="density" :orientation="orientation" :state="state" :tone="tone" />
+    <slot :density :orientation :state :tone />
   </component>
 </template>
 

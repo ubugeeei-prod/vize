@@ -292,9 +292,9 @@ defineExpose({ element, focus } satisfies Omit<RichTextContentExpose, "element">
     :id="editor.contentId.value"
     ref="element"
     v-bind="contentProps"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :spellcheck="spellcheck ? 'true' : 'false'"
     data-vize-ui="rich-text-content"
     part="content"

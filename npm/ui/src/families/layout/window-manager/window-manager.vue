@@ -219,7 +219,7 @@ defineExpose({ element, layout: state.value, activeId, measure });
 
 <template>
   <div ref="element" data-vize-ui="window-manager" :style="rootStyle">
-    <slot :active-id="activeId" :windows="windows" />
+    <slot :active-id :windows />
   </div>
 </template>
 

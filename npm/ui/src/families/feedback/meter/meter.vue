@@ -152,9 +152,9 @@ defineExpose(exposed);
     :low="currentLow ?? undefined"
     :high="currentHigh ?? undefined"
     :optimum="currentOptimum ?? undefined"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     data-vize-ui="meter"
     part="root"
     :data-state="state"
@@ -176,11 +176,11 @@ defineExpose(exposed);
       :low="currentLow"
       :high="currentHigh"
       :optimum="currentOptimum"
-      :percent="percent"
-      :range="range"
-      :optimal="optimal"
-      :invalid="invalid"
-      :state="state"
+      :percent
+      :range
+      :optimal
+      :invalid
+      :state
     />
   </meter>
 </template>

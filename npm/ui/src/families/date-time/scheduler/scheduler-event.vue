@@ -100,13 +100,13 @@ function stop(nativeEvent: Event): void {
     :data-continues-before="(placement ?? row)?.continuesBefore ? 'true' : undefined"
     :data-continues-after="(placement ?? row)?.continuesAfter ? 'true' : undefined"
     :data-dragging="move.isDragging.value || resize.isDragging.value ? 'true' : undefined"
-    :style="style"
+    :style
     v-bind="locked ? {} : move.sourceProps"
     @click="onClick"
     @keydown="onKeydown"
     @pointerdown="onPointerDown"
   >
-    <slot :event="event" :placement="placement" :row="row" :label="label">{{ event.title }}</slot>
+    <slot :event :placement :row :label>{{ event.title }}</slot>
     <span
       v-if="showHandle"
       ref="handle"

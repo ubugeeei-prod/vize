@@ -298,8 +298,8 @@ defineExpose(exposed);
     :id="baseId"
     ref="element"
     role="marquee"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :style
     data-vize-ui="marquee-root"
     part="root"

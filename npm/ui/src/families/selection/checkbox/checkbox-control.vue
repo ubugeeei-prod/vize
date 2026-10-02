@@ -111,7 +111,7 @@ defineExpose({ element, checked, focus, reset: state.reset, setChecked: state.se
     type="checkbox"
     :checked
     :disabled
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-checked="indeterminate ? 'mixed' : checked"
     data-vize-ui="checkbox"
     :data-state="visualState"

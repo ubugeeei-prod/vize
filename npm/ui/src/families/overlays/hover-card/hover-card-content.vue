@@ -234,7 +234,7 @@ defineExpose(exposed);
             :id="context.contentId.value"
             ref="element"
             v-bind="dismissableLayer.layerProps"
-            :aria-label="ariaLabel"
+            :aria-label
             data-vize-ui="hover-card-content"
             part="content"
             :hidden="context.open.value ? undefined : true"

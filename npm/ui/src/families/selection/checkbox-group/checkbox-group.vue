@@ -379,13 +379,13 @@ defineExpose(exposed);
   <div
     ref="root"
     role="group"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-disabled="disabled ? 'true' : undefined"
     part="root"
     data-vize-ui="checkbox-group"
-    :data-state="dataState"
+    :data-state
     :data-orientation="orientation"
     :data-disabled="disabled ? 'true' : undefined"
     :data-invalid="ariaInvalidValue === undefined ? undefined : 'true'"

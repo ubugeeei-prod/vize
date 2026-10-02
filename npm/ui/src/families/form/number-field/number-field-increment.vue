@@ -16,7 +16,7 @@ const trigger = useNumberFieldTrigger("increment");
   <button
     type="button"
     tabindex="-1"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-controls="trigger.context.inputId.value"
     :disabled="trigger.disabled.value"
     part="increment"

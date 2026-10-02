@@ -213,7 +213,7 @@ defineExpose({ element });
               ref="element"
               v-bind="contentBindings"
               tabindex="-1"
-              :aria-label="ariaLabel"
+              :aria-label
               :aria-busy="context.status.value === 'loading' ? 'true' : undefined"
               data-vize-ui="mention-content"
               part="content"

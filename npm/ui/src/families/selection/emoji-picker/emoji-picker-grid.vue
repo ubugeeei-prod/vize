@@ -68,7 +68,7 @@ function onKeydown(event: KeyboardEvent): void {
     :id="context.gridId.value"
     ref="element"
     v-bind="interactiveProps"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-rowcount="context.totalRows.value"
     :aria-colcount="context.columns.value"
     :aria-activedescendant="activeId"

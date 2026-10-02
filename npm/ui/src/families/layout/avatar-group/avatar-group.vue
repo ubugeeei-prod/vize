@@ -132,8 +132,8 @@ defineExpose(exposed);
 <template>
   <ul
     ref="element"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :style
     data-vize-ui="avatar-group"
     part="root"

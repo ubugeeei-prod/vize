@@ -152,7 +152,7 @@ defineExpose(exposed);
     type="button"
     :disabled="buttonDisabled"
     :hidden="!supported && unsupported === 'hide' ? true : undefined"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-busy="picking ? 'true' : undefined"
     data-vize-ui="color-picker-eye-dropper"
     part="eye-dropper"

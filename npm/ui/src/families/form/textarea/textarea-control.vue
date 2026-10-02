@@ -328,14 +328,14 @@ defineExpose(exposed);
     :maxlength
     :spellcheck
     :wrap
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-errormessage="ariaInvalidValue === undefined ? undefined : ariaErrormessage"
     :aria-invalid="ariaInvalidValue"
     data-vize-ui="textarea"
-    :data-state="dataState"
-    :data-empty="dataEmpty"
+    :data-state
+    :data-empty
     :data-composing="composing ? 'true' : 'false'"
     @input="onInput"
     @change="onChange"

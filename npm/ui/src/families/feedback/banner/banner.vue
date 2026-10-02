@@ -205,7 +205,7 @@ defineExpose(exposed);
     ref="element"
     :hidden="!openValue"
     :role="renderedAriaRole"
-    :aria-hidden="ariaHidden"
+    :aria-hidden
     :aria-label="renderedAriaLabel"
     :aria-labelledby="renderedAriaLabelledby"
     :aria-describedby="renderedAriaDescribedby"

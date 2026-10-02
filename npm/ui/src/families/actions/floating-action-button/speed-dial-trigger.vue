@@ -80,7 +80,7 @@ defineExpose(exposed);
     ref="element"
     type="button"
     :disabled="context.disabled.value"
-    :aria-label="ariaLabel"
+    :aria-label
     aria-haspopup="menu"
     :aria-expanded="context.open.value ? 'true' : 'false'"
     :aria-controls="context.contentId.value"

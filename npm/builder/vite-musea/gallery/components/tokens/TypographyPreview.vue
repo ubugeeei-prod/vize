@@ -40,10 +40,10 @@ function cssLength(value: string): string {
 <template>
   <div class="typography-preview">
     <template v-if="isLineHeight">
-      <div class="typography-sample" :style="style">Aa<br />Bb</div>
+      <div class="typography-sample" :style>Aa<br />Bb</div>
     </template>
     <template v-else>
-      <div class="typography-sample" :style="style">Aa</div>
+      <div class="typography-sample" :style>Aa</div>
     </template>
   </div>
 </template>

@@ -111,7 +111,7 @@ const itemProps = computed(() => ({
     :data-destructive="destructive ? 'true' : undefined"
     :data-disabled="disabled ? 'true' : undefined"
   >
-    <slot :disabled="disabled" />
+    <slot :disabled />
   </div>
 </template>
 

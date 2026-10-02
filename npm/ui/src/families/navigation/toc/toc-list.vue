@@ -19,7 +19,7 @@ defineSlots<{
 
 <template>
   <ol data-vize-ui="toc-list" part="list" :data-level="level">
-    <slot :level="level" />
+    <slot :level />
   </ol>
 </template>
 

@@ -75,9 +75,9 @@ defineExpose(exposed);
   <button
     ref="element"
     type="button"
-    :disabled="disabled"
-    :aria-label="ariaLabel"
-    :aria-describedby="ariaDescribedby"
+    :disabled
+    :aria-label
+    :aria-describedby
     data-vize-ui="file-upload-trigger"
     part="trigger"
     :data-disabled="disabled ? 'true' : undefined"

@@ -39,7 +39,7 @@ selectGroupContext.provide({ labelId });
   <div
     :id="groupId"
     role="group"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-labelledby="ariaLabel === undefined ? labelId : undefined"
     :data-vize-ui="`${context.partPrefix}-group`"
     part="group"

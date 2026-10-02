@@ -27,7 +27,7 @@ function onChange(event: Event) {
       :id="inputId"
       class="control-select"
       :value="JSON.stringify(model)"
-      :required="required"
+      :required
       @change="onChange"
     >
       <option v-for="opt in options" :key="String(opt.value)" :value="JSON.stringify(opt.value)">

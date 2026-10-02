@@ -492,8 +492,8 @@ defineExpose(exposed);
     :id="baseId"
     ref="element"
     :aria-roledescription="roleDescription"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :dir="dirState"
     data-vize-ui="carousel-root"
     part="root"

@@ -171,8 +171,8 @@ defineExpose({
     ref="element"
     role="menubar"
     aria-orientation="horizontal"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :dir="dirState"
     data-vize-ui="menubar"
     part="root"

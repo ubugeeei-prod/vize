@@ -234,13 +234,13 @@ defineExpose(exposed);
     :aria-setsize="item.setsize"
     :aria-posinset="item.posinset"
     :aria-expanded="item.expandable ? (item.expanded ? 'true' : 'false') : undefined"
-    :aria-selected="ariaSelected"
-    :aria-checked="ariaChecked"
+    :aria-selected
+    :aria-checked
     :aria-disabled="itemDisabled ? 'true' : undefined"
     :aria-busy="loadState === 'loading' ? 'true' : undefined"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     data-vize-ui="tree-item"
     part="item"
     :data-state="itemState"

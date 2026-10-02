@@ -52,7 +52,7 @@ defineExpose(exposed);
     ref="element"
     type="button"
     :disabled
-    :aria-label="ariaLabel"
+    :aria-label
     data-vize-ui="toast-close"
     part="close"
     @click="onClick"

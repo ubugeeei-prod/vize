@@ -254,8 +254,8 @@ defineExpose(exposed);
       ref="thumb"
       v-bind="thumbProps"
       :aria-label="label"
-      :aria-labelledby="ariaLabelledby"
-      :aria-describedby="ariaDescribedby"
+      :aria-labelledby
+      :aria-describedby
       :aria-orientation="orientation"
       :aria-valuemin="min"
       :aria-valuemax="max"

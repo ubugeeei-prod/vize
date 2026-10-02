@@ -326,7 +326,7 @@ defineExpose(exposed);
             role="dialog"
             tabindex="-1"
             :aria-modal="modal ? 'true' : undefined"
-            :aria-label="ariaLabel"
+            :aria-label
             :aria-labelledby="labelledBy"
             :aria-describedby="describedBy"
             data-vize-ui="tour-content"

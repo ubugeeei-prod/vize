@@ -98,16 +98,16 @@ defineExpose(exposed);
     ref="element"
     :role
     :hidden="open ? undefined : true"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-live="live"
     :aria-atomic="atomic ? 'true' : 'false'"
     data-vize-ui="alert"
     :data-state="state"
     :data-variant="variant"
   >
-    <slot :open :role :state="state" :variant />
+    <slot :open :role :state :variant />
   </div>
 </template>
 

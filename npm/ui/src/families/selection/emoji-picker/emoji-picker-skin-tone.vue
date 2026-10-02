@@ -79,7 +79,7 @@ function onKeydown(event: KeyboardEvent): void {
   <div
     ref="element"
     v-bind="groupProps"
-    :aria-label="ariaLabel"
+    :aria-label
     data-vize-ui="emoji-picker-skin-tone"
     part="skin-tone"
     :data-skin-tone="context.skinTone.value"

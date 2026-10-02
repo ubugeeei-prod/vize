@@ -34,7 +34,7 @@ function toggle(name: string): void {
 </script>
 
 <template>
-  <ul :aria-label="ariaLabel" data-vize-ui="chart-legend" part="legend">
+  <ul :aria-label data-vize-ui="chart-legend" part="legend">
     <li
       v-for="entry in context.series.value"
       :key="entry.name"

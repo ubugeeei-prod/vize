@@ -32,8 +32,8 @@ function onInput(event: Event) {
       :class="{ 'input--error': error, 'input--disabled': disabled }"
       :type="type ?? 'text'"
       :value="modelValue"
-      :placeholder="placeholder"
-      :disabled="disabled"
+      :placeholder
+      :disabled
       :aria-label="label"
       @input="onInput"
     />

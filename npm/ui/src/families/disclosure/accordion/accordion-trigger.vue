@@ -92,8 +92,8 @@ defineExpose(exposed);
     ref="element"
     type="button"
     :disabled="collapsible.disabled.value"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :aria-expanded="collapsible.open.value ? 'true' : 'false'"
     :aria-controls="collapsible.contentId.value"
     :aria-disabled="item.locked.value ? 'true' : undefined"

@@ -55,7 +55,7 @@ function onKeydown(event: KeyboardEvent): void {
     @dblclick="onDblclick"
     @keydown="onKeydown"
   >
-    <slot :value="context.value.value" :empty="empty">{{
+    <slot :value="context.value.value" :empty>{{
       empty ? (context.placeholder.value ?? "") : context.value.value
     }}</slot>
   </span>

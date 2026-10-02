@@ -34,7 +34,7 @@ function onClick(event: MouseEvent): void {
 <template>
   <button
     type="button"
-    :disabled="disabled"
+    :disabled
     :aria-label="label"
     :aria-controls="context.id.value"
     data-vize-ui="calendar-prev"
@@ -43,7 +43,7 @@ function onClick(event: MouseEvent): void {
     :data-disabled="disabled ? 'true' : undefined"
     @click="onClick"
   >
-    <slot :unit="unit" :disabled="disabled">‹</slot>
+    <slot :unit :disabled>‹</slot>
   </button>
 </template>
 

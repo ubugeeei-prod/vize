@@ -67,9 +67,9 @@ defineExpose({ element, focus: (options?: FocusOptions) => element.value?.focus(
     :aria-expanded="context.open.value ? 'true' : 'false'"
     :aria-controls="context.open.value ? context.columnIds.value.join(' ') : undefined"
     :aria-activedescendant="context.activeDescendant.value"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-required="context.required.value ? 'true' : undefined"
     data-vize-ui="cascader-trigger"
     part="trigger"

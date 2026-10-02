@@ -164,8 +164,8 @@ defineExpose(exposed);
     ref="element"
     xmlns="http://www.w3.org/2000/svg"
     role="img"
-    :aria-label="ariaLabel"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-describedby
     :viewBox
     data-vize-ui="signature-pad-canvas"
     part="canvas"

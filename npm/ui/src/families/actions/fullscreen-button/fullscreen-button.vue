@@ -285,7 +285,7 @@ defineExpose(exposed);
     :tabindex="tabIndex"
     :aria-label="ariaLabelledbyValue === undefined ? ariaLabelValue : undefined"
     :aria-labelledby="ariaLabelledbyValue"
-    :aria-describedby="ariaDescribedby"
+    :aria-describedby
     :aria-pressed="activeValue ? 'true' : 'false'"
     :aria-disabled="unavailable && (!isNativeButton || pendingValue) ? 'true' : undefined"
     :aria-busy="pendingValue ? 'true' : undefined"

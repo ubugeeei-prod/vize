@@ -60,7 +60,7 @@ const insetEdges = computed(() => {
     :data-insets="insetEdges"
     :style
   >
-    <slot :insets="insets" />
+    <slot :insets />
   </component>
 </template>
 

@@ -152,7 +152,7 @@ defineExpose({ layout, select, back, selected: current });
       tabindex="-1"
       :aria-label="masterLabel"
     >
-      <slot name="master" :selected="current" :layout="layout" :select="select" />
+      <slot name="master" :selected="current" :layout :select />
     </section>
     <section
       v-if="showDetail && current !== null"
@@ -161,10 +161,10 @@ defineExpose({ layout, select, back, selected: current });
       tabindex="-1"
       :aria-label="detailLabel"
     >
-      <slot name="detail" :selected="current" :layout="layout" :back="back" />
+      <slot name="detail" :selected="current" :layout :back />
     </section>
     <section v-else-if="layout === 'split'" data-part="empty" :aria-label="detailLabel">
-      <slot name="empty" :layout="layout" />
+      <slot name="empty" :layout />
     </section>
   </div>
 </template>

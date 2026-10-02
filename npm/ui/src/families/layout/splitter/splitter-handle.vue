@@ -200,8 +200,8 @@ defineExpose(exposed);
     :aria-valuemax="valueMax"
     :aria-controls="controlsId"
     :aria-disabled="handleDisabled ? 'true' : undefined"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     data-vize-ui="splitter-handle"
     part="handle"
     :data-state="handleState"

@@ -180,7 +180,7 @@ defineExpose(exposed);
   <nav
     ref="element"
     :aria-label="ariaLabelledby === undefined ? ariaLabel : undefined"
-    :aria-labelledby="ariaLabelledby"
+    :aria-labelledby
     data-vize-ui="toc"
     part="root"
     :data-state="state"

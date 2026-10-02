@@ -122,8 +122,8 @@ defineExpose(exposed);
     :type
     :disabled="controlDisabled"
     :aria-label="ariaLabelledby === undefined ? ariaLabel : undefined"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-labelledby
+    :aria-describedby
     data-vize-ui="pagination-next"
     part="next"
     :data-state="controlState"

@@ -174,9 +174,9 @@ defineExpose(exposed);
     :disabled="isNativeButton ? itemDisabled : undefined"
     :role="isNativeButton ? undefined : 'button'"
     :tabindex="tabIndex"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-disabled="itemDisabled && !isNativeButton ? 'true' : undefined"
     data-vize-ui="toolbar-item"
     part="item"

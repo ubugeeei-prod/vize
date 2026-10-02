@@ -228,7 +228,7 @@ defineExpose(exposed);
     :tabindex="tabIndex"
     :aria-label="ariaLabelledbyValue === undefined ? ariaLabelValue : undefined"
     :aria-labelledby="ariaLabelledbyValue"
-    :aria-describedby="ariaDescribedby"
+    :aria-describedby
     :aria-disabled="unavailable && (!isNativeButton || sharingValue) ? 'true' : undefined"
     :aria-busy="sharingValue ? 'true' : undefined"
     data-vize-ui="share-button"

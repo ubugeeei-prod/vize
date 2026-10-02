@@ -223,9 +223,9 @@ defineExpose(exposed);
     :id="itemContext.id.value"
     ref="element"
     role="listitem"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     data-vize-ui="stepper-item"
     part="item"
     :data-state="itemContext.state.value"

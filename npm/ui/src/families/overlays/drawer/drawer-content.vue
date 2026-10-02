@@ -397,7 +397,7 @@ defineExpose(exposed);
     ref="element"
     v-bind="dismissableLayer.layerProps"
     tabindex="-1"
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-labelledby="ariaLabelledbyValue"
     :aria-describedby="ariaDescribedbyValue"
     data-vize-ui="drawer-content"

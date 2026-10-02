@@ -50,7 +50,7 @@ defineExpose({ namespace, prefix: resolvedPrefix });
 </script>
 
 <template>
-  <slot :namespace="namespace" :prefix="resolvedPrefix" />
+  <slot :namespace :prefix="resolvedPrefix" />
 </template>
 
 <style scoped>

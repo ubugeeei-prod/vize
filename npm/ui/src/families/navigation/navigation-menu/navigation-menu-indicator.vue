@@ -62,7 +62,7 @@ onScopeDispose(() => stopResize?.());
 <template>
   <span
     aria-hidden="true"
-    :style="style"
+    :style
     data-vize-ui="navigation-menu-indicator"
     part="indicator"
     :data-state="state"

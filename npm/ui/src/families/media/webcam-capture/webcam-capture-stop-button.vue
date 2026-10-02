@@ -50,7 +50,7 @@ defineExpose(exposed);
     ref="element"
     type="button"
     :disabled
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-controls="context.id.value"
     data-vize-ui="webcam-capture-stop-button"
     part="stop-button"

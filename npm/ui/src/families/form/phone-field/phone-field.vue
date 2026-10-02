@@ -321,7 +321,7 @@ defineExpose(exposed);
     role="group"
     part="root"
     data-vize-ui="phone-field"
-    :data-state="dataState"
+    :data-state
     :data-country="activeCountry.code"
     :data-disabled="disabled ? 'true' : undefined"
   >

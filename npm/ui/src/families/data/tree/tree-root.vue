@@ -930,9 +930,9 @@ defineExpose(exposed);
     ref="element"
     :dir="dirState"
     :tabindex="rootTabindex"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-multiselectable="selectionModeState === 'multiple' ? 'true' : undefined"
     :aria-disabled="disabledState ? 'true' : undefined"
     data-vize-ui="tree"

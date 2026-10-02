@@ -143,8 +143,8 @@ defineExpose(exposed);
     :type
     :disabled="pageDisabled"
     :aria-label="ariaLabelledby === undefined ? accessibleLabel : undefined"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-labelledby
+    :aria-describedby
     :aria-current="current ? 'page' : undefined"
     data-vize-ui="pagination-page"
     part="page"

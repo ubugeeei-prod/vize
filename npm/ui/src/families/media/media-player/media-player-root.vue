@@ -679,8 +679,8 @@ defineExpose(exposed);
     :id="baseId"
     ref="element"
     :role="ariaLabel !== undefined || ariaLabelledby !== undefined ? 'group' : undefined"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :dir
     data-vize-ui="media-player-root"
     part="root"

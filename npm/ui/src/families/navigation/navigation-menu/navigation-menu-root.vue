@@ -371,8 +371,8 @@ defineExpose(exposed);
     :id="baseId"
     ref="element"
     :dir="dirState"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     data-vize-ui="navigation-menu"
     part="root"
     :data-state="openValue === null ? 'closed' : 'open'"

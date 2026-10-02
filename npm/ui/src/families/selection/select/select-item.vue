@@ -160,7 +160,7 @@ defineExpose(exposed);
     v-bind="interactiveProps"
     :aria-selected="selected ? 'true' : 'false'"
     :aria-disabled="itemDisabled ? 'true' : undefined"
-    :aria-label="ariaLabel"
+    :aria-label
     :hidden="visible ? undefined : true"
     :data-vize-ui="`${context.partPrefix}-item`"
     part="item"

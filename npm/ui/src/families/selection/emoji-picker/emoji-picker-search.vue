@@ -46,7 +46,7 @@ const handlers = computed(() => ({
     type="search"
     :value="context.search.value"
     :placeholder
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-controls="context.gridId.value"
     autocomplete="off"
     data-vize-ui="emoji-picker-search"

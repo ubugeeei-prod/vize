@@ -171,9 +171,9 @@ defineExpose(exposed);
     :placeholder
     :disabled="context.disabled.value"
     :readonly="context.readOnly.value"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-invalid="state === 'invalid' ? 'true' : undefined"
     data-vize-ui="color-picker-field"
     part="field"

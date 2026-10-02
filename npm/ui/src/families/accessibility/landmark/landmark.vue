@@ -124,8 +124,8 @@ defineExpose(exposed);
     :id="landmarkId"
     ref="element"
     v-bind="focusProps"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     data-vize-ui="landmark"
     part="root"
     :data-landmark="role"

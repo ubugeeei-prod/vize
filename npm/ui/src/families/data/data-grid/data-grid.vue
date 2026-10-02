@@ -527,8 +527,8 @@ defineExpose({
     v-bind="rootProps"
     :id="gridId"
     ref="element"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
+    :aria-label
+    :aria-labelledby
     :aria-rowcount="grid.rowModels.value.length + 1"
     :aria-colcount="grid.columnModels.value.length"
     :aria-multiselectable="grid.selectionMode.value === 'multiple' ? 'true' : undefined"

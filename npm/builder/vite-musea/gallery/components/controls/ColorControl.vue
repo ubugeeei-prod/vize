@@ -31,7 +31,7 @@ const inputId = useId();
         type="text"
         class="control-color-text"
         placeholder="#000000"
-        :required="required"
+        :required
       />
     </div>
     <span v-if="description" class="control-desc">{{ description }}</span>

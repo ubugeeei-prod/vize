@@ -44,10 +44,10 @@ function onChange(event: Event): void {
 
 <template>
   <select
-    :aria-label="ariaLabel"
+    :aria-label
     :aria-controls="context.id.value"
     :value="context.visibleStart.value ? String(context.visibleStart.value.month) : undefined"
-    :disabled="disabled"
+    :disabled
     data-vize-ui="calendar-month-select"
     part="month-select"
     :data-month="context.visibleStart.value?.month"

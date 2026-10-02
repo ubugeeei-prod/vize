@@ -254,9 +254,9 @@ defineExpose(exposed);
     :is="as"
     ref="element"
     role="toolbar"
-    :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-describedby="ariaDescribedby"
+    :aria-label
+    :aria-labelledby
+    :aria-describedby
     :aria-orientation="orientationState"
     :aria-disabled="disabledState ? 'true' : undefined"
     :dir="dirState"

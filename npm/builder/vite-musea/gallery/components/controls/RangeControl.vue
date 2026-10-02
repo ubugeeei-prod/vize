@@ -30,7 +30,7 @@ const inputId = useId();
       :min="min ?? 0"
       :max="max ?? 100"
       :step="step ?? 1"
-      :required="required"
+      :required
     />
     <span v-if="description" class="control-desc">{{ description }}</span>
   </div>
