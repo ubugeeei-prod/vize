@@ -122,8 +122,8 @@ below separately from those remaining semantic and metric obligations.
 All four PRs actually merged at 2026-10-02T18:13:36Z through the protected
 merge queue, with individual auto-merge disabled:
 
-| PR | Actual signed merge commit |
-| --- | --- |
+| PR                                                       | Actual signed merge commit                 |
+| -------------------------------------------------------- | ------------------------------------------ |
 | [#7430](https://github.com/ubugeeei-prod/vize/pull/7430) | `a9f89f8457b890849706904809925e98c2e91802` |
 | [#7431](https://github.com/ubugeeei-prod/vize/pull/7431) | `f613b418a5366f32cc2225eda9d6506cf74efe91` |
 | [#7432](https://github.com/ubugeeei-prod/vize/pull/7432) | `451c97d69565a20b44851080de743d537134f473` |
