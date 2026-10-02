@@ -2,7 +2,17 @@ use vize_l0::{Allocator, SourceBlock, SourceRoot};
 use vize_l1::embed::syntax::{NativeSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
 use vize_l1_to_l2::native::{NativeComponent, NativeProduced};
-use vize_l1_to_l2::vue_file::VueFileProducer;
+use vize_l2::file::{Declaration, TemplatePolicy, TemplateScope};
+use vize_l2::lang::js::FileProducer;
+
+#[derive(Clone, Copy)]
+struct LexicalValues;
+
+impl TemplatePolicy for LexicalValues {
+    fn visible(self, _declaration: &Declaration) -> bool {
+        true
+    }
+}
 
 pub fn block<'a>(source: &'a str, content: &str) -> Option<SourceBlock<'a>> {
     let start = source.find(content)?;
@@ -31,9 +41,12 @@ pub fn construct<'a>(
     arena: &'a Allocator,
     source: &'a str,
     template: &str,
-    producer: &mut VueFileProducer<'a>,
+    producer: &mut FileProducer<'a>,
+    scope: TemplateScope,
 ) -> Option<NativeProduced<'a>> {
     let component = NativeComponent::parse_in(arena, block(source, template)?).ok()?;
-    let mut region = producer.template_region().ok()?;
+    // Diagnostic construction exercises real File rows without certifying
+    // original Vue template custody or runtime access classes.
+    let mut region = producer.template_region(scope, LexicalValues).ok()?;
     component.construct_in(&mut region, Lang::Js).ok()
 }

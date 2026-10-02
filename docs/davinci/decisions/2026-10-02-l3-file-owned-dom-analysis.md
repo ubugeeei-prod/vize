@@ -67,26 +67,31 @@ bytes cannot supply those capabilities.
 
 ## Validation and delivery scope
 
-Six actual Program → private native Vue Component/File → L3 pipeline laws
-cover dynamic interpolation/bindings, original entity AST/coordinates, setup
-shadowing, incomplete child-local refusal, zero-reference nonliteral refusal,
-and equal numeric IDs in distinct owners. The production source and new tests
-pass the workspace's strict Clippy restrictions. Full L3 rustdoc checks include
-the three new ownership/type-boundary compile-fail cases.
+Six actual admitted Program → diagnostic Component/File factory → L3 laws
+cover dynamic interpolation/bindings, original entity AST/coordinates, nested
+script-unit shadowing, incomplete child-local refusal, zero-reference
+nonliteral refusal, and equal numeric IDs in distinct owners. They use the
+real lower `FileProducer`, `ProgramScope` and `TemplateScope` APIs. Diagnostic
+construction does not certify Vue script roles, original template custody or
+native SFC admission. Full L3 rustdoc checks include the three new
+ownership/type-boundary compile-fail cases.
 
-Local evidence compiles the complete current L3 source against hash-authenticated
-frozen ordinary File provider `52dd94a44d14e1f17933020c087e237764b44030`
-and coherent cached L0/OXC/selected original stock L1/upper sources. It is
-bounded source/API evidence, not a whole current workspace, hosted Actions,
-portable target matrix or instruction-count result. Production typed providers
-are still awaiting their actual accepted-main delivery.
+Local evidence compiles the complete owned L3 source against the genuine first
+File provider's unchanged L2 source and coherent retained Shared L1/OXC/L0 and
+selected Pending native modules. Production and test fixtures use the
+workspace's strict Clippy restrictions. This is bounded source/API evidence;
+exact-head hosted Cargo, portable targets and unchanged instruction gates
+remain mandatory before delivery.
 
-The source is prepared on actual signed main
-`4cabe83f7d0826907b6035b58d76798e92634927`; only the previously reviewed owned
-L3/edge source closure is reproduced from its private snapshot. No research
-parent/provider sources or legacy normal/build dependencies are copied into
-this change. Actual native Stack/Actions/unchanged instruction gates and queue
-merge verification remain required before delivery.
+The publication parent is genuine File
+`6e5b4561e8acedef0c05592129fe81691815f5ce`, following Pending
+`ff28296247bcd7a73d7421d462b99d84b2f259fa` and actual merged Shared
+`315a31732b2d70e5cf5dae33ce5e5f9c13f8b7b3`. Only reviewed owned L3/edge
+changes are replayed; no research provider/control ancestry is copied. Neutral
+conditional-frame unit laws construct checked canonical parts through the
+existing `Artifact::try_new`, rather than calling an unpublished factory.
+Native Stack membership, exact-head Actions and actual queue merge are still
+required. No legacy normal/build dependency or product route is introduced.
 
 ## TODO
 

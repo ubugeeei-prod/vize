@@ -3,11 +3,11 @@ extern crate std;
 use super::ConditionalFrame;
 use crate::decision::DecisionBuildError;
 use alloc::vec::Vec as Owned;
-use vize_l0::{Allocator, Span, Vec, id::NodeId};
+use vize_l0::{Allocator, Box, Span, Vec, id::NodeId, side_table::SideTable};
 use vize_l2::{
-    artifact::{Artifact, Builder, ConditionalBranch},
+    artifact::{Artifact, ArtifactParts},
     expr::{ExprRef, JsExpr},
-    op::{Namespace, Op},
+    op::{ElementOp, IfBranch, IfOp, Namespace, Op, Region},
     walk::{NodeEvent, NodeRef},
 };
 
@@ -15,30 +15,40 @@ fn fixture(a: &Allocator, first_roots: usize) -> Artifact<'_> {
     let source = "ok";
     let span = Span::new(0, 2);
     let condition = ExprRef::Js(JsExpr::parse_in(a, source, span).unwrap());
-    let mut builder = Builder::new(a, source).unwrap();
-    builder
-        .conditional(
-            &[
-                ConditionalBranch {
-                    condition: Some(condition),
+    let mut branches = Vec::new_in(&a);
+    for (index, condition) in [Some(condition), None].into_iter().enumerate() {
+        let mut ops = Vec::new_in(&a);
+        for _ in 0..if index == 0 { first_roots } else { 1 } {
+            ops.push(Op::Element(Box::new_in(
+                ElementOp {
+                    tag: "p",
+                    namespace: Namespace::Html,
+                    attributes: Vec::new_in(&a),
+                    bindings: Vec::new_in(&a),
+                    children: Region {
+                        ops: Vec::new_in(&a),
+                    },
                     span,
                 },
-                ConditionalBranch {
-                    condition: None,
-                    span,
-                },
-            ],
+                &a,
+            )));
+        }
+        branches.push(IfBranch {
+            condition,
+            region: Region { ops },
             span,
-            |region, _, index| {
-                for _ in 0..if index == 0 { first_roots } else { 1 } {
-                    region
-                        .element("p", Namespace::Html, Vec::new_in(&a), span, |_, _| {})
-                        .unwrap();
-                }
-            },
-        )
-        .unwrap();
-    builder.finish().unwrap()
+        });
+    }
+    let mut ops = Vec::new_in(&a);
+    ops.push(Op::If(Box::new_in(IfOp { branches, span }, &a)));
+    // This checks canonical event ownership, not native directive admission.
+    Artifact::try_new(ArtifactParts {
+        source,
+        root: Region { ops },
+        provenance: Owned::new(),
+        scopes: SideTable::new(),
+    })
+    .unwrap()
 }
 
 #[test]
