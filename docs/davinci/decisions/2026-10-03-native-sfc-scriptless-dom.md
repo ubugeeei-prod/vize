@@ -106,6 +106,18 @@ owned source, exports, dependency entries and records are replayed; incoming
 provider paths and their independent observations remain intact. Protected
 publication and hosted acceptance still require the final current Stack heads.
 
+The owned adapter is now replayed on callable `84d783b8`, directly above
+published L4 `3721ab0e` and signed merged main `3290e828`. A fresh execution
+uses accepted-main whole L1 `089daee1`, the actual `ea5458f8` parser, matching
+whole L2 `d38cbf2f` and native/Vue/SFC `554da72a`. The provider's 164 laws and
+strict/privacy checks pass. Whole L3/L4 and the actual product entry are rebuilt
+together; all seven product laws, nine reference laws, privacy and strict checks
+pass again. Eight complete native maps and sixteen generated-module runtime
+executions pass from that fresh capture. The new source receipt is
+`b682947927dc8a5f4a0c8368fc420c6e0a222a357e2b6f5f2aefa167b537f5d5`.
+Earlier `24fd046e` and historical-provider executions remain separate. This is
+selected entry/whole L3/L4 evidence; hosted whole-product acceptance remains open.
+
 The adapter owns a normal complete document and optional L0 map string; their
 ordinary destruction is retained. NoLinks selects the actual empty recording
 sink and produces no links. Product/test-owned output and fixture vectors stay
