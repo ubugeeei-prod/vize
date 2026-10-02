@@ -18,6 +18,7 @@ use crate::placement::Placement;
 use vize_l0::{Span, id::NodeId, side_table::SideTable};
 use vize_l2::{
     artifact::Artifact,
+    file::FileArtifact,
     op::{BindingOp, Op},
     walk::{NodeEvent, NodeRef},
 };
@@ -32,7 +33,7 @@ pub fn build_decisions<'owner, 'arena>(
     artifact: &'owner Artifact<'arena>,
     policy: TargetPolicy,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
-    build_with(artifact, policy, &LiteralExpressions)
+    build_with(artifact, policy, &LiteralExpressions, None)
 }
 
 /// Apply explicit native expression-binding semantics in the same DOM walk.
@@ -40,13 +41,14 @@ pub fn build_dom_decisions<'owner, 'arena>(
     artifact: &'owner Artifact<'arena>,
     expressions: &impl DomExpressionFacts,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
-    build_with(artifact, TargetPolicy::Dom, expressions)
+    build_with(artifact, TargetPolicy::Dom, expressions, None)
 }
 
-fn build_with<'owner, 'arena>(
+pub(in crate::decision) fn build_with<'owner, 'arena>(
     artifact: &'owner Artifact<'arena>,
     policy: TargetPolicy,
     expressions: &impl DomExpressionFacts,
+    file: Option<&'owner FileArtifact<'arena>>,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
     let mut builder = Builder {
         policy,
@@ -55,7 +57,7 @@ fn build_with<'owner, 'arena>(
         nodes: SideTable::new(),
         controls: SideTable::new(),
         dom: (policy == TargetPolicy::Dom)
-            .then(|| DomBuilder::new(expressions, artifact.root().ops.len())),
+            .then(|| DomBuilder::new(expressions, artifact.root().ops.len(), file)),
     };
     let mut failure = None;
     artifact
@@ -80,6 +82,8 @@ fn build_with<'owner, 'arena>(
 /// Partial scratch tables are never returned as completed analysis.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DecisionBuildError {
+    /// Script/template failure or interrupted admission is retained by the file.
+    IncompleteFile,
     /// The shared L2 walk exhausted its stage-local id space.
     NodeLimit,
     /// A node's enter/leave or attached owner violated the shared walk.

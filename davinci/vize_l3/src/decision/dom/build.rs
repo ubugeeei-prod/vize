@@ -9,15 +9,18 @@ use alloc::vec::Vec;
 use vize_l0::{Span, id::NodeId, side_table::SideTable};
 use vize_l2::{
     expr::ExprRef,
+    file::FileArtifact,
     op::{BindingOp, DynamicName, Namespace, Op},
     walk::NodeRef,
 };
 
 mod control;
 mod dependencies;
+mod file;
 
 pub(in crate::decision) struct DomBuilder<'facts, 'owner, 'arena, F> {
     expressions: &'facts F,
+    file: Option<&'owner FileArtifact<'arena>>,
     frames: Vec<(NodeId, DomFrame<'owner, 'arena>)>,
     facts: DomFacts<'owner, 'arena>,
     root_count: usize,
@@ -34,9 +37,14 @@ struct DomFrame<'owner, 'arena> {
 }
 
 impl<'facts, 'owner, 'arena, F: DomExpressionFacts> DomBuilder<'facts, 'owner, 'arena, F> {
-    pub(in crate::decision) fn new(expressions: &'facts F, root_count: usize) -> Self {
+    pub(in crate::decision) fn new(
+        expressions: &'facts F,
+        root_count: usize,
+        file: Option<&'owner FileArtifact<'arena>>,
+    ) -> Self {
         Self {
             expressions,
+            file,
             frames: Vec::new(),
             root_count,
             facts: DomFacts {
@@ -48,6 +56,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts> DomBuilder<'facts, 'owner, '
                 bindings: SideTable::new(),
                 controls: SideTable::new(),
                 dependencies: Vec::new(),
+                file_expressions: SideTable::new(),
                 unsupported: Vec::new(),
             },
         }
@@ -74,7 +83,8 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts> DomBuilder<'facts, 'owner, '
             match op {
                 Op::Text(_) => Some(false),
                 Op::Interpolation(interpolation) => Some(
-                    self.value(id, interpolation.expression) == Some(ValueKind::ContextDependent),
+                    self.value(id, interpolation.expression)
+                        .is_some_and(ValueKind::is_dynamic),
                 ),
                 Op::Element(element) => {
                     if element.namespace != Namespace::Html {
@@ -200,9 +210,8 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts> DomBuilder<'facts, 'owner, '
         };
         frame.binding_names.push(name);
         frame.normalize_class |= role == PropertyRole::Class;
-        frame.normalize_style |=
-            role == PropertyRole::Style && value == ValueKind::ContextDependent;
-        if value == ValueKind::ContextDependent {
+        frame.normalize_style |= role == PropertyRole::Style && value.is_dynamic();
+        if value.is_dynamic() {
             match role {
                 PropertyRole::Property => {
                     frame.node.changes.properties = true;
@@ -306,6 +315,9 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts> DomBuilder<'facts, 'owner, '
     fn value(&mut self, id: NodeId, expression: ExprRef<'arena>) -> Option<ValueKind> {
         let span = expression.span();
         if let ExprRef::Js(js) = expression {
+            if self.file.is_some() {
+                return self.file_value(id, js);
+            }
             if js.ast.is_literal() {
                 return Some(ValueKind::LiteralConstant);
             }

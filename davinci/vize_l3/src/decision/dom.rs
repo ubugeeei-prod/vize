@@ -14,9 +14,11 @@ pub(super) mod build;
 mod context;
 pub mod control;
 mod dependencies;
+mod file;
 
 pub use context::ContextOnly;
 pub use dependencies::DomDependency;
+pub use file::{DomFileExpression, NativeFileAnalysis, build_dom_file_decisions};
 
 /// A complete expression's references all have explicitly declared context bindings.
 ///
@@ -53,6 +55,9 @@ pub enum DomUnsupported {
     ConditionalShape,
     ConditionalCondition,
     ConditionalRoot,
+    FileExpression,
+    FileScope,
+    FileBinding,
 }
 
 /// Unsupported semantics retain their actual authored location from the same walk.
@@ -115,6 +120,16 @@ pub enum PropertyRole {
 pub enum ValueKind {
     LiteralConstant,
     ContextDependent,
+    /// Complete references to declarations in the actual retained file scope.
+    /// This supplies no framework exposure, access spelling or purity fact.
+    FileDependent,
+}
+
+impl ValueKind {
+    #[must_use]
+    pub const fn is_dynamic(self) -> bool {
+        matches!(self, Self::ContextDependent | Self::FileDependent)
+    }
 }
 
 /// One exact canonical region op and its DOM eligibility.
@@ -164,6 +179,7 @@ pub struct DomFacts<'owner, 'arena> {
     pub(super) bindings: SideTable<DomBinding<'owner, 'arena>>,
     pub(super) controls: SideTable<control::DomConditional<'owner, 'arena>>,
     pub(super) dependencies: Vec<DomDependency>,
+    pub(super) file_expressions: SideTable<DomFileExpression<'owner, 'arena>>,
     pub(super) unsupported: Vec<DomRejection>,
 }
 
@@ -193,6 +209,12 @@ impl<'owner, 'arena> DomFacts<'owner, 'arena> {
     #[must_use]
     pub fn dependencies(&self) -> &[DomDependency] {
         &self.dependencies
+    }
+
+    /// A complete same-file resolution admitted at an actual canonical event.
+    #[must_use]
+    pub fn file_expression(&self, id: NodeId) -> Option<&DomFileExpression<'owner, 'arena>> {
+        self.file_expressions.get(id)
     }
 
     #[must_use]

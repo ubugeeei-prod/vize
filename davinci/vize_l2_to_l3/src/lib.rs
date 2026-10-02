@@ -17,5 +17,8 @@ pub mod partition;
 
 pub use crate::partition::dump::{Fact as DumpPartitionFact, Page as PartitionPage};
 pub use crate::partition::{PartitionFact, PartitionFacts, PartitionKind};
-pub use decision::{DecisionBuildError, NativeAnalysis, build_decisions, build_dom_decisions};
+pub use decision::{
+    DecisionBuildError, NativeAnalysis, NativeFileAnalysis, build_decisions, build_dom_decisions,
+    build_dom_file_decisions,
+};
 pub use lower::{Lowered, lower};

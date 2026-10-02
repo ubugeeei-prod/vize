@@ -18,6 +18,7 @@ pub mod dom;
 pub mod policy;
 
 pub use build::{DecisionBuildError, build_decisions, build_dom_decisions};
+pub use dom::{NativeFileAnalysis, build_dom_file_decisions};
 
 use policy::TargetPolicy;
 
