@@ -1,0 +1,254 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "baseRevision": "c2451a0fb39bf7390c51630cfe28ae0c1b06a870",
+  "product": "compiler",
+  "artifactRoot": "repository",
+  "cases": [
+    {
+      "id": "compiler/ssr/textarea-model",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "files": [
+          {
+            "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/textarea-model.input.txt",
+            "sha256": "c3a529ad8dc823b0e5338020686459a83b44182c70767aeb5c331e6296d4b42f",
+            "role": "entry"
+          }
+        ]
+      },
+      "options": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/textarea-model.expected.json",
+        "sha256": "5739aaddb0d1d6b623ff5ae02c39ff63c869d826c065292a65c3da12da5d6fd9"
+      },
+      "reference": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/textarea-model.expected.json",
+        "sha256": "5739aaddb0d1d6b623ff5ae02c39ff63c869d826c065292a65c3da12da5d6fd9"
+      },
+      "historicalObservation": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/capture-c2451/first.stdout.json",
+        "sha256": "27f53d1ece55ea1f63f496bef0700d432491e9679aba63ac4cfb9be72e4481ec"
+      },
+      "provenance": {
+        "commits": [
+          {
+            "sha": "63d11c41a88db4cead31dbbb512e3a47c8ac29e6",
+            "role": "fix"
+          }
+        ],
+        "witness": {
+          "path": "crates/vize_atelier_ssr/src/lib.rs",
+          "symbol": "test_ssr_v_model_textarea_renders_bound_value"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-public-ssr-api-v1",
+        "native": null,
+        "reasons": {
+          "native": "whole-product native compiler path unavailable"
+        }
+      },
+      "comparison": {
+        "contract": "compiler-complete-public-ssr-result-v1",
+        "requiredFacets": ["code", "preamble", "map", "diagnostics"]
+      }
+    },
+    {
+      "id": "compiler/ssr/slot-fallback-vnode",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "files": [
+          {
+            "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/slot-fallback-vnode.input.txt",
+            "sha256": "465b18b3bfebc61f26fbad82682359ee46881d0f485d8ea474fe3778ef6de0d4",
+            "role": "entry"
+          }
+        ]
+      },
+      "options": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/slot-fallback-vnode.expected.json",
+        "sha256": "5ebc501d34723565b01309f47875a360883429c579a67aa3689dbfd4178dfc77"
+      },
+      "reference": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/slot-fallback-vnode.expected.json",
+        "sha256": "5ebc501d34723565b01309f47875a360883429c579a67aa3689dbfd4178dfc77"
+      },
+      "historicalObservation": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/capture-c2451/first.stdout.json",
+        "sha256": "27f53d1ece55ea1f63f496bef0700d432491e9679aba63ac4cfb9be72e4481ec"
+      },
+      "provenance": {
+        "commits": [
+          {
+            "sha": "dd9f507ccdf045c33596e6f37f403b06a084b1e7",
+            "role": "fix"
+          }
+        ],
+        "witness": {
+          "path": "crates/vize_atelier_ssr/src/lib.rs",
+          "symbol": "test_ssr_slot_outlet_fallback_survives_vnode_branch"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-public-ssr-api-v1",
+        "native": null,
+        "reasons": {
+          "native": "whole-product native compiler path unavailable"
+        }
+      },
+      "comparison": {
+        "contract": "compiler-complete-public-ssr-result-v1",
+        "requiredFacets": ["code", "preamble", "map", "diagnostics"]
+      }
+    },
+    {
+      "id": "compiler/ssr/component-slot-props",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "files": [
+          {
+            "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/component-slot-props.input.txt",
+            "sha256": "220c156bb2d4e5bc1fb46c732288a63eb4d08f7a6601621af8126d15aca615bb",
+            "role": "entry"
+          }
+        ]
+      },
+      "options": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/component-slot-props.expected.json",
+        "sha256": "84b813f65e6423494a52f2bdee1fa1a6a36562dd6ed3e11e90629db9a05d69b7"
+      },
+      "reference": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/component-slot-props.expected.json",
+        "sha256": "84b813f65e6423494a52f2bdee1fa1a6a36562dd6ed3e11e90629db9a05d69b7"
+      },
+      "historicalObservation": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/capture-c2451/first.stdout.json",
+        "sha256": "27f53d1ece55ea1f63f496bef0700d432491e9679aba63ac4cfb9be72e4481ec"
+      },
+      "provenance": {
+        "commits": [
+          {
+            "sha": "4819858579748608f8a3837b62ee6a2fb638d11e",
+            "role": "fix"
+          }
+        ],
+        "witness": {
+          "path": "crates/vize_atelier_ssr/src/lib.rs",
+          "symbol": "test_ssr_component_level_v_slot_binds_props"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-public-ssr-api-v1",
+        "native": null,
+        "reasons": {
+          "native": "whole-product native compiler path unavailable"
+        }
+      },
+      "comparison": {
+        "contract": "compiler-complete-public-ssr-result-v1",
+        "requiredFacets": ["code", "preamble", "map", "diagnostics"]
+      }
+    },
+    {
+      "id": "compiler/ssr/named-scoped-slot",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "files": [
+          {
+            "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/named-scoped-slot.input.txt",
+            "sha256": "41a5a6cf03ef53ede45b456ce769fc25af68cdd9ac099dd091a16e5a89e7c635",
+            "role": "entry"
+          }
+        ]
+      },
+      "options": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/named-scoped-slot.expected.json",
+        "sha256": "898551035bded41371b19a0361b7fdff76fb62d3764e420e09ff5f0d698ceb31"
+      },
+      "reference": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/named-scoped-slot.expected.json",
+        "sha256": "898551035bded41371b19a0361b7fdff76fb62d3764e420e09ff5f0d698ceb31"
+      },
+      "historicalObservation": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/capture-c2451/first.stdout.json",
+        "sha256": "27f53d1ece55ea1f63f496bef0700d432491e9679aba63ac4cfb9be72e4481ec"
+      },
+      "provenance": {
+        "commits": [
+          {
+            "sha": "49c9bcc2d19e1a1abfc2bcd0a372e16339a41ff6",
+            "role": "fix"
+          }
+        ],
+        "witness": {
+          "path": "crates/vize_atelier_ssr/src/lib.rs",
+          "symbol": "test_ssr_named_scoped_slot_keeps_props_in_vnode_fallback"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-public-ssr-api-v1",
+        "native": null,
+        "reasons": {
+          "native": "whole-product native compiler path unavailable"
+        }
+      },
+      "comparison": {
+        "contract": "compiler-complete-public-ssr-result-v1",
+        "requiredFacets": ["code", "preamble", "map", "diagnostics"]
+      }
+    },
+    {
+      "id": "compiler/ssr/component-lone-spread",
+      "state": "active",
+      "targets": ["ssr"],
+      "inputs": {
+        "files": [
+          {
+            "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/component-lone-spread.input.txt",
+            "sha256": "8ba30b7588fa7cc07546cb3f4eb9b3dc502c661b2e2082a3118bf3b2497648a7",
+            "role": "entry"
+          }
+        ]
+      },
+      "options": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/component-lone-spread.expected.json",
+        "sha256": "eb92b6e429e2d39e9b2de667e850d0bc1a19198790e2ebdb337c9555c264a244"
+      },
+      "reference": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/component-lone-spread.expected.json",
+        "sha256": "eb92b6e429e2d39e9b2de667e850d0bc1a19198790e2ebdb337c9555c264a244"
+      },
+      "historicalObservation": {
+        "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/capture-c2451/first.stdout.json",
+        "sha256": "27f53d1ece55ea1f63f496bef0700d432491e9679aba63ac4cfb9be72e4481ec"
+      },
+      "provenance": {
+        "commits": [
+          {
+            "sha": "7c5c7282989291cf92c3e3546a5c56e24eeb92d5",
+            "role": "fix"
+          }
+        ],
+        "witness": {
+          "path": "crates/vize_atelier_ssr/tests/component_spread_props.rs",
+          "symbol": "lone_v_bind_spread_reaches_the_component_prop_bag"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-public-ssr-api-v1",
+        "native": null,
+        "reasons": {
+          "native": "whole-product native compiler path unavailable"
+        }
+      },
+      "comparison": {
+        "contract": "compiler-complete-public-ssr-result-v1",
+        "requiredFacets": ["code", "preamble", "map", "diagnostics"]
+      }
+    }
+  ]
+}

@@ -45,7 +45,15 @@ audit archive; receipt hashes do not claim those logs are committed here.
 Read-only audits verified all 21 SSR and 20 Vapor original archive hashes and
 both retained executable digests. No executable was run during this port.
 
-The original frozen source identities still need remotely inspectable provenance.
+On 2026-10-01, both original frozen sources were published at their unchanged
+Git identities: [SSR `c2451a0fb`](https://github.com/ubugeeei-prod/vize/commit/c2451a0fb39bf7390c51630cfe28ae0c1b06a870)
+and [Vapor `b11eb54d8`](https://github.com/ubugeeei-prod/vize/commit/b11eb54d83b3d8ed6333e2709b10112b45cd84b8).
+Their provenance heads are `provenance/compiler-ssr-original-c2451-20261002`
+and `provenance/compiler-vapor-original-b11eb-20261002`. The original tree,
+parent, raw commit and author/committer `+0900` identities were verified before
+creating those references; neither source was reconstructed with UTC metadata.
+These inspectable historical source references do not certify current-head
+execution or merge acceptance.
 Current-head execution requires exact-head Actions for both ordinary product
 tests, unchanged all-100 gates, the protected queue and actual main merge.
 These ten links remain prepared until that succeeds. Shared SSR/Vapor corpus
