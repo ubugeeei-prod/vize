@@ -46,7 +46,10 @@ pub fn program_comment_ranges(
     };
     let mut ranges = Vec::new();
     for comment in syntax.comments() {
-        if comment.kind() != CommentKind::Block {
+        if !matches!(
+            comment.kind(),
+            CommentKind::SingleLineBlock | CommentKind::MultiLineBlock
+        ) {
             continue;
         }
         let span = comment

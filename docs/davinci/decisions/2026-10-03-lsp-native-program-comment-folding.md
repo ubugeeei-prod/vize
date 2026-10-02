@@ -8,8 +8,7 @@ records `e648610c51f79aeeefe08a20b936c0ae1ed39ad0`; that main still lacks parser
 Stock/Shared provider prefix and be replayed onto its eventual accepted main.
 Provider publication or library compilation alone does not establish its merge.
 
-The adapter implementation remains byte-identical to the reviewed v2 source.
-It consumes original parser-owned admission, retained block comments and exact
+The adapter consumes original parser-owned admission, retained block comments and exact
 authored spans, without a parser invocation or legacy product lookup. Its
 coordinate scope is an admitted, undecoded, zero-origin Program input. A real
 selected prefix is allowed only as Program-local evidence. These checks confer
@@ -31,6 +30,18 @@ source-ready and unexecuted here. Fresh whole-Cargo Actions must compile actual
 Maestro, tower-lsp, L1, L0 and OXC together and execute every named adapter test.
 The opt-in dependency points from crates to davinci; default features and
 existing request dispatch remain unchanged.
+
+The first actual whole-source Check run `37031030307` at
+`744cae470fd924928faa216e53c932d754d9a0c1` failed in job `110917600638`
+before any of the nine adapter tests executed. The pinned Oxc 0.142 parser
+produces `SingleLineBlock` and `MultiLineBlock`; `CommentKind::Block` does not
+exist. The retained original job log preserves that E0599 diagnostic. The
+narrow correction matches both real block variants and moves the unchanged
+three-command feature gate before workspace tests inside the existing composite
+job. No assertion, default route or performance ceiling changes. A fresh
+exact-head whole-source Actions run must execute all nine tests, check the
+no-default feature combination and pass warning-denying Clippy before this
+provider receives execution credit.
 
 Before publishing, pair this record and the existing LSP paragraph with a #6883
 issue comment. The frozen four-layer LSP packet and captured 514b runtime evidence
