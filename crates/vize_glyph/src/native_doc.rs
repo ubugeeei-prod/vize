@@ -1,12 +1,17 @@
-//! Source-borrowing formatting documents and an independent iterative printer.
+//! Opt-in L1 template formatting with a separate document IR and printer.
 //!
-//! Syntax consumers construct this neutral IR; the printer never reparses
-//! source or queries semantic levels. Product route integration is separate.
+//! This facility leaves all existing formatter entry points unchanged. The
+//! first native template consumer lays out plain opening tags and preserves
+//! content, comments, entities, attribute order and quoted values verbatim.
+//! Directive/embed formatting and the other Vue dialects remain unsupported.
 
 #[path = "native_doc/document.rs"]
 mod document;
 #[path = "native_doc/printer.rs"]
 mod printer;
+#[path = "native_doc/template.rs"]
+mod template;
 
 pub use document::{Doc, Line};
 pub use printer::{LineEnding, PrintOptions, print};
+pub use template::{TemplateDocument, TemplateRefusal, UnsupportedSyntax, template_document};

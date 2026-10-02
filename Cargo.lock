@@ -4701,6 +4701,7 @@ dependencies = [
  "thiserror 2.0.20",
  "vize_atelier_sfc",
  "vize_l0",
+ "vize_l1",
 ]
 
 [[package]]

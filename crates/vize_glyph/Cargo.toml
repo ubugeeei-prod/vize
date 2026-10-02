@@ -11,6 +11,7 @@ publish = false
 [dependencies]
 # Internal crates
 vize_l0.workspace = true
+vize_l1.workspace = true
 vize_atelier_sfc.workspace = true
 
 # OXC dependencies
