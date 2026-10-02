@@ -82,5 +82,12 @@ fail when selected yet remain unexecuted during listing. A successful plain
 executable invocation is not named nextest-worker evidence: hosted discovery and
 actual selection of this advertised case remain required.
 
-Final true delivery ancestry, exact-head full Actions/Fuzz/strict100, paired
-issue decisions, native Stack, protected queue and actual merge remain required.
+The published provider wave uses native Stack #7429, ordered Stock #7427 then
+Shared #7428. GitHub rejected delta-only addition to merged Stack #7392 with
+HTTP 422: each new PR base must be the preceding PR head. That closed Stack's
+last source branch is not the actual merged-main ancestor of this wave. Keeping
+the actual main ancestry and creating a new two-layer Stack preserves both
+owned diffs without changing any merged branch or importing old source ancestry.
+
+Exact-head full Actions/Fuzz/strict100, named nextest worker and same-attempt
+JUnit evidence, protected queue and actual merge remain required.
