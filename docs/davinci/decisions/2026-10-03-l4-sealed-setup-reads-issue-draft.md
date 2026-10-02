@@ -24,6 +24,18 @@ native/L3 source lineage: strict whole L3/L4, 52 L4 unit laws, three native
 laws, two privacy failures and eight Node laws pass. This fresh four-module/
 eight-native-render proof preserves the original frozen evidence. Owned
 Markdown and TypeScript pass the repository-pinned formatter before transport.
+The actual generator refreshes only the owned L4 consumption shard for the new
+scope receiver's naive count; symbol-aware legacy usage remains zero.
+
+The source-only successor uses actual public L3 #7461 `1add43c4` with genuine
+File/exposure/SFC ancestry after the first two layers merged. Incoming Cargo
+helper relocation, graph laws and package/support documentation are preserved.
+All 106 previously compiled production/native-test rows, five ABI inputs and
+effective provider source trees are unchanged. The L3 helper relocation is
+outside that proof and has separate upstream discovery checks. Four modules
+and eight renders remain the original accepted-main3290 execution, with no
+runtime rerun/new whole-main credit. Fresh source and exact-head hosted gates
+are required; the unrelated shared audit failure still holds queue readiness.
 
 Scoped whole-source strict Clippy and Rust/Node/privacy checks are separate
 from hosted Cargo, exact-head full/100 and queue/terminal merge gates. Native

@@ -86,7 +86,21 @@ failures and eight Node laws pass again: four complete native modules, eight
 actual native renders and two typed compound refusals. All six complete
 reference modules and unfiltered raw maps remain pinned. The repository-pinned
 formatter also checks the owned Markdown and reference-test layout before
-publication. This source-library replay does not claim hosted or queue success.
+publication. The generated L4 Croquis-consumption shard also records the new
+scope receiver's naive cross-check count; symbol-aware legacy usage stays zero.
+This source-library replay does not claim hosted or queue success.
+
+The source-only successor follows actual public L3 #7461 head `1add43c4`
+after the first L4 and native custody layers merged. Its genuine File/exposure
+and SFC parents preserve the current graph laws, experimental package support
+and unchanged Cargo-helper relocation. All 106 compiled production/native-test
+rows, five ABI inputs and effective provider source trees match the earlier
+accepted-main `3290e828` execution. The moved L3 helper is outside those rows;
+its new path registration has its own upstream source/discovery checks. This
+successor preserves the original four-module/eight-render proof without a
+runtime rerun or a new whole-main/Cargo claim. Fresh source gates and exact-head
+hosted acceptance remain separate; an unrelated shared audit failure currently
+holds queue readiness.
 
 ## Remaining work
 

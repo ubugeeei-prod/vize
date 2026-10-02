@@ -20,4 +20,4 @@ _None._
 | ---------------- | -------: | ---: |
 | `Croquis`        |        0 |    2 |
 | `Span`           |        0 |  121 |
-| `Croquis.scopes` |        0 |    1 |
+| `Croquis.scopes` |        0 |    2 |
