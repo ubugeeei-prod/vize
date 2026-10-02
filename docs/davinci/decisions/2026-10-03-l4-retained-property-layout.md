@@ -19,11 +19,17 @@ The existing single binding-layout scan incorporates this test before the
 same append writer encodes properties. Expression source/projection/access
 checks remain transactional, including NoLinks emission.
 
-The selected Vue 3.5.35 compiler emits a single `msg` value inline, but emits
-` msg `, `/*kept*/msg`, `msg/*kept*/`, `msg + 1`, `msg.length` and `(msg)` in a
-multiline property object. Literal roots such as ` 42 ` and `'kept'/*雪🌸*/`
-remain inline and preserve those bytes. This corrects complete module output,
-including the late import preamble, rather than comparing a render body alone.
+The selected Vue 3.5.35 compiler emits a single `msg` value inline. It emits a
+multiline property object for expression windows `" msg "`, `"/*kept*/msg"`,
+`"msg/*kept*/"`, `"msg + 1"`, `"msg.length"` and `"(msg)"`; quotes show the window
+boundaries. Literal windows `" 42 "` and `"'kept'/*雪🌸*/"` remain inline and
+preserve those bytes. This corrects complete module output, including the late
+import preamble, rather than comparing a render body alone.
+
+The actual PR formatter rejected the companion and reference test layout.
+Repository-pinned Oxfmt 0.63.0 formats both; quoted window boundaries preserve
+the meaningful outer trivia that Markdown code-span formatting would remove.
+The fix changes no Rust source, fixture, upstream map or runtime expectation.
 
 ## Original complete references and genuine consumers
 
