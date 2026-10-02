@@ -1,11 +1,11 @@
 use super::pattern::Directive;
+use super::{ConstructionBody, ConstructionFactory};
 use super::{Context, NativeHoleKind};
 use vize_l0::Span;
 use vize_l1::dialect::vue3::VueDirectives;
 use vize_l1::embed::prepare_attribute_value;
 use vize_l1::markup::directive::DirectiveSyntax;
 use vize_l1::{Attribute as SurfaceAttribute, Element};
-use vize_l2::artifact::{ComponentBody, ComponentFactory};
 use vize_l2::op::{Attribute, Namespace};
 
 mod header;
@@ -16,8 +16,8 @@ enum PreparedAttribute<'a> {
     Directive(Directive),
 }
 
-impl<'a> Context<'a> {
-    pub(super) fn element<R: ComponentFactory<'a>>(
+impl<'a> Context<'_, 'a> {
+    pub(super) fn element<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
         element: &Element<'a>,
@@ -34,7 +34,7 @@ impl<'a> Context<'a> {
         self.element_body(region, header, mask, parent);
     }
 
-    pub(super) fn element_body<R: ComponentFactory<'a>>(
+    pub(super) fn element_body<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
         header: PreparedElement<'_, 'a>,
@@ -86,7 +86,7 @@ impl<'a> Context<'a> {
         }
     }
 
-    fn attribute<R: ComponentFactory<'a>>(
+    fn attribute<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
         ordinal: usize,
@@ -148,7 +148,7 @@ impl<'a> Context<'a> {
             }
             match prepare_attribute_value(
                 self.allocator,
-                self.block.root_source(),
+                self.block().root_source(),
                 self.token_span(&value.content),
             ) {
                 Ok(source) => Some(source.text()),
@@ -168,8 +168,8 @@ impl<'a> Context<'a> {
     }
 }
 
-struct ElementBody<'ctx, 'surface, 'mask, 'a> {
-    cx: &'ctx mut Context<'a>,
+struct ElementBody<'ctx, 'component, 'surface, 'mask, 'a> {
+    cx: &'ctx mut Context<'component, 'a>,
     carrier: &'surface Element<'a>,
     mask: StructuralHeadMask<'mask>,
     directives: vize_l0::Vec<'a, Directive>,
@@ -179,8 +179,8 @@ struct ElementBody<'ctx, 'surface, 'mask, 'a> {
     children_namespace: Namespace,
 }
 
-impl<'a> ComponentBody<'a> for ElementBody<'_, '_, '_, 'a> {
-    fn run<R: ComponentFactory<'a>>(self, region: &mut R, node: vize_l0::id::NodeId) {
+impl<'a> ConstructionBody<'a> for ElementBody<'_, '_, '_, '_, 'a> {
+    fn run<R: ConstructionFactory<'a>>(self, region: &mut R, node: vize_l0::id::NodeId) {
         self.cx.record(
             region,
             if self.native {

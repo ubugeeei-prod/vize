@@ -1,9 +1,9 @@
 //! A const native dialect pattern table consumed during owner construction.
 
 use super::{Context, NativeHoleKind};
+use crate::native::ConstructionFactory;
 use vize_l0::Span;
 use vize_l1::markup::directive::DirectiveName;
-use vize_l2::artifact::ComponentFactory;
 
 mod vue3;
 
@@ -19,17 +19,17 @@ pub(super) struct Directive {
 
 struct Pattern<'a, R> {
     accepts: fn(&str, DirectiveName) -> bool,
-    lower: fn(&mut Context<'a>, &mut R, Directive),
+    lower: for<'component> fn(&mut Context<'component, 'a>, &mut R, Directive),
 }
 
-impl<'a> Context<'a> {
-    pub(super) fn directive<R: ComponentFactory<'a>>(
+impl<'a> Context<'_, 'a> {
+    pub(super) fn directive<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
         directive: Directive,
     ) {
         for pattern in vue3::Patterns::<'a, R>::TABLE {
-            if (pattern.accepts)(self.block.root_source(), directive.head) {
+            if (pattern.accepts)(self.block().root_source(), directive.head) {
                 (pattern.lower)(self, region, directive);
                 return;
             }

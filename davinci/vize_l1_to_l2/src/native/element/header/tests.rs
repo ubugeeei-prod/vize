@@ -1,20 +1,26 @@
 use super::{Context, HeaderAdmission, NativeHoleKind, StructuralHeadMask};
+use crate::native::construction::Diagnostic;
+use crate::native::{NativeComponent, NativeObservations};
 use alloc::vec::Vec;
-use vize_l0::{Allocator, SourceRoot};
+use vize_l0::{Allocator, SourceRoot, cstr};
 use vize_l1::SurfaceChild;
 use vize_l1::embed::Lang;
 use vize_l2::artifact::Builder;
 use vize_l2::op::{Namespace, Op};
 
-fn context<'a>(a: &'a Allocator, source: &'a str) -> Context<'a> {
+fn context<'component, 'a>(
+    a: &'a Allocator,
+    component: &'component NativeComponent<'a>,
+    observations: &'component mut NativeObservations<'a>,
+) -> Context<'component, 'a> {
     Context {
         allocator: a,
-        block: SourceRoot::new(source).unwrap().whole_block(),
+        component,
         lang: Lang::Js,
-        holes: Vec::new(),
-        diagnostics: Vec::new(),
-        embeds: Vec::new(),
-        rejected_syntax: Vec::new(),
+        holes: &mut observations.holes,
+        diagnostics: &mut observations.diagnostics,
+        embeds: &mut observations.embeds,
+        rejected_syntax: &mut observations.rejected_syntax,
     }
 }
 
@@ -22,15 +28,18 @@ fn context<'a>(a: &'a Allocator, source: &'a str) -> Context<'a> {
 fn moved_prepared_header_keeps_original_ordinals_and_once_decoded_attribute_pointer() {
     let a = Allocator::default();
     let file = "<div title=\"a&amp;b\" v-if=\"ok\" plain=\"x\" v-for=\"item in items\" :id=\"item.id\">text</div>";
-    let component = vize_l1::markup::parse_component(&a, file).unwrap();
-    let [SurfaceChild::Element(carrier)] = component.tree.children.as_slice() else {
+    let component =
+        NativeComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
+    let [SurfaceChild::Element(carrier)] = component.carrier().tree.children.as_slice() else {
         panic!("actual native carrier");
     };
-    let mut cx = context(&a, file);
+    let mut observations = NativeObservations::new();
+    let mut cx = context(&a, &component, &mut observations);
     let mut builder = Builder::new(&a, file).unwrap();
     let decoded;
     {
         let mut region = builder.region();
+        let mut region = Diagnostic::new(&mut region);
         let header = cx.prepare_element_header(&mut region, carrier, Namespace::Html);
         assert!(core::ptr::eq(header.carrier, carrier.as_ref()));
         assert_eq!(header.admission, HeaderAdmission::Ready);
@@ -74,16 +83,19 @@ fn moved_prepared_header_keeps_original_ordinals_and_once_decoded_attribute_poin
 fn a_mask_for_another_actual_carrier_cannot_suppress_this_headers_directive() {
     let a = Allocator::default();
     let file = "<p v-if=\"a\">one</p><p v-if=\"b\">two</p>";
-    let component = vize_l1::markup::parse_component(&a, file).unwrap();
+    let component =
+        NativeComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
     let [SurfaceChild::Element(first), SurfaceChild::Element(second)] =
-        component.tree.children.as_slice()
+        component.carrier().tree.children.as_slice()
     else {
         panic!("actual sibling carriers");
     };
-    let mut cx = context(&a, file);
+    let mut observations = NativeObservations::new();
+    let mut cx = context(&a, &component, &mut observations);
     let mut builder = Builder::new(&a, file).unwrap();
     {
         let mut region = builder.region();
+        let mut region = Diagnostic::new(&mut region);
         let first = cx.prepare_element_header(&mut region, first, Namespace::Html);
         let second = cx.prepare_element_header(&mut region, second, Namespace::Html);
         let mask = cx.structural_mask(&first, &[0]).unwrap();
@@ -96,7 +108,10 @@ fn a_mask_for_another_actual_carrier_cannot_suppress_this_headers_directive() {
         cx.holes.first().unwrap().kind,
         NativeHoleKind::DirectiveSyntax
     );
-    assert_eq!(cx.holes.get(1).unwrap().kind, NativeHoleKind::Directive);
+    let [_, second] = cx.holes.as_slice() else {
+        panic!("two retained carrier refusals");
+    };
+    assert_eq!(second.kind, NativeHoleKind::Directive);
     assert!(cx.embeds.is_empty());
     let [Op::Element(owner)] = artifact.root().ops.as_slice() else {
         panic!("second carrier")
@@ -117,15 +132,18 @@ fn invalid_source_ordinals_and_nonstructural_heads_refuse_before_any_node_or_emb
         "v-if.mod=\"bad +\"",
     ] {
         let a = Allocator::default();
-        let file = alloc::format!("<p {attribute} v-if=\"good\">body</p>");
-        let component = vize_l1::markup::parse_component(&a, &file).unwrap();
-        let [SurfaceChild::Element(carrier)] = component.tree.children.as_slice() else {
+        let file = cstr!("<p {attribute} v-if=\"good\">body</p>");
+        let component =
+            NativeComponent::parse_in(&a, SourceRoot::new(&file).unwrap().whole_block()).unwrap();
+        let [SurfaceChild::Element(carrier)] = component.carrier().tree.children.as_slice() else {
             panic!("native carrier")
         };
-        let mut cx = context(&a, &file);
+        let mut observations = NativeObservations::new();
+        let mut cx = context(&a, &component, &mut observations);
         let mut builder = Builder::new(&a, &file).unwrap();
         {
             let mut region = builder.region();
+            let mut region = Diagnostic::new(&mut region);
             let header = cx.prepare_element_header(&mut region, carrier, Namespace::Html);
             for ordinals in [&[0][..], &[1, 1], &[20]] {
                 assert!(
@@ -150,14 +168,17 @@ fn prepared_pre_carrier_and_missing_owner_keep_original_facts_without_duplicate_
         "<div><p>kept</p>",
     ] {
         let a = Allocator::default();
-        let component = vize_l1::markup::parse_component(&a, file).unwrap();
-        let [SurfaceChild::Element(carrier)] = component.tree.children.as_slice() else {
+        let component =
+            NativeComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
+        let [SurfaceChild::Element(carrier)] = component.carrier().tree.children.as_slice() else {
             panic!("original carrier")
         };
-        let mut cx = context(&a, file);
+        let mut observations = NativeObservations::new();
+        let mut cx = context(&a, &component, &mut observations);
         let mut builder = Builder::new(&a, file).unwrap();
         {
             let mut region = builder.region();
+            let mut region = Diagnostic::new(&mut region);
             let header = cx.prepare_element_header(&mut region, carrier, Namespace::Html);
             let holes = cx.holes.len();
             let pre = header.admission == HeaderAdmission::PreCarrier;

@@ -1,8 +1,8 @@
 use super::{Context, Directive, NativeHoleKind, PreparedAttribute};
+use crate::native::ConstructionFactory;
 use vize_l0::Span;
 use vize_l1::markup::directive::DirectivePrefix;
 use vize_l1::{Element, ElementClose};
-use vize_l2::artifact::ComponentFactory;
 use vize_l2::op::{Attribute, Namespace};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -44,8 +44,8 @@ impl StructuralHeadMask<'_> {
     }
 }
 
-impl<'a> Context<'a> {
-    pub(in crate::native) fn prepare_element_header<'surface, R: ComponentFactory<'a>>(
+impl<'a> Context<'_, 'a> {
+    pub(in crate::native) fn prepare_element_header<'surface, R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
         carrier: &'surface Element<'a>,
@@ -142,7 +142,7 @@ impl<'a> Context<'a> {
                 return Err(NativeHoleKind::DirectiveSyntax);
             };
             let name = self
-                .block
+                .block()
                 .root_source()
                 .get(directive.head.name.start as usize..directive.head.name.end as usize);
             if directive.head.prefix != DirectivePrefix::Full

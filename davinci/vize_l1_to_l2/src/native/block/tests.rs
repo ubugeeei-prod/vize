@@ -1,5 +1,5 @@
 use super::NativeComponent;
-use vize_l0::{Allocator, SourceRoot, Span};
+use vize_l0::{Allocator, SourceRoot, Span, cstr};
 use vize_l1::embed::Lang;
 use vize_l2::artifact::Builder;
 use vize_l2::expr::ExprRef;
@@ -49,10 +49,10 @@ fn whole_file_template_block_keeps_absolute_entities_and_the_same_once_ast() {
             .expression()
             .unwrap()
     ));
-    assert!(core::ptr::eq(
-        js.ast,
-        produced.embeds.get(1).unwrap().syntax.expression().unwrap()
-    ));
+    let [_, second, ..] = produced.embeds.as_slice() else {
+        panic!("second retained expression");
+    };
+    assert!(core::ptr::eq(js.ast, second.syntax.expression().unwrap()));
     assert_eq!(binding.source, "作者 && value");
     assert!(binding.matches_authored_source(file));
     assert!(js.matches_authored_source(file));
@@ -125,8 +125,8 @@ fn recursive_short_borrows_record_only_actual_expression_ids_and_keep_raw_output
     assert_eq!(artifact.node_count(), raw.artifact.node_count());
     assert_eq!(artifact.provenance(), raw.artifact.provenance());
     assert_eq!(
-        alloc::format!("{:?}", artifact.root()),
-        alloc::format!("{:?}", raw.artifact.root())
+        cstr!("{:?}", artifact.root()),
+        cstr!("{:?}", raw.artifact.root())
     );
     assert_eq!(
         sites
@@ -168,10 +168,9 @@ fn block_rebases_all_error_and_admission_facts_without_modifying_original_carrie
         .rev()
         .map(|ch| if ch == '(' { ')' } else { ']' })
         .collect();
-    let content =
-        alloc::format!("<!DOCTYPE html><div v-pre:[{opens}key{closes}]>{{{{ kept }}}}</div>");
+    let content = cstr!("<!DOCTYPE html><div v-pre:[{opens}key{closes}]>{{{{ kept }}}}</div>");
     let prefix = "<script>const 作者 = 1</script>\n<template>";
-    let file = alloc::format!("{prefix}{content}</template>");
+    let file = cstr!("{prefix}{content}</template>");
     let block = SourceRoot::new(&file)
         .unwrap()
         .block(

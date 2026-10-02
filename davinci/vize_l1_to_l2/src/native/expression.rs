@@ -1,12 +1,13 @@
 //! The actual L1 consuming handoff, never a parse from L2 or transformed text.
 
 use super::{Context, NativeEmbed, NativeHoleKind};
+use crate::native::ConstructionFactory;
 use vize_l0::{Allocator, Span, Vec};
 use vize_l1::Interpolation;
 use vize_l1::embed::prepare_vue_interpolation_in;
 use vize_l1::embed::syntax::{EmbedHole, RetainedExpression, parse_once};
 use vize_l1::embed::{DecodeSegmentKind, Embed, EmbedSource, Grammar, Shape};
-use vize_l2::artifact::{ArtifactError, ComponentFactory};
+use vize_l2::artifact::ArtifactError;
 use vize_l2::expr::JsExpr;
 use vize_l2::expr::js::{JsCoordinateError, JsCoordinates, JsSegment};
 
@@ -51,8 +52,8 @@ pub fn retain_expression_in<'a>(
         .map_err(NativeExpressionError::Coordinates)
 }
 
-impl<'a> Context<'a> {
-    pub(super) fn interpolation<R: ComponentFactory<'a>>(
+impl<'a> Context<'_, 'a> {
+    pub(super) fn interpolation<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
         interpolation: &Interpolation<'a>,
@@ -62,10 +63,10 @@ impl<'a> Context<'a> {
             self.token_span(&interpolation.close).end,
         );
         let content = interpolation.content.text;
-        let source_span = self.block.span_of(content).unwrap_or(Span::new(0, 0));
+        let source_span = self.block().span_of(content).unwrap_or(Span::new(0, 0));
         let source = match prepare_vue_interpolation_in(
             self.allocator,
-            self.block.root_source(),
+            self.block().root_source(),
             source_span,
         ) {
             Ok(source) => source,
@@ -84,7 +85,7 @@ impl<'a> Context<'a> {
         );
     }
 
-    pub(super) fn expression<R: ComponentFactory<'a>>(
+    pub(super) fn expression<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
         source: EmbedSource<'a>,
@@ -116,37 +117,35 @@ impl<'a> Context<'a> {
                 return;
             }
         };
-        let expression = match admit(&retained) {
-            Ok(()) => retain_expression_in(self.allocator, self.block.root_source(), &retained),
-            Err(kind) => {
-                self.hole(region, kind, source_span);
-                self.embeds.push(NativeEmbed {
-                    node: None,
-                    syntax: retained,
-                });
-                return;
-            }
-        };
-        let node = match expression {
-            Ok(js) => {
-                let result = construct(region, js);
-                self.produced(region, result, rule, span, after)
-            }
-            Err(error) => {
-                let kind = match error {
+        let expression = admit(&retained).and_then(|()| {
+            retain_expression_in(self.allocator, self.block().root_source(), &retained).map_err(
+                |error| match error {
                     NativeExpressionError::Hole(hole) => NativeHoleKind::Embed(hole),
                     NativeExpressionError::Coordinates(error) => {
                         NativeHoleKind::ExpressionCoordinates(error)
                     }
-                };
-                self.hole(region, kind, source_span);
-                None
-            }
-        };
+                },
+            )
+        });
+        // Keep the owning observation before lower policy/provenance callbacks.
         self.embeds.push(NativeEmbed {
-            node,
+            node: None,
             syntax: retained,
         });
+        match expression {
+            Ok(js) => {
+                let result = construct(region, js);
+                if let Ok(node) = result
+                    && let Some(embed) = self.embeds.last_mut()
+                {
+                    embed.node = Some(node);
+                }
+                self.produced(region, result, rule, span, after);
+            }
+            Err(kind) => {
+                self.hole(region, kind, source_span);
+            }
+        }
     }
 }
 

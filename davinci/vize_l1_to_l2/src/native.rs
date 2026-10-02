@@ -13,12 +13,14 @@ use vize_l1::embed::syntax::{EmbedHole, NativeSyntax, RetainedExpression};
 use vize_l1::embed::{Lang, SourceError};
 use vize_l1::markup::{ComponentParse, DirectiveNameError};
 use vize_l1::{SurfaceChild, Token};
-use vize_l2::artifact::{
-    Artifact, ArtifactError, ArtifactParts, Builder, ComponentFactory, RejectedArtifact,
-};
+use vize_l2::artifact::{Artifact, ArtifactError, ArtifactParts, Builder, RejectedArtifact};
 use vize_l2::op::{Namespace, Region};
 use vize_l2::provenance::ProvenanceRecord;
 
+mod construction;
+pub(crate) use construction::{ConstructionBody, ConstructionFactory};
+mod pending;
+pub(crate) use pending::{NativeObservations, PendingNativeComponent};
 mod block;
 pub use block::{NativeComponent, NativeProduced, RejectedNativeComponent};
 mod element;
@@ -130,18 +132,22 @@ fn empty_rejection<'a>(
     }
 }
 
-struct Context<'a> {
+struct Context<'component, 'a> {
     allocator: &'a Allocator,
-    block: SourceBlock<'a>,
+    component: &'component NativeComponent<'a>,
     lang: Lang,
-    holes: Vec<NativeHole>,
-    diagnostics: Vec<Diagnostic>,
-    embeds: Vec<NativeEmbed<'a>>,
-    rejected_syntax: Vec<NativeSyntax<'a>>,
+    holes: &'component mut Vec<NativeHole>,
+    diagnostics: &'component mut Vec<Diagnostic>,
+    embeds: &'component mut Vec<NativeEmbed<'a>>,
+    rejected_syntax: &'component mut Vec<NativeSyntax<'a>>,
 }
 
-impl<'a> Context<'a> {
-    fn children<R: ComponentFactory<'a>>(
+impl<'a> Context<'_, 'a> {
+    fn block(&self) -> SourceBlock<'a> {
+        self.component.block()
+    }
+
+    fn children<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
         children: &[SurfaceChild<'a>],
@@ -169,10 +175,10 @@ impl<'a> Context<'a> {
     }
 
     fn token_span(&self, token: &Token<'_>) -> Span {
-        self.block.span_of(token.text).unwrap_or(Span::new(0, 0))
+        self.block().span_of(token.text).unwrap_or(Span::new(0, 0))
     }
 
-    fn record<R: ComponentFactory<'a>>(
+    fn record<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
         rule: &'static str,
@@ -181,7 +187,7 @@ impl<'a> Context<'a> {
         after: &'static str,
     ) {
         let before = self
-            .block
+            .block()
             .root_source()
             .get(span.start as usize..span.end as usize)
             .unwrap_or("");
@@ -199,7 +205,12 @@ impl<'a> Context<'a> {
         }
     }
 
-    fn hole<R: ComponentFactory<'a>>(&mut self, region: &mut R, kind: NativeHoleKind, span: Span) {
+    fn hole<R: ConstructionFactory<'a>>(
+        &mut self,
+        region: &mut R,
+        kind: NativeHoleKind,
+        span: Span,
+    ) {
         self.holes.push(NativeHole { span, kind });
         self.diagnostics.push(Diagnostic::new(
             Advisory::Warning,
@@ -212,7 +223,7 @@ impl<'a> Context<'a> {
         self.record(region, "native.unsupported", None, span, "");
     }
 
-    fn produced<R: ComponentFactory<'a>>(
+    fn produced<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
         result: Result<NodeId, ArtifactError>,

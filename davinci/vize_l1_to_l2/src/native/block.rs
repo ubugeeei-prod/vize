@@ -1,6 +1,9 @@
 //! Parser-owned block admission before any generic factory is allowed to mint.
 
-use super::{Context, NativeEmbed, NativeHole, NativeHoleKind};
+use super::{
+    ConstructionFactory, Context, NativeEmbed, NativeHole, NativeHoleKind, NativeObservations,
+    PendingNativeComponent,
+};
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Allocator, SourceBlock, Span, diag::Diagnostic};
 use vize_l1::embed::{Lang, SourceError, syntax::NativeSyntax};
@@ -91,69 +94,73 @@ impl<'a> NativeComponent<'a> {
         region: &mut R,
         lang: Lang,
     ) -> Result<NativeProduced<'a>, Box<RejectedNativeComponent<'a>>> {
-        let expected = self.block.root_source();
-        let actual = region.source();
-        if expected.as_ptr() != actual.as_ptr() || expected.len() != actual.len() {
-            return Err(Box::new(RejectedNativeComponent { component: self }));
+        let mut pending = PendingNativeComponent::from_component(self);
+        if pending.construct_diagnostic_in(region, lang).is_err() {
+            return Err(pending.source_rejection());
         }
-        let mut cx = Context {
-            allocator: self.allocator,
-            block: self.block,
-            lang,
-            holes: Vec::new(),
-            diagnostics: Vec::new(),
-            embeds: Vec::new(),
-            rejected_syntax: Vec::new(),
-        };
-        for error in &self.component.errors {
-            cx.relative_hole(
-                region,
-                NativeHoleKind::Surface(error.code),
-                Span::new(error.offset, error.offset),
-            );
-        }
-        for admission in &self.component.unsupported {
-            cx.relative_hole(
-                region,
-                NativeHoleKind::DirectiveAdmission(admission.error),
-                admission.span,
-            );
-        }
-        cx.children(
-            region,
-            &self.component.tree.children,
-            (Namespace::Html, None),
-        );
-        Ok(NativeProduced {
-            component: self,
-            holes: cx.holes,
-            diagnostics: cx.diagnostics,
-            embeds: cx.embeds,
-            rejected_syntax: cx.rejected_syntax,
-        })
+        pending
+            .into_produced()
+            .map_err(|pending| (*pending).source_rejection())
     }
 }
 
-impl<'a> Context<'a> {
-    fn relative_hole<R: ComponentFactory<'a>>(
+/// Both routes borrow the same original owners into the existing single walk.
+pub(super) fn construct_component<'a, R: ConstructionFactory<'a>>(
+    component: &NativeComponent<'a>,
+    observations: &mut NativeObservations<'a>,
+    region: &mut R,
+    lang: Lang,
+) {
+    let mut cx = Context {
+        allocator: component.allocator,
+        component,
+        lang,
+        holes: &mut observations.holes,
+        diagnostics: &mut observations.diagnostics,
+        embeds: &mut observations.embeds,
+        rejected_syntax: &mut observations.rejected_syntax,
+    };
+    for error in &component.component.errors {
+        cx.relative_hole(
+            region,
+            NativeHoleKind::Surface(error.code),
+            Span::new(error.offset, error.offset),
+        );
+    }
+    for admission in &component.component.unsupported {
+        cx.relative_hole(
+            region,
+            NativeHoleKind::DirectiveAdmission(admission.error),
+            admission.span,
+        );
+    }
+    cx.children(
+        region,
+        &component.component.tree.children,
+        (Namespace::Html, None),
+    );
+}
+
+impl<'a> Context<'_, 'a> {
+    fn relative_hole<R: ConstructionFactory<'a>>(
         &mut self,
         region: &mut R,
         kind: NativeHoleKind,
         relative: Span,
     ) {
         let span = self
-            .block
+            .block()
             .start()
             .checked_add(relative.start)
-            .zip(self.block.start().checked_add(relative.end))
+            .zip(self.block().start().checked_add(relative.end))
             .map(|(start, end)| Span::new(start, end))
-            .filter(|span| self.block.contains_block_span(*span));
+            .filter(|span| self.block().contains_block_span(*span));
         match span {
             Some(span) => self.hole(region, kind, span),
             None => self.hole(
                 region,
                 NativeHoleKind::Source(SourceError::InvalidAuthoredSpan),
-                self.block.span(),
+                self.block().span(),
             ),
         }
     }

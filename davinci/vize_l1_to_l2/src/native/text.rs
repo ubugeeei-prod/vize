@@ -1,18 +1,22 @@
 use super::{Context, NativeHoleKind};
+use crate::native::ConstructionFactory;
 use vize_l0::String;
 use vize_l1::Token;
 use vize_l1::markup::entity::{EntityContext, decode_one, needs_decoding};
-use vize_l2::artifact::ComponentFactory;
 
-impl<'a> Context<'a> {
-    pub(super) fn text<R: ComponentFactory<'a>>(&mut self, region: &mut R, token: &Token<'a>) {
+impl<'a> Context<'_, 'a> {
+    pub(super) fn text<R: ConstructionFactory<'a>>(&mut self, region: &mut R, token: &Token<'a>) {
         let span = self.token_span(token);
         let text = decode_text(self.allocator, token.text);
         let result = region.text(text, span);
         self.produced(region, result, "native.text", span, "ui.text");
     }
 
-    pub(super) fn comment<R: ComponentFactory<'a>>(&mut self, region: &mut R, token: &Token<'a>) {
+    pub(super) fn comment<R: ConstructionFactory<'a>>(
+        &mut self,
+        region: &mut R,
+        token: &Token<'a>,
+    ) {
         let span = self.token_span(token);
         let Some(body) = token
             .text

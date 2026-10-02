@@ -1,5 +1,5 @@
 use crate::native::{NativeHoleKind, lower_component_native};
-use vize_l0::{Allocator, Span};
+use vize_l0::{Allocator, Span, cstr};
 use vize_l1::embed::Lang;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{BindingOp, Op};
@@ -68,7 +68,10 @@ fn trimmed_line_comment_keeps_original_observations_and_refuses_before_mint() {
         first.syntax.comments().next().unwrap().text().unwrap(),
         "//tail"
     );
-    assert_eq!(lowered.embeds.get(1).unwrap().node.unwrap().index(), 1);
+    let [_, second, ..] = lowered.embeds.as_slice() else {
+        panic!("retained later expression");
+    };
+    assert_eq!(second.node.unwrap().index(), 1);
     assert_eq!(lowered.artifact.node_count(), 3);
 }
 
@@ -83,7 +86,7 @@ fn actual_identifier_edge_nbsp_and_bom_keep_syntax_but_refuse_before_coordinates
         ("", "&#65279;"),
     ] {
         let a = Allocator::default();
-        let file = alloc::format!("<p>{{{{ {prefix}msg{suffix} }}}}{{{{kept}}}}</p>");
+        let file = cstr!("<p>{{{{ {prefix}msg{suffix} }}}}{{{{kept}}}}</p>");
         let lowered = lower_component_native(&a, &file, Lang::Js).unwrap();
         assert!(!lowered.is_supported(), "{prefix:?}/{suffix:?}");
         assert_eq!(lowered.holes.len(), 1);
@@ -103,7 +106,10 @@ fn actual_identifier_edge_nbsp_and_bom_keep_syntax_but_refuse_before_coordinates
             lowered.artifact.source().as_ptr(),
             file.as_ptr()
         ));
-        assert_eq!(lowered.embeds.get(1).unwrap().node.unwrap().index(), 1);
+        let [_, second, ..] = lowered.embeds.as_slice() else {
+            panic!("retained later expression");
+        };
+        assert_eq!(second.node.unwrap().index(), 1);
         assert_eq!(lowered.artifact.node_count(), 2);
     }
 }
@@ -120,7 +126,7 @@ fn characters_inside_original_comments_and_literals_do_not_trigger_edge_refusal(
         "'&#160;msg'",
     ] {
         let a = Allocator::default();
-        let file = alloc::format!("{{{{ {expression} }}}}");
+        let file = cstr!("{{{{ {expression} }}}}");
         let lowered = lower_component_native(&a, &file, Lang::Js).unwrap();
         assert!(
             lowered.is_supported(),
@@ -166,7 +172,10 @@ fn interpolation_spelling_policy_does_not_change_neutral_named_binding_admission
     };
     assert_eq!(js.source, "\u{00a0}msg");
     assert_eq!(lowered.embeds.first().unwrap().node.unwrap().index(), 1);
-    assert_eq!(lowered.embeds.get(1).unwrap().node, None);
+    let [_, second, ..] = lowered.embeds.as_slice() else {
+        panic!("retained refused interpolation");
+    };
+    assert_eq!(second.node, None);
     assert!(owner.children.ops.is_empty());
     assert_eq!(lowered.artifact.node_count(), 2);
 }

@@ -1,12 +1,12 @@
 //! Actual Vue 3 directive patterns; no legacy capability or parser route.
 
-use super::{ComponentFactory, Context, Directive, NativeHoleKind, Pattern};
+use super::{ConstructionFactory, Context, Directive, NativeHoleKind, Pattern};
 use vize_l1::embed::prepare_attribute_value;
 use vize_l1::markup::directive::{ArgSyntax, DirectiveName, DirectivePrefix};
 
 pub(super) struct Patterns<'a, R>(core::marker::PhantomData<(&'a (), R)>);
 
-impl<'a, R: ComponentFactory<'a>> Patterns<'a, R> {
+impl<'a, R: ConstructionFactory<'a>> Patterns<'a, R> {
     // The identical function-pointer table is a const value: a static slice
     // would incorrectly require compile-local source and factory borrows to
     // outlive 'static. No table allocation or dynamic dispatch is introduced.
@@ -22,7 +22,11 @@ fn is_bind(source: &str, head: DirectiveName) -> bool {
             && source.get(head.name.start as usize..head.name.end as usize) == Some("bind")
 }
 
-fn bind<'a, R: ComponentFactory<'a>>(cx: &mut Context<'a>, region: &mut R, directive: Directive) {
+fn bind<'a, R: ConstructionFactory<'a>>(
+    cx: &mut Context<'_, 'a>,
+    region: &mut R,
+    directive: Directive,
+) {
     let head = directive.head;
     let expected = match head.prefix {
         DirectivePrefix::Bind => directive.name_span.start.checked_add(1),
@@ -50,7 +54,7 @@ fn bind<'a, R: ComponentFactory<'a>>(cx: &mut Context<'a>, region: &mut R, direc
         cx.hole(region, NativeHoleKind::MissingMarkup, directive.span);
         return;
     }
-    let file = cx.block.root_source();
+    let file = cx.block().root_source();
     let Some(name) = file.get(argument.start as usize..argument.end as usize) else {
         cx.hole(region, NativeHoleKind::DirectiveSyntax, directive.span);
         return;

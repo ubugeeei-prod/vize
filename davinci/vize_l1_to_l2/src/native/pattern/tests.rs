@@ -1,5 +1,5 @@
 use crate::native::{NativeHoleKind, lower_component_native};
-use vize_l0::{Allocator, Span};
+use vize_l0::{Allocator, Span, cstr};
 use vize_l1::embed::Lang;
 use vize_l1::embed::syntax::EmbedHole;
 use vize_l2::expr::ExprRef;
@@ -81,7 +81,7 @@ fn unsupported_bind_forms_never_parse_values_or_enter_the_attached_family() {
         "@click=\"fn(); fn()\"",
     ] {
         let a = Allocator::default();
-        let source = alloc::format!("<div {head}>text</div>");
+        let source = cstr!("<div {head}>text</div>");
         let lowered = lower_component_native(&a, &source, Lang::Js).unwrap();
         assert!(!lowered.is_supported(), "{head}");
         assert!(
@@ -115,7 +115,9 @@ fn a_failed_binding_keeps_full_observations_and_supported_later_fragments() {
     assert!(failed.syntax.expression().is_none());
     assert_eq!(failed.syntax.comments().count(), 1);
     assert!(failed.syntax.diagnostics().count() > 0);
-    let later = lowered.embeds.get(1).unwrap();
+    let [_, later, ..] = lowered.embeds.as_slice() else {
+        panic!("retained later binding");
+    };
     assert_eq!(later.node.unwrap().index(), 1);
     let Some(Op::Element(element)) = lowered.artifact.root().ops.first() else {
         panic!("owner")
@@ -188,7 +190,7 @@ fn unsupported_pre_carrier_preserves_complete_source_without_admitting_inner_exp
 fn binding_token_budget_hole_retains_once_source_and_no_fallback_node() {
     let a = Allocator::default();
     let value = "x + ".repeat(40) + "x";
-    let source = alloc::format!("<div :value=\"{value}\">tail</div>");
+    let source = cstr!("<div :value=\"{value}\">tail</div>");
     let lowered = lower_component_native(&a, &source, Lang::Js).unwrap();
     assert!(!lowered.is_supported());
     assert_eq!(lowered.artifact.node_count(), 2);
@@ -203,7 +205,7 @@ fn binding_token_budget_hole_retains_once_source_and_no_fallback_node() {
 fn pre_on_unsupported_owners_never_reinterprets_raw_descendant_bindings() {
     for tag in ["template", "slot", "component"] {
         let a = Allocator::default();
-        let source = alloc::format!(
+        let source = cstr!(
             "<b>{{{{before}}}}</b><{tag} v-pre><p :id=\"bad + /* raw */\">{{{{raw}}}}</p></{tag}><i>{{{{after}}}}</i>"
         );
         let lowered = lower_component_native(&a, &source, Lang::Js).unwrap();
@@ -224,8 +226,8 @@ fn pre_on_unsupported_owners_never_reinterprets_raw_descendant_bindings() {
         let carrier = source
             .get(pre.span.start as usize..pre.span.end as usize)
             .unwrap();
-        assert!(carrier.starts_with(&alloc::format!("<{tag} v-pre>")));
-        assert!(carrier.ends_with(&alloc::format!("</{tag}>")));
+        assert!(carrier.starts_with(cstr!("<{tag} v-pre>").as_str()));
+        assert!(carrier.ends_with(cstr!("</{tag}>").as_str()));
         assert!(carrier.contains(":id=\"bad + /* raw */\""));
         assert_eq!(lowered.component.tree.children.len(), 3);
         assert!(lowered.component.errors.is_empty());
@@ -236,9 +238,8 @@ fn pre_on_unsupported_owners_never_reinterprets_raw_descendant_bindings() {
 fn pre_on_missing_owners_keeps_missing_source_without_parsing_descendants() {
     for tag in ["div", "template"] {
         let a = Allocator::default();
-        let source = alloc::format!(
-            "<b>{{{{before}}}}</b><{tag} v-pre><p :id=\"bad + /* raw */\">{{{{raw}}}}</p>"
-        );
+        let source =
+            cstr!("<b>{{{{before}}}}</b><{tag} v-pre><p :id=\"bad + /* raw */\">{{{{raw}}}}</p>");
         let lowered = lower_component_native(&a, &source, Lang::Js).unwrap();
         assert!(!lowered.is_supported());
         assert_eq!(lowered.embeds.len(), 1);

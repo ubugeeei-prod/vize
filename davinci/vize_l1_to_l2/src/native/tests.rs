@@ -1,5 +1,5 @@
 use super::{NativeHoleKind, lower_component_native, retain_expression_in};
-use vize_l0::{Allocator, Span};
+use vize_l0::{Allocator, Span, cstr};
 use vize_l1::embed::syntax::{EmbedHole, parse_once};
 use vize_l1::embed::{Embed, Grammar, Lang, Shape, prepare_attribute_value};
 use vize_l2::expr::ExprRef;
@@ -187,7 +187,7 @@ fn svg_integration_point_and_component_children_share_factory_numbering() {
 #[test]
 fn token_budget_hole_never_falls_back_to_a_second_l2_parser() {
     let a = Allocator::default();
-    let source = alloc::format!("{{{{ {} }}}}", "x + ".repeat(40) + "x");
+    let source = cstr!("{{{{ {} }}}}", "x + ".repeat(40) + "x");
     let lowered = lower_component_native(&a, &source, Lang::Js).unwrap();
     let retained = &lowered.embeds.first().unwrap().syntax;
     assert_eq!(retained.hole(), Some(EmbedHole::TokenBudget));
@@ -222,7 +222,7 @@ fn real_component_carrier_keeps_full_surface_errors_and_partial_native_nodes() {
         .unwrap();
     assert!(lowered.holes.iter().any(|hole| {
         hole.kind == NativeHoleKind::Surface(error.code)
-            && hole.span == Span::new(error.offset as u32, error.offset as u32)
+            && hole.span == Span::new(error.offset, error.offset)
     }));
     assert_eq!(lowered.artifact.node_count(), 2);
     assert_eq!(lowered.embeds.len(), 1);
@@ -243,8 +243,8 @@ fn real_component_admission_facts_survive_and_prevent_a_false_supported_result()
         .rev()
         .map(|ch| if ch == '(' { ')' } else { ']' })
         .collect();
-    let head = alloc::format!("v-pre:[{opens}key{closes}]");
-    let source = alloc::format!("<div {head}>{{{{kept}}}}</div><p>tail</p>");
+    let head = cstr!("v-pre:[{opens}key{closes}]");
+    let source = cstr!("<div {head}>{{{{kept}}}}</div><p>tail</p>");
     let lowered = lower_component_native(&a, &source, Lang::Js).unwrap();
     assert!(!lowered.is_supported());
     let admission = lowered.component.unsupported.first().unwrap();
