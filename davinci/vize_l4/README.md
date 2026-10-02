@@ -38,8 +38,11 @@ Vapor and type-check targets remain unfinished in
 Older Vue runtimes, complete generated-script helper admission and product
 integration still need their actual providers and compiler fix-history gate.
 
-The crate remains unpublished while its targets and consumer migration are
-unfinished.
+**Experimental.** The crate follows the
+[checked Rust support contract](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
+It is registry-eligible for the explicit native SFC dependency closure. Actual
+first publication, Trusted Publishing handoff and release acceptance remain
+unfinished, together with the targets and default consumer migration above.
 
 ## License
 

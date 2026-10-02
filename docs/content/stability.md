@@ -88,32 +88,33 @@ details are not compatibility surfaces.
 
 <!-- rust-crate-support:start -->
 
-| Crate                 | Tier                  | Intended audience                         | Public entrypoint                               | Removal / deprecation                  |
-| --------------------- | --------------------- | ----------------------------------------- | ----------------------------------------------- | -------------------------------------- |
-| `vize_carton`         | Alpha-supported       | Vize compiler and library authors         | `vize_carton::{Allocator, Box, FxHashMap}`      | One minor with `#[deprecated]`         |
-| `vize_relief`         | Alpha-supported       | AST and compiler integration authors      | `vize_relief::{RootNode, CompilerOptions}`      | One minor with `#[deprecated]`         |
-| `vize_armature`       | Alpha-supported       | Tools that parse Vue templates            | `vize_armature::{parse, Parser, Tokenizer}`     | One minor with `#[deprecated]`         |
-| `vize_croquis`        | Compatibility preview | Semantic and type-aware tooling authors   | `vize_croquis::{Croquis, Drawer}`               | One minor with `#[deprecated]`         |
-| `vize_croquis_cf`     | Experimental          | Opt-in whole-project analysis experiments | `vize_croquis_cf::CrossFileAnalyzer`            | No minimum; note breaks when practical |
-| `vize_l0_derive` | Experimental          | Davinci dump-format authors               | `vize_l0_derive::Dump`                     | No minimum; note breaks when practical |
-| `vize_doctor`         | Experimental          | Application health analyzer authors       | `vize_doctor::{DoctorFinding, FindingEvidence}` | No minimum; note breaks when practical |
-| `vize_l3`             | Experimental          | Davinci backend-scheduling authors        | `vize_l3::{dump::Page, op, verify}`             | No minimum; note breaks when practical |
-| `vize_atelier_core`   | Alpha-supported       | Custom Vue compiler backend authors       | `vize_atelier_core::{transform, generate}`      | One minor with `#[deprecated]`         |
-| `vize_atelier_dom`    | Alpha-supported       | VDOM compiler and bundler integrations    | `vize_atelier_dom::compile_template`            | One minor with `#[deprecated]`         |
-| `vize_atelier_vapor`  | Experimental          | Opt-in Vapor compiler integrations        | `vize_atelier_vapor::compile_vapor`             | No minimum; note breaks when practical |
-| `vize_atelier_ssr`    | Compatibility preview | SSR and framework integration authors     | `vize_atelier_ssr::compile_ssr`                 | One minor with `#[deprecated]`         |
-| `vize_atelier_sfc`    | Alpha-supported       | SFC tooling and bundler authors           | `vize_atelier_sfc::{parse_sfc, compile_sfc}`    | One minor with `#[deprecated]`         |
-| `vize_atelier_jsx`    | Compatibility preview | JSX/TSX compiler and tooling authors      | `vize_atelier_jsx::{compile_jsx, lower_source}` | One minor with `#[deprecated]`         |
-| `vize_marquette`      | Experimental          | Framework and target-adapter authors      | `vize_marquette::{ApplicationContract, Target}` | No minimum; note breaks when practical |
-| `vize_musea`          | Experimental          | Musea gallery and documentation tools     | `vize_musea::{parse_art, transform_to_csf}`     | No minimum; note breaks when practical |
-| `vize_fresco`         | Incubating            | TUI experiments                           | `vize_fresco::{RenderTree, LayoutEngine}`       | No minimum                             |
-| `vize_canon`          | Compatibility preview | Type-checker and editor integrations      | `vize_canon::{type_check_sfc, TypeChecker}`     | One minor with `#[deprecated]`         |
-| `vize_patina`         | Compatibility preview | Linter and Oxlint integrations            | `vize_patina::{lint, Linter}`                   | One minor with `#[deprecated]`         |
-| `vize_l1`             | Experimental          | Lossless Vue-template tooling authors     | `vize_l1::{parse, SurfaceTree}`                 | No minimum; note breaks when practical |
-| `vize_l1_to_l2`       | Experimental          | Vue lowering and compiler backend authors | `vize_l1_to_l2::{lower, emit_dom}`              | No minimum; note breaks when practical |
-| `vize_l2`             | Experimental          | Dialect-neutral compiler IR authors       | `vize_l2::{dump::Page, op, verify}`             | No minimum; note breaks when practical |
-| `vize_l0`             | Experimental          | Davinci level and pass authors            | `vize_l0::{id::NodeId, side_table::SideTable}` | No minimum; note breaks when practical |
-| `vize_l2_to_l3`       | Experimental          | Impeto lowering and backend authors       | `vize_l2_to_l3::{lower, PartitionFacts}`        | No minimum; note breaks when practical |
+| Crate                | Tier                  | Intended audience                         | Public entrypoint                                      | Removal / deprecation                  |
+| -------------------- | --------------------- | ----------------------------------------- | ------------------------------------------------------ | -------------------------------------- |
+| `vize_carton`        | Alpha-supported       | Vize compiler and library authors         | `vize_carton::{Allocator, Box, FxHashMap}`             | One minor with `#[deprecated]`         |
+| `vize_relief`        | Alpha-supported       | AST and compiler integration authors      | `vize_relief::{RootNode, CompilerOptions}`             | One minor with `#[deprecated]`         |
+| `vize_armature`      | Alpha-supported       | Tools that parse Vue templates            | `vize_armature::{parse, Parser, Tokenizer}`            | One minor with `#[deprecated]`         |
+| `vize_croquis`       | Compatibility preview | Semantic and type-aware tooling authors   | `vize_croquis::{Croquis, Drawer}`                      | One minor with `#[deprecated]`         |
+| `vize_croquis_cf`    | Experimental          | Opt-in whole-project analysis experiments | `vize_croquis_cf::CrossFileAnalyzer`                   | No minimum; note breaks when practical |
+| `vize_l0_derive`     | Experimental          | Davinci dump-format authors               | `vize_l0_derive::Dump`                                 | No minimum; note breaks when practical |
+| `vize_doctor`        | Experimental          | Application health analyzer authors       | `vize_doctor::{DoctorFinding, FindingEvidence}`        | No minimum; note breaks when practical |
+| `vize_l3`            | Experimental          | Davinci backend-scheduling authors        | `vize_l3::{dump::Page, op, verify}`                    | No minimum; note breaks when practical |
+| `vize_l4`            | Experimental          | Opt-in native emission backend authors    | `vize_l4::{targets::dom::emit_file, module::assemble}` | No minimum; note breaks when practical |
+| `vize_atelier_core`  | Alpha-supported       | Custom Vue compiler backend authors       | `vize_atelier_core::{transform, generate}`             | One minor with `#[deprecated]`         |
+| `vize_atelier_dom`   | Alpha-supported       | VDOM compiler and bundler integrations    | `vize_atelier_dom::compile_template`                   | One minor with `#[deprecated]`         |
+| `vize_atelier_vapor` | Experimental          | Opt-in Vapor compiler integrations        | `vize_atelier_vapor::compile_vapor`                    | No minimum; note breaks when practical |
+| `vize_atelier_ssr`   | Compatibility preview | SSR and framework integration authors     | `vize_atelier_ssr::compile_ssr`                        | One minor with `#[deprecated]`         |
+| `vize_atelier_sfc`   | Alpha-supported       | SFC tooling and bundler authors           | `vize_atelier_sfc::{parse_sfc, compile_sfc}`           | One minor with `#[deprecated]`         |
+| `vize_atelier_jsx`   | Compatibility preview | JSX/TSX compiler and tooling authors      | `vize_atelier_jsx::{compile_jsx, lower_source}`        | One minor with `#[deprecated]`         |
+| `vize_marquette`     | Experimental          | Framework and target-adapter authors      | `vize_marquette::{ApplicationContract, Target}`        | No minimum; note breaks when practical |
+| `vize_musea`         | Experimental          | Musea gallery and documentation tools     | `vize_musea::{parse_art, transform_to_csf}`            | No minimum; note breaks when practical |
+| `vize_fresco`        | Incubating            | TUI experiments                           | `vize_fresco::{RenderTree, LayoutEngine}`              | No minimum                             |
+| `vize_canon`         | Compatibility preview | Type-checker and editor integrations      | `vize_canon::{type_check_sfc, TypeChecker}`            | One minor with `#[deprecated]`         |
+| `vize_patina`        | Compatibility preview | Linter and Oxlint integrations            | `vize_patina::{lint, Linter}`                          | One minor with `#[deprecated]`         |
+| `vize_l1`            | Experimental          | Lossless Vue-template tooling authors     | `vize_l1::{parse, SurfaceTree}`                        | No minimum; note breaks when practical |
+| `vize_l1_to_l2`      | Experimental          | Vue lowering and compiler backend authors | `vize_l1_to_l2::{lower, emit_dom}`                     | No minimum; note breaks when practical |
+| `vize_l2`            | Experimental          | Dialect-neutral compiler IR authors       | `vize_l2::{dump::Page, op, verify}`                    | No minimum; note breaks when practical |
+| `vize_l0`            | Experimental          | Davinci level and pass authors            | `vize_l0::{id::NodeId, side_table::SideTable}`         | No minimum; note breaks when practical |
+| `vize_l2_to_l3`      | Experimental          | Impeto lowering and backend authors       | `vize_l2_to_l3::{lower, PartitionFacts}`               | No minimum; note breaks when practical |
 
 <!-- rust-crate-support:end -->
 

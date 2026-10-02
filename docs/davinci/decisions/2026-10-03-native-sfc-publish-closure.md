@@ -19,6 +19,10 @@ entry. It performs no registry publication, release, Trusted Publishing setup or
 default consumer replacement. First publication and release acceptance still
 require their actual publishing controls and terminal external evidence.
 
+The canonical Rust support table and L4 README document the same experimental
+audience, entrypoints and deprecation contract. The README links that checked
+table; existing experimental Rust documentation and metadata remain intact.
+
 All L4 production source, APIs, fixtures, maps and runtime expectations remain
 unchanged. The source-owned SFC/File custody and bounded scriptless/static/literal
 family remain unchanged. Compiler fix-history issue #6880, unfinished L4 issue
