@@ -282,12 +282,9 @@ fn pure_comment_recovery_and_rewind_keep_the_actual_annotation_owner() {
             assert!(tree.diagnostics().next().is_some());
             // Inspect the retained recovery observations without exposing a
             // successful AST view to consumers of a syntax hole.
-            let recovered = tree.program.as_ref().unwrap();
-            assert_eq!(
-                recovered.comments[0].content,
-                CommentContent::PureNotApplied
-            );
-            if let Some(ordinary) = recovered.comments.get(1) {
+            let recovered = tree.observation.as_ref().unwrap().comments();
+            assert_eq!(recovered[0].content, CommentContent::PureNotApplied);
+            if let Some(ordinary) = recovered.get(1) {
                 assert_eq!(ordinary.content, CommentContent::None);
             }
             assert!(tree.program().is_none());

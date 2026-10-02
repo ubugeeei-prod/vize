@@ -8,6 +8,7 @@
 use alloc::boxed::Box;
 use oxc_ast::ast::{Expression, Program, Statement};
 use oxc_diagnostics::Diagnostics;
+use oxc_parser::{AdmittedProgram, ProgramObservation};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, Span, String, expression_guard::expression_is_safe_to_parse};
 
@@ -59,6 +60,7 @@ pub struct NativeSyntax<'a> {
     source_type: SourceType,
     coordinates: Coordinates<'a>,
     program: Option<Program<'a>>,
+    observation: Option<ProgramObservation<'a>>,
     diagnostics: Diagnostics,
     hole: Option<EmbedHole>,
 }
@@ -70,7 +72,7 @@ impl core::fmt::Debug for NativeSyntax<'_> {
             .field("source_type", &self.source_type)
             .field("source", &self.source())
             .field("hole", &self.hole)
-            .field("diagnostic_count", &self.diagnostics.len())
+            .field("diagnostic_count", &self.diagnostics().count())
             .finish_non_exhaustive()
     }
 }
@@ -101,9 +103,16 @@ impl<'a> NativeSyntax<'a> {
     /// Unwrapped programs only; other shapes never expose wrapper Program/text.
     #[must_use]
     pub fn program(&self) -> Option<&Program<'a>> {
-        (self.hole.is_none() && self.grammar.shape == Shape::Program)
-            .then_some(self.program.as_ref())
-            .flatten()
+        self.admitted_program().map(|admitted| admitted.program())
+    }
+
+    /// Original parser-owned admission; callers cannot supply replacement status.
+    #[must_use]
+    pub fn admitted_program(&self) -> Option<AdmittedProgram<'_, 'a>> {
+        if self.hole.is_some() || self.grammar.shape != Shape::Program {
+            return None;
+        }
+        self.observation.as_ref()?.admitted()
     }
 
     /// Remove only the generated outer parentheses, preserving authored ones.
@@ -137,6 +146,11 @@ impl<'a> NativeSyntax<'a> {
         self.program
             .iter()
             .flat_map(|program| program.comments.iter())
+            .chain(
+                self.observation
+                    .iter()
+                    .flat_map(|observation| observation.comments().iter()),
+            )
             .map(|comment| CommentView {
                 comment,
                 coordinates: self.coordinates,
@@ -144,10 +158,17 @@ impl<'a> NativeSyntax<'a> {
     }
 
     pub fn diagnostics(&self) -> impl Iterator<Item = DiagnosticView<'_, 'a>> {
-        self.diagnostics.iter().map(|diagnostic| DiagnosticView {
-            diagnostic,
-            coordinates: self.coordinates,
-        })
+        self.diagnostics
+            .iter()
+            .chain(
+                self.observation
+                    .iter()
+                    .flat_map(|observation| observation.diagnostics().iter()),
+            )
+            .map(|diagnostic| DiagnosticView {
+                diagnostic,
+                coordinates: self.coordinates,
+            })
     }
 
     /// Exact wrapper correction. Wrapper-only bytes never select source bytes.
@@ -247,6 +268,7 @@ pub fn parse_once<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> NativeSynta
             prefix: wrapper.map_or(0, |wrapper| wrapper.prefix.len() as u32),
         },
         program: None,
+        observation: None,
         diagnostics: Diagnostics::default(),
         hole: None,
     };
