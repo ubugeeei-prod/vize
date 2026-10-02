@@ -71,3 +71,27 @@ consumer must retain all 15 complete original API observations, repeats
 and source-built artifact receipts. The unchanged protected full suites
 and all instruction-count ceilings still apply. Verify actual merge and
 fresh main separately; this decision does not close #6880.
+
+## Generated consumer shard correction
+
+The temporary source proof ref retained the exact history API sources.
+[Full Check run 36952506161](https://github.com/ubugeeei-prod/vize/actions/runs/36952506161)
+failed its source inventory step in job 110668305206 before JS installation
+or type checking: the new SSR and Vapor `tests/support/fix_history_next.rs`
+modules each add one genuine test/dev row to their compiler consumer shard.
+
+Regenerate the existing inventory from the complete committed generator
+closure and every configured committed consumer scan root. The original
+check reproduces both stale shards; regeneration retains every old row,
+adds exactly those two rows, leaves the other 17 inventory artifacts byte
+identical, and passes the same generator's full artifact-set check. The
+Vapor Carton row remains explicitly legacy host/compatibility metadata.
+
+This correction changes only the two generated shards and this paired
+decision. Original fixtures, options, observers, captures, API helpers and
+instruction ceilings retain their parent bytes. The first full run remains
+failed, including its separate production security audit; its individual
+capture and instruction evidence must retain their actual head and status.
+The corrected child needs fresh exact-head full Actions and protected
+validation. Current-source capture acceptance, whole-history closure,
+semantic review and native product completion are separate unfinished gates.
