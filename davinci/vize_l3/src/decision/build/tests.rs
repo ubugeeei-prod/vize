@@ -7,13 +7,14 @@ fn id(index: u32) -> NodeId {
     NodeId::from_index(index).unwrap()
 }
 
-fn builder(node_count: u32) -> Builder {
+fn builder(node_count: u32) -> Builder<'static, 'static, 'static, super::LiteralExpressions> {
     Builder {
         policy: TargetPolicy::Ssr,
         node_count,
         frames: Default::default(),
         nodes: SideTable::new(),
         controls: SideTable::new(),
+        dom: None,
     }
 }
 

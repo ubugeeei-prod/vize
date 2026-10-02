@@ -141,7 +141,7 @@ checks and finish cardinality only, preserving binding order and containment.
 Neutral/output meaning stays separate; SSR native events and cloak are omitted.
 Placement remains `Inline`; grouped slots, hoist/cache, complete target rules,
 flat-program demand splitting and product selection remain unfinished.
-Paired #6839 laws require full Actions, differential and unchanged instruction gates.
+Paired #6839 laws require full Actions, differential and unchanged instruction gates. The [native DOM semantic facts](./2026-10-01-l3-dom-semantic-facts.md) and [conditional facts](./2026-10-02-native-dom-conditional-facts.md) retain actual owners, ordered canonical child groups and semantic dependency demands in that same walk.
 
 ## L4: emission
 

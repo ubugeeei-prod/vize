@@ -14,9 +14,10 @@ use vize_l2::artifact::Artifact;
 use crate::placement::Placement;
 
 mod build;
+pub mod dom;
 pub mod policy;
 
-pub use build::{DecisionBuildError, build_decisions};
+pub use build::{DecisionBuildError, build_decisions, build_dom_decisions};
 
 use policy::TargetPolicy;
 
@@ -55,6 +56,7 @@ use policy::TargetPolicy;
 pub struct NativeAnalysis<'owner, 'arena> {
     artifact: &'owner Artifact<'arena>,
     tables: DecisionTables,
+    dom: Option<dom::DomFacts<'owner, 'arena>>,
 }
 
 impl<'owner, 'arena> NativeAnalysis<'owner, 'arena> {
@@ -68,6 +70,12 @@ impl<'owner, 'arena> NativeAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn policy(&self) -> TargetPolicy {
         self.tables.policy
+    }
+
+    /// Bounded DOM facts from this owner's original decision traversal.
+    #[must_use]
+    pub fn dom(&self) -> Option<&dom::DomFacts<'owner, 'arena>> {
+        self.dom.as_ref()
     }
 
     /// Complete decisions, borrowed read-only with their owner retained.

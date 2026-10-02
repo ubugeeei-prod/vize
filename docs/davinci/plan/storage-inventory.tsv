@@ -90,6 +90,11 @@ l2	-	davinci/vize_l2/src/verify/observer.rs	0	0	1	1	0	0	0	0
 l2	analysis	davinci/vize_l2/src/verify/walk.rs	1	5	0	0	0	0	0	0
 l3	analysis	davinci/vize_l3/src/decision/build.rs	1	5	0	0	0	0	0	0
 l3	analysis	davinci/vize_l3/src/decision/mod.rs	1	1	0	0	0	0	0	0
+l3	analysis	davinci/vize_l3/src/decision/dom.rs	1	6	0	0	0	0	0	0
+l3	analysis	davinci/vize_l3/src/decision/dom/build.rs	1	10	0	0	0	0	0	0
+l3	analysis	davinci/vize_l3/src/decision/dom/control.rs	1	1	0	0	0	0	0	0
+l3	analysis	davinci/vize_l3/src/decision/dom/control/build.rs	1	2	0	0	0	0	0	0
+l3	analysis	davinci/vize_l3/src/decision/dom/control/build/tests.rs	1	1	0	0	1	1	0	0
 l3	pass	davinci/vize_l3/src/extract.rs	1	3	0	0	0	0	0	0
 l3	contract	davinci/vize_l3/src/extract/dump.rs	1	1	1	2	0	0	0	0
 l3	pass	davinci/vize_l3/src/extract/measure.rs	1	14	0	0	0	0	0	0
