@@ -26,7 +26,7 @@ No stand-in protocol types or helper provider are used as execution evidence.
 The original seven parser test functions remain unchanged. Two additional
 functions cover original Flow/nonfatal recovery refusal and rejection of an
 admitted decoded Program without its authored-coordinate bridge. All nine are
-source-ready and unexecuted here. Fresh whole-Cargo Actions must compile actual
+source-ready. Fresh whole-Cargo Actions must compile actual
 Maestro, tower-lsp, L1, L0 and OXC together and execute every named adapter test.
 The opt-in dependency points from crates to davinci; default features and
 existing request dispatch remain unchanged.
@@ -42,6 +42,17 @@ job. No assertion, default route or performance ceiling changes. A fresh
 exact-head whole-source Actions run must execute all nine tests, check the
 no-default feature combination and pass warning-denying Clippy before this
 provider receives execution credit.
+
+The actual corrected campaign `37035550062` at
+`5e4b117e000e4014410c463751a3183bd6614f0a`, Rust job `110932761960`,
+compiled genuine Oxc/L1/L0/tower-lsp/Maestro together and passed all nine named
+adapter tests at 16:48:29Z, with zero failed or ignored. The no-default feature
+check passed at 16:48:42Z. Warning-denying feature Clippy then rejected two
+`std::format!` test-input constructors; its original complete job log is retained.
+The shared `cstr!` correction changes only those constructors, retaining their
+literal/interpolated UTF-8 inputs and every assertion. These nine bounded Program
+results do not turn the failed full run green. The next exact source head still
+requires its own full Actions, feature tests/check/Clippy and all100 before merge.
 
 Before publishing, pair this record and the existing LSP paragraph with a #6883
 issue comment. The frozen four-layer LSP packet and captured 514b runtime evidence

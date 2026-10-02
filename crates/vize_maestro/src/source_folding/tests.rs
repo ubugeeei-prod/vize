@@ -1,6 +1,6 @@
 use super::{SourceFoldingRefusal, program_comment_ranges};
 use tower_lsp::lsp_types::{FoldingRange, FoldingRangeKind};
-use vize_l0::{Allocator, Span};
+use vize_l0::{Allocator, Span, cstr};
 use vize_l1::embed::{
     Embed, EmbedSource, Grammar, Lang, Shape,
     syntax::{ProgramGoal, ProgramOptions, parse_once, parse_program_once},
@@ -27,7 +27,7 @@ fn actual_program_profiles_retain_complete_ordered_comment_ranges() {
     ] {
         for goal in [ProgramGoal::Module, ProgramGoal::Script] {
             let arena = Allocator::default();
-            let source = format!("/*\n first\n*/\n{statement}\n/*\n second\n*/\n");
+            let source = cstr!("/*\n first\n*/\n{statement}\n/*\n second\n*/\n");
             let input = EmbedSource::authored(&source, Span::new(0, source.len() as u32))
                 .expect("original whole-file source");
             let parsed = parse_program_once(&arena, input, ProgramOptions { lang, jsx, goal });
@@ -45,7 +45,7 @@ fn actual_program_profiles_retain_complete_ordered_comment_ranges() {
 fn lsp_cr_lf_crlf_coordinates_keep_astral_and_unicode_separators_authored() {
     for newline in ["\r", "\n", "\r\n"] {
         let arena = Allocator::default();
-        let source = format!("/* 😀\u{2028}\u{2029}{newline} 日本語{newline}*/");
+        let source = cstr!("/* 😀\u{2028}\u{2029}{newline} 日本語{newline}*/");
         let input = EmbedSource::authored(&source, Span::new(0, source.len() as u32))
             .expect("original mixed-line source");
         let parsed = parse_program_once(&arena, input, ProgramOptions::module(Lang::Js));
