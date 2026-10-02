@@ -14,6 +14,8 @@ glyph = ["dep:vize_glyph"]
 native = ["vize_canon/native"]
 # Explicit native Program projection; existing LSP routing stays independent.
 experimental-source-folding = ["dep:vize_l1"]
+# Optional genuine native edit and original Program observation adapters.
+experimental-source-project = ["dep:vize_l1"]
 # Opt-in legacy Vue (v0.10 / v0.11 / v1 / v2) editor / LSP surface. Not enabled by the
 # default Vue 3 build; turns on the type-checker-side legacy feature too.
 legacy = ["vize_canon/legacy"]

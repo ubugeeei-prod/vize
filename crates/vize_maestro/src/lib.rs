@@ -65,6 +65,7 @@ pub mod runtime;
 pub mod server;
 #[cfg(feature = "experimental-source-folding")]
 pub mod source_folding;
+pub mod source_project;
 pub mod utils;
 pub mod virtual_code;
 
