@@ -1,12 +1,5 @@
 # Decision Record — Level Restructure (2026-09-27)
 
-Community lint fix [#7417](https://github.com/ubugeeei-prod/vize/issues/7417):
-`vue/prefer-props-shorthand` applies to static same-name bindings on every
-element, matching Vue 3.4+. Remove the component-name heuristic and retain
-the Vue 2 compatibility guard. Dynamic arguments keep their explicit values.
-The reported SFC is retained as a legacy regression fixture; this gives no
-native-stage credit.
-
 > [!NOTE]
 > This record and its linked companion pages collect the decisions from the maintainer's 2026-09-27 design session. It is the working source of truth for crate layout, naming, level
 > responsibilities and CI tiers. Where it conflicts with older pages (S0–S4
@@ -354,4 +347,4 @@ record #6921 owner history, shared parse facts, setter guards and registered typ
 records #6922 owner history, unbounded inferred payloads, string widening and required full diagnostic proof.
 
 [Extension wire ownership](./2026-09-28-extension-wire-ownership.md) starts the
-actual L0 neutral-code move for #6833; retiring the three old packages remains unfinished. [Vapor and SSR production acceptance](./2026-10-01-vapor-ssr-production.md) and [lint pragma production layout](./2026-10-01-lint-pragma-production-layout.md) records #6100's production runtime gates and input-model SSR repair corpus.
+actual L0 neutral-code move for #6833; retiring the three old packages remains unfinished. [Vapor and SSR production acceptance](./2026-10-01-vapor-ssr-production.md) and [lint pragma production layout](./2026-10-01-lint-pragma-production-layout.md) records #6100's production runtime gates and input-model SSR repair corpus. Community lint fix [#7417](https://github.com/ubugeeei-prod/vize/issues/7417) applies `vue/prefer-props-shorthand` to static same-name bindings on all elements (Vue 3.4+), retains explicit dynamic arguments and Vue 2 compatibility, and preserves the reported SFC as a legacy regression fixture without native-stage credit.
