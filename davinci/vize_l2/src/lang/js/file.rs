@@ -56,6 +56,11 @@ impl<'p, 'a> ProgramInput<'p, 'a> {
     pub fn span(&self) -> Span {
         self.block.span()
     }
+    /// Original stock observation profile, already checked against this Program.
+    #[must_use]
+    pub fn source_type(&self) -> oxc_span::SourceType {
+        self.references.program().source_type
+    }
     pub fn checked(
         admitted: AdmittedProgram<'p, 'a>,
         block: SourceBlock<'a>,

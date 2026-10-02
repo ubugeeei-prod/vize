@@ -78,6 +78,11 @@ impl<'a> NativeComponent<'a> {
         &self.component
     }
 
+    #[cfg(test)]
+    pub(in crate::native) fn test_allocator(&self) -> &'a Allocator {
+        self.allocator
+    }
+
     /// Consume source admission when transferring the original carrier alone.
     #[must_use]
     pub fn into_carrier(self) -> ComponentParse<'a> {

@@ -189,6 +189,8 @@ pub enum FileIssueKind {
     BindingLimit,
     UnsupportedComponent,
     InterruptedProgram,
+    InterruptedTemplate,
+    ActiveTemplateWalk,
 }
 
 /// A retained failure at a real template factory, without a fabricated unit.

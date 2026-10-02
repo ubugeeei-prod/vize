@@ -71,8 +71,10 @@ pub mod exemptions;
 pub mod key;
 pub mod lower;
 pub mod native;
+pub mod native_file;
 pub mod partial;
 pub mod pass;
+pub mod vue_file;
 
 /// Croquis reactivity facts the L2 transform rewrite reads (P3-17).
 pub use emit::ReactiveRead;

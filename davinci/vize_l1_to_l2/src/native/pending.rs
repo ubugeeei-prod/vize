@@ -8,6 +8,11 @@ use vize_l0::diag::Diagnostic;
 use vize_l1::embed::{Lang, syntax::NativeSyntax};
 use vize_l2::artifact::ComponentFactory;
 
+mod vue;
+pub use vue::{NativeVueConstructionError, NativeVueProduced, RejectedNativeVueComponent};
+#[cfg(test)]
+pub(crate) use vue::{Point, Probe};
+
 /// Original normal owners, borrowed by Context during its sole construction walk.
 pub(crate) struct NativeObservations<'a> {
     pub(super) holes: Vec<NativeHole>,
@@ -75,6 +80,7 @@ pub(crate) struct PendingNativeComponent<'a> {
     component: NativeComponent<'a>,
     observations: NativeObservations<'a>,
     state: NativeWalkState,
+    native: Option<vue::NativeConstructionReceipt<'a>>,
 }
 
 impl core::fmt::Debug for PendingNativeComponent<'_> {
@@ -93,6 +99,7 @@ impl<'a> PendingNativeComponent<'a> {
             component,
             observations: NativeObservations::new(),
             state: NativeWalkState::Ready,
+            native: None,
         }
     }
 
@@ -106,6 +113,21 @@ impl<'a> PendingNativeComponent<'a> {
 
     pub(crate) fn state(&self) -> NativeWalkState {
         self.state
+    }
+
+    /// A region refusal before the driver may retain the original raw carrier.
+    /// After any driver starts, observations and interruption cannot be stripped.
+    pub(crate) fn into_unconstructed_component(self) -> Result<NativeComponent<'a>, Box<Self>> {
+        if self.state != NativeWalkState::Ready
+            || self.native.is_some()
+            || !self.observations.holes.is_empty()
+            || !self.observations.diagnostics.is_empty()
+            || !self.observations.embeds.is_empty()
+            || !self.observations.rejected_syntax.is_empty()
+        {
+            return Err(Box::new(self));
+        }
+        Ok(self.component)
     }
 
     /// The unchanged diagnostic capability cannot issue a native File receipt.
@@ -131,13 +153,14 @@ impl<'a> PendingNativeComponent<'a> {
     }
 
     pub(crate) fn into_produced(self) -> Result<NativeProduced<'a>, Box<Self>> {
-        if self.state != NativeWalkState::NormalEnd {
+        if self.state != NativeWalkState::NormalEnd || self.native.is_some() {
             return Err(Box::new(self));
         }
         let Self {
             component,
             observations,
             state: _,
+            native: _,
         } = self;
         let NativeObservations {
             holes,

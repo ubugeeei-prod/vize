@@ -21,6 +21,9 @@ mod construction;
 pub(crate) use construction::{ConstructionBody, ConstructionFactory};
 mod pending;
 pub(crate) use pending::{NativeObservations, PendingNativeComponent};
+pub use pending::{NativeVueConstructionError, NativeVueProduced, RejectedNativeVueComponent};
+#[cfg(test)]
+pub(crate) use pending::{Point, Probe};
 mod block;
 pub use block::{NativeComponent, NativeProduced, RejectedNativeComponent};
 mod element;

@@ -22,6 +22,11 @@ pub trait TemplatePolicy: Copy {
 
 mod facade;
 pub use facade::TemplateRegion;
+mod child;
+mod walk;
+mod whole;
+pub use child::{TemplateBody, TemplateChildRegion};
+pub use whole::TemplateWalkRegion;
 
 /// Select a scope actually recorded by this producer; never accept numeric IDs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -152,16 +157,18 @@ where
         expression: &'a JsExpr<'a>,
         span: Span,
     ) -> Result<NodeId, ArtifactError> {
-        let table = self.resolve(expression, span)?;
-        let node = self.region.interpolation(ExprRef::Js(expression), span)?;
-        self.facts.expressions.insert(
-            node,
-            ScopedResolution {
-                scope: self.scope,
-                table,
-            },
-        );
-        Ok(node)
+        self.with_walk(span, |region| {
+            let table = region.resolve(expression, span)?;
+            let node = region.region.interpolation(ExprRef::Js(expression), span)?;
+            region.facts.expressions.insert(
+                node,
+                ScopedResolution {
+                    scope: region.scope,
+                    table,
+                },
+            );
+            Ok(node)
+        })
     }
     fn bind(
         &mut self,
@@ -170,18 +177,20 @@ where
         expression: &'a JsExpr<'a>,
         span: Span,
     ) -> Result<NodeId, ArtifactError> {
-        let table = self.resolve(expression, span)?;
-        let node = self
-            .region
-            .bind(name, name_span, ExprRef::Js(expression), span)?;
-        self.facts.expressions.insert(
-            node,
-            ScopedResolution {
-                scope: self.scope,
-                table,
-            },
-        );
-        Ok(node)
+        self.with_walk(span, |region| {
+            let table = region.resolve(expression, span)?;
+            let node = region
+                .region
+                .bind(name, name_span, ExprRef::Js(expression), span)?;
+            region.facts.expressions.insert(
+                node,
+                ScopedResolution {
+                    scope: region.scope,
+                    table,
+                },
+            );
+            Ok(node)
+        })
     }
     fn element<B: ComponentBody<'a>>(
         &mut self,
@@ -191,24 +200,26 @@ where
         span: Span,
         body: B,
     ) -> Result<NodeId, ArtifactError> {
-        let Self {
-            region,
-            facts,
-            scope,
-            policy,
-            source,
-            ..
-        } = self;
-        region.element(tag, namespace, attributes, span, |child, node| {
-            let mut file_child = FileRegion {
-                region: child,
+        self.with_walk(span, |file| {
+            let Self {
+                region,
                 facts,
-                scope: *scope,
-                policy: *policy,
+                scope,
+                policy,
                 source,
-                borrow: PhantomData,
-            };
-            body.run(&mut file_child, node);
+                ..
+            } = file;
+            region.element(tag, namespace, attributes, span, |child, node| {
+                let mut file_child = FileRegion {
+                    region: child,
+                    facts,
+                    scope: *scope,
+                    policy: *policy,
+                    source,
+                    borrow: PhantomData,
+                };
+                body.run(&mut file_child, node);
+            })
         })
     }
     fn component<B: ComponentBody<'a>>(
@@ -218,29 +229,31 @@ where
         span: Span,
         body: B,
     ) -> Result<NodeId, ArtifactError> {
-        let Self {
-            region,
-            facts,
-            scope,
-            policy,
-            source,
-            ..
-        } = self;
-        region.component(name, attributes, span, |child, node| {
-            facts.template_issues.push(TemplateIssue {
-                node: Some(node),
-                span,
-                kind: FileIssueKind::UnsupportedComponent,
-            });
-            let mut file_child = FileRegion {
-                region: child,
+        self.with_walk(span, |file| {
+            let Self {
+                region,
                 facts,
-                scope: *scope,
-                policy: *policy,
+                scope,
+                policy,
                 source,
-                borrow: PhantomData,
-            };
-            body.run(&mut file_child, node);
+                ..
+            } = file;
+            region.component(name, attributes, span, |child, node| {
+                facts.template_issues.push(TemplateIssue {
+                    node: Some(node),
+                    span,
+                    kind: FileIssueKind::UnsupportedComponent,
+                });
+                let mut file_child = FileRegion {
+                    region: child,
+                    facts,
+                    scope: *scope,
+                    policy: *policy,
+                    source,
+                    borrow: PhantomData,
+                };
+                body.run(&mut file_child, node);
+            })
         })
     }
     fn record(&mut self, record: ProvenanceRecord) -> Result<(), ArtifactError> {

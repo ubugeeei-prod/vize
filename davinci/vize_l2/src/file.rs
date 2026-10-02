@@ -11,8 +11,12 @@ use vize_l0::id::NodeId;
 pub(crate) mod build;
 pub(crate) mod region;
 pub use build::FileBuilder;
-pub use region::{TemplatePolicy, TemplateRegion, TemplateScope};
+pub use region::{
+    TemplateBody, TemplateChildRegion, TemplatePolicy, TemplateRegion, TemplateScope,
+    TemplateWalkRegion,
+};
 mod records;
+mod template;
 pub use records::{
     Declaration, DeclarationKind, Export, FileIssue, FileIssueKind, Import, InitializerKind,
     Namespace, Reference, ReferenceTarget, Scope, ScopeId, ScriptProfile, ScriptUnit, ScriptUnitId,
@@ -100,11 +104,18 @@ impl<'a> FileArtifact<'a> {
         self.facts.units.iter().filter_map(ScriptUnit::interruption)
     }
 
+    /// Interruption of the actual surrounding template walk, separate from syntax issues.
+    #[must_use]
+    pub fn template_interruption(&self) -> Option<TemplateIssue> {
+        self.facts.template_walk.interruption()
+    }
+
     /// Completeness of the admitted script family, not of Vue/product output.
     #[must_use]
     pub fn is_complete(&self) -> bool {
         self.facts.issues.is_empty()
             && self.facts.template_issues.is_empty()
+            && self.facts.template_walk.is_complete()
             && self.facts.units.iter().all(ScriptUnit::walk_completed)
     }
 
@@ -226,6 +237,14 @@ impl core::fmt::Debug for RejectedFile<'_> {
 }
 
 impl<'a> RejectedFile<'a> {
+    #[must_use]
+    pub fn template_interruption(&self) -> Option<TemplateIssue> {
+        self.facts.template_walk.interruption()
+    }
+    #[must_use]
+    pub fn scopes(&self) -> &[Scope] {
+        &self.facts.scopes
+    }
     #[must_use]
     pub fn artifact(&self) -> &crate::artifact::RejectedArtifact<'a> {
         &self.artifact

@@ -1,20 +1,44 @@
-//! Opaque lower diagnostic factory; native admission belongs to its upper owner.
-use super::{RootRegion, TemplatePolicy};
-use crate::artifact::{ArtifactError, ComponentBody, ComponentFactory};
-use crate::expr::JsExpr;
-use crate::op::{Attribute, Namespace};
-use crate::provenance::ProvenanceRecord;
+//! Opaque public diagnostic facade over the private authoritative recorder.
+use super::policy::Visibility;
+use super::profile::NativeTemplateProfile;
 use vize_l0::{Span, id::NodeId};
+use vize_l2::artifact::{ArtifactError, ComponentBody, ComponentFactory};
+use vize_l2::expr::JsExpr;
+use vize_l2::file::TemplateRegion;
+use vize_l2::op::{Attribute, Namespace};
+use vize_l2::provenance::ProvenanceRecord;
+mod native;
+mod walk;
 
-pub struct TemplateRegion<'f, 'a, P: TemplatePolicy> {
-    pub(super) inner: RootRegion<'f, 'a, P>,
+/// Its ordinary diagnostic factory grants no native construction receipt.
+///
+/// ```compile_fail
+/// use vize_l1::embed::Lang;
+/// use vize_l1_to_l2::{native::NativeComponent, vue_file::VueFileRegion};
+/// fn override_lang<'a>(component: NativeComponent<'a>, region: &mut VueFileRegion<'_, 'a>) {
+///     let _ = component.construct_vue_file_in(region, Lang::Ts);
+/// }
+/// ```
+///
+/// ```compile_fail
+/// use vize_l1_to_l2::vue_file::NativeTemplateProfile;
+/// ```
+pub struct VueFileRegion<'f, 'a> {
+    inner: TemplateRegion<'f, 'a, Visibility>,
+    profile: NativeTemplateProfile,
 }
-impl<'f, 'a, P: TemplatePolicy> TemplateRegion<'f, 'a, P> {
-    pub(crate) fn new(inner: RootRegion<'f, 'a, P>) -> Self {
-        Self { inner }
+impl<'f, 'a> VueFileRegion<'f, 'a> {
+    pub(super) fn new(
+        inner: TemplateRegion<'f, 'a, Visibility>,
+        profile: NativeTemplateProfile,
+    ) -> Self {
+        Self { inner, profile }
+    }
+    pub(crate) fn native_profile(&self) -> NativeTemplateProfile {
+        self.profile
     }
 }
-impl<'a, P: TemplatePolicy> ComponentFactory<'a> for TemplateRegion<'_, 'a, P> {
+impl<'a> ComponentFactory<'a> for VueFileRegion<'_, 'a> {
     fn source(&self) -> &'a str {
         self.inner.source()
     }

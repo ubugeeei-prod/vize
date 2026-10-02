@@ -21,6 +21,7 @@ pub(crate) struct Facts<'a> {
     pub issues: Vec<FileIssue>,
     pub expressions: SideTable<ScopedResolution<'a>>,
     pub template_issues: Vec<TemplateIssue>,
+    pub template_walk: super::template::TemplateWalk,
     names: Vec<Names>,
 }
 
@@ -100,6 +101,7 @@ impl<'a> Facts<'a> {
             issues: Vec::new(),
             expressions: SideTable::new(),
             template_issues: Vec::new(),
+            template_walk: super::template::TemplateWalk::Idle,
             names: alloc::vec![Names::default()],
         }
     }
