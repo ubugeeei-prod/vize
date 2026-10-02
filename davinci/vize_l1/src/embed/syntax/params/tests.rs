@@ -31,7 +31,7 @@ fn original_parameter_roots_and_descendants_outlive_the_observation_owner() {
             panic!("expected actual rest binding")
         };
         let identifier = &**identifier as *const _;
-        let retained = tree.into_slot_params(&allocator).unwrap();
+        let retained = tree.into_slot_params().unwrap();
         assert_eq!(retained.hole(), None);
         let parameters = retained.parameters().unwrap();
         let rest = retained.rest().unwrap();
@@ -78,7 +78,7 @@ fn retained_bindings_keep_ts_annotations_and_existing_decoded_maps() {
         .type_annotation
         .as_deref()
         .unwrap() as *const _;
-    let retained = tree.into_slot_params(&allocator).unwrap();
+    let retained = tree.into_slot_params().unwrap();
     assert_eq!(retained.grammar().lang, Lang::Ts);
     assert_eq!(retained.parser_prefix(), 2);
     assert_eq!(
@@ -96,7 +96,7 @@ fn retained_bindings_keep_ts_annotations_and_existing_decoded_maps() {
         &allocator,
         embed("value: Item", Shape::SlotParams, Lang::Js),
     )
-    .into_slot_params(&allocator)
+    .into_slot_params()
     .unwrap();
     assert_eq!(js.hole(), Some(EmbedHole::Syntax));
     assert!(js.parameters().is_none() && js.rest().is_none());
@@ -113,7 +113,7 @@ fn retained_bindings_keep_ts_annotations_and_existing_decoded_maps() {
             source,
         },
     )
-    .into_slot_params(&allocator)
+    .into_slot_params()
     .unwrap();
     assert_eq!(
         retained.source().decode_map().unwrap().segments().as_ptr(),
@@ -136,8 +136,8 @@ fn holes_keep_comments_and_complete_owned_diagnostics_without_recovery_bindings(
     );
     let message = tree.diagnostics().next().unwrap().message().as_ptr();
     let comment = tree.comments().next().unwrap().text().unwrap().as_ptr();
-    let comment_slice = tree.program.as_ref().unwrap().comments.as_ptr();
-    let retained = tree.into_slot_params(&allocator).unwrap();
+    let comment_slice = tree.embedding.as_ref().unwrap().comments().as_ptr();
+    let retained = tree.into_slot_params().unwrap();
     assert_eq!(retained.hole(), Some(EmbedHole::Syntax));
     assert!(retained.parameters().is_none() && retained.rest().is_none());
     assert_eq!(
@@ -148,7 +148,10 @@ fn holes_keep_comments_and_complete_owned_diagnostics_without_recovery_bindings(
         retained.comments().next().unwrap().text().unwrap().as_ptr(),
         comment
     );
-    assert_eq!(retained.comments.as_ptr(), comment_slice);
+    assert_eq!(
+        retained.observation.as_ref().unwrap().comments().as_ptr(),
+        comment_slice
+    );
     for diagnostic in retained.diagnostics() {
         for label in diagnostic.labels() {
             let span = label.decoded_span().unwrap();
@@ -163,7 +166,7 @@ fn holes_keep_comments_and_complete_owned_diagnostics_without_recovery_bindings(
     }
     let large = ",".repeat(32);
     let retained = parse_once(&allocator, embed(&large, Shape::SlotParams, Lang::Js))
-        .into_slot_params(&allocator)
+        .into_slot_params()
         .unwrap();
     assert_eq!(retained.hole(), Some(EmbedHole::TokenBudget));
     assert_eq!(retained.source().text(), large);
@@ -172,7 +175,7 @@ fn holes_keep_comments_and_complete_owned_diagnostics_without_recovery_bindings(
         &allocator,
         embed("x=()=>{import 'x'}", Shape::SlotParams, Lang::Js),
     )
-    .into_slot_params(&allocator)
+    .into_slot_params()
     .unwrap();
     assert_eq!(retained.hole(), Some(EmbedHole::InvalidModuleContext));
     assert!(retained.parameters().is_none() && retained.rest().is_none());
@@ -182,7 +185,7 @@ fn holes_keep_comments_and_complete_owned_diagnostics_without_recovery_bindings(
 fn empty_and_rest_only_parameters_expose_no_generated_container() {
     let allocator = Allocator::default();
     let empty = parse_once(&allocator, embed("", Shape::SlotParams, Lang::Js))
-        .into_slot_params(&allocator)
+        .into_slot_params()
         .unwrap();
     assert_eq!(empty.hole(), None);
     assert!(empty.parameters().unwrap().is_empty() && empty.rest().is_none());
@@ -191,7 +194,7 @@ fn empty_and_rest_only_parameters_expose_no_generated_container() {
         &allocator,
         embed("...rest //tail", Shape::SlotParams, Lang::Js),
     )
-    .into_slot_params(&allocator)
+    .into_slot_params()
     .unwrap();
     assert!(rest.parameters().unwrap().is_empty());
     assert_eq!(
@@ -214,7 +217,7 @@ fn rejected_shapes_keep_the_same_original_expression_and_comments() {
     );
     let root = tree.expression().unwrap() as *const _;
     let comment = tree.comments().next().unwrap().text().unwrap().as_ptr();
-    let original = tree.into_slot_params(&allocator).unwrap_err();
+    let original = tree.into_slot_params().unwrap_err();
     assert_eq!(original.grammar().shape, Shape::Expr);
     assert_eq!(original.expression().unwrap() as *const _, root);
     assert_eq!(

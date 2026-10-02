@@ -55,7 +55,7 @@ fn actual_attribute_handoff_decodes_once_and_projects_exact_authored_entities() 
             source,
         },
     )
-    .into_expression(&a)
+    .into_expression()
     .unwrap();
     let ast = retained.expression().unwrap();
     let js = retain_expression_in(&a, file, &retained).unwrap();

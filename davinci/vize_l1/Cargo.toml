@@ -39,9 +39,14 @@ oxc_parser = { workspace = true }
 oxc_span = { workspace = true }
 
 [dev-dependencies]
+davinci_harness.workspace = true
 davinci_test_support.workspace = true
 htmlize.workspace = true
 vize_armature.workspace = true
+
+[[test]]
+name = "embedding_observation_drop"
+harness = false
 
 [[test]]
 name = "davinci_surface_corpus"

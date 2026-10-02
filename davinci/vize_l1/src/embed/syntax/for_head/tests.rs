@@ -6,6 +6,8 @@ use super::super::{Embed, EmbedHole, EmbedSource, Grammar, Lang, Shape, parse_on
 use super::{ForHeadHole, ForHeadPart, ForKeyword, NativeForHead, parse_vue_for_head_once};
 use crate::embed::prepare_attribute_value;
 
+mod authority;
+
 fn embed(text: &str, lang: Lang) -> Embed<'_> {
     Embed {
         grammar: Grammar {

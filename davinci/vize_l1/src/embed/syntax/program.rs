@@ -1,7 +1,7 @@
 //! Ordinary whole-Program syntax with an explicit compiler source profile.
 
 use oxc_diagnostics::Diagnostics;
-use oxc_parser::{Parser, ParserReturn};
+use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::Allocator;
 
@@ -67,8 +67,8 @@ pub fn parse_program_once<'a>(
         },
         source_type,
         coordinates: Coordinates { source, prefix: 0 },
-        program: None,
         observation: None,
+        embedding: None,
         diagnostics: Diagnostics::default(),
         hole: None,
     };
@@ -86,15 +86,6 @@ pub fn parse_program_once<'a>(
     };
     syntax.observation = Some(observation);
     syntax
-}
-
-/// All native syntax paths use the same single parser invocation.
-pub(super) fn parse_input<'a>(
-    allocator: &'a Allocator,
-    input: &'a str,
-    source_type: SourceType,
-) -> ParserReturn<'a> {
-    Parser::new(allocator.as_oxc(), input, source_type).parse()
 }
 
 #[cfg(test)]

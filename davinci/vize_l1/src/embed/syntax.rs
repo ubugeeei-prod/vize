@@ -6,11 +6,11 @@
 //! this provider yet; it neither selects file languages nor attaches identities.
 
 use alloc::boxed::Box;
-use oxc_ast::ast::{Expression, Program, Statement};
+use oxc_ast::ast::{Expression, Program};
 use oxc_diagnostics::Diagnostics;
-use oxc_parser::{AdmittedProgram, ProgramObservation};
+use oxc_parser::{AdmittedProgram, EmbeddingObservation, ProgramObservation};
 use oxc_span::SourceType;
-use vize_l0::{Allocator, Span, String, expression_guard::expression_is_safe_to_parse};
+use vize_l0::{Allocator, Span};
 
 use super::{Embed, EmbedSource, Grammar, Lang, Shape, SourceError};
 
@@ -22,6 +22,7 @@ mod params;
 mod program;
 mod shapes;
 mod views;
+mod wrapped;
 pub use admission::NATIVE_SYNTAX_UNIT_LIMIT;
 use coordinates::Coordinates;
 pub use for_head::{
@@ -30,7 +31,6 @@ pub use for_head::{
 pub use handoff::RetainedExpression;
 pub use params::RetainedSlotParams;
 pub use program::{ProgramGoal, ProgramOptions, parse_program_once};
-use shapes::Wrapper;
 pub use shapes::{HandlerBodyView, SlotParamsView};
 pub use views::{CommentView, DiagnosticLabel, DiagnosticView};
 
@@ -59,8 +59,8 @@ pub struct NativeSyntax<'a> {
     grammar: Grammar,
     source_type: SourceType,
     coordinates: Coordinates<'a>,
-    program: Option<Program<'a>>,
     observation: Option<ProgramObservation<'a>>,
+    embedding: Option<EmbeddingObservation<'a>>,
     diagnostics: Diagnostics,
     hole: Option<EmbedHole>,
 }
@@ -121,7 +121,7 @@ impl<'a> NativeSyntax<'a> {
         if self.hole.is_some() || self.grammar.shape != Shape::Expr {
             return None;
         }
-        expression(self.program.as_ref()?)
+        self.embedding.as_ref()?.expression()
     }
 
     /// Authored directives/statements only, in an ordinary non-async arrow body.
@@ -130,7 +130,10 @@ impl<'a> NativeSyntax<'a> {
         if self.hole.is_some() || self.grammar.shape != Shape::HandlerBody {
             return None;
         }
-        shapes::handler_body(self.program.as_ref()?)
+        self.embedding
+            .as_ref()?
+            .handler_body()
+            .map(HandlerBodyView::from_body)
     }
 
     /// Authored formal parameters/rest only; the synthetic arrow stays private.
@@ -139,13 +142,16 @@ impl<'a> NativeSyntax<'a> {
         if self.hole.is_some() || self.grammar.shape != Shape::SlotParams {
             return None;
         }
-        shapes::slot_params(self.program.as_ref()?)
+        self.embedding
+            .as_ref()?
+            .parameters()
+            .map(SlotParamsView::from_parameters)
     }
 
     pub fn comments(&self) -> impl Iterator<Item = CommentView<'_, 'a>> {
-        self.program
+        self.embedding
             .iter()
-            .flat_map(|program| program.comments.iter())
+            .flat_map(|observation| observation.comments().iter())
             .chain(
                 self.observation
                     .iter()
@@ -162,6 +168,11 @@ impl<'a> NativeSyntax<'a> {
             .iter()
             .chain(
                 self.observation
+                    .iter()
+                    .flat_map(|observation| observation.diagnostics().iter()),
+            )
+            .chain(
+                self.embedding
                     .iter()
                     .flat_map(|observation| observation.diagnostics().iter()),
             )
@@ -185,64 +196,20 @@ impl<'a> NativeSyntax<'a> {
     /// Non-Expr artifacts are returned intact in a normally owned box. Local
     /// Expr holes keep all source and observation metadata while exposing no
     /// recovered expression.
-    pub fn into_expression(
-        self,
-        allocator: &'a Allocator,
-    ) -> Result<RetainedExpression<'a>, Box<Self>> {
-        handoff::into_expression(self, allocator)
+    pub fn into_expression(self) -> Result<RetainedExpression<'a>, Box<Self>> {
+        handoff::into_expression(self)
     }
 
-    /// Retain authored binding roots at the allocator's lifetime without
-    /// exposing the generated arrow or parameter-list container. Wrong shapes
-    /// return their original artifact intact; local holes keep observations.
-    pub fn into_slot_params(
-        self,
-        allocator: &'a Allocator,
-    ) -> Result<RetainedSlotParams<'a>, Box<Self>> {
-        params::into_slot_params(self, allocator)
+    /// Consume only the original parser-owned arena and complete observations.
+    /// A non-parameter shape returns its original owned artifact intact.
+    pub fn into_slot_params(self) -> Result<RetainedSlotParams<'a>, Box<Self>> {
+        params::into_slot_params(self)
     }
-}
-
-fn expression<'p, 'a>(program: &'p Program<'a>) -> Option<&'p Expression<'a>> {
-    let [Statement::ExpressionStatement(statement)] = program.body.as_slice() else {
-        return None;
-    };
-    let Expression::ParenthesizedExpression(wrapper) = &statement.expression else {
-        return None;
-    };
-    Some(&wrapper.expression)
 }
 
 fn parser_length(length: usize, extra: usize) -> Option<usize> {
     let length = length.checked_add(extra)?;
     (length <= u32::MAX as usize && length <= isize::MAX as usize).then_some(length)
-}
-
-fn admitted_input<'a>(
-    allocator: &'a Allocator,
-    source: &'a str,
-    wrapper: Wrapper,
-    length: usize,
-) -> Result<&'a str, EmbedHole> {
-    let admit = |text: &str| {
-        if !admission::allows_small_input(text) {
-            return Err(EmbedHole::TokenBudget);
-        }
-        if !expression_is_safe_to_parse(text) {
-            return Err(EmbedHole::SafetyAdmission);
-        }
-        Ok(())
-    };
-    if wrapper.prefix.is_empty() {
-        admit(source)?;
-        return Ok(source);
-    }
-    let mut wrapped = String::with_capacity(length);
-    wrapped.push_str(wrapper.prefix);
-    wrapped.push_str(source);
-    wrapped.push_str(wrapper.suffix);
-    admit(wrapped.as_str())?;
-    Ok(allocator.alloc_str(wrapped.as_str()))
 }
 
 /// Parse Program, Expr, HandlerBody or SlotParams exactly once into the shared
@@ -258,62 +225,7 @@ pub fn parse_once<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> NativeSynta
             ProgramOptions::module(embed.grammar.lang),
         );
     }
-    let wrapper = Wrapper::for_shape(embed.grammar.shape);
-    let source_type = ProgramOptions::module(embed.grammar.lang).source_type();
-    let mut result = NativeSyntax {
-        grammar: embed.grammar,
-        source_type,
-        coordinates: Coordinates {
-            source: embed.source,
-            prefix: wrapper.map_or(0, |wrapper| wrapper.prefix.len() as u32),
-        },
-        program: None,
-        observation: None,
-        diagnostics: Diagnostics::default(),
-        hole: None,
-    };
-    let Some(wrapper) = wrapper else {
-        result.hole = Some(EmbedHole::UnsupportedShape);
-        return result;
-    };
-    let extra = wrapper.prefix.len() + wrapper.suffix.len();
-    let Some(length) = parser_length(embed.source.text().len(), extra) else {
-        result.hole = Some(EmbedHole::SourceTooLarge);
-        return result;
-    };
-    let input = match admitted_input(allocator, embed.source.text(), wrapper, length) {
-        Ok(input) => input,
-        Err(hole) => {
-            result.hole = Some(hole);
-            return result;
-        }
-    };
-    let parsed = program::parse_input(allocator, input, source_type);
-    result.hole = if parsed.is_flow_language {
-        Some(EmbedHole::UnsupportedFlow)
-    } else if parsed.panicked || parsed.diagnostics.has_errors() {
-        Some(EmbedHole::Syntax)
-    } else if embed.grammar.shape == Shape::Expr
-        && expression(&parsed.program)
-            .and_then(|expression| {
-                use oxc_span::GetSpan;
-                result.decoded_span(expression.span()).ok()
-            })
-            .is_none()
-    {
-        Some(EmbedHole::InvalidExpressionShape)
-    } else if matches!(embed.grammar.shape, Shape::HandlerBody | Shape::SlotParams)
-        && !shapes::valid_wrapper(&parsed.program, embed.grammar.shape, result.coordinates)
-    {
-        Some(EmbedHole::InvalidWrappedShape)
-    } else if matches!(embed.grammar.shape, Shape::HandlerBody | Shape::SlotParams) {
-        shapes::context_hole(&parsed.program)
-    } else {
-        None
-    };
-    result.diagnostics = parsed.diagnostics;
-    result.program = Some(parsed.program);
-    result
+    wrapped::parse(allocator, embed)
 }
 
 #[cfg(test)]
@@ -321,6 +233,9 @@ mod tests;
 
 #[cfg(test)]
 mod shape_tests;
+
+#[cfg(test)]
+mod embedding_tests;
 
 #[cfg(test)]
 mod parameter_context_tests;

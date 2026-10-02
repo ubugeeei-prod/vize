@@ -121,7 +121,7 @@ fn defensive_rejection_keeps_original_ast_and_all_observation_records() {
     let syntax = parse_once(&allocator, wrong);
     let root = syntax.expression().unwrap() as *const _;
     let comment = syntax.comments().next().unwrap().text().unwrap().as_ptr();
-    let original = syntax.into_slot_params(&allocator).unwrap_err();
+    let original = syntax.into_slot_params().unwrap_err();
     let head = NativeForHead {
         grammar: embed("x in xs", Lang::Js).grammar,
         source: embed("x in xs", Lang::Js).source,

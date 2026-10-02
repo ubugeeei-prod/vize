@@ -1,79 +1,34 @@
-//! Internal parser wrappers and views over their authored syntax only.
+//! The existing fixed wrappers and sole context walk, at their language owner.
 
 use oxc_ast::ast::{
-    ArrowFunctionExpression, AwaitExpression, Directive, Expression, FormalParameter,
-    FormalParameterRest, FormalParameters, FunctionBody, ModuleDeclaration, Program, Statement,
-    TSImportEqualsDeclaration,
+    ArrowFunctionExpression, AwaitExpression, BindingIdentifier, Expression, FormalParameterKind,
+    FormalParameters, FunctionBody, ModuleDeclaration, Program, Statement,
+    TSImportEqualsDeclaration, TSTypeAnnotation,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
 
-use super::{EmbedHole, Shape, coordinates::Coordinates};
+use super::{EmbeddingGoal, EmbeddingHole};
 
-#[derive(Clone, Copy)]
-pub(super) struct Wrapper {
-    pub prefix: &'static str,
-    pub suffix: &'static str,
-}
-
-impl Wrapper {
-    pub const fn for_shape(shape: Shape) -> Option<Self> {
-        let (prefix, suffix) = match shape {
-            Shape::Program => ("", ""),
-            Shape::Expr => ("(\n", "\n)"),
-            Shape::HandlerBody => ("()=>{\n", "\n}"),
-            Shape::SlotParams => ("(\n", "\n)=>{}"),
-            Shape::ForHead | Shape::FilterChain => return None,
-        };
-        Some(Self { prefix, suffix })
+pub(super) const fn wrapper(goal: EmbeddingGoal) -> (&'static str, &'static str) {
+    match goal {
+        EmbeddingGoal::Expr => ("(\n", "\n)"),
+        EmbeddingGoal::HandlerBody => ("()=>{\n", "\n}"),
+        EmbeddingGoal::Parameters => ("(\n", "\n)=>{}"),
     }
 }
 
-/// Authored handler syntax in a non-async lexical arrow context.
-///
-/// The generated arrow, its empty parameters and enclosing braces stay private.
-/// Node spans use the owning `NativeSyntax`'s checked coordinate projections.
-#[derive(Debug, Clone, Copy)]
-pub struct HandlerBodyView<'s, 'a> {
-    directives: &'s [Directive<'a>],
-    statements: &'s [Statement<'a>],
+pub(super) fn expression<'p, 'a>(program: &'p Program<'a>) -> Option<&'p Expression<'a>> {
+    let [Statement::ExpressionStatement(statement)] = program.body.as_slice() else {
+        return None;
+    };
+    let Expression::ParenthesizedExpression(wrapper) = &statement.expression else {
+        return None;
+    };
+    Some(&wrapper.expression)
 }
 
-impl<'s, 'a> HandlerBodyView<'s, 'a> {
-    #[must_use]
-    pub const fn directives(self) -> &'s [Directive<'a>] {
-        self.directives
-    }
-
-    #[must_use]
-    pub const fn statements(self) -> &'s [Statement<'a>] {
-        self.statements
-    }
-}
-
-/// Authored slot formal parameters, including patterns, defaults and rest.
-///
-/// The generated arrow and enclosing parameter-list span stay private. Node
-/// spans use the owning `NativeSyntax`'s checked coordinate projections.
-#[derive(Debug, Clone, Copy)]
-pub struct SlotParamsView<'s, 'a> {
-    parameters: &'s [FormalParameter<'a>],
-    rest: Option<&'s FormalParameterRest<'a>>,
-}
-
-impl<'s, 'a> SlotParamsView<'s, 'a> {
-    #[must_use]
-    pub const fn parameters(self) -> &'s [FormalParameter<'a>] {
-        self.parameters
-    }
-
-    #[must_use]
-    pub const fn rest(self) -> Option<&'s FormalParameterRest<'a>> {
-        self.rest
-    }
-}
-
-fn arrow<'p, 'a>(program: &'p Program<'a>) -> Option<&'p ArrowFunctionExpression<'a>> {
+pub(super) fn arrow<'p, 'a>(program: &'p Program<'a>) -> Option<&'p ArrowFunctionExpression<'a>> {
     let [Statement::ExpressionStatement(statement)] = program.body.as_slice() else {
         return None;
     };
@@ -87,41 +42,35 @@ fn arrow<'p, 'a>(program: &'p Program<'a>) -> Option<&'p ArrowFunctionExpression
     .then_some(arrow)
 }
 
-pub(super) fn handler_body<'p, 'a>(program: &'p Program<'a>) -> Option<HandlerBodyView<'p, 'a>> {
-    let arrow = arrow(program)?;
-    Some(HandlerBodyView {
-        directives: arrow.body.directives.as_slice(),
-        statements: arrow.body.statements.as_slice(),
-    })
-}
-
-pub(super) fn slot_params<'p, 'a>(program: &'p Program<'a>) -> Option<SlotParamsView<'p, 'a>> {
-    let arrow = arrow(program)?;
-    Some(SlotParamsView {
-        parameters: arrow.params.items.as_slice(),
-        rest: arrow.params.rest.as_deref(),
-    })
-}
-
-/// Require the generated enclosing syntax exactly where it was inserted. An
-/// input escaping its body/list cannot add statements, parameters or a tail.
-pub(super) fn valid_wrapper(
+pub(super) fn shape_hole(
     program: &Program<'_>,
-    shape: Shape,
-    coordinates: Coordinates<'_>,
-) -> bool {
-    let Some(arrow) = arrow(program) else {
-        return false;
+    goal: EmbeddingGoal,
+    content: Span,
+) -> Option<EmbeddingHole> {
+    let authored = |span: Span| {
+        span.start >= content.start
+            && span.end <= content.end
+            && span.start <= span.end
+            && program
+                .source_text
+                .get(span.start as usize..span.end as usize)
+                .is_some()
     };
-    let source_end = coordinates.prefix + coordinates.source.text().len() as u32;
-    let authored = |span| coordinates.decoded_span(span).is_ok();
-    match shape {
-        Shape::HandlerBody => {
-            arrow.span == Span::new(0, source_end + 2)
+    if goal == EmbeddingGoal::Expr {
+        return expression(program)
+            .is_none_or(|root| !authored(root.span()))
+            .then_some(EmbeddingHole::InvalidExpressionShape);
+    }
+    let Some(arrow) = arrow(program) else {
+        return Some(EmbeddingHole::InvalidWrappedShape);
+    };
+    let valid = match goal {
+        EmbeddingGoal::HandlerBody => {
+            arrow.span == Span::new(0, content.end + 2)
                 && arrow.params.span == Span::new(0, 2)
                 && arrow.params.items.is_empty()
                 && arrow.params.rest.is_none()
-                && arrow.body.span == Span::new(4, source_end + 2)
+                && arrow.body.span == Span::new(4, content.end + 2)
                 && arrow.body.directives.iter().all(|node| authored(node.span))
                 && arrow
                     .body
@@ -129,10 +78,10 @@ pub(super) fn valid_wrapper(
                     .iter()
                     .all(|node| authored(node.span()))
         }
-        Shape::SlotParams => {
-            arrow.span == Span::new(0, source_end + 6)
-                && arrow.params.span == Span::new(0, source_end + 2)
-                && arrow.body.span == Span::new(source_end + 4, source_end + 6)
+        EmbeddingGoal::Parameters => {
+            arrow.span == Span::new(0, content.end + 6)
+                && arrow.params.span == Span::new(0, content.end + 2)
+                && arrow.body.span == Span::new(content.end + 4, content.end + 6)
                 && arrow.body.directives.is_empty()
                 && arrow.body.statements.is_empty()
                 && arrow.params.items.iter().all(|node| authored(node.span))
@@ -142,47 +91,68 @@ pub(super) fn valid_wrapper(
                     .as_deref()
                     .is_none_or(|node| authored(node.span))
         }
-        _ => false,
-    }
+        EmbeddingGoal::Expr => false,
+    };
+    (!valid).then_some(EmbeddingHole::InvalidWrappedShape)
 }
 
-/// OXC's syntax parser retains module declarations in function bodies and
-/// normally leaves contextual rejection to its semantic builder. Reject that
-/// grammar here without a second parse or a semantic artifact. The same walk
-/// rejects AwaitExpression in any function's parameters. Arrow heads inherit
-/// OXC's outer module Await setting, but parameter defaults cannot await. A
-/// nested async function body remains its own valid Await context.
-pub(super) fn context_hole(program: &Program<'_>) -> Option<EmbedHole> {
+/// One relocated context walk. A runtime formal binding is distinct from an
+/// erased type-signature binding, a property key and a reference expression.
+pub(super) fn context_hole(program: &Program<'_>) -> Option<EmbeddingHole> {
     #[derive(Default)]
     struct Context {
         module_declaration: bool,
         parameter_await: bool,
+        invalid_runtime_binding: bool,
         in_parameters: bool,
+        runtime_formals: bool,
     }
     impl<'a> Visit<'a> for Context {
-        fn visit_module_declaration(&mut self, _declaration: &ModuleDeclaration<'a>) {
+        fn visit_module_declaration(&mut self, _: &ModuleDeclaration<'a>) {
             self.module_declaration = true;
         }
-
-        fn visit_ts_import_equals_declaration(
-            &mut self,
-            _declaration: &TSImportEqualsDeclaration<'a>,
-        ) {
+        fn visit_ts_import_equals_declaration(&mut self, _: &TSImportEqualsDeclaration<'a>) {
             self.module_declaration = true;
         }
-
         fn visit_formal_parameters(&mut self, parameters: &FormalParameters<'a>) {
             let outer = core::mem::replace(&mut self.in_parameters, true);
+            let runtime = core::mem::replace(
+                &mut self.runtime_formals,
+                parameters.kind != FormalParameterKind::Signature,
+            );
             walk::walk_formal_parameters(self, parameters);
             self.in_parameters = outer;
+            self.runtime_formals = runtime;
         }
-
         fn visit_function_body(&mut self, body: &FunctionBody<'a>) {
             let outer = core::mem::replace(&mut self.in_parameters, false);
+            let runtime = core::mem::replace(&mut self.runtime_formals, false);
             walk::walk_function_body(self, body);
             self.in_parameters = outer;
+            self.runtime_formals = runtime;
         }
-
+        fn visit_ts_type_annotation(&mut self, annotation: &TSTypeAnnotation<'a>) {
+            let runtime = core::mem::replace(&mut self.runtime_formals, false);
+            walk::walk_ts_type_annotation(self, annotation);
+            self.runtime_formals = runtime;
+        }
+        fn visit_binding_identifier(&mut self, identifier: &BindingIdentifier<'a>) {
+            self.invalid_runtime_binding |= self.runtime_formals
+                && matches!(
+                    identifier.name.as_str(),
+                    "eval"
+                        | "arguments"
+                        | "implements"
+                        | "interface"
+                        | "let"
+                        | "package"
+                        | "private"
+                        | "protected"
+                        | "public"
+                        | "static"
+                        | "yield"
+                );
+        }
         fn visit_await_expression(&mut self, expression: &AwaitExpression<'a>) {
             self.parameter_await |= self.in_parameters;
             walk::walk_await_expression(self, expression);
@@ -191,9 +161,9 @@ pub(super) fn context_hole(program: &Program<'_>) -> Option<EmbedHole> {
     let mut visitor = Context::default();
     visitor.visit_program(program);
     if visitor.module_declaration {
-        Some(EmbedHole::InvalidModuleContext)
-    } else if visitor.parameter_await {
-        Some(EmbedHole::InvalidParameterContext)
+        Some(EmbeddingHole::InvalidModuleContext)
+    } else if visitor.parameter_await || visitor.invalid_runtime_binding {
+        Some(EmbeddingHole::InvalidParameterContext)
     } else {
         None
     }
