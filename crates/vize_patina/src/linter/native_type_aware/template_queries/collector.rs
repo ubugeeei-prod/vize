@@ -1,8 +1,8 @@
 use super::super::document::TypeAwareDocument;
 use super::{
     TemplateContext, TemplatePromiseQuery, TemplateQuery, TemplateQueryKind,
-    absolute_expression_range, calls::collect_template_call_ranges, generated_offset_for_text,
-    v_for_source_binding_offset,
+    absolute_expression_range, calls::collect_template_call_ranges,
+    generated_offset_for_expression, generated_offset_for_text, v_for_source_binding_offset,
 };
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_span::SourceType;
@@ -495,7 +495,7 @@ fn collect_expression_query_sets(
     // is the key optimization from the type-aware perf work: template expressions
     // are often short but numerous, so reparsing per rule dominated Corsa time.
     let expression_generated_offset = include_template_queries
-        .then(|| generated_offset_for_text(virtual_ts, source_start, source_text))
+        .then(|| generated_offset_for_expression(virtual_ts, source_start, source_text, expression))
         .flatten();
     let include_call_callees = expression_generated_offset.is_some();
     let call_ranges = profile!(
