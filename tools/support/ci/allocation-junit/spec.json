@@ -1,0 +1,35 @@
+{
+  "repository": "ubugeeei-prod/vize",
+  "cohort": "ordinary-pr",
+  "runId": 36966348830,
+  "attempt": 1,
+  "source": "0252e59f1462e57bc1d50507af0266a9912a4484",
+  "tree": "7d763b34612f022d4ba0c1b101e153caf7e9b643",
+  "base": "4cabe83f7d0826907b6035b58d76798e92634927",
+  "mergeCommit": "174516ee419399e3178e9ba1bffafcee4f4ff939",
+  "branch": "fix/allocation-nextest-protocol-20261002",
+  "artifacts": [
+    {
+      "id": 11210162486,
+      "name": "rust-test-shard-1-36966348830-1",
+      "bytes": 92806,
+      "sha256": "2d92928e9eedf2406fd00d52e0963176a0e001ef07e28761da9730c24f09412b",
+      "jobId": 110711652033,
+      "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (1/4)",
+      "shard": 1,
+      "binary": "vize_patina::davinci_authored_markup_budget",
+      "case": "authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget"
+    },
+    {
+      "id": 11209886784,
+      "name": "rust-test-shard-4-36966348830-1",
+      "bytes": 95459,
+      "sha256": "0f45b623c2627dab3e74561852e1c7cd0a039fb0fa2918de64512649ceebd89c",
+      "jobId": 110711652099,
+      "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (4/4)",
+      "shard": 4,
+      "binary": "vize_l0::remark_zero_cost",
+      "case": "remarks_preserve_zero_cost_and_the_positive_control"
+    }
+  ]
+}
