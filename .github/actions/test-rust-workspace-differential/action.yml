@@ -8,6 +8,13 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Test actual host snapshots and native source edits
+      shell: bash
+      run: |
+        cargo test --locked -p vize_maestro --lib source_project::tests:: -- --nocapture
+        cargo test --locked -p vize_maestro --features experimental-source-project --lib source_project:: -- --nocapture
+        cargo check --locked -p vize_maestro --no-default-features --features experimental-source-project
+        cargo clippy --locked -p vize_maestro --features experimental-source-project --all-targets -- -D warnings
     - name: Test Rust workspace
       if: ${{ inputs.workspace-already-tested != 'true' }}
       shell: bash

@@ -63,6 +63,7 @@ pub mod document;
 pub mod ide;
 pub mod runtime;
 pub mod server;
+pub mod source_project;
 pub mod utils;
 pub mod virtual_code;
 

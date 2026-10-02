@@ -74,7 +74,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeData`                       |        8 |   11 |
 | `ScopeKind`                       |       65 |   73 |
 | `SlotUsage`                       |        1 |    2 |
-| `Span`                            |        0 |   13 |
+| `Span`                            |        0 |   28 |
 | `Symbol`                          |        0 |    1 |
 | `SymbolId`                        |        0 |    5 |
 | `TemplateExpression`              |        0 |   14 |
