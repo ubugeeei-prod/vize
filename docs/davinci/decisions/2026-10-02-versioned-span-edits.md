@@ -66,3 +66,13 @@ This replay preserves every incoming parser-authority and formatter change,
 regenerates only the actual affected L1 inventory and keeps all source tests,
 performance ceilings and product-history gates. Fresh required/full/instruction
 Actions, named runtime laws and the protected queue are still pending.
+
+The c850 origin manual full run 37037597041 failed only its source-coverage
+mounted Vapor compound-property case: 59 of 60 cases passed, but the child
+exit status and stdout were missing from the failure message. The 860 child
+full run 37037605015 passed the same unchanged Vapor and support blobs.
+This is a control observation, not an established cause or correction.
+The temporary diagnostic retains the original coverage job commands, settings
+and workspace tests, adding only original-backend/status/stdout/input failure
+reporting. Its actual result cannot replace either public source-head gate.
+Both public PRs remain outside the queue while the origin failure is open.
