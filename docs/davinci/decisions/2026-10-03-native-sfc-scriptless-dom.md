@@ -118,6 +118,11 @@ executions pass from that fresh capture. The new source receipt is
 Earlier `24fd046e` and historical-provider executions remain separate. This is
 selected entry/whole L3/L4 evidence; hosted whole-product acceptance remains open.
 
+The final callable successor `7e382ef0` follows the owned L4 formatting repair
+`9762e3bd`. The adapter replays only its ten owned paths and conserves all 270
+compiler/runtime source rows from the fresh execution above. This records source
+conservation after the formatting repair; it does not claim another execution.
+
 The adapter owns a normal complete document and optional L0 map string; their
 ordinary destruction is retained. NoLinks selects the actual empty recording
 sink and produces no links. Product/test-owned output and fixture vectors stay
