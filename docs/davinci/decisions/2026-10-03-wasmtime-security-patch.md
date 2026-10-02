@@ -22,15 +22,30 @@ SDK/WIT APIs, goldens, released fixtures, normal dependency direction,
 workflow commands and all instruction ceilings are unchanged.
 
 The local read-only registry metadata lacks the new patch. A temporary
-Actions-only resolver capture uses pinned Cargo 1.98.0 and the exact prepared
-source, runs only `cargo update -p wasmtime --precise 48.0.4`, and retains the
-complete generated lock, package delta and source/output hashes. No guest,
-host or product build belongs to this transport. The final source excludes
-the temporary workflow. Genuine lock generation and strict review of every
-changed package/version/checksum/dependency edge are still pending.
+Actions-only resolver capture used Cargo 1.98.0 and exact source `2576a9b5`,
+running only `cargo update -p wasmtime --precise 48.0.4`. Actual
+[run 37064301182](https://github.com/ubugeeei-prod/vize/actions/runs/37064301182)
+and job `111028167782` succeeded with original inputs preserved and only
+`Cargo.lock` dirty. The complete raw/gzip-hashed lock, package blocks and
+original resolver log are retained; the final source excludes the temporary
+workflow and courier.
 
-Product `3e31` passed its four corrected tooling shards and all 100 probes,
-but its required/full checks remain security-red; it stays unqueued. Preserve
+The generated lock is 134,299 bytes, with SHA-256
+`b7abcb06a463b6866617170cfc7ef77801632cf253184da571043031da66f41a`.
+Strict TOML and complete-block review retain all 524 packages: 14
+Wasmtime/Pulley records resolve to `48.0.4`, 13 Cranelift records to compatible
+`0.135.4`/`0.135.5`, and six wasm-tools records to `0.254.2`. These are the
+existing dependency families required by the
+[upstream patch manifest](https://github.com/bytecodealliance/wasmtime/blob/v48.0.4/Cargo.toml).
+Every other package block, including the separate `0.259.0` wasm-tools
+records, stays byte-exact. The only dependency-reference changes are 16
+`0.254.0` references to `0.254.2`; no package, dependency or feature edge is
+added or removed. All checksums come from actual Cargo output. Eight
+checksum/version/edge/unrelated-package/extra-package/TOML controls reject
+malformed closures without a build.
+
+Product `3e31` passed its four corrected tooling shards, runtime laws and all
+100 probes, but its required/full checks ended security-red; it stays unqueued. Preserve
 both failed audit logs and the separate earlier standalone guest lock failure.
 The patch gives no new runtime, compiler history or product-switch credit.
 Fresh exact-head audit with `--deny warnings`, real both-mode Contracts,
