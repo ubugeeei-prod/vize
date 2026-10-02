@@ -44,3 +44,10 @@ entities and conflicting edits must refuse application atomically. Product
 defaults and legacy fix application remain unchanged until their fix-history
 gates close. Fresh exact-head Actions, all 100 unchanged instruction ceilings,
 full native observations and protected merge are required before acceptance.
+
+The first published origin head (`237aeb7`, PR #7434) failed its full source
+inventory check: the committed L1 Span grep count remained 310, while the
+actual source generator reported 327. Regenerating the authoritative Croquis
+inventory changes only that L1 shard. The production source, scanner, gates
+and budgets remain unchanged. This correction needs fresh exact-head required,
+full and instruction Actions; the failed original run is retained as evidence.

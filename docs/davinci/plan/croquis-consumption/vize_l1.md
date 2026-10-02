@@ -18,4 +18,4 @@ _None._
 
 | product | resolved | grep |
 | ------- | -------: | ---: |
-| `Span`  |        0 |  310 |
+| `Span`  |        0 |  327 |
