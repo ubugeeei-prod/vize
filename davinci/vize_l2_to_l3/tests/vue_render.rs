@@ -1,4 +1,5 @@
 //! Genuine descriptor/Program membership; diagnostic template custody stays distinct.
+#[path = "vue_render_support/properties.rs"]
 mod vue_render_properties;
 mod vue_render_support;
 

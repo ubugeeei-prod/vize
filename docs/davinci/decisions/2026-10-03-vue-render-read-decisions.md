@@ -73,5 +73,12 @@ Cached-source tests are bounded source/API evidence. They are not whole-current
 workspace Cargo, hosted Actions, real instruction counts, protected queue,
 actual merge/main proof, raw-map parity or product gate completion. The first
 literal File L3 layer is independently delivered through PR #7453; this READ
-child remains private until its true provider ancestry, paired issue comments,
-independent source review and exact-head Actions are ready.
+child is published in the native provider Stack. Exact-head Actions and the
+protected queue must pass before it is accepted on main.
+
+Hosted Cargo found that a property-law helper at the integration-test root was
+also discovered as a standalone test crate, where its sibling imports were
+invalid. The helper is moved unchanged beneath `vue_render_support`, with an
+explicit path on the original test root. Scoped rustc laws had compiled the
+registered root only; they did not establish Cargo's full target-discovery
+behavior. The original eight law bodies and production source are unchanged.
