@@ -30,7 +30,8 @@ before writing. Missing/partial/colliding or changed input rejects with zero
 writes, and repeating integration preserves every byte.
 
 The existing SFC preferred-L0 source gate admits only the exact System factory
-initializer in its allocation-budget binary. It still rejects Carton storage,
+initializer and its adjacent `#[global_allocator]` attribute in the
+allocation-budget binary. It still rejects Carton storage, a removed attribute,
 alternate allocator types, additional calls and the same host call in compiler
 source. Replay validates and updates this executable gate before any write.
 The earlier exporter replay also retains this exact reviewed gate digest; the

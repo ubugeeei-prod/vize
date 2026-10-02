@@ -56,7 +56,7 @@ function assertPreferredSource(source, relPath) {
   const selected =
     relPath === "crates/vize_atelier_sfc/tests/allocation_budget.rs"
       ? source.replace(
-          /^static GLOBAL: ProfilingAllocator<System> = vize_carton::profile_allocator::system_allocator\(\);$/mu,
+          /^#\[global_allocator\]\nstatic GLOBAL: ProfilingAllocator<System> = vize_carton::profile_allocator::system_allocator\(\);$/mu,
           "",
         )
       : source;
@@ -114,6 +114,7 @@ void test("Atelier SFC admits only its exact host allocator selection and reject
     assertPreferredSource(source, "crates/vize_atelier_sfc/src/compile_template.rs"),
   );
   for (const changed of [
+    source.replace("#[global_allocator]\n", ""),
     source.replace("ProfilingAllocator<System>", "ProfilingAllocator<WrongAllocator>"),
     source.replace("system_allocator()", "system_allocator(WrongAllocator)"),
     source.replace("profile_allocator::system_allocator", "profile_export::system_allocator"),
