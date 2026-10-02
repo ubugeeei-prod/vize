@@ -33,7 +33,7 @@ use vize_l0::profiler::{
 };
 
 #[global_allocator]
-static GLOBAL: ProfilingAllocator<System> = ProfilingAllocator::new();
+static GLOBAL: ProfilingAllocator<System> = vize_carton::profile_allocator::system_allocator();
 
 struct Fixture {
     name: &'static str,

@@ -4,7 +4,7 @@
 //! profiling is enabled, plus the suppression machinery that keeps the
 //! profiler's own bookkeeping from counting itself.
 
-use std::alloc::{GlobalAlloc, Layout, System};
+use std::alloc::{GlobalAlloc, Layout};
 use std::cell::Cell;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
@@ -186,21 +186,8 @@ impl AllocationSnapshot {
 
 /// Global allocator wrapper that records allocation pressure while profiling is enabled.
 #[derive(Debug)]
-pub struct ProfilingAllocator<A = System> {
+pub struct ProfilingAllocator<A> {
     inner: A,
-}
-
-impl ProfilingAllocator<System> {
-    /// Create a profiling allocator backed by [`System`].
-    pub const fn new() -> Self {
-        Self { inner: System }
-    }
-}
-
-impl Default for ProfilingAllocator<System> {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 impl<A> ProfilingAllocator<A> {
