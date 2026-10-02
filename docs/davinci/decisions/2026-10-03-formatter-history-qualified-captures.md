@@ -3,15 +3,19 @@
 This record admits actual execution of the exact reviewed `78cf` source and
 its `5a56` diagnostic child. Two independent reviews verified the full evidence.
 The fresh replay on signed main `21187137f15e981844898d90276fda5df1b6c3cc`
-requires its own Actions and protected merge acceptance; prior source receipts
-do not execute the replay or current main.
+and its composed `3290` merge have their own successful Actions and actual
+source-built output receipts. The four native Stack layers are actually merged;
+prior source receipts retain their original source qualifications.
 
 ## Source and denominator
 
-The four-layer native Stack is #7437 (#7430–#7433). Its reviewed top is
-`78cf7fdc3e65742b5438aeae44e0291141e3aa46`, based on signed main
-`745aec2c`. The new publication replay preserves all incoming Stock and native
-Doc source, lockfiles and inventories from signed main `21187137`. The original 87 area commits, 56 fix commits, 150 semantic
+The four-layer native Stack is #7437 (#7430–#7433). Its originally reviewed top
+was `78cf7fdc3e65742b5438aeae44e0291141e3aa46`, based on signed main
+`745aec2c`. Its final publication top was
+`934512e97b6f152b0f393ca19a9f5d46d605222f` on signed main `21187137`.
+The new publication replay preserves all incoming Stock and native Doc source,
+lockfiles and inventories from signed main `21187137`. The original 87 area
+commits, 56 fix commits, 150 semantic
 requirements, 300 registered cases, original expected/error bytes, source pins
 and immutable provenance refs retain their original meanings.
 
@@ -21,7 +25,7 @@ The specific eight-function retained-source transition verifies the exact
 suffixes, raw function bodies and all eight full snapshots. It provides source
 authority; it provides no new output oracle or execution credit.
 
-## Ordinary source execution
+## Originally reviewed source execution (`78cf`)
 
 The exact top's first complete Check run
 [37027139785](https://github.com/ubugeeei-prod/vize/actions/runs/37027139785)
@@ -110,5 +114,70 @@ credit. The OXC printer-error runtime arm remains unobserved. Eight observed
 The original failed `00f` campaign and 21 Clippy errors remain immutable failed
 attempts. Neither current capture changes native handled/equivalent/paired
 counts from zero, switches a product route, closes #6882 or establishes whole
-history completion. Protected merge acceptance and fresh-main conservation are
-pending for the fresh replay.
+history completion. Protected delivery and fresh-main conservation are recorded
+below separately from those remaining semantic and metric obligations.
+
+## Fresh replay and protected delivery
+
+All four PRs actually merged at 2026-10-02T18:13:36Z through the protected
+merge queue, with individual auto-merge disabled:
+
+| PR | Actual signed merge commit |
+| --- | --- |
+| [#7430](https://github.com/ubugeeei-prod/vize/pull/7430) | `a9f89f8457b890849706904809925e98c2e91802` |
+| [#7431](https://github.com/ubugeeei-prod/vize/pull/7431) | `f613b418a5366f32cc2225eda9d6506cf74efe91` |
+| [#7432](https://github.com/ubugeeei-prod/vize/pull/7432) | `451c97d69565a20b44851080de743d537134f473` |
+| [#7433](https://github.com/ubugeeei-prod/vize/pull/7433) | `3290e828a45c0e0e4ef474ca5420aef7dbac2e32` |
+
+Every final source head passed full Check, required PR reports and the measured
+100-row instruction gate before queue entry. The literal layer's initial full
+run 37036729441 failed only while downloading VS Code, before editor tests;
+that failed attempt remains retained. A separate complete full run 37040725237
+on the unchanged exact literal head succeeded. No source or gate was changed.
+Protected composed Check
+[37043623878](https://github.com/ubugeeei-prod/vize/actions/runs/37043623878)
+passed, including its positive required report and all 100 instruction ceilings
+measured identically across three executions. These existing ceilings grant no
+formatter-specific metric credit.
+
+The fresh `934` top's full Check
+[37036740092](https://github.com/ubugeeei-prod/vize/actions/runs/37036740092)
+passed. Its actual artifact 11241303499 was admitted from complete authenticated
+reports, standalone CLI receipt and source/Cargo/build receipts. The independent
+selected-artifact admission has SHA256
+`e63769c24519e56065eb378fbdbc59c58306976bf1144fdd76e966506981924b`.
+It is one fresh `934` execution, separate from the two earlier `78cf` runs.
+
+A separate complete full Check on actual composed `3290`,
+[37044929402](https://github.com/ubugeeei-prod/vize/actions/runs/37044929402),
+succeeded at 2026-10-02T18:27:24Z, including strict workspace Clippy and tests.
+Its successful test-scripts job 110963903948 emitted artifact 11244842082,
+`formatter-api-corpus-37044929402-1-test-scripts-full`, authenticated service
+digest `a6dc9e68e56f9086fd58c67e4cd2f1c2d766e306841fd603763d9b9b7f77c874`.
+Collector source `3a8193347d23a1262f7291ae24ba7d0f94ac68d2`, actual run
+[37047671108](https://github.com/ubugeeei-prod/vize/actions/runs/37047671108),
+job 110973017889, preserved all 29 frames and 14 selected full files. Its
+363,468-byte authenticated raw log has SHA256
+`9355ac6b40bdd736122dd17f74b4e5ce11f63b5045d188b950a4040e633a8713`.
+The 943-entry inventory includes other products and grants them no byte or
+semantic credit. The service ZIP digest is not locally recomputed.
+
+Normal source-bound validators admitted all 300 API cases, including 14 Vue
+version cases, five historical CLI cases in four modes, the five ordinary
+shared CLI cases, standalone CLI receipt and complete observer Cargo logs.
+The build records exact source `3290`, formatter tree
+`af992c031d2b9c070541b8774fedc49c1a8bcba0`, lock/observer hashes and hosted
+binary hashes. The owner audit has SHA256
+`c7d1ed7afdae74fec7e0c9708c3933399c8c077557f1aa6e80b0bff0e9262a30`.
+
+All five actual queue trees, including the incoming predecessor, were
+independently reproduced from signed incoming main `d871`, source PR #7453
+and the four exact source layers. Each tree equals authenticated GitData; all
+incoming source, security/Check configuration, Davinci, tools and lockfiles are
+conserved. The original corpus remains exact tree
+`992f2dc8e18dd4e51ba0605edb325e94d4aa3401`. No source pin or expected asset
+was rewritten. The separately qualified `5a56` controls retain their source;
+this `3290` observation does not reclassify them or claim a second `3290` run.
+Applicable formatter metrics, OXC printer-error execution and #7258 feature
+history remain unfinished. #6882 stays open; native handling, equivalence and
+paired counts in this differential campaign remain zero.
