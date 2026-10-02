@@ -31,8 +31,11 @@ pub enum SourceError {
 /// Plain text borrows its exact authored slice. Decoded text and its complete
 /// map borrow the shared arena, while authored offsets remain file-absolute.
 /// Private fields prevent consumers from pairing text with an unrelated map.
+/// The retained input identifies a physical byte buffer, not a document,
+/// grammar or producer. Shared and empty inputs need separate host identity.
 #[derive(Debug, Clone, Copy)]
 pub struct EmbedSource<'a> {
+    authored_root: &'a str,
     span: Span,
     text: &'a str,
     decoded: Option<DecodeMap<'a>>,
@@ -47,10 +50,20 @@ impl<'a> EmbedSource<'a> {
             .get(span.start as usize..span.end as usize)
             .ok_or(SourceError::InvalidAuthoredSpan)?;
         Ok(Self {
+            authored_root: source,
             span,
             text,
             decoded: None,
         })
+    }
+
+    /// The complete input supplied to native source preparation, unchanged by
+    /// decoding or slicing. Pointer and length can check buffer provenance;
+    /// they cannot distinguish documents sharing that buffer, including empty
+    /// inputs. Consumers must also retain the host's document key and version.
+    #[must_use]
+    pub const fn authored_root(self) -> &'a str {
+        self.authored_root
     }
 
     #[must_use]
@@ -86,6 +99,7 @@ impl<'a> EmbedSource<'a> {
             .transpose()?
             .flatten();
         Ok(Self {
+            authored_root: self.authored_root,
             span,
             text,
             decoded,
@@ -252,6 +266,7 @@ fn prepare_decoded_value<'a>(
     let segments = segments.into_boxed_slice().into_arena_slice();
     let decoded = DecodeMap::checked(authored_source, span, text, segments)?;
     Ok(EmbedSource {
+        authored_root: authored_source,
         span,
         text,
         decoded: Some(decoded),
@@ -263,3 +278,6 @@ mod tests;
 
 #[cfg(test)]
 mod slice_tests;
+
+#[cfg(test)]
+mod origin_tests;
