@@ -1,0 +1,98 @@
+{
+  "panic-free-workspace": {
+    "commit": "0e2a5bc223bc730ecc70ad71eb064d76e92f781c",
+    "rawPatchSha256": "1fdffaa7d86f4a70ef86420087563cf7a8495660a1878affd9ad0d7fd23b6c84"
+  },
+  "level-import-renaming": {
+    "commit": "c746dd1b2da9ae05bd7174266035274815daefd9",
+    "rawPatchSha256": "b119b75fb198581dd5da029021b0a97532df5893a4f572b557e6f3bf6d43626f"
+  },
+  "style-spec-reference-pairs": {
+    "commit": "a884f4aff7546f9943c2354cdbb31c554b4975c0",
+    "rawPatchSha256": "1cfec74dde18634c440ff64bff5d311d64edbd78a7d52eb5c195efbaefdb3168"
+  },
+  "allocation-alias": {
+    "commit": "79dcf04c746336f716b72c195d6f672eaa45ecbf",
+    "rawPatchSha256": "cb86e363f696d6315404ad27022c493c6a53ef21c0fe37e9ad34be923b0d33d5"
+  },
+  "arena-comment-correction": {
+    "commit": "0901ee419c825340c91d487d464cb6fba5a1ea4d",
+    "rawPatchSha256": "12c09657aaa1c03022f0b0edc24eba60ea88af125ed5f93a12d520ddccdfd8b5"
+  },
+  "benchmark-black-box-migration": {
+    "commit": "b3b91473c278faa32aef1e7dd7cdf7a3697b1dd0",
+    "rawPatchSha256": "f00ffc80e5bcd2c69e6358c79101f20af272da0ada12f3d215c0d599a33bd55c"
+  },
+  "formatter-throughput": {
+    "commit": "d66853e2aa31ac9636a945ab56088300e8aadbe9",
+    "rawPatchSha256": "907997d6d8b2fac7a0b526d8566621ee95752ea7c9114c1e95825c6be8cb295b"
+  },
+  "oxc-formatter-provider": {
+    "commit": "78d71cbdbb9652612e99330b6e6111902b31d6e8",
+    "rawPatchSha256": "92ffe34f92670983f4ec007df0507d22a662de14b0cfd90a1de6e0f689cd3b23"
+  },
+  "crate-logo-docs": {
+    "commit": "08d36b7fd9f9cc5d0c8dac9e51d3517dc5087f80",
+    "rawPatchSha256": "bbb882e34369006b25e5ae6e80eeffc36a54019edb10c09ef117886fa9b70518"
+  },
+  "json-module-move": {
+    "commit": "a9d934cd76610a995d007cdb0ccf89fac3d65446",
+    "rawPatchSha256": "357105bac3d4062b8ba98a3aea87f7381d0d5ccbad9241d2c9f90d75e4e1bb4b"
+  },
+  "expression-arena-reuse": {
+    "commit": "91a998381cf5a47a8f660618145c05f35a7d2935",
+    "rawPatchSha256": "13b44d66a4a9c402c867b301fe3134fb74642309f61d14334d456a2df606292b"
+  },
+  "template-render-once": {
+    "commit": "32e108e44e40cc6241d3f4700ca7890c8dcb768e",
+    "rawPatchSha256": "ec99b9df2716f2de9d3049ff379be16c74b147df20cbc9321f54e0451f5168bd"
+  },
+  "workspace-rust-version": {
+    "commit": "6674ad2dcf31c157ad602cb180e0673d42b3019b",
+    "rawPatchSha256": "381b9a19b9ae98c1fcacf4d16e372707987cd17f8a121afc9696dde3905916d9"
+  },
+  "template-module-relocation": {
+    "commit": "1e63d990253f3ce271f3fd6d74e2ae1766334c6a",
+    "rawPatchSha256": "f410bfa73fea8a24fc70154dea8f8aa5932dae86c88ecee4d75ddfe74ebe630e"
+  },
+  "UTF8-safety-comments": {
+    "commit": "1d81fc9e4ed69bdf2ed9761d7f2f17ed9698926c",
+    "rawPatchSha256": "4933f9e1958dc1393dc033eba3391decec56c4cdff37659d5933ef5095c5c0fd"
+  },
+  "toolchain-source-format": {
+    "commit": "e1a72878637a19affc9251b964cca2742a3b3f1c",
+    "rawPatchSha256": "8fb827983c57cc9609b35942dbfbd56f9d5341718ba43b0f7ce696fb5a65a416"
+  },
+  "readme-refinement": {
+    "commit": "61f0cb251153d3358919b464984660ea65b3d5a1",
+    "rawPatchSha256": "de2d80330cf1b8194351ee0e67f0dc1e55b2444949aa516a6489f4471224cdad"
+  },
+  "vite-plus-docs": {
+    "commit": "67895f5b04eb9298ba3505c48a734151b133c09c",
+    "rawPatchSha256": "be6ff2573f5fa89867d66ee59ad1dc1d500af4e732a99929b051cddef129f24a"
+  },
+  "initial-template-module-split": {
+    "commit": "d80fad6cad059cf0275adc01396b830be797264f",
+    "rawPatchSha256": "b60d06d0ca370c05f430864af2770af2ee3443f537dd487d8e22d5e46f39895b"
+  },
+  "unpublished-package": {
+    "commit": "386c390fc117ecedbc3b45e3117ac479c00e49ee",
+    "rawPatchSha256": "268f91d56a298667fbfb98f94b65bcebd55ca9dda50668834442e89dd761c955"
+  },
+  "brand-asset-removal": {
+    "commit": "593345ca0e73d86d5da4f66e44a3f8b7d6681bba",
+    "rawPatchSha256": "fc5641f617cd2a9bb9c4d805aa5cb5e7e24b538e2caad538153d49cb1a6b83ff"
+  },
+  "docs-rs-metadata": {
+    "commit": "c7c168b215bd53fb9a1bb17f975971c69a3aca6f",
+    "rawPatchSha256": "997e9f653401ed996a235f35731b09470fafa0fd99955a992269019a96706c95"
+  },
+  "initial-public-APIs-and-benchmarks": {
+    "commit": "2c8fc7390db69b5bc4138e4b32b449a93317fa46",
+    "rawPatchSha256": "ec37ed5721a0b23b4a22a8765a94c71958863b5b8ea68c2ebf0e10d803a2b0fc"
+  },
+  "initial-todo-scaffold": {
+    "commit": "6178f3eb51c18b08c84e60223f73d989cd03fff9",
+    "rawPatchSha256": "4d42b7e836706f1652c4658f88d172b2f00670b95cffaedf1ed393b5e9c196ba"
+  }
+}
