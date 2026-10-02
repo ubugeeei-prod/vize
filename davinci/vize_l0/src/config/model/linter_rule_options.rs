@@ -15,7 +15,9 @@ mod casing;
 mod html_self_closing;
 mod hyphenation;
 mod no_mutating_props;
+mod restrictions;
 mod sfc_element_order;
+mod strict_boolean;
 
 pub use casing::{
     ComponentNameInTemplateCasingOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
@@ -26,7 +28,12 @@ pub use html_self_closing::{
 };
 pub use hyphenation::HyphenationStyle;
 pub use no_mutating_props::NoMutatingPropsOptions;
+pub use restrictions::{
+    MuseaDesignToken, MuseaPreferDesignTokensOptions, NoRestrictedGlobalsOptions,
+    NoRestrictedMembersOptions, RestrictedGlobal, RestrictedMember,
+};
 pub use sfc_element_order::{SfcElementOrderGroup, SfcElementOrderOptions};
+pub use strict_boolean::StrictBooleanExpressionsOptions;
 
 /// Per-rule configuration keyed by rule name.
 ///
@@ -108,6 +115,8 @@ impl LintRuleOptions {
 pub struct ConfigLintRuleOptions {
     #[serde(flatten)]
     stable: LintRuleOptions,
+    #[serde(rename = "type/strict-boolean-expressions")]
+    strict_boolean_expressions: Option<StrictBooleanExpressionsOptions>,
     /// Options for `vue/component-name-in-template-casing`.
     #[serde(rename = "vue/component-name-in-template-casing")]
     component_name_in_template_casing: Option<ComponentNameInTemplateCasingOptions>,
@@ -144,6 +153,11 @@ impl ConfigLintRuleOptions {
         }
     }
 
+    /// Configured allowances; options alone do not enable the rule.
+    pub fn strict_boolean_expressions(&self) -> Option<StrictBooleanExpressionsOptions> {
+        self.strict_boolean_expressions
+    }
+
     /// Stable subset exposed by the original `load_linter_rule_options` API.
     #[inline]
     pub fn stable_options(&self) -> &LintRuleOptions {
@@ -153,7 +167,8 @@ impl ConfigLintRuleOptions {
     /// Whether no rule options are configured.
     #[inline]
     pub fn is_empty(&self) -> bool {
-        self.stable.is_empty()
+        self.strict_boolean_expressions.is_none()
+            && self.stable.is_empty()
             && self.component_name_in_template_casing.is_none()
             && self.custom_event_name_casing.is_none()
             && self.no_mutating_props.is_none()
@@ -241,6 +256,9 @@ impl ConfigLintRuleOptions {
     /// Apply a later config layer to this option set.
     pub fn merge_from(&mut self, overlay: &Self) {
         self.stable.merge_from(&overlay.stable);
+        if let Some(options) = overlay.strict_boolean_expressions {
+            self.strict_boolean_expressions = Some(options);
+        }
         if let Some(options) = &overlay.component_name_in_template_casing {
             self.component_name_in_template_casing = Some(*options);
         }
@@ -266,83 +284,6 @@ impl ConfigLintRuleOptions {
             self.musea_prefer_design_tokens = Some(options.clone());
         }
     }
-}
-
-/// Options for `script/no-restricted-globals`.
-///
-/// When `globals` is non-empty it **replaces** the rule's built-in deny list;
-/// otherwise the built-in defaults (`process`, `localStorage`, `sessionStorage`)
-/// apply.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default, rename_all = "camelCase")]
-pub struct NoRestrictedGlobalsOptions {
-    /// Restricted global identifier references.
-    pub globals: Vec<RestrictedGlobal>,
-}
-
-/// A single restricted global entry.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct RestrictedGlobal {
-    /// Identifier name to forbid (e.g. `process`).
-    pub name: String,
-    /// Optional advisory message shown in the diagnostic.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub message: Option<String>,
-}
-
-/// Options for `script/no-restricted-members`.
-///
-/// The rule is off unless `members` is configured; there is no built-in default
-/// list. This is the project-local-rule mechanism: each entry flags an
-/// `<object>.<property>` member access.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default, rename_all = "camelCase")]
-pub struct NoRestrictedMembersOptions {
-    /// Restricted `<object>.<property>` member accesses.
-    pub members: Vec<RestrictedMember>,
-}
-
-/// A single restricted member-access entry.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct RestrictedMember {
-    /// Object identifier (e.g. `window`).
-    pub object: String,
-    /// Property name accessed on the object (e.g. `localStorage`).
-    pub property: String,
-    /// Optional advisory message shown in the diagnostic.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub message: Option<String>,
-}
-
-/// Options for `musea/prefer-design-tokens`.
-///
-/// The rule is off unless tokens are configured and the rule is enabled by
-/// severity or implicitly by this non-empty token list. Each token maps one
-/// hardcoded CSS value to a design-token path.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default, rename_all = "camelCase", deny_unknown_fields)]
-pub struct MuseaPreferDesignTokensOptions {
-    /// Design tokens that should replace matching hardcoded CSS values.
-    pub tokens: Vec<MuseaDesignToken>,
-}
-
-/// A design token recognized by `musea/prefer-design-tokens`.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct MuseaDesignToken {
-    /// Token path (e.g. `color.primary`).
-    pub path: String,
-    /// Primitive CSS value to match (e.g. `#3b82f6`).
-    pub value: String,
-    /// Token tier shown in diagnostics. Defaults to `primitive`.
-    #[serde(default = "default_musea_design_token_tier")]
-    pub tier: String,
-}
-
-fn default_musea_design_token_tier() -> String {
-    "primitive".into()
 }
 
 #[cfg(test)]

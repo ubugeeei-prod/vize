@@ -1,0 +1,139 @@
+[
+  {
+    "file": "App.vue",
+    "messages": [
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
+        "line": 4,
+        "column": 10,
+        "endLine": 4,
+        "endColumn": 15
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
+        "line": 5,
+        "column": 16,
+        "endLine": 5,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
+        "line": 6,
+        "column": 10,
+        "endLine": 6,
+        "endColumn": 15
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
+        "line": 7,
+        "column": 18,
+        "endLine": 7,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
+        "line": 8,
+        "column": 20,
+        "endLine": 8,
+        "endColumn": 25
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
+        "line": 9,
+        "column": 17,
+        "endLine": 9,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
+        "line": 11,
+        "column": 7,
+        "endLine": 11,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
+        "line": 11,
+        "column": 16,
+        "endLine": 11,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
+        "line": 12,
+        "column": 7,
+        "endLine": 12,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
+        "line": 12,
+        "column": 16,
+        "endLine": 12,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected number value in conditional. A number can be falsy (0, NaN) or truthy.",
+        "line": 13,
+        "column": 7,
+        "endLine": 13,
+        "endColumn": 17
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
+        "line": 15,
+        "column": 26,
+        "endLine": 15,
+        "endColumn": 31
+      }
+    ],
+    "errorCount": 13,
+    "warningCount": 0
+  }
+]

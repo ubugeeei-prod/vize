@@ -6,13 +6,15 @@ Arguments:
   [FILE]  Compile FILE (.html, .vue or .pug) and capture its executed levels
 
 Options:
-      --level <LEVEL>        L1 Vue-template source fidelity, or L2/L3 canonical Full dump bytes [possible values: l1, l2, l3]
-      --roundtrip <FILE>     Read FILE and require byte identity after the selected level's roundtrip
-      --all-levels           Capture only the levels executed by one product compile
-      --json                 Write the stage feed as JSON
-      --pipeline <PIPELINE>  Select a real product backend; named no-op passes are unsupported [possible values: dom, ssr, vapor]
-      --dump-dir <DIR>       Write captured pages and the versioned product feed into DIR
-      --dump-after-change    Write a page only when its bytes differ from the preceding page
-      --timing-json <FILE>   Write observed timing data, including availability, as JSON
-      --remarks <FILE>       Write observed remarks, including availability, as JSON
-  -h, --help                 Print help
+      --level <LEVEL>              L1 Vue-template source fidelity, or L2/L3 canonical Full dump bytes [possible values: l1, l2, l3]
+      --roundtrip <FILE>           Read FILE and require byte identity after the selected level's roundtrip
+      --script <SCRIPT>            Inspect a native JS/TS/JSX/TSX Program while checking L1 source bytes [possible values: js, ts, jsx, tsx]
+      --script-goal <SCRIPT_GOAL>  Select the script parse goal explicitly (default: module) [possible values: module, script]
+      --all-levels                 Capture only the levels executed by one product compile
+      --json                       Write the stage feed as JSON
+      --pipeline <PIPELINE>        Select a real product backend; named no-op passes are unsupported [possible values: dom, ssr, vapor]
+      --dump-dir <DIR>             Write captured pages and the versioned product feed into DIR
+      --dump-after-change          Write a page only when its bytes differ from the preceding page
+      --timing-json <FILE>         Write observed timing data, including availability, as JSON
+      --remarks <FILE>             Write observed remarks, including availability, as JSON
+  -h, --help                       Print help

@@ -5,10 +5,9 @@
 //! target never compares helper names as strings. Each runtime (and runtime
 //! version, when the helper set changes) has its own vocabulary table.
 //!
-//! The tables port from `vize_l1_to_l2::emit::helper` and the legacy
-//! `RuntimeHelper` names (#6840); until then [`vocabulary`] is unfinished.
-
-#![expect(clippy::todo, reason = "skeleton: #6840")]
+//! Built-in tables name actual exports of pinned Vue releases, including
+//! the separate server-renderer import. Helper indices are runtime-local,
+//! not interchangeable across vocabularies. Target admission stays separate.
 
 use alloc::vec::Vec;
 
@@ -17,7 +16,7 @@ use alloc::vec::Vec;
 pub enum Runtime {
     /// `vue` — the virtual-DOM runtime.
     VueDom,
-    /// `vue/server-renderer` — the server rendering runtime.
+    /// `@vue/server-renderer` and `vue` — the server rendering runtime.
     VueServerRenderer,
     /// `vue` — the Vapor runtime.
     VueVapor,
@@ -51,35 +50,84 @@ impl Helper {
     }
 }
 
-/// The helper names a runtime exports, and the module they come from.
+/// A module's exports in one runtime vocabulary.
 #[derive(Debug)]
-pub struct Vocabulary {
+pub struct HelperModule {
     /// Import specifier, e.g. `"vue"`.
     pub module: &'static str,
-    /// Exported names, indexed by [`Helper::index`]. At most
-    /// [`Helper::LIMIT`] entries.
+    /// Exported names in stable index order.
     pub names: &'static [&'static str],
+}
+
+/// Modules and helper names for one target runtime and version.
+///
+/// Helpers index the modules' concatenated names. At most [`Helper::LIMIT`]
+/// names are permitted; they must be distinct JavaScript identifiers. Module
+/// order determines import-group order; each group retains body first-use order.
+#[derive(Debug)]
+pub struct Vocabulary {
+    pub modules: &'static [HelperModule],
 }
 
 impl Vocabulary {
     /// The exported name of `helper`, if it belongs to this vocabulary.
     #[must_use]
     pub fn name(&self, helper: Helper) -> Option<&'static str> {
-        self.names.get(usize::from(helper.index())).copied()
+        self.export(helper).map(|(_, name)| name)
     }
 
-    /// The helper exported as `name`.
+    /// The import specifier and exported name of `helper`.
+    #[must_use]
+    pub fn export(&self, helper: Helper) -> Option<(&'static str, &'static str)> {
+        let mut index = usize::from(helper.index());
+        for module in self.modules {
+            if let Some(&name) = module.names.get(index) {
+                return Some((module.module, name));
+            }
+            index = index.checked_sub(module.names.len())?;
+        }
+        None
+    }
+
+    /// The helper exported as `name`. Targets may cache the checked index.
     #[must_use]
     pub fn helper(&self, name: &str) -> Option<Helper> {
-        let index = self.names.iter().position(|candidate| *candidate == name)?;
-        u8::try_from(index).ok().and_then(Helper::from_index)
+        let mut base = 0;
+        for module in self.modules {
+            if let Some(index) = module.names.iter().position(|candidate| *candidate == name) {
+                return u8::try_from(base + index).ok().and_then(Helper::from_index);
+            }
+            base += module.names.len();
+        }
+        None
     }
 }
 
-/// The helper vocabulary of `runtime`.
+mod vue;
+pub use vue::{VUE_DOM, VUE_SERVER_RENDERER, VUE_VAPOR};
+
+/// Default helper vocabulary for the pinned target release.
+///
+/// DOM and SSR target Vue 3.5.35. Vapor targets Vue 3.6.0-rc.9, as pinned by
+/// the existing runtime-conformance lane. This is a vocabulary provider, not
+/// admission of every grammar/dialect or a native product route.
 #[must_use]
-pub fn vocabulary(_runtime: Runtime) -> &'static Vocabulary {
-    todo!("#6840: port the DOM, server-renderer and Vapor helper tables")
+pub fn vocabulary(runtime: Runtime) -> &'static Vocabulary {
+    match runtime {
+        Runtime::VueDom => &VUE_DOM,
+        Runtime::VueServerRenderer => &VUE_SERVER_RENDERER,
+        Runtime::VueVapor => &VUE_VAPOR,
+    }
+}
+
+/// Select an audited exact release. Unsupported pairs have no fallback.
+#[must_use]
+pub fn vocabulary_for(runtime: Runtime, version: &str) -> Option<&'static Vocabulary> {
+    match (runtime, version) {
+        (Runtime::VueDom | Runtime::VueServerRenderer, "3.5.35")
+        | (Runtime::VueVapor, "3.6.0-rc.9") => Some(vocabulary(runtime)),
+        _ => None,
+    }
 }
 
 /// The helpers a body used, in first-use order.
@@ -123,3 +171,6 @@ impl HelperSet {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

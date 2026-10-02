@@ -17,6 +17,7 @@ legacy-differential = []
 davinci-differential = ["legacy-differential"]
 
 [dependencies]
+vize_carton.workspace = true
 # Internal crates
 vize_relief.workspace = true
 vize_armature.workspace = true
@@ -88,6 +89,10 @@ harness = false
 [[test]]
 name = "davinci_markup_differential"
 required-features = ["legacy-differential"]
+
+[[test]]
+name = "davinci_authored_markup_budget"
+harness = false
 
 [lints]
 workspace = true

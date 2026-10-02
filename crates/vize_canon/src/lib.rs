@@ -42,8 +42,6 @@
 //! └─────────────────────────────────────────────────────────────────┘
 //! ```
 
-extern crate vize_l0 as vize_carton;
-
 mod checker;
 mod context;
 #[cfg(feature = "native")]
@@ -123,7 +121,7 @@ pub use sfc_typecheck::{
     type_check_sfc_with_options_api,
 };
 pub use types::{CompletionItem, CompletionKind, TypeInfo, TypeKind};
-pub use vize_l0::i18n::Locale;
+pub use vize_carton::i18n::Locale;
 
 #[cfg(feature = "native")]
 pub use corsa_bridge::{

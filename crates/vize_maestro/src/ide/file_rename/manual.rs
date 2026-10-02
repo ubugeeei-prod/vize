@@ -64,6 +64,7 @@ pub(super) fn collect_import_rename_edits(
     WalkBuilder::new(&workspace_root)
         .standard_filters(true)
         .hidden(true)
+        .filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()))
         .build_parallel()
         .run(|| {
             let changes = &changes;

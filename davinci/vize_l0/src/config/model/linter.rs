@@ -2,6 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::linter_execution::LinterExecutionOptions;
 use super::linter_rule_options::ConfigLintRuleOptions;
 use crate::{FxHashMap, String};
 
@@ -37,11 +38,18 @@ pub(crate) struct RawLinterConfig {
     #[serde(flatten)]
     config: LinterConfig,
     type_aware: bool,
+    strict_reactivity: bool,
+    #[serde(flatten)]
+    execution: LinterExecutionOptions,
     categories: FxHashMap<String, LintRuleSeverity>,
     rule_options: ConfigLintRuleOptions,
 }
 
 impl RawLinterConfig {
+    pub(crate) fn execution(&self) -> LinterExecutionOptions {
+        self.execution
+    }
+
     /// Borrow the typed per-rule options parsed from this raw config.
     pub(crate) fn rule_options(&self) -> &ConfigLintRuleOptions {
         &self.rule_options
@@ -168,6 +176,12 @@ impl Default for LinterConfig {
 impl From<RawLinterConfig> for LinterConfig {
     fn from(raw: RawLinterConfig) -> Self {
         let mut config = raw.config;
+        if raw.strict_reactivity {
+            config
+                .rules
+                .entry("type/no-reactivity-loss".into())
+                .or_insert(LintRuleSeverity::Warn);
+        }
         if raw.type_aware {
             config.enable_type_aware_lint();
         }

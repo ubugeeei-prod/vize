@@ -1,0 +1,140 @@
+[
+  {
+    "id": "static-image",
+    "rule": "a11y/heading-has-content",
+    "source": "<template><h1><img alt=\"Product\" /></h1></template>",
+    "warnings": 0
+  },
+  {
+    "id": "bound-image",
+    "rule": "a11y/heading-has-content",
+    "source": "<template><h2><img :alt=\"name\" /></h2></template>",
+    "warnings": 0
+  },
+  {
+    "id": "bound-literal",
+    "rule": "a11y/heading-has-content",
+    "source": "<template><h1><img :alt=\"'Product'\" /></h1></template>",
+    "warnings": 0
+  },
+  {
+    "id": "nested-image",
+    "rule": "a11y/heading-has-content",
+    "source": "<template><h1><span><img alt=\"Product\" /></span></h1></template>",
+    "warnings": 0
+  },
+  {
+    "id": "empty-image",
+    "rule": "a11y/heading-has-content",
+    "source": "<template><h1><img alt=\"\" /></h1></template>",
+    "warnings": 1
+  },
+  {
+    "id": "blank-image",
+    "rule": "a11y/heading-has-content",
+    "source": "<template><h1><img alt=\" \" /></h1></template>",
+    "warnings": 1
+  },
+  {
+    "id": "bound-empty-image",
+    "rule": "a11y/heading-has-content",
+    "source": "<template><h1><img :alt=\"''\" /></h1></template>",
+    "warnings": 1
+  },
+  {
+    "id": "hidden-image",
+    "rule": "a11y/heading-has-content",
+    "source": "<template><h1><img alt=\"Product\" aria-hidden=\"true\" /></h1></template>",
+    "warnings": 1
+  },
+  {
+    "id": "hidden-ancestor",
+    "rule": "a11y/heading-has-content",
+    "source": "<template><h1><span aria-hidden=\"true\"><img alt=\"Product\" /></span></h1></template>",
+    "warnings": 1
+  },
+  {
+    "id": "missing-alt",
+    "rule": "a11y/heading-has-content",
+    "source": "<template><h1><img /></h1></template>",
+    "warnings": 1
+  },
+  {
+    "id": "real-content-alongside-hidden",
+    "rule": "a11y/heading-has-content",
+    "source": "<template><h1><img aria-hidden=\"true\" alt=\"Icon\" />Product</h1></template>",
+    "warnings": 0
+  },
+  {
+    "id": "exclusive-main",
+    "rule": "a11y/landmark-roles",
+    "source": "<template><main v-if=\"ok\">A</main><main v-else>B</main></template>",
+    "warnings": 0
+  },
+  {
+    "id": "three-branches",
+    "rule": "a11y/landmark-roles",
+    "source": "<template><main v-if=\"a\">A</main><!-- branch --><main v-else-if=\"b\">B</main>\n<main v-else>C</main></template>",
+    "warnings": 0
+  },
+  {
+    "id": "exclusive-banner",
+    "rule": "a11y/landmark-roles",
+    "source": "<template><header v-if=\"ok\">A</header><header v-else>B</header></template>",
+    "warnings": 0
+  },
+  {
+    "id": "exclusive-duplicate-label",
+    "rule": "a11y/landmark-roles",
+    "source": "<template><nav v-if=\"ok\" aria-label=\"Links\">A</nav><nav v-else aria-label=\"Links\">B</nav></template>",
+    "warnings": 0
+  },
+  {
+    "id": "nested-chains",
+    "rule": "a11y/landmark-roles",
+    "source": "<template><template v-if=\"a\"><main v-if=\"b\">A</main><main v-else>B</main></template><main v-else>C</main></template>",
+    "warnings": 0
+  },
+  {
+    "id": "same-branch",
+    "rule": "a11y/landmark-roles",
+    "source": "<template><template v-if=\"a\"><main>A</main><main>B</main></template><main v-else>C</main></template>",
+    "warnings": 1
+  },
+  {
+    "id": "outside-chain",
+    "rule": "a11y/landmark-roles",
+    "source": "<template><main v-if=\"ok\">A</main><main v-else>B</main><main>C</main></template>",
+    "warnings": 1
+  },
+  {
+    "id": "outside-banner",
+    "rule": "a11y/landmark-roles",
+    "source": "<template><header v-if=\"ok\">A</header><header v-else>B</header><header>C</header></template>",
+    "warnings": 3
+  },
+  {
+    "id": "independent-chains",
+    "rule": "a11y/landmark-roles",
+    "source": "<template><main v-if=\"a\">A</main><main v-else>B</main><main v-if=\"b\">C</main><main v-else>D</main></template>",
+    "warnings": 2
+  },
+  {
+    "id": "same-branch-labels",
+    "rule": "a11y/landmark-roles",
+    "source": "<template><template v-if=\"a\"><nav aria-label=\"Links\">A</nav><nav aria-label=\"Links\">B</nav></template><nav v-else aria-label=\"Links\">C</nav></template>",
+    "warnings": 2
+  },
+  {
+    "id": "real-duplicate",
+    "rule": "a11y/landmark-roles",
+    "source": "<template><main>A</main><main>B</main></template>",
+    "warnings": 1
+  },
+  {
+    "id": "v-show-not-exclusive",
+    "rule": "a11y/landmark-roles",
+    "source": "<template><main v-show=\"ok\">A</main><main v-show=\"!ok\">B</main></template>",
+    "warnings": 1
+  }
+]

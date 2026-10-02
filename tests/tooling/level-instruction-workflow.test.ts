@@ -9,7 +9,14 @@ type Job = {
   env?: Record<string, string>;
   if?: string;
   needs?: string[];
-  steps?: Array<{ name?: string; if?: string; run?: string; uses?: string }>;
+  steps?: Array<{
+    name?: string;
+    if?: string;
+    run?: string;
+    uses?: string;
+    with?: Record<string, unknown>;
+    "continue-on-error"?: boolean | string;
+  }>;
   uses?: string;
 };
 type Workflow = { name: string; on?: Record<string, unknown>; jobs?: Record<string, Job> };
@@ -70,6 +77,38 @@ test("required report keeps inventory and final dependency verification in the s
     readRepoFile(".github", "actions", "report-test-inventory", "action.yml"),
   ) as { runs: { using: string; steps: NonNullable<Job["steps"]> } };
   assert.equal(action.runs.using, "composite");
-  assert.match(action.runs.steps[0]?.run ?? "", /test-inventory\.mjs --json test-inventory\.json/);
-  assert.match(action.runs.steps[1]?.uses ?? "", /^actions\/upload-artifact@/);
+  const names = [
+    "Setup Vite+ and Node.js",
+    "Install report dependencies",
+    "Collect test inventory",
+    "Upload test inventory",
+  ];
+  const positions = names.map((name) => action.runs.steps.findIndex((step) => step.name === name));
+  for (const [index, position] of positions.entries()) {
+    assert.notEqual(position, -1, names[index]);
+    if (index > 0) {
+      assert.ok(position > positions[index - 1], `${names[index]} must follow ${names[index - 1]}`);
+    }
+    const step = action.runs.steps[position];
+    assert.equal(step.if, undefined, `${names[index]} must run unconditionally`);
+    assert.ok(
+      step["continue-on-error"] === undefined || step["continue-on-error"] === false,
+      `${names[index]} must propagate failures`,
+    );
+  }
+  const [setup, install, collect, upload] = positions.map(
+    (position) => action.runs.steps[position],
+  );
+  assert.equal(setup.uses, "voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa");
+  assert.deepEqual(setup.with, {
+    "node-version-file": "package.json",
+    cache: true,
+    "run-install": false,
+  });
+  assert.equal(
+    install.run,
+    "vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts",
+  );
+  assert.match(collect.run ?? "", /test-inventory\.mjs --json test-inventory\.json/);
+  assert.match(upload.uses ?? "", /^actions\/upload-artifact@/);
 });

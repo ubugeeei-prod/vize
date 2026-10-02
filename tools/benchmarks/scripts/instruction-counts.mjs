@@ -5,6 +5,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { parseTomlLite } from "../../support/compat/davinci/toml-lite.mjs";
+import { reportOverBudgetHotspots } from "./instruction-hotspots.ts";
 import {
   baselineToml,
   checkMeasurement,
@@ -324,6 +325,19 @@ try {
       const base = flag(args, "--base-budgets");
       // The base can have fewer rows when a new benchmark is introduced.
       if (base) ratchetBudgets(budgets, loadBudgets(base));
+      try {
+        reportOverBudgetHotspots(
+          flag(
+            args,
+            "--measurement",
+            path.join(root, "target/instruction-counts/measurement.json"),
+          ),
+          report,
+          budgets,
+        );
+      } catch (diagnostic) {
+        console.error(`instruction-hotspots: unavailable: ${diagnostic.message}`);
+      }
       checkMeasurement(report, budgets);
       console.log(`instruction-counts: ${registry.size} ceilings hold`);
     }

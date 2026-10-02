@@ -1,0 +1,4 @@
+script: ts module; hole=None
+statement TSInterfaceDeclaration @Span { start: 0, end: 33 }
+statement ExportNamedDeclaration @Span { start: 34, end: 75 }
+dump: l1 roundtrip OK: capture/cases/ts-module.input (75 bytes)

@@ -1,8 +1,9 @@
 //! The native L1→L2 provenance metrics keep one stable profile wire family.
 #![cfg(feature = "davinci-benchmark-profile")]
 
+use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
 use vize_l0::Allocator;
-use vize_l0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
+use vize_l0::profiler::global_profiler;
 use vize_l1::parse;
 use vize_l1_to_l2::lower;
 use vize_l2::provenance::ProvenanceRecord;
@@ -40,11 +41,14 @@ fn lowering_exports_the_level_named_provenance_family_only_when_profiled() {
     assert_eq!(observed.provenance, plain.provenance);
     assert_eq!(observed.op_count, plain.op_count);
 
-    let report = profiler.export_report(&ProfileExportOptions {
-        command: "dump",
-        allocation: None,
-        budget: ProfileExportBudget::default(),
-    });
+    let report = export_report(
+        profiler,
+        &ProfileExportOptions {
+            command: "dump",
+            allocation: None,
+            budget: ProfileExportBudget::default(),
+        },
+    );
     let spans: Vec<_> = report
         .spans
         .iter()

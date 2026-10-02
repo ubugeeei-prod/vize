@@ -55,6 +55,7 @@ fn main() {
         ("vdom/v-once", CompilerMode::Vdom),
         ("vdom/dynamic-component", CompilerMode::Vdom),
         ("vdom/html-entities", CompilerMode::Vdom),
+        ("vdom/pure-comment-recovery", CompilerMode::Vdom),
         ("vdom/parity-core-directives", CompilerMode::Vdom),
         ("vapor/element", CompilerMode::Vapor),
         ("vapor/component", CompilerMode::Vapor),

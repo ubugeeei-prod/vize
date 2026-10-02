@@ -208,6 +208,26 @@ export interface LinterConfig {
    */
   typeAware?: boolean;
   /**
+   * Analyze relationships between input components
+   */
+  crossFile?: boolean;
+  /**
+   * Display the provide/inject tree; enables cross-file analysis
+   */
+  crossFileTree?: boolean;
+  /**
+   * Display cross-file complexity; enables cross-file analysis
+   */
+  crossFileComplexity?: boolean;
+  /**
+   * Enable the native reactivity-loss rule unless rules explicitly disable it
+   */
+  strictReactivity?: boolean;
+  /**
+   * Fail when warnings exceed this limit; absent means unlimited
+   */
+  maxWarnings?: number;
+  /**
    * Rules to enable/disable
    */
   rules?: {
@@ -227,6 +247,16 @@ export interface LinterConfig {
   };
 }
 export interface LintRuleOptions {
+  "type/strict-boolean-expressions"?: {
+    allowString?: boolean;
+    allowNumber?: boolean;
+    allowNullableObject?: boolean;
+    allowNullableBoolean?: boolean;
+    allowNullableString?: boolean;
+    allowNullableNumber?: boolean;
+    allowNullableEnum?: boolean;
+    allowAny?: boolean;
+  };
   "script/no-restricted-globals"?: NoRestrictedGlobalsOptions;
   "script/no-restricted-members"?: NoRestrictedMembersOptions;
   "vue/component-name-in-template-casing"?: {
@@ -365,6 +395,10 @@ export interface TypeCheckerConfig {
  */
 export interface FormatterConfig {
   /**
+   * Oxfmt-compatible import sorting; false disables it
+   */
+  sortImports?: false | SortImportsConfig;
+  /**
    * Max line width
    */
   printWidth?: number;
@@ -448,6 +482,29 @@ export interface FormatterConfig {
    * Sort SFC blocks in canonical order
    */
   sortBlocks?: boolean;
+}
+export interface SortImportsConfig {
+  partitionByNewline?: boolean;
+  partitionByComment?: boolean;
+  sortSideEffects?: boolean;
+  order?: "asc" | "desc";
+  ignoreCase?: boolean;
+  newlinesBetween?: boolean;
+  internalPattern?: string[];
+  groups?: (
+    | string
+    | string[]
+    | {
+        newlinesBetween: boolean;
+      }
+  )[];
+  customGroups?: ImportSortCustomGroup[];
+}
+export interface ImportSortCustomGroup {
+  groupName: string;
+  elementNamePattern?: string[];
+  selector?: string;
+  modifiers?: string[];
 }
 /**
  * Language server options

@@ -83,7 +83,7 @@ export function validateTypecheckerOutput(
     }
     if (!Array.isArray(program.files)) invalid(`programs[${index}].files must be an array`);
     for (const [fileIndex, file] of program.files.entries()) {
-      requireRelativePath(file, `programs[${index}].files[${fileIndex}]`);
+      requireProgramPath(file, `programs[${index}].files[${fileIndex}]`);
     }
   }
 
@@ -258,6 +258,27 @@ function requireRelativePath(value, label) {
     value.split("/").some((segment) => segment === "" || segment === "." || segment === "..")
   ) {
     invalid(`${label} must be a normalized relative path`);
+  }
+}
+
+function requireProgramPath(value, label) {
+  if (typeof value !== "string" || value.length === 0 || /[\\\0]/.test(value)) {
+    invalid(`${label} must be a normalized program path`);
+  }
+  let components = value;
+  if (/^[A-Za-z]:/.test(value)) {
+    if (value[2] !== "/") invalid(`${label} must be a normalized program path`);
+    components = value.slice(3);
+  } else if (value.startsWith("//")) {
+    components = value.slice(2);
+    if (components.split("/").length < 2) invalid(`${label} must be a normalized program path`);
+  } else if (value.startsWith("/")) {
+    components = value.slice(1);
+  }
+  if (
+    components.split("/").some((segment) => segment === "" || segment === "." || segment === "..")
+  ) {
+    invalid(`${label} must be a normalized program path`);
   }
 }
 

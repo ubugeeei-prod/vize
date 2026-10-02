@@ -1,5 +1,7 @@
 //! Rule trait and registry for lint rules.
 
+mod opt_in;
+
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::markup::MarkupRule;
@@ -234,11 +236,7 @@ impl RuleRegistry {
 
     /// Register explicit opt-in rules into an existing registry.
     pub fn register_opt_in_rules(&mut self) {
-        crate::rules::a11y::register_opt_in(self);
-        crate::rules::ecosystem::register_opt_in(self);
-        crate::rules::petite_vue::register_opt_in(self);
-        crate::rules::vue::register_opt_in(self);
-        crate::rules::facts::register_opt_in(self);
+        opt_in::register(self);
     }
 
     /// Create the default happy-path registry.

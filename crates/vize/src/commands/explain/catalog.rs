@@ -5,11 +5,11 @@ use std::borrow::Cow;
 use std::io::IsTerminal;
 
 use crate::render::{Catalog, EnglishCatalog, Phrase};
+use vize_carton::i18n::{Locale, Translator, translator};
 use vize_fresco::{
     ColorSupport, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
 };
 use vize_l0::String;
-use vize_l0::i18n::{Locale, Translator, translator};
 
 /// Parse `--locale`, exiting with usage on an unknown locale.
 pub(crate) fn parse_locale(locale: &str) -> Locale {
@@ -39,6 +39,10 @@ impl LocaleCatalog {
             translator: translator(),
             locale,
         }
+    }
+
+    pub(crate) fn messages(&self) -> impl vize_l0::diag::MessageLookup + '_ {
+        self.translator.for_locale(self.locale)
     }
 
     pub(crate) const fn locale(&self) -> Locale {

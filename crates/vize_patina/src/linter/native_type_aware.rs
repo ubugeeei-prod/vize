@@ -21,6 +21,7 @@ mod relative_imports;
 mod rule_queries;
 mod script_options;
 mod source_path;
+mod strict_boolean;
 #[cfg(test)]
 mod template_component_tests;
 mod template_queries;
@@ -36,6 +37,7 @@ const RULE_REQUIRE_TYPED_PROPS: &str = "type/require-typed-props";
 const RULE_REQUIRE_TYPED_EMITS: &str = "type/require-typed-emits";
 const RULE_NO_FLOATING_PROMISES: &str = "type/no-floating-promises";
 const RULE_NO_UNSAFE_TEMPLATE_BINDING: &str = "type/no-unsafe-template-binding";
+const RULE_STRICT_BOOLEAN: &str = "type/strict-boolean-expressions";
 const RULE_NO_REACTIVITY_LOSS: &str = "type/no-reactivity-loss";
 
 pub(crate) const TYPE_AWARE_RULES: &[&str] = &[
@@ -44,6 +46,7 @@ pub(crate) const TYPE_AWARE_RULES: &[&str] = &[
     RULE_NO_FLOATING_PROMISES,
     RULE_NO_UNSAFE_TEMPLATE_BINDING,
     RULE_NO_REACTIVITY_LOSS,
+    RULE_STRICT_BOOLEAN,
 ];
 
 pub(crate) fn has_active_type_aware_rules(linter: &Linter) -> bool {

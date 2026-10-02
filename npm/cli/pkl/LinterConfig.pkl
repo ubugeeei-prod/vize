@@ -99,7 +99,19 @@ class MuseaPreferDesignTokensOptions {
 }
 
 /// Typed per-rule options for rules that accept project-local configuration.
+class StrictBooleanExpressionsOptions {
+  allowString: Boolean = true
+  allowNumber: Boolean = true
+  allowNullableObject: Boolean = true
+  allowNullableBoolean: Boolean = false
+  allowNullableString: Boolean = false
+  allowNullableNumber: Boolean = false
+  allowNullableEnum: Boolean = false
+  allowAny: Boolean = false
+}
+
 class LintRuleOptions {
+  `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null
   `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null
@@ -121,6 +133,21 @@ class LinterConfig {
 
   /// Enable native type-aware lint rules from the active lint configuration.
   typeAware: Boolean = false
+
+  /// Analyze relationships between input components.
+  crossFile: Boolean = false
+
+  /// Display the provide/inject tree; enables cross-file analysis.
+  crossFileTree: Boolean = false
+
+  /// Display cross-file complexity; enables cross-file analysis.
+  crossFileComplexity: Boolean = false
+
+  /// Enable the native reactivity-loss rule unless rules explicitly disable it.
+  strictReactivity: Boolean = false
+
+  /// Fail when warnings exceed this non-negative limit; absent means unlimited.
+  maxWarnings: Int(isBetween(0, 9007199254740991))? = null
 
   /// Rules to enable/disable.
   rules: Mapping<String, RuleSeverity> = new Mapping {}

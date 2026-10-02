@@ -1,0 +1,38 @@
+/// Typed lint rule options schema.
+module vize.jsonschema.LintRuleOptionsSchemaDefinitions
+
+import "@json_schema/JsonSchema.pkl"
+import "ConfigArtifactDefinitions.pkl"
+
+lintRuleOptionsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["type/strict-boolean-expressions"] = strictBooleanExpressionsOptionsDef
+    ["script/no-restricted-globals"] = new JsonSchema { `$ref` = "#/definitions/NoRestrictedGlobalsOptions" }
+    ["script/no-restricted-members"] = new JsonSchema { `$ref` = "#/definitions/NoRestrictedMembersOptions" }
+    ["vue/component-name-in-template-casing"] = ConfigArtifactDefinitions.componentNameInTemplateCasingOptionsDef
+    ["script/custom-event-name-casing"] = ConfigArtifactDefinitions.customEventNameCasingOptionsDef
+    ["vue/no-mutating-props"] = ConfigArtifactDefinitions.noMutatingPropsOptionsDef
+    ["vue/sfc-element-order"] = ConfigArtifactDefinitions.sfcElementOrderOptionsDef
+    ["vue/html-self-closing"] = ConfigArtifactDefinitions.htmlSelfClosingOptionsDef
+    ["vue/v-on-event-hyphenation"] = ConfigArtifactDefinitions.hyphenationStyleDef
+    ["vue/attribute-hyphenation"] = ConfigArtifactDefinitions.hyphenationStyleDef
+    ["musea/prefer-design-tokens"] = new JsonSchema { `$ref` = "#/definitions/MuseaPreferDesignTokensOptions" }
+  }
+  additionalProperties = false
+}
+
+strictBooleanExpressionsOptionsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["allowString"] = new JsonSchema { type = "boolean"; default = true }
+    ["allowNumber"] = new JsonSchema { type = "boolean"; default = true }
+    ["allowNullableObject"] = new JsonSchema { type = "boolean"; default = true }
+    ["allowNullableBoolean"] = new JsonSchema { type = "boolean"; default = false }
+    ["allowNullableString"] = new JsonSchema { type = "boolean"; default = false }
+    ["allowNullableNumber"] = new JsonSchema { type = "boolean"; default = false }
+    ["allowNullableEnum"] = new JsonSchema { type = "boolean"; default = false }
+    ["allowAny"] = new JsonSchema { type = "boolean"; default = false }
+  }
+  additionalProperties = false
+}

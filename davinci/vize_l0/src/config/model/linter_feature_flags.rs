@@ -10,7 +10,8 @@ pub struct LinterFeatureFlags {
 }
 
 impl LinterFeatureFlags {
-    pub(crate) fn from_config_features(
+    /// Derive lint-only switches from already-parsed configuration values.
+    pub fn from_config_features(
         features: ConfigFeatureFlags,
         compiler_compatibility_vue_version: Option<VueVersion>,
         compiler_vapor: Option<bool>,

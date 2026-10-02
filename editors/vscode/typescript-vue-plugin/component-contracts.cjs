@@ -12,6 +12,7 @@ function vueComponentDisplayParts(ts, sourceText, localName) {
   const slots = extractMacroType(ts, script, "defineSlots");
   const model = extractModelContract(ts, script);
   if (props || emits || slots || model) {
+    lines[0] += " &";
     lines.push("{");
     if (props) lines.push(`  props: ${compactType(props)};`);
     if (emits) lines.push(`  emits: ${compactType(emits)};`);
@@ -39,15 +40,24 @@ function extractMacroType(ts, scriptText, macroName) {
 }
 
 function extractModelContract(ts, scriptText) {
-  const call = findMacroCall(ts, scriptText, "defineModel");
-  const typeArgument = call?.typeArguments?.[0];
-  if (!typeArgument) return undefined;
-  const firstArg = call.arguments?.[0];
-  const name = firstArg && isStringLiteralLike(ts, firstArg) ? firstArg.text : "modelValue";
-  return `${JSON.stringify(name)}: ${compactType(typeArgument.getText(call.getSourceFile()))}`;
+  const models = [];
+  for (const call of findMacroCalls(ts, scriptText, "defineModel")) {
+    const typeArgument = call.typeArguments?.[0];
+    const firstArg = call.arguments?.[0];
+    const name = firstArg && isStringLiteralLike(ts, firstArg) ? firstArg.text : "modelValue";
+    const modelType = typeArgument
+      ? compactType(typeArgument.getText(call.getSourceFile()))
+      : "unknown";
+    models.push(`${JSON.stringify(name)}: ${modelType}`);
+  }
+  return models.length > 0 ? `{ ${models.join("; ")} }` : undefined;
 }
 
 function findMacroCall(ts, scriptText, macroName) {
+  return findMacroCalls(ts, scriptText, macroName)[0];
+}
+
+function findMacroCalls(ts, scriptText, macroName) {
   const sourceFile = ts.createSourceFile(
     "vize-component-contract.ts",
     scriptText,
@@ -55,15 +65,14 @@ function findMacroCall(ts, scriptText, macroName) {
     true,
     ts.ScriptKind.TSX,
   );
-  let result;
+  const result = [];
   visit(sourceFile, (node) => {
     if (
-      !result &&
       ts.isCallExpression(node) &&
       ts.isIdentifier(node.expression) &&
       node.expression.text === macroName
     ) {
-      result = node;
+      result.push(node);
     }
   });
   return result;

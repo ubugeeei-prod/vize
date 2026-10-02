@@ -219,6 +219,17 @@ pub(super) fn emit_inline(
             |segment| matches!(segment.source, Source::Attribute(attr) if attr.name == "style"),
         );
     for segment in attached {
+        let model_value = match segment.source {
+            Source::Attribute(attr) => matches!(attr.name, "true-value" | "false-value"),
+            Source::Binding(l2::BindingOp::Bind(bind)) => matches!(
+                bind.name,
+                Some(DynamicName::Static("true-value" | "false-value"))
+            ),
+            _ => false,
+        };
+        if tag == "input" && model_value {
+            continue;
+        }
         match segment.source {
             Source::Attribute(attr) => {
                 let name = plan_source(segment, SsrStringPayloadKind::AttributeName)?;

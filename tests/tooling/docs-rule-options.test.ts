@@ -10,6 +10,7 @@ const configurableRuleOptions = [
   "script/custom-event-name-casing",
   "script/no-restricted-globals",
   "script/no-restricted-members",
+  "type/strict-boolean-expressions",
   "vue/attribute-hyphenation",
   "vue/component-name-in-template-casing",
   "vue/html-self-closing",
@@ -24,6 +25,7 @@ test("rule option docs enumerate every typed lint rule option", () => {
     path.join(repoRoot, "docs/content/rules/options-script.md"),
     path.join(repoRoot, "docs/content/rules/options-vue.md"),
     path.join(repoRoot, "docs/content/rules/options-musea.md"),
+    path.join(repoRoot, "docs/content/rules/options-type.md"),
   ]);
 
   assertRuleOptionsReference(optionsDoc, {
@@ -36,10 +38,10 @@ test("rule option docs enumerate every typed lint rule option", () => {
 });
 
 test("Japanese rule option docs mirror every typed lint rule option", () => {
-  const optionsDoc = fs.readFileSync(
+  const optionsDoc = readDocs([
     path.join(repoRoot, "docs/content/ja/rules/options.md"),
-    "utf8",
-  );
+    path.join(repoRoot, "docs/content/ja/rules/options-type.md"),
+  ]);
 
   assertRuleOptionsReference(optionsDoc, {
     title: /# ルール オプション/,
@@ -140,4 +142,44 @@ function sectionFor(source: string, heading: string): string {
   assert.notEqual(start, -1, `missing ${heading}`);
   const next = source.indexOf("\n## ", start + heading.length);
   return source.slice(start, next === -1 ? source.length : next);
+}
+
+test("strict boolean rows render within the complete option and type-aware tables", () => {
+  const expectedOptions = [
+    "script/no-restricted-globals",
+    "script/no-restricted-members",
+    "vue/component-name-in-template-casing",
+    "script/custom-event-name-casing",
+    "vue/no-mutating-props",
+    "vue/sfc-element-order",
+    "vue/html-self-closing",
+    "vue/v-on-event-hyphenation",
+    "vue/attribute-hyphenation",
+    "musea/prefer-design-tokens",
+    "type/strict-boolean-expressions",
+  ];
+  for (const locale of ["", "ja/"]) {
+    const source = fs.readFileSync(
+      path.join(repoRoot, `docs/content/${locale}rules/options.md`),
+      "utf8",
+    );
+    assert.deepEqual(tableRules(source), expectedOptions, locale || "en");
+  }
+  const allRules = fs.readFileSync(path.join(repoRoot, "docs/content/rules/all.md"), "utf8");
+  assert.deepEqual(tableRules(sectionFor(allRules, "## Type Aware (6)")), [
+    "type/no-floating-promises",
+    "type/no-reactivity-loss",
+    "type/no-unsafe-template-binding",
+    "type/require-typed-emits",
+    "type/require-typed-props",
+    "type/strict-boolean-expressions",
+  ]);
+});
+
+function tableRules(source: string): string[] {
+  const block = source
+    .split(/\n\s*\n/u)
+    .find((block) => /^\| (?:Rule|ルール) \|[^\n]*\n\| --- \|/u.test(block));
+  assert.ok(block, "table header and separator must share a block");
+  return [...block.matchAll(/^\| `([^`]+)` \|/gmu)].map((match) => match[1]!);
 }

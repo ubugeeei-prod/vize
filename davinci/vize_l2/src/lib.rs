@@ -41,11 +41,14 @@
 
 extern crate alloc;
 
+pub mod artifact;
 pub mod dump;
 pub mod expr;
 pub mod lang;
 pub mod op;
 pub mod provenance;
+pub mod resolution;
 pub mod scope;
 pub mod summary;
 pub mod verify;
+pub mod walk;

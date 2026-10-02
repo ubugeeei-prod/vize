@@ -2,6 +2,7 @@
 module vize.jsonschema.ConfigArtifactDefinitions
 
 import "@json_schema/JsonSchema.pkl"
+import "LintRuleOptionsSchemaDefinitions.pkl"
 
 experimentalsConfigDef: JsonSchema = new JsonSchema {
   type = "object"
@@ -337,19 +338,4 @@ museaPreferDesignTokensOptionsDef: JsonSchema = new JsonSchema {
   additionalProperties = false
 }
 
-lintRuleOptionsDef: JsonSchema = new JsonSchema {
-  type = "object"
-  properties {
-    ["script/no-restricted-globals"] = new JsonSchema { `$ref` = "#/definitions/NoRestrictedGlobalsOptions" }
-    ["script/no-restricted-members"] = new JsonSchema { `$ref` = "#/definitions/NoRestrictedMembersOptions" }
-    ["vue/component-name-in-template-casing"] = componentNameInTemplateCasingOptionsDef
-    ["script/custom-event-name-casing"] = customEventNameCasingOptionsDef
-    ["vue/no-mutating-props"] = noMutatingPropsOptionsDef
-    ["vue/sfc-element-order"] = sfcElementOrderOptionsDef
-    ["vue/html-self-closing"] = htmlSelfClosingOptionsDef
-    ["vue/v-on-event-hyphenation"] = hyphenationStyleDef
-    ["vue/attribute-hyphenation"] = hyphenationStyleDef
-    ["musea/prefer-design-tokens"] = new JsonSchema { `$ref` = "#/definitions/MuseaPreferDesignTokensOptions" }
-  }
-  additionalProperties = false
-}
+lintRuleOptionsDef: JsonSchema = LintRuleOptionsSchemaDefinitions.lintRuleOptionsDef

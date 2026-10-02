@@ -4,6 +4,13 @@
 program shape and exports the shared static/dynamic partition facts computed
 during that lowering.
 
+`build_decisions(&vize_l2::artifact::Artifact, TargetPolicy)` re-exports the
+sole producer in `vize_l3::decision`. It returns `NativeAnalysis`, retaining
+the exact sealed owner with read-only conservative static, output-binding
+and control-containment tables. It constructs no flat program or extra
+validation walk. Placement stays `Inline`; grouped slot scopes, hoist/cache
+analysis and production selection remain unfinished under #6839.
+
 Lowering copies tags, namespaces, attributes, expressions, binding targets,
 model read/write contracts, modifiers, branch conditions, loop aliases and slot
 parameters into L3-owned operands. L2 and its source arena can be released after

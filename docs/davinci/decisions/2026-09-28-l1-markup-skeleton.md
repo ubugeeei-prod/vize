@@ -24,6 +24,11 @@ Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835),
 
 ## Native tokenizer ownership (#6835, partial)
 
+The [2026-10-01 default-provider slice](./2026-10-01-l1-default-markup-provider.md)
+supersedes the opt-in provider/skeleton selection below, subject to the
+unchanged exact-head instruction gate. Production tokenizer routing remains
+unchanged. The following paragraphs retain the earlier delivery boundary.
+
 - L1 owns implementations of `markup::lex::Lexer<P, S>` and `markup::entity`
   behind the `native-markup-lex` feature. L1 unit tests compile and exercise
   them. Default builds retain the prior skeleton API and do not link the new

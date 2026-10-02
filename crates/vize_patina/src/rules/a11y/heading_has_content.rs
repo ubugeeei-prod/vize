@@ -70,8 +70,25 @@ impl HeadingHasContent {
     }
 
     fn has_accessible_content(element: &MarkupElement<'_>) -> bool {
+        if Self::is_hidden_from_accessibility_tree(element) {
+            return false;
+        }
         if Self::has_accessible_name(element) {
             return true;
+        }
+
+        if element.is_unqualified_tag_exact("img") {
+            let mut named = false;
+            element.walk_bindings(&mut |binding| {
+                if binding.is_unqualified_arg_exact("alt") {
+                    named |= match binding.literal_string_value() {
+                        Some(value) => !value.trim().is_empty(),
+                        None if binding.kind() == MarkupBindingKind::Bind => true,
+                        None => false,
+                    };
+                }
+            });
+            return named;
         }
 
         let mut has_content = false;

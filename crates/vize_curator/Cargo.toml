@@ -9,6 +9,7 @@ description = "Curator - local inspection and reporting utilities for Vize"
 publish = false
 
 [dependencies]
+vize_carton.workspace = true
 oxc_allocator = { workspace = true }
 oxc_ast = { workspace = true }
 oxc_ast_visit = { workspace = true }

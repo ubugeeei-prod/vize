@@ -9,7 +9,7 @@
 
 use vize_l3::op::Program;
 
-use crate::expr::ResolutionTable;
+use crate::expr::ResolvedExpressions;
 use crate::write::{LinkSink, Writer};
 
 /// Inputs of one Vapor emission.
@@ -20,7 +20,7 @@ pub struct VaporInput<'s, 'a> {
     /// The scheduled L3 program.
     pub program: &'s Program<'a>,
     /// L2 identifier resolution.
-    pub resolution: ResolutionTable<'s>,
+    pub resolution: ResolvedExpressions<'s, 'a>,
 }
 
 /// Write the Vapor render function for `input`.

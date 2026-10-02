@@ -138,7 +138,7 @@ pub use telegraph::{
     TextEmitter,
 };
 pub use vize_atelier_jsx::JsxLang;
-pub use vize_l0::i18n::Locale;
+pub use vize_carton::i18n::Locale;
 
 /// Lint a Vue template source with default rules
 ///

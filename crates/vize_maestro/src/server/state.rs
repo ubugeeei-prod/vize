@@ -22,6 +22,8 @@ mod corsa_overlays;
 #[cfg(feature = "native")]
 mod global_components;
 #[cfg(feature = "native")]
+mod global_tag_names;
+#[cfg(feature = "native")]
 mod workspace_vue_files;
 
 #[cfg(test)]

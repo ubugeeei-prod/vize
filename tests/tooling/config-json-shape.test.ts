@@ -107,21 +107,38 @@ function typescriptInterfaceKeys(source: string, interfaceName: string): string[
   return [...body.matchAll(/^\s{2}([\w$]+)\??:/gm)].map((match) => match[1]).sort();
 }
 
-function rustStructKeys(file: string, structNames: string[]): string[] {
+function rustStructKeys(file: string, structNames: string[], owners: readonly string[]): string[] {
   const source = fs.readFileSync(file, "utf8");
   return structNames
     .flatMap((structName) => {
       const body = bracedBody(source, new RegExp(`struct ${structName}\\b`));
-      return [...body.matchAll(/^\s+(?:pub(?:\([^)]*\))?\s+)?([a-z]\w*)\s*:/gm)].map(
-        (match) => match[1],
-      );
+      const flattenedFields = [
+        ...body.matchAll(
+          /#\[serde\(flatten\)\]\s+(?:pub(?:\([^)]*\))?\s+)?([a-z]\w*)\s*:\s*(\w+)/g,
+        ),
+      ];
+      for (const [, key, type] of flattenedFields) {
+        const owner = type === "TypeCheckerConfig" ? "TypeCheckerConfigDeserialize" : type;
+        assert.ok(
+          owners.includes(owner),
+          `${structName}.${key} flattened owner ${owner} must be audited`,
+        );
+      }
+      const flattened = new Set(flattenedFields.map((match) => match[1]));
+      return [...body.matchAll(/^\s+(?:pub(?:\([^)]*\))?\s+)?([a-z]\w*)\s*:/gm)]
+        .map((match) => match[1])
+        .filter((key) => !flattened.has(key));
     })
-    .filter((key) => key !== "config")
     .map((key) => key.replace(/_([a-z])/g, (_match, letter: string) => letter.toUpperCase()))
     .sort();
 }
 
 const configSections = [
+  {
+    name: "FormatterConfig",
+    pkl: "FormatterConfig.pkl",
+    rust: [{ file: "formatter.rs", structs: ["FormatterConfig", "RawFormatterConfig"] }],
+  },
   {
     name: "CompilerConfig",
     pkl: "CompilerConfig.pkl",
@@ -130,7 +147,10 @@ const configSections = [
   {
     name: "LinterConfig",
     pkl: "LinterConfig.pkl",
-    rust: [{ file: "linter.rs", structs: ["LinterConfig", "RawLinterConfig"] }],
+    rust: [
+      { file: "linter.rs", structs: ["LinterConfig", "RawLinterConfig"] },
+      { file: "linter_execution.rs", structs: ["LinterExecutionOptions"] },
+    ],
   },
   {
     name: "TypeCheckerConfig",
@@ -170,9 +190,11 @@ test("config keys stay exhaustive across Rust, Pkl, JSON Schema and generated Ty
 
     const rustKeys = section.rust
       .flatMap(({ file, structs }) =>
-        rustStructKeys(path.join("davinci", "vize_l0", "src", "config", "model", file), [
-          ...structs,
-        ]),
+        rustStructKeys(
+          path.join("davinci", "vize_l0", "src", "config", "model", file),
+          [...structs],
+          section.rust.flatMap(({ structs }) => [...structs]),
+        ),
       )
       .sort();
     for (const [artifact, keys] of Object.entries(artifactKeys)) {

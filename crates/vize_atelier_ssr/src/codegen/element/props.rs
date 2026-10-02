@@ -1,7 +1,7 @@
 //! Shared JavaScript expression and prop-object builders for SSR element codegen.
 
 use super::{DirectiveNode, ExpressionNode, PropNode, String, ToCompactString, VNodePropEntry};
-use vize_l0::{FxHashMap, is_on};
+use vize_l0::{FxHashMap, FxHashSet, SmallVec, is_on};
 
 /// Build an object literal from normalized prop entries.
 pub(crate) fn component_props_object(entries: &[VNodePropEntry]) -> String {
@@ -55,10 +55,18 @@ pub(crate) fn push_component_prop_entry(out: &mut String, entry: &VNodePropEntry
     out.push_str(&entry.value);
 }
 
-/// Merge static `class` and `style` entries so Vue sees one canonical value.
+/// Match Vue's prop deduplication: merge class/style/listeners, keep the first
+/// ordinary static key, and retain computed keys for runtime evaluation.
 pub(crate) fn normalize_prop_entries(
-    entries: std::vec::Vec<VNodePropEntry>,
+    mut entries: std::vec::Vec<VNodePropEntry>,
 ) -> std::vec::Vec<VNodePropEntry> {
+    // A bounded scan avoids hash-table setup on the small objects most
+    // templates emit. Wide objects use borrowed keys and retain their buffer
+    // when no class/style/listener normalization is needed.
+    let wide = entries.len() > 8;
+    if wide && !dedup_wide_entries(&mut entries) {
+        return entries;
+    }
     let mut normalized = std::vec::Vec::with_capacity(entries.len());
     let mut class_entries = std::vec::Vec::new();
     let mut style_entries = std::vec::Vec::new();
@@ -76,27 +84,68 @@ pub(crate) fn normalize_prop_entries(
                 event_values.insert(entry.key.clone(), vec![entry.value.clone()]);
                 normalized.push(entry);
             }
-        } else {
+        } else if wide
+            || entry.dynamic
+            || !normalized
+                .iter()
+                .any(|prior: &VNodePropEntry| !prior.dynamic && prior.key == entry.key)
+        {
             normalized.push(entry);
         }
     }
 
-    for entry in &mut normalized {
-        if !entry.dynamic
-            && is_on(&entry.key)
-            && let Some(values) = event_values.remove(&entry.key)
-        {
-            // A merged value no longer is the first entry's authored value.
-            if values.len() > 1 {
-                entry.spans = None;
+    if !event_values.is_empty() {
+        for entry in &mut normalized {
+            if !entry.dynamic
+                && is_on(&entry.key)
+                && let Some(values) = event_values.remove(&entry.key)
+            {
+                // A merged value no longer is the first entry's authored value.
+                if values.len() > 1 {
+                    entry.spans = None;
+                }
+                entry.value = merge_prop_values(values);
             }
-            entry.value = merge_prop_values(values);
         }
     }
 
     normalized.extend(merged_entry("class", class_entries));
     normalized.extend(merged_entry("style", style_entries));
     normalized
+}
+
+/// Deduplicate a wide object in linear time, reporting whether it also needs
+/// class/style/listener combination. Keys remain borrowed until the set drops.
+fn dedup_wide_entries(entries: &mut std::vec::Vec<VNodePropEntry>) -> bool {
+    let mut duplicates = SmallVec::<[usize; 4]>::new();
+    let mut needs_merge = false;
+    {
+        let mut seen = FxHashSet::with_capacity_and_hasher(entries.len(), Default::default());
+        for (index, entry) in entries.iter().enumerate() {
+            if entry.dynamic {
+                continue;
+            }
+            let key = entry.key.as_str();
+            let merges = matches!(key, "class" | "style") || is_on(key);
+            needs_merge |= merges;
+            if !seen.insert(key) && !merges {
+                duplicates.push(index);
+            }
+        }
+    }
+    if !duplicates.is_empty() {
+        let mut duplicates = duplicates.into_iter().peekable();
+        let mut index = 0;
+        entries.retain(|_| {
+            let keep = duplicates.peek() != Some(&index);
+            if !keep {
+                duplicates.next();
+            }
+            index += 1;
+            keep
+        });
+    }
+    needs_merge
 }
 
 /// One entry for `key`: a lone entry is kept whole (with its spans); several
@@ -213,6 +262,13 @@ pub(crate) fn quoted_js_string(value: &str) -> String {
 }
 
 pub(crate) fn escape_js_string(value: &str) -> String {
+    if !value
+        .as_bytes()
+        .iter()
+        .any(|byte| matches!(byte, b'\\' | b'"' | b'\n' | b'\r' | b'\t'))
+    {
+        return value.to_compact_string();
+    }
     let mut out = String::with_capacity(value.len());
     for ch in value.chars() {
         match ch {

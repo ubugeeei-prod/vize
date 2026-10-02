@@ -7,6 +7,7 @@
 //! The state machine is adapted from htmlparser2 and Vue's compiler-core.
 
 pub mod char_codes;
+mod configuration;
 mod dynamic_arg;
 mod in_tag_comment;
 mod sequences;
@@ -45,8 +46,8 @@ impl Default for Delimiters<'_> {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct LexOptions<'a> {
     pub delimiters: Delimiters<'a>,
-    /// Vue 1.x `{{{ expr }}}` raw-HTML interpolation. Honored only with the
-    /// default delimiters.
+    /// Vue 1.x `{{{ expr }}}` raw-HTML interpolation. Admission checks only
+    /// the default opening delimiter, preserving custom-close compatibility.
     pub raw_interpolation: bool,
     /// Experimental `//` comments inside open tags.
     pub in_tag_comments: bool,
@@ -75,7 +76,7 @@ pub struct Lexer<'a, P: Profile, S: Sink> {
     /// True immediately after a quoted attribute value ended, so `<div a="b"c>`
     /// reports missing whitespace instead of silently starting `c`.
     after_quoted_attr_value: bool,
-    /// Vue 1.x `{{{ … }}}`; only with the default delimiters.
+    /// Vue 1.x `{{{ … }}}`; admitted by the default opening delimiter.
     triple_mustache: bool,
     /// True while the open interpolation is a `{{{ … }}}` one.
     in_raw_interpolation: bool,
@@ -130,11 +131,6 @@ impl<'a, P: Profile, S: Sink> Lexer<'a, P, S> {
         self.delimiter_open.first() == Some(&c)
     }
 
-    #[inline]
-    fn at_closing_delimiter(&self, c: u8) -> bool {
-        self.delimiter_close.first() == Some(&c)
-    }
-
     /// Skip through the buffer until a target byte is found.
     fn fast_forward_to(&mut self, c: u8) -> bool {
         while self.index + 1 < self.input.len() {
@@ -150,7 +146,8 @@ impl<'a, P: Profile, S: Sink> Lexer<'a, P, S> {
     /// Lex the whole input, pushing every event and finally `on_end` into
     /// the sink.
     pub fn run(&mut self) {
-        while let Some(&c) = self.input.get(self.index) {
+        let input = self.input;
+        while let Some(&c) = input.get(self.index) {
             match self.state {
                 State::Text => self.state_text(c),
                 State::InterpolationOpen => self.state_interpolation_open(c),

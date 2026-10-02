@@ -1,9 +1,12 @@
+import { childComponent } from "./davinci-mounted-child.mjs";
+export { childComponent } from "./davinci-mounted-child.mjs";
 import assert from "node:assert/strict";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import { Window } from "happy-dom";
 import { build } from "vite-plus";
 import { mountedScope } from "./davinci-mounted-scope.mjs";
+import { withMountedRuntimeDevtools } from "./mounted-runtime-devtools.ts";
 import { evaluateCompiledRender } from "./davinci-runtime-trace.mjs";
 import { vueVaporRuntimeEntry } from "./vue-vapor-release.mjs";
 
@@ -17,6 +20,7 @@ export async function traceMountedBackend({
   slots = null,
   components = {},
   externalTargets = [],
+  production = process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1",
 }) {
   assert.ok(backend === "vdom" || backend === "vapor", `unknown backend: ${backend}`);
   if (slots !== null) validateSuppliedSlots(slots);
@@ -38,166 +42,174 @@ export async function traceMountedBackend({
     globalThis[key] = key === "window" ? window : window[key];
   }
 
-  const vue = await loadRuntime();
-  const render = await evaluateCompiledRender(code, vue);
-  const events = [];
-  const suppliedText = (spec, props) =>
-    Object.hasOwn(spec, "text") ? spec.text : vue.toDisplayString(props[spec.prop]);
-  const vdomSlots = Object.fromEntries(
-    Object.entries(slots ?? {}).map(([name, spec]) => [
-      name,
-      (props) => [vue.createTextVNode(suppliedText(spec, props))],
-    ]),
-  );
-  const state = vue.reactive({
-    $slots: vdomSlots,
-    ...context,
-    save: () => events.push("save"),
-    saveParent: () => events.push("saveParent"),
-    record: (value) => events.push(value),
-  });
-  const cache = [];
-  const vaporChild = vue.defineVaporComponent({ setup: () => render(state) });
-  // A parent supplies slots the way a caller would; it adds no DOM of its own.
-  const vaporSlots = Object.fromEntries(
-    Object.entries(slots ?? {}).map(([name, spec]) => [
-      name,
-      (props) => {
-        const text = window.document.createTextNode("");
-        vue.renderEffect(() => {
-          text.data = suppliedText(spec, props);
-        });
-        return text;
-      },
-    ]),
-  );
-  const component =
-    backend === "vapor"
-      ? slots === null
-        ? vaporChild
-        : vue.defineVaporComponent({
-            setup: () => vue.createComponent(vaporChild, null, vaporSlots),
-          })
-      : { setup: () => () => render(state, cache) };
-  const app = (backend === "vapor" ? vue.createVaporApp : vue.createApp)(component);
-  for (const [name, child] of Object.entries(components)) {
-    app.component(name, await childComponent(backend, vue, name, child));
-  }
-  const diagnostics = [];
-  app.config.warnHandler = (message) => diagnostics.push(message);
-  app.config.errorHandler = (error) => diagnostics.push(String(error));
-  const host = window.document.createElement("div");
-  window.document.body.append(host);
-  const scope = mountedScope(window, host, externalTargets, observeChildren);
-  const snapshots = [];
-  const nodeIdentities = new WeakMap();
-  let nextIdentity = 0;
-  let previousNodes = [];
-
-  function observedIdentities() {
-    const nodes = scope.elements();
-    for (const previous of previousNodes) {
-      if (!nodes.includes(previous))
-        assert.equal(previous.isConnected, false, "removed node is still connected");
-    }
-    previousNodes = nodes;
-    for (const node of nodes) {
-      if (!nodeIdentities.has(node)) nodeIdentities.set(node, nextIdentity++);
-    }
-    return nodes
-      .filter((node) => node.hasAttribute("data-id"))
-      .map((node) => [node.getAttribute("data-id"), nodeIdentities.get(node)]);
-  }
-
-  function snapshot() {
-    assert.deepEqual(diagnostics, [], "mounted runtime diagnostics");
-    snapshots.push({
-      tree: observeChildren(host),
-      events: [...events],
-      ...scope.observations(),
-      ...(identities ? { identities: observedIdentities() } : {}),
-    });
-  }
-
-  try {
-    app.mount(host);
-    await vue.nextTick();
-    snapshot();
-    for (const step of steps) {
-      if (Object.hasOwn(step, "click")) {
-        assert.equal(identities, true, "loop clicks require identity observations");
-        assert.deepEqual(Object.keys(step), ["click"], "unexpected loop click fields");
-        assert.equal(typeof step.click, "string", "loop target must be a data-id string");
-        const targets = scope
-          .elements("[data-id]")
-          .filter((node) => node.getAttribute("data-id") === step.click);
-        assert.equal(targets.length, 1, "expected one live interaction target");
-        assert.ok(targets[0] instanceof window.HTMLButtonElement, "expected a native button");
-        targets[0].click();
-      } else if (Object.hasOwn(step, "activate")) {
-        assert.deepEqual(Object.keys(step), ["activate"], "unexpected activation fields");
-        assert.equal(step.activate, "button", "unsupported activation target");
-        const targets = host.querySelectorAll("button");
-        assert.equal(targets.length, 1, "expected one activation target");
-        assert.ok(targets[0] instanceof window.HTMLButtonElement, "expected an HTML button");
-        targets[0].click();
-      } else if (step.patch) {
-        Object.assign(state, step.patch);
-      } else if (step.event) {
-        const target = scope.elements(step.selector)[0];
-        assert.ok(target, `missing interaction target: ${step.selector}`);
-        if (Object.hasOwn(step, "value")) target.value = step.value;
-        if (Object.hasOwn(step, "checked")) target.checked = step.checked;
-        if (step.selectedValues) {
-          for (const option of target.options)
-            option.selected = step.selectedValues.includes(option.value);
-        }
-        if (Object.hasOwn(step, "selectedIndexes")) {
-          assert.ok(
-            target instanceof window.HTMLSelectElement,
-            "selected indexes require a select",
-          );
-          assert.ok(Array.isArray(step.selectedIndexes), "selected indexes must be an array");
-          assert.ok(
-            step.selectedIndexes.every(
-              (index) => Number.isInteger(index) && index >= 0 && index < target.options.length,
-            ),
-            "selected index out of range",
-          );
-          for (const [index, option] of [...target.options].entries())
-            option.selected = step.selectedIndexes.includes(index);
-        }
-        const EventClass = Object.hasOwn(step, "key")
-          ? window.KeyboardEvent
-          : Object.hasOwn(step, "button")
-            ? window.MouseEvent
-            : window.Event;
-        target.dispatchEvent(
-          new EventClass(step.event, {
-            bubbles: step.bubbles ?? true,
-            cancelable: true,
-            ...(Object.hasOwn(step, "key") ? { key: step.key } : {}),
-            ...(Object.hasOwn(step, "button") ? { button: step.button } : {}),
-          }),
-        );
-      } else {
-        throw new Error(`unknown interaction step: ${JSON.stringify(step)}`);
+  return withMountedRuntimeDevtools(
+    production,
+    () => window.happyDOM.close(),
+    async (devtools) => {
+      const vue = await loadRuntime({ production });
+      devtools.attach(vue);
+      const render = await evaluateCompiledRender(code, vue);
+      const events = [];
+      const suppliedText = (spec, props) =>
+        Object.hasOwn(spec, "text") ? spec.text : vue.toDisplayString(props[spec.prop]);
+      const vdomSlots = Object.fromEntries(
+        Object.entries(slots ?? {}).map(([name, spec]) => [
+          name,
+          (props) => [vue.createTextVNode(suppliedText(spec, props))],
+        ]),
+      );
+      const state = vue.reactive({
+        $slots: vdomSlots,
+        ...context,
+        save: () => events.push("save"),
+        saveParent: () => events.push("saveParent"),
+        record: (value) => events.push(value),
+      });
+      const cache = [];
+      const vaporChild = vue.defineVaporComponent({ setup: () => render(state) });
+      // A parent supplies slots the way a caller would; it adds no DOM of its own.
+      const vaporSlots = Object.fromEntries(
+        Object.entries(slots ?? {}).map(([name, spec]) => [
+          name,
+          (props) => {
+            const text = window.document.createTextNode("");
+            vue.renderEffect(() => {
+              text.data = suppliedText(spec, props);
+            });
+            return text;
+          },
+        ]),
+      );
+      const component =
+        backend === "vapor"
+          ? slots === null
+            ? vaporChild
+            : vue.defineVaporComponent({
+                setup: () => vue.createComponent(vaporChild, null, vaporSlots),
+              })
+          : { setup: () => () => render(state, cache) };
+      const app = (backend === "vapor" ? vue.createVaporApp : vue.createApp)(component);
+      for (const [name, child] of Object.entries(components)) {
+        app.component(name, await childComponent(backend, vue, name, child));
       }
-      await vue.nextTick();
-      snapshot();
-    }
-    app.unmount();
-    await vue.nextTick();
-    assert.equal(host.childNodes.length, 0, "unmount left DOM nodes behind");
-    scope.assertUnmounted();
-    snapshot();
-    return snapshots;
-  } finally {
-    if (host.childNodes.length) app.unmount();
-    host.remove();
-    scope.dispose();
-    await window.happyDOM.close();
-  }
+      const diagnostics = [];
+      app.config.warnHandler = (message) => diagnostics.push(message);
+      app.config.errorHandler = (error) => diagnostics.push(String(error));
+      const host = window.document.createElement("div");
+      window.document.body.append(host);
+      const scope = mountedScope(window, host, externalTargets, observeChildren);
+      const snapshots = [];
+      const nodeIdentities = new WeakMap();
+      let nextIdentity = 0;
+      let previousNodes = [];
+
+      function observedIdentities() {
+        const nodes = scope.elements();
+        for (const previous of previousNodes) {
+          if (!nodes.includes(previous))
+            assert.equal(previous.isConnected, false, "removed node is still connected");
+        }
+        previousNodes = nodes;
+        for (const node of nodes) {
+          if (!nodeIdentities.has(node)) nodeIdentities.set(node, nextIdentity++);
+        }
+        return nodes
+          .filter((node) => node.hasAttribute("data-id"))
+          .map((node) => [node.getAttribute("data-id"), nodeIdentities.get(node)]);
+      }
+
+      function snapshot() {
+        assert.deepEqual(diagnostics, [], "mounted runtime diagnostics");
+        snapshots.push({
+          tree: observeChildren(host),
+          events: [...events],
+          ...scope.observations(),
+          ...(identities ? { identities: observedIdentities() } : {}),
+        });
+      }
+
+      try {
+        app.mount(host);
+        await vue.nextTick();
+        snapshot();
+        for (const step of steps) {
+          if (Object.hasOwn(step, "click")) {
+            assert.equal(identities, true, "loop clicks require identity observations");
+            assert.deepEqual(Object.keys(step), ["click"], "unexpected loop click fields");
+            assert.equal(typeof step.click, "string", "loop target must be a data-id string");
+            const targets = scope
+              .elements("[data-id]")
+              .filter((node) => node.getAttribute("data-id") === step.click);
+            assert.equal(targets.length, 1, "expected one live interaction target");
+            assert.ok(targets[0] instanceof window.HTMLButtonElement, "expected a native button");
+            targets[0].click();
+          } else if (Object.hasOwn(step, "activate")) {
+            assert.deepEqual(Object.keys(step), ["activate"], "unexpected activation fields");
+            assert.equal(step.activate, "button", "unsupported activation target");
+            const targets = host.querySelectorAll("button");
+            assert.equal(targets.length, 1, "expected one activation target");
+            assert.ok(targets[0] instanceof window.HTMLButtonElement, "expected an HTML button");
+            targets[0].click();
+          } else if (step.patch) {
+            Object.assign(state, step.patch);
+          } else if (step.event) {
+            const target = scope.elements(step.selector)[0];
+            assert.ok(target, `missing interaction target: ${step.selector}`);
+            if (Object.hasOwn(step, "value")) target.value = step.value;
+            if (Object.hasOwn(step, "checked")) target.checked = step.checked;
+            if (step.selectedValues) {
+              for (const option of target.options)
+                option.selected = step.selectedValues.includes(option.value);
+            }
+            if (Object.hasOwn(step, "selectedIndexes")) {
+              assert.ok(
+                target instanceof window.HTMLSelectElement,
+                "selected indexes require a select",
+              );
+              assert.ok(Array.isArray(step.selectedIndexes), "selected indexes must be an array");
+              assert.ok(
+                step.selectedIndexes.every(
+                  (index) => Number.isInteger(index) && index >= 0 && index < target.options.length,
+                ),
+                "selected index out of range",
+              );
+              for (const [index, option] of [...target.options].entries())
+                option.selected = step.selectedIndexes.includes(index);
+            }
+            const EventClass = Object.hasOwn(step, "key")
+              ? window.KeyboardEvent
+              : Object.hasOwn(step, "button")
+                ? window.MouseEvent
+                : window.Event;
+            target.dispatchEvent(
+              new EventClass(step.event, {
+                bubbles: step.bubbles ?? true,
+                cancelable: true,
+                ...(Object.hasOwn(step, "key") ? { key: step.key } : {}),
+                ...(Object.hasOwn(step, "button") ? { button: step.button } : {}),
+              }),
+            );
+          } else {
+            throw new Error(`unknown interaction step: ${JSON.stringify(step)}`);
+          }
+          await vue.nextTick();
+          snapshot();
+        }
+        app.unmount();
+        await vue.nextTick();
+        assert.equal(host.childNodes.length, 0, "unmount left DOM nodes behind");
+        scope.assertUnmounted();
+        snapshot();
+        devtools.complete(app, snapshots, diagnostics);
+        return snapshots;
+      } finally {
+        if (host.childNodes.length) app.unmount();
+        host.remove();
+        scope.dispose();
+        await window.happyDOM.close();
+      }
+    },
+  );
 }
 
 /** Supplied slots are static text or one displayed slot prop per name. */
@@ -248,19 +260,22 @@ export function validateLoopScenario(context, steps) {
   }
 }
 
-export async function loadRuntime() {
+export async function loadRuntime({
+  production = process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1",
+} = {}) {
+  assert.equal(typeof production, "boolean", "production runtime mode must be explicit");
   const result = await build({
     configFile: false,
     logLevel: "silent",
     define: {
-      "process.env.NODE_ENV": JSON.stringify("development"),
+      "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),
       __VUE_OPTIONS_API__: "true",
       __VUE_PROD_DEVTOOLS__: "false",
-      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: "true",
+      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: production ? "false" : "true",
     },
     build: {
       write: false,
-      minify: false,
+      minify: production,
       lib: {
         entry: vueVaporRuntimeEntry,
         formats: ["es"],
@@ -300,44 +315,6 @@ export function observeChildren(parent) {
     }
   }
   return children;
-}
-
-/**
- * A child component compiled by the same backend and lane as its parent. The
- * render context exposes props plus `$emit`/`$slots`, as compiled templates
- * expect from a component instance.
- */
-export async function childComponent(backend, vue, name, { code, props = [], emits = [] }) {
-  assert.ok(Array.isArray(props) && Array.isArray(emits), "child props/emits must be arrays");
-  const render = await evaluateCompiledRender(code, vue);
-  const context = (instanceProps, emit, slots) =>
-    new Proxy(instanceProps, {
-      get: (target, key) =>
-        key === "$emit" || key === "send"
-          ? emit
-          : key === "$slots"
-            ? slots
-            : Reflect.get(target, key),
-      has: (target, key) =>
-        key === "$emit" || key === "send" || key === "$slots" || Reflect.has(target, key),
-    });
-  if (backend === "vapor") {
-    return vue.defineVaporComponent({
-      name,
-      props,
-      emits,
-      setup: (instanceProps, { emit, slots }) => render(context(instanceProps, emit, slots)),
-    });
-  }
-  return {
-    name,
-    props,
-    emits,
-    setup: (instanceProps, { emit, slots }) => {
-      const cache = [];
-      return () => render(context(instanceProps, emit, slots), cache);
-    },
-  };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

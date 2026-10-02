@@ -13,10 +13,8 @@
 use std::path::{Path, PathBuf};
 
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, project_virtual_root};
-use vize_l0::{
-    corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable},
-    cstr,
-};
+use vize_carton::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
+use vize_l0::cstr;
 
 fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {

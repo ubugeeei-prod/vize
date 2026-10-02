@@ -519,6 +519,25 @@ export declare function flattenDesignTokenCategories(categories: string): string
 export interface FormatOptionsNapi {
   /** Explicit Vue version; omitted uses Vue 3. */
   vueVersion?: string;
+  /** Oxfmt-compatible import sorting; false disables it. */
+  sortImports?:
+    | false
+    | {
+        partitionByNewline?: boolean;
+        partitionByComment?: boolean;
+        sortSideEffects?: boolean;
+        order?: "asc" | "desc";
+        ignoreCase?: boolean;
+        newlinesBetween?: boolean;
+        internalPattern?: string[];
+        groups?: (string | string[] | { newlinesBetween: boolean })[];
+        customGroups?: {
+          groupName: string;
+          elementNamePattern?: string[];
+          selector?: string;
+          modifiers?: string[];
+        }[];
+      };
   printWidth?: number;
   tabWidth?: number;
   useTabs?: boolean;

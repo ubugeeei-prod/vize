@@ -102,14 +102,18 @@ fn collect_lint_files_from_dir(
     seen: &mut FxHashSet<PathBuf>,
 ) -> bool {
     let mut matched = false;
+    if vize_l0::path::is_git_metadata_path(&normalize_lint_input_path(dir)) {
+        return false;
+    }
     let explicitly_selected = matcher.map(|matcher| matcher.explicit_directories());
     for entry in WalkBuilder::new(dir)
         .standard_filters(true)
         .hidden(matcher.is_none())
         .filter_entry(move |entry| {
-            entry.depth() == 0
-                || !entry.file_type().is_some_and(|kind| kind.is_dir())
-                || !is_default_excluded_dir(entry, explicitly_selected)
+            !vize_l0::path::is_git_metadata_path(entry.path())
+                && (entry.depth() == 0
+                    || !entry.file_type().is_some_and(|kind| kind.is_dir())
+                    || !is_default_excluded_dir(entry, explicitly_selected))
         })
         .build()
     {
@@ -132,7 +136,6 @@ fn is_default_excluded_dir(
 ) -> bool {
     let name = entry.file_name().to_str();
     match name {
-        Some(".git") => !explicitly_selected.is_some_and(|dirs| dirs.git),
         Some(".vize") => !explicitly_selected.is_some_and(|dirs| dirs.vize),
         Some("node_modules") => !explicitly_selected.is_some_and(|dirs| dirs.node_modules),
         _ => false,
@@ -145,10 +148,13 @@ fn add_lint_file(
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
 ) -> bool {
-    if !is_lintable_path(path) {
+    if vize_l0::path::is_git_metadata_path(path) || !is_lintable_path(path) {
         return false;
     }
     let normalized = normalize_lint_input_path(path);
+    if vize_l0::path::is_git_metadata_path(&normalized) {
+        return false;
+    }
     if ignore_set.is_some_and(|ignore_set| ignore_set.is_ignored(&normalized)) {
         return false;
     }
@@ -210,7 +216,6 @@ struct LintInputGlob {
 
 #[derive(Clone, Copy)]
 struct ExplicitDirectories {
-    git: bool,
     vize: bool,
     node_modules: bool,
 }
@@ -229,7 +234,6 @@ impl LintInputGlob {
             )
             .unwrap_or_default();
         let explicit_directories = ExplicitDirectories {
-            git: dynamic_part.split('/').any(|part| part == ".git"),
             vize: dynamic_part.split('/').any(|part| part == ".vize"),
             node_modules: dynamic_part.split('/').any(|part| part == "node_modules"),
         };
@@ -326,26 +330,12 @@ fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: 
 }
 
 fn absolute_config_dir(config_dir: &Path) -> PathBuf {
-    if config_dir.is_absolute() {
-        return config_dir.to_path_buf();
-    }
-
-    std::env::current_dir()
-        .unwrap_or_else(|_| PathBuf::from("."))
-        .join(config_dir)
+    let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    crate::lint_plan::matcher::absolute_path(config_dir, &cwd)
 }
 
-fn nested_node_modules_ignore(pattern: &Path) -> Option<PathBuf> {
-    let pattern_text = normalize_lint_path(pattern);
-    let suffix = "node_modules/**";
-    if !pattern_text.ends_with(suffix) || pattern_text.contains("**/node_modules/**") {
-        return None;
-    }
-    let prefix = pattern_text.trim_end_matches(suffix).trim_end_matches('/');
-    Some(PathBuf::from(
-        vize_l0::cstr!("{prefix}/**/{suffix}").as_str(),
-    ))
-}
+mod node_modules_ignore;
+use node_modules_ignore::nested_node_modules_ignore;
 
 fn lint_glob_match_options() -> MatchOptions {
     MatchOptions {

@@ -1,0 +1,69 @@
+{
+  "base": "5bca3a881a011217738a79f000e9c8c03f21fc37",
+  "capturedAt": "2026-10-01T10:59:51.148Z",
+  "encoding": "case digest XXH3-128 over LE-u64-length-framed source and every observed output field;16bytes/case;source/profile/fixture/cut order is authored in tests",
+  "freshProcessesMatched": true,
+  "sourceIdentity": [
+    {
+      "file": "davinci/vize_l1/src/markup/lex/compat/states.rs",
+      "sha256": "36b3e4b4d55d2e0f4ea03662abc7a5792d3196c881d6b14482b9a0a2e4f8c85e"
+    },
+    {
+      "file": "davinci/vize_l1/src/markup/lex/compat/entity_decode.rs",
+      "sha256": "9ecf12d3d3f811a27e6c96ba717459cd806225a87a626ec2f8d9318a6ed9112c"
+    },
+    {
+      "file": "davinci/vize_l1/src/markup/lex/compat/dynamic_arg.rs",
+      "sha256": "a880c8c2ca4653f0b7cec1b17f7aab8c29272ea0e028eb661e806cc9e0b9c886"
+    },
+    {
+      "file": "crates/vize_armature/src/parser/callbacks.rs",
+      "sha256": "c418ed625655c70e95c33bb3509f741d3b040f25eb8bfe620fad1511c6520f9f"
+    },
+    {
+      "file": "crates/vize_armature/src/parser/element.rs",
+      "sha256": "2a9187cfb6e39804ab0cbefdb9c4f03054df303f7958003be92c7a7e5922af3a"
+    },
+    {
+      "file": "crates/vize_armature/src/parser/attribute.rs",
+      "sha256": "5bc9a3b50431d9cc8e39c230423db9ae6dda75bac886dd98ed0fd7190a49691b"
+    }
+  ],
+  "records": [
+    {
+      "name": "callback-fixtures",
+      "file": "davinci/vize_l1/tests/_fixtures/tokenizer_callback_fixtures.bin",
+      "cases": 6444,
+      "bytes": 103104,
+      "sha256": "b5ba1bea98197a95b1ca6269bc21cc3bb80fdc7f9e46f4fb97ecdf070787b0a3"
+    },
+    {
+      "name": "callback-switches",
+      "file": "davinci/vize_l1/tests/_fixtures/tokenizer_callback_switches.bin",
+      "cases": 14,
+      "bytes": 224,
+      "sha256": "3dbbc063cc9a4dd97cb4e2dc9866b60c471799b5ccb755ed3b3916e6095e5c2e"
+    },
+    {
+      "name": "callback-resume",
+      "file": "davinci/vize_l1/tests/_fixtures/tokenizer_callback_resume.bin",
+      "cases": 1,
+      "bytes": 16,
+      "sha256": "dce6120a18116ff18f0a444a5ba62cfc66c652a3b0f05d6a2a5dddc3a1f8f474"
+    },
+    {
+      "name": "parser-fixtures",
+      "file": "crates/vize_armature/tests/_fixtures/tokenizer_parser_fixtures.bin",
+      "cases": 4296,
+      "bytes": 68736,
+      "sha256": "8d4d06bffecd8503651553d312e444c5ba2640db98af592b8224517ff0de44a7"
+    },
+    {
+      "name": "parser-options",
+      "file": "crates/vize_armature/tests/_fixtures/tokenizer_parser_options.bin",
+      "cases": 12,
+      "bytes": 192,
+      "sha256": "927e7c15225e0886d8c90290ba2675050e2baa069a4d4dbeb256c6fb1e154207"
+    }
+  ]
+}

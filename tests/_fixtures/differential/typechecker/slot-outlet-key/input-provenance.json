@@ -1,0 +1,58 @@
+{
+  "schema": "vize.typechecker.originalProjectProvenance",
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "c6e43ca98cbffe099a6ef323006139d796d62208",
+  "pullRequest": 7108,
+  "originalTest": "slot_outlet_key_matches_declared_and_inferred_payloads",
+  "originalTestSource": {
+    "revision": "c6e43ca98cbffe099a6ef323006139d796d62208",
+    "path": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/slot_key.rs",
+    "blob": "bcdaf5ca24a8eef7e729d546844d9d5e6c4f2ddc",
+    "sha256": "e13a04a5e4d3e83677695a4dd19277228bde30cb1e049f1d15dfd2b1cd45f2cd",
+    "carrier": "original-test.rs.txt"
+  },
+  "projectHelperSource": {
+    "revision": "c6e43ca98cbffe099a6ef323006139d796d62208",
+    "path": "crates/vize_canon/src/batch/type_checker/tests.rs",
+    "blob": "4caefb7832c5dee4c93dd90ef1268cdc6b4bfe8b",
+    "sha256": "6501764dede187110cf31ffd3140da4ba2a785e8d748f3f2e5525d07dd0ec453",
+    "excerpt": {
+      "carrier": "original-helper.rs.txt",
+      "utf8Start": 52703,
+      "utf8End": 54062,
+      "sha256": "614d8fd0c91de0761b66b42c463668824fd4a0df358fa9d6014bd69c3ff95312"
+    }
+  },
+  "configLiteralUtf8Start": 52827,
+  "expectedContract": "complete original authored tuple assertion; original helper sorts the entire vector, which has zero or one row here",
+  "originalRuntimePolicy": "optional runtime guard; no fresh execution credit",
+  "execution": "pending fresh required T1 source-built Actions",
+  "native": "unsupported",
+  "inputs": [
+    {
+      "file": "src/Declared.vue",
+      "source": "declared-and-inferred-key-payload/src/Declared.vue.txt",
+      "sha256": "1ff0ae87a97a8a9fd22402f01424b972cbf43bae822973da1975253bf8cf77a5",
+      "originalLiteralUtf8Start": 395
+    },
+    {
+      "file": "src/Inferred.vue",
+      "source": "declared-and-inferred-key-payload/src/Inferred.vue.txt",
+      "sha256": "ef9942704deccd1f3e5d0e221cc52d7bf074b83f8bb96b1a4891dddf7ec3c6ba",
+      "originalLiteralUtf8Start": 777
+    },
+    {
+      "file": "src/App.vue",
+      "source": "declared-and-inferred-key-payload/src/App.vue.txt",
+      "sha256": "0c7fbda6e55159c62594841b5af37327b002130039b5e3372cf01fae99b280e6",
+      "originalLiteralUtf8Start": 1077
+    },
+    {
+      "file": "tsconfig.json",
+      "source": "tsconfig.json.txt",
+      "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b",
+      "originalLiteralUtf8Start": null
+    }
+  ]
+}

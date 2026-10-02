@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use super::{FmtArgs, files::FmtPattern};
+use super::files::FmtPattern;
 use crate::config;
 
 pub(crate) struct FmtIgnoreSet {
@@ -23,21 +23,20 @@ impl FmtIgnoreSet {
     }
 }
 
-pub(super) fn load_fmt_ignore_set(args: &FmtArgs) -> Option<FmtIgnoreSet> {
-    if args.no_config {
+pub(super) fn load_fmt_ignore_set(
+    snapshot: &config::LoadedFormatterSnapshot,
+) -> Option<FmtIgnoreSet> {
+    if snapshot.ignores.is_empty() {
         return None;
     }
-    let loaded = config::load_config_entry_ignores_with_source(args.config.as_deref());
-    if loaded.ignores.is_empty() {
-        return None;
-    }
-    let config_dir = loaded
+    let config_dir = snapshot
+        .loaded
         .source_path
         .as_deref()
         .and_then(Path::parent)
         .map(Path::to_path_buf)
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
-    FmtIgnoreSet::new(&loaded.ignores, &config_dir)
+    FmtIgnoreSet::new(&snapshot.ignores, &config_dir)
 }
 
 fn expand_entry_ignore_patterns(

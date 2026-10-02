@@ -53,6 +53,9 @@ export class MuseaVrtRunner {
       workers: normalizeVrtWorkerCount(options.workers),
     };
     this.capture = {
+      animations: options.capture?.animations ?? "disabled",
+      reducedMotion: options.capture?.reducedMotion ?? "no-preference",
+      caret: options.capture?.caret ?? "hide",
       fullPage: options.capture?.fullPage ?? false,
       waitForNetwork: options.capture?.waitForNetwork ?? true,
       settleTime: options.capture?.settleTime ?? 100,
@@ -188,6 +191,7 @@ export class MuseaVrtRunner {
     const context = await this.browser.newContext({
       viewport: { width: viewport.width, height: viewport.height },
       deviceScaleFactor: viewport.deviceScaleFactor ?? 1,
+      reducedMotion: this.capture.reducedMotion,
     });
     const page = await context.newPage();
     return { page, context };

@@ -28,12 +28,13 @@ may point only to an earlier tier:
 | 1          | `vize_davinci`  | `vize_l0`                                       |
 | 1          | `vize_l1`       | `vize_l0`                                       |
 | 2          | `vize_l2`       | `vize_l0`, `vize_davinci`                       |
-| 3          | `vize_l3`       | `vize_l0`, `vize_davinci`                       |
+| 3          | `vize_l3`       | `vize_l0`, `vize_davinci`, `vize_l2`            |
 | 3          | `vize_l1_to_l2` | `vize_l0`, `vize_davinci`, `vize_l1`, `vize_l2` |
 | 4          | `vize_l2_to_l3` | `vize_l0`, `vize_davinci`, `vize_l2`, `vize_l3` |
 
-L0 must never depend on a later tier. Conversion crates are the only current
-crates that join artifact stages.
+L0 must never depend on a later tier. L3's native decision result borrows its
+actual sealed L2 owner through a normal downward dependency. The conversion
+edge re-exports that sole producer; it still owns flat-program lowering.
 
 The resident tier (`vize_resident`, P5-4a) is a consumer above every stage
 tier: it runs the stage functions as salsa queries for long-lived processes

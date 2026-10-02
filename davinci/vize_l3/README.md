@@ -3,6 +3,12 @@
 `vize_l3` is Davinci's L3 reactivity IR. It records backend-oriented UI
 work as flat, id-addressed operations with explicit state and effect edges.
 
+`decision::build_decisions` separately computes conservative native decisions
+in one canonical L2 event walk. Its `NativeAnalysis` retains the actual sealed
+L2 owner, selected policy and read-only tables as one input to L4. Local ids
+from another artifact cannot establish that association. Placement remains
+`Inline`; complete grouping, placement and product selection are unfinished.
+
 `Program::operands` retains value payloads beside the compact graph. Operands
 identify their owning operation, binding target or conditional region, semantic
 role, source span, and value kind. Missing values differ from empty literals;

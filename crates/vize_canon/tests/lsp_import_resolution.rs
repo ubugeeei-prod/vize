@@ -317,8 +317,8 @@ fn hover_contains(hover: &Option<LspHover>, expected: &str) -> bool {
 
 fn resolve_test_tsgo_binary() -> Option<PathBuf> {
     let root = workspace_root();
-    vize_l0::corsa_resolver::resolve_corsa_executable(
-        vize_l0::corsa_resolver::CorsaResolveRequest {
+    vize_carton::corsa_resolver::resolve_corsa_executable(
+        vize_carton::corsa_resolver::CorsaResolveRequest {
             project_root: Some(&root),
             ..Default::default()
         },

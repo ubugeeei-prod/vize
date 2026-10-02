@@ -7,6 +7,31 @@ use std::{
 use vize_l0::{String, ToCompactString};
 
 #[test]
+fn formatting_never_selects_git_metadata_even_when_explicitly_named() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    let source = root.join(".github/App.vue");
+    let metadata = root.join(".git/worktrees/cache/App.vue");
+    for file in [&source, &metadata] {
+        fs::create_dir_all(file.parent().unwrap()).unwrap();
+        fs::write(file, "<template><div/></template>").unwrap();
+    }
+    for input in [
+        root.display().to_string(),
+        root.join("**/*.vue").display().to_string(),
+    ] {
+        assert_eq!(collect_files(&[input], None), vec![source.clone()]);
+    }
+    for input in [
+        metadata.display().to_string(),
+        root.join(".git").display().to_string(),
+        root.join("**/.git/**/*.vue").display().to_string(),
+    ] {
+        assert!(collect_files(&[input], None).is_empty());
+    }
+}
+
+#[test]
 fn collect_files_ignores_supported_extension_directories() {
     let root = unique_case_dir("format-extension-directories");
     let src = root.join("src");

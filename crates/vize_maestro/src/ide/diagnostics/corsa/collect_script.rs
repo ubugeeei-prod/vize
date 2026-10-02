@@ -126,8 +126,8 @@ mod tests {
             .parent()
             .and_then(std::path::Path::parent)
             .unwrap();
-        let Ok(corsa_path) = vize_l0::corsa_resolver::resolve_corsa_executable(
-            vize_l0::corsa_resolver::CorsaResolveRequest {
+        let Ok(corsa_path) = vize_carton::corsa_resolver::resolve_corsa_executable(
+            vize_carton::corsa_resolver::CorsaResolveRequest {
                 project_root: Some(workspace_root),
                 ..Default::default()
             },

@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const modules = import.meta.__vizeTestGlob<{ default: object }>("./*.vue")
+const mode: number = import.meta.__vizeTestEnv.MODE
+</script>
+<template><p>{{ Object.keys(modules).length }} {{ mode }}</p></template>

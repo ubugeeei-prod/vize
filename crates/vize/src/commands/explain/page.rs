@@ -7,8 +7,8 @@
 //! and the compiler say.
 
 use crate::render::{Catalog, Phrase};
+use vize_carton::i18n::Locale;
 use vize_l0::diag::Severity as Claim;
-use vize_l0::i18n::Locale;
 use vize_l0::{String, cstr};
 use vize_patina::{HelpRenderTarget, render_help, rule_docs_path};
 use vize_relief::CompilerError;
@@ -53,7 +53,11 @@ pub(crate) fn page(subject: &Subject, catalog: &LocaleCatalog, color: bool) -> S
         Subject::Compiler(code) => {
             let kind = catalog.format("explain.kind.compiler", &[]);
             heading(&mut out, paint, code.code(), &kind);
-            line(&mut out, paint, &code.localized_message(catalog.locale()));
+            line(
+                &mut out,
+                paint,
+                &code.localized_message_with(&catalog.messages()),
+            );
             out.push('\n');
             field(
                 &mut out,
@@ -79,7 +83,7 @@ pub(crate) fn page(subject: &Subject, catalog: &LocaleCatalog, color: bool) -> S
                     &mut out,
                     paint,
                     catalog,
-                    &code.localized_help(catalog.locale()),
+                    &code.localized_help_with(&catalog.messages()),
                     color,
                 );
             }

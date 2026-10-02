@@ -337,6 +337,8 @@ test("the VS Code real-server suite drives the packaged type-aware scorecard", (
 
   assert.match(expected, /templateTag: \[/);
   assert.match(expected, /componentContractTemplateDefinitions/);
-  assert.match(expected, /_Component usage_/);
+  assert.match(expected, /const ContractChild: VueComponent &/);
+  assert.match(expected, /slots: \{ default\(props: \{ value: string \}\): unknown \};/);
+  assert.doesNotMatch(expected, /Component usage|Passed props/);
   assert.match(expected, /range: \[7, 3, 7, 16\]/);
 });

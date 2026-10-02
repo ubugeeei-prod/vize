@@ -1,4 +1,4 @@
-use super::super::imports_aliases::PathAliasResolver;
+use super::super::super::imports_aliases::PathAliasResolver;
 use super::*;
 use vize_l0::path::canonicalize_non_verbatim;
 

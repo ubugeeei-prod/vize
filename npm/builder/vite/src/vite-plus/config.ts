@@ -43,6 +43,10 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
   const { compiler: compilerOption, typecheck, vize, lint, fmt, extends: _bases, ...rest } = source;
   const { vize: nativeLint, ...oxlint } = lint ?? {};
   const { vize: nativeFmt, ...oxfmt } = fmt ?? {};
+  const formatter = {
+    ...(oxfmt.sortImports === undefined ? {} : { sortImports: oxfmt.sortImports }),
+    ...(typeof nativeFmt === "object" ? nativeFmt : {}),
+  };
   const alias =
     vize && typeof vize === "object" && !Array.isArray(vize)
       ? (vize as VizeSharedConfig).lint
@@ -80,7 +84,7 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
         ...(compiler === false ? {} : { compiler: nativeCompiler(compiler) }),
         ...(typeof typecheck === "object" ? { typeChecker: typecheck } : {}),
         ...(typeof lintConfig === "object" ? { linter: withoutTaskLintOptions(lintConfig) } : {}),
-        ...(typeof nativeFmt === "object" ? { formatter: nativeFmt } : {}),
+        ...(Object.keys(formatter).length ? { formatter } : {}),
       },
       env,
     );

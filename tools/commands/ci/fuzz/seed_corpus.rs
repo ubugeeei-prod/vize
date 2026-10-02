@@ -46,6 +46,7 @@ fn run() -> Result<(), String> {
     let sfc_dir = reset_corpus(&corpus_root, "sfc_parse")?;
     let template_lexer_dir = reset_corpus(&corpus_root, "template_lexer")?;
     let expression_dir = reset_corpus(&corpus_root, "js_ts_expression")?;
+    let program_dir = reset_corpus(&corpus_root, "l1_program")?;
     let css_dir = reset_corpus(&corpus_root, "css_parse")?;
     let template_dir = reset_corpus(&corpus_root, "template_compile")?;
     let l1_lowering_dir = reset_corpus(&corpus_root, "l1_lowering")?;
@@ -76,6 +77,13 @@ fn run() -> Result<(), String> {
     }
     let mut template_count = 0usize;
     let mut expression_count = 0usize;
+    let mut program_count = 0usize;
+    for file in glob_files(&root, &["tests/fuzz/regressions/l1_program/*"])? {
+        let input =
+            fs::read(&file).map_err(|error| format!("cannot read {}: {error}", file.display()))?;
+        write_program_seeds(&program_dir, &input)?;
+        program_count += 1;
+    }
     let mut style_count = 0usize;
     for file in glob_files(
         &root,
@@ -109,6 +117,8 @@ fn run() -> Result<(), String> {
         for capture in script_block.captures_iter(&content) {
             write_seed(&expression_dir, capture[1].as_bytes())?;
             expression_count += 1;
+            write_program_seeds(&program_dir, capture[1].as_bytes())?;
+            program_count += 1;
         }
 
         for capture in style_block.captures_iter(&content) {
@@ -118,9 +128,19 @@ fn run() -> Result<(), String> {
     }
 
     println!(
-        "Seeded {sfc_count} sfc_parse entries, {template_count} template entries (template_lexer/template_compile/l1_lowering/l2_to_l3_lowering), {expression_count} JS/TS expression entries, {style_count} CSS entries, and {folio_count} folio pages from {} fixtures.",
+        "Seeded {sfc_count} sfc_parse entries, {template_count} template entries (template_lexer/template_compile/l1_lowering/l2_to_l3_lowering), {expression_count} JS/TS expression entries, {program_count} native Program sources in eight explicit profiles, {style_count} CSS entries, and {folio_count} folio pages from {} fixtures.",
         vue_files.len() + folio_count
     );
+    Ok(())
+}
+
+fn write_program_seeds(dir: &Path, source: &[u8]) -> Result<(), String> {
+    for selector in 0..8u8 {
+        let mut bytes = Vec::with_capacity(source.len() + 1);
+        bytes.push(selector);
+        bytes.extend_from_slice(source);
+        write_seed(dir, &bytes)?;
+    }
     Ok(())
 }
 

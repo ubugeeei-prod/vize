@@ -2,7 +2,7 @@
 //!
 //! Implementation names and artifact-key v2 use logical `l0` through `l4`.
 //! Pipeline selectors retain their separate `s0` through `s4` mapping;
-//! Emit/l4 does not imply a physical L4 crate.
+//! A listed crate identifies ownership, not implementation completeness.
 
 /// The stage a Davinci diagnostic came from.
 ///
@@ -133,8 +133,8 @@ pub struct ConversionCrate {
 /// L0: the source, arena, compact-storage, and span foundation.
 pub const L0: LayerCrate = LayerCrate {
     id: "l0",
-    crate_alias: "vize_carton",
-    package: "vize_carton",
+    crate_alias: "vize_l0",
+    package: "vize_l0",
     role: "source model and compiler storage foundation",
 };
 
@@ -162,6 +162,14 @@ pub const L3: LayerCrate = LayerCrate {
     role: "reactivity and backend scheduling IR",
 };
 
+/// L4: output emission and source-map writing.
+pub const L4: LayerCrate = LayerCrate {
+    id: "l4",
+    crate_alias: "vize_l4",
+    package: "vize_l4",
+    role: "output emission and source-map writing",
+};
+
 /// L1→L2: Vue lowering from the lossless surface tree into the semantic IR.
 pub const L1_TO_L2: ConversionCrate = ConversionCrate {
     id: "l1_to_l2",
@@ -183,11 +191,11 @@ pub const L2_TO_L3: ConversionCrate = ConversionCrate {
 };
 
 /// Davinci layer crates that exist in the workspace today.
-pub const LAYERS: &[LayerCrate] = &[L0, L1, L2, L3];
+pub const LAYERS: &[LayerCrate] = &[L0, L1, L2, L3, L4];
 
 /// Historical artifact-only view retained for compatibility.
 ///
-/// New code should use [`LAYERS`] when it needs the complete L0/L1/L2/L3 stack.
+/// New code should use [`LAYERS`] when it needs the complete L0 through L4 stack.
 pub const ARTIFACT_STAGES: &[StageCrate] = &[L1, L2, L3];
 
 /// Conversion crates that exist in the workspace today.
@@ -241,7 +249,7 @@ mod tests {
 
     #[test]
     fn stage_aliases_are_the_preferred_implementation_names() {
-        assert_eq!(L0.crate_alias, "vize_carton");
+        assert_eq!(L0.crate_alias, "vize_l0");
         assert_eq!(L1.crate_alias, "vize_l1");
         assert_eq!(L2.crate_alias, "vize_l2");
         assert_eq!(L3.crate_alias, "vize_l3");
@@ -251,7 +259,7 @@ mod tests {
 
     #[test]
     fn package_ids_match_the_current_workspace_spelling() {
-        assert_eq!(L0.package, "vize_carton");
+        assert_eq!(L0.package, "vize_l0");
         assert_eq!(L1.package, "vize_l1");
         assert_eq!(L2.package, "vize_l2");
         assert_eq!(L3.package, "vize_l3");
@@ -260,7 +268,7 @@ mod tests {
 
     #[test]
     fn conversions_cover_each_artifact_stage_edge_once() {
-        assert_eq!(LAYERS.len(), 4);
+        assert_eq!(LAYERS.len(), 5);
         for edge in ARTIFACT_STAGES.windows(2) {
             assert_eq!(
                 CONVERSIONS

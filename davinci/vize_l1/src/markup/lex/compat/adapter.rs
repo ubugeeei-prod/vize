@@ -1,8 +1,8 @@
 //! Compatibility callback bridge for the profile lexer.
 //!
-//! The compiler retains `Tokenizer` until #6880's product gate. This bridge
-//! lets the existing callback contract be checked against `Lexer<P>` without
-//! putting legacy output rules into L1's native sink.
+//! The published tokenizer facade uses this bridge in ordinary builds.
+//! First-scalar entity callbacks, diagnostic vocabulary and live verbatim
+//! polling remain at this boundary; native sinks receive complete values.
 
 use vize_l0::ErrorCode;
 

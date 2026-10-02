@@ -82,10 +82,20 @@ const CASES: Case[] = [
   { trigger: "'", line: `  <div :title='|'></div>`, include: BINDINGS, exclude: DIRECTIVES },
   { trigger: ":", line: `  <div :|></div>`, include: ["class"], exclude: BINDINGS },
   { trigger: "@", line: `  <div @|></div>`, include: ["@click"], exclude: BINDINGS },
-  { trigger: "<", line: `  <|`, include: ["Transition"], exclude: BINDINGS },
+  {
+    trigger: "<",
+    line: `  <|`,
+    include: ["Transition", "div", "span"],
+    exclude: [...BINDINGS, ...DIRECTIVES],
+  },
   { trigger: ".", line: `  <div>{{ count.|}}</div>`, include: [], exclude: DIRECTIVES },
   { trigger: "#", line: `  <Child #|></Child>`, include: ["#"], exclude: BINDINGS },
-  { trigger: "/", line: `  <div></|`, include: DIRECTIVES, exclude: BINDINGS },
+  {
+    trigger: "/",
+    line: `  <div></|`,
+    include: ["div", "span"],
+    exclude: [...BINDINGS, ...DIRECTIVES],
+  },
 ];
 
 function positionAt(text: string, offset: number): { line: number; character: number } {

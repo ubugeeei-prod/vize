@@ -45,7 +45,9 @@ pub(crate) enum State {
     // Comments & CDATA
     BeforeComment,
     CDATASequence,
-    InCommentLike,
+    // Keep Text=1 and InRCDATA=33 so their hot transition can use a shift and
+    // add. The unused historical state at 28 needs no runtime arm.
+    InCommentLike = 29,
 
     // Special tags
     BeforeSpecialS,

@@ -2,6 +2,4 @@
 # `#![expect(clippy::todo, reason = "skeleton: #NNNN")]` modules per crate.
 # Checked by `tools/commands/ci/check-skeleton-todos.rs --check`. Counts only
 # go down; run the tool with `--write` after filling a skeleton module.
-vize_l1 = 4
-vize_l2_to_l3 = 1
-vize_l4 = 7
+vize_l4 = 4

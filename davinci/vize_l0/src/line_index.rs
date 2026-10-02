@@ -11,11 +11,11 @@
 //! units (the #1223 class of bug). Centralizing it here keeps the conversion
 //! correct in one place. See issue #1389.
 
-use crate::lsp::Position;
-
 mod line_breaks;
+mod position;
 mod utf16;
 pub use line_breaks::LineBreaks;
+pub use position::{Position, Range};
 pub use utf16::{utf16_len, utf16_offset};
 
 /// Precomputed byte offsets of every line start in a source string.

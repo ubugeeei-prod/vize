@@ -155,7 +155,7 @@ function assertImportedComponentHover(hoverText: string): void {
   assert.match(hoverText, /props: \{ label: string; count\?: number \};/);
   assert.match(hoverText, /emits: \{ save: \[value: string\] \};/);
   assert.match(hoverText, /slots: \{ default\(props: \{ value: string \}\): unknown \};/);
-  assert.match(hoverText, /model: "modelValue": boolean;/);
+  assert.match(hoverText, /model: \{ "modelValue": boolean \};/);
   assert.doesNotMatch(hoverText, /__vizeComponentMarker|__vizeRawProps|__VizeComponentConstructor/);
 }
 

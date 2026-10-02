@@ -1,12 +1,18 @@
 //! The tokenizer-event stream the tree is built from.
 //!
-//! Construction is two-phase: a [`Recorder`] implements the moved lexer's
-//! [`Callbacks`] and flattens the token events into an arena `Vec` of
+//! Construction is two-phase: a [`Recorder`] implements native
+//! [`Sink`](crate::markup::token::Sink)
+//! and preserved [`Callbacks`], flattening events into an arena `Vec` of
 //! plain [`Event`]s (12 bytes, `Copy`), then `build` walks that slice
 //! with lookahead. The split keeps the tree builder a straight-line
 //! function over data instead of a callback state machine.
 
-use crate::markup::lex::compat::{Callbacks, QuoteType};
+mod native;
+#[cfg(test)]
+mod tests;
+
+use crate::markup::lex::compat::{Callbacks, QuoteType as CompatQuote};
+use crate::markup::token::QuoteType;
 use vize_l0::ErrorCode;
 use vize_l0::Vec;
 
@@ -49,10 +55,11 @@ pub(crate) enum EventKind {
     ProcessingInstruction,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct Event {
     pub kind: EventKind,
-    /// [`QuoteType`] as `u8` for [`EventKind::AttrEnd`]; 0 otherwise.
+    /// Quote type on AttrEnd; resolved verbatim mode on opening-tag ends.
+    /// All other event kinds keep zero. These interpretations never overlap.
     pub aux: u8,
     pub start: u32,
     pub end: u32,
@@ -77,9 +84,17 @@ impl Event {
             _ => QuoteType::NoValue,
         }
     }
+
+    pub(crate) fn is_verbatim_opening(&self) -> bool {
+        debug_assert!(matches!(
+            self.kind,
+            EventKind::OpenTagEnd | EventKind::SelfClosingTag
+        ));
+        self.aux != 0
+    }
 }
 
-/// The `Callbacks` impl: pushes events and errors, decides nothing.
+/// Records authored syntax spans and diagnostics without interpreting them.
 pub(crate) struct Recorder<'a, 'v> {
     pub events: &'v mut Vec<'a, Event>,
     pub errors: &'v mut Vec<'a, SurfaceError>,
@@ -89,6 +104,28 @@ impl Recorder<'_, '_> {
     fn push(&mut self, kind: EventKind, start: usize, end: usize) {
         self.events.push(Event::new(kind, start, end));
     }
+
+    fn attr_end(&mut self, quote: QuoteType, end: usize) {
+        self.events.push(Event {
+            kind: EventKind::AttrEnd,
+            aux: quote as u8,
+            start: end as u32,
+            end: end as u32,
+        });
+    }
+
+    pub(crate) fn opening_end(&mut self, kind: EventKind, end: usize, verbatim: bool) {
+        debug_assert!(matches!(
+            kind,
+            EventKind::OpenTagEnd | EventKind::SelfClosingTag
+        ));
+        self.events.push(Event {
+            kind,
+            aux: u8::from(verbatim),
+            start: end as u32,
+            end: end as u32,
+        });
+    }
 }
 
 impl Callbacks for Recorder<'_, '_> {
@@ -97,7 +134,7 @@ impl Callbacks for Recorder<'_, '_> {
     }
 
     fn on_text_entity(&mut self, _char: char, start: usize, end: usize) {
-        // L1 keeps the raw bytes; the decoded char is L2's concern.
+        // The surface keeps raw bytes; embed construction owns decoding.
         self.push(EventKind::Text, start, end);
     }
 
@@ -129,13 +166,14 @@ impl Callbacks for Recorder<'_, '_> {
         self.push(EventKind::AttrData, start, end);
     }
 
-    fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {
-        self.events.push(Event {
-            kind: EventKind::AttrEnd,
-            aux: quote as u8,
-            start: end as u32,
-            end: end as u32,
-        });
+    fn on_attrib_end(&mut self, quote: CompatQuote, end: usize) {
+        let quote = match quote {
+            CompatQuote::NoValue => QuoteType::NoValue,
+            CompatQuote::Unquoted => QuoteType::Unquoted,
+            CompatQuote::Single => QuoteType::Single,
+            CompatQuote::Double => QuoteType::Double,
+        };
+        self.attr_end(quote, end);
     }
 
     fn on_attrib_name(&mut self, start: usize, end: usize) {

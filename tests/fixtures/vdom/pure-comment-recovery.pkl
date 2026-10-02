@@ -1,0 +1,17 @@
+// Differential compiler corpus for the pinned parser's annotation rewind.
+amends "CompilerFixture.pkl"
+
+mode = "vdom"
+
+cases {
+  new {
+    name = "pure comment rewind keeps later ordinary comment"
+    input = "<div>{{ (/*#__PURE__*/ /* ordinary */ value) }}</div>"
+    options { prefixIdentifiers = true }
+  }
+  new {
+    name = "pure call rewind keeps authored comment ownership"
+    input = "<div>{{ (/*@__PURE__*/ invoke(/* ordinary */)) }}</div>"
+    options { prefixIdentifiers = true }
+  }
+}

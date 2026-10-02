@@ -102,7 +102,10 @@ export async function exerciseAuthoredLspOracle(
     );
     const hoverText = hoverToText(hover);
     for (const expected of binding.hoverContains) {
-      assert.ok(hoverText.includes(expected), `hover for ${binding.symbol} is missing ${expected}`);
+      assert.ok(
+        hoverText.includes(expected),
+        `hover for ${binding.symbol} is missing ${expected}; actual hover: ${JSON.stringify(hoverText)}`,
+      );
     }
 
     const definitionRequest = await timedRequest<unknown>(
@@ -206,7 +209,7 @@ export async function exerciseAuthoredLspOracle(
     assert.equal(
       baselineLabels.length,
       boundary.completionItemCount,
-      `${boundary.importerFile} completion set size drifted`,
+      `${boundary.importerFile} completion set size drifted; actual labels: ${JSON.stringify(baselineLabels)}`,
     );
     assertRankedLabels(baselineLabels, boundary.completionItems, boundary.importerFile);
     const probe = boundary.dependencyEdit.completionLabel;

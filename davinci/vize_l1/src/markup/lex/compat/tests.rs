@@ -103,7 +103,7 @@ fn tokenize(input: &str) -> TestCallbacks {
     let cb = TestCallbacks::default();
     let mut tok = Tokenizer::new(input, cb);
     tok.tokenize();
-    tok.callbacks
+    tok.into_callbacks().expect("owned callbacks")
 }
 
 // ========================================================================
@@ -781,7 +781,7 @@ fn tokenize_triple(input: &str) -> TestCallbacks {
     let mut tok = Tokenizer::new(input, cb);
     tok.set_triple_mustache(true);
     tok.tokenize();
-    tok.callbacks
+    tok.into_callbacks().expect("owned callbacks")
 }
 
 #[cfg(feature = "legacy")]

@@ -764,7 +764,7 @@ function unsafe(): any { return { label: 'unsafe' } }
 #[test]
 fn relative_imports_keep_template_bindings_typed_across_source_directories() {
     use std::path::PathBuf;
-    use vize_l0::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
+    use vize_carton::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
 
     if !corsa_available() {
         return;

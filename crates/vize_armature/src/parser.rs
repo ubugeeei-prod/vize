@@ -21,6 +21,8 @@ mod legacy_tests;
 #[cfg(all(test, feature = "native-lex-parity"))]
 mod native_adapter_tests;
 mod pending_text;
+#[cfg(all(test, feature = "legacy"))]
+mod tokenizer_contract_tests;
 mod whitespace;
 mod whitespace_context;
 

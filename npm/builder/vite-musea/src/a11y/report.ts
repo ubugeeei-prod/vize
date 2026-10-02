@@ -8,6 +8,7 @@
 import type { A11yResult } from "../types/index.js";
 import type { A11ySummary } from "./index.js";
 import path from "node:path";
+import { nodeDetails } from "./node-report.js";
 
 /**
  * Compute a11y summary statistics from results.
@@ -72,16 +73,20 @@ export function generateA11yHtmlReport(results: A11yResult[], summary: A11ySumma
     .join("");
 
   const resultItems = results
-    .filter((r) => r.violations.length > 0)
+    .filter((r) => r.violations.length > 0 || r.incomplete > 0)
     .map((r) => {
       const artName = path.basename(r.artPath, ".art.vue");
-      const violationRows = r.violations
+      const findings = [
+        ...r.violations.map((v) => ({ v, review: false })),
+        ...(r.incompleteResults ?? []).map((v) => ({ v, review: true })),
+      ];
+      const violationRows = findings
         .map(
-          (v) => `
+          ({ v, review }) => `
             <tr>
-              <td><span style="color:${impactColor(v.impact)};font-weight:600;text-transform:uppercase;font-size:0.6875rem">${escapeHtml(v.impact)}</span></td>
+              <td><span style="color:${impactColor(v.impact ?? "unknown")};font-weight:600;text-transform:uppercase;font-size:0.6875rem">${escapeHtml(review ? "needs review" : (v.impact ?? "unknown"))}</span></td>
               <td><code>${escapeHtml(v.id)}</code></td>
-              <td>${escapeHtml(v.description)}</td>
+              <td>${escapeHtml(v.description)}${nodeDetails(v)}</td>
               <td>${v.nodes}</td>
               <td>${v.helpUrl ? `<a href="${escapeHtml(v.helpUrl)}" target="_blank" style="color:#60a5fa">docs</a>` : ""}</td>
             </tr>`,
@@ -93,7 +98,7 @@ export function generateA11yHtmlReport(results: A11yResult[], summary: A11ySumma
           <div class="result-header">
             <div class="result-info">
               <span class="result-name">${escapeHtml(artName)} / ${escapeHtml(r.variantName)}</span>
-              <span class="result-count">${r.violations.length} violation(s)</span>
+              <span class="result-count">${r.violations.length} violation(s), ${r.incomplete} need review</span>
             </div>
           </div>
           <table class="violations-table">
@@ -157,6 +162,8 @@ export function generateA11yHtmlReport(results: A11yResult[], summary: A11ySumma
     .violations-table th { padding: 0.75rem 1rem; text-align: left; color: var(--musea-text-muted); font-weight: 500; font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid var(--musea-border); }
     .violations-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--musea-border); }
     .violations-table code { background: var(--musea-bg-tertiary); padding: 0.125rem 0.375rem; border-radius: 3px; font-size: 0.75rem; }
+    .node-details { margin-top: 0.5rem; }
+    .node-details pre { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 0.5rem; }
     .all-clear { background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.2); border-radius: 8px; padding: 2rem; text-align: center; }
     .all-clear-text { color: #4ade80; font-weight: 600; }
   </style>
@@ -176,7 +183,9 @@ export function generateA11yHtmlReport(results: A11yResult[], summary: A11ySumma
       <div class="stat critical"><div class="stat-value">${summary.erroredVariants}</div><div class="stat-label">Not audited</div></div>
     </div>
     ${
-      summary.totalViolations === 0 && summary.erroredVariants === 0
+      summary.totalViolations === 0 &&
+      summary.erroredVariants === 0 &&
+      !results.some((r) => r.incomplete > 0)
         ? `<div class="all-clear"><div class="all-clear-text">No accessibility violations found across ${summary.totalVariants} variant(s)</div></div>`
         : `<div class="results">${errorItems}${resultItems}</div>`
     }
@@ -200,6 +209,7 @@ export function generateA11yJsonReport(results: A11yResult[]): string {
         violations: r.violations,
         passes: r.passes,
         incomplete: r.incomplete,
+        ...(r.incompleteResults === undefined ? {} : { incompleteResults: r.incompleteResults }),
         ...(r.error === undefined ? {} : { error: r.error }),
       })),
     },

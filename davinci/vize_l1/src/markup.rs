@@ -11,23 +11,33 @@
 //! is a dialect syntax hook ([`directive::DirectiveSyntax`]), like an MLIR
 //! custom assembly format.
 //!
-//! The profile-generic implementation is compiled in L1 unit tests and with
-//! the `native-markup-lex` feature. Default builds retain that skeleton API,
-//! while the surface tree and compiler use the same L1-owned compatibility
-//! tokenizer. Switching products to the generic lexer waits for the compiler
-//! fix-history gate #6880 and parity validation.
-//! The directive hook is still a skeleton.
+//! The profile-generic lexer, entity decoder and compatibility callback
+//! adapter are available in default builds. [`parse_component`] constructs a
+//! native surface tree with checked admission and dialect-owned `v-pre` scope.
+//! The root parse APIs and compiler products retain
+//! their existing parser routes through the published tokenizer facade;
+//! that facade executes this same lexer while preserving callback policy.
+//! Replacing product parser routes still requires fix-history and parity gates.
+//! The Vue dialect provides allocation-free directive decomposition with checked
+//! source admission; typed Shape dispatch remains unfinished.
 //! Design: <https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929>.
 
 pub mod directive;
 pub mod entity;
 pub mod grammar;
 pub mod lex;
+pub mod parse;
 pub mod profile;
 pub mod token;
 
-pub use directive::{ArgSyntax, DirectiveName, DirectivePrefix, DirectiveSyntax, VueDirectives};
+pub use directive::{
+    ArgSyntax, DirectiveName, DirectiveNameError, DirectivePrefix, DirectiveSyntax, VueDirectives,
+};
 pub use grammar::{MarkupGrammar, Vue};
 pub use lex::{Delimiters, LexOptions, Lexer};
+pub use parse::{
+    ComponentParse, ComponentSourceError, DirectiveAdmission, parse_component,
+    parse_component_with_authored, parse_component_with_options,
+};
 pub use profile::{Component, Document, Profile, ProfileKind};
 pub use token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};

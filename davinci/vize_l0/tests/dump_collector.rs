@@ -5,12 +5,13 @@
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;
+use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
 use vize_l0::dump::collector::Collector;
 use vize_l0::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, TimingObserver,
     run_pipeline,
 };
-use vize_l0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
+use vize_l0::profiler::global_profiler;
 
 const BUDGET: &str =
     "[budget-observer]\nwalks=2\npasses=3\nanalyses=0\npipelines=1\nfailures=0\n\n";
@@ -73,11 +74,14 @@ fn timing_json_satisfies_the_p0_11_schema() {
     assert_eq!(observers.0.recorded_walks, 1);
     assert_eq!((observers.1.walks, observers.1.passes), (1, 2));
 
-    let export = profiler.export_report(&ProfileExportOptions {
-        command: "typed-pass-test",
-        allocation: None,
-        budget: ProfileExportBudget::default(),
-    });
+    let export = export_report(
+        profiler,
+        &ProfileExportOptions {
+            command: "typed-pass-test",
+            allocation: None,
+            budget: ProfileExportBudget::default(),
+        },
+    );
     let json: serde_json::Value =
         serde_json::from_str(export.to_json().as_str()).expect("export is valid JSON");
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))

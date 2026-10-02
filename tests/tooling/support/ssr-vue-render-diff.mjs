@@ -21,6 +21,13 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { Window } from "happy-dom";
+
+// The optional checkbox oracle mounts official client output. Install the DOM
+// before loading Vue because runtime-dom captures document at module load.
+const window = new Window();
+for (const key of ["window", "document", "Element", "HTMLElement", "SVGElement", "Node"])
+  globalThis[key] = key === "window" ? window : window[key];
 
 const oracle =
   process.env.VIZE_SSR_VUE_ORACLE ??
@@ -43,7 +50,7 @@ const failures = [];
 // imports bound to the oracle's single Vue instance (a `data:` module cannot
 // resolve bare specifiers, so they read the instance from `globalThis`).
 globalThis.__vizeSsrOracle = { vue, server: serverRenderer };
-async function load(code) {
+async function load(code, functionName = "ssrRender") {
   const body = code.replace(
     /import \{([^}]*)\} from "(vue|@vue\/server-renderer|vue\/server-renderer)"\n?/g,
     (_, names, source) => {
@@ -52,9 +59,11 @@ async function load(code) {
     },
   );
   // Upstream exports `ssrRender`; vize's module declares it without `export`.
-  const source = /export function ssrRender/.test(body) ? body : `${body}\nexport { ssrRender };`;
+  const source = body.includes(`export function ${functionName}`)
+    ? body
+    : `${body}\nexport { ${functionName} };`;
   const module = await import(`data:text/javascript,${encodeURIComponent(source)}`);
-  return module.ssrRender;
+  return module[functionName];
 }
 
 // Directives exercising every `getSSRProps` channel the compilers route.
@@ -127,6 +136,44 @@ async function render(code, fixture) {
   }
 }
 
+function withoutChecked(html) {
+  const fragment = window.document.createElement("template");
+  fragment.innerHTML = html;
+  assert.equal(fragment.content.querySelectorAll("input").length, 1);
+  fragment.content.querySelector("input").removeAttribute("checked");
+  return normalize(fragment.innerHTML);
+}
+
+function inputChecked(html) {
+  const fragment = window.document.createElement("template");
+  fragment.innerHTML = html;
+  assert.equal(fragment.content.querySelectorAll("input").length, 1);
+  return fragment.content.querySelector("input").checked;
+}
+
+async function clientChecked(fixture) {
+  const compiled = compileTemplate({
+    source: fixture.template,
+    filename: `${fixture.name}.vue`,
+    id: fixture.name,
+  });
+  assert.deepEqual(compiled.errors, [], "client checkbox oracle compiles");
+  const host = window.document.createElement("div");
+  window.document.body.append(host);
+  const app = vue.createApp({
+    render: await load(compiled.code, "render"),
+    data: () => fixture.data,
+  });
+  try {
+    app.mount(host);
+    await vue.nextTick();
+    return host.querySelector("input").checked;
+  } finally {
+    app.unmount();
+    host.remove();
+  }
+}
+
 for (const fixture of cases) {
   const upstream = compileTemplate({
     source: fixture.template,
@@ -146,17 +193,33 @@ for (const fixture of cases) {
   } else {
     result.vue = await render(upstream.code, fixture);
     result.vize = await render(fixture.vize, fixture);
-    result.legacy = await render(fixture.legacy, fixture);
+    if (fixture.observeInput && result.vize.html !== undefined)
+      result.vize.inputChecked = inputChecked(result.vize.html);
+    if (fixture.compareCheckedWithClient) result.clientChecked = await clientChecked(fixture);
+    if (fixture.legacy !== undefined) result.legacy = await render(fixture.legacy, fixture);
   }
   process.stdout.write(`${JSON.stringify(result)}\n`);
   const upstreamHtml = result.vue?.html;
-  const aligned = upstreamHtml !== undefined && result.vize?.html === upstreamHtml;
+  // Vue 3.5's merged input-model helper ignores true-value. Permit only the
+  // checked-attribute correction proven by its official client renderer;
+  // every other attribute/content must still match the SSR oracle.
+  const clientAligned =
+    fixture.compareCheckedWithClient &&
+    result.vize?.html !== undefined &&
+    result.vize.inputChecked === result.clientChecked &&
+    upstreamHtml !== undefined &&
+    withoutChecked(result.vize.html) === withoutChecked(upstreamHtml);
+  const aligned =
+    upstreamHtml !== undefined && (result.vize?.html === upstreamHtml || clientAligned);
   const legacyWrong =
+    fixture.legacy === undefined ||
     fixture.expectLegacyMismatch === false ||
     result.legacy?.error !== undefined ||
     result.legacy?.html !== upstreamHtml;
   if (!aligned || !legacyWrong) failures.push(fixture.name);
 }
+
+await window.happyDOM.close();
 
 if (check && failures.length) {
   process.stderr.write(`SSR render differential failed for: ${failures.join(", ")}\n`);

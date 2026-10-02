@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse as parseToml } from "@iarna/toml";
+import { withoutHostRuntimeReferences } from "./davinci-host-imports.ts";
 import { readMetadata as readCargoMetadata } from "../../../tools/support/compat/davinci/level-dependencies.mjs";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -13,6 +14,7 @@ export type Dependency = {
   rename: string | null;
   kind: "dev" | "build" | null;
   optional: boolean;
+  target?: string | null;
   req: string;
 };
 
@@ -105,8 +107,9 @@ export function assertL0AliasConsumer(options: {
   label: string;
   directory: string;
   filter?: (fullPath: string) => boolean;
+  hostRuntime?: boolean;
 }) {
-  const { packageName, label, directory, filter = () => true } = options;
+  const { packageName, label, directory, filter = () => true, hostRuntime = false } = options;
   const dependencies = workspacePackage(metadata, packageName).dependencies;
   assert.ok(
     dependencies.some(
@@ -115,17 +118,29 @@ export function assertL0AliasConsumer(options: {
     ),
     `${packageName} must import L0 storage through vize_l0`,
   );
-  assert.ok(
-    dependencies.every((dependency) => dependency.name !== "vize_carton"),
-    `${packageName} must not depend on vize_carton directly`,
-  );
+  if (hostRuntime) {
+    assert.ok(
+      dependencies.some(
+        (dependency) => dependency.kind === null && dependency.name === "vize_carton",
+      ),
+      `${packageName} must declare its legacy host runtime owner`,
+    );
+  } else {
+    assert.ok(
+      dependencies.every((dependency) => dependency.name !== "vize_carton"),
+      `${packageName} must not depend on vize_carton directly`,
+    );
+  }
 
   const offenders = [];
   let aliasImports = 0;
   for (const fullPath of walkRustFiles(directory)) {
     if (!filter(fullPath)) continue;
     const source = fs.readFileSync(fullPath, "utf8");
-    if (/\bvize_carton::|use vize_carton\b/u.test(source)) {
+    const storageSource = hostRuntime
+      ? withoutHostRuntimeReferences(source, path.relative(repoRoot, fullPath))
+      : source;
+    if (/\bvize_carton::|use vize_carton\b/u.test(storageSource)) {
       offenders.push(path.relative(repoRoot, fullPath));
     }
     if (/\bvize_l0::|use vize_l0\b/u.test(source)) {

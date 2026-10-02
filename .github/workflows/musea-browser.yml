@@ -1,0 +1,42 @@
+name: Musea accessibility and capture
+on:
+  pull_request:
+    branches: [main]
+    paths: ["npm/builder/vite-musea/**", ".github/workflows/musea-browser.yml"]
+  merge_group:
+    types: [checks_requested]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: musea-browser-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  musea-browser:
+    name: Musea real Chromium contracts
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install Musea test dependencies
+        run: vp install --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Install Chromium and its system dependencies
+        run: vize-ci-apt-retry vp exec --filter './npm/builder/vite-musea' -- playwright install --with-deps chromium
+      - name: Verify real accessibility and deterministic screenshots
+        working-directory: npm/builder/vite-musea
+        env:
+          VIZE_MUSEA_BROWSER_TESTS: "1"
+        run: vp exec tsx --test src/a11y/browser-contracts.test.ts src/a11y/node-report.test.ts

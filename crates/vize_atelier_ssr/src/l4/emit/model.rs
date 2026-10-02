@@ -3,13 +3,14 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{String, ToCompactString, cstr};
-use vize_l1_to_l2::TransformContent;
-use vize_l2::op as l2;
+use vize_l1_to_l2::{TransformContent, decode_template_entities};
+use vize_l2::op::{self as l2, DynamicName};
 
 use super::attrs::{Attached, admit_value, bound_value, static_value};
 use super::{Emitter, Result};
 use crate::codegen::element::VNodePropEntry;
 use crate::codegen::element::props::{component_prop_entry, quoted_js_string};
+use crate::l4::string_plan::SsrSegmentSource as Source;
 
 /// `v-model` reads the plan emitter can own.
 ///
@@ -50,6 +51,48 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             .map(|value| self.expr(value, TransformContent::Decoded))
             .transpose()
     }
+
+    fn model_attr_value(&self, attached: &Attached<'_, '_>, name: &str) -> Result<Option<String>> {
+        for segment in attached {
+            match segment.source {
+                Source::Attribute(attr) if attr.name == name => {
+                    if let Some(value) = attr.value {
+                        return Ok(Some(quoted_js_string(&decode_template_entities(value))));
+                    }
+                }
+                Source::Binding(l2::BindingOp::Bind(bind)) => {
+                    if matches!(bind.name, Some(DynamicName::Static(bound)) if bound == name)
+                        && let Some(value) = &bind.value
+                    {
+                        return self.expr(value, TransformContent::Decoded).map(Some);
+                    }
+                }
+                _ => {}
+            }
+        }
+        Ok(None)
+    }
+
+    fn checkbox_model_checked(&mut self, attached: &Attached<'_, '_>, exp: &str) -> Result<String> {
+        if let Some(value) = self.model_attr_value(attached, "true-value")? {
+            self.ctx.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
+            self.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+            let input_value = self
+                .model_attr_value(attached, "value")?
+                .unwrap_or_else(|| "null".to_compact_string());
+            Ok(cstr!(
+                "Array.isArray({exp}) ? _ssrLooseContain({exp}, {input_value}) : _ssrLooseEqual({exp}, {value})"
+            ))
+        } else {
+            self.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+            let value = self
+                .model_attr_value(attached, "value")?
+                .unwrap_or_else(|| "null".to_compact_string());
+            Ok(cstr!(
+                "Array.isArray({exp}) ? _ssrLooseContain({exp}, {value}) : {exp}"
+            ))
+        }
+    }
 }
 
 /// `process_v_model_on_element` at the directive's authored position.
@@ -67,24 +110,27 @@ pub(super) fn emit_inline(
         "input" => {
             if let Some(type_exp) = em.dynamic_type(attached)? {
                 em.ctx.use_ssr_helper(RuntimeHelper::SsrRenderDynamicModel);
+                let value = em
+                    .model_attr_value(attached, "value")?
+                    .unwrap_or_else(|| "null".to_compact_string());
                 em.ctx.push_string_part_dynamic(&cstr!(
-                    "_ssrRenderDynamicModel({type_exp}, {exp}, null)"
+                    "_ssrRenderDynamicModel({type_exp}, {exp}, {value})"
                 ));
                 return Ok(());
             }
             match static_value(attached, "type").as_deref() {
                 Some("checkbox") => {
                     em.ctx.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
-                    em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+                    let checked = em.checkbox_model_checked(attached, &exp)?;
                     em.ctx.push_string_part_dynamic(&cstr!(
-                        "(_ssrIncludeBooleanAttr(Array.isArray({exp}) ? _ssrLooseContain({exp}, null) : {exp})) ? \" checked\" : \"\""
+                        "(_ssrIncludeBooleanAttr({checked})) ? \" checked\" : \"\""
                     ));
                 }
                 Some("radio") => {
                     em.ctx.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
                     em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
-                    let value = static_value(attached, "value")
-                        .map(|value| quoted_js_string(&value))
+                    let value = em
+                        .model_attr_value(attached, "value")?
                         .unwrap_or_else(|| "null".to_compact_string());
                     em.ctx.push_string_part_dynamic(&cstr!(
                         "(_ssrIncludeBooleanAttr(_ssrLooseEqual({exp}, {value}))) ? \" checked\" : \"\""
@@ -126,17 +172,17 @@ pub(super) fn collect_root(
     }
     match static_value(attached, "type").as_deref() {
         Some("checkbox") => {
-            em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
+            let checked = em.checkbox_model_checked(attached, &exp)?;
             entries.push(component_prop_entry(
                 "checked",
-                &cstr!("(Array.isArray({exp}) ? _ssrLooseContain({exp}, null) : {exp})"),
+                &cstr!("({checked})"),
                 false,
             ));
         }
         Some("radio") => {
             em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
-            let value = static_value(attached, "value")
-                .map(|value| quoted_js_string(&value))
+            let value = em
+                .model_attr_value(attached, "value")?
                 .unwrap_or_else(|| "null".to_compact_string());
             entries.push(component_prop_entry(
                 "checked",
@@ -160,13 +206,9 @@ pub(super) fn emit_option_selected(
     em.ctx.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
     em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseContain);
     em.ctx.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
-    let value = match static_value(attached, "value") {
-        Some(value) => quoted_js_string(&value),
-        None => match bound_value(attached, "value") {
-            Some(value) => em.expr(value, TransformContent::Decoded)?,
-            None => "null".to_compact_string(),
-        },
-    };
+    let value = em
+        .model_attr_value(attached, "value")?
+        .unwrap_or_else(|| "null".to_compact_string());
     em.ctx.push_string_part_dynamic(&cstr!(
         "((_ssrIncludeBooleanAttr(Array.isArray({model}) ? _ssrLooseContain({model}, {value}) : _ssrLooseEqual({model}, {value}))) ? \" selected\" : \"\")"
     ));

@@ -7,9 +7,8 @@ use super::{
 };
 use serde_json::{Value, json};
 use std::hint::black_box;
-use vize_l0::profiler::{
-    ProfileExportOptions, allocation_snapshot, global_profiler, reset_allocation_counters,
-};
+use vize_carton::profile_export::{ProfileExportOptions, export_report};
+use vize_l0::profiler::{allocation_snapshot, global_profiler, reset_allocation_counters};
 
 pub(super) fn profile(inputs: &[&Input], shape: Shape, force_retained: bool) -> Value {
     let profiler = global_profiler();
@@ -27,11 +26,14 @@ pub(super) fn profile(inputs: &[&Input], shape: Shape, force_retained: bool) -> 
         batch();
     }
     profiler.disable();
-    let report = profiler.export_report(&ProfileExportOptions {
-        command: "davinci-production-perf-attribution",
-        allocation: cfg!(feature = "davinci-production-profile").then(allocation_snapshot),
-        budget: Default::default(),
-    });
+    let report = export_report(
+        profiler,
+        &ProfileExportOptions {
+            command: "davinci-production-perf-attribution",
+            allocation: cfg!(feature = "davinci-production-profile").then(allocation_snapshot),
+            budget: Default::default(),
+        },
+    );
     profiler.clear();
     json!(report)
 }

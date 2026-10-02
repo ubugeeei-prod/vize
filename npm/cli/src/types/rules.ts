@@ -145,6 +145,7 @@ export const LINT_RULE_NAMES = [
   "type/no-unsafe-template-binding",
   "type/require-typed-emits",
   "type/require-typed-props",
+  "type/strict-boolean-expressions",
   "vapor/no-inline-template",
   "vapor/no-vue-lifecycle-events",
   "vapor/prefer-static-class",

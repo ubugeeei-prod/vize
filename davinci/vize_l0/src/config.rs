@@ -1,43 +1,25 @@
-//! Shared Vize configuration loading.
+//! In-memory Vize configuration values and projections.
 
-mod loader;
-#[cfg(feature = "lint-glob")]
-pub mod matcher;
+mod document;
 mod model;
 mod normalize;
-mod project;
 pub use crate::dialect::VueDialect;
-pub use loader::{
-    LoadedConfig, LoadedConfigEntryFiles, LoadedConfigEntryIgnores,
-    LoadedConfigExperimentalVueFlags, LoadedConfigWithFeatures, LoadedLibConfig, LoadedLspConfig,
-    load_compiler_custom_elements, load_compiler_host_compiler, load_compiler_jsx_compat,
-    load_compiler_jsx_mode, load_compiler_template_syntax, load_compiler_vapor,
-    load_compiler_vue_version, load_config,
-    load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source,
-    load_config_and_linter_plan_with_lint_features_and_source,
-    load_config_and_linter_plan_with_rule_options_and_lint_features_and_source,
-    load_config_and_linter_with_features_and_source,
-    load_config_and_linter_with_lint_features_and_source, load_config_and_linter_with_source,
-    load_config_entry_files_with_source, load_config_entry_ignores_with_source,
-    load_config_experimental_vue_flags_with_source, load_config_lint_rule_options,
-    load_config_with_features_and_source, load_config_with_source,
-    load_language_server_unstable_flags, load_lib_config_with_source, load_linter_config,
-    load_linter_rule_options, load_lsp_config_snapshot, validate_explicit_config_path,
-};
+pub use document::ConfigDocument;
 pub use model::{
     ArrowParens, AttributeSortOrder, ComponentNameInTemplateCasingOptions, ConfigEntryFiles,
     ConfigEntryIgnore, ConfigExperimentalVueFlags, ConfigFeatureFlags, ConfigLintRuleOptions,
     CustomEventNameCasing, CustomEventNameCasingOptions, EndOfLine, FormatterConfig,
     GlobalTypeDeclaration, GlobalTypesConfig, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions,
-    HtmlSelfClosingStyle, HyphenationStyle, JsxCompat, JsxMode, LanguageServerConfig,
-    LanguageServerUnstableFlags, LibConfig, LibRegistryConfig, LintRuleOptions, LintRuleSeverity,
-    LinterConfig, LinterConfigEntry, LinterConfigPlan, LinterConfigPlanWithConfigRuleOptions,
-    LinterConfigPlanWithRuleOptions, LinterFeatureFlags, LspConfig, MuseaDesignToken,
-    MuseaPreferDesignTokensOptions, NoMutatingPropsOptions, NoRestrictedGlobalsOptions,
-    NoRestrictedMembersOptions, ParseVueVersionError, QuoteProps, ResolvedLinterConfig,
+    HtmlSelfClosingStyle, HyphenationStyle, ImportSortCustomGroup, ImportSortGroup, JsxCompat,
+    JsxMode, LanguageServerConfig, LanguageServerUnstableFlags, LibConfig, LibRegistryConfig,
+    LintRuleOptions, LintRuleSeverity, LinterConfig, LinterConfigEntry, LinterConfigPlan,
+    LinterConfigPlanWithConfigRuleOptions, LinterConfigPlanWithRuleOptions, LinterExecutionOptions,
+    LinterFeatureFlags, LspConfig, MuseaDesignToken, MuseaPreferDesignTokensOptions,
+    NoMutatingPropsOptions, NoRestrictedGlobalsOptions, NoRestrictedMembersOptions,
+    ParseVueVersionError, QuoteProps, ResolvedLinterConfig,
     ResolvedLinterConfigWithConfigRuleOptions, RestrictedGlobal, RestrictedMember,
-    SfcElementOrderGroup, SfcElementOrderOptions, TemplateComponentNameCasing, TrailingComma,
-    TypeCheckerConfig, VizeConfig, VueVersion,
+    SfcElementOrderGroup, SfcElementOrderOptions, SortImportsConfig, SortImportsSetting,
+    StrictBooleanExpressionsOptions, TemplateComponentNameCasing, TrailingComma, TypeCheckerConfig,
+    VizeConfig, VueVersion,
 };
 pub use normalize::normalize_public_config_value;
-pub use project::ProjectModel;

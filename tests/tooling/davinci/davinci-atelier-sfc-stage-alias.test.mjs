@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { parse as parseToml } from "@iarna/toml";
 
 import { scanConsumerMigrationSurfaces } from "../../../tools/support/compat/davinci/lib/consumer-migration-scan.mjs";
 
@@ -34,6 +35,16 @@ const sfcPreferredL0Rows = [
   ["crates/vize_atelier_sfc/tests/workspace_prop_types.rs", "test", 2],
 ];
 
+function assertPreferredDependencies(cargoToml) {
+  const manifest = parseToml(cargoToml);
+  assert.deepEqual(manifest.dependencies.vize_l0, { workspace: true });
+  assert.deepEqual(manifest["dev-dependencies"].vize_carton, { workspace: true });
+  for (const scope of [manifest, ...Object.values(manifest.target ?? {})])
+    for (const kind of ["dependencies", "build-dependencies"])
+      for (const [key, value] of Object.entries(scope[kind] ?? {}))
+        assert.ok(key !== "vize_carton" && value?.package !== "vize_carton");
+}
+
 function compiler() {
   const scan = scanConsumerMigrationSurfaces();
   const consumer = scan.consumers.find((candidate) => candidate.id === "compiler");
@@ -47,8 +58,26 @@ void test("Atelier SFC declares the L0 dependency through the preferred name", (
     "utf8",
   );
 
-  assert.match(cargoToml, /^vize_l0\.workspace = true$/m);
-  assert.doesNotMatch(cargoToml, /^vize_carton\.workspace = true$/m);
+  assertPreferredDependencies(cargoToml);
+});
+
+void test("Atelier SFC permits the profiler example dev edge while rejecting normal and build Carton edges", () => {
+  const cargoToml = fs.readFileSync(
+    path.join(repoRoot, "crates", "vize_atelier_sfc", "Cargo.toml"),
+    "utf8",
+  );
+  for (const declaration of [
+    "[dependencies]\nvize_carton.workspace = true\n",
+    '[build-dependencies]\nprofile_host = { package = "vize_carton", version = "*" }\n',
+    '[target.\'cfg(unix)\'.dependencies]\n"vize_carton"."workspace" = true\n',
+    '[target.\'cfg(unix)\'.build-dependencies]\nprofile_host = { package = "vize_carton", version = "*", optional = true }\n',
+  ]) {
+    const section = declaration.slice(0, declaration.indexOf("\n") + 1);
+    const changed = cargoToml.includes(section)
+      ? cargoToml.replace(section, declaration)
+      : cargoToml + "\n" + declaration;
+    assert.throws(() => assertPreferredDependencies(changed), { code: "ERR_ASSERTION" });
+  }
 });
 
 void test("Atelier SFC selected compiler and integration test slices import L0 through the preferred name", () => {

@@ -57,6 +57,7 @@ jobs:
             sfc_parse,
             template_lexer,
             js_ts_expression,
+            l1_program,
             css_parse,
             template_compile,
             l1_lowering,

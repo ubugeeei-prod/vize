@@ -46,6 +46,7 @@ use session::collect_virtual_file_uris;
 pub struct CorsaExecutor {
     /// Path to the resolved Corsa executable.
     corsa_path: PathBuf,
+    checker_count: Option<usize>,
     incremental_session: Mutex<IncrementalSessionState>,
 }
 
@@ -67,6 +68,7 @@ impl CorsaExecutor {
         match resolve_corsa_executable(request) {
             Ok(corsa_path) => Ok(Self {
                 corsa_path,
+                checker_count: None,
                 incremental_session: Mutex::new(IncrementalSessionState::default()),
             }),
             Err(CorsaResolveError::ExplicitNotFound { path, .. }) => {
@@ -74,6 +76,15 @@ impl CorsaExecutor {
             }
             Err(CorsaResolveError::NotFound) => Err(CorsaNotFoundError::new(project_root)),
         }
+    }
+
+    /// Override the deterministic worker count for CLI checks without process-global mutation.
+    pub fn set_checker_count(&mut self, count: Option<usize>) {
+        self.checker_count = count.filter(|count| *count > 0);
+    }
+
+    fn checkers(&self) -> usize {
+        self.checker_count.unwrap_or_else(cli::checker_count)
     }
 
     pub fn corsa_path(&self) -> &Path {
@@ -123,11 +134,11 @@ impl CorsaExecutor {
         project: &VirtualProject,
         servers: Option<usize>,
     ) -> CorsaResult<TypeCheckResult> {
-        let servers = servers.unwrap_or_else(|| auto_server_count(project));
+        let servers = servers.unwrap_or_else(|| auto_server_count(project, self.checkers()));
         if servers > 1 {
             match profile!(
                 "canon.corsa.cli",
-                check_with_cli_sharded(&self.corsa_path, project, servers)
+                check_with_cli_sharded(&self.corsa_path, project, servers, self.checkers())
             ) {
                 Ok(result) => return Ok(result),
                 Err(cli_error) => {
@@ -138,7 +149,10 @@ impl CorsaExecutor {
             }
         }
 
-        match profile!("canon.corsa.cli", check_with_cli(&self.corsa_path, project)) {
+        match profile!(
+            "canon.corsa.cli",
+            check_with_cli(&self.corsa_path, project, self.checkers())
+        ) {
             Ok(result) => return Ok(result),
             Err(cli_error) => {
                 // Fall through to the project-session API. This keeps the batch

@@ -12,11 +12,8 @@ use std::{
     path::{Path, PathBuf},
     sync::atomic::{AtomicU64, Ordering},
 };
-use vize_l0::{
-    String, ToCompactString,
-    corsa_resolver::{CORSA_EXECUTABLE_NAMES, CorsaResolveError, CorsaResolveRequest},
-    cstr,
-};
+use vize_carton::corsa_resolver::{CORSA_EXECUTABLE_NAMES, CorsaResolveError, CorsaResolveRequest};
+use vize_l0::{String, ToCompactString, cstr};
 
 const SESSION_DIRECTORY_PREFIX: &str = "session-";
 pub(super) const TSCONFIG_FILE_NAME: &str = "tsconfig.json";
@@ -145,7 +142,7 @@ mod tests {
             .join("@typescript")
             .join(&*cstr!(
                 "native-preview-{}",
-                vize_l0::corsa_resolver::platform_suffix()
+                vize_carton::corsa_resolver::platform_suffix()
             ))
             .join("lib")
             .join("tsgo");

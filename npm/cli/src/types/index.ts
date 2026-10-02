@@ -11,6 +11,8 @@ export type {
   LinterConfig,
   TypeCheckerConfig,
   FormatterConfig,
+  SortImportsConfig,
+  ImportSortCustomGroup,
   LanguageServerConfig,
   MuseaVrtConfig,
   MuseaA11yConfig,

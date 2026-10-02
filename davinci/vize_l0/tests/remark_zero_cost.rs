@@ -64,7 +64,42 @@ fn run<O: PassObserver>(observer: &mut O) {
     .expect("no step fails");
 }
 
-fn main() {
+const CASE: &str = "remarks_preserve_zero_cost_and_the_positive_control";
+
+fn main() -> Result<(), &'static str> {
+    let mut args = std::env::args().skip(1);
+    let (mut list, mut ignored, mut exact) = (false, false, false);
+    let mut filter = None;
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--list" => list = true,
+            "--ignored" => ignored = true,
+            "--exact" => exact = true,
+            "--nocapture" => {}
+            "--format" if args.next().as_deref() == Some("terse") => {}
+            value if !value.starts_with('-') && filter.is_none() => filter = Some(arg),
+            _ => return Err("unsupported harness argument"),
+        }
+    }
+    let selected = filter.as_ref().is_none_or(|filter| {
+        if exact {
+            filter == CASE
+        } else {
+            CASE.contains(filter)
+        }
+    });
+    if ignored || !selected {
+        return Ok(());
+    }
+    if list {
+        println!("{CASE}: test");
+        return Ok(());
+    }
+    remarks_preserve_zero_cost_and_the_positive_control();
+    Ok(())
+}
+
+fn remarks_preserve_zero_cost_and_the_positive_control() {
     mark_installed();
 
     let detached = measure(|| run(&mut NoObserver)).expect("counting allocator installed");

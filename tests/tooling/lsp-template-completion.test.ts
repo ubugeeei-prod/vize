@@ -208,7 +208,7 @@ const count = ref(0)
       assert.ok(!repairedLabels.includes("disk-only"), repairedLabels.join(", "));
     });
 
-    await t.test("after '<' surfaces built-in components and directive snippets", async () => {
+    await t.test("after '<' surfaces built-in components and native tag names", async () => {
       const offset = ltSource.indexOf("  <") + "  <".length;
       const response = await session.request("textDocument/completion", {
         textDocument: { uri: ltUri },
@@ -218,19 +218,26 @@ const count = ref(0)
       const labels = completionLabels(
         response as Array<{ label: string }> | { items?: Array<{ label: string }> } | null,
       );
-      for (const builtin of [
-        "Transition",
-        "Teleport",
-        "Suspense",
+      const expected = [
         "KeepAlive",
+        "Suspense",
+        "Teleport",
+        "Transition",
+        "TransitionGroup",
         "component",
+        "div",
         "slot",
-        "v-if",
-      ]) {
-        assert.ok(labels.includes(builtin), `missing ${builtin}; got ${labels.join(", ")}`);
-      }
-      // No <script>/imports here, so no user components should be offered.
-      assert.ok(!labels.includes("Child"), labels.join(", "));
+        "span",
+        "svg",
+      ];
+      const required = new Set(expected);
+      assert.deepEqual(labels.filter((label) => required.has(label)).sort(), expected);
+      // Tag-name positions accept names, while directives belong to attributes.
+      const excluded = new Set(["Child", "v-if", "v-for"]);
+      assert.deepEqual(
+        labels.filter((label) => excluded.has(label)),
+        [],
+      );
     });
 
     await t.test("inside an HTML comment returns only the @vize: directive set", async () => {

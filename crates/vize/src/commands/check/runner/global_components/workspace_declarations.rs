@@ -95,6 +95,9 @@ fn collect_explicit_template_component_names(files: &[PathBuf]) -> FxHashSet<Str
 }
 
 fn should_visit_global_component_declaration_entry(entry: &DirEntry) -> bool {
+    if vize_l0::path::is_git_metadata_path(entry.path()) {
+        return false;
+    }
     if entry.depth() == 0 || !entry.file_type().is_some_and(|kind| kind.is_dir()) {
         return true;
     }

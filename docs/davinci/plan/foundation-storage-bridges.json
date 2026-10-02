@@ -3,7 +3,6 @@
   "issues": [
     "davinci/vize_l0/src/allocator.rs: forbidden std storage path: std::vec::Vec",
     "davinci/vize_l0/src/allocator/tests.rs: forbidden std storage path: std::vec::Vec::new",
-    "davinci/vize_l0/src/config/loader.rs: forbidden std storage path: std::string::String",
     "davinci/vize_l0/src/config/model/global_types.rs: forbidden std storage import: std::collections::BTreeMap",
     "davinci/vize_l0/src/config/model/global_types.rs: forbidden std storage path: BTreeMap",
     "davinci/vize_l0/src/config/model/global_types.rs: forbidden std storage path: BTreeMap",

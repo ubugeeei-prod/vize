@@ -1,12 +1,8 @@
-//! Dialect syntax hooks for directive attribute names.
+//! Generic contracts for dialect-provided directive attribute-name syntax.
 //!
-//! The generic markup lexer reads structure only. How an attribute name
-//! decomposes into a directive (`v-on:click.stop`, `@click`, `#default`,
-//! `:[dyn]`) is a hook the dialect provides, the role MLIR custom assembly
-//! formats play. Results are spans into the source, so decomposition
-//! allocates nothing.
-
-#![expect(clippy::todo, reason = "skeleton: #6836")]
+//! Results borrow source coordinates rather than copying attribute text;
+//! decomposition allocates nothing.
+//! Concrete syntax policy belongs to the dialect modules.
 
 use vize_l0::Span;
 
@@ -25,41 +21,47 @@ pub enum DirectivePrefix {
     Slot,
 }
 
-/// A directive argument.
+/// A directive argument, preserving recovered incomplete input too.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ArgSyntax {
-    /// `:title`: the argument bytes.
+    /// The static argument bytes.
     Static(Span),
-    /// `:[key]`: the bytes between the brackets, later an expression embed.
+    /// The bytes between brackets, or the recovered bytes after an unclosed `[`.
     Dynamic(Span),
 }
 
-/// A decomposed directive attribute name. Spans are absolute source offsets.
+/// A decomposed directive attribute name. All spans are absolute UTF-8 offsets.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DirectiveName {
     pub prefix: DirectivePrefix,
-    /// The directive name without `v-` (`on`, `bind`, `my-dir`); for
-    /// shorthands the span is empty at the prefix.
+    /// The name without `v-`; shorthand names are empty at the prefix.
     pub name: Span,
     pub arg: Option<ArgSyntax>,
-    /// The `.a.b` modifier run, including its leading dot; empty when there
-    /// are none. Split on `.` to iterate without allocating.
+    /// The modifier run including its leading dot; empty at the head's end
+    /// when absent. Empty modifiers remain in this run for diagnostics.
     pub modifiers: Span,
 }
 
-/// The dialect hook that recognizes and decomposes directive names.
+/// Source admission failure, distinct from a plain attribute or recovered syntax.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DirectiveNameError {
+    /// The attribute's absolute byte range does not fit the source span model.
+    OffsetOverflow,
+    /// The syntax provider's allocation-free nesting capacity was exceeded.
+    NestingLimit,
+}
+
+/// A dialect hook recognizing and decomposing a complete raw attribute head.
 pub trait DirectiveSyntax {
-    /// Decompose the attribute name `name`, which starts at byte `offset`.
-    /// `None` means the attribute is a plain attribute.
-    fn decompose(&self, name: &str, offset: u32) -> Option<DirectiveName>;
+    /// `Ok(None)` means a plain attribute. Recognized malformed syntax retains
+    /// its source evidence in `Ok(Some(_))`; lexical diagnostics are separate.
+    /// Admission errors never silently turn a directive into a plain attribute.
+    fn decompose(
+        &self,
+        name: &str,
+        offset: u32,
+    ) -> Result<Option<DirectiveName>, DirectiveNameError>;
 }
 
-/// Vue 3 directive-name syntax.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub struct VueDirectives;
-
-impl DirectiveSyntax for VueDirectives {
-    fn decompose(&self, _name: &str, _offset: u32) -> Option<DirectiveName> {
-        todo!("#6836: decompose Vue directive names in the dialect syntax hook")
-    }
-}
+/// Transitional public path; the implementation is owned by the Vue dialect.
+pub use crate::dialect::vue3::VueDirectives;

@@ -9,6 +9,7 @@ import type { ConfigWithVizeTasks, VizeTask, VizeTaskConfig } from "./types.ts";
 import { taskConfigKey } from "./types.ts";
 import { loadConfig, resolveConfigExport } from "../config.ts";
 import { resolveVitePlus } from "./runtime.ts";
+import { relocateTaskConfig } from "./config-paths.ts";
 
 export type Execute = (command: string, args: string[]) => Promise<number>;
 
@@ -27,9 +28,10 @@ export async function runTools(
   const fix = task === "lint:fix" || args.includes("--fix");
   const formatCheck =
     task === "fmt:check" || (task === "check" && !fix) || args.includes("--check");
-  if (task === "check" && args.some((arg) => arg.startsWith("-") && arg !== "--fix")) {
+  if ((task === "check" || lint) && args.some((arg) => arg.startsWith("-") && arg !== "--fix")) {
+    const section = task === "check" ? "the corresponding config section" : "lint.vize";
     throw new Error(
-      "Vize check tasks accept paths and --fix. Put native tool options in defineConfig().",
+      `Vize ${task} tasks accept paths and --fix. Put native tool options in ${section}.`,
     );
   }
   let status = 0;
@@ -152,7 +154,10 @@ export async function runNative(
       : await resolveConfigExport(metadata.config, env);
   const file = path.join(os.tmpdir(), `.vize-vp-${randomUUID()}.json`);
   try {
-    await writeFile(file, JSON.stringify(config), { flag: "wx", mode: 0o600 });
+    await writeFile(file, JSON.stringify(relocateTaskConfig(config, process.cwd())), {
+      flag: "wx",
+      mode: 0o600,
+    });
     const lintOptions =
       command === "lint"
         ? [

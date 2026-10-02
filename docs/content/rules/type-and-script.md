@@ -295,3 +295,39 @@ Good:
 const appConfig = useAppConfig();
 </script>
 ```
+
+## `type/strict-boolean-expressions`
+
+This opt-in native type-aware rule checks conditions in inline SFC scripts
+and `v-if`, `v-else-if`, and `v-show`. It requires the existing Corsa runtime
+(TypeScript 7). Enable it explicitly; it belongs to no preset.
+
+```ts
+export default {
+  linter: {
+    typeAware: true,
+    rules: { "type/strict-boolean-expressions": "error" },
+    ruleOptions: {
+      "type/strict-boolean-expressions": {
+        allowString: false,
+        allowNumber: false,
+        allowNullableObject: false,
+      },
+    },
+  },
+};
+```
+
+The rule covers `if`, `while`, `do`, `for`, ternary tests, negation and logical
+operands. A logical right operand used only as a resulting value is allowed.
+Explicit comparisons and narrowed booleans are accepted. For example, use
+`el == null` instead of `!el` when nullable objects are forbidden,
+`count > 0` instead of `count`, and `title !== ""` instead of `title`.
+
+`allowString`, `allowNumber`, and `allowNullableObject` default to `true`.
+`allowNullableBoolean`, `allowNullableString`, `allowNullableNumber`,
+`allowNullableEnum`, and `allowAny` default to `false`. Options alone do not
+enable the rule. Non-nullable objects are always truthy; nullish values are
+always falsy. Mixed unions still require an explicit check. The native
+checker projection uses strict checking. Assertion functions, array
+predicates and external/Pug template conditions are outside this rule's scope.

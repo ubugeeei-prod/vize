@@ -22,6 +22,15 @@ use crate::rules::vue::{
 use vize_l0::String;
 
 impl Linter {
+    /// Configure strict boolean allowances without enabling the opt-in rule.
+    pub fn with_strict_boolean_expressions_options(
+        mut self,
+        options: vize_l0::config::StrictBooleanExpressionsOptions,
+    ) -> Self {
+        self.strict_boolean_options = options;
+        self
+    }
+
     /// Configure the deny list for `script/no-restricted-globals`.
     ///
     /// Each entry is `(name, optional message)`. A non-empty list **replaces**

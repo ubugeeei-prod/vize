@@ -58,6 +58,13 @@ doc = false
 bench = false
 
 [[bin]]
+name = "l1_program"
+path = "fuzz_targets/l1_program.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
 name = "css_parse"
 path = "fuzz_targets/css_parse.rs"
 test = false
@@ -94,3 +101,6 @@ bench = false
 
 # Isolated workspace — does NOT inherit from the repository root workspace.
 [workspace]
+
+[patch."https://github.com/oxc-project/oxc"]
+oxc_parser = { path = "../../vendor/oxc_parser" }

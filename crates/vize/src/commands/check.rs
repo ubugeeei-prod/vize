@@ -92,6 +92,10 @@ pub struct CheckArgs {
     #[arg(long)]
     pub servers: Option<usize>,
 
+    /// Checker workers per Corsa CLI process (default: 1, or VIZE_CHECKERS)
+    #[arg(long)]
+    pub checkers: Option<std::num::NonZeroUsize>,
+
     /// Emit `.d.ts` files using the materialized Corsa project
     #[arg(long)]
     pub declaration: bool,

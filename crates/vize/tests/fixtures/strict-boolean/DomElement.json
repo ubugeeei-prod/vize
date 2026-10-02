@@ -1,0 +1,19 @@
+[
+  {
+    "file": "App.vue",
+    "messages": [
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected nullable object value in conditional. Please handle the nullish case explicitly.",
+        "line": 7,
+        "column": 8,
+        "endLine": 7,
+        "endColumn": 10
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 0
+  }
+]

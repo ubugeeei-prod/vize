@@ -17,9 +17,11 @@
 mod common;
 #[path = "../../support/fixture_inputs.rs"]
 mod fixture_inputs;
+#[path = "../../support/fixture_programs.rs"]
+mod fixture_programs;
 
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     env, fs,
@@ -1807,54 +1809,7 @@ fn validate_typechecker_output(
             }
         }
     }
-    if let Some(programs) = output.get("programs").and_then(Value::as_array) {
-        for (index, program) in programs.iter().enumerate() {
-            let object = require_record(program, &format!("programs[{index}]"), "typechecker")?;
-            let expected_keys = if program.get("tsconfig").is_some_and(Value::is_string) {
-                &["compilerOptions", "files", "root", "tsconfig"][..]
-            } else {
-                &["files", "root"][..]
-            };
-            require_exact_keys(
-                object,
-                expected_keys,
-                &format!("programs[{index}]"),
-                "typechecker",
-            )?;
-            require_non_empty_string(
-                &program["root"],
-                &format!("programs[{index}].root"),
-                "typechecker",
-            )?;
-            if object.contains_key("tsconfig") {
-                require_non_empty_string(
-                    &program["tsconfig"],
-                    &format!("programs[{index}].tsconfig"),
-                    "typechecker",
-                )?;
-            }
-            if object.contains_key("compilerOptions") {
-                require_record(
-                    &program["compilerOptions"],
-                    &format!("programs[{index}].compilerOptions"),
-                    "typechecker",
-                )?;
-            }
-            let program_files = program["files"].as_array().ok_or_else(|| {
-                format!("invalid typechecker JSON output: programs[{index}].files must be an array")
-            })?;
-            for (file_index, file) in program_files.iter().enumerate() {
-                let file = file.as_str().ok_or_else(|| {
-                    format!("invalid typechecker JSON output: programs[{index}].files[{file_index}] must be a normalized relative path")
-                })?;
-                require_normalized_path(
-                    file,
-                    &format!("programs[{index}].files[{file_index}]"),
-                    "typechecker",
-                )?;
-            }
-        }
-    }
+    fixture_programs::validate(output)?;
     let checked_files = seen_files.into_iter().take(file_count).collect::<Vec<_>>();
     let mut sorted_files = checked_files.clone();
     sorted_files.sort_by(|left, right| left.as_bytes().cmp(right.as_bytes()));

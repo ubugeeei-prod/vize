@@ -74,7 +74,11 @@ test("Canon LSP client imports L0 storage through the stage alias", () => {
   assert.equal(workspaceS0.package, undefined);
   assert.equal(workspaceS0.path, "davinci/vize_l0");
   assert.equal(canonS0.workspace, true);
-  assert.ok(!Object.hasOwn(canonDependencies, "vize_carton"));
+  assert.equal(asRecord(canonDependencies.vize_carton).workspace, true);
+  assert.doesNotMatch(
+    fs.readFileSync(path.join(repoRoot, "crates/vize_canon/src/lib.rs"), "utf8"),
+    /extern crate vize_l0 as vize_carton/u,
+  );
 
   const metadata = cargoMetadata();
   const cartonPackage = metadata.packages.find((pkg) => pkg.name === "vize_l0");
@@ -91,11 +95,21 @@ test("Canon LSP client imports L0 storage through the stage alias", () => {
   assert.equal(s0Dependency.optional, false);
   assert.equal(s0Dependency.uses_default_features, true);
 
+  const host = canonPackage.dependencies.find((dep) => dep.name === "vize_carton");
+  assert.ok(host);
+  assert.equal(host.rename, null);
+  assert.equal(host.kind, null);
+  assert.equal(host.path, path.join(repoRoot, "crates", "vize_carton"));
+
   const offenders = [];
   let aliasImportCount = 0;
   for (const file of [lspClientModule, ...rustFiles(lspClientRoot)]) {
     const source = fs.readFileSync(file, "utf8");
-    if (/\bvize_carton::|use vize_carton\b/u.test(source)) {
+    const storage = source.replace(
+      /\bvize_carton::corsa_(?:api_mode|resolver)\b/gu,
+      "host_runtime",
+    );
+    if (/\bvize_carton::|use vize_carton\b/u.test(storage)) {
       offenders.push(path.relative(repoRoot, file));
     }
     if (/\bvize_l0::|use vize_l0\b/u.test(source)) {

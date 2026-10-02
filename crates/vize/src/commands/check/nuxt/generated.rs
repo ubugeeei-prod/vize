@@ -35,6 +35,7 @@ pub(super) fn collect_generated_stubs(
         let walker = WalkBuilder::new(nuxt_types_dir.as_path())
             .hidden(false)
             .standard_filters(false)
+            .filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()))
             .build();
 
         for entry in walker.flatten() {

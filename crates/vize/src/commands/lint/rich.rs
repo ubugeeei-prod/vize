@@ -13,11 +13,11 @@ use std::borrow::Cow;
 use std::io::IsTerminal;
 
 use crate::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
+use vize_carton::i18n::{Locale, Translator, translator};
 use vize_fresco::{
     ColorSupport, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
 };
 use vize_l0::diag::{Diagnostic, DiagnosticPart, PartKind};
-use vize_l0::i18n::{Locale, Translator, translator};
 use vize_l0::{FxHashMap, SourceRoot, String, cstr};
 use vize_patina::output::unified::{UnifiedError, to_unified};
 use vize_patina::{HelpRenderTarget, LintDiagnostic, LintResult, OutputFormat, render_help};
@@ -219,7 +219,7 @@ pub(crate) fn unify(lint: &LintDiagnostic, source: &str) -> Result<Diagnostic, U
 #[cfg(test)]
 mod tests {
     use super::{LocaleCatalog, refused, unify};
-    use vize_l0::i18n::Locale;
+    use vize_carton::i18n::Locale;
     use vize_l0::{Span, String};
     use vize_patina::LintDiagnostic;
     use vize_patina::output::unified::UnifiedError;

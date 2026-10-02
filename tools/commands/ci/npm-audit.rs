@@ -45,14 +45,7 @@ fn main() -> ExitCode {
 
 fn run_audit() -> Result<ExitStatus, std::io::Error> {
     Command::new("vp")
-        .args([
-            "exec",
-            "pnpm",
-            "audit",
-            "--prod",
-            "--audit-level",
-            "moderate",
-        ])
+        .args(["node", "tools/commands/ci/npm-audit.ts"])
         .status()
 }
 

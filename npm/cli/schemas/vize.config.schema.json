@@ -209,6 +209,27 @@
           "description": "Enable native type-aware lint rules from the active lint configuration",
           "type": "boolean"
         },
+        "crossFile": {
+          "description": "Analyze relationships between input components",
+          "type": "boolean"
+        },
+        "crossFileTree": {
+          "description": "Display the provide/inject tree; enables cross-file analysis",
+          "type": "boolean"
+        },
+        "crossFileComplexity": {
+          "description": "Display cross-file complexity; enables cross-file analysis",
+          "type": "boolean"
+        },
+        "strictReactivity": {
+          "description": "Enable the native reactivity-loss rule unless rules explicitly disable it",
+          "type": "boolean"
+        },
+        "maxWarnings": {
+          "description": "Fail when warnings exceed this limit; absent means unlimited",
+          "type": "integer",
+          "minimum": 0
+        },
         "rules": {
           "description": "Rules to enable/disable",
           "type": "object",
@@ -253,6 +274,94 @@
         }
       },
       "additionalProperties": false
+    },
+    "SortImportsConfig": {
+      "type": "object",
+      "properties": {
+        "partitionByNewline": {
+          "type": "boolean"
+        },
+        "partitionByComment": {
+          "type": "boolean"
+        },
+        "sortSideEffects": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "string",
+          "enum": ["asc", "desc"]
+        },
+        "ignoreCase": {
+          "type": "boolean"
+        },
+        "newlinesBetween": {
+          "type": "boolean"
+        },
+        "internalPattern": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "newlinesBetween": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false,
+                "required": ["newlinesBetween"]
+              }
+            ]
+          }
+        },
+        "customGroups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ImportSortCustomGroup"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ImportSortCustomGroup": {
+      "type": "object",
+      "properties": {
+        "groupName": {
+          "type": "string"
+        },
+        "elementNamePattern": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "selector": {
+          "type": "string"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": ["groupName"]
     },
     "RestrictedGlobal": {
       "type": "object",
@@ -342,6 +451,44 @@
     "LintRuleOptions": {
       "type": "object",
       "properties": {
+        "type/strict-boolean-expressions": {
+          "type": "object",
+          "properties": {
+            "allowString": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNumber": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNullableObject": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNullableBoolean": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allowNullableString": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allowNullableNumber": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allowNullableEnum": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allowAny": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
         "script/no-restricted-globals": {
           "$ref": "#/definitions/NoRestrictedGlobalsOptions"
         },
@@ -548,6 +695,18 @@
       "description": "Formatter options",
       "type": "object",
       "properties": {
+        "sortImports": {
+          "description": "Oxfmt-compatible import sorting; false disables it",
+          "oneOf": [
+            {
+              "type": "boolean",
+              "enum": [false]
+            },
+            {
+              "$ref": "#/definitions/SortImportsConfig"
+            }
+          ]
+        },
         "printWidth": {
           "description": "Max line width",
           "default": 100,

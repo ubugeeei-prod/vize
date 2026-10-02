@@ -1,14 +1,13 @@
 ---
 title: ルール オプション
 ---
-
 <!-- Generated translation; source: rules/options.md -->
 
 # ルール オプション
+<!-- Type-aware reference: [型ルール オプション](./options-type.md) -->
 
 `linter.ruleOptions` は、オプションを受け取るルールの project-local な型付き設定です。
-未知の option field は拒否されます。同じ rule に対して後から一致した config entry がある場合、
-その rule の option object 全体を置き換えます。重大度は `linter.rules` で設定し、
+未知の option field は拒否されます。同じ rule に対して後から一致した config entry がある場合、その rule の option object 全体を置き換えます。重大度は `linter.rules` で設定し、
 `ruleOptions` は有効なルールの振る舞いだけを決めます。
 
 ```json
@@ -53,6 +52,7 @@ title: ルール オプション
 | `vue/v-on-event-hyphenation` | `"always" \| "never"` | component 上の static event listener 名を hyphenation するかを設定します。 |
 | `vue/attribute-hyphenation` | `"always" \| "never"` | template 内の component prop attribute を hyphenation するかを設定します。 |
 | `musea/prefer-design-tokens` | `{ tokens?: Array<{ path: string; value: string; tier?: string }> }` | token data が設定され、rule が有効か、空でない token list で暗黙に選択されたときだけ発火します。`tier` の既定は `primitive` です。 |
+| `type/strict-boolean-expressions` | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`、`allowNumber`、`allowNullableObject` の既定は `true`、その他は `false` です。rule を明示的に有効にする必要があります。 |
 
 ## Scoped Entries
 

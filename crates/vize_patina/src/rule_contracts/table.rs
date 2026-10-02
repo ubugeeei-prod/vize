@@ -39,6 +39,9 @@ const STYLE: Domain = Domain::new(
 const TEMPLATE_FLOW: Domain = Domain::new(
     "control flow of HTML SFC templates as lowered to L2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside",
 );
+const BOOLEAN_CONDITIONS: Domain = Domain::new(
+    "checker-resolved if/while/do/for/ternary/negation/logical conditions in inline SFC scripts and v-if/v-else-if/v-show; assertion functions, array predicates and external/pug templates are outside",
+);
 const TYPES: Domain =
     Domain::new("types the Corsa session resolves for the component; unresolved types are outside");
 
@@ -187,6 +190,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("type/no-unsafe-template-binding", Complete, TYPES, Warning),
     row!("type/require-typed-emits", Exact, MACROS, Warning),
     row!("type/require-typed-props", Exact, MACROS, Warning),
+    row!("type/strict-boolean-expressions", Complete, BOOLEAN_CONDITIONS, Warning),
     row!("vapor/no-inline-template", Exact, DIRECTIVES, Error),
     row!("vapor/no-vue-lifecycle-events", Exact, DIRECTIVES, Error),
     row!("vapor/prefer-static-class", Exact, DIRECTIVES, Warning),

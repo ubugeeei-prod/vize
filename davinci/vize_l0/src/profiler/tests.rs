@@ -1,5 +1,3 @@
-mod export;
-
 use super::{CacheStats, Metrics, Profiler, Timer};
 use std::sync::Arc;
 use std::time::Duration;

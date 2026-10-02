@@ -1,149 +1,20 @@
-//! Decode at most one HTML entity from the start of a byte slice (`&name;`, `&#...;`, …).
-//! Rules align with `htmlize::unescape_bytes_in` (WHATWG), using the same `ENTITIES` map.
+//! Published first-scalar entity API over the shared complete-value decoder.
 
-use core::cmp::min;
-use core::num::IntErrorKind;
+use crate::markup::entity::{DecodedEntity, EntityContext, decode_one};
+use htmlize::Context;
 
-use htmlize::{Context, ENTITIES, ENTITY_MAX_LENGTH, ENTITY_MIN_LENGTH};
-
-/// If `input` starts with a valid entity, returns the first decoded scalar and the number of
-/// bytes consumed (including `&` and an optional `;`). Otherwise `None` so the tokenizer can
-/// emit `&` as literal text.
+/// Preserve the decoded first scalar and exact authored bytes consumed.
 pub fn try_decode_entity(input: &[u8], context: Context) -> Option<(char, usize)> {
-    if input.first() != Some(&b'&') {
-        return None;
-    }
-    if input.get(1) == Some(&b'#') {
-        decode_numeric_entity(input)
-    } else {
-        decode_named_entity(input, context)
-    }
-}
-
-fn first_scalar(expansion: &[u8]) -> Option<char> {
-    core::str::from_utf8(expansion).ok()?.chars().next()
-}
-
-fn decode_named_entity(input: &[u8], context: Context) -> Option<(char, usize)> {
-    let mut j = 1usize;
-    let mut steps = 0usize;
-    while steps < ENTITY_MAX_LENGTH - 1 {
-        if input.get(j).is_some_and(u8::is_ascii_alphanumeric) {
-            j += 1;
-            steps += 1;
-        } else {
-            break;
-        }
-    }
-
-    let mut consumed_end = j;
-    match input.get(j).copied() {
-        Some(b';') => consumed_end = j + 1,
-        Some(b'=') if context == Context::Attribute => return None,
-        _ => {}
-    }
-
-    if context == Context::Attribute {
-        let candidate = input.get(..consumed_end)?;
-        if candidate.len() < ENTITY_MIN_LENGTH {
-            return None;
-        }
-        let expansion = ENTITIES.get(candidate)?;
-        let ch = first_scalar(expansion)?;
-        return Some((ch, consumed_end));
-    }
-
-    let max_len = min(consumed_end, ENTITY_MAX_LENGTH);
-    for check_len in (ENTITY_MIN_LENGTH..=max_len).rev() {
-        if let Some(expansion) = input.get(..check_len).and_then(|name| ENTITIES.get(name)) {
-            let ch = first_scalar(expansion)?;
-            return Some((ch, check_len));
-        }
-    }
-    None
-}
-
-fn decode_numeric_entity(input: &[u8]) -> Option<(char, usize)> {
-    if input.len() < 3 || !input.starts_with(b"&#") {
-        return None;
-    }
-
-    let mut pos = 2usize;
-    let number = match input.get(pos).copied() {
-        Some(b'x' | b'X') => {
-            pos += 1;
-            let start = pos;
-            while input.get(pos).is_some_and(u8::is_ascii_hexdigit) {
-                pos += 1;
-            }
-            let hex = input.get(start..pos)?;
-            if hex.is_empty() {
-                return None;
-            }
-            u32::from_str_radix(core::str::from_utf8(hex).ok()?, 16)
-        }
-        Some(c) if c.is_ascii_digit() => {
-            let start = pos;
-            while input.get(pos).is_some_and(u8::is_ascii_digit) {
-                pos += 1;
-            }
-            let dec = input.get(start..pos)?;
-            if dec.is_empty() {
-                return None;
-            }
-            core::str::from_utf8(dec).ok()?.parse::<u32>()
-        }
-        _ => return None,
+    let context = match context {
+        Context::General => EntityContext::Text,
+        Context::Attribute => EntityContext::Attribute,
     };
-
-    let mut end = pos;
-    if input.get(pos) == Some(&b';') {
-        end = pos + 1;
-    }
-
-    let ch = match number {
-        Ok(n) => correct_numeric_entity(n),
-        Err(e) if *e.kind() == IntErrorKind::PosOverflow => '\u{FFFD}',
-        Err(_) => return None,
+    let (value, consumed) = decode_one(input, context)?;
+    let first = match value {
+        DecodedEntity::Named(text) => text.chars().next()?,
+        DecodedEntity::Numeric(ch) => ch,
     };
-    Some((ch, end))
-}
-
-/// <https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state>
-fn correct_numeric_entity(number: u32) -> char {
-    match number {
-        0x00 => '\u{FFFD}',
-        0x11_0000.. => '\u{FFFD}',
-        0xD800..=0xDFFF => '\u{FFFD}',
-        0x80 => '\u{20AC}',
-        0x82 => '\u{201A}',
-        0x83 => '\u{0192}',
-        0x84 => '\u{201E}',
-        0x85 => '\u{2026}',
-        0x86 => '\u{2020}',
-        0x87 => '\u{2021}',
-        0x88 => '\u{02C6}',
-        0x89 => '\u{2030}',
-        0x8A => '\u{0160}',
-        0x8B => '\u{2039}',
-        0x8C => '\u{0152}',
-        0x8E => '\u{017D}',
-        0x91 => '\u{2018}',
-        0x92 => '\u{2019}',
-        0x93 => '\u{201C}',
-        0x94 => '\u{201D}',
-        0x95 => '\u{2022}',
-        0x96 => '\u{2013}',
-        0x97 => '\u{2014}',
-        0x98 => '\u{02DC}',
-        0x99 => '\u{2122}',
-        0x9A => '\u{0161}',
-        0x9B => '\u{203A}',
-        0x9C => '\u{0153}',
-        0x9E => '\u{017E}',
-        0x9F => '\u{0178}',
-        c => char::from_u32(c).unwrap_or('\u{FFFD}'),
-    }
+    Some((first, consumed))
 }
 
 #[cfg(test)]

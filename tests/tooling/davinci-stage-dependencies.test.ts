@@ -18,7 +18,13 @@ import {
 const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>([
   ["vize_l1", [["vize_l0", null]]],
   ["vize_l2", [["vize_l0", null]]],
-  ["vize_l3", [["vize_l0", null]]],
+  [
+    "vize_l3",
+    [
+      ["vize_l0", null],
+      ["vize_l2", null],
+    ],
+  ],
   [
     "vize_l1_to_l2",
     [
@@ -47,6 +53,18 @@ const publishedDavinciStages = new Set([
   "vize_l1_to_l2",
   "vize_l2_to_l3",
 ]);
+
+test("host executable lookup does not enter normal or build level dependencies", () => {
+  const host = dependency(metadata, "vize_carton", "which", null);
+  assert.equal(host.target, 'cfg(not(target_arch = "wasm32"))');
+  for (const pkg of metadata.packages) {
+    if (!/^vize_l\d+(?:_to_l\d+|_derive)?$/u.test(pkg.name)) continue;
+    assert.ok(
+      pkg.dependencies.every((dep) => dep.kind === "dev" || dep.name !== "which"),
+      `${pkg.name} must keep executable lookup in its host owner`,
+    );
+  }
+});
 
 test("Davinci crates import retained packages through stage aliases", () => {
   for (const [packageName, expectedAliases] of aliases) {
@@ -80,7 +98,7 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
     ["vize_l0", []],
     ["vize_l1", ["vize_l0"]],
     ["vize_l2", ["vize_l0"]],
-    ["vize_l3", ["vize_l0"]],
+    ["vize_l3", ["vize_l0", "vize_l2"]],
     ["vize_l1_to_l2", ["vize_l0", "vize_l1", "vize_l2", "vize_l3"]],
     ["vize_l2_to_l3", ["vize_l0", "vize_l2", "vize_l3"]],
   ]);
@@ -286,19 +304,32 @@ const s0AliasConsumers = [
 
 for (const [packageName, label, parts] of s0AliasConsumers) {
   test(`${label} imports L0 storage through the stage alias`, () => {
-    assertL0AliasConsumer({ packageName, label, directory: path.join(repoRoot, ...parts) });
+    assertL0AliasConsumer({
+      packageName,
+      label,
+      directory: path.join(repoRoot, ...parts),
+      hostRuntime: [
+        "vize",
+        "vize_patina",
+        "vize_maestro",
+        "vize_relief",
+        "vize_vitrine",
+        "vize_curator",
+      ].includes(packageName),
+    });
   });
 }
 
 test("Canon content-mapper imports L0 storage through the stage alias", () => {
   const manifest = readRepoFile("crates", "vize_canon", "Cargo.toml");
   assert.match(manifest, /^vize_l0\.workspace = true$/m);
-  assert.doesNotMatch(manifest, /^vize_carton\.workspace = true$/m);
+  assert.match(manifest, /^vize_carton\.workspace = true$/m);
   assertL0AliasConsumer({
     packageName: "vize_canon",
     label: "Canon content-mapper",
     directory: path.join(repoRoot, "crates", "vize_canon", "src", "batch", "virtual_project"),
     filter: (fullPath) => path.basename(fullPath).startsWith("content_mapper"),
+    hostRuntime: true,
   });
 });
 

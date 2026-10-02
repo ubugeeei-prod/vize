@@ -16,7 +16,9 @@ use crate::ide::IdeContext;
 use crate::ide::markup;
 
 mod fallback;
+mod keys;
 pub(super) use fallback::vue_component_import_hover;
+use keys::field_name as key;
 
 pub(super) fn rewrite_vue_component_import_hover(
     ctx: &IdeContext<'_>,
@@ -80,6 +82,9 @@ pub(super) fn component_contract_markdown(
     }
 
     if !fields.is_empty() {
+        if let Some(header) = lines.first_mut() {
+            header.push_str(" &");
+        }
         lines.push("{".to_string());
         lines.extend(fields);
         lines.push("}".to_string());
@@ -127,7 +132,7 @@ fn props_contract(macros: &vize_croquis::macros::MacroTracker) -> Option<String>
         .map(|prop| {
             let optional = if prop.required { "" } else { "?" };
             let prop_type = prop.prop_type.as_deref().unwrap_or("unknown");
-            format!("{}{optional}: {}", prop.name, compact_type(prop_type))
+            format!("{}{optional}: {}", key(&prop.name), compact_type(prop_type))
         })
         .collect::<Vec<_>>()
         .join("; ");
@@ -151,7 +156,7 @@ fn emits_contract(macros: &vize_croquis::macros::MacroTracker) -> Option<String>
         .iter()
         .map(|emit| {
             let payload = emit.payload_type.as_deref().unwrap_or("unknown[]");
-            format!("{}: {}", emit.name, compact_type(payload))
+            format!("{}: {}", key(&emit.name), compact_type(payload))
         })
         .collect::<Vec<_>>()
         .join("; ");
@@ -179,7 +184,7 @@ fn slots_contract(macros: &vize_croquis::macros::MacroTracker) -> Option<String>
                 .as_deref()
                 .map(compact_type)
                 .unwrap_or_else(|| "{}".to_string());
-            format!("{}(props: {}): unknown", slot.name, payload)
+            format!("{}(props: {}): unknown", key(&slot.name), payload)
         })
         .collect::<Vec<_>>()
         .join("; ");
@@ -196,15 +201,15 @@ fn model_contract(macros: &vize_croquis::macros::MacroTracker) -> Option<String>
         .iter()
         .map(|model| {
             let model_type = model.model_type.as_deref().unwrap_or("unknown");
-            format!("\"{}\": {}", model.name, compact_type(model_type))
+            format!(
+                "{}: {}",
+                keys::quoted_name(&model.name),
+                compact_type(model_type)
+            )
         })
         .collect::<Vec<_>>();
 
-    if fields.len() == 1 {
-        fields.into_iter().next()
-    } else {
-        Some(format!("{{ {} }}", fields.join("; ")))
-    }
+    Some(format!("{{ {} }}", fields.join("; ")))
 }
 
 fn compact_type(source: &str) -> String {

@@ -8,108 +8,137 @@ use super::{Block, Container, ContainerError, ContainerErrorCode, ContainerForma
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Vue;
 
+mod descriptor;
 mod scan;
+
+pub use descriptor::{
+    AdmittedDescriptor, DescriptorIssue, DescriptorIssueCode, DescriptorObservation,
+    DescriptorOptions, DescriptorRefusal, ScriptRole, ScriptView, TemplateView,
+};
 
 use scan::{find_bytes, find_close, find_template_close, read_open};
 
 impl ContainerFormat for Vue {
     fn split<'a>(&self, allocator: &'a Allocator, source: &'a str) -> Container<'a> {
-        let mut result = Container {
-            source,
-            blocks: Vec::new_in(&allocator),
-            errors: Vec::new_in(&allocator),
-        };
-        if source.len() > u32::MAX as usize {
-            result.errors.push(ContainerError {
-                code: ContainerErrorCode::SourceTooLarge,
-                offset: 0,
-            });
-            return result;
+        split_with(allocator, source, |_, _, _, _| {})
+    }
+}
+
+impl Vue {
+    /// Observe original blocks and descriptor policy in the same splitter pass.
+    /// Public capture records cannot be converted into an admitted descriptor.
+    pub fn observe_descriptor<'a>(
+        &self,
+        allocator: &'a Allocator,
+        source: &'a str,
+        options: DescriptorOptions,
+    ) -> DescriptorObservation<'a> {
+        descriptor::observe(allocator, source, options)
+    }
+}
+
+fn split_with<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    mut observe: impl FnMut(usize, &Block<'a>, bool, bool),
+) -> Container<'a> {
+    let mut result = Container {
+        source,
+        blocks: Vec::new_in(&allocator),
+        errors: Vec::new_in(&allocator),
+    };
+    if source.len() > u32::MAX as usize {
+        result.errors.push(ContainerError {
+            code: ContainerErrorCode::SourceTooLarge,
+            offset: 0,
+        });
+        return result;
+    }
+    let bytes = source.as_bytes();
+    let (mut at, mut template, mut script, mut setup) = (0, false, false, false);
+    while at < bytes.len() {
+        if bytes.get(at) != Some(&b'<') {
+            at += 1;
+            continue;
         }
-        let bytes = source.as_bytes();
-        let (mut at, mut template, mut script, mut setup) = (0, false, false, false);
-        while at < bytes.len() {
-            if bytes.get(at) != Some(&b'<') {
+        if bytes
+            .get(at..)
+            .is_some_and(|rest| rest.starts_with(b"<!--"))
+        {
+            at = find_bytes(bytes, at + 4, b"-->").map_or(bytes.len(), |end| end + 3);
+            continue;
+        }
+        let open = match read_open(allocator, source, at) {
+            Ok(Some(open)) => open,
+            Ok(None) => {
                 at += 1;
                 continue;
             }
-            if bytes
-                .get(at..)
-                .is_some_and(|rest| rest.starts_with(b"<!--"))
-            {
-                at = find_bytes(bytes, at + 4, b"-->").map_or(bytes.len(), |end| end + 3);
-                continue;
+            Err(()) => {
+                result.errors.push(ContainerError {
+                    code: ContainerErrorCode::UnterminatedOpenTag,
+                    offset: at as u32,
+                });
+                break;
             }
-            let open = match read_open(allocator, source, at) {
-                Ok(Some(open)) => open,
-                Ok(None) => {
-                    at += 1;
-                    continue;
-                }
-                Err(()) => {
-                    result.errors.push(ContainerError {
-                        code: ContainerErrorCode::UnterminatedOpenTag,
-                        offset: at as u32,
-                    });
-                    break;
-                }
-            };
-            let duplicate = if open.name.eq_ignore_ascii_case("template") {
-                let old = template;
-                template = true;
+        };
+        let duplicate = if open.name.eq_ignore_ascii_case("template") {
+            let old = template;
+            template = true;
+            old
+        } else if open.name.eq_ignore_ascii_case("script") {
+            if open.attrs.iter().any(|attr| attr.name == "setup") {
+                let old = setup;
+                setup = true;
                 old
-            } else if open.name.eq_ignore_ascii_case("script") {
-                if open.attrs.iter().any(|attr| attr.name == "setup") {
-                    let old = setup;
-                    setup = true;
-                    old
-                } else {
-                    let old = script;
-                    script = true;
-                    old
-                }
             } else {
-                false
-            };
-            if duplicate {
-                result.errors.push(ContainerError {
-                    code: ContainerErrorCode::DuplicateBlock,
-                    offset: at as u32,
-                });
+                let old = script;
+                script = true;
+                old
             }
-            let (content_end, close_end, uncertain) = if open.self_closing {
-                (open.end, Some(open.end), false)
-            } else if open.name.eq_ignore_ascii_case("template") {
-                find_template_close(allocator, source, open.end)
-            } else {
-                find_close(bytes, open.end, open.name)
-                    .map_or((bytes.len(), None, false), |(start, end)| {
-                        (start, Some(end), false)
-                    })
-            };
-            if uncertain {
-                result.errors.push(ContainerError {
-                    code: ContainerErrorCode::UncertainInterpolation,
-                    offset: at as u32,
-                });
-            }
-            if close_end.is_none() {
-                result.errors.push(ContainerError {
-                    code: ContainerErrorCode::MissingCloseTag,
-                    offset: at as u32,
-                });
-            }
-            result.blocks.push(Block {
-                name: open.name,
-                open_tag: Span::new(at as u32, open.end as u32),
-                attrs: open.attrs,
-                content: Span::new(open.end as u32, content_end as u32),
-                close_tag: close_end.map(|end| Span::new(content_end as u32, end as u32)),
+        } else {
+            false
+        };
+        if duplicate {
+            result.errors.push(ContainerError {
+                code: ContainerErrorCode::DuplicateBlock,
+                offset: at as u32,
             });
-            at = close_end.unwrap_or(bytes.len());
         }
-        result
+        let (content_end, close_end, uncertain) = if open.self_closing {
+            (open.end, Some(open.end), false)
+        } else if open.name.eq_ignore_ascii_case("template") {
+            find_template_close(allocator, source, open.end)
+        } else {
+            find_close(bytes, open.end, open.name)
+                .map_or((bytes.len(), None, false), |(start, end)| {
+                    (start, Some(end), false)
+                })
+        };
+        if uncertain {
+            result.errors.push(ContainerError {
+                code: ContainerErrorCode::UncertainInterpolation,
+                offset: at as u32,
+            });
+        }
+        if close_end.is_none() {
+            result.errors.push(ContainerError {
+                code: ContainerErrorCode::MissingCloseTag,
+                offset: at as u32,
+            });
+        }
+        let block = Block {
+            name: open.name,
+            open_tag: Span::new(at as u32, open.end as u32),
+            attrs: open.attrs,
+            content: Span::new(open.end as u32, content_end as u32),
+            close_tag: close_end.map(|end| Span::new(content_end as u32, end as u32)),
+        };
+        observe(result.blocks.len(), &block, uncertain, open.self_closing);
+        result.blocks.push(block);
+        at = close_end.unwrap_or(bytes.len());
     }
+    result
 }
 
 #[cfg(test)]
@@ -279,7 +308,7 @@ mod tests {
 
     #[test]
     fn long_closed_interpolation_has_no_artificial_limit() {
-        let mut source = alloc::string::String::from("<template>{{ ");
+        let mut source = vize_l0::String::from("<template>{{ ");
         source.push_str(&"x".repeat(8192));
         source.push_str(" }}</template>");
         let allocator = Allocator::default();

@@ -4,7 +4,7 @@ import { classifyVitePluginRequest } from "@vizejs/native";
 import type { TransformResult } from "vite";
 
 import {
-  getCompileOptionsForRequest,
+  getCompileOptionsForRequest as compileOptions,
   getEnvironmentCache,
   shouldExtractCssForRequest,
   syncCollectedCssForFile,
@@ -73,7 +73,7 @@ function findMacroArtifactModule(
 
   if (!compiled && fs.existsSync(realPath)) {
     const source = fs.readFileSync(realPath, "utf-8");
-    compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, ssr), source);
+    compiled = compileFile(realPath, cache, compileOptions(state, ssr, realPath), source);
   }
   syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
 
@@ -101,7 +101,7 @@ function loadCompiledSfcModule(
   // On-demand compile if not cached
   if (!compiled && fs.existsSync(realPath)) {
     state.logger.log(`load: on-demand compiling ${realPath}`);
-    compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, isSsr), undefined, {
+    compiled = compileFile(realPath, cache, compileOptions(state, isSsr, realPath), undefined, {
       logWarnings: shouldLogSfcWarnings(state, realPath),
     });
   }
@@ -391,18 +391,18 @@ export function transformJsxRequest(
   const ssr = options?.ssr ?? false;
   // Match the SFC path's source-map policy: on unless explicitly disabled or in
   // a production build (#1533).
-  const sourceMap = getCompileOptionsForRequest(state, ssr).sourceMap;
+  const fileOptions = state.fileCompilerOptions?.(realPath) ?? state.mergedOptions;
 
   const {
     code: compiled,
     map,
     warnings,
   } = compileJsxModule(realPath, code, {
-    jsxMode: state.mergedOptions.jsxMode,
-    jsxCompat: state.mergedOptions.jsxCompat,
-    vapor: state.mergedOptions.vapor ?? false,
+    jsxMode: fileOptions.jsxMode,
+    jsxCompat: fileOptions.jsxCompat,
+    vapor: fileOptions.vapor ?? false,
     ssr,
-    sourceMap,
+    sourceMap: compileOptions(state, ssr, realPath).sourceMap,
   });
   for (const warning of warnings) {
     state.logger.warn(`Warning in ${realPath}: ${warning}`);

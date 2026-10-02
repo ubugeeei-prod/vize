@@ -4,6 +4,7 @@
 //! code using OXC's formatter (oxfmt).
 
 mod block_identity;
+mod format;
 
 use crate::error::FormatError;
 use crate::options::FormatOptions;
@@ -26,7 +27,7 @@ pub fn format_script_content(
     options: &FormatOptions,
     _allocator: &Allocator,
 ) -> Result<String, FormatError> {
-    format_script_content_with_source_type(
+    format::format_script_content_with_source_type(
         source,
         options,
         _allocator,
@@ -34,62 +35,20 @@ pub fn format_script_content(
     )
 }
 
-/// Format JavaScript/TypeScript/JSX/TSX content using an explicit OXC source type.
-///
-/// SFC formatting calls this with the script block's `lang` attribute so
-/// `<script lang="jsx">` and `<script lang="tsx">` preserve JSX syntax instead
-/// of falling back through the non-JSX TypeScript parser.
-#[inline]
-pub fn format_script_content_with_source_type(
-    source: &str,
-    options: &FormatOptions,
-    _allocator: &Allocator,
-    source_type: SourceType,
-) -> Result<String, FormatError> {
-    // Fast path for empty content
-    let trimmed = source.trim();
-    if trimmed.is_empty() {
-        return Ok(String::default());
-    }
-
-    // Use OXC's allocator for parsing (required by oxc_parser)
-    let oxc_allocator = OxcAllocator::default();
-
-    // Parse the source with formatter-compatible options. `parse_for_format` is
-    // the parse the formatter requires (`preserve_parens: false`, hashed
-    // identifiers, JSX enabled for JavaScript source types); `format_program`
-    // may panic on an AST parsed any other way.
-    let parsed = parse_for_format(&oxc_allocator, source, source_type);
-
-    if !parsed.diagnostics.is_empty() {
-        let error_messages: Vec<String> = parsed
-            .diagnostics
-            .iter()
-            .map(|e| e.to_compact_string())
-            .collect();
-        return Err(FormatError::ScriptParseError(
-            error_messages.join("; ").into(),
-        ));
-    }
-
-    // Convert options and format
-    let oxc_options = options.to_oxc_format_options();
-    let formatted = format_program(&oxc_allocator, &parsed.program, oxc_options, None);
-    let printed = formatted
-        .print()
-        .map_err(|error| FormatError::ScriptFormatError(error.to_compact_string()))?;
-
-    Ok(printed.into_code().into())
-}
-
 pub(crate) fn format_script_content_stable(
     source: &str,
     options: &FormatOptions,
     allocator: &Allocator,
     source_type: SourceType,
+    sort_imports: Option<&crate::ImportSortOptions>,
 ) -> Result<String, FormatError> {
-    let mut current =
-        format_script_content_with_source_type(source, options, allocator, source_type)?;
+    let mut current = format::format_script_content_with_sort_imports(
+        source,
+        options,
+        allocator,
+        source_type,
+        sort_imports,
+    )?;
     // Skip the second (idempotence) pass when the caller only needs change
     // detection (`fmt --check`), or when the first pass was already a no-op:
     // the input is then a fixed point, so re-formatting cannot change it.
@@ -98,11 +57,12 @@ pub(crate) fn format_script_content_stable(
     }
 
     for _ in 1..MAX_SCRIPT_STABILIZATION_PASSES {
-        let next = match format_script_content_with_source_type(
+        let next = match format::format_script_content_with_sort_imports(
             current.as_str(),
             options,
             allocator,
             source_type,
+            sort_imports,
         ) {
             Ok(next) => next,
             Err(_) => return Ok(current),
@@ -126,6 +86,7 @@ pub(crate) fn format_ts_script_content_stable(
         options,
         allocator,
         SourceType::ts().with_module(true),
+        None,
     )
 }
 
@@ -222,10 +183,8 @@ fn format_js_expression_with_quote_style(
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        Allocator, FormatOptions, format_js_expression, format_script_content,
-        format_script_content_with_source_type,
-    };
+    use super::format::format_script_content_with_source_type;
+    use super::{Allocator, FormatOptions, format_js_expression, format_script_content};
     use oxc_span::SourceType;
     use vize_l0::String;
 

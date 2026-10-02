@@ -12,7 +12,7 @@
       "expectedParserMode": "legacy-v0.10",
       "sourceRule": "list",
       "witness": {
-        "file": "crates/vize_armature/src/legacy.rs",
+        "file": "davinci/vize_l1/src/dialect/vue.rs",
         "selector": "Templates iterate with `v-repeat` (no `v-for`; that arrives in 1.0),"
       },
       "input": {
@@ -31,7 +31,7 @@
       "expectedParserMode": "legacy-v0.11",
       "sourceRule": "list",
       "witness": {
-        "file": "crates/vize_armature/src/legacy.rs",
+        "file": "davinci/vize_l1/src/dialect/vue.rs",
         "selector": "Shares the clause-style directive surface with 0.10 (`v-repeat`,"
       },
       "input": {
@@ -50,7 +50,7 @@
       "expectedParserMode": "legacy-v1",
       "sourceRule": "list",
       "witness": {
-        "file": "crates/vize_armature/src/legacy.rs",
+        "file": "davinci/vize_l1/src/dialect/vue.rs",
         "selector": "The 1.0 migration replaced `v-repeat` with `v-for` (`track-by`,"
       },
       "input": {
@@ -88,7 +88,7 @@
       "expectedParserMode": "legacy-v1",
       "sourceRule": "attribute-interpolation",
       "witness": {
-        "file": "crates/vize_armature/src/legacy.rs",
+        "file": "davinci/vize_l1/src/dialect/vue.rs",
         "selector": "interpolation still works inside plain attribute values"
       },
       "input": {

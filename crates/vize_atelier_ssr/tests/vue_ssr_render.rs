@@ -19,6 +19,10 @@
 
 #[path = "vue_ssr_render/fixtures.rs"]
 mod fixtures;
+#[path = "vue_ssr_render/input_models.rs"]
+mod input_models;
+#[path = "vue_ssr_render/lint_pragmas.rs"]
+mod lint_pragmas;
 
 use std::io::Write;
 use std::path::Path;
@@ -158,6 +162,7 @@ fn scoped_layout_slots_render_page_roots_like_vue() {
 
 fn render_cases(input: &str) -> String {
     let mut child = Command::new("node")
+        .env("NODE_ENV", "production")
         .arg(
             Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("../../tests/tooling/support/ssr-vue-render-diff.mjs"),

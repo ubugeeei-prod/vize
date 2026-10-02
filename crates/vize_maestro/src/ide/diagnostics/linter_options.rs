@@ -128,6 +128,9 @@ pub(super) fn apply_rule_options(
     mut linter: vize_patina::Linter,
     options: &vize_l0::config::ConfigLintRuleOptions,
 ) -> vize_patina::Linter {
+    if let Some(options) = options.strict_boolean_expressions() {
+        linter = linter.with_strict_boolean_expressions_options(options);
+    }
     if let Some(casing) = options.component_name_in_template_casing() {
         linter = linter.with_component_name_in_template_casing(component_casing(casing));
     }
@@ -273,4 +276,23 @@ fn attribute_hyphenation_style(
         vize_l0::config::HyphenationStyle::Always => vize_patina::rules::HyphenationStyle::Always,
         vize_l0::config::HyphenationStyle::Never => vize_patina::rules::HyphenationStyle::Never,
     }
+}
+
+/// Point the new native type rule at its actual Vize reference.
+pub(super) fn rule_docs_url(rule_name: &str) -> Option<Url> {
+    if rule_name == "type/strict-boolean-expressions" {
+        return Url::parse(
+            "https://github.com/ubugeeei-prod/vize/blob/main/docs/content/rules/type-and-script.md",
+        )
+        .ok();
+    }
+    Url::parse(
+        vize_l0::cstr!(
+            "https://eslint.vuejs.org/rules/{}.html",
+            rule_name.strip_prefix("vue/").unwrap_or(rule_name),
+        )
+        .as_str(),
+    )
+    .or_else(|_| Url::parse("https://eslint.vuejs.org/rules/"))
+    .ok()
 }

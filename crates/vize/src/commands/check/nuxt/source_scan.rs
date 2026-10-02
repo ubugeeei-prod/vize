@@ -31,6 +31,7 @@ pub(super) fn collect_source_auto_import_stubs(
         let walker = WalkBuilder::new(root)
             .hidden(false)
             .standard_filters(true)
+            .filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()))
             .build();
 
         for entry in walker.flatten() {
@@ -82,6 +83,7 @@ pub(super) fn collect_source_type_auto_import_stubs(cwd: &Path, stubs: &mut Vec<
         let walker = WalkBuilder::new(root)
             .hidden(false)
             .standard_filters(true)
+            .filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()))
             .build();
 
         for entry in walker.flatten() {

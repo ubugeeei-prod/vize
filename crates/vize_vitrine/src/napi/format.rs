@@ -7,7 +7,7 @@
 
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
-use vize_glyph::{Allocator, FormatOptions, VueVersion, format_sfc_with_allocator_and_vue_version};
+use vize_glyph::{Allocator, FormatOptions, GlyphFormatter, VueVersion, resolve_sort_imports};
 
 /// Format options for NAPI.
 #[napi(object)]
@@ -15,6 +15,11 @@ use vize_glyph::{Allocator, FormatOptions, VueVersion, format_sfc_with_allocator
 pub struct FormatOptionsNapi {
     /// Explicit Vue version; omitted uses Vue 3.
     pub vue_version: Option<String>,
+    /// Oxfmt-compatible import sorting; false disables it.
+    #[napi(
+        ts_type = "false | { partitionByNewline?: boolean; partitionByComment?: boolean; sortSideEffects?: boolean; order?: 'asc' | 'desc'; ignoreCase?: boolean; newlinesBetween?: boolean; internalPattern?: string[]; groups?: (string | string[] | { newlinesBetween: boolean })[]; customGroups?: { groupName: string; elementNamePattern?: string[]; selector?: string; modifiers?: string[] }[] }"
+    )]
+    pub sort_imports: Option<serde_json::Value>,
     pub print_width: Option<u32>,
     pub tab_width: Option<u8>,
     pub use_tabs: Option<bool>,
@@ -83,14 +88,45 @@ pub fn format_sfc_napi(
         })
         .transpose()?
         .unwrap_or_default();
+    let sorting = options
+        .sort_imports
+        .as_ref()
+        .map(|value| serde_json::from_value::<vize_l0::config::SortImportsSetting>(value.clone()))
+        .transpose()
+        .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
+    let sorting = resolve_sort_imports(sorting.as_ref())
+        .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))?;
     let options = apply_options(options);
     let allocator = Allocator::with_capacity(source.len() * 2);
-    let result =
-        format_sfc_with_allocator_and_vue_version(&source, &options, &allocator, vue_version)
-            .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?;
+    let result = GlyphFormatter::new_with_vue_version(&options, &allocator, vue_version)
+        .with_sort_imports(sorting.as_ref())
+        .format(&source)
+        .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?;
 
     Ok(FormatResultNapi {
         code: result.code.into(),
         changed: result.changed,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{FormatOptionsNapi, format_sfc_napi};
+
+    #[test]
+    fn native_sfc_sorting_uses_the_authored_full_reference() {
+        let source = include_str!("../../../vize_glyph/tests/fixtures/sort-imports/UserCard.vue");
+        let expected =
+            include_str!("../../../vize_glyph/tests/fixtures/sort-imports/UserCard.sorted.vue");
+        let output = format_sfc_napi(
+            source.into(),
+            Some(FormatOptionsNapi {
+                sort_imports: Some(serde_json::json!({})),
+                ..Default::default()
+            }),
+        )
+        .expect("native formatting");
+        assert_eq!(output.code, expected);
+        assert!(output.changed);
+    }
 }

@@ -3,6 +3,7 @@
 mod aggregate;
 mod args;
 mod collect;
+mod config_load;
 mod cross_file;
 mod entry_rules;
 mod fix;
@@ -37,31 +38,14 @@ use vize_l0::source_io as fs;
 use vize_l0::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 use vize_patina::{HelpLevel, LintPreset, OutputFormat};
 
-pub fn run(args: LintArgs) {
+pub fn run(mut args: LintArgs) {
     let start = Instant::now();
-    if let Some(path) = args.config.as_deref()
-        && !args.no_config
-        && let Err(error) = crate::config::validate_explicit_config_path(path)
-    {
-        eprintln!("\x1b[31mError:\x1b[0m {}", error);
-        std::process::exit(2);
-    }
     let (format, rich) = rich::parse_format(args.format.as_str());
     let locale = rich::parse_locale(args.locale.as_str());
     let render_details = aggregate::should_render_details(format, args.quiet);
     crate::config::write_schema(None);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let (loaded_config, linter_plan, linter_features) = if args.no_config {
-        (
-            crate::config::LoadedConfigWithFeatures::default(),
-            crate::config::LinterConfigPlanWithConfigRuleOptions::default(),
-            crate::config::LinterFeatureFlags::default(),
-        )
-    } else {
-        crate::config::load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source(
-            args.config.as_deref(),
-        )
-    };
+    let (loaded_config, linter_plan, linter_features) = config_load::load(&mut args);
     let linter_enabled = linter_plan.plan.base.enabled;
     let config_dir = loaded_config
         .source_path

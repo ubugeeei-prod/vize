@@ -1,0 +1,22 @@
+[
+  { "name": "checkbox-static", "props": "type=\"checkbox\" value=\"yes\"", "data": { "model": ["yes"] }, "checked": true },
+  { "name": "checkbox-static-miss", "props": "type=\"checkbox\" value=\"yes\"", "data": { "model": ["no"] }, "checked": false },
+  { "name": "checkbox-number", "props": "type=\"checkbox\" :value=\"value\"", "data": { "model": ["2"], "value": 2 }, "checked": true },
+  { "name": "checkbox-object", "props": "type=\"checkbox\" :value=\"value\"", "data": { "model": [{ "id": 1 }], "value": { "id": 1 } }, "checked": true },
+  { "name": "checkbox-true-static", "props": "type=\"checkbox\" true-value=\"yes\" false-value=\"no\"", "data": { "model": "yes" }, "checked": true },
+  { "name": "checkbox-false-static", "props": "type=\"checkbox\" true-value=\"yes\" false-value=\"no\"", "data": { "model": "no" }, "checked": false },
+  { "name": "checkbox-true-bound", "props": "type=\"checkbox\" :true-value=\"value\"", "data": { "model": { "id": 1 }, "value": { "id": 1 } }, "checked": true },
+  { "name": "checkbox-false-bound", "props": "type=\"checkbox\" :true-value=\"value\"", "data": { "model": { "id": 2 }, "value": { "id": 1 } }, "checked": false },
+  { "name": "radio-bound", "props": "type=\"radio\" :value=\"value\"", "data": { "model": "2", "value": 2 }, "checked": true },
+  { "name": "radio-bound-miss", "props": "type=\"radio\" :value=\"value\"", "data": { "model": "3", "value": 2 }, "checked": false },
+  { "name": "radio-object", "props": "type=\"radio\" :value=\"value\"", "data": { "model": { "id": 1 }, "value": { "id": 1 } }, "checked": true },
+  { "name": "dynamic-checkbox", "props": ":type=\"type\" :value=\"value\"", "data": { "type": "checkbox", "model": ["yes"], "value": "yes" }, "checked": true },
+  { "name": "dynamic-radio", "props": ":type=\"type\" :value=\"value\"", "data": { "type": "radio", "model": "yes", "value": "yes" }, "checked": true },
+  { "name": "dynamic-static-value", "props": ":type=\"type\" value=\"yes\"", "data": { "type": "checkbox", "model": ["yes"] }, "checked": true },
+  { "name": "dynamic-unchecked", "props": ":type=\"type\" :value=\"value\"", "data": { "type": "checkbox", "model": ["no"], "value": "yes" }, "checked": false },
+  { "name": "radio-static-before-bound", "props": "type=\"radio\" value=\"yes\" :value=\"value\"", "data": { "model": "yes", "value": "no" }, "checked": true },
+  { "name": "radio-bound-before-static", "props": "type=\"radio\" :value=\"value\" value=\"yes\"", "data": { "model": "no", "value": "no" }, "checked": true },
+  { "name": "checkbox-array-true-value", "props": "type=\"checkbox\" value=\"yes\" true-value=\"active\"", "data": { "model": ["yes"] }, "checked": true },
+  { "name": "checkbox-scalar-true-value", "props": "type=\"checkbox\" value=\"yes\" true-value=\"active\"", "data": { "model": "active" }, "checked": true },
+  { "name": "checkbox-array-true-value-miss", "props": "type=\"checkbox\" value=\"yes\" true-value=\"active\"", "data": { "model": ["no"] }, "checked": false }
+]

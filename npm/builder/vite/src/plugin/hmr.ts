@@ -130,7 +130,7 @@ export async function handleHotUpdateHook(
 
       const prevCompiled = state.cache.get(file);
 
-      compileFile(file, state.cache, getCompileOptionsForRequest(state, false), source);
+      compileFile(file, state.cache, getCompileOptionsForRequest(state, false, file), source);
       state.ssrCache.delete(file);
 
       const newCompiled = state.cache.get(file)!;

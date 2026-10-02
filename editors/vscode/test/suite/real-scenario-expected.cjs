@@ -111,12 +111,12 @@ const refSurfaceHovers = {
 
 const componentContractHoverValue = [
   "```typescript",
-  "const ContractChild: VueComponent",
+  "const ContractChild: VueComponent &",
   "{",
   "  props: { label: string; count?: number };",
   "  emits: { save: [value: string] };",
   "  slots: { default(props: { value: string }): unknown };",
-  '  model: "modelValue": boolean;',
+  '  model: { "modelValue": boolean };',
   "}",
   "```",
   "",
@@ -138,22 +138,7 @@ const componentContractHovers = {
   ],
   templateTag: [
     {
-      contents: [
-        [
-          "**ContractChild**",
-          "",
-          "_Component usage_",
-          "",
-          "```vue",
-          '<ContractChild label="ready" />',
-          "```",
-          "",
-          "**Passed props**",
-          '- `label="ready"`',
-          "",
-          "[Vue Component Props](https://vuejs.org/guide/components/props.html)",
-        ].join("\n"),
-      ],
+      contents: [componentContractHoverValue],
       range: [7, 3, 7, 16],
     },
   ],

@@ -1,9 +1,8 @@
 //! Open and close tags: the element half of the builder.
 
-use vize_l0::Namespace;
-use vize_l0::{Box, Vec, is_html_tag, is_math_ml_tag, is_svg_tag, is_void_tag};
+use vize_l0::{Box, Vec, is_void_tag};
 
-use super::{Builder, Frame, ImplicitlyClosedTag};
+use super::{Builder, Frame};
 use crate::event::{Event, EventKind};
 use crate::surface::{Attribute, CloseTag, Element, ElementClose, OpenTag, SurfaceChild, Token};
 
@@ -13,7 +12,7 @@ impl<'a> Builder<'a, '_> {
         self.i += 1;
         let lt = name_s.saturating_sub(1);
         self.flush_gap(lt);
-        let lt_name = self.token_at(lt, name_e);
+        let mut lt_name = self.token_at(lt, name_e);
         let tag = crate::slice::range(self.src, name_s, name_e);
         let mut attrs: Vec<'a, Attribute<'a>> = Vec::new_in(&self.allocator);
         let mut slash = None;
@@ -25,19 +24,19 @@ impl<'a> Builder<'a, '_> {
                     attrs.push(attr);
                 }
                 Some(EventKind::OpenTagEnd) => {
-                    let idx = self
-                        .events
-                        .get(self.i)
-                        .map_or(self.cursor, |ev| ev.start as usize);
+                    let idx = self.events.get(self.i).map_or(self.cursor, |event| {
+                        lt_name.mark_verbatim_opening(event.is_verbatim_opening());
+                        event.start as usize
+                    });
                     self.i += 1;
                     gt = self.open_gt(idx);
                     break;
                 }
                 Some(EventKind::SelfClosingTag) => {
-                    let idx = self
-                        .events
-                        .get(self.i)
-                        .map_or(self.cursor, |ev| ev.start as usize);
+                    let idx = self.events.get(self.i).map_or(self.cursor, |event| {
+                        lt_name.mark_verbatim_opening(event.is_verbatim_opening());
+                        event.start as usize
+                    });
                     self.i += 1;
                     let (found_slash, found_gt) = self.self_closing(idx);
                     slash = found_slash;
@@ -58,15 +57,16 @@ impl<'a> Builder<'a, '_> {
             }
         }
         let self_closing = slash.is_some();
-        let ns = self.enter_ns(tag);
+        let (ns, implicit_depth) = self.recovery.open(&self.stack, tag, self_closing);
         let open = OpenTag {
             lt_name,
             attrs,
             slash,
             gt,
         };
-        if !self_closing {
-            self.handle_nested_interactive_start_tag(tag, ns);
+        if let Some(depth) = implicit_depth {
+            self.repaired = true;
+            self.implicitly_close_stack_element_at(depth);
         }
 
         if self_closing || is_void_tag(tag) {
@@ -112,17 +112,7 @@ impl<'a> Builder<'a, '_> {
         let gt_pos = self.find_byte(b'>', e, self.src.len());
         let name = crate::slice::range(self.src, s, e);
         self.flush_gap(lt_start);
-        let matched = self
-            .stack
-            .iter()
-            .rposition(|frame| frame.tag().eq_ignore_ascii_case(name));
-        if self.should_consume_implicitly_closed_tag(name, matched) {
-            self.implicitly_closed_tags.pop();
-            self.unexpected_close_tag(lt_start, gt_pos);
-            return;
-        }
-
-        let Some(depth) = matched else {
+        let Some(depth) = self.recovery.close(&self.stack, name) else {
             // Stray end tag: a typed `Unexpected` hole, whole extent.
             self.unexpected_close_tag(lt_start, gt_pos);
             return;
@@ -187,59 +177,6 @@ impl<'a> Builder<'a, '_> {
         self.push_child(SurfaceChild::Unexpected(token));
     }
 
-    fn enter_ns(&self, tag: &str) -> Namespace {
-        if is_svg_tag(tag) {
-            Namespace::Svg
-        } else if is_math_ml_tag(tag) {
-            Namespace::MathMl
-        } else {
-            self.stack
-                .last()
-                .map_or(Namespace::Html, |frame| children_ns(frame.ns, frame.tag()))
-        }
-    }
-
-    fn handle_nested_interactive_start_tag(&mut self, tag: &'a str, ns: Namespace) {
-        if !self.repair_interactive || ns != Namespace::Html {
-            return;
-        }
-        if !is_interactive_html_tree_tag(tag) {
-            return;
-        }
-        let Some(depth) = self.stack.iter().rposition(|frame| {
-            frame.ns == Namespace::Html
-                && is_interactive_html_tree_tag(frame.tag())
-                && frame.tag().eq_ignore_ascii_case(tag)
-        }) else {
-            return;
-        };
-        self.repaired = true;
-        self.note_implicitly_closed_stack_entries_from(depth);
-        self.implicitly_close_stack_element_at(depth);
-    }
-
-    fn note_implicitly_closed_stack_entries_from(&mut self, start_depth: usize) {
-        for (depth, frame) in self.stack.iter().enumerate().skip(start_depth) {
-            self.implicitly_closed_tags.push(ImplicitlyClosedTag {
-                tag: frame.tag(),
-                depth,
-            });
-        }
-    }
-
-    fn should_consume_implicitly_closed_tag(&self, tag: &str, live_depth: Option<usize>) -> bool {
-        let Some(closed) = self.implicitly_closed_tags.last() else {
-            return false;
-        };
-        if !closed.tag.eq_ignore_ascii_case(tag) {
-            return false;
-        }
-        match live_depth {
-            Some(depth) => depth < closed.depth,
-            None => true,
-        }
-    }
-
     fn implicitly_close_stack_element_at(&mut self, depth: usize) {
         let mut child = None;
         while self.stack.len() > depth {
@@ -259,17 +196,5 @@ impl<'a> Builder<'a, '_> {
         if let Some(element) = child {
             self.attach(element);
         }
-    }
-}
-
-fn is_interactive_html_tree_tag(tag: &str) -> bool {
-    is_html_tag(tag) && (tag.eq_ignore_ascii_case("a") || tag.eq_ignore_ascii_case("button"))
-}
-
-fn children_ns(ns: Namespace, tag: &str) -> Namespace {
-    match ns {
-        Namespace::Svg if matches!(tag, "foreignObject" | "desc" | "title") => Namespace::Html,
-        Namespace::MathMl if matches!(tag, "mi" | "mo" | "mn" | "ms" | "mtext") => Namespace::Html,
-        other => other,
     }
 }

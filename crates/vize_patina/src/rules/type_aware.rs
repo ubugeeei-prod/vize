@@ -30,3 +30,8 @@ pub use crate::rules::opinionated::type_aware::NoUnsafeTemplateBinding;
 pub use require_typed_emits::RequireTypedEmits;
 #[cfg(not(target_arch = "wasm32"))]
 pub use require_typed_props::RequireTypedProps;
+
+#[cfg(not(target_arch = "wasm32"))]
+mod strict_boolean_expressions;
+#[cfg(not(target_arch = "wasm32"))]
+pub use strict_boolean_expressions::StrictBooleanExpressions;

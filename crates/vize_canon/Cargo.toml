@@ -32,6 +32,7 @@ legacy-differential = []
 davinci-differential = ["legacy-differential"]
 
 [dependencies]
+vize_carton.workspace = true
 vize_l0.workspace = true
 # P5-1b ambient key manifests: the Corsa session key folds through them.
 vize_croquis.workspace = true

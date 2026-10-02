@@ -16,7 +16,7 @@ use super::catalog::LocaleCatalog;
 use super::page;
 use super::subjects::{self, Subject};
 use super::{all_pages, distance, nearest};
-use vize_l0::i18n::Locale;
+use vize_carton::i18n::Locale;
 
 fn snapshot(locale: Locale) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -64,7 +64,7 @@ fn the_generated_list_covers_every_compiler_code_and_rule_once() {
         .iter()
         .filter(|subject| matches!(subject, Subject::Rule(_)))
         .count();
-    assert_eq!((all.len() - rules, rules), (56 + 22 + 10 + 60, 250));
+    assert_eq!((all.len() - rules, rules), (56 + 22 + 10 + 60, 251));
     let mut codes: Vec<&str> = all.iter().map(Subject::code).collect();
     let total = codes.len();
     codes.sort_unstable();

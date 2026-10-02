@@ -38,6 +38,9 @@ use vize_relief::{
     ElementNode, ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
 
+mod branches;
+use branches::{BranchChoice, can_coexist, walk_elements};
+
 static META: RuleMeta = RuleMeta {
     name: "a11y/landmark-roles",
     description: "Validate landmark role placement and uniqueness",
@@ -54,6 +57,7 @@ struct LandmarkInfo {
     label: Option<LandmarkLabel>,
     start: u32,
     end: u32,
+    branches: Vec<BranchChoice>,
 }
 
 enum LandmarkLabel {
@@ -131,32 +135,19 @@ fn get_label(element: &ElementNode) -> Option<LandmarkLabel> {
 }
 
 fn collect_landmarks<'a>(children: &[TemplateChildNode<'a>], landmarks: &mut Vec<LandmarkInfo>) {
-    for child in children {
-        match child {
-            TemplateChildNode::Element(el) => {
-                if el.tag_type != ElementType::Component
-                    && let Some(role) = get_landmark_role(el)
-                {
-                    landmarks.push(LandmarkInfo {
-                        role: role.to_compact_string(),
-                        label: get_label(el),
-                        start: el.loc.span.start,
-                        end: el.loc.span.end,
-                    });
-                }
-                collect_landmarks(&el.children, landmarks);
-            }
-            TemplateChildNode::If(if_node) => {
-                for branch in if_node.branches.iter() {
-                    collect_landmarks(&branch.children, landmarks);
-                }
-            }
-            TemplateChildNode::For(for_node) => {
-                collect_landmarks(&for_node.children, landmarks);
-            }
-            _ => {}
+    walk_elements(children, &mut Vec::new(), &mut |el, branches| {
+        if el.tag_type != ElementType::Component
+            && let Some(role) = get_landmark_role(el)
+        {
+            landmarks.push(LandmarkInfo {
+                role: role.to_compact_string(),
+                label: get_label(el),
+                start: el.loc.span.start,
+                end: el.loc.span.end,
+                branches: branches.to_vec(),
+            });
         }
-    }
+    });
 }
 
 impl Rule for LandmarkRoles {
@@ -171,7 +162,14 @@ impl Rule for LandmarkRoles {
         // Check 1: Duplicate main landmarks
         let mains: Vec<&LandmarkInfo> = landmarks.iter().filter(|l| l.role == "main").collect();
         if mains.len() > 1 {
-            for main in mains.iter().skip(1) {
+            for (index, main) in mains.iter().enumerate().skip(1) {
+                if !mains
+                    .iter()
+                    .take(index)
+                    .any(|prior| can_coexist(&prior.branches, &main.branches))
+                {
+                    continue;
+                }
                 let message = ctx.t("a11y/landmark-roles.duplicate_main");
                 let diag = LintDiagnostic::warn(META.name, message, main.start, main.end)
                     .with_help(
@@ -196,8 +194,16 @@ impl Rule for LandmarkRoles {
                 continue; // Already handled
             }
             if group.len() > 1 {
-                let unlabeled: Vec<&&LandmarkInfo> =
-                    group.iter().filter(|l| l.label.is_none()).collect();
+                let unlabeled: Vec<&&LandmarkInfo> = group
+                    .iter()
+                    .filter(|landmark| {
+                        landmark.label.is_none()
+                            && group.iter().any(|other| {
+                                other.start != landmark.start
+                                    && can_coexist(&other.branches, &landmark.branches)
+                            })
+                    })
+                    .collect();
                 for landmark in unlabeled {
                     let message =
                         ctx.t_fmt("a11y/landmark-roles.missing_label", &[("role", *role)]);
@@ -221,6 +227,12 @@ impl Rule for LandmarkRoles {
 
                 for duplicate_group in static_labels.values().filter(|labels| labels.len() > 1) {
                     for landmark in duplicate_group {
+                        if !duplicate_group.iter().any(|other| {
+                            other.start != landmark.start
+                                && can_coexist(&other.branches, &landmark.branches)
+                        }) {
+                            continue;
+                        }
                         let message =
                             ctx.t_fmt("a11y/landmark-roles.missing_label", &[("role", *role)]);
                         let diag =

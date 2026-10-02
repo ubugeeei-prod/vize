@@ -3,6 +3,15 @@ description: Collect and upload the test inventory before aggregate verification
 runs:
   using: composite
   steps:
+    - name: Setup Vite+ and Node.js
+      uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      with:
+        node-version-file: "package.json"
+        cache: true
+        run-install: false
+    - name: Install report dependencies
+      shell: bash
+      run: vp install --frozen-lockfile --prefer-offline --filter vize-workspace --ignore-scripts
     - name: Collect test inventory
       shell: bash
       run: node tools/benchmarks/scripts/test-inventory.mjs --json test-inventory.json --markdown "$GITHUB_STEP_SUMMARY"

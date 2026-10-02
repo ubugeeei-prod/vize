@@ -1,0 +1,27 @@
+/// Oxfmt-compatible import sorting controls.
+module vize.SortImportsConfig
+
+typealias ImportSortOrder = "asc"|"desc"
+
+class ImportSortBoundary {
+  newlinesBetween: Boolean
+}
+
+class ImportSortCustomGroup {
+  groupName: String
+  elementNamePattern: Listing<String>? = null
+  selector: String? = null
+  modifiers: Listing<String>? = null
+}
+
+class SortImportsConfig {
+  partitionByNewline: Boolean? = null
+  partitionByComment: Boolean? = null
+  sortSideEffects: Boolean? = null
+  order: ImportSortOrder? = null
+  ignoreCase: Boolean? = null
+  newlinesBetween: Boolean? = null
+  internalPattern: Listing<String>? = null
+  groups: Listing<String | Listing<String> | ImportSortBoundary>? = null
+  customGroups: Listing<ImportSortCustomGroup>? = null
+}

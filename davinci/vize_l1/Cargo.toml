@@ -22,6 +22,8 @@ metadata.vize.stability = "experimental"
 legacy-differential = []
 # Deprecated published feature spelling; keep as a compatibility alias.
 davinci-differential = ["legacy-differential"]
+# Retain the published opt-in spelling for native lexer differential tests.
+# The lexer, entity decoder and callback adapter are available by default.
 native-markup-lex = []
 # Retain the moved tokenizer's Vue 1 raw-interpolation test lane.
 legacy = []
@@ -30,10 +32,16 @@ moonbit = []
 [dependencies]
 vize_l0 = { workspace = true }
 htmlize = { workspace = true }
+oxc_ast = { workspace = true }
+oxc_ast_visit = { workspace = true }
+oxc_diagnostics = { workspace = true }
+oxc_parser = { workspace = true }
+oxc_span = { workspace = true }
 
 [dev-dependencies]
 davinci_test_support.workspace = true
 htmlize.workspace = true
+vize_armature.workspace = true
 
 [[test]]
 name = "davinci_surface_corpus"

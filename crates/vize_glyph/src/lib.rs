@@ -52,6 +52,8 @@ mod formatter;
 mod json;
 mod options;
 mod script;
+mod sort_imports;
+pub use sort_imports::{ImportSortOptions, resolve_sort_imports};
 mod style;
 mod template;
 mod vue_version;
@@ -102,7 +104,7 @@ pub fn format_script_with_source_type(
     allocator: &Allocator,
     source_type: oxc_span::SourceType,
 ) -> Result<String, FormatError> {
-    script::format_script_content_stable(source, options, allocator, source_type)
+    script::format_script_content_stable(source, options, allocator, source_type, None)
 }
 
 /// Format only the template content
@@ -119,3 +121,14 @@ pub fn format_style(source: &str, options: &FormatOptions) -> Result<String, For
 
 #[cfg(test)]
 mod tests;
+
+/// Format script content with validated, opt-in import sorting.
+pub fn format_script_with_sort_imports(
+    source: &str,
+    options: &FormatOptions,
+    allocator: &Allocator,
+    source_type: oxc_span::SourceType,
+    sort_imports: Option<&ImportSortOptions>,
+) -> Result<String, FormatError> {
+    script::format_script_content_stable(source, options, allocator, source_type, sort_imports)
+}

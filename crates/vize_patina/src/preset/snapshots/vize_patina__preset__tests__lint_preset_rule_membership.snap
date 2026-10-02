@@ -626,6 +626,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "css/prefer-slotted"
   ],
   "opt_in": [
+    "type/strict-boolean-expressions",
     "a11y/img-alt",
     "ecosystem/router-link-require-to",
     "ecosystem/vue-router-prefer-named-link",

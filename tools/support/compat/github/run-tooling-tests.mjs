@@ -3,10 +3,11 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { toolingTestFiles } from "./plan-tooling-tests.mjs";
+import { selectToolingShard } from "./tooling-test-shards.ts";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 
-export function toolingTestCommand(plan, available = toolingTestFiles()) {
+export function toolingTestCommand(plan, available = toolingTestFiles(), shard = "") {
   if (plan.version !== 1 || !["pr", "merge"].includes(plan.tier) || !Array.isArray(plan.tests)) {
     throw new Error("invalid tooling test plan");
   }
@@ -20,16 +21,18 @@ export function toolingTestCommand(plan, available = toolingTestFiles()) {
   if (plan.tier === "merge" && plan.tests.length !== available.length) {
     throw new Error("merge tooling plan must retain every test file");
   }
-  // Shared fixture/report paths prohibit file-level process concurrency.
-  return ["--test", "--test-concurrency=1", ...plan.tests];
+  // Each isolated runner remains serial because fixtures and reports are shared
+  // between test files inside a checkout. Only the already-selected PR files
+  // may be partitioned; the full merge suite is never partitioned here.
+  return ["--test", "--test-concurrency=1", ...selectToolingShard(plan, shard)];
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const planPath =
     process.argv[2] ?? process.env.VIZE_TOOLING_TEST_PLAN ?? "target/tooling-test-plan.json";
   const plan = JSON.parse(readFileSync(planPath, "utf8"));
-  const args = toolingTestCommand(plan);
-  if (plan.tests.length > 0) {
+  const args = toolingTestCommand(plan, toolingTestFiles(), process.env.VIZE_TOOLING_TEST_SHARD);
+  if (args.length > 2) {
     // Selection defers known scenarios. An unclassified new requirement must
     // still fail closed; disabling the requirement would hide missing coverage.
     const env = { ...process.env, VIZE_TEST_REQUIRE_TSGO: "1" };

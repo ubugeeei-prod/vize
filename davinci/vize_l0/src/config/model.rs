@@ -5,10 +5,16 @@ mod compiler;
 mod entries;
 mod experimentals;
 mod formatter;
+mod sort_imports;
+use formatter::RawFormatterConfig;
+pub use sort_imports::{
+    ImportSortCustomGroup, ImportSortGroup, SortImportsConfig, SortImportsSetting,
+};
 mod global_types;
 mod language_server;
 mod library;
 mod linter;
+mod linter_execution;
 mod linter_feature_flags;
 mod linter_rule_options;
 mod type_checker;
@@ -34,6 +40,7 @@ pub use language_server::{LanguageServerConfig, LanguageServerUnstableFlags, Lsp
 pub use library::{LibConfig, LibRegistryConfig};
 pub(crate) use linter::RawLinterConfig;
 pub use linter::{LintRuleSeverity, LinterConfig};
+pub use linter_execution::LinterExecutionOptions;
 pub use linter_feature_flags::LinterFeatureFlags;
 pub use linter_rule_options::{
     ComponentNameInTemplateCasingOptions, ConfigLintRuleOptions, CustomEventNameCasing,
@@ -41,7 +48,7 @@ pub use linter_rule_options::{
     HtmlSelfClosingStyle, HyphenationStyle, LintRuleOptions, MuseaDesignToken,
     MuseaPreferDesignTokensOptions, NoMutatingPropsOptions, NoRestrictedGlobalsOptions,
     NoRestrictedMembersOptions, RestrictedGlobal, RestrictedMember, SfcElementOrderGroup,
-    SfcElementOrderOptions, TemplateComponentNameCasing,
+    SfcElementOrderOptions, StrictBooleanExpressionsOptions, TemplateComponentNameCasing,
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};
@@ -153,7 +160,7 @@ pub(crate) struct RawVizeConfig {
     pub base_path: Option<String>,
     pub files: Option<Vec<String>>,
     pub dialect: Option<VueDialect>,
-    pub formatter: FormatterConfig,
+    pub formatter: RawFormatterConfig,
     pub(crate) compiler: RawCompilerConfig,
     pub(crate) compatibility: compatibility::RawCompatibilityConfig,
     pub(crate) experimentals: RawExperimentalsConfig,
@@ -288,6 +295,7 @@ impl RawVizeConfig {
             }
         }
 
+        let formatter = formatter.config;
         let formatter = if formatter == FormatterConfig::default() {
             legacy_formatter.unwrap_or(formatter)
         } else {

@@ -4,7 +4,7 @@ title: All Patina Rules
 
 # All Patina Rules
 
-This page lists all 249 Patina rule implementations declared under `crates/vize_patina/src/rules`. The category pages keep the longer examples; this page is the compact reference for coverage, default severity, preset membership, fixability, rule-option support, and source implementation.
+This page lists all 250 Patina rule implementations declared under `crates/vize_patina/src/rules`. The category pages keep the longer examples; this page is the compact reference for coverage, default severity, preset membership, fixability, rule-option support, and source implementation.
 
 Preset names use Vize CLI terminology. The oxlint plugin metadata name `general-recommended` is shown here as `happy-path`. `_none_` means the rule is opt-in, host-driven, or outside the bundled lint presets.
 
@@ -19,7 +19,7 @@ Rules marked with `ruleOptions` accept typed project-local settings under `linte
 | [Recommended](#recommended-45) | 45 |
 | [Accessibility](#accessibility-31) | 31 |
 | [HTML Conformance](#html-conformance-9) | 9 |
-| [Type Aware](#type-aware-5) | 5 |
+| [Type Aware](#type-aware-6) | 6 |
 | [Vapor](#vapor-7) | 7 |
 | [Ecosystem](#ecosystem-9) | 9 |
 | [CSS](#css-10) | 10 |
@@ -199,7 +199,7 @@ Rules marked with `ruleOptions` accept typed project-local settings under `linte
 | `html/no-empty-palpable-content` | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L32) | Disallow empty elements that expect visible content |
 | `html/require-datetime` | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/require_datetime.rs#L34) | Require datetime attribute on &lt;time&gt; element |
 
-## Type Aware (5)
+## Type Aware (6)
 
 | Rule | Severity | Presets | Fixable | Options | Implementation | Description |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -208,6 +208,7 @@ Rules marked with `ruleOptions` accept typed project-local settings under `linte
 | `type/no-unsafe-template-binding` | `warning` | `nuxt`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_unsafe_template_binding.rs#L12) | Disallow template bindings that resolve to unsafe types |
 | `type/require-typed-emits` | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_emits.rs#L54) | Require type definition for defineEmits |
 | `type/require-typed-props` | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57) | Require type definition for defineProps |
+| `type/strict-boolean-expressions` | `warning` | _none_ | No | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/strict_boolean_expressions.rs#L8) | Require safe boolean expressions in script and template conditions |
 
 ## Vapor (7)
 

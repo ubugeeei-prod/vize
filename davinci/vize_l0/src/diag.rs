@@ -86,6 +86,7 @@
 //! field in the compiler moved to `&'a str` in that change; diagnostics did
 //! not, for exactly this reason.
 
+pub mod catalog;
 pub mod severity;
 pub mod tier;
 pub mod verdict;
@@ -95,6 +96,7 @@ pub mod witness;
 use alloc::vec::Vec;
 
 pub use crate::stage::Stage;
+pub use catalog::MessageLookup;
 pub use severity::{Advisory, Severity};
 pub use tier::{Domain, RuleContract, Tier};
 pub use verdict::Verdict;

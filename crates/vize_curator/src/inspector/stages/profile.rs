@@ -16,8 +16,9 @@
 
 use core::time::Duration;
 
+use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
 use vize_l0::pass::TimingObserver;
-use vize_l0::profiler::{ProfileExportBudget, ProfileExportOptions, Profiler, SpanAttribution};
+use vize_l0::profiler::{Profiler, SpanAttribution};
 
 use super::ladder::LadderStep;
 
@@ -52,11 +53,14 @@ pub fn ladder_profile(
             profiler.record_attributed(key, attribution, Duration::from_nanos(step.nanos));
         }
     }
-    let export = profiler.export_report(&ProfileExportOptions {
-        command,
-        allocation: None,
-        budget: ProfileExportBudget::default(),
-    });
+    let export = export_report(
+        &profiler,
+        &ProfileExportOptions {
+            command,
+            allocation: None,
+            budget: ProfileExportBudget::default(),
+        },
+    );
     profiler.disable();
     // The exporter emits valid JSON by construction; `null` is the
     // unreachable fallback rather than an abort.

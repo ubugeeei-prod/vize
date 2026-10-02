@@ -1,16 +1,12 @@
 //! Format command - High-performance Vue and script formatting using vize_glyph
 
 use clap::Args;
-use oxc_span::SourceType;
 use rayon::prelude::*;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
-use vize_glyph::{
-    Allocator, FormatOptions, FormatResult, VueVersion, format_script_with_source_type,
-    format_sfc_with_allocator_and_vue_version,
-};
+use vize_glyph::{Allocator, FormatOptions, FormatResult, VueVersion};
 use vize_l0::source_io as fs;
 use vize_l0::{cstr, profile, profiler::global_profiler};
 
@@ -23,8 +19,10 @@ use vize_curator::profile::{
 mod data;
 mod entries;
 mod files;
+mod format_source;
 mod ignores;
 mod options;
+use format_source::format_file_source;
 mod patterns;
 use options::build_format_options;
 
@@ -102,15 +100,19 @@ pub struct FmtArgs {
 
 pub fn run(args: FmtArgs) {
     let start = Instant::now();
-    if let Some(path) = args.config.as_deref()
-        && !args.no_config
-        && let Err(error) = config::validate_explicit_config_path(path)
-    {
-        eprintln!("\x1b[31mError:\x1b[0m {}", error);
-        std::process::exit(2);
-    }
-    let (options, vue_version) = build_format_options(&args);
-    let (ignore_set, patterns) = (load_fmt_ignore_set(&args), entries::resolve_patterns(&args));
+    let snapshot = if args.no_config {
+        config::LoadedFormatterSnapshot::default()
+    } else {
+        config::try_load_formatter_snapshot(args.config.as_deref()).unwrap_or_else(|error| {
+            eprintln!("Invalid formatter configuration: {error}");
+            std::process::exit(2);
+        })
+    };
+    let (options, vue_version, sort_imports) = build_format_options(&args, &snapshot);
+    let (ignore_set, patterns) = (
+        load_fmt_ignore_set(&snapshot),
+        entries::resolve_patterns(&args, &snapshot),
+    );
 
     let collect_start = Instant::now();
     let files: Vec<PathBuf> = collect_files(&patterns.values, ignore_set.as_ref());
@@ -149,7 +151,7 @@ pub fn run(args: FmtArgs) {
             match process_file(
                 path,
                 &options,
-                vue_version,
+                (vue_version, sort_imports.as_ref()),
                 allocator,
                 args.check,
                 args.write,
@@ -338,12 +340,13 @@ pub fn run(args: FmtArgs) {
 fn process_file(
     path: &PathBuf,
     options: &FormatOptions,
-    vue_version: VueVersion,
+    formatting: (VueVersion, Option<&vize_glyph::ImportSortOptions>),
     allocator: &Allocator,
     check: bool,
     write: bool,
     profile: bool,
 ) -> Result<FormatFileResult, String> {
+    let (vue_version, sort_imports) = formatting;
     let file_start = profile.then(Instant::now);
     let read_start = profile.then(Instant::now);
     let source = match profile!("cli.fmt.file.read", fs::read_to_string(path)) {
@@ -361,7 +364,7 @@ fn process_file(
         .unwrap_or(Duration::ZERO);
 
     let format_start = profile.then(Instant::now);
-    let result = format_file_source(path, &source, options, allocator, vue_version)
+    let result = format_file_source(path, &source, options, allocator, vue_version, sort_imports)
         .map_err(|e| vize_l0::cstr!("Format error: {}", e))?;
     let format_time = format_start
         .map(|start| start.elapsed())
@@ -422,44 +425,6 @@ fn process_file(
     })
 }
 
-fn format_file_source(
-    path: &Path,
-    source: &str,
-    options: &FormatOptions,
-    allocator: &Allocator,
-    vue_version: VueVersion,
-) -> Result<FormatResult, vize_glyph::FormatError> {
-    if let Some(source_type) = script_source_type_for_path(path) {
-        let code = profile!(
-            "cli.fmt.file.format_script",
-            format_script_with_source_type(source, options, allocator, source_type)
-        )?;
-        return Ok(FormatResult {
-            changed: code.as_str() != source,
-            code,
-        });
-    }
-
-    if let Some(result) = data::format_data_file(path, source, options) {
-        return result;
-    }
-    profile!(
-        "cli.fmt.file.format_sfc",
-        format_sfc_with_allocator_and_vue_version(source, options, allocator, vue_version)
-    )
-}
-
-fn script_source_type_for_path(path: &Path) -> Option<SourceType> {
-    let extension = path.extension().and_then(|extension| extension.to_str())?;
-    match extension {
-        "js" | "mjs" | "cjs" => Some(SourceType::from_path("module.js").ok()?.with_module(true)),
-        "ts" | "mts" | "cts" => Some(SourceType::from_path(path).ok()?.with_module(true)),
-        "jsx" => Some(SourceType::jsx().with_module(true)),
-        "tsx" => Some(SourceType::tsx().with_module(true)),
-        _ => None,
-    }
-}
-
 struct FormatFileResult {
     changed: bool,
     profile: Option<FormatFileProfile>,
@@ -486,6 +451,7 @@ mod tests {
             &options,
             &allocator,
             super::VueVersion::V3,
+            None,
         )
         .unwrap();
 

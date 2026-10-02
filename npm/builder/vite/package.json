@@ -65,6 +65,7 @@
     "@vizejs/unplugin": "workspace:*",
     "jsonc-parser": "^3.3.1",
     "oxc-parser": "catalog:oxc",
+    "picomatch": "4.0.5",
     "tinyglobby": "catalog:repo-tooling",
     "vize": "workspace:*"
   },

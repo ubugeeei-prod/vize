@@ -80,6 +80,8 @@ export interface A11yResult {
   violations: A11yViolation[];
   passes: number;
   incomplete: number;
+  /** Rules requiring manual review, with the same per-node details as violations. */
+  incompleteResults?: A11yViolation[];
   /**
    * Why the audit could not run, when it could not run.
    *
@@ -96,8 +98,28 @@ export interface A11yResult {
  */
 export interface A11yViolation {
   id: string;
-  impact: "minor" | "moderate" | "serious" | "critical";
+  impact: "minor" | "moderate" | "serious" | "critical" | null;
   description: string;
   helpUrl: string;
   nodes: number;
+  /** Per-node results from axe; optional for older stored reports. */
+  targets?: A11yNode[];
+}
+
+export interface A11yNode {
+  /** Selectors retain axe's nested arrays for iframe/shadow DOM targets. */
+  target: (string | string[])[];
+  html: string;
+  failureSummary?: string;
+  any: A11yCheck[];
+  all: A11yCheck[];
+  none: A11yCheck[];
+}
+
+export interface A11yCheck {
+  id: string;
+  impact: string;
+  message: string;
+  /** Measured values such as foreground/background colors and contrast ratios. */
+  data?: unknown;
 }

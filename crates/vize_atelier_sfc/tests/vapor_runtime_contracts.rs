@@ -15,13 +15,15 @@ use std::{
 };
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 use vize_atelier_sfc::{
-    SfcCompileOptions, SfcScriptOutputMode, compile_sfc_for_adapter, parse_sfc,
+    SfcCompileOptions, SfcScriptOutputMode, TemplateCompileOptions, compile_sfc_for_adapter,
+    parse_sfc,
 };
 
 mod vapor_runtime_contracts {
     mod events;
     mod model_arguments;
     mod models;
+    mod production;
 }
 
 const CHILD: &str = r#"<script setup>
@@ -30,10 +32,36 @@ const emit = defineEmits(['example']);
 </script><template><button @click="emit('example', label)">{{ label }}</button></template>"#;
 
 fn compile(source: &str, backend: &str) -> String {
+    compile_for_mode(source, backend, false)
+}
+
+fn compile_for_mode(source: &str, backend: &str, production: bool) -> String {
+    compile_with_output(
+        source,
+        backend,
+        production,
+        if production {
+            SfcScriptOutputMode::InlineTemplate
+        } else {
+            SfcScriptOutputMode::SeparateTemplate
+        },
+    )
+}
+
+fn compile_with_output(
+    source: &str,
+    backend: &str,
+    production: bool,
+    script_output: SfcScriptOutputMode,
+) -> String {
     let descriptor = parse_sfc(source, Default::default()).unwrap();
     let options = SfcCompileOptions {
         vapor: backend == "vapor",
         scope_id: Some("probe".into()),
+        template: TemplateCompileOptions {
+            is_prod: production,
+            ..Default::default()
+        },
         ..Default::default()
     };
     let result = compile_sfc_for_adapter(
@@ -42,7 +70,7 @@ fn compile(source: &str, backend: &str) -> String {
         TemplateSyntaxMode::Standard,
         CustomElementMatcher::default(),
         CodegenOptions::default(),
-        SfcScriptOutputMode::SeparateTemplate,
+        script_output,
     )
     .unwrap();
     assert!(result.errors.is_empty(), "{backend}: {:?}", result.errors);
@@ -50,13 +78,31 @@ fn compile(source: &str, backend: &str) -> String {
 }
 
 fn trace(source: &str, backend: &str, extra: Value) -> Value {
-    let code = compile(source, backend);
+    let production = extra
+        .get("production")
+        .and_then(Value::as_bool)
+        .unwrap_or_else(|| {
+            std::env::var("VIZE_VUE_RUNTIME_PRODUCTION").is_ok_and(|value| value == "1")
+        });
+    let compile_request = |source| {
+        if extra.get("separateTemplate").and_then(Value::as_bool) == Some(true) {
+            compile_with_output(
+                source,
+                backend,
+                production,
+                SfcScriptOutputMode::SeparateTemplate,
+            )
+        } else {
+            compile_for_mode(source, backend, production)
+        }
+    };
+    let code = compile_request(source);
     let child_source = extra
         .get("childSource")
         .and_then(Value::as_str)
         .unwrap_or(CHILD);
     let mut input =
-        json!({"backend": backend, "code": code, "child": compile(child_source, backend)});
+        json!({"backend": backend, "code": code, "child": compile_request(child_source)});
     input
         .as_object_mut()
         .unwrap()

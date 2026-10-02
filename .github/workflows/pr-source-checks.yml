@@ -21,6 +21,7 @@ jobs:
       rust-plan: ${{ steps.rust-plan.outputs.rust-plan }}
       js: ${{ steps.plan.outputs.js }}
       tooling: ${{ steps.tooling-plan.outputs.tooling }}
+      tooling-matrix: ${{ steps.tooling-plan.outputs.tooling-matrix }}
       playground: ${{ steps.plan.outputs.playground }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -128,9 +129,12 @@ jobs:
         run: vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check
 
   pr-tooling-scripts:
-    name: PR tooling scripts
+    name: PR tooling scripts (${{ matrix.index }}/${{ matrix.total }})
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     needs: pr-source-plan
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.pr-source-plan.outputs.tooling-matrix) }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 35
     env:
@@ -185,6 +189,7 @@ jobs:
         env:
           SOURCE_LENGTH_BASE_REF: ${{ needs.pr-source-plan.outputs.comparison-base }}
           VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
+          VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
         run: vp run --workspace-root test:scripts:pr
       - name: Test tooling scripts
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
@@ -193,7 +198,9 @@ jobs:
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
         run: vp run --workspace-root test:scripts
       - uses: ./.github/actions/upload-formatter-api-corpus-evidence
-        if: ${{ always() && github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ always() && needs.pr-source-plan.outputs.tooling == 'true' }}
+        with:
+          shard: ${{ matrix.index }}
 
   pr-playground-test:
     name: PR playground browser tests

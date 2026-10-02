@@ -47,15 +47,16 @@ pub(crate) fn resolve_tsconfig_program_inputs(
         .collect::<Vec<_>>();
 
     for file in files.iter().filter(|path| {
-        is_supported_check_file_with_options(
-            path,
-            SupportedFileOptions {
-                // JavaScript reaches Canon so the exact owning config's
-                // inherited allowJs value decides membership.
-                include_js: true,
-                include_jsx,
-            },
-        )
+        !vize_l0::path::is_git_metadata_path(path)
+            && is_supported_check_file_with_options(
+                path,
+                SupportedFileOptions {
+                    // JavaScript reaches Canon so the exact owning config's
+                    // inherited allowJs value decides membership.
+                    include_js: true,
+                    include_jsx,
+                },
+            )
     }) {
         let file = normalize_input_path(file);
         let owner = if is_nuxt_import_manifest_path(&file) {

@@ -50,17 +50,8 @@ use self::output_module::{
 };
 use self::styles::compile_styles;
 
-pub use crate::compile_script::ScriptCompileResult;
-#[expect(deprecated, reason = "kept exported until removal")]
-pub use entry::compile_sfc_with_vue_parser_quirks;
-pub use entry::{
-    SfcScriptOutputMode, compile_sfc, compile_sfc_for_adapter,
-    compile_sfc_for_adapter_with_experimental_options, compile_sfc_for_adapter_with_stage_capture,
-    compile_sfc_with_custom_elements_template_syntax_and_codegen_options,
-    compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options,
-    compile_sfc_with_template_syntax, compile_sfc_with_template_syntax_and_codegen_options,
-    prepare_root_patterned_template,
-};
+mod public;
+pub use public::*;
 use vize_carton::{String, ToCompactString, profile};
 use vize_l0::dump::capture::StageCapture;
 
@@ -131,6 +122,15 @@ fn compile_sfc_inner(
         warnings.push(create_vapor_ssr_fallback_warning(descriptor));
     }
     let is_vapor = !options.template.ssr && vapor_requested;
+    // The production Vapor runtime does not expose script-setup bindings
+    // through the component proxy. Every adapter must inline that template,
+    // including native API callers that retain the development default.
+    let script_output = if is_vapor && options.template.is_prod && descriptor.script_setup.is_some()
+    {
+        SfcScriptOutputMode::InlineTemplate
+    } else {
+        script_output
+    };
     stage_capture::configure(
         capture.as_deref_mut(),
         is_vapor,

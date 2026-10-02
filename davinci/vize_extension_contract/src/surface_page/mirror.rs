@@ -128,15 +128,11 @@ impl<'a> Build<'a> {
                 .get(from as usize..to as usize)
                 .unwrap_or_default()
         };
-        Token {
-            leading: slice(token.start, token.text),
-            text: slice(token.text, token.end),
-            status: if token.missing {
-                TokenStatus::Missing
-            } else {
-                TokenStatus::Present
-            },
+        let mut raw = Token::present(slice(token.start, token.text), slice(token.text, token.end));
+        if token.missing {
+            raw.status = TokenStatus::Missing;
         }
+        raw
     }
 
     fn opt(&self, token: Option<&PageToken>) -> Option<Token<'a>> {

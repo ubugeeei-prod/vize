@@ -42,6 +42,9 @@ impl ServerState {
         let Ok(path) = uri.to_file_path() else {
             return false;
         };
+        if vize_l0::path::is_git_metadata_path(&path) {
+            return false;
+        }
         if path.is_file() {
             return is_vue_file(&path) && self.workspace_vue_files.insert(uri, ()).is_none();
         }
@@ -100,8 +103,9 @@ fn vue_files_below(root: &Path) -> impl Iterator<Item = DirEntry> {
         .parents(false)
         .follow_links(false)
         .filter_entry(|entry| {
-            !entry.file_type().is_some_and(|kind| kind.is_dir())
-                || !is_excluded_directory(entry.file_name())
+            !vize_l0::path::is_git_metadata_path(entry.path())
+                && (!entry.file_type().is_some_and(|kind| kind.is_dir())
+                    || !is_excluded_directory(entry.file_name()))
         });
     builder
         .build()
@@ -111,11 +115,15 @@ fn vue_files_below(root: &Path) -> impl Iterator<Item = DirEntry> {
 }
 
 fn is_vue_file(path: &Path) -> bool {
-    path.extension().is_some_and(|extension| extension == "vue")
+    !vize_l0::path::is_git_metadata_path(path)
+        && path.extension().is_some_and(|extension| extension == "vue")
 }
 
 fn is_vue_uri(uri: &Url) -> bool {
     uri.path().ends_with(".vue")
+        && uri
+            .to_file_path()
+            .is_ok_and(|path| !vize_l0::path::is_git_metadata_path(&path))
 }
 
 async fn discover_sources_in_background(
@@ -136,6 +144,7 @@ async fn discover_sources_in_background(
             uris.dedup();
             let sources = uris
                 .into_iter()
+                .filter(is_vue_uri)
                 .filter_map(|uri| {
                     let path = uri.to_file_path().ok()?;
                     let source = std::fs::read_to_string(path).ok()?;
@@ -154,6 +163,34 @@ async fn discover_sources_in_background(
 #[cfg(test)]
 mod tests {
     use super::{ServerState, Url};
+
+    #[test]
+    fn discovery_excludes_git_metadata_on_disk_and_in_open_buffers() {
+        crate::runtime::block_on(async {
+            let root = tempfile::tempdir().unwrap();
+            let source = root.path().join(".github/App.vue");
+            let metadata = root.path().join(".git/worktrees/cache/Snapshot.vue");
+            for path in [&source, &metadata] {
+                std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+                std::fs::write(path, "<template />").unwrap();
+            }
+            let source_uri = Url::from_file_path(&source).unwrap();
+            let metadata_uri = Url::from_file_path(&metadata).unwrap();
+            let state = ServerState::new();
+            state.set_workspace_root(root.path().to_path_buf());
+            state.documents.open(
+                metadata_uri.clone(),
+                "unsaved metadata".to_string(),
+                1,
+                "vue".to_string(),
+            );
+            assert!(!state.track_workspace_vue_files(metadata_uri.as_str()));
+            assert_eq!(
+                state.discover_workspace_vue_sources().await,
+                vec![(source_uri, "<template />".to_string())],
+            );
+        });
+    }
 
     #[test]
     fn discovery_loads_closed_sources_and_prefers_open_buffers() {

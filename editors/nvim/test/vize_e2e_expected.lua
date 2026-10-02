@@ -76,12 +76,12 @@ local component_contract_host_source = table.concat({
 }, "\n")
 
 local component_contract_hover_value = [[```typescript
-const ContractChild: VueComponent
+const ContractChild: VueComponent &
 {
   props: { label: string; count?: number };
   emits: { save: [value: string] };
   slots: { default(props: { value: string }): unknown };
-  model: "modelValue": boolean;
+  model: { "modelValue": boolean };
 }
 ```
 

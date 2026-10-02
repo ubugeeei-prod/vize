@@ -118,6 +118,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         virtual_ts_options: build_virtual_ts_options(&config, config_dir),
         corsa_path: effective_corsa_path,
         servers: corsa_servers,
+        checkers: args.checkers.map(std::num::NonZero::get),
         options_api,
         legacy_vue2,
         jsx_typecheck,

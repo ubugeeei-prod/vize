@@ -14,10 +14,8 @@
 use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::{InitializeParams, Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
-use vize_l0::config::{
-    ConfigLintRuleOptions, LinterConfig, LinterConfigPlanWithConfigRuleOptions,
-    matcher::LintPlanScope,
-};
+use vize_carton::config::matcher::LintPlanScope;
+use vize_l0::config::{ConfigLintRuleOptions, LinterConfig, LinterConfigPlanWithConfigRuleOptions};
 
 use super::ServerState;
 
@@ -33,7 +31,7 @@ impl WorkspaceFolderConfig {
     /// Load the folder's own `vize.config.*`; a folder without a config file
     /// gets the built-in defaults so contexts stay order-independent.
     fn load(root: PathBuf) -> Self {
-        let (loaded, plan, _) = vize_l0::config::
+        let (loaded, plan, _) = vize_carton::config::
             load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source(
                 Some(&root),
             );

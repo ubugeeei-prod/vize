@@ -120,7 +120,7 @@ pub(in super::super) fn resolve_corsa_executable(
         project_root: Some(project_root),
     };
 
-    match vize_l0::corsa_resolver::resolve_corsa_executable(request) {
+    match vize_carton::corsa_resolver::resolve_corsa_executable(request) {
         Ok(path) => Ok(path),
         // Preserve the historical lenient fallback: a bare `corsa` lets the
         // spawn-time `PATH` lookup have the final word.

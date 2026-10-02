@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Declared from './Declared.vue'
+import Inferred from './Inferred.vue'
+</script>
+<template>
+  <Declared :messages="['a']">
+    <template #message="{ message, key }">{{ key.toFixed() }} {{ message }}</template>
+  </Declared>
+  <Inferred :messages="['b']">
+    <template #message="{ message, key }">{{ key.toFixed() }} {{ message }}</template>
+  </Inferred>
+</template>

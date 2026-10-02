@@ -24,26 +24,21 @@ phf = { workspace = true }
 rustc-hash = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-globset = { workspace = true, optional = true }
 once_cell = { workspace = true }
 smallvec = { workspace = true }
 memchr = { workspace = true }
 simdutf8 = { workspace = true }
 stacker = { workspace = true }
 xxhash-rust = { workspace = true }
-pklrust = { workspace = true }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-which = { workspace = true }
 
 [features]
 default = []
 # External extension wire records and negotiation. Kept out of the default
 # graph so compiler-only consumers build the same code as before.
 extension = []
-lint-glob = ["dep:globset"]
 
 [dev-dependencies]
+vize_carton = { path = "../../crates/vize_carton" }
 criterion.workspace = true
 # Foundation laws use higher-level and legacy producers only as dev oracles.
 # Version-less path declarations are stripped when this foundation is packaged.

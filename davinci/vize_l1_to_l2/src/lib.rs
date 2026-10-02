@@ -65,10 +65,12 @@ extern crate alloc;
 #[cfg(feature = "typescript")]
 extern crate std;
 
+pub mod dialect;
 pub mod emit;
 pub mod exemptions;
 pub mod key;
 pub mod lower;
+pub mod native;
 pub mod partial;
 pub mod pass;
 

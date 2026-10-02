@@ -14,7 +14,9 @@ default-filter = '''not ((package(=vize_maestro) & (
   test(=required_props_keep_exact_unicode_diagnostics) |
   test(=unicode_reserved_props_preserve_value_diagnostics) |
   test(=reserved_prop_shapes_preserve_literal_and_member_diagnostics) |
-  test(=component_event_tuples_preserve_all_argument_diagnostics)
+  test(=component_event_tuples_preserve_all_argument_diagnostics) |
+  test(=typed_import_meta_preserves_exact_authored_diagnostics) |
+  test(=slot_outlet_keys_preserve_complete_project_diagnostics)
 )))'''
 fail-fast = false
 retries = 0

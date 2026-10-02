@@ -280,7 +280,7 @@ export default function setup(app: App) {
 
 ## Visual Regression Testing
 
-The package exposes the `musea-vrt` binary:
+The package exposes the `musea-vrt` binary. See [capture settings and accessibility details](./musea-capture.md) for animation controls and per-node reports:
 
 ```bash
 vp exec musea-vrt --base-url http://localhost:5173

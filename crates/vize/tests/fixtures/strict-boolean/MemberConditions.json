@@ -1,0 +1,69 @@
+[
+  {
+    "file": "App.vue",
+    "messages": [
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected nullable string value in conditional. Please handle the nullish and empty string cases explicitly.",
+        "line": 3,
+        "column": 7,
+        "endLine": 3,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected nullable number value in conditional. Please handle the nullish and zero cases explicitly.",
+        "line": 4,
+        "column": 7,
+        "endLine": 4,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected nullable boolean value in conditional. Please handle the nullish case explicitly.",
+        "line": 5,
+        "column": 7,
+        "endLine": 5,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
+        "line": 6,
+        "column": 7,
+        "endLine": 6,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected object value in conditional. An object is always truthy.",
+        "line": 7,
+        "column": 7,
+        "endLine": 7,
+        "endColumn": 15
+      },
+      {
+        "ruleId": "type/strict-boolean-expressions",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 2,
+        "message": "[vize:type/strict-boolean-expressions] Unexpected string value in conditional. A string can be falsy (empty string) or truthy.",
+        "line": 8,
+        "column": 7,
+        "endLine": 8,
+        "endColumn": 17
+      }
+    ],
+    "errorCount": 6,
+    "warningCount": 0
+  }
+]

@@ -3,7 +3,8 @@ use crate::linter::corsa_session::CorsaTypeAwareSession;
 use corsa::api::ApiMode;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
-use vize_l0::{corsa_resolver::platform_suffix, cstr};
+use vize_carton::corsa_resolver::platform_suffix;
+use vize_l0::cstr;
 
 static NEXT_CASE_ID: AtomicU64 = AtomicU64::new(0);
 

@@ -173,6 +173,8 @@ observational guard for planning only. It does not change rollout state.
 - Stage names are split into preferred physical names and compatibility
   code-name aliases so L0/L1/L2 migration work is measurable without changing
   rollout state.
+- Carton is legacy host/compatibility infrastructure, not a level alias; its
+  references remain visible separately and receive no native-stage credit.
 - \`source/manifest\` includes production Rust files plus crate manifests.
   \`test/dev\` includes crate \`tests\`, \`benches\`, \`tests.rs\`,
   \`*_tests.rs\`, and Rust sites after the first \`#[cfg(test)]\` in a file.
