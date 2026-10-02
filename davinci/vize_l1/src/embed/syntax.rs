@@ -26,7 +26,9 @@ mod wrapped;
 pub use admission::NATIVE_SYNTAX_UNIT_LIMIT;
 use coordinates::Coordinates;
 pub use for_head::{
-    DenseForHeadView, ForHeadHole, ForHeadPart, ForKeyword, NativeForHead, parse_vue_for_head_once,
+    AdmittedDenseForHead, DenseForHeadView, ForHeadHole, ForHeadPart, ForKeyword, NativeForHead,
+    NativeForInput, NativeForInputError, NativeForRefusal, RejectedNativeForInput,
+    parse_vue_for_head_once,
 };
 pub use handoff::RetainedExpression;
 pub use params::RetainedSlotParams;

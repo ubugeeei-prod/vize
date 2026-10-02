@@ -129,6 +129,8 @@ fn defensive_rejection_keeps_original_ast_and_all_observation_records() {
         aliases: Some(Err(original)),
         collection: None,
         hole: Some(ForHeadHole::RejectedPart(ForHeadPart::Aliases)),
+        origin: None,
+        native_refusal: None,
     };
     assert_eq!(refused(&head), head.hole());
     assert_eq!(
