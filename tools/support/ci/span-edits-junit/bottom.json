@@ -1,0 +1,80 @@
+{
+  "repository": "ubugeeei-prod/vize",
+  "cohort": "pull-request",
+  "runId": 37027769372,
+  "attempt": 1,
+  "source": "6d1e91cafe54ad902cb21a217f90977e4a483ce7",
+  "tree": "9dcc477469786a84bc1bc6b4643f1366d6c7f61a",
+  "base": "237aeb7436c9159b8e62f09b27375cb6d87dd953",
+  "originalSource": "4341acd9ad6df6bc8eb5d2ea45aca0daca436709",
+  "checkout": "4f64e6963b24f4a354a1b6b07710fe24f9208d43",
+  "archiveName": "rust-test-archive-37027769372-4f64e6963b24f4a354a1b6b07710fe24f9208d43",
+  "branch": "feat/l1-embedded-source-origin-20261003",
+  "expectedCaseCount": 5,
+  "ownedCaseBlobs": [
+    {
+      "label": "owned-0",
+      "path": "davinci/vize_l1/src/embed/source.rs",
+      "sha": "8396557ea3ce8211d92c1478b5641fc854ca7917"
+    },
+    {
+      "label": "owned-1",
+      "path": "davinci/vize_l1/src/embed/source/origin_tests.rs",
+      "sha": "b40237e3c8d3dbe91ed02f439b1a907fbd917c66"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 11236206455,
+      "name": "rust-test-shard-1-37027769372-1",
+      "bytes": 93942,
+      "sha256": "a1b431bef3655309cdef9f9b2b7540da057c6cee8372b219c0d94795a0666940",
+      "jobId": 110908148232,
+      "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (1/4)",
+      "shard": 1,
+      "binary": "vize_l1",
+      "cases": [
+        "embed::source::origin_tests::authored_and_decoded_sources_keep_the_complete_preparation_input",
+        "embed::source::origin_tests::entity_and_identity_slices_keep_the_same_origin_and_exact_boundaries"
+      ]
+    },
+    {
+      "id": 11236730983,
+      "name": "rust-test-shard-2-37027769372-1",
+      "bytes": 94533,
+      "sha256": "bc98d4e29a3b3e46480e88a8482d9ea6dfa2b02d00876dec670d9c70f34254fe",
+      "jobId": 110908148195,
+      "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (2/4)",
+      "shard": 2,
+      "binary": "vize_l1",
+      "cases": [
+        "embed::source::origin_tests::shared_and_empty_buffers_do_not_create_document_identity",
+        "embed::source::origin_tests::root_metadata_adds_one_borrow_without_plain_preparation_allocations"
+      ]
+    },
+    {
+      "id": 11236311423,
+      "name": "rust-test-shard-3-37027769372-1",
+      "bytes": 91513,
+      "sha256": "08abfc56c8c96d6fd7a0cffba55858d8fb708d9cfab245d6fd49a4c6a5b6f781",
+      "jobId": 110908148261,
+      "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (3/4)",
+      "shard": 3,
+      "binary": "vize_l1",
+      "cases": []
+    },
+    {
+      "id": 11235743395,
+      "name": "rust-test-shard-4-37027769372-1",
+      "bytes": 97265,
+      "sha256": "1293ba218b4d644e19e08a6f9e35f42c996241faed9cd0d4e3e6b60e861839ae",
+      "jobId": 110908148325,
+      "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (4/4)",
+      "shard": 4,
+      "binary": "vize_l1",
+      "cases": [
+        "embed::source::origin_tests::trimmed_interpolation_retains_whole_input_and_entity_spelling"
+      ]
+    }
+  ]
+}

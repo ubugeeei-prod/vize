@@ -1,0 +1,104 @@
+{
+  "repository": "ubugeeei-prod/vize",
+  "cohort": "pull-request",
+  "runId": 37027771862,
+  "attempt": 1,
+  "source": "81382c1e5af399cdb6d7358420890ebdaccef23f",
+  "tree": "230e2ab187c27f08f16e231af70dc695ae70cc48",
+  "base": "6d1e91cafe54ad902cb21a217f90977e4a483ce7",
+  "originalSource": "4341acd9ad6df6bc8eb5d2ea45aca0daca436709",
+  "checkout": "8fd9f3439130ca74739d0e897eebf4f7b2db427d",
+  "archiveName": "rust-test-archive-37027771862-8fd9f3439130ca74739d0e897eebf4f7b2db427d",
+  "branch": "feat/l1-versioned-span-edits-20261003",
+  "expectedCaseCount": 13,
+  "ownedCaseBlobs": [
+    {
+      "label": "owned-0",
+      "path": "davinci/vize_l1/src/embed/source.rs",
+      "sha": "8396557ea3ce8211d92c1478b5641fc854ca7917"
+    },
+    {
+      "label": "owned-1",
+      "path": "davinci/vize_l1/src/embed/source/origin_tests.rs",
+      "sha": "b40237e3c8d3dbe91ed02f439b1a907fbd917c66"
+    },
+    {
+      "label": "owned-2",
+      "path": "davinci/vize_l1/src/edit.rs",
+      "sha": "4d7afc095cc8bf04d8bc1f848e60b2b5c4d40e57"
+    },
+    {
+      "label": "owned-3",
+      "path": "davinci/vize_l1/src/edit/tests.rs",
+      "sha": "273797075d1af23253c12862779df1f8427e6811"
+    },
+    {
+      "label": "owned-4",
+      "path": "davinci/vize_l1/src/lib.rs",
+      "sha": "f7c623ae0c526fae8120200b5cb4cb7e953ac1ee"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 11236471404,
+      "name": "rust-test-shard-1-37027771862-1",
+      "bytes": 94121,
+      "sha256": "fcb94d902decd0bb6b76b9ad4748afca26f85bff230522726b0b24b450aee053",
+      "jobId": 110908324613,
+      "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (1/4)",
+      "shard": 1,
+      "binary": "vize_l1",
+      "cases": [
+        "embed::source::origin_tests::authored_and_decoded_sources_keep_the_complete_preparation_input",
+        "embed::source::origin_tests::entity_and_identity_slices_keep_the_same_origin_and_exact_boundaries"
+      ]
+    },
+    {
+      "id": 11236291396,
+      "name": "rust-test-shard-2-37027771862-1",
+      "bytes": 93635,
+      "sha256": "f8218aeac1c56966e01ae91281d4912b5eb7ef4137444051f4cd161bfffdc0bc",
+      "jobId": 110908324639,
+      "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (2/4)",
+      "shard": 2,
+      "binary": "vize_l1",
+      "cases": [
+        "embed::source::origin_tests::shared_and_empty_buffers_do_not_create_document_identity",
+        "embed::source::origin_tests::root_metadata_adds_one_borrow_without_plain_preparation_allocations",
+        "edit::tests::ordered_adjacent_edits_and_boundary_insertions_apply_once_to_original_bytes",
+        "edit::tests::conflicts_and_unsorted_edits_are_explicit_refusals_without_source_mutation",
+        "edit::tests::native_expression_span_projects_from_retained_preparation_without_reparse",
+        "edit::tests::exact_projection_rejects_entity_interior_even_when_diagnostic_cover_is_valid"
+      ]
+    },
+    {
+      "id": 11236466493,
+      "name": "rust-test-shard-3-37027771862-1",
+      "bytes": 92561,
+      "sha256": "4cc3564684a7e27b45e3c10ae23013384dc6b1822301d8362df52cfeeb7193e8",
+      "jobId": 110908324583,
+      "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (3/4)",
+      "shard": 3,
+      "binary": "vize_l1",
+      "cases": [
+        "edit::tests::stale_version_reopened_key_and_equal_foreign_buffer_never_apply",
+        "edit::tests::prepared_identity_slices_interpolation_and_foreign_equal_roots_stay_bound"
+      ]
+    },
+    {
+      "id": 11236581327,
+      "name": "rust-test-shard-4-37027771862-1",
+      "bytes": 96820,
+      "sha256": "29fb0a5dfd3ef01b848a78e17072968e890d2e6ccbabd56ad044eb0ae272a704",
+      "jobId": 110908324547,
+      "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (4/4)",
+      "shard": 4,
+      "binary": "vize_l1",
+      "cases": [
+        "embed::source::origin_tests::trimmed_interpolation_retains_whole_input_and_entity_spelling",
+        "edit::tests::checked_spans_reject_reversed_out_of_bounds_and_non_utf8_ranges",
+        "edit::tests::shared_and_empty_bytes_still_require_actual_distinct_snapshot_keys"
+      ]
+    }
+  ]
+}
