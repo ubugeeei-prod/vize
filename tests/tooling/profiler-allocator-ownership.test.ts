@@ -9,6 +9,7 @@ import {
   hostModuleText,
   originalAllocatorSelection,
   prepareAllocatorSelection,
+  profileExportContract,
   sfcImportGate,
 } from "../../tools/support/levels/select-profile-allocator-host.ts";
 
@@ -29,7 +30,7 @@ test("host allocator selection checks and repeats without writing", () => {
 
 test("original allocator selection replays to exact current bytes", () => {
   const planned = prepareAllocatorSelection(reader(original));
-  assert.equal(planned.size, 6);
+  assert.equal(planned.size, 7);
   for (const [file, text] of planned) assert.equal(text, current.get(file));
   const replayed = new Map([...original, ...planned]);
   assert.equal(prepareAllocatorSelection(reader(replayed)).size, 0);
@@ -114,5 +115,21 @@ test("allocator replay preflights the real SFC source gate before writes", () =>
       changed.set(sfcImportGate, altered);
       rejectsBeforeWrites(changed);
     }
+  }
+});
+
+test("allocator replay preflights the existing exporter exact-gate contract", () => {
+  for (const state of [original, current]) {
+    const changed = new Map(state);
+    changed.set(
+      profileExportContract,
+      state
+        .get(profileExportContract)!
+        .replace(
+          "0039b68bc23fa3077a61407c0caf903a978e81027377c99563142120008829f1",
+          "unexpected_gate_digest",
+        ),
+    );
+    rejectsBeforeWrites(changed);
   }
 });

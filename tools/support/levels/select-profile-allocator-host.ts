@@ -31,6 +31,11 @@ export const contracts = [
     old: "0039b68bc23fa3077a61407c0caf903a978e81027377c99563142120008829f1",
     next: "26f13cc77bf1f531f4aea165ebdf96d9b3b5629500fd09664e84ba077d2f4172",
   },
+  {
+    file: "tools/support/levels/profile-export-host-contract.ts",
+    old: "9050edf0a4777c61029c1fdbbcb9d346470403659bac95754c8c6329c80f7c1a",
+    next: "25b5346fdf0d5bfa022529890d73763a5329e9c4d8a5e3513cab3ccdf89abe6a",
+  },
 ];
 export const hostModule = "crates/vize_carton/src/profile_allocator.rs";
 export const hostModuleText =
@@ -43,6 +48,11 @@ const sfcGateLaws =
   '\nvoid test("Atelier SFC admits only its exact host allocator selection and rejects Carton storage", () => {\n  const relPath = "crates/vize_atelier_sfc/tests/allocation_budget.rs";\n  const source = fs.readFileSync(path.join(repoRoot, relPath), "utf8");\n  assertPreferredSource(source, relPath);\n  assert.throws(() =>\n    assertPreferredSource(source, "crates/vize_atelier_sfc/src/compile_template.rs"),\n  );\n  for (const changed of [\n    source.replace("ProfilingAllocator<System>", "ProfilingAllocator<WrongAllocator>"),\n    source.replace("system_allocator()", "system_allocator(WrongAllocator)"),\n    source.replace("profile_allocator::system_allocator", "profile_export::system_allocator"),\n    source + "\\nuse vize_carton::String;\\n",\n    source + "\\nuse vize_carton::profiler::ProfilingAllocator;\\n",\n    source +\n      "\\nstatic OTHER: ProfilingAllocator<System> = vize_carton::profile_allocator::system_allocator();\\n",\n    source +\n      "\\nstatic GLOBAL: ProfilingAllocator<System> = vize_carton::profile_allocator::system_allocator();\\n",\n  ]) {\n    assert.throws(() => assertPreferredSource(changed, relPath), { code: "ERR_ASSERTION" });\n  }\n});\n';
 const sfcGateOldCall = "assert.doesNotMatch(source, /\\bvize_carton\\b/u, relPath);";
 const sfcGateNewCall = "assertPreferredSource(source, relPath);";
+export const profileExportContract = "tools/support/levels/profile-export-host-contract.ts";
+const sfcOldGateDigestDeclaration =
+  '      "0039b68bc23fa3077a61407c0caf903a978e81027377c99563142120008829f1",\n';
+const sfcHostGateDigestDeclaration =
+  '      "26f13cc77bf1f531f4aea165ebdf96d9b3b5629500fd09664e84ba077d2f4172",\n';
 const removedSystem =
   "impl ProfilingAllocator<System> {\n    /// Create a profiling allocator backed by [`System`].\n    pub const fn new() -> Self {\n        Self { inner: System }\n    }\n}\n\nimpl Default for ProfilingAllocator<System> {\n    fn default() -> Self {\n        Self::new()\n    }\n}\n\n";
 const digest = (text: string) => createHash("sha256").update(text).digest("hex");
@@ -85,6 +95,11 @@ export function prepareAllocatorSelection(read: Reader): Map<string, string> {
         text
           .replace(sfcGateAnchor, sfcGateHelper + sfcGateAnchor)
           .replace(sfcGateOldCall, sfcGateNewCall) + sfcGateLaws;
+    else if (contract.file === profileExportContract)
+      text = text.replace(
+        sfcOldGateDigestDeclaration,
+        sfcOldGateDigestDeclaration + sfcHostGateDigestDeclaration,
+      );
     else
       text = text.replace(
         "ProfilingAllocator::new()",
@@ -123,6 +138,8 @@ export function originalAllocatorSelection(read: Reader): Map<string, string> {
         .replace(sfcGateHelper, "")
         .replace(sfcGateNewCall, sfcGateOldCall)
         .replace(sfcGateLaws, "");
+    else if (contract.file === profileExportContract)
+      text = text.replace(sfcHostGateDigestDeclaration, "");
     else
       text = text.replace(
         "vize_carton::profile_allocator::system_allocator()",

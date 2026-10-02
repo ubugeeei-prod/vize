@@ -33,6 +33,8 @@ The existing SFC preferred-L0 source gate admits only the exact System factory
 initializer in its allocation-budget binary. It still rejects Carton storage,
 alternate allocator types, additional calls and the same host call in compiler
 source. Replay validates and updates this executable gate before any write.
+The earlier exporter replay also retains this exact reviewed gate digest; the
+allocator replay preflights and updates that byte contract in the same plan.
 
 Finite source proof compares the original allocator hooks and actual callers
 with signed main. The public host doctest verifies const construction and exact
