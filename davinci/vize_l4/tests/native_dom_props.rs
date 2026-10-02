@@ -4,8 +4,10 @@
 mod support;
 
 use vize_l0::Allocator;
-use vize_l1_to_l2::vue_file::VueFileProducer;
-use vize_l2::lang::js::ProgramInput;
+use vize_l2::{
+    file::TemplateScope,
+    lang::js::{FileProducer, ProgramInput, ProgramScope},
+};
 use vize_l3::decision::build_dom_file_decisions;
 use vize_l4::{
     module::assemble_template,
@@ -25,19 +27,23 @@ fn complete_file_literal_property_modules_keep_comments_trivia_and_authentic_own
         }
         let arena = Allocator::default();
         let source = reference["source"].as_str().unwrap();
-        let mut producer = VueFileProducer::new(&arena, source).unwrap();
+        let mut producer = FileProducer::new(&arena, source).unwrap();
         let (syntax, block) = support::script(&arena, source, reference["setup"].as_str().unwrap());
         producer
-            .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap())
+            .program(
+                ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap(),
+                ProgramScope::Nested,
+            )
             .unwrap();
         let native = support::construct(
             &arena,
             source,
             reference["template"].as_str().unwrap(),
             &mut producer,
+            TemplateScope::LastUnit,
         );
         let vue = producer.finish().unwrap();
-        let analysis = build_dom_file_decisions(vue.file()).unwrap();
+        let analysis = build_dom_file_decisions(&vue).unwrap();
         let recorded = assemble_template(
             emit_file::<Recorded>(&analysis).unwrap(),
             vocabulary(Runtime::VueDom),
@@ -64,7 +70,7 @@ fn complete_file_literal_property_modules_keep_comments_trivia_and_authentic_own
             .file_expression(embed.node.unwrap())
             .unwrap();
         let resolution = row.resolution();
-        assert!(core::ptr::eq(resolution.file(), vue.file()));
+        assert!(core::ptr::eq(resolution.file(), &vue));
         let table = resolution.table().unwrap();
         assert!(table.occurrences().is_empty());
         assert!(core::ptr::eq(

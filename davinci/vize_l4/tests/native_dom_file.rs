@@ -4,8 +4,10 @@ mod support;
 
 use support::{construct, script};
 use vize_l0::Allocator;
-use vize_l1_to_l2::vue_file::VueFileProducer;
-use vize_l2::{file::Namespace, lang::js::ProgramInput};
+use vize_l2::{
+    file::{Namespace, TemplateScope},
+    lang::js::{FileProducer, ProgramInput, ProgramScope},
+};
 use vize_l3::decision::{build_dom_file_decisions, dom::DomUnsupported};
 use vize_l4::module::assemble_template;
 use vize_l4::runtime::{Runtime, vocabulary};
@@ -21,22 +23,33 @@ fn complete_static_and_literal_modules_keep_real_file_owners_and_link_sinks() {
         let arena = Allocator::default();
         let source = fixture["source"].as_str().unwrap();
         let template = fixture["template"].as_str().unwrap();
-        let mut producer = VueFileProducer::new(&arena, source).unwrap();
+        let mut producer = FileProducer::new(&arena, source).unwrap();
         let syntax = fixture["setup"]
             .as_str()
             .map(|content| script(&arena, source, content));
         if let Some((syntax, block)) = &syntax {
             producer
-                .setup(
+                .program(
                     ProgramInput::checked(syntax.admitted_program().unwrap(), *block, 0).unwrap(),
+                    ProgramScope::Nested,
                 )
                 .unwrap();
         }
-        let native = construct(&arena, source, template, &mut producer);
+        let native = construct(
+            &arena,
+            source,
+            template,
+            &mut producer,
+            if syntax.is_some() {
+                TemplateScope::LastUnit
+            } else {
+                TemplateScope::Root
+            },
+        );
         let vue = producer.finish().unwrap();
-        let analysis = build_dom_file_decisions(vue.file()).unwrap();
-        assert!(core::ptr::eq(analysis.file(), vue.file()));
-        assert!(core::ptr::eq(analysis.artifact(), vue.file().artifact()));
+        let analysis = build_dom_file_decisions(&vue).unwrap();
+        assert!(core::ptr::eq(analysis.file(), &vue));
+        assert!(core::ptr::eq(analysis.artifact(), vue.artifact()));
         assert!(analysis.dom().unwrap().unsupported().is_empty());
         let recorded = assemble_template(
             emit_file::<Recorded>(&analysis).unwrap(),
@@ -65,13 +78,10 @@ fn complete_static_and_literal_modules_keep_real_file_owners_and_link_sinks() {
                 .file_expression(node)
                 .unwrap()
                 .resolution();
-            assert!(core::ptr::eq(resolution.file(), vue.file()));
+            assert!(core::ptr::eq(resolution.file(), &vue));
             assert_eq!(resolution.node(), node);
             let scope = resolution.scope().unwrap();
-            assert_eq!(
-                vue.file().scopes().get(scope.index() as usize).unwrap().id,
-                scope
-            );
+            assert_eq!(vue.scopes().get(scope.index() as usize).unwrap().id, scope);
             let expression = resolution.table().unwrap().expression();
             assert!(core::ptr::eq(
                 expression.ast,
@@ -117,28 +127,33 @@ fn complete_static_and_literal_modules_keep_real_file_owners_and_link_sinks() {
 }
 
 #[test]
-fn const_initializers_and_setup_shadowing_never_authorize_context_access() {
+fn const_initializers_and_nested_unit_shadowing_never_authorize_context_access() {
     let arena = Allocator::default();
     let source = "<!--雪🌸--><script>const msg = 'outer';</script><script setup>const msg = 'inner';</script><template><p :title=\"'first'\">{{msg}}</p></template>";
     let (ordinary, ordinary_block) = script(&arena, source, "const msg = 'outer';");
     let (setup, setup_block) = script(&arena, source, "const msg = 'inner';");
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
+    let mut producer = FileProducer::new(&arena, source).unwrap();
     producer
-        .ordinary(
+        .program(
             ProgramInput::checked(ordinary.admitted_program().unwrap(), ordinary_block, 0).unwrap(),
+            ProgramScope::Module,
         )
         .unwrap();
     producer
-        .setup(ProgramInput::checked(setup.admitted_program().unwrap(), setup_block, 1).unwrap())
+        .program(
+            ProgramInput::checked(setup.admitted_program().unwrap(), setup_block, 1).unwrap(),
+            ProgramScope::Nested,
+        )
         .unwrap();
     let native = construct(
         &arena,
         source,
         "<p :title=\"'first'\">{{msg}}</p>",
         &mut producer,
+        TemplateScope::LastUnit,
     );
     let vue = producer.finish().unwrap();
-    let analysis = build_dom_file_decisions(vue.file()).unwrap();
+    let analysis = build_dom_file_decisions(&vue).unwrap();
     assert!(analysis.dom().unwrap().unsupported().is_empty());
     let embed = native
         .embeds
@@ -152,25 +167,23 @@ fn const_initializers_and_setup_shadowing_never_authorize_context_access() {
         .file_expression(node)
         .unwrap()
         .resolution();
-    assert_eq!(row.scope(), Some(vue.setup().unwrap().scope()));
+    assert_eq!(row.scope(), Some(vue.units().last().unwrap().scope));
     let use_site = row.table().unwrap().occurrences().first().unwrap();
     let declaration = row
         .binding(use_site.binding)
         .unwrap()
         .declaration()
         .unwrap();
-    assert_eq!(declaration.scope, vue.setup().unwrap().scope());
+    assert_eq!(declaration.scope, vue.units().last().unwrap().scope);
     assert_eq!(
         row.binding(use_site.binding).unwrap().id(),
-        vue.file()
-            .lookup(vue.setup().unwrap().scope(), "msg", Namespace::Value)
+        vue.lookup(vue.units().last().unwrap().scope, "msg", Namespace::Value)
             .unwrap()
             .id()
     );
     assert_ne!(
         use_site.binding,
-        vue.file()
-            .lookup(vue.ordinary().unwrap().scope(), "msg", Namespace::Value)
+        vue.lookup(vue.units().first().unwrap().scope, "msg", Namespace::Value)
             .unwrap()
             .id()
     );
@@ -202,10 +215,10 @@ fn const_initializers_and_setup_shadowing_never_authorize_context_access() {
 fn zero_reference_nonliteral_keeps_the_real_l3_refusal_and_full_source() {
     let arena = Allocator::default();
     let source = "<p :title=\"[]\"/>";
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
-    let native = construct(&arena, source, source, &mut producer);
+    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let native = construct(&arena, source, source, &mut producer, TemplateScope::Root);
     let vue = producer.finish().unwrap();
-    let analysis = build_dom_file_decisions(vue.file()).unwrap();
+    let analysis = build_dom_file_decisions(&vue).unwrap();
     let error = emit_file::<Recorded>(&analysis).unwrap_err();
     assert_eq!(
         error.kind,
@@ -227,10 +240,10 @@ fn zero_reference_nonliteral_keeps_the_real_l3_refusal_and_full_source() {
 fn special_attribute_refusal_keeps_exact_binding_diagnostics_before_any_output() {
     let arena = Allocator::default();
     let source = "<p :key=\"'identity'\">text</p>";
-    let mut producer = VueFileProducer::new(&arena, source).unwrap();
-    let native = construct(&arena, source, source, &mut producer);
+    let mut producer = FileProducer::new(&arena, source).unwrap();
+    let native = construct(&arena, source, source, &mut producer, TemplateScope::Root);
     let vue = producer.finish().unwrap();
-    let analysis = build_dom_file_decisions(vue.file()).unwrap();
+    let analysis = build_dom_file_decisions(&vue).unwrap();
     let error = emit_file::<NoLinks>(&analysis).unwrap_err();
     assert_eq!(
         error.kind,

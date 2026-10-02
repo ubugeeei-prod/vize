@@ -9,22 +9,26 @@ use crate::runtime::{Runtime, vocabulary};
 use crate::targets::dom::DomErrorKind;
 use crate::write::{Recorded, Writer};
 use vize_l0::{Allocator, Span};
-use vize_l1_to_l2::vue_file::VueFileProducer;
-use vize_l2::{expr::ExprRef, lang::js::ProgramInput};
+use vize_l2::{
+    expr::ExprRef,
+    file::TemplateScope,
+    lang::js::{FileProducer, ProgramInput, ProgramScope},
+};
 use vize_l3::decision::build_dom_file_decisions;
 
 #[test]
 fn equal_numeric_nodes_do_not_authorize_a_foreign_retained_literal() {
     let arena = Allocator::default();
     let source = "<p>{{'same'}}</p>";
-    let mut first = VueFileProducer::new(&arena, source).unwrap();
-    let first_native = support::construct(&arena, source, source, &mut first);
+    let mut first = FileProducer::new(&arena, source).unwrap();
+    let first_native = support::construct(&arena, source, source, &mut first, TemplateScope::Root);
     let first = first.finish().unwrap();
-    let mut second = VueFileProducer::new(&arena, source).unwrap();
-    let second_native = support::construct(&arena, source, source, &mut second);
+    let mut second = FileProducer::new(&arena, source).unwrap();
+    let second_native =
+        support::construct(&arena, source, source, &mut second, TemplateScope::Root);
     let second = second.finish().unwrap();
-    let first_analysis = build_dom_file_decisions(first.file()).unwrap();
-    let second_analysis = build_dom_file_decisions(second.file()).unwrap();
+    let first_analysis = build_dom_file_decisions(&first).unwrap();
+    let second_analysis = build_dom_file_decisions(&second).unwrap();
     let node = first_native.embeds.first().unwrap().node.unwrap();
     assert_eq!(second_native.embeds.first().unwrap().node, Some(node));
     let original = first_analysis
@@ -77,20 +81,38 @@ fn equal_binding_ids_keep_real_owners_and_reference_refusal_is_atomic() {
     let arena = Allocator::default();
     let source = "<script setup>const msg = 'literal';</script><template>{{msg}}</template>";
     let (syntax, block) = support::script(&arena, source, "const msg = 'literal';");
-    let mut first = VueFileProducer::new(&arena, source).unwrap();
+    let mut first = FileProducer::new(&arena, source).unwrap();
     first
-        .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap())
+        .program(
+            ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap(),
+            ProgramScope::Nested,
+        )
         .unwrap();
-    let first_native = support::construct(&arena, source, "{{msg}}", &mut first);
+    let first_native = support::construct(
+        &arena,
+        source,
+        "{{msg}}",
+        &mut first,
+        TemplateScope::LastUnit,
+    );
     let first = first.finish().unwrap();
-    let mut second = VueFileProducer::new(&arena, source).unwrap();
+    let mut second = FileProducer::new(&arena, source).unwrap();
     second
-        .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap())
+        .program(
+            ProgramInput::checked(syntax.admitted_program().unwrap(), block, 0).unwrap(),
+            ProgramScope::Nested,
+        )
         .unwrap();
-    let second_native = support::construct(&arena, source, "{{msg}}", &mut second);
+    let second_native = support::construct(
+        &arena,
+        source,
+        "{{msg}}",
+        &mut second,
+        TemplateScope::LastUnit,
+    );
     let second = second.finish().unwrap();
-    let first_analysis = build_dom_file_decisions(first.file()).unwrap();
-    let second_analysis = build_dom_file_decisions(second.file()).unwrap();
+    let first_analysis = build_dom_file_decisions(&first).unwrap();
+    let second_analysis = build_dom_file_decisions(&second).unwrap();
     let node = first_native.embeds.first().unwrap().node.unwrap();
     assert_eq!(second_native.embeds.first().unwrap().node, Some(node));
     let original = first_analysis

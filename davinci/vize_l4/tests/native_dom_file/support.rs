@@ -4,7 +4,17 @@ use vize_l0::{Allocator, SourceBlock, SourceRoot};
 use vize_l1::embed::syntax::{NativeSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
 use vize_l1_to_l2::native::{NativeComponent, NativeProduced};
-use vize_l1_to_l2::vue_file::VueFileProducer;
+use vize_l2::file::{Declaration, TemplatePolicy, TemplateScope};
+use vize_l2::lang::js::FileProducer;
+
+#[derive(Clone, Copy)]
+struct DiagnosticValues;
+
+impl TemplatePolicy for DiagnosticValues {
+    fn visible(self, _: &Declaration) -> bool {
+        true
+    }
+}
 
 pub fn block<'a>(source: &'a str, content: &str) -> SourceBlock<'a> {
     // Selection belongs only to the authored dev fixture. SourceRoot still
@@ -39,10 +49,13 @@ pub fn construct<'a>(
     arena: &'a Allocator,
     source: &'a str,
     template: &str,
-    producer: &mut VueFileProducer<'a>,
+    producer: &mut FileProducer<'a>,
+    scope: TemplateScope,
 ) -> NativeProduced<'a> {
     let component = NativeComponent::parse_in(arena, block(source, template)).unwrap();
-    let mut region = producer.template_region().unwrap();
+    // Real lower factories record lexical rows. This diagnostic policy grants
+    // no Vue role, runtime class, or complete original-template custody.
+    let mut region = producer.template_region(scope, DiagnosticValues).unwrap();
     let native = component.construct_in(&mut region, Lang::Js).unwrap();
     assert!(native.is_supported(), "{source}");
     native
