@@ -2520,12 +2520,14 @@ name = "oxc_parser"
 version = "0.142.0"
 dependencies = [
  "bitflags 2.13.1",
+ "compact_str",
  "cow-utils",
  "memchr",
  "num-bigint",
  "num-traits",
  "oxc_allocator",
  "oxc_ast",
+ "oxc_ast_visit",
  "oxc_data_structures",
  "oxc_diagnostics",
  "oxc_ecmascript",
@@ -4755,6 +4757,7 @@ dependencies = [
 name = "vize_l1"
 version = "0.430.0"
 dependencies = [
+ "davinci_harness",
  "davinci_test_support",
  "htmlize",
  "oxc_ast",

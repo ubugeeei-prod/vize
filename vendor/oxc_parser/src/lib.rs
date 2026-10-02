@@ -70,6 +70,7 @@ pub mod config;
 mod context;
 mod cursor;
 mod error_handler;
+mod embedding;
 mod modifiers;
 mod module_record;
 mod observation;
@@ -99,6 +100,11 @@ use oxc_syntax::module_record::ModuleRecord;
 
 pub use crate::lexer::{Kind, Token};
 pub use observation::{AdmittedProgram, ProgramObservation};
+pub use embedding::{
+    AdmittedExpression, AdmittedHandlerBody, AdmittedParameters, EmbeddingGoal, EmbeddingHole,
+    EmbeddingInput, EmbeddingInputError, EmbeddingObservation, ExpressionObservation,
+    HandlerBodyObservation, ParametersObservation,
+};
 use crate::{
     config::{
         LexerConfig, NoTokensParserConfig, ParserConfig, RuntimeParserConfig, TokensParserConfig,

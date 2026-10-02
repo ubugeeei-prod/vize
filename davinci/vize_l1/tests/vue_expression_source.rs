@@ -123,7 +123,7 @@ fn entity_whitespace_survives_and_real_ast_endpoints_project_to_complete_authore
         panic!("expected the actual logical expression")
     };
     let ast = core::ptr::from_ref(&**logical);
-    let retained = syntax.into_expression(&allocator).unwrap();
+    let retained = syntax.into_expression().unwrap();
     let Expression::LogicalExpression(logical) = retained.expression().unwrap() else {
         panic!("expected the same retained logical payload")
     };
@@ -230,7 +230,7 @@ fn retained_root_and_all_leading_trailing_comments_survive_without_minimum_envel
                 .collect::<Vec<_>>(),
             comments
         );
-        let retained = syntax.into_expression(&allocator).unwrap();
+        let retained = syntax.into_expression().unwrap();
         let Expression::Identifier(identifier) = retained.expression().unwrap() else {
             panic!("expected the same retained identifier payload")
         };

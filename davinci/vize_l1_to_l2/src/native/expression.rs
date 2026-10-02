@@ -104,7 +104,7 @@ impl<'a> Context<'a> {
                 source,
             },
         );
-        let retained = match syntax.into_expression(self.allocator) {
+        let retained = match syntax.into_expression() {
             Ok(retained) => retained,
             Err(syntax) => {
                 self.rejected_syntax.push(*syntax);

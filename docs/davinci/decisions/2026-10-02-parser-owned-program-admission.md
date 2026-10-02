@@ -29,9 +29,9 @@ keeps that original requested identity even if its AST infers Module.
 L1 retains this whole ordinary-drop observation for Program only and exposes
 its private borrowed capability through `NativeSyntax::admitted_program()`.
 The original source, typed hole, actual comments and complete diagnostic views
-remain available when no capability is admitted. Wrapped Expr/HandlerBody/
-SlotParams paths keep their existing parser result, guards and consuming
-handoff. A non-Expr `into_expression` returns the whole owner intact.
+remain available when no capability is admitted. The [authenticated fixed embedding extension](./2026-10-02-authenticated-embedding-projections.md)
+retains the original wrapped guards while moving its complete observation and
+selected roots through the parser-owned consuming projection. A non-Expr `into_expression` returns the whole owner intact.
 No parser or semantic pass, AST clone, stage, serialization or legacy normal
 dependency is added.
 

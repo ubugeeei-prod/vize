@@ -24,7 +24,7 @@ fn parameter_await_is_a_precise_context_hole_with_full_owned_observations() {
             // OXC produced no diagnostic. Keep the original empty owner rather
             // than fabricating one or advertising a recovered parameter root.
             assert_eq!(syntax.diagnostics().count(), 0);
-            let retained = syntax.into_slot_params(&allocator).unwrap();
+            let retained = syntax.into_slot_params().unwrap();
             assert_eq!(retained.hole(), Some(EmbedHole::InvalidParameterContext));
             assert!(retained.parameters().is_none() && retained.rest().is_none());
             if text.contains("keep") {
@@ -40,7 +40,7 @@ fn parameter_await_is_a_precise_context_hole_with_full_owned_observations() {
             let count = syntax.diagnostics().count();
             assert!(count > 0);
             let message = syntax.diagnostics().next().unwrap().message().as_ptr();
-            let retained = syntax.into_slot_params(&allocator).unwrap();
+            let retained = syntax.into_slot_params().unwrap();
             assert_eq!(retained.diagnostics().count(), count);
             assert_eq!(
                 retained.diagnostics().next().unwrap().message().as_ptr(),
@@ -113,7 +113,7 @@ fn parameter_context_preserves_authored_offsets_and_existing_module_refusal() {
         },
     );
     let comment = syntax.comments().next().unwrap().text().unwrap().as_ptr();
-    let retained = syntax.into_slot_params(&allocator).unwrap();
+    let retained = syntax.into_slot_params().unwrap();
     assert_eq!(retained.hole(), Some(EmbedHole::InvalidParameterContext));
     assert_eq!(retained.source().span(), source.span());
     assert_eq!(

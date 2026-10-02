@@ -28,10 +28,13 @@ fn root_outlives_observation_owner_and_preserves_actual_subtree_addresses() {
             panic!("expected left identifier")
         };
         let original_left = core::ptr::from_ref(&**left);
-        let comments = syntax.program.as_ref().unwrap().comments.as_ptr();
-        let retained = syntax.into_expression(&allocator).unwrap();
+        let comments = syntax.embedding.as_ref().unwrap().comments().as_ptr();
+        let retained = syntax.into_expression().unwrap();
         assert_eq!(retained.hole(), None);
-        assert_eq!(retained.comments.as_ptr(), comments);
+        assert_eq!(
+            retained.observation.as_ref().unwrap().comments().as_ptr(),
+            comments
+        );
         let root = retained.expression().unwrap();
         let Expression::BinaryExpression(binary) = root else {
             panic!("expected moved binary expression")
@@ -58,17 +61,20 @@ fn root_outlives_observation_owner_and_preserves_actual_subtree_addresses() {
 fn handoff_removes_only_generated_parentheses_and_keeps_comments_and_coordinates() {
     let allocator = Allocator::default();
     let syntax = parse_once(&allocator, embed("/*keep*/ (count) //tail", Shape::Expr));
-    let original_comments = syntax.program.as_ref().unwrap().comments.as_ptr();
+    let original_comments = syntax.embedding.as_ref().unwrap().comments().as_ptr();
     let Expression::ParenthesizedExpression(original) = syntax.expression().unwrap() else {
         panic!("expected authored parentheses")
     };
     let original_parentheses = core::ptr::from_ref(&**original);
-    let retained = syntax.into_expression(&allocator).unwrap();
+    let retained = syntax.into_expression().unwrap();
     let Expression::ParenthesizedExpression(parentheses) = retained.expression().unwrap() else {
         panic!("authored parentheses must survive")
     };
     assert_eq!(core::ptr::from_ref(&**parentheses), original_parentheses);
-    assert_eq!(retained.comments.as_ptr(), original_comments);
+    assert_eq!(
+        retained.observation.as_ref().unwrap().comments().as_ptr(),
+        original_comments
+    );
     assert_eq!(retained.parser_prefix(), 2);
     assert_eq!(
         retained.decoded_span(parentheses.span),
@@ -100,7 +106,7 @@ fn moved_expression_retains_actual_once_decoded_source_and_authored_projection()
             source,
         },
     );
-    let retained = syntax.into_expression(&allocator).unwrap();
+    let retained = syntax.into_expression().unwrap();
     let Expression::Identifier(identifier) = retained.expression().unwrap() else {
         panic!("expected actual decoded identifier")
     };
@@ -118,7 +124,7 @@ fn syntax_and_admission_holes_keep_owned_observations_without_recovery_ast() {
     let allocator = Allocator::default();
     let syntax = parse_once(&allocator, embed("count + /*keep*/", Shape::Expr));
     let message = syntax.diagnostics().next().unwrap().message().as_ptr();
-    let retained = syntax.into_expression(&allocator).unwrap();
+    let retained = syntax.into_expression().unwrap();
     assert_eq!(retained.hole(), Some(EmbedHole::Syntax));
     assert!(retained.expression().is_none());
     assert_eq!(
@@ -143,7 +149,7 @@ fn syntax_and_admission_holes_keep_owned_observations_without_recovery_ast() {
     }
     let too_large = ";".repeat(32);
     let retained = parse_once(&allocator, embed(&too_large, Shape::Expr))
-        .into_expression(&allocator)
+        .into_expression()
         .unwrap();
     assert_eq!(retained.hole(), Some(EmbedHole::TokenBudget));
     assert_eq!(retained.source().text(), too_large);
@@ -161,7 +167,7 @@ fn non_expression_artifacts_are_returned_intact() {
     );
     let statements = syntax.handler_body().unwrap().statements().as_ptr();
     let comments = syntax.comments().next().unwrap().text().unwrap().as_ptr();
-    let original = syntax.into_expression(&allocator).unwrap_err();
+    let original = syntax.into_expression().unwrap_err();
     assert_eq!(original.grammar().shape, Shape::HandlerBody);
     assert_eq!(original.hole(), None);
     assert_eq!(original.handler_body().unwrap().statements().len(), 1);
@@ -177,7 +183,7 @@ fn non_expression_artifacts_are_returned_intact() {
 
     let syntax = parse_once(&allocator, embed("let =", Shape::Program));
     let message = syntax.diagnostics().next().unwrap().message().as_ptr();
-    let original = syntax.into_expression(&allocator).unwrap_err();
+    let original = syntax.into_expression().unwrap_err();
     assert_eq!(original.hole(), Some(EmbedHole::Syntax));
     assert_eq!(
         original.diagnostics().next().unwrap().message().as_ptr(),

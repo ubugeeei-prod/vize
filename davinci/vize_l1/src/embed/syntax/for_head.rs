@@ -272,7 +272,7 @@ pub fn parse_vue_for_head_once<'a>(
                 source: aliases,
             },
         )
-        .into_slot_params(allocator),
+        .into_slot_params(),
     );
     head.collection = Some(
         parse_once(
@@ -285,7 +285,7 @@ pub fn parse_vue_for_head_once<'a>(
                 source: collection,
             },
         )
-        .into_expression(allocator),
+        .into_expression(),
     );
     head.hole = refused(&head);
     head

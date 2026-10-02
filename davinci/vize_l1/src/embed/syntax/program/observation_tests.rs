@@ -41,7 +41,7 @@ fn nonfatal_regex_error_cannot_mint_admission_from_its_recovery_ast() {
     );
     assert!(core::mem::needs_drop::<ProgramObservation<'_>>());
     assert!(core::mem::needs_drop::<NativeSyntax<'_>>());
-    let retained = tree.into_expression(&allocator).unwrap_err();
+    let retained = tree.into_expression().unwrap_err();
     assert_eq!(retained.hole(), Some(EmbedHole::Syntax));
     assert_eq!(retained.comments().count(), 2);
     assert_eq!(retained.diagnostics().count(), observed.diagnostics().len());
