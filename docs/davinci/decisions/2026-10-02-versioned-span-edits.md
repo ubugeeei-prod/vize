@@ -38,12 +38,50 @@ identity/entity slices, trimmed interpolation, shared/empty limitations and
 the payload size/no-Drop/plain-allocation observation. It is a scoped cache
 proof, not a fresh whole-Cargo or hosted acceptance result.
 
-The shared checked edit API and real diagnostic/fix/code-action consumers are
-next. Stale host versions, incorrect source roots, UTF-8/range errors, partial
-entities and conflicting edits must refuse application atomically. Product
-defaults and legacy fix application remain unchanged until their fix-history
-gates close. Fresh exact-head Actions, all 100 unchanged instruction ceilings,
-full native observations and protected merge are required before acceptance.
+`vize_l1::edit` now provides `VersionedSource`, `SpanEdit` and `EditSet`.
+The host supplies its genuine snapshot key, client version and `SourceRoot`;
+the key must distinguish both document and revision when versions reset or
+bytes are shared. A borrowed actual URI plus actual host revision is one
+possible carrier. The provider creates no global brand, URI or identity hash.
+It cannot query current host state; adapters must capture genuine identities
+and serialize validation/application with their ordinary document updates.
+
+Checked construction rejects reversed/out-of-bounds/non-UTF-8 authored spans.
+Projection consumes the retained native `EmbedSource` and its existing exact
+`authored_span` map, after original pointer/length validation. It never uses
+diagnostic covering, compares decoded-text equality, or parses/decodes again.
+The immutable edit set borrows source-ordered checked edits and replacements;
+mixed snapshots, stale versions, foreign buffers, unsorted ranges, interior
+overlaps and duplicate insertion points are explicit errors. Adjacent ranges
+and boundary insertions follow supplied order; insertion at a replacement's
+start must precede it, while later insertion can use its end. Construction validates once
+and records checked output length; application rechecks the current snapshot,
+reserves one L0 String and emits changed/unchanged authored bytes in one pass.
+Every error leaves the original source untouched. Private fields prevent
+unchecked construction or changing a validated span, owner or replacement.
+
+Eight additional laws run against the real complete L1 artifact, including a
+single native Expr parse whose retained OXC right-hand span selects `&fjlig;`
+in an actual authored directive. Replacing it produces the exact expected
+authored output without reparsing. Other laws cover valid Unicode/application,
+stale versions, reopened/foreign keys, equal separately allocated buffers,
+overlaps/order, entity-interior refusal despite valid diagnostic coverage,
+identity slices, interpolation and shared/empty document keys. Six deliberately
+broken provider guards are caught by these actual laws. Five independent
+external compilations reject private field mutation/forgery. Both proof sets
+retain their actual source/dependency identities and scope; they provide no
+product or hosted performance credit. Full per-file storage-policy laws pass;
+the new production row reviews one L0 String import/two bound uses for output,
+with no alloc String/Vec, arena storage, refcounts or new dependencies.
+
+Complete diagnostic/fix/code-action consumers remain unfinished. The current
+Patina fixes and Maestro actions lack this retained native source carrier;
+their default behavior is unchanged. Product integration must retain actual
+host snapshot identities and full native diagnostic/fix mappings, close each
+product's fix-history gate and reuse the shared provider rather than inventing
+a second authority or legacy-backed native path. Fresh exact-head Actions,
+all 100 unchanged instruction ceilings, full native observations and protected
+merge are required before acceptance. #6876 remains open for those consumers.
 
 The first published origin head (`237aeb7`, PR #7434) failed its full source
 inventory check: the committed L1 Span grep count remained 310, while the
@@ -51,3 +89,9 @@ actual source generator reported 327. Regenerating the authoritative Croquis
 inventory changes only that L1 shard. The production source, scanner, gates
 and budgets remain unchanged. This correction needs fresh exact-head required,
 full and instruction Actions; the failed original run is retained as evidence.
+
+The first published checked-edit head (`4341acd`, PR #7435) had the same
+source-inventory omission: its actual complete L1 Span grep count is 375.
+The child records that actual count after replaying only its reviewed source
+and documentation over the corrected origin layer. Both failed original full
+runs remain preserved, and both new Stack heads require fresh acceptance.
