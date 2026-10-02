@@ -33,3 +33,13 @@ Remaining: genuine retained L1 template/directive/embed consumers (#6847),
 all Vue dialects and JS/TS/JSX/TSX, SFC/options, shared source/version edits
 (#6876), full-source Actions and formatter-specific instruction-count evidence.
 The complete #6882 fix-history gate still precedes any default product switch.
+
+## Canonical inventory (2026-10-03)
+
+The first hosted required and full-source runs rejected the stale Glyph consumer
+migration shard: module registration moves the existing lib.rs L0 site and the
+Doc/printer/layout-law files add three real L0 sites. The unchanged canonical
+Node generator writes the actual 62-line shard; every other generated shard
+remains byte-exact. The correction changes no product source, expectation, gate,
+fixture or performance ceiling. Actual canonical inventory/storage/ledger laws
+are checked locally; fresh exact-head Actions and protected queue remain required.
