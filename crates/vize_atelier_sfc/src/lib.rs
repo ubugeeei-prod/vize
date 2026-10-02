@@ -40,6 +40,7 @@ pub mod croquis;
 pub mod css;
 pub(crate) mod module_map;
 pub mod module_shape;
+pub mod native;
 pub mod rewrite_default;
 pub mod script;
 pub mod style;
@@ -84,6 +85,10 @@ pub use compile_script::props::{
 pub use css::{
     CssAstResult, CssCompileOptions, CssCompileResult, CssTargets, bundle_css, compile_css,
     compile_style_block, parse_css_ast, print_css_ast,
+};
+pub use native::{
+    NativeSfcCompilation, NativeSfcCompileError, NativeSfcCompileOptions, NativeSfcOutput,
+    compile_native_sfc,
 };
 pub use parse::parse_sfc;
 pub use script::{TypeResolutionBatchGuard, begin_type_resolution_batch};

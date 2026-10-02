@@ -89,7 +89,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ReactivityTracker`       |        0 |    1 |
 | `Scope`                   |        0 |    6 |
 | `ScopeKind`               |        2 |    3 |
-| `Span`                    |        0 |    9 |
+| `Span`                    |        0 |   12 |
 | `Symbol`                  |        0 |    5 |
 | `SymbolFlags`             |        0 |    5 |
 | `Croquis.bindings`        |       23 |  229 |
