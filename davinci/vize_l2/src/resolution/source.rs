@@ -1,0 +1,129 @@
+//! Crate-private Program source admission for the owning statement walker.
+
+use oxc_ast::ast::{Expression, ModuleExportName, Program};
+use oxc_span::{GetSpan, SourceType};
+use vize_l0::Span;
+
+use super::{ResolutionError, ResolutionErrorKind, sink::ReferenceSink, walk};
+use crate::expr::JsExpr;
+
+#[derive(Clone, Copy)]
+pub(super) enum ReferenceSource<'a> {
+    Expression(JsExpr<'a>),
+    Program(&'a str),
+}
+
+impl ReferenceSource<'_> {
+    pub(super) fn span(self, span: oxc_span::Span) -> Option<Span> {
+        match self {
+            Self::Expression(expression) => expression.ast_span_to_source(span),
+            Self::Program(source) => {
+                source.get(span.start as usize..span.end as usize)?;
+                Some(Span::new(span.start, span.end))
+            }
+        }
+    }
+    pub(super) fn length(self) -> u32 {
+        match self {
+            Self::Expression(expression) => expression.source.len() as u32,
+            Self::Program(source) => source.len() as u32,
+        }
+    }
+}
+
+/// Internal capability over the actual whole Program, never an expression window.
+/// The native owner must additionally supply its genuine no-hole observation.
+pub(crate) struct ProgramReferenceSource<'p, 'a> {
+    program: &'p Program<'a>,
+    content: Span,
+}
+
+impl<'p, 'a> ProgramReferenceSource<'p, 'a> {
+    pub(crate) fn checked(
+        program: &'p Program<'a>,
+        file: &'a str,
+        content: Span,
+        source_type: SourceType,
+    ) -> Result<Self, ResolutionError> {
+        let fail = || ResolutionError {
+            span: Span::new(0, 0),
+            kind: ResolutionErrorKind::InvalidSpan,
+        };
+        u32::try_from(file.len()).map_err(|_| fail())?;
+        let raw = file
+            .get(content.start as usize..content.end as usize)
+            .ok_or_else(fail)?;
+        let length = u32::try_from(raw.len()).map_err(|_| fail())?;
+        if program.source_type != source_type
+            || program.span != oxc_span::Span::new(0, length)
+            || !core::ptr::eq(raw, program.source_text)
+        {
+            return Err(fail());
+        }
+        Ok(Self { program, content })
+    }
+
+    #[must_use]
+    pub(crate) const fn program(&self) -> &'p Program<'a> {
+        self.program
+    }
+
+    pub(crate) fn expression(
+        &self,
+        expression: &Expression<'a>,
+        sink: &mut impl ReferenceSink<'a>,
+    ) -> Result<(), ResolutionError> {
+        walk::retained(
+            ReferenceSource::Program(self.program.source_text),
+            expression,
+            sink,
+        )
+    }
+
+    /// Only an actual local export leaf; imported/re-exported names are policy
+    /// of the statement walker and must not be passed here as local uses.
+    pub(crate) fn export_local(
+        &self,
+        local: &ModuleExportName<'a>,
+        sink: &mut impl ReferenceSink<'a>,
+    ) -> Result<(), ResolutionError> {
+        let (span, name) = match local {
+            ModuleExportName::IdentifierName(identifier) => {
+                (identifier.span, identifier.name.as_str())
+            }
+            ModuleExportName::IdentifierReference(identifier) => {
+                (identifier.span, identifier.name.as_str())
+            }
+            other => {
+                return Err(ResolutionError {
+                    span: ReferenceSource::Program(self.program.source_text)
+                        .span(other.span())
+                        .unwrap_or(Span::new(0, 0)),
+                    kind: ResolutionErrorKind::UnsupportedSyntax,
+                });
+            }
+        };
+        walk::export_local(
+            ReferenceSource::Program(self.program.source_text),
+            span,
+            name,
+            sink,
+        )
+    }
+
+    #[must_use]
+    pub(crate) fn authored_span(&self, span: Span) -> Option<Span> {
+        self.program
+            .source_text
+            .get(span.start as usize..span.end as usize)?;
+        Some(Span::new(
+            self.content.start.checked_add(span.start)?,
+            self.content.start.checked_add(span.end)?,
+        ))
+    }
+}
+
+#[cfg(test)]
+mod calls;
+#[cfg(test)]
+mod tests;

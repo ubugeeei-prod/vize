@@ -1,4 +1,3 @@
-use alloc::vec::Vec;
 use oxc_ast::ast::{
     Argument, CallExpression, ChainElement, Expression, IdentifierReference, SimpleAssignmentTarget,
 };
@@ -9,38 +8,75 @@ use crate::expr::JsExpr;
 
 mod compound;
 
-use super::{BindingLookup, Occurrence, ResolutionError, ResolutionErrorKind, Usage};
+use super::sink::{ReferenceEvent, ReferenceSink};
+use super::source::ReferenceSource;
+use super::{ResolutionError, ResolutionErrorKind, Usage};
 
-pub(super) fn resolve<'a>(
+pub(super) fn expression<'a>(
     expression: &JsExpr<'a>,
-    bindings: &impl BindingLookup,
-) -> Result<Vec<Occurrence<'a>>, ResolutionError> {
-    let mut resolver = Resolver {
-        expression: *expression,
-        bindings,
-        occurrences: Vec::new(),
-        visited: 0,
-        in_new_callee: false,
-    };
-    resolver.expression(expression.ast, 0)?;
-    Ok(resolver.occurrences)
+    sink: &mut impl ReferenceSink<'a>,
+) -> Result<(), ResolutionError> {
+    retained(
+        ReferenceSource::Expression(*expression),
+        expression.ast,
+        sink,
+    )
 }
 
-struct Resolver<'a, 'b, B> {
-    expression: JsExpr<'a>,
-    bindings: &'b B,
-    occurrences: Vec<Occurrence<'a>>,
+pub(super) fn retained<'a>(
+    source: ReferenceSource<'a>,
+    expression: &Expression<'a>,
+    sink: &mut impl ReferenceSink<'a>,
+) -> Result<(), ResolutionError> {
+    let checkpoint = sink.checkpoint();
+    let mut resolver = Resolver::new(source, sink);
+    let result = resolver.expression(expression, 0);
+    if result.is_err() {
+        resolver.sink.rollback(checkpoint);
+    }
+    result
+}
+
+pub(super) fn export_local<'a>(
+    source: ReferenceSource<'a>,
+    span: oxc_span::Span,
+    name: &'a str,
+    sink: &mut impl ReferenceSink<'a>,
+) -> Result<(), ResolutionError> {
+    let checkpoint = sink.checkpoint();
+    let mut resolver = Resolver::new(source, sink);
+    let result = resolver.reference(span, name, Usage::Read, false);
+    if result.is_err() {
+        resolver.sink.rollback(checkpoint);
+    }
+    result
+}
+
+struct Resolver<'a, 'b, S> {
+    source: ReferenceSource<'a>,
+    sink: &'b mut S,
+    last_end: Option<u32>,
     visited: usize,
     in_new_callee: bool,
 }
 
-impl<'a, B: BindingLookup> Resolver<'a, '_, B> {
+impl<'a, 'b, S: ReferenceSink<'a>> Resolver<'a, 'b, S> {
+    fn new(source: ReferenceSource<'a>, sink: &'b mut S) -> Self {
+        Self {
+            source,
+            sink,
+            last_end: None,
+            visited: 0,
+            in_new_callee: false,
+        }
+    }
+
     fn fail(&self, span: oxc_span::Span, kind: ResolutionErrorKind) -> ResolutionError {
         ResolutionError {
             span: self
-                .expression
-                .ast_span_to_source(span)
-                .unwrap_or(Span::new(0, self.expression.source.len() as u32)),
+                .source
+                .span(span)
+                .unwrap_or(Span::new(0, self.source.length())),
             kind,
         }
     }
@@ -51,46 +87,47 @@ impl<'a, B: BindingLookup> Resolver<'a, '_, B> {
         if depth > 64 || self.visited > 4096 {
             return Err(self.fail(span, ResolutionErrorKind::TraversalLimit));
         }
-        self.expression
-            .ast_span_to_source(span)
+        self.source
+            .span(span)
             .ok_or_else(|| self.fail(span, ResolutionErrorKind::InvalidSpan))
     }
 
     fn identifier(
         &mut self,
-        identifier: &'a IdentifierReference<'a>,
+        identifier: &IdentifierReference<'a>,
         usage: Usage,
         shorthand: bool,
     ) -> Result<(), ResolutionError> {
-        let ast_span = identifier.span;
+        self.reference(identifier.span, identifier.name.as_str(), usage, shorthand)
+    }
+
+    fn reference(
+        &mut self,
+        ast_span: oxc_span::Span,
+        name: &'a str,
+        usage: Usage,
+        shorthand: bool,
+    ) -> Result<(), ResolutionError> {
         let span = self.visit(ast_span, 0)?;
-        if span.start == span.end
-            || self
-                .occurrences
-                .last()
-                .is_some_and(|last| last.span.end > span.start)
-        {
+        if span.start == span.end || self.last_end.is_some_and(|last| last > span.start) {
             return Err(self.fail(ast_span, ResolutionErrorKind::InvalidSpan));
         }
-        let name = identifier.name.as_str();
-        let binding = self
-            .bindings
-            .lookup(name)
-            .ok_or_else(|| self.fail(ast_span, ResolutionErrorKind::MissingBinding))?;
-        self.occurrences.push(Occurrence {
-            span: Span::new(span.start, span.end),
-            name,
-            binding,
-            usage,
-            shorthand,
-            constructor: self.in_new_callee,
-        });
+        self.sink
+            .reference(ReferenceEvent::new(
+                span,
+                name,
+                usage,
+                shorthand,
+                self.in_new_callee,
+            ))
+            .map_err(|kind| self.fail(ast_span, kind))?;
+        self.last_end = Some(span.end);
         Ok(())
     }
 
     fn expression(
         &mut self,
-        expression: &'a Expression<'a>,
+        expression: &Expression<'a>,
         depth: usize,
     ) -> Result<(), ResolutionError> {
         self.visit(expression.span(), depth)?;
@@ -197,12 +234,19 @@ impl<'a, B: BindingLookup> Resolver<'a, '_, B> {
         }
     }
 
-    fn call(&mut self, value: &'a CallExpression<'a>, next: usize) -> Result<(), ResolutionError> {
+    fn call(&mut self, value: &CallExpression<'a>, next: usize) -> Result<(), ResolutionError> {
         if value.type_arguments.is_some()
             || matches!(value.callee.get_inner_expression(), Expression::Identifier(id) if id.name == "eval")
         {
             return Err(self.fail(value.span, ResolutionErrorKind::UnsupportedSyntax));
         }
+        let span = self
+            .source
+            .span(value.span)
+            .ok_or_else(|| self.fail(value.span, ResolutionErrorKind::InvalidSpan))?;
+        self.sink
+            .observe_call(value, span)
+            .map_err(|kind| self.fail(value.span, kind))?;
         self.expression(&value.callee, next)?;
         for argument in &value.arguments {
             self.argument(argument, next)?;
@@ -210,7 +254,7 @@ impl<'a, B: BindingLookup> Resolver<'a, '_, B> {
         Ok(())
     }
 
-    fn argument(&mut self, argument: &'a Argument<'a>, next: usize) -> Result<(), ResolutionError> {
+    fn argument(&mut self, argument: &Argument<'a>, next: usize) -> Result<(), ResolutionError> {
         self.visit(argument.span(), next)?;
         match argument {
             Argument::SpreadElement(spread) => self.expression(&spread.argument, next),
@@ -220,7 +264,7 @@ impl<'a, B: BindingLookup> Resolver<'a, '_, B> {
 
     fn target(
         &mut self,
-        target: &'a SimpleAssignmentTarget<'a>,
+        target: &SimpleAssignmentTarget<'a>,
         usage: Usage,
         depth: usize,
     ) -> Result<(), ResolutionError> {

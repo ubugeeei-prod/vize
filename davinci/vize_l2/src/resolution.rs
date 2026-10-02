@@ -10,6 +10,8 @@ use vize_l0::Span;
 
 use crate::expr::JsExpr;
 
+pub(crate) mod sink;
+pub(crate) mod source;
 mod walk;
 
 /// A binding identity supplied by the owning compile unit's binder.
@@ -104,7 +106,7 @@ pub fn resolve_expression<'a>(
     expression: &JsExpr<'a>,
     bindings: &impl BindingLookup,
 ) -> Result<ResolutionTable<'a>, ResolutionError> {
-    let occurrences = walk::resolve(expression, bindings)?;
+    let occurrences = sink::resolve(expression, bindings)?;
     Ok(ResolutionTable {
         expression: *expression,
         occurrences,

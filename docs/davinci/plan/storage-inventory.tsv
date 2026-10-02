@@ -247,7 +247,6 @@ l1_to_l2	analysis	davinci/vize_l1_to_l2/src/native/block/tests.rs	4	0	4	0	0	0	0	
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/element.rs	0	0	0	0	1	0	0	0
 l2	-	davinci/vize_l2/src/artifact/builder/factory.rs	0	0	0	0	4	0	0	0
 l2	analysis	davinci/vize_l2/src/resolution.rs	1	1	0	0	0	0	0	0
-l2	analysis	davinci/vize_l2/src/resolution/walk.rs	1	3	0	0	0	0	0	0
 l1	-	davinci/vize_l1/src/container/vue/descriptor.rs	0	0	0	0	1	1	0	0
 l1	-	davinci/vize_l1/src/container/vue/descriptor/policy.rs	0	0	0	0	1	2	0	0
 l1	-	davinci/vize_l1/src/container/vue/descriptor/tests.rs	0	0	1	2	0	0	0	0
@@ -255,3 +254,14 @@ l1_to_l2	-	davinci/vize_l1_to_l2/src/native/construction.rs	0	0	0	0	4	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/native/pending.rs	1	8	0	0	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/pending/tests.rs	0	0	1	1	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/pending/tests/factory.rs	0	0	0	0	2	0	0	0
+l2	analysis	davinci/vize_l2/src/file/build.rs	1	16	1	6	0	0	0	0
+l2	-	davinci/vize_l2/src/file/records.rs	0	0	1	7	0	0	0	0
+l2	analysis	davinci/vize_l2/src/resolution/sink.rs	1	3	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/resolution/source/tests.rs	1	4	0	0	0	0	0	0
+l2	-	davinci/vize_l2/src/resolution/source/tests/admission.rs	0	0	1	1	0	0	0	0
+l2	-	davinci/vize_l2/src/lang/js/file/walk/imports.rs	0	0	1	5	0	0	0	0
+l2	-	davinci/vize_l2/src/lang/js/file/walk/exports.rs	0	0	1	4	0	0	0	0
+l2	-	davinci/vize_l2/src/lang/js/file/walk/references.rs	0	0	1	1	0	0	0	0
+l2	-	davinci/vize_l2/src/file/region.rs	0	0	0	0	2	0	0	0
+l2	-	davinci/vize_l2/src/file/region/facade.rs	0	0	0	0	2	0	0	0
+l2	analysis	davinci/vize_l2/src/resolution/source/calls.rs	1	4	0	0	0	0	0	0

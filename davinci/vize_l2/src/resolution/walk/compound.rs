@@ -1,13 +1,13 @@
-use super::{BindingLookup, ResolutionError, ResolutionErrorKind, Resolver, Usage};
+use super::{ReferenceSink, ResolutionError, ResolutionErrorKind, Resolver, Usage};
 use oxc_ast::ast::{
     ArrayExpression, ArrayExpressionElement, Expression, ObjectExpression, ObjectPropertyKind,
     PropertyKey,
 };
 use oxc_span::GetSpan;
-impl<'a, B: BindingLookup> Resolver<'a, '_, B> {
+impl<'a, S: ReferenceSink<'a>> Resolver<'a, '_, S> {
     pub(super) fn array(
         &mut self,
-        value: &'a ArrayExpression<'a>,
+        value: &ArrayExpression<'a>,
         next: usize,
     ) -> Result<(), ResolutionError> {
         for element in &value.elements {
@@ -24,7 +24,7 @@ impl<'a, B: BindingLookup> Resolver<'a, '_, B> {
     }
     pub(super) fn object(
         &mut self,
-        value: &'a ObjectExpression<'a>,
+        value: &ObjectExpression<'a>,
         next: usize,
     ) -> Result<(), ResolutionError> {
         for property in &value.properties {

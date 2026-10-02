@@ -44,6 +44,7 @@ extern crate alloc;
 pub mod artifact;
 pub mod dump;
 pub mod expr;
+pub mod file;
 pub mod lang;
 pub mod op;
 pub mod provenance;
