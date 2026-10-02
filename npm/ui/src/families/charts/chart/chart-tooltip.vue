@@ -55,12 +55,7 @@ const style = computed(() =>
     :data-state="datum === undefined ? 'closed' : 'open'"
     :data-series="point?.series"
   >
-    <slot
-      v-if="datum !== undefined && point !== null"
-      :datum
-      :index="point.index"
-      :point
-    />
+    <slot v-if="datum !== undefined && point !== null" :datum :index="point.index" :point />
   </div>
 </template>
 

@@ -18,13 +18,7 @@ const inputId = useId();
       {{ label }}
       <span v-if="required" class="control-required">*</span>
     </label>
-    <input
-      :id="inputId"
-      v-model.number="model"
-      type="number"
-      class="control-input"
-      :required
-    />
+    <input :id="inputId" v-model.number="model" type="number" class="control-input" :required />
     <span v-if="description" class="control-desc">{{ description }}</span>
   </div>
 </template>

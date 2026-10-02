@@ -94,14 +94,7 @@ defineExpose(exposed);
     :data-max="currentMax"
     :data-percent="percent ?? undefined"
   >
-    <slot
-      :value="currentValue"
-      :max="currentMax"
-      :percent
-      :indeterminate
-      :complete
-      :state
-    />
+    <slot :value="currentValue" :max="currentMax" :percent :indeterminate :complete :state />
   </progress>
 </template>
 
