@@ -4,6 +4,7 @@
 )]
 
 mod lifecycle;
+mod shared;
 
 use std::pin::Pin;
 use std::sync::Arc;

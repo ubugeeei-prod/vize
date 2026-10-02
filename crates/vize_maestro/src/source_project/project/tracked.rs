@@ -7,10 +7,9 @@
 use std::future::Future;
 use std::sync::Arc;
 
-use crate::document::DocumentStore;
 use crate::source_project::{SnapshotRefusal, SourceQuery, SourceQueryResult, SourceSnapshot};
 
-use super::ActiveQueries;
+use super::{ActiveQueries, host::DocumentHost};
 
 struct QueryLease {
     active: Arc<ActiveQueries>,
@@ -35,20 +34,20 @@ impl Drop for QueryLease {
 /// One real source query associated with its original project host.
 pub struct ProjectQuery<'host> {
     query: SourceQuery,
-    documents: &'host DocumentStore,
+    host: DocumentHost<'host>,
     lease: QueryLease,
 }
 
 impl<'host> ProjectQuery<'host> {
     pub(super) fn new(
         query: SourceQuery,
-        documents: &'host DocumentStore,
+        host: DocumentHost<'host>,
         active: Arc<ActiveQueries>,
         id: u64,
     ) -> Self {
         Self {
             query,
-            documents,
+            host,
             lease: QueryLease { active, id },
         }
     }
@@ -66,15 +65,11 @@ impl<'host> ProjectQuery<'host> {
         F: FnOnce(Arc<SourceSnapshot>) -> Fut,
         Fut: Future<Output = T>,
     {
-        let Self {
-            query,
-            documents,
-            lease,
-        } = self;
-        let result = query.run(documents, compute).await?;
+        let Self { query, host, lease } = self;
+        let result = query.run(host.documents(), compute).await?;
         Ok(ProjectQueryResult {
             result,
-            documents,
+            host,
             _lease: lease,
         })
     }
@@ -83,7 +78,7 @@ impl<'host> ProjectQuery<'host> {
 /// The lease remains cancellable until ready data is synchronously published.
 pub struct ProjectQueryResult<'host, T> {
     result: SourceQueryResult<T>,
-    documents: &'host DocumentStore,
+    host: DocumentHost<'host>,
     _lease: QueryLease,
 }
 
@@ -93,6 +88,6 @@ impl<T> ProjectQueryResult<'_, T> {
     /// The underlying actual read guard enforces snapshot freshness; asynchronous
     /// transport and atomic store mutation remain outside this boundary.
     pub fn publish<R>(self, publish: impl FnOnce(T) -> R) -> Result<R, SnapshotRefusal> {
-        self.result.publish(self.documents, publish)
+        self.result.publish(self.host.documents(), publish)
     }
 }

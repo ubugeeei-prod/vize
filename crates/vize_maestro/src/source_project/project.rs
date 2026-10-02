@@ -4,6 +4,7 @@
     reason = "the actual LSP host receives std String and suspended query leases share Arc state"
 )]
 
+mod host;
 #[cfg(test)]
 mod tests;
 mod tracked;
@@ -18,6 +19,7 @@ use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 use crate::document::DocumentStore;
 
 use super::{SnapshotRefusal, SourceSnapshotCache};
+use host::DocumentHost;
 pub use tracked::{ProjectQuery, ProjectQueryResult};
 
 struct ActiveQuery {
@@ -51,7 +53,7 @@ impl ActiveQueries {
 /// not notify this project's suspended work. No document guard or lifecycle lock
 /// survives an await. Production request dispatch is not selected by this type.
 pub struct SourceQueryProject<'host> {
-    documents: &'host DocumentStore,
+    host: DocumentHost<'host>,
     cache: SourceSnapshotCache,
     active: Arc<ActiveQueries>,
     next_query: AtomicU64,
@@ -60,8 +62,12 @@ pub struct SourceQueryProject<'host> {
 
 impl<'host> SourceQueryProject<'host> {
     pub fn new(documents: &'host DocumentStore) -> Self {
+        Self::with_host(DocumentHost::Borrowed(documents))
+    }
+
+    fn with_host(host: DocumentHost<'host>) -> Self {
         Self {
-            documents,
+            host,
             cache: SourceSnapshotCache::default(),
             active: Arc::new(ActiveQueries::default()),
             next_query: AtomicU64::new(0),
@@ -75,7 +81,7 @@ impl<'host> SourceQueryProject<'host> {
         uri: &Url,
     ) -> Result<(ProjectQuery<'host>, AbortHandle), SnapshotRefusal> {
         let _lifecycle = self.lifecycle.lock();
-        let (query, cancel) = self.cache.begin_query(self.documents, uri)?;
+        let (query, cancel) = self.cache.begin_query(self.host.documents(), uri)?;
         let id = self.next_query.fetch_add(1, Ordering::Relaxed);
         self.active.0.lock().push(ActiveQuery {
             id,
@@ -83,7 +89,7 @@ impl<'host> SourceQueryProject<'host> {
             cancel: cancel.clone(),
         });
         Ok((
-            ProjectQuery::new(query, self.documents, Arc::clone(&self.active), id),
+            ProjectQuery::new(query, self.host.clone(), Arc::clone(&self.active), id),
             cancel,
         ))
     }
@@ -91,7 +97,8 @@ impl<'host> SourceQueryProject<'host> {
     pub fn open(&self, uri: Url, source: String, version: i32, language_id: String) {
         let aborted = {
             let _lifecycle = self.lifecycle.lock();
-            self.documents
+            self.host
+                .documents()
                 .open(uri.clone(), source, version, language_id);
             self.invalidate(&uri)
         };
@@ -108,14 +115,16 @@ impl<'host> SourceQueryProject<'host> {
         let aborted = {
             let _lifecycle = self.lifecycle.lock();
             let before = self
-                .documents
+                .host
+                .documents()
                 .get(uri)
                 .map(|document| (document.revision(), document.version));
-            if !self.documents.apply_changes(uri, changes, version) {
+            if !self.host.documents().apply_changes(uri, changes, version) {
                 return false;
             }
             let after = self
-                .documents
+                .host
+                .documents()
                 .get(uri)
                 .map(|document| (document.revision(), document.version));
             // The actual host accepts a newer empty list without changing this
@@ -132,7 +141,7 @@ impl<'host> SourceQueryProject<'host> {
     pub fn close(&self, uri: &Url) {
         let aborted = {
             let _lifecycle = self.lifecycle.lock();
-            self.documents.close(uri);
+            self.host.documents().close(uri);
             self.invalidate(uri)
         };
         abort(aborted);
@@ -141,7 +150,7 @@ impl<'host> SourceQueryProject<'host> {
     pub fn rename(&self, old_uri: &Url, new_uri: Url) -> bool {
         let aborted = {
             let _lifecycle = self.lifecycle.lock();
-            if !self.documents.rename(old_uri, new_uri.clone()) {
+            if !self.host.documents().rename(old_uri, new_uri.clone()) {
                 return false;
             }
             if old_uri == &new_uri {
@@ -158,6 +167,20 @@ impl<'host> SourceQueryProject<'host> {
     fn invalidate(&self, uri: &Url) -> Vec<AbortHandle> {
         self.cache.forget(uri);
         self.active.remove_for(uri)
+    }
+}
+
+impl SourceQueryProject<'static> {
+    /// Retain the caller's exact shared open-document store through queries.
+    pub fn new_shared(documents: Arc<DocumentStore>) -> Self {
+        Self::with_host(DocumentHost::SharedStore(documents))
+    }
+
+    /// Retain the actual server owner and borrow its original inline store.
+    /// Store this controller beside the server state, never inside that owner.
+    /// This prevents a reference cycle; no new store or self-reference is made.
+    pub fn new_server(state: Arc<crate::server::ServerState>) -> Self {
+        Self::with_host(DocumentHost::Server(state))
     }
 }
 

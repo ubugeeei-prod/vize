@@ -2,6 +2,12 @@
 //! This adapter reads the retained Programs and never parses or assembles a File.
 
 use oxc_ast::ast::CommentKind;
+#[cfg(all(
+    feature = "experimental-source-project",
+    feature = "experimental-sfc-folding"
+))]
+pub mod project;
+
 use tower_lsp::lsp_types::{FoldingRange, FoldingRangeKind};
 use vize_l0::line_index::LineBreaks;
 use vize_l1_to_l2::native_file::NativeSfc;
