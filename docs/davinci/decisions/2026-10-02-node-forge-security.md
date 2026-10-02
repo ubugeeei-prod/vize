@@ -1,0 +1,128 @@
+# Node Forge RSA signature source repair
+
+Issue: [#6830](https://github.com/ubugeeei-prod/vize/issues/6830).
+
+The production audit reports HIGH
+[GHSA-86w9-cpqp-85rv](https://github.com/advisories/GHSA-86w9-cpqp-85rv)
+for Node Forge <=1.4.0. The advisory currently lists no patched release.
+Keep the actual version 1.4.0 and its existing registry integrity. Do not
+substitute a development version or disable the advisory.
+
+## Source and scope
+
+The patch starts from the nested `DigestAlgorithm` cardinality repair in
+[upstream PR #1152](https://github.com/digitalbazaar/forge/pull/1152), pinned
+to [ceba34402e329f0365134f23fe19898756527d65](https://github.com/digitalbazaar/forge/commit/ceba34402e329f0365134f23fe19898756527d65).
+That PR is open and has no published fixed release. Our default public
+`RSA.verify` regressions also expose nonempty NULL parameters and a dangling
+OID continuation that the cardinality change alone still accepts. The local
+repair requires the exact nested cardinality, an empty primitive UNIVERSAL
+NULL when present, and the exact canonical bytes of the decoded supported OID.
+Existing digest support and MD2/MD5 parameter-presence rules remain unchanged.
+
+Only the existing Node `lib/rsa.js` verifier changes. The package's published
+browser distributions remain unchanged and unpatched. This is a repair for
+the current Node listhen consumer, not a claim that every Node Forge 1.4.0
+entry point is repaired. The recognition guard rejects another Forge version,
+a direct or aliased Forge/listhen consumer, a different listhen version,
+another dependency route, and direct literal browser/deep-file imports in
+tracked JS/TS, Vue or HTML sources. Literal module values include comment
+separators, JavaScript escapes, CDN paths and no-version npm aliases. This is
+a source admission guard, not arbitrary JavaScript data-flow analysis. A future
+consumer change requires fresh source review.
+
+The lock retains the sole `listhen@1.10.1` Forge edge and both real consumers:
+`@nuxt/cli@3.37.0` and `nitropack@2.13.4`. Their existing framework fixtures,
+package identities and registry integrities are preserved.
+
+## Exact installation and audit contract
+
+`pnpm patchedDependencies` applies `patches/node-forge@1.4.0.patch`.
+The patch SHA256 is
+`daba842b423fef3be8ae568031ef47c120d4f1134e861fb0045be9282fdb286a`.
+The original RSA file SHA256 is
+`fd4740238145ec26470eb3f06a627c72039538ce1307dbdce40521f94dfd0a50`;
+the repaired file is
+`bb2c61cef273c89aaedb9c865173f5330d76917024ff1c2c1d39ffd5be01cc2d`.
+The guard additionally hashes every regular package file and pins the actual
+Node entry and the complete unchanged listhen package. Every resolved
+installed Forge instance must match and pass the public crypto laws.
+
+The prepared lock changes only the patch registration, the one consumer
+reference and its snapshot key. Its SHA256 patch hash follows the actual
+[pinned pnpm 12.1.0 implementation](https://github.com/pnpm/pnpm/blob/v12.1.0/crates/patching/src/hash.rs).
+Both original lock documents and every unrelated resolution remain preserved.
+This preparation is not a local pnpm-generated installation claim: a genuine
+hosted frozen install and actual installed-source proof remain required before
+acceptance. The original read-only local installation is not modified.
+
+The audit still executes `pnpm audit --prod --audit-level moderate --json`.
+The Rust command retains its three attempts, increasing delay and original
+failure status. The adapter prints the original registry report and recognizes
+only the exact HIGH GHSA above, with no published patched version, exact
+version/Node-consumer findings, and no other moderate, high or critical finding.
+An audit error, unexpected report, missing/changed patch, registry or lock
+identity, installed-source mismatch, extra consumer, or failed crypto law is
+fatal. The adapter prints an explicit verified remediation receipt and the
+browser-distribution limitation; it never silently suppresses a finding.
+All other advisories and the production threshold remain unchanged.
+
+## Verification and remaining work
+
+Ordinary tooling laws apply the actual patch to a finite copy of the real
+registry package. They demonstrate original and incomplete repairs failing
+attestation, exact patch/source recognition, valid OID-only and empty-NULL
+signatures, the pinned upstream public exploit vector under default options,
+and malformed cardinality, NULL and dangling-OID rejection. Controlled extra
+malformed signatures use a real private key; those controls demonstrate parser
+rejection, not a new no-private-key forgery claim. Valid SHA1/SHA256/SHA384/
+SHA512/MD5 signatures also pass Node's independent verifier. X509, encrypted
+PKCS8 and PKCS12 round trips remain valid.
+
+The hosted listhen laws resolve the actual Nuxt CLI and Nitro installations.
+Each opens a real loopback TLS listener using the encrypted generated CA/key
+route, performs a Node TLS request, then exports and loads an actual encrypted
+PKCS12 store and repeats the request. They require the repaired installed
+source and cannot skip an absent consumer. Frozen installation, these hosted
+laws, production audit, full frontend suites and real instruction-count gates
+remain pending until exact-head Actions succeeds. The workflow and budgets
+are unchanged; local source laws alone do not establish merge completion.
+
+Replace the local patch and recognition with a genuine released upstream fix
+once that release is reviewed and its actual crypto regressions pass. Keep
+unknown findings fatal while the patch is needed.
+
+## Attribution and license
+
+The two RSA source changes and the upstream public vector are derived from
+Digital Bazaar's Forge source and PR #1152. The vector is copied from the
+pinned upstream test blob `f44b4b3f4a51a8dfb7f64c07b6f7af684617f3de`.
+They are distributed here under Forge's offered BSD 3-clause license:
+
+```text
+New BSD License (3-clause)
+Copyright (c) 2010, Digital Bazaar, Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of Digital Bazaar, Inc. nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL DIGITAL BAZAAR BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+```

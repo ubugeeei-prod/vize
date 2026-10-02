@@ -397,6 +397,11 @@ overrides:
   vite@>=8.0.0 <8.0.16: 8.0.16
   yaml: 2.9.0
 
+patchedDependencies:
+  node-forge@1.4.0:
+    hash: daba842b423fef3be8ae568031ef47c120d4f1134e861fb0045be9282fdb286a
+    path: patches/node-forge@1.4.0.patch
+
 importers:
 
   .:
@@ -21463,7 +21468,7 @@ snapshots:
       h3: 1.15.11
       http-shutdown: 1.2.2
       jiti: 2.7.0
-      node-forge: 1.4.0
+      node-forge: 1.4.0(patch_hash=daba842b423fef3be8ae568031ef47c120d4f1134e861fb0045be9282fdb286a)
       pathe: 2.0.3
       std-env: 4.2.0
       tinyclip: 0.1.15
@@ -21911,7 +21916,7 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
-  node-forge@1.4.0: {}
+  node-forge@1.4.0(patch_hash=daba842b423fef3be8ae568031ef47c120d4f1134e861fb0045be9282fdb286a): {}
 
   node-gyp-build@4.8.4: {}
 
