@@ -54,13 +54,21 @@ fn retains_real_dense_bindings_and_collection_forms_in_js_and_ts() {
         );
         for parameter in view.parameters() {
             let authored = view.alias_authored_span(parameter.span).unwrap();
-            assert!(!input[authored.start as usize..authored.end as usize].is_empty());
+            assert!(
+                !input
+                    .get(authored.start as usize..authored.end as usize)
+                    .unwrap()
+                    .is_empty()
+            );
         }
         let authored = view
             .collection_authored_span(view.collection().span())
             .unwrap();
         assert_eq!(
-            input[authored.start as usize..authored.end as usize].trim(),
+            input
+                .get(authored.start as usize..authored.end as usize)
+                .unwrap()
+                .trim(),
             view.collection_source().text().trim()
         );
         assert!(view.alias_decoded_span(oxc_span::Span::new(0, 2)).is_err());
@@ -97,12 +105,19 @@ fn strict_first_separator_and_unicode_offsets_preserve_authored_roots() {
     assert_eq!(separator.0, ForKeyword::Of);
     let keyword = source.authored_span(separator.1).unwrap();
     assert_eq!(
-        &authored[keyword.start as usize..keyword.end as usize],
+        authored
+            .get(keyword.start as usize..keyword.end as usize)
+            .unwrap(),
         "of"
     );
     for (parameter, expected) in view.parameters().iter().zip(["α", "β"]) {
         let span = view.alias_authored_span(parameter.span).unwrap();
-        assert_eq!(&authored[span.start as usize..span.end as usize], expected);
+        assert_eq!(
+            authored
+                .get(span.start as usize..span.end as usize)
+                .unwrap(),
+            expected
+        );
     }
     let head = parse(&allocator, "a in b in c", Lang::Js);
     assert_eq!(head.hole(), None);
@@ -205,7 +220,10 @@ fn actual_ast_positions_keep_commas_inside_all_lexical_binding_forms() {
         let last = view
             .alias_authored_span(view.parameters().last().unwrap().span)
             .unwrap();
-        assert_eq!(&input[last.start as usize..last.end as usize], "k");
+        assert_eq!(
+            input.get(last.start as usize..last.end as usize).unwrap(),
+            "k"
+        );
     }
 }
 

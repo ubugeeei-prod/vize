@@ -96,3 +96,11 @@ The seeder reads every file in this directory and prefixes each unchanged
 source with all eight explicit profile selectors; filenames do not choose
 the language. The scripted move preserves all five inputs byte for byte,
 including malformed parser regressions, and adds no formatter exclusion.
+
+The current SlotParams and expression handoffs explicitly retain the compiler
+`SourceType` on both success and holes, preserving their original arena roots,
+comments, diagnostics and decode maps. The actual merged Params/Dense and
+descriptor providers remain in the replay ancestry. Six inherited Dense test
+assertions now use checked UTF-8 ranges with the same original spans and
+expected bytes; production source and instruction ceilings are unchanged.
+Fresh whole-source checks and Actions are required after this replay.
