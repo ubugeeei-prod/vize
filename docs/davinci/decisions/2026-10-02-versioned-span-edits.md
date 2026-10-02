@@ -1,0 +1,87 @@
+# Versioned L1 span edits
+
+Issue: [#6876](https://github.com/ubugeeei-prod/vize/issues/6876).
+
+The existing embedded source retains authored offsets and decoded bytes, but
+neither its decode map nor its text identifies the complete preparation input.
+Checking equal decoded text or equal numeric spans would admit unrelated input.
+`EmbedSource` now retains a private borrowed `authored_root`, populated only
+from the actual preparation input. Native attribute decoding, authored sources,
+trimmed Vue interpolation and checked slices retain that same reference.
+The readonly accessor performs no parse, decode, traversal or allocation.
+
+This is physical buffer provenance: compare the original pointer and length.
+It provides no semantic document, language, grammar, File or producer authority.
+Documents can share borrowed bytes, and empty buffers need not have distinct
+pointers. A real caller must retain its own document identity and version.
+Maestro already exposes URI, client version and a changing document revision;
+its separately obtained `text()` values are distinct owned snapshots. A future
+adapter must capture those host identities with its retained parsed source,
+and must not substitute an independently copied equal-text buffer.
+
+| Retained 64-bit payload |   Before |    After |                     Change |
+| ----------------------- | -------: | -------: | -------------------------: |
+| `EmbedSource`           | 40 bytes | 56 bytes | one 16-byte borrowed `str` |
+
+The source remains Copy and has no Drop. The reviewed production storage row
+stays exactly one L0 String import/two bound uses and one arena Vec import/two
+bound uses; the getter adds no owned storage. The new origin laws have their
+own reviewed test-only L0 String row for distinct live allocated buffers.
+Plain preparation and identity slicing still use zero arena bytes in the law.
+That observation does not establish unchanged instructions or whole-process
+allocation performance, especially for arrays of the larger retained payload.
+
+Local validation compiles the actual complete L1 library under strict Clippy
+against the retained official dependency cache and runs five laws against that
+real library: separate equal allocated roots, Unicode/entity exact boundaries,
+identity/entity slices, trimmed interpolation, shared/empty limitations and
+the payload size/no-Drop/plain-allocation observation. It is a scoped cache
+proof, not a fresh whole-Cargo or hosted acceptance result.
+
+The shared checked edit API and real diagnostic/fix/code-action consumers are
+next. Stale host versions, incorrect source roots, UTF-8/range errors, partial
+entities and conflicting edits must refuse application atomically. Product
+defaults and legacy fix application remain unchanged until their fix-history
+gates close. Fresh exact-head Actions, all 100 unchanged instruction ceilings,
+full native observations and protected merge are required before acceptance.
+
+The first published origin head (`237aeb7`, PR #7434) failed its full source
+inventory check: the committed L1 Span grep count remained 310, while the
+actual source generator reported 327. Regenerating the authoritative Croquis
+inventory changes only that L1 shard. The production source, scanner, gates
+and budgets remain unchanged. This correction needs fresh exact-head required,
+full and instruction Actions; the failed original run is retained as evidence.
+
+Actual merged Stock/Shared and formatter main 2118713 is the new replay
+base. The original 6d1e91c and 81382c1 source checks and all 100 unchanged
+instruction ceilings passed. Their genuine ordinary workers ran five origin
+and thirteen combined laws, with eight original same-attempt artifact ZIPs,
+complete JUnit, service hashes and every entry CRC preserved. These are
+historical observations and do not grant acceptance to the replayed heads.
+The first cumulative queue entries were unmergeable before any candidate test
+run; both were removed immediately. Actual three-way source comparisons
+located conflicts in the central record and the L1 Croquis shard, while the
+selected library root, embedded source and storage rows merged cleanly.
+This replay preserves every incoming parser-authority and formatter change,
+regenerates only the actual affected L1 inventory and keeps all source tests,
+performance ceilings and product-history gates. Fresh required/full/instruction
+Actions, named runtime laws and the protected queue are still pending.
+
+The original c850 manual full run 37037597041 failed one mounted Vapor
+compound-property child with empty stderr; the assertion omitted its actual
+exit status and stdout and normalized the backend label. The 860 full run
+37037605015 passed the same unchanged Vapor/support blobs. The temporary
+status-preserving exact coverage diagnostic 37042419615 also passed. These
+controls cannot recover the original exit cause, which remains open.
+The failure-reporting follow-up retains the original backend, status, stdout,
+stderr and input on failure. Compiler inputs/output, assertions, concurrency,
+workflow/gate policy and instruction ceilings remain unchanged. Both updated
+source heads require fresh required/full/instruction and named-worker proof;
+previous-head and temporary diagnostic success grant no current acceptance.
+
+The current source replay starts from authenticated signed main d87109e,
+including the actual LSP, allocator, native File and Vue 1 merges after 2118713.
+It preserves all incoming source bytes outside these owned paths, updates only
+the affected L1 inventory and keeps the physical-buffer and host-synchronization
+limitations. Original c850/860 proof is historical; fresh source and protected
+latest-main gates remain required. No product integration is claimed.

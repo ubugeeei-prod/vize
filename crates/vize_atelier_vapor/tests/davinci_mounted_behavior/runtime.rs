@@ -128,6 +128,7 @@ fn compile(backend: &str, source: &str, experimental_patterned_template: bool) -
 }
 
 fn run(backend: &str, code: String, mut input: Value) -> Value {
+    let original_backend = backend;
     let backend = if backend == "vapor-legacy" {
         "vapor"
     } else {
@@ -153,8 +154,10 @@ fn run(backend: &str, code: String, mut input: Value) -> Value {
     let output = child.wait_with_output().unwrap();
     assert!(
         output.status.success(),
-        "{backend} mounted runner failed:\n{}\ncode:\n{code}",
-        String::from_utf8_lossy(&output.stderr)
+        "{original_backend} mounted runner failed ({status}):\nstdout:\n{stdout}\nstderr:\n{stderr}\ninput:\n{input}\ncode:\n{code}",
+        status = output.status,
+        stdout = String::from_utf8_lossy(&output.stdout),
+        stderr = String::from_utf8_lossy(&output.stderr)
     );
     serde_json::from_slice(&output.stdout)
         .unwrap_or_else(|error| panic!("{error}: {}", String::from_utf8_lossy(&output.stdout)))
