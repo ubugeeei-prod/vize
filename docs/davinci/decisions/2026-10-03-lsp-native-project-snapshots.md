@@ -146,3 +146,24 @@ the eleven new lifecycle functions remain unexecuted at this source freeze.
 The private pending-query helper also uses expect for its genuine host URI
 precondition. All actual host/provider bytes and production dispatch remain
 unchanged. This decision is paired with #6883 in the same publication.
+
+## Actual twenty-nine functions and test-helper correction
+
+The genuine whole-source campaign `37044408941` at
+`1dc47741ee45ee6bb5568c0665123a883f617a44`, Rust job `110962163524`,
+passed all twenty-nine unique functions: twenty-one default plus twenty-nine
+feature executions, with zero failed or ignored. The minimal feature check
+passed at 18:07:33Z. Warning-denying feature Clippy rejected the test URI
+helper expect at edit_tests.rs:11; replacing unwrap with expect had not
+resolved the earlier helper lint. Both original complete campaigns remain
+failed. All-100 run `37044412195` passed at the same source head.
+
+The helper now returns the genuine URI parse Result. The same seven successful
+URI parses are unwrapped only inside their existing test functions, which
+retain all original URI/source inputs and assertions. No lint suppression,
+new dependency, production API, host mutation, or product route is added.
+The twenty-nine functions are previously executed at the original head; the
+new correction needs its own full Actions, minimal check, feature Clippy and
+all-100 proof. The actual provider ancestry remains the original public 860
+source; it must be conserved onto the owner’s corrected public provider before
+any dependent native Stack publication. This decision is paired with #6883.

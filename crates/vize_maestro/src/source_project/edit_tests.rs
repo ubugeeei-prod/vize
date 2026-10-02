@@ -7,16 +7,17 @@ use crate::document::DocumentStore;
 
 use super::{SnapshotRefusal, SourceEditRefusal, SourceSnapshotCache};
 
-fn open(documents: &DocumentStore, path: &str, source: &str) -> Url {
-    let uri = Url::parse(path).expect("actual test URI");
-    documents.open(uri.clone(), source.into(), 1, "vue".into());
-    uri
+fn open(documents: &DocumentStore, path: &str, source: &str) -> Result<Url, impl std::fmt::Debug> {
+    Url::parse(path).map(|uri| {
+        documents.open(uri.clone(), source.into(), 1, "vue".into());
+        uri
+    })
 }
 
 #[test]
 fn actual_edit_model_borrows_the_original_cached_root_and_produces_only_new_text() {
     let documents = DocumentStore::new();
-    let uri = open(&documents, "file:///edit.vue", "<div>😀</div>\r\n");
+    let uri = open(&documents, "file:///edit.vue", "<div>😀</div>\r\n").unwrap();
     let cache = SourceSnapshotCache::default();
     let snapshot = cache.capture(&documents, &uri).unwrap();
     let frame = snapshot.versioned_source().unwrap();
@@ -32,7 +33,7 @@ fn actual_edit_model_borrows_the_original_cached_root_and_produces_only_new_text
 #[test]
 fn equal_copy_with_the_real_key_and_version_still_refuses_physical_source_mismatch() {
     let documents = DocumentStore::new();
-    let uri = open(&documents, "file:///copy.vue", "<div>same</div>");
+    let uri = open(&documents, "file:///copy.vue", "<div>same</div>").unwrap();
     let snapshot = SourceSnapshotCache::default()
         .capture(&documents, &uri)
         .unwrap();
@@ -61,8 +62,8 @@ fn equal_copy_with_the_real_key_and_version_still_refuses_physical_source_mismat
 #[test]
 fn real_host_key_refuses_foreign_document_edits_despite_equal_versions_and_bytes() {
     let documents = DocumentStore::new();
-    let first_uri = open(&documents, "file:///first.vue", "<div/>");
-    let second_uri = open(&documents, "file:///second.vue", "<div/>");
+    let first_uri = open(&documents, "file:///first.vue", "<div/>").unwrap();
+    let second_uri = open(&documents, "file:///second.vue", "<div/>").unwrap();
     let cache = SourceSnapshotCache::default();
     let first = cache.capture(&documents, &first_uri).unwrap();
     let second = cache.capture(&documents, &second_uri).unwrap();
@@ -78,7 +79,7 @@ fn real_host_key_refuses_foreign_document_edits_despite_equal_versions_and_bytes
 #[test]
 fn close_reopen_with_same_client_version_cannot_apply_retained_native_edits() {
     let documents = DocumentStore::new();
-    let uri = open(&documents, "file:///reopen.vue", "<div/>");
+    let uri = open(&documents, "file:///reopen.vue", "<div/>").unwrap();
     let snapshot = SourceSnapshotCache::default()
         .capture(&documents, &uri)
         .unwrap();
@@ -100,7 +101,7 @@ fn close_reopen_with_same_client_version_cannot_apply_retained_native_edits() {
 #[test]
 fn actual_current_revision_change_refuses_edit_output_before_emission() {
     let documents = DocumentStore::new();
-    let uri = open(&documents, "file:///superseded.vue", "<div/>");
+    let uri = open(&documents, "file:///superseded.vue", "<div/>").unwrap();
     let snapshot = SourceSnapshotCache::default()
         .capture(&documents, &uri)
         .unwrap();
@@ -125,7 +126,7 @@ fn actual_current_revision_change_refuses_edit_output_before_emission() {
 #[test]
 fn genuine_decoded_embed_projects_to_the_same_retained_authored_root() {
     let documents = DocumentStore::new();
-    let uri = open(&documents, "file:///entity.vue", "xx&fjlig;yy");
+    let uri = open(&documents, "file:///entity.vue", "xx&fjlig;yy").unwrap();
     let snapshot = SourceSnapshotCache::default()
         .capture(&documents, &uri)
         .unwrap();
