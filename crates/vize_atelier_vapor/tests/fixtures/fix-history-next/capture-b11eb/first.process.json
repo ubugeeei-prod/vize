@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "/private/tmp/vize-ssr-fix-history-target-20260927/ci/examples/vapor_next_fixture_observer"
+  ],
+  "exitCode": 0,
+  "stdoutSha256": "5b60b9b80a961a15e123a0ffe6c55d83038bb685f97f26e2fca28d7969935dc5",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "binarySha256": "b923ddd92be3433af9a4e7c79ac10d79250efe45a2bc87c99dcde0baba241e32"
+}

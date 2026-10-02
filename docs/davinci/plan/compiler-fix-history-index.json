@@ -32,7 +32,7 @@
   "touchingCommits": 1321,
   "conventionalFixSubjects": 661,
   "nonMergeFixSubjects": 626,
-  "fixtureLinkedFixSubjects": 20,
+  "fixtureLinkedFixSubjects": 30,
   "nonIndexedFixtureReferences": [
     {
       "sha": "0de7787aeac48a931e15bc590a3e3b803286dcb8",
@@ -53,7 +53,7 @@
   ],
   "index": {
     "path": "docs/davinci/plan/compiler-fix-history.tsv",
-    "sha256": "c376e084c8adf1346a52757e6f257e7c4c982877d17dd7f2666de6ab5c548769"
+    "sha256": "d1682fa7658745b11bb466cf07833f6245478ae8044f0c696a76a05a74263615"
   },
   "semanticDenominator": null,
   "nativeAcceptance": 0,

@@ -246,5 +246,6 @@ compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/nested_delegate_event
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/patterned_template_grammar.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/patterned_template_recovery.rs	14	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/patterned_template_runtime.rs	25	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/support/fix_history_next.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/support/fix_history.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/vapor_custom_directive_parity.rs	13	carton	Carton host/compatibility	old	vize_carton	legacy	1

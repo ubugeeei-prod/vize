@@ -1,0 +1,7 @@
+<Outer>
+  <button>
+    <slot :ui="ui">
+      <span v-if="label">{{ label }}</span>
+    </slot>
+  </button>
+</Outer>

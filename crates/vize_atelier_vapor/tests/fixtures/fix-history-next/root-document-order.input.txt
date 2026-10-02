@@ -1,0 +1,1 @@
+<Child/><p>A</p><Child/><p>B</p>

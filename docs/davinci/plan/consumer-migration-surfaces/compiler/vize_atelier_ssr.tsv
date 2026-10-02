@@ -128,6 +128,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/native_stage_capture.rs
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/native_stage_capture.rs	6	l2	L2	stage	vize_l2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/setup_component_parity.rs	8	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/ssr_snapshot.rs	9	l0	L0	stage	vize_l0	preferred	4
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/support/fix_history_next.rs	8	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/support/fix_history.rs	8	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/vue_ssr_render.rs	33	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/vue_ssr_render/input_models.rs	8	l0	L0	stage	vize_l0	preferred	1

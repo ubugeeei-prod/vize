@@ -1,0 +1,55 @@
+{
+  "schema": "vize.compiler.historical-target-capture",
+  "version": 1,
+  "target": "ssr",
+  "sourceRevision": "c2451a0fb39bf7390c51630cfe28ae0c1b06a870",
+  "sourceTree": "f2802265785d4addba73c3d4184fc6dfab18bc98",
+  "cargoLockSha256": "65c25b05347b3c75fd9eaeaafe3eaba48dc286c2f7a70f3f9d5ebd2c68da2f40",
+  "observerSources": [
+    {
+      "path": "crates/vize_atelier_ssr/examples/ssr_next_fixture_observer/main.rs",
+      "sha256": "8d40dd5d64af8bb70b155e8e10c21c53451c935c34e607e1dad27a783476bc00",
+      "retainedPath": "observer-main.rs.txt"
+    },
+    {
+      "path": "crates/vize_atelier_ssr/examples/ssr_next_fixture_observer/fixtures.rs",
+      "sha256": "96453ad1e3f14b73d767691c2e4852df8edfe704119b8e928500bdaf1994218f",
+      "retainedPath": "observer-fixtures.rs.txt"
+    }
+  ],
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--offline",
+    "--profile",
+    "ci",
+    "-p",
+    "vize_atelier_ssr",
+    "--example",
+    "ssr_next_fixture_observer",
+    "--message-format=json-render-diagnostics"
+  ],
+  "toolchain": {
+    "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: aarch64-apple-darwin\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+    "cargo": "cargo 1.98.0 (797e8a9bc 2026-08-05)\n"
+  },
+  "buildExitStatus": 0,
+  "binarySha256": "4da708fa5f7caf6390953555668437419fa422f9f085bbb832df706fd0c4e166",
+  "selectedCargoArtifact": {
+    "path": "selected-cargo-artifact.json",
+    "sha256": "4bdf504d602ab0f942bf3a6a1d554e9d6e8b7d3d55b7f494e05499728e2ba20c"
+  },
+  "originalBuildLogs": {
+    "retained": "private audit archive; not committed here",
+    "stdoutSha256": "a165b07734cfbe6c13278fd3846de0ea6e7beddde695dd48ebf15b7fe57c7e84",
+    "stderrSha256": "1572f8ee3e0896cf06ab335d3dbd5853079aac7f2b342d469b441ff5004d5bf4"
+  },
+  "repeatedObservation": {
+    "bytes": 5524,
+    "sha256": "27f53d1ece55ea1f63f496bef0700d432491e9679aba63ac4cfb9be72e4481ec",
+    "first": "first.stdout.json",
+    "repeat": "repeat.stdout.json"
+  },
+  "scope": "historical selected public target output; not fresh-head Actions, native acceptance or whole-history completion"
+}
