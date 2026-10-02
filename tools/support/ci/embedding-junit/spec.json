@@ -1,0 +1,31 @@
+{
+  "repository": "ubugeeei-prod/vize",
+  "cohort": "pull-request",
+  "runId": 37026044793,
+  "attempt": 1,
+  "source": "1850119b21127a16cc28392cee107c5f17e19e85",
+  "tree": "0d10c0c19b359bd54b37ff113af22e97210090ea",
+  "base": "a04fdf81bad61ad32d1bd96a7cfd816e4796cb70",
+  "originalSource": "a04fdf81bad61ad32d1bd96a7cfd816e4796cb70",
+  "branch": "feat/l1-shared-embedding-observations-20261002",
+  "ownedCaseBlobs": [
+    {
+      "label": "embedding",
+      "path": "davinci/vize_l1/tests/embedding_observation_drop.rs",
+      "sha": "9d75bf75d76addf7d6980e086b66f442ddf62e79"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 11235228927,
+      "name": "rust-test-shard-4-37026044793-1",
+      "bytes": 96935,
+      "sha256": "d210f375a1f58c286199fd4dd30e317e40ee5387f74ed1ef30495349714b5124",
+      "jobId": 110903030332,
+      "jobName": "PR source checks / PR Rust Clippy, tests, and fixtures / Rust tests (4/4)",
+      "shard": 4,
+      "binary": "vize_l1::embedding_observation_drop",
+      "case": "original_embedding_diagnostics_drop_before_their_arena"
+    }
+  ]
+}
