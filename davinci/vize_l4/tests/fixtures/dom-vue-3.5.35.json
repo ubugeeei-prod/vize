@@ -1,0 +1,245 @@
+{
+  "compiler": {
+    "package": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "options": {
+    "mode": "module",
+    "prefixIdentifiers": true,
+    "hoistStatic": false,
+    "cacheHandlers": false,
+    "bindingMetadata": {
+      "__isScriptSetup": false
+    },
+    "filename": "NativeDom.vue",
+    "sourceMap": true
+  },
+  "fixtures": [
+    {
+      "id": "empty",
+      "source": "",
+      "code": "\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return null\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeDom.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          ""
+        ]
+      }
+    },
+    {
+      "id": "empty-element",
+      "source": "<div/>",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\"))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeDom.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAM",
+        "sourcesContent": [
+          "<div/>"
+        ]
+      }
+    },
+    {
+      "id": "static-prop-text",
+      "source": "<p title=\"hi\">Hello</p>",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", { title: \"hi\" }, \"Hello\"))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeDom.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAuB,OAApB,KAAK,EAAC,IAAI,IAAC,OAAK",
+        "sourcesContent": [
+          "<p title=\"hi\">Hello</p>"
+        ]
+      }
+    },
+    {
+      "id": "nested-comment",
+      "source": "<div id=\"a\"><span>x</span><!--ok--></div>",
+      "code": "import { createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { id: \"a\" }, [\n    _createElementVNode(\"span\", null, \"x\"),\n    _createCommentVNode(\"ok\")\n  ]))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeDom.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAyC,SAApC,EAAE,EAAC,GAAG;IAAC,oBAAc,cAAR,GAAC;IAAO,yBAAS",
+        "sourcesContent": [
+          "<div id=\"a\"><span>x</span><!--ok--></div>"
+        ]
+      }
+    },
+    {
+      "id": "mixed-text-runs",
+      "source": "<div>a{{x}}<span/>b{{y}}</div>",
+      "code": "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createTextVNode(\"a\" + _toDisplayString(_ctx.x), 1 /* TEXT */),\n    _createElementVNode(\"span\"),\n    _createTextVNode(\"b\" + _toDisplayString(_ctx.y), 1 /* TEXT */)\n  ]))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeDom.vue"
+        ],
+        "names": [
+          "x",
+          "y"
+        ],
+        "mappings": ";;;wBAAA,oBAA8B;qBAAzB,GAAC,oBAAEA,MAAC;IAAE,oBAAO;qBAAA,GAAC,oBAAEC,MAAC",
+        "sourcesContent": [
+          "<div>a{{x}}<span/>b{{y}}</div>"
+        ]
+      }
+    },
+    {
+      "id": "dynamic-prop-text",
+      "source": "<p :title=\"tip\">{{count + offset}}</p>",
+      "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", { title: _ctx.tip }, _toDisplayString(_ctx.count + _ctx.offset), 9 /* TEXT, PROPS */, [\"title\"]))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeDom.vue"
+        ],
+        "names": [
+          "tip",
+          "count",
+          "offset"
+        ],
+        "mappings": ";;;wBAAA,oBAAsC,OAAlC,KAAK,EAAEA,QAAG,qBAAIC,UAAK,GAAGC,WAAM",
+        "sourcesContent": [
+          "<p :title=\"tip\">{{count + offset}}</p>"
+        ]
+      }
+    },
+    {
+      "id": "class-style",
+      "source": "<div :class=\"classes\" :style=\"styles\"/>",
+      "code": "import { normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass(_ctx.classes),\n    style: _normalizeStyle(_ctx.styles)\n  }, null, 6 /* CLASS, STYLE */))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeDom.vue"
+        ],
+        "names": [
+          "classes",
+          "styles"
+        ],
+        "mappings": ";;;wBAAA,oBAAuC;IAAjC,KAAK,kBAAEA,YAAO;IAAG,KAAK,kBAAEC,WAAM",
+        "sourcesContent": [
+          "<div :class=\"classes\" :style=\"styles\"/>"
+        ]
+      }
+    },
+    {
+      "id": "root-fragment",
+      "source": "<p>A</p><p>B</p>",
+      "code": "import { createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"p\", null, \"A\"),\n    _createElementVNode(\"p\", null, \"B\")\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeDom.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;IAAA,oBAAQ,WAAL,GAAC;IAAI,oBAAQ,WAAL,GAAC",
+        "sourcesContent": [
+          "<p>A</p><p>B</p>"
+        ]
+      }
+    },
+    {
+      "id": "root-text-run",
+      "source": "hello {{msg}}",
+      "code": "import { toDisplayString as _toDisplayString } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return \"hello \" + _toDisplayString(_ctx.msg)\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeDom.vue"
+        ],
+        "names": [
+          "msg"
+        ],
+        "mappings": ";;;SAAA,QAAM,oBAAEA,QAAG",
+        "sourcesContent": [
+          "hello {{msg}}"
+        ]
+      }
+    },
+    {
+      "id": "text-before-element",
+      "source": "<div>hi<span/></div>",
+      "code": "import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createTextVNode(\"hi\"),\n    _createElementVNode(\"span\")\n  ]))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeDom.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAoB;qBAAf,IAAE;IAAA,oBAAO",
+        "sourcesContent": [
+          "<div>hi<span/></div>"
+        ]
+      }
+    },
+    {
+      "id": "class-with-children",
+      "source": "<div :class=\"classes\"><span>{{msg}}</span></div>",
+      "code": "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass(_ctx.classes)\n  }, [\n    _createElementVNode(\"span\", null, _toDisplayString(_ctx.msg), 1 /* TEXT */)\n  ], 2 /* CLASS */))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeDom.vue"
+        ],
+        "names": [
+          "classes",
+          "msg"
+        ],
+        "mappings": ";;;wBAAA,oBAAgD;IAA1C,KAAK,kBAAEA,YAAO;;IAAE,oBAAoB,+BAAZC,QAAG",
+        "sourcesContent": [
+          "<div :class=\"classes\"><span>{{msg}}</span></div>"
+        ]
+      }
+    },
+    {
+      "id": "style-before-class",
+      "source": "<div :style=\"styles\" :class=\"classes\"/>",
+      "code": "import { normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    style: _normalizeStyle(_ctx.styles),\n    class: _normalizeClass(_ctx.classes)\n  }, null, 6 /* CLASS, STYLE */))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeDom.vue"
+        ],
+        "names": [
+          "styles",
+          "classes"
+        ],
+        "mappings": ";;;wBAAA,oBAAuC;IAAjC,KAAK,kBAAEA,WAAM;IAAG,KAAK,kBAAEC,YAAO",
+        "sourcesContent": [
+          "<div :style=\"styles\" :class=\"classes\"/>"
+        ]
+      }
+    },
+    {
+      "id": "comment-root-fragment",
+      "source": "<p>A</p><!--ok-->",
+      "code": "import { createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"p\", null, \"A\"),\n    _createCommentVNode(\"ok\")\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeDom.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;IAAA,oBAAQ,WAAL,GAAC;IAAI,yBAAS",
+        "sourcesContent": [
+          "<p>A</p><!--ok-->"
+        ]
+      }
+    }
+  ]
+}

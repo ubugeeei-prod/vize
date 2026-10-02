@@ -16,7 +16,8 @@ _None._
 
 ## Naive grep disagreements (resolved/grep)
 
-| product   | resolved | grep |
-| --------- | -------: | ---: |
-| `Croquis` |        0 |    2 |
-| `Span`    |        0 |   97 |
+| product          | resolved | grep |
+| ---------------- | -------: | ---: |
+| `Croquis`        |        0 |    2 |
+| `Span`           |        0 |  121 |
+| `Croquis.scopes` |        0 |    1 |

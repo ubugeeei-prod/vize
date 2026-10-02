@@ -27,6 +27,7 @@ serde_json = { workspace = true }
 
 [dev-dependencies]
 vize_l1 = { workspace = true }
+vize_l1_to_l2 = { workspace = true }
 
 [lints]
 workspace = true

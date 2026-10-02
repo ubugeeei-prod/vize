@@ -1,0 +1,245 @@
+{
+  "schema": "vize.native-dom-file-reference",
+  "version": 1,
+  "compiler": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "options": {
+    "mode": "module",
+    "hoistStatic": false,
+    "prefixIdentifiers": true,
+    "comments": true,
+    "filename": "FileDom.vue",
+    "sourceMap": true,
+    "bindingMetadata": {},
+    "cacheHandlers": false
+  },
+  "scope": "Complete template-module references only; upstream maps retained unchanged, native whole-file maps are separate.",
+  "fixtures": [
+    {
+      "id": "empty-element",
+      "source": "<div/>",
+      "template": "<div/>",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\"))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["FileDom.vue"],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAM",
+        "sourcesContent": ["<div/>"]
+      },
+      "sourceSha256": "fc7e6385a22749a8b3224a31b05f7cb995e2e62ab4af84ae526262af38c1753e",
+      "templateSha256": "fc7e6385a22749a8b3224a31b05f7cb995e2e62ab4af84ae526262af38c1753e",
+      "codeSha256": "2238d8fac7cc738d522ab81596fa84e5dd90343280639d7c830a55bb1e73e66d",
+      "referenceMapSha256": "830dd65da0048bbe367f76ad80c58177fd53450c6762f91e8324aff95e2cf4e8",
+      "runtime": {
+        "type": "div",
+        "props": {},
+        "children": null,
+        "patchFlag": 0
+      }
+    },
+    {
+      "id": "static-prop-text",
+      "source": "<p title=\"hi\">Hello</p>",
+      "template": "<p title=\"hi\">Hello</p>",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", { title: \"hi\" }, \"Hello\"))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["FileDom.vue"],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAuB,OAApB,KAAK,EAAC,IAAI,IAAC,OAAK",
+        "sourcesContent": ["<p title=\"hi\">Hello</p>"]
+      },
+      "sourceSha256": "edbeb59ef8d70d77a68a1f9c49891ddf5f25964f1bad34999a71746615b11059",
+      "templateSha256": "edbeb59ef8d70d77a68a1f9c49891ddf5f25964f1bad34999a71746615b11059",
+      "codeSha256": "63b157c7f011b19ba6945072991f7b3ffd7ad1bd10b4590f1305f7231a819301",
+      "referenceMapSha256": "931aa67ff9c6a7a23dcb318a22f135a867dc1e7e5eb0114ac65bf354136f36d2",
+      "runtime": {
+        "type": "p",
+        "props": {
+          "title": "hi"
+        },
+        "children": "Hello",
+        "patchFlag": 0
+      }
+    },
+    {
+      "id": "mixed-static-children",
+      "source": "<div>hi<span>x</span><!--ok--></div>",
+      "template": "<div>hi<span>x</span><!--ok--></div>",
+      "code": "import { createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createTextVNode(\"hi\"),\n    _createElementVNode(\"span\", null, \"x\"),\n    _createCommentVNode(\"ok\")\n  ]))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["FileDom.vue"],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAoC;qBAA/B,IAAE;IAAA,oBAAc,cAAR,GAAC;IAAO,yBAAS",
+        "sourcesContent": ["<div>hi<span>x</span><!--ok--></div>"]
+      },
+      "sourceSha256": "888a76113975b900afc088ecdd74b7310309795bd268f20b9d5b6e35cf8d34c1",
+      "templateSha256": "888a76113975b900afc088ecdd74b7310309795bd268f20b9d5b6e35cf8d34c1",
+      "codeSha256": "1a9a7049f966b9f1897419bfa3a7dc5aafc173057b0f0654a226ab2484b60706",
+      "referenceMapSha256": "ed58abad0a875a650d89e1ec6b81f1be33cb09fb418a2c83b5cdc33ebf68aaed",
+      "runtime": {
+        "type": "div",
+        "props": {},
+        "children": [
+          {
+            "type": "text",
+            "props": {},
+            "children": "hi",
+            "patchFlag": 0
+          },
+          {
+            "type": "span",
+            "props": {},
+            "children": "x",
+            "patchFlag": 0
+          },
+          {
+            "type": "comment",
+            "props": {},
+            "children": "ok",
+            "patchFlag": 0
+          }
+        ],
+        "patchFlag": 0
+      }
+    },
+    {
+      "id": "root-fragment",
+      "source": "<p>A</p><p>B</p>",
+      "template": "<p>A</p><p>B</p>",
+      "code": "import { createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"p\", null, \"A\"),\n    _createElementVNode(\"p\", null, \"B\")\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["FileDom.vue"],
+        "names": [],
+        "mappings": ";;;;IAAA,oBAAQ,WAAL,GAAC;IAAI,oBAAQ,WAAL,GAAC",
+        "sourcesContent": ["<p>A</p><p>B</p>"]
+      },
+      "sourceSha256": "e5222e7ec12ab425cf19145917755218d084dc993293e49d1e7b32c986630d99",
+      "templateSha256": "e5222e7ec12ab425cf19145917755218d084dc993293e49d1e7b32c986630d99",
+      "codeSha256": "8680cd1df1f83d5bffee857a82efec6847fc8bf3fb1d4ee1bd337cb60c7bdf06",
+      "referenceMapSha256": "86ae7c7442c5fd1b27e34f1593809f2ccaad4cc4a051dfcb7b45137a6a05dc36",
+      "runtime": {
+        "type": "fragment",
+        "props": {},
+        "children": [
+          {
+            "type": "p",
+            "props": {},
+            "children": "A",
+            "patchFlag": 0
+          },
+          {
+            "type": "p",
+            "props": {},
+            "children": "B",
+            "patchFlag": 0
+          }
+        ],
+        "patchFlag": 64
+      }
+    },
+    {
+      "id": "entity-literal-offset",
+      "source": "<!--雪🌸-->\r\n<script setup>const unused = 0;</script>\r\n<template><p :title=\"'a &amp; b'\">{{'日本語'}}</p></template>",
+      "setup": "const unused = 0;",
+      "template": "<p :title=\"'a &amp; b'\">{{'日本語'}}</p>",
+      "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", { title: 'a & b' }, _toDisplayString('日本語')))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["FileDom.vue"],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAqC,OAAjC,KAAK,EAAE,OAAW,qBAAI,KAAK",
+        "sourcesContent": ["<p :title=\"'a &amp; b'\">{{'日本語'}}</p>"]
+      },
+      "sourceSha256": "39b61e6abb51787186c9d6d6dd68e8afbb7e90fac3f83d330b823c1723897f1b",
+      "templateSha256": "758fc6e697f758d1aaf7bec2b1b7c46e325dfb10f8961d7675d88f4de3f96fd8",
+      "codeSha256": "bc546666764a7a58f1700c9b95400acadf45837906a8d38202d39e19b148a440",
+      "referenceMapSha256": "bd746e460c3a1619abeede7ffb6a35d430a3209e1afac603caed69b10d39e524",
+      "runtime": {
+        "type": "p",
+        "props": {
+          "title": "a & b"
+        },
+        "children": "日本語",
+        "patchFlag": 0
+      }
+    },
+    {
+      "id": "literal-class-style",
+      "source": "<div :class=\"'a'\" :style=\"'color:red'\"/>",
+      "template": "<div :class=\"'a'\" :style=\"'color:red'\"/>",
+      "code": "import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass('a'),\n    style: 'color:red'\n  }))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["FileDom.vue"],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAwC;IAAlC,KAAK,kBAAE,GAAG;IAAG,KAAK,EAAE,WAAW",
+        "sourcesContent": ["<div :class=\"'a'\" :style=\"'color:red'\"/>"]
+      },
+      "sourceSha256": "d8bfaa39d01e33be207d7e15b93bd4c5d14992895a472ad315bf08e562409853",
+      "templateSha256": "d8bfaa39d01e33be207d7e15b93bd4c5d14992895a472ad315bf08e562409853",
+      "codeSha256": "2104606b5ad8c3f79f40e2ab0bd0de2fd4da9551a13711bcf8dcc0ecceaae337",
+      "referenceMapSha256": "9b5042e5068d8029aeb710fcba5203e8cba2d059b8f7a6e725b3be155ad9381c",
+      "runtime": {
+        "type": "div",
+        "props": {
+          "class": "a",
+          "style": "color:red"
+        },
+        "children": null,
+        "patchFlag": 0
+      }
+    },
+    {
+      "id": "comment-literal",
+      "source": "<p>{{ /* lead */ '雪🌸' /* tail */ }}</p>",
+      "template": "<p>{{ /* lead */ '雪🌸' /* tail */ }}</p>",
+      "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString(/* lead */ '雪🌸' /* tail */)))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["FileDom.vue"],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAwC,4BAAlC,2BAA2B",
+        "sourcesContent": ["<p>{{ /* lead */ '雪🌸' /* tail */ }}</p>"]
+      },
+      "sourceSha256": "373fd1b6547865de8cebef2d2a375d0a12ebc9870012a11232ac7dbc8504a988",
+      "templateSha256": "373fd1b6547865de8cebef2d2a375d0a12ebc9870012a11232ac7dbc8504a988",
+      "codeSha256": "65a8fcdefc7cc64bc51be749b4a7b6b4ceafb591486b19aaef8521c78d302318",
+      "referenceMapSha256": "6ff0a4ec7567048b561e28a2b2b5d110f0552e8b73dbc0b07314dbc5a40fc5db",
+      "runtime": {
+        "type": "p",
+        "props": {},
+        "children": "雪🌸",
+        "patchFlag": 0
+      }
+    },
+    {
+      "id": "literal-family",
+      "source": "<p>{{true}}/{{null}}/{{42}}/{{1n}}/{{/雪/g}}</p>",
+      "template": "<p>{{true}}/{{null}}/{{42}}/{{1n}}/{{/雪/g}}</p>",
+      "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString(true) + \"/\" + _toDisplayString(null) + \"/\" + _toDisplayString(42) + \"/\" + _toDisplayString(1n) + \"/\" + _toDisplayString(/雪/g)))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["FileDom.vue"],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAA+C,4BAA1C,IAAI,IAAE,GAAC,oBAAE,IAAI,IAAE,GAAC,oBAAE,EAAE,IAAE,GAAC,oBAAE,EAAE,IAAE,GAAC,oBAAE,IAAI",
+        "sourcesContent": ["<p>{{true}}/{{null}}/{{42}}/{{1n}}/{{/雪/g}}</p>"]
+      },
+      "sourceSha256": "c4882b471effb77654d95877c6b0f4896683f8e2e5a99003b6f2d08461242e6a",
+      "templateSha256": "c4882b471effb77654d95877c6b0f4896683f8e2e5a99003b6f2d08461242e6a",
+      "codeSha256": "cea0f39f58829ee2dc76227d570684c906e461dadba2942500d89d20ed0b6de7",
+      "referenceMapSha256": "3180d5bd16273197d89e82a7242fa6bbc68c0dbb431a5e84d7659ce8a5f183da",
+      "runtime": {
+        "type": "p",
+        "props": {},
+        "children": "true//42/1//雪/g",
+        "patchFlag": 0
+      }
+    }
+  ]
+}

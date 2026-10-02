@@ -93,6 +93,23 @@ impl<'a, L: LinkSink> ModuleParts<'a, L> {
 }
 
 mod imports;
+#[cfg(test)]
+mod template_tests;
+
+/// Assemble an exported template render declaration with its late helper imports.
+///
+/// The target owns the complete declaration; no script or component attachment
+/// is synthesized for this standalone compiler module surface.
+pub fn assemble_template<L: LinkSink>(
+    render: Writer<L>,
+    vocabulary: &Vocabulary,
+) -> Result<Emitted<L>, AssemblyError> {
+    let mut body = Writer::default();
+    body.push("\nexport ");
+    body.append(render);
+    let preamble = imports::preamble(vocabulary, body.helpers())?;
+    Ok(body.finish_with_preamble(preamble))
+}
 
 /// A mismatch between prepared fragments and their declared contracts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

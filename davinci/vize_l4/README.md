@@ -25,8 +25,16 @@ imports its helper group from `@vue/server-renderer` and shared helpers from
 `vue`, preserving first-use order within each group. Custom vocabularies may
 also describe multiple module groups.
 
-Expression rewriting (`expr`) and the DOM, SSR, Vapor and type-check targets
-(`targets`) remain unfinished in [#6840](https://github.com/ubugeeei-prod/vize/issues/6840).
+The checked expression writer consumes actual retained L2 resolution facts.
+`targets::dom::emit_file` consumes only the genuine file-owned L3 analysis and
+emits static DOM structure and retained literals. Every runtime reference is a
+typed refusal until the real same-file Vue access provider exists. Complete
+template modules are assembled with `module::assemble_template`; authored maps
+retain the whole file and original retained expression coordinates.
+
+Whole-component completeness, file If/For, broader DOM semantics and the SSR,
+Vapor and type-check targets remain unfinished in
+[#6840](https://github.com/ubugeeei-prod/vize/issues/6840).
 Older Vue runtimes, complete generated-script helper admission and product
 integration still need their actual providers and compiler fix-history gate.
 
