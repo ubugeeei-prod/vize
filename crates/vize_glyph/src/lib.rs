@@ -50,6 +50,7 @@ mod attribute;
 mod error;
 mod formatter;
 mod json;
+pub mod native_doc;
 mod options;
 mod script;
 mod sort_imports;
