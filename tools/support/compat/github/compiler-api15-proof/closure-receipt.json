@@ -1,0 +1,91 @@
+{
+  "layer": 3,
+  "rev": "34b1713bc2156929a6087648e028129823db4cef",
+  "working": false,
+  "compiler": "TypeScript 6.0.3",
+  "strict": true,
+  "mixedJsResolution": true,
+  "existingUnownedJsBodyCheck": false,
+  "selected": [
+    "tests/differential/compiler-api-manifest.ts",
+    "tests/differential/compiler-api.ts",
+    "tests/tooling/differential-compiler-api-execution.test.ts",
+    "tests/tooling/differential-compiler-api.test.ts",
+    "tools/commands/fixtures/compiler-fix-history.ts",
+    "tools/config/vite-plus/tooling-test-scopes.ts",
+    "tests/differential/compiler-api-types.ts"
+  ],
+  "closure": [
+    {
+      "file": "package.json",
+      "sha256": "d8fcbdb8b01ce5837a2ff1691a8f45649cb6dc936b49b4883f8cf6d04ea722e2",
+      "bytes": 1736,
+      "origin": "34b1713bc2156929a6087648e028129823db4cef:package.json"
+    },
+    {
+      "file": "tests/differential/compiler-api-manifest.ts",
+      "sha256": "cf2461be536606b9a70ff7cd1568c1c428820c4e78a6c844ccdd6102be7d1db8",
+      "bytes": 8273,
+      "origin": "34b1713bc2156929a6087648e028129823db4cef:tests/differential/compiler-api-manifest.ts"
+    },
+    {
+      "file": "tests/differential/harness.mjs",
+      "sha256": "ff3bb2fe68378b361e0e7f5eee7dd6d73b0074ce15ff211777bbbd765ed12219",
+      "bytes": 5819,
+      "origin": "34b1713bc2156929a6087648e028129823db4cef:tests/differential/harness.mjs"
+    },
+    {
+      "file": "tests/differential/observer-build.ts",
+      "sha256": "4d122d9a126bd8d36df60dfd9509e72abc280b44fbbd3e7dde9ff4810916e76c",
+      "bytes": 11380,
+      "origin": "34b1713bc2156929a6087648e028129823db4cef:tests/differential/observer-build.ts"
+    },
+    {
+      "file": "tests/differential/compiler-api-types.ts",
+      "sha256": "0bfae0ebcc974c7f6aff5c4c5b9a17ffd134654414a61527d4cb31208c77eee7",
+      "bytes": 2886,
+      "origin": "34b1713bc2156929a6087648e028129823db4cef:tests/differential/compiler-api-types.ts"
+    },
+    {
+      "file": "tests/differential/compiler-api.ts",
+      "sha256": "333c3351c757b01b9d900ca0239b7019abde0ae7540b8e0812db80cfdb78218b",
+      "bytes": 8554,
+      "origin": "34b1713bc2156929a6087648e028129823db4cef:tests/differential/compiler-api.ts"
+    },
+    {
+      "file": "tests/tooling/differential-compiler-api-execution.test.ts",
+      "sha256": "b568f0a951e22134347b6330077221e795a9bf2645dfe4113aa18fe2eb8cddc6",
+      "bytes": 2867,
+      "origin": "34b1713bc2156929a6087648e028129823db4cef:tests/tooling/differential-compiler-api-execution.test.ts"
+    },
+    {
+      "file": "tests/differential/acceptance-rates.mjs",
+      "sha256": "6a76028b4c9de36833eec91c900580834336e6f320c926c2cc3c8b81a2f36e61",
+      "bytes": 3646,
+      "origin": "34b1713bc2156929a6087648e028129823db4cef:tests/differential/acceptance-rates.mjs"
+    },
+    {
+      "file": "tests/tooling/differential-compiler-api.test.ts",
+      "sha256": "5406e7358b0688f180c85bd6123c9faa583eaf160859ca536604cdc481ebbc1b",
+      "bytes": 9678,
+      "origin": "34b1713bc2156929a6087648e028129823db4cef:tests/tooling/differential-compiler-api.test.ts"
+    },
+    {
+      "file": "tools/commands/fixtures/compiler-fix-history.ts",
+      "sha256": "ed9cadebc63268ffb365ae4dbaf065c34e23d7d27ed8064f5865743bb49e443e",
+      "bytes": 9611,
+      "origin": "34b1713bc2156929a6087648e028129823db4cef:tools/commands/fixtures/compiler-fix-history.ts"
+    },
+    {
+      "file": "tools/config/vite-plus/tooling-test-scopes.ts",
+      "sha256": "cbf6dbafaee4064ca5f42ba19b48b0a54b0a8df8e5db17735b647d96996fdab9",
+      "bytes": 9378,
+      "origin": "34b1713bc2156929a6087648e028129823db4cef:tools/config/vite-plus/tooling-test-scopes.ts"
+    }
+  ],
+  "exitStatus": 0,
+  "signal": null,
+  "error": null,
+  "currentApiCaptures": 0,
+  "nativeAcceptance": 0
+}

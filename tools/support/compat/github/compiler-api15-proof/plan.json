@@ -1,0 +1,1075 @@
+{
+  "schema": "vize.compiler.temporary-source-proof-campaign",
+  "version": 1,
+  "state": "prepared-not-published-not-dispatched",
+  "source": {
+    "revision": "34b1713bc2156929a6087648e028129823db4cef",
+    "tree": "969ea15a40444314ed6d30d9acdd222d663d3253",
+    "temporaryRef": "proof/compiler-history-dd6-20261002"
+  },
+  "workflow": {
+    "full": ".github/workflows/check.yml",
+    "all100": ".github/workflows/level-instruction-counts.yml"
+  },
+  "actualApiCapture": {
+    "connected": true,
+    "executionJob": "test-scripts",
+    "command": "vp run --workspace-root test:scripts",
+    "fullToolingGlobFiles": 679,
+    "requiredTestFile": "tests/tooling/differential-compiler-api-execution.test.ts",
+    "cohorts": [
+      {
+        "target": "dom",
+        "manifestFile": "tests/_fixtures/differential/compiler/sfc-fix-history.manifest.json",
+        "manifestSha256": "1837fd540bbd434055b1e7d11d265aa4d1f51343f7ae78012205c4a2c5d25cb7",
+        "spec": {
+          "product": "compiler",
+          "packageName": "vize_atelier_sfc",
+          "exampleName": "sfc_fix_history_observer",
+          "sourcePath": "crates/vize_atelier_sfc/examples/sfc_fix_history_observer/main.rs",
+          "probes": [
+            [
+              "--contract"
+            ]
+          ],
+          "expectedFeatures": [
+            "default",
+            "native"
+          ]
+        },
+        "cargoCommand": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "ci",
+          "-p",
+          "vize_atelier_sfc",
+          "--example",
+          "sfc_fix_history_observer",
+          "--message-format=json-render-diagnostics"
+        ],
+        "inputsAreOriginalLibraryApi": true,
+        "sourceWrapping": false,
+        "optionChanges": false,
+        "plannedCases": [
+          {
+            "id": "compiler/sfc/imported-component-before-prop",
+            "entrypoint": "compile_sfc_for_adapter",
+            "input": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/imported-component-before-prop.input.txt",
+              "sha256": "d00747c81ac5139a87bc504682233ab4076b0dc46e3d1e569463ab6775f9d0f1",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "descriptorParseOptions": {
+                "filename": "",
+                "source_map": false,
+                "pad": "None",
+                "ignore_empty": false,
+                "template_parse_options": null
+              },
+              "compileOptions": {
+                "parse": {
+                  "filename": "",
+                  "source_map": false,
+                  "pad": "None",
+                  "ignore_empty": false,
+                  "template_parse_options": null
+                },
+                "script": {
+                  "id": null,
+                  "inline_template": false,
+                  "is_ts": true,
+                  "reactive_props_destructure": false,
+                  "props_destructure": "False",
+                  "define_model": false
+                },
+                "template": {
+                  "id": null,
+                  "ssr": false,
+                  "ssr_css_vars": null,
+                  "scoped": false,
+                  "is_prod": false,
+                  "is_ts": false,
+                  "custom_renderer": false,
+                  "dialect": "V3",
+                  "compiler_options": null
+                },
+                "style": {
+                  "id": "",
+                  "scoped": false,
+                  "trim": false,
+                  "source_map": false,
+                  "preprocessor_lang": null,
+                  "data_attrs": []
+                },
+                "vapor": false,
+                "scope_id": null
+              },
+              "effectiveAdapterInputs": {
+                "templateSyntax": "Standard",
+                "customElements": {
+                  "construction": "CustomElementMatcher::default()"
+                },
+                "codegen": {
+                  "mode": "Function",
+                  "prefix_identifiers": false,
+                  "source_map": false,
+                  "filename": "template.vue",
+                  "component_name": null,
+                  "scope_id": null,
+                  "ssr": false,
+                  "optimize_imports": false,
+                  "runtime_module_name": "vue",
+                  "runtime_global_name": "Vue",
+                  "is_ts": false,
+                  "inline": false,
+                  "binding_metadata": null,
+                  "cache_handlers": false
+                },
+                "scriptOutput": "SeparateTemplate",
+                "experimental": {
+                  "self_component": false
+                }
+              }
+            },
+            "expected": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/imported-component-before-prop.expected.json",
+              "sha256": "600994e6a994599c266d81c8536343a16d1de82c5b6a773636bfd9ebc16a879a"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/imported-component-before-prop.observation.json",
+              "sha256": "c37bffbae08fa05462ca3d541ad4e5aae0d6e18cf27295b6f876e6db6615521d"
+            },
+            "native": "unsupported"
+          },
+          {
+            "id": "compiler/sfc/scoped-css-v-bind",
+            "entrypoint": "compile_sfc",
+            "input": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/scoped-css-v-bind.input.txt",
+              "sha256": "834e6c3798927138190d2bac8873982f523a6077e90854bc645f1abbae5b4111",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "descriptorParseOptions": {
+                "filename": "",
+                "source_map": false,
+                "pad": "None",
+                "ignore_empty": false,
+                "template_parse_options": null
+              },
+              "compileOptions": {
+                "parse": {
+                  "filename": "",
+                  "source_map": false,
+                  "pad": "None",
+                  "ignore_empty": false,
+                  "template_parse_options": null
+                },
+                "script": {
+                  "id": "src/Box.vue",
+                  "inline_template": false,
+                  "is_ts": false,
+                  "reactive_props_destructure": false,
+                  "props_destructure": "False",
+                  "define_model": false
+                },
+                "template": {
+                  "id": null,
+                  "ssr": false,
+                  "ssr_css_vars": null,
+                  "scoped": false,
+                  "is_prod": false,
+                  "is_ts": false,
+                  "custom_renderer": false,
+                  "dialect": "V3",
+                  "compiler_options": null
+                },
+                "style": {
+                  "id": "",
+                  "scoped": false,
+                  "trim": false,
+                  "source_map": false,
+                  "preprocessor_lang": null,
+                  "data_attrs": []
+                },
+                "vapor": false,
+                "scope_id": "test"
+              },
+              "effectiveAdapterInputs": {
+                "templateSyntax": "Standard",
+                "customElements": {
+                  "construction": "CustomElementMatcher::default()"
+                },
+                "codegen": {
+                  "mode": "Function",
+                  "prefix_identifiers": false,
+                  "source_map": false,
+                  "filename": "template.vue",
+                  "component_name": null,
+                  "scope_id": null,
+                  "ssr": false,
+                  "optimize_imports": false,
+                  "runtime_module_name": "vue",
+                  "runtime_global_name": "Vue",
+                  "is_ts": false,
+                  "inline": false,
+                  "binding_metadata": null,
+                  "cache_handlers": false
+                },
+                "scriptOutput": "InlineTemplate",
+                "experimental": {
+                  "self_component": false
+                }
+              }
+            },
+            "expected": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/scoped-css-v-bind.expected.json",
+              "sha256": "1a2856e7b080b7d738a46a78138bd724ed72a475b139d2618b8a23fa56eb21c6"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/scoped-css-v-bind.observation.json",
+              "sha256": "4f41449746a6ce82c860de220ca017df911946e7141d3ede3ecf3590a8ea338c"
+            },
+            "native": "unsupported"
+          },
+          {
+            "id": "compiler/sfc/dynamic-loop-ref-for",
+            "entrypoint": "compile_sfc_for_adapter",
+            "input": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dynamic-loop-ref-for.input.txt",
+              "sha256": "773403e04457abaab20df73a514c74e83a5b66d6900ddb82c28f67838bcfc527",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "descriptorParseOptions": {
+                "filename": "CascaderPanel.vue",
+                "source_map": false,
+                "pad": "None",
+                "ignore_empty": false,
+                "template_parse_options": null
+              },
+              "compileOptions": {
+                "parse": {
+                  "filename": "",
+                  "source_map": false,
+                  "pad": "None",
+                  "ignore_empty": false,
+                  "template_parse_options": null
+                },
+                "script": {
+                  "id": null,
+                  "inline_template": false,
+                  "is_ts": false,
+                  "reactive_props_destructure": false,
+                  "props_destructure": "False",
+                  "define_model": false
+                },
+                "template": {
+                  "id": null,
+                  "ssr": false,
+                  "ssr_css_vars": null,
+                  "scoped": false,
+                  "is_prod": false,
+                  "is_ts": false,
+                  "custom_renderer": false,
+                  "dialect": "V3",
+                  "compiler_options": null
+                },
+                "style": {
+                  "id": "",
+                  "scoped": false,
+                  "trim": false,
+                  "source_map": false,
+                  "preprocessor_lang": null,
+                  "data_attrs": []
+                },
+                "vapor": false,
+                "scope_id": null
+              },
+              "effectiveAdapterInputs": {
+                "templateSyntax": "Standard",
+                "customElements": {
+                  "construction": "CustomElementMatcher::default()"
+                },
+                "codegen": {
+                  "mode": "Function",
+                  "prefix_identifiers": false,
+                  "source_map": false,
+                  "filename": "template.vue",
+                  "component_name": null,
+                  "scope_id": null,
+                  "ssr": false,
+                  "optimize_imports": false,
+                  "runtime_module_name": "vue",
+                  "runtime_global_name": "Vue",
+                  "is_ts": false,
+                  "inline": false,
+                  "binding_metadata": null,
+                  "cache_handlers": false
+                },
+                "scriptOutput": "SeparateTemplate",
+                "experimental": {
+                  "self_component": false
+                }
+              }
+            },
+            "expected": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dynamic-loop-ref-for.expected.json",
+              "sha256": "f80949fc60b3b574b15ceed7a03dc97903dfc8e0d1bf37bb71ba32927ab85b93"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/dynamic-loop-ref-for.observation.json",
+              "sha256": "cadeb8ff277ab8cf09ce1be830dea79856befbc589dc297bc8fda3c7fb69bf58"
+            },
+            "native": "unsupported"
+          },
+          {
+            "id": "compiler/sfc/computed-component-unref",
+            "entrypoint": "compile_sfc",
+            "input": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/computed-component-unref.input.txt",
+              "sha256": "6a7a7c946ea30ad568eae780c9f37ff437256aaac77ea20bfd4cce9c5a2451b9",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "descriptorParseOptions": {
+                "filename": "",
+                "source_map": false,
+                "pad": "None",
+                "ignore_empty": false,
+                "template_parse_options": null
+              },
+              "compileOptions": {
+                "parse": {
+                  "filename": "",
+                  "source_map": false,
+                  "pad": "None",
+                  "ignore_empty": false,
+                  "template_parse_options": null
+                },
+                "script": {
+                  "id": null,
+                  "inline_template": false,
+                  "is_ts": false,
+                  "reactive_props_destructure": false,
+                  "props_destructure": "False",
+                  "define_model": false
+                },
+                "template": {
+                  "id": null,
+                  "ssr": false,
+                  "ssr_css_vars": null,
+                  "scoped": false,
+                  "is_prod": false,
+                  "is_ts": false,
+                  "custom_renderer": false,
+                  "dialect": "V3",
+                  "compiler_options": null
+                },
+                "style": {
+                  "id": "",
+                  "scoped": false,
+                  "trim": false,
+                  "source_map": false,
+                  "preprocessor_lang": null,
+                  "data_attrs": []
+                },
+                "vapor": false,
+                "scope_id": null
+              },
+              "effectiveAdapterInputs": {
+                "templateSyntax": "Standard",
+                "customElements": {
+                  "construction": "CustomElementMatcher::default()"
+                },
+                "codegen": {
+                  "mode": "Function",
+                  "prefix_identifiers": false,
+                  "source_map": false,
+                  "filename": "template.vue",
+                  "component_name": null,
+                  "scope_id": null,
+                  "ssr": false,
+                  "optimize_imports": false,
+                  "runtime_module_name": "vue",
+                  "runtime_global_name": "Vue",
+                  "is_ts": false,
+                  "inline": false,
+                  "binding_metadata": null,
+                  "cache_handlers": false
+                },
+                "scriptOutput": "InlineTemplate",
+                "experimental": {
+                  "self_component": false
+                }
+              }
+            },
+            "expected": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/computed-component-unref.expected.json",
+              "sha256": "d9999e9d8f131c24b09434dfc69d70e6a24915c904b6dc5734d82e81d1ede62a"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/computed-component-unref.observation.json",
+              "sha256": "08127c2f5df0e902518f6b3270b2d1b23bbfd45a512ec5c98e02f3d653cad37b"
+            },
+            "native": "unsupported"
+          },
+          {
+            "id": "compiler/sfc/custom-directive-child-patch",
+            "entrypoint": "compile_sfc",
+            "input": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/custom-directive-child-patch.input.txt",
+              "sha256": "c7abd33b5052e5ecdf30d6d5f342c5a99bc1bd5b32d6c1881a636efbf5446bdd",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "descriptorParseOptions": {
+                "filename": "",
+                "source_map": false,
+                "pad": "None",
+                "ignore_empty": false,
+                "template_parse_options": null
+              },
+              "compileOptions": {
+                "parse": {
+                  "filename": "",
+                  "source_map": false,
+                  "pad": "None",
+                  "ignore_empty": false,
+                  "template_parse_options": null
+                },
+                "script": {
+                  "id": null,
+                  "inline_template": false,
+                  "is_ts": false,
+                  "reactive_props_destructure": false,
+                  "props_destructure": "False",
+                  "define_model": false
+                },
+                "template": {
+                  "id": null,
+                  "ssr": false,
+                  "ssr_css_vars": null,
+                  "scoped": false,
+                  "is_prod": false,
+                  "is_ts": false,
+                  "custom_renderer": false,
+                  "dialect": "V3",
+                  "compiler_options": null
+                },
+                "style": {
+                  "id": "",
+                  "scoped": false,
+                  "trim": false,
+                  "source_map": false,
+                  "preprocessor_lang": null,
+                  "data_attrs": []
+                },
+                "vapor": false,
+                "scope_id": null
+              },
+              "effectiveAdapterInputs": {
+                "templateSyntax": "Standard",
+                "customElements": {
+                  "construction": "CustomElementMatcher::default()"
+                },
+                "codegen": {
+                  "mode": "Function",
+                  "prefix_identifiers": false,
+                  "source_map": false,
+                  "filename": "template.vue",
+                  "component_name": null,
+                  "scope_id": null,
+                  "ssr": false,
+                  "optimize_imports": false,
+                  "runtime_module_name": "vue",
+                  "runtime_global_name": "Vue",
+                  "is_ts": false,
+                  "inline": false,
+                  "binding_metadata": null,
+                  "cache_handlers": false
+                },
+                "scriptOutput": "InlineTemplate",
+                "experimental": {
+                  "self_component": false
+                }
+              }
+            },
+            "expected": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/custom-directive-child-patch.expected.json",
+              "sha256": "82b77abca9652fd67f14f75f76b6f806b54d525c752bf63fdf16a48426f9e7c1"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_sfc/tests/fixtures/fix-history/custom-directive-child-patch.observation.json",
+              "sha256": "0ccbce84c3b60cf5e332db625e78006639a16ba9562e084565e17a234dc29bc7"
+            },
+            "native": "unsupported"
+          }
+        ],
+        "retainedRoot": "target/differential/compiler-api/dom",
+        "requiredFiles": [
+          "report.json",
+          "unverified-report.json",
+          "build-receipt.json",
+          "first.attempt.json",
+          "repeat.attempt.json",
+          "revalidation.attempt.json",
+          "cargo.jsonl",
+          "cargo.stderr.txt",
+          "sfc_fix_history_observer"
+        ]
+      },
+      {
+        "target": "ssr",
+        "manifestFile": "tests/_fixtures/differential/compiler/ssr-fix-history.manifest.json",
+        "manifestSha256": "803b17768a17a7fcf0202f4aa74e2b9c81c430482f7780bb00db89a27bb55a61",
+        "spec": {
+          "product": "compiler",
+          "packageName": "vize_atelier_ssr",
+          "exampleName": "ssr_fix_history_observer",
+          "sourcePath": "crates/vize_atelier_ssr/examples/ssr_fix_history_observer/main.rs",
+          "probes": [
+            [
+              "--contract"
+            ]
+          ],
+          "expectedFeatures": [
+            "default"
+          ]
+        },
+        "cargoCommand": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "ci",
+          "-p",
+          "vize_atelier_ssr",
+          "--example",
+          "ssr_fix_history_observer",
+          "--message-format=json-render-diagnostics"
+        ],
+        "inputsAreOriginalLibraryApi": true,
+        "sourceWrapping": false,
+        "optionChanges": false,
+        "plannedCases": [
+          {
+            "id": "compiler/ssr/textarea-model",
+            "entrypoint": "compile_ssr",
+            "input": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/textarea-model.input.txt",
+              "sha256": "c3a529ad8dc823b0e5338020686459a83b44182c70767aeb5c331e6296d4b42f",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "bindingMetadata": null,
+              "croquis": null,
+              "customElements": "default",
+              "dialect": "V3",
+              "entrypoint": "compile_ssr",
+              "experimental": {
+                "componentName": null,
+                "selfComponent": false,
+                "sourceMap": false,
+                "sourceMapFilename": null
+              },
+              "publicOptions": {
+                "comments": false,
+                "componentName": null,
+                "customRenderer": false,
+                "experimentalInTagComments": false,
+                "experimentalPatternedTemplate": false,
+                "inline": false,
+                "isTs": false,
+                "scopeId": null,
+                "ssrCssVars": null
+              },
+              "rawTemplateSlotted": true,
+              "templateSyntax": "Standard"
+            },
+            "expected": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/textarea-model.expected.json",
+              "sha256": "5739aaddb0d1d6b623ff5ae02c39ff63c869d826c065292a65c3da12da5d6fd9"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/capture-c2451/first.stdout.json",
+              "sha256": "27f53d1ece55ea1f63f496bef0700d432491e9679aba63ac4cfb9be72e4481ec"
+            },
+            "native": "unsupported"
+          },
+          {
+            "id": "compiler/ssr/slot-fallback-vnode",
+            "entrypoint": "compile_ssr",
+            "input": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/slot-fallback-vnode.input.txt",
+              "sha256": "465b18b3bfebc61f26fbad82682359ee46881d0f485d8ea474fe3778ef6de0d4",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "bindingMetadata": null,
+              "croquis": null,
+              "customElements": "default",
+              "dialect": "V3",
+              "entrypoint": "compile_ssr",
+              "experimental": {
+                "componentName": null,
+                "selfComponent": false,
+                "sourceMap": false,
+                "sourceMapFilename": null
+              },
+              "publicOptions": {
+                "comments": false,
+                "componentName": null,
+                "customRenderer": false,
+                "experimentalInTagComments": false,
+                "experimentalPatternedTemplate": false,
+                "inline": false,
+                "isTs": false,
+                "scopeId": null,
+                "ssrCssVars": null
+              },
+              "rawTemplateSlotted": true,
+              "templateSyntax": "Standard"
+            },
+            "expected": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/slot-fallback-vnode.expected.json",
+              "sha256": "5ebc501d34723565b01309f47875a360883429c579a67aa3689dbfd4178dfc77"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/capture-c2451/first.stdout.json",
+              "sha256": "27f53d1ece55ea1f63f496bef0700d432491e9679aba63ac4cfb9be72e4481ec"
+            },
+            "native": "unsupported"
+          },
+          {
+            "id": "compiler/ssr/component-slot-props",
+            "entrypoint": "compile_ssr",
+            "input": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/component-slot-props.input.txt",
+              "sha256": "220c156bb2d4e5bc1fb46c732288a63eb4d08f7a6601621af8126d15aca615bb",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "bindingMetadata": null,
+              "croquis": null,
+              "customElements": "default",
+              "dialect": "V3",
+              "entrypoint": "compile_ssr",
+              "experimental": {
+                "componentName": null,
+                "selfComponent": false,
+                "sourceMap": false,
+                "sourceMapFilename": null
+              },
+              "publicOptions": {
+                "comments": false,
+                "componentName": null,
+                "customRenderer": false,
+                "experimentalInTagComments": false,
+                "experimentalPatternedTemplate": false,
+                "inline": false,
+                "isTs": false,
+                "scopeId": null,
+                "ssrCssVars": null
+              },
+              "rawTemplateSlotted": true,
+              "templateSyntax": "Standard"
+            },
+            "expected": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/component-slot-props.expected.json",
+              "sha256": "84b813f65e6423494a52f2bdee1fa1a6a36562dd6ed3e11e90629db9a05d69b7"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/capture-c2451/first.stdout.json",
+              "sha256": "27f53d1ece55ea1f63f496bef0700d432491e9679aba63ac4cfb9be72e4481ec"
+            },
+            "native": "unsupported"
+          },
+          {
+            "id": "compiler/ssr/named-scoped-slot",
+            "entrypoint": "compile_ssr",
+            "input": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/named-scoped-slot.input.txt",
+              "sha256": "41a5a6cf03ef53ede45b456ce769fc25af68cdd9ac099dd091a16e5a89e7c635",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "bindingMetadata": null,
+              "croquis": null,
+              "customElements": "default",
+              "dialect": "V3",
+              "entrypoint": "compile_ssr",
+              "experimental": {
+                "componentName": null,
+                "selfComponent": false,
+                "sourceMap": false,
+                "sourceMapFilename": null
+              },
+              "publicOptions": {
+                "comments": false,
+                "componentName": null,
+                "customRenderer": false,
+                "experimentalInTagComments": false,
+                "experimentalPatternedTemplate": false,
+                "inline": false,
+                "isTs": false,
+                "scopeId": null,
+                "ssrCssVars": null
+              },
+              "rawTemplateSlotted": true,
+              "templateSyntax": "Standard"
+            },
+            "expected": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/named-scoped-slot.expected.json",
+              "sha256": "898551035bded41371b19a0361b7fdff76fb62d3764e420e09ff5f0d698ceb31"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/capture-c2451/first.stdout.json",
+              "sha256": "27f53d1ece55ea1f63f496bef0700d432491e9679aba63ac4cfb9be72e4481ec"
+            },
+            "native": "unsupported"
+          },
+          {
+            "id": "compiler/ssr/component-lone-spread",
+            "entrypoint": "compile_ssr",
+            "input": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/component-lone-spread.input.txt",
+              "sha256": "8ba30b7588fa7cc07546cb3f4eb9b3dc502c661b2e2082a3118bf3b2497648a7",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "bindingMetadata": null,
+              "croquis": null,
+              "customElements": "default",
+              "dialect": "V3",
+              "entrypoint": "compile_ssr",
+              "experimental": {
+                "componentName": null,
+                "selfComponent": false,
+                "sourceMap": false,
+                "sourceMapFilename": null
+              },
+              "publicOptions": {
+                "comments": false,
+                "componentName": null,
+                "customRenderer": false,
+                "experimentalInTagComments": false,
+                "experimentalPatternedTemplate": false,
+                "inline": false,
+                "isTs": false,
+                "scopeId": null,
+                "ssrCssVars": null
+              },
+              "rawTemplateSlotted": true,
+              "templateSyntax": "Standard"
+            },
+            "expected": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/component-lone-spread.expected.json",
+              "sha256": "eb92b6e429e2d39e9b2de667e850d0bc1a19198790e2ebdb337c9555c264a244"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_ssr/tests/fixtures/fix-history-next/capture-c2451/first.stdout.json",
+              "sha256": "27f53d1ece55ea1f63f496bef0700d432491e9679aba63ac4cfb9be72e4481ec"
+            },
+            "native": "unsupported"
+          }
+        ],
+        "retainedRoot": "target/differential/compiler-api/ssr",
+        "requiredFiles": [
+          "report.json",
+          "unverified-report.json",
+          "build-receipt.json",
+          "first.attempt.json",
+          "repeat.attempt.json",
+          "revalidation.attempt.json",
+          "cargo.jsonl",
+          "cargo.stderr.txt",
+          "ssr_fix_history_observer"
+        ]
+      },
+      {
+        "target": "vapor",
+        "manifestFile": "tests/_fixtures/differential/compiler/vapor-fix-history.manifest.json",
+        "manifestSha256": "d42e8d005564f5acfbdaf4e6d49d9d43843e0288f131cad6c326d9c934e14cf2",
+        "spec": {
+          "product": "compiler",
+          "packageName": "vize_atelier_vapor",
+          "exampleName": "vapor_fix_history_observer",
+          "sourcePath": "crates/vize_atelier_vapor/examples/vapor_fix_history_observer/main.rs",
+          "probes": [
+            [
+              "--contract"
+            ]
+          ],
+          "expectedFeatures": []
+        },
+        "cargoCommand": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "ci",
+          "-p",
+          "vize_atelier_vapor",
+          "--example",
+          "vapor_fix_history_observer",
+          "--message-format=json-render-diagnostics"
+        ],
+        "inputsAreOriginalLibraryApi": true,
+        "sourceWrapping": false,
+        "optionChanges": false,
+        "plannedCases": [
+          {
+            "id": "compiler/vapor/once-directive",
+            "entrypoint": "compile_vapor",
+            "input": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/once-directive.input.txt",
+              "sha256": "48b75c6816ef978fc5cd7067128c6030b30cd3c72a5cac46dca8935a20799851",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "bindingMetadata": null,
+              "customElements": "default",
+              "customRenderer": false,
+              "entrypoint": "compile_vapor",
+              "experimental": {
+                "componentName": null,
+                "selfComponent": false,
+                "sourceMap": false,
+                "sourceMapFilename": null
+              },
+              "experimentalInTagComments": false,
+              "experimentalPatternedTemplate": false,
+              "inline": false,
+              "prefixIdentifiers": false,
+              "retainedLane": false,
+              "sfcScope": null,
+              "ssr": false,
+              "templateSyntax": "Standard"
+            },
+            "expected": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/once-directive.expected.json",
+              "sha256": "1756b5d7de2917058c60e1a389c3fb4f497ec4a42fd634a946eaf8b58c50f521"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/capture-b11eb/first.stdout.json",
+              "sha256": "5b60b9b80a961a15e123a0ffe6c55d83038bb685f97f26e2fca28d7969935dc5"
+            },
+            "native": "unsupported"
+          },
+          {
+            "id": "compiler/vapor/insertion-placeholder",
+            "entrypoint": "compile_vapor",
+            "input": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/insertion-placeholder.input.txt",
+              "sha256": "3b93a1c770bd2426b9816074226116bcf06b072a3f511c67cc75d1b2911739af",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "bindingMetadata": null,
+              "customElements": "default",
+              "customRenderer": false,
+              "entrypoint": "compile_vapor",
+              "experimental": {
+                "componentName": null,
+                "selfComponent": false,
+                "sourceMap": false,
+                "sourceMapFilename": null
+              },
+              "experimentalInTagComments": false,
+              "experimentalPatternedTemplate": false,
+              "inline": false,
+              "prefixIdentifiers": false,
+              "retainedLane": false,
+              "sfcScope": null,
+              "ssr": false,
+              "templateSyntax": "Standard"
+            },
+            "expected": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/insertion-placeholder.expected.json",
+              "sha256": "a956a9d2163fe0da040a28eccefe96146858eed94df62d4d055ec6d01d962d46"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/capture-b11eb/first.stdout.json",
+              "sha256": "5b60b9b80a961a15e123a0ffe6c55d83038bb685f97f26e2fca28d7969935dc5"
+            },
+            "native": "unsupported"
+          },
+          {
+            "id": "compiler/vapor/root-document-order",
+            "entrypoint": "compile_vapor",
+            "input": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/root-document-order.input.txt",
+              "sha256": "aab80cda6015249603921060a52bc204d2e1fb66c0994adf3331748b61ed8407",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "bindingMetadata": null,
+              "customElements": "default",
+              "customRenderer": false,
+              "entrypoint": "compile_vapor",
+              "experimental": {
+                "componentName": null,
+                "selfComponent": false,
+                "sourceMap": false,
+                "sourceMapFilename": null
+              },
+              "experimentalInTagComments": false,
+              "experimentalPatternedTemplate": false,
+              "inline": false,
+              "prefixIdentifiers": false,
+              "retainedLane": false,
+              "sfcScope": null,
+              "ssr": false,
+              "templateSyntax": "Standard"
+            },
+            "expected": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/root-document-order.expected.json",
+              "sha256": "d81f13baf5899fe5d332c2b62bc694feea6f71d6a7c75bd785e2660283efa77a"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/capture-b11eb/first.stdout.json",
+              "sha256": "5b60b9b80a961a15e123a0ffe6c55d83038bb685f97f26e2fca28d7969935dc5"
+            },
+            "native": "unsupported"
+          },
+          {
+            "id": "compiler/vapor/hydration-sibling-element",
+            "entrypoint": "compile_vapor",
+            "input": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/hydration-sibling-element.input.txt",
+              "sha256": "830e61bc2e5c9b96df312704ba8972430031610a909d361b676fafabbba34e3e",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "bindingMetadata": null,
+              "customElements": "default",
+              "customRenderer": false,
+              "entrypoint": "compile_vapor",
+              "experimental": {
+                "componentName": null,
+                "selfComponent": false,
+                "sourceMap": false,
+                "sourceMapFilename": null
+              },
+              "experimentalInTagComments": false,
+              "experimentalPatternedTemplate": false,
+              "inline": false,
+              "prefixIdentifiers": false,
+              "retainedLane": false,
+              "sfcScope": null,
+              "ssr": false,
+              "templateSyntax": "Standard"
+            },
+            "expected": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/hydration-sibling-element.expected.json",
+              "sha256": "3fb50a06f2ca32161d4eefe7322fb02e868180c8a5aa9474e8257dc7aa74473c"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/capture-b11eb/first.stdout.json",
+              "sha256": "5b60b9b80a961a15e123a0ffe6c55d83038bb685f97f26e2fca28d7969935dc5"
+            },
+            "native": "unsupported"
+          },
+          {
+            "id": "compiler/vapor/mounted-control-slot",
+            "entrypoint": "compile_vapor",
+            "input": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/mounted-control-slot.input.txt",
+              "sha256": "d7253e27cc48f5811028d780c5895b072ae26b3db996b02f30b889cdd075576d",
+              "role": "entry"
+            },
+            "originalOptions": {
+              "bindingMetadata": null,
+              "customElements": "default",
+              "customRenderer": false,
+              "entrypoint": "compile_vapor",
+              "experimental": {
+                "componentName": null,
+                "selfComponent": false,
+                "sourceMap": false,
+                "sourceMapFilename": null
+              },
+              "experimentalInTagComments": false,
+              "experimentalPatternedTemplate": false,
+              "inline": false,
+              "prefixIdentifiers": true,
+              "retainedLane": false,
+              "sfcScope": null,
+              "ssr": false,
+              "templateSyntax": "Standard"
+            },
+            "expected": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/mounted-control-slot.expected.json",
+              "sha256": "2093a2c17875b5e0e65aa138fdae1993f7b2b9a4b3fbbdc0e6240b6b09e0dbdd"
+            },
+            "historicalObservation": {
+              "path": "crates/vize_atelier_vapor/tests/fixtures/fix-history-next/capture-b11eb/first.stdout.json",
+              "sha256": "5b60b9b80a961a15e123a0ffe6c55d83038bb685f97f26e2fca28d7969935dc5"
+            },
+            "native": "unsupported"
+          }
+        ],
+        "retainedRoot": "target/differential/compiler-api/vapor",
+        "requiredFiles": [
+          "report.json",
+          "unverified-report.json",
+          "build-receipt.json",
+          "first.attempt.json",
+          "repeat.attempt.json",
+          "revalidation.attempt.json",
+          "cargo.jsonl",
+          "cargo.stderr.txt",
+          "vapor_fix_history_observer"
+        ]
+      }
+    ]
+  },
+  "artifact": {
+    "nameTemplate": "formatter-api-corpus-RUN_ID-RUN_ATTEMPT-test-scripts-full",
+    "originalAction": ".github/actions/upload-formatter-api-corpus-evidence/action.yml",
+    "uploadedRoots": [
+      "target/differential/",
+      "target/ci/vize.differential-build.json"
+    ],
+    "receiptBytesMustMatchReportBuildReceipt": true,
+    "rawObserverBinaryBytesMustMatchReceiptSha256": true,
+    "placeholderFileSOURCE_BUILT_OBSERVERIsNotARealRequiredFilename": true
+  },
+  "acceptance": {
+    "authenticateRunAndJobMetadata": true,
+    "requiredHeadSha": "34b1713bc2156929a6087648e028129823db4cef",
+    "requiredHeadTree": "969ea15a40444314ed6d30d9acdd222d663d3253",
+    "event": "workflow_dispatch",
+    "requiredRef": "proof/compiler-history-dd6-20261002",
+    "terminalFullWorkflowSuccess": true,
+    "terminalAll100WorkflowSuccess": true,
+    "downloadExactAttemptArtifactZipAndJobLogs": true,
+    "artifactDigestMatchesAuthenticatedMetadata": true,
+    "all15OriginalSourceOptionsFullResultsMatch": true,
+    "firstRepeatRevalidationBytesEqual": true,
+    "exitStatusZeroSignalAndErrorNullCompleteStderrEmpty": true,
+    "receiptCurrentSourceTreeAndLibraryProductTreeCargoLockObserverHashesVerified": true,
+    "actualCargoArtifactAndSelectedBinaryHashesVerified": true,
+    "nativeCreditRemainsZero": true
+  },
+  "claims": {
+    "actualApiObservations": 0,
+    "actualFullToolingRuns": 0,
+    "actualAll100Runs": 0,
+    "wholeHistoryClosed": false,
+    "nativeHandled": 0,
+    "remoteMutationPerformed": false
+  },
+  "publication": {
+    "rootOnly": true,
+    "createPrs": false,
+    "createNativeStack": false,
+    "mergeCredit": false,
+    "frozen116OwnPathsUntouched": true,
+    "frozenCompiler130AndSfc3cdfUntouched": true
+  }
+}
