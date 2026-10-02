@@ -68,6 +68,7 @@ pub fn parse_program_once<'a>(
         source_type,
         coordinates: Coordinates { source, prefix: 0 },
         program: None,
+        observation: None,
         diagnostics: Diagnostics::default(),
         hole: None,
     };
@@ -75,16 +76,15 @@ pub fn parse_program_once<'a>(
         syntax.hole = Some(EmbedHole::SourceTooLarge);
         return syntax;
     }
-    let parsed = parse_input(allocator, source.text(), source_type);
-    syntax.hole = if parsed.is_flow_language {
+    let observation = Parser::new(allocator.as_oxc(), source.text(), source_type).parse_observed();
+    syntax.hole = if observation.is_flow_language() {
         Some(EmbedHole::UnsupportedFlow)
-    } else if parsed.panicked || parsed.diagnostics.has_errors() {
+    } else if observation.panicked() || observation.diagnostics().has_errors() {
         Some(EmbedHole::Syntax)
     } else {
         None
     };
-    syntax.diagnostics = parsed.diagnostics;
-    syntax.program = Some(parsed.program);
+    syntax.observation = Some(observation);
     syntax
 }
 
@@ -99,3 +99,6 @@ pub(super) fn parse_input<'a>(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod observation_tests;

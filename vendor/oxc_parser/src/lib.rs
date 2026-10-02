@@ -72,6 +72,7 @@ mod cursor;
 mod error_handler;
 mod modifiers;
 mod module_record;
+mod observation;
 mod state;
 
 mod js;
@@ -97,6 +98,7 @@ use oxc_span::{SourceType, Span};
 use oxc_syntax::module_record::ModuleRecord;
 
 pub use crate::lexer::{Kind, Token};
+pub use observation::{AdmittedProgram, ProgramObservation};
 use crate::{
     config::{
         LexerConfig, NoTokensParserConfig, ParserConfig, RuntimeParserConfig, TokensParserConfig,
@@ -196,7 +198,7 @@ pub struct ParserReturn<'a> {
 /// Parse options
 ///
 /// You may provide options to the [`Parser`] using [`Parser::with_options`].
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ParseOptions {
     /// Whether to parse regular expressions or not.
     ///

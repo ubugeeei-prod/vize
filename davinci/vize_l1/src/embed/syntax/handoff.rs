@@ -105,6 +105,7 @@ pub(super) fn into_expression<'a>(
         source_type,
         coordinates,
         program,
+        observation: _,
         diagnostics,
         mut hole,
     } = syntax;
