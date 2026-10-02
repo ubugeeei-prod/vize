@@ -194,7 +194,7 @@ stacker = "=0.1.25"
 
 # Extension-contract hosting (charter #39: pinned, audited, and reachable only
 # through `vize_extension_host`'s `extension-host` feature)
-wasmtime = { version = "=48.0.3", default-features = false, features = [
+wasmtime = { version = "=48.0.4", default-features = false, features = [
   "component-model",
   "cranelift",
   "runtime",
