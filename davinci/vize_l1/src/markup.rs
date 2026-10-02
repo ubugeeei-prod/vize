@@ -26,6 +26,7 @@ pub mod directive;
 pub mod entity;
 pub mod grammar;
 pub mod lex;
+mod native;
 pub mod parse;
 pub mod profile;
 pub mod token;
@@ -35,6 +36,9 @@ pub use directive::{
 };
 pub use grammar::{MarkupGrammar, Vue};
 pub use lex::{Delimiters, LexOptions, Lexer};
+pub use native::{
+    NativeAttribute, NativeAttributes, NativeChild, NativeChildren, NativeComponent, NativeElement,
+};
 pub use parse::{
     ComponentParse, ComponentSourceError, DirectiveAdmission, parse_component,
     parse_component_with_authored, parse_component_with_options,
