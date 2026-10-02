@@ -24,12 +24,6 @@ use crate::surface::{
     Element, ElementClose, Interpolation, OpenTag, SurfaceChild, SurfaceTree, Token,
 };
 
-/// v1 supports the tokenizer's default `{{` / `}}` delimiters; custom
-/// delimiters (a `ParserOptions` concern) are recorded as deferred in the
-/// P2-7 record.
-const DELIM_OPEN_LEN: usize = 2;
-const DELIM_CLOSE_LEN: usize = 2;
-
 #[derive(Clone, Copy)]
 enum RawKind {
     Comment,
@@ -54,13 +48,13 @@ impl<'a> scope::Frame<'a> for Frame<'a> {
     }
 }
 
-pub(crate) fn build<'a>(
+pub(crate) fn build<'a, const RAW: bool>(
     allocator: &'a Allocator,
     src: &'a str,
     events: &[Event],
     repair_interactive: bool,
 ) -> (SurfaceTree<'a>, bool) {
-    let mut b = Builder {
+    let mut b = Builder::<RAW> {
         src,
         allocator,
         events,
@@ -94,7 +88,7 @@ pub(crate) fn build<'a>(
     )
 }
 
-struct Builder<'a, 'e> {
+struct Builder<'a, 'e, const RAW: bool> {
     src: &'a str,
     allocator: &'a Allocator,
     events: &'e [Event],
@@ -106,7 +100,7 @@ struct Builder<'a, 'e> {
     repaired: bool,
 }
 
-impl<'a> Builder<'a, '_> {
+impl<'a, const RAW: bool> Builder<'a, '_, RAW> {
     fn run(&mut self) {
         while let Some(ev) = self.events.get(self.i).copied() {
             match ev.kind {
@@ -207,13 +201,19 @@ impl<'a> Builder<'a, '_> {
     fn interpolation(&mut self, ev: Event) {
         let (s, e) = (ev.start as usize, ev.end as usize);
         self.i += 1;
-        let open_start = s.saturating_sub(DELIM_OPEN_LEN);
+        // Existing consumers instantiate RAW=false: no new mode branch or
+        // delimiter metadata load is introduced into their interpolation path.
+        let width = if RAW { ev.interpolation_width() } else { 2 };
+        let open_start = s.saturating_sub(width);
         self.flush_gap(open_start);
-        let open = self.token_at(open_start, s);
+        let mut open = self.token_at(open_start, s);
+        if RAW && width == 3 {
+            open.mark_raw_interpolation();
+        }
         let content = self.token_at(s, e);
         // The tokenizer only reports an interpolation once the closing
         // delimiter matched, so it is always present.
-        let close = self.token_at(e, (e + DELIM_CLOSE_LEN).min(self.src.len()));
+        let close = self.token_at(e, (e + width).min(self.src.len()));
         let node = Interpolation {
             open,
             content,

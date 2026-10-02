@@ -7,7 +7,29 @@ use crate::markup::{Component, DirectiveNameError, LexOptions, Lexer};
 use crate::parse::{SurfaceError, SurfaceParseOptions, construct};
 use crate::surface::SurfaceTree;
 
-mod sink;
+use super::VueDirectives;
+use crate::dialect::vue::surface::{SurfacePolicy, sink::VueSink};
+use crate::markup::directive::{DirectivePrefix, DirectiveSyntax};
+
+struct Vue3Policy;
+
+impl SurfacePolicy for Vue3Policy {
+    type Boundary = DirectiveAdmission;
+
+    fn pre(raw: &str, offset: u32, source: &str) -> Result<bool, Self::Boundary> {
+        VueDirectives
+            .decompose(raw, offset)
+            .map(|head| {
+                head.is_some_and(|head| {
+                    head.prefix == DirectivePrefix::Full && head.name.slice(source) == "pre"
+                })
+            })
+            .map_err(|error| DirectiveAdmission {
+                span: Span::new(offset, offset.saturating_add(raw.len() as u32)),
+                error,
+            })
+    }
+}
 
 /// A recovered directive head outside the native syntax provider's admission.
 /// Its attribute and all remaining authored bytes are retained in the tree.
@@ -83,19 +105,20 @@ fn projection<'a>(
         return Err(ComponentSourceError::SourceTooLarge);
     }
     let mut unsupported = Vec::new_in(&allocator);
-    let (tree, authored, errors) = construct(allocator, source, authored, |events, errors| {
-        let recorder = Recorder { events, errors };
-        let sink = sink::VueSink::new(allocator, source, recorder, &mut unsupported);
-        Lexer::<Component, _>::new(
-            source,
-            sink,
-            LexOptions {
-                in_tag_comments: options.experimental_in_tag_comments,
-                ..LexOptions::default()
-            },
-        )
-        .run();
-    });
+    let (tree, authored, errors) =
+        construct::<false>(allocator, source, authored, |events, errors| {
+            let recorder = Recorder { events, errors };
+            let sink = VueSink::<Vue3Policy>::new(allocator, source, recorder, &mut unsupported);
+            Lexer::<Component, _>::new(
+                source,
+                sink,
+                LexOptions {
+                    in_tag_comments: options.experimental_in_tag_comments,
+                    ..LexOptions::default()
+                },
+            )
+            .run();
+        });
     Ok(ComponentParse {
         tree,
         authored,

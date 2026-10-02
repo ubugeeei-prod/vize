@@ -81,7 +81,7 @@ fn parse_projection<'a>(
     Option<SurfaceTree<'a>>,
     Vec<'a, SurfaceError>,
 ) {
-    construct(allocator, source, authored, |events, errors| {
+    construct::<false>(allocator, source, authored, |events, errors| {
         let recorder = Recorder { events, errors };
         let mut tokenizer = Tokenizer::new(source, recorder);
         tokenizer.set_in_tag_comments(options.experimental_in_tag_comments);
@@ -91,7 +91,7 @@ fn parse_projection<'a>(
 
 /// Both lexer entry points share the source limit, recovery and projection
 /// construction. Recording remains one pass with no intervening serialization.
-pub(crate) fn construct<'a>(
+pub(crate) fn construct<'a, const RAW: bool>(
     allocator: &'a Allocator,
     source: &'a str,
     authored: bool,
@@ -112,8 +112,9 @@ pub(crate) fn construct<'a>(
         return (SurfaceTree { source, children }, None, errors);
     }
     record(&mut events, &mut errors);
-    let (tree, repaired) = build(allocator, source, &events, true);
-    let authored = (authored && repaired).then(|| build(allocator, source, &events, false).0);
+    let (tree, repaired) = build::<RAW>(allocator, source, &events, true);
+    let authored =
+        (authored && repaired).then(|| build::<RAW>(allocator, source, &events, false).0);
     debug_assert!(
         check_fidelity(&tree).is_ok(),
         "L1 fidelity: render(tree) != source"

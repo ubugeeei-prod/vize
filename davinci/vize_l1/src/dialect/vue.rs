@@ -6,6 +6,8 @@
 
 use vize_l0::config::VueVersion;
 
+pub(crate) mod surface;
+
 /// A legacy (pre-Vue-3) version line that Vize can opt into supporting.
 ///
 /// Vize targets Vue 3 by default. These variants name the older runtimes whose

@@ -1,14 +1,13 @@
 //! Vue policy is applied at complete authored heads, outside the generic sink.
 
-use vize_l0::{Allocator, Namespace, Span, Vec, is_void_tag};
+use vize_l0::{Allocator, Namespace, Vec, is_void_tag};
 
-use super::DirectiveAdmission;
+use super::SurfacePolicy;
 use crate::build::scope::{Frame, Recovery};
-use crate::dialect::vue3::VueDirectives;
 use crate::event::{EventKind, Recorder};
-use crate::markup::directive::{DirectivePrefix, DirectiveSyntax};
 use crate::markup::entity::DecodedEntity;
 use crate::markup::token::{LexErrorCode, LexMode, QuoteType, Sink};
+use core::marker::PhantomData;
 
 struct ModeFrame<'a> {
     tag: &'a str,
@@ -25,22 +24,23 @@ impl<'a> Frame<'a> for ModeFrame<'a> {
     }
 }
 
-pub(super) struct VueSink<'a, 'v> {
+pub(crate) struct VueSink<'a, 'v, P: SurfacePolicy> {
     source: &'a str,
     recorder: Recorder<'a, 'v>,
-    unsupported: &'v mut Vec<'a, DirectiveAdmission>,
+    unsupported: &'v mut Vec<'a, P::Boundary>,
     stack: Vec<'a, ModeFrame<'a>>,
     recovery: Recovery<'a>,
     tag: Option<&'a str>,
     tag_events: usize,
+    policy: PhantomData<P>,
 }
 
-impl<'a, 'v> VueSink<'a, 'v> {
-    pub(super) fn new(
+impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
+    pub(crate) fn new(
         allocator: &'a Allocator,
         source: &'a str,
         recorder: Recorder<'a, 'v>,
-        unsupported: &'v mut Vec<'a, DirectiveAdmission>,
+        unsupported: &'v mut Vec<'a, P::Boundary>,
     ) -> Self {
         Self {
             source,
@@ -50,6 +50,7 @@ impl<'a, 'v> VueSink<'a, 'v> {
             recovery: Recovery::new(allocator, true),
             tag: None,
             tag_events: 0,
+            policy: PhantomData,
         }
     }
 
@@ -85,18 +86,9 @@ impl<'a, 'v> VueSink<'a, 'v> {
                     if let Some(start) = name_start.take()
                         && let Some(raw) = self.source.get(start as usize..event.start as usize)
                     {
-                        match VueDirectives.decompose(raw, start) {
-                            Ok(Some(head))
-                                if head.prefix == DirectivePrefix::Full
-                                    && head.name.slice(self.source) == "pre" =>
-                            {
-                                pre = true
-                            }
-                            Err(error) => self.unsupported.push(DirectiveAdmission {
-                                span: Span::new(start, event.start),
-                                error,
-                            }),
-                            _ => {}
+                        match P::pre(raw, start, self.source) {
+                            Ok(control) => pre |= control,
+                            Err(boundary) => self.unsupported.push(boundary),
                         }
                     }
                 }
@@ -121,12 +113,11 @@ macro_rules! forward {
     };
 }
 
-impl Sink for VueSink<'_, '_> {
+impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
     forward! {
         on_text(start: usize, end: usize);
         on_text_entity(ch: char, start: usize, end: usize);
         on_text_entity_value(value: DecodedEntity, start: usize, end: usize);
-        on_interpolation(start: usize, end: usize);
         on_attrib_data(start: usize, end: usize);
         on_attrib_entity(ch: char, start: usize, end: usize);
         on_attrib_entity_value(value: DecodedEntity, start: usize, end: usize);
@@ -141,6 +132,28 @@ impl Sink for VueSink<'_, '_> {
         on_processing_instruction(start: usize, end: usize);
         on_end();
         on_error(code: LexErrorCode, index: usize);
+    }
+
+    fn on_interpolation(&mut self, start: usize, end: usize) {
+        P::interpolation(
+            self.source,
+            &mut self.recorder,
+            self.unsupported,
+            start,
+            end,
+            false,
+        );
+    }
+
+    fn on_raw_interpolation(&mut self, start: usize, end: usize) {
+        P::interpolation(
+            self.source,
+            &mut self.recorder,
+            self.unsupported,
+            start,
+            end,
+            true,
+        );
     }
 
     fn on_open_tag_name(&mut self, start: usize, end: usize) {

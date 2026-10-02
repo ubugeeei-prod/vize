@@ -35,6 +35,7 @@ pub struct Token<'a> {
     /// Present source syntax, or a typed `Missing` hole.
     pub status: TokenStatus,
     verbatim_opening: bool,
+    raw_interpolation: bool,
 }
 
 // Keep public diagnostics and dumps independent of private construction facts.
@@ -58,6 +59,7 @@ impl<'a> Token<'a> {
             text,
             status: TokenStatus::Present,
             verbatim_opening: false,
+            raw_interpolation: false,
         }
     }
 
@@ -68,11 +70,16 @@ impl<'a> Token<'a> {
             text: at,
             status: TokenStatus::Missing,
             verbatim_opening: false,
+            raw_interpolation: false,
         }
     }
 
     pub(crate) fn mark_verbatim_opening(&mut self, verbatim: bool) {
         self.verbatim_opening = verbatim;
+    }
+
+    pub(crate) fn mark_raw_interpolation(&mut self) {
+        self.raw_interpolation = true;
     }
 
     pub fn is_missing(&self) -> bool {
@@ -102,18 +109,27 @@ pub enum SurfaceChild<'a> {
     Unexpected(Token<'a>),
 }
 
-/// `{{ expr }}`. The tokenizer only reports an interpolation once its
+/// `{{ expr }}` or complete native Vue 1 `{{{ expr }}}` framing.
+/// The tokenizer only reports an interpolation once its
 /// closing delimiter matched, so all three tokens are always present
 /// (an unterminated `{{ …` at EOF is a [`SurfaceChild::Text`] run, the
 /// tokenizer's own recovery).
 #[derive(Debug)]
 pub struct Interpolation<'a> {
-    /// The opening delimiter (`{{` — v1 supports the default delimiters).
+    /// The opening delimiter (`{{`, or native Vue 1 `{{{`).
     pub open: Token<'a>,
     /// The expression bytes between the delimiters, verbatim.
     pub content: Token<'a>,
-    /// The closing delimiter (`}}`).
+    /// The corresponding closing delimiter (`}}`, or native Vue 1 `}}}`).
     pub close: Token<'a>,
+}
+
+impl Interpolation<'_> {
+    /// Native construction recognized unescaped interpolation framing.
+    /// Raw constructors default false; this fact grants no runtime admission.
+    pub fn is_raw_html(&self) -> bool {
+        self.open.raw_interpolation
+    }
 }
 
 /// An element: open tag, contents, and how the element ended.

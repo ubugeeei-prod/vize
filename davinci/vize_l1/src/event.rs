@@ -59,7 +59,8 @@ pub(crate) enum EventKind {
 pub(crate) struct Event {
     pub kind: EventKind,
     /// Quote type on AttrEnd; resolved verbatim mode on opening-tag ends.
-    /// All other event kinds keep zero. These interpretations never overlap.
+    /// Raw interpolation delimiter width on Interpolation; otherwise zero.
+    /// These interpretations never overlap.
     pub aux: u8,
     pub start: u32,
     pub end: u32,
@@ -92,6 +93,11 @@ impl Event {
         ));
         self.aux != 0
     }
+
+    pub(crate) fn interpolation_width(&self) -> usize {
+        debug_assert!(self.kind == EventKind::Interpolation);
+        if self.aux == 3 { 3 } else { 2 }
+    }
 }
 
 /// Records authored syntax spans and diagnostics without interpreting them.
@@ -103,6 +109,15 @@ pub(crate) struct Recorder<'a, 'v> {
 impl Recorder<'_, '_> {
     fn push(&mut self, kind: EventKind, start: usize, end: usize) {
         self.events.push(Event::new(kind, start, end));
+    }
+
+    pub(crate) fn raw_interpolation(&mut self, start: usize, end: usize) {
+        self.events.push(Event {
+            kind: EventKind::Interpolation,
+            aux: 3,
+            start: start as u32,
+            end: end as u32,
+        });
     }
 
     fn attr_end(&mut self, quote: QuoteType, end: usize) {

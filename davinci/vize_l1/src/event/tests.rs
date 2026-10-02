@@ -1,6 +1,7 @@
 //! Exact event and diagnostic laws for the direct native recorder.
 
 use super::{Event, EventKind, Recorder};
+use crate::markup::lex::compat::Callbacks;
 use crate::markup::lex::compat::Tokenizer;
 use crate::markup::{Component, LexOptions, Lexer};
 use crate::parse::SurfaceError;
@@ -123,5 +124,30 @@ fn opening_mode_aux_preserves_quote_interpretation_and_event_layout() {
     }
     assert_eq!(core::mem::size_of::<Event>(), 12);
     assert_eq!(events.len(), 7);
+    assert!(errors.is_empty());
+}
+
+#[test]
+fn raw_interpolation_width_is_disjoint_from_quote_and_opening_aux() {
+    use crate::markup::token::QuoteType;
+    let allocator = Allocator::new();
+    let (mut events, mut errors) = record(&allocator, "", true, false);
+    let mut recorder = Recorder {
+        events: &mut events,
+        errors: &mut errors,
+    };
+    recorder.raw_interpolation(3, 8);
+    let raw = recorder.events.last().unwrap();
+    assert_eq!(
+        (raw.kind, raw.start, raw.end, raw.interpolation_width()),
+        (EventKind::Interpolation, 3, 8, 3)
+    );
+    recorder.attr_end(QuoteType::Double, 9);
+    let quote = recorder.events.last().unwrap();
+    assert_eq!(quote.quote(), QuoteType::Double);
+    recorder.on_interpolation(2, 10);
+    assert_eq!(recorder.events.last().unwrap().interpolation_width(), 2);
+    assert_eq!(core::mem::size_of::<Event>(), 12);
+    assert_eq!(events.len(), 3);
     assert!(errors.is_empty());
 }

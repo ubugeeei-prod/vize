@@ -6,7 +6,7 @@ use super::Builder;
 use crate::event::{Event, EventKind};
 use crate::surface::{AttrValue, Attribute, Token};
 
-impl<'a> Builder<'a, '_> {
+impl<'a, const RAW: bool> Builder<'a, '_, RAW> {
     /// `events[i]` is the first `AttrName` piece. Directive pieces all
     /// record as `AttrName`, so the raw name token spans from the first
     /// piece to the `AttrNameEnd` offset — the authored spelling, sigils

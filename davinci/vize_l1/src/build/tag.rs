@@ -6,7 +6,7 @@ use super::{Builder, Frame};
 use crate::event::{Event, EventKind};
 use crate::surface::{Attribute, CloseTag, Element, ElementClose, OpenTag, SurfaceChild, Token};
 
-impl<'a> Builder<'a, '_> {
+impl<'a, const RAW: bool> Builder<'a, '_, RAW> {
     pub(super) fn element(&mut self, ev: Event) {
         let (name_s, name_e) = (ev.start as usize, ev.end as usize);
         self.i += 1;
