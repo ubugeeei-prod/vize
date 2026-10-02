@@ -8,7 +8,7 @@ use crate::document::DocumentStore;
 use super::{SnapshotRefusal, SourceEditRefusal, SourceSnapshotCache};
 
 fn open(documents: &DocumentStore, path: &str, source: &str) -> Url {
-    let uri = Url::parse(path).unwrap();
+    let uri = Url::parse(path).expect("actual test URI");
     documents.open(uri.clone(), source.into(), 1, "vue".into());
     uri
 }

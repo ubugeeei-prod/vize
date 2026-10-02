@@ -3,9 +3,11 @@
 //! These adapters use actual open-document revisions. They do not select a
 //! production request route or turn a host snapshot into native File admission.
 
+mod project;
 mod query;
 mod snapshot;
 
+pub use project::{ProjectQuery, ProjectQueryResult, SourceQueryProject};
 pub use query::{SourceQuery, SourceQueryResult};
 pub use snapshot::{SnapshotKey, SnapshotRefusal, SourceSnapshot, SourceSnapshotCache};
 

@@ -52,9 +52,11 @@ dependencies. The signed main already contains genuine Shared; the current
 span-edit provider and this consumer still need their own fresh exact-head
 Actions and protected terminal merges.
 
-Ten genuine DocumentStore/query test functions and eight optional original edit/
-Program functions are source-ready and unexecuted here. Only rustfmt, source API
-checks, tree/patch conservation and diff checks were run. The generic host query
+At original preparation, ten genuine DocumentStore/query test functions and
+eight optional original edit/Program functions were source-ready and unexecuted.
+The later actual eighteen-test campaign is recorded below; the new lifecycle
+functions still require execution. Initial local checks covered rustfmt, source
+API/tree/patch conservation and diff checks only. The generic host query
 module changes no request dispatch/default features; the optional dependency
 points from crates to davinci. The existing frozen four-layer packet and runtime
 captures are untouched.
@@ -80,3 +82,67 @@ remain intact. All four affected tooling tests pass locally. Original eighteen
 host/edit/parser test functions and all actual provider source bytes remain
 unchanged. Whole feature Actions, all100, actual provider merge and protected
 consumer acceptance are still pending; no Cargo build or installation ran locally.
+
+The actual whole-source campaign `37042290190` at
+`6dddbd44575a9359f33ac0e86af93cdb7ca2e62b`, Rust job `110955102871`,
+compiled the genuine host/edit/parser source together and passed all eighteen
+unique test functions: ten default plus eighteen feature executions, with zero
+failed or ignored. The minimal feature check passed at 17:48:39Z. Warning-denying
+feature Clippy then rejected the URI helper unwrap at edit_tests.rs:11, outside
+a test function. The expect correction retains every valid URI input and assertion;
+no lint waiver is added. The failed complete Rust/full campaign stays failed.
+
+## Scoped actual host lifecycle cancellation
+
+This bounded source draft follows the genuine current source-project consumer
+`6dddbd44575a9359f33ac0e86af93cdb7ca2e62b`. That consumer's eighteen real
+host/edit/parser functions still require their in-flight full Actions proof.
+This draft contains eleven additional real host/cancellation tests and none has
+executed. Rustfmt is the only draft check performed so far.
+
+`SourceQueryProject` borrows the caller's actual DocumentStore and forwards its
+real open, version-ordered incremental change, close and rename methods. A
+successful lifecycle event removes only matching source-query leases and aborts
+them after releasing every registry/lifecycle lock. Rejected stale changes,
+rename collisions and no-op same-URI renames preserve pending work. A small
+synchronous lock makes original snapshot capture and cancellation registration
+one lifecycle boundary; it never survives an await. Dropping work removes its
+lease, completed results stay cancellable until final guarded publication, and
+project shutdown wakes retained computations. Wakers run after all locks drop.
+
+Source queries continue to use the actual URI, monotonic host revision, client
+version and once-retained original buffer. Genuine original edit/parser APIs
+remain in the parent consumer. No request dispatch/default-feature switch,
+legacy reparse, caller File capability or native admission is introduced.
+External raw DocumentStore mutations still fail final freshness checks but do
+not automatically notify this scoped project. Product handlers must explicitly
+use this real lifecycle API before automatic production cancellation is claimed.
+
+The final publication must fold the same decision into central LSP paragraph
+229 and a #6883 comment, verify every parent-provider byte and run actual full
+Actions/all100 on the new exact source head. The known previous full failures
+remain failures. Native File/SFC integration, host atomic edit mutation,
+complete LSP response history and production selection stay separately pending.
+
+Independent source review found a retained Waker destructor could run while
+QueryLease removed its final registry handle under the mutex. The correction
+moves the entire removed request out, releases the guard, then drops its handle.
+A tenth actual stored-Waker destructor regression checks registry re-entry
+without hanging the runner. Original five draft bytes and their first receipt
+remain retained in original-v1; this correction has no execution credit yet.
+
+The actual host accepts a higher-version empty change list without changing
+this document revision/version. The wrapper now compares those real host values
+before and after accepted changes and preserves the original cache/leases when
+they remain equal. An eleventh real-host regression covers this no-op. The
+incremental cancellation witness now uses an actual UTF-16 range over an astral
+character. Accepted equal-text replacements still receive fresh host identity
+and correctly cancel old work. Original v1/v2 bytes and receipts stay retained.
+
+The new source campaign tests all twenty-one host/lifecycle functions without
+the optional parser dependency, then all twenty-nine functions with the genuine
+edit/parser feature. These are fifty executions of twenty-nine unique functions;
+the eleven new lifecycle functions remain unexecuted at this source freeze.
+The private pending-query helper also uses expect for its genuine host URI
+precondition. All actual host/provider bytes and production dispatch remain
+unchanged. This decision is paired with #6883 in the same publication.
