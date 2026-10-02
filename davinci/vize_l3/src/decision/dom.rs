@@ -15,6 +15,7 @@ mod context;
 pub mod control;
 mod dependencies;
 mod file;
+pub mod vue;
 
 pub use context::ContextOnly;
 pub use dependencies::DomDependency;
@@ -58,6 +59,7 @@ pub enum DomUnsupported {
     FileExpression,
     FileScope,
     FileBinding,
+    VueReadAccess,
 }
 
 /// Unsupported semantics retain their actual authored location from the same walk.
@@ -180,6 +182,7 @@ pub struct DomFacts<'owner, 'arena> {
     pub(super) controls: SideTable<control::DomConditional<'owner, 'arena>>,
     pub(super) dependencies: Vec<DomDependency>,
     pub(super) file_expressions: SideTable<DomFileExpression<'owner, 'arena>>,
+    pub(super) vue_expressions: SideTable<vue::VueRenderExpression<'owner, 'arena>>,
     pub(super) unsupported: Vec<DomRejection>,
 }
 

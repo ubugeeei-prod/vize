@@ -1,6 +1,6 @@
 //! Sole-file analysis retains genuine scopes without assigning runtime access.
 
-use super::{DomFacts, LiteralExpressions};
+use super::{DomFacts, LiteralExpressions, vue::policy::NoReads};
 use crate::decision::{DecisionBuildError, DecisionTables, NativeAnalysis, TargetPolicy, build};
 use vize_l2::{
     artifact::Artifact,
@@ -112,6 +112,7 @@ pub fn build_dom_file_decisions<'owner, 'arena>(
         TargetPolicy::Dom,
         &LiteralExpressions,
         Some(file),
+        &NoReads,
     )?;
     Ok(NativeFileAnalysis { file, analysis })
 }

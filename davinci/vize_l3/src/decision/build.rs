@@ -7,6 +7,7 @@
 use alloc::vec::Vec;
 
 mod levels;
+use super::dom::vue::policy::{FileReads, NoReads};
 use super::dom::{DomExpressionFacts, LiteralExpressions, build::DomBuilder};
 use levels::Levels;
 
@@ -33,7 +34,7 @@ pub fn build_decisions<'owner, 'arena>(
     artifact: &'owner Artifact<'arena>,
     policy: TargetPolicy,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
-    build_with(artifact, policy, &LiteralExpressions, None)
+    build_with(artifact, policy, &LiteralExpressions, None, &NoReads)
 }
 
 /// Apply explicit native expression-binding semantics in the same DOM walk.
@@ -41,7 +42,7 @@ pub fn build_dom_decisions<'owner, 'arena>(
     artifact: &'owner Artifact<'arena>,
     expressions: &impl DomExpressionFacts,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
-    build_with(artifact, TargetPolicy::Dom, expressions, None)
+    build_with(artifact, TargetPolicy::Dom, expressions, None, &NoReads)
 }
 
 pub(in crate::decision) fn build_with<'owner, 'arena>(
@@ -49,6 +50,7 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
     policy: TargetPolicy,
     expressions: &impl DomExpressionFacts,
     file: Option<&'owner FileArtifact<'arena>>,
+    reads: &impl FileReads<'owner, 'arena>,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
     let mut builder = Builder {
         policy,
@@ -57,7 +59,7 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
         nodes: SideTable::new(),
         controls: SideTable::new(),
         dom: (policy == TargetPolicy::Dom)
-            .then(|| DomBuilder::new(expressions, artifact.root().ops.len(), file)),
+            .then(|| DomBuilder::new(expressions, artifact.root().ops.len(), file, reads)),
     };
     let mut failure = None;
     artifact
@@ -98,13 +100,13 @@ pub enum DecisionBuildError {
     DuplicateControl { node: NodeId },
 }
 
-struct Builder<'facts, 'owner, 'arena, F> {
+struct Builder<'facts, 'owner, 'arena, F, R> {
     policy: TargetPolicy,
     node_count: u32,
     frames: Vec<Frame>,
     nodes: SideTable<NodeDecision>,
     controls: SideTable<ControlRegion>,
-    dom: Option<DomBuilder<'facts, 'owner, 'arena, F>>,
+    dom: Option<DomBuilder<'facts, 'owner, 'arena, F, R>>,
 }
 
 /// One open region op, released at its matching leave event.
@@ -117,7 +119,9 @@ struct Frame {
     dynamic_bindings: Vec<NodeId>,
 }
 
-impl<'owner, 'arena, F: DomExpressionFacts> Builder<'_, 'owner, 'arena, F> {
+impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+    Builder<'_, 'owner, 'arena, F, R>
+{
     fn finish(self) -> Result<DecisionTables, DecisionBuildError> {
         if let Some(frame) = self.frames.last() {
             return Err(DecisionBuildError::InvalidTraversal { node: frame.id });

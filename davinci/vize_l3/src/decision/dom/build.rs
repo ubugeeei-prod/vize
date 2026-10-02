@@ -18,9 +18,11 @@ mod binding;
 mod control;
 mod dependencies;
 mod file;
+use super::vue::policy::FileReads;
 
-pub(in crate::decision) struct DomBuilder<'facts, 'owner, 'arena, F> {
+pub(in crate::decision) struct DomBuilder<'facts, 'owner, 'arena, F, R> {
     expressions: &'facts F,
+    reads: &'facts R,
     file: Option<&'owner FileArtifact<'arena>>,
     frames: Vec<(NodeId, DomFrame<'owner, 'arena>)>,
     facts: DomFacts<'owner, 'arena>,
@@ -37,14 +39,18 @@ struct DomFrame<'owner, 'arena> {
     has_text: bool,
 }
 
-impl<'facts, 'owner, 'arena, F: DomExpressionFacts> DomBuilder<'facts, 'owner, 'arena, F> {
+impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+    DomBuilder<'facts, 'owner, 'arena, F, R>
+{
     pub(in crate::decision) fn new(
         expressions: &'facts F,
         root_count: usize,
         file: Option<&'owner FileArtifact<'arena>>,
+        reads: &'facts R,
     ) -> Self {
         Self {
             expressions,
+            reads,
             file,
             frames: Vec::new(),
             root_count,
@@ -58,6 +64,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts> DomBuilder<'facts, 'owner, '
                 controls: SideTable::new(),
                 dependencies: Vec::new(),
                 file_expressions: SideTable::new(),
+                vue_expressions: SideTable::new(),
                 unsupported: Vec::new(),
             },
         }

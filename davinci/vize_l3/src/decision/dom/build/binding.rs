@@ -1,13 +1,16 @@
 //! Static-name property decisions on the existing DOM owner frame.
 
 use super::{DomBinding, DomBuilder, DomExpressionFacts, DomUnsupported, PropertyRole};
+use crate::decision::dom::vue::policy::FileReads;
 use vize_l0::id::NodeId;
 use vize_l2::{
     op::{BindingOp, DynamicName, Op},
     walk::NodeRef,
 };
 
-impl<'owner, 'arena, F: DomExpressionFacts> DomBuilder<'_, 'owner, 'arena, F> {
+impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+    DomBuilder<'_, 'owner, 'arena, F, R>
+{
     pub(in crate::decision) fn binding(&mut self, id: NodeId, binding: &'owner BindingOp<'arena>) {
         let span = NodeRef::Binding(binding).span();
         let BindingOp::Bind(bind) = binding else {
