@@ -1,3 +1,15 @@
+## Community lint improvements
+
+- `vue/prefer-props-shorthand` now reports and fixes same-name bindings on native
+  elements as well as components, including `:style="style"` and
+  `:aria-label="ariaLabel"` ([#7417](https://github.com/ubugeeei-prod/vize/issues/7417)).
+- The opt-in `type/strict-boolean-expressions` rule checks non-boolean conditions
+  in scripts and templates ([#7377](https://github.com/ubugeeei-prod/vize/issues/7377)).
+- Cross-file lint detects attributes passed to a component whose root cannot
+  receive fallthrough attributes ([#7273](https://github.com/ubugeeei-prod/vize/issues/7273)).
+
+Thank you [@naitokosuke](https://github.com/naitokosuke) for these reports and proposals.
+
 ## Drop-in scope
 
 `@vizejs/vite-plugin` is a drop-in replacement for `@vitejs/plugin-vue` on **Vue 3 SFCs**
