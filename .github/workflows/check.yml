@@ -37,7 +37,7 @@ jobs:
           node-version-file: source/package.json
           cache: false
           run-install: false
-      - name: Prepare fresh compatibility paths for the unchanged reviewed auditor
+      - name: Prepare fresh compatibility paths for the source-corrected reviewed auditor
         shell: bash
         run: |
           set -euo pipefail
@@ -49,6 +49,7 @@ jobs:
           [[ ! -e /private/tmp/vize-compiler-history-foundation-main-20261002 ]]
           [[ ! -e /private/tmp/vize-compiler-dd6-review-20261002 ]]
       - name: Audit literal ZIP and original source-bound API evidence without rebuilding
+        id: audit
         shell: bash
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -58,8 +59,29 @@ jobs:
           proof_output="$RUNNER_TEMP/compiler-api15-artifact-proof"
           vp node "$proof_tools/collect.ts" "$proof_tools" "$GITHUB_WORKSPACE/source" "$proof_output"
       - name: Emit complete bounded lossless evidence frames
+        id: frames
         shell: bash
         run: |
           set -euo pipefail
           proof_tools="$GITHUB_WORKSPACE/transport/tools/support/compat/github/compiler-api15-proof"
           vp node "$proof_tools/frames.ts" "$RUNNER_TEMP/compiler-api15-artifact-proof"
+      - name: Preserve bounded complete textual evidence on either audit outcome
+        if: always()
+        id: bound
+        shell: bash
+        env:
+          PROOF_AUDIT_OUTCOME: ${{ steps.audit.outcome }}
+          PROOF_FRAMES_OUTCOME: ${{ steps.frames.outcome }}
+          PROOF_JOB_STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          proof_tools="$GITHUB_WORKSPACE/transport/tools/support/compat/github/compiler-api15-proof"
+          vp node "$proof_tools/bounded.ts" "$RUNNER_TEMP/compiler-api15-artifact-proof" "$RUNNER_TEMP/compiler-api15-bounded-evidence"
+      - name: Upload bounded original metadata, census and complete textual evidence
+        if: always() && steps.bound.outcome == 'success'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: compiler-api15-artifact-audit-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
+          path: ${{ runner.temp }}/compiler-api15-bounded-evidence/
+          if-no-files-found: error
+          retention-days: 3

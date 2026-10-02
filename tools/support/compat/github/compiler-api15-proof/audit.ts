@@ -55,7 +55,7 @@ assert.equal(job.run_id, run.id);
 assert.equal(job.head_sha, source);
 assert.equal(job.status, "completed");
 assert(["success", "failure"].includes(job.conclusion));
-for (const name of ["Build vize CLI", "Install CLI binary", "Ensure plugin host runtime"]) {
+for (const name of ["Build vize CLI", "Install vize CLI", "Prepare the pinned plugin isolation runtime"]) {
   const steps = job.steps.filter((step: { name: string }) => step.name === name);
   assert.equal(steps.length, 1);
   assert.equal(steps[0].conclusion, "success");

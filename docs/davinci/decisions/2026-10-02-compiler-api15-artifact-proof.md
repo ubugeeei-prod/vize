@@ -44,3 +44,11 @@ accepts neither failed full workflow nor tooling job, closes no history
 issue, and leaves native/compiler completion credit zero. Root reviews and
 publishes the temporary packet, verifies terminal diagnostic execution and
 decodes the actual log frames before accepting this bounded evidence.
+
+## Source-derived hosted audit correction
+
+The first diagnostic run [36957963310](https://github.com/ubugeeei-prod/vize/actions/runs/36957963310) at frozen temporary source `d0932485260956387a842c36e48dc9051481f30c` failed in the auditor before any evidence frames or acceptance receipt. It verified the literal ZIP and every 42-entry CRC/hash before reaching a mismatched job-step label. The independently reviewed original auditor remains immutable.
+
+The diagnostic now preserves all available complete textual evidence even when the audit fails. An always-run bounded collector records actual audit/frame step outcomes and the diagnostic run/head/attempt, copies only the authority and textual-artifact roots, rejects symlinks and non-UTF8/binary payloads, and enforces 128 files and 16 MiB including its census. A pinned upload action retains this bounded directory on either outcome. The 45,765,688-byte original ZIP and omitted observer binary payloads are excluded. Failure upload is evidence preservation, not acceptance. Authenticated full job logs remain independently required. Successful lossless frames and their fifteen-case admission checks remain unchanged.
+
+The new temporary child changes only the two required labels to `Install vize CLI` and `Prepare the pinned plugin isolation runtime`, as present in the actual original source34b `test-scripts` workflow and authenticated attempt1 job110668305314. `Build vize CLI` stays unchanged. All three actual source-build steps succeeded. The ZIP identity, source34b, original inputs/options/Results/repeats/revalidation, Cargo and binary checks, framing, read-only permissions and failed full/tooling status remain unchanged. The collector now pins corrected auditor SHA256 `dce248eb39bef94a023fa989699c84491e1ca210b91d526ad5663b8c298ce636`. The child still requires a new exact-head hosted run and authenticated frame decode; no acceptance is granted by preparing or publishing this correction. Native and history completion credit remain zero.

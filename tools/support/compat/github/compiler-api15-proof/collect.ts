@@ -13,7 +13,7 @@ const tree = "969ea15a40444314ed6d30d9acdd222d663d3253";
 const artifactId = 11204858271;
 const artifactBytes = 45765688;
 const artifactDigest = "d7aa4701068bdf1b0463a411ce42fa5aac53a2e86b8166490293ec8dddabec85";
-const auditorDigest = "09e04d1817fd2d9fcde5e7e2d41b93285b3d0260c8d8dc37568fbe9a2755d92c";
+const auditorDigest = "dce248eb39bef94a023fa989699c84491e1ca210b91d526ad5663b8c298ce636";
 const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const git = (...args: string[]) => execFileSync("git", ["--no-replace-objects", ...args], { cwd: source, encoding: "utf8" }).trimEnd();
 assert.equal(git("rev-parse", "HEAD"), revision);
