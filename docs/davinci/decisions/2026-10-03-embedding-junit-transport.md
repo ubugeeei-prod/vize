@@ -26,3 +26,8 @@ literal ZIP and whole XML rather than only a selected text fragment.
 Transport success provides evidence about the original run only. Actual
 protected queue, its required checks and all 100 unchanged instruction ceilings,
 signed merges and incoming-source conservation remain separate obligations.
+
+The first collector authenticated the original ZIP, complete XML and named
+worker, then failed on the reused allocation transport's literal label. The
+embedding frame assertion now uses the same embedding label as its payload;
+the original failed collector and every public provider head remain preserved.

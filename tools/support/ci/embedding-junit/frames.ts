@@ -8,7 +8,7 @@ assert(input);
 const raw = fs.readFileSync(input);
 const payload = JSON.parse(raw.toString());
 assert.equal(payload.schema, 1);
-assert.equal(payload.label, "allocation-nextest-junit-proof");
+assert.equal(payload.label, "embedding-nextest-junit-proof");
 assert(payload.files.length > 0 && payload.files.length <= 128);
 assert(raw.length <= 32 * 1024 * 1024);
 const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
