@@ -1,54 +1,40 @@
-name: Formatter original controls diagnostic
-run-name: Formatter original controls diagnostic @ ${{ github.sha }}
+name: Formatter control artifact transport
+run-name: Formatter control artifact transport ${{ inputs.run_id }} attempt ${{ inputs.source_attempt }}
 on:
   workflow_dispatch:
     inputs:
-      approved_head_sha:
-        required: true
-        type: string
-      reviewed_plan_sha256:
-        required: true
-        type: string
-concurrency:
-  group: formatter-history-diagnostic-${{ github.sha }}
-  cancel-in-progress: false
+      run_id: { type: string, required: true }
+      source_attempt: { type: string, required: true }
+      source_job: { type: string, required: true }
+      artifact_id: { type: string, required: true }
 permissions:
+  actions: read
   contents: read
-env:
-  CARGO_TERM_COLOR: never
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
-  formatter-history:
+  transport:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 40
-    env:
-      NODE_OPTIONS: --disable-warning=DEP0040 --disable-warning=DEP0169
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          fetch-depth: 0
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
-          cache: true
+          cache: false
           run-install: false
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      - name: Download actual source-built formatter control evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          wild-version: 0.9.0
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: test-scripts
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Install pinned JS dependencies
-        run: vp install --frozen-lockfile --prefer-offline
-      - uses: ./.github/actions/setup-rust-script
-      - name: Capture unchanged mandatory formatter tests and retained laws
+          artifact-ids: ${{ inputs.artifact_id }}
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/formatter-capture
+      - name: Emit bounded lossless full formatter capture frames
         env:
-          APPROVED_HEAD_SHA: ${{ inputs.approved_head_sha }}
-          REVIEWED_PLAN_SHA256: ${{ inputs.reviewed_plan_sha256 }}
-        run: vp node tools/campaigns/formatter-history/formatter-history-campaign.ts --run "$GITHUB_WORKSPACE" tools/campaigns/formatter-history/reviewed-plan.json "$APPROVED_HEAD_SHA" "$REVIEWED_PLAN_SHA256"
-      - uses: ./.github/actions/upload-formatter-api-corpus-evidence
-        if: ${{ always() }}
-        with:
-          shard: formatter-original-controls
+          GH_TOKEN: ${{ github.token }}
+          FORMATTER_SOURCE_RUN: ${{ inputs.run_id }}
+          FORMATTER_SOURCE_ATTEMPT: ${{ inputs.source_attempt }}
+          FORMATTER_SOURCE_JOB: ${{ inputs.source_job }}
+          FORMATTER_ARTIFACT_ID: ${{ inputs.artifact_id }}
+          FORMATTER_CAPTURE_PATH: ${{ runner.temp }}/formatter-capture
+        run: vp exec node tools/support/ci/formatter-artifact-transport.ts "$FORMATTER_CAPTURE_PATH"
