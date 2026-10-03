@@ -58,6 +58,14 @@ pub(crate) trait ReferenceSink<'a> {
     type Checkpoint;
     fn checkpoint(&self) -> Self::Checkpoint;
     fn reference(&mut self, event: ReferenceEvent<'a>) -> Result<(), ResolutionErrorKind>;
+    fn observe_syntax(
+        &mut self,
+        _kind: super::SyntaxKind<'a>,
+        _edge: super::SyntaxEdge,
+        _span: Span,
+    ) -> Result<(), ResolutionErrorKind> {
+        Ok(())
+    }
     fn observe_invocation(
         &mut self,
         _expression: &oxc_ast::ast::Expression<'a>,

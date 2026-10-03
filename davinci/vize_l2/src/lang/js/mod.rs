@@ -6,6 +6,11 @@ pub use file::native::{
     NativeTemplateFile, NativeTemplateIssue, NativeTemplateIssueKind, NativeTemplateOwner,
     NativeTemplateView, RejectedNativeTemplateOwner,
 };
-pub use file::observer::{CallEvent, DeclaredEvent, FileObserver, InvocationEvent, StatementEvent};
+pub use file::observer::{
+    CallEvent, DeclaredEvent, FileObserver, InvocationEvent, StatementEvent, SyntaxEvent,
+};
 pub use file::setup::{SetupIssue, SetupIssueKind, VueSetup};
 pub use file::{FileProducer, ProgramInput, ProgramInputError, ProgramScope};
+
+mod jsx_body;
+pub use jsx_body::{JsxChildren, JsxFile, JsxFileError, JsxFileProducer, JsxNode, RejectedJsxFile};
