@@ -104,10 +104,11 @@ fn genuine_pre_recovery_refusal_retains_every_original_parser_and_aria_error() {
     ] {
         refused(source, path);
         for locale in LOCALES {
-            let mut diagnostics = vec![error(locale, span(source, ":role='x'"), "meta", "role")];
+            let mut diagnostics = Vec::new();
             if let Some(head) = ignored {
                 diagnostics.push(parser("error", IGNORED, span(source, head)));
             }
+            diagnostics.push(error(locale, span(source, ":role='x'"), "meta", "role"));
             if let Some(tail) = invalid_end {
                 let mut range = span(source, tail);
                 range.end = range.start + u32::try_from(tail.find('>').unwrap() + 1).unwrap();

@@ -55,10 +55,14 @@ impl NativeHeaderFacts<'_, '_> {
         }
         // An empty or exempt header cannot touch a catalog. Every chain is
         // verified before any localized result, so failures are whole-result.
+        if proven.is_empty() {
+            return Ok(Vec::new());
+        }
+        let template = messages.lookup("a11y/aria-unsupported-elements.message");
+        let help = messages.lookup("a11y/aria-unsupported-elements.help");
         Ok(proven
             .into_iter()
             .map(|(tag, attribute, range, chain)| {
-                let template = messages.lookup("a11y/aria-unsupported-elements.message");
                 let message = substitute(
                     &substitute(template.as_ref(), "{tag}", tag),
                     "{attr}",
@@ -67,13 +71,7 @@ impl NativeHeaderFacts<'_, '_> {
                 NativeLintFinding {
                     rule_name: ARIA_UNSUPPORTED_ELEMENTS_RULE,
                     diagnostic: Diagnostic::proven(Stage::Surface, range, message.as_str(), chain)
-                        .with_part(DiagnosticPart::new(
-                            PartKind::Help,
-                            range,
-                            messages
-                                .lookup("a11y/aria-unsupported-elements.help")
-                                .as_ref(),
-                        )),
+                        .with_part(DiagnosticPart::new(PartKind::Help, range, help.as_ref())),
                 }
             })
             .collect())

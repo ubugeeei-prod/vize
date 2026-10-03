@@ -41,7 +41,7 @@ is added.
 
 ## Validation and remaining work
 
-Fifteen current authored laws compare complete standalone registered SFC results in
+The earlier fifteen authored laws compare complete standalone registered SFC results in
 English, Japanese and Chinese, including filename, error/warning counts, every
 unfiltered parser/product diagnostic, message, range, full Help, labels and fix.
 They retain exact static/Bind/Prop/modifier names, opaque/empty/entity values,
@@ -121,3 +121,12 @@ a separate genuine recursive safety repair and corpus regression before giving
 this full registered oracle runtime credit. Enlarging the test stack or reducing
 the input would hide that product failure and is not acceptance. The known-red
 Error source remains unqueued while the independent provider prefix runs.
+
+The existing PR review keeps native diagnostic order observable: the fixture
+helper no longer sorts the emitted vector, and the nested-form recovery
+expectation lists the earlier ignored-start Error before the unchanged ARIA and
+invalid-end Errors. Inputs, diagnostic values, ranges and counts are retained.
+The two fixed catalog lookups now run once per nonempty result, after every
+authentic witness chain is verified; empty and refused results still cannot
+touch the catalog. Fresh exact-head Actions must execute the existing twenty
+laws before protected merge; no new runtime proof is claimed here.
