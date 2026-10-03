@@ -14,7 +14,8 @@ serialization, pipeline stage or allocation is added. Generated FunctionBody
 delimiters still confer no authored coordinates. The full stock body, profile,
 comments, every diagnostic and original decoded source/map stay normally owned.
 
-HandlerSyntax is sealed and borrowed through that genuine HandlerResolution.
+HandlerSyntax has sealed construction; neutral Copy observations are obtained
+from the genuine HandlerResolution, not detached owner-bound capabilities.
 Its two fixed-size observations follow the existing whole-walk checkpoint:
 a late unsupported statement rolls them back with scopes, bindings,
 declarations and references. These observations are neutral syntax facts,
@@ -29,7 +30,7 @@ reference handlers, output/maps/runtime acceptance, #6880 and default product
 replacement remain unfinished here.
 
 Three new original-owner laws cover leading declarations and directives,
-the first nested return's decoded and authored windows, and late refusal
+the first nested return's Unicode/entity decoded and nonzero authored windows, and late refusal
 rolling back all syntax and scope tables while retaining complete source.
 A compile-fail privacy law denies fabricated syntax observations. Rust
 execution is delegated to exact-head Actions; full protected suites, immutable

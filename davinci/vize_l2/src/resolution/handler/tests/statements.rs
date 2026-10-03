@@ -22,13 +22,13 @@ fn declaration_and_return_facts_are_minted_from_the_same_original_body() {
 #[test]
 fn the_original_first_nested_return_keeps_its_exact_source_window() {
     let arena = Allocator::default();
-    let text = "var unused=0; if($event){return $event;} return 1;";
+    let text = "var unused=&quot;雪🌸&quot;; if($event){return $event &amp;&amp; 1;} return 1;";
     let resolution = resolve_handler(input(&arena, text), &Outer(&[])).unwrap();
     assert!(resolution.syntax().leading_declaration());
     let returned = resolution.syntax().first_return().unwrap();
     assert_eq!(
         returned.slice(resolution.input().operand().syntax().source().text()),
-        "return $event;"
+        "return $event && 1;"
     );
     let authored = resolution.authored_span(returned).unwrap();
     assert_eq!(
@@ -40,7 +40,7 @@ fn the_original_first_nested_return_keeps_its_exact_source_window() {
                 .source()
                 .authored_root()
         ),
-        "return $event;"
+        "return $event &amp;&amp; 1;"
     );
 }
 
