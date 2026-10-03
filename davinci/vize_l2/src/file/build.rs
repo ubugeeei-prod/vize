@@ -24,6 +24,8 @@ pub(crate) struct Facts<'a> {
     pub template_issues: Vec<TemplateIssue>,
     pub template_walk: super::template::TemplateWalk,
     pub setup_annotations: Option<Box<crate::lang::js::file::setup::SetupAnnotationStorage>>,
+    pub native_interpolations: Vec<super::NativeFileInterpolation<'a>>,
+    pub native_interpolation_nodes: SideTable<usize>,
     names: Vec<Names>,
 }
 
@@ -106,6 +108,8 @@ impl<'a> Facts<'a> {
             template_issues: Vec::new(),
             template_walk: super::template::TemplateWalk::Idle,
             setup_annotations: None,
+            native_interpolations: Vec::new(),
+            native_interpolation_nodes: SideTable::new(),
             names: alloc::vec![Names::default()],
         }
     }

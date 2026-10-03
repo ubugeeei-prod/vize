@@ -15,7 +15,9 @@ pub use region::{
     TemplateBody, TemplateChildRegion, TemplatePolicy, TemplateRegion, TemplateScope,
     TemplateWalkRegion,
 };
+mod interpolation;
 mod query;
+pub use interpolation::{NativeFileInterpolation, NativeFileInterpolationState};
 mod records;
 pub use query::{PositionQueryError, ReferenceRef, ScopeRef};
 mod template;

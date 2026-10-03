@@ -11,6 +11,7 @@ use vize_l0::id::NodeId;
 use vize_l1::markup::{NativeChild, NativeRootText, NativeTemplateComponent};
 
 mod body;
+mod interpolation;
 
 #[derive(Clone, Copy)]
 pub(crate) struct NativeVisibility;
@@ -119,6 +120,40 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
             Err(kind) => self.reject(kind),
         }
     }
+    /// Consume a whole input at the actual original root child event.
+    /// The private File stores its original observations before resolution;
+    /// neither a raw expression nor a nested child can advance this cursor.
+    pub fn root_interpolation(
+        &mut self,
+        child: NativeChild<'_, 'a>,
+        input: crate::lang::js::NativeInterpolationInput<'a>,
+    ) -> Result<NodeId, NativeTemplateIssue> {
+        let check = if !matches!(self.state, NativeRouteState::Walking)
+            || self.root.facts.template_walk.interruption().is_some()
+        {
+            Err(NativeTemplateIssueKind::Interrupted)
+        } else if !core::ptr::eq(child.component(), self.selected.component())
+            || child.parent_element().is_some()
+            || child.ordinal() != self.cursor
+        {
+            Err(NativeTemplateIssueKind::InvalidEvent)
+        } else {
+            Ok(())
+        };
+        let selected = self.selected;
+        let span = selected.component().block().span();
+        let result = self.root.with_walk(span, |region| {
+            interpolation::construct(selected, child, input, region, check)
+        });
+        match result {
+            Ok(node) => {
+                self.cursor += 1;
+                Ok(node)
+            }
+            Err(kind) => self.reject(kind),
+        }
+    }
+
     fn reject<T>(&mut self, kind: NativeTemplateIssueKind) -> Result<T, NativeTemplateIssue> {
         if let NativeRouteState::Refused(issue) = *self.state {
             return Err(issue);
@@ -134,7 +169,9 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
         Err(issue)
     }
     pub fn complete(mut self) -> Result<(), NativeTemplateIssue> {
-        if !matches!(self.state, NativeRouteState::Walking) {
+        if !matches!(self.state, NativeRouteState::Walking)
+            || self.root.facts.template_walk.interruption().is_some()
+        {
             return self.reject(NativeTemplateIssueKind::Interrupted);
         }
         if self.cursor != self.expected {

@@ -10,6 +10,7 @@ use vize_l1::{embed::Lang, markup::NativeTemplateComponent};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeTemplateIssueKind {
+    Interpolation(super::super::NativeInterpolationInputError),
     Artifact(ArtifactError),
     Program(FileIssueKind),
     MissingProgram,

@@ -50,8 +50,9 @@ strings. Its existing classifier and all previous rows remain unchanged.
 
 ## Dependent work
 
-Original selected root/nested interpolation receiver integration and
-normal File-owned input records remain unfinished. Initial target scope
+The [root-only first consumer](./2026-10-03-l2-native-root-interpolation.md)
+implements original root cursor admission and normal File-owned input
+records; nested interpolation receiver integration remains unfinished. Initial target scope
 will be literals with no external binding reads, using the existing sole
 L3 visit and DOM encoder. Actual `toDisplayString` helper order, complete
 pinned Vue modules/maps/runtime and hidden-read refusals require genuine
