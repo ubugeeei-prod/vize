@@ -42,6 +42,7 @@ const pack = JSON.parse(
   version: number;
   vueVersion: string;
   options: Record<string, unknown> & { filename: string };
+  nativeCapture: unknown;
   cases: Fixture[];
   deferred: Array<{ id: string }>;
 };
@@ -96,6 +97,16 @@ test("packet identity retains the bounded original provider closure and official
   assert.equal(pack.schema, "vize.native-selected-root-text-reference");
   assert.equal(pack.version, 1);
   assert.equal(pack.vueVersion, "3.5.35");
+  assert.deepEqual(pack.nativeCapture, {
+    sourceHead: "afd0fbd88fc9d5878cae90eec3cc6c2bf74621de",
+    executionCommit: "f57f6f7bc2f4d88ede347b0f53d9c459b2ff97d3",
+    workflowRun: 37128761580,
+    rustJob: 111220362717,
+    artifactId: 11276012428,
+    artifactName: "rust-test-shard-4-37128761580-1",
+    artifactPath: "native-selected-root-text-dom.json",
+    cases: 24,
+  });
   assert.deepEqual(pack.options, {
     mode: "module",
     hoistStatic: false,

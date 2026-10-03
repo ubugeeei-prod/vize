@@ -95,6 +95,17 @@ Old source-green heads confer no validation credit on the replayed heads.
 
 ## Genuine selected DOM output laws
 
+The first hosted Rust law passed all 24 complete sources at source head
+`afd0fbd88fc9d5878cae90eec3cc6c2bf74621de`, executing the genuine parent merge
+`f57f6f7bc2f4d88ede347b0f53d9c459b2ff97d3`. Check run 37128761580, Rust job
+111220362717 and its small shard artifact 11276012428 retain the full actual
+packet. All 24 native fields are now populated from that validated artifact,
+with immutable capture metadata. All 74 independent Node laws pass using the
+existing pinned dependencies; fresh hosted execution is still mandatory. The
+initial tooling failures remain explicit: 48 absent-capture assertions and the
+central record crossing 350 lines by two. Decision text is preserved within the
+existing L4 narrative at 350 lines; no source limit or oracle is relaxed.
+
 The dependent L4 law uses the actual original selected owner, every original
 root slot, sealed text receipts and the canonical completed File. It calls the
 actually merged selected `emit_template` entry with the retained L3 analysis;
@@ -107,7 +118,7 @@ entire official Vue 3.5.35 module and the same helper set.
 The whole Rust law captures real native modules, complete maps, authored byte
 links and node counts through the existing hosted nextest artifact path. All
 24 inputs and complete outputs must validate before any fixture is populated
-from that artifact. The initial reference packet contains zero native captures;
+from that artifact. The initial reference packet contained zero native captures;
 the 48 mandatory native TypeScript assertions intentionally refuse absent
 capture fields. A reference-only 26-test run establishes no native output
 credit. After freezing genuine hosted output, every fresh Rust run must compare
