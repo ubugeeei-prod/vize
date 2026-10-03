@@ -177,6 +177,7 @@ fn normal_resolution_owner_moves_and_rejoins_only_the_original_selected_header()
     assert_eq!(table.into_input().aliases().as_ptr(), aliases);
 }
 
+mod borrowed;
 mod budget;
 mod declaration;
 mod refusal;

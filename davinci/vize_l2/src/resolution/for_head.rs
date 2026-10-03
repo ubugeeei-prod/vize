@@ -7,6 +7,7 @@ use vize_l1::embed::syntax::ForHeadPart;
 use super::{BindingId, BindingLookup, Occurrence, ResolutionErrorKind, walk};
 use crate::lang::js::NativeForInput;
 
+mod borrowed;
 mod declaration;
 mod facts;
 mod sink;
@@ -131,16 +132,12 @@ pub fn resolve_for_head<'a>(
     input: NativeForInput<'a>,
     enclosing: &impl BindingLookup,
 ) -> Result<ForResolution<'a>, Box<RejectedForResolution<'a>>> {
-    let result = resolve(&input, enclosing);
-    match result {
-        Ok((collection, collection_authored, value, key)) => Ok(ForResolution {
-            input,
-            collection,
-            collection_authored,
-            value: value.fact,
-            key: key.as_ref().map(|key| key.fact),
-            value_parameter: value.parameter,
-            key_parameter: key.map(|key| key.parameter),
+    match borrowed::resolve_for_facts(&input, enclosing) {
+        Ok(facts) => facts.join(input).map_err(|input| {
+            Box::new(RejectedForResolution {
+                input: *input,
+                error: borrowed::invalid_source(),
+            })
         }),
         Err(error) => Err(Box::new(RejectedForResolution { input, error })),
     }
