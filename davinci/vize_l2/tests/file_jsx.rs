@@ -204,15 +204,15 @@ fn unresolved_component_is_a_real_authored_use_without_intrinsic_or_context_gues
 fn unsupported_tag_namespace_generic_and_ts_subtrees_rollback_only_the_real_expression() -> LawResult
 {
     for unsupported in [
-        "<div value={value}/>",
-        "<Comp.Member/>",
+        "<this.Member value={value}/>",
+        "<this.Member/>",
         "<ns:tag/>",
         "<this/>",
         "<Comp ns:attr={value}/>",
         "<Comp<Type>/>",
         "<Comp>{value as Type}</Comp>",
         "<Comp>{() => value}</Comp>",
-        "<Comp><div/></Comp>",
+        "<Comp><ns:tag/></Comp>",
     ] {
         let arena = Allocator::default();
         let mut source =

@@ -3,7 +3,8 @@
 use super::{ReferenceSink, ResolutionError, ResolutionErrorKind, Resolver, Usage};
 use oxc_ast::ast::{
     JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement, JSXElementName,
-    JSXExpression, JSXExpressionContainer, JSXFragment,
+    JSXExpression, JSXExpressionContainer, JSXFragment, JSXMemberExpression,
+    JSXMemberExpressionObject,
 };
 use oxc_span::GetSpan;
 
@@ -23,26 +24,14 @@ impl<'a, S: ReferenceSink<'a>> Resolver<'a, '_, S> {
         if opening.type_arguments.is_some() {
             return Err(self.fail(opening.span, ResolutionErrorKind::UnsupportedSyntax));
         }
-        match &opening.name {
-            JSXElementName::IdentifierReference(identifier) => {
-                self.identifier(identifier, Usage::Read, false)?;
-            }
-            name => return Err(self.fail(name.span(), ResolutionErrorKind::UnsupportedSyntax)),
-        }
+        self.jsx_tag_name(&opening.name, next, true)?;
         for attribute in &opening.attributes {
             self.jsx_attribute(attribute, next)?;
         }
         self.jsx_children(&element.children, next)?;
         if let Some(closing) = &element.closing_element {
             self.visit(closing.span, next)?;
-            match &closing.name {
-                JSXElementName::IdentifierReference(identifier) => {
-                    self.jsx_name_span(identifier.span, next)?;
-                }
-                name => {
-                    return Err(self.fail(name.span(), ResolutionErrorKind::UnsupportedSyntax));
-                }
-            }
+            self.jsx_tag_name(&closing.name, next, false)?;
         }
         Ok(())
     }
@@ -69,6 +58,48 @@ impl<'a, S: ReferenceSink<'a>> Resolver<'a, '_, S> {
             return Err(self.fail(span, ResolutionErrorKind::InvalidSpan));
         }
         Ok(())
+    }
+
+    fn jsx_tag_name(
+        &mut self,
+        name: &JSXElementName<'a>,
+        depth: usize,
+        opening: bool,
+    ) -> Result<(), ResolutionError> {
+        match name {
+            JSXElementName::Identifier(name) => self.jsx_name_span(name.span, depth),
+            JSXElementName::IdentifierReference(name) if opening => {
+                self.identifier(name, Usage::Read, false)
+            }
+            JSXElementName::IdentifierReference(name) => self.jsx_name_span(name.span, depth),
+            JSXElementName::MemberExpression(member) => self.jsx_member(member, depth, opening),
+            name => Err(self.fail(name.span(), ResolutionErrorKind::UnsupportedSyntax)),
+        }
+    }
+
+    fn jsx_member(
+        &mut self,
+        member: &JSXMemberExpression<'a>,
+        depth: usize,
+        opening: bool,
+    ) -> Result<(), ResolutionError> {
+        self.visit(member.span, depth)?;
+        let next = depth + 1;
+        match &member.object {
+            JSXMemberExpressionObject::IdentifierReference(name) if opening => {
+                self.identifier(name, Usage::Read, false)?;
+            }
+            JSXMemberExpressionObject::IdentifierReference(name) => {
+                self.jsx_name_span(name.span, next)?;
+            }
+            JSXMemberExpressionObject::MemberExpression(object) => {
+                self.jsx_member(object, next, opening)?;
+            }
+            object => {
+                return Err(self.fail(object.span(), ResolutionErrorKind::UnsupportedSyntax));
+            }
+        }
+        self.jsx_name_span(member.property.span, next)
     }
 
     fn jsx_attribute(

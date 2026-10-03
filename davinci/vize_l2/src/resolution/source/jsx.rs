@@ -149,7 +149,7 @@ fn existing_call_and_all_invocation_hooks_run_once_inside_actual_jsx_containers(
 #[test]
 fn late_unsupported_and_sink_refusal_restore_seed_rows_calls_and_invocations() -> LawResult {
     let arena = Allocator::default();
-    let file = "seed(); <Comp>{new Maker(value)}{run(value)}<div/></Comp>; <Comp>{run(value)}<Other/></Comp>;";
+    let file = "seed(); <Comp>{new Maker(value)}{run(value)}<ns:tag/></Comp>; <Comp>{run(value)}<Other/></Comp>;";
     let profile = SourceType::jsx();
     let parsed = Parser::new(&arena, file, profile).parse();
     let source = ProgramReferenceSource::checked(
@@ -301,3 +301,5 @@ fn actual_fragment_container_work_is_bounded_by_the_existing_resolver_budget() -
     assert_eq!(sink.invocations, []);
     Ok(())
 }
+
+mod names;
