@@ -130,3 +130,5 @@ The two fixed catalog lookups now run once per nonempty result, after every
 authentic witness chain is verified; empty and refused results still cannot
 touch the catalog. Fresh exact-head Actions must execute the existing twenty
 laws before protected merge; no new runtime proof is claimed here.
+
+The genuine legacy traversal prerequisite #7616 is now an actual main ancestor, signed f95ef123ad8000fd6e1e770712a158585c5bbfc6 merged at 2026-10-03T16:15:47Z after protected Check37135244870 and all 100 pinned instruction ceilings. Source replay retains the joined exact diagnostic ordering repair: expected full results remain unsorted, production verifies all genuine witness chains before the sole nonempty catalog lookup, and the original self-closing sibling recovery span is retained. All twenty authored Error laws keep their original complete inputs and fields, including the exact 4096-depth public oracle on ordinary stacks. New exact-head hosted Actions and true native Stack registration are required; no fixture, gate, budget or native admission is weakened.
