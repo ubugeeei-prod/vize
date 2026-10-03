@@ -128,12 +128,12 @@ pub use corsa_bridge::{
     CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, CorsaMaterializedMappingKind,
     CorsaMaterializedSource, CorsaScriptVirtualDocument, CorsaScriptVirtualDocumentRequest,
     CorsaScriptVirtualProject, CorsaSourceCatalog, CorsaVueVirtualDependency,
-    CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions, LspCompletionItem, LspCompletionList,
-    LspCompletionResponse, LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover,
-    LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent,
-    LspParameterInformation, LspParameterLabel, LspPosition, LspRange, LspSignatureHelp,
-    LspSignatureInformation, NativeVueCheck, NativeVueError, OriginalProgramCheck,
-    OriginalProgramError, VIRTUAL_URI_SCHEME,
+    CorsaVueVirtualDocument, CorsaVueVirtualDocumentOptions, DiagnosingConfiguration,
+    DiagnosingSnapshot, LspCompletionItem, LspCompletionList, LspCompletionResponse,
+    LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover, LspHoverContents,
+    LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspParameterInformation,
+    LspParameterLabel, LspPosition, LspRange, LspSignatureHelp, LspSignatureInformation,
+    NativeVueCheck, NativeVueError, OriginalProgramCheck, OriginalProgramError, VIRTUAL_URI_SCHEME,
 };
 
 // Re-export batch type checker

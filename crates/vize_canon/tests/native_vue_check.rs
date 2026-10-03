@@ -22,6 +22,9 @@ mod const_semantics;
 #[path = "native_vue_check/jsdoc_semantics.rs"]
 mod jsdoc_semantics;
 #[cfg(unix)]
+#[path = "native_vue_check/options_custody.rs"]
+mod options_custody;
+#[cfg(unix)]
 #[path = "native_vue_check/ref_semantics.rs"]
 mod ref_semantics;
 
@@ -85,6 +88,25 @@ fn real_native_vue_checker_retains_complete_js_ts_diagnostics_and_original_owner
         block_on(bridge.spawn()).unwrap();
         let result =
             block_on(bridge.check_native_vue(observed.admitted().unwrap(), &path)).unwrap();
+        let custody = result.diagnosing_configuration();
+        assert!(!custody.session().session_id.is_empty());
+        for state in [custody.before(), custody.after()] {
+            assert_eq!(
+                state.project().compiler_options,
+                result.configuration().options
+            );
+            assert_eq!(
+                Path::new(&state.project().config_file_name),
+                result.diagnostic_configuration_path()
+            );
+            assert!(
+                state
+                    .response()
+                    .projects
+                    .iter()
+                    .any(|project| project.id == state.project().id)
+            );
+        }
         assert!(std::ptr::eq(
             result.projection().original().observation(),
             &observed

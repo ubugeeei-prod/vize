@@ -1,7 +1,12 @@
 //! The actual configured checker owns virtual membership; no tsconfig is rewritten.
 
-use super::{CorsaProjectClient, EditorLspSession, project_identity::ProjectIdentityError};
-use crate::corsa_bridge::{CorsaBridgeError, NativeVueError};
+use super::{
+    CorsaProjectClient, EditorLspSession, project_configuration::ConfigurationError,
+    project_identity::ProjectIdentityError,
+};
+use crate::corsa_bridge::{
+    CorsaBridgeError, DiagnosingConfiguration, NativeVueError, OriginalProgramError,
+};
 use corsa::{
     api::{ApiMode, ApiSpawnConfig, ConfigResponse, ProjectResponse, ProjectSession},
     runtime::block_on,
@@ -25,6 +30,7 @@ impl CorsaProjectClient {
             ConfigResponse,
             ProjectResponse,
             std::path::PathBuf,
+            DiagnosingConfiguration,
         ),
         NativeVueError,
     > {
@@ -93,11 +99,46 @@ impl CorsaProjectClient {
                 if diagnosing_config != config {
                     return Err(NativeVueError::UnconfiguredProjection);
                 }
-                let report = editor.diagnostics(uri).map_err(backend)?;
-                if configuration(&mut editor)? != diagnosing_config {
-                    return Err(NativeVueError::UnconfiguredProjection);
+                let custody_error = |error| match error {
+                    ConfigurationError::Communication(error) => backend(error),
+                    ConfigurationError::Unconfigured => NativeVueError::UnconfiguredProjection,
+                    ConfigurationError::Changed => {
+                        NativeVueError::Identity(OriginalProgramError::ConfigurationChanged)
+                    }
+                    #[cfg(not(unix))]
+                    ConfigurationError::Unsupported => {
+                        NativeVueError::Identity(OriginalProgramError::UnsupportedConfiguredProject)
+                    }
+                };
+                let api = editor.diagnosing_api(uri).map_err(custody_error)?;
+                let result = (|| {
+                    let before = api
+                        .observe(uri, config, &effective.options)
+                        .map_err(custody_error)?;
+                    let report = editor.diagnostics(uri).map_err(backend)?;
+                    if configuration(&mut editor)? != diagnosing_config {
+                        return Err(NativeVueError::UnconfiguredProjection);
+                    }
+                    let after = api
+                        .observe(uri, config, &effective.options)
+                        .map_err(custody_error)?;
+                    Ok((
+                        report,
+                        effective,
+                        project,
+                        diagnosing_config,
+                        DiagnosingConfiguration {
+                            session: api.session.clone(),
+                            before,
+                            after,
+                        },
+                    ))
+                })();
+                let cleanup = api.close(&mut editor).map_err(custody_error);
+                match (result, cleanup) {
+                    (Ok(report), Ok(())) => Ok(report),
+                    (Err(error), _) | (_, Err(error)) => Err(error),
                 }
-                Ok((report, effective, project, diagnosing_config))
             })();
             let cleanup = editor.shutdown().map_err(backend);
             match (report, cleanup) {

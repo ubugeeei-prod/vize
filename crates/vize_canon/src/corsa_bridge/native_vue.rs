@@ -1,6 +1,6 @@
 //! Explicit checking of one genuine original SFC projection in a real configuration.
 
-use super::{CorsaBridge, CorsaBridgeError, OriginalProgramError};
+use super::{CorsaBridge, CorsaBridgeError, DiagnosingConfiguration, OriginalProgramError};
 use lsp_types::{DocumentDiagnosticReport, DocumentDiagnosticReportResult, Range};
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
@@ -52,6 +52,7 @@ pub struct NativeVueCheck<'o, 'a> {
     configuration: corsa::api::ConfigResponse,
     project: corsa::api::ProjectResponse,
     diagnostic_configuration_path: PathBuf,
+    diagnosing_configuration: DiagnosingConfiguration,
     authored_spans: Vec<Result<Span, MappingError>>,
 }
 
@@ -95,6 +96,11 @@ impl<'o, 'a> NativeVueCheck<'o, 'a> {
     pub fn diagnostic_configuration_path(&self) -> &Path {
         &self.diagnostic_configuration_path
     }
+    /// Full observations from the same LSP session that returned this report.
+    #[must_use]
+    pub fn diagnosing_configuration(&self) -> &DiagnosingConfiguration {
+        &self.diagnosing_configuration
+    }
     /// Every primary diagnostic has one authored span or a typed mapping refusal.
     pub fn authored_spans(&self) -> &[Result<Span, MappingError>] {
         &self.authored_spans
@@ -125,7 +131,13 @@ impl CorsaBridge {
         let checked_source = String::from(source);
         let checked_bounds = bounds.clone();
         let checked_uri = projection_uri.clone();
-        let (report, configuration, project, diagnostic_configuration_path) = self
+        let (
+            report,
+            configuration,
+            project,
+            diagnostic_configuration_path,
+            diagnosing_configuration,
+        ) = self
             .with_client(move |client| {
                 Ok((|| {
                     checked_bounds.verify(&checked_source)?;
@@ -162,6 +174,7 @@ impl CorsaBridge {
             configuration,
             project,
             diagnostic_configuration_path,
+            diagnosing_configuration,
             authored_spans,
         })
     }

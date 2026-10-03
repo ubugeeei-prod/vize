@@ -10,6 +10,8 @@ use std::{
 use vize_l0::{Allocator, String, cstr};
 use vize_l1::embed::Lang;
 
+mod configuration;
+
 fn shell_quote(path: &Path) -> String {
     cstr!("'{}'", path.to_str().unwrap().replace('\'', "'\\''"))
 }

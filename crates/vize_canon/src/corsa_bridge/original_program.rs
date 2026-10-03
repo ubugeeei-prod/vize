@@ -11,7 +11,7 @@ use vize_l4::targets::ts::{
     project_program,
 };
 
-use super::{CorsaBridge, CorsaBridgeError};
+use super::{CorsaBridge, CorsaBridgeError, DiagnosingConfiguration};
 
 /// Refusals preserve the original File; no legacy checker fallback is attempted.
 #[derive(Debug)]
@@ -60,6 +60,7 @@ pub struct OriginalProgramCheck<'file, 'arena> {
     report: DocumentDiagnosticReportResult,
     configuration: corsa::api::ConfigResponse,
     diagnostic_configuration_path: PathBuf,
+    diagnosing_configuration: DiagnosingConfiguration,
     authored_spans: Vec<Result<Span, MappingError>>,
 }
 
@@ -99,6 +100,11 @@ impl<'file, 'arena> OriginalProgramCheck<'file, 'arena> {
     #[must_use]
     pub fn diagnostic_configuration_path(&self) -> &Path {
         &self.diagnostic_configuration_path
+    }
+    /// Full observations of the diagnosing session's actual configured options.
+    #[must_use]
+    pub fn diagnosing_configuration(&self) -> &DiagnosingConfiguration {
+        &self.diagnosing_configuration
     }
 }
 
@@ -233,7 +239,12 @@ impl CorsaBridge {
         let checked_source = String::from(original);
         let checked_config = config.clone();
         let checked_configuration = configuration.clone();
-        let (report, effective_configuration, diagnostic_configuration_path) = self
+        let (
+            report,
+            effective_configuration,
+            diagnostic_configuration_path,
+            diagnosing_configuration,
+        ) = self
             .with_client(move |client| {
                 // Bind the source again after entering the worker, so a
                 // queued request cannot open a stale disk revision unnoticed.
@@ -283,6 +294,7 @@ impl CorsaBridge {
             report,
             configuration: effective_configuration,
             diagnostic_configuration_path,
+            diagnosing_configuration,
             authored_spans,
         })
     }

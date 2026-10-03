@@ -106,6 +106,7 @@ fn real_configured_original_programs_preserve_complete_diagnostics_and_source() 
         );
         block_on(bridge.spawn()).unwrap();
         let result = block_on(bridge.check_original_program(&original, &source_path)).unwrap();
+        assert_diagnosing_options(&result);
         assert!(std::ptr::eq(result.projection().file(), &original));
         assert_eq!(result.source_path(), source_path.canonicalize().unwrap());
         assert_eq!(
@@ -262,6 +263,7 @@ fn actual_project_membership_inherited_options_and_relative_imports_are_retained
         Some("missing")
     );
     assert_eq!(result.configuration().options["strict"], false);
+    assert_diagnosing_options(&result);
     let original = file(&arena, ts, Lang::Ts);
     let result =
         block_on(bridge.check_original_program(&original, &root.path().join("source.ts"))).unwrap();
@@ -282,6 +284,7 @@ fn actual_project_membership_inherited_options_and_relative_imports_are_retained
     let revised =
         block_on(bridge.check_original_program(&original, &root.path().join("source.ts"))).unwrap();
     assert_eq!(revised.configuration().options["strict"], true);
+    assert_diagnosing_options(&revised);
     assert_eq!(
         revised.diagnostic_configuration_path(),
         root.path().join("tsconfig.json").canonicalize().unwrap()
@@ -299,4 +302,31 @@ fn actual_project_membership_inherited_options_and_relative_imports_are_retained
         ts
     );
     block_on(bridge.shutdown()).unwrap();
+}
+
+fn assert_diagnosing_options(result: &vize_canon::OriginalProgramCheck<'_, '_>) {
+    let custody = result.diagnosing_configuration();
+    assert!(!custody.session().session_id.is_empty());
+    for observed in [custody.before(), custody.after()] {
+        assert_eq!(
+            observed.project().compiler_options,
+            result.configuration().options
+        );
+        assert_eq!(
+            Path::new(&observed.project().config_file_name),
+            result.diagnostic_configuration_path()
+        );
+        assert!(
+            observed
+                .response()
+                .projects
+                .iter()
+                .any(|project| project.id == observed.project().id)
+        );
+    }
+    // The pinned API allocates a new actual snapshot even for a no-op refresh.
+    assert_ne!(
+        custody.before().response().snapshot,
+        custody.after().response().snapshot
+    );
 }

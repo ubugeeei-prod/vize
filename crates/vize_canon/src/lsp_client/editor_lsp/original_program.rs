@@ -1,7 +1,10 @@
 //! Read-only authored-file overlays, bypassing virtual project materialization.
 
-use super::{CorsaProjectClient, EditorLspSession, project_identity::ProjectIdentityError};
-use crate::corsa_bridge::{CorsaBridgeError, OriginalProgramError};
+use super::{
+    CorsaProjectClient, EditorLspSession, project_configuration::ConfigurationError,
+    project_identity::ProjectIdentityError,
+};
+use crate::corsa_bridge::{CorsaBridgeError, DiagnosingConfiguration, OriginalProgramError};
 use corsa::{
     api::{ConfigResponse, FileChanges},
     runtime::block_on,
@@ -17,8 +20,15 @@ impl CorsaProjectClient {
         projected: &str,
         config: &Path,
         needs_forced_module: bool,
-    ) -> Result<(DocumentDiagnosticReportResult, ConfigResponse, PathBuf), OriginalProgramError>
-    {
+    ) -> Result<
+        (
+            DocumentDiagnosticReportResult,
+            ConfigResponse,
+            PathBuf,
+            DiagnosingConfiguration,
+        ),
+        OriginalProgramError,
+    > {
         let backend =
             |error| OriginalProgramError::Backend(CorsaBridgeError::CommunicationError(error));
         if self.materialized_project_session || self.document_texts.contains_key(uri) {
@@ -84,11 +94,43 @@ impl CorsaProjectClient {
             if diagnosing_config != config {
                 return Err(OriginalProgramError::UnconfiguredSource);
             }
-            let report = session.diagnostics(uri).map_err(backend)?;
-            if configuration(&mut session)? != diagnosing_config {
-                return Err(OriginalProgramError::UnconfiguredSource);
+            let custody_error = |error| match error {
+                ConfigurationError::Communication(error) => backend(error),
+                ConfigurationError::Unconfigured => OriginalProgramError::UnconfiguredSource,
+                ConfigurationError::Changed => OriginalProgramError::ConfigurationChanged,
+                #[cfg(not(unix))]
+                ConfigurationError::Unsupported => {
+                    OriginalProgramError::UnsupportedConfiguredProject
+                }
+            };
+            let api = session.diagnosing_api(uri).map_err(custody_error)?;
+            let result = (|| {
+                let before = api
+                    .observe(uri, config, &effective.options)
+                    .map_err(custody_error)?;
+                let report = session.diagnostics(uri).map_err(backend)?;
+                if configuration(&mut session)? != diagnosing_config {
+                    return Err(OriginalProgramError::UnconfiguredSource);
+                }
+                let after = api
+                    .observe(uri, config, &effective.options)
+                    .map_err(custody_error)?;
+                Ok((
+                    report,
+                    effective,
+                    diagnosing_config,
+                    DiagnosingConfiguration {
+                        session: api.session.clone(),
+                        before,
+                        after,
+                    },
+                ))
+            })();
+            let cleanup = api.close(&mut session).map_err(custody_error);
+            match (result, cleanup) {
+                (Ok(report), Ok(())) => Ok(report),
+                (Err(error), _) | (_, Err(error)) => Err(error),
             }
-            Ok((report, effective, diagnosing_config))
         })();
         // Graceful shutdown closes/reaps every overlay even after a failed
         // request. The bridge worker continues this cleanup after a timeout.

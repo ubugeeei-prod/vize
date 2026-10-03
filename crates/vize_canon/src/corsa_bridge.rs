@@ -6,6 +6,7 @@
 
 mod batch_checker;
 mod bridge;
+mod diagnosing_configuration;
 mod editor_session;
 mod native_vue;
 mod original_program;
@@ -57,6 +58,7 @@ mod worker;
 
 pub use batch_checker::BatchTypeChecker;
 pub use bridge::CorsaBridge;
+pub use diagnosing_configuration::{DiagnosingConfiguration, DiagnosingSnapshot};
 pub(crate) use editor_session::EditorMirrorSession;
 pub use native_vue::{NativeVueCheck, NativeVueError};
 pub use original_program::{OriginalProgramCheck, OriginalProgramError};

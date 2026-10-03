@@ -129,6 +129,25 @@ fn real_vue_jsx_and_tsx_keep_complete_raw_diagnostics_types_and_authored_owners(
         let bridge = bridge(root.path());
         block_on(bridge.spawn()).unwrap();
         let result = block_on(bridge.check_original_jsx(&original, &path)).unwrap();
+        let custody = result.diagnosing_configuration();
+        assert!(!custody.session().session_id.is_empty());
+        for observed in [custody.before(), custody.after()] {
+            assert_eq!(
+                observed.project().compiler_options,
+                result.configuration().options
+            );
+            assert_eq!(
+                Path::new(&observed.project().config_file_name),
+                result.diagnostic_configuration_path()
+            );
+            assert!(
+                observed
+                    .response()
+                    .projects
+                    .iter()
+                    .any(|project| project.id == observed.project().id)
+            );
+        }
         assert!(std::ptr::eq(result.projection().file(), original.file()));
         assert_eq!(result.projection().source_kind(), kind);
         assert_eq!(

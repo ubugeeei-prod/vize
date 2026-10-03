@@ -39,6 +39,7 @@ mod implementation;
 mod materialized;
 mod native_vue;
 mod original_program;
+mod project_configuration;
 mod project_identity;
 mod readiness;
 mod requests;
