@@ -75,6 +75,16 @@ full differential gate. Actual unchanged all-100 measured instruction ceilings
 and terminal merge remain required. No local Rust/install or extra manual full
 campaign is used.
 
+Initial source `be3de099` actually passes all six new provider laws in the four
+Rust archive shards, the owner-drop compile-fail law, all 64 SourceProject and
+9 RPC laws, minimal feature compilation and strict Clippy. Its tooling gate
+rejects the new foreign-owner test's forbidden `std::String` and missing storage
+row. The correction copies equal source bytes into an explicit `alloc::Vec`,
+borrows checked UTF-8, and records only this test module's one direct import and
+three bound vector uses as analysis storage. Production queries still allocate
+nothing; no scanner exception or storage baseline is relaxed. That failed head
+was never queued, and the corrected source requires fresh complete acceptance.
+
 Generic File-level template position queries, additional native grammar/dialects,
 JSX, external/workspace navigation and default product admission remain
 unfinished. This shared original-SFC facade does not close #6871, #6872 or #6883.

@@ -173,9 +173,10 @@ fn equal_bytes_and_equal_numeric_ids_do_not_accept_another_original_file_binding
     let first_arena = Allocator::default();
     let second_arena = Allocator::default();
     let source = "<script setup>const value=1;</script><template>{{value}}</template>";
-    let copied = std::string::String::from(source);
+    let copied = Vec::from(source.as_bytes());
+    let copied = core::str::from_utf8(&copied).unwrap();
     let first_owner = observe(&first_arena, source);
-    let second_owner = observe(&second_arena, &copied);
+    let second_owner = observe(&second_arena, copied);
     let first = first_owner.admitted().unwrap();
     let second = second_owner.admitted().unwrap();
     let at = at(source, "value", 1);
