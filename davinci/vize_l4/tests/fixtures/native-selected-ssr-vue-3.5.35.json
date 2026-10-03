@@ -1,0 +1,169 @@
+{
+  "schema": "vize.native-selected-ssr-reference",
+  "version": 1,
+  "compiler": {
+    "name": "@vue/compiler-ssr",
+    "version": "3.5.35"
+  },
+  "options": {
+    "mode": "module",
+    "ssrRuntimeModuleName": "@vue/server-renderer",
+    "comments": true,
+    "filename": "NativeSelectedSsr.vue",
+    "sourceMap": true
+  },
+  "fixtures": [
+    {
+      "id": "empty",
+      "source": "<template></template>",
+      "template": "",
+      "sourceSha256": "a3f83c203801aec76992765f9bee184b00ccdf9928069d492406cf7ec90176aa",
+      "templateSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "referenceCode": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  \n}",
+      "referenceCodeSha256": "3dec280e9141de0475b995ce9d97f188f09cfd8a6848bcb9a9370bbdcc8e8b89",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSelectedSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [""]
+      },
+      "referenceMapSha256": "599d60de00d714c8b237986b2a6789591bf5a98d1cfb1d484642af62d241f54a",
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  \n}",
+      "codeSha256": "3dec280e9141de0475b995ce9d97f188f09cfd8a6848bcb9a9370bbdcc8e8b89"
+    },
+    {
+      "id": "unicode",
+      "source": "<template>hé世界</template>",
+      "template": "hé世界",
+      "sourceSha256": "e4e1c9e9cda0ee4d30979a183d47bd168a75c2c1e70ade5936ea61590e58ce3b",
+      "templateSha256": "3628ed91636f5e7cb04a53d92f61ff535718d9c36514bacf0c37213180f0416c",
+      "referenceCode": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`hé世界`)\n}",
+      "referenceCodeSha256": "0a39a18f97edb272e7856f9385b85ecec8031706b5b2416c35f8515992248e05",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSelectedSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["hé世界"]
+      },
+      "referenceMapSha256": "c7682e327d3db99f5393b7eba97abf5b06a081ed516d1d9ea6610edafd8c5cef",
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`hé世界`)\n}",
+      "codeSha256": "0a39a18f97edb272e7856f9385b85ecec8031706b5b2416c35f8515992248e05"
+    },
+    {
+      "id": "js-text",
+      "source": "<template>\"'>\\${payload}`</template>",
+      "template": "\"'>\\${payload}`",
+      "sourceSha256": "295b7eb80536cdeb3a2bb128f7c054595db94642ec87d7d67c866fc4f2b629d8",
+      "templateSha256": "ffb2287ebce3145582002feea5b82ce0a93e05c7179ec110732353acfe26f4e3",
+      "referenceCode": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`&quot;&#39;&gt;\\\\\\${payload}\\``)\n}",
+      "referenceCodeSha256": "a15a4e93574f35c8462dd3d4a225e5950304f4914f97e62d36832e0618220f4c",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSelectedSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["\"'>\\${payload}`"]
+      },
+      "referenceMapSha256": "46fdb66730b8b609fc721cf23dfcb4e8e4bf6ca0c98fb85035ff6587347adc47",
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`&quot;&#39;&gt;\\\\\\${payload}\\``)\n}",
+      "codeSha256": "a15a4e93574f35c8462dd3d4a225e5950304f4914f97e62d36832e0618220f4c"
+    },
+    {
+      "id": "comment",
+      "source": "<template><!--safe--></template>",
+      "template": "<!--safe-->",
+      "sourceSha256": "2287b2c66e3b99a3fd17da16258506f0a99244f84565c4528d4fb9205082589f",
+      "templateSha256": "128c8651aa556a75d6da1aaed0ef2d4a9e00c691b893f52826ea801b2c460ddb",
+      "referenceCode": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--safe-->`)\n}",
+      "referenceCodeSha256": "efee817fec6863d0c2a4ad08082b5432a09ce3b7393b30502fdcb4092dab6931",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSelectedSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["<!--safe-->"]
+      },
+      "referenceMapSha256": "5692c7ddbea639fd2f5f717bd9e1523b809746357f91dd6ec0f092d2c6f49828",
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--safe-->`)\n}",
+      "codeSha256": "efee817fec6863d0c2a4ad08082b5432a09ce3b7393b30502fdcb4092dab6931"
+    },
+    {
+      "id": "root",
+      "source": "<template><div/></template>",
+      "template": "<div/>",
+      "sourceSha256": "9555dce5b64d5f2707a739e3ba65c3727d035a815154a0e8cee736cba87b4168",
+      "templateSha256": "fc7e6385a22749a8b3224a31b05f7cb995e2e62ab4af84ae526262af38c1753e",
+      "referenceCode": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}></div>`)\n}",
+      "referenceCodeSha256": "f8ef9c90a0ed80bc61ec3fc07ee6e33900757b5a2c532ac6e491f15fa3f988ac",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSelectedSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["<div/>"]
+      },
+      "referenceMapSha256": "50bac3d9a1122f031f211fb579f9f061bfbac913f5926040964d43a3be18b751",
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}></div>`)\n}",
+      "codeSha256": "f8ef9c90a0ed80bc61ec3fc07ee6e33900757b5a2c532ac6e491f15fa3f988ac"
+    },
+    {
+      "id": "nested",
+      "source": "<template><div><p>hé</p><br/></div></template>",
+      "template": "<div><p>hé</p><br/></div>",
+      "sourceSha256": "7b873b7ea1fc010f2a76940350ca078e15c56bc737225abbd966f48eb6c48929",
+      "templateSha256": "1523ed7d57a82b3727098bc6f586ac0302dd95b8146a074a93745a47b1e0f7df",
+      "referenceCode": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><p>hé</p><br></div>`)\n}",
+      "referenceCodeSha256": "b20c0a0c3ea7af38eaa44231f27819a7fb12c61e12060794576a483c70d38db7",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSelectedSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["<div><p>hé</p><br/></div>"]
+      },
+      "referenceMapSha256": "9d17c3d251f65f37980df0e52ea93393ff53e5a5cde02178e462c177b6fe33bb",
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><p>hé</p><br></div>`)\n}",
+      "codeSha256": "b20c0a0c3ea7af38eaa44231f27819a7fb12c61e12060794576a483c70d38db7"
+    },
+    {
+      "id": "fragment",
+      "source": "<template><p/><i/></template>",
+      "template": "<p/><i/>",
+      "sourceSha256": "e569958a9a11cfd5f1b5c8bc4b12e9a6557f1c13a558603ca658cad344f0d931",
+      "templateSha256": "f73530964514d3c84b5a1f98e4e2a33fd993ea7c092e9ecaf42a01645acb644c",
+      "referenceCode": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[--><p></p><i></i><!--]-->`)\n}",
+      "referenceCodeSha256": "42ff698bcde959a24f527dd8bd2fd2ce420d88df348b5d814fb72b52f12513ef",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSelectedSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["<p/><i/>"]
+      },
+      "referenceMapSha256": "a5fc56cc56fd417cb48e0e3f7d2ab95ceb13eefed7d24a2cf6604be101be5ad6",
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[--><p></p><i></i><!--]-->`)\n}",
+      "codeSha256": "42ff698bcde959a24f527dd8bd2fd2ce420d88df348b5d814fb72b52f12513ef"
+    },
+    {
+      "id": "ordinary-props",
+      "source": "<template><div id=\"original\" title=\"世界\"/></template>",
+      "template": "<div id=\"original\" title=\"世界\"/>",
+      "sourceSha256": "e42d3d30c588edbb811111a7ff508704feeec0227ec18cf2c3ecc664176fa6fb",
+      "templateSha256": "78ca6dadc414db8aea5cb9ea3e19a410a60cd80e3644524145a6be897c7d87ce",
+      "referenceCode": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({\n    id: \"original\",\n    title: \"世界\"\n  }, _attrs))}></div>`)\n}",
+      "referenceCodeSha256": "cb23ed147952581827bb2afb3bd9d41875cf0729aa9d3c77ab670e992cac2947",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSelectedSsr.vue"],
+        "names": [],
+        "mappings": ";;;;;IAAK,EAAE,EAAC,UAAU;IAAC,KAAK,EAAC,IAAI",
+        "sourcesContent": ["<div id=\"original\" title=\"世界\"/>"]
+      },
+      "referenceMapSha256": "0a70bb7d7be7f031e218d792569c962a52a94cdb8b1a2ea8b7f5218ed86f74b2",
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({\n    id: \"original\",\n    title: \"世界\"\n  }, _attrs))}></div>`)\n}",
+      "codeSha256": "238b41990ec982d19fac6df85c7d7b38c86c100a09c9c51132e5c3a63ce1b913"
+    }
+  ]
+}

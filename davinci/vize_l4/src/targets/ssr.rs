@@ -5,7 +5,9 @@
 //! An unsupported whole view returns no writer or partial render function.
 
 use vize_l0::{Span, id::NodeId};
-use vize_l3::decision::ssr::{NativeSsrFileAnalysis, SsrFacts, SsrPart, SsrUnsupported};
+use vize_l3::decision::ssr::{
+    NativeSsrFileAnalysis, NativeTemplateSsrAnalysis, SsrFacts, SsrPart, SsrUnsupported,
+};
 use vize_l3::decision::{NativeAnalysis, policy::TargetPolicy};
 
 use crate::runtime::{Runtime, vocabulary};
@@ -29,8 +31,8 @@ pub enum SsrErrorKind {
     OutputTooLarge,
 }
 
-/// Emit a complete prepared SSR function from its exact sealed native owner.
-/// No caller source, region, decision table or expression facts are paired here.
+/// Emit a diagnostic SSR function from its exact sealed neutral artifact.
+/// This does not certify original selected-template output authority.
 pub fn emit<L: LinkSink>(analysis: &NativeAnalysis<'_, '_>) -> Result<Writer<L>, SsrError> {
     if analysis.policy() != TargetPolicy::Ssr {
         return Err(SsrError {
@@ -48,6 +50,24 @@ pub fn emit_file<L: LinkSink>(
     analysis: &NativeSsrFileAnalysis<'_, '_>,
 ) -> Result<Writer<L>, SsrError> {
     encode(analysis.artifact().source(), analysis.ssr())
+}
+
+/// Emit only from a genuine original-template completion receipt.
+/// Original source and SSR decisions come from the same retained lower owner.
+/// Dynamic/special/dialect families and complete SFC products remain bounded.
+///
+/// Diagnostic File completion cannot be promoted at this entry:
+/// ```compile_fail
+/// use vize_l3::decision::ssr::NativeSsrFileAnalysis;
+/// use vize_l4::{targets::ssr::emit_template, write::NoLinks};
+/// fn promote(analysis: &NativeSsrFileAnalysis<'_, '_>) {
+///     let _ = emit_template::<NoLinks>(analysis);
+/// }
+/// ```
+pub fn emit_template<L: LinkSink>(
+    receipt: &NativeTemplateSsrAnalysis<'_, '_>,
+) -> Result<Writer<L>, SsrError> {
+    encode(receipt.artifact().source(), receipt.ssr())
 }
 
 fn encode<L: LinkSink>(
