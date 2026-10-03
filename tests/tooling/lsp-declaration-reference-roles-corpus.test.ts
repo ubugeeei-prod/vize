@@ -20,6 +20,14 @@ test("declaration role corpus preserves actual Volt, watcher and badge contracts
       entry.sourceFile,
     );
   }
+  assert.deepEqual(
+    corpus.scopeControls.map((entry: { id: string }) => entry.id),
+    [
+      "nested-global-interface-is-not-vue-augmentation",
+      "nested-global-value-keeps-its-global-role",
+      "actual-runtime-core-component-augmentation",
+    ],
+  );
   const watcher = read("tests/tooling/lsp-watcher-revalidation.test.ts");
   assert.ok(watcher.includes('include: ["src/**/*"]'));
   assert.ok(watcher.includes('writeGlobalComponentDeclaration(declarationPath, "boolean")'));

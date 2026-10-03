@@ -61,6 +61,30 @@ fn corpus_uses_the_original_volt_and_compatibility_declaration_roles() {
                 .collect::<Vec<_>>()
         );
     }
+    for entry in corpus.get("scopeControls").unwrap().as_array().unwrap() {
+        let facts = declared_facts(entry.get("declaration").unwrap().as_str().unwrap());
+        assert_eq!(
+            facts.global_values,
+            entry.get("globalValues").unwrap().as_bool().unwrap()
+        );
+        assert_eq!(
+            facts.vue_components,
+            entry.get("vueComponents").unwrap().as_bool().unwrap()
+        );
+        // The new role fact does not change the legacy tag-name consumer,
+        // including its established outer-module/global-interface quirk.
+        assert_eq!(
+            facts.names,
+            entry
+                .get("legacyNames")
+                .unwrap()
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|name| String::from(name.as_str().unwrap()))
+                .collect::<Vec<_>>()
+        );
+    }
 }
 
 #[test]

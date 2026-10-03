@@ -182,10 +182,15 @@ struct Interface {
     extends: Vec<String>,
 }
 #[derive(Default)]
+struct DeclarationRoles {
+    global_values: bool,
+    vue_components: bool,
+}
+#[derive(Default)]
 struct Declarations {
     vue_module: bool,
     in_global: bool,
-    global_values: bool,
+    roles: DeclarationRoles,
     interfaces: BTreeMap<String, Interface>,
     roots: Vec<String>,
 }
@@ -207,7 +212,7 @@ impl<'a> Visit<'a> for Declarations {
                     | Declaration::TSEnumDeclaration(_)
             )
         {
-            self.global_values = true;
+            self.roles.global_values = true;
         }
         walk::walk_declaration(self, declaration);
     }
@@ -224,6 +229,7 @@ impl<'a> Visit<'a> for Declarations {
         let name = interface.id.name.as_str().to_compact_string();
         if name == "GlobalComponents" && self.vue_module {
             self.roots.push(name.clone());
+            self.roles.vue_components |= !self.in_global;
         }
         if name == "GlobalComponents" && !self.vue_module {
             return;
@@ -254,8 +260,8 @@ fn declared_facts(source: &str) -> DeclarationFacts {
     }
     let mut declarations = Declarations::default();
     declarations.visit_program(&parsed.program);
-    let vue_components = !declarations.roots.is_empty();
-    let global_values = declarations.global_values;
+    let vue_components = declarations.roles.vue_components;
+    let global_values = declarations.roles.global_values;
     let mut pending = declarations.roots;
     let mut visited = BTreeSet::new();
     let mut result = BTreeSet::new();

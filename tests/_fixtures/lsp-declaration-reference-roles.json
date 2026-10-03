@@ -15,5 +15,28 @@
       "names": ["ElBadge", "ElButton", "ElIcon"],
       "contract": "```typescript\n(parameter) value: any\n```"
     }
+  ],
+  "scopeControls": [
+    {
+      "id": "nested-global-interface-is-not-vue-augmentation",
+      "declaration": "declare module 'vue' { global { interface GlobalComponents { Noise: unknown } } } export {};",
+      "globalValues": false,
+      "vueComponents": false,
+      "legacyNames": ["Noise"]
+    },
+    {
+      "id": "nested-global-value-keeps-its-global-role",
+      "declaration": "declare module 'vue' { global { const ref: unknown; interface GlobalComponents { GlobalOnly: unknown } } } export {};",
+      "globalValues": true,
+      "vueComponents": false,
+      "legacyNames": ["GlobalOnly"]
+    },
+    {
+      "id": "actual-runtime-core-component-augmentation",
+      "declaration": "declare module '@vue/runtime-core' { interface GlobalComponents { RealCard: unknown } } export {};",
+      "globalValues": false,
+      "vueComponents": true,
+      "legacyNames": ["RealCard"]
+    }
   ]
 }

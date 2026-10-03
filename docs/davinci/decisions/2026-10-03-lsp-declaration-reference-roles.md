@@ -59,3 +59,36 @@ refresh, timeout increase, skip, warning waiver, new job or extra stage is added
 Native routing, complete LSP history, the ecosystem Matrix and #6883 remain
 unfinished. A public PR and protected acceptance are held until the correction
 has actual full-suite evidence.
+
+## Global augmentation scope correction
+
+The subsequent source `4c2c3815d96089a3e8c7a3ed4b505b31c9dfafdb` has actual
+whole Check `37114388498` success at 2026-10-03 10:16:09 UTC, with nineteen
+successful jobs and five existing declared skips. The original seven ownership
+laws and eight new parser/cache/scope laws each passed once; workspace tests and
+warning-denying Clippy succeeded. The original badge `any` oracle, both unchanged
+declaration watcher cases and both Nuxt server cases passed. Tooling executed
+5,576 tests with 5,564 passes, zero failures and twelve existing skips. The
+original `96ce07d2` failure remains unchanged, and no result grants execution to
+the next source correction or transfers old instruction-count acceptance.
+
+A bounded source audit found that the old tag-name visitor keeps its outer Vue
+module flag while visiting a nested `global` declaration. Deriving the new
+component-augmentation role from those old tag-name roots could therefore
+misclassify a global `GlobalComponents` interface as a Vue module augmentation.
+The new role flag now uses the actual global/module scope in that same OXC
+visitor. A global interface nested inside an ambient Vue module does not supply
+the Vue component role; a genuine module interface does. Global values retain
+their actual global role. The legacy tag-name roots, including their existing
+outer-module quirk, stay unchanged, and no new parse, walk or stage is added.
+
+Three literal corpus controls retain that distinction: the nested global
+interface, a nested global value/interface pair, and a real
+`@vue/runtime-core` module augmentation. The existing parser corpus law checks
+their role facts and exact old tag names. Original Volt, watcher and badge
+declarations/configurations/expectations, the eight Rust law names, helper 68,
+defaults and budgets remain unchanged. This new source has zero Rust/product
+execution and must receive its own independent source review and one fresh
+whole Check on the same temporary branch after the current campaign is
+terminal. No PR, counts dispatch, Stack or queue entry is authorized by these
+bounded controls; full arbitrary declaration-role completeness is not claimed.
