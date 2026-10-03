@@ -80,8 +80,7 @@ rows; regenerate the canonical compiler migration surface from actual source,
 preserving every incoming row and the separate 20-file Croquis census. Fresh
 source CI is required; the draft still grants no native or protected acceptance.
 
-Corrected source `d5190b3444d94a08c6c78aa55974dfb795848934` passes Check
-37136590128. Its source-qualified first worker builds the actual PR checkout
+Corrected source `d5190b3444d94a08c6c78aa55974dfb795848934` passes Check 37136590128. Its source-qualified first worker builds the actual PR checkout
 `b41c4bca191801a1f36ab48d0ab40dfcfb6472db` and produces artifact 11278903519.
 That actual Rust capture contains all three original source/fixture identities,
 complete native modules and raw maps. Its runtime receipt matches those whole
