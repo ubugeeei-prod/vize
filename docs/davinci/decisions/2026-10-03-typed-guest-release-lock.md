@@ -54,6 +54,11 @@ The report's existing PR/queue condition stays exact.
 Source laws prove these modes; an actual protected candidate must execute the
 reusable WIT lane and its required report before merge acceptance.
 
+Existing-family drain takes priority. When a predecessor regenerates a queue
+candidate, preserve its older green epoch as historical; require WIT/report
+success on the current candidate. Do not jump or duplicate entries, change
+queue configuration, or replay source merely because main advances.
+
 Fresh exact-head Davinci Contracts must execute the real TS-48 guests in both
 hosting modes. Configured Actions and protected candidate validation remain
 required before actual merge. Local metadata and source tests establish the
