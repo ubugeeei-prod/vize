@@ -33,6 +33,14 @@ error under the existing `result_large_err` Clippy gate. The corrected refusal
 owns the same analysis in a private Box allocated only on failure; acceptance
 and original custody are unchanged, and no lint exemption is introduced.
 
+The corrected source passed all ten compile-fail docs and three new runtime
+laws, but the five-terminator law wrongly expected a named static-property
+link. The actual native property encoder records anonymous whole-Attribute
+ranges. The law now joins the emitted key to the authentic File Attribute and
+checks the actual empty names array, preserving every frame/map/UTF-16 check.
+It adds caller locations for failed law conditions. No target spelling,
+named-link provider, map envelope or subspan parity is changed or claimed.
+
 The original pipeline laws cover a Unicode original comment before the
 template, five JavaScript line terminators, non-BMP text/attribute/literal
 bytes, independently decoded whole-module VLQ positions, complete source-map

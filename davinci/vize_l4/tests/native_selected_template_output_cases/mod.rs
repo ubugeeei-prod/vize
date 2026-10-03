@@ -12,14 +12,18 @@ use vize_l1::{
 use vize_l2::lang::js::{NativeInterpolationInput, NativeTemplateFile, NativeTemplateOwner};
 use vize_l4::targets::dom::NativeTemplateDomOutput;
 
+#[track_caller]
 pub(super) fn check(condition: bool) -> Result<(), &'static str> {
     if condition {
         Ok(())
     } else {
+        let caller = core::panic::Location::caller();
+        eprintln!("required condition at {}:{}", caller.file(), caller.line());
         Err("required condition")
     }
 }
 
+#[track_caller]
 pub(super) fn equal<T: PartialEq>(actual: T, expected: T) -> Result<(), &'static str> {
     check(actual == expected)
 }

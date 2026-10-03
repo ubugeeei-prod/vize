@@ -2,6 +2,7 @@
 
 use vize_l0::Allocator;
 use vize_l2::file::NativeFileInterpolationState;
+use vize_l2::op::Op;
 use vize_l3::decision::native::build_native_dom_file_decisions;
 use vize_l4::{
     module::assemble_template,
@@ -61,7 +62,27 @@ fn original_output_keeps_whole_source_frame_and_five_line_terminators() -> Resul
             document.source_map("雪🌸\".vue", &source),
         )?;
         check(!output.links().is_empty())?;
-        check(output.links().iter().any(|link| link.name.is_some()))?;
+        let [Op::Element(element), Op::Interpolation(_)] =
+            output.analysis().artifact().root().ops.as_slice()
+        else {
+            return Err("actual ordered Element and original interpolation");
+        };
+        let [attribute] = element.attributes.as_slice() else {
+            return Err("actual original static Attribute");
+        };
+        equal(attribute.name, "title")?;
+        let key = output
+            .links()
+            .iter()
+            .find(|link| {
+                output
+                    .code()
+                    .get(link.generated.start as usize..link.generated.end as usize)
+                    == Some("title")
+            })
+            .ok_or("actual emitted static key range")?;
+        equal(key.authored, attribute.span)?;
+        check(key.name.is_none() && output.links().iter().all(|link| link.name.is_none()))?;
         for link in output.links() {
             check(output.source_block().contains_block_span(link.authored))?;
             check(
@@ -76,6 +97,7 @@ fn original_output_keeps_whole_source_frame_and_five_line_terminators() -> Resul
         let renamed: serde_json::Value = serde_json::from_str(&output.source_map("Foreign.vue"))
             .map_err(|_| "renamed metadata")?;
         equal(&renamed["sourcesContent"], &serde_json::json!([source]))?;
+        equal(&renamed["names"], &serde_json::json!([]))?;
         check(
             renamed["mappings"]
                 .as_str()
