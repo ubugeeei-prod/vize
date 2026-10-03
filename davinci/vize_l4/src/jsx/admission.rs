@@ -73,10 +73,10 @@ pub(super) fn check(analysis: &NativeJsxAnalysis<'_>) -> Result<(), JsxEmitError
                 return Err(JsxEmitError::at(Error::UnknownIntrinsic, node));
             }
             Kind::Member => return Err(JsxEmitError::at(Error::MemberTag, node)),
-            Kind::Text(_) if needs_normalization(node)? => {
+            Kind::Text(_) if has_entities(node)? => {
                 return Err(JsxEmitError::at(Error::TextNormalization, node));
             }
-            Kind::AttributeString(_) if needs_normalization(node)? => {
+            Kind::AttributeString(_) if has_entities(node)? => {
                 return Err(JsxEmitError::at(Error::AttributeNormalization, node));
             }
             Kind::Opening { .. } => {
@@ -101,11 +101,8 @@ fn js_whitespace(character: char) -> bool {
     character.is_whitespace() || character == '\u{feff}'
 }
 
-fn needs_normalization(node: JsxNode<'_, '_>) -> Result<bool, JsxEmitError> {
-    Ok(node
-        .source()
-        .ok_or_else(|| invalid(node))?
-        .contains(['&', '\n', '\r', '\t']))
+fn has_entities(node: JsxNode<'_, '_>) -> Result<bool, JsxEmitError> {
+    Ok(node.source().ok_or_else(|| invalid(node))?.contains('&'))
 }
 
 fn check_element(

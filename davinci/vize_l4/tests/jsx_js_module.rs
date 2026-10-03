@@ -238,11 +238,6 @@ fn unsupported_module_semantics_are_whole_typed_refusals() -> Result<(), &'stati
             Error::TextNormalization,
         ),
         (
-            "export function render() { return <div>\n  text\n</div>; }",
-            SourceType::jsx(),
-            Error::TextNormalization,
-        ),
-        (
             "export function render() { return <div title=\"A&amp;B\"/>; }",
             SourceType::jsx(),
             Error::AttributeNormalization,

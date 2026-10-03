@@ -102,7 +102,9 @@ pub(super) fn element<L: LinkSink>(
                     .ok_or_else(|| invalid(attribute))?;
                 quoted(
                     writer,
-                    value,
+                    super::whitespace::normalized(value)
+                        .as_ref()
+                        .map_or(value, |value| value.as_str()),
                     value_node.span().ok_or_else(|| invalid(value_node))?,
                 );
             } else {
@@ -112,28 +114,37 @@ pub(super) fn element<L: LinkSink>(
         writer.push(" }");
     }
     writer.push(", ");
-    let has_children = node.children().skip(1).any(|child| {
-        !matches!(
-            kind(analysis, child),
-            Ok(Kind::Closing | Kind::EmptyContainer)
-        )
-    });
+    let has_children = node
+        .children()
+        .skip(1)
+        .any(|child| match kind(analysis, child) {
+            Ok(Kind::Closing | Kind::EmptyContainer) => false,
+            Ok(Kind::Text(value)) => super::whitespace::has_text(value),
+            _ => true,
+        });
     writer.push(if has_children { "[" } else { "null" });
     let mut separator = "";
     for child in children {
         match kind(analysis, child)? {
             Kind::Closing => {}
             Kind::EmptyContainer => container(writer, analysis, child)?,
-            Kind::Text(value) => {
+            Kind::Text(value) if super::whitespace::has_text(value) => {
                 writer.push(separator);
                 separator = ", ";
                 let text_helper = helper.text.as_ref().ok_or_else(|| invalid(child))?;
                 writer.use_helper(text_helper.id);
                 writer.push(text_helper.alias.as_str());
                 writer.push("(");
-                quoted(writer, value, child.span().ok_or_else(|| invalid(child))?);
+                quoted(
+                    writer,
+                    super::whitespace::normalized(value)
+                        .as_ref()
+                        .map_or(value, |value| value.as_str()),
+                    child.span().ok_or_else(|| invalid(child))?,
+                );
                 writer.push(")");
             }
+            Kind::Text(_) => {}
             Kind::Element => {
                 writer.push(separator);
                 separator = ", ";

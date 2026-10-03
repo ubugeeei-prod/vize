@@ -22,7 +22,9 @@ pub(super) fn selected(analysis: &NativeJsxAnalysis<'_>) -> Result<SelectedHelpe
     let node = one(file, "createVNode")?;
     let text = analysis
         .decisions()
-        .any(|decision| matches!(decision.kind(), JsxDecisionKind::Text(_)))
+        .any(|decision| {
+            matches!(decision.kind(), JsxDecisionKind::Text(value) if super::whitespace::has_text(value))
+        })
         .then(|| one(file, "createTextVNode"))
         .transpose()?;
     Ok(SelectedHelpers { node, text })

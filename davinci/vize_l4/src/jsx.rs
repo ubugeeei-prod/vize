@@ -2,7 +2,7 @@
 //!
 //! Only genuine completed L3 decisions admit replacement spans. Everything
 //! outside those spans, including module declarations and comments, is copied
-//! from the original source. TS erasure, slots and normalized JSX text remain
+//! from the original source. TS erasure, slots and JSX entities remain
 //! explicit refusals. This does not replace a legacy product route.
 
 use vize_l0::Span;
@@ -13,6 +13,7 @@ use crate::write::{Emitted, LinkSink, Writer};
 
 mod admission;
 mod helpers;
+mod whitespace;
 mod write;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

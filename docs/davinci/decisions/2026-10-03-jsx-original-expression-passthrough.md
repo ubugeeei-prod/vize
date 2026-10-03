@@ -59,10 +59,14 @@ unchanged instruction gate. GitHub rebased this remaining child to `2b05244a`
 on that actual main and retargeted its base to main; all nine reviewed
 production/test/reference/fixture payload files remain byte-identical.
 
-Fresh exact-head Actions and protected queue acceptance remain required for
-this child after the provider merge. TS erasure, compound JSX
-containers, wider JSX attributes/slots/grammar and legacy product routing
-remain unfinished.
+Exact source `f49beb423c` Check 37122988988 and protected candidate
+`134c4ad549ce` Check 37123717090 both completed successfully. Instruction
+job 111204731926 verified all 100 benchmarks across three identical repeats,
+all pinned ceilings and the unchanged ratchet. #7561 literally merged as
+that candidate at 2026-10-03 12:59:16 UTC; fresh main retained all nine
+reviewed production/test/reference/fixture payload files byte-for-byte.
+TS erasure, compound JSX containers, wider attributes/slots/grammar and
+legacy product routing remain unfinished.
 
 ## Scoped queue recovery
 

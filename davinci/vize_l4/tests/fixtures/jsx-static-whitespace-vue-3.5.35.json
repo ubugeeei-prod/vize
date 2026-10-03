@@ -1,0 +1,704 @@
+{
+  "schema": "vize.native-jsx.static-whitespace",
+  "vueVersion": "3.5.35",
+  "babelVersion": "7.29.0",
+  "pluginVersion": "2.0.1",
+  "pluginOptions": {
+    "optimize": false,
+    "enableObjectSlots": false
+  },
+  "fixtures": [
+    {
+      "id": "lf-empty-text",
+      "source": "export function render(){return <div>\n  \t\n</div>;}\n",
+      "rawTexts": [
+        "\n  \t\n"
+      ],
+      "rawAttributes": [],
+      "helpers": 1,
+      "arguments": [
+        []
+      ],
+      "code": "",
+      "map": {},
+      "referenceCode": "import { createVNode as _createVNode } from \"vue\";\nexport function render() {\n  return _createVNode(\"div\", null, null);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": [
+          "render",
+          "_createVNode"
+        ],
+        "sources": [
+          "Native雪🌸.jsx"
+        ],
+        "sourcesContent": [
+          "export function render(){return <div>\n  \t\n</div>;}\n"
+        ],
+        "mappings": ";AAAA,OAAO,SAASA,MAAMA,CAAA,EAAE;EAAC,OAAAC,YAAA;AAElB",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": [
+          "render"
+        ],
+        "results": [
+          {
+            "arguments": [],
+            "vnode": {
+              "type": "div",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 1,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": null
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {},
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "crlf-nested-text",
+      "source": "export function render(){return <div>\r\n \tHello\r\n <span/>\r\n \tWorld\r\n</div>;}\n",
+      "rawTexts": [
+        "\r\n \tHello\r\n ",
+        "\r\n \tWorld\r\n"
+      ],
+      "rawAttributes": [],
+      "helpers": 2,
+      "arguments": [
+        []
+      ],
+      "code": "",
+      "map": {},
+      "referenceCode": "import { createVNode as _createVNode, createTextVNode as _createTextVNode } from \"vue\";\nexport function render() {\n  return _createVNode(\"div\", null, [_createTextVNode(\"Hello\"), _createVNode(\"span\", null, null), _createTextVNode(\"World\")]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": [
+          "render",
+          "_createVNode",
+          "_createTextVNode"
+        ],
+        "sources": [
+          "Native雪🌸.jsx"
+        ],
+        "sourcesContent": [
+          "export function render(){return <div>\r\n \tHello\r\n <span/>\r\n \tWorld\r\n</div>;}\n"
+        ],
+        "mappings": ";AAAA,OAAO,SAASA,MAAMA,CAAA,EAAE;EAAC,OAAAC,YAAA,eAAAC,gBAAA,WAAAD,YAAA,sBAAAC,gBAAA;AAIlB",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": [
+          "render"
+        ],
+        "results": [
+          {
+            "arguments": [],
+            "vnode": {
+              "type": "div",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": "Hello"
+                },
+                {
+                  "type": "span",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 1,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": null
+                },
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": "World"
+                }
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "Hello"
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "span",
+                    "props": {},
+                    "children": []
+                  },
+                  {
+                    "kind": "text",
+                    "text": "World"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "cr-static-attribute",
+      "source": "export function render(){return <div title=\"  one\r \t two\r  \">x</div>;}\n",
+      "rawTexts": [
+        "x"
+      ],
+      "rawAttributes": [
+        "  one\r \t two\r  "
+      ],
+      "helpers": 2,
+      "arguments": [
+        []
+      ],
+      "code": "",
+      "map": {},
+      "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nexport function render() {\n  return _createVNode(\"div\", {\n    \"title\": \"  one two\"\n  }, [_createTextVNode(\"x\")]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": [
+          "render",
+          "_createVNode",
+          "_createTextVNode"
+        ],
+        "sources": [
+          "Native雪🌸.jsx"
+        ],
+        "sourcesContent": [
+          "export function render(){return <div title=\"  one\r \t two\r  \">x</div>;}\n"
+        ],
+        "mappings": ";AAAA,OAAO,SAASA,MAAMA,CAAA,EAAE;EAAC,OAAAC,YAAA;IAAA;EAAA,IAAAC,gBAAA;AAEb",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": [
+          "render"
+        ],
+        "results": [
+          {
+            "arguments": [],
+            "vnode": {
+              "type": "div",
+              "props": {
+                "title": "  one two"
+              },
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": "x"
+                }
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {
+                  "title": "  one two"
+                },
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "x"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "single-tab-text",
+      "source": "export function render(){return <div>\t</div>;}\n",
+      "rawTexts": [
+        "\t"
+      ],
+      "rawAttributes": [],
+      "helpers": 2,
+      "arguments": [
+        []
+      ],
+      "code": "",
+      "map": {},
+      "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nexport function render() {\n  return _createVNode(\"div\", null, [_createTextVNode(\" \")]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": [
+          "render",
+          "_createVNode",
+          "_createTextVNode"
+        ],
+        "sources": [
+          "Native雪🌸.jsx"
+        ],
+        "sourcesContent": [
+          "export function render(){return <div>\t</div>;}\n"
+        ],
+        "mappings": ";AAAA,OAAO,SAASA,MAAMA,CAAA,EAAE;EAAC,OAAAC,YAAA,eAAAC,gBAAA;AAAoB",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": [
+          "render"
+        ],
+        "results": [
+          {
+            "arguments": [],
+            "vnode": {
+              "type": "div",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": " "
+                }
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": " "
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "unicode-separator-text",
+      "source": "export function render(){return <div>   </div>;}\n",
+      "rawTexts": [
+        "   "
+      ],
+      "rawAttributes": [],
+      "helpers": 2,
+      "arguments": [
+        []
+      ],
+      "code": "",
+      "map": {},
+      "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nexport function render() {\n  return _createVNode(\"div\", null, [_createTextVNode(\"\\u2028\\u2029\\xA0\")]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": [
+          "render",
+          "_createVNode",
+          "_createTextVNode"
+        ],
+        "sources": [
+          "Native雪🌸.jsx"
+        ],
+        "sourcesContent": [
+          "export function render(){return <div>   </div>;}\n"
+        ],
+        "mappings": ";AAAA,OAAO,SAASA,MAAMA,CAAA,EAAE;EAAC,OAAAC,YAAA,eAAAC,gBAAA;AAEjB",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": [
+          "render"
+        ],
+        "results": [
+          {
+            "arguments": [],
+            "vnode": {
+              "type": "div",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": "   "
+                }
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "   "
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "empty-attribute-and-comments",
+      "source": "/* original module */\r\nexport function render(){return <div title=\"\n \t\n\">\r\n {/* keep child */}\r\n</div>;}\r\n// original tail\r\n",
+      "rawTexts": [
+        "\r\n ",
+        "\r\n"
+      ],
+      "rawAttributes": [
+        "\n \t\n"
+      ],
+      "helpers": 1,
+      "comments": [
+        "/* original module */",
+        "/* keep child */",
+        "// original tail"
+      ],
+      "arguments": [
+        []
+      ],
+      "code": "",
+      "map": {},
+      "referenceCode": "import { createVNode as _createVNode } from \"vue\";\n/* original module */\nexport function render() {\n  return _createVNode(\"div\", {\n    \"title\": \"\"\n  }, null);\n}\n// original tail",
+      "referenceMap": {
+        "version": 3,
+        "names": [
+          "render",
+          "_createVNode"
+        ],
+        "sources": [
+          "Native雪🌸.jsx"
+        ],
+        "sourcesContent": [
+          "/* original module */\r\nexport function render(){return <div title=\"\n \t\n\">\r\n {/* keep child */}\r\n</div>;}\r\n// original tail\r\n"
+        ],
+        "mappings": ";AAAA;AACA,OAAO,SAASA,MAAMA,CAAA,EAAE;EAAC,OAAAC,YAAA;IAAA;EAAA;AAIlB;AACP",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": [
+          "render"
+        ],
+        "results": [
+          {
+            "arguments": [],
+            "vnode": {
+              "type": "div",
+              "props": {
+                "title": ""
+              },
+              "key": null,
+              "ref": null,
+              "shapeFlag": 1,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": null
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {
+                  "title": ""
+                },
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "original-lf-refusal-now-admitted",
+      "source": "export function render() { return <div>\n  text\n</div>; }",
+      "rawTexts": [
+        "\n  text\n"
+      ],
+      "rawAttributes": [],
+      "helpers": 2,
+      "arguments": [
+        []
+      ],
+      "code": "",
+      "map": {},
+      "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nexport function render() {\n  return _createVNode(\"div\", null, [_createTextVNode(\"text\")]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": [
+          "render",
+          "_createVNode",
+          "_createTextVNode"
+        ],
+        "sources": [
+          "Native雪🌸.jsx"
+        ],
+        "sourcesContent": [
+          "export function render() { return <div>\n  text\n</div>; }"
+        ],
+        "mappings": ";AAAA,OAAO,SAASA,MAAMA,CAAA,EAAG;EAAE,OAAAC,YAAA,eAAAC,gBAAA;AAEnB",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": [
+          "render"
+        ],
+        "results": [
+          {
+            "arguments": [],
+            "vnode": {
+              "type": "div",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": "text"
+                }
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "text"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "helper-collision-and-read",
+      "source": "const _vize_createTextVNode0 = 11;\nexport function render(message){return <div>\n \t{message}\n Text\tdata\n</div>;}\n",
+      "rawTexts": [
+        "\n \t",
+        "\n Text\tdata\n"
+      ],
+      "rawAttributes": [],
+      "helpers": 2,
+      "arguments": [
+        [
+          "雪🌸"
+        ],
+        [
+          0
+        ]
+      ],
+      "code": "",
+      "map": {},
+      "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nconst _vize_createTextVNode0 = 11;\nexport function render(message) {\n  return _createVNode(\"div\", null, [message, _createTextVNode(\"Text data\")]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": [
+          "_vize_createTextVNode0",
+          "render",
+          "message",
+          "_createVNode",
+          "_createTextVNode"
+        ],
+        "sources": [
+          "Native雪🌸.jsx"
+        ],
+        "sourcesContent": [
+          "const _vize_createTextVNode0 = 11;\nexport function render(message){return <div>\n \t{message}\n Text\tdata\n</div>;}\n"
+        ],
+        "mappings": ";AAAA,MAAMA,sBAAsB,GAAG,EAAE;AACjC,OAAO,SAASC,MAAMA,CAACC,OAAO,EAAC;EAAC,OAAAC,YAAA,eAC7BD,OAAO,EAAAE,gBAAA;AAEH",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": [
+          "render"
+        ],
+        "results": [
+          {
+            "arguments": [
+              "雪🌸"
+            ],
+            "vnode": {
+              "type": "div",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                "雪🌸",
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": "Text data"
+                }
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "雪🌸"
+                  },
+                  {
+                    "kind": "text",
+                    "text": "Text data"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "arguments": [
+              0
+            ],
+            "vnode": {
+              "type": "div",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                0,
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": "Text data"
+                }
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "0"
+                  },
+                  {
+                    "kind": "text",
+                    "text": "Text data"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
