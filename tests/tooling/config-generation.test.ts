@@ -34,7 +34,9 @@ function runPkl(args: string[]): SpawnSyncReturns<string> {
     ".bin",
     process.platform === "win32" ? "pkl.cmd" : "pkl",
   );
-  return spawnSync(pkl, args, { cwd: root, encoding: "utf8" });
+  const cache = process.env.VIZE_PKL_SCHEMA_CACHE;
+  const preparedArgs = cache ? [args[0], "--cache-dir", cache, ...args.slice(1)] : args;
+  return spawnSync(pkl, preparedArgs, { cwd: root, encoding: "utf8" });
 }
 
 function assertCommandSucceeded(

@@ -72,10 +72,28 @@ test("every isolated tooling runner regenerates its tier and retains the full me
   );
   const steps = job.steps ?? [];
   const regenerate = steps.findIndex((step) => step.name === "Regenerate tooling plan");
+  const dependencies = steps.findIndex(
+    (step) => step.name === "Install fixture and JS dependencies",
+  );
+  const pkl = steps.findIndex(
+    (step) => step.name === "Prepare checksum-pinned Pkl schema dependencies",
+  );
   const build = steps.findIndex((step) => step.name === "Build and install vize CLI");
   const selected = steps.findIndex((step) => step.name === "Test selected PR tooling scripts");
   const full = steps.findIndex((step) => step.name === "Test tooling scripts");
   assert.ok(regenerate >= 0 && regenerate < build && build < selected && selected < full);
+  assert.ok(regenerate < dependencies && dependencies < pkl && pkl < build);
+  assert.equal(steps[pkl].if, "${{ needs.pr-source-plan.outputs.tooling == 'true' }}");
+  assert.equal(steps[pkl].run, "node tools/support/compat/github/prepare-pkl-schema.mjs");
+  assert.equal(steps[pkl].env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
+  assert.equal(
+    steps[pkl].env?.VIZE_TOOLING_TEST_TIER,
+    "${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}",
+  );
+  assert.equal(
+    steps[pkl].env?.VIZE_TOOLING_TEST_SHARD,
+    "${{ format('{0}/{1}', matrix.index, matrix.total) }}",
+  );
   for (const step of [steps[selected]]) {
     assert.equal(
       step.if,
