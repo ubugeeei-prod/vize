@@ -37,7 +37,7 @@ MessageLookup. Findings remain owned after the selected owner/arena drops.
 
 ## Validation and delivery
 
-Ten new integration laws compare complete ordered diagnostics with the
+Eleven new integration laws compare complete ordered diagnostics with the
 unchanged actual TabindexNoPositive-only registered legacy oracle. They cover
 all three locales and quoted/unquoted ranges; positive i32 boundaries and
 plus/leading-zero forms; zero/negative/whitespace/invalid/overflow values;
@@ -62,3 +62,27 @@ weakened budget or broad import exemption is added.
 Other rules, unresolved dynamic/object admission, every Vue dialect, semantic
 linting on L2/facts, autofix span edits, whole linter history and default/native
 product route replacement remain unfinished; #6848 and #6881 stay open.
+
+The first child PR Check at `716a2c5e` executed all previous twenty native laws
+and nine of the ten new tabindex laws successfully. The original Unicode order
+fixture contained `tabindex` and `tabIndex` on the same element. The actual
+unchanged parser emits a recovered `parser/template` duplicate-attribute
+advisory in addition to three actual tabindex warnings, so its complete count
+was four versus native three. The original failed source and complete job
+111170180952 log are retained; this is not whole native admission.
+
+Native tabindex now refuses duplicate static names by comparing genuine
+same-owner original attribute projections with ASCII-insensitive names. The
+refusal carries the repeated original name span; it does not fabricate a parser
+observation, clear the owner's errors or publish a partial diagnostic list.
+All static names participate, including valueless/non-tabindex attributes.
+The bounded rule cannot preserve that legacy parser advisory without a genuine
+native provider observation, so duplicate attributes remain unsupported.
+
+The exact original failed fixture remains a refusal control alongside the
+complete, repeated actual four-diagnostic oracle output, including the full
+parser advisory and three authored tabindex spans. No diagnostic is filtered,
+normalized or removed. A separate valid nested-element fixture verifies three
+ordered full-diagnostic comparisons without a duplicate header. Existing
+image-alt/iframe inputs and equality assertions remain exact. Fresh exact-head
+Actions and protected terminal merge remain required.

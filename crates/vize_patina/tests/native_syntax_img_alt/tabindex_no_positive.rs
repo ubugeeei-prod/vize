@@ -1,4 +1,4 @@
-use super::support::{native, owner, tabindex_parity as parity};
+use super::support::{native, owner, tabindex_parity as parity, tabindex_reference};
 use vize_carton::i18n::{Locale, translator};
 use vize_l0::{Allocator, Span};
 use vize_patina::native::{NativeLintRefusal, NativeSyntaxLint};
@@ -124,7 +124,7 @@ fn ascii_case_components_and_verbatim_controls_match() {
 
 #[test]
 fn original_attribute_order_and_unicode_absolute_ranges_match() {
-    let source = "<!--🦀--><script>const fake='<div tabindex=9 />'</script><template>日本語<div tabindex='1' tabIndex='2'><span tabindex='3'></span></div></template>";
+    let source = "<!--🦀--><script>const fake='<div tabindex=9 />'</script><template>日本語<div tabindex='1'><i tabIndex='2'></i><span tabindex='3'></span></div></template>";
     let output = parity(source, Locale::En);
     assert_eq!(output.len(), 3);
     for (finding, attribute) in output
@@ -132,6 +132,49 @@ fn original_attribute_order_and_unicode_absolute_ranges_match() {
         .zip(["tabindex='1'", "tabIndex='2'", "tabindex='3'"])
     {
         let start = source.find(attribute).unwrap();
+        assert_eq!(finding["start"], start);
+        assert_eq!(finding["end"], start + attribute.len());
+    }
+}
+
+#[test]
+fn original_duplicate_case_fixture_refuses_instead_of_losing_parser_advisory() {
+    let source = "<!--🦀--><script>const fake='<div tabindex=9 />'</script><template>日本語<div tabindex='1' tabIndex='2'><span tabindex='3'></span></div></template>";
+    let arena = Allocator::default();
+    let original = owner(&arena, source);
+    let lint = NativeSyntaxLint::new(&original).unwrap();
+    let element = original
+        .children()
+        .find_map(|child| child.into_element())
+        .unwrap();
+    let start = u32::try_from(source.find("tabIndex").unwrap()).unwrap();
+    assert_eq!(
+        lint.tabindex_no_positive(&element, &translator().for_locale(Locale::En))
+            .err(),
+        Some(NativeLintRefusal::DuplicateAttribute {
+            span: Span::new(start, start + 8)
+        })
+    );
+    assert!(original.component().carrier().errors.is_empty());
+    let reference = tabindex_reference(source, Locale::En);
+    assert_eq!(reference, tabindex_reference(source, Locale::En));
+    assert_eq!(reference.len(), 4);
+    assert_eq!(
+        reference[0],
+        serde_json::json!({
+            "rule_name": "parser/template", "severity": "warning",
+            "message": "Duplicate attribute `tabIndex`. Keeping the repeated attribute so parsing can continue.",
+            "start": start, "end": start + 8, "help": null, "labels": [], "fix": null,
+        })
+    );
+    for (finding, attribute) in
+        reference
+            .iter()
+            .skip(1)
+            .zip(["tabindex='1'", "tabIndex='2'", "tabindex='3'"])
+    {
+        let start = source.find(attribute).unwrap();
+        assert_eq!(finding["rule_name"], "a11y/tabindex-no-positive");
         assert_eq!(finding["start"], start);
         assert_eq!(finding["end"], start + attribute.len());
     }

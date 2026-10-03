@@ -120,6 +120,17 @@ pub fn tabindex_parity(source: &str, locale: Locale) -> Vec<Value> {
     compare(source, locale, SyntaxRule::Tabindex)
 }
 
+pub fn tabindex_reference(source: &str, locale: Locale) -> Vec<Value> {
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(TabindexNoPositive));
+    let result = Linter::with_registry(registry)
+        .with_locale(locale)
+        .lint_sfc(source, "native.vue");
+    assert_eq!(result.error_count, 0);
+    assert_eq!(result.warning_count, result.diagnostics.len());
+    result.diagnostics.iter().map(legacy).collect()
+}
+
 fn compare(source: &str, locale: Locale, rule: SyntaxRule) -> Vec<Value> {
     let arena = Allocator::default();
     let original = owner(&arena, source);

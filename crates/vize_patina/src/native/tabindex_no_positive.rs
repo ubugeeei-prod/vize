@@ -1,7 +1,7 @@
 //! Static tabindex integer checks over original same-owner attributes.
 
 use vize_l0::{
-    String,
+    SmallVec, String,
     diag::{Advisory, Diagnostic, DiagnosticPart, MessageLookup, PartKind, Stage},
 };
 use vize_l1::markup::{
@@ -9,7 +9,7 @@ use vize_l1::markup::{
     entity::{EntityContext, decode_one, needs_decoding},
 };
 
-use super::{NativeLintFinding, NativeLintRefusal, TABINDEX_NO_POSITIVE_RULE, header};
+use super::{NativeLintFinding, NativeLintRefusal, TABINDEX_NO_POSITIVE_RULE, attribute, header};
 
 pub(super) fn check(
     element: &NativeElement<'_, '_>,
@@ -17,13 +17,21 @@ pub(super) fn check(
 ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
     header::opening_range(element)?;
     let mut findings = Vec::new();
+    let mut names: SmallVec<[&str; 8]> = SmallVec::new();
     for original in element.attributes() {
-        let header::Binding::Static {
-            name,
-            value: Some(value),
-            range,
-        } = header::binding(element, &original)?
+        let header::Binding::Static { name, value, range } = header::binding(element, &original)?
         else {
+            continue;
+        };
+        if names
+            .iter()
+            .any(|previous| previous.eq_ignore_ascii_case(name))
+        {
+            let span = attribute::span(element.component().block(), original.surface().name.text)?;
+            return Err(NativeLintRefusal::DuplicateAttribute { span });
+        }
+        names.push(name);
+        let Some(value) = value else {
             continue;
         };
         if !name.eq_ignore_ascii_case("tabindex") || !positive(value)? {

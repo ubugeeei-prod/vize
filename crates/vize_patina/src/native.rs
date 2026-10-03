@@ -35,6 +35,7 @@ pub enum NativeLintRefusal {
     Hole,
     UnresolvedBinding { span: Span },
     UnsupportedDirective { span: Span },
+    DuplicateAttribute { span: Span },
 }
 
 /// A finished L0 diagnostic and its original stable rule code.
