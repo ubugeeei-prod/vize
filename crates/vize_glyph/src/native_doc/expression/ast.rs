@@ -76,6 +76,7 @@ impl<'a> Context<'_, 'a> {
                 self.computed_member(member, span, depth)
             }
             Expression::CallExpression(call) => self.call(call, span, depth),
+            Expression::ArrayExpression(array) => self.array(array, span, depth),
             Expression::ConditionalExpression(conditional) => {
                 self.conditional(conditional, span, depth)
             }

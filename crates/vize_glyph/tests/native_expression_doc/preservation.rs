@@ -1,6 +1,6 @@
 //! Independent typed AST/comment fingerprints across a real second parse.
 
-use oxc_ast::ast::{CommentKind, Expression};
+use oxc_ast::ast::{ArrayExpressionElement, CommentKind, Expression};
 use oxc_span::GetSpan;
 use vize_glyph::native_doc::{LineEnding, PrintOptions};
 use vize_l0::{Allocator, Span};
@@ -31,6 +31,8 @@ enum Syntax {
         std::boxed::Box<Syntax>,
         std::vec::Vec<Syntax>,
     ),
+    Array(std::vec::Vec<Syntax>),
+    Elision(std::string::String),
     Conditional(
         std::boxed::Box<Syntax>,
         std::boxed::Box<Syntax>,
@@ -77,6 +79,18 @@ fn fingerprint(original: &RetainedExpression<'_>, expression: &Expression<'_>) -
             member.optional,
             std::boxed::Box::new(fingerprint(original, &member.object)),
             std::boxed::Box::new(fingerprint(original, &member.expression)),
+        ),
+        Expression::ArrayExpression(array) => Syntax::Array(
+            array
+                .elements
+                .iter()
+                .map(|element| match element {
+                    ArrayExpressionElement::Elision(elision) => {
+                        Syntax::Elision(authored(original, elision.span()))
+                    }
+                    _ => fingerprint(original, element.as_expression().unwrap()),
+                })
+                .collect(),
         ),
         Expression::ConditionalExpression(conditional) => Syntax::Conditional(
             std::boxed::Box::new(fingerprint(original, &conditional.test)),

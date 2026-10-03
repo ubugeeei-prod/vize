@@ -1,5 +1,4 @@
 //! Real retained compiler-profile AST documents; no formatter parse or oracle.
-
 use vize_glyph::native_doc::{LineEnding, PrintOptions, expression_document, print};
 use vize_l0::{Allocator, SourceRoot, Span, String};
 use vize_l1::embed::{
@@ -7,6 +6,8 @@ use vize_l1::embed::{
     syntax::{RetainedExpression, parse_once},
 };
 
+#[path = "native_expression_doc/array.rs"]
+mod array;
 #[path = "native_expression_doc/authored_newlines.rs"]
 mod authored_newlines;
 #[path = "native_expression_doc/call.rs"]
@@ -21,7 +22,6 @@ mod preservation;
 mod refusals;
 #[path = "native_expression_doc/unary.rs"]
 mod unary;
-
 fn retained<'a>(
     allocator: &'a Allocator,
     root: &'a str,

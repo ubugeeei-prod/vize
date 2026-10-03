@@ -9,6 +9,8 @@ use vize_l1::embed::{
 
 use super::Doc;
 
+#[path = "expression/array.rs"]
+mod array;
 #[path = "expression/ast.rs"]
 mod ast;
 #[path = "expression/source.rs"]
@@ -73,9 +75,10 @@ mod projection_tests;
 /// Build directly from the original retained compiler-profile AST, once.
 ///
 /// Identifier, numeric/string/boolean/null atoms, authored parentheses and
-/// binary/logical, prefix unary, ordinary static/computed member, call and
-/// conditional nodes are
-/// supported. Plain unary/member gaps use separators so signs, keyword
+/// binary/logical, prefix unary, ordinary static/computed member, call,
+/// conditional and array nodes are supported. Original array elements and
+/// elisions retain their order and exact comma custody, including checked
+/// authored trailing commas; spread elements refuse. Plain unary/member gaps use separators so signs, keyword
 /// operators and numeric literal spellings cannot fuse with adjacent tokens.
 /// Nonoptional calls retain original callees and argument order, checked
 /// delimiters, commas and optional authored trailing commas. Type arguments,

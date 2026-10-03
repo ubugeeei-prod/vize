@@ -16,7 +16,7 @@ fn unsupported_test_consequent_alternate_and_ancestor_children_refuse_whole_docu
         "obj?.a?b:c",
         "a?obj?.b:c",
         "a?b:obj?.c",
-        "[a]?b:c",
+        "[...a]?b:c",
         "(a=b)?c:d",
         "a?b=c:d",
         "a?b:c=d",

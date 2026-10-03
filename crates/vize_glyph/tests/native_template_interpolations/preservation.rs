@@ -1,6 +1,6 @@
 //! Actual selected-source reparse, with independent typed syntax fingerprints.
 
-use oxc_ast::ast::Expression;
+use oxc_ast::ast::{ArrayExpressionElement, Expression};
 use oxc_span::GetSpan;
 use vize_glyph::native_doc::{LineEnding, PrintOptions, native_template_document, print};
 use vize_l0::Allocator;
@@ -27,6 +27,8 @@ pub(super) enum Syntax {
         std::boxed::Box<Syntax>,
         std::vec::Vec<Syntax>,
     ),
+    Array(std::vec::Vec<Syntax>),
+    Elision(std::string::String),
     Conditional(
         std::boxed::Box<Syntax>,
         std::boxed::Box<Syntax>,
@@ -89,6 +91,24 @@ pub(super) fn fingerprint(
             member.optional,
             std::boxed::Box::new(fingerprint(original, &member.object)),
             std::boxed::Box::new(fingerprint(original, &member.expression)),
+        ),
+        Expression::ArrayExpression(array) => Syntax::Array(
+            array
+                .elements
+                .iter()
+                .map(|element| match element {
+                    ArrayExpressionElement::Elision(elision) => Syntax::Elision({
+                        let span = original.authored_span(elision.span()).unwrap();
+                        original
+                            .source()
+                            .authored_root()
+                            .get(span.start as usize..span.end as usize)
+                            .unwrap()
+                            .to_owned()
+                    }),
+                    _ => fingerprint(original, element.as_expression().unwrap()),
+                })
+                .collect(),
         ),
         Expression::ConditionalExpression(conditional) => Syntax::Conditional(
             std::boxed::Box::new(fingerprint(original, &conditional.test)),
