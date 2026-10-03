@@ -19,4 +19,3 @@ pub enum DecisionBuildError {
     /// A control owner appeared more than once in the shared walk.
     DuplicateControl { node: NodeId },
 }
-

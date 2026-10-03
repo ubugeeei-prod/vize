@@ -18,6 +18,7 @@ fn builder(
         controls: SideTable::new(),
         dom: None,
         ssr: None,
+        vapor: None,
     }
 }
 

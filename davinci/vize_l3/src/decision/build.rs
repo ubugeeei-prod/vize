@@ -10,6 +10,7 @@ mod levels;
 use super::dom::vue::policy::{FileReads, NoReads};
 use super::dom::{DomExpressionFacts, LiteralExpressions, build::DomBuilder};
 use super::ssr::build::SsrBuilder;
+use super::vapor::build::VaporBuilder;
 use levels::Levels;
 
 use super::{
@@ -60,6 +61,7 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
         nodes: SideTable::new(),
         controls: SideTable::new(),
         ssr: (policy == TargetPolicy::Ssr).then(SsrBuilder::new),
+        vapor: (policy == TargetPolicy::Vapor).then(VaporBuilder::new),
         dom: (policy == TargetPolicy::Dom)
             .then(|| DomBuilder::new(expressions, artifact.root().ops.len(), file, reads)),
     };
@@ -76,14 +78,15 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
     }
     let dom = builder.dom.take().map(DomBuilder::finish);
     let ssr = builder.ssr.take().map(SsrBuilder::finish);
+    let vapor = builder.vapor.take().map(VaporBuilder::finish);
     Ok(NativeAnalysis {
         artifact,
         tables: builder.finish()?,
         dom,
         ssr,
+        vapor,
     })
 }
-
 
 struct Builder<'facts, 'owner, 'arena, F, R> {
     policy: TargetPolicy,
@@ -93,6 +96,7 @@ struct Builder<'facts, 'owner, 'arena, F, R> {
     controls: SideTable<ControlRegion>,
     dom: Option<DomBuilder<'facts, 'owner, 'arena, F, R>>,
     ssr: Option<SsrBuilder<'owner, 'arena>>,
+    vapor: Option<VaporBuilder<'owner, 'arena>>,
 }
 
 /// One open region op, released at its matching leave event.
@@ -193,6 +197,9 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         if let Some(ssr) = &mut self.ssr {
             ssr.enter(id, op, self.frames.is_empty());
         }
+        if let Some(vapor) = &mut self.vapor {
+            vapor.enter(id, op, self.frames.is_empty());
+        }
         self.frames.push(Frame {
             id,
             levels,
@@ -221,6 +228,9 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         }
         if let Some(ssr) = &mut self.ssr {
             ssr.binding(id, binding, owner);
+        }
+        if let Some(vapor) = &mut self.vapor {
+            vapor.binding(id, binding);
         }
         let role = match binding {
             BindingOp::On(_) => BindingRole::Event,
@@ -281,6 +291,9 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         }
         if let Some(ssr) = &mut self.ssr {
             ssr.leave(id);
+        }
+        if let Some(vapor) = &mut self.vapor {
+            vapor.leave(id);
         }
         self.insert_node(
             id,
