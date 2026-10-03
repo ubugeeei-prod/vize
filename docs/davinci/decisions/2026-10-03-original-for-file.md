@@ -309,3 +309,29 @@ acceptance is historical after the replay: fresh configured exact-head Actions
 and actual protected Stack acceptance establish current delivery. Preserve the
 older Handler prefix and continue asynchronously without another local Cargo/npm
 or manual full campaign.
+
+## Actual Handler prefix completion
+
+Current source `d84c0c1f9` passes actual
+[Check37139119736](https://github.com/ubugeeei-prod/vize/actions/runs/37139119736)
+and its complete required rollup. Official native Stack admission encounters
+a null `UNMERGEABLE` own entry behind the later ordinary-script Stack. Clear only
+#7620 by reversible close/reopen: its source, parent and Stack7517 position9
+remain unchanged; every healthy earlier candidate is preserved. Standard dequeue
+cannot address a child whose immediate branch has no queue, and GitHub refuses
+a base change while its unmerged Stack parents remain.
+
+Handler #7581/#7591/#7601/#7607 actually merge at 17:17:50 UTC as
+`4c3105ec` / `7f972791` / `031ae02d` / `552ad33e`. Replay only the genuine
+For child delta onto that literal main, preserving all incoming Canon/Patina and
+analysis-ID providers. Own production, original laws and every budget remain
+byte-identical to accepted d84. Whole replayed source composes cleanly with both
+actual outside-Stack source0354153f and its exact queued candidate7f06e1d6;
+no future candidate becomes a source dependency. The close/reopen overlaps the parent merge event and misses GitHub’s automatic
+first-open retarget. Its Stack rejects manual base edits even after every parent
+merges. Use the documented unstack endpoint for the sole open child: all eight
+actual merged members and their OIDs remain in historical Stack7517. Retarget
+#7620 to main as an independent PR with every real provider now in literal main. Regenerate the actual
+canonical20 and consumer-migration inventories, require fresh exact-head Actions
+and then protected full/docs/all100 instruction/terminal acceptance. Older
+healthy queue entries remain intact; no additional local or manual campaign runs.
