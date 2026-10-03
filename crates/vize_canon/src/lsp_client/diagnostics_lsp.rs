@@ -116,7 +116,11 @@ fn initialize_lsp_params(
         .map_err(|error| cstr!("Failed to encode Corsa LSP initialization: {error}"))?;
     // TS7's pull converter reads this capability independently of push
     // diagnostics. lsp-types 0.97 lacks the pull relatedInformation field.
-    params["capabilities"]["textDocument"]["diagnostic"]["relatedInformation"] = Value::Bool(true);
+    let diagnostic = params
+        .pointer_mut("/capabilities/textDocument/diagnostic")
+        .and_then(Value::as_object_mut)
+        .ok_or_else(|| cstr!("Corsa LSP initialization lacks diagnostic capabilities"))?;
+    diagnostic.insert("relatedInformation".into(), Value::Bool(true));
     Ok(params)
 }
 

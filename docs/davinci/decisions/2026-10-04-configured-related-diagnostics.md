@@ -57,3 +57,10 @@ Coherent snapshots across the complete imported/configuration graph, broader
 incomplete native syntax, full serialized source maps, editor product migration
 and complete fix-history parity remain unfinished. This protocol repair does
 not close #6879 or change the checker default.
+
+The first exact source campaign (`c97035b0fc`, Check37151032093) stopped at
+Clippy's existing `indexing_slicing` rule before any backend law executed.
+The wire extension now uses checked JSON pointer/object access and returns an
+initialization error if its typed diagnostic object is absent. No lint or
+instruction ceiling is relaxed, and the full-vector law is unchanged. The PR
+was not queued; fresh source-built Actions is required after this correction.
