@@ -67,15 +67,24 @@ fn binding_layout_preserves_attribute_order_and_is_a_fixed_point() {
 }
 
 #[test]
-fn dynamic_full_form_and_other_families_keep_original_observations_on_refusal() {
+fn dynamic_and_missing_arguments_keep_original_observations_on_refusal() {
     for source in [
         "<p :[key]='value'/>",
         "<p .[key]='value'/>",
-        "<p v-bind:label='value'/>",
-        "<p @click='act()'/>",
-        "<p #slot='item'/>",
+        "<p @[key]='act()'/>",
+        "<p #[key]='item'/>",
+        "<p v-bind:[key]='value'/>",
+        "<p v-on:[key]='act()'/>",
+        "<p v-slot:[key]='item'/>",
+        "<p v-bind='object'/>",
+        "<p v-on='handlers'/>",
+        "<p v-if='condition'/>",
+        "<p v-custom/>",
+        "<p v-:label='value'/>",
         "<p :='value'/>",
         "<p .='value'/>",
+        "<p @='act()'/>",
+        "<p #='item'/>",
     ] {
         let allocator = Allocator::default();
         let parsed = parse_component(&allocator, source).unwrap();
@@ -108,4 +117,59 @@ fn a_foreign_equal_byte_directive_head_does_not_establish_source_custody() {
         Err(TemplateRefusal::SourceMismatch { .. })
     ));
     assert_eq!(parsed.tree.source, source.as_str());
+}
+
+#[test]
+fn full_static_and_event_slot_heads_have_complete_flat_and_broken_output() {
+    let source = "<Card v-bind:label = 'name' v-on:click.stop = \"act()\" @focus = 'focus()' #header = 'slot' />";
+    assert_eq!(
+        format(source, 120),
+        "<Card v-bind:label='name' v-on:click.stop=\"act()\" @focus='focus()' #header='slot' />"
+    );
+    assert_eq!(
+        format(source, 20),
+        "<Card\n  v-bind:label='name'\n  v-on:click.stop=\"act()\"\n  @focus='focus()'\n  #header='slot'\n/>"
+    );
+}
+
+#[test]
+fn full_unicode_name_argument_and_opaque_values_keep_original_spelling() {
+    let source = "<!--é-->\n<Panel v-カスタム:日本..camel = 'one\r\n 二 &amp;' @更新.once = \"value as T\" v-slot:見出し = '{ item }' />";
+    assert_eq!(
+        format(source, 80),
+        "<!--é-->\n<Panel\n  v-カスタム:日本..camel='one\r\n 二 &amp;'\n  @更新.once=\"value as T\"\n  v-slot:見出し='{ item }'\n/>"
+    );
+}
+
+#[test]
+fn mixed_static_families_preserve_order_and_are_fixed_points() {
+    for source in [
+        "<Card id=x v-bind:é = 'value' @click.stop=\"act()\" #header='item' disabled />",
+        "<div><Panel v-slot:header='a' :value.camel='b' .data-prop='c' /></div>",
+        "<!-- keep -->\n<p v-custom:arg..modifier @click #default> text  &amp; </p>",
+    ] {
+        for width in [0, 7, 20, 80, 120] {
+            let output = format(source, width);
+            assert_eq!(format(&output, width), output);
+        }
+    }
+}
+
+#[test]
+fn incomplete_dynamic_and_noncontiguous_full_heads_keep_original_observations() {
+    for source in [
+        "<p v-bind:='value'/>",
+        "<p v-bind:[key='value'/>",
+        "<p v-bind:[key]suffix='value'/>",
+        "<p @click[tail]='act()'/>",
+        "<p v-on:click='act()' broken='value></p>",
+    ] {
+        let allocator = Allocator::default();
+        let parsed = parse_component(&allocator, source).unwrap();
+        let error_count = parsed.errors.len();
+        assert!(template_document(&parsed, &allocator).is_err());
+        assert_eq!(parsed.errors.len(), error_count);
+        assert_eq!(parsed.tree.source, source);
+        assert_eq!(check_fidelity(&parsed.tree), Ok(()));
+    }
 }
