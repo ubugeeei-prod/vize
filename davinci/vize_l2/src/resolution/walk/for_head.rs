@@ -16,7 +16,12 @@ pub(in crate::resolution) fn original<'a>(
     sink: &mut impl ReferenceSink<'a>,
 ) -> Result<(ForAlias<'a>, Option<ForAlias<'a>>), ForResolutionError> {
     let checkpoint = sink.checkpoint();
-    let mut resolver = Resolver::new(source.collection_source(), sink);
+    let collection_source = source.collection_source().ok_or(ForResolutionError {
+        part: ForHeadPart::Collection,
+        span: Span::new(0, 0),
+        kind: ForResolutionErrorKind::Reference(ResolutionErrorKind::InvalidSpan),
+    })?;
+    let mut resolver = Resolver::new(collection_source, sink);
     let result = (|| {
         resolver
             .expression(source.collection(), 0)

@@ -1,6 +1,7 @@
 //! Distinct original alias and collection coordinates borrowed from one Joint owner.
 
 use oxc_ast::ast::{Expression, FormalParameter};
+use oxc_span::GetSpan;
 use vize_l0::Span;
 use vize_l1::embed::{
     SourceError,
@@ -32,8 +33,20 @@ impl<'h, 'a> ForReferenceSource<'h, 'a> {
         self.head.collection().expression()
     }
     /// Mint the collection namespace only from this complete original head.
-    pub(in crate::resolution) fn collection_source(&self) -> ReferenceSource<'a> {
-        ReferenceSource::ForCollection(self.collection.source().text())
+    pub(in crate::resolution) fn collection_source(&self) -> Option<ReferenceSource<'a>> {
+        let source = self.collection.source().text();
+        let ast = self.collection().span();
+        let decoded = self.collection_decoded_span(ast).ok()?;
+        // This admitted family has one direct original Identifier occupying
+        // the complete collection window. Derive its real wrapper geometry
+        // through the retained owner; no caller chooses AST/source/prefix.
+        if decoded != Span::new(0, u32::try_from(source.len()).ok()?) {
+            return None;
+        }
+        Some(ReferenceSource::ForCollection {
+            source,
+            prefix: ast.start.checked_sub(decoded.start)?,
+        })
     }
     pub(crate) fn alias_decoded_span(&self, span: oxc_span::Span) -> Result<Span, SourceError> {
         self.aliases.decoded_span(span)

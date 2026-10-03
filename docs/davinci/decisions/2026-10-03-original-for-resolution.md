@@ -58,6 +58,25 @@ contiguous prefix enters the protected queue after the older conflicting L2
 census prefix has actually landed. Queued, open and parent success are not
 terminal child merge proof.
 
+## Hosted failure and correction
+
+The first hosted head5b864 built successfully but its original semantic laws
+refused at Collection/InvalidSpan: the new private source variant had omitted
+the original Expr wrapper prefix. The corrected adapter derives the actual
+complete stock-root prefix only through the retained owner's validated decoded
+projection, requires that direct original Identifier to cover the whole source
+window, and applies checked subtraction plus UTF-8 slicing to descendants.
+All original Unicode, lookup-order, refusal and rollback assertions remain
+unchanged. Fresh corrected-head execution is required; the failed source has
+never entered the queue.
+
+Native Stack #7565 is verified on both actual layers: #7555 position1 on main
+and #7563 position2 on the exact original input branch. A mistaken link to
+independent CSS #7558 was immediately removed as Stack7564; GitHub's actual
+base-change history proved its original main base, which was restored with
+its source head unchanged and no queue/merge operation. No CSS ancestry or
+proof is part of this genuine For Stack.
+
 ## Required dependent work
 
 The File receiver must join this same complete original Attribute through its
@@ -68,3 +87,18 @@ completion, drop/forget/unwind and rollback. A fabricated Program/ScriptUnit,
 neutral header projection or these local semantic IDs cannot replace that
 authority. Full For grammar, body/control, L3/L4 runtime, product delivery and
 compiler fix-history #6880 remain unfinished.
+
+## Genuine current-parent replay
+
+The corrected own resolver source follows the actual input branch `d15868b8b737c1047d4611c21a9a0281ad349e90` after literal main bf3b6ee. Its original For source/tests are byte-identical to corrected b6; all incoming static-header, Document and complete-tooling source/decisions/storage remain. The actual complete L2 census is regenerated, with fresh configured Actions required and no extra manual full/instruction campaign. Native Stack7565 and older JSX queue priority remain.
+
+## Actual JSX-prefix replay
+
+The corrected own source follows genuine input b30 on literal main1b9 after
+actual protected JSX #7486/#7503/#7519/#7538. Union the original For walk with
+incoming syntax-edge/value modules and preserve their exact observer contracts,
+all source, decisions and storage. Original own runtime/table/tests remain
+byte-identical to corrected d83; regenerate the complete actual L2 census. Prior
+d83 required Check37120149159 is historical after this parent replay; fresh
+configured Actions and protected terminal acceptance remain required. No extra
+manual full/all-100 or local Cargo campaign is added.
