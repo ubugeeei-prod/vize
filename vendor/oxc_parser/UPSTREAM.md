@@ -36,3 +36,9 @@ Supporting Oxc crates retain the original pinned revision and registry version.
 Upstream source retains its own formatting and lint policy; Vize's workspace
 continues to compile and test the fork; its crate-level Clippy policy preserves
 upstream style without changing first-party check commands.
+
+The unpublished `vendor/oxc_parser_compat` package re-exports this same fork
+under the upstream package identity for transitive Git dependencies such as
+`oxc_formatter::parse_for_format`. The repository patch retains parser safety
+in those paths; published Vize consumers use the direct fork dependency and
+do not rely on that patch. The adapter contains no parser implementation.
