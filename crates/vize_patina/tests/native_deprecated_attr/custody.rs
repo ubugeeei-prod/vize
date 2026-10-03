@@ -1,4 +1,6 @@
-use super::support::{FILENAME, LOCALES, NeverLookup, complete, native, parity, selected};
+use super::support::{
+    FILENAME, LOCALES, NeverLookup, complete, expected, native, parity, selected, span, warning,
+};
 use std::{borrow::Cow, cell::Cell};
 use vize_l0::{Allocator, cstr, diag::MessageLookup};
 use vize_l1::check_fidelity;
@@ -103,11 +105,16 @@ fn owned_output_preserves_attr_then_tag_repeated_replacements_after_arena_and_ca
 fn authored_tag_placeholders_remain_literal_in_all_registered_locale_messages() {
     let source = "<template><a{attr} align='x'></a{attr}></template>";
     for locale in LOCALES {
-        let result = parity(source, locale);
-        assert_eq!(result["warning_count"], 1);
-        let message = result["diagnostics"][0]["message"].as_str().unwrap();
-        assert!(message.contains("a{attr}"));
-        assert!(!message.contains("aalign"));
+        assert_eq!(
+            parity(source, locale),
+            expected(vec![warning(
+                locale,
+                span(source, "align='x'"),
+                "a{attr}",
+                "align",
+                "CSS `text-align` or `margin: auto`",
+            )])
+        );
     }
 }
 

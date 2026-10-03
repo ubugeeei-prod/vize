@@ -973,8 +973,8 @@ linter	Linter	test/dev	crates/vize_patina/tests/native_aria_unsupported_elements
 linter	Linter	test/dev	crates/vize_patina/tests/native_aria_unsupported_elements/support.rs	2	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_aria_unsupported_elements/table.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_deprecated_attr/attributes.rs	2	l0	L0	stage	vize_l0	preferred	1
-linter	Linter	test/dev	crates/vize_patina/tests/native_deprecated_attr/custody.rs	3	l0	L0	stage	vize_l0	preferred	1
-linter	Linter	test/dev	crates/vize_patina/tests/native_deprecated_attr/custody.rs	3	l1	L1	stage	vize_l1	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/native_deprecated_attr/custody.rs	5	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/native_deprecated_attr/custody.rs	5	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_deprecated_attr/policy.rs	2	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_deprecated_attr/refusals.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_deprecated_attr/support.rs	2	l0	L0	stage	vize_l0	preferred	2
