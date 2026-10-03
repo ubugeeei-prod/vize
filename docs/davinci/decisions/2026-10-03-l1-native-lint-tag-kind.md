@@ -156,3 +156,10 @@ This source repair is replayed onto actual main after policy #7580 merged as
 `0c3f5bae33bd5b4ea49cc4349b01f35f9cc7eb93`. Its deleted grep-only L1 census stays
 deleted; authoritative migration/storage data and fresh source-qualified census reports
 remain mandatory. Prior controls and complete-output expectations remain unchanged.
+
+The repaired provider's first fresh Check 37128542859 caught a law calling
+`surface()` on `parent_element()`, whose authentic API already returns the original
+`&Element`. The comparison now uses that exact original reference directly;
+the input, identity assertion and every other law are unchanged. This is a test
+API correction, with no production or admission change. Fresh hosted proof is
+required on the corrected source.

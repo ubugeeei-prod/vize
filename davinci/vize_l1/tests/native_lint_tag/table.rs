@@ -50,7 +50,7 @@ fn original_live_table_context_is_retained_without_moving_authored_elements() {
     let table = owner.children().next().unwrap().into_element().unwrap();
     let html = table.children().next().unwrap().into_element().unwrap();
     assert!(core::ptr::eq(
-        html.parent_element().unwrap().surface(),
+        html.parent_element().unwrap(),
         table.surface()
     ));
     assert_eq!(html.lint_tag().unwrap().kind(), Kind::Element);
