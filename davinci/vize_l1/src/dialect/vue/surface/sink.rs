@@ -107,14 +107,15 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
             None
         };
         if !self_closing && !is_void_tag(tag) {
+            let frame_recovery = P::LINT_TAGS
+                && (inherited_recovery || recovery_spelling(tag) || self.stack.len() >= 4096);
             self.stack.push(ModeFrame {
                 tag,
                 ns,
                 verbatim,
                 exact_pre,
                 table_context: P::LINT_TAGS && (table_context || tag.eq_ignore_ascii_case("table")),
-                recovery_context: P::LINT_TAGS
-                    && (inherited_recovery || recovery_spelling(tag) || self.stack.len() >= 4096),
+                recovery_context: frame_recovery,
             });
         }
         (

@@ -197,3 +197,11 @@ capture. The source now defines the genuine inherited recovery value and combine
 it with the already-captured actual header-entry value. No source input, custody
 assertion, refusal or budget is changed; the original nested-interactive and depth
 laws remain mandatory. Fresh hosted proof replaces that known-red head.
+
+Check 37132060003 rejected the next actual source with E0502: the allocator
+vector's mutable push borrow overlapped an immutable depth read in the frame
+argument. The frame's genuine recovery value is now evaluated immediately
+before push, from the same post-recovery stack. This changes evaluation order
+only; every authentic entry/depth law, input, layout cap and instruction ceiling
+remains unchanged. That red source stays unqueued; corrected-head Actions are
+required before any Stack admission.
