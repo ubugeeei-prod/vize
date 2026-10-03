@@ -4,6 +4,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 
+import {
+  resolveBaselineRuntime,
+  runBaseline,
+} from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
+
 import { runLintDivergenceReport } from "../../tools/support/compat/fixtures/lint-divergence-report.mjs";
 
 const root = path.resolve(import.meta.dirname, "../..");
@@ -177,6 +182,42 @@ test("a nonempty Vue surface still enforces its actual mapped diagnostic budget"
       assert.equal(artifact.budget.passed, false);
       assert.equal(artifact.budget.verdict, "breached");
     }
+  } finally {
+    input.clean();
+  }
+});
+
+test("both actual ESLint entry points validate mapped rules without linting an empty corpus", async () => {
+  const input = fixture();
+  try {
+    const source = fs.readFileSync(
+      path.join(root, "tools/commands/fixtures/lint-divergence-report.rs"),
+      "utf8",
+    );
+    const script = source.match(/let script = r#"([\s\S]*?)"#;/u)?.[1];
+    assert.ok(script, "the actual Rust runner's retained ESLint entry point must exist");
+    const runtime = resolveBaselineRuntime();
+    for (const rules of [
+      { "vue/no-such-mapped-rule": "warn" },
+      { "vue/no-v-html": ["warn", { invalidOption: true }] },
+    ]) {
+      await assert.rejects(runBaseline(runtime, input.directory, [], rules), /Key "rules"/u);
+      const measured = spawnSync(process.execPath, ["--input-type=module", "--eval", script], {
+        cwd: root,
+        encoding: "utf8",
+        input: JSON.stringify({
+          benchPackageJson: path.join(root, "tools/benchmarks/scripts/package.json"),
+          cwd: input.directory,
+          files: [],
+          rules,
+        }),
+      });
+      assert.equal(measured.error, undefined, measured.error?.message);
+      assert.equal(measured.status, 1, `${measured.stdout}\n${measured.stderr}`);
+      assert.match(measured.stderr, /Key "rules"/u);
+      assert.equal(measured.stdout, "");
+    }
+    assert.equal(fs.existsSync(path.join(input.directory, "__vize_empty_vue_config__.vue")), false);
   } finally {
     input.clean();
   }

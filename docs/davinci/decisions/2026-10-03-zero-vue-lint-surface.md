@@ -22,6 +22,9 @@ Both actual ESLint entry points use `passOnNoPatterns` only for the supplied
 empty list. ESLint otherwise treats `lintFiles([])` as a request to lint the
 current directory, which would silently compare unrelated JavaScript inputs.
 This preserves the registered Vue surface; it does not exempt diagnostics.
+For an empty list, both entry points separately resolve the Vue configuration
+for a filename without creating or linting that file. This validates enabled
+rule identities and options before ESLint returns its empty result.
 Mapped rules must still exist, parser errors and invalid ranges remain fatal,
 and all divergence budgets still apply. A complete expected-empty surface is
 valid report input and provides no nonempty linter-parity evidence.
@@ -37,3 +40,11 @@ Budget laws retain parser, range and diagnostic failures for expected-empty
 reports. The old budget rejects the new positive law; the corrected helper
 passes eight focused laws. Actual Rust-runner and exact-head Actions validation
 remain required before merge. No matrix-wide acceptance is claimed.
+
+The first published head passed its four real-reporter laws and required Check.
+A live review then showed that `passOnNoPatterns` returns before ESLint validates
+mapped rule IDs. Its queue candidate was removed. The successor adds the
+configuration resolution above and a genuine pinned ESLint regression against
+both actual entry points for a missing mapped rule and invalid rule options.
+The original source, executions and candidate remain historical evidence;
+fresh successor Actions and protected queue acceptance remain required.

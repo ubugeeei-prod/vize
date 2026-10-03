@@ -139,5 +139,8 @@ export async function runBaseline(runtime, cwd, files, rules) {
     overrideConfig: baselineConfig(runtime, rules),
     errorOnUnmatchedPattern: false,
   });
+  if (files.length === 0) {
+    await eslint.calculateConfigForFile("__vize_empty_vue_config__.vue");
+  }
   return retainEnabledFindings(await eslint.lintFiles(files), rules);
 }

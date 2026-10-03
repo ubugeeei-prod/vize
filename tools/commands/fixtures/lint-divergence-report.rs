@@ -297,6 +297,9 @@ const eslint = new ESLint({
   }],
   errorOnUnmatchedPattern: false
 });
+if (input.files.length === 0) {
+  await eslint.calculateConfigForFile("__vize_empty_vue_config__.vue");
+}
 const results = await eslint.lintFiles(input.files);
 const enabled = new Set(Object.keys(input.rules));
 let droppedConfigMessageCount = 0;
