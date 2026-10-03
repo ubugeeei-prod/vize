@@ -51,3 +51,23 @@ and actual Vue runtime fixtures remain dependent work. Canonical source ledgers,
 fresh exact-head full Actions, every real 100-case measurement, native Stack and
 protected terminal merge remain separate delivery gates. Public READ source and
 previous hosted proofs are unchanged.
+
+## Current READ/DOM publication replay
+
+The own-only provider replay starts at signed main `d36c4874`, preserving the
+actual READ/DOM merge `0fcd481e` and its signed Glyph, LSP and JSX successors.
+The five production deltas and seven setup laws retain the reviewed `7a10265e`
+family, including its compact-helper correction and separate move-only fixture
+commit. The incoming JSX Program intake remains intact; this setup capability
+still requires its own authentic JS-only profile. Every unrelated provider,
+dependency, guest lock and product path is retained. Original private proofs
+remain attributed to their original source and ABI, without a new current-main
+execution. Fresh exact-head hosted whole-source checks, full Actions, real
+all-100 measurements and protected terminal merge are required for this
+two-layer provider/product Stack. Eligibility alone emits no setup script or
+SFC output and changes no default or history gate.
+
+The unchanged canonical Croquis scanner records current L2 classifier counts
+while preserving incoming JSX rows. The first stale-shard and sparse-checkout
+documentation failures remain separate from corrected current source checks;
+no scanner or support-table test is weakened.
