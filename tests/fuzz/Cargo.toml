@@ -103,4 +103,4 @@ bench = false
 [workspace]
 
 [patch."https://github.com/oxc-project/oxc"]
-oxc_parser = { path = "../../vendor/oxc_parser" }
+oxc_parser = { path = "../../vendor/oxc_parser_compat" }
