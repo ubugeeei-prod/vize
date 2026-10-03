@@ -19,8 +19,7 @@ use vize_l2::file::{
 };
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
-#[path = "vue_exposure_cases/setup.rs"]
-mod setup;
+mod vue_setup_cases;
 
 struct Observed<'a> {
     descriptor: DescriptorObservation<'a>,
