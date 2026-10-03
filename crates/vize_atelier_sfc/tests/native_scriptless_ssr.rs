@@ -30,7 +30,12 @@ fn original_whole_sfc_modules_keep_selected_custody_and_complete_maps() {
         );
         let moved = core::hint::black_box(compilation);
         let observation = moved.observation();
-        assert!(observation.issues().is_empty(), "{}", fixture["id"]);
+        assert!(
+            observation.issues().is_empty(),
+            "{}: {:?}",
+            fixture["id"],
+            observation.issues()
+        );
         assert!(core::ptr::eq(observation.descriptor().source(), source));
         let admitted = observation.admitted().unwrap();
         assert!(core::ptr::eq(admitted.observation(), observation));
@@ -113,6 +118,10 @@ fn refusals() -> Vec<serde_json::Value> {
         (
             "nested-whitespace",
             "<template><div>\n a \n</div></template>",
+        ),
+        (
+            "handler-global",
+            "<template><div><button @click='globalThis.__vize_ssr_event_probe += 1;'>go</button></div></template>",
         ),
         (
             "handler-syntax",

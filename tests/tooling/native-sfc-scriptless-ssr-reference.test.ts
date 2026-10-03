@@ -36,6 +36,7 @@ const refusalIds = [
   "for",
   "class",
   "nested-whitespace",
+  "handler-global",
   "handler-syntax",
 ];
 

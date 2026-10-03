@@ -561,9 +561,9 @@
     },
     {
       "id": "handler-nested",
-      "source": "<template><div><button @click='globalThis.__vize_ssr_event_probe += 1;'>go</button></div></template>",
+      "source": "<template><div><button @click='$event.count += 2;'>go</button></div></template>",
       "filename": "/native-ssr/handler-nested.vue",
-      "sourceSha256": "a22a0c84d404d84dcaff078b5918d3330655875e816bb1d75f140ad87d1f232c",
+      "sourceSha256": "8bb96de11b52059a349e0148c2d31b4a575f9e3bf69c9427b37ee4fc7e0830f1",
       "referenceCode": "const _sfc_main = {  }\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><button>go</button></div>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"handler-nested.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
       "referenceMap": {
         "version": 3,
@@ -571,14 +571,14 @@
         "names": [],
         "sources": [],
         "sourcesContent": [
-          "<template><div><button @click='globalThis.__vize_ssr_event_probe += 1;'>go</button></div></template>"
+          "<template><div><button @click='$event.count += 2;'>go</button></div></template>"
         ],
         "mappings": "",
         "ignoreList": []
       },
       "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
       "referenceCodeSha256": "9c4551d77bf3b290413fe14e725a1bae9676c2eddbfdb21955f01ee0d7492572",
-      "referenceMapSha256": "26642b77782c4c668d8ff0f3b1f63de17d1d9650ced87b8cdc57a3be7e94dbc5",
+      "referenceMapSha256": "ea52e2d2a25888250daef1c819fe584b729ceeaae4da55f8133e6900f1299341",
       "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
       "executions": [
         {

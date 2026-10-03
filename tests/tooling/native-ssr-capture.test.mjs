@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { test } from "node:test";
 import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/native-ssr-capture.mjs";
 
-test("authentic SSR source dependencies require an affected PR capture", () => {
+void test("authentic SSR source dependencies require an affected PR capture", () => {
   for (const path of [
     "crates/vize_atelier_sfc/src/native_ssr.rs",
     "crates/vize_atelier_sfc/src/native_ssr/output.rs",
@@ -31,6 +31,7 @@ test("authentic SSR source dependencies require an affected PR capture", () => {
     "tests/tooling/support/native-sfc-ssr-reference.ts",
     ".github/actions/test-native-ssr/action.yml",
     ".github/workflows/pr-source-checks.yml",
+    ".github/workflows/check.yml",
     "tools/support/compat/github/native-ssr-capture.mjs",
     "pnpm-lock.yaml",
     "Cargo.lock",
@@ -38,7 +39,7 @@ test("authentic SSR source dependencies require an affected PR capture", () => {
     assert.equal(nativeSsrCaptureRequired([path]), true, path);
 });
 
-test("prose, generated ledgers and independent target consumers do not grant SSR capture inputs", () => {
+void test("prose, generated ledgers and independent target consumers do not grant SSR capture inputs", () => {
   for (const path of [
     "docs/davinci/decisions/2026-10-04-native-scriptless-ssr-sfc.md",
     "docs/davinci/plan/croquis-consumption/vize_atelier_sfc.md",
@@ -59,7 +60,7 @@ test("prose, generated ledgers and independent target consumers do not grant SSR
   );
 });
 
-test("the existing first-shard action remains mandatory for merge groups and qualified PR sources", () => {
+void test("the existing first-shard action remains mandatory for merge groups and qualified PR sources", () => {
   const workflow = fs.readFileSync(
     new URL("../../.github/workflows/pr-source-checks.yml", import.meta.url),
     "utf8",
@@ -82,8 +83,17 @@ test("the existing first-shard action remains mandatory for merge groups and qua
     ),
   );
   assert.equal(workflow.match(/uses: \.\/\.github\/actions\/test-native-ssr/g)?.length, 1);
-  assert(planner.includes("toolingChecksRequired(plan, paths) || nativeSsrCaptureRequired(paths)"));
-  assert(planner.includes("native-ssr-capture=${nativeSsrCaptureRequired(paths)}"));
+  assert(
+    planner.includes(
+      "toolingChecksRequired(plan, paths) || nativeSsrCaptureRequired(capturePaths)",
+    ),
+  );
+  assert(planner.includes("native-ssr-capture=${nativeSsrCaptureRequired(capturePaths)}"));
+  assert(
+    planner.includes(
+      'const capturePaths = /^0+$/.test(base) ? [".github/workflows/check.yml"] : paths;',
+    ),
+  );
   assert(action.includes('VIZE_L4_SSR_REQUIRE_NATIVE: "1"'));
   assert(action.includes("--test native_scriptless_ssr -- --nocapture"));
   assert(
