@@ -3,6 +3,8 @@
 //! These adapters use actual open-document revisions. They do not select a
 //! production request route or turn a host snapshot into native File admission.
 
+#[cfg(feature = "experimental-source-navigation")]
+pub mod navigation;
 mod project;
 mod query;
 mod snapshot;

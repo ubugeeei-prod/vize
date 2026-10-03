@@ -21,6 +21,7 @@ pub trait TemplatePolicy: Copy {
 }
 
 mod facade;
+pub(crate) mod native;
 pub use facade::TemplateRegion;
 mod child;
 mod walk;

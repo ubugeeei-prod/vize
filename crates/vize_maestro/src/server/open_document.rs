@@ -14,6 +14,8 @@ impl MaestroServer {
         self.state
             .documents
             .open(uri.clone(), content.clone(), version, language_id);
+        #[cfg(feature = "experimental-source-navigation")]
+        self.notify_native_navigation(&uri);
         self.state.update_virtual_docs(&uri, &content);
 
         // The bounded worker starts parser/lint feedback promptly, then runs
@@ -35,6 +37,8 @@ impl MaestroServer {
     pub(super) async fn close_document(&self, params: DidCloseTextDocumentParams) {
         let uri = params.text_document.uri;
         self.state.close_document(&uri);
+        #[cfg(feature = "experimental-source-navigation")]
+        self.notify_native_navigation(&uri);
 
         // Clean up virtual documents cache
         self.state.remove_virtual_docs(&uri);

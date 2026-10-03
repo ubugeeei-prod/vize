@@ -1,5 +1,11 @@
 //! Shared JS/TS semantic production over actual retained language syntax.
 
 pub(crate) mod file;
+pub use crate::file::region::native::NativeTemplateWalk;
+pub use file::native::{
+    NativeTemplateFile, NativeTemplateIssue, NativeTemplateIssueKind, NativeTemplateOwner,
+    NativeTemplateView, RejectedNativeTemplateOwner,
+};
 pub use file::observer::{CallEvent, DeclaredEvent, FileObserver, InvocationEvent, StatementEvent};
+pub use file::setup::{SetupIssue, SetupIssueKind, VueSetup};
 pub use file::{FileProducer, ProgramInput, ProgramInputError, ProgramScope};

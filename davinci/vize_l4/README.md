@@ -32,6 +32,13 @@ typed refusal until the real same-file Vue access provider exists. Complete
 template modules are assembled with `module::assemble_template`; authored maps
 retain the whole file and original retained expression coordinates.
 
+`targets::ts::project_program` borrows one completed File with one genuine
+whole-source JS/TS Module unit and no template operations. It copies that
+Program through the existing writer, keeps its original checker language and
+exposes checked authored diagnostic ranges. Generated module punctuation is
+unlinked. This additive input does not select Canon's default route or admit
+Vue templates, JSX, incomplete File syntax or the full type-check target.
+
 Whole-component completeness, file If/For, broader DOM semantics and the SSR,
 Vapor and type-check targets remain unfinished in
 [#6840](https://github.com/ubugeeei-prod/vize/issues/6840).

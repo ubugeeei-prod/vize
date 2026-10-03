@@ -51,6 +51,9 @@ l1	-	davinci/vize_l1/src/markup/lex/native/dynamic_arg/tests.rs	0	0	0	0	0	0	1	2
 l1	-	davinci/vize_l1/src/markup/lex/native/tests.rs	0	0	0	0	0	0	1	4
 l1	analysis	davinci/vize_l1/src/markup/native/tests.rs	1	2	0	0	0	0	0	0
 l1	analysis	davinci/vize_l1/src/markup/native/operand/tests.rs	1	0	1	0	0	0	0	0
+l1	analysis	davinci/vize_l1/src/markup/native/reborrow_tests.rs	1	0	0	0	0	0	0	0
+l1	analysis	davinci/vize_l1/src/markup/native/interpolation/tests/ownership.rs	2	0	0	0	0	0	0	0
+l1	-	davinci/vize_l1/src/markup/native/interpolation/tests/refusals.rs	0	0	1	0	0	0	0	0
 l1	-	davinci/vize_l1/src/event.rs	0	0	0	0	1	2	0	0
 l1	-	davinci/vize_l1/src/event/tests.rs	0	0	0	0	1	4	0	0
 l1	analysis	davinci/vize_l1/src/lang/moonbit/lines.rs	1	1	0	0	0	0	0	0
@@ -122,6 +125,8 @@ l3	analysis	davinci/vize_l3/src/verify.rs	1	8	0	0	0	0	0	0
 l3	analysis	davinci/vize_l3/src/verify/operands.rs	1	1	0	0	0	0	0	0
 l3	analysis	davinci/vize_l3/src/verify/placement.rs	1	3	1	6	0	0	0	0
 l3	-	davinci/vize_l3/src/verify/violation.rs	0	0	1	1	0	0	0	0
+l3	analysis	davinci/vize_l3/src/decision/dom/build/file.rs	1	1	0	0	0	0	0	0
+l3	analysis	davinci/vize_l3/src/decision/dom/vue.rs	1	1	0	0	0	0	0	0
 l2_to_l3	-	davinci/vize_l2_to_l3/src/partition.rs	0	0	0	0	1	2	0	0
 l2_to_l3	contract	davinci/vize_l2_to_l3/src/partition/dump.rs	1	1	0	0	0	0	0	0
 l1_to_l2	emit	davinci/vize_l1_to_l2/src/emit.rs	1	2	1	1	0	0	0	0
@@ -280,6 +285,8 @@ l2	-	davinci/vize_l2/src/lang/js/file/walk/references.rs	0	0	1	1	0	0	0	0
 l2	-	davinci/vize_l2/src/file/region.rs	0	0	0	0	2	0	0	0
 l2	-	davinci/vize_l2/src/file/region/facade.rs	0	0	0	0	2	0	0	0
 l2	analysis	davinci/vize_l2/src/resolution/source/calls.rs	1	4	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/resolution/source/jsx.rs	1	6	1	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/resolution/source/jsx/names.rs	1	1	1	1	0	0	0	0
 l1_to_l2	analysis	davinci/vize_l1_to_l2/src/vue_file.rs	1	7	0	0	0	0	0	0
 l1_to_l2	analysis	davinci/vize_l1_to_l2/src/vue_file/policy.rs	1	2	0	0	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/vue_file/region.rs	0	0	0	0	2	0	0	0

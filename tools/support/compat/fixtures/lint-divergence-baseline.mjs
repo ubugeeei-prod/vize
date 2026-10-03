@@ -134,9 +134,13 @@ export function retainEnabledFindings(results, rules) {
 export async function runBaseline(runtime, cwd, files, rules) {
   const eslint = new runtime.ESLint({
     cwd,
+    passOnNoPatterns: files.length === 0,
     overrideConfigFile: true,
     overrideConfig: baselineConfig(runtime, rules),
     errorOnUnmatchedPattern: false,
   });
+  if (files.length === 0) {
+    await eslint.calculateConfigForFile("__vize_empty_vue_config__.vue");
+  }
   return retainEnabledFindings(await eslint.lintFiles(files), rules);
 }

@@ -34,6 +34,7 @@ pub struct SourceSnapshot {
     uri: Url,
     revision: u64,
     version: i32,
+    language_id: Arc<str>,
     source: Arc<str>,
 }
 
@@ -56,6 +57,12 @@ impl SourceSnapshot {
     #[must_use]
     pub fn source(&self) -> &str {
         &self.source
+    }
+
+    /// The real host language identifier captured with this source revision.
+    #[must_use]
+    pub fn language_id(&self) -> &str {
+        &self.language_id
     }
 
     #[must_use]
@@ -89,6 +96,7 @@ impl SourceSnapshot {
         if document.uri != self.uri
             || document.revision() != self.revision
             || document.version != self.version
+            || document.language_id.as_str() != self.language_id()
         {
             return Err(SnapshotRefusal::Superseded);
         }
@@ -114,17 +122,20 @@ impl SourceSnapshotCache {
                 uri: document.uri.clone(),
                 revision: document.revision(),
                 version: document.version,
+                language_id: Arc::from(document.language_id.as_str()),
                 source: Arc::from(document.text()),
             })
         });
         if entry.revision != document.revision()
             || entry.version != document.version
             || entry.uri != document.uri
+            || entry.language_id() != document.language_id.as_str()
         {
             *entry = Arc::new(SourceSnapshot {
                 uri: document.uri.clone(),
                 revision: document.revision(),
                 version: document.version,
+                language_id: Arc::from(document.language_id.as_str()),
                 source: Arc::from(document.text()),
             });
         }
@@ -134,5 +145,18 @@ impl SourceSnapshotCache {
     /// Drop a cache entry after a host lifecycle event, without changing the host.
     pub fn forget(&self, uri: &Url) {
         self.snapshots.remove(uri);
+    }
+
+    pub(super) fn forget_superseded(&self, documents: &DocumentStore, uri: &Url) {
+        // Match capture's document-before-cache lock order.
+        let document = documents.get(uri);
+        self.snapshots.remove_if(uri, |_, snapshot| {
+            !document.as_ref().is_some_and(|doc| {
+                doc.uri == snapshot.uri
+                    && doc.revision() == snapshot.revision
+                    && doc.version == snapshot.version
+                    && doc.language_id.as_str() == snapshot.language_id()
+            })
+        });
     }
 }

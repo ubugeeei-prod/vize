@@ -115,12 +115,12 @@ fn recovered_syntax_keeps_original_errors_and_bytes_on_refusal() {
 }
 
 #[test]
-fn directives_use_shared_l1_syntax_and_are_explicitly_unsupported() {
+fn nonstatic_directives_use_shared_l1_syntax_and_are_explicitly_unsupported() {
     for source in [
         "<p :[key].camel='value'/>",
         "<p v-bind='value'/>",
-        "<p @click='act()'/>",
-        "<p #slot='item'/>",
+        "<p @[key]='act()'/>",
+        "<p #[key]='item'/>",
         "<p v-pre>{{raw}}</p>",
     ] {
         let allocator = Allocator::default();

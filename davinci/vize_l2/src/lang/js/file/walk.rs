@@ -81,6 +81,14 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
     }
 
     fn statement(&mut self, statement: &Statement<'a>) {
+        if self.context != Context::Unit
+            || !matches!(
+                statement,
+                Statement::VariableDeclaration(_) | Statement::EmptyStatement(_)
+            )
+        {
+            super::setup::reject(self.facts, self.unit);
+        }
         let Some(span) = self.span(statement.span()) else {
             return;
         };
@@ -148,6 +156,16 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
     }
 
     fn variable(&mut self, value: &VariableDeclaration<'a>, exported: bool) {
+        if self.context != Context::Unit
+            || exported
+            || value.declare
+            || !matches!(
+                value.kind,
+                VariableDeclarationKind::Let | VariableDeclarationKind::Var
+            )
+        {
+            super::setup::reject(self.facts, self.unit);
+        }
         let kind = match value.kind {
             VariableDeclarationKind::Const => DeclarationKind::Const,
             VariableDeclarationKind::Let => DeclarationKind::Let,
@@ -163,6 +181,7 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
         }
         for declaration in &value.declarations {
             let BindingPattern::BindingIdentifier(id) = &declaration.id else {
+                super::setup::reject(self.facts, self.unit);
                 self.unsupported(declaration.span);
                 continue;
             };
@@ -170,6 +189,12 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
                 Some(value) if primitive(value) => InitializerKind::PrimitiveLiteral,
                 _ => InitializerKind::Unknown,
             };
+            if initializer != InitializerKind::PrimitiveLiteral
+                || declaration.type_annotation.is_some()
+                || declaration.definite
+            {
+                super::setup::reject(self.facts, self.unit);
+            }
             let binding = self.binding(id, kind, initializer, declaration.init.as_ref());
             if exported && let Some(span) = self.span(id.span) {
                 self.push_export(id.name.as_str(), binding, None, Namespace::Value, span);

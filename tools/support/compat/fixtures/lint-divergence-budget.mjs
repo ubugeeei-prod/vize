@@ -79,7 +79,12 @@ export function summarizeBudgets(artifacts) {
 }
 
 function unusableLintReason(artifact) {
-  if (artifact.files.comparedCount === 0) return "the project selected no Vue files";
+  if (artifact.files.expectedCount === 0 && artifact.files.comparedCount !== 0) {
+    return "the project expected zero Vue files but selected a nonempty corpus";
+  }
+  if (artifact.files.comparedCount === 0 && artifact.files.expectedCount !== 0) {
+    return "the project selected no Vue files";
+  }
   if (artifact.baseline.comparedRuleCount === 0) {
     return "no mapped eslint-plugin-vue rule was comparable under the selected preset";
   }

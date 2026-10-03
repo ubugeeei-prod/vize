@@ -1,8 +1,11 @@
 //! Commit semantic demands when the original node transformation closes.
 
 use super::{DomBuilder, DomChildren, DomDependency, DomExpressionFacts, DomNode, Op};
+use crate::decision::dom::vue::policy::FileReads;
 
-impl<F: DomExpressionFacts> DomBuilder<'_, '_, '_, F> {
+impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+    DomBuilder<'_, 'owner, 'arena, F, R>
+{
     pub(super) fn complete_dependencies(
         &mut self,
         node: &DomNode<'_, '_>,

@@ -37,6 +37,14 @@ runs:
         cargo test --locked -p vize_maestro --features experimental-source-project,experimental-sfc-folding --lib source_sfc_folding:: -- --nocapture
         cargo check --locked -p vize_maestro --no-default-features --features experimental-source-project,experimental-sfc-folding
         cargo clippy --locked -p vize_maestro --features experimental-source-project,experimental-sfc-folding --all-targets -- -D warnings
+    - name: Test native JS and TS navigation responses
+      shell: bash
+      env: { VIZE_TEST_REQUIRE_TSGO: "1" }
+      run: |
+        cargo test --locked -p vize_maestro --features experimental-source-navigation --lib source_project:: -- --nocapture
+        cargo test --locked -p vize_maestro --features experimental-source-navigation --lib server::native_navigation:: -- --nocapture
+        cargo check --locked -p vize_maestro --no-default-features --features experimental-source-navigation
+        cargo clippy --locked -p vize_maestro --features experimental-source-navigation --all-targets -- -D warnings
     - name: Test Rust workspace
       if: ${{ inputs.workspace-already-tested != 'true' }}
       shell: bash

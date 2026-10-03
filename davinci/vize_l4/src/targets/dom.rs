@@ -24,10 +24,12 @@ mod expression;
 mod file;
 #[cfg(test)]
 mod tests;
+mod vue;
 mod write;
 
 use expression::{BareExpressions, ExpressionWriter};
 pub use file::emit_file;
+pub use vue::emit_vue;
 use write::{Helpers, helper, quoted};
 
 /// A target refuses the actual node rather than emitting partial JavaScript.
@@ -53,6 +55,7 @@ pub enum DomErrorKind {
     MissingFileExpression,
     MissingFileScope,
     RuntimeAccessUnavailable,
+    UncertifiedExpressionSpelling,
     OutputTooLarge,
 }
 

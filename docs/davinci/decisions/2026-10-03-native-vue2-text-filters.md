@@ -104,3 +104,15 @@ alongside strict lint and four complete upstream compiler/runtime tests. It is
 not the whole
 current Cargo graph. Exact-head hosted Check, unchanged all-100 instruction
 ceilings, full protected queue and actual main merge determine acceptance.
+
+## Current-main integration
+
+The 2026-10-03 replay integrates actual main `dd05d54bd7` while retaining the
+reviewed Vue 2 parser, laws and complete upstream reference bytes unchanged.
+The only conflict was the generated L1 source-consumption matrix, regenerated
+from the complete combined source. All incoming original/selected owner and
+interpolation providers remain intact. GitHub reports no native Stack for this
+PR; its required providers are already merged, so this bounded syntax slice
+is an independent queue candidate. Earlier source-head checks grant no current
+head or protected merge acceptance. Fresh hosted Check, full Check, all-100
+measurement and actual merge are tracked separately.

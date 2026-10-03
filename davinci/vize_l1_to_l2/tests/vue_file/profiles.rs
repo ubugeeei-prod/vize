@@ -155,12 +155,13 @@ fn conflicting_script_only_profiles_refuse_with_the_actual_setup_origin() {
 }
 
 #[test]
-fn invalid_observed_profiles_refuse_template_and_script_only_finish_without_losing_units() {
+fn invalid_vue_profiles_refuse_template_and_script_only_finish_without_losing_units() {
     let arena = Allocator::default();
     let source = "const value = 1;";
     for profile in [
         SourceType::cjs(),
         SourceType::jsx().with_module(true),
+        SourceType::tsx().with_module(true),
         SourceType::d_ts().with_module(true),
     ] {
         let observation = Parser::new(&arena, source, profile).parse_observed();
@@ -183,7 +184,9 @@ fn invalid_observed_profiles_refuse_template_and_script_only_finish_without_losi
         assert_eq!(error.span, receipt.span());
         assert_eq!(rejected.issues(), &[error]);
         assert_eq!(rejected.file().unwrap().units().len(), 1);
-        assert!(!rejected.file().unwrap().is_complete());
+        // JSX/TSX facts are valid for a generic File; the Vue refusal above
+        // remains authoritative even when the retained generic File completes.
+        assert_eq!(rejected.file().unwrap().is_complete(), profile.is_jsx());
         assert!(core::ptr::eq(
             observation.admitted().unwrap().program(),
             original

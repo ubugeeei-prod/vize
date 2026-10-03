@@ -1,0 +1,150 @@
+{
+  "cases": [
+    {
+      "id": "js-valid",
+      "kind": "js",
+      "source": "const msg='x'; msg.length; // tail",
+      "codes": [],
+      "diagnostics": []
+    },
+    {
+      "id": "js-property",
+      "kind": "js",
+      "source": "const value=1; value.missing;",
+      "codes": [2339],
+      "diagnostics": [
+        {
+          "authored": "missing",
+          "category": 1,
+          "code": 2339,
+          "length": 7,
+          "message": "Property 'missing' does not exist on type '1'.",
+          "start": 21
+        }
+      ]
+    },
+    {
+      "id": "js-jsdoc",
+      "kind": "js",
+      "source": "/** @type {string} */ let msg=1;",
+      "codes": [2322],
+      "diagnostics": [
+        {
+          "authored": "msg",
+          "category": 1,
+          "code": 2322,
+          "length": 3,
+          "message": "Type 'number' is not assignable to type 'string'.",
+          "start": 26
+        }
+      ]
+    },
+    {
+      "id": "ts-valid",
+      "kind": "ts",
+      "source": "const msg='x'; msg.length;",
+      "codes": [],
+      "diagnostics": []
+    },
+    {
+      "id": "ts-property",
+      "kind": "ts",
+      "source": "const value=1; value.missing;",
+      "codes": [2339],
+      "diagnostics": [
+        {
+          "authored": "missing",
+          "category": 1,
+          "code": 2339,
+          "length": 7,
+          "message": "Property 'missing' does not exist on type '1'.",
+          "start": 21
+        }
+      ]
+    },
+    {
+      "id": "unicode-ts",
+      "kind": "ts",
+      "source": "﻿/* 😀 */ const 日本語='é';\r\n日本語.missing; // tail",
+      "codes": [2339],
+      "diagnostics": [
+        {
+          "authored": "missing",
+          "category": 1,
+          "code": 2339,
+          "length": 7,
+          "message": "Property 'missing' does not exist on type '\"é\"'.",
+          "start": 30
+        }
+      ]
+    },
+    {
+      "id": "js-hashbang",
+      "kind": "js",
+      "source": "#!/usr/bin/env node\nconst value=1;\nvalue.missing // tail",
+      "codes": [2339],
+      "diagnostics": [
+        {
+          "authored": "missing",
+          "category": 1,
+          "code": 2339,
+          "length": 7,
+          "message": "Property 'missing' does not exist on type '1'.",
+          "start": 41
+        }
+      ]
+    },
+    {
+      "id": "ts-jsdoc-ignored",
+      "kind": "ts",
+      "source": "/** @type {string} */ let msg=1;",
+      "codes": [],
+      "diagnostics": []
+    },
+    {
+      "id": "ordered-ts-errors",
+      "kind": "ts",
+      "source": "/* 😀 */ const value=1;\nvalue.missing; value.other;",
+      "codes": [2339, 2339],
+      "diagnostics": [
+        {
+          "authored": "missing",
+          "category": 1,
+          "code": 2339,
+          "length": 7,
+          "message": "Property 'missing' does not exist on type '1'.",
+          "start": 30
+        },
+        {
+          "authored": "other",
+          "category": 1,
+          "code": 2339,
+          "length": 5,
+          "message": "Property 'other' does not exist on type '1'.",
+          "start": 45
+        }
+      ]
+    },
+    {
+      "id": "ts-module-goal",
+      "kind": "ts",
+      "source": "const name='x'; name.length;",
+      "codes": [],
+      "diagnostics": []
+    }
+  ],
+  "checker": {
+    "name": "typescript",
+    "version": "6.0.3"
+  },
+  "options": {
+    "noEmit": true,
+    "strict": true,
+    "types": [],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "moduleDetection": "Force",
+    "skipLibCheck": true
+  }
+}

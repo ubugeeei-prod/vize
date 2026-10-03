@@ -1,0 +1,209 @@
+{
+  "id": "commented-let-prop-text",
+  "source": "<script setup>let msg='before';</script><template><p :title=\"/* kept */msg/*雪🌸*/\">{{/*before*/msg/*雪🌸*/}}</p></template>",
+  "setup": "let msg='before';",
+  "template": "<p :title=\"/* kept */msg/*雪🌸*/\">{{/*before*/msg/*雪🌸*/}}</p>",
+  "sourceSha256": "99de8ccf6e84d5ac7b3898cbd2439013df9e0ee6a86d640717e12bf207f54d33",
+  "setupSha256": "defb58eae99aaea781c192e55279b0a1e14830ff97794718db70c24e72559f78",
+  "templateSha256": "80767fc45665f31b4ad8a793801b8e462eddeaf850373cb014ed34eb8c3ab8e2",
+  "windows": {
+    "script": {
+      "utf16Start": 14,
+      "utf16End": 31,
+      "authoredByteStart": 14,
+      "authoredByteEnd": 31
+    },
+    "template": {
+      "utf16Start": 50,
+      "utf16End": 111,
+      "authoredByteStart": 50,
+      "authoredByteEnd": 119
+    }
+  },
+  "compiledScript": {
+    "options": {
+      "id": "vue-setup-let",
+      "inlineTemplate": false
+    },
+    "optionsSha256": "0a0841d11e730735a983c6622d853d77f69cdc85cb2a8a775051cb062383f16f",
+    "bindings": {
+      "msg": "setup-let"
+    },
+    "bindingsSha256": "9c4781a90caefa8a5bb998e140cb3424a7e628f001bb959fb94da10d5854479e",
+    "bindingDescriptors": {
+      "msg": {
+        "value": "setup-let",
+        "writable": true,
+        "enumerable": true,
+        "configurable": true
+      }
+    },
+    "code": "\nexport default {\n  __name: 'VueSetupLet',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet msg='before';\nconst __returned__ = { get msg() { return msg }, set msg(v) { msg = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+    "codeSha256": "152f6568df3564b5df7029b88e00f18b87e77246d3c952f1225e625243c1a733",
+    "rawMap": {
+      "version": 3,
+      "sources": [
+        "VueSetupLet.vue"
+      ],
+      "sourcesContent": [
+        "<script setup>let msg='before';</script><template><p :title=\"/* kept */msg/*雪🌸*/\">{{/*before*/msg/*雪🌸*/}}</p></template>"
+      ],
+      "names": [],
+      "mappings": ";;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;"
+    },
+    "rawMapSha256": "29758f46dd5ea36ab78aebd46c38d82abe1ce7bad6c4d8905587e39a840c0c88"
+  },
+  "options": {
+    "filename": "VueSetupLet.vue",
+    "mode": "module",
+    "hoistStatic": false,
+    "prefixIdentifiers": true,
+    "comments": true,
+    "sourceMap": true,
+    "cacheHandlers": false,
+    "bindingMetadata": {
+      "msg": "setup-let"
+    }
+  },
+  "optionsSha256": "c5d844071de47e6056a7500459220ed3ce9cc0fc9ca922e33efd05df724a0ce2",
+  "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", {\n    title: /* kept */$setup.msg/*雪🌸*/\n  }, _toDisplayString(/*before*/$setup.msg/*雪🌸*/), 9 /* TEXT, PROPS */, [\"title\"]))\n}",
+  "codeSha256": "2961eb07cc558437b77e1002e133f6810b9e089d2b61c5f00d3577d86a6ce576",
+  "referenceMap": {
+    "version": 3,
+    "sources": [
+      "VueSetupLet.vue"
+    ],
+    "names": [],
+    "mappings": ";;;wBAAA,oBAA6D;IAAzD,KAAK,YAAY,UAAG;gCAAqB,UAAG",
+    "sourcesContent": [
+      "<p :title=\"/* kept */msg/*雪🌸*/\">{{/*before*/msg/*雪🌸*/}}</p>"
+    ]
+  },
+  "referenceMapSha256": "54e818f3b16d05fc13f547f65be3b823f1448b2fe6dbabe66028dbdc8ebb8299",
+  "update": {
+    "msg": "after"
+  },
+  "repeatedCapture": {
+    "identical": true,
+    "compiledScriptCodeSha256": "152f6568df3564b5df7029b88e00f18b87e77246d3c952f1225e625243c1a733",
+    "compiledScriptRawMapSha256": "29758f46dd5ea36ab78aebd46c38d82abe1ce7bad6c4d8905587e39a840c0c88",
+    "bindingsSha256": "9c4781a90caefa8a5bb998e140cb3424a7e628f001bb959fb94da10d5854479e",
+    "codeSha256": "2961eb07cc558437b77e1002e133f6810b9e089d2b61c5f00d3577d86a6ce576",
+    "referenceMapSha256": "54e818f3b16d05fc13f547f65be3b823f1448b2fe6dbabe66028dbdc8ebb8299"
+  },
+  "executions": [
+    {
+      "context": "actual-setup-initial",
+      "setupStateValues": {
+        "msg": "before"
+      },
+      "attemptedForeignReads": [],
+      "vnode": {
+        "type": "p",
+        "props": {
+          "title": "before"
+        },
+        "children": "before",
+        "patchFlag": 9,
+        "dynamicProps": [
+          "title"
+        ],
+        "dynamicChildren": [],
+        "key": null,
+        "ref": null,
+        "shapeFlag": 9
+      },
+      "rawVNode": {
+        "__v_isVNode": true,
+        "__v_skip": true,
+        "type": "p",
+        "props": {
+          "title": "before"
+        },
+        "key": null,
+        "ref": null,
+        "scopeId": null,
+        "slotScopeIds": null,
+        "children": "before",
+        "component": null,
+        "suspense": null,
+        "ssContent": null,
+        "ssFallback": null,
+        "dirs": null,
+        "transition": null,
+        "el": null,
+        "anchor": null,
+        "target": null,
+        "targetStart": null,
+        "targetAnchor": null,
+        "staticCount": 0,
+        "shapeFlag": 9,
+        "patchFlag": 9,
+        "dynamicProps": [
+          "title"
+        ],
+        "dynamicChildren": [],
+        "appContext": null,
+        "ctx": null
+      },
+      "outcome": "pass"
+    },
+    {
+      "context": "actual-setup-mutated",
+      "setupStateValues": {
+        "msg": "after"
+      },
+      "attemptedForeignReads": [],
+      "vnode": {
+        "type": "p",
+        "props": {
+          "title": "after"
+        },
+        "children": "after",
+        "patchFlag": 9,
+        "dynamicProps": [
+          "title"
+        ],
+        "dynamicChildren": [],
+        "key": null,
+        "ref": null,
+        "shapeFlag": 9
+      },
+      "rawVNode": {
+        "__v_isVNode": true,
+        "__v_skip": true,
+        "type": "p",
+        "props": {
+          "title": "after"
+        },
+        "key": null,
+        "ref": null,
+        "scopeId": null,
+        "slotScopeIds": null,
+        "children": "after",
+        "component": null,
+        "suspense": null,
+        "ssContent": null,
+        "ssFallback": null,
+        "dirs": null,
+        "transition": null,
+        "el": null,
+        "anchor": null,
+        "target": null,
+        "targetStart": null,
+        "targetAnchor": null,
+        "staticCount": 0,
+        "shapeFlag": 9,
+        "patchFlag": 9,
+        "dynamicProps": [
+          "title"
+        ],
+        "dynamicChildren": [],
+        "appContext": null,
+        "ctx": null
+      },
+      "outcome": "pass"
+    }
+  ],
+  "executionsSha256": "f5a22c6286adacad02e8351e1239132f84d86e529f534f85a4a603480ace265f"
+}

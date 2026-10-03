@@ -1,4 +1,4 @@
-//! Borrowed documents for the first typed Vue directive-head family.
+//! Borrowed documents for typed Vue heads with complete static arguments.
 
 use vize_l0::{Allocator, SourceBlock, Span, Vec};
 use vize_l1::markup::{ArgSyntax, DirectiveName, DirectivePrefix};
@@ -20,37 +20,73 @@ pub(super) fn name_document<'a>(
     let Some(ArgSyntax::Static(argument)) = head.arg else {
         return Err(unsupported());
     };
-    if !matches!(head.prefix, DirectivePrefix::Bind | DirectivePrefix::Prop) {
+    if argument.start == argument.end {
         return Err(unsupported());
     }
-    if block.start().checked_add(1) != Some(argument.start) || argument.start == argument.end {
-        return Err(unsupported());
+    let mismatch = || TemplateRefusal::SourceMismatch {
+        offset: block.start() as usize,
+    };
+    if head.modifiers != Span::new(argument.end, block.end()) {
+        return Err(mismatch());
     }
-    if head.name != Span::new(block.start(), block.start())
-        || head.modifiers != Span::new(argument.end, block.end())
-    {
+    let spelling = match head.prefix {
+        DirectivePrefix::Full => "v-",
+        DirectivePrefix::Bind => ":",
+        DirectivePrefix::Prop => ".",
+        DirectivePrefix::On => "@",
+        DirectivePrefix::Slot => "#",
+    };
+    let (prefix, name, separator) = match head.prefix {
+        DirectivePrefix::Full => {
+            if head.name.start == head.name.end {
+                return Err(unsupported());
+            }
+            if block.start().checked_add(2) != Some(head.name.start)
+                || head.name.end.checked_add(1) != Some(argument.start)
+            {
+                return Err(mismatch());
+            }
+            (
+                Span::new(block.start(), head.name.start),
+                Some(head.name),
+                Some(Span::new(head.name.end, argument.start)),
+            )
+        }
+        _ => {
+            if block.start().checked_add(1) != Some(argument.start)
+                || head.name != Span::new(block.start(), block.start())
+            {
+                return Err(mismatch());
+            }
+            (Span::new(block.start(), argument.start), None, None)
+        }
+    };
+    let project = |span| {
+        if !block.contains_block_span(span) {
+            return Err(mismatch());
+        }
+        block
+            .root_source()
+            .get(span.start as usize..span.end as usize)
+            .ok_or_else(mismatch)
+    };
+    if project(prefix)? != spelling || separator.is_some_and(|span| project(span) != Ok(":")) {
         return Err(TemplateRefusal::SourceMismatch {
             offset: block.start() as usize,
         });
     }
     let mut parts = Vec::new_in(&allocator);
     for span in [
-        Span::new(block.start(), argument.start),
-        argument,
-        head.modifiers,
-    ] {
-        if !block.contains_block_span(span) {
-            return Err(TemplateRefusal::SourceMismatch {
-                offset: block.start() as usize,
-            });
-        }
-        let text = block
-            .root_source()
-            .get(span.start as usize..span.end as usize)
-            .ok_or(TemplateRefusal::SourceMismatch {
-                offset: block.start() as usize,
-            })?;
-        parts.push(Doc::text(text));
+        Some(prefix),
+        name,
+        separator,
+        Some(argument),
+        Some(head.modifiers),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        parts.push(Doc::text(project(span)?));
     }
     Ok(Doc::concat(parts))
 }
@@ -63,7 +99,7 @@ mod tests {
     use vize_l0::{Allocator, SourceRoot, Span};
     use vize_l1::{
         dialect::vue3::VueDirectives,
-        markup::{ArgSyntax, DirectiveName, DirectiveSyntax},
+        markup::{ArgSyntax, DirectiveName, DirectivePrefix, DirectiveSyntax},
     };
 
     #[test]
@@ -113,5 +149,86 @@ mod tests {
                 Err(TemplateRefusal::SourceMismatch { .. })
             ));
         }
+    }
+
+    #[test]
+    fn full_name_separator_and_other_static_prefixes_borrow_original_pieces() {
+        let cases: [(&str, &[&str]); 3] = [
+            (
+                "é v-カスタム:日本..camel",
+                &["v-", "カスタム", ":", "日本", "..camel"],
+            ),
+            ("é @更新.once", &["@", "更新", ".once"]),
+            ("é #見出し", &["#", "見出し", ""]),
+        ];
+        let allocator = Allocator::default();
+        for (source, expected) in cases {
+            let text = source.get(3..).unwrap();
+            let block = SourceRoot::new(source).unwrap().block(text, 3).unwrap();
+            let head = VueDirectives.decompose(text, 3).unwrap().unwrap();
+            let document = name_document(block, Some(head), &allocator).unwrap();
+            let Kind::Concat(parts) = document.kind else {
+                panic!("borrowed pieces")
+            };
+            assert_eq!(parts.len(), expected.len());
+            let mut start = 3;
+            for (part, expected) in parts.iter().zip(expected) {
+                let Kind::Text(actual) = part.kind else {
+                    panic!("source text")
+                };
+                let original = source.get(start..start + expected.len()).unwrap();
+                assert_eq!(actual, *expected);
+                assert!(core::ptr::eq(actual.as_ptr(), original.as_ptr()));
+                start += expected.len();
+            }
+            assert_eq!(start, source.len());
+        }
+    }
+
+    #[test]
+    fn forged_full_prefix_name_separator_argument_and_modifier_ranges_are_refused() {
+        let allocator = Allocator::default();
+        let source = "v-bind:日本.camel";
+        let block = SourceRoot::new(source).unwrap().whole_block();
+        let head = VueDirectives.decompose(source, 0).unwrap().unwrap();
+        for altered in [
+            DirectiveName {
+                prefix: DirectivePrefix::Bind,
+                ..head
+            },
+            DirectiveName {
+                name: Span::new(1, 6),
+                ..head
+            },
+            DirectiveName {
+                name: Span::new(2, 5),
+                arg: Some(ArgSyntax::Static(Span::new(6, 13))),
+                ..head
+            },
+            DirectiveName {
+                arg: Some(ArgSyntax::Static(Span::new(7, 8))),
+                modifiers: Span::new(8, block.end()),
+                ..head
+            },
+            DirectiveName {
+                modifiers: Span::new(12, block.end()),
+                ..head
+            },
+            DirectiveName {
+                arg: Some(ArgSyntax::Static(Span::new(7, u32::MAX))),
+                modifiers: Span::new(u32::MAX, block.end()),
+                ..head
+            },
+        ] {
+            assert!(matches!(
+                name_document(block, Some(altered), &allocator),
+                Err(TemplateRefusal::SourceMismatch { .. })
+            ));
+        }
+        let foreign = SourceRoot::new("vXbind:日本.camel").unwrap().whole_block();
+        assert!(matches!(
+            name_document(foreign, Some(head), &allocator),
+            Err(TemplateRefusal::SourceMismatch { .. })
+        ));
     }
 }

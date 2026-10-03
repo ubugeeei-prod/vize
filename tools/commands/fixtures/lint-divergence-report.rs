@@ -123,7 +123,14 @@ fn measure_project(
         return Ok(None);
     }
     let files = collect_vue_input_paths(&cwd, project)?;
-    if files.is_empty() && project.get("expectedVueFileCount").and_then(Value::as_u64) != Some(0) {
+    let expected_count = project.get("expectedVueFileCount").and_then(Value::as_u64);
+    if expected_count == Some(0) && !files.is_empty() {
+        return Err(format!(
+            "{project_id} matched {} Vue files, expected 0",
+            files.len()
+        ));
+    }
+    if files.is_empty() && expected_count != Some(0) {
         return Err(format!("{project_id} matched no Vue files"));
     }
 
@@ -146,7 +153,7 @@ fn measure_project(
         "revision": project.get("revision").cloned().unwrap_or(Value::Null),
         "preset": args.preset.clone().unwrap_or_else(|| "all-mapped".to_string()),
         "evidence": evidence,
-        "files": { "comparedCount": files.len() },
+        "files": { "comparedCount": files.len(), "expectedCount": expected_count },
         "baseline": {
             "package": rule_map.pointer("/upstream/package").cloned().unwrap_or(Value::Null),
             "version": baseline.version,
@@ -270,6 +277,7 @@ const scriptParser = requireFromBench("@typescript-eslint/parser");
 const manifest = requireFromBench("eslint-plugin-vue/package.json");
 const eslint = new ESLint({
   cwd: input.cwd,
+  passOnNoPatterns: input.files.length === 0,
   overrideConfigFile: true,
   overrideConfig: [{
     files: ["**/*.vue"],
@@ -289,6 +297,9 @@ const eslint = new ESLint({
   }],
   errorOnUnmatchedPattern: false
 });
+if (input.files.length === 0) {
+  await eslint.calculateConfigForFile("__vize_empty_vue_config__.vue");
+}
 const results = await eslint.lintFiles(input.files);
 const enabled = new Set(Object.keys(input.rules));
 let droppedConfigMessageCount = 0;
@@ -1593,11 +1604,18 @@ fn rule_map_version(root: &Path) -> Result<String, String> {
 }
 
 fn unusable_lint_reason(artifact: &Value) -> Option<String> {
-    if artifact
+    let compared_count = artifact
         .pointer("/files/comparedCount")
-        .and_then(Value::as_u64)
-        == Some(0)
-    {
+        .and_then(Value::as_u64);
+    let expected_count = artifact
+        .pointer("/files/expectedCount")
+        .and_then(Value::as_u64);
+    if expected_count == Some(0) && compared_count != Some(0) {
+        return Some(
+            "the project expected zero Vue files but selected a nonempty corpus".to_string(),
+        );
+    }
+    if compared_count == Some(0) && expected_count != Some(0) {
         return Some("the project selected no Vue files".to_string());
     }
     if artifact

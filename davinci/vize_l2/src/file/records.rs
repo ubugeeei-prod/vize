@@ -53,8 +53,10 @@ pub(crate) struct ProgramOrigin {
     pub(crate) body: usize,
     pub(crate) length: usize,
     pub(crate) has_call: bool,
+    has_comments: bool,
     pub(crate) has_export: bool,
     pub(crate) reserved_binding: bool,
+    pub(crate) setup_eligible: bool,
 }
 
 impl ProgramOrigin {
@@ -63,8 +65,10 @@ impl ProgramOrigin {
             body: program.body.as_ptr() as usize,
             length: program.body.len(),
             has_call: false,
+            has_comments: !program.comments.is_empty(),
             has_export: false,
             reserved_binding: false,
+            setup_eligible: crate::lang::js::file::setup::initial(program),
         }
     }
 }
@@ -106,6 +110,22 @@ impl ScriptUnit {
     }
     pub(crate) fn walk_completed(&self) -> bool {
         self.walk == ProgramWalkState::Complete
+    }
+    /// Whether the existing walk observed an original call, constructor, tagged
+    /// template or dynamic import. This observation survives rollback and unwind.
+    ///
+    /// A false observation on an incomplete File does not prove absence. This
+    /// getter grants neither completed-walk nor native File admission authority.
+    #[must_use]
+    pub fn has_invocations(&self) -> bool {
+        self.origin.has_call
+    }
+    /// Whether the original admitted Program contains parser-retained comments.
+    /// This fact is retained before observer callbacks and survives interruption.
+    /// It grants neither completed-walk nor authored filename authority.
+    #[must_use]
+    pub fn has_comments(&self) -> bool {
+        self.origin.has_comments
     }
     /// Actual unit interruption is separate from the stored syntax issue slice.
     #[must_use]

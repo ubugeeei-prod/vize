@@ -87,6 +87,17 @@ pub struct NativeAttribute<'o, 'a> {
     attribute: &'o Attribute<'a>,
 }
 impl<'o, 'a> NativeAttribute<'o, 'a> {
+    /// Borrow the same original header event for observation before consumption.
+    /// The projection cannot outlive this token or change its ordinal/membership.
+    #[must_use]
+    pub fn reborrow(&self) -> NativeAttribute<'_, 'a> {
+        NativeAttribute {
+            component: self.component,
+            element: self.element,
+            ordinal: self.ordinal,
+            attribute: self.attribute,
+        }
+    }
     #[must_use]
     pub fn component(&self) -> &'o NativeComponent<'a> {
         self.component

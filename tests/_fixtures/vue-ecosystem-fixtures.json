@@ -76,7 +76,7 @@
           "componentFile": "packages/effects/layouts/src/widgets/theme-toggle/theme-button.vue",
           "tagName": "ThemeButton",
           "tagAnchor": "<ThemeButton\n          ",
-          "completionItemCount": 30,
+          "completionItemCount": 31,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -107,7 +107,8 @@
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
             { "label": "type", "rank": 28 },
-            { "label": "model-value", "rank": 29 }
+            { "label": "model-value", "rank": 29 },
+            { "label": "@update:modelValue", "rank": 30 }
           ],
           "dependencyEdit": {
             "anchor": "  type?: 'icon' | 'normal';\n",
@@ -280,7 +281,7 @@
           "componentFile": "packages/components/cascader-panel/src/node.vue",
           "tagName": "el-cascader-node",
           "tagAnchor": "<el-cascader-node\n            ",
-          "completionItemCount": 30,
+          "completionItemCount": 31,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -311,7 +312,8 @@
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
             { "label": "node", "rank": 28 },
-            { "label": "menu-id", "rank": 29 }
+            { "label": "menu-id", "rank": 29 },
+            { "label": "@expand", "rank": 30 }
           ],
           "dependencyEdit": {
             "anchor": "  menuId?: string\n",
@@ -1237,7 +1239,7 @@
           "componentFile": "packages/frontend/src/components/MkTooltip.vue",
           "tagName": "MkTooltip",
           "tagAnchor": "<MkTooltip ",
-          "completionItemCount": 37,
+          "completionItemCount": 38,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -1275,7 +1277,8 @@
             { "label": "as-mfm", "rank": 33 },
             { "label": "max-width", "rank": 34 },
             { "label": "direction", "rank": 35 },
-            { "label": "inner-margin", "rank": 36 }
+            { "label": "inner-margin", "rank": 36 },
+            { "label": "@closed", "rank": 37 }
           ],
           "dependencyEdit": {
             "anchor": "\tinnerMargin?: number;\n",
@@ -2077,7 +2080,7 @@
           "componentFile": "packages/online-playground/src/VersionSelect.vue",
           "tagName": "VersionSelect",
           "tagAnchor": "<VersionSelect v-model=\"store.state.typescriptVersion\" ",
-          "completionItemCount": 31,
+          "completionItemCount": 32,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -2109,7 +2112,8 @@
             { "label": "@mouseleave", "rank": 27 },
             { "label": "pkg", "rank": 28 },
             { "label": "label", "rank": 29 },
-            { "label": "model-value", "rank": 30 }
+            { "label": "model-value", "rank": 30 },
+            { "label": "@update:modelValue", "rank": 31 }
           ],
           "dependencyEdit": {
             "anchor": "  label?: string\n",
@@ -3943,7 +3947,7 @@
           "componentFile": "packages/varlet-ui-playground/src/Header.vue",
           "tagName": "Header",
           "tagAnchor": "\n  <Header ",
-          "completionItemCount": 30,
+          "completionItemCount": 31,
           "completionItems": [
             {
               "label": "v-if",
@@ -4064,6 +4068,10 @@
             {
               "label": "theme",
               "rank": 29
+            },
+            {
+              "label": "@update:theme",
+              "rank": 30
             }
           ],
           "dependencyEdit": {
@@ -5796,7 +5804,7 @@
           "componentFile": "packages/lib/src/VueDatePicker/components/Common/ArrowBtn.vue",
           "tagName": "ArrowBtn",
           "tagAnchor": "class=\"dp--month-year-wrap\">\n        <ArrowBtn\n          ",
-          "completionItemCount": 32,
+          "completionItemCount": 34,
           "completionItems": [
             {
               "label": "v-if",
@@ -5925,6 +5933,14 @@
             {
               "label": "inactive",
               "rank": 31
+            },
+            {
+              "label": "@activate",
+              "rank": 32
+            },
+            {
+              "label": "@set-ref",
+              "rank": 33
             }
           ],
           "dependencyEdit": {

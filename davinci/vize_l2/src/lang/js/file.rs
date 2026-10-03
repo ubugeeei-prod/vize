@@ -10,7 +10,9 @@ use oxc_parser::{AdmittedProgram, ParseOptions};
 use vize_l0::{Allocator, SourceBlock, Span};
 
 mod guard;
+pub mod native;
 pub(crate) mod observer;
+pub(crate) mod setup;
 mod walk;
 use guard::ProgramWalkGuard;
 use observer::{FileObserver, NoObserver};
@@ -158,7 +160,6 @@ impl<'a> FileProducer<'a> {
             observer.unit(unit);
         }
         if !input.profile.module
-            || input.profile.jsx
             || input
                 .references
                 .program()

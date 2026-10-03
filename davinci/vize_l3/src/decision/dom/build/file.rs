@@ -2,10 +2,15 @@
 
 use super::{DomBuilder, DomExpressionFacts, DomUnsupported, ValueKind};
 use crate::decision::dom::file::{DomFileExpression, matches_expression};
+use crate::decision::dom::vue::policy::FileReads;
+use crate::decision::dom::vue::{VueRenderExpression, VueRenderRead};
+use alloc::vec::Vec;
 use vize_l0::id::NodeId;
 use vize_l2::{expr::JsExpr, file::Namespace};
 
-impl<'owner, 'arena, F: DomExpressionFacts> DomBuilder<'_, 'owner, 'arena, F> {
+impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
+    DomBuilder<'_, 'owner, 'arena, F, R>
+{
     pub(super) fn file_value(
         &mut self,
         node: NodeId,
@@ -30,19 +35,29 @@ impl<'owner, 'arena, F: DomExpressionFacts> DomBuilder<'_, 'owner, 'arena, F> {
         let table = resolution.table()?;
         // These identities were resolved by the actual minting factory. Check
         // recorded declarations only, rather than rerunning scope/name lookup.
-        if !table.occurrences().iter().all(|occurrence| {
-            resolution
-                .binding(occurrence.binding)
-                .is_some_and(|binding| {
-                    resolution.accepts(binding)
-                        && binding.declaration().is_some_and(|declaration| {
-                            declaration.namespace == Namespace::Value
-                                && declaration.name == occurrence.name
-                        })
-                })
-        }) {
-            self.reject(node, expression.span, DomUnsupported::FileBinding);
-            return None;
+        let mut reads = Vec::new();
+        for occurrence in table.occurrences() {
+            let Some(binding) = resolution.binding(occurrence.binding).filter(|binding| {
+                resolution.accepts(*binding)
+                    && binding.declaration().is_some_and(|declaration| {
+                        declaration.namespace == Namespace::Value
+                            && declaration.name == occurrence.name
+                    })
+            }) else {
+                self.reject(node, expression.span, DomUnsupported::FileBinding);
+                return None;
+            };
+            if R::RECORD {
+                let Some(kind) = self.reads.classify(occurrence, binding) else {
+                    self.reject(node, expression.span, DomUnsupported::VueReadAccess);
+                    return None;
+                };
+                reads.push(VueRenderRead {
+                    occurrence,
+                    binding,
+                    kind,
+                });
+            }
         }
         let value = if expression.ast.is_literal() {
             ValueKind::LiteralConstant
@@ -55,6 +70,16 @@ impl<'owner, 'arena, F: DomExpressionFacts> DomBuilder<'_, 'owner, 'arena, F> {
         self.facts
             .file_expressions
             .insert(node, DomFileExpression { resolution });
+        if R::RECORD {
+            self.facts.vue_expressions.insert(
+                node,
+                VueRenderExpression {
+                    resolution,
+                    reads,
+                    value,
+                },
+            );
+        }
         Some(value)
     }
 }

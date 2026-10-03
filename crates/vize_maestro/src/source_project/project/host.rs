@@ -6,6 +6,7 @@
 
 use std::sync::Arc;
 
+use super::{ActiveQueries, AtomicU64, Mutex, SourceQueryProject, SourceSnapshotCache};
 use crate::document::DocumentStore;
 use crate::server::ServerState;
 
@@ -23,6 +24,18 @@ impl DocumentHost<'_> {
             Self::Borrowed(documents) => documents,
             Self::SharedStore(documents) => documents,
             Self::Server(state) => &state.documents,
+        }
+    }
+}
+
+impl<'host> SourceQueryProject<'host> {
+    pub(super) fn with_host(host: DocumentHost<'host>) -> Self {
+        Self {
+            host,
+            cache: SourceSnapshotCache::default(),
+            active: Arc::new(ActiveQueries::default()),
+            next_query: AtomicU64::new(0),
+            lifecycle: Mutex::new(()),
         }
     }
 }

@@ -262,7 +262,6 @@ fn declaration_profiles_outside_the_admitted_module_family_stay_incomplete() {
     let source = "const value = 1;";
     for source_type in [
         SourceType::cjs(),
-        SourceType::tsx().with_module(true),
         SourceType::ts()
             .with_module(true)
             .with_typescript_definition(true),

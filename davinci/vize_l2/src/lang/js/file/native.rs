@@ -1,0 +1,305 @@
+//! Selected-owner prototype. Only text/comment/empty root bodies can complete.
+
+use super::{FileProducer, ProgramInput, ProgramScope};
+use crate::artifact::ArtifactError;
+use crate::file::region::native::NativeTemplateWalk;
+use crate::file::{FileArtifact, FileIssueKind, RejectedFile, ScriptUnitId};
+use oxc_parser::AdmittedProgram;
+use vize_l0::Span;
+use vize_l1::{embed::Lang, markup::NativeTemplateComponent};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NativeTemplateIssueKind {
+    Artifact(ArtifactError),
+    Program(FileIssueKind),
+    MissingProgram,
+    DuplicateProgram,
+    InvalidProfile,
+    InvalidEvent,
+    IncompleteChildren,
+    UnsupportedChild,
+    Interrupted,
+    UnsupportedInvocation,
+    UnsupportedExport,
+    ReservedBinding,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct NativeTemplateIssue {
+    pub span: Span,
+    pub kind: NativeTemplateIssueKind,
+}
+#[derive(Clone, Copy)]
+pub(crate) enum NativeRouteState {
+    Scripts,
+    Walking,
+    Complete,
+    Refused(NativeTemplateIssue),
+    Interrupted,
+}
+
+/// Consume original Descriptor-selected ownership before any fallible walk.
+/// The File producer is private and created internally, never paired by caller.
+/// ```compile_fail
+/// use vize_l2::lang::js::{FileProducer, NativeTemplateOwner};
+/// fn replace<'a>(owner: &mut NativeTemplateOwner<'a>, producer: FileProducer<'a>) {
+///     owner.producer = producer;
+/// }
+/// ```
+pub struct NativeTemplateOwner<'a> {
+    selected: NativeTemplateComponent<'a>,
+    producer: FileProducer<'a>,
+    ordinary: Option<ScriptUnitId>,
+    setup: Option<ScriptUnitId>,
+    state: NativeRouteState,
+}
+pub struct RejectedNativeTemplateOwner<'a> {
+    selected: NativeTemplateComponent<'a>,
+    error: ArtifactError,
+}
+impl<'a> RejectedNativeTemplateOwner<'a> {
+    #[must_use]
+    pub fn selected(&self) -> &NativeTemplateComponent<'a> {
+        &self.selected
+    }
+    #[must_use]
+    pub fn error(&self) -> ArtifactError {
+        self.error
+    }
+}
+
+impl<'a> NativeTemplateOwner<'a> {
+    pub fn new(
+        selected: NativeTemplateComponent<'a>,
+    ) -> Result<Self, alloc::boxed::Box<RejectedNativeTemplateOwner<'a>>> {
+        let producer = match FileProducer::new(
+            selected.component().allocator(),
+            selected.component().block().root_source(),
+        ) {
+            Ok(producer) => producer,
+            Err(error) => {
+                return Err(alloc::boxed::Box::new(RejectedNativeTemplateOwner {
+                    selected,
+                    error,
+                }));
+            }
+        };
+        Ok(Self {
+            selected,
+            producer,
+            ordinary: None,
+            setup: None,
+            state: NativeRouteState::Scripts,
+        })
+    }
+    #[must_use]
+    pub fn selected(&self) -> &NativeTemplateComponent<'a> {
+        &self.selected
+    }
+    pub fn ordinary_program(
+        &mut self,
+        admitted: AdmittedProgram<'_, 'a>,
+    ) -> Result<ScriptUnitId, NativeTemplateIssue> {
+        self.program(admitted, false)
+    }
+    pub fn setup_program(
+        &mut self,
+        admitted: AdmittedProgram<'_, 'a>,
+    ) -> Result<ScriptUnitId, NativeTemplateIssue> {
+        self.program(admitted, true)
+    }
+    fn program(
+        &mut self,
+        admitted: AdmittedProgram<'_, 'a>,
+        setup: bool,
+    ) -> Result<ScriptUnitId, NativeTemplateIssue> {
+        let span = self.selected.component().block().span();
+        if !matches!(self.state, NativeRouteState::Scripts) {
+            return self.refuse(span, NativeTemplateIssueKind::Interrupted);
+        }
+        let selection = if setup {
+            self.selected.setup()
+        } else {
+            self.selected.ordinary()
+        };
+        let Some(selection) = selection else {
+            return self.refuse(span, NativeTemplateIssueKind::MissingProgram);
+        };
+        let span = selection.block().span();
+        let previous = if setup { self.setup } else { self.ordinary };
+        if previous.is_some() {
+            return self.refuse(span, NativeTemplateIssueKind::DuplicateProgram);
+        }
+        let source_type = admitted.source_type();
+        if !source_type.is_module()
+            || source_type.is_unambiguous()
+            || source_type.is_jsx()
+            || source_type.is_typescript_definition()
+            || source_type.is_typescript() != (selection.lang() == Lang::Ts)
+        {
+            return self.refuse(span, NativeTemplateIssueKind::InvalidProfile);
+        }
+        let input =
+            match ProgramInput::checked(admitted, selection.block(), selection.container_index()) {
+                Ok(input) => input,
+                Err(error) => {
+                    return self.refuse(error.span, NativeTemplateIssueKind::Program(error.kind));
+                }
+            };
+        // Delegate the same actual Program entry and its single declaration walk.
+        let result = self.producer.program(
+            input,
+            if setup {
+                ProgramScope::Nested
+            } else {
+                ProgramScope::Module
+            },
+        );
+        let unit = match result {
+            Ok(unit) => unit,
+            Err(error) => {
+                return self.refuse(error.span, NativeTemplateIssueKind::Program(error.kind));
+            }
+        };
+        if setup {
+            self.setup = Some(unit);
+        } else {
+            self.ordinary = Some(unit);
+        }
+        Ok(unit)
+    }
+    pub fn begin(&mut self) -> Result<NativeTemplateWalk<'_, 'a>, NativeTemplateIssue> {
+        let span = self.selected.component().block().span();
+        if !matches!(self.state, NativeRouteState::Scripts) {
+            return self.refuse(span, NativeTemplateIssueKind::Interrupted);
+        }
+        if self.selected.ordinary().is_some() != self.ordinary.is_some()
+            || self.selected.setup().is_some() != self.setup.is_some()
+        {
+            return self.refuse(span, NativeTemplateIssueKind::MissingProgram);
+        }
+        if !self.producer.builder.facts.issues.is_empty()
+            || !self
+                .producer
+                .builder
+                .facts
+                .units
+                .iter()
+                .all(crate::file::ScriptUnit::walk_completed)
+        {
+            return self.refuse(
+                span,
+                NativeTemplateIssueKind::Program(FileIssueKind::UnsupportedSyntax),
+            );
+        }
+        let carrier = self.selected.component().carrier();
+        // The same Program walk records these bits even without an observer.
+        // This private two-selected-unit preflight does not enumerate the AST.
+        for unit in &self.producer.builder.facts.units {
+            let kind = if unit.origin.has_call {
+                Some(NativeTemplateIssueKind::UnsupportedInvocation)
+            } else if unit.origin.has_export {
+                Some(NativeTemplateIssueKind::UnsupportedExport)
+            } else if unit.origin.reserved_binding {
+                Some(NativeTemplateIssueKind::ReservedBinding)
+            } else {
+                None
+            };
+            if let Some(kind) = kind {
+                let span = unit.span;
+                return self.refuse(span, kind);
+            }
+        }
+        if !carrier.errors.is_empty() || !carrier.unsupported.is_empty() {
+            return self.refuse(span, NativeTemplateIssueKind::UnsupportedChild);
+        }
+        NativeTemplateWalk::new(
+            &self.selected,
+            &mut self.producer.builder,
+            &mut self.state,
+            self.setup,
+        )
+    }
+    fn refuse<T>(
+        &mut self,
+        span: Span,
+        kind: NativeTemplateIssueKind,
+    ) -> Result<T, NativeTemplateIssue> {
+        let issue = NativeTemplateIssue { span, kind };
+        self.state = NativeRouteState::Refused(issue);
+        Err(issue)
+    }
+    #[must_use]
+    pub fn finish(self) -> NativeTemplateFile<'a> {
+        NativeTemplateFile {
+            selected: self.selected,
+            outcome: self.producer.finish(),
+            state: self.state,
+        }
+    }
+}
+
+/// Keep original Component and canonical File together across movement/failure.
+/// ```compile_fail
+/// use vize_l2::{file::FileArtifact, lang::js::NativeTemplateFile};
+/// fn replace<'a>(owner: &mut NativeTemplateFile<'a>, file: FileArtifact<'a>) {
+///     owner.outcome = Ok(file);
+/// }
+/// ```
+/// ```compile_fail
+/// use vize_l2::lang::js::NativeTemplateFile;
+/// fn move_after_view(owner: NativeTemplateFile<'_>) {
+///     if let Ok(view) = owner.view() { drop(owner); let _ = view.file(); }
+/// }
+/// ```
+pub struct NativeTemplateFile<'a> {
+    selected: NativeTemplateComponent<'a>,
+    outcome: Result<FileArtifact<'a>, RejectedFile<'a>>,
+    state: NativeRouteState,
+}
+impl<'a> NativeTemplateFile<'a> {
+    #[must_use]
+    pub fn selected(&self) -> &NativeTemplateComponent<'a> {
+        &self.selected
+    }
+    #[must_use]
+    pub fn file(&self) -> Option<&FileArtifact<'a>> {
+        self.outcome.as_ref().ok()
+    }
+    #[must_use]
+    pub fn rejected_file(&self) -> Option<&RejectedFile<'a>> {
+        self.outcome.as_ref().err()
+    }
+    pub fn view(&self) -> Result<NativeTemplateView<'_, 'a>, NativeTemplateIssue> {
+        if matches!(self.state, NativeRouteState::Complete)
+            && self.file().is_some_and(FileArtifact::is_complete)
+        {
+            return Ok(NativeTemplateView { owner: self });
+        }
+        let issue = match self.state {
+            NativeRouteState::Refused(issue) => issue,
+            _ => NativeTemplateIssue {
+                span: self.selected.component().block().span(),
+                kind: NativeTemplateIssueKind::Interrupted,
+            },
+        };
+        Err(issue)
+    }
+}
+/// Constructor private: no external File+Component pair or numeric registrar.
+/// ```compile_fail
+/// use vize_l2::lang::js::NativeTemplateView;
+/// fn copy(view: NativeTemplateView<'_, '_>) { let _ = view.clone(); }
+/// ```
+pub struct NativeTemplateView<'f, 'a> {
+    owner: &'f NativeTemplateFile<'a>,
+}
+impl<'f, 'a> NativeTemplateView<'f, 'a> {
+    #[must_use]
+    pub fn owner(&self) -> &'f NativeTemplateFile<'a> {
+        self.owner
+    }
+    #[must_use]
+    pub fn file(&self) -> Option<&'f FileArtifact<'a>> {
+        self.owner.file()
+    }
+}
