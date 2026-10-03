@@ -3,6 +3,7 @@
 mod native_textarea_mustache {
     mod contexts;
     mod custody;
+    mod literal_context;
     mod markers;
     mod opaque;
     mod refusal;

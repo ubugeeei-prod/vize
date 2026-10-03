@@ -1047,8 +1047,10 @@ linter	Linter	test/dev	crates/vize_patina/tests/native_syntax_img_alt/tabindex_n
 linter	Linter	test/dev	crates/vize_patina/tests/native_syntax_img_alt/tabindex_no_positive.rs	2	carton	Carton host/compatibility	old	vize_carton	legacy	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_textarea_mustache/contexts.rs	4	l0	L0	stage	vize_l0	preferred	2
 linter	Linter	test/dev	crates/vize_patina/tests/native_textarea_mustache/custody.rs	3	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/native_textarea_mustache/literal_context.rs	4	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/native_textarea_mustache/literal_context.rs	4	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_textarea_mustache/markers.rs	2	l0	L0	stage	vize_l0	preferred	1
-linter	Linter	test/dev	crates/vize_patina/tests/native_textarea_mustache/opaque.rs	2	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/native_textarea_mustache/opaque.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_textarea_mustache/refusal.rs	2	l0	L0	stage	vize_l0	preferred	3
 linter	Linter	test/dev	crates/vize_patina/tests/native_textarea_mustache/refusal.rs	2	l1	L1	stage	vize_l1	preferred	3
 linter	Linter	test/dev	crates/vize_patina/tests/native_textarea_mustache/support.rs	2	l0	L0	stage	vize_l0	preferred	1

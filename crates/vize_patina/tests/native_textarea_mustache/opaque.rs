@@ -1,6 +1,8 @@
-use super::support::{LOCALES, NeverLookup, expected, parity, selected};
+use super::support::{
+    LOCALES, NeverLookup, complete, expected, parity, registered, selected, span,
+};
 use vize_l0::{Allocator, cstr};
-use vize_patina::native::NativeSyntaxLint;
+use vize_patina::native::{NativeSyntaxLint, NativeTextareaLintError};
 
 #[test]
 fn exact_authored_lowercase_unqualified_tag_contract_has_no_name_guess() {
@@ -121,7 +123,23 @@ fn literal_pre_on_the_original_header_freezes_markers_without_a_body_certificate
 #[test]
 fn inherited_exact_pre_context_preserves_clean_original_output() {
     let source = "<template><div v-pre><textarea>{{x}}</textarea></div></template>";
+    let arena = Allocator::default();
+    let owner = selected(&arena, source);
+    let parent = owner.children().next().unwrap().into_element().unwrap();
+    let element = parent.children().next().unwrap().into_element().unwrap();
+    let lint = NativeSyntaxLint::new(&owner).unwrap();
+    let header = lint.header_facts(&element).unwrap();
+    let facts = header
+        .child_facts(element.children().next().unwrap())
+        .unwrap();
+    assert_eq!(facts.markers().unwrap().len(), 0);
+    assert_eq!(
+        facts.no_textarea_mustache(&NeverLookup).err(),
+        Some(NativeTextareaLintError::InheritedLiteralContext {
+            span: span(source, "<textarea>")
+        })
+    );
     for locale in LOCALES {
-        assert_eq!(parity(source, locale), expected(vec![]));
+        assert_eq!(complete(&registered(source, locale)), expected(vec![]));
     }
 }
