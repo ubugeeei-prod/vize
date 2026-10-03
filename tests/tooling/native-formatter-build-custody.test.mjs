@@ -7,6 +7,8 @@ import {
   bytes,
   emittedNativeArtifact,
   captureNativeHistoryBuild,
+  nativeHistoryBuildEnvironment,
+  validateNativeHistoryEnvironment,
 } from "../../npm/native/scripts/formatter-history-build.mjs";
 
 // Synthetic admission controls only. Real emitted addon custody is proved by
@@ -59,4 +61,21 @@ void test("failed build admission retains raw actual command/process streams bef
   assert.deepEqual(frame.stderr, bytes(stderr));
   assert.equal(frame.exitStatus, 1);
   assert(!fs.existsSync(path.join(directory, "build-receipt.json")));
+});
+
+void test("build environment custody compares the actual builder before and after, not a later observer", () => {
+  const builder = { ...nativeHistoryBuildEnvironment(), CARGO_BUILD_JOBS: "12" };
+  const observer = { ...builder, CARGO_BUILD_JOBS: null };
+  assert.notDeepEqual(builder, observer);
+  assert.deepEqual(validateNativeHistoryEnvironment({ before: builder, after: { ...builder } }), {
+    before: builder,
+    after: builder,
+  });
+  assert.throws(() => validateNativeHistoryEnvironment({ before: builder, after: observer }));
+  assert.throws(() =>
+    validateNativeHistoryEnvironment({ before: builder, after: { ...builder, extra: "unknown" } }),
+  );
+  assert.throws(() =>
+    validateNativeHistoryEnvironment({ before: builder, after: { ...builder, CARGO: 12 } }),
+  );
 });

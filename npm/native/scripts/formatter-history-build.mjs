@@ -12,20 +12,35 @@ export const nativeHistoryReceipt = (nativeDir) =>
 export const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 export const bytes = (value) => ({ base64: value.toString("base64"), sha256: hash(value) });
 
-function buildEnvironment() {
+const buildEnvironmentKeys = [
+  "CARGO",
+  "CARGO_TARGET_DIR",
+  "CARGO_BUILD_TARGET",
+  "CARGO_BUILD_JOBS",
+  "RUSTFLAGS",
+  "CARGO_ENCODED_RUSTFLAGS",
+  "CC",
+  "CXX",
+  "SDKROOT",
+];
+export function nativeHistoryBuildEnvironment() {
   return Object.fromEntries(
-    [
-      "CARGO",
-      "CARGO_TARGET_DIR",
-      "CARGO_BUILD_TARGET",
-      "CARGO_BUILD_JOBS",
-      "RUSTFLAGS",
-      "CARGO_ENCODED_RUSTFLAGS",
-      "CC",
-      "CXX",
-      "SDKROOT",
-    ].map((key) => [key, globalThis.process.env[key] ?? null]),
+    buildEnvironmentKeys.map((key) => [key, globalThis.process.env[key] ?? null]),
   );
+}
+export function validateNativeHistoryEnvironment(environment) {
+  assert.deepEqual(Object.keys(environment), ["before", "after"]);
+  for (const observed of [environment.before, environment.after]) {
+    assert.deepEqual(Object.keys(observed), buildEnvironmentKeys);
+    for (const value of Object.values(observed))
+      assert(value === null || typeof value === "string");
+  }
+  assert.deepEqual(
+    environment.after,
+    environment.before,
+    "build environment changed during the actual build",
+  );
+  return environment;
 }
 function cargoVersion() {
   return execFileSync(globalThis.process.env.CARGO ?? "cargo", ["-V"]).toString();
@@ -118,7 +133,15 @@ export function captureNativeHistoryBuild(nativeDir, before, command, result) {
   assert.equal(process.exitStatus, 0);
   assert.equal(process.signal, null);
   assert.equal(process.error, null);
-  assert.deepEqual(nativeHistorySource(nativeDir), before, "source changed during native build");
+  assert.deepEqual(
+    nativeHistorySource(nativeDir),
+    before.source,
+    "source changed during native build",
+  );
+  const environment = validateNativeHistoryEnvironment({
+    before: before.environment,
+    after: nativeHistoryBuildEnvironment(),
+  });
   const emitted = emittedNativeArtifact(stdout);
   const generated = fs
     .readdirSync(path.join(nativeDir, ".artifacts/native"))
@@ -136,8 +159,8 @@ export function captureNativeHistoryBuild(nativeDir, before, command, result) {
   const receipt = {
     schema: "vize.public-native-formatter-build",
     version: 1,
-    source: before,
-    environment: buildEnvironment(),
+    source: before.source,
+    environment,
     process,
     emitted,
     generated: { name: generated[0], sha256: hash(generatedBytes) },
@@ -157,7 +180,7 @@ export function validateNativeHistoryBuild(nativeDir, receipt) {
   assert.equal(receipt.schema, "vize.public-native-formatter-build");
   assert.equal(receipt.version, 1);
   assert.deepEqual(receipt.source, nativeHistorySource(nativeDir));
-  assert.deepEqual(receipt.environment, buildEnvironment());
+  validateNativeHistoryEnvironment(receipt.environment);
   assert.deepEqual(receipt.process.command, [
     "pnpm",
     "exec",

@@ -48,3 +48,14 @@ the two Node test registrations returned unconsumed promises. Mark their
 registration results with `void`, preserving both callbacks, complete vectors,
 assertions and production build custody. No warning waiver or runtime credit
 is added; corrected-source Actions and protected acceptance remain required.
+
+The first child244fbce25 hosted campaign genuinely emitted and froze the addon
+(artifact11283519449), but stopped before public calls: the build used twelve
+Cargo jobs while the later JS observer legitimately had no Cargo jobs variable.
+Build environment is its own actor's custody. Capture and require identical
+before/after values in the actual builder, while observers retain their separate
+actual environment. Recheck unchanged source, full streams, toolchain and exact
+emitted/generated/frozen bytes across actors; do not infer runtime Cargo settings
+from the earlier build. A new admission law rejects within-builder mutation and
+malformed/unknown fields. The failed original packet remains source-scoped and
+grants no public-call acceptance. Fresh both-head Actions remain required.

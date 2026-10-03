@@ -3,7 +3,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync, spawnSync } from "node:child_process";
 
-import { captureNativeHistoryBuild, nativeHistorySource } from "./formatter-history-build.mjs";
+import {
+  captureNativeHistoryBuild,
+  nativeHistorySource,
+  nativeHistoryBuildEnvironment,
+} from "./formatter-history-build.mjs";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const packageDir = path.resolve(scriptDir, "..");
@@ -83,7 +87,9 @@ if (isRelease) {
 
 const captureHistory =
   process.env.GITHUB_ACTIONS === "true" && process.platform === "linux" && !isRelease;
-const before = captureHistory ? nativeHistorySource(packageDir) : null;
+const before = captureHistory
+  ? { source: nativeHistorySource(packageDir), environment: nativeHistoryBuildEnvironment() }
+  : null;
 if (captureHistory) buildArgs.push("--", "--message-format=json-render-diagnostics", "--locked");
 
 const buildResult = spawnSync("pnpm", buildArgs, {
