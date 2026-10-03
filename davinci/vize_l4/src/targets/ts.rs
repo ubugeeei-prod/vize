@@ -1,4 +1,4 @@
-//! Checkable original JS/TS Modules, retaining their sole completed File owner.
+//! Checkable original JS/TS/JSX/TSX Modules, retaining their completed File owner.
 //!
 //! Vue template projection and the Canon default route remain unfinished
 //! (#6849, #6879). This bounded entry never rewrites or reparses a Program.
@@ -6,6 +6,7 @@
 use crate::write::{EmitDocument, LinkSink, NoLinks, Recorded, Writer};
 use vize_l0::Span;
 use vize_l2::file::{FileArtifact, ScriptUnit};
+use vize_l2::lang::js::JsxFile;
 
 mod mapping;
 pub use mapping::MappingError;
@@ -18,6 +19,8 @@ const MODULE_SUFFIX: &str = "\n;\nexport {};\n";
 pub enum SourceKind {
     JavaScript,
     TypeScript,
+    Jsx,
+    Tsx,
 }
 
 impl SourceKind {
@@ -26,6 +29,8 @@ impl SourceKind {
         match self {
             Self::JavaScript => "mjs",
             Self::TypeScript => "ts",
+            Self::Jsx => "jsx",
+            Self::Tsx => "tsx",
         }
     }
 }
@@ -95,19 +100,51 @@ impl<'file, 'arena> ProgramProjection<'file, 'arena> {
 pub fn project_program<'file, 'arena>(
     file: &'file FileArtifact<'arena>,
 ) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
-    project::<Recorded>(file)
+    project::<Recorded, false>(file)
 }
 
 /// Identical output without links. Diagnostic mapping explicitly refuses it.
 pub fn project_program_no_links<'file, 'arena>(
     file: &'file FileArtifact<'arena>,
 ) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
-    project::<NoLinks>(file)
+    project::<NoLinks, false>(file)
+}
+
+/// Preserve the whole original JSX/TSX Module through its genuine owning body.
+/// This borrows the owner's actual File; it performs no parse or semantic walk.
+///
+/// A separately supplied File cannot establish JSX ownership:
+/// ```compile_fail
+/// use vize_l2::file::FileArtifact;
+/// use vize_l4::targets::ts::project_jsx_program;
+/// fn forge(file: &FileArtifact<'_>) { let _ = project_jsx_program(file); }
+/// ```
+/// The original owning body cannot be dropped while its projection is live:
+/// ```compile_fail
+/// use vize_l2::lang::js::JsxFile;
+/// use vize_l4::targets::ts::project_jsx_program;
+/// fn discard(owner: JsxFile<'_>) {
+///     let projection = project_jsx_program(&owner).unwrap();
+///     drop(owner);
+///     let _ = projection.document();
+/// }
+/// ```
+pub fn project_jsx_program<'file, 'arena>(
+    owner: &'file JsxFile<'arena>,
+) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
+    project::<Recorded, true>(owner.file())
+}
+
+/// Identical JSX/TSX output without links; diagnostic mapping refuses it.
+pub fn project_jsx_program_no_links<'file, 'arena>(
+    owner: &'file JsxFile<'arena>,
+) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
+    project::<NoLinks, true>(owner.file())
 }
 
 // Only the two concrete built-in sinks can mint this result. A caller-defined
 // LinkSink cannot substitute arbitrary output through into_document().
-fn project<'file, 'arena, L: LinkSink>(
+fn project<'file, 'arena, L: LinkSink, const JSX: bool>(
     file: &'file FileArtifact<'arena>,
 ) -> Result<ProgramProjection<'file, 'arena>, ProjectionError> {
     if !file.is_complete() {
@@ -126,7 +163,7 @@ fn project<'file, 'arena, L: LinkSink>(
     if unit.span != Span::new(0, length) {
         return Err(ProjectionError::PartialSource);
     }
-    if !unit.profile.module || unit.profile.jsx {
+    if !unit.profile.module || unit.profile.jsx != JSX {
         return Err(ProjectionError::UnsupportedProfile);
     }
     if !file
@@ -139,10 +176,11 @@ fn project<'file, 'arena, L: LinkSink>(
     if file.artifact().node_count() != 0 || !file.artifact().root().ops.is_empty() {
         return Err(ProjectionError::TemplateOperations);
     }
-    let kind = if unit.profile.typescript {
-        SourceKind::TypeScript
-    } else {
-        SourceKind::JavaScript
+    let kind = match (unit.profile.typescript, JSX) {
+        (false, false) => SourceKind::JavaScript,
+        (true, false) => SourceKind::TypeScript,
+        (false, true) => SourceKind::Jsx,
+        (true, true) => SourceKind::Tsx,
     };
     let mut writer = Writer::<L>::with_capacity(capacity);
     writer.push_linked(source, unit.span);

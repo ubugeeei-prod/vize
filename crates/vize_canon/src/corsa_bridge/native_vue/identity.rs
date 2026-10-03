@@ -63,6 +63,9 @@ impl Bounds {
         filename.push(match kind {
             SourceKind::JavaScript => ".mjs",
             SourceKind::TypeScript => ".ts",
+            SourceKind::Jsx | SourceKind::Tsx => {
+                return Err(fail(OriginalProgramError::SourceKindMismatch));
+            }
         });
         let projected = PathBuf::from(filename);
         if std::fs::symlink_metadata(&projected).is_ok() {

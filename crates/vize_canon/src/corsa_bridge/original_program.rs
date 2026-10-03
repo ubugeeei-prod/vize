@@ -174,6 +174,7 @@ impl CorsaBridge {
                     && !source_path.to_string_lossy().ends_with(".d.ts")
                     && !source_path.to_string_lossy().ends_with(".d.mts")
             }
+            SourceKind::Jsx | SourceKind::Tsx => false,
         };
         if !correct_kind {
             return Err(OriginalProgramError::SourceKindMismatch);
