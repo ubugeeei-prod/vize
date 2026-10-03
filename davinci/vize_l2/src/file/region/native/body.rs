@@ -9,6 +9,8 @@ use vize_l1::{
     markup::{NativeChild, NativeElement},
 };
 
+mod header;
+
 pub(super) fn construct<'a, R: ComponentFactory<'a>>(
     child: NativeChild<'_, 'a>,
     region: &mut R,
@@ -65,7 +67,6 @@ fn element<'a, R: ComponentFactory<'a>>(
             "template" | "script" | "style" | "pre" | "textarea" | "title"
         )
         || surface.open.is_verbatim()
-        || !surface.open.attrs.is_empty()
         || surface.open.lt_name.is_missing()
         || surface.open.gt.is_missing()
         || surface
@@ -93,7 +94,7 @@ fn element<'a, R: ComponentFactory<'a>>(
     }
     .ok_or(Kind::InvalidEvent)?;
     let span = Span::new(opening.start, ending.end);
-    let attributes = vize_l0::Vec::new_in(&original.component().allocator());
+    let attributes = header::construct(&original)?;
     let mut result = Err(Kind::IncompleteChildren);
     let node = region
         .element(

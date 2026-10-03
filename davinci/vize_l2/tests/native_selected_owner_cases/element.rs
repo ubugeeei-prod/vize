@@ -199,10 +199,10 @@ fn foreign_reordered_and_nested_children_cannot_stand_in_for_a_root_element()
 }
 
 #[test]
-fn header_namespace_special_and_operand_routes_remain_unavailable() -> Result<(), &'static str> {
+fn directive_namespace_special_and_operand_routes_remain_unavailable() -> Result<(), &'static str> {
     let arena = Allocator::default();
     for body in [
-        "<div id='x'/>",
+        "<div :id='x'/>",
         "<div v-pre/>",
         "<div v-if='true'/>",
         "<div>{{1}}</div>",

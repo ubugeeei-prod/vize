@@ -1,4 +1,4 @@
-//! Original root cursor and private zero-header HTML body construction.
+//! Original root cursor and private ordinary HTML header/body construction.
 
 use super::{RootRegion, TemplatePolicy};
 use crate::file::template::TemplateWalk;
