@@ -77,3 +77,43 @@ required aggregates. No build, job, gate, instruction budget or default path is
 added or removed. The failed original log stays source-qualified; new parent
 and child Actions plus protected candidate execution and actual merge remain
 required. Earlier child `6cabd2b2`'s 25 genuine calls qualify only that source.
+
+## Protected replay output backpressure
+
+Parent `b417f772` passed its exact-source Actions, but protected candidate
+`0b5014cf88422ae49bc7ac60f4142f1dfbfeca34` failed Check37153620863's
+check-js job111292373083. Cargo reported successful compilation in 52.55s;
+the wrapper then truncated its captured JSON replay mid-record and reported
+`Failed to spawn process: Resource temporarily unavailable (os error 11)`.
+The owner removed the known-red entry while preserving healthy peer candidates.
+Its original complete failed log remains retained. Its actual all-100 three-run,
+ceiling/ratchet/hold success and artifact11284693314 qualify only that failed
+candidate and supply no actual merge or successor acceptance.
+
+The pinned installed Vite+ 0.1.24 references Vite Task `5833b37`. Its
+[pipe drain](https://github.com/voidzero-dev/vite-task/blob/5833b37/crates/vite_task/src/session/execute/pipe.rs)
+uses synchronous write_all/flush; the
+[execution wrapper](https://github.com/voidzero-dev/vite-task/blob/5833b37/crates/vite_task/src/session/execute/mod.rs)
+maps drain failures to the same Spawn message and cancels the child. This
+supports an output-backpressure diagnosis; there was no PID/thread measurement.
+The upstream [corrected diagnosis](https://github.com/voidzero-dev/vite-task/issues/506#issuecomment-5021666986)
+and [merged blocking-stdio repair](https://github.com/voidzero-dev/vite-plus/pull/2173)
+identify Node's shared nonblocking output descriptors as the cause of this
+failure under slow consumers.
+
+Change only Check's existing debug invocation to
+`vp run --no-cache --filter './npm/native' build:debug`, retaining its entire
+build/capture script and following `vp run --workspace-root check:ci`. The pinned
+interleaved reporter inherits stdio for uncached spawned scripts, bypassing the
+defective cached drain and ensuring a real fresh measurement build. No dependency
+upgrade, resource/performance cap, additional build or gate waiver is introduced.
+
+A pure Node law invokes the actual installed catalog-matching VP with script
+caching enabled in an isolated workspace and the explicit uncached command.
+Paused/slow consumers verify all 1,212,416 stdout and 671,744 stderr bytes,
+including genuine reporter framing, for both exit0 and exit1. Both invocations
+must actually run once; truncation, substituted output, failure masking and
+unexpected termination fail the law. It runs no Cargo or package installation
+and grants no native formatter credit. Fresh parent/child source Actions,
+source-built whole packets, protected full suites/all-100 and actual merge
+remain required; the old candidate is never reused as proof.

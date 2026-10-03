@@ -13,7 +13,7 @@ test("JS check runtime action installs the native build prerequisites", () => {
 
   assert.match(
     checkJsJob,
-    /vp run --filter '\.\/npm\/native' build:debug && vp run --workspace-root check:ci/,
+    /vp run --no-cache --filter '\.\/npm\/native' build:debug && vp run --workspace-root check:ci/,
   );
   assert.match(action, /setup-moonbit/);
   assert.match(action, /dtolnay\/rust-toolchain/);
