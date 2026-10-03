@@ -37,3 +37,8 @@ crates, real resolved/non-product changes and the actual check producer's
 source-qualified report. Hosted exact-head checks, protected composed checks
 and actual merge remain required. This decision records a queue-conflict fix,
 not a measured whole-gate latency improvement or completed Davinci product.
+
+The first hosted source check at `06c5822b5359be312a08218a2534149bd930403e`
+rejected four unhandled Node test registration promises under the existing
+zero-warning gate. Marking the registrations explicitly `void` preserves the
+same tests; fresh exact-head Actions remain required.

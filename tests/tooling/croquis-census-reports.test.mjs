@@ -30,7 +30,7 @@ function analysis(grep, resolved = 0, nonProduct = 0) {
   };
 }
 
-test("unrelated native grep additions retain exact committed consumption and fresh diagnostics", () => {
+void test("unrelated native grep additions retain exact committed consumption and fresh diagnostics", () => {
   const before = analysis(2, 1);
   const after = analysis(3, 1);
   assert.deepEqual(
@@ -41,7 +41,7 @@ test("unrelated native grep additions retain exact committed consumption and fre
   assert.match(renderSummary(products, after), /`vize_l2` \(1\/3\)/u);
 });
 
-test("grep-only native crates remain visible without generating a conflicting committed count", () => {
+void test("grep-only native crates remain visible without generating a conflicting committed count", () => {
   const result = analysis(4);
   assert.equal(renderCroquisArtifacts(products, result).length, 1);
   assert.match(renderSummary(products, result), /`vize_l2` \(0\/4\)/u);
@@ -53,13 +53,13 @@ test("grep-only native crates remain visible without generating a conflicting co
   assert.equal(gateViolations(ungated, result).missing.includes("UngatedNewProduct"), true);
 });
 
-test("resolved consumption and non-product changes still change byte-compared artifacts", () => {
+void test("resolved consumption and non-product changes still change byte-compared artifacts", () => {
   const original = renderCroquisArtifacts(products, analysis(4, 1, 1));
   assert.notDeepEqual(renderCroquisArtifacts(products, analysis(4, 2, 1)), original);
   assert.notDeepEqual(renderCroquisArtifacts(products, analysis(4, 1, 2)), original);
 });
 
-test("the actual check producer prints source-qualified per-crate diagnostics", () => {
+void test("the actual check producer prints source-qualified per-crate diagnostics", () => {
   const generator = fileURLToPath(
     new URL("../../tools/support/compat/davinci/croquis-consumers.mjs", import.meta.url),
   );
