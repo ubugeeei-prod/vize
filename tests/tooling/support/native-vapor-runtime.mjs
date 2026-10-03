@@ -51,7 +51,9 @@ function observe(node) {
     1,
     node.localName,
     node.namespaceURI,
-    [...node.attributes].map((attribute) => [attribute.name, attribute.value]).sort(),
+    [...node.attributes]
+      .map((attribute) => [attribute.name, attribute.value])
+      .sort(([left], [right]) => left.localeCompare(right)),
     [...node.childNodes].map(observe),
   ];
 }

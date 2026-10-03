@@ -33,7 +33,7 @@ function position(text, bytes) {
   return { line: lines.length, column: lines.at(-1).length };
 }
 
-test("frozen complete modules retain exact official rc.9 output and independent maps", () => {
+await test("frozen complete modules retain exact official rc.9 output and independent maps", () => {
   assert.equal(vueVaporVersion, pack.version);
   assert.equal(pack.fixtures.length, 12);
   for (const fixture of pack.fixtures) {
@@ -60,7 +60,7 @@ test("frozen complete modules retain exact official rc.9 output and independent 
   }
 });
 
-test(
+await test(
   "genuine captured modules and maps equal the entire frozen output",
   { skip: !captures },
   () => {
@@ -77,7 +77,7 @@ test(
   },
 );
 
-test("whole modules execute with real rc.9 nodes, comments, attrs and clone disposal", () => {
+await test("whole modules execute with real rc.9 nodes, comments, attrs and clone disposal", () => {
   const inputs = pack.fixtures.map((fixture, index) => {
     const roots = officialCompilerVapor
       .parse(fixture.template)
@@ -111,7 +111,7 @@ test("whole modules execute with real rc.9 nodes, comments, attrs and clone disp
     );
 });
 
-test("actual runtime judge rejects changed text and detached hydration blocks", () => {
+await test("actual runtime judge rejects changed text and detached hydration blocks", () => {
   const fixture = pack.fixtures.find((fixture) => fixture.id === "text");
   for (const code of [
     fixture.code.replace('"hello"', '"changed"'),
