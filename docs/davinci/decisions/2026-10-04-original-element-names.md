@@ -57,6 +57,12 @@ Actual source-head Actions,
 protected full suites, unchanged all100 instruction measurements and literal
 merge are required. No local Cargo/build/install is performed.
 
+The lifetime law ends its temporary Element projection in a lexical scope
+instead of calling `drop` on a type without Drop. The original borrowed receipt,
+owner lifetime, all twelve laws and every production byte are conserved. This
+source-only Clippy correction needs its own exact-head Actions; no earlier
+head's unexecuted or green checks transfer to the successor.
+
 Next genuine consumer must retain the original whole owner, reuse the same
 construction/iteration, map checked UTF-8 names to full-source UTF-16 and obey
 source/config/version/cancel/close publication guards. Pin complete original

@@ -202,11 +202,11 @@ fn owner_move_reborrow_and_query_order_preserve_original_names_without_arena_gro
         NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block()).unwrap();
     let owner = core::hint::black_box(owner);
     let before = arena.allocated_bytes();
-    let first = owner.children().next().unwrap().into_element().unwrap();
+    let (original, names) = {
+        let first = owner.children().next().unwrap().into_element().unwrap();
+        (first.surface(), first.names().unwrap())
+    };
     let second = owner.children().nth(1).unwrap().into_element().unwrap();
-    let original = first.surface();
-    let names = first.names().unwrap();
-    drop(first);
     let next = second.names().unwrap();
     for _ in 0..16 {
         let projection = owner.children().next().unwrap().into_element().unwrap();
