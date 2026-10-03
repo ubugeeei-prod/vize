@@ -85,6 +85,14 @@ adapter now uses the existing public root re-export. This changes no oracle,
 case, assertion or product API. The original failed source and complete log
 remain retained; no ten-law execution is credited from that attempt.
 
+The same attempt's full tooling suite found one failure among 5,544 tests:
+the two new differential callers were missing from the existing reviewed
+host-i18n import registry. Only their exact test paths and literal
+`Locale`/`translator` imports are registered. Three boundary laws keep changed
+imports, Carton storage, foreign paths and native production imports rejected.
+The genuine catalog and locale implementation remain the oracle; no substitute
+catalog, broad import exception or storage/dependency gate change is introduced.
+
 Other syntax rules, dynamic/object binding admission, every Vue dialect,
 semantic linting on L2/facts, autofix span edits, complete linter fix-history,
 default route replacement and complete native Patina remain unfinished.
