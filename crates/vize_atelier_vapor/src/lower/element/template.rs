@@ -11,7 +11,8 @@ use vize_carton::ensure_sufficient_stack;
 /// Generate element template string (recursively includes static children)
 #[inline(always)]
 pub(crate) fn generate_element_template(el: &ElementNode<'_>, scope_id: Option<&str>) -> String {
-    let mut template = EmitDocument::new(false);
+    let mut template =
+        EmitDocument::with_capacity((el.loc.span.end - el.loc.span.start) as usize, false);
     write_element_template(&mut template, el, scope_id);
     template.into_string()
 }
@@ -22,7 +23,8 @@ pub(crate) fn generate_element_template_spanned(
     el: &ElementNode<'_>,
     scope_id: Option<&str>,
 ) -> EmitDocument {
-    let mut template = EmitDocument::default();
+    let mut template =
+        EmitDocument::with_capacity((el.loc.span.end - el.loc.span.start) as usize, true);
     write_element_template(&mut template, el, scope_id);
     template
 }
