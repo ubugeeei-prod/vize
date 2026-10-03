@@ -94,7 +94,7 @@ impl<'s, 'a> Retained<'s, 'a> {
             }
             let value = match binding {
                 BindingOp::Bind(bind) => bind.value,
-                BindingOp::On(on) => on.handler,
+                BindingOp::On(on) => on.expression(),
                 BindingOp::Model(model) => Some(model.contract.read),
                 BindingOp::VueShow(show) => Some(show.value),
                 BindingOp::VueHtml(html) => html.value,

@@ -12,6 +12,7 @@ use crate::expr::JsExpr;
 
 mod for_head;
 mod handler;
+pub(crate) use handler::resolve_handler_facts;
 pub(crate) mod sink;
 mod syntax;
 pub use syntax::{SyntaxEdge, SyntaxKind};

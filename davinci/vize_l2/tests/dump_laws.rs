@@ -156,6 +156,7 @@ fn hand_built() -> Page {
                             name: Some(Name::Static(String::from("press"))),
                             modifiers: vec![String::from("stop")],
                             handler: None,
+                            native_handler: None,
                             span: Span::new(158, 160),
                         }),
                     ],

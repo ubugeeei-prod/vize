@@ -182,12 +182,15 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                 }
             }
             l2::BindingOp::On(on) => {
+                if on.handler.is_some_and(|handler| handler.body().is_some()) {
+                    return Err(LegacyReason::Binding.into());
+                }
                 let Some(name) = &on.name else {
-                    let object = self.required_value(on.handler.as_ref())?;
+                    let object = self.required_value(on.expression().as_ref())?;
                     self.ctx.use_core_helper(RuntimeHelper::ToHandlers);
                     return Ok(Some(wrap_call("_toHandlers", &object)));
                 };
-                let handler = match &on.handler {
+                let handler = match &on.expression() {
                     Some(handler) => self.component_handler(handler)?,
                     None => "() => {}".to_compact_string(),
                 };

@@ -71,7 +71,10 @@ fn admit(attached: &Attached<'_, '_>, owner_fact: u32) -> Result<()> {
                 match binding {
                     l2::BindingOp::Bind(bind) => admit_value(bind.value.as_ref())?,
                     l2::BindingOp::On(on) => {
-                        if let Some(handler) = &on.handler {
+                        if on.handler.is_some_and(|handler| handler.body().is_some()) {
+                            return Err(LegacyReason::Binding.into());
+                        }
+                        if let Some(handler) = &on.expression() {
                             admit_value(Some(handler))?;
                         }
                     }

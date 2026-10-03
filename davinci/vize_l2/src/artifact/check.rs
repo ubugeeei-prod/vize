@@ -62,6 +62,15 @@ fn check_node(
     owner: Option<Span>,
 ) -> Result<(), ArtifactError> {
     owned_span(parts.source, id, node.span(), owner)?;
+    if let NodeRef::Binding(BindingOp::On(on)) = node
+        && let Some(handler) = on.handler.and_then(crate::op::OnHandlerRef::body)
+        && handler.node() != id
+    {
+        return Err(ArtifactError::InvalidHandlerReference {
+            node: id,
+            handler: handler.node(),
+        });
+    }
     for attr in node.attributes() {
         owned_span(parts.source, id, attr.span, Some(node.span()))?;
     }

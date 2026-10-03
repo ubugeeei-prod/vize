@@ -11,6 +11,7 @@ use vize_l0::id::NodeId;
 use vize_l1::markup::{NativeChild, NativeRootText, NativeTemplateComponent};
 
 mod body;
+mod handler;
 mod interpolation;
 
 #[derive(Clone, Copy)]
@@ -74,7 +75,9 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
         self.selected
     }
     pub fn child(&mut self, child: NativeChild<'_, 'a>) -> Result<NodeId, NativeTemplateIssue> {
-        if !matches!(self.state, NativeRouteState::Walking) {
+        if !matches!(self.state, NativeRouteState::Walking)
+            || self.root.facts.template_walk.interruption().is_some()
+        {
             return self.reject(NativeTemplateIssueKind::Interrupted);
         }
         if !core::ptr::eq(child.component(), self.selected.component())
@@ -83,7 +86,14 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
         {
             return self.reject(NativeTemplateIssueKind::InvalidEvent);
         }
-        let result = body::construct(child, &mut self.root);
+        let selected = self.selected;
+        let span = selected.component().block().span();
+        // Includes original header observation and handler parsing/resolution,
+        // before element_body's nested guard. A caught unwind is sticky even
+        // when the caller keeps this walk and retries the same original child.
+        let result = self
+            .root
+            .with_walk(span, |root| body::construct(selected, child, root));
         match result {
             Ok(node) => {
                 self.cursor += 1;
@@ -158,7 +168,10 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
         if let NativeRouteState::Refused(issue) = *self.state {
             return Err(issue);
         }
-        let span = self.selected.component().block().span();
+        let span = match kind {
+            NativeTemplateIssueKind::Handler { span, .. } => span,
+            _ => self.selected.component().block().span(),
+        };
         let issue = NativeTemplateIssue { span, kind };
         *self.state = NativeRouteState::Refused(issue);
         self.root.facts.template_issues.push(TemplateIssue {
@@ -186,6 +199,9 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod interruption;
 impl Drop for NativeTemplateWalk<'_, '_> {
     fn drop(&mut self) {
         if self.armed {

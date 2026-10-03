@@ -64,7 +64,7 @@ fn to_on<'a>(allocator: &'a Allocator, sync: &VueSyncOp<'a>, name: &'a str) -> B
         OnOp {
             name: Some(DynamicName::Static(event)),
             modifiers: Vec::new_in(&allocator),
-            handler: Some(ExprRef::parse_js_in(allocator, handler, sync.span)),
+            handler: Some(ExprRef::parse_js_in(allocator, handler, sync.span).into()),
             span: sync.span,
         },
         &allocator,

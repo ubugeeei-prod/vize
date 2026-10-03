@@ -56,6 +56,7 @@ struct OptionalFields {
     name: Option<Name>,
     modifiers: Vec<String>,
     expr: Option<Expr>,
+    native_handler: Option<u32>,
     span: vize_l0::Span,
 }
 
@@ -96,6 +97,28 @@ fn optional_fields(
         rest = tail;
         any_field = true;
     }
+    let mut native_handler = None;
+    if expr_key == "handler="
+        && let Some(skip) = field(rest, "handler-ref=", any_field)
+    {
+        if expr.is_some() {
+            return Err(err(
+                line_no,
+                cstr!("handler expression and body ref conflict"),
+            ));
+        }
+        let payload = rest.get(skip..).unwrap_or_default();
+        let end = payload
+            .find(' ')
+            .ok_or_else(|| err(line_no, cstr!("expected handler ref and span")))?;
+        native_handler = Some(
+            payload[..end]
+                .parse()
+                .map_err(|_| err(line_no, cstr!("invalid handler ref")))?,
+        );
+        rest = &payload[end..];
+        any_field = true;
+    }
     let span = if any_field {
         tail_span(rest, line_no)?
     } else {
@@ -105,6 +128,7 @@ fn optional_fields(
         name,
         modifiers,
         expr,
+        native_handler,
         span,
     })
 }
@@ -135,6 +159,7 @@ pub(super) fn on(rest: &str, line_no: usize) -> Result<Item, DumpError> {
         name: fields.name,
         modifiers: fields.modifiers,
         handler: fields.expr,
+        native_handler: fields.native_handler,
         span: fields.span,
     }))
 }

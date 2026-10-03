@@ -14,7 +14,31 @@ impl<'a> Cx<'a> {
                 "bind"
             }
             l2::BindingOp::On(op) => {
-                self.named_binding(id, target, op.name, op.handler, &op.modifiers, span);
+                if let Some(handler) = op.handler.and_then(l2::OnHandlerRef::body) {
+                    self.add_operand(id, Role::Name, Some(target), self.name(op.name, span));
+                    self.add_operand(
+                        id,
+                        Role::Value,
+                        Some(target),
+                        vize_l3::operand::OperandValue {
+                            kind: vize_l3::operand::ValueKind::NativeHandler,
+                            native_handler: Some(handler),
+                            text: "",
+                            qualifier: "",
+                            span,
+                        },
+                    );
+                    for modifier in &op.modifiers {
+                        self.add_operand(
+                            id,
+                            Role::Modifier,
+                            Some(target),
+                            self.literal(Some(modifier), span),
+                        );
+                    }
+                } else {
+                    self.named_binding(id, target, op.name, op.expression(), &op.modifiers, span);
+                }
                 "on"
             }
             l2::BindingOp::Model(op) => {

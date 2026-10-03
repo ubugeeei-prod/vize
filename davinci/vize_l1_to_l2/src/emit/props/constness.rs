@@ -15,7 +15,7 @@ pub(in crate::emit) fn handler_is_constant(
     on: &vize_l2::op::OnOp<'_>,
     constant: &dyn Fn(&str) -> bool,
 ) -> bool {
-    let Some(handler) = on.handler else {
+    let Some(handler) = on.expression() else {
         return false;
     };
     let source = match handler {

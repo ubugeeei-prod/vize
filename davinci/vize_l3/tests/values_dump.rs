@@ -15,7 +15,10 @@ fn every_role_and_value_kind_round_trips_without_losing_escaped_text() {
     let arena = Allocator::default();
     let mut program = Program::new(&arena, Phase::Built);
     for role in OperandRole::ALL {
-        for kind in ValueKind::ALL {
+        for kind in ValueKind::ALL
+            .into_iter()
+            .filter(|kind| *kind != ValueKind::NativeHandler)
+        {
             let attribute = matches!(role, OperandRole::Attribute | OperandRole::ModelAttribute);
             program.operands.push(Operand {
                 op: OpId::new(0),
@@ -24,6 +27,7 @@ fn every_role_and_value_kind_round_trips_without_losing_escaped_text() {
                 region: (role == OperandRole::Condition).then_some(RegionId::new(1)),
                 name: attribute.then_some("data-\"key\\\n\u{03bb}"),
                 value: OperandValue {
+                    native_handler: None,
                     kind,
                     text: if kind == ValueKind::Absent {
                         ""

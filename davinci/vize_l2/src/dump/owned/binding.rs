@@ -67,6 +67,8 @@ pub struct On {
     pub modifiers: Vec<String>,
     /// The handler expression, when authored.
     pub handler: Option<Expr>,
+    /// Diagnostic attached-node index; loading it grants no native File body.
+    pub native_handler: Option<u32>,
     /// Source range.
     pub span: Span,
 }
@@ -206,7 +208,11 @@ pub(super) fn own_binding(binding: &BindingOp<'_>) -> Binding {
         BindingOp::On(on) => Binding::On(On {
             name: on.name.as_ref().map(own_name),
             modifiers: own_modifiers(&on.modifiers),
-            handler: on.handler.as_ref().map(own_expr),
+            handler: on.expression().as_ref().map(own_expr),
+            native_handler: on
+                .handler
+                .and_then(|handler| handler.body())
+                .map(|id| id.node().index()),
             span: on.span,
         }),
         BindingOp::Model(model) => Binding::Model(Model {

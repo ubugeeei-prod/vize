@@ -136,7 +136,7 @@ fn binding_contains_filter(binding: &BindingOp<'_>) -> bool {
         }
         BindingOp::On(on) => {
             on.name.as_ref().is_some_and(name_contains_filter)
-                || on.handler.as_ref().is_some_and(expr_contains_filter)
+                || on.expression().as_ref().is_some_and(expr_contains_filter)
         }
         BindingOp::Model(model) => {
             expr_contains_filter(&model.contract.read)
@@ -192,8 +192,9 @@ fn rewrite_bindings<'a>(
                 if let Some(name) = &mut on.name {
                     rewrite_name(allocator, name, filters);
                 }
-                if let Some(handler) = &mut on.handler {
-                    rewrite_expr(allocator, handler, filters);
+                if let Some(mut handler) = on.expression() {
+                    rewrite_expr(allocator, &mut handler, filters);
+                    on.handler = Some(handler.into());
                 }
             }
             BindingOp::Model(model) => {

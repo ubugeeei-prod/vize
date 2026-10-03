@@ -1,33 +1,49 @@
 //! Only this private body consumes the original element's ordered children.
 
-use crate::artifact::{ComponentBody, ComponentFactory};
+use super::{NativeVisibility, handler::PreparedHandler};
+use crate::artifact::{ComponentFactory, RegionBuilder};
+use crate::file::region::FileRegion;
+use crate::file::{TemplateBody, TemplateChildRegion};
 use crate::lang::js::file::native::NativeTemplateIssueKind as Kind;
 use crate::op::Namespace;
+use core::ops::DerefMut;
 use vize_l0::{Span, ensure_sufficient_stack, id::NodeId};
 use vize_l1::{
     ElementClose, SurfaceChild,
-    markup::{NativeChild, NativeElement},
+    markup::{NativeChild, NativeElement, NativeTemplateComponent},
 };
 
 mod header;
 
-pub(super) fn construct<'a, R: ComponentFactory<'a>>(
+pub(super) fn construct<'a: 'b, 'b, R>(
+    selected: &NativeTemplateComponent<'a>,
     child: NativeChild<'_, 'a>,
-    region: &mut R,
-) -> Result<NodeId, Kind> {
-    ensure_sufficient_stack(|| construct_guarded(child, region))
+    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+) -> Result<NodeId, Kind>
+where
+    R: DerefMut<Target = RegionBuilder<'b, 'a>>,
+{
+    ensure_sufficient_stack(|| construct_guarded(selected, child, region))
 }
 
-fn construct_guarded<'a, R: ComponentFactory<'a>>(
+fn construct_guarded<'a: 'b, 'b, R>(
+    selected: &NativeTemplateComponent<'a>,
     child: NativeChild<'_, 'a>,
-    region: &mut R,
-) -> Result<NodeId, Kind> {
+    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+) -> Result<NodeId, Kind>
+where
+    R: DerefMut<Target = RegionBuilder<'b, 'a>>,
+{
     let block = child.component().block();
     let (token, comment) = match child.surface() {
         SurfaceChild::Text(token) => (token, false),
         SurfaceChild::Comment(token) => (token, true),
         SurfaceChild::Element(_) => {
-            return element(child.into_element().ok_or(Kind::InvalidEvent)?, region);
+            return element(
+                selected,
+                child.into_element().ok_or(Kind::InvalidEvent)?,
+                region,
+            );
         }
         _ => return Err(Kind::UnsupportedChild),
     };
@@ -53,10 +69,14 @@ fn construct_guarded<'a, R: ComponentFactory<'a>>(
     region.text(token.text, span).map_err(Kind::Artifact)
 }
 
-fn element<'a, R: ComponentFactory<'a>>(
+fn element<'a: 'b, 'b, R>(
+    selected: &NativeTemplateComponent<'a>,
     original: NativeElement<'_, 'a>,
-    region: &mut R,
-) -> Result<NodeId, Kind> {
+    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+) -> Result<NodeId, Kind>
+where
+    R: DerefMut<Target = RegionBuilder<'b, 'a>>,
+{
     let surface = original.surface();
     let tag = surface.tag();
     // No caller tag, namespace, attribute list or body enters this route.
@@ -94,16 +114,21 @@ fn element<'a, R: ComponentFactory<'a>>(
     }
     .ok_or(Kind::InvalidEvent)?;
     let span = Span::new(opening.start, ending.end);
-    let attributes = header::construct(&original)?;
+    let header::Header {
+        attributes,
+        handlers,
+    } = header::construct(&original, selected, region)?;
     let mut result = Err(Kind::IncompleteChildren);
     let node = region
-        .element(
+        .element_body(
             tag,
             Namespace::Html,
             attributes,
             span,
             OriginalBody {
                 original,
+                selected,
+                handlers,
                 result: &mut result,
             },
         )
@@ -114,17 +139,29 @@ fn element<'a, R: ComponentFactory<'a>>(
     Ok(node)
 }
 
-struct OriginalBody<'owner, 'result, 'a> {
+struct OriginalBody<'selected, 'owner, 'result, 'a> {
     original: NativeElement<'owner, 'a>,
+    selected: &'selected NativeTemplateComponent<'a>,
+    handlers: alloc::vec::Vec<PreparedHandler<'a>>,
     result: &'result mut Result<(), Kind>,
 }
 
-impl<'a> ComponentBody<'a> for OriginalBody<'_, '_, 'a> {
-    fn run<R: ComponentFactory<'a>>(self, region: &mut R, _: NodeId) {
-        // This iterator is derived from the actual original parent. It is
-        // private: callers cannot substitute, omit or replay nested events.
+impl<'a> TemplateBody<'a, NativeVisibility> for OriginalBody<'_, '_, '_, 'a> {
+    fn run<'r, 'b>(self, region: &mut TemplateChildRegion<'r, 'b, 'a, NativeVisibility>, _: NodeId)
+    where
+        'a: 'b,
+        'b: 'r,
+    {
+        // Only a complete original header supplies these private prepared rows.
+        // All attached nodes precede the same original parent's first child.
+        for handler in self.handlers {
+            if let Err(kind) = region.inner.attach_handler(handler) {
+                *self.result = Err(kind);
+                return;
+            }
+        }
         for child in self.original.children() {
-            if let Err(kind) = construct(child, region) {
+            if let Err(kind) = construct(self.selected, child, &mut region.inner) {
                 *self.result = Err(kind);
                 return;
             }

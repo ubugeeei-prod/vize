@@ -63,7 +63,7 @@ fn v_on_directives_project_to_l2_on_bindings() {
     };
     assert!(matches!(click.name, Some(DynamicName::Static("click"))));
     assert!(click.modifiers.is_empty());
-    let handler = click.handler.expect("event binding has a handler");
+    let handler = click.expression().expect("event binding has a handler");
     assert_eq!(handler.source(), "handle");
     assert_eq!(handler.span().start, source.find("handle").unwrap() as u32);
     let event_attr = "v-on:click={handle}";
@@ -106,7 +106,7 @@ fn event_handler_directives_project_to_l2_on_bindings() {
     };
     assert!(matches!(click.name, Some(DynamicName::Static("click"))));
     assert_eq!(click.modifiers.as_slice(), ["passive", "capture"]);
-    let handler = click.handler.expect("event binding has a handler");
+    let handler = click.expression().expect("event binding has a handler");
     assert_eq!(handler.source(), "handle");
     assert_eq!(handler.span().start, source.find("handle").unwrap() as u32);
     let event_attr = "onClickPassiveCapture={handle}";

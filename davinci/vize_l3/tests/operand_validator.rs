@@ -31,6 +31,7 @@ fn binding() -> Operand<'static> {
         region: None,
         name: None,
         value: OperandValue {
+            native_handler: None,
             kind: ValueKind::Js,
             text: "value",
             qualifier: "",
@@ -103,6 +104,7 @@ fn operand_owners_targets_and_spans_must_resolve() {
     rejects(
         Operand {
             value: OperandValue {
+                native_handler: None,
                 span: Span::new(19, 26),
                 ..binding().value
             },

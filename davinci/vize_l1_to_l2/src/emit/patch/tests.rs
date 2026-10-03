@@ -200,11 +200,14 @@ fn materialized_handler_facts(kind: BindingKind) -> PatchFacts {
         OnOp {
             name: Some(vize_l2::op::DynamicName::Static("click")),
             modifiers: vize_l0::Vec::new_in(&arena),
-            handler: Some(vize_l2::expr::ExprRef::parse_js_in(
-                &allocator,
-                handler,
-                Span::new(0, handler.len() as u32),
-            )),
+            handler: Some(
+                vize_l2::expr::ExprRef::parse_js_in(
+                    &allocator,
+                    handler,
+                    Span::new(0, handler.len() as u32),
+                )
+                .into(),
+            ),
             span: Span::new(0, handler.len() as u32),
         },
         &arena,

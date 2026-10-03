@@ -134,7 +134,16 @@ fn refusal_at_the_last_header_never_mints_that_element_or_body() -> Result<(), &
                 .child(children.next().ok_or("actual header")?)
                 .err()
                 .ok_or("refused complete original header")?;
-            equal(refusal.kind, Kind::UnsupportedChild)?;
+            if rejected == "@click='handler'" {
+                let Kind::Handler { span, kind } = refusal.kind else {
+                    return Err("precise event refusal");
+                };
+                equal(kind, vize_l2::file::FileIssueKind::UnresolvedReference)?;
+                equal(span.slice(&source), "handler")?;
+                equal(refusal.span, span)?;
+            } else {
+                equal(refusal.kind, Kind::UnsupportedChild)?;
+            }
             equal(
                 walk.child(children.next().ok_or("tail")?).err(),
                 Some(refusal),

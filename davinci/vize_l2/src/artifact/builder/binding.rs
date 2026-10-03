@@ -5,6 +5,8 @@ use crate::expr::ExprRef;
 use crate::op::{BindOp, BindingOp, DynamicName};
 use vize_l0::{Box, Span, id::NodeId};
 
+mod native;
+
 impl<'a> Builder<'a> {
     pub(super) fn bind(
         &mut self,

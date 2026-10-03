@@ -39,7 +39,7 @@ pub(super) fn admit_object(bind: &BindOp<'_>) -> Result<(), EmitError> {
 }
 
 pub(super) fn admit_object_on(on: &OnOp<'_>) -> Result<(), EmitError> {
-    match on.handler {
+    match on.expression() {
         Some(ExprRef::Js(_)) => Ok(()),
         Some(expr) if super::js::expr_source(&expr, false).is_some() => Ok(()),
         Some(expr) => Err(EmitError::unsupported_at(
@@ -262,7 +262,7 @@ fn emit_to_handlers(
     on: &OnOp<'_>,
     is_plain_element: bool,
 ) -> Result<(), EmitError> {
-    let source = match on.handler {
+    let source = match on.expression() {
         Some(expr) => super::js::expr_source(&expr, false)
             .ok_or_else(|| EmitError::unsupported_at(Reason::ObjectOnHandlerNotJs, expr.span()))?,
         None => {
@@ -276,7 +276,7 @@ fn emit_to_handlers(
     cx.buf.push(Buf::to_handlers_alias());
     cx.buf.push("(");
     if cx.prefixing() {
-        if let Some(expr) = on.handler {
+        if let Some(expr) = on.expression() {
             cx.push_prefixed_expr(&expr, Site::Expression)?;
         }
         if is_plain_element {
@@ -289,7 +289,7 @@ fn emit_to_handlers(
         cx.source,
         on.span,
         source.as_str(),
-        on.handler.map(|expr| expr.span()).unwrap_or(on.span),
+        on.expression().map(|expr| expr.span()).unwrap_or(on.span),
     ) {
         cx.buf.push(leading);
         cx.buf.push(source.as_str());

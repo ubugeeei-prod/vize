@@ -8,6 +8,7 @@ use super::Cx;
 impl<'a> Cx<'a> {
     pub(super) fn literal(&self, text: Option<&str>, span: Span) -> OperandValue<'a> {
         OperandValue {
+            native_handler: None,
             kind: if text.is_some() {
                 ValueKind::Literal
             } else {
@@ -34,6 +35,7 @@ impl<'a> Cx<'a> {
             ExprRef::Filter(_) => (ValueKind::Filter, ""),
         };
         OperandValue {
+            native_handler: None,
             kind,
             text: self.allocator.alloc_str(expression.source()),
             qualifier: self.allocator.alloc_str(qualifier),

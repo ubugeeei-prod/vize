@@ -118,7 +118,7 @@ impl<'a> L2Bound<'a> {
     pub(in crate::markup) fn expression(self) -> Option<&'a str> {
         let expression = match self.op {
             BindingOp::Bind(bind) => bind.value.as_ref(),
-            BindingOp::On(on) => on.handler.as_ref(),
+            BindingOp::On(on) => return on.expression().map(|expression| expression.source()),
             BindingOp::Model(model) => Some(&model.contract.read),
             BindingOp::SlotContent(content) => content.params.as_ref(),
             BindingOp::VueDirective(directive) => directive.value.as_ref(),

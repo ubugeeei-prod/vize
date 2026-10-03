@@ -192,7 +192,7 @@ fn every_binding<'a>(allocator: &'a Allocator) -> Vec<'a, BindingOp<'a>> {
                 OnOp {
                     name: None,
                     modifiers: Vec::new_in(&allocator),
-                    handler: Some(expr),
+                    handler: Some(expr.into()),
                     span,
                 },
                 &allocator,

@@ -12,6 +12,13 @@ pub struct RegionBuilder<'s, 'a> {
 }
 
 impl<'a> RegionBuilder<'_, 'a> {
+    pub(crate) fn native_on(
+        &mut self,
+        handler: &crate::resolution::HandlerResolution<'a>,
+        span: Span,
+    ) -> Result<(NodeId, core::ptr::NonNull<crate::op::OnOp<'a>>), ArtifactError> {
+        self.builder.native_on(handler, span)
+    }
     /// Attach an explicit static named binding before this owner's children.
     pub fn bind(
         &mut self,

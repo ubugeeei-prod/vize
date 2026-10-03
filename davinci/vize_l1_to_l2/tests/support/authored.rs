@@ -120,7 +120,7 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[BindingOp<'_>
                 if let Some(name) = on.name {
                     assert_dynamic_name(source, root, name);
                 }
-                if let Some(handler) = on.handler {
+                if let Some(handler) = on.expression() {
                     assert_expr(source, root, handler);
                 }
             }

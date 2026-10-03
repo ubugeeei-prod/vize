@@ -13,6 +13,9 @@ pub(in crate::emit) fn emit_wrapped_handler(
     classified: &Classified<'_>,
     is_plain_element: bool,
 ) -> Result<(), EmitError> {
+    if on.handler.is_some_and(|handler| handler.body().is_some()) {
+        return Err(EmitError::unsupported_at(Reason::OnHandlerNotJs, on.span));
+    }
     let cached = needs_handler_cache(cx, on);
     if cached {
         let slot = cx.once_cache_index;
@@ -34,9 +37,9 @@ pub(in crate::emit) fn emit_wrapped_handler(
         cx.buf.push("(");
     }
     let options_api = on
-        .handler
+        .expression()
         .and_then(|expr| options_api_handler_name(cx, &expr));
-    match (options_api, on.handler) {
+    match (options_api, on.expression()) {
         // `generate_options_api_handler_reference`: a bare Options API
         // method name is guarded and forwarded, never prefixed.
         (Some(name), _) => {

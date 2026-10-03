@@ -302,6 +302,7 @@ fn missing_and_foreign_source_programs_cannot_bypass_selected_receipts() -> Resu
 mod attribute;
 mod condense;
 mod element;
+mod event;
 mod ordinary;
 mod rejection;
 mod text;

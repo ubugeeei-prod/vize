@@ -87,6 +87,8 @@ pub enum ArtifactError {
     BindingAfterChild { node: NodeId, span: Span },
     /// A static binding name is empty or does not equal its authored range.
     InvalidBindingName { node: NodeId, span: Span },
+    /// A direct whole-handler reference names a different attached node.
+    InvalidHandlerReference { node: NodeId, handler: NodeId },
     /// An authored span is inverted, outside source, or cuts UTF-8.
     InvalidSpan { node: Option<NodeId>, span: Span },
     /// A node or payload span escapes its immediate source owner.

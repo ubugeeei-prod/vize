@@ -79,6 +79,7 @@ pub(super) fn capture<'a>(
             }
             operands.push(vize_l3::operand::Operand {
                 value: OperandValue {
+                    native_handler: None,
                     kind: if part.dynamic {
                         ValueKind::Js
                     } else {

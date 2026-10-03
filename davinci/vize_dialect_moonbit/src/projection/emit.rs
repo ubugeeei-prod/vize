@@ -131,7 +131,12 @@ impl<'a> Emitter<'a> {
                 }
                 BindingOp::On(on) => {
                     self.argument(on.name.as_ref());
-                    if let Some(handler) = on.handler {
+                    if on.handler.is_some_and(|handler| handler.body().is_some()) {
+                        self.projection.unsupported.push(Unsupported {
+                            what: "native.handler",
+                            span: on.span,
+                        });
+                    } else if let Some(handler) = on.expression() {
                         self.handler(handler);
                     }
                 }

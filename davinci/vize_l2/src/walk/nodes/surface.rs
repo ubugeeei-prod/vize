@@ -109,7 +109,7 @@ impl<'s, 'a> NodeRef<'s, 'a> {
                 }
                 BindingOp::On(it) => {
                     name(it.name, visit);
-                    optional(it.handler, visit);
+                    optional(it.expression(), visit);
                 }
                 BindingOp::Model(it) => {
                     name(it.argument, visit);

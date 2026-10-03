@@ -17,7 +17,7 @@
 
 use vize_l0::{Span, Vec};
 
-use super::DynamicName;
+use super::{DynamicName, OnHandlerRef};
 use crate::expr::ExprRef;
 
 /// `ui.bind` - one one-way binding (`v-bind:` / `:` / the `.` shorthand),
@@ -48,11 +48,23 @@ pub struct OnOp<'a> {
     pub name: Option<DynamicName<'a>>,
     /// Modifier names in authored order, without their leading dots.
     pub modifiers: Vec<'a, &'a str>,
-    /// The handler expression; `None` for a bare listener spelling
+    /// The handler expression or original File-owned body; `None` for a bare spelling
     /// (`@click.stop` with no value).
-    pub handler: Option<ExprRef<'a>>,
+    pub handler: Option<OnHandlerRef<'a>>,
     /// The whole directive's source range.
     pub span: Span,
+}
+
+impl<'a> OnOp<'a> {
+    /// Diagnostic expression positions exclude original whole-body handlers.
+    /// Native emission must read the distinct body reference beside its File.
+    #[must_use]
+    pub const fn expression(&self) -> Option<ExprRef<'a>> {
+        match self.handler {
+            Some(handler) => handler.expression(),
+            None => None,
+        }
+    }
 }
 
 /// See [`crate::op`] for the guard rationale.

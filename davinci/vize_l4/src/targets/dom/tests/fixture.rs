@@ -275,7 +275,7 @@ pub(super) fn rejected_event(arena: &Allocator) -> Artifact<'_> {
         OnOp {
             name: Some(DynamicName::Static("click")),
             modifiers: Vec::new_in(&arena),
-            handler: Some(expression(arena, source, "handler")),
+            handler: Some(expression(arena, source, "handler").into()),
             span: at,
         },
         &arena,

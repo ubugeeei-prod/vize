@@ -255,7 +255,7 @@ fn lower_bind_or_on<'a>(
             OnOp {
                 name,
                 modifiers,
-                handler: expression,
+                handler: expression.map(Into::into),
                 span: directive.loc.span,
             },
             &allocator,

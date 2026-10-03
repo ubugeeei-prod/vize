@@ -5,6 +5,49 @@ use crate::lang::js::NativeHandlerInput;
 use alloc::boxed::Box;
 use vize_l0::Span;
 
+/// Private facts are minted from a live original input borrow. The owning
+/// File keeps that input parked across the fallible walk and short rejoin.
+pub(crate) struct ResolvedHandlerFacts<'a> {
+    body: &'a oxc_ast::ast::FunctionBody<'a>,
+    source: vize_l1::embed::EmbedSource<'a>,
+    tables: Tables<'a>,
+}
+
+impl<'a> ResolvedHandlerFacts<'a> {
+    pub(crate) fn join(
+        self,
+        input: NativeHandlerInput<'a>,
+    ) -> Result<HandlerResolution<'a>, NativeHandlerInput<'a>> {
+        let source = input.operand().syntax().source();
+        if !core::ptr::eq(self.body, input.body())
+            || !core::ptr::eq(self.source.authored_root(), source.authored_root())
+            || !core::ptr::eq(self.source.text(), source.text())
+            || self.source.span() != source.span()
+        {
+            return Err(input);
+        }
+        Ok(HandlerResolution {
+            input,
+            tables: self.tables,
+        })
+    }
+}
+
+pub(crate) fn resolve_handler_facts<'a>(
+    input: &NativeHandlerInput<'a>,
+    bindings: &impl BindingLookup,
+) -> Result<ResolvedHandlerFacts<'a>, ResolutionError> {
+    let source = input.references();
+    let mut pending = Pending::new();
+    walk::handler_body(&source, &mut pending)?;
+    let tables = pending.finish(bindings)?;
+    Ok(ResolvedHandlerFacts {
+        body: input.body(),
+        source: input.operand().syntax().source(),
+        tables,
+    })
+}
+
 mod facts;
 pub use facts::{
     HandlerBinding, HandlerBindingRef, HandlerDeclaration, HandlerDeclarationKind, HandlerLocalId,

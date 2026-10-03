@@ -266,10 +266,10 @@ fn pieces_have_inline_on(cx: &EmitCx<'_>, pieces: &[Piece<'_>]) -> bool {
         // always breaks onto its own line.
         Piece::On(event) => on::caches_handler(cx, event)
             || on::forces_inline_on(event)
-            || matches!(event.handler, Some(ExprRef::Js(js)) if on::is_inline_handler_source(
+            || matches!(event.expression(), Some(ExprRef::Js(js)) if on::is_inline_handler_source(
                 super::prefix::node_content(cx.source, js.source, js.span).text.as_str()
             ))
-            || matches!(event.handler, Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement),
+            || matches!(event.expression(), Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement),
         Piece::ModelUpdate { .. } => true,
         _ => false,
     })

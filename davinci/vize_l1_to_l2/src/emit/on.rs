@@ -35,6 +35,9 @@ pub(super) struct Classified<'a> {
 }
 
 pub(super) fn admit_on(on: &OnOp<'_>) -> Result<(), EmitError> {
+    if on.handler.is_some_and(|handler| handler.body().is_some()) {
+        return Err(EmitError::unsupported_at(Reason::OnHandlerNotJs, on.span));
+    }
     if on.name.is_none() {
         return super::merge::admit_object_on(on);
     }
@@ -43,7 +46,7 @@ pub(super) fn admit_on(on: &OnOp<'_>) -> Result<(), EmitError> {
     }
     static_on_name(on)?;
     classify(on)?;
-    match on.handler {
+    match on.expression() {
         None | Some(ExprRef::Js(_)) => Ok(()),
         Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement => Ok(()),
         Some(expr) => Err(EmitError::unsupported_at(

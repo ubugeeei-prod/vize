@@ -88,6 +88,7 @@ impl<'a> Build<'a> {
             region: None,
             name: None,
             value: OperandValue {
+                native_handler: None,
                 kind,
                 text,
                 qualifier: if kind == ValueKind::Opaque {

@@ -7,7 +7,7 @@ use super::super::{EmitCx, options::BindingKind};
 /// is in play, the directive has an expression, and that expression is
 /// not a bare `SetupConst` reference.
 pub(in crate::emit) fn needs_handler_cache(cx: &EmitCx<'_>, on: &OnOp<'_>) -> bool {
-    let Some(handler) = on.handler else {
+    let Some(handler) = on.expression() else {
         return false;
     };
     if !cx.caches_handlers() {

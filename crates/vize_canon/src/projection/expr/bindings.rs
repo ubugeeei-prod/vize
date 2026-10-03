@@ -20,7 +20,7 @@ pub(super) fn project_bindings<D: ExprDialect>(
             }
             BindingOp::On(on) => {
                 project_name(document, dialect, on.name);
-                on.handler
+                on.expression()
             }
             BindingOp::Model(model) => {
                 project_name(document, dialect, model.argument);

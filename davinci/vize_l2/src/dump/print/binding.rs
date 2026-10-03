@@ -122,6 +122,9 @@ fn print_on<W: Write>(w: &mut W, on: &On, depth: usize, mode: Style) -> Result {
         w.write_str(" handler=")?;
         print_expr(w, handler, mode)?;
     }
+    if let Some(id) = on.native_handler {
+        write!(w, " handler-ref={id}")?;
+    }
     end_line(w, on.span, mode)
 }
 

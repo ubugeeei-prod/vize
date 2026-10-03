@@ -53,7 +53,7 @@ pub(super) fn binding_payload<'a>(binding: &l2::BindingOp<'a>) -> Option<SsrStri
                 })
             }),
         l2::BindingOp::On(op) => op
-            .handler
+            .expression()
             .map(|handler| directive_payload(handler.source()))
             .or_else(|| {
                 op.name

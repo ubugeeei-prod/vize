@@ -116,7 +116,7 @@ pub fn event(allocator: &Allocator) -> BindingOp<'_> {
         OnOp {
             name: Some(DynamicName::Static("click")),
             modifiers: Vec::new_in(&allocator),
-            handler: Some(expression(allocator)),
+            handler: Some(expression(allocator).into()),
             span: SPAN,
         },
         &allocator,

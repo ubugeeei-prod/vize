@@ -141,7 +141,7 @@ fn owner_bindings(
             }
             BindingOp::On(on) => {
                 dynamic_name(on.name, id, depth, facts);
-                if let Some(handler) = on.handler {
+                if let Some(handler) = on.expression() {
                     score(handler, id, depth, facts);
                 }
             }

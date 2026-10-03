@@ -10,7 +10,7 @@ fn binding_expressions<'a>(bindings: &[BindingOp<'a>], out: &mut Vec<ExprRef<'a>
     for binding in bindings {
         let (name, value) = match binding {
             BindingOp::Bind(bind) => (bind.name, bind.value),
-            BindingOp::On(on) => (on.name, on.handler),
+            BindingOp::On(on) => (on.name, on.expression()),
             BindingOp::SlotContent(slot) => (slot.name, slot.params),
             BindingOp::VueShow(show) => (None, Some(show.value)),
             _ => continue,

@@ -1,43 +1,88 @@
 //! Original ordinary static attributes must exhaust before an Element body.
 
+use super::super::{NativeVisibility, handler::PreparedHandler};
+use crate::artifact::RegionBuilder;
+use crate::file::region::FileRegion;
 use crate::lang::js::file::native::NativeTemplateIssueKind as Kind;
 use crate::op::Attribute;
+use core::ops::DerefMut;
 use vize_l0::{SourceBlock, Span, Vec};
 use vize_l1::{
     AttrValue,
     dialect::vue3::VueDirectives,
-    markup::{NativeAttribute, NativeElement, directive::DirectiveSyntax},
+    markup::{
+        NativeAttribute, NativeElement, NativeTemplateComponent,
+        directive::{DirectivePrefix, DirectiveSyntax},
+    },
 };
 
-pub(super) fn construct<'a>(
+pub(super) struct Header<'a> {
+    pub(super) attributes: Vec<'a, Attribute<'a>>,
+    pub(super) handlers: alloc::vec::Vec<PreparedHandler<'a>>,
+}
+
+pub(super) fn construct<'a: 'b, 'b, R>(
     original: &NativeElement<'_, 'a>,
-) -> Result<Vec<'a, Attribute<'a>>, Kind> {
+    selected: &NativeTemplateComponent<'a>,
+    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+) -> Result<Header<'a>, Kind>
+where
+    R: DerefMut<Target = RegionBuilder<'b, 'a>>,
+{
     let mut attributes = Vec::new_in(&original.component().allocator());
-    // The original iterator is private to this fused helper. Only its actual
-    // normal end can return a header to the existing Element factory.
-    for attribute in original.attributes() {
-        if !core::ptr::eq(attribute.component(), original.component())
+    let mut handlers: alloc::vec::Vec<PreparedHandler<'a>> = alloc::vec::Vec::new();
+    // One actual full header iterator. Only its normal end permits the Element
+    // factory and original callback; pending owners remain parked on refusal.
+    for (ordinal, attribute) in original.attributes().enumerate() {
+        if !core::ptr::eq(selected.component(), original.component())
+            || !core::ptr::eq(attribute.component(), original.component())
             || !core::ptr::eq(attribute.element(), original.surface())
-            || attribute.ordinal() != attributes.len()
+            || attribute.ordinal() != ordinal
             || !original
                 .surface()
                 .open
                 .attrs
-                .get(attribute.ordinal())
+                .get(ordinal)
                 .is_some_and(|surface| core::ptr::eq(surface, attribute.surface()))
         {
             return Err(Kind::InvalidEvent);
         }
-        let attribute = ordinary(attribute)?;
-        if attributes
-            .iter()
-            .any(|previous: &Attribute<'_>| previous.name == attribute.name)
-        {
-            return Err(Kind::UnsupportedChild);
+        let block = original.component().block();
+        let name_span = block
+            .span_of(attribute.surface().name.text)
+            .ok_or(Kind::InvalidEvent)?;
+        match VueDirectives.decompose(attribute.surface().name.text, name_span.start) {
+            Ok(None) => {
+                let attribute = ordinary(attribute)?;
+                if attributes
+                    .iter()
+                    .any(|previous: &Attribute<'_>| previous.name == attribute.name)
+                {
+                    return Err(Kind::UnsupportedChild);
+                }
+                attributes.push(attribute);
+            }
+            Ok(Some(directive))
+                if directive.prefix == DirectivePrefix::On
+                    || (directive.prefix == DirectivePrefix::Full
+                        && directive.name.slice(block.root_source()) == "on") =>
+            {
+                let handler = region.prepare_handler(selected, attribute)?;
+                if handlers
+                    .iter()
+                    .any(|previous| previous.name == handler.name)
+                {
+                    return Err(Kind::UnsupportedChild);
+                }
+                handlers.push(handler);
+            }
+            Ok(Some(_)) | Err(_) => return Err(Kind::UnsupportedChild),
         }
-        attributes.push(attribute);
     }
-    Ok(attributes)
+    Ok(Header {
+        attributes,
+        handlers,
+    })
 }
 
 fn ordinary<'a>(original: NativeAttribute<'_, 'a>) -> Result<Attribute<'a>, Kind> {
@@ -48,7 +93,6 @@ fn ordinary<'a>(original: NativeAttribute<'_, 'a>) -> Result<Attribute<'a>, Kind
     if surface.name.is_missing()
         || name.is_empty()
         || matches!(name, "class" | "style" | "key" | "ref" | "is")
-        || !matches!(VueDirectives.decompose(name, name_span.start), Ok(None))
     {
         return Err(Kind::UnsupportedChild);
     }

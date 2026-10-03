@@ -30,6 +30,13 @@ fn invalid(program: &Tables<'_, '_>, operand: &Operand<'_>) -> Option<&'static s
     if !operand.value.is_well_formed() {
         return Some("malformed value");
     }
+    if let Some(handler) = operand.value.native_handler
+        && (owner.kind != OpKind::SetEvent
+            || operand.role != OperandRole::Value
+            || handler.node().index() != owner.id.index())
+    {
+        return Some("native handler must be the value of its actual attached event node");
+    }
     if !contains(owner.span, operand.value.span) {
         return Some("value span escapes owner");
     }

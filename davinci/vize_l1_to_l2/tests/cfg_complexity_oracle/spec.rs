@@ -222,7 +222,7 @@ impl Eval {
                 }
                 DumpBinding::On(on) => {
                     cur = self.opt_name(on.name.as_ref(), id, cur);
-                    cur = self.opt_expr(on.handler.as_ref(), id, cur);
+                    cur = self.opt_expr(on.expression().as_ref(), id, cur);
                 }
                 DumpBinding::Model(model) => {
                     cur = self.opt_name(model.argument.as_ref(), id, cur);

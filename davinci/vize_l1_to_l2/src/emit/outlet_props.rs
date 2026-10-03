@@ -109,7 +109,7 @@ fn emit_bind_spread_expr(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), E
 }
 
 fn emit_on_spread_expr(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError> {
-    let source = match on.handler {
+    let source = match on.expression() {
         Some(expr) => super::js::expr_source(&expr, false)
             .ok_or_else(|| EmitError::unsupported_at(Reason::ObjectOnHandlerNotJs, expr.span()))?,
         None => {
@@ -123,7 +123,7 @@ fn emit_on_spread_expr(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitErr
     cx.buf.push(Buf::to_handlers_alias());
     cx.buf.push("(");
     if cx.prefixing()
-        && let Some(expr) = on.handler
+        && let Some(expr) = on.expression()
     {
         cx.push_prefixed_expr(&expr, Site::Expression)?;
     } else {

@@ -16,8 +16,11 @@ pub(super) fn is_dynamic_on_name(on: &OnOp<'_>) -> bool {
 }
 
 pub(super) fn admit(on: &OnOp<'_>) -> Result<(), EmitError> {
+    if on.handler.is_some_and(|handler| handler.body().is_some()) {
+        return Err(EmitError::unsupported_at(Reason::OnHandlerNotJs, on.span));
+    }
     dynamic_name(on)?;
-    match on.handler {
+    match on.expression() {
         None | Some(ExprRef::Js(_)) => Ok(()),
         Some(ExprRef::Opaque(opaque)) if opaque.reason == OpaqueReason::MultiStatement => Ok(()),
         Some(expr) if super::js::parse_rejected_raw_js(&expr, false).is_some() => Ok(()),

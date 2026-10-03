@@ -183,7 +183,7 @@ pub(crate) fn lower_on<'a>(
         OnOp {
             name,
             modifiers,
-            handler,
+            handler: handler.map(Into::into),
             span,
         },
         &cx.allocator,

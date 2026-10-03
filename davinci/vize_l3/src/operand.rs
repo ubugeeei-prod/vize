@@ -116,16 +116,19 @@ pub enum ValueKind {
     Opaque,
     Foreign,
     Filter,
+    /// Original whole handler retained by the actual native File.
+    NativeHandler,
 }
 
 impl ValueKind {
-    pub const ALL: [Self; 6] = [
+    pub const ALL: [Self; 7] = [
         Self::Absent,
         Self::Literal,
         Self::Js,
         Self::Opaque,
         Self::Foreign,
         Self::Filter,
+        Self::NativeHandler,
     ];
 
     #[must_use]
@@ -142,6 +145,7 @@ impl ValueKind {
             Self::Opaque => "opaque",
             Self::Foreign => "foreign",
             Self::Filter => "vue.filter",
+            Self::NativeHandler => "native.handler",
         }
     }
 }
@@ -150,6 +154,8 @@ impl ValueKind {
 #[derive(Debug, Clone, Copy)]
 pub struct OperandValue<'a> {
     pub kind: ValueKind,
+    /// A genuine attached handler ID; text never serializes this identity.
+    pub native_handler: Option<vize_l2::op::HandlerId>,
     pub text: &'a str,
     /// Opaque reason or foreign dialect, empty for other kinds.
     pub qualifier: &'a str,
@@ -161,6 +167,8 @@ impl OperandValue<'_> {
     #[must_use]
     pub fn is_well_formed(&self) -> bool {
         self.span.start <= self.span.end
+            && (self.native_handler.is_some() == (self.kind == ValueKind::NativeHandler))
+            && (self.kind != ValueKind::NativeHandler || self.text.is_empty())
             && (self.kind != ValueKind::Absent || self.text.is_empty())
             && match self.kind {
                 ValueKind::Opaque | ValueKind::Foreign => !self.qualifier.is_empty(),
@@ -184,3 +192,5 @@ pub struct Operand<'a> {
 }
 
 const _: () = assert!(!core::mem::needs_drop::<Operand<'static>>());
+#[cfg(target_pointer_width = "64")]
+const _: () = assert!(core::mem::size_of::<OperandValue<'_>>() == 48);
