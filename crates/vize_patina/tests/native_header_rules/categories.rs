@@ -6,6 +6,12 @@ use vize_patina::Locale;
 fn original_intrinsic_categories_keep_components_custom_tags_and_opaque_is_controls() {
     for (tag, control, component) in [
         ("div", "", false),
+        ("script", "", false),
+        ("style", "", false),
+        ("title", "", false),
+        ("textarea", "", false),
+        ("SCRIPT", "", true),
+        ("STYLE", "", true),
         ("widget", "", false),
         ("my-element", "", false),
         ("marquee", "", false),
@@ -139,5 +145,23 @@ fn nested_unicode_and_original_attribute_order_keep_absolute_sfc_byte_offsets() 
                 ],
             }
         );
+    }
+}
+
+#[test]
+fn original_raw_text_children_do_not_turn_authored_lookalikes_into_elements() {
+    let source = "<!--🦀--><template><script autofocus accesskey>const source = '<blink autofocus accesskey />';</script><style autofocus accesskey>.x { color: red } /* <blink autofocus accesskey /> */</style><title autofocus accesskey>名 &amp; <blink autofocus accesskey /></title><textarea autofocus accesskey>本文 <blink autofocus accesskey /></textarea></template>";
+    for rule in HeaderRule::ALL {
+        for locale in LOCALES {
+            let result = parity(source, locale, rule);
+            assert_eq!(
+                result["warning_count"],
+                if matches!(rule, HeaderRule::Distracting) {
+                    0
+                } else {
+                    4
+                }
+            );
+        }
     }
 }

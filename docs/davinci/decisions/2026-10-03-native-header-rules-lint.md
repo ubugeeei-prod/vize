@@ -77,3 +77,14 @@ Parent Check 37117755805 executed all 24 unique new provider laws and all 31 pri
 image/iframe/tabindex laws successfully in four authenticated Rust shards. Its
 whole Check still failed the now-repaired module-layout source gate, so this is
 Rust-law evidence only, not terminal CI/queue/merge acceptance.
+
+After the older handler Stack actually merged as signed 566a5687/54308aa5,
+the provider and this consumer rebase onto literal main 54308aa5 and retain
+the source union through canonical regeneration. The original category law
+now includes lowercase and uppercase script/style plus title/textarea; one
+additional complete raw-text law keeps fake inner markup as original text.
+This checks actual header-only lint behavior independently of L2 body or
+target admission. Production admission and every previous source/equality
+assertion remain unchanged. All twenty-five current consumer laws require
+fresh exact-head hosted execution; earlier afdb complete Check37118457457
+proved the previous twenty-four laws and does not credit these new controls.
