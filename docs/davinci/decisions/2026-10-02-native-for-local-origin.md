@@ -75,7 +75,6 @@ native control execution and target emission remain unfinished. The current
 Local source validation is not exact-head hosted full/Fuzz/strict100 acceptance
 or protected-queue/main merge proof. No product migration is credited here.
 
-
 ## Replay onto current original and selected providers
 
 PR [#7463](https://github.com/ubugeeei-prod/vize/pull/7463) retains the owned
