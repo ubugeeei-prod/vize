@@ -97,6 +97,7 @@
     )
 )]
 
+mod attribute_policy;
 mod context;
 mod diagnostic;
 pub mod html_content_model;
