@@ -2,7 +2,7 @@
 // Prose/ledger replays do not. Protected merge groups remain unconditional.
 export function nativeSetupCaptureRequired(paths) {
   return paths.some((path) =>
-    /^(?:davinci\/vize_l2\/src\/(?:file(?:\.rs|\/)|lang\/js\/file(?:\.rs|\/))|davinci\/vize_l3\/src\/decision\/dom\/vue(?:\.rs|\/)|davinci\/vize_l4\/src\/(?:module(?:\.rs|\/)|targets\/dom\/vue(?:\.rs|\/)|expr\.rs$)|crates\/vize_atelier_sfc\/src\/native(?:\.rs|\/)|crates\/vize_atelier_sfc\/tests\/fixtures\/native_sfc_(?:js|const|ts[^/]*)_setup_|tests\/tooling\/native-sfc-(?:js|primitive|strict|annotation)-setup|vendor\/oxc_parser\/src\/|\.github\/actions\/test-native-js-setup\/|tools\/support\/compat\/github\/native-setup-capture\.mjs$)/.test(
+    /^(?:davinci\/vize_l2\/src\/(?:file(?:\.rs|\/)|lang\/js\/file(?:\.rs|\/))|davinci\/vize_l3\/src\/decision\/dom\/vue(?:\.rs|\/)|davinci\/vize_l4\/src\/(?:module(?:\.rs|\/)|targets\/dom\/vue(?:\.rs|\/)|expr\.rs$)|crates\/vize_atelier_sfc\/src\/native(?:\.rs|\/)|crates\/vize_atelier_sfc\/tests\/fixtures\/native_sfc_(?:js|const|ts[^/]*)_setup_|tests\/tooling\/native-sfc-(?:js|primitive|strict|annotation)-setup|tests\/tooling\/support\/native-sfc-setup-reference\.ts$|vendor\/oxc_parser\/src\/|\.github\/actions\/test-native-js-setup\/|tools\/support\/compat\/github\/native-setup-capture\.mjs$)/.test(
       path,
     ),
   );

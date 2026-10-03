@@ -18,6 +18,7 @@ test("actual native setup inputs qualify affected source capture while prose sta
     "crates/vize_atelier_sfc/src/native/setup/tests/annotations.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json",
     "tests/tooling/native-sfc-primitive-setup-reference.test.ts",
+    "tests/tooling/support/native-sfc-setup-reference.ts",
     ".github/actions/test-native-js-setup/action.yml",
     "vendor/oxc_parser/src/lexer/string.rs",
   ])

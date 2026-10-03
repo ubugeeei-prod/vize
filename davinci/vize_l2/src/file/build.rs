@@ -23,7 +23,7 @@ pub(crate) struct Facts<'a> {
     pub expressions: SideTable<ScopedResolution<'a>>,
     pub template_issues: Vec<TemplateIssue>,
     pub template_walk: super::template::TemplateWalk,
-    pub setup_annotations: Option<Box<Vec<crate::lang::js::file::setup::SetupAnnotationRecord>>>,
+    pub setup_annotations: Option<Box<crate::lang::js::file::setup::SetupAnnotationStorage>>,
     names: Vec<Names>,
 }
 

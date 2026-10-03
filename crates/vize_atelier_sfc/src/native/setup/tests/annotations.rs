@@ -31,6 +31,10 @@ fn three_source_owned_annotation_modules_and_maps_are_captured() -> Result<(), S
             },
         );
         let output = mapped.result().map_err(|error| cstr!("{id}: {error:?}"))?;
+        require!(
+            output.code() == text(fixture, "code")?,
+            "{id}: whole frozen native module"
+        );
         let plain_output = plain
             .result()
             .map_err(|error| cstr!("{id}: plain {error:?}"))?;
@@ -45,6 +49,10 @@ fn three_source_owned_annotation_modules_and_maps_are_captured() -> Result<(), S
         require!(plain_output.source_map().is_none(), "{id}: optional map");
         let map: Value = serde_json::from_str(output.source_map().ok_or("actual map")?)
             .map_err(|error| cstr!("{error}"))?;
+        require!(
+            fixture.get("nativeMap") == Some(&map),
+            "{id}: whole frozen native map"
+        );
         require!(
             map.get("sourcesContent") == Some(&serde_json::json!([source])),
             "{id}: complete original map source"

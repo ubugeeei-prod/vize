@@ -28,6 +28,19 @@ pub(crate) struct SetupAnnotationRecord {
     pub kind: SetupPrimitiveType,
 }
 
+/// Deferred original receipts keep unannotated File facts to one pointer.
+/// Only the original variable event creates this private storage owner.
+#[derive(Default)]
+pub(crate) struct SetupAnnotationStorage {
+    rows: Vec<SetupAnnotationRecord>,
+}
+
+impl SetupAnnotationStorage {
+    pub(crate) fn rows(&self) -> &[SetupAnnotationRecord] {
+        &self.rows
+    }
+}
+
 pub(super) fn record_annotation(
     facts: &mut Facts<'_>,
     unit: ScriptUnitId,
@@ -36,7 +49,8 @@ pub(super) fn record_annotation(
 ) {
     facts
         .setup_annotations
-        .get_or_insert_with(|| Box::new(Vec::new()))
+        .get_or_insert_with(|| Box::new(SetupAnnotationStorage::default()))
+        .rows
         .push(SetupAnnotationRecord { unit, span, kind });
 }
 

@@ -3,7 +3,6 @@ import fs from "node:fs";
 import { test } from "node:test";
 import {
   compiler,
-  runtime,
   fromVue,
   hash,
   checkMap,

@@ -94,7 +94,7 @@ impl<'a> FileArtifact<'a> {
         self.facts
             .setup_annotations
             .as_deref()
-            .map_or(&[], |rows| rows.as_slice())
+            .map_or(&[], |storage| storage.rows())
     }
 
     /// Borrowed name lookup inside an actual file scope; no context fallback.

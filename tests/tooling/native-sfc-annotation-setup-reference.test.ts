@@ -94,7 +94,8 @@ test(
       assert.equal(row.id, fixture.id);
       assert.equal(row.source, fixture.source);
       assert.deepEqual(row.bindings, fixture.bindings);
-      assert(row.code.length > 0);
+      assert.equal(row.code, fixture.code);
+      assert.deepEqual(row.nativeMap, fixture.nativeMap);
       checkMap({ ...fixture, code: row.code, nativeMap: row.nativeMap });
     }
   },

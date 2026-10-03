@@ -55,7 +55,26 @@
         "names": [],
         "mappings": "AAAA,OAAO,EAAE,eAAe,IAAI,gBAAgB,EAAE,MAAM,KAAK,CAAA;AACzD,MAAM,GAAG,GAAS,IAAI,EAAC,GAAG,GAAM,IAAI,EAAC,IAAI,GAAQ,EAAE,EAAC,IAAI,GAAQ,KAAK,EAAC,MAAM,GAAQ,GAAG,CAAC;AACxF,MAAM,SAAS,GAAG,aAAa,CAAA,gBAAgB,CAAC;IAC9C,MAAM,EAAE,UAAU;IAClB,KAAK,CAAC,OAAO,EAAE,EAAE,MAAM,EAAE,QAAQ,EAAE;QACnC,QAAQ,EAAE,CAAC;QAEb,MAAM,YAAY,GAAG,EAAE,GAAG,EAAE,GAAG,EAAE,IAAI,EAAE,IAAI,EAAE,MAAM,EAAE,CAAA;QACrD,MAAM,CAAC,cAAc,CAAC,YAAY,EAAE,iBAAiB,EAAE,EAAE,UAAU,EAAE,KAAK,EAAE,KAAK,EAAE,IAAI,EAAE,CAAC,CAAA;QAC1F,OAAO,YAAY,CAAA;IACnB,CAAC;CAEA,CAAC,CACD;AACD,OAAO,EAAE,eAAe,IAAI,gBAAgB,EAAE,SAAS,IAAI,UAAU,EAAE,kBAAkB,IAAI,mBAAmB,EAAE,MAAM,KAAK,CAAA;AAE7H,SAAS,MAAM,CAAC,IAAI,EAAE,MAAM,EAAE,MAAM,EAAE,MAAM,EAAE,KAAK,EAAE,QAAQ;IAC3D,OAAO,CAAC,UAAU,EAAE,EAAE,mBAAmB,CAAC,GAAG,EAAE,IAAI,EAAE,gBAAgB,CAAC,MAAM,CAAC,GAAG,CAAC,GAAG,GAAG,GAAG,gBAAgB,CAAC,MAAM,CAAC,GAAG,CAAC,GAAG,GAAG,GAAG,gBAAgB,CAAC,MAAM,CAAC,IAAI,CAAC,GAAG,GAAG,GAAG,gBAAgB,CAAC,MAAM,CAAC,IAAI,CAAC,GAAG,GAAG,GAAG,gBAAgB,CAAC,MAAM,CAAC,MAAM,CAAC,CAAC,CAAC,CAAA;AAC9O,CAAC;AACD,SAAS,CAAC,MAAM,GAAG,MAAM,CAAA;AACzB,eAAe,SAAS,CAAA"
       },
-      "annotationCount": 5
+      "annotationCount": 5,
+      "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nconst yes=true,nil=null,huge=2n,text='雪🌸',number=1.5;\n;\n    const __returned__ = {\n      get yes() { return yes },\n      get nil() { return nil },\n      get huge() { return huge },\n      get text() { return text },\n      get number() { return number },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString($setup.yes) + \" \" + _toDisplayString($setup.nil) + \" \" + _toDisplayString($setup.huge) + \" \" + _toDisplayString($setup.text) + \" \" + _toDisplayString($setup.number)))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "nativeMap": {
+        "file": "Setup雪🌸.vue",
+        "mappings": ";;;;AAAwB,SAAiB,SAAc,UAAiB,QAAe,aAAoB;;;UAA7EA,eAAAA;UAAiBC,eAAAA;UAAcC,gBAAAA;UAAeC,gBAAAA;UAAkBC,kBAAAA;;;;;;;;SAAqC,mCAAA,4BAAKJ,cAAK,uBAAGC,cAAK,uBAAGC,eAAM,uBAAGC,eAAM,uBAAGC",
+        "names": [
+          "yes",
+          "nil",
+          "huge",
+          "text",
+          "number"
+        ],
+        "sources": [
+          "Setup雪🌸.vue"
+        ],
+        "sourcesContent": [
+          "<script setup lang=\"ts\">const yes:boolean=true,nil:null=null,huge:bigint=2n,text:string='雪🌸',number:number=1.5;</script><template><p>{{yes}} {{nil}} {{huge}} {{text}} {{number}}</p></template>"
+        ],
+        "version": 3
+      }
     },
     {
       "bindings": [
@@ -106,7 +125,24 @@
         "names": [],
         "mappings": "AAAA,OAAO,EAAE,eAAe,IAAI,gBAAgB,EAAE,MAAM,KAAK,CAAA;AACzD,MAAM,KAAK,GAAQ,CAAC,CAAC;AACrB,MAAM,SAAS,GAAG,aAAa,CAAA,gBAAgB,CAAC;IAC9C,MAAM,EAAE,UAAU;IAClB,KAAK,CAAC,OAAO,EAAE,EAAE,MAAM,EAAE,QAAQ,EAAE;QACnC,QAAQ,EAAE,CAAC;QACb,IAAI,KAAK,GAAQ,CAAC,CAAC;QAAA,IAAI,KAAK,GAAQ,CAAC,CAAC;QACtC,MAAM,YAAY,GAAG,EAAE,KAAK,EAAE,IAAI,KAAK,KAAK,OAAO,KAAK,CAAA,CAAC,CAAC,EAAE,IAAI,KAAK,CAAC,CAAC,IAAI,KAAK,GAAG,CAAC,CAAA,CAAC,CAAC,EAAE,IAAI,KAAK,KAAK,OAAO,KAAK,CAAA,CAAC,CAAC,EAAE,IAAI,KAAK,CAAC,CAAC,IAAI,KAAK,GAAG,CAAC,CAAA,CAAC,CAAC,EAAE,CAAA;QAClJ,MAAM,CAAC,cAAc,CAAC,YAAY,EAAE,iBAAiB,EAAE,EAAE,UAAU,EAAE,KAAK,EAAE,KAAK,EAAE,IAAI,EAAE,CAAC,CAAA;QAC1F,OAAO,YAAY,CAAA;IACnB,CAAC;CAEA,CAAC,CACD;AACD,OAAO,EAAE,eAAe,IAAI,gBAAgB,EAAE,SAAS,IAAI,UAAU,EAAE,kBAAkB,IAAI,mBAAmB,EAAE,MAAM,KAAK,CAAA;AAE7H,SAAS,MAAM,CAAC,IAAI,EAAE,MAAM,EAAE,MAAM,EAAE,MAAM,EAAE,KAAK,EAAE,QAAQ;IAC3D,OAAO,CAAC,UAAU,EAAE,EAAE,mBAAmB,CAAC,GAAG,EAAE,IAAI,EAAE,gBAAgB,CAAC,MAAM,CAAC,KAAK,CAAC,GAAG,GAAG,GAAG,gBAAgB,CAAC,MAAM,CAAC,KAAK,CAAC,GAAG,GAAG,GAAG,gBAAgB,CAAC,MAAM,CAAC,KAAK,CAAC,EAAE,CAAC,CAAC,UAAU,CAAC,CAAC,CAAA;AACnL,CAAC;AACD,SAAS,CAAC,MAAM,GAAG,MAAM,CAAA;AACzB,eAAe,SAAS,CAAA"
       },
-      "annotationCount": 3
+      "annotationCount": 3,
+      "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nconst count=1;let other=2;var final=3;\n;\n    const __returned__ = {\n      get count() { return count },\n      get other() { return other },\n      set other(__value) { other = __value },\n      get final() { return final },\n      set final(__value) { final = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString($setup.count) + \" \" + _toDisplayString($setup.other) + \" \" + _toDisplayString($setup.final), 1 /* TEXT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "nativeMap": {
+        "file": "Setup雪🌸.vue",
+        "mappings": ";;;;AAAwB,WAAkB,YAAmB,YAAmB;;;UAAlDA,iBAAAA;UAAmBC,iBAAAA;UAAAA,iBAAAA;UAAmBC,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAAkC,mCAAA,4BAAKF,gBAAO,uBAAGC,gBAAO,uBAAGC",
+        "names": [
+          "count",
+          "other",
+          "final"
+        ],
+        "sources": [
+          "Setup雪🌸.vue"
+        ],
+        "sourcesContent": [
+          "<script setup lang=\"ts\">const count:number=1;let other:number=2;var final:number=3;</script><template><p>{{count}} {{other}} {{final}}</p></template>"
+        ],
+        "version": 3
+      }
     },
     {
       "bindings": [
@@ -153,7 +189,23 @@
         "names": [],
         "mappings": "AAAA,OAAO,EAAE,eAAe,IAAI,gBAAgB,EAAE,MAAM,KAAK,CAAA;AACzD,MAAM,UAAU,GAAkB,CAAC,EAAC,CAAC,GAAQ,CAAC,CAAC,CAAC,eAAe;AAC/D,MAAM,SAAS,GAAG,aAAa,CAAA,gBAAgB,CAAC;IAC9C,MAAM,EAAE,UAAU;IAClB,KAAK,CAAC,OAAO,EAAE,EAAE,MAAM,EAAE,QAAQ,EAAE;QACnC,QAAQ,EAAE,CAAC;QACb,SAAS;QAET,MAAM,YAAY,GAAG,EAAE,KAAK,EAAE,CAAC,EAAE,CAAA;QACjC,MAAM,CAAC,cAAc,CAAC,YAAY,EAAE,iBAAiB,EAAE,EAAE,UAAU,EAAE,KAAK,EAAE,KAAK,EAAE,IAAI,EAAE,CAAC,CAAA;QAC1F,OAAO,YAAY,CAAA;IACnB,CAAC;CAEA,CAAC,CACD;AACD,OAAO,EAAE,eAAe,IAAI,gBAAgB,EAAE,SAAS,IAAI,UAAU,EAAE,kBAAkB,IAAI,mBAAmB,EAAE,MAAM,KAAK,CAAA;AAE7H,SAAS,MAAM,CAAC,IAAI,EAAE,MAAM,EAAE,MAAM,EAAE,MAAM,EAAE,KAAK,EAAE,QAAQ;IAC3D,OAAO,CAAC,UAAU,EAAE,EAAE,mBAAmB,CAAC,GAAG,EAAE,IAAI,EAAE,gBAAgB,CAAC,MAAM,CAAC,KAAK,CAAC,GAAG,GAAG,GAAG,gBAAgB,CAAC,MAAM,CAAC,CAAC,CAAC,CAAC,CAAC,CAAA;AAC1H,CAAC;AACD,SAAS,CAAC,MAAM,GAAG,MAAM,CAAA;AACzB,eAAe,SAAS,CAAA"
       },
-      "annotationCount": 2
+      "annotationCount": 2,
+      "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\n/* 雪🌸 */\nconst c\\u006funt=1,雪=2; // retained end\n;\n    const __returned__ = {\n      get count() { return count },\n      get 雪() { return 雪 },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString($setup.count) + \" \" + _toDisplayString($setup.雪)))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "nativeMap": {
+        "file": "Setup雪🌸.vue",
+        "mappings": ";;;;AAAwB;gBACS,IAAW;;;UAAtCA,iBAAAA;UAA8BC,aAAAA;;;;;;;;SAA8C,mCAAA,4BAAKD,gBAAO,uBAAGC",
+        "names": [
+          "count",
+          "雪"
+        ],
+        "sources": [
+          "Setup雪🌸.vue"
+        ],
+        "sourcesContent": [
+          "<script setup lang=\"ts\">/* 雪🌸 */\nconst c\\u006funt: /* 🌸 */ number=1,雪:number=2; // retained end</script><template><p>{{count}} {{雪}}</p></template>"
+        ],
+        "version": 3
+      }
     }
   ],
   "runtime": "vue@3.5.35",
