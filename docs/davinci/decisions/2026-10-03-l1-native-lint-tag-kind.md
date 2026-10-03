@@ -122,3 +122,17 @@ original cases, source strings and full comparisons stay unchanged. The next
 hosted tooling capture required ordinary discovery rather than path attributes;
 the roots now use inline modules with ordinary private child declarations, as
 the previously merged native syntax laws do. No module-layout gate is bypassed.
+
+The next-rule readiness audit keeps native Error rules pending a genuine fact
+provider. `a11y/aria-unsupported-elements` is Exact/Error in the unchanged
+registered rule contract. L0 `Diagnostic::new` accepts only `Advisory`, and
+`Diagnostic::proven` requires a `WitnessChain` checked against a fact base. This
+original lint-kind receipt is a borrowed parser fact, but it does not yet expose
+a registered FactGroup/key or verifier for an exact unsupported tag/attribute
+counterexample. TODO: provide genuine original-owner fact/verifier custody
+before emitting that Error; never manufacture a group/key, add a legacy
+exemption, lower its severity or call the existing semantic helper. A clean
+`wt` child was created for readiness inspection only; no rule source or PR is
+created until this dependency is ready. Raw script/style observations for that
+Error consumer must be established separately; L2 body or target admission is
+not authority for this L1 header-only lint API.
