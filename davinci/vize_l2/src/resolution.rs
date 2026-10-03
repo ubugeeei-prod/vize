@@ -24,8 +24,8 @@ pub use for_head::{
 };
 pub use handler::{
     HandlerBinding, HandlerBindingRef, HandlerDeclaration, HandlerDeclarationKind, HandlerLocalId,
-    HandlerReference, HandlerResolution, HandlerScope, HandlerScopeId, RejectedHandlerResolution,
-    resolve_handler,
+    HandlerReference, HandlerResolution, HandlerScope, HandlerScopeId, HandlerSyntax,
+    RejectedHandlerResolution, resolve_handler,
 };
 
 /// A binding identity supplied by the owning compile unit's binder.

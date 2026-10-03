@@ -52,7 +52,7 @@ pub(crate) fn resolve_handler_facts<'a>(
 mod facts;
 pub use facts::{
     HandlerBinding, HandlerBindingRef, HandlerDeclaration, HandlerDeclarationKind, HandlerLocalId,
-    HandlerReference, HandlerScope, HandlerScopeId,
+    HandlerReference, HandlerScope, HandlerScopeId, HandlerSyntax,
 };
 pub(super) mod sink;
 use sink::{Pending, Tables};
@@ -92,6 +92,10 @@ impl<'a> HandlerResolution<'a> {
     #[must_use]
     pub fn references(&self) -> &[HandlerReference<'a>] {
         &self.tables.references
+    }
+    #[must_use]
+    pub const fn syntax(&self) -> HandlerSyntax {
+        self.tables.syntax
     }
     #[must_use]
     pub fn into_input(self) -> NativeHandlerInput<'a> {

@@ -25,6 +25,13 @@ pub(in crate::resolution) fn handler_body<'a>(
 
 impl<'a, S: HandlerScopeSink<'a>> Resolver<'a, '_, S> {
     fn original_handler(&mut self, body: &FunctionBody<'a>) -> Result<(), ResolutionError> {
+        self.sink.observe_body(
+            body.directives.is_empty()
+                && matches!(
+                    body.statements.first(),
+                    Some(Statement::VariableDeclaration(_))
+                ),
+        );
         for directive in &body.directives {
             self.visit(directive.span, 0)?;
         }
@@ -45,6 +52,7 @@ impl<'a, S: HandlerScopeSink<'a>> Resolver<'a, '_, S> {
             Statement::EmptyStatement(_) => Ok(()),
             Statement::ExpressionStatement(value) => self.expression(&value.expression, next),
             Statement::ReturnStatement(value) => {
+                self.sink.observe_return(span);
                 if let Some(argument) = &value.argument {
                     self.expression(argument, next)?;
                 }

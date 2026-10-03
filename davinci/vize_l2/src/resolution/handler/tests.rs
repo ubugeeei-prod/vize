@@ -2,6 +2,7 @@ use super::{HandlerBindingRef, HandlerDeclarationKind, resolve_handler};
 use crate::lang::js::NativeHandlerInput;
 use crate::resolution::{BindingId, BindingLookup, ResolutionErrorKind, Usage};
 use alloc::vec::Vec;
+mod statements;
 use vize_l0::{
     Allocator, Span,
     config::{VueDialect, VueVersion},

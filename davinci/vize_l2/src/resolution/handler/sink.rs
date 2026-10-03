@@ -2,7 +2,7 @@
 
 use super::{
     HandlerBinding, HandlerBindingRef, HandlerDeclaration, HandlerDeclarationKind, HandlerLocalId,
-    HandlerReference, HandlerScope, HandlerScopeId,
+    HandlerReference, HandlerScope, HandlerScopeId, HandlerSyntax,
 };
 use crate::resolution::{
     BindingLookup, ResolutionError, ResolutionErrorKind,
@@ -14,6 +14,8 @@ use vize_l0::Span;
 pub(in crate::resolution) trait HandlerScopeSink<'a>:
     ReferenceSink<'a>
 {
+    fn observe_body(&mut self, leading_declaration: bool);
+    fn observe_return(&mut self, span: Span);
     fn enter_block(&mut self, span: Span) -> Result<(), ResolutionErrorKind>;
     fn leave_block(&mut self);
     fn declare(
@@ -26,6 +28,7 @@ pub(in crate::resolution) trait HandlerScopeSink<'a>:
 
 #[derive(Debug)]
 pub(super) struct Tables<'a> {
+    pub syntax: HandlerSyntax,
     pub scopes: Vec<HandlerScope>,
     pub bindings: Vec<HandlerBinding<'a>>,
     pub declarations: Vec<HandlerDeclaration<'a>>,
@@ -33,6 +36,7 @@ pub(super) struct Tables<'a> {
 }
 
 pub(super) struct Pending<'a> {
+    syntax: HandlerSyntax,
     scopes: Vec<HandlerScope>,
     bindings: Vec<HandlerBinding<'a>>,
     declarations: Vec<HandlerDeclaration<'a>>,
@@ -41,6 +45,7 @@ pub(super) struct Pending<'a> {
 }
 
 pub(super) struct Checkpoint {
+    syntax: HandlerSyntax,
     scopes: usize,
     bindings: usize,
     declarations: usize,
@@ -63,6 +68,10 @@ impl<'a> Pending<'a> {
             kind: HandlerDeclarationKind::EventParameter,
         }];
         Self {
+            syntax: HandlerSyntax {
+                leading_declaration: false,
+                first_return: None,
+            },
             scopes,
             bindings,
             declarations: Vec::new(),
@@ -125,6 +134,7 @@ impl<'a> Pending<'a> {
             });
         }
         Ok(Tables {
+            syntax: self.syntax,
             scopes: self.scopes,
             bindings: self.bindings,
             declarations: self.declarations,
@@ -137,6 +147,7 @@ impl<'a> ReferenceSink<'a> for Pending<'a> {
     type Checkpoint = Checkpoint;
     fn checkpoint(&self) -> Checkpoint {
         Checkpoint {
+            syntax: self.syntax,
             scopes: self.scopes.len(),
             bindings: self.bindings.len(),
             declarations: self.declarations.len(),
@@ -149,6 +160,7 @@ impl<'a> ReferenceSink<'a> for Pending<'a> {
         Ok(())
     }
     fn rollback(&mut self, checkpoint: Checkpoint) {
+        self.syntax = checkpoint.syntax;
         self.scopes.truncate(checkpoint.scopes);
         self.bindings.truncate(checkpoint.bindings);
         self.declarations.truncate(checkpoint.declarations);
@@ -158,6 +170,12 @@ impl<'a> ReferenceSink<'a> for Pending<'a> {
 }
 
 impl<'a> HandlerScopeSink<'a> for Pending<'a> {
+    fn observe_body(&mut self, leading_declaration: bool) {
+        self.syntax.leading_declaration = leading_declaration;
+    }
+    fn observe_return(&mut self, span: Span) {
+        self.syntax.first_return.get_or_insert(span);
+    }
     fn enter_block(&mut self, span: Span) -> Result<(), ResolutionErrorKind> {
         let id = HandlerScopeId(
             u32::try_from(self.scopes.len()).map_err(|_| ResolutionErrorKind::TraversalLimit)?,

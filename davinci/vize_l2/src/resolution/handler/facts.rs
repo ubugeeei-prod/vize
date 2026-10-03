@@ -1,6 +1,32 @@
 use crate::resolution::{BindingId, Usage};
 use vize_l0::Span;
 
+/// Statement facts recorded during the same whole original handler walk.
+/// They confer no Vue directive or runtime policy independently of that owner.
+///
+/// Callers cannot manufacture original-body observations:
+/// ```compile_fail
+/// use vize_l2::resolution::HandlerSyntax;
+/// let _ = HandlerSyntax { leading_declaration: true, first_return: None };
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct HandlerSyntax {
+    pub(super) leading_declaration: bool,
+    pub(super) first_return: Option<Span>,
+}
+
+impl HandlerSyntax {
+    #[must_use]
+    pub const fn leading_declaration(self) -> bool {
+        self.leading_declaration
+    }
+    /// Decoded-relative original first return statement, including nested blocks.
+    #[must_use]
+    pub const fn first_return(self) -> Option<Span> {
+        self.first_return
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HandlerScopeId(pub(super) u32);
 impl HandlerScopeId {
