@@ -58,3 +58,10 @@ ratchet while its twelve native module/map and twenty-six runtime executions
 passed. Those captures remain SHA-qualified; fresh exact-head and protected
 acceptance are still required. Zero skeleton markers grants no general target,
 product, fix-history or default-compiler completion.
+
+The next protected candidate `06f5fcae` again captured every genuine module and
+runtime execution successfully, but its composed source-check workflow reached
+351 lines and failed the unchanged 350-line ceiling. The target was removed
+from the queue and drafted. Replaying actual main and removing three empty
+workflow lines preserves every sibling hook and condition; new exact-head and
+protected acceptance remain required.

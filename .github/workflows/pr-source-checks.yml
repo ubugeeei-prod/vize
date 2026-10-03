@@ -4,11 +4,9 @@ on:
 
 permissions:
   contents: read
-
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   wit-contracts:
     name: Guest contracts
@@ -58,7 +56,6 @@ jobs:
           BASE_SHA: ${{ steps.comparison.outputs.base }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: node tools/support/compat/github/report-legacy-fix-fixtures.mjs "$BASE_SHA" "$GITHUB_SHA"
-
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         if: ${{ steps.plan.outputs.rust == 'true' }}
         with:
