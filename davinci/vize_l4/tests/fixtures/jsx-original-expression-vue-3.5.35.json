@@ -13,8 +13,17 @@
       "source": "/* authored scalar */\nconst seed = 0x10;\nconst marker = \"@jsx h\";\nexport function render(message) {\n  const unused = \"kept\";\n  return <div>{/* genuine module read */seed}{message}</div>;\n}\n",
       "arguments": [["前"], [0]],
       "originalExpressions": ["0x10", "\"@jsx h\"", "\"kept\""],
-      "code": "",
-      "map": {},
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\n/* authored scalar */\nconst seed = 0x10;\nconst marker = \"@jsx h\";\nexport function render(message) {\n  const unused = \"kept\";\n  return _vize_createVNode0(\"div\", null, [/* genuine module read */seed, message]);\n}\n",
+      "map": {
+        "file": "Original.jsx",
+        "mappings": ";AAAA;AACA;AACA;AACA;AACA;AACA,SAAS,mBAAC,cAAK,yBAAyBA,MAAMC,SAAc;AAC5D",
+        "names": ["seed", "message"],
+        "sources": ["Original.jsx"],
+        "sourcesContent": [
+          "/* authored scalar */\nconst seed = 0x10;\nconst marker = \"@jsx h\";\nexport function render(message) {\n  const unused = \"kept\";\n  return <div>{/* genuine module read */seed}{message}</div>;\n}\n"
+        ],
+        "version": 3
+      },
       "referenceCode": "import { createVNode as _createVNode } from \"vue\";\n/* authored scalar */\nconst seed = 0x10;\nconst marker = \"@jsx h\";\nexport function render(message) {\n  const unused = \"kept\";\n  return _createVNode(\"div\", null, [/* genuine module read */seed, message]);\n}",
       "referenceMap": {
         "version": 3,
@@ -99,8 +108,17 @@
       "source": "export function identity(value) { /* same function */ return value; }\nexport function render(message) { const shadow = message + 1; return <div>{shadow}</div>; }\n",
       "arguments": [[2], ["A"]],
       "originalExpressions": ["value", "message + 1", "message", "1"],
-      "code": "",
-      "map": {},
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\nexport function identity(value) { /* same function */ return value; }\nexport function render(message) { const shadow = message + 1; return _vize_createVNode0(\"div\", null, [shadow]); }\n",
+      "map": {
+        "file": "Original.jsx",
+        "mappings": ";AAAA;AACA,qEAAqE,mBAAC,cAAKA,QAAa",
+        "names": ["shadow"],
+        "sources": ["Original.jsx"],
+        "sourcesContent": [
+          "export function identity(value) { /* same function */ return value; }\nexport function render(message) { const shadow = message + 1; return <div>{shadow}</div>; }\n"
+        ],
+        "version": 3
+      },
       "referenceCode": "import { createVNode as _createVNode } from \"vue\";\nexport function identity(value) {\n  /* same function */return value;\n}\nexport function render(message) {\n  const shadow = message + 1;\n  return _createVNode(\"div\", null, [shadow]);\n}",
       "referenceMap": {
         "version": 3,
@@ -185,8 +203,17 @@
         "calculate",
         "message"
       ],
-      "code": "",
-      "map": {},
+      "code": "import { createVNode as _vize_createVNode1 } from \"vue\";\nconst _vize_createVNode0 = 7;\nfunction calculate(value) { return value * 2; }\nexport function render(message) { const result = calculate(message); return _vize_createVNode1(\"div\", null, [result]); }\n",
+      "map": {
+        "file": "Original.jsx",
+        "mappings": ";AAAA;AACA;AACA,4EAA4E,mBAAC,cAAKA,QAAa",
+        "names": ["result"],
+        "sources": ["Original.jsx"],
+        "sourcesContent": [
+          "const _vize_createVNode0 = 7;\nfunction calculate(value) { return value * 2; }\nexport function render(message) { const result = calculate(message); return <div>{result}</div>; }\n"
+        ],
+        "version": 3
+      },
       "referenceCode": "import { createVNode as _createVNode } from \"vue\";\nconst _vize_createVNode0 = 7;\nfunction calculate(value) {\n  return value * 2;\n}\nexport function render(message) {\n  const result = calculate(message);\n  return _createVNode(\"div\", null, [result]);\n}",
       "referenceMap": {
         "version": 3,

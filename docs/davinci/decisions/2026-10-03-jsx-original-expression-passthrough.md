@@ -26,7 +26,7 @@ and retained-owner law. Compound JSX expressions, dynamic attributes,
 fragments, spreads and incomplete lower owners keep their refusals. The
 foreign-owner query, moved owner, source-window and TS-erasure gates remain.
 
-## Evidence and outstanding capture
+## Evidence and hosted capture
 
 Three new complete sources cover module/local scalar initializers, a normal
 parameter-returning helper, a local binary initializer, an original function
@@ -36,13 +36,17 @@ runtime executions. Named native JSX reads must independently resolve to the
 original and generated UTF-16 coordinates.
 
 The 8 original-owning L3 laws and 2 scalar laws passed locally before the
-team's disk constraint. The new Rust whole-module capture failed during
-compilation with ENOSPC before the test ran. No capture or execution success
-is claimed from that failure. Local Cargo/rustc/npm installs and new probes
-are stopped; exact-head hosted Actions must produce the genuine native
-code/map captures and validate their strict fixture comparisons. Pending
-native fixture fields and failed-test stdout/JUnit are explicit draft work;
-assertions and source policy are not weakened to accommodate generation.
+team's disk constraint. The new local Rust whole-module capture failed during
+compilation with ENOSPC before the test ran and receives no execution credit.
+Local Cargo/rustc/npm installs and new probes remain stopped. Exact source
+`34f45238` hosted Check run 37118594496, Rust job 111190833154, then produced
+all three complete genuine code/map captures in failed-test stdout/JUnit.
+Every manually authored original-expression role list agrees exactly. Only
+the pending native code/map fields are populated from that capture; the
+independent reference transforms, maps and execution fixtures stay unchanged.
+The five pure Node reference/runtime/map/mutation laws pass with those genuine
+modules. The original failed generation run stays intact, and fresh exact-head
+hosted Rust fixture comparisons remain required; no assertion is weakened.
 
 ## Remaining work
 
