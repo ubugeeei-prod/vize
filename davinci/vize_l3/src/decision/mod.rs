@@ -15,6 +15,7 @@ use crate::placement::Placement;
 
 mod build;
 pub mod dom;
+pub mod native;
 pub mod policy;
 
 pub use build::{DecisionBuildError, build_decisions, build_dom_decisions};

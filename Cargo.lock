@@ -4837,6 +4837,7 @@ dependencies = [
  "serde_json",
  "toml",
  "vize_l0",
+ "vize_l1",
  "vize_l2",
 ]
 

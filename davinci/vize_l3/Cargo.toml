@@ -16,6 +16,7 @@ serde_json = { workspace = true }
 
 [dev-dependencies]
 toml = { workspace = true }
+vize_l1 = { workspace = true }
 
 [lints]
 workspace = true
