@@ -22,8 +22,9 @@ NativeSfcCompileOptions.scope_id accepts an optional full `data-v-*` identity
 with a nonempty ASCII alphanumeric/underscore/hyphen suffix. The default uses
 the established ordinary filename policy: DefaultHasher low 32 bits as eight
 lowercase hex digits, prefixed with `data-v-`. The source-bound ordinary SFC
-oracle checks the actual complete CSS and component identity for the same
-filename; no legacy semantic helper runs in normal code. A pinned default
+oracle checks the complete scoped CSS and its actual identity for the same
+filename; ordinary compilation leaves component scope attachment to its Vite
+consumer. No legacy semantic helper runs in normal code. A pinned default
 `Scoped雪🌸.vue` fixture has `data-v-63f39f9f`, which is mounted through actual
 Vue 3.5.35 with the same ID. Scope options affect scoped styles only.
 
@@ -43,10 +44,12 @@ across moves. The pinned Vue compiler independently checks CSS output. Real
 Vue DOM mount, DOM selector.matches, outside-component exclusion, setup update
 and unmount laws execute complete native fixture modules in HappyDOM. The hosted
 native runtime helper captures fresh Rust complete modules/maps/CSS and compares
-them to those same exact source-bound runtime fixtures, then retains runtime
-receipts as artifacts. Local fixture runtime checks are not relabelled as fresh
-Rust capture proof; hosted exact-head Actions and protected full/all100 gates
-remain required.
+them to those same exact source-bound runtime fixtures, then mounts those fresh
+modules and retains runtime/source receipts as artifacts. Its dedicated action
+runs in protected merge-group tooling shard 1 after CLI/dependency preparation,
+independently of another native feature's pending PR. Local fixture runtime
+checks are not relabelled as fresh Rust capture proof; hosted exact-head Actions
+and protected full/all100 gates remain required.
 
 At-rules, multiple rules per scoped block, empty scoped blocks, pseudos,
 combinators, attribute selectors, nested rules/values/functions (including

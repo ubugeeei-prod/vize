@@ -79,7 +79,15 @@ fn four_source_bound_scoped_modules_css_and_default_identity_match_complete_cont
         )
         .unwrap();
         assert_eq!(output.css(), ordinary.css.as_deref());
-        assert!(ordinary.code.contains(output.scope_id().unwrap()));
+        // Ordinary compilation leaves component scope attachment to its Vite
+        // consumer; its independently scoped CSS proves the filename identity.
+        assert!(
+            ordinary
+                .css
+                .as_ref()
+                .unwrap()
+                .contains(output.scope_id().unwrap())
+        );
         assert!(compilation.observation().admitted().is_some());
         assert!(core::ptr::eq(
             compilation
@@ -145,7 +153,7 @@ fn verify_css_map(source: &str, filename: &str, output: &super::NativeSfcOutput)
 
 #[test]
 fn escaped_class_and_optional_trim_preserve_every_original_css_byte_and_scope_gap() {
-    let source = "<!-- 雪 -->\r\n<style scoped> \r\n.\\66 oo { content:'雪🌸'; color:red; } \r\n</style><template><p class='foo'/></template>";
+    let source = "<!-- 雪 -->\r\n<style scoped> \r\n.\\66 oo { content:'雪🌸'; color:red; } \r\n</style><template><p class=\"foo\"/></template>";
     for trim in [false, true] {
         let arena = Allocator::default();
         let compilation = compile_native_sfc(

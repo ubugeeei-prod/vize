@@ -189,6 +189,9 @@ jobs:
       - name: Build and install vize CLI
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && cat target/ci/vize.differential-build.json && sudo install -m 0755 target/ci/vize /usr/local/bin/vize
+      - name: Verify current-source native scoped CSS and real Vue DOM
+        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
+        uses: ./.github/actions/test-native-scoped-css
       - name: Prepare the pinned plugin isolation runtime
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
