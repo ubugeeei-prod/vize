@@ -14,7 +14,7 @@ fn spread_or_unsupported_array_descendants_refuse_the_complete_selected_document
         ("[...a,]", false),
         ("[,a,...b]", false),
         ("[a,...b,c]", false),
-        ("[a,1n]", false),
+        ("[a,fn(...b)]", false),
         ("[a,/x/]", false),
         ("[a,`x`]", false),
         ("[a,()=>b]", false),

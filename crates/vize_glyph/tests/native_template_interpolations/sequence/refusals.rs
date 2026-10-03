@@ -65,7 +65,7 @@ fn unsupported_sequence_children_or_ancestors_refuse_the_complete_selected_docum
         ("a,b=>c", false),
         ("a,b?.c", false),
         ("a,f(...b)", false),
-        ("a,1n", false),
+        ("a,fn(...b)", false),
         ("a,/x/", false),
         ("a,`x`", false),
         ("a,super.b", false),

@@ -24,7 +24,7 @@ fn unsupported_ordered_children_refuse_the_whole_sequence_and_its_enclosing_cons
         "a,++b",
         "a,(b=>b)",
         "a,this",
-        "a,1n",
+        "a,1n + f(...b)",
         "a,/x/",
         "a,`x`",
         "f((a,[...b]))",

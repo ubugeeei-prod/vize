@@ -104,7 +104,7 @@ fn unsupported_object_keys_properties_values_and_decoded_prototype_keys_refuse_w
         ("{1n:a}", false),
         ("{a:this}", false),
         ("{a:b,c:this}", false),
-        ("{a:1n}", false),
+        ("{a:fn(...b)}", false),
         ("{a:/x/}", false),
         ("{a:`x`}", false),
         ("{a:()=>b}", false),

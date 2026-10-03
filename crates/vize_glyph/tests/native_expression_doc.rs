@@ -1,14 +1,14 @@
 //! Real retained compiler-profile AST documents; no formatter parse or oracle.
 use vize_glyph::native_doc::{LineEnding, PrintOptions, expression_document, print};
 use vize_l0::{Allocator, SourceRoot, Span, String};
-use vize_l1::embed::{
-    Embed, EmbedSource, Grammar, Lang, Shape, prepare_attribute_value,
-    syntax::{RetainedExpression, parse_once},
-};
+use vize_l1::embed::syntax::{RetainedExpression, parse_once};
+use vize_l1::embed::{Embed, EmbedSource, Grammar, Lang, Shape, prepare_attribute_value};
 #[path = "native_expression_doc/array.rs"]
 mod array;
 #[path = "native_expression_doc/authored_newlines.rs"]
 mod authored_newlines;
+#[path = "native_expression_doc/bigint.rs"]
+mod bigint;
 #[path = "native_expression_doc/call.rs"]
 mod call;
 #[path = "native_expression_doc/conditional.rs"]

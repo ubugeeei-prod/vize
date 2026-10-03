@@ -30,6 +30,7 @@ impl<'a> Context<'_, 'a> {
         match expression {
             Expression::Identifier(_)
             | Expression::NumericLiteral(_)
+            | Expression::BigIntLiteral(_)
             | Expression::StringLiteral(_)
             | Expression::BooleanLiteral(_)
             | Expression::NullLiteral(_) => self.text(span),

@@ -1,7 +1,8 @@
 //! Independent typed AST/comment fingerprints across a real second parse.
 
 use oxc_ast::ast::{
-    ArrayExpressionElement, CommentKind, Expression, ObjectPropertyKind, PropertyKey, PropertyKind,
+    ArrayExpressionElement, BigintBase, CommentKind, Expression, ObjectPropertyKind, PropertyKey,
+    PropertyKind,
 };
 use oxc_span::GetSpan;
 use vize_glyph::native_doc::{LineEnding, PrintOptions};
@@ -14,6 +15,12 @@ use super::{format, retained};
 enum Syntax {
     Identifier(std::string::String, std::string::String),
     Numeric(u64, std::string::String),
+    BigInt(
+        BigintBase,
+        std::string::String,
+        Option<std::string::String>,
+        std::string::String,
+    ),
     String(std::string::String, std::string::String),
     Boolean(bool, std::string::String),
     Null(std::string::String),
@@ -70,6 +77,12 @@ fn fingerprint(original: &RetainedExpression<'_>, expression: &Expression<'_>) -
             Syntax::Identifier(identifier.name.as_str().to_owned(), spelling)
         }
         Expression::NumericLiteral(number) => Syntax::Numeric(number.value.to_bits(), spelling),
+        Expression::BigIntLiteral(bigint) => Syntax::BigInt(
+            bigint.base,
+            bigint.value.as_str().to_owned(),
+            bigint.raw.as_ref().map(|raw| raw.as_str().to_owned()),
+            spelling,
+        ),
         Expression::StringLiteral(string) => {
             Syntax::String(string.value.as_str().to_owned(), spelling)
         }

@@ -12,6 +12,8 @@ use vize_l1::{SurfaceChild, SurfaceParseOptions};
 mod array;
 #[path = "native_template_interpolations/authored_newlines.rs"]
 mod authored_newlines;
+#[path = "native_template_interpolations/bigint.rs"]
+mod bigint;
 #[path = "native_template_interpolations/call.rs"]
 mod call;
 #[path = "native_template_interpolations/conditional.rs"]

@@ -78,7 +78,7 @@ mod projection_tests;
 
 /// Build directly from the original retained compiler-profile AST, once.
 ///
-/// Identifier, numeric/string/boolean/null atoms, authored parentheses and
+/// Identifier, numeric/BigInt/string/boolean/null atoms, authored parentheses and
 /// binary/logical, prefix unary, ordinary static/computed member, call,
 /// conditional, array, static explicit data object and sequence nodes are
 /// supported. Object key spelling/order stays original; computed, shorthand,

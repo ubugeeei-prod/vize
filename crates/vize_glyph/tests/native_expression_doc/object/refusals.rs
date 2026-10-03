@@ -32,7 +32,7 @@ fn unsupported_property_shapes_values_and_decoded_proto_keys_refuse_the_whole_do
         "{a:++b}",
         "{a:f(...b)}",
         "{a:this}",
-        "{a:1n}",
+        "{a:1n + f(...b)}",
         "{a:()=>b}",
         "f({a:[...b]})",
         "obj[{a:b?.c}]",

@@ -39,7 +39,7 @@ fn unsupported_original_nodes_and_descendants_refuse_the_complete_document() {
         "[...a]",
         "a=b",
         "a?b:[...c]",
-        "1n",
+        "1n + fn(...x)",
         "a as T",
         "a + fn(...x)",
     ] {

@@ -8,11 +8,12 @@ use vize_glyph::native_doc::{LineEnding, PrintOptions, native_template_document,
 use vize_l0::Allocator;
 use vize_l1::embed::syntax::RetainedExpression;
 
-use super::{format, operands, selected};
+use super::{bigint::BigIntFingerprint, format, operands, selected};
 
 #[derive(Debug, PartialEq, Eq)]
 pub(super) enum Syntax {
     Atom(&'static str, std::string::String, std::string::String),
+    BigInt(BigIntFingerprint),
     Parentheses(std::boxed::Box<Syntax>),
     Unary(&'static str, std::boxed::Box<Syntax>),
     StaticMember(
@@ -74,6 +75,9 @@ pub(super) fn fingerprint(
         }
         Expression::StringLiteral(string) => {
             Syntax::Atom("string", string.value.as_str().to_owned(), spelling)
+        }
+        Expression::BigIntLiteral(literal) => {
+            Syntax::BigInt(BigIntFingerprint::from_literal(literal, spelling))
         }
         Expression::BooleanLiteral(boolean) => {
             Syntax::Atom("boolean", boolean.value.to_string(), spelling)

@@ -91,7 +91,7 @@ formatter	Formatter	test/dev	crates/vize_glyph/tests/formatter_parser_allocation
 formatter	Formatter	test/dev	crates/vize_glyph/tests/formatter_parser_allocation.rs	3	raw_oxc	raw OXC	raw	oxc_formatter	raw	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/import_sorting.rs	3	l0	L0	stage	vize_l0	preferred	5
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc.rs	3	l0	L0	stage	vize_l0	preferred	1
-formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc.rs	3	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc.rs	3	l1	L1	stage	vize_l1	preferred	2
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/array.rs	3	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/array.rs	3	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/array.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -104,6 +104,13 @@ formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/array
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/authored_newlines.rs	3	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/authored_newlines.rs	3	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/authored_newlines.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/bigint.rs	4	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/bigint/custody.rs	3	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/bigint/custody.rs	3	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/bigint/custody.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/bigint/refusals.rs	3	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/bigint/refusals.rs	3	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/bigint/refusals.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/call.rs	3	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/call.rs	3	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/call.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -166,6 +173,15 @@ formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolati
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/authored_newlines.rs	3	l0	L0	stage	vize_l0	preferred	7
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/authored_newlines.rs	3	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/authored_newlines.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/bigint.rs	4	l0	L0	stage	vize_l0	preferred	21
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/bigint.rs	4	l1	L1	stage	vize_l1	preferred	3
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/bigint.rs	4	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/bigint/custody.rs	5	l0	L0	stage	vize_l0	preferred	18
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/bigint/custody.rs	5	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/bigint/custody.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/bigint/refusals.rs	5	l0	L0	stage	vize_l0	preferred	12
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/bigint/refusals.rs	5	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/bigint/refusals.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/call.rs	5	l0	L0	stage	vize_l0	preferred	11
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/call.rs	5	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/call/custody.rs	6	l0	L0	stage	vize_l0	preferred	3
