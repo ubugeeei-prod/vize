@@ -121,3 +121,5 @@ retained, old registration is released and remaining children relink natively
 after source replay. No unrelated queue entry or protection is changed. Fresh
 exact-head Actions and a newly verified contiguous native prefix remain
 required before protected actual merge.
+
+The independent legacy traversal prerequisite #7616 actually merged as signed f95ef123ad8000fd6e1e770712a158585c5bbfc6 at 2026-10-03T16:15:47Z after protected Check37135244870, every full Rust/source worker and 100 identical three-run instruction measurements with all pinned ceilings and ratchet verified. Its physical 4096-depth corpus passes on ordinary stacks. Remaining native children replay onto literal main97f71d63, preserve every original source/law and require fresh exact-head Actions and a newly verified native Stack; this legacy fix adds no native admission credit.
