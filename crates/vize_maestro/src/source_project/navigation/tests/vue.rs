@@ -180,7 +180,7 @@ fn half_open_names_static_source_holes_and_opaque_styles_have_no_fabricated_refe
 fn original_sfc_refusals_are_sticky_without_script_only_or_legacy_fallback() {
     for source in [
         "<script>const value=1;</script><template>{{value}}</template>",
-        "<script setup lang=ts>const value:number=1;</script><template>{{value}}</template>",
+        "<script setup lang=ts>const value:number|string=1;</script><template>{{value}}</template>",
         "<script setup>const value=/x/uv;</script><template>{{value}}</template>",
         "<script setup>const value=1;</script><template><div v-if=\"value\"/></template>",
         "<script setup src='./external.ts'></script><template></template>",
@@ -199,4 +199,41 @@ fn original_sfc_refusals_are_sticky_without_script_only_or_legacy_fallback() {
         assert!(Arc::ptr_eq(&original, &worker(&project)));
         assert_eq!(original.sfc_productions(), 1);
     }
+}
+
+#[test]
+fn original_keyword_annotation_keeps_full_vue_owner_and_authored_binding_ranges() {
+    let source = "\r\n<script setup lang=ts>/*😀*/ const café: /*🌸*/ number=1;</script>\r\n<template><div :title=\"café\">{{caf\\u00e9}}</div></template>";
+    let (_, project) = new_project(source);
+    let (_, declaration) = occurrence(source, "café", 0);
+    let (attribute, attribute_location) = occurrence(source, "café", 1);
+    let (interpolation, interpolation_location) = occurrence(source, "caf\\u00e9", 0);
+    let (annotation, _) = occurrence(source, "number", 0);
+    assert_eq!(
+        block_on(project.definition(&uri(), attribute)),
+        Ok(Some(declaration.clone()))
+    );
+    let original = worker(&project);
+    let before = block_on(original.inspect(attribute)).unwrap();
+    let sfc = before.sfc.as_ref().unwrap();
+    assert_eq!(sfc.productions, 1);
+    assert_eq!(sfc.programs.len(), 1);
+    assert_eq!(sfc.programs[0].1, 1);
+    assert_eq!(sfc.expressions.len(), 2);
+    assert_eq!(
+        block_on(project.references(&uri(), attribute, true)),
+        Ok(vec![
+            declaration.clone(),
+            attribute_location,
+            interpolation_location
+        ])
+    );
+    assert_eq!(
+        block_on(project.definition(&uri(), interpolation)),
+        Ok(Some(declaration))
+    );
+    assert_eq!(block_on(project.definition(&uri(), annotation)), Ok(None));
+    assert_eq!(before, block_on(original.inspect(interpolation)).unwrap());
+    assert!(Arc::ptr_eq(&original, &worker(&project)));
+    assert_eq!(original.sfc_productions(), 1);
 }

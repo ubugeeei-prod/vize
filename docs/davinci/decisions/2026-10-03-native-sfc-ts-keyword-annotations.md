@@ -47,6 +47,11 @@ for byte alongside the independent reference, and the original eight JS,
 five Const and three unannotated TS captures remain unchanged. That source
 retains separate Clippy/unused-import/storage failures; it grants no final
 acceptance. New L2 laws and all corrected-head source checks remain required.
+The next source passes strict Clippy but exposes two inherited Maestro tests
+that blanket-refuse primitive annotations. Their inputs become genuine union
+types with exact authored issue spans; two new real navigation laws retain
+original standalone TS and full Vue binding ranges, Unicode/CRLF, escaped
+reads and the same cached owner. No Maestro production path changes.
 The existing first-tooling-shard native setup action also runs on precisely affected PR source: its classifier forces a worker even
 when ordinary tooling selection is empty. The protected merge-group capture
 remains mandatory independently of that flag. Missing captures fail rather

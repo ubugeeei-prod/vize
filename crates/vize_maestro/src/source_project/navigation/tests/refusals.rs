@@ -44,8 +44,8 @@ fn recovered_program_and_incomplete_file_never_fall_back_to_legacy_queries() {
     );
     for (source, expected) in [
         (
-            "const value:number=1;value;",
-            vec![(0, Span::new(6, 20), UnsupportedSyntax)],
+            "const value:number|string=1;value;",
+            vec![(0, Span::new(6, 27), UnsupportedSyntax)],
         ),
         (
             "const {value}=other;value;",
@@ -81,4 +81,30 @@ fn recovered_program_and_incomplete_file_never_fall_back_to_legacy_queries() {
             &project.workers.lock().get(&uri()).unwrap().snapshot
         ));
     }
+}
+
+#[test]
+fn primitive_keyword_annotation_keeps_original_ts_binding_and_query_coordinates() {
+    let documents = DocumentStore::new();
+    let project = NativeNavigationProject::new(SourceQueryProject::new(&documents));
+    documents.open(
+        uri(),
+        "const value:number=1;value;".into(),
+        1,
+        "typescript".into(),
+    );
+    assert_eq!(
+        block_on(project.definition(&uri(), Position::new(0, 22))),
+        Ok(Some(location((0, 6), (0, 11))))
+    );
+    let original = super::cached(&project);
+    assert_eq!(
+        block_on(project.references(&uri(), Position::new(0, 7), true)),
+        Ok(vec![location((0, 6), (0, 11)), location((0, 21), (0, 26))])
+    );
+    assert_eq!(
+        block_on(project.definition(&uri(), Position::new(0, 13))),
+        Ok(None)
+    );
+    assert!(Arc::ptr_eq(&original, &super::cached(&project)));
 }
