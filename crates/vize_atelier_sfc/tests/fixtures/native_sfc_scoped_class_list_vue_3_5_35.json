@@ -1,0 +1,69 @@
+{
+  "schema": "vize.native-sfc.scoped-class-list-reference",
+  "runtime": "vue@3.5.35",
+  "fixtures": [
+    {
+      "id": "class-list",
+      "source": "<template><div :class=\"'a b'\" :style=\"'color:red'\"/></template><style scoped>.a,.b{background:blue}</style>",
+      "template": "<div :class=\"'a b'\" :style=\"'color:red'\"/>",
+      "script": null,
+      "styles": [
+        {
+          "scoped": true,
+          "source": ".a,.b{background:blue}"
+        }
+      ],
+      "filename": "Scoped雪🌸.vue",
+      "scopeId": "data-v-list",
+      "explicitScopeId": "data-v-list",
+      "code": "import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass('a b'),\n    style: 'color:red'\n  }))\n}\n_sfc_main.render = render\n_sfc_main.__scopeId = \"data-v-list\"\nexport default _sfc_main\n",
+      "css": ".a[data-v-list],.b[data-v-list]{background:blue}",
+      "ordinaryCss": ".a[data-v-list], .b[data-v-list]{background:blue}",
+      "text": null,
+      "classes": ["a", "b"],
+      "selectors": [".a[data-v-list]", ".b[data-v-list]"]
+    },
+    {
+      "id": "unicode-list",
+      "source": "<!-- source 雪🌸 -->\r\n<template><div :class=\"'雪 a'\" :style=\"'color:red'\"/></template><style scoped>/* 雪🌸 */\r\n.雪,\r\n .a { background:blue; }</style>",
+      "template": "<div :class=\"'雪 a'\" :style=\"'color:red'\"/>",
+      "script": null,
+      "styles": [
+        {
+          "scoped": true,
+          "source": "/* 雪🌸 */\r\n.雪,\r\n .a { background:blue; }"
+        }
+      ],
+      "filename": "Scoped雪🌸.vue",
+      "scopeId": "data-v-unicodeList",
+      "explicitScopeId": "data-v-unicodeList",
+      "code": "import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass('雪 a'),\n    style: 'color:red'\n  }))\n}\n_sfc_main.render = render\n_sfc_main.__scopeId = \"data-v-unicodeList\"\nexport default _sfc_main\n",
+      "css": "/* 雪🌸 */\r\n.雪[data-v-unicodeList],\r\n .a[data-v-unicodeList] { background:blue; }",
+      "ordinaryCss": "/* 雪🌸 */\r\n.雪[data-v-unicodeList], .a[data-v-unicodeList]{ background:blue; }",
+      "text": null,
+      "classes": ["雪", "a"],
+      "selectors": [".雪[data-v-unicodeList]", ".a[data-v-unicodeList]"]
+    },
+    {
+      "id": "default-setup-list",
+      "source": "<script setup>let count=1</script><template><p :class=\"'a b'\">{{count}}</p></template><style scoped>.a,.b{background:blue}</style>",
+      "template": "<p :class=\"'a b'\">{{count}}</p>",
+      "script": "let count=1",
+      "styles": [
+        {
+          "scoped": true,
+          "source": ".a,.b{background:blue}"
+        }
+      ],
+      "filename": "Scoped雪🌸.vue",
+      "scopeId": "data-v-63f39f9f",
+      "explicitScopeId": null,
+      "code": "import { toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=1\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", {\n    class: _normalizeClass('a b')\n  }, _toDisplayString($setup.count), 1 /* TEXT */))\n}\n_sfc_main.render = render\n_sfc_main.__scopeId = \"data-v-63f39f9f\"\nexport default _sfc_main\n",
+      "css": ".a[data-v-63f39f9f],.b[data-v-63f39f9f]{background:blue}",
+      "ordinaryCss": ".a[data-v-63f39f9f], .b[data-v-63f39f9f]{background:blue}",
+      "text": "1",
+      "classes": ["a", "b"],
+      "selectors": [".a[data-v-63f39f9f]", ".b[data-v-63f39f9f]"]
+    }
+  ]
+}

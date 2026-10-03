@@ -171,8 +171,8 @@ impl<'a> NativeSfcCompilation<'a> {
 /// This additive entry supports scriptless static structure and retained
 /// literals, original JS/TS setup let/var/const primitive declarations plus empty
 /// statements, and plain CSS without unproven binding syntax, plus one simple-class
-/// rule per original scoped CSS block. Other scripts, macros, broader scoped/module/
-/// preprocessor styles, custom/external blocks, unsupported
+/// rule or literal class list per original scoped CSS block. Other scripts,
+/// macros, broader scoped/module/preprocessor styles, custom/external blocks, unsupported
 /// profiles and unavailable native target semantics return typed refusals.
 /// Every original observation survives, and no partial module is returned.
 #[must_use]
@@ -293,6 +293,8 @@ fn emit<L: LinkSink>(
 #[cfg(test)]
 mod tests;
 
+#[cfg(test)]
+mod class_list_tests;
 #[cfg(test)]
 mod css_tests;
 mod scope;

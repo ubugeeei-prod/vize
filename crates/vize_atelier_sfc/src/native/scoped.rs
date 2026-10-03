@@ -1,4 +1,4 @@
-//! Scope only a complete original parser-proven simple-class rule.
+//! Scope a complete original parser-proven simple-class rule or class list.
 
 use super::NativeSfcCompileError;
 use vize_l0::Span;
@@ -27,15 +27,20 @@ pub(super) fn append(
         .iter()
         .find(|syntax| syntax.container_index() == original.container_index())
         .ok_or_else(unavailable)?;
-    let receipt =
-        observed
-            .simple_class()
-            .map_err(|issue| NativeSfcCompileError::ScopedStyleUnavailable {
-                container_index: original.container_index(),
-                issue,
-            })?;
+    let (single, list) = match observed.simple_class() {
+        Ok(receipt) => (Some(receipt), None),
+        Err(_) => (
+            None,
+            Some(observed.simple_class_list().map_err(|issue| {
+                NativeSfcCompileError::ScopedStyleUnavailable {
+                    container_index: original.container_index(),
+                    issue,
+                }
+            })?),
+        ),
+    };
     let scope = scope.ok_or_else(unavailable)?;
-    let block = receipt.syntax().source();
+    let block = observed.source();
     let raw = block.source();
     let (text, prefix) = if trim {
         (raw.trim(), raw.len() - raw.trim_start().len())
@@ -44,23 +49,35 @@ pub(super) fn append(
     };
     let start = block.start() + prefix as u32;
     let end = start + text.len() as u32;
-    let before_span = Span::new(start, receipt.insertion());
-    let after_span = Span::new(receipt.insertion(), end);
-    let before = block
+    block
         .root_source()
-        .get(before_span.start as usize..before_span.end as usize)
-        .ok_or_else(unavailable)?;
-    let after = block
-        .root_source()
-        .get(after_span.start as usize..after_span.end as usize)
+        .get(start as usize..end as usize)
         .ok_or_else(unavailable)?;
     if !output.is_empty() {
         output.push_str("\n");
     }
-    append_original(output, before, before_span);
-    output.push_str("[");
-    output.push_str(scope.as_str());
-    output.push_str("]");
+    let mut cursor = start;
+    let insertions = single
+        .into_iter()
+        .map(|receipt| receipt.insertion())
+        .chain(list.into_iter().flat_map(|receipt| receipt.insertions()));
+    for insertion in insertions {
+        let before_span = Span::new(cursor, insertion);
+        let before = block
+            .root_source()
+            .get(before_span.start as usize..before_span.end as usize)
+            .ok_or_else(unavailable)?;
+        append_original(output, before, before_span);
+        output.push_str("[");
+        output.push_str(scope.as_str());
+        output.push_str("]");
+        cursor = insertion;
+    }
+    let after_span = Span::new(cursor, end);
+    let after = block
+        .root_source()
+        .get(after_span.start as usize..after_span.end as usize)
+        .ok_or_else(unavailable)?;
     append_original(output, after, after_span);
     Ok(())
 }
