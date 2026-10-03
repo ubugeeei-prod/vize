@@ -225,7 +225,7 @@ fn unsupported_profiles_external_custom_and_malformed_envelopes_keep_descriptor_
 fn original_refused_handler_syntax_and_late_header_inputs_remain_owned() {
     for (body, tail, syntax_refusal) in [
         ("return (", "", true),
-        ("var unused=$event;", "v-if=true", false),
+        ("var unused=$event;", ":id='bad'", false),
     ] {
         let arena = Allocator::default();
         let source = std::format!("<template><button @click='{body}' {tail}/></template>");
