@@ -108,7 +108,8 @@ void test("complete config custody keeps undefined, symbols and noninvoked acces
   const before = observePublic(guarded);
   assert.equal(before.snapshot.properties[0].kind, "accessor");
   assert.deepEqual(before.snapshot.properties[0].set, { type: "undefined" });
-  assert.equal(before.functions[0].value, Object.getOwnPropertyDescriptor(guarded, "value").get);
+  const descriptor = Object.getOwnPropertyDescriptor(guarded, "value");
+  assert.equal(before.functions[0].value, Object.getOwnPropertyDescriptor(descriptor, "get").value);
   assert.equal(publicIdentity(guarded, before).functions[0].sameFunction, true);
   assert.equal(accessorCalls, 0);
   assert.throws(() => completeConfig({ pattern: /vue/ }), /unsupported public config value/);

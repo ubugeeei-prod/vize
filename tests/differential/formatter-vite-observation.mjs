@@ -53,8 +53,16 @@ export function completeConfig(value, functions, location = []) {
             }
           : {
               kind: "accessor",
-              get: completeConfig(descriptor.get, functions, [...location, savedKey, "get"]),
-              set: completeConfig(descriptor.set, functions, [...location, savedKey, "set"]),
+              get: completeConfig(
+                Object.getOwnPropertyDescriptor(descriptor, "get").value,
+                functions,
+                [...location, savedKey, "get"],
+              ),
+              set: completeConfig(
+                Object.getOwnPropertyDescriptor(descriptor, "set").value,
+                functions,
+                [...location, savedKey, "set"],
+              ),
             }),
       };
     }),

@@ -83,9 +83,10 @@ equivalent and paired counts stay zero.
 Four pure source/object/observer/lock controls pass using an existing cached
 Node 24.13.0 and pinned dependency metadata, with no local Rust build or Vize
 addon/CLI execution. Syntax checks pass. These
-controls prove no real formatter/CLI acceptance. The first qualified hosted
-source capture, all twenty-seven calls, protected full/instruction suites and
-literal merge are pending. The accepted prerequisite keeps its unchanged
+controls prove no real formatter/CLI acceptance. The qualified `458e517f`
+hosted capture below separately proves its twenty-seven calls; that source's
+warning gate fails. Corrected exact-head Actions, protected full/instruction
+suites and literal merge remain required. The accepted prerequisite keeps its unchanged
 no-cache, Node 24 same-job build/owner recipe; this consumer does not modify that
 recipe or reuse the predecessor's call report as fresh acceptance.
 
@@ -140,3 +141,27 @@ Keep all comparisons and process frames in the durable whole artifact; console
 failure output names only failed plans and its packet path, avoiding huge
 assertion replay through the pinned cached reporter. Fresh source Actions,
 all-twenty-seven calls and protected acceptance remain pending.
+
+## Source-scoped complete CLI capture and warning repair
+
+Source `458e517f178d5d29db960be19d99356c20110895` runs at actual PR checkout
+`4fe1400908e5a5ab098d746032bcc34e456133fe`. Mandatory JS package job
+111310493297 succeeds and artifact 11287028184 retains the complete schema-2
+report: 2,902,821 bytes, SHA256
+`251552fa544c8af79070824ca6c997fe30df2e9ad24dd3242e37b13f0e263682`.
+All nine plans match all twenty-seven actual Node calls, full config JSON,
+streams, file transitions, prepared-addon identity and cleanup. The observed
+inheritance descriptors confirm all seven original HMR paths and fourteen
+getter/setter references; its original config factory makes fifteen unchanged
+callable identities at normal resolution and each subsequent call. The actual
+Node is 24.14.0 and public/core peers are 0.2.9; native counts remain zero.
+
+This is source-scoped runtime evidence, not protected acceptance. Check
+37159710018 fails only three unchanged-gate unbound-method warnings on recording
+accessor metadata. Read the native-returned descriptor's own data `get`/`set`
+fields to retain the same original references without binding, wrapping,
+invoking or suppressing warnings. All four pure controls pass after this
+bounded correction. No expected data, descriptor reference, output, original
+control, production behavior or build recipe changes. The corrected source
+needs its own complete capture and all required Actions before queue admission;
+protected full/all100 and actual merge remain required.
