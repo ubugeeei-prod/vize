@@ -225,6 +225,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/module_code.rs	8	l0	L0	
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/module_props.rs	15	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/parity_tsx.rs	12	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/parity_vapor.rs	9	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/parser_allocation.rs	4	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/pragma.rs	3	l0	L0	stage	vize_l0	preferred	9
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/pragma.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_jsx/tests/slots.rs	15	l0	L0	stage	vize_l0	preferred	1

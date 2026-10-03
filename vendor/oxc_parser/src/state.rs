@@ -3,10 +3,15 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use oxc_ast::ast::AssignmentExpression;
 use oxc_span::Span;
 
-use crate::cursor::ParserCheckpoint;
+use crate::{Context, cursor::ParserCheckpoint};
 
 pub struct ParserState<'a> {
     pub not_parenthesized_arrow: FxHashSet<u32>,
+
+    /// Failed expression type-argument probes survive rewinds so nested malformed
+    /// generics do not repeatedly allocate the same speculative AST. Grammar
+    /// context is part of the key because parameter initializers can change it.
+    pub not_type_arguments_in_expression: FxHashSet<(u32, Context)>,
 
     /// Temporary storage for `CoverInitializedName` `({ foo = bar })`.
     /// Keyed by `ObjectProperty`'s span.start.
@@ -37,6 +42,7 @@ impl ParserState<'_> {
     pub fn new() -> Self {
         Self {
             not_parenthesized_arrow: FxHashSet::default(),
+            not_type_arguments_in_expression: FxHashSet::default(),
             cover_initialized_name: FxHashMap::default(),
             trailing_commas: FxHashMap::default(),
             potential_await_reparse: Vec::new(),

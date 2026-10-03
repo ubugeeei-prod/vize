@@ -256,6 +256,18 @@ test("opaque native Program regressions seed all eight profiles with exact sourc
         "pure-ts-operator.ts.input",
         "cb91e97e41d2202545925f335bd74794a9176bd2d0fd8c6dd29803ae7cce5e54",
       ],
+      [
+        "type-argument-backtracking.tsx.input",
+        "3611249f2fbc19493b3f5170c372265bbfe804ef0472bd54b27782ee2aaa25e5",
+      ],
+      [
+        "type-argument-slow-unit.tsx.input",
+        "2c66018e8af55e8555b14198db25bd8b18e986f0ccbeaa8f0616b5bbaa615cd1",
+      ],
+      [
+        "type-argument-computed-key.ts.input",
+        "795604dd30265beeeec984c6c5500943dd5c8cf1b2bad9aed4b55ceb9d3ca04a",
+      ],
     ] as const;
     const inputs = witnesses.map(([name, digest]) => {
       const bytes = fs.readFileSync(path.join(repoRoot, "tests/fuzz/regressions/l1_program", name));
@@ -269,9 +281,9 @@ test("opaque native Program regressions seed all eight profiles with exact sourc
       { encoding: "utf8", env: { ...process.env, VIZE_REPO_ROOT: root } },
     );
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-    assert.match(result.stdout, /5 native Program sources in eight explicit profiles/);
+    assert.match(result.stdout, /8 native Program sources in eight explicit profiles/);
     const corpus = path.join(root, "tests/fuzz/corpus/l1_program");
-    assert.equal(fs.readdirSync(corpus).length, 40);
+    assert.equal(fs.readdirSync(corpus).length, 64);
     for (const source of inputs) {
       for (let profile = 0; profile < 8; profile++) {
         const bytes = Buffer.concat([Buffer.from([profile]), source]);
