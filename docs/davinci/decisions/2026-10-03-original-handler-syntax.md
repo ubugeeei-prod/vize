@@ -36,3 +36,10 @@ A compile-fail privacy law denies fabricated syntax observations. Rust
 execution is delegated to exact-head Actions; full protected suites, immutable
 instruction ceilings, native Stack verification and actual merge remain
 separate acceptance requirements.
+
+The first encoded nested-return fixture exceeded the unchanged 31-unit L1
+pre-parse admission once its genuine function-body wrapper and UTF-8 bytes
+were counted. A shorter original declaration and nested block preserve the
+Unicode/entity, first-of-two returns and nonzero authored-window laws within
+26 units. Only the fixture changes; production, profiles, limits and oracles
+remain unchanged. Corrected-head hosted execution is required.

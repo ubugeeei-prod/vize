@@ -22,7 +22,7 @@ fn declaration_and_return_facts_are_minted_from_the_same_original_body() {
 #[test]
 fn the_original_first_nested_return_keeps_its_exact_source_window() {
     let arena = Allocator::default();
-    let text = "var unused=&quot;雪🌸&quot;; if($event){return $event &amp;&amp; 1;} return 1;";
+    let text = "var x=&quot;雪&quot;;{return $event &amp;&amp; 1;}return 0;";
     let resolution = resolve_handler(input(&arena, text), &Outer(&[])).unwrap();
     assert!(resolution.syntax().leading_declaration());
     let returned = resolution.syntax().first_return().unwrap();
