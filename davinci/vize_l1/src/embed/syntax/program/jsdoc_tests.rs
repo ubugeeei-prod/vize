@@ -15,13 +15,13 @@ fn native_js_ts_program_retains_original_jsdoc_receipt_after_owner_move() {
             ProgramOptions::module(lang),
         );
         assert!(original.hole().is_none());
-        let ast = original.admitted_program().unwrap().program() as *const _;
+        let ast = original.admitted_program().unwrap().program().body.as_ptr();
         let source_pointer = original.source().text().as_ptr();
         let moved = original;
         let admitted = moved.admitted_program().unwrap();
         assert_eq!(moved.source().authored_root(), authored.as_str());
         assert!(admitted.has_jsdoc_comments());
-        assert_eq!(admitted.program() as *const _, ast);
+        assert_eq!(admitted.program().body.as_ptr(), ast);
         assert_eq!(admitted.source().as_ptr(), source_pointer);
         assert_eq!(admitted.source(), source);
         assert_eq!(
