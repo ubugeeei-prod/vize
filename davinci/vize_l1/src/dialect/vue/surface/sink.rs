@@ -82,11 +82,12 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
             P::LINT_TAGS && self.stack.last().is_some_and(|frame| frame.exact_pre);
         let table_context =
             P::LINT_TAGS && self.stack.last().is_some_and(|frame| frame.table_context);
-        let recovery_context = P::LINT_TAGS
+        let inherited_recovery = P::LINT_TAGS
             && self
                 .stack
                 .last()
                 .is_some_and(|frame| frame.recovery_context);
+        let recovery_context = entry_recovery || inherited_recovery;
         let (heads, exact_head) = if inherited {
             (HeaderPolicy::default(), false)
         } else {

@@ -191,3 +191,9 @@ caps. Facts are bundled privately in the same sole event; normal const-false
 constructors omit computation and keep exact bytes and unchanged ceilings.
 Fresh hosted proof is required; the previous semantic table/export heads are
 unadmitted while this genuine custody boundary is repaired.
+
+Check 37131485577 exposed an incomplete variable rename in the new post-recovery
+capture. The source now defines the genuine inherited recovery value and combines
+it with the already-captured actual header-entry value. No source input, custody
+assertion, refusal or budget is changed; the original nested-interactive and depth
+laws remain mandatory. Fresh hosted proof replaces that known-red head.
