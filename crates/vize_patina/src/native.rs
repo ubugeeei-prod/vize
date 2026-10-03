@@ -11,10 +11,15 @@ use vize_l0::{
 use vize_l1::markup::{NativeElement, NativeTemplateComponent};
 
 mod attribute;
+mod header;
+mod iframe_has_title;
 mod img_alt;
 
 /// The existing rule code; the native entry is separately opt-in.
 pub const IMG_ALT_RULE: &str = "a11y/img-alt";
+
+/// The existing iframe title rule code; the native entry is separately opt-in.
+pub const IFRAME_HAS_TITLE_RULE: &str = "a11y/iframe-has-title";
 
 /// A refusal retains the caller's original component and observations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -108,5 +113,21 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
             return Err(NativeLintRefusal::ForeignElement);
         }
         img_alt::check(element, messages)
+    }
+
+    /// Check one genuine element's original header for `a11y/iframe-has-title`.
+    ///
+    /// Static title text must contain a non-whitespace decoded scalar. Typed
+    /// static title bindings are accepted without parsing their opaque values.
+    /// Every original header is checked before a result, as in `img_alt`.
+    pub fn iframe_has_title(
+        &self,
+        element: &NativeElement<'_, 'a>,
+        messages: &impl MessageLookup,
+    ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
+        if !core::ptr::eq(self.owner.component(), element.component()) {
+            return Err(NativeLintRefusal::ForeignElement);
+        }
+        iframe_has_title::check(element, messages)
     }
 }

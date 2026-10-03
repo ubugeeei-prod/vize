@@ -1,6 +1,7 @@
 //! A dev-only legacy oracle checks complete diagnostics; production uses L1 only.
 #[cfg(test)]
 mod native_syntax_img_alt {
+    mod iframe_has_title;
     pub mod support;
 }
 

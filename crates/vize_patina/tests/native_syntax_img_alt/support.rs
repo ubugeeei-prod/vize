@@ -13,7 +13,7 @@ use vize_l1::{
 use vize_patina::{
     LintDiagnostic, Linter, RuleRegistry,
     native::{NativeLintFinding, NativeSyntaxLint},
-    rules::a11y::ImgAlt,
+    rules::a11y::{IframeHasTitle, ImgAlt},
 };
 
 pub fn owner<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
@@ -71,30 +71,46 @@ fn collect<'a>(
     lint: &NativeSyntaxLint<'_, 'a>,
     children: NativeChildren<'_, 'a>,
     locale: Locale,
+    iframe: bool,
     output: &mut Vec<Value>,
 ) {
     for child in children {
         if let Some(element) = child.into_element() {
-            if let Some(finding) = lint
-                .img_alt(&element, &translator().for_locale(locale))
-                .unwrap()
-            {
+            let messages = translator().for_locale(locale);
+            let result = if iframe {
+                lint.iframe_has_title(&element, &messages)
+            } else {
+                lint.img_alt(&element, &messages)
+            };
+            if let Some(finding) = result.unwrap() {
                 output.push(native(&finding));
             }
-            collect(lint, element.children(), locale, output);
+            collect(lint, element.children(), locale, iframe, output);
         }
     }
 }
 
 pub fn parity(source: &str, locale: Locale) -> Vec<Value> {
+    compare(source, locale, false)
+}
+
+pub fn iframe_parity(source: &str, locale: Locale) -> Vec<Value> {
+    compare(source, locale, true)
+}
+
+fn compare(source: &str, locale: Locale, iframe: bool) -> Vec<Value> {
     let arena = Allocator::default();
     let original = owner(&arena, source);
     let lint = NativeSyntaxLint::new(&original).unwrap();
     let before = original.component().carrier().tree.source;
     let mut actual = Vec::new();
-    collect(&lint, original.children(), locale, &mut actual);
+    collect(&lint, original.children(), locale, iframe, &mut actual);
     let mut registry = RuleRegistry::new();
-    registry.register(Box::new(ImgAlt));
+    if iframe {
+        registry.register(Box::new(IframeHasTitle));
+    } else {
+        registry.register(Box::new(ImgAlt));
+    }
     let reference = Linter::with_registry(registry)
         .with_locale(locale)
         .lint_sfc(source, "native.vue");
