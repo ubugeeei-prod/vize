@@ -168,3 +168,11 @@ The source audit itself is not build or runtime proof.
 A consumer-side complete typed envelope constructor law also proves that
 independently paired original observations/template/setup views cannot mint
 `NativeSelectedSetupSfc`. The healthy queued common parent remains unchanged.
+
+The first hosted production compile of the consumer failed with E0478: the
+private shared setup projection omitted its required `arena: owner` lifetime
+bound. The trait, both sealed implementations and the shared emitter now state
+that existing ownership relation explicitly. No owner lifetime, source scope,
+authority, eligibility, emitter bytes or test was relaxed; fresh Actions must
+prove this corrected head. The queued parent separately failed its immutable
+instruction ceiling and its owner removed that known-red candidate promptly.

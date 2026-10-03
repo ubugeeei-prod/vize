@@ -41,12 +41,12 @@ pub fn emit_selected_setup<L: LinkSink>(
 
 // Only genuine sealed setup owners implement this private segment projection.
 // It borrows existing declaration/annotation rows, without walking the AST.
-trait SetupInput<'owner, 'arena> {
+trait SetupInput<'owner, 'arena: 'owner> {
     fn source(&self) -> SourceBlock<'arena>;
     fn bindings(&self) -> impl Iterator<Item = BindingRef<'owner, 'arena>>;
     fn type_annotations(&self) -> impl Iterator<Item = SetupAnnotation<'owner, 'arena>>;
 }
-impl<'owner, 'arena> SetupInput<'owner, 'arena> for VueSetup<'owner, '_, '_, 'arena> {
+impl<'owner, 'arena: 'owner> SetupInput<'owner, 'arena> for VueSetup<'owner, '_, '_, 'arena> {
     fn source(&self) -> SourceBlock<'arena> {
         self.source()
     }
@@ -57,7 +57,7 @@ impl<'owner, 'arena> SetupInput<'owner, 'arena> for VueSetup<'owner, '_, '_, 'ar
         self.type_annotations()
     }
 }
-impl<'owner, 'arena> SetupInput<'owner, 'arena> for NativeSelectedSetup<'owner, 'arena> {
+impl<'owner, 'arena: 'owner> SetupInput<'owner, 'arena> for NativeSelectedSetup<'owner, 'arena> {
     fn source(&self) -> SourceBlock<'arena> {
         self.source()
     }
@@ -68,7 +68,7 @@ impl<'owner, 'arena> SetupInput<'owner, 'arena> for NativeSelectedSetup<'owner, 
         self.type_annotations()
     }
 }
-fn emit_body<'owner, 'arena, L: LinkSink>(
+fn emit_body<'owner, 'arena: 'owner, L: LinkSink>(
     setup: &impl SetupInput<'owner, 'arena>,
 ) -> Result<Writer<L>, SetupEmitError> {
     let fail = |span, kind| SetupEmitError { span, kind };
