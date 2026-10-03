@@ -3,7 +3,11 @@ use vize_atelier_sfc::{
 };
 use vize_l0::{Allocator, config::VueVersion};
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind;
-use vize_l2::op::{BindingOp, OnOp, Op, Region};
+use vize_l2::{
+    file::{FileIssueKind, RejectedFileFor},
+    lang::js::NativeTemplateIssueKind,
+    op::{BindingOp, OnOp, Op, Region},
+};
 use vize_l3::decision::ssr::SsrUnsupported;
 use vize_l4::module::AssemblyError;
 use vize_l4::targets::ssr::SsrErrorKind;
@@ -193,11 +197,32 @@ fn refusals() -> Vec<serde_json::Value> {
                     "{id}: {error:?}"
                 );
             }
-            "interpolation" | "for" => {
-                assert!(compilation.observation().admitted().is_some());
+            "interpolation" => {
+                assert!(
+                    compilation.observation().admitted().is_some(),
+                    "{id}: {error:?}"
+                );
                 assert!(
                     matches!(error, NativeSsrSfcCompileError::Ssr(error) if error.kind == SsrErrorKind::Unsupported(SsrUnsupported::Operation))
                 );
+            }
+            "for" => {
+                assert!(compilation.observation().admitted().is_none());
+                assert!(
+                    matches!(error, NativeSsrSfcCompileError::Lowering(issue) if matches!(issue.kind, NativeSelectedSfcIssueKind::Template(issue) if matches!(issue.kind, NativeTemplateIssueKind::For { kind: FileIssueKind::UnsupportedSyntax, .. }))),
+                    "{id}: {error:?}"
+                );
+                let original = compilation.observation().template().unwrap();
+                assert!(original.view().is_err());
+                let [RejectedFileFor::Resolution { input, .. }] =
+                    original.file().unwrap().rejected_for_heads()
+                else {
+                    panic!("{id}: original rejected For resolution missing");
+                };
+                assert_eq!(input.operand().raw_value(), "value in [1,2]");
+                assert_eq!(input.operand().value_span().slice(source), "value in [1,2]");
+                let collection = input.operand().syntax().collection().unwrap().unwrap();
+                assert!(core::ptr::eq(collection.source().authored_root(), source));
             }
             "handler-syntax" => {
                 let original = compilation.observation().template().unwrap();
