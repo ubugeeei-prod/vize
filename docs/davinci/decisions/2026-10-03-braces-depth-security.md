@@ -11,7 +11,7 @@ This is a distinct new finding. The existing Node Forge repair, audit threshold,
 retry policy, Wasmtime closure, guest locks and native providers stay unchanged.
 The native DOM source campaign remains unqueued while its security audit is red.
 
-The proposed registry-package patch backports only the depth hunks from the
+The registry-package patch backports only the depth hunks from the
 **open, unmerged** upstream
 [PR #72](https://github.com/micromatch/braces/pull/72), at immutable head
 `d0d575e55e74a4e0218e5248fafb79efc3e54ebb`.
@@ -42,8 +42,37 @@ Independent Nuxt fixture npm lockfiles are outside this root pnpm repair,
 including their historical `braces@2.3.2` records; no independent-install or
 browser/CDN remediation is claimed.
 
-The actual pnpm-generated patch lock, frozen Linux installation, strict compound
-Forge/Braces audit report proof, unknown-finding refusal laws and fresh exact-head
-Actions remain pending. The temporary resolver capture is evidence only and
-must not appear in the production PR. No audit exception or version claim
+Actions run `37087472637` produced the genuine pnpm 12.1.0 patch resolution.
+Its full output also pruned unrelated native catalog/importer/package entries
+and rewrote Forge's existing lock representation; the subsequent frozen install
+failed. That original output and failure are retained. The production lock uses
+only its Braces patch hash, patched snapshot and two parent edges, conserving
+every unrelated original byte. This is a resolver-derived projection, not the
+verbatim full resolver output or a hand-written integrity value.
+
+Actions run `37088402443` then passed the inherited
+`vp install --frozen-lockfile --ignore-scripts --prefer-offline` on the exact
+projected lock. Its complete Linux census contains ten published Braces files,
+both actual parent consumers and the three range dependencies. All 34 file
+contents match their recorded hashes; the package and both linked parents pass
+the 59 rejection and 18 positive laws. Forge's installed-source proof passes
+unchanged. The Braces digest is
+`74958865c440ebdccbe18322a4b9a2d6468368e5a3c975a761c0752d8ff2c0cc`.
+An earlier private digest accidentally included patch-construction Git metadata;
+that receipt is retained with an additive correction. Unexpected installed
+metadata, files or symlinks still fail the full-package digest.
+
+The original moderate-threshold audit JSON remains visible and unmodified:
+two HIGH findings (Forge and Braces), no MODERATE/CRITICAL, and one LOW count.
+The strict report composer accounts for the complete actionable set before
+recognizing precisely those two independently source-attested Node repairs.
+Unknown findings, count/identity/path changes, new consumers, aliases, missing
+patches and changed sources remain fatal. The LOW count remains visible under
+the original threshold. No audit exception or upstream patched-version claim
 substitutes for the actual installed-source proof.
+
+The temporary source and workflow are evidence only and excluded from the PR.
+Fresh ordinary exact-head required/full/Contracts/Fuzz/all-100 Actions and actual
+protected-queue merge remain pending; the native children stay unqueued until
+the security repair is accepted. This does not finish compiler fix-history
+acceptance or switch any product's legacy default.
