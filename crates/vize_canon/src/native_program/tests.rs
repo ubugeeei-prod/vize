@@ -4,7 +4,7 @@
 mod support;
 
 use super::mapping;
-use crate::{LspDiagnostic, LspPosition, LspRange};
+use lsp_types::Diagnostic;
 use vize_l0::{Allocator, Span, line_index::LineBreaks};
 use vize_l1::embed::Lang;
 use vize_l4::targets::ts::{MappingError, project_program, project_program_no_links};
@@ -19,23 +19,20 @@ fn require(observation: bool, failure: &'static str) -> TestResult {
     }
 }
 
-fn diagnostic(start: (u32, u32), end: (u32, u32)) -> Result<LspDiagnostic, serde_json::Error> {
-    Ok(LspDiagnostic {
-        range: LspRange {
-            start: LspPosition {
-                line: start.0,
-                character: start.1,
-            },
-            end: LspPosition {
-                line: end.0,
-                character: end.1,
-            },
+fn diagnostic(start: (u32, u32), end: (u32, u32)) -> Result<Diagnostic, serde_json::Error> {
+    serde_json::from_value(serde_json::json!({
+        "range": {
+            "start": {"line": start.0, "character": start.1},
+            "end": {"line": end.0, "character": end.1}
         },
-        severity: Some(1),
-        code: Some(serde_json::json!(2339)),
-        source: Some("ts".into()),
-        message: "the original message\nwith detail".into(),
-        related_information: Some(serde_json::from_value(serde_json::json!([{
+        "severity": 1,
+        "code": 2339,
+        "source": "ts",
+        "message": "the original message\nwith detail",
+        "codeDescription": {"href": "https://actual-project.example/2339"},
+        "tags": [1, 2],
+        "data": {"uri": "file:///actual-project/opaque.ts", "original": [true, 1]},
+        "relatedInformation": [{
             "location": {
                 "uri": "file:///actual-project/related.ts",
                 "range": {
@@ -44,8 +41,8 @@ fn diagnostic(start: (u32, u32), end: (u32, u32)) -> Result<LspDiagnostic, serde
                 }
             },
             "message": "the original related message"
-        }]))?),
-    })
+        }]
+    }))
 }
 
 #[test]

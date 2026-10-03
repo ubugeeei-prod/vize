@@ -16,7 +16,6 @@ use std::{
     },
     time::Duration,
 };
-use vize_canon::LspDiagnostic;
 use vize_l0::String;
 
 pub(super) struct DiskReference {
@@ -117,7 +116,7 @@ impl DiskReference {
     pub(super) async fn diagnostics(
         &self,
         path: &Path,
-    ) -> Result<Vec<LspDiagnostic>, Box<dyn std::error::Error>> {
+    ) -> Result<lsp_types::RelatedFullDocumentDiagnosticReport, Box<dyn std::error::Error>> {
         let path = path.canonicalize()?;
         require(
             path.starts_with(&self.root)
@@ -143,11 +142,15 @@ impl DiskReference {
         else {
             return Err("original compiler did not return a complete diagnostic report".into());
         };
-        full.full_document_diagnostic_report
-            .items
-            .iter()
-            .map(|diagnostic| Ok(serde_json::from_value(serde_json::to_value(diagnostic)?)?))
-            .collect()
+        require(
+            full.related_documents.as_ref().is_none_or(|documents| {
+                documents.values().all(|report| {
+                    matches!(report, lsp_types::DocumentDiagnosticReportKind::Full(_))
+                })
+            }),
+            "original related reports are complete without a previous result identity",
+        )?;
+        Ok(full)
     }
 
     pub(super) async fn close(&mut self) -> TestResult {

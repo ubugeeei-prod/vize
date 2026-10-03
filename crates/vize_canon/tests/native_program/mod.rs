@@ -1,4 +1,6 @@
 mod backend;
+mod case;
+mod oracle;
 mod reference;
 mod refusals;
 mod support;

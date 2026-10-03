@@ -65,17 +65,38 @@ Foreign related locations remain original backend observations. No unexpected
 diagnostic is filtered, and cleanup failures retain successfully read vectors.
 
 The feature-enabled backend fixture must execute the actual Corsa/TSGO bridge;
-a missing required executable fails. It compares the complete projected
-diagnostic vectors with actual original-source backend vectors, and checks
-exact code/category/message/UTF-16 start/length/authored spelling against the
-independent TypeScript 6.0.3 references. All ten original L4 reference inputs
-remain registered: original commented inputs become explicit typed refusals.
-Eight additional comment-free whole references cover positive and negative
-JS/TS, JavaScript open-ended object assignment versus TypeScript property
-errors, Unicode/CRLF, hashbangs, ordered errors and Module goal. They retain
-complete independently captured diagnostic payloads. Bad-to-good session reuse
-and unrecorded projections retain real backend errors or exact typed refusals.
-Source/mapping laws and TypeScript captures grant no Corsa execution credit.
+a missing required executable fails. The unchanged TypeScript 6.0.3
+pre-emit helper separately verifies every original compiler-history golden
+against all ten original and eight bounded inputs and their genuine L4
+documents. Compiler diagnostics remain their own independent oracle; they are
+not an expected total editor vector and this work does not establish complete
+compiler equivalence or close the product fix-history gate.
+
+A separate TypeScript 6.0.3 LanguageService generates complete editor vectors
+through its supported syntactic, semantic and suggestion diagnostic APIs. Every
+raw diagnostic field, message chain, report flag, source view and provider
+coordinate provenance is retained. The complete protocol view explicitly uses
+the existing pull client capabilities and the pinned TypeScript 7.0.2 converter
+contract; no suggestion is filtered. Original `.mjs`/`.ts` kinds and actual
+Module Force, strict, allowJs and checkJs options remain explicit.
+
+The editor oracle retains three distinct source views: the exact original
+string opened through ScriptSnapshot.fromString, the provider's actual
+ts.sys.readFile result for the original physical file, and the exact emitted
+document supplied by the genuine Rust L4 projection. It never reconstructs the
+module suffix in JavaScript. The actual physical backend is compared with the
+independent physical view, and the native backend with the independent emitted
+opened view. BOM removal performed by the physical provider is recorded as a
+different source view, not an offset correction. No position is shifted or
+normalized to force equality.
+
+Both complete vectors and their original full typed reports are retained.
+Primary ranges use the same strict L0/L4 mapping; hints remain diagnostics and
+has_errors follows ERROR severity. Original commented inputs remain typed
+refusals, and unknown/closed physical files, bad-to-good reuse, unrecorded
+projections and the fixed nonempty TS probe stay mandatory. Source/mapping
+laws, standalone TypeScript captures and old-head partial SDK matches confer
+no corrected-source Corsa or whole-history execution credit.
 
 The first exact-source full Actions run 37108231996 reached the mandatory
 feature build, then failed on a mapping-fixture import of a related-information
@@ -192,3 +213,32 @@ actual-backend and privacy tests, minimal-feature check and strict Clippy.
 Exact-head Actions, current all 100 instruction probes, native Stack ancestry,
 protected queue and actual merge remain required before delivery. This change
 does not close either roadmap issue or any complete product/history gate.
+
+The seventh failed full campaign, 37122732290 at source 0c8, proved the native
+JavaScript discovery repair through the genuine SDK. Both nonempty TS and JS
+property vectors matched. Three bounded cases then matched before unicode-js
+failed: the original physical editor hint used first-line characters 6..11
+while the exact opened BOM-bearing source used 7..12. Both unfiltered vectors
+contained 2339 and the unused-variable hint 6133; the original compiler
+pre-emit golden correctly contains only 2339. The full terminal failure,
+complete raw payloads and all original goldens are preserved.
+
+The native-only fetch now requests a fresh complete typed editor report
+directly. It requires the same open configured document and exact private
+external/document pair; missing, null, partial, unchanged and related-unchanged
+responses refuse without a cache fallback. RelatedFullDocumentDiagnosticReport
+and every Diagnostic field remain intact, including resultId, relatedDocuments,
+relatedInformation, codeDescription, tags and opaque data. No legacy DTO round
+trip or recursive opaque-URI remapping is used. The typed primary cache keeps
+the returned items. The opt-in result borrows the same projection and exposes
+the retained report beside strict primary mappings. Foreign related reports
+make that observation incomplete and their errors remain observable; no
+foreign source authority is fabricated.
+
+Existing default/legacy diagnostic methods, compatibility DTOs and transport
+bytes remain unchanged. Three source-authored strict-report laws cover rich
+payloads and malformed/incomplete/live-document refusals; mapping laws now
+also retain rich typed payloads. This is bounded SDK/editor qualification,
+with compiler-history, default migration, filename authority, Vue, JS process
+reuse/performance, actual corrected backend/privacy/strict Actions and merge
+delivery still unfinished. No new public feature PR is created.

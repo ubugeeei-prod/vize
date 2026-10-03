@@ -24,6 +24,8 @@ mod documents;
 #[path = "bridge/implementation.rs"]
 mod implementation;
 mod language_features;
+#[cfg(feature = "native-program")]
+mod native_program;
 pub(super) use documents::normalize_document_uri;
 
 /// Bridge to Corsa for type checking and editor queries via project sessions.

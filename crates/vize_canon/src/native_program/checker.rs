@@ -146,7 +146,7 @@ impl NativeProgramChecker {
             Ok(())
         };
         let diagnostics = match readiness {
-            Ok(()) => self.bridge.get_diagnostics(&uri).await,
+            Ok(()) => self.bridge.get_native_program_diagnostics(&uri).await,
             Err(error) => Err(error),
         };
         let cleanup_error = self.bridge.close_virtual_document(&uri).await.err();
@@ -160,9 +160,13 @@ impl NativeProgramChecker {
         Ok(NativeProgramCheck {
             projection,
             diagnostics: diagnostics
-                .into_iter()
+                .full_document_diagnostic_report
+                .items
+                .iter()
+                .cloned()
                 .map(|diagnostic| mapping::observe(projection, diagnostic))
                 .collect(),
+            backend_report: diagnostics,
             cleanup_error,
             configuration_changed: self.configuration_changed,
         })

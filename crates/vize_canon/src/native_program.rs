@@ -3,7 +3,11 @@
 //! This does not replace Vue virtual TS, the default route or the #6879 history
 //! gate. The original File remains borrowed beside every backend observation.
 
-use crate::{CorsaBridgeError, LspDiagnostic, LspRange};
+use crate::{CorsaBridgeError, LspRange};
+use lsp_types::{
+    Diagnostic, DiagnosticSeverity, DocumentDiagnosticReportKind,
+    RelatedFullDocumentDiagnosticReport,
+};
 use vize_l0::Span;
 use vize_l4::targets::ts::{MappingError, ProgramProjection};
 
@@ -13,7 +17,7 @@ pub use checker::{NativeProgramChecker, NativeProgramError};
 
 /// An original backend diagnostic, including refused generated coordinates.
 pub struct NativeProgramDiagnostic {
-    backend: LspDiagnostic,
+    backend: Diagnostic,
     span: Result<Span, MappingError>,
     original_range: Option<LspRange>,
 }
@@ -21,7 +25,7 @@ pub struct NativeProgramDiagnostic {
 impl NativeProgramDiagnostic {
     /// Complete original message/code/severity/related payload; never filtered.
     #[must_use]
-    pub fn backend(&self) -> &LspDiagnostic {
+    pub fn backend(&self) -> &Diagnostic {
         &self.backend
     }
 
@@ -57,12 +61,19 @@ impl NativeProgramDiagnostic {
 /// ```
 pub struct NativeProgramCheck<'projection, 'file, 'arena> {
     projection: &'projection ProgramProjection<'file, 'arena>,
+    backend_report: RelatedFullDocumentDiagnosticReport,
     diagnostics: Vec<NativeProgramDiagnostic>,
     cleanup_error: Option<CorsaBridgeError>,
     configuration_changed: bool,
 }
 
 impl<'projection, 'file, 'arena> NativeProgramCheck<'projection, 'file, 'arena> {
+    /// Original complete typed report, including result ID and related documents.
+    #[must_use]
+    pub fn backend_report(&self) -> &RelatedFullDocumentDiagnosticReport {
+        &self.backend_report
+    }
+
     #[must_use]
     pub fn projection(&self) -> &'projection ProgramProjection<'file, 'arena> {
         self.projection
@@ -90,13 +101,29 @@ impl<'projection, 'file, 'arena> NativeProgramCheck<'projection, 'file, 'arena> 
         self.cleanup_error.is_none()
             && !self.configuration_changed
             && self.diagnostics.iter().all(|item| item.span.is_ok())
+            // Foreign documents stay in the raw report; this projection grants
+            // no authored source authority for mapping their diagnostics.
+            && self.backend_report.related_documents.as_ref().is_none_or(|documents| documents.is_empty())
     }
 
     #[must_use]
     pub fn has_errors(&self) -> bool {
         self.diagnostics
             .iter()
-            .any(|item| item.backend.severity == Some(1))
+            .any(|item| item.backend.severity == Some(DiagnosticSeverity::ERROR))
+            || self
+                .backend_report
+                .related_documents
+                .as_ref()
+                .is_some_and(|documents| {
+                    documents.values().any(|report| match report {
+                        DocumentDiagnosticReportKind::Full(full) => full
+                            .items
+                            .iter()
+                            .any(|item| item.severity == Some(DiagnosticSeverity::ERROR)),
+                        DocumentDiagnosticReportKind::Unchanged(_) => false,
+                    })
+                })
     }
 }
 

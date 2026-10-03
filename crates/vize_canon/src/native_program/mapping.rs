@@ -1,7 +1,8 @@
 //! Convert the existing bridge's exact LSP ranges through L4 source links.
 
 use super::NativeProgramDiagnostic;
-use crate::{LspDiagnostic, LspPosition, LspRange};
+use crate::{LspPosition, LspRange};
+use lsp_types::{Diagnostic, Range};
 use vize_l0::{
     Span,
     line_index::{LineBreaks, utf16_len},
@@ -10,7 +11,7 @@ use vize_l4::targets::ts::{MappingError, ProgramProjection};
 
 pub(super) fn observe(
     projection: &ProgramProjection<'_, '_>,
-    backend: LspDiagnostic,
+    backend: Diagnostic,
 ) -> NativeProgramDiagnostic {
     let span = map_range(projection, &backend.range);
     let original_range = span.ok().map(|span| {
@@ -31,12 +32,9 @@ pub(super) fn observe(
     }
 }
 
-fn map_range(
-    projection: &ProgramProjection<'_, '_>,
-    range: &LspRange,
-) -> Result<Span, MappingError> {
+fn map_range(projection: &ProgramProjection<'_, '_>, range: &Range) -> Result<Span, MappingError> {
     let text = projection.document().as_str();
-    let offset = |position: &LspPosition| {
+    let offset = |position: &lsp_types::Position| {
         let byte = LineBreaks::Lsp
             .position_to_offset(text, position.line, position.character)
             .ok_or(MappingError::InvalidUtf16Boundary)?;
