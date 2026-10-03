@@ -46,8 +46,27 @@ Local proof checks Rust formatting, diff hygiene and unchanged canonical Glyph
 inventory generators. Fresh hosted affected Rust Clippy/tests and the protected
 merge queue supply exact-source whole-workspace and instruction acceptance.
 Historical artifacts and duplicate manual full campaigns provide no acceptance
-credit. The parent queue and child Stack membership remain owned by the root
-delivery agent; this child is not independently auto-merged.
+credit. This dependent child is not individually auto-merged.
+
+## Publication and provider integration
+
+The published child #7518 has #7505's actual branch as its base. GitHub's
+native `gh stack link --remote origin 7505 7518` refused registration because
+#7505 was already queued for merge. Both PRs reported no Stack membership;
+the queued parent candidate `80cc646225e00cf672b52f9db29821609542bb71`
+remains untouched. Parent-base links alone receive no native Stack credit.
+
+The provider actually merged at 2026-10-03T09:01:27Z as valid signed
+`80cc646225e00cf672b52f9db29821609542bb71`. Its protected Check
+`37110594067` passed full Rust/tooling/differential validation and all 100
+instruction ceilings, with every benchmark identical across three executions.
+The merged native runtime and dynamic-law source matches its reviewed head.
+
+The child is replayed on that fresh `main`, preserving its incoming allocation
+test and regenerating the owned canonical Glyph shards. Retarget it to `main`
+and rerun exact-head Actions before the resulting independent source enters
+its protected queue. The old parent-base campaign remains evidence only for
+its original head. No child queue or actual-merge credit follows from replay.
 
 ## Remaining work
 
