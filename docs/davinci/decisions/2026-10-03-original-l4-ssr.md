@@ -15,9 +15,11 @@ escaping/comment/static HTML/nesting/fragment/ordinary-prop boundaries. The
 Rust law observes the authentic Descriptor, selected Component, private lower
 whole-root completion and moved L3 receipt. It compares the complete emitted
 module against independent pinned Vue 3.5.35 function bytes, retaining only the
-existing server-first import-grouping adjustment. Both sinks match, every
-original/generated link stays in its original whole-SFC frame, and prepared
-component assembly preserves complete bytes and SSR attachment.
+existing server-first import-grouping adjustment. Root props use the pinned inline layout for one
+property and multiline layout for multiple properties; the real two-attribute
+fixture covers that encoder correction. Both sinks match, every original/
+generated link stays in its original whole-SFC frame, and prepared component
+assembly preserves complete bytes and SSR attachment.
 
 The separate immutable primary references retain full compiler options/code/
 maps/digests. Dev tests recompile every reference twice, use real SSR helpers

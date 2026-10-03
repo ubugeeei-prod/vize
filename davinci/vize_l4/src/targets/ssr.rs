@@ -115,10 +115,22 @@ fn encode<L: LinkSink>(
                             writer.push("_attrs");
                         } else {
                             writer.use_helper(merge);
-                            writer.push("_mergeProps({ ");
+                            let multiline = element.attributes.len() > 1;
+                            writer.push("_mergeProps({");
+                            if multiline {
+                                writer.indent();
+                                writer.newline();
+                            } else {
+                                writer.push(" ");
+                            }
                             for (index, attribute) in element.attributes.iter().enumerate() {
                                 if index > 0 {
-                                    writer.push(", ");
+                                    writer.push(",");
+                                    if multiline {
+                                        writer.newline();
+                                    } else {
+                                        writer.push(" ");
+                                    }
                                 }
                                 write::property(&mut writer, attribute.name, attribute.span);
                                 writer.push(": ");
@@ -128,7 +140,13 @@ fn encode<L: LinkSink>(
                                     attribute.span,
                                 );
                             }
-                            writer.push(" }, _attrs)");
+                            if multiline {
+                                writer.deindent();
+                                writer.newline();
+                            } else {
+                                writer.push(" ");
+                            }
+                            writer.push("}, _attrs)");
                         }
                         if element.tag.contains('-') {
                             writer.push(", ");
