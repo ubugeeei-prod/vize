@@ -386,6 +386,7 @@ impl<'a, C: Config> Lexer<'a, C> {
                 // LegacyOctalEscapeSequence
                 // NonOctalDecimalEscapeSequence
                 c @ '0'..='7' if !in_template => {
+                    self.has_legacy_literals = true;
                     let first_digit = c as u8 - b'0';
                     let mut value = first_digit;
 
@@ -422,7 +423,9 @@ impl<'a, C: Config> Lexer<'a, C> {
                     *is_valid_escape_sequence = false;
                 }
                 other => {
-                    // NonOctalDecimalEscapeSequence \8 \9 in strict mode
+                    if matches!(other, '8' | '9') && !in_template {
+                        self.has_legacy_literals = true;
+                    }
                     text.push(other);
                 }
             },

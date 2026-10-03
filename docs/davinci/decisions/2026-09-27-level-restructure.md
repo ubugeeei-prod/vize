@@ -99,7 +99,7 @@ Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835), [#6836](h
   - `Shape` is the role inside the markup: `Expr`, `HandlerBody`, `ForHead`, `SlotParams`, `FilterChain`, …
   - `Lang` is the host language, resolved once per file: JS and TS now; Flow, MoonBit and others later.
   - Composite shapes (`ForHead`, `FilterChain`) are built by the dialect from language pieces.
-- **Embed trees** are a separate L1 artifact keyed by embed id:
+- **Embed trees** are a separate L1 artifact keyed by embed id: [The original strict literal receipt](./2026-10-03-original-strict-literal-receipt.md) retains legacy numeric/string spelling facts during the existing lexer decode and both checkpoint paths, without changing ordinary ASTs or syntax diagnostics. It is a provider for authentic native setup eligibility; general semantics, consumer acceptance and TS erasure remain separate.
   - The JS/TS tree is the oxc AST plus spans; the source bytes are authoritative.
   - A broken expression becomes a hole in its own tree and never breaks the markup tree.
   - Embedding works in both directions and nests (markup inside script for JSX, TSRX and Angular inline templates).

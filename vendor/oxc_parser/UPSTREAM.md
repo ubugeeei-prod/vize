@@ -42,3 +42,10 @@ under the upstream package identity for transitive Git dependencies such as
 `oxc_formatter::parse_for_format`. The repository patch retains parser safety
 in those paths; published Vize consumers use the direct fork dependency and
 do not rely on that patch. The adapter contains no parser implementation.
+
+The original lexer now retains whether it decoded legacy numeric or string
+literal spellings forbidden in a strict module. The private boolean follows
+both lexer checkpoint/rewind paths and is exposed only from the immutable
+original admitted Program observation. Ordinary ASTs, diagnostics and syntax
+admission remain unchanged; the receipt does not certify general semantics.
+Native setup eligibility consumes it without another source scan or AST walk.

@@ -97,6 +97,7 @@ impl<C: Config> Lexer<'_, C> {
     }
 
     fn read_legacy_octal(&mut self) -> Kind {
+        self.has_legacy_literals = true;
         let mut kind = Kind::Octal;
         loop {
             match self.peek_byte() {

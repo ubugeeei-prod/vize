@@ -204,6 +204,9 @@ pub struct ParserReturn<'a> {
 
     /// Whether the file is [flow](https://flow.org).
     pub is_flow_language: bool,
+
+    // Private original lexer receipt, distinct from syntax diagnostics.
+    pub(crate) has_legacy_literals: bool,
 }
 
 /// Parse options
@@ -780,6 +783,7 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
             tokens,
             panicked,
             is_flow_language,
+            has_legacy_literals: self.lexer.has_legacy_literals,
         }
     }
 

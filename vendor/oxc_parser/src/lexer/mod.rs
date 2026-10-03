@@ -55,6 +55,7 @@ pub struct LexerCheckpoint<'a> {
     tokens_len: usize,
     pure_comment: Option<usize>,
     has_no_side_effects_comment: bool,
+    has_legacy_literals: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -82,6 +83,9 @@ pub struct Lexer<'a, C: Config> {
     source_type: SourceType,
 
     token: Token,
+
+    // Recorded in the existing literal decoder; no source or AST rescan.
+    pub(crate) has_legacy_literals: bool,
 
     pub(crate) errors: Vec<ParserDiagnostic<'a>>,
 
@@ -150,6 +154,7 @@ impl<'a, C: Config> Lexer<'a, C> {
             source_type,
             token,
             errors: vec![],
+            has_legacy_literals: false,
             deferred_module_errors: vec![],
             trivia_builder: TriviaBuilder::new_in(allocator),
             escaped_strings: FxHashMap::default(),
@@ -200,6 +205,7 @@ impl<'a, C: Config> Lexer<'a, C> {
             tokens_len: self.tokens.len(),
             pure_comment: self.trivia_builder.pure_comment,
             has_no_side_effects_comment: self.trivia_builder.has_no_side_effects_comment,
+            has_legacy_literals: self.has_legacy_literals,
         }
     }
 
@@ -218,6 +224,7 @@ impl<'a, C: Config> Lexer<'a, C> {
             tokens_len: self.tokens.len(),
             pure_comment: self.trivia_builder.pure_comment,
             has_no_side_effects_comment: self.trivia_builder.has_no_side_effects_comment,
+            has_legacy_literals: self.has_legacy_literals,
         }
     }
 
@@ -231,6 +238,7 @@ impl<'a, C: Config> Lexer<'a, C> {
         self.tokens.truncate(checkpoint.tokens_len);
         self.source.set_position(checkpoint.source_position);
         self.token = checkpoint.token;
+        self.has_legacy_literals = checkpoint.has_legacy_literals;
         self.trivia_builder.pure_comment = checkpoint.pure_comment;
         self.trivia_builder.has_no_side_effects_comment = checkpoint.has_no_side_effects_comment;
     }
@@ -623,4 +631,38 @@ impl<'a, C: Config> Lexer<'a, C> {
 #[cold]
 pub fn cold_branch<F: FnOnce() -> T, T>(f: F) -> T {
     f()
+}
+
+#[cfg(test)]
+mod literal_receipt_tests {
+    use super::*;
+    use crate::config::NoTokensLexerConfig;
+
+    #[test]
+    fn speculative_peek_and_both_checkpoint_kinds_restore_original_literal_fact() {
+        let arena = Allocator::default();
+        for source in ["1 010", "1 '\\8'"] {
+            let mut lexer = Lexer::new(&arena, source, SourceType::mjs(), NoTokensLexerConfig,
+                UniquePromise::new_for_tests_and_benchmarks());
+            lexer.first_token();
+            assert!(!lexer.has_legacy_literals);
+            lexer.peek_token();
+            assert!(!lexer.has_legacy_literals, "peek cannot supply an actual decoded fact");
+            let ordinary = lexer.checkpoint();
+            lexer.next_token();
+            assert!(lexer.has_legacy_literals);
+            lexer.rewind(ordinary);
+            assert!(!lexer.has_legacy_literals);
+            let recovery = lexer.checkpoint_with_error_recovery();
+            lexer.next_token();
+            assert!(lexer.has_legacy_literals);
+            lexer.rewind(recovery);
+            assert!(!lexer.has_legacy_literals);
+            lexer.next_token();
+            let retained = lexer.checkpoint();
+            lexer.next_token();
+            lexer.rewind(retained);
+            assert!(lexer.has_legacy_literals, "actual earlier literal remains sticky");
+        }
+    }
 }
