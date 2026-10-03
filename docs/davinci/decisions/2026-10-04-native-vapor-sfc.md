@@ -19,9 +19,12 @@ chooses the independently audited VueVapor runtime 3.6.0-rc.9. This does not
 widen source dialect/header admission. Every ordinary/setup script, even empty,
 and every style, even empty/global/scoped, refuses before template admission.
 Custom/external blocks, unsupported language/header/profile and unavailable
-native semantics retain authentic source evidence. Completed original click and
-For Files still refuse Vapor Binding/Operation decisions. These providers grant
-structure, not target semantics. A standalone original template with authentic
+native semantics retain authentic source evidence. Completed original click
+Files still refuse Vapor Binding decisions. The original numeric For collection
+retains its actual rejected head and CollectionShape source refusal; the current
+native For family admits identifiers only, so this scriptless control grants no
+complete For File or target Operation credit. These providers grant structure,
+not target semantics. A standalone original template with authentic
 script/style siblings also cannot silently omit them through component emission.
 
 ## Complete modules and independent primary controls
@@ -96,3 +99,11 @@ JavaScript gate: two Node test registration promises and one unbound logger
 method. Awaiting both registrations and preserving the logger receiver corrects
 only the verification harness. The failed source was never queued; fresh hosted
 module/runtime acceptance remains required, with no warning-budget waiver.
+
+Source `3bab09afb6` genuinely compiled and matched all eleven complete native
+component/map fixtures, but its numeric For control incorrectly expected source
+completion. The law now checks the exact retained source/head refusal without
+widening the provider, alongside the original complete click File/Binding law.
+The actual consumer-migration inventory generator also updates the compiler's
+SFC shard for the new native dependency rows. This failed source was not queued;
+fresh full component/runtime capture remains mandatory.
