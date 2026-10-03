@@ -95,7 +95,9 @@ fn strict_safe_literal_spellings_preserve_original_body_and_complete_module() ->
             serde_json::json!({"source":source.as_str(), "accepted":true,"code":output.code()}),
         );
         require!(
-            output.code().contains(cstr!("const value={literal};").as_str()),
+            output
+                .code()
+                .contains(cstr!("const value={literal};").as_str()),
             "authored spelling unchanged"
         );
         require!(
