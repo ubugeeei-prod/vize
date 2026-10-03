@@ -26,7 +26,7 @@ pub enum RejectedFileHandler<'a> {
     Observation(NativeAttributeHandlerFailure<'a>),
     Syntax(Box<RejectedNativeHandlerInput<'a>>),
     Resolution {
-        input: NativeHandlerInput<'a>,
+        input: Box<NativeHandlerInput<'a>>,
         error: ResolutionError,
     },
 }

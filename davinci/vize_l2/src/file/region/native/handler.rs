@@ -76,7 +76,11 @@ where
         });
         // Same original token, complete body, source/profile and owner. Even
         // an unexpected identity refusal retains this normally owned input.
-        if self.facts.pending_handlers[index]
+        if self
+            .facts
+            .pending_handlers
+            .get(index)
+            .ok_or(Kind::InvalidEvent)?
             .input
             .as_ref()
             .ok_or(Kind::InvalidEvent)?
@@ -89,7 +93,11 @@ where
         super::interruption::after_park();
         // Keep the entire normal owner in File facts before the fallible walk.
         // A caught unwind leaves that same input parked, never dropped locally.
-        let input = self.facts.pending_handlers[index]
+        let input = self
+            .facts
+            .pending_handlers
+            .get(index)
+            .ok_or(Kind::InvalidEvent)?
             .input
             .as_ref()
             .ok_or(Kind::InvalidEvent)?;
@@ -104,7 +112,11 @@ where
         let facts = match result {
             Ok(facts) => facts,
             Err(error) => {
-                let input = self.facts.pending_handlers[index]
+                let input = self
+                    .facts
+                    .pending_handlers
+                    .get_mut(index)
+                    .ok_or(Kind::InvalidEvent)?
                     .input
                     .take()
                     .ok_or(Kind::InvalidEvent)?;
@@ -122,23 +134,23 @@ where
                 };
                 self.facts
                     .rejected_handlers
-                    .push(RejectedFileHandler::Resolution { input, error });
+                    .push(RejectedFileHandler::Resolution {
+                        input: alloc::boxed::Box::new(input),
+                        error,
+                    });
                 return Err(self.handler_error(span, kind));
             }
         };
-        let input = self.facts.pending_handlers[index]
-            .input
-            .take()
+        let pending = self
+            .facts
+            .pending_handlers
+            .get_mut(index)
             .ok_or(Kind::InvalidEvent)?;
-        let resolution = match facts.join(input) {
-            Ok(resolution) => resolution,
-            Err(input) => {
-                self.facts.pending_handlers[index].input = Some(input);
-                return Err(self.handler_error(value_span, FileIssueKind::InvalidSource));
-            }
+        let Some(resolution) = facts.join(&mut pending.input) else {
+            return Err(self.handler_error(value_span, FileIssueKind::InvalidSource));
         };
         let name = resolution.input().operand().argument();
-        self.facts.pending_handlers[index].resolution = Some(resolution);
+        pending.resolution = Some(resolution);
         Ok(PreparedHandler { index, name })
     }
 
@@ -153,7 +165,11 @@ where
             return Err(self.handler_error(span, FileIssueKind::InvalidSource));
         }
         self.with_walk(span, |file| {
-            let resolution = file.facts.pending_handlers[handler.index]
+            let resolution = file
+                .facts
+                .pending_handlers
+                .get(handler.index)
+                .ok_or(Kind::InvalidEvent)?
                 .resolution
                 .as_ref()
                 .ok_or(Kind::InvalidEvent)?;
@@ -163,7 +179,11 @@ where
                 .region
                 .native_on(resolution, span)
                 .map_err(Kind::Artifact)?;
-            let resolution = file.facts.pending_handlers[handler.index]
+            let resolution = file
+                .facts
+                .pending_handlers
+                .get_mut(handler.index)
+                .ok_or(Kind::InvalidEvent)?
                 .resolution
                 .take()
                 .ok_or(Kind::InvalidEvent)?;

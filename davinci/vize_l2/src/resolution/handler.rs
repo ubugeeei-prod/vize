@@ -16,18 +16,19 @@ pub(crate) struct ResolvedHandlerFacts<'a> {
 impl<'a> ResolvedHandlerFacts<'a> {
     pub(crate) fn join(
         self,
-        input: NativeHandlerInput<'a>,
-    ) -> Result<HandlerResolution<'a>, NativeHandlerInput<'a>> {
-        let source = input.operand().syntax().source();
-        if !core::ptr::eq(self.body, input.body())
+        input: &mut Option<NativeHandlerInput<'a>>,
+    ) -> Option<HandlerResolution<'a>> {
+        let original = input.as_ref()?;
+        let source = original.operand().syntax().source();
+        if !core::ptr::eq(self.body, original.body())
             || !core::ptr::eq(self.source.authored_root(), source.authored_root())
             || !core::ptr::eq(self.source.text(), source.text())
             || self.source.span() != source.span()
         {
-            return Err(input);
+            return None;
         }
-        Ok(HandlerResolution {
-            input,
+        Some(HandlerResolution {
+            input: input.take()?,
             tables: self.tables,
         })
     }

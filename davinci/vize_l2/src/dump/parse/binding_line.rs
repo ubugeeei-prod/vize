@@ -1,8 +1,6 @@
-//! Attached-binding line grammar: `ui.bind`, `ui.on`, `ui.model`,
-//! `ui.slot-content`, `vue.directive`, `vue.css-bind` — split from
-//! [`line`](crate::dump::parse::line)
-//! along the op-family boundary (region-op lines there, binding lines
-//! here) so each file stays within the source budget.
+//! Attached-binding grammar for UI bindings and Vue directives.
+//! Split from [`line`](crate::dump::parse::line) along the op-family
+//! boundary so region operations and bindings fit the source budget.
 
 use alloc::vec::Vec;
 
@@ -112,11 +110,15 @@ fn optional_fields(
             .find(' ')
             .ok_or_else(|| err(line_no, cstr!("expected handler ref and span")))?;
         native_handler = Some(
-            payload[..end]
+            payload
+                .get(..end)
+                .ok_or_else(|| err(line_no, cstr!("invalid handler ref boundary")))?
                 .parse()
                 .map_err(|_| err(line_no, cstr!("invalid handler ref")))?,
         );
-        rest = &payload[end..];
+        rest = payload
+            .get(end..)
+            .ok_or_else(|| err(line_no, cstr!("invalid handler ref boundary")))?;
         any_field = true;
     }
     let span = if any_field {

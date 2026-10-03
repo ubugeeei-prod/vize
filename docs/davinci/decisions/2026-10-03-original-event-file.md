@@ -66,6 +66,14 @@ File owner and source-sized private header worklists; tests add no production
 storage. Hosted exact-head Actions, protected full suites/instruction ceilings
 and actual native Stack merge remain required execution/delivery evidence.
 
+The first actual hosted source build at `074383cb` refused unchecked string
+and pending-row indexing, a large semantic rejection variant and a large
+identity-join error. Checked boundary/row lookups preserve typed refusals;
+semantic input is boxed only on rejection, and the private successful receipt
+joins through the parked input slot, leaving that slot unchanged on mismatch.
+No successful-path allocation, warning waiver or law/fixture weakening is
+added. That failed head remains separate from fresh repaired-head acceptance.
+
 The current private NativeVisibility policy still refuses every outer setup
 binding. Only the supported handler-local subset and actual event `$event`
 parameter can resolve here; an existing setup declaration cannot bypass that
