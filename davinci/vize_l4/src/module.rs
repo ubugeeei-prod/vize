@@ -96,6 +96,7 @@ impl<'a, L: LinkSink> ModuleParts<'a, L> {
 }
 
 mod imports;
+pub mod ordinary;
 mod scope;
 pub use scope::ScopeId;
 pub mod setup;
