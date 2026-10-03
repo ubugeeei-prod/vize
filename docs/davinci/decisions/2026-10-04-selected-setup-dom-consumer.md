@@ -214,3 +214,21 @@ laws and its durable failure record enter this union. Native Stack #7664
 still requires current source Actions for both ordered members and protected
 full/100-by-3 acceptance through their actual merges. Historical successful
 captures and this source-preserving replay grant no current delivery credit.
+
+The genuine envelope parent #7658 actually merged at 2026-10-03T23:44:10Z
+as `c3c0d044e4853d1f8c341a6f11f593d1706f738c`. Protected Check `37161916241`
+passed full workspace Clippy/archive/doctests, differential suites, four full
+Rust workers, four tooling workers and both source aggregates. Its 15,100 full
+Rust executions have no failed or skipped cases; seven envelope and three CFG
+laws pass once each, with six new privacy docs. The [terminal receipt](https://github.com/ubugeeei-prod/vize/issues/6838#issuecomment-5974716542)
+retains these exact records. All 100 unchanged
+instruction gates passed three identical measurements; the actual complexity
+fixture is 5761, below the fixed 5781 ceiling. Nuxt and Musea also passed.
+
+The child then replayed its six owned commits onto that freshly fetched literal
+main. Both incoming SSR/Vapor product exports and the original local-handler
+capture qualifier are retained alongside the genuine setup DOM additions.
+All owned emitter/product/fixture/runtime bytes remain unchanged. GitHub
+automatically retargeted the sole remaining native Stack child to main; fresh
+exact-source capture Actions and protected full/100-by-3 actual child merge
+remain required. The parent acceptance does not grant child output delivery.

@@ -104,3 +104,13 @@ For output, broader handler accesses, ordinary/styles/macros/general JS/TS,
 complete Vue envelope parity, defaults and #6880 remain unfinished. Source and
 protected full Actions, unchanged budgets and actual native Stack merges are
 required; passing ownership laws alone do not complete a product.
+
+The envelope #7658 actually merged at 2026-10-03T23:44:10Z as
+`c3c0d044e4853d1f8c341a6f11f593d1706f738c`, after protected Check
+`37161916241` passed full workspace Clippy/archive/doctests/differential, four
+full Rust and tooling workers (15,100 executions, seven envelope/three CFG laws
+once each, six new privacy docs), all100-by-3 fixed ceilings/ratchet/hold, and
+Nuxt/Musea. Actual complexity is 5761 in each of the three executions under
+unchanged ceiling 5781. The preceding 3043/e309 failures remain historical;
+this normally retained envelope is delivered, while its DOM child needs its
+own fresh source/capture/protected acceptance and actual merge.
