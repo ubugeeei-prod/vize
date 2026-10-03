@@ -27,9 +27,9 @@ origin. Local syntax/context/resource holes remain observable but expose no
 admitted body. `into_syntax` explicitly drops attribute authority and keeps the
 normally owned original syntax; the owner is neither Clone nor Copy.
 
-Eight genuine selected-parser library laws cover both static head forms,
+Nine genuine selected-parser library laws cover both static head forms,
 Unicode/entity/CRLF coordinates, multi-statement body identity, setup-only TS,
-JS syntax observations, move/parking, foreign/sibling/nested custody,
+JS syntax observations, move/parking, single-visit current-header joins, foreign/sibling/nested custody,
 unsupported no-parse forms, v-pre/recovered carriers and retained syntax/context
 holes. Strict production Clippy and the private-origin rustdoc law pass locally.
 Fresh exact-head Actions, the protected full/instruction queue and actual merge

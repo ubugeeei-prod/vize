@@ -287,3 +287,29 @@ fn local_body_syntax_and_context_holes_retain_comments_and_cannot_join_event() {
         );
     }
 }
+
+#[test]
+fn single_header_visit_parks_then_joins_the_actual_original_event_token() {
+    let arena = Allocator::default();
+    let source = "<template><button @click='return count'/></template>";
+    let owner = selected(&arena, source);
+    let element = owner.children().next().unwrap().into_element().unwrap();
+    let mut visits = 0;
+    let mut parked = alloc::vec::Vec::new();
+    for attribute in element.attributes() {
+        visits += 1;
+        let operand = owner
+            .observe_attribute_handler(attribute.reborrow())
+            .unwrap();
+        let original = operand.syntax().body().unwrap();
+        parked.push(operand);
+        parked.reserve(32);
+        let admitted = parked[0].admitted_for(&owner, attribute).unwrap();
+        assert_eq!(admitted.attribute().ordinal(), 0);
+        assert!(core::ptr::eq(
+            admitted.handler_body().unwrap().body(),
+            original
+        ));
+    }
+    assert_eq!(visits, 1);
+}
