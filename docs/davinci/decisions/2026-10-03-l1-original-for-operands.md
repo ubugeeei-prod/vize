@@ -58,3 +58,15 @@ execution, target output and product migration remain unfinished. Existing parse
 admission limits, dependency direction, storage classifier and all instruction
 ceilings stay unchanged. Fresh exact-head Actions, full Fuzz/instruction and the
 protected queue with actual merge are required before delivery is recorded.
+
+## Delivery receipts
+
+The original Joint provider #7463 actually merged on 2026-10-03 as
+`750bed7799e40c59aa9af2c8a7afee63f7881499`, the same protected candidate whose
+complete source, Rust, differential corpus and 100 pinned instruction ceilings
+succeeded. This dependent owner is replayed onto that actual main with the
+canonical source census regenerated from the complete current tree. The header
+checker is currently consumed by the conditional and For receivers; the separate
+event provider may adopt it after this owner merges. No parser, runtime law,
+source classifier, legacy route or numeric budget changes in this replay. Fresh
+exact-head source Actions and a protected composed candidate remain required.
