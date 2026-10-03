@@ -120,7 +120,7 @@ pub use embedding::{
     EmbeddingInput, EmbeddingInputError, EmbeddingObservation, ExpressionObservation,
     HandlerBodyObservation, ParametersObservation,
 };
-pub use observation::{AdmittedProgram, ProgramObservation};
+pub use observation::{AdmittedProgram, OriginalDefaultExport, ProgramObservation};
 
 /// Maximum length of source which can be parsed (in bytes).
 /// ~4 GiB on 64-bit systems, ~2 GiB on 32-bit systems.

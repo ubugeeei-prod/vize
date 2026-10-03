@@ -9,6 +9,9 @@ use crate::{
     config::{NoTokensParserConfig, ParserConfig, RuntimeParserConfig, TokensParserConfig},
 };
 
+mod default_export;
+pub use default_export::OriginalDefaultExport;
+
 /// The complete ordinarily owned result of one parser invocation.
 ///
 /// Private storage prevents a caller from discarding diagnostics and presenting
