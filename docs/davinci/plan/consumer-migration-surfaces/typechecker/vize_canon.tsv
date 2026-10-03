@@ -289,7 +289,8 @@ typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/batch_checker.
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/bridge.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/bridge/documents.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/bridge/language_features.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/editor_configuration.rs	19	carton	Carton host/compatibility	old	vize_carton	legacy	3
+typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/editor_configuration.rs	19	carton	Carton host/compatibility	old	vize_carton	legacy	5
+typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/editor_configuration/reference_tests.rs	125	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/editor_configuration/tests.rs	181	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/editor_session.rs	13	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/editor_session.rs	74	carton	Carton host/compatibility	old	vize_carton	legacy	1

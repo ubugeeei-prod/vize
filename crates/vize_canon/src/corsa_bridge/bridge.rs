@@ -174,6 +174,25 @@ impl CorsaBridge {
         .reference_paths(candidates)
     }
 
+    /// Scope parser-classified Vue component augmentations for diagnostics.
+    /// The caller supplies declaration-role facts; this method only determines
+    /// their physical effective-project boundary, not declaration semantics.
+    pub fn scoped_vue_component_reference_paths(
+        &self,
+        source_path: &std::path::Path,
+        candidates: &[std::path::PathBuf],
+    ) -> Vec<std::path::PathBuf> {
+        if candidates.is_empty() {
+            return Vec::new();
+        }
+        super::editor_configuration::EditorProjectConfiguration::for_source(
+            source_path,
+            self.config.working_dir.as_deref(),
+            self.config.tsconfig_path.as_deref(),
+        )
+        .component_reference_paths(candidates)
+    }
+
     /// Clear diagnostics cache.
     pub fn clear_cache(&self) {
         let _ = self.submit(|slot| {

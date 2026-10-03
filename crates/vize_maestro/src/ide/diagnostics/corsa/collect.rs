@@ -132,12 +132,21 @@ impl DiagnosticService {
         let legacy_vue2 = state.legacy_vue2_enabled();
         let mut virtual_ts_options = state.virtual_ts_options();
         let discovered_references = state.global_component_reference_paths().await;
-        let reference_paths = match uri.to_file_path() {
+        let component_references = state.vue_component_augmentation_paths().await;
+        let mut reference_paths = match uri.to_file_path() {
             Ok(source_path) => {
-                bridge.scoped_vue_reference_paths(&source_path, &discovered_references)
+                let mut paths =
+                    bridge.scoped_vue_reference_paths(&source_path, &discovered_references);
+                paths.extend(
+                    bridge
+                        .scoped_vue_component_reference_paths(&source_path, &component_references),
+                );
+                paths
             }
             Err(_) => discovered_references,
         };
+        reference_paths.sort();
+        reference_paths.dedup();
         virtual_ts_options.reference_paths = reference_paths
             .iter()
             .map(|path| path.to_string_lossy().as_ref().into())

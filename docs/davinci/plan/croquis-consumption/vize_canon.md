@@ -113,7 +113,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `NonScriptSetupScopeData` |        3 |    4 |
 | `OptionGroup`             |        7 |    9 |
 | `PassedProp`              |       24 |   35 |
-| `Scope`                   |       25 |   58 |
+| `Scope`                   |       25 |   59 |
 | `ScopeChain`              |        7 |    9 |
 | `ScopeData`               |       35 |   53 |
 | `ScopeId`                 |       23 |   31 |

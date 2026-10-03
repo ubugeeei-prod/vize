@@ -54,7 +54,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
         return Ok(None);
     };
     let mut virtual_ts_options = ctx.state.virtual_ts_options();
-    let discovered_references = ctx.state.global_component_reference_paths().await;
+    let discovered_references = ctx.state.global_value_reference_paths().await;
     virtual_ts_options.reference_paths = bridge
         .scoped_vue_reference_paths(&source_path, &discovered_references)
         .iter()

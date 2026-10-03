@@ -1,0 +1,19 @@
+{
+  "description": "Reduced declaration-role corpus retains the original Volt ambient ref declaration and byte-exact existing watcher and Element Plus component augmentations. Role selection must preserve the existing diagnostic and hover contracts.",
+  "voltFixture": "tests/_fixtures/lsp-nuxt-auto-import-hover.json",
+  "voltAmbient": "export {};\ndeclare global { const ref: typeof import('vue')['ref']; }\n",
+  "componentAugmentations": [
+    {
+      "sourceFile": "tests/tooling/lsp-file-create-delete.test.ts",
+      "declaration": "declare module \"vue\" {\n  export interface GlobalComponents {\n    NuxtCard: import(\"vue\").DefineComponent<{ count: string }>;\n  }\n}\nexport {};\n",
+      "names": ["NuxtCard"],
+      "contract": "Type 'number' is not assignable to type 'string'."
+    },
+    {
+      "sourceFile": "tests/snapshots/check/element-plus-slot-oracle.ts",
+      "declaration": "declare module 'vue' {\n  export interface GlobalComponents {\n    ElBadge: typeof import('element-plus')['ElBadge']\n    ElButton: typeof import('element-plus')['ElButton']\n    ElIcon: typeof import('element-plus')['ElIcon']\n  }\n}\n\nexport {}\n",
+      "names": ["ElBadge", "ElButton", "ElIcon"],
+      "contract": "```typescript\n(parameter) value: any\n```"
+    }
+  ]
+}

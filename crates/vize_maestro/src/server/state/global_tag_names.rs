@@ -1,9 +1,10 @@
-//! Cache authored GlobalComponents declaration names for tag completion.
+//! Cache authored global declaration roles and component names in one parse.
 use super::ServerState;
 use futures::{channel::oneshot, lock::Mutex as AsyncMutex};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{
-    Expression, TSInterfaceDeclaration, TSModuleDeclaration, TSModuleDeclarationName, TSSignature,
+    Declaration, Expression, TSGlobalDeclaration, TSInterfaceDeclaration, TSModuleDeclaration,
+    TSModuleDeclarationName, TSSignature,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
@@ -24,7 +25,13 @@ enum Stamp {
 }
 struct CachedNames {
     stamp: Stamp,
+    declarations: DeclarationFacts,
+}
+#[derive(Clone, Default)]
+struct DeclarationFacts {
     names: Vec<String>,
+    global_values: bool,
+    vue_components: bool,
 }
 #[derive(Default)]
 pub(super) struct GlobalTagNamesCache {
@@ -40,6 +47,36 @@ impl GlobalTagNamesCache {
 
 impl ServerState {
     pub(crate) async fn global_component_tag_names(&self) -> Vec<String> {
+        self.workspace_declaration_facts()
+            .await
+            .into_iter()
+            .flat_map(|(_, facts)| facts.names)
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect()
+    }
+
+    /// Script globals share the existing declaration parse/cache. Component
+    /// augmentations retain their established diagnostic/template route.
+    pub(crate) async fn global_value_reference_paths(&self) -> Vec<PathBuf> {
+        self.workspace_declaration_facts()
+            .await
+            .into_iter()
+            .filter(|(_, facts)| facts.global_values && !facts.vue_components)
+            .map(|(path, _)| path)
+            .collect()
+    }
+
+    pub(crate) async fn vue_component_augmentation_paths(&self) -> Vec<PathBuf> {
+        self.workspace_declaration_facts()
+            .await
+            .into_iter()
+            .filter(|(_, facts)| facts.vue_components)
+            .map(|(path, _)| path)
+            .collect()
+    }
+
+    async fn workspace_declaration_facts(&self) -> Vec<(PathBuf, DeclarationFacts)> {
         let mut paths = self.global_component_reference_paths().await;
         for document in self.documents.iter() {
             if let Ok(path) = document.key().to_file_path()
@@ -57,7 +94,7 @@ impl ServerState {
         paths.dedup();
         let cache = &self.global_component_references.tag_names;
         let _scan = cache.scan_lock.lock().await;
-        let mut result = BTreeSet::new();
+        let mut result = Vec::new();
         let mut missing = Vec::new();
         for path in &paths {
             let document = Url::from_file_path(path)
@@ -79,7 +116,7 @@ impl ServerState {
                 .get(path)
                 .filter(|cached| cached.stamp == stamp)
             {
-                result.extend(cached.names.clone());
+                result.push((path.clone(), cached.declarations.clone()));
                 continue;
             }
             if document
@@ -90,7 +127,7 @@ impl ServerState {
                     path.clone(),
                     CachedNames {
                         stamp,
-                        names: Vec::new(),
+                        declarations: DeclarationFacts::default(),
                     },
                 );
                 continue;
@@ -108,8 +145,14 @@ impl ServerState {
                         .filter_map(|(path, stamp, source)| {
                             let source = source
                                 .or_else(|| fs::read_to_string(&path).ok().map(String::from))?;
-                            let names = declared_names(&source);
-                            Some((path, CachedNames { stamp, names }))
+                            let declarations = declared_facts(&source);
+                            Some((
+                                path,
+                                CachedNames {
+                                    stamp,
+                                    declarations,
+                                },
+                            ))
                         })
                         .collect::<Vec<_>>();
                     let _ = sender.send(parsed);
@@ -119,7 +162,7 @@ impl ServerState {
             } else if let Ok(parsed) = receiver.await {
                 let mut cached = cache.names.write();
                 for (path, entry) in parsed {
-                    result.extend(entry.names.iter().cloned());
+                    result.push((path.clone(), entry.declarations.clone()));
                     cached.insert(path, entry);
                 }
             }
@@ -128,7 +171,8 @@ impl ServerState {
             .names
             .write()
             .retain(|path, _| paths.binary_search(path).is_ok());
-        result.into_iter().collect()
+        result.sort_by(|left, right| left.0.cmp(&right.0));
+        result
     }
 }
 
@@ -140,16 +184,41 @@ struct Interface {
 #[derive(Default)]
 struct Declarations {
     vue_module: bool,
+    in_global: bool,
+    global_values: bool,
     interfaces: BTreeMap<String, Interface>,
     roots: Vec<String>,
 }
 
 impl<'a> Visit<'a> for Declarations {
+    fn visit_ts_global_declaration(&mut self, declaration: &TSGlobalDeclaration<'a>) {
+        let previous = self.in_global;
+        self.in_global = true;
+        walk::walk_ts_global_declaration(self, declaration);
+        self.in_global = previous;
+    }
+    fn visit_declaration(&mut self, declaration: &Declaration<'a>) {
+        if self.in_global
+            && matches!(
+                declaration,
+                Declaration::VariableDeclaration(_)
+                    | Declaration::FunctionDeclaration(_)
+                    | Declaration::ClassDeclaration(_)
+                    | Declaration::TSEnumDeclaration(_)
+            )
+        {
+            self.global_values = true;
+        }
+        walk::walk_declaration(self, declaration);
+    }
     fn visit_ts_module_declaration(&mut self, module: &TSModuleDeclaration<'a>) {
         let previous = self.vue_module;
+        let previous_global = self.in_global;
+        self.in_global = false;
         self.vue_module = matches!(&module.id, TSModuleDeclarationName::StringLiteral(name) if matches!(name.value.as_str(), "vue" | "@vue/runtime-core"));
         walk::walk_ts_module_declaration(self, module);
         self.vue_module = previous;
+        self.in_global = previous_global;
     }
     fn visit_ts_interface_declaration(&mut self, interface: &TSInterfaceDeclaration<'a>) {
         let name = interface.id.name.as_str().to_compact_string();
@@ -177,14 +246,16 @@ impl<'a> Visit<'a> for Declarations {
     }
 }
 
-fn declared_names(source: &str) -> Vec<String> {
+fn declared_facts(source: &str) -> DeclarationFacts {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, source, SourceType::d_ts()).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
-        return Vec::new();
+        return DeclarationFacts::default();
     }
     let mut declarations = Declarations::default();
     declarations.visit_program(&parsed.program);
+    let vue_components = !declarations.roots.is_empty();
+    let global_values = declarations.global_values;
     let mut pending = declarations.roots;
     let mut visited = BTreeSet::new();
     let mut result = BTreeSet::new();
@@ -197,8 +268,21 @@ fn declared_names(source: &str) -> Vec<String> {
             pending.extend(interface.extends.iter().cloned());
         }
     }
-    result.into_iter().collect()
+    DeclarationFacts {
+        names: result.into_iter().collect(),
+        global_values,
+        vue_components,
+    }
 }
+
+#[cfg(test)]
+fn declared_names(source: &str) -> Vec<String> {
+    declared_facts(source).names
+}
+
+#[cfg(test)]
+#[path = "global_tag_names/reference_tests.rs"]
+mod reference_tests;
 
 #[cfg(test)]
 mod tests {
