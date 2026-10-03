@@ -63,3 +63,14 @@ The earlier unchanged allocation-law failure76>74 and successful identical
 archived retry remain recorded in the native Vue companion and #6830.
 Process-global counter/libtest interference is an unproven hypothesis.
 No allocation source or ceiling is changed here.
+
+Initial source daa770467 Check37135594845 built the actual owned source and
+passed all four Rust workers plus their source report. The genuine late-project
+and root-config mutation/reaping law passed at .243s, all ten original full
+vectors at 1.873s, inherited/import reload at .421s, and the original timeout
+cleanup law at 1.210s. The tooling1 partition alone found the canonical consumer
+inventory still naming the moved private file. Regenerate that inventory through
+the same pure Node generator used by its Rust wrapper; its sole changed row
+records the new path and actual import line. No local Cargo build, ceiling,
+diagnostic vector or runtime source is changed by that correction. The refreshed
+head still requires its own complete Actions and protected acceptance.

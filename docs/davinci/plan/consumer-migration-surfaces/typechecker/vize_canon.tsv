@@ -382,8 +382,8 @@ typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/mater
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/native_vue.rs	11	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/native_vue.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/native_vue/filesystem.rs	5	l0	L0	stage	vize_l0	preferred	1
-typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/native_vue/project.rs	8	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/original_program.rs	11	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/project_identity.rs	7	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/readiness.rs	5	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/retry.rs	4	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/retry.rs	40	l0	L0	stage	vize_l0	preferred	1
