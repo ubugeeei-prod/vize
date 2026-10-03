@@ -8,12 +8,14 @@ use crate::expr::JsExpr;
 
 mod budget;
 mod compound;
+mod exports;
 mod for_head;
 mod handler;
 mod jsx;
 #[cfg(test)]
 mod syntax_tests;
 mod values;
+pub(super) use exports::export_local;
 pub(super) use for_head::original as original_for_head;
 pub(super) use handler::handler_body;
 
@@ -40,21 +42,6 @@ pub(super) fn retained<'a>(
     let checkpoint = sink.checkpoint();
     let mut resolver = Resolver::new(source, sink);
     let result = resolver.expression(expression, 0);
-    if result.is_err() {
-        resolver.sink.rollback(checkpoint);
-    }
-    result
-}
-
-pub(super) fn export_local<'a>(
-    source: ReferenceSource<'a>,
-    span: oxc_span::Span,
-    name: &'a str,
-    sink: &mut impl ReferenceSink<'a>,
-) -> Result<(), ResolutionError> {
-    let checkpoint = sink.checkpoint();
-    let mut resolver = Resolver::new(source, sink);
-    let result = resolver.reference(span, name, Usage::Read, false);
     if result.is_err() {
         resolver.sink.rollback(checkpoint);
     }
