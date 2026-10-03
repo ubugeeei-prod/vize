@@ -65,3 +65,11 @@ runtime execution successfully, but its composed source-check workflow reached
 from the queue and drafted. Replaying actual main and removing three empty
 workflow lines preserves every sibling hook and condition; new exact-head and
 protected acceptance remain required.
+
+After source acceptance, the next admission was unmergeable before any candidate
+was created: the accepted selected-literal output prefix also amended the same
+L4 overview paragraph. The whole Vapor decision is moved byte-exact into the
+existing Vapor history paragraph, leaving that shared overview and the provider
+facts unchanged. Read-only merge-tree verification against the actual accepted
+prefix is clean; the prefix is never adopted as main. This documentation move
+changes no target/capture bytes and still requires fresh hosted acceptance.
