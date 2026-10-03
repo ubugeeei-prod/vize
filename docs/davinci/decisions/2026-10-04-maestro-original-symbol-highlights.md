@@ -83,8 +83,9 @@ production result/error arrays are compared. The shadow fixture uses a genuine
 supported function scope; incomplete original destructuring retains the exact
 existing producer issues. Source review is not hosted execution credit.
 
-Local source review/rustfmt and existing pure source tooling are permitted;
-no local Rust/install/build is attempted. The same mandatory affected
+Local source review/rustfmt, all seven pure storage/summary laws and exact
+canonical generation pass; only the owned Maestro migration shard changes.
+No local Rust/install/build is attempted. The same mandatory affected
 native-navigation Actions must execute real source/RPC/minimal/strict laws,
 followed by exact source Check, protected full/all100 x3 ceilings/ratchets and
 literal merge. No ignored law or feature-disabled stub supplies acceptance.

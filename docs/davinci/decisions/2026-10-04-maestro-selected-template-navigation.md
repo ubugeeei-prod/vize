@@ -73,7 +73,7 @@ publication. No coarser digest or equal source bytes replace physical ownership.
 
 ## Genuine laws and acceptance still required
 
-Private source adds fifteen real SourceProject laws and four whole JSON-RPC
+This source adds fifteen real SourceProject laws and four whole JSON-RPC
 laws. They use actual server configuration, the production selected-SFC owner,
 real original File queries and production service registration:
 
@@ -105,6 +105,17 @@ was never queued. Fresh corrected source and protected acceptance are required.
 
 The source refresh onto actual main preserves incoming JSX/profile/source laws
 and the central paragraph; only the source-qualified Maestro migration shard
-changes in the canonical inventories. TODO: publish this consumer, execute the existing hosted action and
-track its full protected queue/actual merge. No default switch, cross-file graph,
+changes in the canonical inventories. Terminal receipt: corrected9d source Check37156250523 and protected full
+Check37157144532 are SUCCESS. Actual source builder111300378857 and protected
+Rust111302832274 each executed all90 source/all18 RPC laws, including all19 new
+laws once with zero ignored, plus minimal/strict. Protected Musea37157144269
+and Nuxt37157144208 are SUCCESS; genuine full suites passed. Instruction
+job111302751198 measured all100 x3 identically and verified pinned ceilings,
+ratchets and hold; artifact11286383067 SHA256
+`12b2f4e586187b42be38dd56eb3f187ad4b9f8855c79af78124971bf7341e47c`.
+#7654 ACTUALLY MERGED at2026-10-03T22:20:31Z as
+`53960908048a014da7944f13f2b8be93b63737f8`, queue=null. Earlier failed/source
+and obsolete union receipts remain distinct. The next genuine bounded consumer
+is original symbol highlights; scripted For/outer binding and tag-pair remain
+separate unfinished prerequisites. No default switch, cross-file graph,
 whole dialect/product or #6883 fix-history closure is claimed.
