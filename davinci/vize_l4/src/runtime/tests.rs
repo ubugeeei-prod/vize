@@ -31,7 +31,7 @@ fn exact_version_selection_has_no_cross_runtime_or_old_version_fallback() {
     for (runtime, version, count) in [
         (Runtime::VueDom, "3.5.35", 57),
         (Runtime::VueServerRenderer, "3.5.35", 76),
-        (Runtime::VueVapor, "3.6.0-rc.9", 74),
+        (Runtime::VueVapor, "3.6.0-rc.9", 75),
     ] {
         let selected = vocabulary_for(runtime, version).unwrap();
         assert!(core::ptr::eq(selected, vocabulary(runtime)));
@@ -69,6 +69,7 @@ fn unsupported_old_generator_helpers_are_not_admitted_as_current_exports() {
     assert!(vapor.helper("withVaporModifiers").is_some());
     assert!(vapor.helper("withVaporKeys").is_some());
     assert!(vapor.helper("ssrInterpolate").is_none());
+    assert_eq!(vapor.helper("defineVaporComponent").unwrap().index(), 74);
     let server = vocabulary(Runtime::VueServerRenderer);
     assert_eq!(server.helper("ssrInterpolate").unwrap().index(), 0);
     assert_eq!(

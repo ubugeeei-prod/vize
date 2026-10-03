@@ -163,6 +163,7 @@ const VAPOR_NAMES: &[&str] = &[
     "createPropsRestProxy",
     "withAsyncContext",
     "useModel",
+    "defineVaporComponent",
 ];
 
 /// Vue 3.5.35 DOM, shared helpers and SFC-generated script helpers.

@@ -11,7 +11,9 @@ use crate::module::{AssemblyError, assemble_template_with_prelude};
 use crate::runtime::{Runtime, vocabulary};
 use crate::write::{Emitted, LinkSink, Writer};
 
+mod component;
 mod literal;
+pub use component::emit_component;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VaporErrorKind {
@@ -19,6 +21,9 @@ pub enum VaporErrorKind {
     MissingFacts,
     ForeignRoot,
     RuntimeHelper,
+    ScriptSource,
+    StyledSource,
+    ComponentFragmentLifecycle,
     Assembly(AssemblyError),
 }
 
@@ -42,11 +47,23 @@ pub struct VaporError {
 pub fn emit_template<L: LinkSink>(
     analysis: &NativeTemplateVaporAnalysis<'_, '_>,
 ) -> Result<Emitted<L>, VaporError> {
-    let error = |kind| VaporError {
+    let (prelude, render) = fragments(analysis)?;
+    assemble_template_with_prelude(prelude, render, vocabulary(Runtime::VueVapor))
+        .map_err(|assembly| error(VaporErrorKind::Assembly(assembly)))
+}
+
+fn error(kind: VaporErrorKind) -> VaporError {
+    VaporError {
         node: None,
         span: Span::new(0, 0),
         kind,
-    };
+    }
+}
+
+/// Reuse the same single encoding of genuine L3 facts for both module surfaces.
+fn fragments<L: LinkSink>(
+    analysis: &NativeTemplateVaporAnalysis<'_, '_>,
+) -> Result<(Writer<L>, Writer<L>), VaporError> {
     let facts = analysis
         .vapor()
         .ok_or_else(|| error(VaporErrorKind::MissingFacts))?;
@@ -117,8 +134,7 @@ pub fn emit_template<L: LinkSink>(
     render.deindent();
     render.newline();
     render.push("}");
-    assemble_template_with_prelude(prelude, render, runtime)
-        .map_err(|assembly| error(VaporErrorKind::Assembly(assembly)))
+    Ok((prelude, render))
 }
 
 fn number<L: LinkSink>(writer: &mut Writer<L>, value: usize) {

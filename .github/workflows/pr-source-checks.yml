@@ -25,6 +25,7 @@ jobs:
       js: ${{ steps.plan.outputs.js }}
       tooling: ${{ steps.tooling-plan.outputs.tooling }}
       tooling-matrix: ${{ steps.tooling-plan.outputs.tooling-matrix }}
+      native-vapor-capture: ${{ steps.tooling-plan.outputs.native-vapor-capture }}
       native-setup-capture: ${{ steps.tooling-plan.outputs.native-setup-capture }}
       playground: ${{ steps.plan.outputs.playground }}
     steps:
@@ -205,7 +206,7 @@ jobs:
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-setup-capture == 'true')) }}
         uses: ./.github/actions/test-native-js-setup
       - name: Capture original native Vapor modules and runtime
-        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-vapor-capture == 'true')) }}
         uses: ./.github/actions/test-native-vapor
       - name: Test selected PR tooling scripts
         if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}

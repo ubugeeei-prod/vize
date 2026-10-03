@@ -1,0 +1,608 @@
+{
+  "schema": "vize.native-vapor.scriptless-sfc",
+  "version": "3.6.0-rc.9",
+  "pluginVersion": "6.0.7",
+  "targetSelection": "explicit Vapor target; stock plugin parse result selects descriptor.vapor without changing original source",
+  "fixtures": [
+    {
+      "id": "empty",
+      "source": "<template></template>",
+      "template": "",
+      "code": "import { defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst _sfc_main = _defineVaporComponent({ __multiRoot: false })\n;\nfunction render(_ctx) {\n  return []\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template></template>"
+        ]
+      },
+      "anchors": [],
+      "reference": {
+        "code": "const _sfc_main = { __vapor: true }\n\nfunction _sfc_render(_ctx, $props, $emit, $attrs, $slots) {\n  return []\n}\n_sfc_main.__multiRoot = false\n\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]])",
+        "map": {
+          "version": 3,
+          "file": "/native-vapor/NativeVapor.vue",
+          "names": [],
+          "sources": [],
+          "sourcesContent": [
+            "<template></template>"
+          ],
+          "mappings": "",
+          "ignoreList": []
+        },
+        "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "multiRoot": false,
+        "serverHtml": ""
+      }
+    },
+    {
+      "id": "text",
+      "source": "<template>hello</template>",
+      "template": "hello",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"hello\", 2)\n;\nconst _sfc_main = _defineVaporComponent({ __multiRoot: false })\n;\nfunction render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAU",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template>hello</template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 113,
+          "source": 10
+        }
+      ],
+      "reference": {
+        "code": "const _sfc_main = { __vapor: true }\nimport { template as _template } from 'vue';\nconst t0 = _template(\"hello\", 2)\n\nfunction _sfc_render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.__multiRoot = false\n\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]])",
+        "map": {
+          "version": 3,
+          "file": "/native-vapor/NativeVapor.vue",
+          "names": [],
+          "sources": [],
+          "sourcesContent": [
+            "<template>hello</template>"
+          ],
+          "mappings": "",
+          "ignoreList": []
+        },
+        "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "multiRoot": false,
+        "serverHtml": "hello"
+      }
+    },
+    {
+      "id": "unicode",
+      "source": "<template>雪🌸 a</template>",
+      "template": "雪🌸 a",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"雪🌸 a\", 2)\n;\nconst _sfc_main = _defineVaporComponent({ __multiRoot: false })\n;\nfunction render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAU",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template>雪🌸 a</template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 113,
+          "source": 10
+        }
+      ],
+      "reference": {
+        "code": "const _sfc_main = { __vapor: true }\nimport { template as _template } from 'vue';\nconst t0 = _template(\"雪🌸 a\", 2)\n\nfunction _sfc_render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.__multiRoot = false\n\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]])",
+        "map": {
+          "version": 3,
+          "file": "/native-vapor/NativeVapor.vue",
+          "names": [],
+          "sources": [],
+          "sourcesContent": [
+            "<template>雪🌸 a</template>"
+          ],
+          "mappings": "",
+          "ignoreList": []
+        },
+        "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "multiRoot": false,
+        "serverHtml": "雪🌸 a"
+      }
+    },
+    {
+      "id": "comment",
+      "source": "<template><!--雪🌸--></template>",
+      "template": "<!--雪🌸-->",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"<!--雪🌸-->\", 2)\n;\nconst _sfc_main = _defineVaporComponent({ __multiRoot: false })\n;\nfunction render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAU",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template><!--雪🌸--></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 113,
+          "source": 10
+        }
+      ],
+      "reference": {
+        "code": "const _sfc_main = { __vapor: true }\nimport { template as _template } from 'vue';\nconst t0 = _template(\"<!--雪🌸-->\", 2)\n\nfunction _sfc_render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.__multiRoot = false\n\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]])",
+        "map": {
+          "version": 3,
+          "file": "/native-vapor/NativeVapor.vue",
+          "names": [],
+          "sources": [],
+          "sourcesContent": [
+            "<template><!--雪🌸--></template>"
+          ],
+          "mappings": "",
+          "ignoreList": []
+        },
+        "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "multiRoot": false,
+        "serverHtml": "<!--雪🌸-->"
+      }
+    },
+    {
+      "id": "nested",
+      "source": "<template><div><span>hello</span><br><img></div></template>",
+      "template": "<div><span>hello</span><br><img></div>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"<div><span>hello</span><br><img></div>\", 3)\n;\nconst _sfc_main = _defineVaporComponent({ __multiRoot: false })\n;\nfunction render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAU,KAAK,MAAM,KAAY,OAAA,IAAI,KAAW",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template><div><span>hello</span><br><img></div></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 113,
+          "source": 10
+        },
+        {
+          "generated": 118,
+          "source": 15
+        },
+        {
+          "generated": 124,
+          "source": 21
+        },
+        {
+          "generated": 129,
+          "source": 33
+        },
+        {
+          "generated": 136,
+          "source": 33
+        },
+        {
+          "generated": 140,
+          "source": 37
+        },
+        {
+          "generated": 145,
+          "source": 48
+        }
+      ],
+      "reference": {
+        "code": "const _sfc_main = { __vapor: true }\nimport { template as _template } from 'vue';\nconst t0 = _template(\"<div><span>hello</span><br><img>\", 3)\n\nfunction _sfc_render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.__multiRoot = false\n\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]])",
+        "map": {
+          "version": 3,
+          "file": "/native-vapor/NativeVapor.vue",
+          "names": [],
+          "sources": [],
+          "sourcesContent": [
+            "<template><div><span>hello</span><br><img></div></template>"
+          ],
+          "mappings": "",
+          "ignoreList": []
+        },
+        "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "multiRoot": false,
+        "serverHtml": "<div><span>hello</span><br><img></div>"
+      }
+    },
+    {
+      "id": "quoted-text",
+      "source": "<template><div>a\"b\\c</div></template>",
+      "template": "<div>a\"b\\c</div>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"<div>a\\\"b\\\\c</div>\", 3)\n;\nconst _sfc_main = _defineVaporComponent({ __multiRoot: false })\n;\nfunction render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAU,KAAK,OAAW",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template><div>a\"b\\c</div></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 113,
+          "source": 10
+        },
+        {
+          "generated": 118,
+          "source": 15
+        },
+        {
+          "generated": 125,
+          "source": 26
+        }
+      ],
+      "reference": {
+        "code": "const _sfc_main = { __vapor: true }\nimport { template as _template } from 'vue';\nconst t0 = _template(\"<div>a&quot;b\\\\c\", 3)\n\nfunction _sfc_render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.__multiRoot = false\n\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]])",
+        "map": {
+          "version": 3,
+          "file": "/native-vapor/NativeVapor.vue",
+          "names": [],
+          "sources": [],
+          "sourcesContent": [
+            "<template><div>a\"b\\c</div></template>"
+          ],
+          "mappings": "",
+          "ignoreList": []
+        },
+        "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "multiRoot": false,
+        "serverHtml": "<div>a&quot;b\\c</div>"
+      }
+    },
+    {
+      "id": "attributes",
+      "source": "<template><div id=\"x\" title='a\"b\\c' data-probe=\"雪🌸\" aria-label=\"hello\"><span lang=\"ja\">雪🌸</span></div></template>",
+      "template": "<div id=\"x\" title='a\"b\\c' data-probe=\"雪🌸\" aria-label=\"hello\"><span lang=\"ja\">雪🌸</span></div>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"<div id=\\\"x\\\" title=\\\"a&quot;b\\\\c\\\" data-probe=\\\"雪🌸\\\" aria-label=\\\"hello\\\"><span lang=\\\"ja\\\">雪🌸</span></div>\", 3)\n;\nconst _sfc_main = _defineVaporComponent({ __multiRoot: false })\n;\nfunction render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAU,KAAK,SAAO,sBAAc,mBAAiB,qBAAmB,MAAM,YAAU,GAAU,OAAM",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template><div id=\"x\" title='a\"b\\c' data-probe=\"雪🌸\" aria-label=\"hello\"><span lang=\"ja\">雪🌸</span></div></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 113,
+          "source": 10
+        },
+        {
+          "generated": 118,
+          "source": 15
+        },
+        {
+          "generated": 127,
+          "source": 22
+        },
+        {
+          "generated": 149,
+          "source": 36
+        },
+        {
+          "generated": 172,
+          "source": 57
+        },
+        {
+          "generated": 193,
+          "source": 76
+        },
+        {
+          "generated": 199,
+          "source": 82
+        },
+        {
+          "generated": 211,
+          "source": 92
+        },
+        {
+          "generated": 218,
+          "source": 106
+        },
+        {
+          "generated": 225,
+          "source": 112
+        }
+      ],
+      "reference": {
+        "code": "const _sfc_main = { __vapor: true }\nimport { template as _template } from 'vue';\nconst t0 = _template(\"<div id=x title=\\\"a&quot;b\\\\c\\\" data-probe=雪🌸 aria-label=hello><span lang=ja>雪🌸\", 3)\n\nfunction _sfc_render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.__multiRoot = false\n\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]])",
+        "map": {
+          "version": 3,
+          "file": "/native-vapor/NativeVapor.vue",
+          "names": [],
+          "sources": [],
+          "sourcesContent": [
+            "<template><div id=\"x\" title='a\"b\\c' data-probe=\"雪🌸\" aria-label=\"hello\"><span lang=\"ja\">雪🌸</span></div></template>"
+          ],
+          "mappings": "",
+          "ignoreList": []
+        },
+        "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "multiRoot": false,
+        "serverHtml": "<div id=\"x\" title=\"a&quot;b\\c\" data-probe=\"雪🌸\" aria-label=\"hello\"><span lang=\"ja\">雪🌸</span></div>"
+      }
+    },
+    {
+      "id": "crlf-source",
+      "source": "\r\n<!--prefix-->\r\n<template><div><span>雪🌸</span></div></template>",
+      "template": "<div><span>雪🌸</span></div>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"<div><span>雪🌸</span></div>\", 3)\n;\nconst _sfc_main = _defineVaporComponent({ __multiRoot: false })\n;\nfunction render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAEU,KAAK,MAAM,GAAU,OAAM",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "\r\n<!--prefix-->\r\n<template><div><span>雪🌸</span></div></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 113,
+          "source": 27
+        },
+        {
+          "generated": 118,
+          "source": 32
+        },
+        {
+          "generated": 124,
+          "source": 38
+        },
+        {
+          "generated": 131,
+          "source": 52
+        },
+        {
+          "generated": 138,
+          "source": 58
+        }
+      ],
+      "reference": {
+        "code": "const _sfc_main = { __vapor: true }\nimport { template as _template } from 'vue';\nconst t0 = _template(\"<div><span>雪🌸\", 3)\n\nfunction _sfc_render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.__multiRoot = false\n\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]])",
+        "map": {
+          "version": 3,
+          "file": "/native-vapor/NativeVapor.vue",
+          "names": [],
+          "sources": [],
+          "sourcesContent": [
+            "\r\n<!--prefix-->\r\n<template><div><span>雪🌸</span></div></template>"
+          ],
+          "mappings": "",
+          "ignoreList": []
+        },
+        "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "multiRoot": false,
+        "serverHtml": "<div><span>雪🌸</span></div>"
+      }
+    },
+    {
+      "id": "cr-source",
+      "source": "\r<!--prefix-->\r<template><div><span>雪🌸</span></div></template>",
+      "template": "<div><span>雪🌸</span></div>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"<div><span>雪🌸</span></div>\", 3)\n;\nconst _sfc_main = _defineVaporComponent({ __multiRoot: false })\n;\nfunction render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAEU,KAAK,MAAM,GAAU,OAAM",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "\r<!--prefix-->\r<template><div><span>雪🌸</span></div></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 113,
+          "source": 25
+        },
+        {
+          "generated": 118,
+          "source": 30
+        },
+        {
+          "generated": 124,
+          "source": 36
+        },
+        {
+          "generated": 131,
+          "source": 50
+        },
+        {
+          "generated": 138,
+          "source": 56
+        }
+      ],
+      "reference": {
+        "code": "const _sfc_main = { __vapor: true }\nimport { template as _template } from 'vue';\nconst t0 = _template(\"<div><span>雪🌸\", 3)\n\nfunction _sfc_render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.__multiRoot = false\n\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]])",
+        "map": {
+          "version": 3,
+          "file": "/native-vapor/NativeVapor.vue",
+          "names": [],
+          "sources": [],
+          "sourcesContent": [
+            "\r<!--prefix-->\r<template><div><span>雪🌸</span></div></template>"
+          ],
+          "mappings": "",
+          "ignoreList": []
+        },
+        "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "multiRoot": false,
+        "serverHtml": "<div><span>雪🌸</span></div>"
+      }
+    },
+    {
+      "id": "unicode-lines",
+      "source": "<!--prefix-->  <template><div>a b 雪🌸</div></template>",
+      "template": "<div>a b 雪🌸</div>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"<div>a\\u2028b\\u2029雪🌸</div>\", 3)\n;\nconst _sfc_main = _defineVaporComponent({ __multiRoot: false })\n;\nfunction render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAEU,KAAK,iBAEN",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<!--prefix-->  <template><div>a b 雪🌸</div></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 113,
+          "source": 29
+        },
+        {
+          "generated": 118,
+          "source": 34
+        },
+        {
+          "generated": 139,
+          "source": 55
+        }
+      ],
+      "reference": {
+        "code": "const _sfc_main = { __vapor: true }\nimport { template as _template } from 'vue';\nconst t0 = _template(\"<div>a b 雪🌸\", 3)\n\nfunction _sfc_render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.__multiRoot = false\n\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]])",
+        "map": {
+          "version": 3,
+          "file": "/native-vapor/NativeVapor.vue",
+          "names": [],
+          "sources": [],
+          "sourcesContent": [
+            "<!--prefix-->  <template><div>a b 雪🌸</div></template>"
+          ],
+          "mappings": "",
+          "ignoreList": []
+        },
+        "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "multiRoot": false,
+        "serverHtml": "<div>a b 雪🌸</div>"
+      }
+    },
+    {
+      "id": "module-comment",
+      "source": "<template><!--import { template as _template } from 'vue'--></template>",
+      "template": "<!--import { template as _template } from 'vue'-->",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"<!--import { template as _template } from 'vue'-->\", 2)\n;\nconst _sfc_main = _defineVaporComponent({ __multiRoot: false })\n;\nfunction render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAU",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template><!--import { template as _template } from 'vue'--></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 113,
+          "source": 10
+        }
+      ],
+      "reference": {
+        "code": "const _sfc_main = { __vapor: true }\nimport { template as _template } from 'vue';\nconst t0 = _template(\"<!--import { template as _template } from &#39;vue&#39;-->\", 2)\n\nfunction _sfc_render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\n_sfc_main.__multiRoot = false\n\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]])",
+        "map": {
+          "version": 3,
+          "file": "/native-vapor/NativeVapor.vue",
+          "names": [],
+          "sources": [],
+          "sourcesContent": [
+            "<template><!--import { template as _template } from 'vue'--></template>"
+          ],
+          "mappings": "",
+          "ignoreList": []
+        },
+        "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "multiRoot": false,
+        "serverHtml": "<!--import { template as _template } from 'vue'-->"
+      }
+    }
+  ],
+  "refusedReferences": [
+    {
+      "id": "siblings",
+      "source": "<template><span>a</span><div>b</div></template>",
+      "template": "<span>a</span><div>b</div>",
+      "reference": {
+        "code": "const _sfc_main = { __vapor: true }\nimport { template as _template } from 'vue';\nconst t0 = _template(\"<span>a\", 2)\nconst t1 = _template(\"<div>b\", 2)\n\nfunction _sfc_render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  const n1 = t1()\n  return [n0, n1]\n}\n_sfc_main.__multiRoot = true\n\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]])",
+        "map": {
+          "version": 3,
+          "file": "/native-vapor/NativeVapor.vue",
+          "names": [],
+          "sources": [],
+          "sourcesContent": [
+            "<template><span>a</span><div>b</div></template>"
+          ],
+          "mappings": "",
+          "ignoreList": []
+        },
+        "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "multiRoot": true,
+        "serverHtml": "<!--[--><span>a</span><div>b</div><!--]-->"
+      }
+    },
+    {
+      "id": "comment-root",
+      "source": "<template><!--a--><section>hello</section><!--b--></template>",
+      "template": "<!--a--><section>hello</section><!--b-->",
+      "reference": {
+        "code": "const _sfc_main = { __vapor: true }\nimport { template as _template } from 'vue';\nconst t0 = _template(\"<!--a-->\", 2)\nconst t1 = _template(\"<section>hello\", 3)\nconst t2 = _template(\"<!--b-->\", 2)\n\nfunction _sfc_render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  const n1 = t1()\n  const n2 = t2()\n  return [n0, n1, n2]\n}\n_sfc_main.__multiRoot = true\n\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]])",
+        "map": {
+          "version": 3,
+          "file": "/native-vapor/NativeVapor.vue",
+          "names": [],
+          "sources": [],
+          "sourcesContent": [
+            "<template><!--a--><section>hello</section><!--b--></template>"
+          ],
+          "mappings": "",
+          "ignoreList": []
+        },
+        "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "multiRoot": true,
+        "serverHtml": "<!--[--><!--a--><section>hello</section><!--b--><!--]-->"
+      }
+    }
+  ]
+}

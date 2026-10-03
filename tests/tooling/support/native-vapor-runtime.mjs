@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import { vueVaporBrowserRuntime, vueVaporVersion } from "./vue-vapor-release.mjs";
 const requireUi = createRequire(new URL("../../../npm/ui/package.json", import.meta.url));
 const { Window } = await import(requireUi.resolve("happy-dom"));
+const { transformSync } = requireUi("@babel/core");
 const window = new Window();
 for (const name of [
   "window",
@@ -29,19 +30,61 @@ for (const name of ["template", "defineVaporComponent", "createVaporApp", "creat
 globalThis.__nativeVaporRuntime = vue;
 
 let sequence = 0;
-async function load(code) {
-  const rewritten = code.replace(/import \{([^}]+)\} from ["']vue["'];?/g, (_, list) =>
-    list
-      .split(",")
-      .map((entry) => {
-        const [name, local = name] = entry.trim().split(/\s+as\s+/u);
-        assert.equal(typeof vue[name], "function", `module import ${name}`);
-        return `const ${local} = globalThis.__nativeVaporRuntime[${JSON.stringify(name)}];`;
-      })
-      .join("\n"),
-  );
-  assert.ok(!/\bimport\s/u.test(rewritten), "unresolved module import");
-  return (await import(dataUrl(rewritten + `\n// complete module ${sequence++}`))).render;
+let activeId = "";
+async function load(code, component = false, helperCode = null) {
+  if (helperCode !== null) {
+    const helper = await import(dataUrl(helperCode));
+    assert.equal(typeof helper.default, "function", "actual stock export-helper");
+    globalThis.__nativeVaporExportHelper = helper.default;
+  }
+  // Resolve only parsed import declarations. Authored static strings/comments
+  // can contain module-looking text without becoming loader instructions.
+  const rewritten = transformSync(code, {
+    configFile: false,
+    babelrc: false,
+    plugins: [
+      ({ types: t }) => ({
+        visitor: {
+          ImportDeclaration(path) {
+            const owner = path.node.source.value;
+            const declarations = path.node.specifiers.map((specifier) => {
+              if (owner === "\0plugin-vue:export-helper") {
+                assert.ok(t.isImportDefaultSpecifier(specifier) && helperCode !== null);
+                return t.variableDeclarator(
+                  specifier.local,
+                  t.memberExpression(
+                    t.identifier("globalThis"),
+                    t.identifier("__nativeVaporExportHelper"),
+                  ),
+                );
+              }
+              assert.equal(owner, "vue", "actual runtime module owner");
+              assert.ok(t.isImportSpecifier(specifier));
+              const name = specifier.imported.name ?? specifier.imported.value;
+              assert.equal(typeof vue[name], "function", `module import ${name}`);
+              return t.variableDeclarator(
+                specifier.local,
+                t.memberExpression(
+                  t.memberExpression(
+                    t.identifier("globalThis"),
+                    t.identifier("__nativeVaporRuntime"),
+                  ),
+                  t.stringLiteral(name),
+                  true,
+                ),
+              );
+            });
+            path.replaceWith(t.variableDeclaration("const", declarations));
+          },
+        },
+      }),
+    ],
+  }).code;
+  const module = await import(dataUrl(rewritten + `\n// complete module ${sequence++}`));
+  if (!component) return module.render;
+  assert.equal(module.default?.__vapor, true, "whole default component Vapor marker");
+  assert.equal(typeof module.default.render, "function", "whole component render attachment");
+  return module.default;
 }
 
 function observe(node) {
@@ -58,13 +101,25 @@ function observe(node) {
   ];
 }
 
-async function mount(render, configuration, serverHtml = null) {
+async function mount(render, configuration, serverHtml = null, wholeComponent = false) {
   const host = document.body.appendChild(document.createElement("div"));
   if (serverHtml !== null) host.innerHTML = serverHtml;
-  const component = vue.defineVaporComponent({
-    inheritAttrs: configuration.inheritAttrs,
-    setup: () => render({}),
-  });
+  const originalNodes = [];
+  if (serverHtml !== null && wholeComponent) {
+    const collect = (parent) => {
+      for (const node of parent.childNodes) {
+        originalNodes.push(node);
+        collect(node);
+      }
+    };
+    collect(host);
+  }
+  const component = wholeComponent
+    ? { ...render, inheritAttrs: configuration.inheritAttrs }
+    : vue.defineVaporComponent({
+        inheritAttrs: configuration.inheritAttrs,
+        setup: () => render({}),
+      });
   const app = (serverHtml === null ? vue.createVaporApp : vue.createVaporSSRApp)(
     component,
     configuration.props,
@@ -76,14 +131,20 @@ async function mount(render, configuration, serverHtml = null) {
     app.mount(host);
     await vue.nextTick();
     assert.deepEqual(diagnostics, [], "mounted diagnostics");
+    for (const node of originalNodes)
+      assert.ok(host.contains(node), `${activeId} hydration retains original SSR node`);
     const tree = [...host.childNodes].map(observe);
     const html = host.innerHTML;
     const retained = [...host.childNodes];
     app.unmount();
     await vue.nextTick();
-    assert.equal(host.childNodes.length, 0, "unmount leaves no nodes");
+    assert.equal(
+      host.childNodes.length,
+      0,
+      `${activeId} ${serverHtml === null ? "mounted" : "hydrated"} unmount leaves no nodes`,
+    );
     assert.deepEqual(diagnostics, []);
-    return { tree, retained, html };
+    return { tree, retained, html, hydratedNodeCount: originalNodes.length };
   } finally {
     host.remove();
   }
@@ -96,26 +157,47 @@ const captured = [];
 try {
   assert.ok(inputs.length > 0, "nonempty actual module runtime denominator");
   for (const input of inputs) {
-    const native = await load(input.code);
-    const reference = await load(input.upstreamCode);
-    const configurations = [{ inheritAttrs: true, props: {} }];
-    if (input.rootElement)
+    activeId = input.id;
+    const native = await load(input.code, !!input.component);
+    const reference = await load(input.upstreamCode, !!input.component, input.helperCode ?? null);
+    if (input.component) {
+      assert.equal(native.__multiRoot, input.multiRoot, `${input.id} native root metadata`);
+      assert.equal(reference.__multiRoot, input.multiRoot, `${input.id} primary root metadata`);
+    }
+    const configurations = input.configurations ?? [{ inheritAttrs: true, props: {} }];
+    if (input.rootElement && !input.configurations)
       configurations.push(
         { inheritAttrs: true, props: { title: "inherited", "data-owner": "caller" } },
         { inheritAttrs: false, props: { title: "inherited", "data-owner": "caller" } },
       );
     const traces = [];
-    for (const configuration of configurations) {
-      const actual = await mount(native, configuration);
-      const expected = await mount(reference, configuration);
+    for (const [configurationIndex, configuration] of configurations.entries()) {
+      const actual = await mount(native, configuration, null, !!input.component);
+      const expected = await mount(reference, configuration, null, !!input.component);
       assert.deepEqual(actual.tree, expected.tree, `${input.id} actual pinned runtime tree`);
-      const repeated = await mount(native, configuration);
+      const repeated = await mount(native, configuration, null, !!input.component);
       assert.deepEqual(repeated.tree, actual.tree, `${input.id} template clone reuse`);
       for (const [index, node] of repeated.retained.entries())
         assert.notEqual(node, actual.retained[index]);
+      let hydrationNodes = 0;
       if (input.hydrate) {
-        const hydrated = await mount(native, configuration, expected.html);
-        const referenceHydrated = await mount(reference, configuration, expected.html);
+        const hydrated = await mount(
+          native,
+          configuration,
+          input.serverHtmlByConfiguration?.[configurationIndex] ??
+            input.serverHtml ??
+            expected.html,
+          !!input.component,
+        );
+        hydrationNodes = hydrated.hydratedNodeCount;
+        const referenceHydrated = await mount(
+          reference,
+          configuration,
+          input.serverHtmlByConfiguration?.[configurationIndex] ??
+            input.serverHtml ??
+            expected.html,
+          !!input.component,
+        );
         assert.deepEqual(
           hydrated.tree,
           referenceHydrated.tree,
@@ -123,12 +205,19 @@ try {
         );
         assert.deepEqual(hydrated.tree, actual.tree, `${input.id} hydrated original output`);
       }
-      traces.push({ configuration, tree: actual.tree, hydrated: !!input.hydrate, unmounted: [] });
+      traces.push({
+        configuration,
+        tree: actual.tree,
+        hydrated: !!input.hydrate,
+        unmounted: [],
+        ...(input.component ? { hydrationNodes } : {}),
+      });
     }
     captured.push({ id: input.id, version: vue.version, traces });
   }
   process.stdout.write(JSON.stringify(captured));
 } finally {
   delete globalThis.__nativeVaporRuntime;
+  delete globalThis.__nativeVaporExportHelper;
   await window.happyDOM.close();
 }

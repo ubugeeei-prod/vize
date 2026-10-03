@@ -40,6 +40,11 @@ pub mod croquis;
 pub mod css;
 pub(crate) mod module_map;
 pub mod module_shape;
+pub mod native_vapor;
+pub use native_vapor::{
+    NativeVaporSfcCompilation, NativeVaporSfcCompileError, NativeVaporSfcCompileOptions,
+    NativeVaporSfcOutput, compile_native_vapor_sfc,
+};
 pub mod native;
 pub mod rewrite_default;
 pub mod script;

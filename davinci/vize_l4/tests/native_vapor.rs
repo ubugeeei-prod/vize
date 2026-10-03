@@ -169,3 +169,82 @@ fn unsupported_original_lower_events_cannot_authorize_the_target() {
         assert!(refused.view().is_err(), "{template}");
     }
 }
+
+#[test]
+fn whole_component_assembly_never_omits_original_scripts_or_styles() {
+    use vize_l1::embed::{
+        EmbedSource,
+        syntax::{ProgramOptions, parse_program_once},
+    };
+    use vize_l4::targets::vapor::emit_component;
+    for (source, expected) in [
+        (
+            "<script>const unrelated=1;</script><template><div/></template>",
+            VaporErrorKind::ScriptSource,
+        ),
+        (
+            "<script setup lang=ts>const unrelated:number=1;</script><template><div/></template>",
+            VaporErrorKind::ScriptSource,
+        ),
+        (
+            "<template><div/></template><style>.x{color:red}</style>",
+            VaporErrorKind::StyledSource,
+        ),
+    ] {
+        let arena = Allocator::default();
+        let descriptor = Vue.observe_descriptor(
+            &arena,
+            source,
+            DescriptorOptions {
+                version: VueVersion::V3,
+                dialect: VueDialect::Vue,
+                template: SurfaceParseOptions::default(),
+            },
+        );
+        let admitted = descriptor.admitted().unwrap();
+        let selected = NativeTemplateComponent::parse_in(&arena, admitted)
+            .unwrap()
+            .unwrap();
+        let mut owner = NativeTemplateOwner::new(selected)
+            .map_err(|_| "original owner")
+            .unwrap();
+        for script in [admitted.ordinary(), admitted.setup()]
+            .into_iter()
+            .flatten()
+        {
+            let syntax = parse_program_once(
+                &arena,
+                EmbedSource::authored(source, script.block().span()).unwrap(),
+                ProgramOptions::module(script.lang()),
+            );
+            let program = syntax.admitted_program().unwrap();
+            match script.role() {
+                vize_l1::container::vue::ScriptRole::Ordinary => {
+                    owner.ordinary_program(program).unwrap()
+                }
+                vize_l1::container::vue::ScriptRole::Setup => owner.setup_program(program).unwrap(),
+            };
+        }
+        {
+            let mut walk = owner.begin().unwrap();
+            let selected = walk.selected();
+            for child in selected.children() {
+                walk.child(child).unwrap();
+            }
+            walk.complete().unwrap();
+        }
+        let original = owner.finish();
+        let analysis = build_native_vapor_file_decisions(original.view().unwrap()).unwrap();
+        let recorded = emit_component::<Recorded>(&analysis, "3.6.0-rc.9").unwrap_err();
+        assert_eq!(recorded.kind, expected);
+        assert_eq!(
+            recorded,
+            emit_component::<NoLinks>(&analysis, "3.6.0-rc.9").unwrap_err()
+        );
+        assert!(
+            source
+                .get(recorded.span.start as usize..recorded.span.end as usize)
+                .is_some()
+        );
+    }
+}
