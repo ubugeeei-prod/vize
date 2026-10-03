@@ -50,3 +50,11 @@ fix-history #6880 and default compiler migration remain unfinished. No legacy
 runtime helper, instruction budget change or reverse dependency is introduced.
 The provider and target use a native GitHub Stack and require exact-head Actions,
 protected full/instruction queue acceptance and actual merges.
+
+After the SSR target actually merged as `3e78e2e83334bec26903d3205a64765f0bea307b`,
+the genuine current-main replay removes the final obsolete L4 skeleton entry.
+The earlier prospective combined candidate correctly failed this exact zero-entry
+ratchet while its twelve native module/map and twenty-six runtime executions
+passed. Those captures remain SHA-qualified; fresh exact-head and protected
+acceptance are still required. Zero skeleton markers grants no general target,
+product, fix-history or default-compiler completion.
