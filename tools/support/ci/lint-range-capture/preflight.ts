@@ -24,7 +24,7 @@ import {
   existingJson,
   directory,
 } from "./common.ts";
-import { pins, reporterSource, versions } from "./pins.ts";
+import { pins, reporterBaseline, versions } from "./pins.ts";
 import { projects } from "./projects.ts";
 
 type GitOutput = { path: string; bytes: number; sha256: string };
@@ -133,7 +133,7 @@ export function verifyTrackedSource(root: string, expected: string) {
 export function verifySource(root: string, expected: string) {
   source(root, expected);
   verifyTrackedSource(root, expected);
-  git(root, "merge-base", "--is-ancestor", reporterSource, expected);
+  git(root, "merge-base", "--is-ancestor", reporterBaseline, expected);
   const pinRows = pins.map((pin) => {
     const bytes = readFileSync(join(root, pin.path));
     assert.equal(sha256(bytes), pin.sha256, "Producer/control drift: " + pin.path);
@@ -177,26 +177,90 @@ export function verifySource(root: string, expected: string) {
   }
   return {
     expectedSource: expected,
-    reporterSource,
+    reporterSource: expected,
+    reporterBaseline,
     pins: pinRows,
     registrySha256: sha256(readFileSync(join(root, registryPath))),
     projects: projects.map((p) => ({ id: p.id, revision: p.revision })),
   };
 }
-export function verifyRuntime(root: string, expected: string) {
+export function verifyFixtureStatus(
+  root: string,
+  project: (typeof projects)[number],
+  expected: string,
+  phase: string,
+) {
+  const cwd = join(root, project.fixturePath),
+    out = directory(root),
+    folder = mkdtempSync(join(out, "fixture-status-git-"));
+  const status = retainGit(
+    out,
+    folder,
+    cwd,
+    "status",
+    "status",
+    "--porcelain",
+    "--untracked-files=normal",
+  );
+  if (status.stdout.bytes) {
+    if (!existingJson(root, "fixture-runtime-drift.json")) {
+      const outputs = [{ label: "status", stdout: status.stdout, stderr: status.stderr }];
+      const observe = (label: string, ...args: string[]) => {
+        const result = retainGit(out, folder, cwd, label, ...args);
+        outputs.push({ label, stdout: result.stdout, stderr: result.stderr });
+        return result.value;
+      };
+      save(root, "fixture-runtime-drift.json", {
+        phase,
+        expectedSource: expected,
+        actualSource: git(root, "rev-parse", "HEAD").toString().trim(),
+        fixture: {
+          id: project.id,
+          path: project.fixturePath,
+          expectedRevision: project.revision,
+          actualRevision: git(cwd, "rev-parse", "HEAD").toString().trim(),
+        },
+        originalStatusBytes: status.stdout.bytes,
+        originalStatus: status.value,
+        completeStatus: observe(
+          "complete-status",
+          "status",
+          "--porcelain",
+          "--untracked-files=all",
+        ),
+        trackedDiff: observe("tracked-diff", "diff", "--no-ext-diff", "HEAD"),
+        untrackedPaths: observe(
+          "untracked-paths",
+          "ls-files",
+          "--others",
+          "--exclude-standard",
+          "-z",
+        ),
+        gitOutputs: outputs,
+        acceptance: false,
+      });
+    }
+    console.error(
+      "Fixture source has edits (" +
+        phase +
+        ", " +
+        project.id +
+        "):\n" +
+        (typeof status.value === "string" ? status.value : JSON.stringify(status.value)),
+    );
+  }
+  assert.equal(status.stdout.bytes, 0, "Fixture source has edits");
+}
+export function verifyRuntime(root: string, expected: string, phase = "pre-reporter-runtime") {
   const bound = verifySource(root, expected);
   assert.equal(process.version, "v24.14.0", "Pinned Node differs");
   const fixtures = projects.map((project) => {
-    const cwd = join(root, project.fixturePath);
     assert.ok(
       git(root, "submodule", "status", "--", project.fixturePath)
         .toString()
         .startsWith(" " + project.revision + " "),
     );
-    assert.equal(
-      execFileSync("git", ["-C", cwd, "status", "--porcelain", "--untracked-files=normal"]).length,
-      0,
-    );
+    verifyFixtureStatus(root, project, expected, phase);
     return { id: project.id, revision: project.revision, clean: true };
   });
   const require = createRequire(join(root, "tools/benchmarks/scripts/package.json"));

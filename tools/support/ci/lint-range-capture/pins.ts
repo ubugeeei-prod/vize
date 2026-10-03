@@ -1,4 +1,5 @@
-export const reporterSource = "ddef7f37fc2e3e1692168e16a52bdb3f21464faf";
+// Historical verified baseline; current reporter bytes are pinned below.
+export const reporterBaseline = "ddef7f37fc2e3e1692168e16a52bdb3f21464faf";
 export const originalSource = "ae874862fb175f1e3a6df27cbd412b270f664d60";
 export const originalRun = 37098199031;
 export const historicalInvalidCount = 224; // Comparison only; never an expected fresh count.
@@ -7,9 +8,9 @@ export const pins = [
   {
     path: "tools/commands/fixtures/lint-divergence-report.rs",
     gitEntry:
-      "100644 blob 4eaba3339809d019da43f763ebd46788ffa562b9\ttools/commands/fixtures/lint-divergence-report.rs",
-    sha256: "2a25d1da43c028b05f854b32bf9970bb21eb72adcf062eed36ce6c755440d245",
-    bytes: 69423,
+      "100644 blob 61f24873ee65df0d19636aece01a1ddfb761b840\ttools/commands/fixtures/lint-divergence-report.rs",
+    sha256: "28e6791248e7c6f68a48af0ae00b99f6178ba61f035af0d16b462bdb0a23792d",
+    bytes: 69449,
     sameOriginalBytes: false,
   },
   {

@@ -70,7 +70,7 @@ export function validateSummary(summary: any, reports: any[], expected: string) 
   return count;
 }
 export function verifyReports(root: string, expected: string) {
-  const preflight = verifyRuntime(root, expected),
+  const preflight = verifyRuntime(root, expected, "post-reporter-reports"),
     out = join(directory(root), "reports");
   const reports = projects.map((project) => {
     const path = join(out, project.id + "-lint-divergence.json"),

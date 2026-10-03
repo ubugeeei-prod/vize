@@ -132,3 +132,48 @@ recover the full attestation, tree and dirty-source evidence. Capture-only
 fetch-depth zero retains the original pinned reporter across the genuine
 five-commit source chain; normal Matrix and PR gates are untouched. Ten
 finite laws pass; actual hosted nineteen-project capture is still required.
+
+The c598 capture (run 37120746827) actually executed the canonical Rust
+reporter on all nineteen original projects. It retained all 61 original
+files, nineteen JSON/Markdown reports, the full summary, stdout/stderr and
+original producer exit one. The 224 observed invalid findings are all
+Vue comment-directive controls: 108 disable-rule and 108 enable-rule
+messages, plus four disable-all and four enable-all messages, all at
+column zero. Every original report remains UNUSABLE; this is capture
+evidence, not ecosystem acceptance. Issue #6830 comment 5968991650 records
+the actual terminal failure.
+
+The actual pinned Vue plugin wires its vue/vue processor in the flat base
+configuration. The canonical embedded ESLint collector omitted that
+processor, so internal controls reached the report instead of being
+consumed by the provider’s own directive handling. Connect that exact
+processor, preserving every rule, coordinate and budget. A meaningful
+Node law extracts the actual embedded collector and executes real pinned
+providers on real temporary Vue files; it verifies complete diagnostics
+and enabled/disabled directive behavior without a copied collector.
+
+Post-reporter verification separately failed its unchanged per-fixture
+zero-status assertion: seventeen stdout bytes were observed, but the
+fixture identity and original bytes were not retained. Their cause is
+unidentified; neither a generated summary nor a cache path is established.
+Before that same assertion, retain the phase, actual fixture identity and
+revision, original normal status, complete status, tracked diff and
+untracked names. Stream complete Git stdout/stderr into owned files with
+size/hash references; unchanged always-frames and artifacts include them.
+A real committed fixture law observes an exact seventeen-byte synthetic
+status, refuses it, recovers every original byte through the actual frames
+CLI, and preserves the first diagnostic after a later refusal. The test
+filename is a fixture counterexample, not a guess about the hosted path.
+
+One direct c598 successor combines these bounded corrections. Its current
+reporter Git blob/hash is pinned, and preflight records the verified
+campaign HEAD as reporterSource while retaining ddef as the explicitly
+historical reporterBaseline ancestry pin. Full-history checkout is
+unchanged. Original nineteen revisions, Vue globs, dependency versions,
+rule mapping, source assertions and enforced budgets remain exact. Fresh
+actual capture is still required; historical 224 is comparison only.
+
+Eighteen finite laws pass on the combined source: seven real canonical
+provider laws and eleven capture/retention laws. The real provider law
+is registered in the existing T1 inventory; ordinary short PR selection
+and the original registered capture workflow remain unchanged.
