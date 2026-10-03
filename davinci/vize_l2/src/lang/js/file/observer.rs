@@ -22,6 +22,15 @@ pub struct CallEvent<'s, 'a> {
     pub call: &'s CallExpression<'a>,
 }
 
+/// Original constructor, tagged template or dynamic import in the existing walk.
+/// This diagnostic event grants no factory or native admission capability.
+pub struct InvocationEvent<'s, 'a> {
+    pub unit: ScriptUnitId,
+    pub scope: ScopeId,
+    pub span: Span,
+    pub expression: &'s Expression<'a>,
+}
+
 /// Diagnostic observation grants no native file admission or insertion capability.
 pub trait FileObserver<'a> {
     type Checkpoint;
@@ -30,6 +39,9 @@ pub trait FileObserver<'a> {
     fn declared(&mut self, event: DeclaredEvent<'_, 'a>);
     fn checkpoint(&self) -> Self::Checkpoint;
     fn call(&mut self, event: CallEvent<'_, 'a>) -> Result<(), ResolutionErrorKind>;
+    fn invocation(&mut self, _: InvocationEvent<'_, 'a>) -> Result<(), ResolutionErrorKind> {
+        Ok(())
+    }
     fn rollback(&mut self, checkpoint: Self::Checkpoint);
 }
 

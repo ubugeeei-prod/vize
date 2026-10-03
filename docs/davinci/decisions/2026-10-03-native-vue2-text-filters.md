@@ -98,7 +98,7 @@ entity maps, exact authored spans, every UTF-8 prefix, literal pre and shared
 recovered/authored projections. Source-provider peers, whole L1 unit laws,
 strict production and dialect linting, distinct-carrier compile-fail examples,
 storage inventory and dialect/core dependency guards remain required. Cached
-coherent local dependency metadata is finite source evidence: 319 actual L1
+coherent local dependency metadata is finite source evidence: 337 actual L1
 unit laws, 10 new dialect laws and 45 existing provider/dialect laws passed,
 alongside strict lint and four complete upstream compiler/runtime tests. It is
 not the whole

@@ -17,7 +17,7 @@ import {
 
 const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>([
   ["vize_l1", [["vize_l0", null]]],
-  ["vize_l2", [["vize_l0", null]]],
+  ["vize_l2", ["vize_l0", "vize_l1"].map((name) => [name, null] as const)],
   [
     "vize_l3",
     [
@@ -97,7 +97,7 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
     ["vize_carton", ["vize_l0"]],
     ["vize_l0", []],
     ["vize_l1", ["vize_l0"]],
-    ["vize_l2", ["vize_l0"]],
+    ["vize_l2", ["vize_l0", "vize_l1"]],
     ["vize_l3", ["vize_l0", "vize_l2"]],
     ["vize_l1_to_l2", ["vize_l0", "vize_l1", "vize_l2", "vize_l3"]],
     ["vize_l2_to_l3", ["vize_l0", "vize_l2", "vize_l3"]],

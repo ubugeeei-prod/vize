@@ -1,6 +1,7 @@
 //! Neutral file declarations and references; no framework access spelling.
 
 use crate::resolution::{BindingId, Usage};
+use oxc_ast::ast::Program;
 use vize_l0::{Span, String};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -43,6 +44,29 @@ pub struct ScriptUnit {
     pub profile: ScriptProfile,
     pub scope: ScopeId,
     walk: ProgramWalkState,
+    pub(crate) origin: ProgramOrigin,
+}
+
+/// Original arena storage survives movement of the normally owned Program root.
+#[derive(Debug)]
+pub(crate) struct ProgramOrigin {
+    pub(crate) body: usize,
+    pub(crate) length: usize,
+    pub(crate) has_call: bool,
+    pub(crate) has_export: bool,
+    pub(crate) reserved_binding: bool,
+}
+
+impl ProgramOrigin {
+    pub(crate) fn checked(program: &Program<'_>) -> Self {
+        Self {
+            body: program.body.as_ptr() as usize,
+            length: program.body.len(),
+            has_call: false,
+            has_export: false,
+            reserved_binding: false,
+        }
+    }
 }
 
 #[repr(u8)]
@@ -59,6 +83,7 @@ impl ScriptUnit {
         span: Span,
         profile: ScriptProfile,
         scope: ScopeId,
+        origin: ProgramOrigin,
     ) -> Self {
         Self {
             id,
@@ -66,6 +91,7 @@ impl ScriptUnit {
             profile,
             scope,
             walk: ProgramWalkState::Pending,
+            origin,
         }
     }
     pub(crate) fn complete_walk(&mut self) {
@@ -130,6 +156,20 @@ pub struct Declaration {
     pub initializer: InitializerKind,
     pub import_source: Option<String>,
     pub imported_name: Option<String>,
+    pub(crate) direct_program: bool,
+}
+
+impl Declaration {
+    /// The original statement event was directly in the admitted Program body.
+    #[must_use]
+    pub fn is_direct_program(&self) -> bool {
+        self.direct_program
+    }
+
+    #[must_use]
+    pub fn script_unit(&self) -> Option<ScriptUnitId> {
+        Some(self.unit)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

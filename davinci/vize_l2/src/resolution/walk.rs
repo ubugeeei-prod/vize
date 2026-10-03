@@ -147,6 +147,7 @@ impl<'a, 'b, S: ReferenceSink<'a>> Resolver<'a, 'b, S> {
                 Ok(())
             }
             Expression::TaggedTemplateExpression(value) if value.type_arguments.is_none() => {
+                self.invocation(expression)?;
                 self.expression(&value.tag, next)?;
                 for expression in &value.quasi.expressions {
                     self.expression(expression, next)?;
@@ -183,6 +184,7 @@ impl<'a, 'b, S: ReferenceSink<'a>> Resolver<'a, 'b, S> {
             }
             Expression::CallExpression(value) => self.call(value, next),
             Expression::NewExpression(value) if value.type_arguments.is_none() => {
+                self.invocation(expression)?;
                 let previous = self.in_new_callee;
                 self.in_new_callee = true;
                 let result = self.expression(&value.callee, next);
@@ -205,6 +207,7 @@ impl<'a, 'b, S: ReferenceSink<'a>> Resolver<'a, 'b, S> {
                 other => Err(self.fail(other.span(), ResolutionErrorKind::UnsupportedSyntax)),
             },
             Expression::ImportExpression(value) if value.phase.is_none() => {
+                self.invocation(expression)?;
                 self.expression(&value.source, next)?;
                 if let Some(options) = &value.options {
                     self.expression(options, next)?;
@@ -232,6 +235,16 @@ impl<'a, 'b, S: ReferenceSink<'a>> Resolver<'a, 'b, S> {
             }
             other => Err(self.fail(other.span(), ResolutionErrorKind::UnsupportedSyntax)),
         }
+    }
+
+    fn invocation(&mut self, expression: &Expression<'a>) -> Result<(), ResolutionError> {
+        let span = self
+            .source
+            .span(expression.span())
+            .ok_or_else(|| self.fail(expression.span(), ResolutionErrorKind::InvalidSpan))?;
+        self.sink
+            .observe_invocation(expression, span)
+            .map_err(|kind| self.fail(expression.span(), kind))
     }
 
     fn call(&mut self, value: &CallExpression<'a>, next: usize) -> Result<(), ResolutionError> {

@@ -63,6 +63,7 @@ pub enum VueFileIssueKind {
     SetupExport,
     UnsupportedOptions,
     UnsupportedCall { optional: bool },
+    UnsupportedInvocation,
     InvalidTemplateProfile,
     ConflictingScriptProfiles,
 }

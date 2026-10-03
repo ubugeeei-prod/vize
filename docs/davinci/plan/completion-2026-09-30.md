@@ -2,6 +2,10 @@
 
 Initial snapshot: main `507ac3cc683c044fc136016cd4bfb7d3bde44965`; completion evidence refreshed on 2026-10-01 at main `cb806ff4fcbbfe93971a23007a9e62df2252e679`. Issue status alone is not implementation evidence. A slice completes only after exact-head Actions, protected-queue success, actual merge, and a fresh-main check.
 
+For current functionality, remaining implementation lanes and finish gates, use
+the [October 3 native completion ledger](./completion-2026-10-03.md). The
+current-work sections below retain their original snapshot qualification.
+
 ## Completion conditions
 
 - L0–L4 and conversions own their implementation; no active codename substrate, placeholder `todo!()`, reverse normal/build dependency, or legacy-backed native path remains.
