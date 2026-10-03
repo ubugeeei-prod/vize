@@ -12,7 +12,7 @@ own module in a separate factoring commit, keeping the shared builder under the
 350-line source limit and preserving its public API.
 
 The first family admits finite HTML tags whose trees do not trigger browser
-table/select/paragraph/formatting recovery: div, span, section, article, main,
+table/select/paragraph recovery in the admitted well-nested trees: div, span, section, article, main,
 aside, header, footer, nav, small, br, hr and img. Generic id/title/role/dir/lang,
 data-* and aria-* static attributes retain their actual decoded values. The
 collector records actual void closing eligibility, original root order and the
@@ -37,6 +37,16 @@ from another analysis cannot supply output parts. Compile-fail laws retain the
 File through the analysis. Genuine once-lowered SFC/File laws validate pointer,
 decoded attribute, root-order, target-isolation and original refusal semantics;
 handcrafted File values are not the acceptance denominator.
+
+A public neutral File builder can deliberately attach different text to equal
+source spans. The generic File analysis therefore remains diagnostic-only and
+cannot authorize native target output. `NativeTemplateVaporAnalysis` instead
+retains the moved, non-cloneable original `NativeTemplateView` exactly like the
+existing DOM entry. Its private fields derive the File internally, preserve the
+actual original lower owner and invoke the same sole decision producer. Neither
+a neutral analysis nor a complete manually populated File can promote itself;
+three compile-fail laws and a real selected original-template law pin this
+boundary. The target consumes only this original completion capability.
 
 This provider is not an emitted product. The actual L4 target, complete module
 and original-source maps, pinned runtime/reference execution, original SFC

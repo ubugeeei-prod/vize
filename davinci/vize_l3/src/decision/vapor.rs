@@ -10,9 +10,11 @@ use vize_l2::op::{CommentOp, ElementOp, TextOp};
 
 pub(super) mod build;
 mod file;
+mod template;
 #[cfg(test)]
 mod tests;
 pub use file::{NativeVaporFileAnalysis, build_vapor_file_decisions};
+pub use template::{NativeTemplateVaporAnalysis, build_native_vapor_file_decisions};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VaporUnsupported {

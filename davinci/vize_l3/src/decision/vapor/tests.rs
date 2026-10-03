@@ -142,3 +142,33 @@ fn interrupted_file_fails_before_the_shared_walk() {
     ));
     assert!(file.template_interruption().is_some());
 }
+
+#[test]
+fn original_selected_completion_is_the_sole_target_capability() {
+    use super::build_native_vapor_file_decisions;
+    use vize_l1::{container::Vue, markup::NativeTemplateComponent};
+    use vize_l2::lang::js::NativeTemplateOwner;
+    let arena = Allocator::default();
+    let source = "<template><!--original--><div><span>雪🌸</span><br></div></template>";
+    let descriptor = Vue.observe_descriptor(&arena, source, options());
+    let selected = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+        .unwrap()
+        .unwrap();
+    let mut owner = NativeTemplateOwner::new(selected).unwrap();
+    {
+        let mut walk = owner.begin().unwrap();
+        let selected = walk.selected();
+        for child in selected.children() {
+            walk.child(child).unwrap();
+        }
+        walk.complete().unwrap();
+    }
+    let output = owner.finish();
+    let analysis = build_native_vapor_file_decisions(output.view().unwrap()).unwrap();
+    assert!(core::ptr::eq(analysis.owner(), &output));
+    assert!(core::ptr::eq(analysis.file(), output.file().unwrap()));
+    assert!(core::ptr::eq(analysis.artifact().source(), source));
+    assert_eq!(analysis.tables().nodes.len(), 5);
+    assert_eq!(analysis.vapor().unwrap().unsupported(), []);
+    assert_eq!(analysis.vapor().unwrap().roots().len(), 2);
+}
