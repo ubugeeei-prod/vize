@@ -75,8 +75,15 @@ No budget, test or audit gate is weakened.
 
 ## Unfinished
 
-Element/body/header cursors, original operands, entity decoding and indexed
-native If/For completion are lower prerequisites. Neutral File conditions or
+The [selected zero-header HTML successor](./2026-10-03-selected-static-html.md)
+extends the genuine lower provider with original nested Element bodies. The
+Text/Comment-only source proofs above remain historical. The existing L3
+producer consumes the same completed view without another walk; the obsolete
+Element-refusal fixture now uses an actually unsupported SVG root. Exact
+new-source and protected queue checks still decide this successor's acceptance.
+
+Original header/operand completion, entity decoding and indexed native
+If/For completion are lower prerequisites. Neutral File conditions or
 aliases cannot activate those paths. Vue declaration membership alone cannot
 replace template custody or prove runtime access.
 

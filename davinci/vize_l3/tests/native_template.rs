@@ -186,7 +186,7 @@ fn equal_source_foreign_child_cannot_reach_native_analysis() -> Result<(), &'sta
 
 #[test]
 fn unsupported_element_and_entity_roots_keep_no_native_completion() -> Result<(), &'static str> {
-    for source in ["<template><div /></template>", "<template>&amp;</template>"] {
+    for source in ["<template><svg/></template>", "<template>&amp;</template>"] {
         let arena = Allocator::default();
         let mut original = owner(&arena, source)?;
         {

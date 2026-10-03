@@ -67,3 +67,10 @@ so this call must pass a reference to that genuine reference. The one-line
 correction matches existing canonical factory calls without changing the
 arena, owner, body, laws, storage count or budgets. The failed campaign stays
 failed; the corrected exact source requires fresh hosted execution.
+
+After #7493 actually merges as `4608954745`, the source replays onto that
+literal current main. Its old downstream `<div />` refusal fixture must use
+an unsupported SVG root, and the original-view documentation records this
+lower-provider successor. Existing L3 production behavior and the sole
+decision walk remain unchanged; genuine new Element decision laws are the
+dependent next slice.

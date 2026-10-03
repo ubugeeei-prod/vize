@@ -14,9 +14,9 @@ use vize_l2::{
 
 /// Decisions retain the moved, non-cloneable lower completion view.
 ///
-/// The current lower route authenticates selected Text/Comment/empty roots
-/// only, with original HTML whitespace refused before completion. This does
-/// not admit Element/header/operand/control semantics, Vue
+/// The lower route authenticates selected Text/Comment/empty roots and
+/// zero-header HTML bodies, with original HTML whitespace refused before
+/// completion. This does not admit header/operand/control semantics, Vue
 /// runtime exposure, SFC migration or target emission.
 ///
 /// A neutral analysis or an externally paired File cannot construct it:
