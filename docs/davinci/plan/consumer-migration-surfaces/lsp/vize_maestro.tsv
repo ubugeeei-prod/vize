@@ -61,8 +61,8 @@ lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/component_interfa
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface.rs	38	l0	L0	stage	vize_l0	preferred	3
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface.rs	38	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests.rs	8	l2	L2	stage	vize_l2	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/corpus.rs	5	l2	L2	stage	vize_l2	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/corpus.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	4
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/corpus.rs	6	l2	L2	stage	vize_l2	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/corpus.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	4
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/edits.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/edits.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/template/component_interface/tests/edits.rs	3	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
@@ -329,7 +329,7 @@ lsp	LSP	source	crates/vize_maestro/src/server/state/global_tag_names.rs	4	raw_ox
 lsp	LSP	source	crates/vize_maestro/src/server/state/global_tag_names.rs	4	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 lsp	LSP	source	crates/vize_maestro/src/server/state/global_tag_names.rs	4	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	test/dev	crates/vize_maestro/src/server/state/global_tag_names.rs	206	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/server/state/resident.rs	21	l2	L2	stage	vize_l2	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/server/state/resident.rs	22	l2	L2	stage	vize_l2	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/server/state/resident/sources.rs	11	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs.rs	72	l0	L0	stage	vize_l0	preferred	7
 lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs.rs	72	old_ast	old AST/parser	old	vize_armature	legacy	2
