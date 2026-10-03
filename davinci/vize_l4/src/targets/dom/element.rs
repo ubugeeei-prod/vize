@@ -79,13 +79,17 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
                     .facts
                     .binding(binding)
                     .ok_or_else(|| self.error(binding, DomErrorKind::MissingBinding))?;
-                let BindingOp::Bind(bind) = fact.binding() else {
-                    return Err(self.error(binding, DomErrorKind::InvalidGrouping));
+                let (name, span) = match fact.binding() {
+                    BindingOp::Bind(bind) => {
+                        let Some(DynamicName::Static(name)) = bind.name else {
+                            return Err(self.error(binding, DomErrorKind::InvalidGrouping));
+                        };
+                        (name, bind.span)
+                    }
+                    BindingOp::On(on) if fact.role == PropertyRole::Event => ("onClick", on.span),
+                    _ => return Err(self.error(binding, DomErrorKind::InvalidGrouping)),
                 };
-                let Some(DynamicName::Static(name)) = bind.name else {
-                    return Err(self.error(binding, DomErrorKind::InvalidGrouping));
-                };
-                quoted(&mut self.writer, name, bind.span);
+                quoted(&mut self.writer, name, span);
             }
             self.writer.push("]");
         }
@@ -117,7 +121,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
     ) -> Result<u8, DomError> {
         let complex_value = bindings.iter().any(|&id| {
             self.facts.binding(id).is_some_and(|fact| {
-                fact.role == PropertyRole::Class
+                matches!(fact.role, PropertyRole::Class | PropertyRole::Event)
                     || (fact.role == PropertyRole::Style && fact.value.is_dynamic())
                     || matches!(fact.binding(), BindingOp::Bind(bind)
                         if bind.value.is_some_and(|value| !inline_value(value)))
@@ -154,6 +158,17 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
                 .facts
                 .binding(id)
                 .ok_or_else(|| self.error(id, DomErrorKind::MissingBinding))?;
+            if let BindingOp::On(on) = fact.binding() {
+                if fact.role != PropertyRole::Event {
+                    return Err(self.error(id, DomErrorKind::InvalidGrouping));
+                }
+                self.property_start(index, multiline);
+                property(&mut self.writer, "onClick", on.span);
+                self.writer.push(": ");
+                self.expressions.write_handler(&mut self.writer, id, on)?;
+                index += 1;
+                continue;
+            }
             let BindingOp::Bind(bind) = fact.binding() else {
                 return Err(self.error(id, DomErrorKind::InvalidGrouping));
             };

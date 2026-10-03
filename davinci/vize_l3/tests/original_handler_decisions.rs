@@ -77,14 +77,12 @@ fn sole_binding_walk_retains_same_file_on_body_source_and_complete_resolver() {
         "/*original*/ var x=$event; return x;"
     );
     assert_eq!(syntax.comments().count(), 1);
-    // Association alone does not select inline/reference meaning or emission.
-    assert!(
-        dom.unsupported()
-            .iter()
-            .any(|refusal| refusal.reason == DomUnsupported::Binding
-                && refusal.node == lower.id().node()
-                && refusal.span == on.span)
-    );
+    // A stock FunctionBody return is retained, but Vue's authored directive
+    // grammar refuses it before any generated arrow can make it executable.
+    let refusal = dom.unsupported().first().unwrap();
+    assert_eq!(refusal.reason, DomUnsupported::HandlerSyntax);
+    assert_eq!(refusal.node, lower.id().node());
+    assert_eq!(refusal.span.slice(source), "return x;");
 }
 
 #[test]

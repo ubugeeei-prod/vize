@@ -61,6 +61,8 @@ pub enum DomUnsupported {
     ConditionalRoot,
     FileExpression,
     FileHandler,
+    HandlerSyntax,
+    HandlerAccess,
     FileScope,
     FileBinding,
     VueReadAccess,
@@ -119,6 +121,7 @@ pub enum PropertyRole {
     Property,
     Class,
     Style,
+    Event,
 }
 
 /// Value semantics proved by the retained AST or complete context registry.

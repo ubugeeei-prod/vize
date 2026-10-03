@@ -13,7 +13,8 @@ use crate::write::{LinkSink, Writer};
 
 /// Emit a render declaration from the sole checked file owner.
 ///
-/// Static structure and retained literals are supported. Declarations and
+/// Static structure, retained literals and genuine bounded click bodies are
+/// supported. Handler facts supply only event-parameter access. Declarations and
 /// lexical visibility do not authorize Vue access, so every expression with
 /// references is explicitly refused until its genuine runtime provider exists.
 /// If/For and whole-SFC producer completeness remain separate prerequisites.
@@ -45,7 +46,8 @@ pub fn emit_file<L: LinkSink>(
 ///
 /// The same owner supplies File, artifact and existing sole-walk DOM facts.
 /// No neutral analysis is extracted or rebuilt. Ordinary static structure is
-/// supported; File expressions retain the literal-only checks below. This
+/// supported, including the bounded owner-joined click body family; File
+/// expressions retain the literal-only checks below. This
 /// supplies no Vue read policy, script emission or whole-SFC completion.
 ///
 /// A neutral File analysis cannot stand in for selected-root completion:
@@ -79,6 +81,14 @@ struct FileExpressions<'s, 'owner, 'arena> {
 }
 
 impl ExpressionWriter for FileExpressions<'_, '_, '_> {
+    fn write_handler<L: LinkSink>(
+        &self,
+        writer: &mut Writer<L>,
+        node: NodeId,
+        on: &vize_l2::op::OnOp<'_>,
+    ) -> Result<(), DomError> {
+        super::handler::write(writer, self.file, self.facts, node, on)
+    }
     fn write<L: LinkSink>(
         &self,
         writer: &mut Writer<L>,

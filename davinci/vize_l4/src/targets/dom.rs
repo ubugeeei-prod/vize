@@ -22,6 +22,7 @@ mod conditional;
 mod element;
 mod expression;
 mod file;
+mod handler;
 #[cfg(test)]
 mod tests;
 mod vue;

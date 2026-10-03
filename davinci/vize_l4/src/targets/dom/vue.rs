@@ -47,6 +47,14 @@ struct VueExpressions<'read, 'view, 'owner, 'descriptor, 'program, 'arena> {
 }
 
 impl ExpressionWriter for VueExpressions<'_, '_, '_, '_, '_, '_> {
+    fn write_handler<L: LinkSink>(
+        &self,
+        writer: &mut Writer<L>,
+        node: NodeId,
+        on: &vize_l2::op::OnOp<'_>,
+    ) -> Result<(), DomError> {
+        super::handler::write(writer, self.analysis.file(), self.analysis.dom(), node, on)
+    }
     fn write<L: LinkSink>(
         &self,
         writer: &mut Writer<L>,

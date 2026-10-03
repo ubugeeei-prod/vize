@@ -14,9 +14,8 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
     pub(in crate::decision) fn binding(&mut self, id: NodeId, binding: &'owner BindingOp<'arena>) {
         let span = NodeRef::Binding(binding).span();
         if let BindingOp::On(on) = binding {
-            // Whole-handler custody is retained even while runtime semantics
-            // remain refused by the existing bounded target policy below.
-            self.record_handler(id, on);
+            self.handler_binding(id, binding, on);
+            return;
         }
         let BindingOp::Bind(bind) = binding else {
             self.reject(id, span, DomUnsupported::Binding);
@@ -75,7 +74,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         frame.normalize_style |= role == PropertyRole::Style && value.is_dynamic();
         if value.is_dynamic() {
             match role {
-                PropertyRole::Property => {
+                PropertyRole::Property | PropertyRole::Event => {
                     frame.node.changes.properties = true;
                     frame.node.dynamic_property_bindings.push(id);
                 }
