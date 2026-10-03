@@ -179,8 +179,19 @@ fn refusals() -> Vec<serde_json::Value> {
             "global-style" | "scoped-style" => assert!(
                 matches!(error, NativeSsrSfcCompileError::Lowering(issue) if issue.kind == NativeSelectedSfcIssueKind::Style)
             ),
-            "search" | "slot" => {
-                assert!(matches!(error, NativeSsrSfcCompileError::Ssr(_)))
+            "search" => {
+                assert!(compilation.observation().admitted().is_some());
+                assert!(
+                    matches!(error, NativeSsrSfcCompileError::Ssr(_)),
+                    "{id}: {error:?}"
+                );
+            }
+            "slot" => {
+                assert!(compilation.observation().admitted().is_none());
+                assert!(
+                    matches!(error, NativeSsrSfcCompileError::Lowering(issue) if matches!(issue.kind, NativeSelectedSfcIssueKind::Template(_))),
+                    "{id}: {error:?}"
+                );
             }
             "interpolation" | "for" => {
                 assert!(compilation.observation().admitted().is_some());
