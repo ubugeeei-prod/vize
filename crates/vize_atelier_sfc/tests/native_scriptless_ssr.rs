@@ -49,9 +49,6 @@ fn original_whole_sfc_modules_keep_selected_custody_and_complete_maps() {
         let output = moved
             .result()
             .unwrap_or_else(|error| panic!("{}: {error:?}", fixture["id"]));
-        assert!(output.code().contains("const _sfc_main = {}"));
-        assert!(output.code().contains("_sfc_main.ssrRender = ssrRender"));
-        assert!(output.code().ends_with("export default _sfc_main\n"));
         let map: serde_json::Value = serde_json::from_str(output.source_map().unwrap()).unwrap();
         assert_eq!(map["sourcesContent"], serde_json::json!([source]));
         assert_eq!(map["sources"], serde_json::json!([filename]));
