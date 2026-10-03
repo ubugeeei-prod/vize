@@ -37,6 +37,7 @@ mod declaration;
 mod file_rename;
 mod implementation;
 mod materialized;
+mod native_vue;
 mod original_program;
 mod readiness;
 mod requests;

@@ -7,6 +7,7 @@
 mod batch_checker;
 mod bridge;
 mod editor_session;
+mod native_vue;
 mod original_program;
 mod script_document;
 #[cfg(test)]
@@ -57,6 +58,7 @@ mod worker;
 pub use batch_checker::BatchTypeChecker;
 pub use bridge::CorsaBridge;
 pub(crate) use editor_session::EditorMirrorSession;
+pub use native_vue::{NativeVueCheck, NativeVueError};
 pub use original_program::{OriginalProgramCheck, OriginalProgramError};
 pub use script_document::{
     CorsaScriptVirtualDocument, CorsaScriptVirtualDocumentRequest, CorsaScriptVirtualProject,
