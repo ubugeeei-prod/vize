@@ -3,8 +3,10 @@
 //! This facility leaves all existing formatter entry points unchanged. The
 //! native template consumer lays out plain and typed directive opening tags and preserves
 //! content, comments, entities, attribute order and quoted values verbatim.
-//! Incomplete directive heads, missing shorthand arguments, embed formatting and the other
-//! Vue dialects remain unsupported.
+//! The selected-template consumer joins genuine original interpolation owners
+//! to the bounded native expression document provider. Incomplete directive
+//! heads, missing shorthand arguments, other embed shapes and Vue dialects
+//! remain unsupported.
 //!
 //! An independent retained-expression consumer builds documents directly from
 //! genuine compiler-profile atoms, parentheses and binary/logical nodes with
@@ -19,6 +21,8 @@ mod document;
 mod expression;
 #[path = "native_doc/printer.rs"]
 mod printer;
+#[path = "native_doc/selected_template.rs"]
+mod selected_template;
 #[path = "native_doc/template.rs"]
 mod template;
 
@@ -27,4 +31,7 @@ pub use expression::{
     ExpressionDocument, ExpressionRefusal, MAX_EXPRESSION_DOCUMENT_DEPTH, expression_document,
 };
 pub use printer::{LineEnding, PrintOptions, print};
+pub use selected_template::{
+    NativeTemplateDocument, NativeTemplateRefusal, native_template_document,
+};
 pub use template::{TemplateDocument, TemplateRefusal, UnsupportedSyntax, template_document};
