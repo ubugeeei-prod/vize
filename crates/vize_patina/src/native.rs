@@ -10,6 +10,7 @@ use vize_l0::{
 };
 use vize_l1::markup::{NativeElement, NativeLintTagRefusal, NativeTemplateComponent};
 
+mod aria_unsupported_elements;
 mod attribute;
 mod header;
 pub mod header_facts;
@@ -30,6 +31,10 @@ pub const TABINDEX_NO_POSITIVE_RULE: &str = "a11y/tabindex-no-positive";
 pub const NO_AUTOFOCUS_RULE: &str = "a11y/no-autofocus";
 pub const NO_ACCESS_KEY_RULE: &str = "a11y/no-access-key";
 pub const NO_DISTRACTING_ELEMENTS_RULE: &str = "a11y/no-distracting-elements";
+
+pub const ARIA_UNSUPPORTED_ELEMENTS_RULE: &str = "a11y/aria-unsupported-elements";
+
+pub use aria_unsupported_elements::NativeAriaLintError;
 
 /// A refusal retains the caller's original component and observations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
