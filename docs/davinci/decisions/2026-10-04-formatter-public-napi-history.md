@@ -113,8 +113,7 @@ real calls and full protected actual merge remain required.
 
 ## Historical exact-source receipts and replay
 
-Child source `6cabd2b2ef590b05426ebfbe2ac873efebc3b9d7` passed Check
-37151994570. Its actual JS job 111287664708 retained all nine plans and
+Child source `6cabd2b2ef590b05426ebfbe2ac873efebc3b9d7` passed Check 37151994570. Its actual JS job 111287664708 retained all nine plans and
 twenty-five public calls, including the complete Error, with zero failures.
 The entire 714,304-byte report has SHA256
 `b47e29d9f21b9c9b7fd41499d0d52c998f49819a1da8e929db8c824d4d5b68de`;
