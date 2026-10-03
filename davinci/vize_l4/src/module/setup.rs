@@ -30,7 +30,7 @@ pub fn emit_setup<L: LinkSink>(
         let declaration = binding
             .declaration()
             .ok_or_else(|| fail(setup.source().span(), SetupEmitErrorKind::MissingBinding))?;
-        if matches!(declaration.name.as_str(), "Object" | "__value") {
+        if matches!(declaration.name.as_str(), "Object" | "__value" | "__v_raw") {
             return Err(fail(
                 declaration.span,
                 SetupEmitErrorKind::GeneratedBindingCollision,

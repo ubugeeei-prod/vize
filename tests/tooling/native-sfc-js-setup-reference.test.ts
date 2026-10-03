@@ -41,6 +41,17 @@ const capturePath = process.env.VIZE_NATIVE_SFC_SETUP_CAPTURE;
 const captured = capturePath ? JSON.parse(fs.readFileSync(capturePath, "utf8")) : null;
 const executions: unknown[] = [];
 
+test("the pinned Vue proxy reserves __v_raw instead of reading its authored getter", () => {
+  assert.equal(fromVue("vue/package.json").version, "3.5.35");
+  const original = {
+    get __v_raw() {
+      return 1;
+    },
+  };
+  assert.equal(original.__v_raw, 1);
+  assert.equal(runtime.proxyRefs(original).__v_raw, original);
+});
+
 test("JS setup whole-module fixtures retain pinned source and checked binding references", () => {
   assert.equal(pack.schema, "vize.native-sfc.js-setup-dom-reference");
   assert.equal(compiler.version, "3.5.35");

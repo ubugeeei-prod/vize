@@ -42,7 +42,7 @@ fn complete_neutral_syntax_cannot_bypass_whole_setup_eligibility() -> Result<(),
 fn generated_operations_and_parameter_names_refuse_before_any_partial_output() -> Result<(), String>
 {
     let arena = Allocator::default();
-    for name in ["Object", "__value"] {
+    for name in ["Object", "__value", "__v_raw"] {
         let source = cstr!("<script setup>let {name}=1;</script><template><p/></template>");
         let compilation = compile_native_sfc(&arena, &source, NativeSfcCompileOptions::default());
         let error = compilation

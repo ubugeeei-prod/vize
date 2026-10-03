@@ -23,8 +23,11 @@ The existing module assembler joins the prepared component and genuine READ
 render fragments using one checked Vue 3.5.35 vocabulary and late helper imports.
 
 Existing exposure guards reject generated setup locals and reserved markers.
-L4 additionally refuses `Object` and `__value` before creating its Writer, because
-they would shadow the actual generated marker operation or setter parameter.
+L4 additionally refuses `Object`, `__value` and `__v_raw` before creating its Writer.
+The first two would shadow the generated marker operation or setter parameter;
+Vue 3.5.35's real setup proxy returns its target for the third, hiding the authored
+primitive getter. An actual native-produced setup diagnostic preserves this
+boundary, and an independent pinned-runtime law checks the proxy behavior.
 Successful output or a typed refusal stays beside the complete original
 descriptor, Program, native template and File owners; no partial module escapes.
 
@@ -40,7 +43,7 @@ a dev-only oracle; the native product calls no legacy or upstream compiler.
 Bounded source proof rebuilds the selected normal native upper modules, whole
 L3/L4 and native product entry against the source-qualified ordinary L1/whole L2
 provider. Production and all new fixture helpers pass Clippy all plus 13 denial
-rules with the actual repository configuration. Thirteen product laws and eighteen
+rules with the actual repository configuration. Thirteen product laws and nineteen
 reference/capture/runtime laws pass. The latter bind fresh Rust output to all eight
 inputs, invoke eight actual native setup functions in Vue, and perform sixteen
 renders using their returned lexical bindings. Updates use the actual generated
