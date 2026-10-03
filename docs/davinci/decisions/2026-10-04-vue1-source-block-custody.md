@@ -10,8 +10,8 @@ The existing intrinsic Vue 1 `ComponentParse` now retains its original L0
 `SourceBlock`. `parse_component_block` and
 `parse_component_with_authored_block` accept only that pointer-checked source
 frame. `block()` returns the same borrowed frame, including complete authored
-root, exact selected slice and nonzero file offset. Public reconstruction from
-a source string and caller-selected offset cannot manufacture this carrier.
+root, exact selected slice and nonzero file offset. No constructor pairs an existing CST with a caller-supplied source/offset;
+the carrier is produced only by this original block parse.
 
 The existing whole-source functions keep their names, signatures and base-zero
 behavior. They validate `SourceRoot` once and use its whole block.
