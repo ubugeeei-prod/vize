@@ -12,10 +12,11 @@ use vize_l2::{
 ///
 /// Caller-written combinations cannot mint this receipt:
 /// ```compile_fail
-/// use vize_l2::{file::FileForHead, op::OriginalForOp};
+/// use vize_l2::{file::{BindingRef, FileForHead}, op::OriginalForOp, resolution::ForResolution};
 /// use vize_l3::decision::dom::DomFileForHead;
-/// fn forge<'f, 'a>(head: FileForHead<'f, 'a>, original: &'f OriginalForOp<'a>) {
-///     let _ = DomFileForHead { head, original };
+/// fn forge<'f, 'a>(head: FileForHead<'f, 'a>, original: &'f OriginalForOp<'a>,
+///     resolution: &'f ForResolution<'a>, collection: BindingRef<'f, 'a>) {
+///     let _ = DomFileForHead { head, original, resolution, collection };
 /// }
 /// ```
 /// ```compile_fail

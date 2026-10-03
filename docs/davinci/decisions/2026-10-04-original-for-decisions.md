@@ -74,7 +74,9 @@ normally retained File records. They cover:
 - A parked header hole and actual root drop, forget and unwind after an
   attached For retain complete lower owners but refuse L3 completion.
 - Private construction, non-Clone receipt and actual File lifetime
-  compile-fail docs, and genuine L4 Operation refusal before output.
+  compile-fail docs, and genuine L4 Operation refusal before output. The
+  constructor law supplies every field so failure proves privacy rather than
+  an incomplete struct literal.
 
 The lower For File provider #7620 is actually merged as `894971db`, after
 exact protected Check37141419763, Nuxt37141419363 and Musea37141419374 all
