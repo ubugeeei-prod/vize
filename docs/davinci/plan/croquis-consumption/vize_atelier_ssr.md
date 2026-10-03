@@ -4,7 +4,7 @@
 
 # Croquis consumption: `vize_atelier_ssr`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize_atelier_ssr/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolved consumption and non-product imports in `crates/vize_atelier_ssr/src`. The method and product set live on that page; fresh naive-grep diagnostics are printed by `--check` and `--summary`.
 
 ## Resolved product sites
 
@@ -22,14 +22,3 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Demand`                |     1 |     2 |
 | `FactConsumer`          |     1 |     1 |
 | `used_components_empty` |     1 |     1 |
-
-## Naive grep disagreements (resolved/grep)
-
-| product            | resolved | grep |
-| ------------------ | -------: | ---: |
-| `BindingMetadata`  |        0 |   11 |
-| `Croquis`          |        4 |   20 |
-| `Scope`            |        0 |    2 |
-| `Span`             |        0 |   43 |
-| `Symbol`           |        0 |    2 |
-| `Croquis.bindings` |        1 |   29 |

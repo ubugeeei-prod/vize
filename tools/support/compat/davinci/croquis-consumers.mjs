@@ -8,7 +8,7 @@
 // per-file alias tables built from parsed Rust `use` declarations
 // (braces, `as` aliases, `pub use` re-export chains) plus typed-receiver
 // field-access counting. A naive text-grep lane runs as a cross-check and
-// disagreements are reported in the artifact, never reconciled.
+// exact disagreements are printed in every --check report, never reconciled.
 //
 // This file is the CLI; the stages live in ./lib:
 //   rust-source.mjs        comment/string stripping + `use`-tree parsing
@@ -23,9 +23,10 @@
 //
 // The committed matrix is sharded: docs/davinci/plan/croquis-consumption.md
 // (method + product set, which depend only on vize_croquis) and
-// docs/davinci/plan/croquis-consumption/<crate>.md (every per-crate fact).
-// Cross-crate totals are never committed — they changed with every PR and
-// made every open PR conflict — and are printed on demand by --summary.
+// docs/davinci/plan/croquis-consumption/<crate>.md (resolved consumption and
+// non-product imports). Cross-crate totals and naive-grep diagnostics change
+// on independent source edits; every --check prints their fresh report and
+// --summary prints the same source-qualified report on demand.
 //
 // Usage:
 //   rust-script tools/commands/davinci/croquis-consumers.rs --write     # regenerate index + shards
@@ -35,12 +36,13 @@
 // Node builtins only. Output is deterministic (stable sort everywhere,
 // no timestamps, no absolute paths).
 
+import { execFileSync } from "node:child_process";
 import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.mjs";
 import { analyzeConsumers } from "./lib/croquis-analysis.mjs";
 import { enumerateProducts } from "./lib/croquis-products.mjs";
 import { gateViolations, renderSummary } from "./lib/croquis-render.mjs";
 import { renderCroquisArtifacts } from "./lib/croquis-shards.mjs";
-import { REGEN_COMMAND, SHARD_DIR_REL } from "./lib/paths.mjs";
+import { REGEN_COMMAND, SHARD_DIR_REL, repoRoot } from "./lib/paths.mjs";
 
 function main() {
   const mode = process.argv[2];
@@ -52,6 +54,14 @@ function main() {
   }
   const products = enumerateProducts();
   const analysis = analyzeConsumers(products);
+  if (mode === "--check" || mode === "--summary") {
+    const revision = execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    }).trim();
+    process.stdout.write(`Analyzed working tree at HEAD \`${revision}\`.\n\n`);
+    process.stdout.write(renderSummary(products, analysis));
+  }
   const violations = gateViolations(products, analysis);
   if (violations.missing.length > 0 || violations.stale.length > 0) {
     if (violations.missing.length > 0) {
@@ -67,7 +77,6 @@ function main() {
     if (mode !== "--summary") process.exit(1);
   }
   if (mode === "--summary") {
-    process.stdout.write(renderSummary(products, analysis));
     return;
   }
   const set = {

@@ -4,7 +4,7 @@
 
 # Croquis consumption: `vize_croquis_cf`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize_croquis_cf/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolved consumption and non-product imports in `crates/vize_croquis_cf/src`. The method and product set live on that page; fresh naive-grep diagnostics are printed by `--check` and `--summary`.
 
 ## Resolved product sites
 
@@ -85,38 +85,3 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `to_pascal_case`             |     1 |     2 |
 | `used_component_contains`    |     1 |     1 |
 | `used_component_name_list`   |     5 |     7 |
-
-## Naive grep disagreements (resolved/grep)
-
-| product                                | resolved | grep |
-| -------------------------------------- | -------: | ---: |
-| `Analyzer`                             |       42 |   52 |
-| `AnalyzerOptions`                      |       21 |   61 |
-| `ComponentUsage`                       |       38 |   86 |
-| `Croquis`                              |       97 |  125 |
-| `EffectGraphScript`                    |        1 |    2 |
-| `EffectGraphSummary`                   |       19 |   31 |
-| `ElementIdKind`                        |        3 |    4 |
-| `EventHandlerScopeData`                |        1 |    2 |
-| `EventListener`                        |       10 |   16 |
-| `MacroTracker`                         |        0 |    1 |
-| `PassedProp`                           |       17 |   25 |
-| `ProvideInjectTracker`                 |        0 |    1 |
-| `ScopeId`                              |       21 |   33 |
-| `ScopeKind`                            |        8 |    9 |
-| `SlotUsage`                            |        2 |    7 |
-| `Span`                                 |        0 |   36 |
-| `Symbol`                               |        0 |   31 |
-| `SymbolId`                             |        0 |    6 |
-| `TemplateExpression`                   |        1 |    2 |
-| `TemplateExpressionKind`               |        1 |    2 |
-| `build_effect_graph_from_script`       |        2 |    3 |
-| `build_effect_graph_from_script_setup` |        1 |    2 |
-| `build_effect_graph_from_sfc_scripts`  |        1 |    2 |
-| `note_mounted_resources`               |        1 |    2 |
-| `Croquis.bindings`                     |        0 |    6 |
-| `Croquis.macros`                       |       25 |   27 |
-| `Croquis.provide_inject`               |        0 |    8 |
-| `Croquis.race_conditions`              |        0 |    3 |
-| `Croquis.setup_context`                |        3 |    6 |
-| `Croquis.template_info`                |       14 |   15 |

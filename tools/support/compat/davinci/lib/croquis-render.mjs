@@ -111,7 +111,8 @@ export function methodLines(products, analysis) {
     "- **naive grep lane** (cross-check) — raw word-boundary text matches per" +
       " product name (`\\.field` matches for field rows) over the same files —" +
       " comments, strings, doc text, and same-named unrelated symbols included," +
-      " imports included. Disagreements are listed per crate, **not** reconciled:" +
+      " imports included. Every `--check` report and `--summary` lists exact" +
+      " per-crate disagreements; these diagnostics are **not** reconciled:" +
       " `grep > resolved` usually means comments/unrelated same-named symbols (for" +
       " field rows: field accesses on non-`Croquis` receivers); `grep < resolved`" +
       " would indicate a resolver bug and must be investigated.",
@@ -213,7 +214,9 @@ export function renderSummary(products, analysis) {
     "Cross-crate aggregates of the sharded matrix in" +
       " `docs/davinci/plan/croquis-consumption/`. Printed by `" +
       SUMMARY_COMMAND +
-      "`; totals are sums over the per-crate shards.",
+      "`; resolved totals match the per-crate shards. Naive-grep counts are" +
+      " recomputed from the current source files, including crates with no" +
+      " resolved legacy consumers.",
   );
   lines.push("");
   lines.push("## Products with external consumers");

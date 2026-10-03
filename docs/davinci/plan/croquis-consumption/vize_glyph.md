@@ -4,7 +4,7 @@
 
 # Croquis consumption: `vize_glyph`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize_glyph/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolved consumption and non-product imports in `crates/vize_glyph/src`. The method and product set live on that page; fresh naive-grep diagnostics are printed by `--check` and `--summary`.
 
 ## Resolved product sites
 
@@ -16,9 +16,3 @@ _None._
 | ----------------- | ----: | ----: |
 | `BlockLocation`   |     1 |     3 |
 | `SfcParseOptions` |     1 |     1 |
-
-## Naive grep disagreements (resolved/grep)
-
-| product | resolved | grep |
-| ------- | -------: | ---: |
-| `Span`  |        0 |   86 |

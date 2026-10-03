@@ -4,7 +4,7 @@
 
 # Croquis consumption: `vize_maestro`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize_maestro/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolved consumption and non-product imports in `crates/vize_maestro/src`. The method and product set live on that page; fresh naive-grep diagnostics are printed by `--check` and `--summary`.
 
 ## Resolved product sites
 
@@ -58,32 +58,3 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `reactivity_lookup`           |     3 |     3 |
 | `reactivity_sources`          |     3 |     3 |
 | `v_bind_expression_ranges`    |     1 |     1 |
-
-## Naive grep disagreements (resolved/grep)
-
-| product                           | resolved | grep |
-| --------------------------------- | -------: | ---: |
-| `Analyzer`                        |        3 |    5 |
-| `AnalyzerOptions`                 |        3 |    5 |
-| `ComponentShape`                  |        1 |    2 |
-| `Croquis`                         |       10 |   31 |
-| `Drawer`                          |       22 |   38 |
-| `DrawerOptions`                   |       22 |   39 |
-| `Scope`                           |        0 |    3 |
-| `ScopeBinding`                    |        1 |    2 |
-| `ScopeData`                       |        8 |   11 |
-| `ScopeKind`                       |       65 |   73 |
-| `SlotUsage`                       |        1 |    2 |
-| `Span`                            |        0 |   54 |
-| `Symbol`                          |        0 |    1 |
-| `SymbolId`                        |        0 |    5 |
-| `TemplateExpression`              |        0 |   14 |
-| `Croquis.binding_spans`           |        0 |    1 |
-| `Croquis.bindings`                |        0 |    8 |
-| `Croquis.component_registrations` |        0 |    1 |
-| `Croquis.import_statements`       |        0 |    1 |
-| `Croquis.macros`                  |       14 |   24 |
-| `Croquis.pattern_diagnostics`     |        3 |    4 |
-| `Croquis.reactivity`              |        0 |    1 |
-| `Croquis.scopes`                  |       15 |   17 |
-| `Croquis.types`                   |        0 |    1 |

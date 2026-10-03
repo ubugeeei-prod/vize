@@ -4,7 +4,7 @@
 
 # Croquis consumption: `vize`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolved consumption and non-product imports in `crates/vize/src`. The method and product set live on that page; fresh naive-grep diagnostics are printed by `--check` and `--summary`.
 
 ## Resolved product sites
 
@@ -32,21 +32,3 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `parse_script_setup_with_generic_and_jsx` |     1 |     1 |
 | `parse_script_with_options_and_jsx`       |     1 |     1 |
 | `to_pascal_case`                          |     1 |     1 |
-
-## Naive grep disagreements (resolved/grep)
-
-| product                               | resolved | grep |
-| ------------------------------------- | -------: | ---: |
-| `Analyzer`                            |        1 |    2 |
-| `AnalyzerOptions`                     |        1 |    2 |
-| `Croquis`                             |        1 |    4 |
-| `EffectGraphScript`                   |        2 |    3 |
-| `Scope`                               |        0 |    1 |
-| `Span`                                |        0 |   11 |
-| `build_effect_graph_from_sfc_scripts` |        1 |    2 |
-| `Croquis.bindings`                    |        0 |    4 |
-| `Croquis.import_statements`           |        0 |    1 |
-| `Croquis.scopes`                      |        0 |    2 |
-| `Croquis.template_info`               |        3 |    4 |
-| `Croquis.types`                       |        0 |    5 |
-| `Croquis.unused_bindings`             |        0 |    1 |

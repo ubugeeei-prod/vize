@@ -4,7 +4,7 @@
 
 # Croquis consumption: `vize_canon`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize_canon/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolved consumption and non-product imports in `crates/vize_canon/src`. The method and product set live on that page; fresh naive-grep diagnostics are printed by `--check` and `--summary`.
 
 ## Resolved product sites
 
@@ -97,42 +97,3 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `used_component_contains`      |     1 |     1 |
 | `used_component_name_list`     |     5 |     6 |
 | `used_components_empty`        |     2 |     2 |
-
-## Naive grep disagreements (resolved/grep)
-
-| product                   | resolved | grep |
-| ------------------------- | -------: | ---: |
-| `Analyzer`                |      162 |  244 |
-| `AnalyzerOptions`         |      158 |  240 |
-| `COMPILER_MACRO_NAMES`    |        0 |    1 |
-| `ComponentUsage`          |       44 |   64 |
-| `Croquis`                 |      216 |  321 |
-| `Drawer`                  |        0 |    1 |
-| `EventHandlerScopeData`   |        9 |   16 |
-| `EventListener`           |        3 |    5 |
-| `NonScriptSetupScopeData` |        3 |    4 |
-| `OptionGroup`             |        7 |    9 |
-| `PassedProp`              |       24 |   35 |
-| `Scope`                   |       25 |   58 |
-| `ScopeChain`              |        7 |    9 |
-| `ScopeData`               |       35 |   53 |
-| `ScopeId`                 |       23 |   31 |
-| `ScopeKind`               |       59 |   76 |
-| `SlotUsage`               |        1 |    3 |
-| `Span`                    |        0 |   69 |
-| `SpreadProp`              |        6 |   10 |
-| `Symbol`                  |        0 |    4 |
-| `SymbolId`                |        0 |    3 |
-| `TemplateExpression`      |       22 |   38 |
-| `TemplateExpressionKind`  |       14 |   20 |
-| `TypeExport`              |        9 |   12 |
-| `TypeExportKind`          |        9 |   11 |
-| `TypeResolver`            |        0 |    5 |
-| `UndefinedRef`            |        1 |    2 |
-| `VForScopeData`           |        4 |    5 |
-| `VSlotScopeData`          |        4 |    5 |
-| `Croquis.bindings`        |        0 |   27 |
-| `Croquis.macros`          |       72 |   73 |
-| `Croquis.scopes`          |       60 |   62 |
-| `Croquis.types`           |        9 |   17 |
-| `Croquis.undefined_refs`  |        0 |    1 |

@@ -4,7 +4,7 @@
 
 # Croquis consumption: `vize_atelier_sfc`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize_atelier_sfc/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolved consumption and non-product imports in `crates/vize_atelier_sfc/src`. The method and product set live on that page; fresh naive-grep diagnostics are printed by `--check` and `--summary`.
 
 ## Resolved product sites
 
@@ -76,24 +76,3 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `prod_scoped_v_bind_name`                 |     1 |     1 |
 | `runtime_erased_macro_names`              |     3 |     5 |
 | `scoped_v_bind_name`                      |     1 |     1 |
-
-## Naive grep disagreements (resolved/grep)
-
-| product                   | resolved | grep |
-| ------------------------- | -------: | ---: |
-| `BindingMetadata`         |       31 |   51 |
-| `BlockKind`               |        0 |   10 |
-| `Croquis`                 |       22 |   50 |
-| `Drawer`                  |        9 |   11 |
-| `DrawerOptions`           |        5 |    6 |
-| `ReactivityTracker`       |        0 |    1 |
-| `Scope`                   |        0 |    6 |
-| `ScopeKind`               |        2 |    3 |
-| `Span`                    |        0 |   23 |
-| `Symbol`                  |        0 |    5 |
-| `SymbolFlags`             |        0 |    5 |
-| `Croquis.bindings`        |       23 |  232 |
-| `Croquis.hoists`          |        0 |    2 |
-| `Croquis.macros`          |       17 |  114 |
-| `Croquis.types`           |       16 |   28 |
-| `Croquis.unused_bindings` |        5 |    9 |

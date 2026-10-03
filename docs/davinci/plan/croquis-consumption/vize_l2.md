@@ -4,7 +4,7 @@
 
 # Croquis consumption: `vize_l2`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `davinci/vize_l2/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolved consumption and non-product imports in `davinci/vize_l2/src`. The method and product set live on that page; fresh naive-grep diagnostics are printed by `--check` and `--summary`.
 
 ## Resolved product sites
 
@@ -15,15 +15,3 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 ## Non-product `vize_croquis` imports
 
 _None._
-
-## Naive grep disagreements (resolved/grep)
-
-| product              | resolved | grep |
-| -------------------- | -------: | ---: |
-| `Scope`              |        0 |   18 |
-| `ScopeBinding`       |        0 |   12 |
-| `ScopeId`            |        0 |   53 |
-| `Span`               |        0 |  559 |
-| `Croquis.bindings`   |        1 |   38 |
-| `Croquis.reactivity` |        0 |    1 |
-| `Croquis.scopes`     |        0 |   26 |

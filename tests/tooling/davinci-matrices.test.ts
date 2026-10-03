@@ -18,7 +18,8 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 // cross-crate totals, so parallel PRs touching different crates never
 // conflict on them. `--check` is as strict as before: every shard is
 // byte-compared, and a shard the generator no longer produces is stale.
-// Totals are printed on demand by each generator's `--summary`.
+// Totals are printed on demand by each generator's `--summary`. Croquis raw
+// grep diagnostics are printed by every --check and forwarded into CI logs.
 const matrices = [
   {
     name: "croquis consumption matrix",
@@ -63,6 +64,7 @@ function runCheck(generator: string, extraArgs: string[] = []) {
 for (const matrix of matrices) {
   test(`${matrix.name} is current (${matrix.artifact})`, () => {
     const result = runCheck(matrix.generator);
+    if (matrix.name === "croquis consumption matrix") process.stdout.write(result.stdout);
     assert.equal(
       result.status,
       0,

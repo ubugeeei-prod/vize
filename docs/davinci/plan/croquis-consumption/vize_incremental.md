@@ -4,7 +4,7 @@
 
 # Croquis consumption: `vize_incremental`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize_incremental/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolved consumption and non-product imports in `crates/vize_incremental/src`. The method and product set live on that page; fresh naive-grep diagnostics are printed by `--check` and `--summary`.
 
 ## Resolved product sites
 
@@ -18,13 +18,3 @@ _None._
 | `SfcError`        |     1 |     1 |
 | `SfcParseOptions` |     2 |     2 |
 | `parse_sfc`       |     2 |     2 |
-
-## Naive grep disagreements (resolved/grep)
-
-| product            | resolved | grep |
-| ------------------ | -------: | ---: |
-| `BlockKind`        |        0 |   28 |
-| `Croquis`          |        0 |    2 |
-| `Scope`            |        0 |    1 |
-| `Span`             |        0 |    3 |
-| `Croquis.bindings` |        0 |    3 |

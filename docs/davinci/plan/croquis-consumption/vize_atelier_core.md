@@ -4,7 +4,7 @@
 
 # Croquis consumption: `vize_atelier_core`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize_atelier_core/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolved consumption and non-product imports in `crates/vize_atelier_core/src`. The method and product set live on that page; fresh naive-grep diagnostics are printed by `--check` and `--summary`.
 
 ## Resolved product sites
 
@@ -26,23 +26,3 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ReactiveKind`      |     1 |     4 |
 | `is_event_local`    |     1 |     1 |
 | `is_global_allowed` |     4 |    10 |
-
-## Naive grep disagreements (resolved/grep)
-
-| product              | resolved | grep |
-| -------------------- | -------: | ---: |
-| `BindingMetadata`    |        0 |   24 |
-| `Croquis`            |       17 |   25 |
-| `ReactivityTracker`  |        0 |    1 |
-| `Scope`              |        0 |    4 |
-| `ScopeBinding`       |        1 |    2 |
-| `ScopeChain`         |        2 |    3 |
-| `ScopeKind`          |        2 |    3 |
-| `Span`               |        0 |   44 |
-| `Symbol`             |        0 |    5 |
-| `VForScopeData`      |        1 |    2 |
-| `VSlotScopeData`     |        1 |    2 |
-| `Croquis.bindings`   |       10 |   35 |
-| `Croquis.hoists`     |        0 |    8 |
-| `Croquis.reactivity` |        0 |    1 |
-| `Croquis.scopes`     |        0 |    4 |
