@@ -170,7 +170,7 @@ fn entity_spelling_refuses_before_decode_and_the_next_original_text_stays_availa
 fn original_unsupported_parser_observations_refuse_before_deriving_root_text()
 -> Result<(), &'static str> {
     let arena = Allocator::default();
-    let source = "<template>  original<div v-pre:[((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((key))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))]>body</div></template>";
+    let source = "<template>  original<div v-pre:[([([([([([([([([([([([([([([([([([([([([([([([([([([([([([([([([key])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])])]>body</div></template>";
     let owner = selected(&arena, source)?;
     assert_eq!(owner.component().carrier().unsupported.len(), 1);
     assert_eq!(
@@ -196,6 +196,17 @@ fn original_unsupported_parser_observations_refuse_before_deriving_root_text()
     assert!(!owner.component().carrier().unsupported.is_empty());
     crate::check_fidelity(&owner.component().carrier().tree)
         .map_err(|_| "original recovered fidelity")?;
+    // Repeated identical delimiters share one run in the actual bounded
+    // scanner. They cannot be used as an invented unsupported witness.
+    let accepted = selected(
+        &arena,
+        "<template>  original<div v-pre:[((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((key))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))]>body</div></template>",
+    )?;
+    assert!(accepted.component().carrier().unsupported.is_empty());
+    let prefix = accepted
+        .prepare_condensed_root_text(accepted.children().next().ok_or("accepted prefix")?)
+        .map_err(|_| "actual accepted delimiter run")?;
+    assert_eq!(prefix.content(), Some(" original"));
     Ok(())
 }
 

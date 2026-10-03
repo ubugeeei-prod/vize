@@ -57,6 +57,21 @@ belongs to that consumer change, alongside normal completion and interruption
 laws. Native nested whitespace, text entities, inherited pre/RCDATA, all Vue
 profiles/dialects, runtime families and complete product routes remain unfinished.
 
+## Protected queue baseline refresh
+
+The queue audit observed both source-green RootText layers as unmergeable
+without candidate SHAs; the immediate follow-up query found both entries and
+auto-merge requests absent. Both were made drafts while the shared census
+policy awaited its actual merge. The cause of that queue appearance is not
+established. The paired issue receipts retain the precise observed sequence.
+
+The policy actually merged as `0c3f5bae33bd5b4ea49cc4349b01f35f9cc7eb93`.
+Replay onto literal main preserves deletion of the grep-only L1 shard and
+regenerates the canonical 20-file inventory with complete fresh source-qualified
+diagnostic reports. Authoritative resolved and nonproduct tables, original
+source laws, unchanged budgets and actual protected validation remain required.
+Old source-green heads confer no validation credit on the replayed heads.
+
 The existing [explicit native SFC DOM product](./2026-10-03-native-sfc-scriptless-dom.md)
 has an intentional preserve-whitespace family. This additive provider does not
 change that product, its fixtures or default route. Product fix-history gates
