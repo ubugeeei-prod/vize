@@ -202,9 +202,8 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             };
             let type_supported = self.type_annotation(
                 declaration,
-                self.context == Context::Unit
-                    && !exported
-                    && initializer == InitializerKind::PrimitiveLiteral,
+                self.context == Context::Unit && !exported,
+                initializer == InitializerKind::PrimitiveLiteral,
             );
             if initializer != InitializerKind::PrimitiveLiteral
                 || !type_supported

@@ -60,7 +60,6 @@ fn nonkeyword_nested_exported_definite_and_nonprimitive_annotations_keep_file_is
         "const value: never = 1;",
         "const value: void = 1;",
         "const value: object = 1;",
-        "const value: number[] = 1;",
         "const value: [number] = 1;",
         "const value: readonly number[] = 1;",
         "const value: typeof other = 1;",
@@ -99,6 +98,62 @@ fn nonkeyword_nested_exported_definite_and_nonprimitive_annotations_keep_file_is
         require!(core::ptr::eq(file.artifact().source(), source.as_str()));
         equal!(original.syntax.diagnostics().count(), 0);
     }
+    Ok(())
+}
+
+#[test]
+fn complete_original_array_annotations_never_supply_primitive_setup_or_erasure()
+-> Result<(), String> {
+    let arena = Allocator::default();
+    for body in [
+        "const items:number[]=[];",
+        "const items:{id:number}[]=[{id:1}];",
+        "const items:number[]=1;",
+        "const primitive:number=1;const items:number[]=[];",
+        "const items:number[]=[];const primitive:number=1;",
+    ] {
+        let source = cstr!("<script setup lang=ts>{body}</script>");
+        let original = Observed::new(&arena, &source)?;
+        let file = original.file(&arena)?;
+        require!(file.is_complete(), "neutral syntax complete: {body}");
+        require!(original.view(&file)?.is_ok(), "authentic exposure: {body}");
+        require!(
+            matches!(checked(&original,&file)?,Err(issue)
+                if issue.kind==SetupIssueKind::UnsupportedSyntax),
+            "array never grants setup or primitive annotation receipts: {body}"
+        );
+        require!(core::ptr::eq(file.artifact().source(), source.as_str()));
+        equal!(original.syntax.diagnostics().count(), 0);
+    }
+    Ok(())
+}
+
+#[test]
+fn original_array_file_move_preserves_setup_refusal_and_rejects_a_second_parse()
+-> Result<(), String> {
+    let arena = Allocator::default();
+    let source = "<script setup lang=ts>/* 🌸 */const items:{id:number}[]=[{id:1}];</script>";
+    let original = Observed::new(&arena, source)?;
+    let file = Box::new(original.file(&arena)?);
+    require!(file.is_complete());
+    require!(original.view(&file)?.is_ok());
+    require!(matches!(checked(&original,&file)?,Err(issue)
+        if issue.kind==SetupIssueKind::UnsupportedSyntax));
+    require!(core::ptr::eq(file.artifact().source(), source));
+    let script = original.script()?;
+    let second = Parser::new(
+        &arena,
+        script.block().source(),
+        SourceType::ts().with_module(true),
+    )
+    .parse_observed();
+    require!(second.diagnostics().is_empty());
+    require!(matches!(
+        VueSetup::checked(&file,script,second.admitted().ok_or("second original")?),
+        Err(issue) if issue.kind==SetupIssueKind::Exposure(ExposureIssueKind::ProgramOrigin)
+    ));
+    require!(matches!(checked(&original,&file)?,Err(issue)
+        if issue.kind==SetupIssueKind::UnsupportedSyntax));
     Ok(())
 }
 
