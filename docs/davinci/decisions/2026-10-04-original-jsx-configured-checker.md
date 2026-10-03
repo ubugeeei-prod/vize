@@ -58,3 +58,9 @@ or local Cargo builds are needed.
 Coherent snapshots across an entire imported/configuration graph, broader
 incomplete lower JSX/TSX families, editor integration, fix-history equivalence,
 complete serialized source maps, and default replacement remain unfinished.
+
+Independent source review corrected two fixture assumptions before validation:
+the actual pinned Vue declaration indents `id` with four spaces, and Oxc
+`SourceType::tsx()` requests Unambiguous until `with_module(true)` establishes
+the original Module profile. The laws use the real declaration offset and
+explicit original TSX Module; production eligibility is unchanged.

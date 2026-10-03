@@ -84,7 +84,12 @@ fn real_vue_jsx_and_tsx_keep_complete_raw_diagnostics_types_and_authored_owners(
     let declared_id = declaration_source.find("\n    id?: string").unwrap() + 5;
     for (annotation, profile, kind, missing_type) in [
         ("", SourceType::jsx(), SourceKind::Jsx, "1"),
-        (": number", SourceType::tsx(), SourceKind::Tsx, "number"),
+        (
+            ": number",
+            SourceType::tsx().with_module(true),
+            SourceKind::Tsx,
+            "number",
+        ),
     ] {
         let root = tempfile::TempDir::new().unwrap();
         std::os::unix::fs::symlink(&dependencies, root.path().join("node_modules")).unwrap();

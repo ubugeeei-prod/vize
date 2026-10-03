@@ -9,7 +9,7 @@ fn original_jsx_path_and_configured_module_refusals_preserve_complete_owners() {
     let bridge = bridge(root.path());
     for (profile, extension, wrong_extension) in [
         (SourceType::jsx(), "jsx", "mjs"),
-        (SourceType::tsx(), "tsx", "ts"),
+        (SourceType::tsx().with_module(true), "tsx", "ts"),
     ] {
         let original = owner(&arena, source, profile);
         let path = root.path().join(cstr!("source.{extension}").as_str());
