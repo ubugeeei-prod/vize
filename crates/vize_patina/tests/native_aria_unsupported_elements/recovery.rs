@@ -23,6 +23,15 @@ fn refused(source: &str, path: &[usize]) {
         .unwrap();
     let mut first_context = None;
     for ordinal in &path[1..] {
+        // Complete caller traversal reaches an earlier authored sibling before
+        // the path's target, including the genuine self-closing nested a.
+        for sibling in element.children().take(*ordinal + 1) {
+            let sibling = sibling.into_element().unwrap();
+            let receipt = sibling.lint_tag().unwrap();
+            if receipt.in_recovery_context() {
+                first_context.get_or_insert(receipt.span());
+            }
+        }
         element = element
             .children()
             .nth(*ordinal)

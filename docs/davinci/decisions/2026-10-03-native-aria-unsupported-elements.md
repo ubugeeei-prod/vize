@@ -108,3 +108,16 @@ Error. No recursive native rendering/debugging is added to that deep law.
 The eighteen earlier Error laws remain unchanged; twenty authored Error laws
 now await fresh exact-head hosted execution. Existing merged rule admissions,
 oracles, layout caps and all ceilings remain unchanged.
+
+Exact Check 37133085047 executed all earlier laws but rejected both new recovery
+controls. The whole-traversal assertion now retains the authentic first refused
+earlier sibling, including self-closing nested a, rather than incorrectly using
+only the final meta path's range. All five complete diagnostic sources and
+expected results stay unchanged. The exact 4096-depth control exposes a real
+stack overflow in unchanged registered legacy lint traversal: suppression
+prescan and element recursion lack the existing stack-headroom guard. Native
+original depth custody and SDK refusal laws pass independently. TODO: deliver
+a separate genuine recursive safety repair and corpus regression before giving
+this full registered oracle runtime credit. Enlarging the test stack or reducing
+the input would hide that product failure and is not acceptance. The known-red
+Error source remains unqueued while the independent provider prefix runs.
