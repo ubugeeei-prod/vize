@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import vm from "node:vm";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { completeConfig } from "../differential/formatter-vite-observation.mjs";
+import { completeConfig, qualifyReference } from "../differential/formatter-vite-observation.mjs";
 import {
   originalViteInputs,
   originalViteSources,
@@ -13,6 +14,32 @@ import {
 } from "../differential/formatter-vite-source.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
+void test("actual multi-document lock keeps one workspace owner and refuses duplicate or malformed documents", () => {
+  const require = createRequire(path.join(root, "package.json"));
+  const version = require("oxfmt/package.json").version;
+  const lock = qualifyReference(root, require, version);
+  assert.equal(
+    lock.importers["npm/builder/vite"].devDependencies["vite-plus"].version.split("(")[0],
+    "0.2.9",
+  );
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vite-lock-control-"));
+  const raw = fs.readFileSync(path.join(root, "pnpm-lock.yaml"), "utf8");
+  try {
+    fs.copyFileSync(
+      path.join(root, "pnpm-workspace.yaml"),
+      path.join(directory, "pnpm-workspace.yaml"),
+    );
+    fs.writeFileSync(path.join(directory, "pnpm-lock.yaml"), `${raw}\n${raw}`);
+    assert.throws(
+      () => qualifyReference(directory, require, version),
+      /ambiguous or missing workspace lock importer owner/,
+    );
+    fs.writeFileSync(path.join(directory, "pnpm-lock.yaml"), `${raw}\n---\ninvalid: [\n`);
+    assert.throws(() => qualifyReference(directory, require, version), /YAMLParseError/);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
 void test("Vite history pins all original vectors while adding nine distinct whole input plans", () => {
   const original = originalViteInputs(root);
   const plans = viteConfigurationPlans(root);
@@ -98,13 +125,15 @@ void test("declared CLI loader observation forwards real return and identical th
           throw new Error(name);
         },
       });
-      if (failure)
-        assert.throws(
-          () => Reflect.apply(process.dlopen, thisValue, [module, filename, 4]),
-          (error) => error === actualError,
-        );
+      const invoke = () =>
+        Reflect.apply(Object.getOwnPropertyDescriptor(process, "dlopen").value, thisValue, [
+          module,
+          filename,
+          4,
+        ]);
+      if (failure) assert.throws(invoke, (error) => error === actualError);
       else {
-        assert.equal(Reflect.apply(process.dlopen, thisValue, [module, filename, 4]), marker);
+        assert.equal(invoke(), marker);
         const { loads } = JSON.parse(fs.readFileSync(destination));
         assert.equal(loads.length, 1);
         assert.equal(loads[0].completed, true);

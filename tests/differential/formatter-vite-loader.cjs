@@ -4,7 +4,7 @@ const crypto = require("node:crypto");
 const destination = process.env.VIZE_VITE_CLI_LOAD_CAPTURE;
 if (!destination) throw new Error("instrumented CLI requires a load capture destination");
 const hash = (file) => crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
-const actual = process.dlopen;
+const actual = Object.getOwnPropertyDescriptor(process, "dlopen").value;
 const loads = [];
 process.dlopen = function (...args) {
   const [, filename] = args;

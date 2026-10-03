@@ -32,13 +32,16 @@ zero execution or native credit.
 The recovered source was preserved separately and replayed onto actual main
 `ead89a7592e653a8ed585f4f3fed88fac71b3551`, retaining incoming workflow, native
 providers, immutable formatter manifests and goldens. No local Rust build or
-package installation was run. Actual source-built hosted build, exact-head
-Actions, unchanged protected suites/instruction ceilings and actual merge remain
-required. Failed campaigns remain scoped to their original heads.
+package installation was run. Provider #7630 actually merged through native
+Stack #7635 as signed `c141927e2b61d9c5ac4834b709e808e962b6c252` on 2026-10-03
+at 21:54:25 UTC. Protected Check 37155742392, actual no-cache check-js job
+111298642535 and unchanged all-100 three-run/ratchet job 111298642451 passed;
+artifact 11286266021 retains those instruction results. Failed campaigns remain
+scoped to their original heads.
 
-A dependent nine-case pack will require twenty-five independent actual public
-JS calls, whole input/options/results/errors and fixed-point chains while the
-existing preparation owner is alive. That pack is not yet accepted. Public Vite
+The dependent nine-case public pack #7634 also actually merged as signed
+`9c25fbea58d30a1dcf08b2ca039918a2527c503e` at the same time. Its protected
+source-bound receipt below admits all twenty-five real JS calls. Public Vite
 resolved-configuration/real CLI integration, schema/WASM history, applicable
 Glyph measurements, genuine printer-error runtime and #6882 remain unfinished.
 No native handled/equivalent/paired or default replacement credit is granted.
@@ -117,3 +120,28 @@ unexpected termination fail the law. It runs no Cargo or package installation
 and grants no native formatter credit. Fresh parent/child source Actions,
 source-built whole packets, protected full suites/all-100 and actual merge
 remain required; the old candidate is never reused as proof.
+
+## Terminal protected custody
+
+Parent actual JS package job 111298728706 and artifact 11284584933 retain the
+complete 547,383-byte typed build receipt SHA256
+`31bc508a05474b316e38daa115c8deaeabd01bd3e3e05f27e7a2bd7e62b06665`.
+Its `fresh=false` emitted/generated/frozen addon SHA256 is
+`cbdb61b8ba9e44d51c02c578302ddebc9405035c57aaa39cb0bc6fe83c786eca`;
+independent admission binds that actual packet to accepted parent `c141927e`.
+Its source and module identity remain separate from the child's later packet.
+
+Child protected Check 37155742925 and actual JS package job 111298740583 passed.
+Artifact 11285596806 retains the complete 714,304-byte public report SHA256
+`0ed91604135a82dd1a8fa028f3d8a13f162616fcc7a809afec099426750b57e3`
+and 547,383-byte build receipt SHA256
+`6de42a274aa8b449209362c3a73b2d4358c8ad6379c19c26fdeca6567eb4b428`.
+Its actual typed `fresh=false` cdylib emission, generated addon and frozen module
+agree at SHA256 `c31085d10e75ddfac8d52b967029aaf89d16cb559c21bbd22ea8485330057a07`.
+The complete packet passed independent admission; emitted/generated/frozen byte
+comparison belongs to the actual hosted validator. Child no-cache check-js job
+111298643649 and all-100 three-run/ratchet job 111298643810 passed, with instruction
+artifact 11285886876. Both signed actual commits and native Stack positions 1/2
+were verified. Nine native-unsupported rows and handled/equivalent/paired zero
+remain unchanged. This prerequisite receipt grants no fresh public Vite+ CLI,
+printer-error, default migration or whole-history completion credit.

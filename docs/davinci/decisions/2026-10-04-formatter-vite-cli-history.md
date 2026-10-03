@@ -79,10 +79,27 @@ equivalent and paired counts stay zero.
 
 ## Validation status
 
-Three pure source/object/observer controls pass using an existing cached Node
-24.13.0, with no local Rust build or Vize addon/CLI execution. Syntax checks pass. These
+Four pure source/object/observer/lock controls pass using an existing cached
+Node 24.13.0 and pinned dependency metadata, with no local Rust build or Vize
+addon/CLI execution. Syntax checks pass. These
 controls prove no real formatter/CLI acceptance. The first qualified hosted
 source capture, all twenty-seven calls, protected full/instruction suites and
 literal merge are pending. The accepted prerequisite keeps its unchanged
 no-cache, Node 24 same-job build/owner recipe; this consumer does not modify that
 recipe or reuse the predecessor's call report as fresh acceptance.
+
+## First source refusal and correction
+
+Source `989f019c` Check 37157081640 failed the unchanged zero-warning gate on
+four new method/sort references. Borrow the original data-descriptor loader
+function and retain its actual receiver with `Reflect.apply`; add the explicit
+ordinal comparator matching existing string order. No warnings are waived.
+Actual JS job 111302618309 then refused before CLI calls: PNPM 12's lock is a
+multi-document YAML stream, so single-document parsing rejected its second
+owner. Parse every document with the genuine YAML API, reject every parse error
+and require exactly one workspace importer owner before version qualification.
+Artifact 11286253467 and complete failed logs remain source-scoped; there is no
+27-call acceptance from this campaign. Fresh corrected Actions and protected
+acceptance remain required. The separate terminal #7630/#7634 receipts are
+recorded in their companions and central record without transferring runtime
+credit to this new consumer.

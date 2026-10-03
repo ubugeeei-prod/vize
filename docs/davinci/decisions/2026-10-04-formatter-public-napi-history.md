@@ -6,8 +6,11 @@ one whole original UserCard law, all five original Vite script controls, distinc
 false/omitted caller objects and a genuine malformed-boundary Error. Eight success
 plans chain complete results through three processes; one error plan retains its
 complete public Error. Existing API/config manifests, goldens and receipts stay
-immutable. This pack depends on #7630's actual emitted-addon custody; its exact-head Actions,
-all twenty-five public calls, protected queue and actual merge remain pending.
+immutable. This pack consumed #7630's actual emitted-addon custody and merged
+through native Stack #7635 as signed `9c25fbea58d30a1dcf08b2ca039918a2527c503e`
+on 2026-10-03 at 21:54:25 UTC, together with provider `c141927e`. Exact-source
+Actions and protected Check 37155742925 passed; all twenty-five actual public
+calls are admitted by the complete terminal receipt below.
 
 ## Complete public witness
 
@@ -75,9 +78,10 @@ object cannot substitute for that actual CLI execution.
 ## Delivery boundary
 
 Four pure source/process/error admission controls and the three parent build
-controls pass and grant no runtime credit. Actual addon execution and all twenty-five calls remain unqualified until
-hosted evidence passes. Preserve failed build/process streams before admission or
-parsing and upload the frozen module/whole receipts/report in the existing JS job.
+controls pass and grant no runtime credit. The terminal protected packet now
+qualifies actual addon execution and all twenty-five calls for signed `9c25fbea`.
+Failed build/process streams remain preserved before admission or parsing, and
+the existing JS job uploads the frozen module, whole receipts and report.
 Public Vite resolved-configuration/actual CLI integration remains unfinished.
 Paired issue/central decisions, exact published-source Actions, the protected
 queue and literal merge are required. A dependency published before its
@@ -167,3 +171,23 @@ Preserve that source in a private evidence ref. Replay all five child commits
 unchanged onto the actual `053d11fb6` parent (`range-diff` exact equality),
 then require fresh source packets and protected actual acceptance. The
 appended durable receipt does not grant execution credit for the new head.
+
+## Terminal protected public calls
+
+Protected Check 37155742925, actual JS package job 111298740583 and artifact
+11285596806 qualify all nine plans: eight complete three-call success/fixed-point
+chains and one complete real public Error, twenty-five calls, zero failures.
+The entire 714,304-byte report has SHA256
+`0ed91604135a82dd1a8fa028f3d8a13f162616fcc7a809afec099426750b57e3`;
+the entire 547,383-byte build receipt has SHA256
+`6de42a274aa8b449209362c3a73b2d4358c8ad6379c19c26fdeca6567eb4b428`.
+The original complete vectors, caller/options/results/error bytes, independent
+process frames, builder/observer separation and source/toolchain/lock identities
+passed independent admission. The hosted validator proves actual emitted,
+generated and frozen addon equality at SHA256
+`c31085d10e75ddfac8d52b967029aaf89d16cb559c21bbd22ea8485330057a07`.
+Actual no-cache check-js job 111298643649 and all-100 three-run/ratchet job
+111298643810 passed; instruction artifact 11285886876 retains the unchanged gates.
+Native unsupported remains nine; handled/equivalent/paired remains zero. This
+receipt grants no new public Vite+ resolved-config/actual Node CLI execution,
+default replacement, schema/WASM, printer-error or whole #6882 completion.

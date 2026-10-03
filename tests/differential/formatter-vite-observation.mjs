@@ -55,7 +55,7 @@ export const snapshot = (directory) =>
   Object.fromEntries(
     fs
       .readdirSync(directory, { recursive: true })
-      .sort()
+      .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0))
       .flatMap((name) => {
         const file = path.join(directory, String(name));
         return fs.statSync(file).isFile() ? [[String(name), bytes(fs.readFileSync(file))]] : [];
@@ -65,7 +65,15 @@ export const snapshot = (directory) =>
 export function qualifyReference(root, require, version) {
   const yaml = require("yaml");
   const catalog = yaml.parse(fs.readFileSync(path.join(root, "pnpm-workspace.yaml"), "utf8"));
-  const lock = yaml.parse(fs.readFileSync(path.join(root, "pnpm-lock.yaml"), "utf8"));
+  const documents = yaml.parseAllDocuments(
+    fs.readFileSync(path.join(root, "pnpm-lock.yaml"), "utf8"),
+  );
+  for (const document of documents) assert.deepEqual(document.errors, []);
+  const workspaceLocks = documents
+    .map((document) => document.toJS())
+    .filter((lock) => lock.importers?.["npm/builder/vite"]);
+  assert.equal(workspaceLocks.length, 1, "ambiguous or missing workspace lock importer owner");
+  const [lock] = workspaceLocks;
   assert.equal(catalog.catalogs.linting.oxfmt, version);
   assert.equal(lock.importers["."].devDependencies.oxfmt.version.split("(")[0], version);
   return lock;
