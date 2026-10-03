@@ -1,0 +1,12 @@
+{
+  "description": "Reduced Volt input retains the registry-pinned authored ref declaration. Nuxt-shaped configurations and real Vue declaration types exercise ownership; the original whole-file blob identifies the upstream input rather than this reduced source.",
+  "projectId": "primevue-volt",
+  "repository": "https://github.com/primefaces/primevue",
+  "revision": "d4374cb7c1267f35eba7cee5d0a266f50ca8ec84",
+  "componentFile": "apps/volt/components/landing/FilesCard.vue",
+  "sourceBlob": "76ffa1bb83ee2056c60be853c7300db522bfb6c6",
+  "declaration": "const tags = ref(['new']);",
+  "source": "<script setup lang=\"ts\">\nconst tags = ref(['new']);\n</script>\n<template><p>{{ tags }}</p></template>\n",
+  "ambient": "export {};\ndeclare global { const ref: typeof import('vue')['ref']; }\n",
+  "originalHoverContains": "const tags: string[]"
+}

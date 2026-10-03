@@ -53,7 +53,13 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
     let Some(source_path) = ctx.uri.to_file_path().ok() else {
         return Ok(None);
     };
-    let virtual_ts_options = ctx.state.virtual_ts_options();
+    let mut virtual_ts_options = ctx.state.virtual_ts_options();
+    let discovered_references = ctx.state.global_component_reference_paths().await;
+    virtual_ts_options.reference_paths = bridge
+        .scoped_vue_reference_paths(&source_path, &discovered_references)
+        .iter()
+        .map(|path| path.to_string_lossy().as_ref().into())
+        .collect();
     let opened = bridge
         .open_vue_virtual_workspace_document(
             &source_path,

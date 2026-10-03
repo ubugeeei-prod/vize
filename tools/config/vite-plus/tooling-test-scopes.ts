@@ -74,6 +74,7 @@ export const mergeOnlyToolingTests = [
   "tests/tooling/lsp-multi-root-workspace.test.ts",
   "tests/tooling/lsp-native-code-actions.test.ts",
   "tests/tooling/lsp-native-event-authoring.test.ts",
+  "tests/tooling/lsp-nuxt-auto-import-hover-type-backed.test.ts",
   "tests/tooling/lsp-on-type-formatting.test.ts",
   "tests/tooling/lsp-own-attrs-authoring.test.ts",
   "tests/tooling/lsp-own-slot-authoring.test.ts",

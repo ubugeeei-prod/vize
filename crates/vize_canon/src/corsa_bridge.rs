@@ -6,6 +6,7 @@
 
 mod batch_checker;
 mod bridge;
+mod editor_configuration;
 mod editor_session;
 mod script_document;
 #[cfg(test)]

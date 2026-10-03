@@ -39,7 +39,8 @@ export function resolveTypecheckRuntime(
     path.join(root, "tests/node_modules/.bin/tsgo"),
   ];
   return candidates.find(
-    (candidate): candidate is string => Boolean(candidate) && fs.existsSync(candidate),
+    (candidate): candidate is string =>
+      typeof candidate === "string" && candidate.length > 0 && fs.existsSync(candidate),
   );
 }
 

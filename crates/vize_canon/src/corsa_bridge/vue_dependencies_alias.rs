@@ -84,7 +84,7 @@ fn inside_node_modules(path: &Path) -> bool {
         .any(|component| matches!(component, Component::Normal(part) if part == "node_modules"))
 }
 
-fn is_declaration(path: &Path) -> bool {
+pub(super) fn is_declaration(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| {

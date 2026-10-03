@@ -156,6 +156,24 @@ impl CorsaBridge {
         &self.cache_stats
     }
 
+    /// Keep discovered Vue global declarations in the exact effective
+    /// TypeScript project used by this bridge for the authored source.
+    pub fn scoped_vue_reference_paths(
+        &self,
+        source_path: &std::path::Path,
+        candidates: &[std::path::PathBuf],
+    ) -> Vec<std::path::PathBuf> {
+        if candidates.is_empty() {
+            return Vec::new();
+        }
+        super::editor_configuration::EditorProjectConfiguration::for_source(
+            source_path,
+            self.config.working_dir.as_deref(),
+            self.config.tsconfig_path.as_deref(),
+        )
+        .reference_paths(candidates)
+    }
+
     /// Clear diagnostics cache.
     pub fn clear_cache(&self) {
         let _ = self.submit(|slot| {
