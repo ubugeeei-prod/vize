@@ -102,3 +102,53 @@ byte-identical to corrected d83; regenerate the complete actual L2 census. Prior
 d83 required Check37120149159 is historical after this parent replay; fresh
 configured Actions and protected terminal acceptance remain required. No extra
 manual full/all-100 or local Cargo campaign is added.
+
+## Shared source-budget correction
+
+Fresh replay Check37123314781 built the source but its tooling source-length
+gate found the shared walk at354 lines against the unchanged350 ceiling. Move
+the original counter/depth guard into a private inline sibling, used by both
+ordinary expressions and the original For aliases. Its same single visited
+counter, depth64 and node4096 thresholds remain unchanged; no parser, walk,
+pipeline stage, fact allocation or law changes. The shared walk now fits350
+lines. Regenerate the actual complete census and require fresh configured
+Actions and protected instruction validation. The source-red descendants stay
+unqueued; retain the already accepted healthy input candidate through its
+actual merge and honor the census-policy repair's next admission window.
+
+## Protected composition and literal-prefix replay
+
+Post-policy source `37d19787f64aba4c800d5ae278363616ec50bbe9` passed
+[Check37128061754](https://github.com/ubugeeei-prod/vize/actions/runs/37128061754),
+including the actual ten original For laws and two table privacy docs. Its
+declaration child `930c63dc9fa92bd2ce7e71b04d90f52b51c95832` passed its own
+Check37128063304 with all thirteen combined laws and four privacy/lifetime docs.
+Native Stack admission after every PR check passed was accepted, but composition
+immediately produced only null-candidate UNMERGEABLE entries. Withdrawing the
+bottom removed both For layers while preserving all six healthy predecessors.
+
+Exact merge-tree comparisons were clean through #7597/#7551/#7589/#7548;
+#7559 first conflicted only in the shared central decision paragraph. Rust
+source, storage inventory and the production-only census composed. After actual
+#7548/#7559/#7595 merges established literal main `81478afda81c8ec0f13d6e9d256134a2cf73a7b4`,
+replay unions the complete incoming record with the same original For clauses.
+Every original source, assertion and budget remains unchanged. No future queue
+candidate becomes a source dependency, and no For candidate run or merge credit
+exists from the withdrawn admission. Fresh configured source Actions, composed
+full validation, all 100 unchanged instruction measurements and actual native
+Stack merges remain required. No local Cargo/npm or duplicate manual campaign
+is added; File/header/body, canonical For factories, runtime and products remain
+unfinished. This qualification is paired on #6836/#6838 and in the central record.
+
+## Actual query-prefix replay
+
+Exact source8a27 and declaration2a57 passed Check37130775952/37130789644,
+including ten/thirteen original laws and two/four privacy docs. Before admission,
+the future #7603 candidate conflicted only in the central paragraph; no For
+candidate was created. Its actual protected merge5035 at15:07:13 UTC establishes
+this next literal main. Replay all incoming provider/query decisions and the
+exact owned resolver clauses while preserving every original runtime, assertion
+and depth64/node4096/shared350 budget. Regenerate the actual canonical20-file
+census and require fresh configured Actions plus composed full/instruction
+terminal native Stack proof. Prior source success does not establish current
+protected merge, and no local Cargo/npm or duplicate manual campaign is added.

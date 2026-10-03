@@ -85,8 +85,7 @@ fn alias<'a, S: ReferenceSink<'a>>(
     parameter: &'a FormalParameter<'a>,
     index: u8,
 ) -> Result<ForAlias<'a>, ForResolutionError> {
-    resolver.visited += 1;
-    if resolver.visited > super::MAX_NODES {
+    if !resolver.advance(0) {
         return Err(error(
             source,
             parameter.span(),
