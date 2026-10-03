@@ -38,7 +38,9 @@ real selected setup and For shadowing/ancestor scopes, failed late operands,
 foreign equal-source inputs/children, precise preparation failures, root shortcut
 refusal, sticky interruption and drop/forget. An older static-element refusal
 for <div>{{1}}</div> is requalified by genuine positive ownership laws; all other
-unsupported header/text/namespace/special-owner refusals remain unchanged.
+unsupported header/text/namespace/special-owner refusals remain unchanged. The
+original Vapor scalar case likewise moves from the obsolete lower refusal into
+its real Recorded/NoLinks target Operation refusal; no Vapor output is admitted.
 
 Source review is not execution acceptance. New exact-head hosted Rust laws and
 privacy docs, protected full suites and unchanged actual all100 instruction

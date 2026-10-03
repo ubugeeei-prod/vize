@@ -116,6 +116,7 @@ fn original_target_refusals_never_return_a_partial_module() {
             "<div>before</div><span title=\"a\r b\">after</span>",
             VaporUnsupported::AttributeSemantics,
         ),
+        ("<span>{{1}}</span>", VaporUnsupported::Operation),
     ] {
         let arena = Allocator::default();
         let source = format!("<template>{template}</template>");
@@ -141,7 +142,6 @@ fn unsupported_original_lower_events_cannot_authorize_the_target() {
         "<span>a&amp;b</span>",
         "<span :title=\"1\">x</span>",
         "<span class=\"x\">x</span>",
-        "<span>{{1}}</span>",
     ] {
         let arena = Allocator::default();
         let source = format!("<template>{template}</template>");
