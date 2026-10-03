@@ -110,6 +110,7 @@ mod rule;
 pub mod rule_contracts;
 pub mod rules;
 pub mod style;
+mod tag_policy;
 pub mod telegraph;
 mod visitor;
 mod visitor_scope;

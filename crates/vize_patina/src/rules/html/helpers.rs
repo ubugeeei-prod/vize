@@ -2,37 +2,7 @@
 
 use vize_relief::{ElementNode, ElementType, TemplateChildNode};
 
-/// Deprecated HTML elements per the Living Standard
-pub const DEPRECATED_ELEMENTS: &[&str] = &[
-    "acronym",
-    "applet",
-    "basefont",
-    "bgsound",
-    "big",
-    "blink",
-    "center",
-    "dir",
-    "font",
-    "frame",
-    "frameset",
-    "isindex",
-    "keygen",
-    "listing",
-    "marquee",
-    "menuitem",
-    "multicol",
-    "nextid",
-    "nobr",
-    "noembed",
-    "noframes",
-    "plaintext",
-    "rb",
-    "rtc",
-    "spacer",
-    "strike",
-    "tt",
-    "xmp",
-];
+pub use crate::tag_policy::DEPRECATED_ELEMENTS;
 
 /// Returns a CSS replacement suggestion if the attribute is deprecated on the given element.
 pub fn deprecated_attr_suggestion(element: &str, attr: &str) -> Option<&'static str> {
