@@ -64,3 +64,12 @@ the actual pinned Vue declaration indents `id` with four spaces, and Oxc
 `SourceType::tsx()` requests Unambiguous until `with_module(true)` establishes
 the original Module profile. The laws use the real declaration offset and
 explicit original TSX Module; production eligibility is unchanged.
+
+The corrected provider source `2cbffbd790` passed exact Check37140046811,
+all four Rust runtime workers and every required source context. Native
+Stack #7628 reports size two, positions #7624 then #7627, with both source
+OIDs unchanged by complete-URL registration. Only the green bottom was admitted
+through `gh stack merge 7624 --yes --squash`, after read-only clean unions with
+both older queued sources. This is queue admission, not an actual merge.
+Independent bounded consumer review found no additional production blocker
+after the genuine fixture corrections; full-vector TS7 Actions is still required.
