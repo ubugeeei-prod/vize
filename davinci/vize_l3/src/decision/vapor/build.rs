@@ -156,10 +156,10 @@ impl<'owner, 'arena> VaporBuilder<'owner, 'arena> {
         if let Some((node, Some(element), false)) = self.frames.pop() {
             self.facts.parts.push(VaporPart::Close { node, element });
         }
-        if self.frames.is_empty() {
-            if let Some(root) = self.facts.roots.last_mut() {
-                root.parts.end = self.facts.parts.len();
-            }
+        if self.frames.is_empty()
+            && let Some(root) = self.facts.roots.last_mut()
+        {
+            root.parts.end = self.facts.parts.len();
         }
     }
 
