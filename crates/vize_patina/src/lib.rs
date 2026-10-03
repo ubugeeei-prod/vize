@@ -98,6 +98,7 @@
 )]
 
 mod attribute_policy;
+mod component_name;
 mod context;
 mod diagnostic;
 pub mod html_content_model;
