@@ -4,8 +4,10 @@ Issues: #6836, #6871, #6872 and #6883. This is an additive explicit preview
 consumer, separate from existing original Program/NativeSfc navigation and
 standard product handlers. Its real dependencies are #7633 (the once-selected
 whole SFC owner) and #7640 (shared original Handler/For File position queries).
-Private source preparation is not hosted execution or product completion;
-both providers must actually merge before this independent consumer publishes.
+Both providers actually merged before this consumer publishes: #7633 at
+`d807a097efc081cf9501a626146370c84fb54c72` and #7640 at
+`c241d75fa0bceea9479098d24b820dc1411f539c`, with terminal protected Checks
+37154243123 and 37154511071. Private source is not hosted execution or product completion.
 No synthetic integration branch, second parser or legacy fallback supplies a
 missing prerequisite.
 
@@ -84,16 +86,18 @@ real original File queries and production service registration:
 - shared live capacity and mailbox Busy, retry after actual owner exit, full
   JSON-RPC result/error arrays and actual didChange/didClose behavior.
 
-Local validation is source review and rustfmt only under the no-local-build
-capacity constraint. The existing mandatory native-navigation hosted action
+Local source review, rustfmt, seven pure storage/summary laws and exact census
+generation passed under the no-local-build constraint. The pure workflow
+contract could not import the absent local yaml package; no installation or
+local Rust build was attempted. The existing mandatory native-navigation hosted action
 must run the actual affected source/RPC laws, minimal compilation and strict
 Clippy; its protected full recipe remains mandatory. Exact-head source Actions,
 full queue suites, unchanged all100 x3 instruction ceilings/ratchets and the
 literal protected merge are required before acceptance. No skipped law,
 API availability or private source body receives runtime credit.
 
-TODO: refresh onto actual main after both real provider merges, preserve every
-incoming JSX/profile/source law and central paragraph, regenerate exact source
-inventories, publish the small consumer, execute the existing hosted action and
+The source refresh onto actual main preserves incoming JSX/profile/source laws
+and the central paragraph; only the source-qualified Maestro migration shard
+changes in the canonical inventories. TODO: publish this consumer, execute the existing hosted action and
 track its full protected queue/actual merge. No default switch, cross-file graph,
 whole dialect/product or #6883 fix-history closure is claimed.
