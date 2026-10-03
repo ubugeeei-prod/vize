@@ -12,6 +12,7 @@ use vize_l1::markup::{NativeElement, NativeLintTagRefusal, NativeTemplateCompone
 
 mod aria_unsupported_elements;
 mod attribute;
+mod deprecated_attr;
 mod deprecated_element;
 mod header;
 pub mod header_facts;
@@ -36,6 +37,7 @@ pub const NO_DISTRACTING_ELEMENTS_RULE: &str = "a11y/no-distracting-elements";
 pub const NO_INLINE_STYLE_RULE: &str = "vue/no-inline-style";
 
 pub const ARIA_UNSUPPORTED_ELEMENTS_RULE: &str = "a11y/aria-unsupported-elements";
+pub const DEPRECATED_ATTR_RULE: &str = "html/deprecated-attr";
 pub const DEPRECATED_ELEMENT_RULE: &str = "html/deprecated-element";
 
 pub use aria_unsupported_elements::NativeAriaLintError;
@@ -233,6 +235,20 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
             return Err(NativeLintRefusal::ForeignElement);
         }
         deprecated_element::check(element, messages)
+    }
+
+    /// Check exact static deprecated attributes on original non-component headers.
+    /// Values remain opaque. Findings retain authored order and full attribute
+    /// ranges; a later unsupported head refuses before any catalog lookup.
+    pub fn deprecated_attr(
+        &self,
+        element: &NativeElement<'_, 'a>,
+        messages: &impl MessageLookup,
+    ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
+        if !core::ptr::eq(self.owner.component(), element.component()) {
+            return Err(NativeLintRefusal::ForeignElement);
+        }
+        deprecated_attr::check(element, messages)
     }
 
     /// Check exact static `style` attributes, including component attributes.

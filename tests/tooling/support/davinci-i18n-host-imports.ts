@@ -49,6 +49,9 @@ export const i18nHostImports: Record<string, readonly string[]> = {
   "crates/vize_patina/tests/native_deprecated_element/support.rs": [
     "use vize_carton::i18n::{Locale, translator};",
   ],
+  "crates/vize_patina/tests/native_deprecated_attr/support.rs": [
+    "use vize_carton::i18n::{Locale, translator};",
+  ],
   "crates/vize_patina/tests/native_inline_style/support.rs": [
     "use vize_carton::i18n::{Locale, translator};",
   ],
