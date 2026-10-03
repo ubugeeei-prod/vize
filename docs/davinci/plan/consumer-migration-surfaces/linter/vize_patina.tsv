@@ -268,7 +268,8 @@ linter	Linter	source	crates/vize_patina/src/markup/node.rs	7	old_ast	old AST/par
 linter	Linter	source	crates/vize_patina/src/markup/node.rs	7	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/markup/relief_children.rs	2	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/markup/relief_scopes.rs	15	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/markup/scope.rs	14	l2	L2	stage	vize_l2	preferred	2
+linter	Linter	source	crates/vize_patina/src/markup/scope.rs	14	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/markup/scope.rs	14	l2	L2	stage	vize_l2	preferred	3
 linter	Linter	source	crates/vize_patina/src/markup/scope.rs	14	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
 linter	Linter	source	crates/vize_patina/src/markup/scope.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/markup/source_ranges.rs	9	old_ast	old AST/parser	old	vize_relief	legacy	1

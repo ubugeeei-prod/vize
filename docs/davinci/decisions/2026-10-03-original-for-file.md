@@ -276,3 +276,12 @@ no production meaning, authority or span/fact reinterpretation, and changes no
 expected row, range, law or budget. Fresh corrected-head hosted compilation,
 new Rust law execution and strict Clippy remain required; the failed source
 never enters the protected queue.
+
+The initial tooling run independently confirms the canonical20 consumption
+census and source-length gates pass. It detects three consumer-migration shards
+stale from the actual owned closed-family source/imports: SSR/Vapor compiler
+and Patina linter inventories. Regenerate those genuine source rows using the
+unchanged observational scanner and verify its pure `--check`. This changes no
+product wiring, migration admission or baseline classification. The complexity
+tooling failure is the same corrected CFG coordinate compilation error. Fresh
+exact-head acceptance must prove both repairs; no known-red candidate is admitted.
