@@ -55,21 +55,40 @@ complete comments precede native observation. A coherent source movement
 control must reject stale within-bounds Read coordinates.
 
 All twenty-two existing positive fixtures and both upstream refusal controls
-remain byte-exact. New native code/maps are initially empty strict fields:
-zero of eight native captures is credited at consumer publication. The
-hosted owning Rust law must emit all complete observations before comparison;
-only genuine code/maps may then populate the fields after reviewed original
-roles and bindings match. Both Recorded and NoLinks use the same original
-owner; complete maps retain original source and UTF-16 anchor bounds.
+remain byte-exact. Draft #7642 initially published empty strict code/map fields
+with zero native capture credit. Exact source `d5faffbb21e7` Check 37152946836
+then produced all eight complete native observations in worker 111291304197
+before its expected first empty-code comparison failure. Every original
+owner/body identity, File Read lookup, moved query, valid linked range and
+Recorded/NoLinks check completed for all eight; manually frozen attribute,
+Read and helper vectors match every captured row. The separate genuine TSX
+and duplicate/comment refusal laws passed in the hosted Rust workers.
+
+Only genuine native code/maps populate the fields; all independent original
+sources, upstream transforms/maps/runtime and manual control facts stay
+unchanged. Nineteen complete native/upstream Vue, literal/Read UTF-16 maps,
+comments and coherent stale-map Node laws pass on those captured bytes.
+Native sources/maps grant no current-head strict Rust or protected acceptance:
+a fresh exact-source replay remains required after capture publication.
 No source prediction or upstream output supplies native authority.
+
+Review found that earlier oracle callers retain mutable host-prop objects
+between updates. Their frozen whole outputs and existing acceptance remain
+unchanged; they do not prove independent intermediate-prop snapshots. That
+historical observation is explicit remaining validation debt, without
+retroactively crediting this new snapshot path to the twenty-two old rows.
+The new opt-in path deep-retains the actual pre-mount VNode and mounted host
+result before each later update; manual intermediate prop vectors pass.
 
 Provider #7638 source `99338ec30358` passed exact-head Check 37151572595,
 including all four strict native provider laws across the four Rust workers.
-Their original worker logs are retained separately. Consumer source checks
-and native capture/strict replay are pending, followed by protected full and
+Their original worker logs are retained separately. Consumer fresh exact-head source checks
+and strict native replay are pending, followed by protected full and
 all-100 instruction/ceiling/ratchet gates and literal merges of both layers.
-Publish them as one genuine ordered GitHub native Stack, linking complete
-existing PR URLs and verifying unchanged heads and ordered membership.
+Native GitHub Stack #7643 reports positions one #7638 and two #7642; complete
+existing PR URL linking preserved both exact remote heads. The ready provider
+prefix entered the protected queue while the draft consumer captures/replays;
+its literal merge and any required child refresh remain separately tracked.
 No local Cargo/rustc/install/binary probe or manual full campaign is used.
 Entities in JSX static text, wider expression grammar, slots, TS runtime
 transformation and product/default replacement remain unfinished; no roadmap

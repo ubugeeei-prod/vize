@@ -86,8 +86,19 @@
           }
         ]
       },
-      "code": "",
-      "map": {},
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\nexport function render(){return _vize_createVNode0(\"div\", { \"id\": 0x10, \"class\": 'one\\t two', \"title\": 'A\\u0026amp;B', \"disabled\": true, \"aria-hidden\": false, \"data-null\": null }, null);}\n",
+      "map": {
+        "file": "Scalar.jsx",
+        "mappings": ";AAAA,gCAAgC,mBAAC,SAAI,MAAI,MAAM,SAAO,aAAa,SAAO,gBAAgB,YAAU,MAAM,eAAa,OAAO,aAAW,aAAO",
+        "names": [],
+        "sources": [
+          "Scalar.jsx"
+        ],
+        "sourcesContent": [
+          "export function render(){return <div id={0x10} class={'one\\t two'} title={'A\\u0026amp;B'} disabled={true} aria-hidden={false} data-null={null}/>;}\n"
+        ],
+        "version": 3
+      },
       "literals": [
         {
           "spelling": "0x10",
@@ -453,8 +464,23 @@
           }
         ]
       },
-      "code": "",
-      "map": {}
+      "code": "import { createVNode as _vize_createVNode0, createTextVNode as _vize_createTextVNode0 } from \"vue\";\nconst message=\"outer\";\nexport function render(message,visible,klass){return _vize_createVNode0(\"div\", { \"title\": message, \"id\": message, \"disabled\": visible, \"class\": klass, \"data-number\": 0 }, [_vize_createTextVNode0(\"body\")]);}\n",
+      "map": {
+        "file": "Scalar.jsx",
+        "mappings": ";AAAA;AACA,qDAAqD,mBAAC,SAAI,SAAOA,SAAS,MAAIA,SAAS,YAAUC,SAAS,SAAOC,OAAO,eAAa,6BAAG,SAAU",
+        "names": [
+          "message",
+          "visible",
+          "klass"
+        ],
+        "sources": [
+          "Scalar.jsx"
+        ],
+        "sourcesContent": [
+          "const message=\"outer\";\nexport function render(message,visible,klass){return <div title={message} id={message} disabled={visible} class={klass} data-number={0}>body</div>;}\n"
+        ],
+        "version": 3
+      }
     },
     {
       "id": "escaped-unicode-read-and-string",
@@ -574,8 +600,21 @@
           }
         ]
       },
-      "code": "",
-      "map": {}
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\n/* original module */\nexport function render(\\u6d88\\u606f){return _vize_createVNode0(\"div\", { \"title\": \\u6d88\\u606f, \"data-text\": \"\\u96ea\\uD83C\\uDF38 &amp;\\t /* not comment */\" }, null);}\n",
+      "map": {
+        "file": "Scalar.jsx",
+        "mappings": ";AAAA;AACA,4CAA4C,mBAAC,SAAI,SAAOA,cAAc,aAAW,uDAAiD",
+        "names": [
+          "消息"
+        ],
+        "sources": [
+          "Scalar.jsx"
+        ],
+        "sourcesContent": [
+          "/* original module */\nexport function render(\\u6d88\\u606f){return <div title={\\u6d88\\u606f} data-text={\"\\u96ea\\uD83C\\uDF38 &amp;\\t /* not comment */\"}/>;}\n"
+        ],
+        "version": 3
+      }
     },
     {
       "id": "multiline-original-containers",
@@ -703,8 +742,21 @@
           }
         ]
       },
-      "code": "",
-      "map": {}
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\n/* keep module */\r\nexport function render(label){return _vize_createVNode0(\"div\", { \"title\": \r\n\tlabel\r\n, \"id\":  label  }, null);}\r\n// keep tail\r\n",
+      "map": {
+        "file": "Scalar.jsx",
+        "mappings": ";AAAA;AACA,qCAAqC,mBAAC,SAAI,SAAO;AACjD,CAACA,KAAK;EACJ,MAAI;AACNA,KAAK;SACF;AACH",
+        "names": [
+          "label"
+        ],
+        "sources": [
+          "Scalar.jsx"
+        ],
+        "sourcesContent": [
+          "/* keep module */\r\nexport function render(label){return <div title={\r\n\tlabel\r\n} id={ label }/>;}\r\n// keep tail\r\n"
+        ],
+        "version": 3
+      }
     },
     {
       "id": "actual-file-helper-collisions",
@@ -851,8 +903,21 @@
           }
         ]
       },
-      "code": "",
-      "map": {}
+      "code": "import { createVNode as _vize_createVNode1, createTextVNode as _vize_createTextVNode1 } from \"vue\";\nconst _vize_createTextVNode0=11;\nexport function render(_vize_createVNode0){return _vize_createVNode1(\"div\", { \"id\": _vize_createVNode0 }, [_vize_createTextVNode1(\"text\")]);}\n",
+      "map": {
+        "file": "Scalar.jsx",
+        "mappings": ";AAAA;AACA,kDAAkD,mBAAC,SAAI,MAAIA,8CAAoB,SAAU",
+        "names": [
+          "_vize_createVNode0"
+        ],
+        "sources": [
+          "Scalar.jsx"
+        ],
+        "sourcesContent": [
+          "const _vize_createTextVNode0=11;\nexport function render(_vize_createVNode0){return <div id={_vize_createVNode0}>text</div>;}\n"
+        ],
+        "version": 3
+      }
     },
     {
       "id": "mixed-original-attributes-and-child",
@@ -1076,8 +1141,22 @@
           }
         ]
       },
-      "code": "",
-      "map": {}
+      "code": "import { createVNode as _vize_createVNode0, createTextVNode as _vize_createTextVNode0 } from \"vue\";\nexport function render(label,count){return _vize_createVNode0(\"div\", { \"id\": \"fixed\", \"title\": label, \"class\": ' spaced\\tclass ', \"disabled\": true, \"data-null\": null, \"aria-label\": \"name\" }, [_vize_createTextVNode0(\"x\"), _vize_createVNode0(\"span\", { \"data-count\": count }, null)]);}\n",
+      "map": {
+        "file": "Scalar.jsx",
+        "mappings": ";AAAA,2CAA2C,mBAAC,SAAI,MAAG,SAAQ,SAAOA,OAAO,SAAO,mBAAmB,kBAAS,aAAW,MAAM,cAAW,kCAAO,MAAC,mBAAC,UAAK,cAAYC,gBAAc",
+        "names": [
+          "label",
+          "count"
+        ],
+        "sources": [
+          "Scalar.jsx"
+        ],
+        "sourcesContent": [
+          "export function render(label,count){return <div id=\"fixed\" title={label} class={' spaced\\tclass '} disabled data-null={null} aria-label=\"name\">x<span data-count={count}/></div>;}\n"
+        ],
+        "version": 3
+      }
     },
     {
       "id": "resolved-component-attributes",
@@ -1222,8 +1301,23 @@
           }
         ]
       },
-      "code": "",
-      "map": {}
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\nimport Button from \"button\";\nexport function render(label,disabled){return _vize_createVNode0(Button, { \"title\": label, \"disabled\": disabled }, null);}\n",
+      "map": {
+        "file": "Scalar.jsx",
+        "mappings": ";AAAA;AACA,8CAA8C,mBAACA,UAAO,SAAOC,OAAO,YAAUC,iBAAW",
+        "names": [
+          "Button",
+          "label",
+          "disabled"
+        ],
+        "sources": [
+          "Scalar.jsx"
+        ],
+        "sourcesContent": [
+          "import Button from \"button\";\nexport function render(label,disabled){return <Button title={label} disabled={disabled}/>;}\n"
+        ],
+        "version": 3
+      }
     },
     {
       "id": "original-module-read-attribute",
@@ -1329,8 +1423,21 @@
           }
         ]
       },
-      "code": "",
-      "map": {}
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\nconst x = 1; const view = _vize_createVNode0(\"div\", { \"id\": x }, null);\nexport function render(){return view;}\n",
+      "map": {
+        "file": "Scalar.jsx",
+        "mappings": ";AAAA,0BAA0B,mBAAC,SAAI,MAAIA,UAAI;AACvC",
+        "names": [
+          "x"
+        ],
+        "sources": [
+          "Scalar.jsx"
+        ],
+        "sourcesContent": [
+          "const x = 1; const view = <div id={x}/>;\nexport function render(){return view;}\n"
+        ],
+        "version": 3
+      }
     }
   ]
 }
