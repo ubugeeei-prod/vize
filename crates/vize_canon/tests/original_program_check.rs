@@ -113,6 +113,10 @@ fn real_configured_original_programs_preserve_complete_diagnostics_and_source() 
             vize_l0::cstr!("file://{}", source_path.canonicalize().unwrap().display())
         );
         assert_eq!(result.source_digest().len(), 64);
+        assert_eq!(
+            result.diagnostic_configuration_path(),
+            root.path().join("tsconfig.json").canonicalize().unwrap()
+        );
         let DocumentDiagnosticReportResult::Report(DocumentDiagnosticReport::Full(report)) =
             result.report()
         else {
@@ -278,6 +282,10 @@ fn actual_project_membership_inherited_options_and_relative_imports_are_retained
     let revised =
         block_on(bridge.check_original_program(&original, &root.path().join("source.ts"))).unwrap();
     assert_eq!(revised.configuration().options["strict"], true);
+    assert_eq!(
+        revised.diagnostic_configuration_path(),
+        root.path().join("tsconfig.json").canonicalize().unwrap()
+    );
     let report = serde_json::to_value(revised.report()).unwrap();
     assert_eq!(report["items"].as_array().unwrap().len(), 1);
     assert_eq!(report["items"][0]["code"], 18047);

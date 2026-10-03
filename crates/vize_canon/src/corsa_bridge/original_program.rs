@@ -58,6 +58,7 @@ pub struct OriginalProgramCheck<'file, 'arena> {
     source_digest: String,
     report: DocumentDiagnosticReportResult,
     configuration: corsa::api::ConfigResponse,
+    diagnostic_configuration_path: PathBuf,
     authored_spans: Vec<Result<Span, MappingError>>,
 }
 
@@ -92,6 +93,11 @@ impl<'file, 'arena> OriginalProgramCheck<'file, 'arena> {
     #[must_use]
     pub fn configuration(&self) -> &corsa::api::ConfigResponse {
         &self.configuration
+    }
+    /// Absolute configured project attested by the process returning diagnostics.
+    #[must_use]
+    pub fn diagnostic_configuration_path(&self) -> &Path {
+        &self.diagnostic_configuration_path
     }
 }
 
@@ -186,23 +192,29 @@ impl CorsaBridge {
             .collect::<String>();
         let checked_path = source_path.clone();
         let checked_source = String::from(original);
-        let (report, effective_configuration) = self
+        let checked_config = config.clone();
+        let checked_configuration = configuration.clone();
+        let (report, effective_configuration, diagnostic_configuration_path) = self
             .with_client(move |client| {
                 // Bind the source again after entering the worker, so a
                 // queued request cannot open a stale disk revision unnoticed.
                 Ok((|| {
                     verify_source(&checked_path, &checked_source)?;
-                    if std::fs::read(&config).ok().as_deref() != Some(configuration.as_slice()) {
+                    if std::fs::read(&checked_config).ok().as_deref()
+                        != Some(checked_configuration.as_slice())
+                    {
                         return Err(OriginalProgramError::ConfigurationChanged);
                     }
                     let report = client.original_program_diagnostics(
                         &uri,
                         &projected,
-                        &config,
+                        &checked_config,
                         needs_forced_module,
                     )?;
                     verify_source(&checked_path, &checked_source)?;
-                    if std::fs::read(&config).ok().as_deref() != Some(configuration.as_slice()) {
+                    if std::fs::read(&checked_config).ok().as_deref()
+                        != Some(checked_configuration.as_slice())
+                    {
                         return Err(OriginalProgramError::ConfigurationChanged);
                     }
                     Ok(report)
@@ -211,6 +223,9 @@ impl CorsaBridge {
             .await
             .map_err(OriginalProgramError::Backend)??;
         verify_source(&source_path, original)?;
+        if std::fs::read(&config).ok().as_deref() != Some(configuration.as_slice()) {
+            return Err(OriginalProgramError::ConfigurationChanged);
+        }
         let DocumentDiagnosticReportResult::Report(DocumentDiagnosticReport::Full(full)) = &report
         else {
             return Err(OriginalProgramError::IncompleteDiagnosticReport);
@@ -228,6 +243,7 @@ impl CorsaBridge {
             source_digest,
             report,
             configuration: effective_configuration,
+            diagnostic_configuration_path,
             authored_spans,
         })
     }

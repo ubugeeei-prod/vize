@@ -1,13 +1,13 @@
 //! Read-only authored-file overlays, bypassing virtual project materialization.
 
-use super::{CorsaProjectClient, EditorLspSession};
+use super::{CorsaProjectClient, EditorLspSession, project_identity::ProjectIdentityError};
 use crate::corsa_bridge::{CorsaBridgeError, OriginalProgramError};
 use corsa::{
     api::{ConfigResponse, FileChanges},
     runtime::block_on,
 };
 use lsp_types::DocumentDiagnosticReportResult;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use vize_l0::cstr;
 
 impl CorsaProjectClient {
@@ -17,7 +17,8 @@ impl CorsaProjectClient {
         projected: &str,
         config: &Path,
         needs_forced_module: bool,
-    ) -> Result<(DocumentDiagnosticReportResult, ConfigResponse), OriginalProgramError> {
+    ) -> Result<(DocumentDiagnosticReportResult, ConfigResponse, PathBuf), OriginalProgramError>
+    {
         let backend =
             |error| OriginalProgramError::Backend(CorsaBridgeError::CommunicationError(error));
         if self.materialized_project_session || self.document_texts.contains_key(uri) {
@@ -68,15 +69,33 @@ impl CorsaProjectClient {
             EditorLspSession::spawn(self.executable.as_str(), &self.cwd, &self.project_root)
                 .map_err(backend)?;
         let result = (|| {
-            session.mirror(uri, projected)?;
-            session.diagnostics(uri)
+            session.mirror(uri, projected).map_err(backend)?;
+            let configuration = |session: &mut EditorLspSession| {
+                session
+                    .diagnosing_configuration(uri)
+                    .map_err(|error| match error {
+                        ProjectIdentityError::Communication(error) => backend(error),
+                        ProjectIdentityError::Unconfigured => {
+                            OriginalProgramError::UnconfiguredSource
+                        }
+                    })
+            };
+            let diagnosing_config = configuration(&mut session)?;
+            if diagnosing_config != config {
+                return Err(OriginalProgramError::UnconfiguredSource);
+            }
+            let report = session.diagnostics(uri).map_err(backend)?;
+            if configuration(&mut session)? != diagnosing_config {
+                return Err(OriginalProgramError::UnconfiguredSource);
+            }
+            Ok((report, effective, diagnosing_config))
         })();
         // Graceful shutdown closes/reaps every overlay even after a failed
         // request. The bridge worker continues this cleanup after a timeout.
-        let cleanup = session.shutdown();
+        let cleanup = session.shutdown().map_err(backend);
         match (result, cleanup) {
-            (Ok(report), Ok(())) => Ok((report, effective)),
-            (Err(error), _) | (_, Err(error)) => Err(backend(error)),
+            (Ok(report), Ok(())) => Ok(report),
+            (Err(error), _) | (_, Err(error)) => Err(error),
         }
     }
 }

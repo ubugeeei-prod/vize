@@ -98,6 +98,86 @@ fn failed_and_timed_out_original_overlays_are_reaped_without_source_writes() {
     }
 }
 
+#[test]
+fn diagnosing_project_and_configuration_changes_refuse_and_reap_real_overlays() {
+    use std::os::unix::fs::PermissionsExt;
+    for nested in [true, false] {
+        let root = tempfile::TempDir::new().unwrap();
+        drop(project(root.path(), true));
+        let config = root.path().join("tsconfig.json");
+        let configuration = std::fs::read(&config).unwrap();
+        let subdirectory = root.path().join("nested");
+        std::fs::create_dir(&subdirectory).unwrap();
+        let path = subdirectory.join("source.mjs");
+        let source = "const value=1; value.missing;";
+        std::fs::write(&path, source).unwrap();
+        let pid_path = root.path().join("overlay.pid");
+        let wrapper = root.path().join("tsc");
+        // Root membership and the front-end nested-config check run before
+        // the independent diagnosing process starts. Only this real process
+        // startup changes its configured project or the root's source bytes.
+        let mutation = if nested {
+            cstr!(
+                "printf '%s' '{{\"compilerOptions\":{{\"allowJs\":true,\"checkJs\":true,\"types\":[],\"noEmit\":true}}}}' > {}",
+                shell_quote(&subdirectory.join("tsconfig.json"))
+            )
+        } else {
+            cstr!("echo ' ' >> {}", shell_quote(&config))
+        };
+        let script = cstr!(
+            "#!/bin/sh\nif [ \"$1\" = \"--lsp\" ]; then\n  echo \"$$\" > {}\n  {}\nfi\nexec {} \"$@\"\n",
+            shell_quote(&pid_path),
+            mutation,
+            shell_quote(&backend())
+        );
+        std::fs::write(&wrapper, script).unwrap();
+        std::fs::set_permissions(&wrapper, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
+            corsa_path: Some(wrapper),
+            working_dir: Some(root.path().to_path_buf()),
+            timeout_ms: 30000,
+            ..Default::default()
+        });
+        block_on(bridge.spawn()).unwrap();
+        let arena = Allocator::default();
+        let original = file(&arena, source, Lang::Js);
+        assert!(original.is_complete(), "{:?}", original.issues());
+        let result = block_on(bridge.check_original_program(&original, &path));
+        if nested {
+            assert!(matches!(
+                result,
+                Err(OriginalProgramError::UnconfiguredSource)
+            ));
+            assert_eq!(std::fs::read(&config).unwrap(), configuration);
+        } else {
+            assert!(matches!(
+                result,
+                Err(OriginalProgramError::ConfigurationChanged)
+            ));
+            assert_ne!(std::fs::read(&config).unwrap(), configuration);
+        }
+        let pid: i32 = std::fs::read_to_string(&pid_path)
+            .unwrap()
+            .trim()
+            .parse()
+            .unwrap();
+        let started = Instant::now();
+        loop {
+            // SAFETY: signal zero only observes this owned exec child's PID.
+            if unsafe { libc::kill(pid, 0) } != 0 {
+                break;
+            }
+            assert!(
+                started.elapsed() < Duration::from_secs(10),
+                "overlay not reaped"
+            );
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        block_on(bridge.shutdown()).unwrap();
+        assert_eq!(std::fs::read(&path).unwrap(), source.as_bytes());
+    }
+}
+
 fn backend() -> std::path::PathBuf {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

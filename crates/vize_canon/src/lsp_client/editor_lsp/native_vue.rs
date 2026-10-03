@@ -1,6 +1,6 @@
 //! The actual configured checker owns virtual membership; no tsconfig is rewritten.
 
-use super::{CorsaProjectClient, EditorLspSession};
+use super::{CorsaProjectClient, EditorLspSession, project_identity::ProjectIdentityError};
 use crate::corsa_bridge::{CorsaBridgeError, NativeVueError};
 use corsa::{
     api::{ApiMode, ApiSpawnConfig, ConfigResponse, ProjectResponse, ProjectSession},
@@ -11,7 +11,6 @@ use std::{path::Path, sync::Arc};
 use vize_l0::cstr;
 
 mod filesystem;
-mod project;
 
 impl CorsaProjectClient {
     pub(crate) fn native_vue_diagnostics(
@@ -80,12 +79,22 @@ impl CorsaProjectClient {
                     .map_err(backend)?;
             let report = (|| {
                 editor.mirror(uri, text).map_err(backend)?;
-                let diagnosing_config = editor.native_vue_configuration(uri)?;
+                let configuration = |editor: &mut EditorLspSession| {
+                    editor
+                        .diagnosing_configuration(uri)
+                        .map_err(|error| match error {
+                            ProjectIdentityError::Communication(error) => backend(error),
+                            ProjectIdentityError::Unconfigured => {
+                                NativeVueError::UnconfiguredProjection
+                            }
+                        })
+                };
+                let diagnosing_config = configuration(&mut editor)?;
                 if diagnosing_config != config {
                     return Err(NativeVueError::UnconfiguredProjection);
                 }
                 let report = editor.diagnostics(uri).map_err(backend)?;
-                if editor.native_vue_configuration(uri)? != diagnosing_config {
+                if configuration(&mut editor)? != diagnosing_config {
                     return Err(NativeVueError::UnconfiguredProjection);
                 }
                 Ok((report, effective, project, diagnosing_config))
