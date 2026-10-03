@@ -29,8 +29,9 @@ Nine plans cover those five scripts and shared/false/object/inherited public
 configuration. Actual `defineConfig`, metadata factory and public
 `resolveConfigExport` run normally. Store every own public object property,
 including undefined values, symbol keys, descriptors and the config callable's
-full source. Unsupported object/accessor/callable shapes refuse; no arbitrary
-JavaScript value is claimed to survive the subsequent JSON transport.
+full source. Authentic accessor descriptors retain flags and actual getter/setter
+source and callable metadata without invoking them. Unsupported object/callable
+shapes refuse; no arbitrary JavaScript value is claimed to survive JSON transport.
 
 Whole independently authored expected native and ordinary Vite+ objects detect
 extra, omitted and changed values. The independent resolution uses the same
@@ -103,3 +104,39 @@ Artifact 11286253467 and complete failed logs remain source-scoped; there is no
 acceptance remain required. The separate terminal #7630/#7634 receipts are
 recorded in their companions and central record without transferring runtime
 credit to this new consumer.
+
+## Complete public inheritance compatibility custody
+
+The complete source `592e0185` packet from artifact 11286319259 is 2,024,387
+bytes, SHA256 `9284ab55c7519e8be89aa7c64b0dabb472e3983ed9a365e0389e663813fa5e44`.
+Its actual checkout is `6c9c9dfdd8357d4c49f8a4f3bdf90abb45210a11`. All eight
+non-inheritance plans match twenty-four actual CLI calls, complete temporary
+JSON/streams/files, the loaded source-built addon and cleanup. The ninth plan
+refuses during public-object capture, with zero CLI calls; no output mismatch
+or all-twenty-seven acceptance follows. Preserve the complete failed packet.
+
+Independent primary-source review identifies the first getter path as
+`server.hmr.protocol`, then host, port, clientPort, path, timeout and server.
+The actual Vite+ 0.2.9 lock snapshot depends on core 0.2.9 independently of its
+Vitest core-0.1.24 peer. That core's real server merge adds `ws: {}` and seven
+enumerable/configurable HMR getters/setters. The old observer stopped before
+retaining the actual descriptor path, so fresh capture must confirm that exact
+shape. No getter is invoked to create a copied expected value.
+
+Preserve all original authored data values and native expected objects. Add a
+separate public compatibility descriptor reference, independently read from the
+pinned core source. Qualify the actual core manifest/version/lock snapshot,
+entry bytes, complete module hash and original compatibility span, and verify
+its exported merge function is the same public function. The expected getter
+and setter source, names, arities and property flags are authored from that
+source, never generated from captured configuration output.
+
+Schema 2 records complete noninvoked data/accessor descriptors and original
+callable references. It compares complete public descriptor snapshots and
+retains actual/expected metadata/native objects; each original public object
+and callable must retain identity after normal resolution and every real CLI
+call. Normal production resolution operates on the unchanged original object.
+Keep all comparisons and process frames in the durable whole artifact; console
+failure output names only failed plans and its packet path, avoiding huge
+assertion replay through the pinned cached reporter. Fresh source Actions,
+all-twenty-seven calls and protected acceptance remain pending.

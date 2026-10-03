@@ -10,6 +10,14 @@ import {
   validateNativeHistoryBuild,
 } from "../../npm/native/scripts/formatter-history-build.mjs";
 import { viteConfigurationPlans, originalViteSources } from "./formatter-vite-source.mjs";
+import {
+  qualifyPublicCore,
+  expectedPublic,
+  observePublic,
+  publicStrings,
+  publicIdentity,
+  assertMetadata,
+} from "./formatter-vite-public.mjs";
 
 import {
   completeConfig,
@@ -57,7 +65,7 @@ export async function runPublicViteFormatter(root) {
   const env = { command: "fmt", mode: "production" };
   const report = {
     schema: "vize.public-vite-formatter-result",
-    version: 1,
+    version: 2,
     buildReceipt: receipt,
     preparation: custody.preparation,
     originalViteSources,
@@ -96,6 +104,7 @@ export async function runPublicViteFormatter(root) {
     try {
       process.chdir(workspace);
       row.consumerPeer = qualifiedConsumerPeer(root, workspace, require, rootRequire, lock);
+      report.publicCore ??= qualifyPublicCore(row.consumerPeer, lock);
       fs.writeFileSync("UserCard.vue", fixture.input);
       row.initialFiles = snapshot(workspace);
       const source = structuredClone(fixture.source);
@@ -114,28 +123,27 @@ export async function runPublicViteFormatter(root) {
         source,
         fixture.integration,
       )({ command: "build", mode: "production" });
-      row.publicConfig = completeConfig(vp);
+      const originalPublic = observePublic(vp);
+      row.publicConfig = originalPublic.snapshot;
+      row.publicComparison = {
+        actual: publicStrings(row.publicConfig),
+        expected: expectedPublic(fixture),
+      };
+      persist();
       const metadata = vp[taskConfigKey];
-      const ordinary = Object.fromEntries(Object.entries(vp));
-      assert.deepEqual(ordinary, fixture.public);
+      assert.deepEqual(row.publicComparison.actual, row.publicComparison.expected);
       assert.deepEqual(
         Reflect.ownKeys(vp).filter((key) => typeof key === "symbol"),
         [taskConfigKey],
       );
-      assert.deepEqual(
-        { ...metadata, config: undefined },
-        {
-          config: undefined,
-          options: fixture.options,
-          lintTypecheck: false,
-          lintLocale: undefined,
-          lintHelpLevel: undefined,
-          fmtIgnorePatterns: undefined,
-        },
-      );
-      assert.equal(typeof metadata.config, "function");
+      assertMetadata(metadata, fixture, row);
       const resolved = await resolveConfigExport(metadata.config, env);
-      row.independentResolution = { env, config: completeConfig(resolved) };
+      row.independentResolution = {
+        env,
+        config: completeConfig(resolved),
+        expected: completeConfig(fixture.native),
+      };
+      row.publicAfterResolution = publicIdentity(vp, originalPublic);
       assert.deepEqual(resolved, fixture.native);
       const transported = JSON.stringify(relocateTaskConfig(resolved, workspace));
       const oracle = await reference.format("control.ts", fixture.script, fixture.formatter);
@@ -298,6 +306,8 @@ export async function runPublicViteFormatter(root) {
           ),
         );
         assert.deepEqual(pass.outputFiles, index === 0 ? row.initialFiles : row.expectedFiles);
+        pass.publicAfterCall = publicIdentity(vp, originalPublic);
+        persist();
       }
       row.state = "matched-reference";
     } catch (error) {
@@ -325,7 +335,10 @@ export async function runPublicViteFormatter(root) {
   assert.equal(
     report.rows.filter(({ state }) => state === "failed").length,
     0,
-    JSON.stringify(report.rows),
+    `Failed plans: ${report.rows
+      .filter(({ state }) => state === "failed")
+      .map(({ id }) => id)
+      .join(", ")}; complete public/comparison/process packet: ${reportPath}`,
   );
   assert.equal(
     report.rows.reduce((count, row) => count + row.passes.length, 0),

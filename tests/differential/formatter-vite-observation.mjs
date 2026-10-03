@@ -9,9 +9,10 @@ import { requirePreparedNative } from "../../npm/builder/vite/scripts/run-tests.
 
 // Preserve undefined, symbols and the actual callable config source. This is
 // object custody, not a claim that arbitrary JS values survive JSON transport.
-export function completeConfig(value) {
+export function completeConfig(value, functions, location = []) {
   if (value === undefined) return { type: "undefined" };
   if (typeof value === "function") {
+    functions?.push({ path: location, value });
     assert.deepEqual(
       Reflect.ownKeys(value),
       ["length", "name"],
@@ -27,25 +28,34 @@ export function completeConfig(value) {
     };
   }
   if (value === null || typeof value !== "object") return { type: typeof value, value };
-  if (Array.isArray(value)) return { type: "array", values: value.map(completeConfig) };
+  if (Array.isArray(value))
+    return {
+      type: "array",
+      values: value.map((item, index) => completeConfig(item, functions, [...location, index])),
+    };
   assert.equal(Object.getPrototypeOf(value), Object.prototype, "unsupported public config value");
   return {
     type: "object",
     properties: Reflect.ownKeys(value).map((key) => {
       const descriptor = Object.getOwnPropertyDescriptor(value, key);
-      assert(
-        Object.hasOwn(descriptor, "value"),
-        "public config accessor is not observed by calling it",
-      );
+      const savedKey =
+        typeof key === "symbol"
+          ? { symbol: key.description ?? null, global: Symbol.keyFor(key) ?? null }
+          : key;
       return {
-        key:
-          typeof key === "symbol"
-            ? { symbol: key.description ?? null, global: Symbol.keyFor(key) ?? null }
-            : key,
+        key: savedKey,
         enumerable: descriptor.enumerable,
         configurable: descriptor.configurable,
-        writable: descriptor.writable,
-        value: completeConfig(descriptor.value),
+        ...(Object.hasOwn(descriptor, "value")
+          ? {
+              writable: descriptor.writable,
+              value: completeConfig(descriptor.value, functions, [...location, savedKey]),
+            }
+          : {
+              kind: "accessor",
+              get: completeConfig(descriptor.get, functions, [...location, savedKey, "get"]),
+              set: completeConfig(descriptor.set, functions, [...location, savedKey, "set"]),
+            }),
       };
     }),
   };

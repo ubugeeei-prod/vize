@@ -8,6 +8,12 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { completeConfig, qualifyReference } from "../differential/formatter-vite-observation.mjs";
 import {
+  observePublic,
+  publicIdentity,
+  expectedPublic,
+  publicCoreReference,
+} from "../differential/formatter-vite-public.mjs";
+import {
   originalViteInputs,
   originalViteSources,
   viteConfigurationPlans,
@@ -49,6 +55,23 @@ void test("Vite history pins all original vectors while adding nine distinct who
     assert.equal(plans[index].input, `<script setup lang="ts">\n${script}</script>\n`);
     assert.deepEqual(plans[index].source, { fmt: { sortImports: setting } });
   }
+  const inherited = plans.at(-1);
+  assert.deepEqual(inherited.public.server, { port: 4321, host: true });
+  const server = expectedPublic(inherited).properties.find(({ key }) => key === "server").value;
+  assert.deepEqual(
+    server.properties.map(({ key }) => key),
+    ["port", "ws", "hmr", "host"],
+  );
+  const hmr = server.properties.find(({ key }) => key === "hmr").value;
+  assert.deepEqual(
+    hmr.properties.map(({ key }) => key),
+    publicCoreReference.keys,
+  );
+  for (const descriptor of hmr.properties) {
+    assert.equal(descriptor.kind, "accessor");
+    assert.equal(descriptor.get.source, publicCoreReference.getter);
+    assert.equal(descriptor.set.source, publicCoreReference.setter);
+  }
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vite-source-control-"));
   try {
     for (const file of Object.keys(originalViteSources)) {
@@ -65,7 +88,7 @@ void test("Vite history pins all original vectors while adding nine distinct who
   }
 });
 
-void test("complete config custody keeps undefined, symbol keys and callable source; unproved values refuse", () => {
+void test("complete config custody keeps undefined, symbols and noninvoked accessor identity; unproved values refuse", () => {
   const config = async (env) => ({ formatter: { singleQuote: env.command === "fmt" } });
   const symbol = Symbol("tasks");
   const observed = completeConfig({ absent: undefined, [symbol]: { config } });
@@ -75,15 +98,19 @@ void test("complete config custody keeps undefined, symbol keys and callable sou
   assert.equal(observed.properties[1].value.properties[0].value.source, config.toString());
   assert.notDeepEqual(completeConfig({}), completeConfig({ absent: undefined }));
   assert.notDeepEqual(completeConfig({ tasks: 1 }), completeConfig({ [symbol]: 1 }));
-  assert.throws(
-    () =>
-      completeConfig({
-        get value() {
-          throw new Error("must not run");
-        },
-      }),
-    /accessor/,
-  );
+  let accessorCalls = 0;
+  const guarded = {
+    get value() {
+      accessorCalls++;
+      throw new Error("must not run");
+    },
+  };
+  const before = observePublic(guarded);
+  assert.equal(before.snapshot.properties[0].kind, "accessor");
+  assert.deepEqual(before.snapshot.properties[0].set, { type: "undefined" });
+  assert.equal(before.functions[0].value, Object.getOwnPropertyDescriptor(guarded, "value").get);
+  assert.equal(publicIdentity(guarded, before).functions[0].sameFunction, true);
+  assert.equal(accessorCalls, 0);
   assert.throws(() => completeConfig({ pattern: /vue/ }), /unsupported public config value/);
   config.extra = true;
   assert.throws(() => completeConfig(config), /unsupported callable/);
