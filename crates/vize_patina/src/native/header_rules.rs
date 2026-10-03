@@ -11,7 +11,7 @@ use super::{
     NativeLintRefusal, attribute, header,
 };
 
-fn inspect(
+pub(super) fn inspect(
     element: &NativeElement<'_, '_>,
     mut visit: impl FnMut(header::Binding<'_>),
 ) -> Result<(NativeLintTagKind, Span), NativeLintRefusal> {

@@ -12,6 +12,7 @@ use vize_l1::markup::{NativeElement, NativeLintTagRefusal, NativeTemplateCompone
 
 mod aria_unsupported_elements;
 mod attribute;
+mod deprecated_element;
 mod header;
 pub mod header_facts;
 mod header_rules;
@@ -33,6 +34,7 @@ pub const NO_ACCESS_KEY_RULE: &str = "a11y/no-access-key";
 pub const NO_DISTRACTING_ELEMENTS_RULE: &str = "a11y/no-distracting-elements";
 
 pub const ARIA_UNSUPPORTED_ELEMENTS_RULE: &str = "a11y/aria-unsupported-elements";
+pub const DEPRECATED_ELEMENT_RULE: &str = "html/deprecated-element";
 
 pub use aria_unsupported_elements::NativeAriaLintError;
 
@@ -215,5 +217,19 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
             return Err(NativeLintRefusal::ForeignElement);
         }
         header_rules::no_distracting_elements(element, messages)
+    }
+
+    /// Check exact authored obsolete tag spellings with original opening ranges.
+    /// Every original header is strictly admitted before component exemption or
+    /// catalog lookup. This opt-in rule does not evaluate values or inspect body.
+    pub fn deprecated_element(
+        &self,
+        element: &NativeElement<'_, 'a>,
+        messages: &impl MessageLookup,
+    ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
+        if !core::ptr::eq(self.owner.component(), element.component()) {
+            return Err(NativeLintRefusal::ForeignElement);
+        }
+        deprecated_element::check(element, messages)
     }
 }
