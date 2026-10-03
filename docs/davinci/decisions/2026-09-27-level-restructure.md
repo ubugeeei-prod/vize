@@ -222,6 +222,8 @@ Required T1 captures reuse actual production checks with atomic packs and four-w
 
 The [original Vue setup/interpolation projection](./2026-10-03-native-vue-type-projection.md) borrows the genuine complete `NativeSfc` and its original descriptor, selected setup Program, Component, retained expression observations and sole File. Exact setup bytes and original decoded interpolation reads are emitted in one canonical L4 traversal, with real AST/scope/binding joins and all original embeds accounted for. Existing decode segments supply complete authored links; diagnostic mapping uses their original covering projector for indivisible entities and rejects invalid UTF-16 or generated boundaries. Setup-only complete JS/TS Programs and static native template owners are supported; mixed/ordinary scripts, styles, attached bindings, controls and components remain typed refusals. This does not broaden compiler eligibility or add parsing, a semantic walk, context shims or legacy output. The configured Canon projected-source consumer, full diagnostics, source-built Actions, protected queue and terminal merge remain separate requirements; #6849/#6879 and default replacement remain unfinished.
 
+The projection also refuses the original `search` element in that same emission event because pinned Vue 3.5.35 classifies it as a component while neutral HTML membership classifies it as an element. This bounded negative check adds no classifier copy or semantic walk and grants no general versioned tag-role authority; that provider remains unfinished.
+
 ## Legacy deletion criteria
 
 See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria),

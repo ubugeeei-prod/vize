@@ -200,6 +200,10 @@ fn completed_owners_refuse_unchecked_sfc_type_families_without_losing_observatio
             "<template><div :title='value'>{{value}}</div></template><script setup>const value=1;</script>",
             VueProjectionError::UnsupportedTemplate,
         ),
+        (
+            "<template><search>{{1}}</search></template>",
+            VueProjectionError::UnsupportedTemplate,
+        ),
     ] {
         let arena = Allocator::default();
         let observed = lower_sfc_native(&arena, source, options());

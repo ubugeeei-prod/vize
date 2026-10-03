@@ -201,7 +201,11 @@ fn project<'o, 'a, L: LinkSink>(
             }
             result = (|| {
                 let interpolation = match node {
-                    NodeRef::Op(Op::Text(_) | Op::Comment(_) | Op::Element(_)) => return Ok(()),
+                    NodeRef::Op(Op::Text(_) | Op::Comment(_)) => return Ok(()),
+                    // Neutral HTML membership is not Vue's versioned tag role.
+                    // The pinned Vue 3 reference treats this original tag as a
+                    // component; never omit its unfinished component typing.
+                    NodeRef::Op(Op::Element(element)) if element.tag != "search" => return Ok(()),
                     NodeRef::Op(Op::Interpolation(interpolation)) => interpolation,
                     _ => return Err(VueProjectionError::UnsupportedTemplate),
                 };

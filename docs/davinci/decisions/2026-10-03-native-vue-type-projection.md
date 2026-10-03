@@ -21,7 +21,10 @@ it neither broadens that compiler flag nor asserts primitive-only syntax.
 Ordinary scripts and ordinary/setup mixtures are refused because their distinct
 original scopes cannot be faithfully concatenated. Styles, attached bindings,
 components, slots and structured controls are refused until their type
-semantics are complete. Source families refused by the original native SFC
+semantics are complete. The original `search` element is also refused in this
+same emission event: neutral HTML membership differs from the pinned Vue
+3.5.35 component role. This bounded negative check is not a general versioned
+tag-role provider; broader role authority remains unfinished. Source families refused by the original native SFC
 provider, including typed declarations and terminal line-comment interpolations,
 remain refused with their original observations retained.
 
