@@ -50,9 +50,33 @@ hosted Rust fixture comparisons remain required; no assertion is weakened.
 
 ## Remaining work
 
-Whole-module native/reference fixture agreement and fresh exact-head Actions
-remain required before this draft becomes ready. The protected merge queue
-must retain all full-suite and instruction gates, with actual provider
-ancestry and actual merge tracked separately. TS erasure, compound JSX
+Exact source `df1b478a` Check 37119522963 passed the complete hosted native
+fixture comparisons. The original four-layer provider prefix actually merged
+through the protected queue on 2026-10-03 at 12:23:43–44 UTC: #7486, #7503,
+#7519 and #7538, ending at `1b9fce90998e`. Their exact queue Checks
+37121082567, 37121083060, 37121084065 and 37121891628 passed, including the
+unchanged instruction gate. GitHub rebased this remaining child to `2b05244a`
+on that actual main and retargeted its base to main; all nine reviewed
+production/test/reference/fixture payload files remain byte-identical.
+
+Fresh exact-head Actions and protected queue acceptance remain required for
+this child after the provider merge. TS erasure, compound JSX
 containers, wider JSX attributes/slots/grammar and legacy product routing
 remain unfinished.
+
+## Scoped queue recovery
+
+Appending this child to an already queued prefix produced a null-candidate
+UNMERGEABLE entry with add/add conflicts against the squashed prospective
+parent tree. The child must stay out of the queue until the real parent lands.
+The public `dequeuePullRequest` mutation instead looked for its parent branch
+queue and failed. Draft conversion did not clear the entry, and the native
+Stack refused a temporary base-main edit while the child remained stacked.
+
+Closing and immediately reopening only draft #7561 cleared its queue entry.
+The before/after GraphQL observations retained Stack #7504's five ordered
+entries, all five source heads and the four healthy queue candidate identities.
+No healthy prefix was dequeued or unstacked; no source or branch was deleted.
+After the actual prefix merge, inspect and adopt GitHub's rebased child head
+before any guarded publication. This is an observed metadata recovery for
+this native Stack API limitation, never a substitute for fresh required checks.
