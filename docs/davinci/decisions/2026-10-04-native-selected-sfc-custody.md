@@ -46,7 +46,12 @@ Check 37151355421: five laws and the docs pass; the late-header oracle fails
 because actual `v-if` is refused by the original Component preflight before
 any handler visit. Correct only that fixture to the existing proven `:id`
 late-header family; production admission/ownership stays unchanged. That head
-was never queued, and corrected exact-head acceptance remains required.
+was never queued. Corrected source `5d253487` passes exact Check 37152017926:
+all six laws execute once and all three privacy docs pass. Fresh live queue
+tail `329d0776` conflicts only in the central decision paragraph; preserve
+every admitted incoming decision plus this provider in one canonical docs
+union, with production byte-identical and fresh exact-head Actions required
+before queue admission. No known-conflicting entry is admitted.
 
 DOM whole-SFC component assembly and pinned complete module/map/runtime laws
 are a dependent next slice. SSR/Vapor may consume this same lower custody through
