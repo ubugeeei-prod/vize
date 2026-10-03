@@ -41,7 +41,7 @@ is added.
 
 ## Validation and remaining work
 
-Fourteen authored laws compare complete standalone registered SFC results in
+Fifteen current authored laws compare complete standalone registered SFC results in
 English, Japanese and Chinese, including filename, error/warning counts, every
 unfiltered parser/product diagnostic, message, range, full Help, labels and fix.
 They retain exact static/Bind/Prop/modifier names, opaque/empty/entity values,
@@ -69,3 +69,12 @@ Operational follow-through also retires only this lane's verified actual-merged,
 clean/inactive iframe and tabindex worktrees through `wt --no-delete-branch
 --no-hooks --foreground`; branches and tracked raw receipts/goldens remain
 preserved, with no ignored/untracked files or active cwd processes removed.
+
+The initial whole Check 37125788038 at exact source 6df970dcb7 passed all 14
+then-current Error laws and all 13 genuine provider laws, together with every
+unchanged warning/tag law. Four Rust shards passed 14,394 tests. An additional
+complete three-locale law now retains actual SVG/MathML namespaces, HTML
+integration points and opaque static/bound is attributes. Read-only original
+parser classification confirms these heads do not alter the default authored
+lint predicate. The new input and all preceding full comparisons require fresh
+hosted execution; no production admission changes are made.

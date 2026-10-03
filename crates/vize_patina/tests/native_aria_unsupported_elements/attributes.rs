@@ -105,3 +105,29 @@ fn empty_prefix_attributes_and_opaque_values_are_preserved_exactly() {
         );
     }
 }
+
+#[test]
+fn original_foreign_namespaces_integration_points_and_is_heads_keep_authored_predicates() {
+    let source = "<template><svg><meta role='svg' /><foreignObject><meta aria-hidden='html' is='vue:Foo' :is='view' /></foreignObject></svg><math><meta :role='math' /><annotation-xml encoding='text/html'><meta .aria-label='annotation' /></annotation-xml></math></template>";
+    for locale in LOCALES {
+        assert_eq!(
+            parity(source, locale),
+            expected(vec![
+                error(locale, span(source, "role='svg'"), "meta", "role"),
+                error(
+                    locale,
+                    span(source, "aria-hidden='html'"),
+                    "meta",
+                    "aria-hidden"
+                ),
+                error(locale, span(source, ":role='math'"), "meta", "role"),
+                error(
+                    locale,
+                    span(source, ".aria-label='annotation'"),
+                    "meta",
+                    "aria-label"
+                ),
+            ])
+        );
+    }
+}
