@@ -35,7 +35,11 @@ L0700/AST068/Span816/Shared parser ABI; current L1 source is equal to accepted f
 Whole L2 has 56 unit laws, unchanged exposure has 17, the new target has seven
 and whole L2 rustdoc includes carrier construction, clone and original-owner
 borrow privacy laws. Production and the complete
-new target pass Clippy all plus the 13 strict denial rules. Existing exposure
+new target pass Clippy all plus the 13 strict denial rules. A subsequent test-only
+child replaces its std string/format helpers with L0 String/cstr and repeats the
+seven laws and strict production/target checks with the restored root Clippy
+configuration. Original inputs, assertions and production bytes are unchanged.
+Existing exposure
 fixture strict failures are retained; they are not waived or credited as green.
 The first custom allocation invocation used the wrong libtest harness and ran
 zero cases; only the subsequent literal named workers count. Their unchanged

@@ -1,19 +1,19 @@
 macro_rules! require {
     ($condition:expr, $($message:tt)+) => {
         if !$condition {
-            return Err(format!($($message)+));
+            return Err(cstr!($($message)+));
         }
     };
     ($condition:expr) => {
         if !$condition {
-            return Err(format!("law failed: {}", stringify!($condition)));
+            return Err(cstr!("law failed: {}", stringify!($condition)));
         }
     };
 }
 macro_rules! equal {
     ($left:expr, $right:expr $(,)?) => {
         if $left != $right {
-            return Err(format!(
+            return Err(cstr!(
                 "law failed: {} != {}",
                 stringify!($left),
                 stringify!($right)
@@ -25,7 +25,7 @@ macro_rules! equal {
 use super::{FileArtifact, Observed};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_l0::Allocator;
+use vize_l0::{Allocator, String, cstr};
 use vize_l2::file::{FileIssueKind, ScriptUnit, vue::ExposureIssueKind};
 use vize_l2::lang::js::{
     CallEvent, DeclaredEvent, FileObserver, FileProducer, ProgramInput, ProgramScope, SetupIssue,
@@ -90,7 +90,7 @@ fn neutral_complete_files_do_not_certify_the_whole_setup_statement_family() -> R
         "'use strict'; let value=1;",
         "#!/usr/bin/env node\nlet value=1;",
     ] {
-        let source = format!("<script setup>{script}</script>");
+        let source = cstr!("<script setup>{script}</script>");
         let original = Observed::new(&arena, &source)?;
         let file = original.file(&arena)?;
         require!(file.is_complete(), "{script}");
@@ -135,7 +135,7 @@ fn unsupported_script_shapes_never_supply_a_setup_capability() -> Result<(), Str
         "let __returned__=1;",
         "let __proto__=1;",
     ] {
-        let source = format!("<script setup>{script}</script>");
+        let source = cstr!("<script setup>{script}</script>");
         let original = Observed::new(&arena, &source)?;
         let file = original.file(&arena)?;
         require!(checked(&original, &file)?.is_err(), "{script}");
