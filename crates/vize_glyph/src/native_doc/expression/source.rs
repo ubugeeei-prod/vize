@@ -169,7 +169,12 @@ impl<'p, 'a> Context<'p, 'a> {
         }
         self.whitespace(Span::new(cursor, span.end))?;
         let authored = self.authored(span)?;
-        if initial != self.comment_index || authored != self.decoded(span)? {
+        // Mapped identity gaps may carry physical LF required by container
+        // framing, which scans authored bytes before entity decoding.
+        if initial != self.comment_index
+            || authored != self.decoded(span)?
+            || (self.original.source().decode_map().is_some() && authored.contains('\n'))
+        {
             return Ok(Doc::text(authored));
         }
         Ok(match style {

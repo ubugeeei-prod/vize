@@ -86,6 +86,9 @@ formatter	Formatter	test/dev	crates/vize_glyph/tests/formatter_parser_allocation
 formatter	Formatter	test/dev	crates/vize_glyph/tests/import_sorting.rs	3	l0	L0	stage	vize_l0	preferred	5
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc.rs	4	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc.rs	4	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/authored_newlines.rs	3	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/authored_newlines.rs	3	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/authored_newlines.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/preservation.rs	3	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/preservation.rs	3	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/preservation.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -104,6 +107,8 @@ formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_full.rs	6	l
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_full.rs	6	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations.rs	4	l0	L0	stage	vize_l0	preferred	2
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations.rs	4	l1	L1	stage	vize_l1	preferred	5
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/authored_newlines.rs	3	l0	L0	stage	vize_l0	preferred	7
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/authored_newlines.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/layout.rs	3	l0	L0	stage	vize_l0	preferred	5
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/layout.rs	3	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/preservation.rs	3	l0	L0	stage	vize_l0	preferred	3

@@ -9,7 +9,7 @@ use vize_l1::embed::syntax::RetainedExpression;
 use super::{format, operands, selected};
 
 #[derive(Debug, PartialEq, Eq)]
-enum Syntax {
+pub(super) enum Syntax {
     Atom(&'static str, std::string::String, std::string::String),
     Parentheses(std::boxed::Box<Syntax>),
     Unary(&'static str, std::boxed::Box<Syntax>),
@@ -20,7 +20,10 @@ enum Syntax {
     ),
 }
 
-fn fingerprint(original: &RetainedExpression<'_>, expression: &Expression<'_>) -> Syntax {
+pub(super) fn fingerprint(
+    original: &RetainedExpression<'_>,
+    expression: &Expression<'_>,
+) -> Syntax {
     let span = original.authored_span(expression.span()).unwrap();
     let spelling = original
         .source()

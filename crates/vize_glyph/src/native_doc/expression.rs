@@ -64,7 +64,9 @@ mod projection_tests;
 /// Original literal/operator spellings, parentheses, complete entities and
 /// typed comments remain source slices.
 /// Only proven plain ASCII whitespace gaps change. Encoded whitespace and
-/// gaps containing comments stay verbatim. This does not select a language,
+/// gaps containing comments stay verbatim. With an original decode map,
+/// checked gaps containing physical LF also remain authored, retaining native
+/// container framing. This does not select a language,
 /// parse, clone/normalize an AST or call an OXC/legacy formatter.
 ///
 /// The checked caller block must cover the selected embed inside the same

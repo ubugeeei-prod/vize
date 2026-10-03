@@ -8,6 +8,8 @@ use vize_l1::container::vue::DescriptorOptions;
 use vize_l1::markup::{NativeChildren, NativeInterpolationOperand, NativeTemplateComponent};
 use vize_l1::{SurfaceChild, SurfaceParseOptions};
 
+#[path = "native_template_interpolations/authored_newlines.rs"]
+mod authored_newlines;
 #[path = "native_template_interpolations/layout.rs"]
 mod layout;
 #[path = "native_template_interpolations/preservation.rs"]
