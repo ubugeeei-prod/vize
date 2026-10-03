@@ -4776,6 +4776,7 @@ dependencies = [
 name = "vize_l1"
 version = "0.430.1"
 dependencies = [
+ "cssparser",
  "davinci_harness",
  "davinci_test_support",
  "htmlize",

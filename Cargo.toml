@@ -213,6 +213,7 @@ dlmalloc = { version = "=0.2.14", features = ["global"] }
 mimalloc = "=0.1.52"
 
 # CSS
+cssparser = "=0.37.0"
 lightningcss = "=1.0.0-alpha.72"
 parcel_selectors = "=0.28.3"
 
