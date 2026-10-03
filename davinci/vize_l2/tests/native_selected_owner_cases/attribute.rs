@@ -264,7 +264,9 @@ fn complete_static_headers_and_bodies_do_not_replace_normal_root_completion()
             return Err("actual completed Element prefix");
         };
         equal(section.attributes.len(), 5)?;
-        check(file.template_interruption().is_some())?;
+        // Forget skips Drop: its pending walk remains incomplete without
+        // inventing a recorded interruption that only drop/unwind observes.
+        equal(file.template_interruption().is_some(), mode != 1)?;
     }
     Ok(())
 }

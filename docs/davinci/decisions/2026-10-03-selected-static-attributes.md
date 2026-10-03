@@ -65,6 +65,14 @@ protected queue full suites and unchanged instruction ceilings must pass
 before actual merge. Previous provider or sibling fixture results grant no
 execution credit to this new source.
 
+The first source campaign at `dd76baa82a` passes the successful full-token law
+and the header refusal laws, but fails the forgotten-root test's interruption
+expectation. The actual tracker remains Pending after `forget`, which skips
+Drop, so the File is incomplete without a recorded Interrupted event. The
+corrected law keeps the completion refusal and exact prefix checks, and
+requires an interruption observation only after actual drop or unwind.
+Production behavior stays unchanged; the corrected head needs fresh Actions.
+
 Text entities and HTML whitespace, special attributes, directive operands,
 handlers, If/For, SVG/MathML, components, other Vue dialects and native target
 output remain unfinished. This grants no L4/SFC output, Vue runtime exposure,
