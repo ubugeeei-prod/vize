@@ -29,6 +29,7 @@ const vue = await import(runtimeUrl);
 assert.equal(vue.version, vueVaporVersion);
 assert.equal(vue.version, "3.6.0-rc.9", "audited primary lifecycle release");
 const dataUrl = (code) => `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
+const moduleDefaults = new WeakSet();
 let sequence = 0;
 
 async function load(reference) {
@@ -61,6 +62,7 @@ async function load(reference) {
   assert.equal(typeof component.render, "function", "actual render installation");
   assert.equal(typeof reference.multiRoot, "boolean");
   assert.equal(component.__multiRoot, reference.multiRoot, "actual stock root metadata");
+  moduleDefaults.add(component);
   return component;
 }
 
@@ -97,10 +99,18 @@ async function mount(component, configuration, serverHtml = null) {
   const originalTree = tree(host);
   const originalRoots = [...host.childNodes];
   const originals = descendants(host);
+  assert.ok(moduleDefaults.has(component), "exact primary loaded default passed");
+  component.inheritAttrs = configuration.inheritAttrs;
   const app = (serverHtml === null ? vue.createVaporApp : vue.createVaporSSRApp)(
-    { ...component, inheritAttrs: configuration.inheritAttrs },
+    component,
     configuration.props,
   );
+  assert.equal(
+    app._component.render,
+    component.render,
+    "actual primary runtime consumes default render identity",
+  );
+  assert.equal(app._component.__multiRoot, component.__multiRoot);
   const diagnostics = [];
   app.config.warnHandler = (message) => diagnostics.push(message);
   app.config.errorHandler = (error) => diagnostics.push(String(error));
@@ -145,6 +155,7 @@ async function mount(component, configuration, serverHtml = null) {
     return {
       nodes,
       trace: {
+        defaultAuthority: "loaded-default/runtime-render-identity",
         originalTree,
         tree: mountedTree,
         diagnostics,

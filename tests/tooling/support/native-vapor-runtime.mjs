@@ -29,6 +29,7 @@ for (const name of ["template", "defineVaporComponent", "createVaporApp", "creat
   assert.equal(typeof vue[name], "function", `actual export ${name}`);
 globalThis.__nativeVaporRuntime = vue;
 
+const moduleDefaults = new WeakSet();
 let sequence = 0;
 let activeId = "";
 async function load(code, component = false, helperCode = null) {
@@ -84,6 +85,7 @@ async function load(code, component = false, helperCode = null) {
   if (!component) return module.render;
   assert.equal(module.default?.__vapor, true, "whole default component Vapor marker");
   assert.equal(typeof module.default.render, "function", "whole component render attachment");
+  moduleDefaults.add(module.default);
   return module.default;
 }
 
@@ -115,15 +117,31 @@ async function mount(render, configuration, serverHtml = null, wholeComponent = 
     collect(host);
   }
   const component = wholeComponent
-    ? { ...render, inheritAttrs: configuration.inheritAttrs }
+    ? render
     : vue.defineVaporComponent({
         inheritAttrs: configuration.inheritAttrs,
         setup: () => render({}),
       });
+  if (wholeComponent) {
+    assert.ok(moduleDefaults.has(component), "exact loaded default component passed");
+    component.inheritAttrs = configuration.inheritAttrs;
+  }
   const app = (serverHtml === null ? vue.createVaporApp : vue.createVaporSSRApp)(
     component,
     configuration.props,
   );
+  if (wholeComponent) {
+    assert.equal(
+      app._component.render,
+      component.render,
+      "actual runtime consumes default render identity",
+    );
+    assert.equal(
+      app._component.__multiRoot,
+      component.__multiRoot,
+      "actual runtime retains default root metadata",
+    );
+  }
   const diagnostics = [];
   app.config.warnHandler = (message) => diagnostics.push(message);
   app.config.errorHandler = (error) => diagnostics.push(String(error));
@@ -161,6 +179,12 @@ try {
     const native = await load(input.code, !!input.component);
     const reference = await load(input.upstreamCode, !!input.component, input.helperCode ?? null);
     if (input.component) {
+      assert.notEqual(native, reference, "native and primary default component owners differ");
+      assert.notEqual(
+        native.render,
+        reference.render,
+        "native and primary default render identities differ",
+      );
       assert.equal(native.__multiRoot, input.multiRoot, `${input.id} native root metadata`);
       assert.equal(reference.__multiRoot, input.multiRoot, `${input.id} primary root metadata`);
     }
@@ -210,7 +234,9 @@ try {
         tree: actual.tree,
         hydrated: !!input.hydrate,
         unmounted: [],
-        ...(input.component ? { hydrationNodes } : {}),
+        ...(input.component
+          ? { hydrationNodes, defaultAuthority: "loaded-default/runtime-render-identity" }
+          : {}),
       });
     }
     captured.push({ id: input.id, version: vue.version, traces });

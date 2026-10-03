@@ -21,6 +21,7 @@ test("original native Vapor source qualifies a fresh affected-PR capture without
     "tests/tooling/native-vapor-sfc-reference.test.mjs",
     "tests/tooling/support/native-vapor-sfc-oracle.mjs",
     "tests/tooling/support/native-vapor-primary-lifecycle.mjs",
+    "tests/tooling/support/native-vapor-process-capture.mjs",
     "tests/tooling/support/vue-vapor-release.mjs",
     ".github/actions/test-native-vapor/action.yml",
     ".github/workflows/check.yml",
@@ -69,6 +70,7 @@ test("the existing first-shard hook preserves full protected capture and mandato
     "native-vapor-sfc-modules.json",
     "native-vapor-sfc-runtime.json",
     "native-vapor-primary-lifecycle.json",
+    "native-vapor-processes.jsonl",
   ])
     assert.ok(action.includes(path), path);
   assert.match(action, /cargo test --locked --profile ci -p vize_l4 --test native_vapor/);
@@ -78,4 +80,5 @@ test("the existing first-shard hook preserves full protected capture and mandato
   );
   assert.match(action, /VIZE_NATIVE_VAPOR_REQUIRE_CAPTURE: "1"/);
   assert.match(action, /if-no-files-found: error/);
+  assert.match(action, /if: \$\{\{ always\(\) \}\}/);
 });

@@ -79,7 +79,14 @@ Rust modules before their mandatory Node consumers for actual affected PR inputs
 An unknown comparison base qualifies capture conservatively; ordinary planning
 keeps its existing broad unknown-base behavior. Prose-only source changes do not
 qualify this expensive hook. Protected merge groups stay unconditional, and
-nonempty captures are fatal requirements. Only an output and the existing step
+nonempty captures are fatal requirements. Browser consumers pass the exact
+loaded default component, changing only the requested inheritAttrs option;
+identity checks confirm the actual pinned runtime consumes that same render and
+root metadata. Separate native/primary default owners cannot share a substituted
+render. Raw child input/stdout/stderr/exit/signal/error frames are stored before
+fallible parsing/assertions and uploaded through the existing capture seam even
+on failure. Expected mutation failures are labelled, never successful result rows.
+Only an output and the existing step
 condition are added to the workflow, retaining the composed 350-line ceiling.
 Exact-head hosted Rust/module/runtime captures, unchanged full/instruction
 merge-group gates and literal protected merge are required before delivery.

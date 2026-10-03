@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { test } from "node:test";
+import { captureVaporProcess } from "./support/native-vapor-process-capture.mjs";
 import { officialCompilerVapor, vueVaporVersion } from "./support/vue-vapor-release.mjs";
 
 const pack = JSON.parse(
@@ -100,6 +101,7 @@ await test("whole modules execute with real rc.9 nodes, comments, attrs and clon
       maxBuffer: 8 * 1024 * 1024,
     },
   );
+  captureVaporProcess("standalone-template", inputs, runtime);
   assert.equal(runtime.status, 0, runtime.stderr);
   const traces = JSON.parse(runtime.stdout);
   assert.equal(traces.length, 12);
@@ -129,6 +131,12 @@ await test("actual runtime judge rejects changed text and detached hydration blo
         timeout: 60_000,
         maxBuffer: 8 * 1024 * 1024,
       },
+    );
+    captureVaporProcess(
+      "standalone-negative",
+      [{ id: "negative", code, upstreamCode: fixture.upstreamCode, hydrate: true }],
+      runtime,
+      true,
     );
     assert.notEqual(runtime.status, 0, "actual runtime differences must fail");
     assert.match(runtime.stderr, /AssertionError|removeChild/u);

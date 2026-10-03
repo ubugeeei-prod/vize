@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { test } from "node:test";
+import { captureVaporProcess } from "./support/native-vapor-process-capture.mjs";
 import {
   compileVaporSfcReference,
   compilerVersion,
@@ -86,16 +87,21 @@ await test(
   },
 );
 
-function execute(inputs) {
-  return spawnSync(
-    process.execPath,
-    [new URL("./support/native-vapor-runtime.mjs", import.meta.url).pathname],
-    {
-      input: JSON.stringify(inputs),
-      encoding: "utf8",
-      timeout: 60_000,
-      maxBuffer: 8 * 1024 * 1024,
-    },
+function execute(inputs, expectedFailure = false) {
+  return captureVaporProcess(
+    "whole-component",
+    inputs,
+    spawnSync(
+      process.execPath,
+      [new URL("./support/native-vapor-runtime.mjs", import.meta.url).pathname],
+      {
+        input: JSON.stringify(inputs),
+        encoding: "utf8",
+        timeout: 60_000,
+        maxBuffer: 8 * 1024 * 1024,
+      },
+    ),
+    expectedFailure,
   );
 }
 
@@ -156,18 +162,21 @@ await test("whole-component judge rejects changed source output and missing rend
     fixture.code.replace('"hello"', '"changed"'),
     fixture.code.replace("_sfc_main.render = render", "/* missing render */"),
   ]) {
-    const runtime = execute([
-      {
-        id: "negative-component",
-        component: true,
-        code,
-        upstreamCode: fixture.reference.code,
-        helperCode: fixture.reference.helperCode,
-        multiRoot: fixture.reference.multiRoot,
-        hydrate: true,
-        serverHtml: fixture.reference.serverHtml,
-      },
-    ]);
+    const runtime = execute(
+      [
+        {
+          id: "negative-component",
+          component: true,
+          code,
+          upstreamCode: fixture.reference.code,
+          helperCode: fixture.reference.helperCode,
+          multiRoot: fixture.reference.multiRoot,
+          hydrate: true,
+          serverHtml: fixture.reference.serverHtml,
+        },
+      ],
+      true,
+    );
     assert.notEqual(runtime.status, 0, "actual whole component changes must fail");
     assert.match(runtime.stderr, /AssertionError/u);
   }
@@ -207,6 +216,7 @@ await test("separate real primary lifecycle controls retain exact upstream fragm
       maxBuffer: 8 * 1024 * 1024,
     },
   );
+  captureVaporProcess("primary-only-lifecycle", inputs, primary);
   assert.equal(primary.status, 0, primary.stderr);
   const observed = JSON.parse(primary.stdout);
   assert.equal(observed.primaryOnly, true);
