@@ -177,3 +177,19 @@ No production fault flag, extra decode/parse/AST/header walk, pipeline stage,
 serialization, legacy route or budget increase is introduced. All new Rust
 laws remain unexecuted until exact-head hosted Actions; source review, direct
 formatting and pure tooling do not transfer historical or protected proof.
+
+## Reviewed source storage
+
+The actual production scanner adds two bounded arena Vec spellings for the
+checked original frame and one L0 String import/use for authentic alias names
+in the existing scope maps. The File facts row adds six bound normal-Vec uses
+for the three new pending/refused/template-row fields and their empty
+constructors. Empty native-only storage allocates nothing on the original
+script path. The header adds one type occurrence for the same moved handler
+Vec and one arena attribute type occurrence; observe/resolve phases do not
+allocate a second handler collection. Diagnostic owned/parsed original For
+rows add one Vec occurrence each under their existing contract category.
+The exact per-file inventory is updated from the unchanged scanner, preserving
+all incoming rows/categories. Seven pure storage/scanner/summary laws pass;
+that is tooling evidence only, not execution of new Rust receiver laws or
+protected instruction/allocation proof.

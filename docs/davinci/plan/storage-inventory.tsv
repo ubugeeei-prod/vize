@@ -94,13 +94,13 @@ l2	analysis	davinci/vize_l2/src/artifact/builder/binding/tests.rs	1	0	0	0	1	6	0	
 l2	analysis	davinci/vize_l2/src/artifact/builder/tests.rs	1	0	1	6	1	7	0	0
 l2	analysis	davinci/vize_l2/src/artifact/tests.rs	1	9	1	6	1	9	0	0
 l2	contract	davinci/vize_l2/src/dump.rs	1	1	1	0	0	0	0	0
-l2	contract	davinci/vize_l2/src/dump/owned.rs	1	14	1	14	0	0	0	0
+l2	contract	davinci/vize_l2/src/dump/owned.rs	1	15	1	14	0	0	0	0
 l2	contract	davinci/vize_l2/src/dump/owned/binding.rs	1	7	1	13	0	0	0	0
 l2	-	davinci/vize_l2/src/dump/owned/expr.rs	0	0	1	10	0	0	0	0
 l2	contract	davinci/vize_l2/src/dump/parse.rs	1	4	1	0	0	0	0	0
 l2	contract	davinci/vize_l2/src/dump/parse/binding_line.rs	1	8	1	3	0	0	0	0
 l2	-	davinci/vize_l2/src/dump/parse/expr_token.rs	0	0	1	1	0	0	0	0
-l2	contract	davinci/vize_l2/src/dump/parse/line.rs	12	0	1	6	0	0	0	0
+l2	contract	davinci/vize_l2/src/dump/parse/line.rs	13	0	1	6	0	0	0	0
 l2	-	davinci/vize_l2/src/dump/print/binding.rs	0	0	1	1	0	0	0	0
 l2	contract	davinci/vize_l2/src/dump/provenance.rs	1	1	1	4	0	0	0	0
 l2	-	davinci/vize_l2/src/op.rs	0	0	0	0	1	1	0	0
@@ -290,7 +290,7 @@ l1_to_l2	-	davinci/vize_l1_to_l2/src/native/construction.rs	0	0	0	0	4	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/native/pending.rs	1	8	0	0	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/pending/tests.rs	0	0	1	1	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/pending/tests/factory.rs	0	0	0	0	2	0	0	0
-l2	analysis	davinci/vize_l2/src/file/build.rs	1	22	1	6	0	0	0	0
+l2	analysis	davinci/vize_l2/src/file/build.rs	1	28	1	6	0	0	0	0
 l2	analysis	davinci/vize_l2/src/lang/js/file/setup.rs	1	1	0	0	0	0	0	0
 l2	-	davinci/vize_l2/src/file/records.rs	0	0	1	7	0	0	0	0
 l2	analysis	davinci/vize_l2/src/resolution/sink.rs	1	3	0	0	0	0	0	0
@@ -323,7 +323,7 @@ l1_to_l2	analysis	davinci/vize_l1_to_l2/src/native_file/template/tests.rs	1	3	0	
 l1_to_l2	analysis	davinci/vize_l1_to_l2/src/native_file/query/tests.rs	1	3	0	0	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/pending/vue/testing.rs	0	0	0	0	2	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/pending/vue/tests.rs	0	0	1	0	0	0	0	0
-l2	lower	davinci/vize_l2/src/file/region/native/body/header.rs	3	0	0	0	1	2	0	0
+l2	lower	davinci/vize_l2/src/file/region/native/body/header.rs	4	0	0	0	1	3	0	0
 l2	contract	davinci/vize_l2/src/lang/js/jsx_body.rs	3	0	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/lang/js/jsx_body/recorder.rs	1	4	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/resolution/walk/syntax_tests.rs	1	1	0	0	0	0	0	0
@@ -342,3 +342,5 @@ l2	-	davinci/vize_l2/src/lang/js/interpolation/tests.rs	0	0	1	4	0	0	0	0
 l2	analysis	davinci/vize_l2/src/lang/js/interpolation/tests/ownership.rs	1	0	0	0	0	0	0	0
 l2	-	davinci/vize_l2/src/artifact/builder/binding/native.rs	0	0	0	0	1	0	0	0
 l2	lower	davinci/vize_l2/src/file/region/native/body.rs	1	0	0	0	0	0	0	0
+l2	-	davinci/vize_l2/src/artifact/builder/original_for.rs	0	0	0	0	2	0	0	0
+l2	-	davinci/vize_l2/src/file/build/template.rs	0	0	1	1	0	0	0	0
