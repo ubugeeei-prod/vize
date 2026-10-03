@@ -157,6 +157,14 @@ fn normal_resolution_owner_moves_and_rejoins_only_the_original_selected_header()
     let table = pending.pop().unwrap();
     assert_eq!(table.input().aliases().as_ptr(), aliases);
     assert_eq!(table.input().collection() as *const _, collection);
+    assert_eq!(table.value_declaration().parameter() as *const _, aliases);
+    assert!(core::ptr::eq(
+        table.value_declaration().resolution(),
+        &table
+    ));
+    let key = table.key_declaration().unwrap();
+    assert!(core::ptr::eq(key.parameter(), &table.input().aliases()[1]));
+    assert_eq!(key.fact(), table.key().unwrap());
     assert!(table.input().admitted_for(&owner, first).is_some());
     assert!(table.input().admitted_for(&owner, second).is_none());
     let foreign_element = foreign.children().next().unwrap().into_element().unwrap();
@@ -170,4 +178,5 @@ fn normal_resolution_owner_moves_and_rejoins_only_the_original_selected_header()
 }
 
 mod budget;
+mod declaration;
 mod refusal;

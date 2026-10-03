@@ -7,8 +7,11 @@ use vize_l1::embed::syntax::ForHeadPart;
 use super::{BindingId, BindingLookup, Occurrence, ResolutionErrorKind, walk};
 use crate::lang::js::NativeForInput;
 
+mod declaration;
 mod facts;
 mod sink;
+pub use declaration::ForAliasDeclaration;
+pub(in crate::resolution) use declaration::OriginalForAlias;
 pub use facts::{ForAlias, ForAliasId, ForAliasRole, ForResolvedBinding};
 
 /// A decoded-relative error in one of the two original source namespaces.
@@ -52,11 +55,14 @@ impl<'a> RejectedForResolution<'a> {
 /// Caller-written facts cannot replace the original source owner:
 /// ```compile_fail
 /// use vize_l0::Span;
+/// use oxc_ast::ast::FormalParameter;
 /// use vize_l2::lang::js::NativeForInput;
 /// use vize_l2::resolution::{ForAlias, ForResolution, Occurrence};
 /// fn substitute<'a>(input: NativeForInput<'a>, collection: Occurrence<'a>,
-///     collection_authored: Span, value: ForAlias<'a>, key: Option<ForAlias<'a>>) {
-///     let _ = ForResolution { input, collection, collection_authored, value, key };
+///     collection_authored: Span, value: ForAlias<'a>, key: Option<ForAlias<'a>>,
+///     value_parameter: &'a FormalParameter<'a>, key_parameter: Option<&'a FormalParameter<'a>>) {
+///     let _ = ForResolution { input, collection, collection_authored, value, key,
+///         value_parameter, key_parameter };
 /// }
 /// ```
 /// The whole normal owner is not cloneable:
@@ -71,6 +77,8 @@ pub struct ForResolution<'a> {
     collection_authored: Span,
     value: ForAlias<'a>,
     key: Option<ForAlias<'a>>,
+    value_parameter: &'a oxc_ast::ast::FormalParameter<'a>,
+    key_parameter: Option<&'a oxc_ast::ast::FormalParameter<'a>>,
 }
 
 impl<'a> ForResolution<'a> {
@@ -129,14 +137,21 @@ pub fn resolve_for_head<'a>(
             input,
             collection,
             collection_authored,
-            value,
-            key,
+            value: value.fact,
+            key: key.as_ref().map(|key| key.fact),
+            value_parameter: value.parameter,
+            key_parameter: key.map(|key| key.parameter),
         }),
         Err(error) => Err(Box::new(RejectedForResolution { input, error })),
     }
 }
 
-type Facts<'a> = (Occurrence<'a>, Span, ForAlias<'a>, Option<ForAlias<'a>>);
+type Facts<'a> = (
+    Occurrence<'a>,
+    Span,
+    OriginalForAlias<'a>,
+    Option<OriginalForAlias<'a>>,
+);
 
 fn resolve<'a>(
     input: &NativeForInput<'a>,

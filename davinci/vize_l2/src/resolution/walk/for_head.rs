@@ -8,13 +8,14 @@ use vize_l1::embed::syntax::ForHeadPart;
 use super::{ReferenceSink, ResolutionErrorKind, Resolver};
 use crate::resolution::for_head::{
     ForAlias, ForAliasId, ForAliasRole, ForResolutionError, ForResolutionErrorKind,
+    OriginalForAlias,
 };
 use crate::resolution::source::ForReferenceSource;
 
 pub(in crate::resolution) fn original<'a>(
     source: &ForReferenceSource<'_, 'a>,
     sink: &mut impl ReferenceSink<'a>,
-) -> Result<(ForAlias<'a>, Option<ForAlias<'a>>), ForResolutionError> {
+) -> Result<(OriginalForAlias<'a>, Option<OriginalForAlias<'a>>), ForResolutionError> {
     let checkpoint = sink.checkpoint();
     let collection_source = source.collection_source().ok_or(ForResolutionError {
         part: ForHeadPart::Collection,
@@ -52,10 +53,13 @@ pub(in crate::resolution) fn original<'a>(
                 ForResolutionErrorKind::UnsupportedAlias,
             ));
         }
-        if let Some(key) = key.filter(|key| key.name() == value.name()) {
+        if let Some(key) = key
+            .as_ref()
+            .filter(|key| key.fact.name() == value.fact.name())
+        {
             return Err(ForResolutionError {
                 part: ForHeadPart::Aliases,
-                span: key.decoded_span(),
+                span: key.fact.decoded_span(),
                 kind: ForResolutionErrorKind::DuplicateAlias,
             });
         }
@@ -84,7 +88,7 @@ fn alias<'a, S: ReferenceSink<'a>>(
     source: &ForReferenceSource<'_, 'a>,
     parameter: &'a FormalParameter<'a>,
     index: u8,
-) -> Result<ForAlias<'a>, ForResolutionError> {
+) -> Result<OriginalForAlias<'a>, ForResolutionError> {
     if !resolver.advance(0) {
         return Err(error(
             source,
@@ -123,15 +127,18 @@ fn alias<'a, S: ReferenceSink<'a>>(
             ForResolutionErrorKind::Reference(ResolutionErrorKind::InvalidSpan),
         )
     })?;
-    Ok(ForAlias {
-        id: ForAliasId(index),
-        name,
-        role: if index == 0 {
-            ForAliasRole::Value
-        } else {
-            ForAliasRole::Key
+    Ok(OriginalForAlias {
+        parameter,
+        fact: ForAlias {
+            id: ForAliasId(index),
+            name,
+            role: if index == 0 {
+                ForAliasRole::Value
+            } else {
+                ForAliasRole::Key
+            },
+            decoded,
+            authored,
         },
-        decoded,
-        authored,
     })
 }
