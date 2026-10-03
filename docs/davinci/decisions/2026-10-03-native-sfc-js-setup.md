@@ -79,3 +79,14 @@ ordinary tooling run continues to qualify its skipped capture laws explicitly.
 Fresh whole Cargo, full Actions, all-100 measurements and protected terminal
 merge remain separate gates for this two-layer Stack; TS, macros, const,
 ordinary scripts, defaults and compiler history remain unfinished.
+
+## Cargo dependency closure
+
+The first current product Actions failed with E0433 before native capture:
+the adapter imported L2 `VueSetup` and `SetupIssue` without a direct package
+dependency. The compiler now declares the genuine normal `vize_l2` edge;
+the lockfile and canonical dependency records include it. Existing source,
+fixtures, runtime captures and failed logs remain preserved. This packaging
+repair changes no native admission or generated output. Fresh whole Cargo,
+runtime capture, full Actions, instruction measurements and protected merge
+must pass on the repaired source; prior private proofs grant no hosted credit.

@@ -55,6 +55,7 @@ vize_atelier_vapor = { workspace = true }
 # The Davinci pug dialect: `<template lang="pug">` desugars through L1.
 vize_l1_to_l2 = { workspace = true }
 vize_l1.workspace = true
+vize_l2.workspace = true
 vize_l3.workspace = true
 vize_l4.workspace = true
 
