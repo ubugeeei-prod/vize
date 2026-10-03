@@ -4,7 +4,7 @@ use vize_glyph::native_doc::{ExpressionRefusal, expression_document};
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::embed::{Lang, syntax::EmbedHole};
 
-use super::retained;
+use super::{format, retained};
 
 #[test]
 fn foreign_equal_byte_roots_and_uncovered_selected_blocks_cannot_establish_custody() {
@@ -31,7 +31,7 @@ fn foreign_equal_byte_roots_and_uncovered_selected_blocks_cannot_establish_custo
 #[test]
 fn unsupported_original_nodes_and_descendants_refuse_the_complete_document() {
     for source in [
-        "-1", "obj.key", "fn()", "[a]", "a=b", "a?b:c", "1n", "a as T", "a + fn()",
+        "obj.key", "fn()", "[a]", "a=b", "a?b:c", "1n", "a as T", "a + fn()",
     ] {
         let allocator = Allocator::default();
         let original = retained(
@@ -55,6 +55,123 @@ fn unsupported_original_nodes_and_descendants_refuse_the_complete_document() {
         );
         assert_eq!(core::ptr::from_ref(original.expression().unwrap()), before);
         assert_eq!(original.source().text(), source);
+    }
+}
+
+#[test]
+fn updates_awaits_and_unsupported_unary_descendants_keep_original_observations() {
+    for source in [
+        "++a",
+        "a++",
+        "--a",
+        "a--",
+        "await a",
+        "!/*x*/++a",
+        "-/*x*/await a",
+        "typeof/*x*/fn()",
+        "!/*x*/obj.key",
+    ] {
+        for lang in [Lang::Js, Lang::Ts] {
+            let allocator = Allocator::default();
+            let original = retained(
+                &allocator,
+                source,
+                Span::new(0, source.len() as u32),
+                lang,
+                false,
+            );
+            assert_eq!(original.hole(), None, "{source}");
+            let before = core::ptr::from_ref(original.expression().unwrap());
+            let comments = original
+                .comments()
+                .map(|comment| {
+                    (
+                        comment.kind(),
+                        comment.decoded_span().unwrap(),
+                        comment.authored_span().unwrap(),
+                        comment.text().unwrap().as_ptr(),
+                    )
+                })
+                .collect::<std::vec::Vec<_>>();
+            let diagnostics = original
+                .diagnostics()
+                .map(|diagnostic| diagnostic.message().as_ptr())
+                .collect::<std::vec::Vec<_>>();
+            assert!(
+                matches!(
+                    expression_document(
+                        &original,
+                        SourceRoot::new(source).unwrap().whole_block(),
+                        &allocator
+                    ),
+                    Err(ExpressionRefusal::UnsupportedNode { .. })
+                ),
+                "{source}"
+            );
+            assert_eq!(core::ptr::from_ref(original.expression().unwrap()), before);
+            assert_eq!(original.hole(), None);
+            assert_eq!(original.source().text(), source);
+            assert_eq!(
+                original
+                    .comments()
+                    .map(|comment| (
+                        comment.kind(),
+                        comment.decoded_span().unwrap(),
+                        comment.authored_span().unwrap(),
+                        comment.text().unwrap().as_ptr(),
+                    ))
+                    .collect::<std::vec::Vec<_>>(),
+                comments
+            );
+            assert_eq!(
+                original
+                    .diagnostics()
+                    .map(|diagnostic| diagnostic.message().as_ptr())
+                    .collect::<std::vec::Vec<_>>(),
+                diagnostics
+            );
+        }
+    }
+}
+
+#[test]
+fn genuine_unary_nesting_retains_the_original_provider_and_document_depth_boundary() {
+    let supported = std::format!("{}a", "!".repeat(16));
+    for lang in [Lang::Js, Lang::Ts] {
+        assert_eq!(
+            format(&supported, lang, false, Default::default()),
+            std::format!("{}a", "! ".repeat(16))
+        );
+    }
+    super::preservation::assert_preserved(&supported, false);
+    let source = std::format!("{}a", "!".repeat(17));
+    for lang in [Lang::Js, Lang::Ts] {
+        let allocator = Allocator::default();
+        let original = retained(
+            &allocator,
+            &source,
+            Span::new(0, source.len() as u32),
+            lang,
+            false,
+        );
+        assert_eq!(original.hole(), None);
+        let before = core::ptr::from_ref(original.expression().unwrap());
+        assert_eq!(
+            expression_document(
+                &original,
+                SourceRoot::new(&source).unwrap().whole_block(),
+                &allocator
+            )
+            .unwrap_err(),
+            ExpressionRefusal::DepthLimit {
+                span: Span::new(17, 18)
+            }
+        );
+        assert_eq!(core::ptr::from_ref(original.expression().unwrap()), before);
+        assert_eq!(original.source().text(), source);
+        assert_eq!(original.hole(), None);
+        assert_eq!(original.comments().count(), 0);
+        assert_eq!(original.diagnostics().count(), 0);
     }
 }
 
@@ -143,23 +260,24 @@ fn deep_input_keeps_the_real_provider_capacity_refusal() {
 #[test]
 fn unproven_non_ascii_gaps_refuse_without_claiming_format_success() {
     let allocator = Allocator::default();
-    let source = "a\u{a0}+ b";
-    let original = retained(
-        &allocator,
-        source,
-        Span::new(0, source.len() as u32),
-        Lang::Js,
-        false,
-    );
-    let before = core::ptr::from_ref(original.expression().unwrap());
-    assert!(matches!(
-        expression_document(
-            &original,
-            SourceRoot::new(source).unwrap().whole_block(),
-            &allocator
-        ),
-        Err(ExpressionRefusal::InvalidGap { .. })
-    ));
-    assert_eq!(core::ptr::from_ref(original.expression().unwrap()), before);
-    assert_eq!(original.source().text(), source);
+    for source in ["a\u{a0}+ b", "!\u{a0}ready"] {
+        let original = retained(
+            &allocator,
+            source,
+            Span::new(0, source.len() as u32),
+            Lang::Js,
+            false,
+        );
+        let before = core::ptr::from_ref(original.expression().unwrap());
+        assert!(matches!(
+            expression_document(
+                &original,
+                SourceRoot::new(source).unwrap().whole_block(),
+                &allocator
+            ),
+            Err(ExpressionRefusal::InvalidGap { .. })
+        ));
+        assert_eq!(core::ptr::from_ref(original.expression().unwrap()), before);
+        assert_eq!(original.source().text(), source);
+    }
 }

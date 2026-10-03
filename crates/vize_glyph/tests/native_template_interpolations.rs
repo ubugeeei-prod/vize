@@ -14,6 +14,8 @@ mod layout;
 mod preservation;
 #[path = "native_template_interpolations/refusals.rs"]
 mod refusals;
+#[path = "native_template_interpolations/unary.rs"]
+mod unary;
 
 fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(

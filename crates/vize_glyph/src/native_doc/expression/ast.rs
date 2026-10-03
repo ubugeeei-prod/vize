@@ -65,8 +65,34 @@ impl<'a> Context<'_, 'a> {
                 span,
                 depth,
             ),
+            Expression::UnaryExpression(unary) => {
+                self.prefix(unary.operator.as_str(), &unary.argument, span, depth)
+            }
             _ => Err(ExpressionRefusal::UnsupportedNode { span }),
         }
+    }
+
+    fn prefix(
+        &mut self,
+        spelling: &str,
+        argument: &Expression<'a>,
+        span: Span,
+        depth: usize,
+    ) -> Result<Doc<'a>, ExpressionRefusal> {
+        let argument_span = self.decoded_span(argument.span())?;
+        if argument_span.start <= span.start || argument_span.end != span.end {
+            return Err(ExpressionRefusal::InvalidFraming { span });
+        }
+        let operator = self.token(Span::new(span.start, argument_span.start), spelling)?;
+        if operator.start != span.start {
+            return Err(ExpressionRefusal::InvalidFraming { span });
+        }
+        let mut parts = Vec::new_in(&self.allocator);
+        parts.push(self.text(operator)?);
+        // A separator also keeps adjacent unary signs from becoming update tokens.
+        parts.push(self.gap(Span::new(operator.end, argument_span.start), Gap::Space)?);
+        parts.push(self.node(argument, span, depth + 1)?);
+        Ok(Doc::concat(parts))
     }
 
     fn infix(

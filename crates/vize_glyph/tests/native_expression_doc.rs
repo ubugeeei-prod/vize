@@ -11,6 +11,8 @@ use vize_l1::embed::{
 mod preservation;
 #[path = "native_expression_doc/refusals.rs"]
 mod refusals;
+#[path = "native_expression_doc/unary.rs"]
+mod unary;
 
 fn retained<'a>(
     allocator: &'a Allocator,

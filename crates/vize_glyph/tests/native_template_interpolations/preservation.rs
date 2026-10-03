@@ -12,6 +12,7 @@ use super::{format, operands, selected};
 enum Syntax {
     Atom(&'static str, std::string::String, std::string::String),
     Parentheses(std::boxed::Box<Syntax>),
+    Unary(&'static str, std::boxed::Box<Syntax>),
     Infix(
         &'static str,
         std::boxed::Box<Syntax>,
@@ -44,6 +45,10 @@ fn fingerprint(original: &RetainedExpression<'_>, expression: &Expression<'_>) -
         Expression::ParenthesizedExpression(parentheses) => Syntax::Parentheses(
             std::boxed::Box::new(fingerprint(original, &parentheses.expression)),
         ),
+        Expression::UnaryExpression(unary) => Syntax::Unary(
+            unary.operator.as_str(),
+            std::boxed::Box::new(fingerprint(original, &unary.argument)),
+        ),
         Expression::BinaryExpression(binary) => Syntax::Infix(
             binary.operator.as_str(),
             std::boxed::Box::new(fingerprint(original, &binary.left)),
@@ -71,6 +76,25 @@ fn actual_selected_js_ts_reparse_keeps_nodes_literals_operators_parentheses_and_
         "a &#47;*encoded*&#47; + '&amp;amp;'",
         "&#32;&fjlig; &amp;&amp; (tr&#117;e)&#32;",
         "a&#32;+&#9;b",
+        "!ready",
+        "~bits",
+        "+1",
+        "-1",
+        "typeof value",
+        "void 0",
+        "delete 0",
+        "+ +a",
+        "- -a",
+        "a + +b",
+        "a - -b",
+        "-(a+b)",
+        "(-a)**b",
+        "-(a**b)",
+        "!(a&amp;&amp;b)",
+        "&#33;ready",
+        "&#43;&#32;&#43;a",
+        "!&#9;ready",
+        "! /*kept\r\n*/ ready",
     ] {
         for script in ["", "<script setup lang=ts>let a=1</script>"] {
             let source = vize_l0::cstr!("<template><p>{{{{{content}}}}}</p></template>{script}");
