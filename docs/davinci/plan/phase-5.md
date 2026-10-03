@@ -42,7 +42,7 @@ Lanes own disjoint paths within this phase. Cross-phase: lane D must not edit ph
 | ---- | ------------------- | ---------------------------------------------------------------------------------------------- |
 | A    | P5-1a, P5-1b        | `davinci/vize_davinci/src/key*`, `docs/davinci/plan/key-manifests.md`                          |
 | B    | P5-2, P5-3          | `davinci/vize_davinci/src/summary*`                                                            |
-| C    | P5-4a, P5-4b, P5-5  | `crates/vize_incremental/`                                                                        |
+| C    | P5-4a, P5-4b, P5-5  | `crates/vize_incremental/`                                                                     |
 | D    | P5-6a, P5-6b, P5-6c | `crates/vize_maestro/src/ide/`, `crates/vize_maestro/src/server/`                              |
 | E    | P5-7                | `crates/vize_canon/src/projection/reuse*`                                                      |
 | F    | P5-8                | `crates/vize_canon/src/corsa_session_cache*`, `crates/vize/src/commands/check_server*`         |
