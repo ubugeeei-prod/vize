@@ -40,6 +40,9 @@ export const i18nHostImports: Record<string, readonly string[]> = {
   "crates/vize_patina/tests/native_header_rules/support.rs": [
     "use vize_carton::i18n::{Locale, translator};",
   ],
+  "crates/vize_patina/tests/native_textarea_mustache/support.rs": [
+    "use vize_carton::i18n::{Locale, translator};",
+  ],
   "crates/vize_patina/tests/native_aria_unsupported_elements/support.rs": [
     "use vize_carton::i18n::{Locale, translator};",
   ],

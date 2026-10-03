@@ -48,12 +48,16 @@ pub const NATIVE_LINT_HEADERS: AnalysisId = AnalysisId::new(16);
 pub const NATIVE_LINT_ATTRIBUTES: AnalysisId = AnalysisId::new(17);
 /// Unsupported-ARIA counterexamples derived from original header/attribute facts.
 pub const NATIVE_UNSUPPORTED_ARIA: AnalysisId = AnalysisId::new(18);
+/// Closed original direct-child interpolation markers, keyed by actual ordinal.
+pub const NATIVE_DIRECT_INTERPOLATIONS: AnalysisId = AnalysisId::new(19);
+/// Textarea counterexamples derived from genuine header and marker facts.
+pub const NATIVE_TEXTAREA_MUSTACHE: AnalysisId = AnalysisId::new(20);
 
 /// The first id tests and bench fixtures may use.
 pub const FIXTURE_BASE: u8 = 32;
 
 /// Every allocated production id, in id order.
-pub const PRODUCTION: [AnalysisId; 18] = [
+pub const PRODUCTION: [AnalysisId; 20] = [
     BINDINGS,
     UNDEFINED_REFS,
     UNUSED_BINDINGS,
@@ -72,6 +76,8 @@ pub const PRODUCTION: [AnalysisId; 18] = [
     NATIVE_LINT_HEADERS,
     NATIVE_LINT_ATTRIBUTES,
     NATIVE_UNSUPPORTED_ARIA,
+    NATIVE_DIRECT_INTERPOLATIONS,
+    NATIVE_TEXTAREA_MUSTACHE,
 ];
 
 // Unique, ascending, and below the fixture range.

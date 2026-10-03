@@ -12,6 +12,7 @@ use vize_l1::markup::{NativeElement, NativeLintTagRefusal, NativeTemplateCompone
 
 mod aria_unsupported_elements;
 mod attribute;
+pub mod child_facts;
 mod deprecated_attr;
 mod deprecated_element;
 mod header;
@@ -21,6 +22,7 @@ mod iframe_has_title;
 mod img_alt;
 mod inline_style;
 mod tabindex_no_positive;
+mod textarea_mustache;
 
 /// The existing rule code; the native entry is separately opt-in.
 pub const IMG_ALT_RULE: &str = "a11y/img-alt";
@@ -35,12 +37,14 @@ pub const NO_AUTOFOCUS_RULE: &str = "a11y/no-autofocus";
 pub const NO_ACCESS_KEY_RULE: &str = "a11y/no-access-key";
 pub const NO_DISTRACTING_ELEMENTS_RULE: &str = "a11y/no-distracting-elements";
 pub const NO_INLINE_STYLE_RULE: &str = "vue/no-inline-style";
+pub const NO_TEXTAREA_MUSTACHE_RULE: &str = "vue/no-textarea-mustache";
 
 pub const ARIA_UNSUPPORTED_ELEMENTS_RULE: &str = "a11y/aria-unsupported-elements";
 pub const DEPRECATED_ATTR_RULE: &str = "html/deprecated-attr";
 pub const DEPRECATED_ELEMENT_RULE: &str = "html/deprecated-element";
 
 pub use aria_unsupported_elements::NativeAriaLintError;
+pub use textarea_mustache::NativeTextareaLintError;
 
 /// A refusal retains the caller's original component and observations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
