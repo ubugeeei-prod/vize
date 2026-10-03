@@ -28,6 +28,11 @@ links and mappings. Typed emitter/assembler/range refusals retain the same
 analysis and normally owned original File/input diagnostics without publishing
 partial native output.
 
+The first hosted source built the custody API but rejected its 528-byte inline
+error under the existing `result_large_err` Clippy gate. The corrected refusal
+owns the same analysis in a private Box allocated only on failure; acceptance
+and original custody are unchanged, and no lint exemption is introduced.
+
 The original pipeline laws cover a Unicode original comment before the
 template, five JavaScript line terminators, non-BMP text/attribute/literal
 bytes, independently decoded whole-module VLQ positions, complete source-map

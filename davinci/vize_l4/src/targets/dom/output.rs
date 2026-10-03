@@ -1,5 +1,6 @@
 //! Recorded standalone modules retain the original selected completion owner.
 
+use alloc::boxed::Box;
 use core::fmt;
 use vize_l0::{SourceBlock, String};
 use vize_l3::decision::native::NativeTemplateDomAnalysis;
@@ -131,7 +132,7 @@ pub enum NativeTemplateDomOutputError {
 
 /// Refusal retains the same completed File, source and original L3 diagnostics.
 pub struct NativeTemplateDomOutputFailure<'owner, 'arena> {
-    analysis: NativeTemplateDomAnalysis<'owner, 'arena>,
+    analysis: Box<NativeTemplateDomAnalysis<'owner, 'arena>>,
     error: NativeTemplateDomOutputError,
 }
 
@@ -179,7 +180,10 @@ pub fn emit_template_output<'owner, 'arena>(
             document,
             helpers,
         }),
-        Err(error) => Err(NativeTemplateDomOutputFailure { analysis, error }),
+        Err(error) => Err(NativeTemplateDomOutputFailure {
+            analysis: Box::new(analysis),
+            error,
+        }),
     }
 }
 
