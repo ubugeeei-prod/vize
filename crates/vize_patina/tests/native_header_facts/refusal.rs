@@ -81,3 +81,46 @@ fn ambiguous_modified_pre_and_inherited_template_cannot_mint_counterexamples() {
         }))
     );
 }
+
+#[test]
+fn original_table_context_cannot_mint_partial_header_facts() {
+    for (source, depth) in [
+        ("<template><table><html role></html></table></template>", 2),
+        (
+            "<template><math><annotation-xml encoding='text/html'><table><html role></html></table></annotation-xml></math></template>",
+            4,
+        ),
+        (
+            "<template><table><tbody><tr><td><html role></html></td></tr></tbody></table></template>",
+            5,
+        ),
+    ] {
+        let arena = Allocator::default();
+        let owner = selected(&arena, source);
+        let before = cstr!("{:?}", owner.component().carrier());
+        let mut element = owner.children().next().unwrap().into_element().unwrap();
+        for _ in 1..depth {
+            element = element.children().next().unwrap().into_element().unwrap();
+        }
+        let receipt = element.lint_tag().unwrap();
+        assert!(receipt.in_table_context());
+        assert_eq!(
+            receipt.span(),
+            vize_l0::Span::new(
+                span(source, "html role").start,
+                span(source, "html role").start + 4
+            )
+        );
+        let lint = NativeSyntaxLint::new(&owner).unwrap();
+        assert_eq!(
+            lint.header_facts(&element).err(),
+            Some(NativeHeaderFactError::Header(
+                NativeLintRefusal::TableContext {
+                    span: receipt.span()
+                }
+            ))
+        );
+        assert!(owner.component().carrier().errors.is_empty());
+        assert_eq!(cstr!("{:?}", owner.component().carrier()), before);
+    }
+}

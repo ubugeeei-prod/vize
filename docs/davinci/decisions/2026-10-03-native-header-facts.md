@@ -82,3 +82,14 @@ semantic linting, autofixes, dialect coverage and #6881 remain unfinished.
 The initial exact-head Check 37124950787 stopped production Clippy on an unused
 root `Span` import. Remove that import without changing any original fixture,
 predicate or SDK assertion; the repaired head requires fresh hosted acceptance.
+
+The genuine table-context complete-output audit is now part of provider admission:
+the shared strict original-header inspector returns typed `TableContext` before
+its callback, so no header/attribute/counterexample table or partial artifact is
+issued for any original authored-table descendant. One additional custody law
+preserves the exact original `<table><html role>` input, the concrete MathML
+annotation-xml ambiguity and valid cells, including authentic tag spans, unchanged
+carrier observations and parser cleanliness. All 13 original SDK demand/witness
+laws remain unchanged. The initial import repair has real passing hosted evidence
+in consumer Check 37125788038; standalone fresh provider proof is still required
+after this main/policy/source refresh.
