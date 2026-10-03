@@ -58,6 +58,15 @@ pub enum NativeSelectedSetupSfcDomError {
 ///     let _ = compiled.observation();
 /// }
 /// ```
+/// Correctly typed independent owners cannot construct a paired completion:
+/// ```compile_fail
+/// use vize_l1_to_l2::native_file::{NativeSelectedSetupSfc, NativeSelectedSetupSfcObservation};
+/// use vize_l2::lang::js::{NativeSelectedSetup, NativeTemplateView};
+/// fn pair<'o, 'a>(observation: &'o NativeSelectedSetupSfcObservation<'a>,
+///     template: NativeTemplateView<'o, 'a>, setup: NativeSelectedSetup<'o, 'a>) {
+///     let _ = NativeSelectedSetupSfc { observation, template, setup };
+/// }
+/// ```
 #[derive(Debug)]
 pub struct NativeSelectedSetupSfcDomCompilation<'a> {
     observation: NativeSelectedSetupSfcObservation<'a>,

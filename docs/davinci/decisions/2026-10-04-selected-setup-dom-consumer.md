@@ -154,7 +154,7 @@ classifying its actual File binding. `emit_selected_setup` shares the existing
 segment emitter through a private projection implemented only by the two real
 setup receipt types. `compile_native_selected_setup_sfc_dom` normally retains
 the complete original envelope through either full module output or refusal.
-Eight Rust laws, seven new privacy/lifetime docs, six independent desired whole
+Eight Rust laws, eight new privacy/lifetime docs, six independent desired whole
 module/maps and a mandatory source-built pinned Vue runtime capture are authored.
 Source Actions and protected merge proof are pending; no local Rust build or
 install was performed. Primitive updates explicitly request a render and do not
@@ -164,3 +164,7 @@ Independent source review found no production authority/lifetime blocker.
 The two constructor privacy laws were strengthened to supply every field at
 its correct actual type, so field privacy is the decisive compile-fail cause.
 The source audit itself is not build or runtime proof.
+
+A consumer-side complete typed envelope constructor law also proves that
+independently paired original observations/template/setup views cannot mint
+`NativeSelectedSetupSfc`. The healthy queued common parent remains unchanged.
