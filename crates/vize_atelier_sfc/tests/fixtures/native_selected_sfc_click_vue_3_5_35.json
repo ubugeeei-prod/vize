@@ -1,0 +1,205 @@
+{
+  "schema": "vize.native-sfc.selected-click-reference",
+  "version": 1,
+  "compiler": {
+    "name": "@vue/compiler-sfc",
+    "version": "3.5.35"
+  },
+  "runtime": {
+    "name": "vue",
+    "version": "3.5.35"
+  },
+  "filename": "SelectedClick雪🌸.vue",
+  "fixtures": [
+    {
+      "id": "event-initializer",
+      "source": "<!--SFC雪🌸:event-initializer-->\r\n<template><button @click=\"let unused=$event; $event.count++;\"/></template>",
+      "template": "<button @click=\"let unused=$event; $event.count++;\"/>",
+      "referenceRender": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    onClick: $event => {let unused=$event; $event.count++;}\n  }, null, 8 /* PROPS */, [\"onClick\"]))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "SelectedClick雪🌸.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAqD;IAA5C,OAAK,iBAAM,MAAM,CAAC,MAAM,EAAE,MAAM,CAAC,KAAK",
+        "sourcesContent": [
+          "<button @click=\"let unused=$event; $event.count++;\"/>"
+        ]
+      },
+      "referenceModule": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    onClick: $event => {let unused=$event; $event.count++;}\n  }, null, 8 /* PROPS */, [\"onClick\"]))\n}\nconst reference_component = { render };\nexport default reference_component;\n",
+      "expectedCode": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    onClick: $event => {let unused=$event; $event.count++;}\n  }, null, 8 /* PROPS */, [\"onClick\"]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "nativeMap": null,
+      "events": [
+        {
+          "count": 0
+        },
+        {
+          "count": 7
+        }
+      ],
+      "expected": [
+        {
+          "count": 1
+        },
+        {
+          "count": 8
+        }
+      ]
+    },
+    {
+      "id": "original-block-comment",
+      "source": "<!--SFC雪🌸:original-block-comment-->\r\n<template><button @click=\"/*kept*/ var unused=0; if($event.ready){$event.count+=2;}\"/></template>",
+      "template": "<button @click=\"/*kept*/ var unused=0; if($event.ready){$event.count+=2;}\"/>",
+      "referenceRender": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    onClick: $event => {/*kept*/ var unused=0; if($event.ready){$event.count+=2;}}\n  }, null, 8 /* PROPS */, [\"onClick\"]))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "SelectedClick雪🌸.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAA4E;IAAnE,OAAK,0BAAe,MAAM,OAAO,MAAM,CAAC,KAAK,EAAE,MAAM,CAAC,KAAK",
+        "sourcesContent": [
+          "<button @click=\"/*kept*/ var unused=0; if($event.ready){$event.count+=2;}\"/>"
+        ]
+      },
+      "referenceModule": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    onClick: $event => {/*kept*/ var unused=0; if($event.ready){$event.count+=2;}}\n  }, null, 8 /* PROPS */, [\"onClick\"]))\n}\nconst reference_component = { render };\nexport default reference_component;\n",
+      "expectedCode": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    onClick: $event => {/*kept*/ var unused=0; if($event.ready){$event.count+=2;}}\n  }, null, 8 /* PROPS */, [\"onClick\"]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "nativeMap": null,
+      "events": [
+        {
+          "count": 0,
+          "ready": true
+        },
+        {
+          "count": 7,
+          "ready": false
+        }
+      ],
+      "expected": [
+        {
+          "count": 2,
+          "ready": true
+        },
+        {
+          "count": 7,
+          "ready": false
+        }
+      ]
+    },
+    {
+      "id": "unicode-entity-window",
+      "source": "<!--SFC雪🌸:unicode-entity-window-->\r\n<template><button id=\"target\" @click=\"const unused=&quot;雪🌸&quot;; $event.count+=2;\"/></template>",
+      "template": "<button id=\"target\" @click=\"const unused=&quot;雪🌸&quot;; $event.count+=2;\"/>",
+      "referenceRender": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    id: \"target\",\n    onClick: $event => {const unused=\"雪🌸\"; $event.count+=2;}\n  }, null, 8 /* PROPS */, [\"onClick\"]))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "SelectedClick雪🌸.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAA6E;IAArE,EAAE,EAAC,QAAQ;IAAE,OAAK,mBAAQ,MAAM,QAAQ,MAAM,CAAC,KAAK",
+        "sourcesContent": [
+          "<button id=\"target\" @click=\"const unused=&quot;雪🌸&quot;; $event.count+=2;\"/>"
+        ]
+      },
+      "referenceModule": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    id: \"target\",\n    onClick: $event => {const unused=\"雪🌸\"; $event.count+=2;}\n  }, null, 8 /* PROPS */, [\"onClick\"]))\n}\nconst reference_component = { render };\nexport default reference_component;\n",
+      "expectedCode": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"button\", {\n    id: \"target\",\n    onClick: $event => {const unused=\"雪🌸\"; $event.count+=2;}\n  }, null, 8 /* PROPS */, [\"onClick\"]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "nativeMap": null,
+      "events": [
+        {
+          "count": 0
+        },
+        {
+          "count": 7
+        }
+      ],
+      "expected": [
+        {
+          "count": 2
+        },
+        {
+          "count": 9
+        }
+      ]
+    },
+    {
+      "id": "nested-element",
+      "source": "<!--SFC雪🌸:nested-element-->\r\n<template><section><button @click=\"var unused=0; $event.count++;\">run</button></section></template>",
+      "template": "<section><button @click=\"var unused=0; $event.count++;\">run</button></section>",
+      "referenceRender": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    _createElementVNode(\"button\", {\n      onClick: $event => {var unused=0; $event.count++;}\n    }, \"run\", 8 /* PROPS */, [\"onClick\"])\n  ]))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "SelectedClick雪🌸.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAA8E;IAArE,oBAA2D;MAAlD,OAAK,iBAAM,MAAM,IAAI,MAAM,CAAC,KAAK;OAAK,KAAG",
+        "sourcesContent": [
+          "<section><button @click=\"var unused=0; $event.count++;\">run</button></section>"
+        ]
+      },
+      "referenceModule": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    _createElementVNode(\"button\", {\n      onClick: $event => {var unused=0; $event.count++;}\n    }, \"run\", 8 /* PROPS */, [\"onClick\"])\n  ]))\n}\nconst reference_component = { render };\nexport default reference_component;\n",
+      "expectedCode": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"section\", null, [\n    _createElementVNode(\"button\", {\n      onClick: $event => {var unused=0; $event.count++;}\n    }, \"run\", 8 /* PROPS */, [\"onClick\"])\n  ]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "nativeMap": null,
+      "events": [
+        {
+          "count": 0
+        },
+        {
+          "count": 7
+        }
+      ],
+      "expected": [
+        {
+          "count": 1
+        },
+        {
+          "count": 8
+        }
+      ]
+    },
+    {
+      "id": "fragment-event",
+      "source": "<!--SFC雪🌸:fragment-event-->\r\n<template>\n<button @click=\"var unused=0; $event.detail={value:3};\"/><p>tail</p>\n</template>",
+      "template": "\n<button @click=\"var unused=0; $event.detail={value:3};\"/><p>tail</p>\n",
+      "referenceRender": "import { createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"button\", {\n      onClick: $event => {var unused=0; $event.detail={value:3};}\n    }, null, 8 /* PROPS */, [\"onClick\"]),\n    _createElementVNode(\"p\", null, \"tail\")\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "SelectedClick雪🌸.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;IACA,oBAAyD;MAAhD,OAAK,iBAAM,MAAM,IAAI,MAAM,CAAC,MAAM;;IAAc,oBAAW,WAAR,MAAI",
+        "sourcesContent": [
+          "\n<button @click=\"var unused=0; $event.detail={value:3};\"/><p>tail</p>\n"
+        ]
+      },
+      "referenceModule": "import { createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"button\", {\n      onClick: $event => {var unused=0; $event.detail={value:3};}\n    }, null, 8 /* PROPS */, [\"onClick\"]),\n    _createElementVNode(\"p\", null, \"tail\")\n  ], 64 /* STABLE_FRAGMENT */))\n}\nconst reference_component = { render };\nexport default reference_component;\n",
+      "expectedCode": "import { createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"button\", {\n      onClick: $event => {var unused=0; $event.detail={value:3};}\n    }, null, 8 /* PROPS */, [\"onClick\"]),\n    _createElementVNode(\"p\", null, \"tail\")\n  ], 64 /* STABLE_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "nativeMap": null,
+      "events": [
+        {
+          "detail": null
+        },
+        {
+          "detail": {
+            "value": 9
+          }
+        }
+      ],
+      "expected": [
+        {
+          "detail": {
+            "value": 3
+          }
+        },
+        {
+          "detail": {
+            "value": 3
+          }
+        }
+      ]
+    }
+  ]
+}

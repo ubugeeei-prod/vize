@@ -90,6 +90,11 @@ pub use native::{
     NativeSfcCompilation, NativeSfcCompileError, NativeSfcCompileOptions, NativeSfcOutput,
     compile_native_sfc,
 };
+mod native_selected;
+pub use native_selected::{
+    NativeSelectedSfcDomCompilation, NativeSelectedSfcDomError, NativeSelectedSfcDomOptions,
+    NativeSelectedSfcDomOutput, compile_native_selected_sfc_dom,
+};
 pub use parse::parse_sfc;
 pub use script::{TypeResolutionBatchGuard, begin_type_resolution_batch};
 pub use types::{
