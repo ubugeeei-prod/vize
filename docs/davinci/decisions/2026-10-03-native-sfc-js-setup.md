@@ -63,7 +63,8 @@ unfinished, with no default-route replacement or #6880 closure claimed.
 ## Current READ/DOM publication replay
 
 The consumer is an own-only child of the eligibility replay on signed main
-`0fcd481e`, after the actual L3 READ and L4 DOM merge. Its reviewed `200fc8fa`
+`d36c4874`, preserving the actual L3 READ/L4 DOM merge and signed Glyph, LSP
+and JSX successors. Its reviewed `200fc8fa`
 runtime sources, thirteen Rust laws, eight complete modules/maps and reserved
 `__v_raw` refusal are preserved. All unrelated provider and default-product
 bytes remain incoming source. The original private source/library/runtime
