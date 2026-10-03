@@ -68,6 +68,14 @@ complete independently captured diagnostic payloads. Bad-to-good session reuse
 and unrecorded projections retain real backend errors or exact typed refusals.
 Source/mapping laws and TypeScript captures grant no Corsa execution credit.
 
+The first exact-source full Actions run 37108231996 reached the mandatory
+feature build, then failed on a mapping-fixture import of a related-information
+type that the bridge does not reexport. No backend, mapping or privacy law ran.
+The test-only correction constructs the same complete related payload through
+fallible deserialization into the actual field type and propagates construction
+errors. Every mapping assertion and diagnostic field is retained; public and
+production APIs are unchanged. A fresh corrected-source full run is required.
+
 The existing full Rust Actions recipe explicitly runs the feature's mapping,
 actual-backend and privacy tests, minimal-feature check and strict Clippy.
 Exact-head Actions, current all 100 instruction probes, native Stack ancestry,
