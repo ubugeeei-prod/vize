@@ -65,6 +65,13 @@ than substituting fixture bytes; whole native code/map comparisons remain
 mandatory. Exact-head checks, full protected suites, all 100 unchanged
 instruction ceilings and actual merge remain required. With
 the genuine predecessors merged, this successor is published independently.
+Source a2f626546d passes exact Check37126708092, including all five original
+annotation laws and all four Rust/tooling workers. After census policy #7580
+actually merges, its canonical producer regenerates the complete incoming
+union: resolved tables stay authoritative and raw diagnostic counts stay in
+the mandatory fresh report. Provider/runtime bytes, goldens and all incoming
+source remain unchanged; refreshed-head Actions and protected acceptance are
+still required.
 
 Broader TS erasure, ordinary scripts, macros, nonprimitive bodies, remaining Vue
 dialects/targets and compiler default migration remain unfinished. Compiler
