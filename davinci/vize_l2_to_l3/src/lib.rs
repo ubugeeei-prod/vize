@@ -22,3 +22,4 @@ pub use decision::{
     build_dom_file_decisions,
 };
 pub use lower::{Lowered, lower};
+pub use vize_l3::jsx::{NativeJsxAnalysis, RejectedJsxAnalysis, build_jsx_decisions};

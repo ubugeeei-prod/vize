@@ -312,3 +312,5 @@ l2	analysis	davinci/vize_l2/src/resolution/walk/syntax_tests.rs	1	1	0	0	0	0	0	0
 l3	analysis	davinci/vize_l3/src/decision/ssr.rs	1	2	0	0	0	0	0	0
 l3	analysis	davinci/vize_l3/src/decision/ssr/build.rs	1	5	0	0	0	0	0	0
 l3	-	davinci/vize_l3/src/decision/ssr/tests.rs	0	0	0	0	1	4	0	0
+l3	analysis	davinci/vize_l3/src/jsx.rs	1	2	0	0	0	0	0	0
+l3	analysis	davinci/vize_l3/src/jsx/build.rs	1	2	0	0	0	0	0	0

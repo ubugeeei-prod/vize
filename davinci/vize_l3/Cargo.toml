@@ -17,6 +17,8 @@ serde_json = { workspace = true }
 [dev-dependencies]
 toml = { workspace = true }
 vize_l1 = { workspace = true }
+oxc_parser = { workspace = true }
+oxc_span = { workspace = true }
 
 [lints]
 workspace = true

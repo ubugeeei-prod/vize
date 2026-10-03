@@ -29,6 +29,7 @@ extern crate alloc;
 pub mod decision;
 pub mod dump;
 pub mod extract;
+pub mod jsx;
 pub mod lattice;
 pub mod op;
 pub mod operand;
