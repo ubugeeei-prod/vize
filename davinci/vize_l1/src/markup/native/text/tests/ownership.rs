@@ -170,9 +170,13 @@ fn entity_spelling_refuses_before_decode_and_the_next_original_text_stays_availa
 fn original_unsupported_parser_observations_refuse_before_deriving_root_text()
 -> Result<(), &'static str> {
     let arena = Allocator::default();
-    let source = "<template>  original<div v->body</div></template>";
+    let source = "<template>  original<div v-pre:[((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((key))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))]>body</div></template>";
     let owner = selected(&arena, source)?;
-    assert!(!owner.component().carrier().unsupported.is_empty());
+    assert_eq!(owner.component().carrier().unsupported.len(), 1);
+    assert_eq!(
+        owner.component().carrier().unsupported[0].error,
+        crate::dialect::vue::DirectiveNameError::NestingLimit
+    );
     let child = owner.children().next().ok_or("original text prefix")?;
     let original = child.surface();
     let before = arena.allocated_bytes();

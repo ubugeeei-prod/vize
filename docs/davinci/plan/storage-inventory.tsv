@@ -64,6 +64,8 @@ l1	analysis	davinci/vize_l1/src/markup/native/operand/event/tests.rs	2	0	0	0	0	0
 l1	analysis	davinci/vize_l1/src/markup/native/reborrow_tests.rs	1	0	0	0	0	0	0	0
 l1	analysis	davinci/vize_l1/src/markup/native/interpolation/tests/ownership.rs	2	0	0	0	0	0	0	0
 l1	-	davinci/vize_l1/src/markup/native/interpolation/tests/refusals.rs	0	0	1	0	0	0	0	0
+l1	analysis	davinci/vize_l1/src/markup/native/text/tests/fixtures.rs	1	0	0	0	0	0	0	0
+l1	analysis	davinci/vize_l1/src/markup/native/text/tests/ownership.rs	1	0	1	0	0	0	0	0
 l1	-	davinci/vize_l1/src/event.rs	0	0	0	0	1	2	0	0
 l1	-	davinci/vize_l1/src/event/tests.rs	0	0	0	0	1	4	0	0
 l1	analysis	davinci/vize_l1/src/lang/moonbit/lines.rs	1	1	0	0	0	0	0	0
