@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import "./z-init";
+import "./a-init";
+// stable boundary
+import B from "./b";
+import A from "./a";
+</script>

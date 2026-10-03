@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import B from "./b";
+import A from "./a";
+
+import D from "./d";
+import C from "./c";
+</script>

@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import { useRoute } from "vue-router";
+
+import { formatName } from "./format";
+import type { User } from "./types";
+
+const props = defineProps<{ user: User }>();
+const route = useRoute();
+const name = computed(() => formatName(props.user, route.path));
+</script>
