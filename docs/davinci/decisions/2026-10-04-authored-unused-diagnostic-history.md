@@ -50,8 +50,9 @@ source-built Actions provides actual observations.
 A separate genuine Unix native Vue law consumes the same original primitive SFC,
 retaining the original observation, selected Program, File, Component and
 interpolation. It compares the entire raw full report, authored range, actual
-same-session compiler options and source/config bytes. Enabled options require
-an error; disabled/default options retain the actual severity-4 TS6133 hint.
+same-session compiler options and source/config bytes. Enabled options retain
+the actual severity-2 TS6133 warning; disabled/default options retain the
+actual severity-4 TS6133 hint.
 Batch's empty disabled vectors are never substituted for those native reports.
 The diagnosing process must already be reaped when the result is published,
 and no projected file is materialized. Its platform gate follows the actual
@@ -72,3 +73,22 @@ full #6879 history/native/default migration. No upstream protocol or checker
 options are changed by this slice. No local Rust build or backend installation
 is used; runtime proof belongs to existing source-built Actions and the
 protected queue.
+
+The first exact `5ba28aa3291e0745985e80551cc6be88c673ac97` Actions attempt
+(Check37159113770, Rust1 job111309706011) fails the unmasked native report
+assertion: actual TS6133 is severity 2, while the initial reference was severity
+
+1. The actual code/message/full range/source/full-report kind match. No queue
+   admission or native runtime acceptance is credited to that head.
+
+This is a genuine configured LSP distinction, not a source error to filter.
+The pinned actual backend
+[diagnostics.go:54](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/ls/diagnostics.go#L54)
+passes the real style-warning preference; the
+[converter](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/ls/lsconv/converters.go#L258-L285)
+classifies TS6133 as a style diagnostic and converts an error to warning when
+that preference is enabled. Only the separate native reference is corrected to
+the observed warning. Batch CLI error vectors remain unchanged and still
+require actual T1 proof; disabled native suggestions remain severity 4. No
+source/configuration, protocol capability, preference, production normalization
+or instruction ceiling is changed. Fresh exact-head Actions is required.

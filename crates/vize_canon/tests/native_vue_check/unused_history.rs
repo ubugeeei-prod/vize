@@ -1,4 +1,4 @@
-//! Historical Batch errors and genuine native pull suggestions stay distinct.
+//! Historical Batch errors and genuine native pull warnings/hints stay distinct.
 
 use super::*;
 use std::os::unix::fs::PermissionsExt;
@@ -94,7 +94,7 @@ fn primitive_native_history_keeps_full_unused_errors_and_disabled_hints() {
             serde_json::json!({
                 "kind":"full", "items":[{
                     "range":{"start":{"line":2,"character":6},"end":{"line":2,"character":17}},
-                    "severity":if enabled {1} else {4}, "code":6133,"source":"ts",
+                    "severity":if enabled {2} else {4}, "code":6133,"source":"ts",
                     "message":"'unusedLocal' is declared but its value is never read."
                 }]
             }),
