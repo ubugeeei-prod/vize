@@ -2,6 +2,7 @@
 
 pub(crate) mod file;
 mod for_head;
+mod handler;
 pub mod interpolation;
 pub use crate::file::region::native::NativeTemplateWalk;
 pub use file::native::{
@@ -19,4 +20,8 @@ pub use interpolation::{
 };
 
 mod jsx_body;
+pub use handler::{
+    HandlerInput, HandlerInputErrorKind, NativeHandlerInput, RejectedHandlerInput,
+    RejectedNativeHandlerInput,
+};
 pub use jsx_body::{JsxChildren, JsxFile, JsxFileError, JsxFileProducer, JsxNode, RejectedJsxFile};
