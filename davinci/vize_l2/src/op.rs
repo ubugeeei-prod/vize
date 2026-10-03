@@ -49,9 +49,11 @@ pub mod vue;
 
 pub use bind::{BindOp, OnOp};
 pub use control::{ForBinding, ForOp, IfBranch, IfOp};
+mod original_for;
 pub use element::{Attribute, ComponentOp, ElementOp, Namespace};
 pub use handler::{HandlerId, OnHandlerRef};
 pub use model::{BindingContract, ModelOp};
+pub use original_for::{OriginalForId, OriginalForOp};
 pub use slot::{DynamicName, SlotContentOp, SlotOp};
 pub use text::{CommentOp, InterpolationOp, TextOp};
 pub use vue::{
@@ -86,6 +88,8 @@ pub enum Op<'a> {
     /// `ui.for` - structured iteration; the repeated content is one owned
     /// region.
     For(Box<'a, ForOp<'a>>),
+    /// `ui.for` - the genuine original File-owned declaration family.
+    OriginalFor(Box<'a, OriginalForOp<'a>>),
     /// `ui.slot` - a slot outlet owning its fallback region.
     Slot(Box<'a, SlotOp<'a>>),
 }
@@ -103,6 +107,7 @@ impl Op<'_> {
             Self::Comment(_) => "ui.comment",
             Self::If(_) => "ui.if",
             Self::For(_) => "ui.for",
+            Self::OriginalFor(_) => "ui.for",
             Self::Slot(_) => "ui.slot",
         }
     }
