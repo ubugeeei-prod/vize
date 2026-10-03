@@ -415,8 +415,8 @@
             "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "stderr": {
-            "path": "tests/_fixtures/differential/formatter-history/import-sorting-config/effectful-write-relative-stderr.txt",
-            "sha256": "b85c397cddcc546baac710143c06dc7d6f1cc36be6d313b54f0b638c11351ba8"
+            "path": "tests/_fixtures/differential/formatter-history/import-sorting-config/effectful-write-stderr.txt",
+            "sha256": "49095ba4e0beeb5e10c36c8fcb738055f43e2d17ebff45e9339f8bd48ab37ebf"
           },
           "files": {
             "nested/UserCard.vue": {

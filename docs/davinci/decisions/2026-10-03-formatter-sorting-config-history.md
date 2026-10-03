@@ -31,9 +31,8 @@ full native resolver probes. Configuration input, return trace, API probes and C
 output are distinct evidence.
 
 Expected CLI stream bytes are repository-authored from the existing CLI contract,
-not captured observations. The MJS entry expansion prints an absolute temporary
-path; only its declared workspace identity is interpolated into the full expected
-stream. Actual stderr is retained without normalization, stripping or truncation.
+not captured observations. The MJS entry expansion reports the relative `nested/UserCard.vue` path;
+the complete expected stream retains that actual spelling. Actual stderr is retained without normalization, stripping or truncation.
 Current Rust CLI source laws and all input/config/output/stream assets are pinned.
 Unknown references, duplicate or omitted cases/steps, broken file-state chains,
 invented native credit and altered full stream/file hashes fail closed. Store the
@@ -69,6 +68,22 @@ failed with `No space left on device`, and stopped private Cargo caches were cle
 while all earlier frozen observers, receipts and raw reports were preserved. Further
 Rust validation runs in hosted Actions. Exact-head Actions, actual composed CLI
 execution, native Stack registration when applicable and literal merge are pending.
+
+## First protected capture and reference correction
+
+The first actual protected candidate `4f5fbe00b17a9cc5f08245ccfb93c8cef522176b`
+ran all twelve CLI calls through Check `37121907402`. Worker `111199593426` retained
+artifact `11274140860`: five scenarios matched and MJS failed only because its
+authored expected stderr assumed an absolute path. Actual complete stderr reports
+`Reformatted: nested/UserCard.vue`, SHA-256
+`b85c397cddcc546baac710143c06dc7d6f1cc36be6d313b54f0b638c11351ba8`.
+All source/config/counter/return/ignore file states remain fully captured. Remove
+the known-red PR from the queue immediately; do not reinterpret that failed report
+as acceptance of revised source. Keep the original expected asset, archive the whole
+original manifest as `import-sorting-config-manifest.d901.json.txt`, and add the
+complete observed relative-path reference separately. No product behavior changes.
+The original failure/source/raw capture stays immutable. Fresh exact-source Actions,
+protected real replay and literal merge remain pending.
 
 ## Remaining gates
 
