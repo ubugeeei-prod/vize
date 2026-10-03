@@ -97,6 +97,12 @@ File query refusal instead of inventing admission. The superseded source was
 never queued. Fresh source and queue acceptance must execute this law; earlier
 successful runtime evidence is historical.
 
+Source `d7f0efdb` passes actual provider archive/runtime/minimal/strict/doctest
+checks but exceeds the central decision record's 350-line gate by two lines.
+The central correction summaries are folded into the existing semantic query
+paragraph; this companion keeps their full history. No source-length exemption
+or production change is introduced. Fresh exact-head acceptance remains required.
+
 Generic File-level template position queries, additional native grammar/dialects,
 JSX, external/workspace navigation and default product admission remain
 unfinished. This shared original-SFC facade does not close #6871, #6872 or #6883.
