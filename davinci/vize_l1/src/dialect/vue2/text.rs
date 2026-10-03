@@ -282,7 +282,16 @@ fn invocation<'a>(
                 .chain(core::iter::once(args.text().len()))
             {
                 let argument = piece(allocator, args, start, end)?;
-                if argument.text().is_empty() || argument.text().starts_with("...") {
+                if argument.text().is_empty() {
+                    // The final window is either the whole blank list or the
+                    // one optional trailing comma. Earlier empty windows are
+                    // holes, including leading or repeated commas.
+                    if end == args.text().len() {
+                        break;
+                    }
+                    return Err(TextBoundaryKind::UnsupportedArgumentList);
+                }
+                if argument.text().starts_with("...") {
                     return Err(TextBoundaryKind::UnsupportedArgumentList);
                 }
                 arguments.push(argument);

@@ -76,7 +76,7 @@ language parses begin. Actual diagnostics stay available and subsequent bindings
 `admitted()` borrows only the original chain with no dialect boundary or native
 language hole. CRLF/LF are historical text framing; lone CR and U+2028/U+2029,
 empty callback content and missing closers retain typed refusals. Regex character
-classes, comments, spread/trailing-comma argument lists, unsafe generated-name
+classes, comments, spread/empty-hole argument lists, unsafe generated-name
 spellings and unbalanced historical scanner state are explicit unsupported
 families. Entity-produced braces outside literal interpolation retain authored
 `EncodedDelimiter` boundaries: Vue 2 decodes text before delimiter recognition,
@@ -143,3 +143,10 @@ CRLF controls. The six upstream/compiler/runtime tests pass locally; corrected
 head hosted laws, strict lint, full Check, all-100 measurement and protected
 queue/actual merge remain external acceptance gates. The initial source and
 its qualified checks remain historical evidence, not corrected-head credit.
+
+The [blank/trailing argument-list follow-up](./2026-10-03-native-vue2-argument-lists.md)
+accepts whitespace-only lists and one trailing comma after nonempty arguments,
+retaining complete original invocation coordinates and sole native argument
+observations. Leading/repeated commas remain typed refusals. Its source-qualified
+hosted and protected acceptance is tracked separately from this provider's
+actual `c05e0ee71b` merge.

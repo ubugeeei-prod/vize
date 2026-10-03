@@ -219,7 +219,7 @@ fn uncertified_families_are_typed_refusals_without_losing_source() {
             "x | wrap(...values)",
             TextBoundaryKind::UnsupportedArgumentList,
         ),
-        ("x | wrap(1,)", TextBoundaryKind::UnsupportedArgumentList),
+        ("x | wrap(1,,)", TextBoundaryKind::UnsupportedArgumentList),
         ("x | wrap(", TextBoundaryKind::UnbalancedFilterSyntax),
         ("x | \"bad\"", TextBoundaryKind::UnsupportedFilterName),
     ] {

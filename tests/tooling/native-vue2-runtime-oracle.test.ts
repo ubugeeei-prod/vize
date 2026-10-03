@@ -39,6 +39,18 @@ const cases: Array<[string, string, Call[]]> = [
   ["value | with-dash", "dash:4", [{ name: "withDash", args: [4] }]],
   ["value | upper()", "4", [{ name: "upper", args: [4] }]],
   ["value | upper ()", "SPACED:4", [{ name: "upper ", args: [4] }]],
+  ["value | upper( )", "4", [{ name: "upper", args: [4] }]],
+  ["value | upper(\t\n\u00a0)", "4", [{ name: "upper", args: [4] }]],
+  ["value | upper(&#160;&#xfeff;)", "4", [{ name: "upper", args: [4] }]],
+  ["value | upper ( )", "SPACED:4", [{ name: "upper ", args: [4] }]],
+  ["value | add(2,)", "6", [{ name: "add", args: [4, 2] }]],
+  ["value | add(2,  )", "6", [{ name: "add", args: [4, 2] }]],
+  ["value | add(2&#44;)", "6", [{ name: "add", args: [4, 2] }]],
+  [
+    "value | pick((1,2), [3,], {a:3,},)",
+    '[4,2,[3],{"a":3}]',
+    [{ name: "pick", args: [4, 2, [3], { a: 3 }] }],
+  ],
   ["value", "4", []],
   ["value\r\n | upper", "4", [{ name: "upper", args: [4] }]],
   ["value &#124; add(2)", "6", [{ name: "add", args: [4, 2] }]],
@@ -114,7 +126,6 @@ test("real runtime characterizes typed deferred families without native admissio
   for (const environment of ["test", "production"] as const) {
     for (const [content, value, calls] of [
       ["value | wrap(...values)", "前4後", [{ name: "wrap", args: [4, "前", "後"] }]],
-      ["value | add(2,)", "6", [{ name: "add", args: [4, 2] }]],
       ["/[a|b]/.test(value) | number", "0", [{ name: "number", args: [false] }]],
     ] as Array<[string, string, Call[]]>) {
       assert.deepEqual(render(environment, `<div>{{ ${content} }}</div>`), {

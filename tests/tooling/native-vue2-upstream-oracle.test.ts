@@ -22,6 +22,14 @@ const cases = [
   ["value | with-dash", '_f("with-dash")(value)'],
   ["value | upper()", '_f("upper")(value)'],
   ["value | upper ()", '_f("upper ")(value)'],
+  ["value | upper( )", '_f("upper")(value, )'],
+  ["value | upper(\t\n\u00a0)", '_f("upper")(value,\t\n\u00a0)'],
+  ["value | upper(\u00a0\ufeff)", '_f("upper")(value,\u00a0\ufeff)'],
+  ["value | upper ( )", '_f("upper ")(value, )'],
+  ["value | wrap(1,)", '_f("wrap")(value,1,)'],
+  ["value | add(2,)", '_f("add")(value,2,)'],
+  ["value | add(2,  )", '_f("add")(value,2,  )'],
+  ["value | pick((1,2), [3,], {a:3,},)", '_f("pick")(value,(1,2), [3,], {a:3,},)'],
   ["value", "value"],
   ["value\r\n | upper", '_f("upper")(value)'],
 ] as const;
@@ -64,13 +72,35 @@ test("historical text framing and deferred families stay explicitly characterize
     tokens: [{ "@binding": "" }],
   });
   assert.equal(parser.parseFilters("x | wrap(...values)"), '_f("wrap")(x,...values)');
-  assert.equal(parser.parseFilters("x | wrap(1,)"), '_f("wrap")(x,1,)');
   assert.equal(parser.parseFilters("/[a|b]/.test(x) | number"), '_f("number")(/[a|b]/.test(x))');
   const compiled = compiler.compile("<div>&#123;&#123; x &#125;&#125;</div>");
   assert.equal(compiled.ast.children[0].expression, "_s(x)");
   for (const name of ["v-pre", "v-pre.foo", "v-pre:arg", "@pre", "v-previous"]) {
     const result = compiler.compile(`<div ${name}>{{ x | upper }}</div>`);
     assert.equal(result.ast.children[0].type, name === "v-pre" ? 3 : 2, name);
+  }
+});
+
+test("empty list holes and non-ECMAScript whitespace remain real compiler errors", () => {
+  for (const [content, binding] of [
+    ["value | upper(,)", '_f("upper")(value,,)'],
+    ["value | upper(, )", '_f("upper")(value,, )'],
+    ["value | add(2,,)", '_f("add")(value,2,,)'],
+    ["value | add(2, ,)", '_f("add")(value,2, ,)'],
+    ["value | add(2,,3,)", '_f("add")(value,2,,3,)'],
+    ["value | add(1 +,)", '_f("add")(value,1 +,)'],
+    ["value | upper(\u0085)", '_f("upper")(value,\u0085)'],
+  ]) {
+    assert.equal(parser.parseFilters(content), binding, content);
+    const compiled = compiler.compile(`<div>{{ ${content} }}</div>`);
+    assert.equal(compiled.errors.length, 1, content);
+    assert.deepEqual(
+      plain(
+        compiled.ast.children.map(({ type, expression, tokens }) => ({ type, expression, tokens })),
+      ),
+      [{ type: 2, expression: `_s(${binding})`, tokens: [{ "@binding": binding }] }],
+      content,
+    );
   }
 });
 
