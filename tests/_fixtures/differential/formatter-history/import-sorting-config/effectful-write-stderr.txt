@@ -1,0 +1,5 @@
+Found 1 file(s)
+Reformatted: {{workspace}}/nested/UserCard.vue
+
+Formatted 1 file(s)
+  1 file(s) reformatted

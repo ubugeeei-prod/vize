@@ -1,0 +1,1 @@
+{"formatter":{"sortImports":{}},"entries":[{"basePath":"nested","files":["*.vue"],"ignores":["Ignored.vue"]}]}

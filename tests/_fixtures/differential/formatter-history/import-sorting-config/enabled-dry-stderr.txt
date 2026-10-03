@@ -1,0 +1,5 @@
+Found 1 file(s)
+Would reformat: UserCard.vue
+
+Checked 1 file(s) (use --write to apply changes)
+  1 file(s) would be reformatted

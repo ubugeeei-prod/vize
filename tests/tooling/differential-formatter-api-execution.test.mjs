@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { buildFormatterObserver } from "../differential/formatter-api-build.mjs";
 import { runFormatterApiPack } from "../differential/formatter-api.mjs";
+import { runSortingConfigPack } from "../differential/formatter-sorting-config.mjs";
 import { validateFormatterHistoryExecution } from "../differential/formatter-history-audit.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -106,5 +107,26 @@ void test("shared formatter API history observes complete source-built output an
       pairedComparisons: 0,
     },
     JSON.stringify(sorting.rows, null, 2),
+  );
+  const configuration = runSortingConfigPack({
+    repoRoot: root,
+    binaryPath: path.join(root, "target/ci", process.platform === "win32" ? "vize.exe" : "vize"),
+  });
+  fs.writeFileSync(
+    path.join(evidenceDir, "import-sorting-config-report.json"),
+    JSON.stringify(configuration, null, 2) + "\n",
+  );
+  assert.deepEqual(
+    configuration.summary,
+    {
+      plannedCases: 6,
+      legacyMatches: 6,
+      legacyFailures: 0,
+      nativeUnsupported: 6,
+      nativeHandled: 0,
+      nativeEquivalent: 0,
+      pairedComparisons: 0,
+    },
+    JSON.stringify(configuration.rows, null, 2),
   );
 });
