@@ -134,11 +134,10 @@ const loadRuntime = (environment: "test" | "production"): Runtime => {
   const runtime = load(pkg.main) as Runtime;
   assert.equal(runtime.version, "2.7.16");
   assert.deepEqual(
-    [...loaded.keys()].sort(),
-    [
-      pkg.main,
-      `dist/vue.runtime.common.${environment === "production" ? "prod" : "dev"}.js`,
-    ].sort(),
+    [...loaded.keys()].sort((left, right) => left.localeCompare(right)),
+    [pkg.main, `dist/vue.runtime.common.${environment === "production" ? "prod" : "dev"}.js`].sort(
+      (left, right) => String(left).localeCompare(String(right)),
+    ),
   );
   runtime.config.silent = true;
   return runtime;

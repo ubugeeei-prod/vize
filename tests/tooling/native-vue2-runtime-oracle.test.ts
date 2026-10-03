@@ -51,14 +51,15 @@ const render = (environment: "test" | "production", template: string) => {
   const filters = Object.fromEntries(
     Object.entries({
       upper: (value: unknown) => String(value).toUpperCase(),
-      "upper ": (value: unknown) => `SPACED:${value}`,
+      "upper ": (value: unknown) => `SPACED:${String(value)}`,
       number: (value: unknown) => Number(value),
       add: (value: unknown, amount: unknown) => Number(value) + Number(amount),
-      wrap: (value: unknown, before: unknown, after: unknown) => `${before}${value}${after}`,
+      wrap: (value: unknown, before: unknown, after: unknown) =>
+        `${String(before)}${String(value)}${String(after)}`,
       json: (value: unknown) => JSON.stringify(value),
       pick: (...values: unknown[]) => JSON.stringify(values.map(normalized)),
-      日本語: (value: unknown) => `【${value}】`,
-      withDash: (value: unknown) => `dash:${value}`,
+      日本語: (value: unknown) => `【${String(value)}】`,
+      withDash: (value: unknown) => `dash:${String(value)}`,
     }).map(([name, implementation]) => [
       name,
       (...args: unknown[]) => {
