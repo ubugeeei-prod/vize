@@ -69,3 +69,17 @@ migration. Product dispatch must independently reject an actual setup sibling;
 this script proof does not establish whole-descriptor completion. #6880 remains
 open and neither a legacy-backed shortcut nor default compiler migration is
 introduced.
+
+The corrected `1d94e21275e2b888f2db3e10559d63b459857073` source passes
+Check 37135811757. After the preceding #7613 actually merges as signed
+`90c1546c29b34fbc0e0d4ff3741e934354812d38`, its queued child #7618 retains
+a stale feature-branch base and an UNMERGEABLE entry without a candidate.
+The normal dequeue operation rejects that feature branch's missing queue.
+Reversibly closing only #7618 releases its entry; live GitHub reports no queue
+entry. Unstacking removes only the two remaining owned children from their old
+record, leaving the merged historical prefix intact. Reopen #7618, retarget
+fresh main and replay only its genuine L4 changes; preserve incoming original
+handler providers and scope metadata. Re-register the remaining dependent
+children as a new native Stack and require fresh exact-source Actions before
+protected admission. This repairs metadata without acceptance credit from the
+old source checks, queue reservation or prepared-render assembly tests.

@@ -79,6 +79,15 @@ Options issue assertion. It now compares each entire authored default statement,
 retaining the original issue count, unit/scope and complete File checks. Fresh
 source Actions and protected acceptance remain required for this correction.
 
+The corrected exact source `011af77756396e259da4c0e4b05125e913ea6218`
+passes Check 37135183563. Protected candidate
+`90c1546c29b34fbc0e0d4ff3741e934354812d38` passes Check 37136015932,
+Musea 37136015567 and Nuxt 37136015542, including the full Rust/differential
+suite, four Rust and tooling workers and all unchanged instruction ceilings.
+PR #7613 actually merges as that verified signed commit at
+2026-10-03T16:29:46Z, confirmed in fresh main. Linked L4 and product capture
+acceptance remain separate unfinished dependencies.
+
 TODOs remain the linked L4 default rewrite, real complete native module/map and
 Vue runtime capture closure, broader Options API and ordinary binding exposure,
 remaining JS/TS/Vue dialects and compiler fix-history/default migration. #6880
