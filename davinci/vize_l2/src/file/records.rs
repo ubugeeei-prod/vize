@@ -109,6 +109,15 @@ impl ScriptUnit {
     pub(crate) fn walk_completed(&self) -> bool {
         self.walk == ProgramWalkState::Complete
     }
+    /// Whether the existing walk observed an original call, constructor, tagged
+    /// template or dynamic import. This observation survives rollback and unwind.
+    ///
+    /// A false observation on an incomplete File does not prove absence. This
+    /// getter grants neither completed-walk nor native File admission authority.
+    #[must_use]
+    pub fn has_invocations(&self) -> bool {
+        self.origin.has_call
+    }
     /// Actual unit interruption is separate from the stored syntax issue slice.
     #[must_use]
     pub fn interruption(&self) -> Option<FileIssue> {
