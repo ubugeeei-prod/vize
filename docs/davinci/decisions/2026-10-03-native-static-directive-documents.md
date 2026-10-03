@@ -47,6 +47,17 @@ dependency or hosted-workspace acceptance claim. Canonical Glyph inventories
 come from the unchanged repository generators. Fresh required/full/all-100
 Actions and the protected queue must validate the published exact head.
 
+## Hosted corpus inventory correction
+
+The first source campaign for `9ab3aae0` failed the natural `v-on` corpus
+staleness check in tooling shard 3. Six modified-event spellings introduced
+by the new formatter fixtures were absent from the Glyph area's saved shard.
+The unchanged authoritative generator now regenerates that one shard and
+checks all 22 corpus shards byte for byte. Its five real storage/corpus laws
+pass. Runtime source, fixture input/output and bucket capacities stay exact;
+the original failed campaign is retained. Fresh exact-head Actions and
+instruction/queue acceptance are required for the corrected head.
+
 ## Remaining work
 
 Dynamic arguments, full directives without static arguments, interpolation,
