@@ -32,6 +32,7 @@
 //! [`names`]: https://tc39.es/ecma426/#json-names
 //! [VLQ]: https://en.wikipedia.org/wiki/Variable-length_quantity
 
+use super::line_endings::line_break_len;
 use alloc::vec::Vec;
 use vize_l0::{FxHashMap, String, ToCompactString};
 
@@ -201,11 +202,14 @@ fn resolve_positions(code: &str, source: &str, segments: &[Segment]) -> Vec<Reso
         let target =
             floor_char_boundary(code, (seg.generated_offset as usize).min(code_bytes.len()));
         while cursor < target {
-            if code_bytes.get(cursor) == Some(&b'\n') {
+            let width = line_break_len(code, cursor);
+            if width > 0 && cursor + width <= target {
+                cursor += width;
                 gen_line += 1;
-                gen_line_start = cursor + 1;
+                gen_line_start = cursor;
+            } else {
+                cursor += 1;
             }
-            cursor += 1;
         }
         let generated_column = utf16_len(code.get(gen_line_start..target).unwrap_or_default());
 
@@ -226,13 +230,16 @@ fn resolve_positions(code: &str, source: &str, segments: &[Segment]) -> Vec<Reso
 }
 
 /// Byte offsets at which each line of `text` begins. Always starts with `0`;
-/// every `\n` adds the offset just past it.
+/// each JavaScript line terminator adds the offset just past it.
 fn line_start_table(text: &str) -> Vec<usize> {
     let mut starts = Vec::with_capacity(16);
     starts.push(0);
-    for (i, &b) in text.as_bytes().iter().enumerate() {
-        if b == b'\n' {
-            starts.push(i + 1);
+    let mut cursor = 0;
+    while cursor < text.len() {
+        let width = line_break_len(text, cursor);
+        cursor += width.max(1);
+        if width > 0 {
+            starts.push(cursor);
         }
     }
     starts

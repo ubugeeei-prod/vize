@@ -18,7 +18,7 @@ const vue = fromVue("vue");
 const url = (code) => `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
 const runtimeUrl = url(
   `import runtime from ${JSON.stringify(pathToFileURL(fromVue.resolve("vue")).href)};\n` +
-    ["createVNode", "createTextVNode"]
+    ["createVNode", "createTextVNode", "resolveComponent"]
       .map((name) => `export const ${name}=runtime.${name};`)
       .join("\n"),
 );
@@ -112,7 +112,7 @@ function vnodeShape(node) {
   };
 }
 
-export async function execute(code, fixture) {
+async function loadModule(code, fixture) {
   // Only the import address is adapted; the complete generated module executes.
   let addressed = code.replace('from "vue"', `from ${JSON.stringify(runtimeUrl)}`);
   for (const [name, external] of Object.entries(fixture.modules ?? {})) {
@@ -122,7 +122,11 @@ export async function execute(code, fixture) {
       `from ${JSON.stringify(moduleUrl)}`,
     );
   }
-  const module = await import(url(addressed));
+  return import(url(addressed));
+}
+
+export async function execute(code, fixture) {
+  const module = await loadModule(code, fixture);
   const render = module.render ?? module.default;
   assert.equal(typeof render, "function");
   const renderer = hostRenderer();
@@ -152,6 +156,19 @@ export async function execute(code, fixture) {
   return { exports: Object.keys(module), results };
 }
 
+export async function executeRegistered(code, fixture) {
+  const module = await loadModule(code, fixture);
+  const renderer = hostRenderer();
+  const root = { kind: "element", tag: "root", props: {}, children: [], parent: null };
+  const app = renderer.createApp({ render: module.render });
+  app.component("search", { render: () => vue.createVNode("b", null, "registered") });
+  app.mount(root);
+  const tree = root.children.map(shape);
+  app.unmount();
+  assert.deepEqual(root.children, []);
+  return tree;
+}
+
 if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(process.argv[1]).href &&
@@ -164,6 +181,14 @@ if (
     fixture.referenceCode = measured.code;
     fixture.referenceMap = measured.map;
     fixture.runtime = await execute(measured.code, fixture);
+  }
+  for (const fixture of pack.refusals) {
+    const measured = reference(fixture, pack);
+    fixture.referenceCode = measured.code;
+    fixture.referenceMap = measured.map;
+    fixture.runtime = fixture.registered
+      ? await executeRegistered(measured.code, fixture)
+      : await execute(measured.code, fixture);
   }
   fs.writeFileSync(fixtureUrl, JSON.stringify(pack, null, 2) + "\n");
 }

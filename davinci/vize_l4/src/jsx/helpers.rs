@@ -1,5 +1,4 @@
-use alloc::format;
-use vize_l0::{Span, String};
+use vize_l0::{Span, String, cstr};
 use vize_l2::file::FileArtifact;
 use vize_l3::jsx::{JsxDecisionKind, NativeJsxAnalysis};
 
@@ -38,7 +37,7 @@ fn one(file: &FileArtifact<'_>, name: &str) -> Result<SelectedHelper, JsxEmitErr
     let id = runtime.helper(name).ok_or_else(failure)?;
     let (module, export) = runtime.export(id).ok_or_else(failure)?;
     for index in 0..=u32::MAX {
-        let alias = format!("_vize_{name}{index}");
+        let alias = cstr!("_vize_{name}{index}");
         // Every lexical scope matters: a function parameter can shadow imports.
         // References also prevent capturing an unrelated unresolved global read.
         if file.bindings().any(|binding| {
@@ -56,7 +55,7 @@ fn one(file: &FileArtifact<'_>, name: &str) -> Result<SelectedHelper, JsxEmitErr
             id,
             export,
             module,
-            alias: String::new(alias),
+            alias,
         });
     }
     Err(failure())

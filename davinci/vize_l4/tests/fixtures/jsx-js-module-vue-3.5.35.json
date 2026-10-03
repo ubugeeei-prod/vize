@@ -1145,6 +1145,326 @@
           }
         ]
       }
+    },
+    {
+      "id": "line-ending-cr",
+      "source": "/* header */\rexport function render(message) {\r  return <div>{message}</div>;\r}\r",
+      "comments": ["/* header */"],
+      "arguments": [["雪🌸"]],
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\n/* header */\rexport function render(message) {\r  return _vize_createVNode0(\"div\", null, [message]);\r}\r",
+      "map": {
+        "file": "Native雪🌸.jsx",
+        "mappings": ";AAAA;AACA;AACA,SAAS,mBAAC,cAAKA,SAAc;AAC7B",
+        "names": ["message"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* header */\rexport function render(message) {\r  return <div>{message}</div>;\r}\r"
+        ],
+        "version": 3
+      },
+      "referenceCode": "import { createVNode as _createVNode } from \"vue\";\n/* header */\nexport function render(message) {\n  return _createVNode(\"div\", null, [message]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": ["render", "message", "_createVNode"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* header */\rexport function render(message) {\r  return <div>{message}</div>;\r}\r"
+        ],
+        "mappings": ";AAAA;AACA,OAAO,SAASA,MAAMA,CAACC,OAAO,EAAE;EAC9B,OAAAC,YAAA,eAAaD,OAAO;AACtB",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": ["render"],
+        "results": [
+          {
+            "arguments": ["雪🌸"],
+            "vnode": {
+              "type": "div",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": ["雪🌸"]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "雪🌸"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "line-ending-crlf",
+      "source": "/* header */\r\nexport function render(message) {\r\n  return <div>{message}</div>;\r\n}\r\n",
+      "comments": ["/* header */"],
+      "arguments": [["雪🌸"]],
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\n/* header */\r\nexport function render(message) {\r\n  return _vize_createVNode0(\"div\", null, [message]);\r\n}\r\n",
+      "map": {
+        "file": "Native雪🌸.jsx",
+        "mappings": ";AAAA;AACA;AACA,SAAS,mBAAC,cAAKA,SAAc;AAC7B",
+        "names": ["message"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* header */\r\nexport function render(message) {\r\n  return <div>{message}</div>;\r\n}\r\n"
+        ],
+        "version": 3
+      },
+      "referenceCode": "import { createVNode as _createVNode } from \"vue\";\n/* header */\nexport function render(message) {\n  return _createVNode(\"div\", null, [message]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": ["render", "message", "_createVNode"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* header */\r\nexport function render(message) {\r\n  return <div>{message}</div>;\r\n}\r\n"
+        ],
+        "mappings": ";AAAA;AACA,OAAO,SAASA,MAAMA,CAACC,OAAO,EAAE;EAC9B,OAAAC,YAAA,eAAaD,OAAO;AACtB",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": ["render"],
+        "results": [
+          {
+            "arguments": ["雪🌸"],
+            "vnode": {
+              "type": "div",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": ["雪🌸"]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "雪🌸"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "line-ending-unicode-line",
+      "source": "/* header */ export function render(message) {   return <div>{message}</div>; } ",
+      "comments": ["/* header */"],
+      "arguments": [["雪🌸"]],
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\n/* header */ export function render(message) {   return _vize_createVNode0(\"div\", null, [message]); } ",
+      "map": {
+        "file": "Native雪🌸.jsx",
+        "mappings": ";AAAA;AACA;AACA,SAAS,mBAAC,cAAKA,SAAc;AAC7B",
+        "names": ["message"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* header */ export function render(message) {   return <div>{message}</div>; } "
+        ],
+        "version": 3
+      },
+      "referenceCode": "import { createVNode as _createVNode } from \"vue\";\n/* header */\nexport function render(message) {\n  return _createVNode(\"div\", null, [message]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": ["render", "message", "_createVNode"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* header */ export function render(message) {   return <div>{message}</div>; } "
+        ],
+        "mappings": ";AAAA;AACA,OAAO,SAASA,MAAMA,CAACC,OAAO,EAAE;EAC9B,OAAAC,YAAA,eAAaD,OAAO;AACtB",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": ["render"],
+        "results": [
+          {
+            "arguments": ["雪🌸"],
+            "vnode": {
+              "type": "div",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": ["雪🌸"]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "雪🌸"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "line-ending-unicode-paragraph",
+      "source": "/* header */ export function render(message) {   return <div>{message}</div>; } ",
+      "comments": ["/* header */"],
+      "arguments": [["雪🌸"]],
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\n/* header */ export function render(message) {   return _vize_createVNode0(\"div\", null, [message]); } ",
+      "map": {
+        "file": "Native雪🌸.jsx",
+        "mappings": ";AAAA;AACA;AACA,SAAS,mBAAC,cAAKA,SAAc;AAC7B",
+        "names": ["message"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* header */ export function render(message) {   return <div>{message}</div>; } "
+        ],
+        "version": 3
+      },
+      "referenceCode": "import { createVNode as _createVNode } from \"vue\";\n/* header */\nexport function render(message) {\n  return _createVNode(\"div\", null, [message]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": ["render", "message", "_createVNode"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* header */ export function render(message) {   return <div>{message}</div>; } "
+        ],
+        "mappings": ";AAAA;AACA,OAAO,SAASA,MAAMA,CAACC,OAAO,EAAE;EAC9B,OAAAC,YAAA,eAAaD,OAAO;AACtB",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": ["render"],
+        "results": [
+          {
+            "arguments": ["雪🌸"],
+            "vnode": {
+              "type": "div",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": ["雪🌸"]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "雪🌸"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "refusals": [
+    {
+      "id": "factory-pragma",
+      "source": "/** @jsx h */\nimport { h } from \"jsx-factory\";\nexport function render() { return <div/>; }",
+      "modules": {
+        "jsx-factory": "import { createVNode } from \"vue\"; export function h() { return createVNode(\"span\", null, \"factory\"); }"
+      },
+      "arguments": [[]],
+      "referenceCode": "/** @jsx h */\nimport { h } from \"jsx-factory\";\nexport function render() {\n  return h(\"div\", null, null);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": ["h", "render"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/** @jsx h */\nimport { h } from \"jsx-factory\";\nexport function render() { return <div/>; }"
+        ],
+        "mappings": "AAAA;AACA,SAASA,CAAC,QAAQ,aAAa;AAC/B,OAAO,SAASC,MAAMA,CAAA,EAAG;EAAE,OAAAD,CAAA;AAAe",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": ["render"],
+        "results": [
+          {
+            "arguments": [],
+            "vnode": {
+              "type": "span",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 9,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": "factory"
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "span",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "factory"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "registered-search",
+      "source": "export function render() { return <search/>; }",
+      "registered": true,
+      "referenceCode": "import { resolveComponent as _resolveComponent, createVNode as _createVNode } from \"vue\";\nexport function render() {\n  return _createVNode(_resolveComponent(\"search\"), null, null);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": ["render", "_createVNode", "_resolveComponent"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": ["export function render() { return <search/>; }"],
+        "mappings": ";AAAA,OAAO,SAASA,MAAMA,CAAA,EAAG;EAAE,OAAAC,YAAA,CAAAC,iBAAA;AAAkB",
+        "ignoreList": []
+      },
+      "runtime": [
+        {
+          "kind": "element",
+          "tag": "b",
+          "props": {},
+          "children": [
+            {
+              "kind": "text",
+              "text": "registered"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

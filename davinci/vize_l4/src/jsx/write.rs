@@ -4,6 +4,7 @@ use vize_l3::jsx::{JsxDecisionKind as Kind, NativeJsxAnalysis};
 
 use super::helpers::SelectedHelpers;
 use super::{JsxEmitError, JsxEmitErrorKind, invalid, kind};
+use crate::write::line_endings::line_break_len;
 use crate::write::{LinkSink, Writer};
 
 /// Original spans get a link at each line, including comments and Unicode.
@@ -12,17 +13,35 @@ pub(super) fn original<L: LinkSink>(
     source: &str,
     span: Span,
 ) -> Result<(), JsxEmitError> {
+    let failure = || JsxEmitError {
+        kind: JsxEmitErrorKind::SourceWindow,
+        span,
+    };
     let text = source
         .get(span.start as usize..span.end as usize)
-        .ok_or(JsxEmitError {
-            kind: JsxEmitErrorKind::SourceWindow,
-            span,
-        })?;
-    let mut offset = span.start;
-    for line in text.split_inclusive('\n') {
-        let end = offset + line.len() as u32;
-        writer.push_linked(line, Span::new(offset, end));
-        offset = end;
+        .ok_or_else(failure)?;
+    if !L::RECORDING {
+        writer.push(text);
+        return Ok(());
+    }
+    let mut start = 0;
+    let mut cursor = 0;
+    while cursor < text.len() {
+        let width = line_break_len(text, cursor);
+        cursor += width.max(1);
+        if width > 0 {
+            writer.push_linked(
+                text.get(start..cursor).ok_or_else(failure)?,
+                Span::new(span.start + start as u32, span.start + cursor as u32),
+            );
+            start = cursor;
+        }
+    }
+    if start < text.len() {
+        writer.push_linked(
+            text.get(start..).ok_or_else(failure)?,
+            Span::new(span.start + start as u32, span.end),
+        );
     }
     Ok(())
 }

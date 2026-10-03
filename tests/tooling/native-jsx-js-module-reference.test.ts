@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   checkVersions,
   execute,
+  executeRegistered,
   readPack,
   reference,
 } from "../../tools/support/compat/davinci/jsx-js-module-reference.mjs";
@@ -15,8 +16,8 @@ test("whole native JSX module references pin Babel, its Vue plugin and the actua
   assert.equal(pack.pluginVersion, "2.0.1");
   assert.equal(pack.vueVersion, "3.5.35");
   checkVersions(pack);
-  assert.equal(pack.fixtures.length, 7);
-  assert.equal(new Set(pack.fixtures.map((fixture: any) => fixture.id)).size, 7);
+  assert.equal(pack.fixtures.length, 11);
+  assert.equal(new Set(pack.fixtures.map((fixture: any) => fixture.id)).size, 11);
 });
 
 function vlq(segment: string) {
@@ -45,13 +46,14 @@ function checkMap(fixture: any) {
   assert.equal(map.file, "Native雪🌸.jsx");
   assert.deepEqual(map.sources, [map.file]);
   assert.deepEqual(map.sourcesContent, [fixture.source]);
-  const authored = fixture.source.split("\n");
-  const generated = fixture.code.split("\n");
+  const authored = fixture.source.split(/\r\n|[\r\n\u2028\u2029]/u);
+  const generated = fixture.code.split(/\r\n|[\r\n\u2028\u2029]/u);
   let sourceIndex = 0,
     sourceLine = 0,
     sourceColumn = 0,
     nameIndex = 0,
     segments = 0;
+  const namedAnchors: unknown[] = [];
   map.mappings.split(";").forEach((line: string, generatedLine: number) => {
     let generatedColumn = 0;
     for (const encoded of line.split(",").filter(Boolean)) {
@@ -72,11 +74,15 @@ function checkMap(fixture: any) {
         // Named reads/components retain the exact original spelling, including
         // the escaped identifier fixture, at their UTF-16 map anchor.
         assert.equal(generated[generatedLine][generatedColumn], authored[sourceLine][sourceColumn]);
+        namedAnchors.push([map.names[nameIndex], generatedLine, sourceLine]);
       }
       segments++;
     }
   });
   assert(segments > 0);
+  if (fixture.id.startsWith("line-ending-")) {
+    assert.deepEqual(namedAnchors, [["message", 3, 2]]);
+  }
 }
 
 for (const fixture of pack.fixtures) {
@@ -89,6 +95,31 @@ for (const fixture of pack.fixtures) {
     assert.deepEqual(await execute(fixture.code, fixture), fixture.runtime);
   });
 }
+
+test("factory pragmas and pinned component classification require native whole-target refusal", async () => {
+  assert.deepEqual(
+    pack.refusals.map((fixture: any) => fixture.id),
+    ["factory-pragma", "registered-search"],
+  );
+  for (const fixture of pack.refusals) {
+    const measured = reference(fixture, pack);
+    assert.equal(measured.code, fixture.referenceCode);
+    assert.deepEqual(measured.map, fixture.referenceMap);
+    const runtime = fixture.registered
+      ? await executeRegistered(measured.code, fixture)
+      : await execute(measured.code, fixture);
+    assert.deepEqual(runtime, fixture.runtime);
+    const tree = fixture.registered ? runtime : runtime.results[0].tree;
+    assert.deepEqual(tree, [
+      {
+        kind: "element",
+        tag: fixture.registered ? "b" : "span",
+        props: {},
+        children: [{ kind: "text", text: fixture.registered ? "registered" : "factory" }],
+      },
+    ]);
+  }
+});
 
 test("an incorrect scalar payload fails the actual runtime comparison", async () => {
   const fixture = pack.fixtures.find((fixture: any) => fixture.id === "static-scalar-comments");

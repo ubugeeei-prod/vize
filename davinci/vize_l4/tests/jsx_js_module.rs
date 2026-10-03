@@ -30,6 +30,21 @@ fn analyze<'a>(
     build_jsx_decisions(lower(arena, source, profile)?).map_err(|_| "L3")
 }
 
+fn comments(source: &str) -> Result<Vec<&str>, &'static str> {
+    let arena = Allocator::default();
+    let observation = Parser::new(&arena, source, SourceType::mjs()).parse_observed();
+    observation.admitted().ok_or("emitted parse")?;
+    observation
+        .comments()
+        .iter()
+        .map(|comment| {
+            source
+                .get(comment.span.start as usize..comment.span.end as usize)
+                .ok_or("emitted comment span")
+        })
+        .collect()
+}
+
 #[test]
 fn genuine_js_modules_keep_original_comments_scalar_roles_and_complete_maps()
 -> Result<(), &'static str> {
@@ -103,13 +118,10 @@ fn genuine_js_modules_keep_original_comments_scalar_roles_and_complete_maps()
                 .as_ptr(),
             original_body
         );
-        for comment in fixture["comments"].as_array().ok_or("comments")? {
-            assert!(
-                document
-                    .as_str()
-                    .contains(comment.as_str().ok_or("comment")?)
-            );
-        }
+        assert_eq!(
+            serde_json::json!(comments(document.as_str())?),
+            fixture["comments"]
+        );
         captured.push(serde_json::json!({
             "id": fixture["id"], "source": source, "code": document.as_str(), "map": map,
         }));
@@ -184,6 +196,36 @@ fn unsupported_module_semantics_are_whole_typed_refusals() -> Result<(), &'stati
             "export function render() { return <my-widget/>; }",
             SourceType::jsx(),
             Error::UnknownIntrinsic,
+        ),
+        (
+            "/** @jsx h */\nimport { h } from 'jsx-factory'; export function render() { return <div/>; }",
+            SourceType::jsx(),
+            Error::FactoryPragma,
+        ),
+        (
+            "export function render() { return <search/>; }",
+            SourceType::jsx(),
+            Error::UnknownIntrinsic,
+        ),
+        (
+            "export function render() { return <div /* keep */ id='x'/>; }",
+            SourceType::jsx(),
+            Error::TagComment,
+        ),
+        (
+            "export function render() { return <div></div /*keep*/>; }",
+            SourceType::jsx(),
+            Error::TagComment,
+        ),
+        (
+            "export function render() { return <div></ /*keep*/ div>; }",
+            SourceType::jsx(),
+            Error::TagComment,
+        ),
+        (
+            "export function render() { return <div></div //keep\n>; }",
+            SourceType::jsx(),
+            Error::TagComment,
         ),
         (
             "function Widget() {} export function render() { return <Widget>text</Widget>; }",

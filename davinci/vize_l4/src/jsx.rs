@@ -21,6 +21,8 @@ pub enum JsxEmitErrorKind {
     SourceWindow,
     Typescript,
     DirectiveOrHashbang,
+    FactoryPragma,
+    TagComment,
     MemberTag,
     UnknownIntrinsic,
     ComponentChildren,

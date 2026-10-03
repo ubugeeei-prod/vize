@@ -23,6 +23,7 @@ use alloc::vec::Vec;
 use vize_l0::{Span, String};
 
 pub mod document;
+pub(crate) mod line_endings;
 pub mod rewrite_spans;
 pub mod source_map;
 

@@ -105,6 +105,30 @@ fn resolve_source_offset_to_line_column() {
 }
 
 #[test]
+fn javascript_line_terminators_resolve_both_sides_once_with_utf16_columns() {
+    for ending in ["\n", "\r\n", "\r", "\u{2028}", "\u{2029}"] {
+        let source = vize_l0::cstr!("a{ending}雪🌸x{ending}z");
+        let code = vize_l0::cstr!("header{ending}b{ending}🌸雪x{ending}z");
+        let segments = [Segment {
+            generated_offset: code.find('x').unwrap() as u32,
+            source_offset: source.find('x').unwrap() as u32,
+            name: Some(0),
+        }];
+        let resolved = resolve_positions(&code, &source, &segments);
+        assert_eq!(resolved.len(), 1);
+        assert_eq!(
+            (resolved[0].generated_line, resolved[0].generated_column),
+            (2, 3)
+        );
+        assert_eq!((resolved[0].source_line, resolved[0].source_column), (1, 3));
+        assert_eq!(
+            line_start_table(&source),
+            vec![0, 1 + ending.len(), 9 + 2 * ending.len()]
+        );
+    }
+}
+
+#[test]
 fn resolve_positions_clamps_non_char_boundary_offsets() {
     let generated = "const value = \"最大\";\n";
     let source = "<template>\n  {{ 最大値 }}\n</template>";

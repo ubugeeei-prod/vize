@@ -32,11 +32,43 @@ pub(super) fn check(analysis: &NativeJsxAnalysis<'_>) -> Result<(), JsxEmitError
     if original.program().hashbang.is_some() || !original.program().directives.is_empty() {
         return Err(failure(Error::DirectiveOrHashbang));
     }
+    for comment in owner.observation().comments() {
+        let span = comment.content_span();
+        let text = source
+            .get(span.start as usize..span.end as usize)
+            .ok_or_else(|| failure(Error::InvalidDecision))?;
+        // The pinned Vue transform recognizes factory pragmas in actual
+        // parser comments. A source string containing these bytes is unrelated.
+        if text.match_indices("@jsx").any(|(offset, _)| {
+            text.get(offset + 4..).is_some_and(|suffix| {
+                suffix.starts_with(js_whitespace)
+                    && !suffix.trim_start_matches(js_whitespace).is_empty()
+            })
+        }) {
+            return Err(JsxEmitError {
+                kind: Error::FactoryPragma,
+                span: Span::new(comment.span.start, comment.span.end),
+            });
+        }
+    }
     for decision in analysis.decisions() {
         let node = decision.node();
+        if matches!(decision.kind(), Kind::Opening { .. } | Kind::Closing) {
+            let span = node.span().ok_or_else(|| invalid(node))?;
+            if owner
+                .observation()
+                .comments()
+                .iter()
+                .any(|comment| span.start <= comment.span.start && comment.span.end <= span.end)
+            {
+                return Err(JsxEmitError::at(Error::TagComment, node));
+            }
+        }
         match decision.kind() {
             Kind::Intrinsic(name)
-                if !dom_tag_config::is_html_tag(name) && !dom_tag_config::is_svg_tag(name) =>
+                if name == "search"
+                    || (!dom_tag_config::is_html_tag(name)
+                        && !dom_tag_config::is_svg_tag(name)) =>
             {
                 return Err(JsxEmitError::at(Error::UnknownIntrinsic, node));
             }
@@ -63,6 +95,10 @@ pub(super) fn check(analysis: &NativeJsxAnalysis<'_>) -> Result<(), JsxEmitError
         }
     }
     Ok(())
+}
+
+fn js_whitespace(character: char) -> bool {
+    character.is_whitespace() || character == '\u{feff}'
 }
 
 fn needs_normalization(node: JsxNode<'_, '_>) -> Result<bool, JsxEmitError> {
