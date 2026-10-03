@@ -123,3 +123,15 @@ actually merged as `f7db6569` and `7f1c7d4f`. This final replay preserves their
 getters, comment/setup observations, package graph and central record alongside
 the accepted TS projection. Final current-source Actions, instruction gates and
 protected signed product merge remain unfinished.
+
+## Selected-root main refresh
+
+The same product PR #7497 is replayed onto signed selected-root main
+`dd05d54bd7a9b8d544c5b37d5fecd651c823557f`, preserving the complete incoming
+Program invocation/comment receipts and original setup eligibility. Runtime,
+fixture, capture and package changes stay byte-exact to the reviewed source.
+The central decision retains every incoming clause; the L4 census is regenerated
+by its unchanged classifier over the combined source. Native Stack #7498 retains
+merged provider #7496 and this product at position 2. Source-head Actions and
+protected full queue/instruction measurements must succeed on this refreshed
+head before actual merge is claimed. Historical campaigns remain source-bound.
