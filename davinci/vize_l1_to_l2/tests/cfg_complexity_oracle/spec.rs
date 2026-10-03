@@ -158,7 +158,14 @@ impl Eval {
             }
             DumpOp::OriginalFor(for_op) => {
                 let n = self.nesting();
-                self.row("v-for", for_op.span, id, n, 1, 1 + n);
+                self.row(
+                    "v-for",
+                    (for_op.span.start, for_op.span.end),
+                    id,
+                    n,
+                    1,
+                    1 + n,
+                );
                 let header = self.graph.node();
                 self.graph.edge(line, header);
                 let body = self.graph.node();

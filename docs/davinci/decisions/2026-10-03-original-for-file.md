@@ -262,3 +262,17 @@ census; no local Cargo/npm or duplicate manual full campaign runs. New Rust
 laws remain unexecuted until this exact published head's configured Actions.
 Current source gates, composed protected full/instruction checks and actual
 terminal merge establish this bounded factory's delivery separately.
+
+## First hosted compilation correction
+
+Published #7620 is verified native Stack #7517 position9 on actual #7607
+parent0a13, with no queue entry. First source
+[Check37136683710](https://github.com/ubugeeei-prod/vize/actions/runs/37136683710)
+reaches affected test compilation and refuses the new closed-family CFG oracle
+arm at `cfg_complexity_oracle/spec.rs`: the established row helper accepts a
+`(u32, u32)` pair, while the actual original For dump carries `Span`. Pass the
+same original start/end as that existing diagnostic coordinate pair. This adds
+no production meaning, authority or span/fact reinterpretation, and changes no
+expected row, range, law or budget. Fresh corrected-head hosted compilation,
+new Rust law execution and strict Clippy remain required; the failed source
+never enters the protected queue.
