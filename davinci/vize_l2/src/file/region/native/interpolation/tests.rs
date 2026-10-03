@@ -14,6 +14,7 @@ use vize_l1::{
 };
 
 mod interruption;
+mod nested;
 mod ownership;
 mod refusal;
 

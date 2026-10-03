@@ -21,7 +21,9 @@ mod interpolation;
 pub use for_head::{FileForHead, FileTemplateDeclaration, RejectedFileFor, TemplateDeclaration};
 mod query;
 pub use handler::{FileHandler, RejectedFileHandler};
-pub use interpolation::{NativeFileInterpolation, NativeFileInterpolationState};
+pub use interpolation::{
+    NativeFileInterpolation, NativeFileInterpolationFailure, NativeFileInterpolationState,
+};
 mod records;
 pub use query::{
     HandlerLocalRef, PositionQueryError, ReferenceRef, ScopeRef, TemplateQueryError,

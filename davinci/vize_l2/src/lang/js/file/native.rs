@@ -14,6 +14,10 @@ pub use setup::{NativeSelectedSetup, NativeSetupIssue, NativeSetupIssueKind};
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeTemplateIssueKind {
     Interpolation(super::super::NativeInterpolationInputError),
+    InterpolationPreparation {
+        span: Span,
+        kind: vize_l1::markup::NativeInterpolationError,
+    },
     Artifact(ArtifactError),
     Program(FileIssueKind),
     SetupSyntax(vize_l1::embed::syntax::EmbedHole),
@@ -31,8 +35,14 @@ pub enum NativeTemplateIssueKind {
     UnsupportedInvocation,
     UnsupportedExport,
     ReservedBinding,
-    Handler { span: Span, kind: FileIssueKind },
-    For { span: Span, kind: FileIssueKind },
+    Handler {
+        span: Span,
+        kind: FileIssueKind,
+    },
+    For {
+        span: Span,
+        kind: FileIssueKind,
+    },
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct NativeTemplateIssue {

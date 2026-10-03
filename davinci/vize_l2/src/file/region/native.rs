@@ -171,7 +171,8 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
         }
         let span = match kind {
             NativeTemplateIssueKind::Handler { span, .. }
-            | NativeTemplateIssueKind::For { span, .. } => span,
+            | NativeTemplateIssueKind::For { span, .. }
+            | NativeTemplateIssueKind::InterpolationPreparation { span, .. } => span,
             _ => self.selected.component().block().span(),
         };
         let issue = NativeTemplateIssue { span, kind };
