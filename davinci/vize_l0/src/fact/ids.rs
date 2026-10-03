@@ -42,12 +42,18 @@ pub const PARTIAL_HOLES: AnalysisId = AnalysisId::new(13);
 pub const PARTIAL_REGIONS: AnalysisId = AnalysisId::new(14);
 /// `PartialScopes` — scope names of those fragments (P5-10).
 pub const PARTIAL_SCOPES: AnalysisId = AnalysisId::new(15);
+/// Original selected authored lint headers, scoped to one genuine element.
+pub const NATIVE_LINT_HEADERS: AnalysisId = AnalysisId::new(16);
+/// Original selected authored attributes, keyed by their genuine ordinals.
+pub const NATIVE_LINT_ATTRIBUTES: AnalysisId = AnalysisId::new(17);
+/// Unsupported-ARIA counterexamples derived from original header/attribute facts.
+pub const NATIVE_UNSUPPORTED_ARIA: AnalysisId = AnalysisId::new(18);
 
 /// The first id tests and bench fixtures may use.
 pub const FIXTURE_BASE: u8 = 32;
 
 /// Every allocated production id, in id order.
-pub const PRODUCTION: [AnalysisId; 15] = [
+pub const PRODUCTION: [AnalysisId; 18] = [
     BINDINGS,
     UNDEFINED_REFS,
     UNUSED_BINDINGS,
@@ -63,6 +69,9 @@ pub const PRODUCTION: [AnalysisId; 15] = [
     PARTIAL_HOLES,
     PARTIAL_REGIONS,
     PARTIAL_SCOPES,
+    NATIVE_LINT_HEADERS,
+    NATIVE_LINT_ATTRIBUTES,
+    NATIVE_UNSUPPORTED_ARIA,
 ];
 
 // Unique, ascending, and below the fixture range.

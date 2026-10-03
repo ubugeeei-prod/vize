@@ -4,7 +4,7 @@ use vize_l0::{
     SmallVec, Span, String,
     diag::{Advisory, Diagnostic, DiagnosticPart, MessageLookup, PartKind, Stage},
 };
-use vize_l1::markup::{NativeElement, NativeLintTagKind};
+use vize_l1::markup::{NativeAttribute, NativeElement, NativeLintTag, NativeLintTagKind};
 
 use super::{
     NO_ACCESS_KEY_RULE, NO_AUTOFOCUS_RULE, NO_DISTRACTING_ELEMENTS_RULE, NativeLintFinding,
@@ -15,6 +15,16 @@ fn inspect(
     element: &NativeElement<'_, '_>,
     mut visit: impl FnMut(header::Binding<'_>),
 ) -> Result<(NativeLintTagKind, Span), NativeLintRefusal> {
+    let (receipt, opening) = inspect_attributes(element, |_, binding| visit(binding))?;
+    Ok((receipt.kind(), opening))
+}
+
+/// One strict original-header iteration, shared by facts and advisory rules.
+/// The callback receives the real attribute projection and its checked binding.
+pub(super) fn inspect_attributes<'o, 'a>(
+    element: &NativeElement<'o, 'a>,
+    mut visit: impl FnMut(&NativeAttribute<'o, 'a>, header::Binding<'a>),
+) -> Result<(NativeLintTag<'o, 'a>, Span), NativeLintRefusal> {
     let receipt = element
         .lint_tag()
         .map_err(|reason| NativeLintRefusal::LintTag { reason })?;
@@ -43,9 +53,9 @@ fn inspect(
             }
             names.push(name);
         }
-        visit(binding);
+        visit(&original, binding);
     }
-    Ok((receipt.kind(), opening))
+    Ok((receipt, opening))
 }
 
 struct AttributeRule {

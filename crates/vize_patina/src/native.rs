@@ -12,6 +12,7 @@ use vize_l1::markup::{NativeElement, NativeLintTagRefusal, NativeTemplateCompone
 
 mod attribute;
 mod header;
+pub mod header_facts;
 mod header_rules;
 mod iframe_has_title;
 mod img_alt;
@@ -110,6 +111,20 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
     #[must_use]
     pub fn owner(&self) -> &'o NativeTemplateComponent<'a> {
         self.owner
+    }
+
+    /// Retain SDK facts from one genuine, completely checked authored header.
+    /// No detached evidence, caller key, source, span or tag kind is accepted.
+    pub fn header_facts<'e>(
+        &'e self,
+        element: &NativeElement<'e, 'a>,
+    ) -> Result<header_facts::NativeHeaderFacts<'e, 'a>, header_facts::NativeHeaderFactError> {
+        if !core::ptr::eq(self.owner.component(), element.component()) {
+            return Err(header_facts::NativeHeaderFactError::Header(
+                NativeLintRefusal::ForeignElement,
+            ));
+        }
+        header_facts::NativeHeaderFacts::new(self.owner, element)
     }
 
     /// Check one genuine element's original header for `a11y/img-alt`.

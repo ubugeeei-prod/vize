@@ -16,7 +16,7 @@ pub(super) fn check(
             header::Binding::Static { name, .. } | header::Binding::Bind { name, .. } => {
                 name.eq_ignore_ascii_case("alt")
             }
-            header::Binding::Other => false,
+            header::Binding::Other { .. } => false,
         };
     }
     if !element.surface().tag().eq_ignore_ascii_case("img") || has_alt {

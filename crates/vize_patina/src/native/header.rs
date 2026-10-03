@@ -45,7 +45,9 @@ pub(super) enum Binding<'a> {
         name: &'a str,
         range: Span,
     },
-    Other,
+    Other {
+        range: Span,
+    },
 }
 
 pub(super) fn binding<'a>(
@@ -132,7 +134,7 @@ fn binding_with_modifiers<'a, const STRICT: bool>(
         }
     };
     if !binds {
-        return Ok(Binding::Other);
+        return Ok(Binding::Other { range });
     }
     let Some(ArgSyntax::Static(argument)) = head.arg else {
         return Err(NativeLintRefusal::UnresolvedBinding { span: head_span });
