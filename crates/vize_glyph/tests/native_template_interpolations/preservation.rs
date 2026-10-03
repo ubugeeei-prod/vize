@@ -13,6 +13,13 @@ pub(super) enum Syntax {
     Atom(&'static str, std::string::String, std::string::String),
     Parentheses(std::boxed::Box<Syntax>),
     Unary(&'static str, std::boxed::Box<Syntax>),
+    StaticMember(
+        bool,
+        std::boxed::Box<Syntax>,
+        std::string::String,
+        std::string::String,
+    ),
+    ComputedMember(bool, std::boxed::Box<Syntax>, std::boxed::Box<Syntax>),
     Infix(
         &'static str,
         std::boxed::Box<Syntax>,
@@ -51,6 +58,25 @@ pub(super) fn fingerprint(
         Expression::UnaryExpression(unary) => Syntax::Unary(
             unary.operator.as_str(),
             std::boxed::Box::new(fingerprint(original, &unary.argument)),
+        ),
+        Expression::StaticMemberExpression(member) => {
+            let property = original.authored_span(member.property.span()).unwrap();
+            Syntax::StaticMember(
+                member.optional,
+                std::boxed::Box::new(fingerprint(original, &member.object)),
+                member.property.name.as_str().to_owned(),
+                original
+                    .source()
+                    .authored_root()
+                    .get(property.start as usize..property.end as usize)
+                    .unwrap()
+                    .to_owned(),
+            )
+        }
+        Expression::ComputedMemberExpression(member) => Syntax::ComputedMember(
+            member.optional,
+            std::boxed::Box::new(fingerprint(original, &member.object)),
+            std::boxed::Box::new(fingerprint(original, &member.expression)),
         ),
         Expression::BinaryExpression(binary) => Syntax::Infix(
             binary.operator.as_str(),
@@ -99,67 +125,71 @@ fn actual_selected_js_ts_reparse_keeps_nodes_literals_operators_parentheses_and_
         "!&#9;ready",
         "! /*kept\r\n*/ ready",
     ] {
-        for script in ["", "<script setup lang=ts>let a=1</script>"] {
-            let source = vize_l0::cstr!("<template><p>{{{{{content}}}}}</p></template>{script}");
-            let arena = Allocator::default();
-            let original = selected(&arena, &source);
-            let original_operands = operands(&original);
-            let syntax = original_operands.first().unwrap().syntax();
-            let expected = fingerprint(syntax, syntax.expression().unwrap());
-            let comments = syntax
-                .comments()
-                .map(|comment| {
-                    let span = comment.authored_span().unwrap();
-                    (
-                        comment.kind(),
-                        comment.text().unwrap().to_owned(),
-                        source
-                            .get(span.start as usize..span.end as usize)
-                            .unwrap()
-                            .to_owned(),
-                    )
-                })
-                .collect::<std::vec::Vec<_>>();
-            for width in [0, 1, 7, 80] {
-                for line_ending in [LineEnding::Lf, LineEnding::CrLf] {
-                    let options = PrintOptions {
-                        width,
-                        line_ending,
-                        ..PrintOptions::default()
-                    };
-                    let output = format(&source, options);
-                    let replay_source = vize_l0::cstr!("<template>{output}</template>{script}");
-                    let replay_arena = Allocator::default();
-                    let replay = selected(&replay_arena, &replay_source);
-                    let replay_operands = operands(&replay);
-                    let replay = replay_operands.first().unwrap().syntax();
-                    assert_eq!(replay.hole(), None, "{replay_source}");
-                    assert_eq!(replay.source_type(), syntax.source_type());
-                    assert_eq!(
-                        fingerprint(replay, replay.expression().unwrap()),
-                        expected,
-                        "{replay_source}"
-                    );
-                    assert_eq!(
-                        replay
-                            .comments()
-                            .map(|comment| {
-                                let span = comment.authored_span().unwrap();
-                                (
-                                    comment.kind(),
-                                    comment.text().unwrap().to_owned(),
-                                    replay_source
-                                        .get(span.start as usize..span.end as usize)
-                                        .unwrap()
-                                        .to_owned(),
-                                )
-                            })
-                            .collect::<std::vec::Vec<_>>(),
-                        comments,
-                        "{replay_source}"
-                    );
-                    assert_eq!(format(&replay_source, options), output);
-                }
+        assert_preserved(content);
+    }
+}
+
+pub(super) fn assert_preserved(content: &str) {
+    for script in ["", "<script setup lang=ts>let a=1</script>"] {
+        let source = vize_l0::cstr!("<template><p>{{{{{content}}}}}</p></template>{script}");
+        let arena = Allocator::default();
+        let original = selected(&arena, &source);
+        let original_operands = operands(&original);
+        let syntax = original_operands.first().unwrap().syntax();
+        let expected = fingerprint(syntax, syntax.expression().unwrap());
+        let comments = syntax
+            .comments()
+            .map(|comment| {
+                let span = comment.authored_span().unwrap();
+                (
+                    comment.kind(),
+                    comment.text().unwrap().to_owned(),
+                    source
+                        .get(span.start as usize..span.end as usize)
+                        .unwrap()
+                        .to_owned(),
+                )
+            })
+            .collect::<std::vec::Vec<_>>();
+        for width in [0, 1, 7, 80] {
+            for line_ending in [LineEnding::Lf, LineEnding::CrLf] {
+                let options = PrintOptions {
+                    width,
+                    line_ending,
+                    ..PrintOptions::default()
+                };
+                let output = format(&source, options);
+                let replay_source = vize_l0::cstr!("<template>{output}</template>{script}");
+                let replay_arena = Allocator::default();
+                let replay = selected(&replay_arena, &replay_source);
+                let replay_operands = operands(&replay);
+                let replay = replay_operands.first().unwrap().syntax();
+                assert_eq!(replay.hole(), None, "{replay_source}");
+                assert_eq!(replay.source_type(), syntax.source_type());
+                assert_eq!(
+                    fingerprint(replay, replay.expression().unwrap()),
+                    expected,
+                    "{replay_source}"
+                );
+                assert_eq!(
+                    replay
+                        .comments()
+                        .map(|comment| {
+                            let span = comment.authored_span().unwrap();
+                            (
+                                comment.kind(),
+                                comment.text().unwrap().to_owned(),
+                                replay_source
+                                    .get(span.start as usize..span.end as usize)
+                                    .unwrap()
+                                    .to_owned(),
+                            )
+                        })
+                        .collect::<std::vec::Vec<_>>(),
+                    comments,
+                    "{replay_source}"
+                );
+                assert_eq!(format(&replay_source, options), output);
             }
         }
     }

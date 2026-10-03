@@ -122,7 +122,15 @@ fn unary_selected_documents_keep_original_operand_and_ast_source_custody() {
 
 #[test]
 fn update_await_and_unsupported_unary_operands_refuse_the_whole_selected_document() {
-    for content in ["++a", "a++", "--a", "a--", "await a", "!call()", "-obj.key"] {
+    for content in [
+        "++a",
+        "a++",
+        "--a",
+        "a--",
+        "await a",
+        "!call()",
+        "-obj.call()",
+    ] {
         let arena = Allocator::default();
         let source = vize_l0::cstr!("<template>{{{{/*kept*/ {content}}}}}</template>");
         let owner = selected(&arena, &source);

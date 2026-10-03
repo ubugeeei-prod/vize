@@ -9,6 +9,8 @@ use vize_l1::embed::{
 
 #[path = "native_expression_doc/authored_newlines.rs"]
 mod authored_newlines;
+#[path = "native_expression_doc/member.rs"]
+mod member;
 #[path = "native_expression_doc/preservation.rs"]
 mod preservation;
 #[path = "native_expression_doc/refusals.rs"]

@@ -17,6 +17,13 @@ enum Syntax {
     Null(std::string::String),
     Parentheses(std::boxed::Box<Syntax>),
     Unary(&'static str, std::boxed::Box<Syntax>),
+    StaticMember(
+        bool,
+        std::boxed::Box<Syntax>,
+        std::string::String,
+        std::string::String,
+    ),
+    ComputedMember(bool, std::boxed::Box<Syntax>, std::boxed::Box<Syntax>),
     Binary(
         &'static str,
         std::boxed::Box<Syntax>,
@@ -30,13 +37,7 @@ enum Syntax {
 }
 
 fn fingerprint(original: &RetainedExpression<'_>, expression: &Expression<'_>) -> Syntax {
-    let span = original.authored_span(expression.span()).unwrap();
-    let spelling = original
-        .source()
-        .authored_root()
-        .get(span.start as usize..span.end as usize)
-        .unwrap()
-        .to_owned();
+    let spelling = authored(original, expression.span());
     match expression {
         Expression::Identifier(identifier) => {
             Syntax::Identifier(identifier.name.as_str().to_owned(), spelling)
@@ -54,6 +55,17 @@ fn fingerprint(original: &RetainedExpression<'_>, expression: &Expression<'_>) -
             unary.operator.as_str(),
             std::boxed::Box::new(fingerprint(original, &unary.argument)),
         ),
+        Expression::StaticMemberExpression(member) => Syntax::StaticMember(
+            member.optional,
+            std::boxed::Box::new(fingerprint(original, &member.object)),
+            member.property.name.as_str().to_owned(),
+            authored(original, member.property.span()),
+        ),
+        Expression::ComputedMemberExpression(member) => Syntax::ComputedMember(
+            member.optional,
+            std::boxed::Box::new(fingerprint(original, &member.object)),
+            std::boxed::Box::new(fingerprint(original, &member.expression)),
+        ),
         Expression::BinaryExpression(binary) => Syntax::Binary(
             binary.operator.as_str(),
             std::boxed::Box::new(fingerprint(original, &binary.left)),
@@ -66,6 +78,16 @@ fn fingerprint(original: &RetainedExpression<'_>, expression: &Expression<'_>) -
         ),
         _ => panic!("independent fixture family"),
     }
+}
+
+fn authored(original: &RetainedExpression<'_>, span: oxc_span::Span) -> std::string::String {
+    let span = original.authored_span(span).unwrap();
+    original
+        .source()
+        .authored_root()
+        .get(span.start as usize..span.end as usize)
+        .unwrap()
+        .to_owned()
 }
 
 #[test]

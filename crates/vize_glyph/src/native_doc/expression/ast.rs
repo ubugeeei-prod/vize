@@ -1,6 +1,6 @@
 //! One immutable walk of genuine supported AST families.
 
-use oxc_ast::ast::Expression;
+use oxc_ast::ast::{ComputedMemberExpression, Expression, StaticMemberExpression};
 use oxc_span::GetSpan;
 use vize_l0::{Span, Vec};
 
@@ -68,8 +68,75 @@ impl<'a> Context<'_, 'a> {
             Expression::UnaryExpression(unary) => {
                 self.prefix(unary.operator.as_str(), &unary.argument, span, depth)
             }
+            Expression::StaticMemberExpression(member) => self.static_member(member, span, depth),
+            Expression::ComputedMemberExpression(member) => {
+                self.computed_member(member, span, depth)
+            }
             _ => Err(ExpressionRefusal::UnsupportedNode { span }),
         }
+    }
+
+    fn static_member(
+        &mut self,
+        member: &StaticMemberExpression<'a>,
+        span: Span,
+        depth: usize,
+    ) -> Result<Doc<'a>, ExpressionRefusal> {
+        if member.optional {
+            return Err(ExpressionRefusal::UnsupportedNode { span });
+        }
+        let object = self.decoded_span(member.object.span())?;
+        let property = self.decoded_span(member.property.span())?;
+        if object.start != span.start
+            || property.end != span.end
+            || object.end >= property.start
+            || property.start >= property.end
+        {
+            return Err(ExpressionRefusal::InvalidFraming { span });
+        }
+        let mut parts = Vec::new_in(&self.allocator);
+        parts.push(self.node(&member.object, span, depth + 1)?);
+        let dot = self.token(Span::new(object.end, property.start), ".")?;
+        // Keep numeric literal spellings separate from the member-access dot.
+        parts.push(self.gap(Span::new(object.end, dot.start), Gap::Space)?);
+        parts.push(self.text(dot)?);
+        parts.push(self.gap(Span::new(dot.end, property.start), Gap::Space)?);
+        parts.push(self.text(property)?);
+        Ok(Doc::concat(parts))
+    }
+
+    fn computed_member(
+        &mut self,
+        member: &ComputedMemberExpression<'a>,
+        span: Span,
+        depth: usize,
+    ) -> Result<Doc<'a>, ExpressionRefusal> {
+        if member.optional {
+            return Err(ExpressionRefusal::UnsupportedNode { span });
+        }
+        let object = self.decoded_span(member.object.span())?;
+        let key = self.decoded_span(member.expression.span())?;
+        if object.start != span.start
+            || object.end >= key.start
+            || key.start >= key.end
+            || key.end >= span.end
+        {
+            return Err(ExpressionRefusal::InvalidFraming { span });
+        }
+        let mut parts = Vec::new_in(&self.allocator);
+        parts.push(self.node(&member.object, span, depth + 1)?);
+        let open = self.token(Span::new(object.end, key.start), "[")?;
+        parts.push(self.gap(Span::new(object.end, open.start), Gap::Space)?);
+        parts.push(self.text(open)?);
+        parts.push(self.gap(Span::new(open.end, key.start), Gap::Space)?);
+        parts.push(self.node(&member.expression, span, depth + 1)?);
+        let close = self.token(Span::new(key.end, span.end), "]")?;
+        if close.end != span.end {
+            return Err(ExpressionRefusal::InvalidFraming { span });
+        }
+        parts.push(self.gap(Span::new(key.end, close.start), Gap::Space)?);
+        parts.push(self.text(close)?);
+        Ok(Doc::concat(parts))
     }
 
     fn prefix(

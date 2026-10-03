@@ -12,6 +12,8 @@ use vize_l1::{SurfaceChild, SurfaceParseOptions};
 mod authored_newlines;
 #[path = "native_template_interpolations/layout.rs"]
 mod layout;
+#[path = "native_template_interpolations/member.rs"]
+mod member;
 #[path = "native_template_interpolations/preservation.rs"]
 mod preservation;
 #[path = "native_template_interpolations/refusals.rs"]
