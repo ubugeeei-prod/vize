@@ -42,10 +42,19 @@ Wire transport occurs after guarded publication.
 Fifteen new source-authored laws cover local/shadowed/import bindings, physical
 cache identity, native refusals, coordinate boundaries, host mutation/reopen,
 stale/cancelled publication and complete JSON-RPC result/error envelopes through
-the actual production service builder. They are unexecuted until fresh exact-head
-Actions validates them. The full recipe adds named feature tests, minimal-feature
+the actual production service builder. The repaired head requires fresh exact-head
+Actions for all fifteen. The full recipe adds named feature tests, minimal-feature
 compilation and warning-denying Clippy while preserving all prior gates.
-Protected queue and actual terminal merge are still required.
+The first exact-source full campaign `37095511844` at `b7be610f` compiled this
+feature and executed 44 project laws: 43 passed and the original typed-refusal
+law failed. Structural File construction retained semantic issues; the consumer
+now checks the actual script-family `is_complete` state and returns its complete
+original issues before projecting any binding. The original test inputs and
+expected vectors remain unchanged. Nine new project laws passed at that old
+head; five wire laws, minimal feature and navigation Clippy had not run when the
+fail-fast gate stopped. Its all100 campaign passed, but fresh exact-head full,
+feature/minimal/Clippy/all100 and protected terminal acceptance remain required.
+The known-red head was never queued. This completion guard grants no Vue proof.
 
 This is a bounded opt-in JS/TS capability, not native Vue admission, a default
 product replacement or completion of the LSP fix-history gate. #6883 remains open;

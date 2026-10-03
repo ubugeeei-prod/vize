@@ -46,9 +46,19 @@ impl NavigationSummary {
         producer
             .program(program, ProgramScope::Module)
             .map_err(|_| NavigationRefusal::Projection)?;
-        let file = producer
-            .finish()
-            .map_err(|refused| NavigationRefusal::Producer(refused.issues().to_vec()))?;
+        let file = producer.finish().map_err(|refused| {
+            let mut issues = refused.issues().to_vec();
+            issues.extend(refused.interrupted_programs());
+            NavigationRefusal::Producer(issues)
+        })?;
+        // Structural artifact construction also retains incomplete observations.
+        // Require the actual script-family completion before querying bindings;
+        // this condition grants no Vue or product admission.
+        if !file.is_complete() {
+            let mut issues = file.issues().to_vec();
+            issues.extend(file.interrupted_programs());
+            return Err(NavigationRefusal::Producer(issues));
+        }
         let bindings = file.bindings().collect::<Vec<_>>();
         let indices = bindings
             .iter()
