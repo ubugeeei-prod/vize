@@ -16,7 +16,10 @@ Thank you [@naitokosuke](https://github.com/naitokosuke) for these reports and p
 attributes when HTML templates are parsed at runtime or rendered from the IR on
 the server ([#7502](https://github.com/ubugeeei-prod/vize/issues/7502)).
 
-Thank you [@dannote](https://github.com/dannote) for the reproduction.
+Implicit default content beside a named slot template is also retained in the
+Vapor IR and generated slot functions ([#7570](https://github.com/ubugeeei-prod/vize/issues/7570)).
+
+Thank you [@dannote](https://github.com/dannote) for these reproductions.
 
 ## Drop-in scope
 

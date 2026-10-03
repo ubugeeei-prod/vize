@@ -1,0 +1,1 @@
+<Card><p>{{ x }}</p><template #footer="{ ok }">F {{ ok }}</template></Card>

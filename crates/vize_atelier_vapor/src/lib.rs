@@ -33,6 +33,8 @@ mod tests_dynamic_component;
 #[cfg(test)]
 mod tests_generated_identity;
 #[cfg(test)]
+mod tests_implicit_default_slot;
+#[cfg(test)]
 mod tests_insertion_state;
 #[cfg(test)]
 mod tests_setup_components;
