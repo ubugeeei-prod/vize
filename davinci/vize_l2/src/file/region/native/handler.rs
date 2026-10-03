@@ -95,7 +95,11 @@ where
         }
         #[cfg(test)]
         super::interruption::after_park();
-        let name = self.facts.pending_handlers[index]
+        let name = self
+            .facts
+            .pending_handlers
+            .get(index)
+            .ok_or(Kind::InvalidEvent)?
             .input
             .as_ref()
             .ok_or(Kind::InvalidEvent)?

@@ -59,7 +59,11 @@ where
             enclosing: self.scope,
             span: value_span,
         });
-        if self.facts.pending_for_heads[index]
+        if self
+            .facts
+            .pending_for_heads
+            .get(index)
+            .ok_or(Kind::InvalidEvent)?
             .input
             .as_ref()
             .ok_or(Kind::InvalidEvent)?

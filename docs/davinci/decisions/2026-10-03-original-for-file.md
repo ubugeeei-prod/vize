@@ -179,6 +179,9 @@ alias row, parked event and minted prefix with `UnfinishedOwner`, and never seal
 an allocation association. The earlier park fault retains an incomplete File
 with no introducing frame. This strengthens the actual distinct custody laws;
 it is an unexecuted source correction, not an observed Rust run failure.
+The private phase factor also uses checked pending-row access for both For and
+event observations, preserving the existing workspace panic-free lint contract
+and exact `InvalidEvent` refusal without an invariant-only indexing panic.
 No production fault flag, extra decode/parse/AST/header walk, pipeline stage,
 serialization, legacy route or budget increase is introduced. All new Rust
 laws remain unexecuted until exact-head hosted Actions; source review, direct
