@@ -103,6 +103,12 @@ The central correction summaries are folded into the existing semantic query
 paragraph; this companion keeps their full history. No source-length exemption
 or production change is introduced. Fresh exact-head acceptance remains required.
 
+After #7580 actually merges, the branch replays its canonical census generator
+on fresh main. The two old spelling-count shards disappear from this diff under
+the accepted policy; the genuine Maestro consumer surface remains. All incoming
+decisions survive, the central record stays at 350 lines and the provider/test
+bytes stay unchanged. Fresh hosted source and protected acceptance apply again.
+
 Generic File-level template position queries, additional native grammar/dialects,
 JSX, external/workspace navigation and default product admission remain
 unfinished. This shared original-SFC facade does not close #6871, #6872 or #6883.
