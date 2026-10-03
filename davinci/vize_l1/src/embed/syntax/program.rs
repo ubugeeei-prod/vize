@@ -95,5 +95,4 @@ mod tests;
 mod observation_tests;
 
 #[cfg(test)]
-#[path = "program/jsdoc_tests.rs"]
 mod jsdoc_tests;

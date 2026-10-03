@@ -229,5 +229,4 @@ mod legacy_literal_tests {
 }
 
 #[cfg(test)]
-#[path = "observation/jsdoc_tests.rs"]
 mod jsdoc_tests;

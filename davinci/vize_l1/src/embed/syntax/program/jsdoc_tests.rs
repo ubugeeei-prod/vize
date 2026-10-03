@@ -6,10 +6,12 @@ fn native_js_ts_program_retains_original_jsdoc_receipt_after_owner_move() {
     let arena = Allocator::default();
     let source = "/** @type {import('vue').Ref<number>} */ let value=1;";
     let origin = 137;
+    let authored = alloc::format!("{}{source}", " ".repeat(origin as usize));
     for lang in [Lang::Js, Lang::Ts] {
         let original = parse_program_once(
             &arena,
-            EmbedSource::authored(source, Span::new(origin, origin + source.len() as u32)).unwrap(),
+            EmbedSource::authored(&authored, Span::new(origin, origin + source.len() as u32))
+                .unwrap(),
             ProgramOptions::module(lang),
         );
         assert!(original.hole().is_none());
@@ -17,6 +19,7 @@ fn native_js_ts_program_retains_original_jsdoc_receipt_after_owner_move() {
         let source_pointer = original.source().text().as_ptr();
         let moved = original;
         let admitted = moved.admitted_program().unwrap();
+        assert_eq!(moved.source().authored_root(), authored.as_str());
         assert!(admitted.has_jsdoc_comments());
         assert_eq!(admitted.program() as *const _, ast);
         assert_eq!(admitted.source().as_ptr(), source_pointer);

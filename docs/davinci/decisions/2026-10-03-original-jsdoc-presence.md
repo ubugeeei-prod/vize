@@ -12,7 +12,7 @@ that bounded projection; it does not establish complete Vue type semantics.
 A subsequent independent official Vue 3.5.35 / vue-tsc 3.3.11 /
 TypeScript 6.0.3 oracle checked this exact original source:
 
-```vue
+```text
 <script setup>/** @type {import('vue').Ref<number>} */ let value=1;</script><template>{{value.toFixed}}</template>
 ```
 
