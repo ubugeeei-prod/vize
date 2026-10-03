@@ -1,0 +1,255 @@
+//! Native HTML structure, with a fail-closed explicit-envelope insertion mode.
+
+use vize_l0::{Span, Vec};
+
+use super::{DocumentHtmlRefusal as Refusal, DocumentHtmlStructure, Element};
+use crate::markup::document::{DocumentTokenKind as Kind, DocumentTreePolicy, NativeDocument};
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Mode {
+    Doctype,
+    Html,
+    Head,
+    InHead,
+    Body,
+    InBody,
+    HtmlEnd,
+    End,
+}
+
+pub(super) fn construct<'o, 'a>(
+    owner: &'o NativeDocument<'a>,
+) -> Result<DocumentHtmlStructure<'o, 'a>, Refusal> {
+    owner.normal_completion().map_err(Refusal::Lexical)?;
+    let mut builder = Builder {
+        owner,
+        elements: Vec::new_in(&owner.allocator),
+        stack: Vec::new_in(&owner.allocator),
+        mode: Mode::Doctype,
+    };
+    builder.run()?;
+    if builder.mode != Mode::End || !builder.stack.is_empty() {
+        return Err(Refusal::PendingStructure);
+    }
+    Ok(DocumentHtmlStructure {
+        owner,
+        elements: builder.elements,
+    })
+}
+
+struct Builder<'o, 'a> {
+    owner: &'o NativeDocument<'a>,
+    elements: Vec<'a, Element>,
+    stack: Vec<'a, usize>,
+    mode: Mode,
+}
+
+impl Builder<'_, '_> {
+    fn run(&mut self) -> Result<(), Refusal> {
+        let mut index = 0;
+        while let Some(event) = self.owner.events.get(index) {
+            match event.kind {
+                Kind::OpenTagName => {
+                    let name = event.span;
+                    index += 1;
+                    let mut end = None;
+                    while let Some(part) = self.owner.events.get(index) {
+                        index += 1;
+                        match part.kind {
+                            Kind::OpenTagEnd | Kind::SelfClosingTag => {
+                                end = Some((part.span.start, part.kind == Kind::SelfClosingTag));
+                                break;
+                            }
+                            Kind::AttributeName
+                            | Kind::AttributeNameEnd
+                            | Kind::AttributeData
+                            | Kind::AttributeEntity
+                            | Kind::AttributeEnd(_) => {}
+                            Kind::DirectiveName
+                            | Kind::DirectiveArgument
+                            | Kind::DirectiveModifier => {
+                                return Err(Refusal::VueSyntax);
+                            }
+                            _ => return Err(Refusal::InvalidFrame(name)),
+                        }
+                    }
+                    let (gt, slash) = end.ok_or(Refusal::InvalidFrame(name))?;
+                    self.open(name, gt, slash)?;
+                    continue;
+                }
+                Kind::CloseTagName => self.close(event.span)?,
+                Kind::Declaration { terminated: true } => {
+                    let raw = self.source(event.span)?;
+                    if self.mode != Mode::Doctype || !raw.eq_ignore_ascii_case("<!DOCTYPE html>") {
+                        return Err(Refusal::ExplicitEnvelope);
+                    }
+                    self.mode = Mode::Html;
+                }
+                Kind::Text => {
+                    if self.mode != Mode::InBody && !html_space(self.source(event.span)?) {
+                        return Err(Refusal::ExplicitEnvelope);
+                    }
+                }
+                Kind::TextEntity if self.mode == Mode::InBody => {}
+                Kind::TextEntity => return Err(Refusal::ExplicitEnvelope),
+                Kind::Comment => self.comment(event.span)?,
+                Kind::Interpolation
+                | Kind::DirectiveName
+                | Kind::DirectiveArgument
+                | Kind::DirectiveModifier => return Err(Refusal::VueSyntax),
+                _ => return Err(Refusal::NonHtmlToken),
+            }
+            index += 1;
+        }
+        Ok(())
+    }
+
+    fn source(&self, span: Span) -> Result<&str, Refusal> {
+        self.owner
+            .source()
+            .get(span.start as usize..span.end as usize)
+            .ok_or(Refusal::InvalidFrame(span))
+    }
+
+    fn open(&mut self, name_span: Span, gt: u32, slash: bool) -> Result<(), Refusal> {
+        let raw = self.source(name_span)?;
+        let name = name(raw).ok_or_else(|| unsupported(raw, name_span))?;
+        let start = name_span
+            .start
+            .checked_sub(1)
+            .ok_or(Refusal::InvalidFrame(name_span))?;
+        let bytes = self.owner.source().as_bytes();
+        if bytes.get(start as usize) != Some(&b'<')
+            || bytes.get(gt as usize) != Some(&b'>')
+            || (slash && gt.checked_sub(1).and_then(|p| bytes.get(p as usize)) != Some(&b'/'))
+        {
+            return Err(Refusal::InvalidFrame(name_span));
+        }
+        let void = matches!(
+            name,
+            "base" | "link" | "meta" | "br" | "hr" | "img" | "input"
+        );
+        self.mode = match (self.mode, name) {
+            (Mode::Html, "html") => Mode::Head,
+            (Mode::Head, "head") => Mode::InHead,
+            (Mode::Body, "body") => Mode::InBody,
+            (Mode::InHead, "base" | "link" | "meta") => Mode::InHead,
+            (Mode::InBody, "div" | "span" | "br" | "hr" | "img" | "input") => Mode::InBody,
+            _ => return Err(Refusal::ExplicitEnvelope),
+        };
+        let parent = self.stack.last().copied();
+        let index = self.elements.len();
+        self.elements.push(Element {
+            name,
+            authored_name: name_span,
+            opening: Span::new(start, gt + 1),
+            closing: None,
+            parent,
+            first_child: None,
+            last_child: None,
+            next_sibling: None,
+            ignored_slash: slash && !void,
+        });
+        if let Some(parent) = parent {
+            if let Some(previous) = self.elements[parent].last_child {
+                self.elements[previous].next_sibling = Some(index);
+            } else {
+                self.elements[parent].first_child = Some(index);
+            }
+            self.elements[parent].last_child = Some(index);
+        }
+        if !void {
+            self.stack.push(index);
+        }
+        Ok(())
+    }
+
+    fn close(&mut self, name_span: Span) -> Result<(), Refusal> {
+        let raw = self.source(name_span)?;
+        let name = name(raw).ok_or_else(|| unsupported(raw, name_span))?;
+        let start = name_span
+            .start
+            .checked_sub(2)
+            .ok_or(Refusal::InvalidFrame(name_span))?;
+        let source = self.owner.source();
+        if source.get(start as usize..name_span.start as usize) != Some("</") {
+            return Err(Refusal::InvalidFrame(name_span));
+        }
+        let tail = source
+            .get(name_span.end as usize..)
+            .ok_or(Refusal::InvalidFrame(name_span))?;
+        let gap = tail.find('>').ok_or(Refusal::InvalidFrame(name_span))?;
+        if !html_space(tail.get(..gap).ok_or(Refusal::InvalidFrame(name_span))?) {
+            return Err(Refusal::InvalidFrame(name_span));
+        }
+        let index = self
+            .stack
+            .last()
+            .copied()
+            .ok_or(Refusal::ImpliedEnd(name_span))?;
+        if self.elements[index].name != name {
+            return Err(Refusal::ImpliedEnd(name_span));
+        }
+        self.mode = match (self.mode, name) {
+            (Mode::InHead, "head") => Mode::Body,
+            (Mode::InBody, "body") => Mode::HtmlEnd,
+            (Mode::HtmlEnd, "html") => Mode::End,
+            (Mode::InBody, "div" | "span") => Mode::InBody,
+            _ => return Err(Refusal::ExplicitEnvelope),
+        };
+        self.stack.pop();
+        // SourceRoot bounds the complete source to u32 before this producer.
+        let end = name_span.end as usize + gap + 1;
+        self.elements[index].closing = Some(Span::new(start, end as u32));
+        Ok(())
+    }
+
+    fn comment(&self, content: Span) -> Result<(), Refusal> {
+        let source = self.owner.source();
+        let start = content.start.checked_sub(4).ok_or(Refusal::NonHtmlToken)?;
+        let end = (content.end as usize)
+            .checked_add(3)
+            .ok_or(Refusal::NonHtmlToken)?;
+        if source.get(start as usize..content.start as usize) != Some("<!--")
+            || source.get(content.end as usize..end) != Some("-->")
+        {
+            return Err(Refusal::NonHtmlToken);
+        }
+        let raw = self.source(content)?;
+        if raw.contains("<!--") || raw.contains("-->") || raw.contains("--!>") {
+            return Err(Refusal::NonHtmlToken);
+        }
+        Ok(())
+    }
+}
+
+fn name(raw: &str) -> Option<&'static str> {
+    [
+        "html", "head", "body", "div", "span", "base", "link", "meta", "br", "hr", "img", "input",
+    ]
+    .into_iter()
+    .find(|name| raw.eq_ignore_ascii_case(name))
+}
+
+fn unsupported(raw: &str, span: Span) -> Refusal {
+    if [
+        "table", "thead", "tbody", "tfoot", "tr", "td", "th", "caption", "col", "colgroup",
+    ]
+    .iter()
+    .any(|tag| raw.eq_ignore_ascii_case(tag))
+    {
+        Refusal::UnsupportedPolicy(DocumentTreePolicy::TableContentModel)
+    } else if ["p", "li", "dt", "dd", "rt", "rp", "option", "optgroup"]
+        .iter()
+        .any(|tag| raw.eq_ignore_ascii_case(tag))
+    {
+        Refusal::UnsupportedPolicy(DocumentTreePolicy::ImpliedEndTags)
+    } else {
+        Refusal::UnsupportedElement(span)
+    }
+}
+
+fn html_space(raw: &str) -> bool {
+    raw.bytes()
+        .all(|byte| matches!(byte, b'\t' | b'\n' | b'\x0c' | b'\r' | b' '))
+}

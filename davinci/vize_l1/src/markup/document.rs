@@ -10,6 +10,9 @@ use vize_l0::{Allocator, SourceRoot, Span, Vec};
 use super::{Document, LexErrorCode, LexOptions, Lexer, ProfileKind, QuoteType};
 
 mod sink;
+mod structure;
+
+pub use structure::{DocumentHtmlElement, DocumentHtmlRefusal, DocumentHtmlStructure};
 
 /// The callbacks actually emitted by the Document-profile lexer.
 /// End-of-tag callbacks carry a zero-width coordinate, including recovered
@@ -90,13 +93,25 @@ const UNFINISHED_TREE_POLICIES: [DocumentTreePolicy; 4] = [
 ///     NativeDocument { ..original }
 /// }
 /// ```
-#[derive(Debug)]
 pub struct NativeDocument<'a> {
+    allocator: &'a Allocator,
     root: SourceRoot<'a>,
     events: Vec<'a, Event>,
     errors: Vec<'a, DocumentLexicalError>,
     normal_end: bool,
     declaration_refusal: Option<DocumentLexicalRefusal>,
+}
+
+impl core::fmt::Debug for NativeDocument<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("NativeDocument")
+            .field("root", &self.root)
+            .field("events", &self.events)
+            .field("errors", &self.errors)
+            .field("normal_end", &self.normal_end)
+            .field("declaration_refusal", &self.declaration_refusal)
+            .finish_non_exhaustive()
+    }
 }
 
 impl<'a> NativeDocument<'a> {
@@ -120,6 +135,7 @@ impl<'a> NativeDocument<'a> {
         assert_eq!(recorder.end_calls, 1);
         let declaration_refusal = recorder.declaration_refusal;
         Self {
+            allocator,
             root,
             events,
             errors,
@@ -148,6 +164,13 @@ impl<'a> NativeDocument<'a> {
     #[must_use]
     pub fn errors(&self) -> &[DocumentLexicalError] {
         &self.errors
+    }
+
+    /// Construct only the admitted explicit HTML envelope's element ancestry.
+    /// The original retained events are consumed directly, without lexing again.
+    /// This does not certify general HTML tree, text or attribute semantics.
+    pub fn html_structure(&self) -> Result<DocumentHtmlStructure<'_, 'a>, DocumentHtmlRefusal> {
+        structure::construct(self)
     }
 
     /// Declaration tolerance is implemented; these four tree policies are

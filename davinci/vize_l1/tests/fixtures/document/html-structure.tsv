@@ -1,0 +1,9 @@
+# name\tsource\tHTML local-name and parent-start-order census
+casefold	<!DOCTYPE html><HTML><HEAD></head><BODY><DiV><sPaN></SPAN></dIv></body></html>	html:-,head:0,body:0,div:2,span:3
+nonvoid-slash	<!DOCTYPE html><html><head></head><body><DIV/><SPAN></SPAN></DIV><span></span></body></html>	html:-,head:0,body:0,div:2,span:3,span:2
+void-slash	<!DOCTYPE html><html><head></head><body><div><BR/><img/><hr><input></div></body></html>	html:-,head:0,body:0,div:2,br:3,img:3,hr:3,input:3
+siblings	<!DOCTYPE html><html><head></head><body><div><span></span><div></div></div><span><br></span></body></html>	html:-,head:0,body:0,div:2,span:3,div:3,span:2,br:6
+generic-nesting	<!DOCTYPE html><html><head></head><body><span><div><span></span></div></span></body></html>	html:-,head:0,body:0,span:2,div:3,span:4
+attribute-bytes	<!DOCTYPE html><html><head></head><body><DIV DATA-X="<span></span>" data-y='>' a=http://example.test/><SPAN></SPAN></DIV></body></html>	html:-,head:0,body:0,div:2,span:3
+entities-comments	<!--before--><!DOCTYPE html><html><!--middle--><head></head><body><div>&lt;span&gt;é<!-- <span> -->&#32;<span></span></div></body></html><!--after-->	html:-,head:0,body:0,div:2,span:3
+head-void	<!doctype HTML><html/><head/><BASE href="/"><LiNk rel=stylesheet><META charset=utf-8/></HEAD><BODY/><input type=hidden><DIV></DIV></body></html>	html:-,head:0,base:1,link:1,meta:1,body:0,input:5,div:5
