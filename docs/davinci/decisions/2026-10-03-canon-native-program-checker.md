@@ -25,6 +25,15 @@ after a request retain its diagnostics with an incomplete observation. A fresh
 checker is required to adopt changed settings. No scratch-config fallback is
 selected by this entry.
 
+Before opening a native document, a crate-private bridge hook initializes the
+existing configured materialized-project session. It calls the existing client
+activation method, whose body is unchanged; only crate visibility is widened.
+Its overlay config extends the actual workspace config, retaining Module goal,
+strictness and JS checking options even when that workspace initially contains
+only a config file. The hook takes no caller document, URI or config argument,
+is enabled only by this feature, and runs after all provider/config guards.
+Default legacy calls retain their existing behavior.
+
 The existing bridge owns URI normalization. This adapter passes its private
 sealed-kind basename to `open_virtual_document` and uses the actual returned
 URI for both diagnostic retrieval and closure. Failed-open cleanup uses the
@@ -75,6 +84,26 @@ The test-only correction constructs the same complete related payload through
 fallible deserialization into the actual field type and propagates construction
 errors. Every mapping assertion and diagnostic field is retained; public and
 production APIs are unchanged. A fresh corrected-source full run is required.
+
+The corrected full run 37109531827 passed all three mapping laws and four
+pre-backend refusal laws, then its actual positive Corsa law failed: the raw
+virtual original `.ts` reference used inferred settings and produced global
+`name` diagnostics, while the projected Module produced no diagnostics. The
+empty reference workspace had no source files when the backend started, so the
+existing editor fallback did not apply its authored project config. Privacy,
+minimal-feature and feature Clippy steps were not reached. Both failed runs and
+complete original payloads remain preserved.
+
+The reference now writes every frozen original source byte-for-byte into its
+configured TempDir before backend startup and opens its physical identity with
+the same `.mjs`/`.ts` ScriptKind. Separate directories preserve the two fixture
+families' distinct sources with overlapping case names. No projection marker is
+added to the original, expectation changed, or diagnostic filtered. The native
+checker uses a separate actual config-only workspace with the same options, so
+the hook must configure its own materialized session rather than relying on
+reference files to establish the project. A new exact-source
+full Actions run must execute all original and bounded comparisons and privacy
+laws before backend equivalence can be reported.
 
 The existing full Rust Actions recipe explicitly runs the feature's mapping,
 actual-backend and privacy tests, minimal-feature check and strict Clippy.

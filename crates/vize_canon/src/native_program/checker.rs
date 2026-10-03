@@ -109,7 +109,7 @@ impl NativeProgramChecker {
             return Err(NativeProgramError::JavaScriptCheckingDisabled);
         }
         self.bridge
-            .spawn()
+            .ensure_configured_virtual_project()
             .await
             .map_err(|error| NativeProgramError::Backend {
                 error,

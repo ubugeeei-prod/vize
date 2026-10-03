@@ -1,6 +1,7 @@
 //! Independent TypeScript references and complete original Corsa observations.
 
 use super::{TestResult, configured, require, require_equal, support};
+use std::path::Path;
 use vize_canon::native_program::{NativeProgramChecker, NativeProgramError};
 use vize_canon::{CorsaBridge, LspDiagnostic};
 use vize_l0::{
@@ -25,10 +26,10 @@ fn real_backend_preserves_complete_original_diagnostics_and_independent_referenc
         )?;
         // Missing required executables fail this test; no optional backend skip.
         let project = tempfile::TempDir::new()?;
-        let config = configured(project.path(), backend)?;
-        let reference = CorsaBridge::with_config(config.clone());
-        let mut checker = NativeProgramChecker::with_config(config)?;
-        reference.spawn().await?;
+        let config = configured(project.path(), backend.clone())?;
+        // Native startup must honor an actual config-only workspace itself.
+        let native_project = tempfile::TempDir::new()?;
+        let native_config = configured(native_project.path(), backend)?;
         let pack: serde_json::Value = serde_json::from_str(include_str!(
             "../../../../davinci/vize_l4/tests/fixtures/program-checker.json"
         ))?;
@@ -40,19 +41,6 @@ fn real_backend_preserves_complete_original_diagnostics_and_independent_referenc
             cases.len() == 10,
             "complete original independent reference family",
         )?;
-        let mut accepted = 0;
-        let mut refused = 0;
-        for case in cases {
-            if check_case(case, &reference, &mut checker).await? {
-                accepted += 1;
-            } else {
-                refused += 1;
-            }
-        }
-        require(
-            accepted > 0 && refused > 0,
-            "original admitted and commented reference cases observed",
-        )?;
         let bounded: serde_json::Value = serde_json::from_str(include_str!("checker.json"))?;
         let bounded_cases = bounded
             .get("cases")
@@ -62,9 +50,31 @@ fn real_backend_preserves_complete_original_diagnostics_and_independent_referenc
             bounded_cases.len() == 8,
             "complete bounded comment-free family",
         )?;
+        let original_dir = project.path().join("original");
+        let bounded_dir = project.path().join("bounded");
+        prepare_references(&original_dir, cases)?;
+        prepare_references(&bounded_dir, bounded_cases)?;
+        // The actual configured project contains exact original sources before
+        // backend startup; inferred virtual projects are not reference inputs.
+        let reference = CorsaBridge::with_config(config);
+        let mut checker = NativeProgramChecker::with_config(native_config)?;
+        reference.spawn().await?;
+        let mut accepted = 0;
+        let mut refused = 0;
+        for case in cases {
+            if check_case(case, &original_dir, &reference, &mut checker).await? {
+                accepted += 1;
+            } else {
+                refused += 1;
+            }
+        }
+        require(
+            accepted > 0 && refused > 0,
+            "original admitted and commented reference cases observed",
+        )?;
         for case in bounded_cases {
             require(
-                check_case(case, &reference, &mut checker).await?,
+                check_case(case, &bounded_dir, &reference, &mut checker).await?,
                 "every bounded reference actually checked",
             )?;
         }
@@ -93,6 +103,7 @@ fn real_backend_preserves_complete_original_diagnostics_and_independent_referenc
                     .iter()
                     .find(|case| case.get("id") == Some(&serde_json::json!("js-property")))
                     .ok_or("negative JavaScript reference")?,
+                &original_dir,
                 &reference,
                 &mut checker,
             )
@@ -105,6 +116,7 @@ fn real_backend_preserves_complete_original_diagnostics_and_independent_referenc
                     .iter()
                     .find(|case| case.get("id") == Some(&serde_json::json!("js-valid")))
                     .ok_or("positive JavaScript reference")?,
+                &bounded_dir,
                 &reference,
                 &mut checker,
             )
@@ -117,8 +129,31 @@ fn real_backend_preserves_complete_original_diagnostics_and_independent_referenc
     })
 }
 
+fn prepare_references(directory: &Path, cases: &[serde_json::Value]) -> TestResult {
+    std::fs::create_dir_all(directory)?;
+    for case in cases {
+        let id = case
+            .get("id")
+            .and_then(serde_json::Value::as_str)
+            .ok_or("reference case id")?;
+        let extension = match case.get("kind").and_then(serde_json::Value::as_str) {
+            Some("js") => "mjs",
+            Some("ts") => "ts",
+            _ => return Err("reference language".into()),
+        };
+        let source = case
+            .get("source")
+            .and_then(serde_json::Value::as_str)
+            .ok_or("reference source")?;
+        let name = cstr!("reference-{id}.{extension}");
+        std::fs::write(directory.join(name.as_str()), source)?;
+    }
+    Ok(())
+}
+
 async fn check_case(
     case: &serde_json::Value,
+    reference_dir: &Path,
     reference: &CorsaBridge,
     checker: &mut NativeProgramChecker,
 ) -> Result<bool, Box<dyn std::error::Error>> {
@@ -150,7 +185,14 @@ async fn check_case(
         return Ok(false);
     }
     let name = cstr!("reference-{id}.{}", projection.source_kind().extension());
-    let uri = reference.open_virtual_document(&name, source).await?;
+    let path = reference_dir.join(name.as_str());
+    require(
+        std::fs::read(&path)? == source.as_bytes(),
+        "reference file retains exact original bytes",
+    )?;
+    let uri = reference
+        .open_virtual_document(path.to_str().ok_or("reference path")?, source)
+        .await?;
     let original = reference.get_diagnostics(&uri).await?;
     reference.close_virtual_document(&uri).await?;
     let checked = checker.check(&projection).await?;

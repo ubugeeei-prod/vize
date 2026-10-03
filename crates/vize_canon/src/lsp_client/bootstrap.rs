@@ -72,7 +72,7 @@ impl CorsaProjectClient {
         })
     }
 
-    pub(super) fn activate_materialized_project_session(&mut self) -> Result<(), String> {
+    pub(crate) fn activate_materialized_project_session(&mut self) -> Result<(), String> {
         if self.materialized_project_session {
             return Ok(());
         }

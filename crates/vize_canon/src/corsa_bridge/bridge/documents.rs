@@ -10,6 +10,18 @@ use crate::corsa_bridge::types::{
 };
 
 impl CorsaBridge {
+    /// Keep native virtual documents inside the actual configured project.
+    #[cfg(feature = "native-program")]
+    pub(crate) async fn ensure_configured_virtual_project(&self) -> Result<(), CorsaBridgeError> {
+        self.spawn().await?;
+        self.with_client(|client| {
+            client
+                .activate_materialized_project_session()
+                .map_err(CorsaBridgeError::CommunicationError)
+        })
+        .await
+    }
+
     pub async fn open_virtual_document(
         &self,
         name: &str,
