@@ -133,6 +133,24 @@ test(
         native.map((execution) => execution.html),
       );
       if (actual.id.startsWith("handler-")) {
+        assert.equal(
+          Buffer.from(actual.source)
+            .subarray(actual.handler.span.start, actual.handler.span.end)
+            .toString("utf8"),
+          actual.handler.raw,
+        );
+        assert.equal(
+          actual.handler.raw,
+          actual.id === "handler-root"
+            ? "const unused=&quot;雪🌸&quot;; $event.count+=2;"
+            : "$event.count += 2;",
+        );
+        assert.equal(
+          actual.handler.decoded,
+          actual.id === "handler-root"
+            ? 'const unused="雪🌸"; $event.count+=2;'
+            : "$event.count += 2;",
+        );
         assert(!actual.code.includes("$event") && !actual.code.includes("__vize_ssr_event_probe"));
         const changed = actual.code.replace(
           "function ssrRender(_ctx, _push, _parent, _attrs) {",

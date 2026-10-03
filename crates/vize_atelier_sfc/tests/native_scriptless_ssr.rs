@@ -3,12 +3,29 @@ use vize_atelier_sfc::{
 };
 use vize_l0::{Allocator, config::VueVersion};
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind;
+use vize_l2::op::{BindingOp, OnOp, Op, Region};
 use vize_l3::decision::ssr::SsrUnsupported;
 use vize_l4::module::AssemblyError;
 use vize_l4::targets::ssr::SsrErrorKind;
 
 fn pack() -> serde_json::Value {
     serde_json::from_str(include_str!("fixtures/native-sfc-ssr-vue-3.5.35.json")).unwrap()
+}
+
+fn original_on<'o, 'a>(region: &'o Region<'a>) -> Option<&'o OnOp<'a>> {
+    for op in &region.ops {
+        if let Op::Element(element) = op {
+            for binding in &element.bindings {
+                if let BindingOp::On(on) = binding {
+                    return Some(on);
+                }
+            }
+            if let Some(on) = original_on(&element.children) {
+                return Some(on);
+            }
+        }
+    }
+    None
 }
 
 #[test]
@@ -45,6 +62,28 @@ fn original_whole_sfc_modules_keep_selected_custody_and_complete_maps() {
         assert!(file.is_complete());
         assert!(file.units().is_empty());
         assert!(core::ptr::eq(file.artifact().source(), source));
+        let handler = match fixture["id"].as_str() {
+            Some("handler-root" | "handler-nested") => {
+                let on = original_on(file.artifact().root()).unwrap();
+                let handler = file.handler_for(on).unwrap();
+                assert!(handler.accepts_on(on));
+                assert!(core::ptr::eq(handler.file(), file));
+                let resolution = handler.resolution().unwrap();
+                let input = resolution.input();
+                let syntax = input.operand().syntax();
+                assert!(core::ptr::eq(syntax.source().authored_root(), source));
+                assert_eq!(
+                    syntax.source().span().slice(source),
+                    input.operand().raw_value()
+                );
+                assert_eq!(syntax.diagnostics().count(), 0);
+                serde_json::json!({"raw":input.operand().raw_value(),"decoded":syntax.source().text(),"span":{"start":syntax.source().span().start,"end":syntax.source().span().end}})
+            }
+            _ => {
+                assert!(original_on(file.artifact().root()).is_none());
+                serde_json::Value::Null
+            }
+        };
         let provenance = file.artifact().provenance().to_vec();
         let output = moved
             .result()
@@ -70,7 +109,7 @@ fn original_whole_sfc_modules_keep_selected_custody_and_complete_maps() {
         assert!(plain.source_map().is_none());
         assert!(plain.document().links().is_empty());
         assert_eq!(file.artifact().provenance(), provenance);
-        modules.push(serde_json::json!({"id":fixture["id"],"source":source,"filename":filename,"code":output.code(),"map":map,"links":links,"outcome":"complete_original_sfc_module"}));
+        modules.push(serde_json::json!({"id":fixture["id"],"source":source,"filename":filename,"code":output.code(),"map":map,"links":links,"handler":handler,"outcome":"complete_original_sfc_module"}));
     }
     if let Ok(path) = std::env::var("VIZE_NATIVE_SFC_SSR_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&serde_json::json!({"custody":"once_selected_scriptless_sfc","modules":modules,"refusals":refusals()})).unwrap()).unwrap();
