@@ -3,6 +3,7 @@
     reason = "tests compare actual immutable host snapshot Arc identities"
 )]
 mod capacity;
+mod jsx;
 mod lifecycle;
 mod refusals;
 mod retention;

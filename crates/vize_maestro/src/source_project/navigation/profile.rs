@@ -1,10 +1,12 @@
 //! Actual source language and configured server role, never filename language.
 use vize_l0::config::{VueDialect, VueVersion};
-use vize_l1::{container::vue::DescriptorOptions, embed::Lang, parse::SurfaceParseOptions};
+use vize_l1::{
+    container::vue::DescriptorOptions, embed::syntax::ProgramOptions, parse::SurfaceParseOptions,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum Profile {
-    Program(Lang),
+    Program(ProgramOptions),
     Vue(VueConfiguration),
 }
 

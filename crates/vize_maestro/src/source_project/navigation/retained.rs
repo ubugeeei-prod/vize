@@ -9,7 +9,7 @@ use std::sync::{Arc, mpsc::Receiver};
 use tower_lsp::lsp_types::{Location, Position};
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::embed::{
-    EmbedSource, Lang,
+    EmbedSource,
     syntax::{ProgramOptions, parse_program_once},
 };
 use vize_l2::{
@@ -26,7 +26,7 @@ use super::{
 
 pub(super) fn run(
     snapshot: Arc<SourceSnapshot>,
-    lang: Lang,
+    options: ProgramOptions,
     receiver: Receiver<Command>,
     control: Arc<Control>,
 ) {
@@ -46,7 +46,7 @@ pub(super) fn run(
     control
         .parses
         .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    let syntax = parse_program_once(&arena, input, ProgramOptions::module(lang));
+    let syntax = parse_program_once(&arena, input, options);
     if control.retired() {
         return;
     }

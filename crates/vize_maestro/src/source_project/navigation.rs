@@ -16,6 +16,7 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicUsize;
 use tower_lsp::lsp_types::{Location, Position, Url};
 use vize_l0::FxHashMap;
+use vize_l1::embed::{Lang, syntax::ProgramOptions};
 use vize_l2::file::{FileIssue, PositionQueryError};
 
 use super::{SnapshotRefusal, SourceQueryProject, SourceSnapshot};
@@ -154,8 +155,16 @@ impl<'host> NativeNavigationProject<'host> {
 
     fn profile(&self, snapshot: &SourceSnapshot) -> Result<Profile, NavigationRefusal> {
         match snapshot.language_id() {
-            "javascript" => Ok(Profile::Program(vize_l1::embed::Lang::Js)),
-            "typescript" => Ok(Profile::Program(vize_l1::embed::Lang::Ts)),
+            "javascript" => Ok(Profile::Program(ProgramOptions::module(Lang::Js))),
+            "typescript" => Ok(Profile::Program(ProgramOptions::module(Lang::Ts))),
+            "javascriptreact" => Ok(Profile::Program(ProgramOptions {
+                jsx: true,
+                ..ProgramOptions::module(Lang::Js)
+            })),
+            "typescriptreact" => Ok(Profile::Program(ProgramOptions {
+                jsx: true,
+                ..ProgramOptions::module(Lang::Ts)
+            })),
             "vue" if !crate::utils::is_standalone_html_path(snapshot.uri().path()) => self
                 .source
                 .native_vue_configuration()

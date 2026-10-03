@@ -145,7 +145,7 @@ impl NavigationWorker {
                 };
                 let _slot = slot;
                 match profile {
-                    Profile::Program(lang) => retained::run(owner, lang, receiver, stop),
+                    Profile::Program(options) => retained::run(owner, options, receiver, stop),
                     Profile::Vue(configuration) => {
                         retained::vue::run(owner, configuration, receiver, stop);
                     }

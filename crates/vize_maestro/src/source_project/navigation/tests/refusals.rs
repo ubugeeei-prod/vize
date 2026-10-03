@@ -9,7 +9,7 @@ use vize_l2::file::FileIssueKind::{UnresolvedReference, UnsupportedSyntax};
 fn actual_document_language_controls_the_profile_despite_uri_or_source() {
     let documents = DocumentStore::new();
     let project = NativeNavigationProject::new(SourceQueryProject::new(&documents));
-    for language in ["javascriptreact", "typescriptreact", "unknown"] {
+    for language in ["jsx", "tsx", "unknown"] {
         documents.open(uri(), "const value=1;value;".into(), 1, language.into());
         assert_eq!(
             block_on(project.definition(&uri(), Position::new(0, 15))),
