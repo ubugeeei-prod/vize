@@ -66,7 +66,10 @@ passed, including the seven ownership laws; nine privacy docs passed too.
 The first hosted source732 stopped at an unresolved enum import in the new
 pre-cursor helper before Rust laws ran. Its existing public enum import is
 corrected without changing policy, storage, ownership or budgets; fresh exact
-source Actions remains required. No failed-source acceptance is claimed.
+source Actions remains required. Next source82 passes that import but stops
+at existing Clippy collapsible_if before laws; the same guarded owning parse
+and retained refusal are written as a let-chain, without lint relaxation.
+No failed-source acceptance is claimed.
 
 This closes only a bounded original descriptor/setup/File ownership envelope.
 The peer DOM setup consumer needs this actual provider, qualified original

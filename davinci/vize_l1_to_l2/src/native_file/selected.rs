@@ -274,16 +274,16 @@ pub(super) fn observe<'a>(
             return observation;
         }
     };
-    if matches!(mode, SelectedMode::Setup) {
-        if let Err(issue) = owner.parse_setup_program() {
-            observation.issues.push(NativeSelectedSfcIssue {
-                container_index: index,
-                span: issue.span,
-                kind: NativeSelectedSfcIssueKind::Template(issue),
-            });
-            observation.template = Some(owner.finish());
-            return observation;
-        }
+    if matches!(mode, SelectedMode::Setup)
+        && let Err(issue) = owner.parse_setup_program()
+    {
+        observation.issues.push(NativeSelectedSfcIssue {
+            container_index: index,
+            span: issue.span,
+            kind: NativeSelectedSfcIssueKind::Template(issue),
+        });
+        observation.template = Some(owner.finish());
+        return observation;
     }
     let result = match mode {
         SelectedMode::Scriptless => walk::construct(&mut owner),
