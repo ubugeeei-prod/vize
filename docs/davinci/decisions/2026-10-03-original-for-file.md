@@ -335,3 +335,9 @@ actual merged members and their OIDs remain in historical Stack7517. Retarget
 canonical20 and consumer-migration inventories, require fresh exact-head Actions
 and then protected full/docs/all100 instruction/terminal acceptance. Older
 healthy queue entries remain intact; no additional local or manual campaign runs.
+
+## Terminal protected delivery
+
+#7620 source 7655becd actually merges at 2026-10-03T17:57:04Z as signed `894971db63578369280ee6cc4c8cc9b7aac88c47`. Exact protected [Check37141419763](https://github.com/ubugeeei-prod/vize/actions/runs/37141419763), [Nuxt37141419363](https://github.com/ubugeeei-prod/vize/actions/runs/37141419363) and [Musea37141419374](https://github.com/ubugeeei-prod/vize/actions/runs/37141419374) are terminal SUCCESS; own queue is empty. Raw proof selects all 40 workspace packages and 733/733 tooling tests without deferral, runs strict workspace Clippy, the full archive/list and workspace doctests including both new declaration privacy laws, and passes 14,805 tests across four full workers. All 13 authentic receiver laws, four borrowed-owner laws, three transport laws and actual unwind/native-refusal custody execute successfully. All 100 instruction cases are identical across three measurements, with pinned ceilings and immutable base ratchet verified.
+
+Existing differential/parity recipes pass; the 1577-file markup sweep explicitly records smoke scope and closure_evidence=false. Broader For grammar/dialects, genuine L3/L4 operand/access/output custody, runtime/maps, native editor alias queries and whole-product/fix-history gates remain unfinished. The independent read-only ordinary-SFC integration review confirms DOM/Vapor/SSR still refuse original For without their missing native authority. This receipt adds no new source or CI campaign; retain every actual incoming provider and shared worktree/cache.
