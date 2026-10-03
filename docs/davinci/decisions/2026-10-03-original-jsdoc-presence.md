@@ -47,8 +47,9 @@ Focused original laws cover JS/TS positive and ordinary-comment/string/regex
 negative cases, moved owners, same AST/comment pointers, original spans,
 lookahead, both checkpoint variants, deduplicated re-consumption, committed
 await reparsing and syntax holes. A native L1 embed law retains the same
-Program/source identity and absolute authored comment mapping after moving
-its owner. Validation runs in source-built Actions; no local Cargo build or
+Program body-node/source identity and absolute authored comment mapping after
+moving its owner. The inline Program metadata moves with its owner; the law
+retains genuine arena node identity without claiming a fixed metadata address. Validation runs in source-built Actions; no local Cargo build or
 backend installation is needed for this prerequisite.
 
 The next genuine child must consume this receipt in L4's existing first
@@ -59,5 +60,8 @@ retains its original language-specific path. Existing runtime primitive and
 Read-usage proofs remain required. The configured Canon consumer #7554 stays
 drafted and unqueued while this prerequisite and child are incomplete.
 Source checks, protected full checks, immutable all-100 ceilings and actual
-merge are separate acceptance requirements; new admissions wait behind the
-shared census fix #7580. Default replacement and #6849/#6879 remain unfinished.
+merge are separate acceptance requirements. The shared census fix #7580
+actually merged at 2026-10-03 13:51:49 UTC as 0c3f5bae after terminal protected
+Check 37126750630; this source replays onto actual main 3b0618a9 containing it.
+Fresh source and protected acceptance are still required. Default replacement
+and #6849/#6879 remain unfinished.
