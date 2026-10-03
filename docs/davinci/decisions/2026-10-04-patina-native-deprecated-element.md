@@ -2,6 +2,7 @@
 
 Issue: [#6848](https://github.com/ubugeeei-prod/vize/issues/6848).
 Paired [issue decision](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5971216716).
+Paired [complete-order correction and raw-name audit](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5971307011).
 
 This bounded opt-in `html/deprecated-element` consumer starts from the actual
 selected-owner Warning source `1111e82f5c`, including genuine provider #7546's
@@ -42,6 +43,27 @@ owners, owner movement, diagnostic lifetime and default-route equality. Explicit
 caller traversal uses readonly original child projections; production checks only
 the supplied element. An unrelated body error does not invalidate a truthful
 earlier header and is retained in the complete original control.
+
+Complete expected result vectors retain their authored diagnostic order directly;
+the law helper does not sort, filter or normalize them. Original SFC merging
+appends parser diagnostics before product diagnostics, then orders by original
+`(start, end)`. The duplicate-attribute control explicitly places its earlier
+opening Warning before the later attribute parser Warning; equal-span foster and
+missing-close controls retain parser-first order. All original 25 laws, inputs and
+complete fields remain unchanged by this order correction.
+
+The bounded source-only raw-name audit reads the actual Armature compatibility
+tokenizer and selected Vue 3 surface, which execute the same native Component
+lexer. Its special text sequences cover `script`, `style`, `title` and `textarea`.
+Balanced root controls of the form `<template><TAG><center /></TAG></template>`
+with `TAG` equal to `noembed`, `noframes`, `plaintext`, `listing` or `xmp` retain
+both parent and child elements on these Vue template routes. Source-derived
+registered output is two deprecated-tag Warnings in opening order, with no
+table/recovery context or additional registered parser diagnostic. The original
+self-closing compatibility notice for `<center />` remains suppressed by the
+unchanged registered parser-diagnostic policy, rather than by law filtering.
+This read-only finding adds no law, admission, arbitrary-body or browser raw-text
+authority; the exact 28-spelling laws remain header-policy controls.
 
 Uncertain original Descriptor boundaries still refuse before any selected owner
 can exist. A deprecated `xmp` control with a JavaScript template literal inside

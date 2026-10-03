@@ -105,14 +105,15 @@ fn unrelated_static_duplicates_refuse_even_on_exempt_or_nonmatching_tags() {
             Some(NativeLintRefusal::DuplicateAttribute { span: repeated })
         );
         for locale in LOCALES {
-            let mut diagnostics = vec![parser(
-                "warning",
-                "Duplicate attribute `ID`. Keeping the repeated attribute so parsing can continue.",
-                repeated,
-            )];
+            let mut diagnostics = Vec::new();
             if tag == "center" {
                 diagnostics.push(warning(locale, span(&source, &opening), tag));
             }
+            diagnostics.push(parser(
+                "warning",
+                "Duplicate attribute `ID`. Keeping the repeated attribute so parsing can continue.",
+                repeated,
+            ));
             assert_eq!(
                 complete(&registered(&source, locale)),
                 expected(diagnostics)

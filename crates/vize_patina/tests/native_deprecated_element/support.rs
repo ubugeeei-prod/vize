@@ -97,13 +97,7 @@ pub fn native(finding: &NativeLintFinding) -> Value {
     })
 }
 
-pub fn expected(mut diagnostics: Vec<Value>) -> Value {
-    diagnostics.sort_by_key(|diagnostic| {
-        (
-            diagnostic["start"].as_u64().unwrap(),
-            diagnostic["end"].as_u64().unwrap(),
-        )
-    });
+pub fn expected(diagnostics: Vec<Value>) -> Value {
     let errors = diagnostics
         .iter()
         .filter(|diagnostic| diagnostic["severity"] == "error")
