@@ -115,3 +115,7 @@ known own structural template heads retain Template, and the unchanged modified-
 control checks its actual single outside warning. The source-length gate also
 required splitting new test modules under its unchanged 350-line limit. Fresh
 exact-head Actions remain required after these source repairs.
+
+Check 37117544592 then exposed missing explicit integration-test module paths
+after the split. Both roots now declare the exact private file paths; the
+original cases, source strings and full comparisons stay unchanged.

@@ -204,6 +204,9 @@ fn parity(source: &str, locale: Locale) -> (Vec<Observation>, LintResult) {
     (native, result)
 }
 
+#[path = "native_lint_tag/custody.rs"]
 mod custody;
+#[path = "native_lint_tag/grammar.rs"]
 mod grammar;
+#[path = "native_lint_tag/pre.rs"]
 mod pre;

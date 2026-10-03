@@ -73,5 +73,7 @@ fn tags<'a>(owner: &NativeTemplateComponent<'a>) -> Vec<(&'a str, Result<Kind, R
     output
 }
 
+#[path = "native_lint_tag/grammar.rs"]
 mod grammar;
+#[path = "native_lint_tag/ownership.rs"]
 mod ownership;
