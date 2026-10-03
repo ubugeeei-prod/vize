@@ -53,6 +53,17 @@ or frozen maps must fail. Before readiness, freeze only the actual captured
 complete maps, make Rust equality unconditional and require fresh zero-skip
 Node/runtime, exact-head Actions and protected full/instruction acceptance.
 There is no local Cargo/build/install or manual redundant full campaign.
+Initial draft `fd2b51680` / Check37153279345 reaches the real Rust capture law
+but fails full module equality: the independent expectation accidentally kept
+the standalone reference blank separator before component creation. Existing
+ModuleParts component assembly and the actually frozen ordinary component
+contract use one newline. Correct only that independently derived separator,
+recheck the full pinned formula, and require fresh hosted native capture;
+production, reference render/map bytes and runtime eligibility stay unchanged.
+All three genuine product refusal/runtime-envelope laws pass in that same
+configured source campaign; no additional refusal oracle defect is found.
+The four actual worker artifacts remain raw evidence, and no native whole
+module/map artifact exists from the failed capture.
 
 Complete negative envelopes include empty/comment/ordinary/setup/TypeScript
 scripts, plain/scoped/module/external styles, custom/external/duplicate/profile

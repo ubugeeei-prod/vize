@@ -88,6 +88,14 @@ test("five complete original SFCs retain fresh pinned Descriptor, render, module
       measured.code +
         "\nconst reference_component = { render };\nexport default reference_component;\n",
     );
+    const [imports, body] = measured.code.split("\n\nexport function render");
+    assert.equal(
+      fixture.expectedCode,
+      imports +
+        "\nconst _sfc_main = {}\n;\nfunction render" +
+        body +
+        "\n_sfc_main.render = render\nexport default _sfc_main\n",
+    );
     assert.equal(fixture.events.length, 2);
     assert.equal(fixture.expected.length, 2);
   }
