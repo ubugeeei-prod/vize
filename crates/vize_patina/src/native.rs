@@ -18,6 +18,7 @@ pub mod header_facts;
 mod header_rules;
 mod iframe_has_title;
 mod img_alt;
+mod inline_style;
 mod tabindex_no_positive;
 
 /// The existing rule code; the native entry is separately opt-in.
@@ -32,6 +33,7 @@ pub const TABINDEX_NO_POSITIVE_RULE: &str = "a11y/tabindex-no-positive";
 pub const NO_AUTOFOCUS_RULE: &str = "a11y/no-autofocus";
 pub const NO_ACCESS_KEY_RULE: &str = "a11y/no-access-key";
 pub const NO_DISTRACTING_ELEMENTS_RULE: &str = "a11y/no-distracting-elements";
+pub const NO_INLINE_STYLE_RULE: &str = "vue/no-inline-style";
 
 pub const ARIA_UNSUPPORTED_ELEMENTS_RULE: &str = "a11y/aria-unsupported-elements";
 pub const DEPRECATED_ELEMENT_RULE: &str = "html/deprecated-element";
@@ -231,5 +233,19 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
             return Err(NativeLintRefusal::ForeignElement);
         }
         deprecated_element::check(element, messages)
+    }
+
+    /// Check exact static `style` attributes, including component attributes.
+    /// Bind/Prop expressions and all attribute values remain opaque. The whole
+    /// original header must be admitted before any lookup or finding.
+    pub fn no_inline_style(
+        &self,
+        element: &NativeElement<'_, 'a>,
+        messages: &impl MessageLookup,
+    ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
+        if !core::ptr::eq(self.owner.component(), element.component()) {
+            return Err(NativeLintRefusal::ForeignElement);
+        }
+        inline_style::check(element, messages)
     }
 }
