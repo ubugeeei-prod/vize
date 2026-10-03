@@ -96,14 +96,14 @@ fn whole_native_sfc_modules_match_complete_pinned_render_references() {
 }
 
 #[test]
-fn js_ts_and_empty_script_roles_remain_explicit_product_refusals_with_real_syntax() {
+fn ordinary_typed_and_empty_script_roles_keep_product_refusals_with_real_syntax() {
     for (source, lang) in [
         (
             "<script>const value=1</script><template><p/></template>",
             Lang::Js,
         ),
         (
-            "<script setup lang=ts>const value=1</script><template><p/></template>",
+            "<script setup lang=ts>const value:number=1</script><template><p/></template>",
             Lang::Ts,
         ),
         ("<script setup></script><template><p/></template>", Lang::Js),

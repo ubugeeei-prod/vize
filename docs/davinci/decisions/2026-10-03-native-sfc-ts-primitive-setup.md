@@ -34,7 +34,9 @@ first tooling shard now captures and executes all original eight JS, five
 Const and three TS modules beside strict-safe/refused module laws, uploading
 all eight source/runtime capture files. The current source-built Node run has
 41 passing tests and no skips; twenty L2 setup laws and eleven native product
-laws pass. Exact-head Actions, full protected merge-group suites, unchanged
+laws pass. The first broader hosted product shard exposed an obsolete blanket
+TS refusal input; that law now uses a genuine type-annotated declaration while
+retaining its original syntax/profile/source-owner refusal checks. Exact-head Actions, full protected merge-group suites, unchanged
 all-100 instruction ceilings and actual native Stack merge are still required.
 
 Broader TS syntax, other Vue dialects, ordinary scripts and compiler default
