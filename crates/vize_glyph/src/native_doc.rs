@@ -1,10 +1,13 @@
 //! Opt-in L1 template formatting with a separate document IR and printer.
 //!
 //! This facility leaves all existing formatter entry points unchanged. The
-//! first native template consumer lays out plain opening tags and preserves
+//! native template consumer lays out plain and static binding opening tags and preserves
 //! content, comments, entities, attribute order and quoted values verbatim.
-//! Directive/embed formatting and the other Vue dialects remain unsupported.
+//! Other directive families, dynamic arguments, embed formatting and the other
+//! Vue dialects remain unsupported.
 
+#[path = "native_doc/directive.rs"]
+mod directive;
 #[path = "native_doc/document.rs"]
 mod document;
 #[path = "native_doc/printer.rs"]

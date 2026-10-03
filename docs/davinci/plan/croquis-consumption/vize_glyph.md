@@ -19,4 +19,6 @@ _None._
 
 ## Naive grep disagreements (resolved/grep)
 
-_None._
+| product | resolved | grep |
+| ------- | -------: | ---: |
+| `Span`  |        0 |   12 |

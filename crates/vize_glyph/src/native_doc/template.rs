@@ -1,6 +1,6 @@
 //! The supported Vue 3 surface-to-document path. No product parser is called.
 
-use vize_l0::{Allocator, Vec};
+use vize_l0::{Allocator, SourceRoot, Vec};
 use vize_l1::dialect::vue3::{VueDirectives, surface::ComponentParse};
 use vize_l1::markup::DirectiveSyntax;
 use vize_l1::{Attribute, Element, ElementClose, SurfaceChild, Token};
@@ -48,12 +48,13 @@ impl<'p, 'a> TemplateDocument<'p, 'a> {
     }
 }
 
-/// Lay out plain opening-tag attributes from a retained native Vue 3 parse.
+/// Lay out plain and static binding attributes from a retained native Vue 3 parse.
 ///
 /// The caller parses once with L1's native `parse_component` entry point.
 /// Content whitespace, comments, entities, values, quotes and attribute order
-/// stay verbatim. This API refuses recovered/repaired trees, directives and
-/// interpolation rather than using a legacy parser or an incomplete embed.
+/// stay verbatim. Static `:arg` and `.arg` heads use the shared typed Vue syntax.
+/// This API refuses recovered/repaired trees, other directive families, dynamic
+/// arguments and interpolation; it never calls a legacy parser or parses values.
 /// Token source custody is checked in the same traversal that constructs Doc.
 pub fn template_document<'p, 'a>(
     original: &'p ComponentParse<'a>,
@@ -242,18 +243,19 @@ fn attribute_document<'a>(
     let start = cursor.offset.saturating_add(attribute.name.leading.len());
     let offset =
         u32::try_from(start).map_err(|_| TemplateRefusal::SourceMismatch { offset: start })?;
-    match VueDirectives.decompose(attribute.name.text, offset) {
-        Ok(None) => {}
-        Ok(Some(_)) | Err(_) => {
-            return Err(TemplateRefusal::Unsupported {
-                offset: start,
-                syntax: UnsupportedSyntax::Directive,
-            });
-        }
-    }
+    let block = SourceRoot::new(cursor.source)
+        .and_then(|root| root.block(attribute.name.text, offset))
+        .map_err(|_| TemplateRefusal::SourceMismatch { offset: start })?;
+    let head = VueDirectives
+        .decompose(block.source(), block.start())
+        .map_err(|_| TemplateRefusal::Unsupported {
+            offset: start,
+            syntax: UnsupportedSyntax::Directive,
+        })?;
+    let name = super::directive::name_document(block, head, allocator)?;
     cursor.trivia(&attribute.name)?;
     let mut value_parts = Vec::new_in(&allocator);
-    value_parts.push(Doc::text(attribute.name.text));
+    value_parts.push(name);
     if let Some(eq) = &attribute.eq {
         cursor.trivia(eq)?;
         value_parts.push(Doc::text(eq.text));
