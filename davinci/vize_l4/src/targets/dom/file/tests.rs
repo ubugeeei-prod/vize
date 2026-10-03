@@ -58,7 +58,8 @@ fn equal_numeric_nodes_do_not_authorize_a_foreign_retained_literal() {
     writer.indent();
     writer.use_helper(helper);
     let error = FileExpressions {
-        analysis: &first_analysis,
+        file: first_analysis.file(),
+        facts: first_analysis.dom(),
     }
     .write(&mut writer, node, ExprRef::Js(foreign_expression))
     .unwrap_err();
@@ -138,7 +139,8 @@ fn equal_binding_ids_keep_real_owners_and_reference_refusal_is_atomic() {
     let mut writer = Writer::<Recorded>::default();
     writer.push("prefix");
     let error = FileExpressions {
-        analysis: &first_analysis,
+        file: first_analysis.file(),
+        facts: first_analysis.dom(),
     }
     .write(&mut writer, node, ExprRef::Js(expression))
     .unwrap_err();

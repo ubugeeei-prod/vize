@@ -1,8 +1,8 @@
 //! Genuine file-owned DOM entry: literals need no framework binding access.
 
 use vize_l0::id::NodeId;
-use vize_l2::{expr::ExprRef, resolution::Occurrence};
-use vize_l3::decision::NativeFileAnalysis;
+use vize_l2::{expr::ExprRef, file::FileArtifact, resolution::Occurrence};
+use vize_l3::decision::{NativeFileAnalysis, dom::DomFacts, native::NativeTemplateDomAnalysis};
 
 use super::expression::ExpressionWriter;
 use super::{DomError, DomErrorKind, encode};
@@ -34,12 +34,48 @@ pub fn emit_file<L: LinkSink>(
         analysis.policy(),
         analysis.tables(),
         analysis.dom(),
-        FileExpressions { analysis },
+        FileExpressions {
+            file: analysis.file(),
+            facts: analysis.dom(),
+        },
     )
 }
 
-pub(super) struct FileExpressions<'s, 'owner, 'arena> {
-    pub analysis: &'s NativeFileAnalysis<'owner, 'arena>,
+/// Emit the original selected template through its moved completion view.
+///
+/// The same owner supplies File, artifact and existing sole-walk DOM facts.
+/// No neutral analysis is extracted or rebuilt. Ordinary static structure is
+/// supported; File expressions retain the literal-only checks below. This
+/// supplies no Vue read policy, script emission or whole-SFC completion.
+///
+/// A neutral File analysis cannot stand in for selected-root completion:
+/// ```compile_fail
+/// use vize_l3::decision::NativeFileAnalysis;
+/// use vize_l4::{targets::dom::emit_template, write::NoLinks};
+/// fn substitute(analysis: &NativeFileAnalysis<'_, '_>) {
+///     let _ = emit_template::<NoLinks>(analysis);
+/// }
+/// ```
+pub fn emit_template<L: LinkSink>(
+    analysis: &NativeTemplateDomAnalysis<'_, '_>,
+) -> Result<Writer<L>, DomError> {
+    encode(
+        analysis.artifact().source(),
+        analysis.policy(),
+        analysis.tables(),
+        analysis.dom(),
+        FileExpressions {
+            file: analysis.file(),
+            facts: analysis.dom(),
+        },
+    )
+}
+
+// Constructed only by the two typed owner entries above. Callers cannot pair
+// an arbitrary File with DOM rows or discard the selected completion wrapper.
+struct FileExpressions<'s, 'owner, 'arena> {
+    file: &'owner FileArtifact<'arena>,
+    facts: Option<&'s DomFacts<'owner, 'arena>>,
 }
 
 impl ExpressionWriter for FileExpressions<'_, '_, '_> {
@@ -58,17 +94,15 @@ impl ExpressionWriter for FileExpressions<'_, '_, '_> {
             return Err(fail(DomErrorKind::UnsupportedExpression));
         };
         let row = self
-            .analysis
-            .dom()
+            .facts
             .and_then(|facts| facts.file_expression(node))
             .ok_or_else(|| fail(DomErrorKind::MissingFileExpression))?;
         let resolution = row.resolution();
-        if !core::ptr::eq(resolution.file(), self.analysis.file()) || resolution.node() != node {
+        if !core::ptr::eq(resolution.file(), self.file) || resolution.node() != node {
             return Err(fail(DomErrorKind::FileOwnerMismatch));
         }
         if !resolution.scope().is_some_and(|scope| {
-            self.analysis
-                .file()
+            self.file
                 .scopes()
                 .get(scope.index() as usize)
                 .is_some_and(|record| record.id == scope)
@@ -100,17 +134,13 @@ impl ExpressionWriter for FileExpressions<'_, '_, '_> {
         // This policy is private and rejects every access. The real retained
         // literal and complete empty table were checked above, so it supplies
         // no context/ref/prop fallback and is never consulted for a binding.
-        write_expression(
-            writer,
-            self.analysis.artifact().source(),
-            table,
-            &NoReferences,
+        write_expression(writer, self.file.artifact().source(), table, &NoReferences).map_err(
+            |error| DomError {
+                node: Some(node),
+                span: error.span,
+                kind: DomErrorKind::Expression(error),
+            },
         )
-        .map_err(|error| DomError {
-            node: Some(node),
-            span: error.span,
-            kind: DomErrorKind::Expression(error),
-        })
     }
 }
 

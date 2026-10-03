@@ -15,9 +15,10 @@ use vize_l2::{
 /// Decisions retain the moved, non-cloneable lower completion view.
 ///
 /// The lower route authenticates selected Text/Comment/empty roots and
-/// zero-header HTML bodies, with original HTML whitespace refused before
-/// completion. This does not admit header/operand/control semantics, Vue
-/// runtime exposure, SFC migration or target emission.
+/// ordinary static HTML headers/bodies, with original HTML whitespace and
+/// directive operands refused before completion. Structural completion does
+/// not grant Vue tag roles: target holes retain the actual node and source.
+/// Runtime reads, controls and whole-SFC migration remain separate gates.
 ///
 /// A neutral analysis or an externally paired File cannot construct it:
 /// ```compile_fail

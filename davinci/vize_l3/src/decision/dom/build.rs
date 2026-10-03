@@ -98,6 +98,12 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
                     if element.namespace != Namespace::Html {
                         self.reject(id, span, DomUnsupported::Namespace);
                     }
+                    // Neutral HTML custody does not grant a Vue component
+                    // role. The pinned Vue 3 DOM family resolves `search` as
+                    // a component; retain this actual node as a target hole.
+                    if element.tag == "search" {
+                        self.reject(id, span, DomUnsupported::ElementRole);
+                    }
                     if element.attributes.iter().any(|attribute| {
                         matches!(attribute.name, "class" | "style" | "key" | "ref")
                     }) {

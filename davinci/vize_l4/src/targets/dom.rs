@@ -28,7 +28,7 @@ mod vue;
 mod write;
 
 use expression::{BareExpressions, ExpressionWriter};
-pub use file::emit_file;
+pub use file::{emit_file, emit_template};
 pub use vue::emit_vue;
 use write::{Helpers, helper, quoted};
 
@@ -82,7 +82,7 @@ pub fn emit<L: LinkSink>(
     )
 }
 
-// Both entries derive these views only from their checked owner. No public
+// All entries derive these views only from their checked owner. No public
 // entry accepts an independent artifact, row list, scope or completion flag.
 fn encode<'owner, 'arena, L: LinkSink>(
     source: &'arena str,

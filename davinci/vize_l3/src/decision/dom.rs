@@ -46,6 +46,7 @@ impl DomExpressionFacts for LiteralExpressions {
 pub enum DomUnsupported {
     Operation,
     Namespace,
+    ElementRole,
     SpecialAttribute,
     Binding,
     BindingName,
