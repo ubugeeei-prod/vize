@@ -35,6 +35,10 @@ const canonDeferred = [
     name: "options_api_any_instance_preserves_complete_original_diagnostics",
     pack: "options-api-any-instance",
   },
+  {
+    name: "authored_unused_symbols_preserve_complete_original_diagnostics",
+    pack: "authored-unused-symbols",
+  },
 ];
 type Step = { name?: string; run?: string };
 const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {

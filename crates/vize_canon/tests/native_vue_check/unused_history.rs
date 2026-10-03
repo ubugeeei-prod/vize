@@ -1,14 +1,12 @@
 //! Historical Batch errors and genuine native pull suggestions stay distinct.
 
 use super::*;
-#[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
 const SOURCE: &str = include_str!(
     "../../../../tests/_fixtures/differential/typechecker/authored-unused-symbols/App.vue.txt"
 );
 
-#[cfg(unix)]
 fn owned_backend(root: &Path) -> (PathBuf, PathBuf) {
     let pid = root.join("diagnosing.pid");
     let wrapper = root.join("tsc");
@@ -56,10 +54,7 @@ fn primitive_native_history_keeps_full_unused_errors_and_disabled_hints() {
             )
             .unwrap();
         }
-        #[cfg(unix)]
         let (executable, pid) = owned_backend(root.path());
-        #[cfg(not(unix))]
-        let executable = backend();
         let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
             corsa_path: Some(executable),
             working_dir: Some(root.path().to_path_buf()),
@@ -113,7 +108,6 @@ fn primitive_native_history_keeps_full_unused_errors_and_disabled_hints() {
             configuration
         );
         assert!(!root.path().join("src/App.vue.ts").exists());
-        #[cfg(unix)]
         {
             let pid: i32 = std::fs::read_to_string(pid)
                 .unwrap()

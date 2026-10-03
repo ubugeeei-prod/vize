@@ -17,7 +17,8 @@ default-filter = '''not ((package(=vize_maestro) & (
   test(=component_event_tuples_preserve_all_argument_diagnostics) |
   test(=typed_import_meta_preserves_exact_authored_diagnostics) |
   test(=slot_outlet_keys_preserve_complete_project_diagnostics) |
-  test(=options_api_any_instance_preserves_complete_original_diagnostics)
+  test(=options_api_any_instance_preserves_complete_original_diagnostics) |
+  test(=authored_unused_symbols_preserve_complete_original_diagnostics)
 )))'''
 fail-fast = false
 retries = 0

@@ -20,7 +20,8 @@ The original test can skip an unavailable runtime or failed checker and
 filters the diagnostics to one TS6133/message substring. Those assertions do
 not establish a complete vector. The new required BatchTypeChecker test has
 no optional runtime branch and compares every returned diagnostic in order.
-Its six complete project cases are:
+The exact new test identity joins the existing audited PR deferral list, while
+full T1 remains unfiltered with zero retries. Its six complete project cases are:
 
 | Case                | Compiler options                              | Complete public diagnostic vector |
 | ------------------- | --------------------------------------------- | --------------------------------- |
@@ -46,14 +47,16 @@ remain retained but explicitly unbaselined. Their presence is not a new exact
 process-status oracle. History state remains not-admitted until fresh required
 source-built Actions provides actual observations.
 
-A separate genuine native Vue law consumes the same original primitive SFC,
+A separate genuine Unix native Vue law consumes the same original primitive SFC,
 retaining the original observation, selected Program, File, Component and
 interpolation. It compares the entire raw full report, authored range, actual
 same-session compiler options and source/config bytes. Enabled options require
 an error; disabled/default options retain the actual severity-4 TS6133 hint.
 Batch's empty disabled vectors are never substituted for those native reports.
 The diagnosing process must already be reaped when the result is published,
-and no projected file is materialized.
+and no projected file is materialized. Its platform gate follows the actual
+Unix-only same-session API attachment; the typed pre-backend refusal remains
+portable.
 
 The typed function has a real typed native refusal because the current sole
 File walk rejects annotated parameters. It does not gain a fabricated native
