@@ -68,9 +68,12 @@ coverage without claiming lower interpolation completion.
 
 Complete source-built module/runtime/map equality uses the separately owned
 genuine selected L4 `emit_template` provider, actually merged as
-`57ccfca26e485feed482d1e8a3d8b054892b40bb`. A real dependent output law
-slice will join after this lower prefix actually merges; this L2/L3 change
-exposes no neutral analysis or target entry and claims no output closure yet. Native nested whitespace, text entities, inherited pre/RCDATA,
+`57ccfca26e485feed482d1e8a3d8b054892b40bb`. That entry is now on the same
+literal baseline as the lower source. A real third Stack layer branches from
+the lower receiver's actual head so hosted source work can proceed while the
+ready lower prefix merges. This L2/L3 change exposes no neutral analysis or
+target entry and claims no output closure by itself. Native nested whitespace,
+text entities, inherited pre/RCDATA,
 all Vue profiles/dialects, runtime families and complete product routes
 remain unfinished. Exact-head source Actions, protected complete suites and
 unchanged all-100 measurements, and actual merge are still required.
@@ -89,6 +92,44 @@ regenerates the canonical 20-file inventory with complete fresh source-qualified
 diagnostic reports. Authoritative resolved and nonproduct tables, original
 source laws, unchanged budgets and actual protected validation remain required.
 Old source-green heads confer no validation credit on the replayed heads.
+
+## Genuine selected DOM output laws
+
+The dependent L4 law uses the actual original selected owner, every original
+root slot, sealed text receipts and the canonical completed File. It calls the
+actually merged selected `emit_template` entry with the retained L3 analysis;
+no new entry, encoder, parse, semantic stage or neutral owner is introduced.
+Its 24 complete static source packets retain 51 original slots, 12 omissions
+and 39 canonical operations; 13 entity/nested/recovery/interpolation families
+remain explicit deferrals. Recorded and NoLinks emission must preserve the
+entire official Vue 3.5.35 module and the same helper set.
+
+The whole Rust law captures real native modules, complete maps, authored byte
+links and node counts through the existing hosted nextest artifact path. All
+24 inputs and complete outputs must validate before any fixture is populated
+from that artifact. The initial reference packet contains zero native captures;
+the 48 mandatory native TypeScript assertions intentionally refuse absent
+capture fields. A reference-only 26-test run establishes no native output
+credit. After freezing genuine hosted output, every fresh Rust run must compare
+the complete live packet to it again.
+
+The 74 TypeScript laws include packet identity, independent ECMAScript line
+terminator/UTF16 position controls, 24 whole official modules/maps/runtime
+results, 24 genuine native modules and independently VLQ-decoded whole maps,
+and 24 complete live native-versus-official Vue runtime returns. Only the import
+address changes when executing a module; render bodies and context reads are
+not patched. Official maps retain their original template-only contract;
+native maps retain the entire authored SFC, every actual byte-link anchor and
+omitted events' lack of generated links. These distinct source contracts are
+not falsely claimed byte-identical.
+
+The source layer stays draft until real capture and exact-head Actions pass.
+Only a contiguous source-green lower prefix enters the queue while it is
+pending. After lower actual merges, the child follows fresh literal main,
+retargets its real native Stack and reruns Actions. Protected complete suites,
+unchanged real-100 measurements and actual merge remain acceptance requirements.
+Nested whitespace, entities, interpolation, broader Vue/runtime/product
+families and default-route replacement remain unfinished.
 
 The existing [explicit native SFC DOM product](./2026-10-03-native-sfc-scriptless-dom.md)
 has an intentional preserve-whitespace family. This additive provider does not
