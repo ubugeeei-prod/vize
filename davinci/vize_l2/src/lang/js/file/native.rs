@@ -8,7 +8,11 @@ use vize_l0::Span;
 use vize_l1::{embed::syntax::NativeSyntax, markup::NativeTemplateComponent};
 
 mod program;
+mod scoped;
 mod setup;
+pub use scoped::{
+    NativeScopedTemplateIssue, NativeScopedTemplateIssueKind, NativeScopedTemplateView,
+};
 pub use setup::{NativeSelectedSetup, NativeSetupIssue, NativeSetupIssueKind};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

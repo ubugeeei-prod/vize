@@ -7,13 +7,14 @@ use vize_l1::{
         Vue,
         vue::{DescriptorObservation, DescriptorOptions, ScriptRole},
     },
+    css::StyleSyntax,
     markup::{ComponentSourceError, NativeInterpolationFailure, NativeTemplateComponent},
 };
 use vize_l2::{
     artifact::ArtifactError,
     lang::js::{
-        NativeTemplateFile, NativeTemplateIssue, NativeTemplateOwner, NativeTemplateView,
-        RejectedNativeTemplateOwner,
+        NativeScopedTemplateIssueKind, NativeTemplateFile, NativeTemplateIssue,
+        NativeTemplateOwner, NativeTemplateView, RejectedNativeTemplateOwner,
     },
 };
 
@@ -27,6 +28,7 @@ pub enum NativeSelectedSfcIssueKind {
     Descriptor,
     Script(ScriptRole),
     Style,
+    ScopedStyle(NativeScopedTemplateIssueKind),
     MissingTemplate,
     MissingSetup,
     Source(ComponentSourceError),
@@ -56,6 +58,7 @@ pub struct NativeSelectedSfcIssue {
 pub struct NativeSelectedSfcObservation<'a> {
     descriptor: DescriptorObservation<'a>,
     template: Option<NativeTemplateFile<'a>>,
+    style: Option<StyleSyntax<'a>>,
     rejected_creation: Option<Box<RejectedNativeTemplateOwner<'a>>>,
     interpolation_failure: Option<NativeInterpolationFailure<'a>>,
     issues: Vec<NativeSelectedSfcIssue>,
@@ -81,6 +84,9 @@ impl<'a> NativeSelectedSfcObservation<'a> {
     #[must_use]
     pub fn template(&self) -> Option<&NativeTemplateFile<'a>> {
         self.template.as_ref()
+    }
+    pub(super) fn style(&self) -> Option<&StyleSyntax<'a>> {
+        self.style.as_ref()
     }
     #[must_use]
     pub fn rejected_creation(&self) -> Option<&RejectedNativeTemplateOwner<'a>> {
@@ -165,6 +171,7 @@ impl<'o, 'a> NativeSelectedSfc<'o, 'a> {
 #[derive(Clone, Copy)]
 pub(super) enum SelectedMode {
     Scriptless,
+    ScriptlessScoped,
     Setup,
 }
 
@@ -191,6 +198,7 @@ pub(super) fn observe<'a>(
     let mut observation = NativeSelectedSfcObservation {
         descriptor,
         template: None,
+        style: None,
         rejected_creation: None,
         interpolation_failure: None,
         issues: Vec::new(),
@@ -220,12 +228,25 @@ pub(super) fn observe<'a>(
             kind: NativeSelectedSfcIssueKind::Script(script.role()),
         });
     }
-    for style in descriptor.styles() {
-        observation.issues.push(NativeSelectedSfcIssue {
-            container_index: Some(style.container_index()),
-            span: style.block().span(),
-            kind: NativeSelectedSfcIssueKind::Style,
-        });
+    if matches!(mode, SelectedMode::ScriptlessScoped) {
+        if !observation.issues.is_empty() {
+            return observation;
+        }
+        match super::selected_scoped::observe(&observation.descriptor) {
+            Ok((style, issue)) => {
+                observation.style = Some(style);
+                observation.issues.extend(issue);
+            }
+            Err(issue) => observation.issues.push(issue),
+        }
+    } else {
+        for style in descriptor.styles() {
+            observation.issues.push(NativeSelectedSfcIssue {
+                container_index: Some(style.container_index()),
+                span: style.block().span(),
+                kind: NativeSelectedSfcIssueKind::Style,
+            });
+        }
     }
     if matches!(mode, SelectedMode::Setup) && descriptor.setup().is_none() {
         observation.issues.push(NativeSelectedSfcIssue {
@@ -286,7 +307,7 @@ pub(super) fn observe<'a>(
         return observation;
     }
     let result = match mode {
-        SelectedMode::Scriptless => walk::construct(&mut owner),
+        SelectedMode::Scriptless | SelectedMode::ScriptlessScoped => walk::construct(&mut owner),
         SelectedMode::Setup => walk::construct_setup(&mut owner),
     };
     if let Err(failure) = result {
