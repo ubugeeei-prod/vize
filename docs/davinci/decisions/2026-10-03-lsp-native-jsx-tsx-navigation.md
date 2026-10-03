@@ -82,11 +82,21 @@ cargo check --locked -p vize_maestro --no-default-features --features experiment
 cargo clippy --locked -p vize_maestro --features experimental-source-navigation --all-targets -- -D warnings
 ```
 
-These eleven new functions are source-authored and unexecuted at preparation.
-No earlier head's runtime acceptance transfers to them. Fresh exact-head
-Actions, original full logs, unchanged instruction ceilings and protected
-terminal merge are required. New PR publication is held while the existing
-families drain; private source preparation does not count as delivery.
+At the original source preparation, these eleven functions were unexecuted.
+The first actual source campaign, Check `37103582207` at immutable `7e10f998`,
+passed all seven new project laws and four complete response laws, including
+all 51 selected project and nine response tests. Minimal feature compilation
+also passed. The following warning-denying feature Clippy failed because one
+test used forbidden `std::format!`. Whole workspace and differential tails
+were consequently skipped; this failed campaign is not full acceptance.
+
+The correction uses canonical `vize_l0::cstr!` and converts its unchanged
+bytes at the real DocumentStore API. All fixture strings, authored spans,
+assertions, production behavior, warnings and instruction ceilings remain
+unchanged. Fresh exact-head Actions must qualify the corrected source; the
+earlier test successes do not transfer full acceptance to this new head.
+New PR publication is held while existing families drain. Required checks,
+instruction counts and protected terminal merge remain pending.
 
 Whole JS/TS/JSX/TSX syntax and semantic coverage, workspace/external queries,
 hover/type definitions, native Vue navigation, standard route migration,

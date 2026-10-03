@@ -49,8 +49,8 @@ fn unsupported_and_unresolved_jsx_retains_complete_original_issue_vectors() {
         ),
         ("<Missing/>", UnresolvedReference, "Missing"),
     ] {
-        let source = format!("const UI=1; const value=2; const view={expression};");
-        documents.open(uri(), source.clone(), 1, "typescriptreact".into());
+        let source = vize_l0::cstr!("const UI=1; const value=2; const view={expression};");
+        documents.open(uri(), source.as_str().into(), 1, "typescriptreact".into());
         let result = block_on(project.definition(&uri(), Position::new(0, 7)));
         let Err(NavigationRefusal::Producer(issues)) = result else {
             panic!("incomplete actual JSX File cannot expose partial positive bindings")
