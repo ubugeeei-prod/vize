@@ -110,7 +110,18 @@ pub fn assemble_template<L: LinkSink>(
     render: Writer<L>,
     vocabulary: &Vocabulary,
 ) -> Result<Emitted<L>, AssemblyError> {
-    let mut body = Writer::default();
+    assemble_template_with_prelude(Writer::default(), render, vocabulary)
+}
+
+/// Assemble a target's linked static declarations before its exported render.
+/// No source parsing, script rewriting or component attachment is synthesized.
+pub fn assemble_template_with_prelude<L: LinkSink>(
+    prelude: Writer<L>,
+    render: Writer<L>,
+    vocabulary: &Vocabulary,
+) -> Result<Emitted<L>, AssemblyError> {
+    let mut body = prelude;
+    end_line(&mut body);
     body.push("\nexport ");
     body.append(render);
     let preamble = imports::preamble(vocabulary, body.helpers())?;
