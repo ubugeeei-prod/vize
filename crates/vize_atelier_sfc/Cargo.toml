@@ -37,6 +37,7 @@ davinci-production-bench = [
   "davinci-dom-differential",
   "vize_atelier_vapor/davinci-benchmark",
   "vize_atelier_ssr/legacy-differential",
+  "vize_atelier_ssr/davinci-differential",
 ]
 # Separate attribution executable; detailed spans are absent from timed pairs.
 davinci-production-profile = [
