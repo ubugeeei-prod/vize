@@ -33,10 +33,11 @@ pub(super) fn check(
         ElementClose::NotExpected => attribute::span(block, surface.open.gt.text)?.end,
         ElementClose::Missing | ElementClose::Implicit => return Err(NativeLintRefusal::Hole),
     };
-    let range = Span::new(start, end);
-    if !block.contains_block_span(range) {
+    let authored = Span::new(start, end);
+    if !block.contains_block_span(authored) {
         return Err(NativeLintRefusal::SourceMismatch);
     }
+    let range = Span::new(start, attribute::span(block, surface.open.gt.text)?.end);
     let mut has_alt = false;
     for original in element.attributes() {
         if !core::ptr::eq(original.component(), element.component())

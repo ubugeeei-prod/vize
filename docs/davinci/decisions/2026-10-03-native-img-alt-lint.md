@@ -44,12 +44,14 @@ including when an earlier static `alt` already exists. Unknown or malformed
 directive heads also remain refusals.
 
 An admitted missing `alt` produces a finished L0 `Diagnostic` with advisory
-`Warning`, origin `Stage::Surface`, the complete authored element span and one
+`Warning`, origin `Stage::Surface`, the original opening-tag span of the void image element and one
 structured `Help` part. The caller supplies the existing L0 `MessageLookup`,
 so the actual message catalog and locale fallback remain host-owned. No error
 witness or legacy exemption is invented. Diagnostic text is owned and can
-outlive the selected owner and its arena. Opening and real closing tokens
-determine the complete absolute SFC byte span without walking child bodies.
+outlive the selected owner and its arena. Opening and any real closing tokens
+are still validated as authored source. The image warning ends at the original
+opening `>`: the registered rule treats images as HTML void elements, including
+an uppercase `<IMG>` with an authored closing tag. No child body walk is needed.
 
 ## Validation and delivery
 
@@ -78,8 +80,7 @@ instruction-count gates, queue conservation and actual terminal merge remain
 mandatory. Until they finish, this is a source-only opt-in slice, not a
 completed product route.
 
-The first existing full Check on frozen source `2bc3fef0` (run
-37097363700) built production with whole Clippy, but its source-coverage
+The first existing full Check on frozen source `2bc3fef0` (run 37097363700) built production with whole Clippy, but its source-coverage
 test build found a private `diagnostic::LintDiagnostic` import. The test
 adapter now uses the existing public root re-export. This changes no oracle,
 case, assertion or product API. The original failed source and complete log
@@ -92,6 +93,15 @@ host-i18n import registry. Only their exact test paths and literal
 imports, Carton storage, foreign paths and native production imports rejected.
 The genuine catalog and locale implementation remain the oracle; no substitute
 catalog, broad import exception or storage/dependency gate change is introduced.
+
+The fresh source `73850e2a` run exposed the first complete diagnostic mismatch:
+`<IMG src='photo'></IMG>` ended at byte 33 in native output and byte 27 in the
+registered legacy warning. The native range now ends at the original opening
+`>` while every supplied closing token is still checked for source custody.
+The original fixture, catalog and full diagnostic assertions are unchanged.
+The complete failed shard log is retained; it is not a ten-law pass. The same
+source's Markdown run-number wrap is normalized by the actual formatter.
+Fresh exact-head hosted comparisons and protected validation remain required.
 
 Other syntax rules, dynamic/object binding admission, every Vue dialect,
 semantic linting on L2/facts, autofix span edits, complete linter fix-history,
