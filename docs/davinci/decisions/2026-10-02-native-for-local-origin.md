@@ -96,3 +96,19 @@ canonical For constructor is separate and grants no supersession credit.
 Fresh exact-head hosted Check full, Fuzz replay and all 100 instruction probes,
 then protected queue and actual merge, are required for delivery. Roadmap issues
 stay open and no native control or product completion is claimed.
+
+## Cumulative queue census repair
+
+All checks for `45526a5d6e8ca7ae50adb80e94b065531feba7b7` passed, including
+full Check, Fuzz replay and 100 identical instruction measurements in three
+executions. Its first queue attempt retained no candidate head: cumulative
+composition with the incoming Vue 2 provider conflicted only in the generated
+L1 Croquis shard. The PR was dequeued immediately; no known-unmergeable entry
+was left blocking later work.
+
+After #7478 actually merged as `c05e0ee71b6010a1b6bf1a8488737ab2736efdbc`,
+this source was replayed onto that actual main and the census regenerated from
+all real L1 source. Original Joint runtime and laws remain unchanged. The
+selected For receiver is a dependent native Stack slice; fresh exact-head
+full/Fuzz/instruction and protected queue validation remain required on the
+new source. A queue request or old-head green checks are not actual merge proof.
