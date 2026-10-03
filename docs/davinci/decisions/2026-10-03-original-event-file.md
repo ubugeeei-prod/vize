@@ -78,7 +78,11 @@ missing test-helper import and one feature-enabled N-API diagnostic consumer
 still expecting ExprRef. The helper import and allocation-free expression
 projection are repaired; native body references supply no diagnostic JS text. Owned dump helpers keep
 their original expression field, and the native diagnostic carrier law uses
-an exact full row oracle rather than substring assertions.
+an exact full row oracle rather than substring assertions. The first hosted
+execution then distinguished the unchanged pre-parse unbalanced-frame safety
+refusal (zero stock diagnostics) from actual parsed regex syntax failure.
+The strengthened law asserts the exact guard hole and empty diagnostics, plus
+a separate real parsed failure retaining its stock diagnostics and comment.
 
 The current private NativeVisibility policy still refuses every outer setup
 binding. Only the supported handler-local subset and actual event `$event`

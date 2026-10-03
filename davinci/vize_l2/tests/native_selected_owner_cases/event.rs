@@ -164,6 +164,7 @@ fn actual_header_syntax_and_semantic_refusals_keep_complete_owners_and_precise_r
         ("/*kept*/ return missing", "missing"),
         ("while(true){}", "while(true){}"),
         ("return (", "return ("),
+        ("return /x/uv; // kept", "return /x/uv; // kept"),
     ] {
         let source = format!("<template><button @click='{body}'/></template>");
         let mut original = owner(&arena, &source)?;
@@ -202,7 +203,34 @@ fn actual_header_syntax_and_semantic_refusals_keep_complete_owners_and_precise_r
             }
             RejectedFileHandler::Syntax(input) => {
                 equal(input.operand().raw_value(), body)?;
-                check(input.operand().syntax().diagnostics().next().is_some())?;
+                let syntax = input.operand().syntax();
+                equal(syntax.source().text(), body)?;
+                equal(syntax.admitted_body().is_none(), true)?;
+                if body == "return (" {
+                    // The unchanged resource guard refuses unbalanced framing
+                    // before parsing; do not invent a stock syntax diagnostic.
+                    equal(
+                        syntax.hole(),
+                        Some(vize_l1::embed::syntax::EmbedHole::SafetyAdmission),
+                    )?;
+                    equal(syntax.diagnostics().count(), 0)?;
+                } else {
+                    equal(
+                        syntax.hole(),
+                        Some(vize_l1::embed::syntax::EmbedHole::Syntax),
+                    )?;
+                    check(syntax.diagnostics().next().is_some())
+                        .map_err(|_| "stock syntax diagnostic")?;
+                    equal(
+                        syntax
+                            .comments()
+                            .next()
+                            .ok_or("stock comment")?
+                            .text()
+                            .map_err(|_| "comment span")?,
+                        "// kept",
+                    )?;
+                }
             }
             _ => return Err("original syntax or semantic owner"),
         }
