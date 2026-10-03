@@ -5,6 +5,7 @@
 )]
 
 mod host;
+mod notify;
 #[cfg(test)]
 mod tests;
 mod tracked;
@@ -25,6 +26,7 @@ pub use tracked::{ProjectQuery, ProjectQueryResult};
 struct ActiveQuery {
     id: u64,
     uri: Url,
+    revision: u64,
     cancel: AbortHandle,
 }
 
@@ -65,16 +67,6 @@ impl<'host> SourceQueryProject<'host> {
         Self::with_host(DocumentHost::Borrowed(documents))
     }
 
-    fn with_host(host: DocumentHost<'host>) -> Self {
-        Self {
-            host,
-            cache: SourceSnapshotCache::default(),
-            active: Arc::new(ActiveQueries::default()),
-            next_query: AtomicU64::new(0),
-            lifecycle: Mutex::new(()),
-        }
-    }
-
     /// Capture and register under the same synchronous lifecycle boundary.
     pub fn begin_query(
         &self,
@@ -86,6 +78,7 @@ impl<'host> SourceQueryProject<'host> {
         self.active.0.lock().push(ActiveQuery {
             id,
             uri: uri.clone(),
+            revision: query.snapshot().revision(),
             cancel: cancel.clone(),
         });
         Ok((

@@ -48,6 +48,9 @@ impl MaestroServer {
         #[cfg(feature = "native")]
         drop(diagnostic_guard);
 
+        #[cfg(feature = "experimental-source-navigation")]
+        self.notify_native_navigation(uri);
+
         if let Some((diagnostic_version, diagnostics)) = diagnostics {
             self.publish_collected_diagnostics(uri, diagnostic_version, diagnostics)
                 .await;

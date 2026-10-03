@@ -24,6 +24,8 @@ mod helpers;
 mod importers;
 #[cfg(feature = "native")]
 mod initial_diagnostics;
+#[cfg(feature = "experimental-source-navigation")]
+mod native_navigation;
 mod open_document;
 mod semantic_tokens;
 mod state;
@@ -47,9 +49,11 @@ pub struct MaestroServer {
     /// Server state
     #[expect(
         clippy::disallowed_types,
-        reason = "shared only with the single diagnostics worker"
+        reason = "the diagnostics worker and optional native navigation retain the same real server owner"
     )]
     state: std::sync::Arc<ServerState>,
+    #[cfg(feature = "experimental-source-navigation")]
+    navigation: Option<crate::source_project::navigation::NativeNavigationProject<'static>>,
     /// Single background lane for the type-diagnostic work scheduled by
     /// `didOpen`. Keeping the sender on the foreground server lets the worker
     /// own the same client and state without spawning one thread per document.
@@ -61,7 +65,7 @@ impl MaestroServer {
     /// Create a new Maestro server instance.
     #[expect(
         clippy::disallowed_types,
-        reason = "one diagnostics worker shares the live server state"
+        reason = "the diagnostics worker and optional native navigation share the live server state"
     )]
     pub fn new(client: Client) -> Self {
         let state = std::sync::Arc::new(ServerState::new());
@@ -74,17 +78,28 @@ impl MaestroServer {
                 client: client.clone(),
                 state: state.clone(),
                 initial_diagnostics: None,
+                #[cfg(feature = "experimental-source-navigation")]
+                navigation: None,
             };
             Some(initial_diagnostics::InitialDiagnosticsScheduler::new(
                 worker,
             ))
         };
 
+        #[cfg(feature = "experimental-source-navigation")]
+        let navigation = Some(
+            crate::source_project::navigation::NativeNavigationProject::new(
+                crate::source_project::SourceQueryProject::new_server(state.clone()),
+            ),
+        );
+
         Self {
             client,
             state,
             #[cfg(feature = "native")]
             initial_diagnostics,
+            #[cfg(feature = "experimental-source-navigation")]
+            navigation,
         }
     }
 
@@ -98,9 +113,19 @@ impl MaestroServer {
 /// request. `LanguageServer` cannot declare custom methods, so every transport
 /// must use this builder rather than `LspService::new`.
 pub(crate) fn build_lsp_service() -> (LspService<MaestroServer>, ClientSocket) {
-    LspService::build(MaestroServer::new)
-        .custom_method(auto_insert::AUTO_INSERT_METHOD, MaestroServer::auto_insert)
-        .finish()
+    let builder = LspService::build(MaestroServer::new)
+        .custom_method(auto_insert::AUTO_INSERT_METHOD, MaestroServer::auto_insert);
+    #[cfg(feature = "experimental-source-navigation")]
+    let builder = builder
+        .custom_method(
+            native_navigation::DEFINITION_METHOD,
+            MaestroServer::native_definition,
+        )
+        .custom_method(
+            native_navigation::REFERENCES_METHOD,
+            MaestroServer::native_references,
+        );
+    builder.finish()
 }
 
 /// Transport adapter that reports when the LSP `exit` notification has been
