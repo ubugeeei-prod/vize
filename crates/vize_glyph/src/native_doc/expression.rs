@@ -59,10 +59,12 @@ mod projection_tests;
 /// Build directly from the original retained compiler-profile AST, once.
 ///
 /// Identifier, numeric/string/boolean/null atoms, authored parentheses and
-/// binary/logical, prefix unary and ordinary static/computed member nodes are
+/// binary/logical, prefix unary, ordinary static/computed member and call nodes are
 /// supported. Plain unary/member gaps use separators so signs, keyword
 /// operators and numeric literal spellings cannot fuse with adjacent tokens.
-/// Optional chains, private fields and unsupported descendants refuse.
+/// Nonoptional calls retain original callees and argument order, checked
+/// delimiters, commas and optional authored trailing commas. Type arguments,
+/// spreads, optional chains, private fields and unsupported descendants refuse.
 /// Original literal/operator spellings, parentheses, complete entities and
 /// typed comments remain source slices.
 /// Only proven plain ASCII whitespace gaps change. Encoded whitespace and

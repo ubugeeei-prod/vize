@@ -128,8 +128,8 @@ fn update_await_and_unsupported_unary_operands_refuse_the_whole_selected_documen
         "--a",
         "a--",
         "await a",
-        "!call()",
-        "-obj.call()",
+        "!call(...x)",
+        "-obj.call(...x)",
     ] {
         let arena = Allocator::default();
         let source = vize_l0::cstr!("<template>{{{{/*kept*/ {content}}}}}</template>");

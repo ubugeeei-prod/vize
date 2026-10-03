@@ -78,8 +78,8 @@ fn empty_syntax_holes_and_unsupported_expression_descendants_keep_observations()
     }
     for source in [
         "<template>{{a?.value}}</template>",
-        "<template>{{call()}}</template>",
-        "<template>{{a + call()}}</template>",
+        "<template>{{call(...x)}}</template>",
+        "<template>{{a + call(...x)}}</template>",
         "<template>{{value as boolean}}</template><script setup lang=ts>let value=true</script>",
     ] {
         let arena = Allocator::default();

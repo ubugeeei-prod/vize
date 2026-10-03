@@ -34,7 +34,14 @@ fn foreign_equal_byte_roots_and_uncovered_selected_blocks_cannot_establish_custo
 #[test]
 fn unsupported_original_nodes_and_descendants_refuse_the_complete_document() {
     for source in [
-        "fn().key", "fn()", "[a]", "a=b", "a?b:c", "1n", "a as T", "a + fn()",
+        "fn(...x).key",
+        "fn(...x)",
+        "[a]",
+        "a=b",
+        "a?b:c",
+        "1n",
+        "a as T",
+        "a + fn(...x)",
     ] {
         let allocator = Allocator::default();
         let original = retained(
@@ -58,8 +65,8 @@ fn updates_awaits_and_unsupported_unary_descendants_keep_original_observations()
         "await a",
         "!/*x*/++a",
         "-/*x*/await a",
-        "typeof/*x*/fn()",
-        "!/*x*/obj[fn()]",
+        "typeof/*x*/fn(...x)",
+        "!/*x*/obj[fn(...x)]",
     ] {
         for lang in [Lang::Js, Lang::Ts] {
             let allocator = Allocator::default();

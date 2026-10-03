@@ -140,8 +140,8 @@ fn optional_private_chain_and_unsupported_member_descendants_refuse_whole_select
         ("obj?.[key]", false),
         ("(obj?.key).x", false),
         ("obj.#key", false),
-        ("call().key", false),
-        ("obj[call()]", false),
+        ("call(...x).key", false),
+        ("obj[call(...x)]", false),
         ("(obj as T).key", true),
         ("obj!.key", true),
     ] {

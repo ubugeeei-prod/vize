@@ -106,3 +106,36 @@ fn unknown_gap_bytes_and_child_ranges_cannot_establish_token_framing() {
     ));
     assert_eq!(original.source().text(), root);
 }
+
+#[test]
+fn optional_call_separator_absence_still_checks_the_complete_original_typed_gap() {
+    for (root, comma) in [("f(a/*,,*/)", false), ("f(a, /*,,*/)", true)] {
+        let allocator = Allocator::default();
+        let original = retained(
+            &allocator,
+            EmbedSource::authored(root, Span::new(0, root.len() as u32)).unwrap(),
+        );
+        let context = Context::new(
+            &original,
+            SourceRoot::new(root).unwrap().whole_block(),
+            &allocator,
+        )
+        .unwrap();
+        assert_eq!(
+            context
+                .optional_token(Span::new(3, root.len() as u32 - 1), ",")
+                .unwrap(),
+            comma.then_some(Span::new(3, 4))
+        );
+        assert!(matches!(
+            context.optional_token(Span::new(2, 3), ","),
+            Err(ExpressionRefusal::InvalidGap { .. })
+        ));
+        assert!(matches!(
+            context.optional_token(Span::new(3, root.len() as u32), ","),
+            Err(ExpressionRefusal::InvalidGap { .. })
+        ));
+        assert_eq!(original.comments().count(), 1);
+        assert_eq!(original.source().text(), root);
+    }
+}

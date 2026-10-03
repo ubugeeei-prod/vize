@@ -216,15 +216,15 @@ fn ordinary_members_are_fixed_points_and_keep_independent_static_computed_js_ts_
 }
 
 #[test]
-fn chains_private_fields_calls_and_unsupported_member_descendants_refuse_whole_documents() {
+fn chains_private_fields_and_unsupported_call_member_descendants_refuse_whole_documents() {
     for content in [
         "a?.b",
         "a?.[b]",
         "(a?.b).c",
         "a.#x",
-        "call().x",
-        "a[call()]",
-        "a.x()",
+        "call(...x).x",
+        "a[call(...x)]",
+        "a.x(...x)",
         "a[b,c]",
         "a[await b]",
         "a[x=1]",

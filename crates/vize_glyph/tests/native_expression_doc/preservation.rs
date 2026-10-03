@@ -24,6 +24,13 @@ enum Syntax {
         std::string::String,
     ),
     ComputedMember(bool, std::boxed::Box<Syntax>, std::boxed::Box<Syntax>),
+    Call(
+        bool,
+        bool,
+        bool,
+        std::boxed::Box<Syntax>,
+        std::vec::Vec<Syntax>,
+    ),
     Binary(
         &'static str,
         std::boxed::Box<Syntax>,
@@ -65,6 +72,16 @@ fn fingerprint(original: &RetainedExpression<'_>, expression: &Expression<'_>) -
             member.optional,
             std::boxed::Box::new(fingerprint(original, &member.object)),
             std::boxed::Box::new(fingerprint(original, &member.expression)),
+        ),
+        Expression::CallExpression(call) => Syntax::Call(
+            call.optional,
+            call.pure,
+            call.type_arguments.is_some(),
+            std::boxed::Box::new(fingerprint(original, &call.callee)),
+            call.arguments
+                .iter()
+                .map(|argument| fingerprint(original, argument.as_expression().unwrap()))
+                .collect(),
         ),
         Expression::BinaryExpression(binary) => Syntax::Binary(
             binary.operator.as_str(),

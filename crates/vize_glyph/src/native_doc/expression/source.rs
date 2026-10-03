@@ -187,6 +187,16 @@ impl<'p, 'a> Context<'p, 'a> {
     /// Locate only the operator/delimiter already identified by the AST.
     /// All other gap bytes must be ASCII whitespace or original typed comments.
     pub fn token(&self, span: Span, spelling: &str) -> Result<Span, ExpressionRefusal> {
+        self.optional_token(span, spelling)?
+            .ok_or(ExpressionRefusal::InvalidFraming { span })
+    }
+
+    /// Absence still requires complete checked whitespace/comment framing.
+    pub fn optional_token(
+        &self,
+        span: Span,
+        spelling: &str,
+    ) -> Result<Option<Span>, ExpressionRefusal> {
         let text = self.original.source().text();
         self.decoded(span)?;
         let mut cursor = span.start;
@@ -221,7 +231,7 @@ impl<'p, 'a> Context<'p, 'a> {
                 return Err(ExpressionRefusal::InvalidGap { span });
             }
         }
-        found.ok_or(ExpressionRefusal::InvalidFraming { span })
+        Ok(found)
     }
 
     pub fn finish(&self) -> Result<(), ExpressionRefusal> {

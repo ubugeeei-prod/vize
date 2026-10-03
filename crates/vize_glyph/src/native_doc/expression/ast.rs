@@ -1,6 +1,6 @@
 //! One immutable walk of genuine supported AST families.
 
-use oxc_ast::ast::{ComputedMemberExpression, Expression, StaticMemberExpression};
+use oxc_ast::ast::{CallExpression, ComputedMemberExpression, Expression, StaticMemberExpression};
 use oxc_span::GetSpan;
 use vize_l0::{Span, Vec};
 
@@ -72,8 +72,75 @@ impl<'a> Context<'_, 'a> {
             Expression::ComputedMemberExpression(member) => {
                 self.computed_member(member, span, depth)
             }
+            Expression::CallExpression(call) => self.call(call, span, depth),
             _ => Err(ExpressionRefusal::UnsupportedNode { span }),
         }
+    }
+
+    fn call(
+        &mut self,
+        call: &CallExpression<'a>,
+        span: Span,
+        depth: usize,
+    ) -> Result<Doc<'a>, ExpressionRefusal> {
+        if call.optional || call.type_arguments.is_some() {
+            return Err(ExpressionRefusal::UnsupportedNode { span });
+        }
+        let callee = self.decoded_span(call.callee.span())?;
+        let close = self.token(Span::new(span.end - 1, span.end), ")")?;
+        if callee.start != span.start || callee.end >= close.start {
+            return Err(ExpressionRefusal::InvalidFraming { span });
+        }
+        let first = call
+            .arguments
+            .first()
+            .map(|argument| self.decoded_span(argument.span()))
+            .transpose()?;
+        let mut parts = Vec::new_in(&self.allocator);
+        parts.push(self.node(&call.callee, span, depth + 1)?);
+        let open = self.token(
+            Span::new(
+                callee.end,
+                first.map_or(close.start, |argument| argument.start),
+            ),
+            "(",
+        )?;
+        parts.push(self.gap(Span::new(callee.end, open.start), Gap::Space)?);
+        parts.push(self.text(open)?);
+        let mut cursor = open.end;
+        for (index, argument) in call.arguments.iter().enumerate() {
+            let argument = argument
+                .as_expression()
+                .ok_or(ExpressionRefusal::UnsupportedNode { span })?;
+            let argument_span = self.decoded_span(argument.span())?;
+            if argument_span.start < cursor
+                || argument_span.start >= argument_span.end
+                || argument_span.end > close.start
+            {
+                return Err(ExpressionRefusal::InvalidFraming { span });
+            }
+            if index != 0 {
+                let comma = self.token(Span::new(cursor, argument_span.start), ",")?;
+                parts.push(self.gap(Span::new(cursor, comma.start), Gap::Empty)?);
+                parts.push(self.text(comma)?);
+                cursor = comma.end;
+            }
+            parts.push(self.gap(Span::new(cursor, argument_span.start), Gap::Space)?);
+            parts.push(self.node(argument, span, depth + 1)?);
+            cursor = argument_span.end;
+        }
+        // Call ASTs discard the trailing separator. Its checked source spelling
+        // is retained, never inferred from the number of arguments.
+        if !call.arguments.is_empty()
+            && let Some(comma) = self.optional_token(Span::new(cursor, close.start), ",")?
+        {
+            parts.push(self.gap(Span::new(cursor, comma.start), Gap::Empty)?);
+            parts.push(self.text(comma)?);
+            cursor = comma.end;
+        }
+        parts.push(self.gap(Span::new(cursor, close.start), Gap::Space)?);
+        parts.push(self.text(close)?);
+        Ok(Doc::concat(parts))
     }
 
     fn static_member(
