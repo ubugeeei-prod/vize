@@ -10,9 +10,11 @@ use vize_l2::op::{CommentOp, ElementOp, TextOp};
 
 pub(super) mod build;
 mod file;
+mod native;
 #[cfg(test)]
 mod tests;
 pub use file::{NativeSsrFileAnalysis, build_ssr_file_decisions};
+pub use native::{NativeSsrBuildError, NativeTemplateSsrAnalysis, build_native_ssr_file_decisions};
 
 /// A whole SSR view retains unsupported locations instead of partial output.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

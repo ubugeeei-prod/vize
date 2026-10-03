@@ -45,6 +45,7 @@ pub struct NativeTemplateComponent<'a> {
     component: NativeComponent<'a>,
     index: usize,
     grammar: NativeTemplateGrammar,
+    has_styles: bool,
     ordinary: Option<Selection<'a>>,
     setup: Option<Selection<'a>>,
 }
@@ -66,6 +67,7 @@ impl<'a> NativeTemplateComponent<'a> {
             component: NativeComponent::parse_in(allocator, template.block())?,
             index: template.container_index(),
             grammar,
+            has_styles: descriptor.styles().len() != 0,
             ordinary: descriptor.ordinary().map(Selection::original),
             setup: descriptor.setup().map(Selection::original),
         }))
@@ -81,6 +83,11 @@ impl<'a> NativeTemplateComponent<'a> {
     #[must_use]
     pub fn grammar(&self) -> NativeTemplateGrammar {
         self.grammar
+    }
+    /// Authentic Descriptor style presence, retained without a second parse.
+    #[must_use]
+    pub fn has_styles(&self) -> bool {
+        self.has_styles
     }
     #[must_use]
     pub fn children(&self) -> NativeChildren<'_, 'a> {

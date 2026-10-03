@@ -105,6 +105,43 @@ fn absent_template_is_distinct_from_selected_empty_template() {
 }
 
 #[test]
+fn authentic_style_presence_survives_descriptor_drop_and_owner_move() {
+    let arena = Allocator::default();
+    for (source, has_styles) in [
+        ("<template><div/></template>", false),
+        ("<!-- <style scoped/> --><template><div/></template>", false),
+        (
+            "<script>const fake='<style/>'</script><template><div/></template>",
+            false,
+        ),
+        ("<template><div/></template><style></style>", true),
+        (
+            "<style scoped>div{color:red}</style><template><div/></template>",
+            true,
+        ),
+        (
+            "<template><div/></template><style lang=scss>$x:red;</style>",
+            true,
+        ),
+    ] {
+        let selected = {
+            let descriptor = Vue.observe_descriptor(&arena, source, options());
+            let admitted = descriptor.admitted().unwrap();
+            assert_eq!(admitted.styles().len() != 0, has_styles);
+            NativeTemplateComponent::parse_in(&arena, admitted)
+                .unwrap()
+                .unwrap()
+        };
+        let moved = core::hint::black_box(selected);
+        assert_eq!(moved.has_styles(), has_styles);
+        assert!(core::ptr::eq(
+            moved.component().block().root_source(),
+            source
+        ));
+    }
+}
+
+#[test]
 fn setup_only_typescript_grammar_is_derived_from_original_role() {
     let arena = Allocator::default();
     let source = "<template><span/></template><script setup lang=ts>const msg: string='x'</script>";
