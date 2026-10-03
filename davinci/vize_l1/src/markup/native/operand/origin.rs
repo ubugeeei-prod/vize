@@ -2,6 +2,7 @@ use super::{
     Attribute, Element, NativeAttribute, NativeAttributeOperandError, NativeTemplateComponent,
     NativeTemplateGrammar, SourceBlock, SourceError, Span,
 };
+use crate::ElementClose;
 
 pub(super) struct Origin<'a> {
     pub(super) block: SourceBlock<'a>,
@@ -16,6 +17,44 @@ pub(super) struct Origin<'a> {
     pub(super) value_span: Span,
 }
 impl<'a> Origin<'a> {
+    /// Preserve original membership/recovery/verbatim precedence before dialect selection.
+    pub(super) fn check_original_header(
+        selected: &NativeTemplateComponent<'a>,
+        attribute: &NativeAttribute<'_, 'a>,
+    ) -> Result<(), NativeAttributeOperandError> {
+        if !core::ptr::eq(attribute.component(), selected.component()) {
+            return Err(NativeAttributeOperandError::ForeignComponent);
+        }
+        let carrier = selected.component().carrier();
+        if !carrier.errors.is_empty() || !carrier.unsupported.is_empty() {
+            return Err(NativeAttributeOperandError::RecoveredComponent);
+        }
+        // Node/token holes are retained on the original surface even when the
+        // parser has no diagnostic row. Inspect only this actual header/extent.
+        let element = attribute.element();
+        if element.open.lt_name.is_missing()
+            || element.open.gt.is_missing()
+            || element
+                .open
+                .slash
+                .as_ref()
+                .is_some_and(|slash| slash.is_missing())
+            || match &element.close {
+                ElementClose::Missing => true,
+                ElementClose::Present(close) => {
+                    close.lt_slash_name.is_missing() || close.gt.is_missing()
+                }
+                ElementClose::Implicit | ElementClose::NotExpected => false,
+            }
+        {
+            return Err(NativeAttributeOperandError::RecoveredComponent);
+        }
+        if attribute.element().open.is_verbatim() {
+            return Err(NativeAttributeOperandError::Verbatim);
+        }
+        Ok(())
+    }
+
     pub(super) fn from_attribute(
         selected: &NativeTemplateComponent<'a>,
         attribute: &NativeAttribute<'_, 'a>,

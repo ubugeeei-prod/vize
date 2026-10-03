@@ -15,7 +15,7 @@ use crate::dialect::vue3::operand::conditional_head;
 use crate::embed::syntax::{NativeSyntax, RetainedExpression, parse_once};
 use crate::embed::{Embed, Grammar, Lang, Shape, SourceError, prepare_attribute_value};
 use crate::markup::DirectiveNameError;
-use crate::{Attribute, Element, ElementClose};
+use crate::{Attribute, Element};
 
 mod origin;
 use origin::Origin;
@@ -77,36 +77,7 @@ impl<'a> NativeTemplateComponent<'a> {
         &self,
         attribute: NativeAttribute<'_, 'a>,
     ) -> Result<NativeAttributeExpression<'a>, NativeAttributeExpressionFailure<'a>> {
-        if !core::ptr::eq(attribute.component(), self.component()) {
-            return Err(NativeAttributeOperandError::ForeignComponent.into());
-        }
-        let carrier = self.component().carrier();
-        if !carrier.errors.is_empty() || !carrier.unsupported.is_empty() {
-            return Err(NativeAttributeOperandError::RecoveredComponent.into());
-        }
-        // Node/token holes are retained on the original surface even when the
-        // parser has no diagnostic row. Inspect only this actual header/extent.
-        let element = attribute.element();
-        if element.open.lt_name.is_missing()
-            || element.open.gt.is_missing()
-            || element
-                .open
-                .slash
-                .as_ref()
-                .is_some_and(|slash| slash.is_missing())
-            || match &element.close {
-                ElementClose::Missing => true,
-                ElementClose::Present(close) => {
-                    close.lt_slash_name.is_missing() || close.gt.is_missing()
-                }
-                ElementClose::Implicit | ElementClose::NotExpected => false,
-            }
-        {
-            return Err(NativeAttributeOperandError::RecoveredComponent.into());
-        }
-        if attribute.element().open.is_verbatim() {
-            return Err(NativeAttributeOperandError::Verbatim.into());
-        }
+        Origin::check_original_header(self, &attribute)?;
         let block = self.component().block();
         let name_offset = block.offset_of(attribute.surface().name.text).ok_or(
             NativeAttributeOperandError::Source(SourceError::InvalidAuthoredSpan),
