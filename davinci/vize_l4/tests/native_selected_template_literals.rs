@@ -188,9 +188,12 @@ fn capture(captured: &[serde_json::Value]) -> Result<(), &'static str> {
     let path = if let Ok(path) = std::env::var("VIZE_L4_SELECTED_LITERAL_CAPTURE") {
         Some(std::path::PathBuf::from(path))
     } else if let Ok(profile) = std::env::var("NEXTEST_PROFILE") {
-        Some(std::path::PathBuf::from(format!(
-            "target/nextest/{profile}/native-selected-template-literals.json"
-        )))
+        Some(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../target/nextest")
+                .join(profile)
+                .join("native-selected-template-literals.json"),
+        )
     } else {
         None
     };
