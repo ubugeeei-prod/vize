@@ -128,7 +128,7 @@ function rewritePacket(pass) {
   pass.stdout = bytes(Buffer.from(`${JSON.stringify(pass.packet)}\n`));
 }
 
-test("public native history binds all original controls and distinct full caller options", () => {
+void test("public native history binds all original controls and distinct full caller options", () => {
   assert.equal(loaded.cases.length, 9);
   assert.equal(loaded.cases.filter((row) => row.controlIndex !== undefined).length, 5);
   assert.deepEqual(loaded.cases.find(({ id }) => id.endsWith("/false")).options, {
@@ -143,7 +143,7 @@ test("public native history binds all original controls and distinct full caller
   );
 });
 
-test("native source admission rejects omitted authority and coherent sibling/options substitutions", (t) => {
+void test("native source admission rejects omitted authority and coherent sibling/options substitutions", (t) => {
   for (const change of [
     ({ manifest }) => {
       delete manifest.napiWitness.functions;
@@ -172,7 +172,7 @@ test("native source admission rejects omitted authority and coherent sibling/opt
   }
 });
 
-test("complete native vectors reject missing calls, changed full results/errors and forged custody", () => {
+void test("complete native vectors reject missing calls, changed full results/errors and forged custody", () => {
   for (const change of [
     ({ report }) => report.rows[0].passes.pop(),
     ({ report }) => {
@@ -203,7 +203,7 @@ test("complete native vectors reject missing calls, changed full results/errors 
   }
 });
 
-test("terminal parse failure preserves every complete earlier and failing raw process frame", () => {
+void test("terminal parse failure preserves every complete earlier and failing raw process frame", () => {
   const vector = controlReport();
   const row = vector.report.rows[0];
   row.state = "failed";

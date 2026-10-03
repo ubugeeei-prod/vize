@@ -91,7 +91,7 @@ handled/equivalent/paired counts remain zero.
 The original dirty implementation remains intact in its private worktree and
 was snapshotted with every fixture hash before copying into isolated `wt`
 branches on actual main `ead89a75`. Parent #7630 contains only real Cargo build
-custody; this child branches directly from its source `2493203d1`. Its complete
+custody; this child branches directly from its corrected source `bc3d40d78`. Its complete
 existing API/config manifests, source witnesses, goldens and receipts remain
 immutable. Native source-only counts stay zero; legacy public-boundary history
 observations are a distinct migration prerequisite. No local Rust build or
