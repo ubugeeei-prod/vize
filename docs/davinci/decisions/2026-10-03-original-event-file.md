@@ -73,6 +73,10 @@ semantic input is boxed only on rejection, and the private successful receipt
 joins through the parked input slot, leaving that slot unchanged on mismatch.
 No successful-path allocation, warning waiver or law/fixture weakening is
 added. That failed head remains separate from fresh repaired-head acceptance.
+The subsequent hosted build reached integration compilation and exposed a
+missing test-helper import and one feature-enabled N-API diagnostic consumer
+still expecting ExprRef. The helper import and allocation-free expression
+projection are repaired; native body references supply no diagnostic JS text.
 
 The current private NativeVisibility policy still refuses every outer setup
 binding. Only the supported handler-local subset and actual event `$event`

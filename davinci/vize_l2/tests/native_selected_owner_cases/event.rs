@@ -1,4 +1,4 @@
-use super::{Allocator, Kind, check, equal, owner, selected, syntax};
+use super::{Allocator, Kind, check, descriptor, equal, owner, selected, syntax};
 use vize_l0::Span;
 use vize_l2::{
     file::{FileIssueKind, RejectedFileHandler},

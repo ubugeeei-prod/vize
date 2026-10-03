@@ -280,7 +280,7 @@ fn binding_parts(binding: &BindingOp<'_>) -> (Span, Option<String>, Option<Strin
         BindingOp::On(on) => (
             on.span,
             static_name(on.name.as_ref()),
-            value(on.handler.as_ref()),
+            value(on.expression().as_ref()),
         ),
         BindingOp::Model(model) => (model.span, static_name(model.argument.as_ref()), None),
         BindingOp::SlotContent(slot) => (
