@@ -50,6 +50,11 @@ laws and seven product setup laws; the combined original/new Node campaign has
 31 passes without skips, including thirteen actual native setup calls and 26
 native renders. The full-only hosted action adds the exact five-module law and
 new runtime checks, retaining both const JSON outputs beside existing captures.
+The actual merge-group tooling router invokes this action before its full
+script suite. The previous #7497 candidate ran full Rust/instruction gates but
+skipped the top-level schedule/manual-only tooling job, so it receives no new
+hosted capture/runtime credit; historical campaigns remain source-bound. This
+router wiring closes that current queue execution gap without adding PR work.
 Ordinary tooling explicitly skips six const capture/native cases when the
 fresh input is absent, and receives no native execution credit.
 
