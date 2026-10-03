@@ -5,7 +5,7 @@
 
 use super::*;
 use alloc::vec::Vec;
-use oxc_ast::ast::{JSXElementName, Statement};
+use oxc_ast::ast::{JSXElementName, JSXMemberExpressionObject, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::Allocator;
@@ -16,6 +16,7 @@ struct Events {
     references: usize,
     invalid_callback: bool,
     invalid_start: Option<u32>,
+    empty_component_callback: bool,
 }
 impl<'a> ReferenceSink<'a> for Events {
     type Checkpoint = (usize, usize);
@@ -28,12 +29,15 @@ impl<'a> ReferenceSink<'a> for Events {
     }
     fn observe_syntax(
         &mut self,
-        _: SyntaxKind<'a>,
+        kind: SyntaxKind<'a>,
         edge: SyntaxEdge,
         span: Span,
     ) -> Result<(), ResolutionErrorKind> {
         if Some(span.start) == self.invalid_start {
             self.invalid_callback = true;
+        }
+        if matches!(kind, SyntaxKind::Component(_)) && span.start == span.end {
+            self.empty_component_callback = true;
         }
         self.rows.push((edge, span));
         Ok(())
@@ -42,6 +46,48 @@ impl<'a> ReferenceSink<'a> for Events {
         self.rows.truncate(rows);
         self.references = references;
     }
+}
+
+#[test]
+fn empty_opening_component_leaf_is_refused_before_structural_callback_for_simple_and_member_roots()
+-> Result<(), &'static str> {
+    let arena = Allocator::default();
+    for source in ["<Comp/>;", "<UI.Button/>;"] {
+        let mut parsed = Parser::new(&arena, source, SourceType::jsx()).parse();
+        let Statement::ExpressionStatement(statement) =
+            parsed.program.body.first_mut().ok_or("statement")?
+        else {
+            return Err("statement kind");
+        };
+        let Expression::JSXElement(element) = &mut statement.expression else {
+            return Err("element");
+        };
+        let name = match &mut element.opening_element.name {
+            JSXElementName::IdentifierReference(name) => name,
+            JSXElementName::MemberExpression(member) => match &mut member.object {
+                JSXMemberExpressionObject::IdentifierReference(name) => name,
+                _ => return Err("member root"),
+            },
+            _ => return Err("component root"),
+        };
+        name.span.end = name.span.start;
+        let mut sink = Events::default();
+        assert_eq!(
+            retained(
+                ReferenceSource::ProgramJsx(source),
+                &statement.expression,
+                &mut sink
+            )
+            .err()
+            .ok_or("error")?
+            .kind,
+            ResolutionErrorKind::InvalidSpan
+        );
+        assert_eq!(sink.rows, []);
+        assert_eq!(sink.references, 0);
+        assert!(!sink.empty_component_callback);
+    }
+    Ok(())
 }
 
 #[test]

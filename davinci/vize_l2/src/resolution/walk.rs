@@ -261,6 +261,17 @@ impl<'a, 'b, S: ReferenceSink<'a>> Resolver<'a, 'b, S> {
             .source
             .span(ast_span)
             .ok_or_else(|| self.fail(ast_span, ResolutionErrorKind::InvalidSpan))?;
+        if span.start == span.end
+            && matches!(
+                kind,
+                SyntaxKind::Component(_)
+                    | SyntaxKind::Intrinsic(_)
+                    | SyntaxKind::Property(_)
+                    | SyntaxKind::AttributeName(_)
+            )
+        {
+            return Err(self.fail(ast_span, ResolutionErrorKind::InvalidSpan));
+        }
         self.sink
             .observe_syntax(kind, edge, span)
             .map_err(|kind| self.fail(ast_span, kind))
