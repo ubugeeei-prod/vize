@@ -91,7 +91,7 @@ handled/equivalent/paired counts remain zero.
 The original dirty implementation remains intact in its private worktree and
 was snapshotted with every fixture hash before copying into isolated `wt`
 branches on actual main `ead89a75`. Parent #7630 contains only real Cargo build
-custody; this child branches directly from its repaired source `b417f7724`. Its complete
+custody; this child branches directly from its repaired source `053d11fb6`. Its complete
 existing API/config manifests, source witnesses, goldens and receipts remain
 immutable. Native source-only counts stay zero; legacy public-boundary history
 observations are a distinct migration prerequisite. No local Rust build or
@@ -146,3 +146,24 @@ succeeds with status 0. The actual `cargo build --profile ci -p vize` receipt
 binds its CLI bytes to that protected source. This is distinct legacy public
 compatibility history; all eight native plans remain unsupported with zero
 native credit. Main's cancelled push campaign is not used as acceptance.
+
+Parent `b417f7724` passed exact-source Actions, but its protected `0b5014cf`
+candidate failed the pinned Vite+ cached output drain and was immediately
+removed from the queue. Parent `053d11fb6` bypasses that actual cached drain
+using only `--no-cache` for the same debug build, retaining whole captured
+streams and the subsequent full JS checks. Its real pinned-VP backpressure
+law preserves complete multi-buffer stdout/stderr and nonzero status.
+The original failed candidate and successful instruction receipts remain
+historical; no performance ceiling or resource cap changed.
+
+The intervening child `a18335f846b279d9292c2154d46c30493e899fe4` passed
+complete Check 37153618001 with nine plans and twenty-five real calls.
+Independent whole report/process/source admission passes; report SHA256
+`7dd51b13f6c2c1f3177e81fe5441dacdf317058f163c9248e0390b5afe9407a5`
+and build receipt SHA256
+`c349802cf5d82bb600a96f3399cacbac88818c2059e2b6fe73ec6b81ed251717`
+belong only to its actual checkout `d435e64f` and artifact 11284783306.
+Preserve that source in a private evidence ref. Replay all five child commits
+unchanged onto the actual `053d11fb6` parent (`range-diff` exact equality),
+then require fresh source packets and protected actual acceptance. The
+appended durable receipt does not grant execution credit for the new head.
