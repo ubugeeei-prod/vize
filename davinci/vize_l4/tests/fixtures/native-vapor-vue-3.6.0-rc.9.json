@@ -36,14 +36,14 @@
       "id": "text",
       "source": "<template>hello</template>",
       "template": "hello",
-      "code": "import { createTextNode as _createTextNode } from \"vue\"\n\nexport function render(_ctx) {\n  const n0 = _createTextNode(\"hello\")\n  return n0\n}",
+      "code": "import { template as _template } from \"vue\"\nconst t0 = _template(\"hello\", 2)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
       "map": {
         "version": 3,
         "sources": [
           "NativeVapor.vue"
         ],
         "names": [],
-        "mappings": ";;;8BAAU",
+        "mappings": ";sBAAU",
         "file": "NativeVapor.vue",
         "sourcesContent": [
           "<template>hello</template>"
@@ -51,7 +51,7 @@
       },
       "anchors": [
         {
-          "generated": 118,
+          "generated": 66,
           "source": 10
         }
       ],
@@ -72,14 +72,14 @@
       "id": "unicode",
       "source": "<template>雪🌸 a</template>",
       "template": "雪🌸 a",
-      "code": "import { createTextNode as _createTextNode } from \"vue\"\n\nexport function render(_ctx) {\n  const n0 = _createTextNode(\"雪🌸 a\")\n  return n0\n}",
+      "code": "import { template as _template } from \"vue\"\nconst t0 = _template(\"雪🌸 a\", 2)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
       "map": {
         "version": 3,
         "sources": [
           "NativeVapor.vue"
         ],
         "names": [],
-        "mappings": ";;;8BAAU",
+        "mappings": ";sBAAU",
         "file": "NativeVapor.vue",
         "sourcesContent": [
           "<template>雪🌸 a</template>"
@@ -87,7 +87,7 @@
       },
       "anchors": [
         {
-          "generated": 118,
+          "generated": 66,
           "source": 10
         }
       ],

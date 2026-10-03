@@ -40,11 +40,6 @@ function expected(template, source, prefix) {
   const js = (text) => JSON.stringify(text).slice(1, -1).replaceAll("\u2028", "\\u2028").replaceAll("\u2029", "\\u2029");
   const html = (text, attr = false) => js(text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', attr ? "&quot;" : '"'));
   for (const [index, root] of roots.entries()) {
-    if (root.type === 2) {
-      declarations.push(`  const n${index} = _createTextNode("${js(root.content)}")`);
-      links.push({ fragment: "render", generated: declarations.join("\n").length - js(root.content).length - 2, source: prefix + root.loc.start.offset });
-      continue;
-    }
     let literal = "";
     const anchor = (offset) => links.push({ fragment: "hoist", generated: hoists.join("").length + `const t${index} = _template("`.length + literal.length, source: prefix + offset });
     const append = (node) => {
@@ -66,12 +61,15 @@ function expected(template, source, prefix) {
         literal += `</${node.tag}>`;
       }
     };
-    append(root);
+    if (root.type === 2) {
+      anchor(root.loc.start.offset);
+      literal += js(root.content);
+    } else append(root);
     hoists.push(`const t${index} = _template("${literal}", ${root === rootElement ? 3 : 2})\n`);
     declarations.push(`  const n${index} = t${index}()`);
   }
   if (hoists.length) helpers.push("template");
-  if (roots.some((root) => root.type === 2)) helpers.push("createTextNode");
+
   const imports = helpers.length ? `import { ${helpers.map((name) => `${name} as _${name}`).join(", ")} } from "vue"\n` : "";
   const start = `${imports}${hoists.join("")}\nexport function render(_ctx) {\n`;
   const returned = roots.map((_, index) => `n${index}`).join(", ");

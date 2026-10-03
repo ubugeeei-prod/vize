@@ -31,6 +31,14 @@ pub struct VaporError {
 
 /// Emit one complete template module using the audited Vue 3.6.0-rc.9 helpers.
 /// Unsupported input returns no partial writer or output module.
+/// A diagnostic File analysis cannot authorize native emission:
+/// ```compile_fail
+/// use vize_l3::decision::vapor::NativeVaporFileAnalysis;
+/// use vize_l4::{targets::vapor::emit_template, write::NoLinks};
+/// fn promote(analysis: &NativeVaporFileAnalysis<'_, '_>) {
+///     let _ = emit_template::<NoLinks>(analysis);
+/// }
+/// ```
 pub fn emit_template<L: LinkSink>(
     analysis: &NativeTemplateVaporAnalysis<'_, '_>,
 ) -> Result<Emitted<L>, VaporError> {
@@ -62,37 +70,33 @@ pub fn emit_template<L: LinkSink>(
         render.push("const n");
         number(&mut render, index);
         render.push(" = ");
+        let helper = runtime
+            .helper("template")
+            .ok_or_else(|| error(VaporErrorKind::RuntimeHelper))?;
+        prelude.use_helper(helper);
+        prelude.push("const t");
+        number(&mut prelude, index);
+        prelude.push(" = _template(\"");
         if let [VaporPart::Text { text, .. }] = parts {
-            let helper = runtime
-                .helper("createTextNode")
-                .ok_or_else(|| error(VaporErrorKind::RuntimeHelper))?;
-            render.use_helper(helper);
-            render.push("_createTextNode(\"");
-            render.anchor(text.span.start);
-            literal::raw(&mut render, text.content);
-            render.push("\")");
+            prelude.anchor(text.span.start);
+            // Actual template() uses a raw Text branch when the first byte
+            // is not '<'. L3 refuses that markup-shaped root spelling.
+            literal::raw(&mut prelude, text.content);
         } else {
-            let helper = runtime
-                .helper("template")
-                .ok_or_else(|| error(VaporErrorKind::RuntimeHelper))?;
-            prelude.use_helper(helper);
-            prelude.push("const t");
-            number(&mut prelude, index);
-            prelude.push(" = _template(\"");
             for part in parts {
                 literal::html_part(&mut prelude, part);
             }
-            // Actual rc.9 TemplateFlags.STATIC=2 and ROOT=1. L3 decides
-            // root fallthrough; the encoder owns the pinned numeric spelling.
-            prelude.push(if facts.inherit_attrs() == Some(root.node()) {
-                "\", 3)\n"
-            } else {
-                "\", 2)\n"
-            });
-            render.push("t");
-            number(&mut render, index);
-            render.push("()");
         }
+        // Actual rc.9 TemplateFlags.STATIC=2 and ROOT=1. L3 decides
+        // root fallthrough; the encoder owns the pinned numeric spelling.
+        prelude.push(if facts.inherit_attrs() == Some(root.node()) {
+            "\", 3)\n"
+        } else {
+            "\", 2)\n"
+        });
+        render.push("t");
+        number(&mut render, index);
+        render.push("()");
     }
     render.newline();
     render.push("return ");

@@ -9,9 +9,10 @@ const window = new Window();
 for (const name of ["window", "document", "Document", "Node", "Text", "Comment", "Element", "HTMLElement", "SVGElement", "Event", "ShadowRoot"])
   globalThis[name] = name === "window" ? window : window[name];
 const dataUrl = (code) => `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
+console.info = (...values) => process.stderr.write(values.join(" ") + "\n");
 const vue = await import(dataUrl(readFileSync(vueVaporBrowserRuntime, "utf8")));
 assert.equal(vue.version, vueVaporVersion);
-for (const name of ["template", "createTextNode", "defineVaporComponent", "createVaporApp"])
+for (const name of ["template", "defineVaporComponent", "createVaporApp", "createVaporSSRApp"])
   assert.equal(typeof vue[name], "function", `actual export ${name}`);
 globalThis.__nativeVaporRuntime = vue;
 
@@ -35,13 +36,14 @@ function observe(node) {
     [...node.childNodes].map(observe)];
 }
 
-async function mount(render, configuration) {
-  const host = document.body.appendChild(document.createElement("div"));
+async function mount(render, configuration, serverHtml = null) {
+    const host = document.body.appendChild(document.createElement("div"));
+    if (serverHtml !== null) host.innerHTML = serverHtml;
   const component = vue.defineVaporComponent({
     inheritAttrs: configuration.inheritAttrs,
     setup: () => render({}),
   });
-  const app = vue.createVaporApp(component, configuration.props);
+  const app = (serverHtml === null ? vue.createVaporApp : vue.createVaporSSRApp)(component, configuration.props);
   const diagnostics = [];
   app.config.warnHandler = (message) => diagnostics.push(message);
   app.config.errorHandler = (error) => diagnostics.push(String(error));
@@ -50,12 +52,13 @@ async function mount(render, configuration) {
     await vue.nextTick();
     assert.deepEqual(diagnostics, [], "mounted diagnostics");
     const tree = [...host.childNodes].map(observe);
+    const html = host.innerHTML;
     const retained = [...host.childNodes];
     app.unmount();
     await vue.nextTick();
     assert.equal(host.childNodes.length, 0, "unmount leaves no nodes");
     assert.deepEqual(diagnostics, []);
-    return { tree, retained };
+    return { tree, retained, html };
   } finally { host.remove(); }
 }
 
@@ -81,7 +84,13 @@ try {
       const repeated = await mount(native, configuration);
       assert.deepEqual(repeated.tree, actual.tree, `${input.id} template clone reuse`);
       for (const [index, node] of repeated.retained.entries()) assert.notEqual(node, actual.retained[index]);
-      traces.push({ configuration, tree: actual.tree, unmounted: [] });
+      if (input.hydrate) {
+        const hydrated = await mount(native, configuration, expected.html);
+        const referenceHydrated = await mount(reference, configuration, expected.html);
+        assert.deepEqual(hydrated.tree, referenceHydrated.tree, `${input.id} actual pinned hydration tree`);
+        assert.deepEqual(hydrated.tree, actual.tree, `${input.id} hydrated original output`);
+      }
+      traces.push({ configuration, tree: actual.tree, hydrated: !!input.hydrate, unmounted: [] });
     }
     captured.push({ id: input.id, version: vue.version, traces });
   }

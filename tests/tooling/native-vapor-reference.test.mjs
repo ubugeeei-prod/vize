@@ -40,8 +40,7 @@ test("frozen complete modules retain exact official rc.9 output and independent 
   }
 });
 
-test("genuine captured modules and maps equal the entire frozen output", () => {
-  if (!captures) { assert.ok(!required); return; }
+test("genuine captured modules and maps equal the entire frozen output", { skip: !captures }, () => {
   assert.equal(captures.length, pack.fixtures.length);
   for (const [index, fixture] of pack.fixtures.entries()) {
     const actual = captures[index];
@@ -58,7 +57,8 @@ test("whole modules execute with real rc.9 nodes, comments, attrs and clone disp
   const inputs = pack.fixtures.map((fixture, index) => {
     const roots = officialCompilerVapor.parse(fixture.template).children.filter((node) => node.type !== 3);
     return { id: fixture.id, code: captures?.[index].code ?? fixture.code,
-      upstreamCode: fixture.upstreamCode, rootElement: roots.length === 1 && roots[0].type === 1 };
+      upstreamCode: fixture.upstreamCode, rootElement: roots.length === 1 && roots[0].type === 1,
+      hydrate: roots.length === 1 && [1, 2].includes(roots[0].type) };
   });
   const runtime = spawnSync(process.execPath, [new URL("./support/native-vapor-runtime.mjs", import.meta.url).pathname], {
     input: JSON.stringify(inputs), encoding: "utf8", timeout: 60_000, maxBuffer: 8 * 1024 * 1024,
@@ -69,4 +69,20 @@ test("whole modules execute with real rc.9 nodes, comments, attrs and clone disp
   for (const trace of traces) assert.ok(trace.traces.length > 0);
   if (process.env.VIZE_NATIVE_VAPOR_RUNTIME_CAPTURE)
     writeFileSync(process.env.VIZE_NATIVE_VAPOR_RUNTIME_CAPTURE, JSON.stringify({ capturedFromRust: !!captures, version: vueVaporVersion, traces }, null, 2));
+});
+
+test("actual runtime judge rejects changed text and detached hydration blocks", () => {
+  const fixture = pack.fixtures.find((fixture) => fixture.id === "text");
+  for (const code of [
+    fixture.code.replace('"hello"', '"changed"'),
+    'import { createTextNode as _createTextNode } from "vue"\n' +
+      fixture.code.replace('_template("hello", 2)', '() => _createTextNode("hello")'),
+  ]) {
+    const runtime = spawnSync(process.execPath, [new URL("./support/native-vapor-runtime.mjs", import.meta.url).pathname], {
+      input: JSON.stringify([{ id: "negative", code, upstreamCode: fixture.upstreamCode, hydrate: true }]),
+      encoding: "utf8", timeout: 60_000, maxBuffer: 8 * 1024 * 1024,
+    });
+    assert.notEqual(runtime.status, 0, "actual runtime differences must fail");
+    assert.match(runtime.stderr, /AssertionError|removeChild/u);
+  }
 });
