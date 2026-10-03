@@ -5,7 +5,7 @@
 //! document links, lenses, colours, symbols and folding read the SFC parse
 //! through [`ResidentCache`] instead of
 //! calling `parse_sfc` per request. The cache holds each document as an input
-//! of a `vize_resident` salsa database, so every request between two
+//! of a `vize_incremental` salsa database, so every request between two
 //! keystrokes shares one parse.
 //! A rejected parse stays in that memo, error included. Components read from
 //! disk go through the same cache keyed by their path.
@@ -18,8 +18,8 @@ use std::{path::Path, sync::Arc};
 use parking_lot::Mutex;
 use tower_lsp::lsp_types::Url;
 use vize_atelier_sfc::script::TypeSourceSnapshot;
+use vize_incremental::{ComponentSurface, ParsedSfc, ResidentDocuments, SharedDescriptor};
 use vize_l2::summary::AlphaPages;
-use vize_resident::{ComponentSurface, ParsedSfc, ResidentDocuments, SharedDescriptor};
 
 use super::ServerState;
 
@@ -94,12 +94,12 @@ impl ResidentCache {
 
     /// Lookups served and parses run since the last call.
     #[cfg(test)]
-    pub(crate) fn take_stats(&self) -> vize_resident::DescriptorStats {
+    pub(crate) fn take_stats(&self) -> vize_incremental::DescriptorStats {
         self.0.lock().take_stats()
     }
 
     #[cfg(test)]
-    pub(crate) fn take_interface_stats(&self) -> vize_resident::InterfaceStats {
+    pub(crate) fn take_interface_stats(&self) -> vize_incremental::InterfaceStats {
         self.0.lock().take_interface_stats()
     }
 }

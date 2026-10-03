@@ -13,7 +13,7 @@ pub(super) type BlockSpan = (usize, usize);
 pub(super) fn block_spans(source: &str, filename: &str) -> Option<Vec<BlockSpan>> {
     // The formatted buffer is not the open document, so this must not write
     // the resident document cache. `parse_descriptor` is that parse.
-    let descriptor = vize_resident::parse_descriptor(filename, source)?;
+    let descriptor = vize_incremental::parse_descriptor(filename, source)?;
 
     Some(
         descriptor

@@ -84,7 +84,7 @@ pub(super) fn export_component_interface_with_sources(
 }
 
 pub(super) fn component_metadata_from_interface(
-    summary: &vize_resident::ComponentSurface,
+    summary: &vize_incremental::ComponentSurface,
 ) -> Option<ComponentMetadata> {
     let signature: SignatureContract =
         serde_json::from_str(&summary.signature.as_ref()?.contract).ok()?;

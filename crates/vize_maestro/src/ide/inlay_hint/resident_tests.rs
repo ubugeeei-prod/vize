@@ -2,7 +2,7 @@
 //! request and a hover on the same buffer share one parse per revision.
 
 use tower_lsp::lsp_types::{InlayHint, InlayHintLabel, InlayHintTooltip, Position, Range, Url};
-use vize_resident::DescriptorStats;
+use vize_incremental::DescriptorStats;
 
 use super::InlayHintService;
 use crate::ide::{HoverService, IdeContext};
@@ -85,7 +85,7 @@ fn fingerprint(hints: &[InlayHint]) -> Vec<(u32, u32, String, String)> {
 }
 
 fn clean_hints(text: &str, document: &Url, range: Range) -> Vec<InlayHint> {
-    let descriptor = vize_resident::descriptor::parse_descriptor(document.path(), text)
+    let descriptor = vize_incremental::descriptor::parse_descriptor(document.path(), text)
         .expect("the fixture parses");
     InlayHintService::hints_from_descriptor(text, document, range, true, &descriptor)
 }

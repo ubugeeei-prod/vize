@@ -120,7 +120,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-script
       - name: Build the isolated resident session
         run: >-
-          cargo build --profile ci-opt -p vize_resident --example resource_session
+          cargo build --profile ci-opt -p vize_incremental --example resource_session
           --config 'profile.ci-opt.inherits="release"'
           --config 'profile.ci-opt.lto="thin"'
           --config 'profile.ci-opt.codegen-units=16'

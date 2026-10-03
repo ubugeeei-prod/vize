@@ -18,13 +18,13 @@ fn alpha_metadata_preserves_full_prop_and_slot_contracts() {
     ];
     for source in samples {
         for (options_api, legacy_vue2) in [(false, false), (true, false), (true, true)] {
-            let descriptor = vize_resident::parse_descriptor("Widget.vue", source).unwrap();
+            let descriptor = vize_incremental::parse_descriptor("Widget.vue", source).unwrap();
             let pages =
                 export_component_interface(&descriptor, "Widget.vue", options_api, legacy_vue2)
                     .unwrap();
             let summary = SfcSummary::from_alpha(pages).unwrap();
             let projected = component_metadata_from_interface(
-                &vize_resident::ComponentSurface::from_summary(&summary),
+                &vize_incremental::ComponentSurface::from_summary(&summary),
             )
             .unwrap();
             let expected =

@@ -5,7 +5,7 @@ use tower_lsp::lsp_types::{
     CodeLensParams, DocumentColorParams, DocumentSymbolParams, FoldingRangeParams,
     TextDocumentIdentifier, Url,
 };
-use vize_resident::DescriptorStats;
+use vize_incremental::DescriptorStats;
 
 const SFC: &str = "<script setup>\r\nconst count = 1\r\n</script>\r\n<template>\r\n  <div>日本語😀 {{ count }}</div>\r\n</template>\r\n<style>\r\n.a { color: #ff0000; }\r\n</style>";
 

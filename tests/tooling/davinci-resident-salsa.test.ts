@@ -21,7 +21,7 @@ import {
 } from "./support/davinci-stage-dependencies.ts";
 
 /** The crates allowed to depend on salsa: the resident tier. */
-const residentTier = new Set(["vize_resident"]);
+const residentTier = new Set(["vize_incremental"]);
 
 /** Workspace packages that name `salsa` in any dependency kind, sorted. */
 function salsaDependents(graph: Metadata): string[] {
@@ -37,7 +37,7 @@ function outsideResidentTier(graph: Metadata): string[] {
 }
 
 test("only the resident tier depends on salsa", () => {
-  assert.deepEqual(salsaDependents(metadata), ["vize_resident"]);
+  assert.deepEqual(salsaDependents(metadata), ["vize_incremental"]);
   assert.deepEqual(outsideResidentTier(metadata), []);
 });
 
@@ -64,8 +64,8 @@ test("salsa is pinned exactly with rayon off, and the resident crate is unpublis
     "default-features": false,
     features: ["macros", "inventory"],
   });
-  assert.equal(dependency(metadata, "vize_resident", "salsa", null).req, "=0.28.5");
-  assert.deepEqual(workspacePackage(metadata, "vize_resident").publish, []);
+  assert.equal(dependency(metadata, "vize_incremental", "salsa", null).req, "=0.28.5");
+  assert.deepEqual(workspacePackage(metadata, "vize_incremental").publish, []);
 });
 
 test("the one-shot vize binary has no salsa in its build graph", () => {

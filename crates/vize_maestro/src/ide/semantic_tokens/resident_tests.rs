@@ -5,7 +5,7 @@ use tower_lsp::lsp_types::{
     Position, Range, SemanticToken, SemanticTokens, SemanticTokensRangeResult,
     SemanticTokensResult, Url,
 };
-use vize_resident::DescriptorStats;
+use vize_incremental::DescriptorStats;
 
 use super::{SemanticTokensService, encode_tokens, token_overlaps_range};
 use crate::ide::{HoverService, IdeContext};
@@ -53,7 +53,7 @@ fn range_data(result: Option<SemanticTokensRangeResult>) -> Vec<SemanticToken> {
 
 fn clean_tokens(text: &str, filename: &str) -> Vec<SemanticToken> {
     let descriptor =
-        vize_resident::descriptor::parse_descriptor(filename, text).expect("the fixture parses");
+        vize_incremental::descriptor::parse_descriptor(filename, text).expect("the fixture parses");
     encode_tokens(&SemanticTokensService::tokens_from_descriptor(
         text,
         &descriptor,
@@ -66,8 +66,8 @@ fn template_identifiers_keep_unicode_names_and_utf16_ranges() {
         env!("CARGO_MANIFEST_DIR"),
         "/../../tests/_fixtures/differential/lsp/template-unicode-tokens/App.vue.txt"
     ));
-    let descriptor =
-        vize_resident::descriptor::parse_descriptor("App.vue", source).expect("the fixture parses");
+    let descriptor = vize_incremental::descriptor::parse_descriptor("App.vue", source)
+        .expect("the fixture parses");
     let tokens = SemanticTokensService::tokens_from_descriptor(source, &descriptor);
 
     for (line, name) in [(7, "値"), (7, "total"), (8, "ñandú"), (9, "café")] {
@@ -130,8 +130,8 @@ fn full_and_range_share_one_parse_with_hover() {
         counts(1, 0),
         "the range request reads the memo"
     );
-    let descriptor =
-        vize_resident::descriptor::parse_descriptor(uri.path(), SFC).expect("the fixture parses");
+    let descriptor = vize_incremental::descriptor::parse_descriptor(uri.path(), SFC)
+        .expect("the fixture parses");
     let mut absolute = SemanticTokensService::tokens_from_descriptor(SFC, &descriptor);
     absolute.retain(|token| token_overlaps_range(token, range));
     assert_eq!(ranged, encode_tokens(&absolute));

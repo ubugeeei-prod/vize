@@ -6,7 +6,7 @@ name: Davinci Incremental
 # - TS-42 incremental ≡ clean runs the committed edit scripts through the
 #   resident tier over the corpus shard and every committed fixture, and proves
 #   it catches a seeded stale-cache defect. Every PR touching the resident tier
-#   (crates/vize_resident/**) runs it.
+#   (crates/vize_incremental/**) runs it.
 
 on:
   push:
@@ -16,7 +16,7 @@ on:
       - "davinci/vize_l1/**"
       - "davinci/vize_l2/**"
       - "davinci/vize_l1_to_l2/**"
-      - "crates/vize_resident/**"
+      - "crates/vize_incremental/**"
       - "crates/vize_croquis/src/sfc/**"
       - "crates/vize_croquis/src/croquis/alpha*"
       - "crates/vize_croquis/src/croquis/alpha/**"
@@ -97,12 +97,12 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
       - name: Resident tier tests (firewall accounting, committed plane)
-        run: cargo test -p vize_resident
+        run: cargo test -p vize_incremental
       - name: TS-42 production alpha interfaces over the corpus shard
         run: cargo test -p vize_maestro production_alpha_corpus_edits_match_clean -- --ignored --nocapture
       - name: TS-42 over the corpus shard and the committed fixtures
         run: rust-script tools/commands/davinci/incremental-equivalence.rs --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools
       - name: TS-42 catches the seeded stale-cache defect
         run: |
-          cargo test -p vize_resident --features seeded-stale-cache --test equivalence
+          cargo test -p vize_incremental --features seeded-stale-cache --test equivalence
           rust-script tools/commands/davinci/incremental-equivalence.rs --corpus-shard --fixtures tests/_fixtures/_projects --fixtures tests/_fixtures/vue-language-tools --seeded

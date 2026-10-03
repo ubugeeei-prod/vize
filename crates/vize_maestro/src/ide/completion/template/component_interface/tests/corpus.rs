@@ -2,8 +2,8 @@
 
 use std::path::{Path, PathBuf};
 
+use vize_incremental::{ResidentDocuments, parse_descriptor};
 use vize_l2::summary::{Facet, SfcSummary};
-use vize_resident::{ResidentDocuments, parse_descriptor};
 
 use super::super::export_component_interface;
 use super::edits::replace_member_type;

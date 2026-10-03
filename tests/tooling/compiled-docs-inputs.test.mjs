@@ -35,7 +35,7 @@ void test("real compiled Markdown and budget witnesses select both Rust planners
       "davinci/vize_l0/tests/fact_alpha/main.rs",
       "../../../../docs/davinci/plan/fact-alpha-schemas.md",
     ],
-    ["crates/vize_resident/src/summary.rs", "../../../docs/davinci/plan/budgets.toml"],
+    ["crates/vize_incremental/src/summary.rs", "../../../docs/davinci/plan/budgets.toml"],
   ];
   for (const [source, literal] of witnesses) {
     assert.ok(readFileSync(resolve(root, source), "utf8").includes(`include_str!("${literal}")`));

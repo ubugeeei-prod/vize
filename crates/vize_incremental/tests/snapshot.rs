@@ -18,14 +18,14 @@
 
 use std::cell::{Cell, RefCell};
 
+use vize_incremental::snapshot::cancel::{CancelToken, Cancelled};
+use vize_incremental::snapshot::isolate::{FileJob, FileOutcome, update_files_isolated};
+use vize_incremental::snapshot::region::{RegionLowering, RegionSyntax, lower_region};
+use vize_incremental::snapshot::{JointCounts, SnapshotStats, SnapshotTree, Stages};
+use vize_incremental::{BlockSource, StageConfig, SurfaceArtifact, compute_file_artifacts};
 use vize_l0::String;
 use vize_l0::config::VueVersion;
 use vize_l1_to_l2::LegacyCaps;
-use vize_resident::snapshot::cancel::{CancelToken, Cancelled};
-use vize_resident::snapshot::isolate::{FileJob, FileOutcome, update_files_isolated};
-use vize_resident::snapshot::region::{RegionLowering, RegionSyntax, lower_region};
-use vize_resident::snapshot::{JointCounts, SnapshotStats, SnapshotTree, Stages};
-use vize_resident::{BlockSource, StageConfig, SurfaceArtifact, compute_file_artifacts};
 
 const BASE: &str = "<script setup>
 const a = 1
@@ -243,7 +243,7 @@ fn panicking_surface(source: &BlockSource) -> Option<SurfaceArtifact> {
     if source.text.contains("PANIC") {
         panic!("injected stage failure");
     }
-    vize_resident::artifact::surface_artifact(source)
+    vize_incremental::artifact::surface_artifact(source)
 }
 
 #[test]

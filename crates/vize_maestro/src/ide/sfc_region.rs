@@ -33,7 +33,7 @@ pub(crate) fn resolve(content: &str, filename: &str, offset: usize) -> SfcRegion
         return whole_file;
     }
 
-    let Some(descriptor) = vize_resident::parse_descriptor(filename, content) else {
+    let Some(descriptor) = vize_incremental::parse_descriptor(filename, content) else {
         return whole_file;
     };
 

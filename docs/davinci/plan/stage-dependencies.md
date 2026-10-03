@@ -36,7 +36,7 @@ L0 must never depend on a later tier. L3's native decision result borrows its
 actual sealed L2 owner through a normal downward dependency. The conversion
 edge re-exports that sole producer; it still owns flat-program lowering.
 
-The resident tier (`vize_resident`, P5-4a) is a consumer above every stage
+The resident tier (`vize_incremental`, P5-4a) is a consumer above every stage
 tier: it runs the stage functions as salsa queries for long-lived processes
 and is the only crate allowed to depend on `salsa`
 (`tests/tooling/davinci-resident-salsa.test.ts`). No stage crate may depend

@@ -149,7 +149,7 @@ const bar = 'baz'
 )]
 fn resident_legacy_diagnostics_share_cached_success_rejection_and_recovery() {
     use crate::ide::IdeContext;
-    use vize_resident::DescriptorStats;
+    use vize_incremental::DescriptorStats;
 
     let state = ServerState::new();
     let uri = Url::parse("file:///Legacy.vue").unwrap();

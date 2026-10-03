@@ -20,7 +20,7 @@ pub(super) fn usage_range_at(ctx: &IdeContext<'_>) -> Option<Range<usize>> {
 }
 
 pub(super) fn usage_ranges(source: &str, filename: &str) -> Vec<Range<usize>> {
-    let Some(descriptor) = vize_resident::parse_descriptor(filename, source) else {
+    let Some(descriptor) = vize_incremental::parse_descriptor(filename, source) else {
         return Vec::new();
     };
     let Some(template) = descriptor.template.as_ref() else {
@@ -60,7 +60,7 @@ pub(super) fn usage_ranges(source: &str, filename: &str) -> Vec<Range<usize>> {
 }
 
 pub(super) fn declaration_ranges(source: &str, filename: &str) -> Vec<Range<usize>> {
-    let Some(descriptor) = vize_resident::parse_descriptor(filename, source) else {
+    let Some(descriptor) = vize_incremental::parse_descriptor(filename, source) else {
         return Vec::new();
     };
     let Some(script) = descriptor.script_setup.as_ref() else {

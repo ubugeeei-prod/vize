@@ -95,7 +95,7 @@
 
 **Lane:** C
 
-**Deliverable:** the new crate `crates/vize_resident/` — the resident tier's salsa database (charter #10): inputs are file texts and project config, firewall queries are the P5-1a block keys over L1/L2 artifacts, and the one-shot CLI stays salsa-free. salsa is admitted under charter #39 (version pinned, `cargo audit` clean, only this crate and resident-tier features depend on it).
+**Deliverable:** the new crate `crates/vize_incremental/` — the resident tier's salsa database (charter #10): inputs are file texts and project config, firewall queries are the P5-1a block keys over L1/L2 artifacts, and the one-shot CLI stays salsa-free. salsa is admitted under charter #39 (version pinned, `cargo audit` clean, only this crate and resident-tier features depend on it).
 
 **Steps:**
 
@@ -103,7 +103,7 @@
 - [x] Queries: `source_text` (input) → `sfc_blocks` → `s1_block` / `s2_page` keyed by block key, with backdating when the key is unchanged _(the firewall is the `Block` tracked struct: content with its L0 key and position are separate tracked fields)_
 - [x] Cache-hit accounting counters exposed for TS-46 _(`ResidentDatabase::take_accounting`, read from salsa's event stream)_
 
-**Acceptance:** `cargo test -p vize_resident` — editing one block re-executes only that block's queries (counters pinned exactly); the dependency check green and proven to fail on an injected `salsa` edge in `vize_atelier_sfc`; `cargo audit --deny warnings` green; the one-shot `vize build` binary has no `salsa` in `cargo tree -p vize --no-default-features`.
+**Acceptance:** `cargo test -p vize_incremental` — editing one block re-executes only that block's queries (counters pinned exactly); the dependency check green and proven to fail on an injected `salsa` edge in `vize_atelier_sfc`; `cargo audit --deny warnings` green; the one-shot `vize build` binary has no `salsa` in `cargo tree -p vize --no-default-features`.
 
 **Deps:** P5-1a.
 
@@ -123,7 +123,7 @@ The 10k-file RSS and summary TS-42 acceptance remain open.
 
 **Steps:**
 
-- [ ] Summary queries and durability annotations in `crates/vize_resident/`
+- [ ] Summary queries and durability annotations in `crates/vize_incremental/`
 - [ ] A synthetic 10k-file session under the P5-11a RSS preset
 
 **Acceptance:** a body-only edit re-executes no dependent file's queries (counters exact); RSS stays under the preset in the synthetic session (TS-44 methodology); TS-42 green on the shard.
@@ -144,7 +144,7 @@ The 10k-file RSS and summary TS-42 acceptance remain open.
 
 **Steps:**
 
-- [x] Snapshot adoption and cancellation in `crates/vize_resident/src/snapshot*` _(region joint = a template's root regions; TS-42 runs the snapshot path beside the database)_
+- [x] Snapshot adoption and cancellation in `crates/vize_incremental/src/snapshot*` _(region joint = a template's root regions; TS-42 runs the snapshot path beside the database)_
 - [x] A fault-isolation scenario: a stage task that panics is caught, its file degrades per TS-47, and the server keeps answering for every other file
 
 **Acceptance:** TS-46 adoption and cancellation scenarios with exact cache-hit accounting; the fault-isolation scenario green (extends TS-47).
@@ -161,7 +161,7 @@ The 10k-file RSS and summary TS-42 acceptance remain open.
 
 **Lane:** D
 
-**Deliverable:** hover, completion and definition request paths (`crates/vize_maestro/src/ide/{hover,completion,definition,template_scope,references}`) read cached L1/L2 artifacts through `vize_resident` instead of calling `parse_sfc` per request; each wave records its keystroke-cost change.
+**Deliverable:** hover, completion and definition request paths (`crates/vize_maestro/src/ide/{hover,completion,definition,template_scope,references}`) read cached L1/L2 artifacts through `vize_incremental` instead of calling `parse_sfc` per request; each wave records its keystroke-cost change.
 
 **Steps:**
 

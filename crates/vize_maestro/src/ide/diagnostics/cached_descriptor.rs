@@ -9,7 +9,7 @@
 )]
 
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, Position, Range, Url};
-use vize_resident::{DescriptorParseError, ParsedSfc, SharedDescriptor};
+use vize_incremental::{DescriptorParseError, ParsedSfc, SharedDescriptor};
 
 use super::{DiagnosticService, sources};
 use crate::server::ServerState;

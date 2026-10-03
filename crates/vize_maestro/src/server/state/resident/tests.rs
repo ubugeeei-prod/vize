@@ -2,7 +2,7 @@
 //! keystrokes share one parse — exact accounting from the resident tier.
 
 use tower_lsp::lsp_types::{DiagnosticSeverity, Range, Url};
-use vize_resident::DescriptorStats;
+use vize_incremental::DescriptorStats;
 
 use crate::ide::diagnostics::sources;
 use crate::ide::{
@@ -88,7 +88,7 @@ fn the_served_descriptor_is_the_clean_parse() {
         let text = after_keystroke(k);
         let ctx = IdeContext::testing(&state, &uri, 0, text.clone());
         let served = ctx.descriptor().expect("the SFC parses");
-        let clean = vize_resident::descriptor::parse_descriptor(uri.path(), &text).unwrap();
+        let clean = vize_incremental::descriptor::parse_descriptor(uri.path(), &text).unwrap();
         assert!(served == &clean, "keystroke {k}: served equals clean");
         let template = served.template.as_ref().unwrap();
         let clean_template = clean.template.as_ref().unwrap();

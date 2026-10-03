@@ -3,7 +3,7 @@
 use crate::ide::{DiagnosticService, IdeContext};
 use crate::server::ServerState;
 use tower_lsp::lsp_types::{DiagnosticSeverity, NumberOrString, Position, Range, Url};
-use vize_resident::DescriptorStats;
+use vize_incremental::DescriptorStats;
 
 const SOURCE: &str = "<script setup lang=\"ts\">\r\nimport { useRoute } from 'vue-router'\r\nconst route = useRoute()\r\nconst label = '雪😀'; route.params.slug\r\n</script>\r\n<route lang=\"json\">{\"path\":\"/users/:id\"}</route>";
 

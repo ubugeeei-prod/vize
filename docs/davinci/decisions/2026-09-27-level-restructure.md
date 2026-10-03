@@ -278,7 +278,7 @@ the four documented workspace-only experiments remain unpublished.
 
 Vize follows language-toolchain practice, not compiler-only practice. It stays lightweight and fast. It avoids the heaviness of rust-analyzer-style designs: fine-grained per-node queries, per-node reference-counted trees and whole-workspace resident state.
 
-- **Two tiers stay as they are.** Long-lived processes (LSP, check server, watch modes) use the salsa-based resident tier. The one-shot CLI uses the fused non-salsa pipeline.
+- **Two tiers stay as they are.** Long-lived processes (LSP, check server, watch modes) use the salsa-based incremental tier. The maintainer selected `vize_incremental` for [#7304](https://github.com/ubugeeei-prod/vize/issues/7304); the [crate-name decision](./2026-10-03-incremental-tier-name.md) records its scripted rename, unchanged unpublished/transitional status and remaining native LSP work. The one-shot CLI uses the fused non-salsa pipeline.
 - **One semantic query API over L2** serves every product ([#6871](https://github.com/ubugeeei-prod/vize/issues/6871)). See the [semantic query API design](./2026-09-27-level-restructure-designs.md#semantic-query-api-6871) in the companion record.
 - **LSP state stays coarse** ([#6872](https://github.com/ubugeeei-prod/vize/issues/6872)):
   - Queries are per SFC block and per expression embed, not per node.

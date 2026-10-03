@@ -7,7 +7,7 @@ The production imported-component publication/consumer slice is recorded in
 describes the earlier fixture-only boundary; full production scale acceptance
 remains open.
 
-`vize_resident::summary` now accepts P5-2 `AlphaPages` from the upstream fact
+`vize_incremental::summary` now accepts P5-2 `AlphaPages` from the upstream fact
 producer. The resident `sfc_summary` query reads the source revision and
 tsconfig, then builds an `SfcSummary`. The declaration query returns only the
 fingerprint for a named facet and declaration. Salsa backdates equal results
@@ -49,7 +49,7 @@ part of that final acceptance.
 
 ## Synthetic scale probe (2026-09-26)
 
-The new `vize_resident` `resource_session` example retains 10,000 distinct SFC
+The new `vize_incremental` `resource_session` example retains 10,000 distinct SFC
 inputs, builds every S1/S2 artifact and six-facet fixture interface, and compares
 both with the clean functions. It exercises 32 body and prop-signature edits
 with exact dependent execution counts: body edits execute zero consumers;
@@ -71,7 +71,7 @@ export wiring, the full process-tree scale measurement and corpus summary script
 Command:
 
 ```sh
-cargo build --profile ci-opt -p vize_resident --example resource_session \
+cargo build --profile ci-opt -p vize_incremental --example resource_session \
   --config 'profile.ci-opt.inherits="release"' \
   --config 'profile.ci-opt.lto="thin"' \
   --config 'profile.ci-opt.codegen-units=16'

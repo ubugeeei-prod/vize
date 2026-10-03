@@ -13,8 +13,8 @@
 
 use std::path::{Path, PathBuf};
 
+use vize_incremental::equivalence::{EditScript, EquivalenceReport, parse_script};
 use vize_l0::String;
-use vize_resident::equivalence::{EditScript, EquivalenceReport, parse_script};
 
 fn repo() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
@@ -84,7 +84,7 @@ fn run_plane_where(keep: impl Fn(&str) -> bool) -> EquivalenceReport {
 
 #[cfg(not(feature = "seeded-stale-cache"))]
 fn assert_report(report: &EquivalenceReport, counts: [u32; 6], snapshot: [[u32; 3]; 3]) {
-    use vize_resident::snapshot::{JointCounts, SnapshotStats};
+    use vize_incremental::snapshot::{JointCounts, SnapshotStats};
 
     assert_eq!(report.mismatches, []);
     assert_eq!(report.verdict(), Ok(()));
@@ -159,7 +159,7 @@ fn the_seeded_stale_cache_is_caught() {
     assert_eq!(run_plane_where(critical_css_fixture).mismatches.len(), 29);
     assert_eq!(
         report.mismatches[0],
-        vize_resident::equivalence::Mismatch {
+        vize_incremental::equivalence::Mismatch {
             file: String::from("class-component/src/App.vue"),
             script: String::from("05-length-preserving"),
             step: 1,

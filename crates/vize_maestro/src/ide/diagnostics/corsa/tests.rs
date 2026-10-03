@@ -107,7 +107,7 @@ defineProps<{ variant?: "primary" | "secondary" }>();
 </art>"#;
 
     let descriptor =
-        vize_resident::descriptor::parse_descriptor(uri.path(), content).expect("sfc parses");
+        vize_incremental::descriptor::parse_descriptor(uri.path(), content).expect("sfc parses");
     let results = DiagnosticService::generate_virtual_ts_for_inline_art_variants(
         &uri,
         content,
@@ -150,7 +150,7 @@ defineArt("./Button.vue", { title: "Button" });
 </art>"#;
 
     let descriptor =
-        vize_resident::descriptor::parse_descriptor(uri.path(), content).expect("sfc parses");
+        vize_incremental::descriptor::parse_descriptor(uri.path(), content).expect("sfc parses");
     let generated = DiagnosticService::generate_virtual_ts_for_art_with_dependencies(
         content,
         &descriptor,

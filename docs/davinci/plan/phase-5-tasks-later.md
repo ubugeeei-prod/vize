@@ -9,7 +9,7 @@
 
 **Lane:** E
 
-**Deliverable:** issue #698 closed: the single projection reuses script segments on a template-only edit (and template segments on a script-only edit), keyed by P5-1a block keys through `vize_resident`.
+**Deliverable:** issue #698 closed: the single projection reuses script segments on a template-only edit (and template segments on a script-only edit), keyed by P5-1a block keys through `vize_incremental`.
 
 **Steps:**
 
@@ -50,12 +50,12 @@
 
 **Lane:** G
 
-**Deliverable:** TS-42 from the first salsa-backed release (the rustc 1.52.1 lesson): for a corpus shard, scripted edit sequences are applied through `vize_resident`, and every resident artifact and diagnostic is compared with a from-scratch run.
+**Deliverable:** TS-42 from the first salsa-backed release (the rustc 1.52.1 lesson): for a corpus shard, scripted edit sequences are applied through `vize_incremental`, and every resident artifact and diagnostic is compared with a from-scratch run.
 
 **Steps:**
 
-- [x] `rust-script tools/commands/davinci/incremental-equivalence.rs` with committed edit scripts _(six scripts under `incremental-equivalence/scripts/`; the harness is `vize_resident::equivalence`)_
-- [x] `.github/workflows/davinci-incremental.yml` required on PRs touching `crates/vize_resident/` _(the `incremental-equivalence` job; its shape is pinned by `davinci-incremental-workflow.test.ts`)_
+- [x] `rust-script tools/commands/davinci/incremental-equivalence.rs` with committed edit scripts _(six scripts under `incremental-equivalence/scripts/`; the harness is `vize_incremental::equivalence`)_
+- [x] `.github/workflows/davinci-incremental.yml` required on PRs touching `crates/vize_incremental/` _(the `incremental-equivalence` job; its shape is pinned by `davinci-incremental-workflow.test.ts`)_
 
 **Acceptance:** TS-42 green with scope proof (edits applied and artifacts compared are counted; a zero-comparison run fails); a seeded stale-cache bug is caught.
 

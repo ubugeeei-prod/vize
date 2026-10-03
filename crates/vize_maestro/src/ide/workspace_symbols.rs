@@ -73,7 +73,7 @@ impl WorkspaceSymbolsService {
         query: &str,
         symbols: &mut Vec<SymbolInformation>,
     ) {
-        let Some(descriptor) = vize_resident::parse_descriptor(uri.path(), content) else {
+        let Some(descriptor) = vize_incremental::parse_descriptor(uri.path(), content) else {
             return;
         };
 

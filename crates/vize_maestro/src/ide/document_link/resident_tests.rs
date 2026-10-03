@@ -2,7 +2,7 @@
 //! hover on the same buffer share one parse per revision.
 
 use tower_lsp::lsp_types::{DocumentLink, Url};
-use vize_resident::DescriptorStats;
+use vize_incremental::DescriptorStats;
 
 use super::DocumentLinkService;
 use crate::ide::{HoverService, IdeContext};
@@ -49,7 +49,7 @@ fn fingerprint(links: &[DocumentLink]) -> Vec<(u32, u32, u32, u32, String)> {
 }
 
 fn clean_links(text: &str, document: &Url) -> Vec<DocumentLink> {
-    let descriptor = vize_resident::descriptor::parse_descriptor(document.path(), text)
+    let descriptor = vize_incremental::descriptor::parse_descriptor(document.path(), text)
         .expect("the fixture parses");
     DocumentLinkService::links_from_descriptor(text, document, &descriptor)
 }

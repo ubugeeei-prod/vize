@@ -4,7 +4,7 @@
 //! Runs the committed edit scripts (`incremental-equivalence/scripts/*.edits`)
 //! through the resident tier's salsa database, one long-lived database per
 //! file, and compares every served artifact and diagnostic with a
-//! from-scratch run after every step (`vize_resident::equivalence`).
+//! from-scratch run after every step (`vize_incremental::equivalence`).
 //!
 //! ```text
 //! rust-script tools/commands/davinci/incremental-equivalence.rs --corpus-shard [--fixtures <dir>] [--seeded] [--report <path>]
@@ -82,7 +82,7 @@ fn run() -> Result<bool, String> {
         "--release",
         "--locked",
         "-p",
-        "vize_resident",
+        "vize_incremental",
         "--example",
         "incremental_equivalence",
     ]);

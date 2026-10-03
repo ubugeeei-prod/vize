@@ -3,7 +3,7 @@
 use std::sync::OnceLock;
 
 use tower_lsp::lsp_types::Url;
-use vize_resident::SharedDescriptor;
+use vize_incremental::SharedDescriptor;
 
 use super::standalone_html_block_at_offset;
 use crate::server::ServerState;

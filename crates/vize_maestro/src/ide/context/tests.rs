@@ -32,7 +32,7 @@ fn context_at_count<'a>(state: &'a ServerState, uri: &'a Url, text: &str) -> Ide
 
 #[test]
 fn resident_context_consumers_keep_typed_results_and_authored_edits_after_changes() {
-    use vize_resident::DescriptorStats;
+    use vize_incremental::DescriptorStats;
 
     let state = ServerState::new();
     let uri = Url::parse("file:///workspace/Counter.vue").unwrap();
@@ -119,7 +119,7 @@ fn resident_context_consumers_preserve_spaced_declarations_and_annotations() {
 
 #[test]
 fn resident_context_consumers_share_parse_rejection_and_recovery() {
-    use vize_resident::DescriptorStats;
+    use vize_incremental::DescriptorStats;
 
     let state = ServerState::new();
     let uri = Url::parse("file:///workspace/Counter.vue").unwrap();

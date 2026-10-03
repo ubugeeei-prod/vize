@@ -22,11 +22,11 @@
 )]
 #![cfg(not(feature = "seeded-stale-cache"))]
 
-use vize_l0::String;
-use vize_l0::config::VueVersion;
-use vize_resident::{
+use vize_incremental::{
     Accounting, QueryCounts, ResidentDatabase, SourceFile, StageConfig, compute_file_artifacts,
 };
+use vize_l0::String;
+use vize_l0::config::VueVersion;
 
 const BASE: &str = "<script setup lang=\"ts\">
 const n = 1

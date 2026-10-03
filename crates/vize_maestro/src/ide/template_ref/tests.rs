@@ -75,7 +75,7 @@ fn resident_ref_responses(ctx: &IdeContext<'_>) -> serde_json::Value {
 
 #[test]
 fn resident_template_refs_preserve_authored_responses_and_inflight_revisions() {
-    use vize_resident::DescriptorStats;
+    use vize_incremental::DescriptorStats;
 
     let state = ServerState::new();
     let uri = Url::parse("file:///workspace/Ref.vue").unwrap();
@@ -163,7 +163,7 @@ fn resident_template_refs_preserve_authored_responses_and_inflight_revisions() {
 
 #[test]
 fn resident_template_refs_cache_rejection_and_recover_after_reopen() {
-    use vize_resident::DescriptorStats;
+    use vize_incremental::DescriptorStats;
 
     let state = ServerState::new();
     let uri = Url::parse("file:///workspace/Ref.vue").unwrap();

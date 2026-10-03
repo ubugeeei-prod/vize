@@ -23,7 +23,7 @@ impl<'a> Visit<'a> for Member<'_> {
 }
 
 pub(super) fn replace_member_type(source: &str, name: &str, replacement: &str) -> String {
-    let descriptor = vize_resident::parse_descriptor("Button.vue", source).unwrap();
+    let descriptor = vize_incremental::parse_descriptor("Button.vue", source).unwrap();
     let script = descriptor.script_setup.as_ref().unwrap();
     let allocator = oxc_allocator::Allocator::new();
     let parsed = oxc_parser::Parser::new(&allocator, &script.content, SourceType::ts()).parse();
@@ -35,7 +35,7 @@ pub(super) fn replace_member_type(source: &str, name: &str, replacement: &str) -
     let end = script.loc.start + span.end as usize;
     let mut edited = String::from(source);
     edited.replace_range(start..end, replacement);
-    let descriptor = vize_resident::parse_descriptor("Button.vue", &edited).unwrap();
+    let descriptor = vize_incremental::parse_descriptor("Button.vue", &edited).unwrap();
     let script = descriptor.script_setup.as_ref().unwrap();
     assert!(
         oxc_parser::Parser::new(&allocator, &script.content, SourceType::ts())

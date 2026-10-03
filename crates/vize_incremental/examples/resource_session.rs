@@ -3,12 +3,12 @@
 //! The Linux runner samples this process with the shared TS-44 sampler.
 
 use std::{io::Write as _, process::ExitCode, time::Duration};
-use vize_l0::{String, cstr};
-use vize_l2::summary::{AlphaEntry, AlphaPages, Facet, Fingerprint, SfcSummary, Signature};
-use vize_resident::{
+use vize_incremental::{
     DeclarationName, ResidentDatabase, SourceFile, StageConfig, SummaryInput,
     compute_file_artifacts, declaration_fingerprint, sfc_summary,
 };
+use vize_l0::{String, cstr};
+use vize_l2::summary::{AlphaEntry, AlphaPages, Facet, Fingerprint, SfcSummary, Signature};
 
 #[salsa::tracked(returns(copy))]
 fn dependent_use<'db>(
@@ -201,7 +201,9 @@ fn run() -> Result<(), String> {
     }
     db.configure_tsconfig("{\"strict\":true}");
     for file in &files {
-        if sfc_summary(&db, file.summary) != &Err(vize_resident::ResidentSummaryError::StaleAlpha) {
+        if sfc_summary(&db, file.summary)
+            != &Err(vize_incremental::ResidentSummaryError::StaleAlpha)
+        {
             return Err(String::from(
                 "changed tsconfig served an unrefreshed alpha summary",
             ));

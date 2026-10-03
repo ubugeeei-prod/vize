@@ -4,7 +4,7 @@
 # (charter #10); `tests/tooling/davinci-resident-salsa.test.ts` proves no
 # crate outside the resident tier depends on `salsa`.
 [package]
-name = "vize_resident"
+name = "vize_incremental"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

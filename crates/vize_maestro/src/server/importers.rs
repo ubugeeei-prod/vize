@@ -182,7 +182,7 @@ fn collect_dependencies(
         );
         return dependencies.into_iter().collect();
     }
-    let Some(descriptor) = vize_resident::parse_descriptor(&importer.to_string_lossy(), source)
+    let Some(descriptor) = vize_incremental::parse_descriptor(&importer.to_string_lossy(), source)
     else {
         return Vec::new();
     };

@@ -5,9 +5,9 @@
 
 use core::fmt::Write as _;
 
+use vize_incremental::descriptor::parse_descriptor;
+use vize_incremental::{DescriptorStats, ParsedSfc, ResidentDocuments, SharedDescriptor};
 use vize_l0::String;
-use vize_resident::descriptor::parse_descriptor;
-use vize_resident::{DescriptorStats, ParsedSfc, ResidentDocuments, SharedDescriptor};
 
 const SFC: &str = "<script setup>\nconst n = 1\n</script>\n<template><p>{{ n }}</p></template>\n<style>p{}</style>\n";
 

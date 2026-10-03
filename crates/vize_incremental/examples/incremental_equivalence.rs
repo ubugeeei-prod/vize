@@ -2,7 +2,7 @@
 //! runs this with the committed edit scripts and the corpus roots:
 //!
 //! ```text
-//! cargo run -p vize_resident --example incremental_equivalence -- \
+//! cargo run -p vize_incremental --example incremental_equivalence -- \
 //!   --scripts <dir> --root <label>=<dir> [--root ...]
 //! ```
 //!
@@ -13,8 +13,8 @@
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
+use vize_incremental::equivalence::{EditScript, EquivalenceReport, parse_script};
 use vize_l0::String;
-use vize_resident::equivalence::{EditScript, EquivalenceReport, parse_script};
 
 fn main() -> ExitCode {
     match run() {

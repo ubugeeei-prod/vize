@@ -122,7 +122,7 @@ fn component_event_range_at(ctx: &IdeContext<'_>) -> Option<OffsetRange<usize>> 
 }
 
 pub(super) fn component_event_ranges(source: &str, filename: &str) -> Vec<OffsetRange<usize>> {
-    let Some(descriptor) = vize_resident::parse_descriptor(filename, source) else {
+    let Some(descriptor) = vize_incremental::parse_descriptor(filename, source) else {
         return Vec::new();
     };
     let Some(template) = descriptor.template.as_ref() else {

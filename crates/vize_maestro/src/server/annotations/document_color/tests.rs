@@ -8,7 +8,7 @@ type FlatColor = (u32, u32, u32, u32, u32, u32, u32);
 fn colors(source: &str) -> Vec<FlatColor> {
     DocumentColorService::colors(
         source,
-        &vize_resident::descriptor::parse_descriptor("/App.vue", source).unwrap(),
+        &vize_incremental::descriptor::parse_descriptor("/App.vue", source).unwrap(),
     )
     .into_iter()
     .map(|info| {
@@ -175,7 +175,7 @@ fn css_escape_whitespace_follows_css_input_preprocessing() {
     assert_eq!(
         DocumentColorService::colors(
             source,
-            &vize_resident::descriptor::parse_descriptor("/App.vue", source).unwrap(),
+            &vize_incremental::descriptor::parse_descriptor("/App.vue", source).unwrap(),
         ),
         vec![ColorInformation {
             range: Range {

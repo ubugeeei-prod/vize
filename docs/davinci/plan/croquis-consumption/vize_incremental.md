@@ -2,9 +2,9 @@
      Regenerate: rust-script tools/commands/davinci/croquis-consumers.rs --write
      Verify:     rust-script tools/commands/davinci/croquis-consumers.rs --check -->
 
-# Croquis consumption: `vize_resident`
+# Croquis consumption: `vize_incremental`
 
-One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize_resident/src`. The method and the product set live on that page.
+One shard of the [Croquis consumption matrix](../croquis-consumption.md): every fact the matrix records about `crates/vize_incremental/src`. The method and the product set live on that page.
 
 ## Resolved product sites
 

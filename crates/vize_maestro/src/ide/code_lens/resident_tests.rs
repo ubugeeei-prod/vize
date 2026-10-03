@@ -4,7 +4,7 @@ use super::CodeLensService;
 use crate::ide::{DocumentLinkService, HoverService, IdeContext};
 use crate::server::ServerState;
 use tower_lsp::lsp_types::{CodeLens, Url};
-use vize_resident::DescriptorStats;
+use vize_incremental::DescriptorStats;
 
 const SFC: &str = "<script setup>\r\nconst count = ref(0)\r\nconst color = 'red'\r\n</script>\r\n<template><p>日本語😀 {{ count }} {{ count }}</p></template>\r\n<style>p { color: v-bind(color); }</style>";
 
@@ -20,7 +20,7 @@ fn assert_stats(state: &ServerState, lookups: u32, parses: u32) {
 }
 
 fn clean(text: &str, uri: &Url) -> Vec<CodeLens> {
-    let descriptor = vize_resident::descriptor::parse_descriptor(uri.path(), text).unwrap();
+    let descriptor = vize_incremental::descriptor::parse_descriptor(uri.path(), text).unwrap();
     CodeLensService::lenses_from_descriptor(&descriptor)
 }
 
