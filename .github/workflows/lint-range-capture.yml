@@ -1,0 +1,68 @@
+name: Lint range capture
+on:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  capture:
+    name: Pinned original nineteen-project lint capture
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 240
+    env:
+      CARGO_TERM_COLOR: always
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - name: Checkout exact capture source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          run-install: false
+          cache: true
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: ./.github/actions/setup-rust-script
+      - uses: ./.github/actions/setup-moonbit
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: lint-original-range-capture
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Verify literal source and nineteen fixture contracts
+        run: node tools/support/ci/lint-range-capture/preflight.ts source "$GITHUB_WORKSPACE" "$GITHUB_SHA"
+      - name: Hydrate only the original nineteen gitlinks
+        shell: bash
+        run: |
+          mapfile -t paths < <(node tools/support/ci/lint-range-capture/preflight.ts paths "$GITHUB_WORKSPACE" "$GITHUB_SHA")
+          test "${#paths[@]}" -eq 19
+          git submodule update --init --depth 1 -- "${paths[@]}"
+      - name: Install the unchanged frozen repository dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build the exact source CLI once
+        run: cargo build --locked --profile ci -p vize
+      - name: Verify installed baseline and compiled CLI
+        run: node tools/support/ci/lint-range-capture/preflight.ts runtime "$GITHUB_WORKSPACE" "$GITHUB_SHA"
+      - name: Capture canonical reporter once with enforced budgets
+        id: producer
+        run: node tools/support/ci/lint-range-capture/run.ts run "$GITHUB_WORKSPACE" "$GITHUB_SHA"
+      - name: Verify complete reports or retain the original partial failure
+        if: ${{ always() }}
+        run: node tools/support/ci/lint-range-capture/reports.ts reports "$GITHUB_WORKSPACE" "$GITHUB_SHA"
+      - name: Emit lossless original reports and failure logs
+        if: ${{ always() }}
+        run: node tools/support/ci/lint-range-capture/frames.ts "$GITHUB_WORKSPACE" "$GITHUB_SHA"
+      - name: Upload every observed report and process record
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: eslint-original-range-capture-${{ github.run_id }}-${{ github.run_attempt }}
+          path: eslint-invalid-range-capture/
+          if-no-files-found: error
+      - name: Preserve the actual original reporter exit
+        if: ${{ always() }}
+        run: node tools/support/ci/lint-range-capture/run.ts exit "$GITHUB_WORKSPACE" "$GITHUB_SHA"

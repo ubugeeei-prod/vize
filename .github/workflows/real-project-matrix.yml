@@ -1,9 +1,13 @@
 name: Real Project Matrix
 run-name: Real Project Matrix @ ${{ github.sha }}
-
 on:
   workflow_dispatch:
     inputs:
+      capture_invalid_lint_ranges:
+        description: "Capture only the original nineteen-project lint findings"
+        required: false
+        default: false
+        type: boolean
       core_tools_mode:
         description: "Core tool surface handling"
         required: false
@@ -61,20 +65,23 @@ on:
   schedule:
     # Weekly full ecosystem sweep. Manual dispatches provide on-demand release evidence.
     - cron: "37 5 * * 0"
-
 concurrency:
-  group: real-project-matrix-${{ github.ref }}
+  group: real-project-matrix-${{ inputs.capture_invalid_lint_ranges && 'lint-range-capture' || 'full' }}-${{ github.ref }}
   cancel-in-progress: true
-
 permissions:
   contents: read
   issues: read
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
+  lint-original-range-capture:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.capture_invalid_lint_ranges }}
+    uses: ./.github/workflows/lint-range-capture.yml
+    permissions:
+      contents: read
   real-project-matrix:
+    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.capture_invalid_lint_ranges }}
     name: real projects (${{ matrix.shard }}/22)
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
@@ -105,7 +112,6 @@ jobs:
       - uses: ./.github/actions/setup-rust-script
       - name: Enable package manager shims
         run: corepack enable
-
       - name: Select and hydrate fixture shard
         shell: bash
         run: |
@@ -122,7 +128,6 @@ jobs:
           mkdir -p "$FIXTURE_REPORT_DIR"
           printf '%s\n' "${fixture_paths[@]}" > "$FIXTURE_REPORT_DIR/selected-fixtures.txt"
           git submodule update --init --depth 1 -- "${fixture_paths[@]}"
-
       - name: Install pinned typecheck baseline dependencies
         id: typecheck_dependencies
         if: ${{ !cancelled() }}
@@ -133,7 +138,6 @@ jobs:
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
             --timeout-ms 600000
-
       - name: Audit formatter waiver owners
         id: waiver_audit
         if: ${{ !cancelled() }}
@@ -143,19 +147,15 @@ jobs:
         run: |
           rust-script tools/commands/fixtures/glyph-corpus-waiver-audit.rs \
             --output "$FIXTURE_REPORT_DIR/glyph-waiver-issues.json"
-
       - uses: ./.github/actions/setup-moonbit
-
       - name: Setup Wild linker
         uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: real-project-matrix-${{ matrix.shard }}
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-
       - name: Install JavaScript dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build Vize CLI
@@ -173,7 +173,6 @@ jobs:
             --vize-bin target/ci/vize \
             --timeout-ms "$CORE_TOOLS_TIMEOUT_MS" \
             --output-dir "$FIXTURE_REPORT_DIR"
-
       - name: Check real-project LSP lifecycle
         id: lsp
         if: ${{ !cancelled() }}
@@ -190,7 +189,6 @@ jobs:
           node --test --test-concurrency=1 \
             tests/tooling/real-project-lsp.test.ts
           test -s "$FIXTURE_REPORT_DIR/lsp-lifecycle-summary.json"
-
       - name: Measure real-project lint divergence
         id: lint_divergence
         if: ${{ !cancelled() }}
@@ -305,6 +303,7 @@ jobs:
           retention-days: 30
 
   davinci-dom-corpus:
+    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.capture_invalid_lint_ranges }}
     name: s2 dom corpus
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
