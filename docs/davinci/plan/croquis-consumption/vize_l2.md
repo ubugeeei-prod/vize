@@ -20,10 +20,10 @@ _None._
 
 | product              | resolved | grep |
 | -------------------- | -------: | ---: |
-| `Scope`              |        0 |   15 |
+| `Scope`              |        0 |   18 |
 | `ScopeBinding`       |        0 |   12 |
-| `ScopeId`            |        0 |   46 |
-| `Span`               |        0 |  494 |
-| `Croquis.bindings`   |        1 |   35 |
+| `ScopeId`            |        0 |   49 |
+| `Span`               |        0 |  505 |
+| `Croquis.bindings`   |        1 |   38 |
 | `Croquis.reactivity` |        0 |    1 |
-| `Croquis.scopes`     |        0 |   22 |
+| `Croquis.scopes`     |        0 |   26 |
