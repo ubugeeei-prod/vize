@@ -158,26 +158,29 @@ fn original_duplicate_case_fixture_refuses_instead_of_losing_parser_advisory() {
     assert!(original.component().carrier().errors.is_empty());
     let reference = tabindex_reference(source, Locale::En);
     assert_eq!(reference, tabindex_reference(source, Locale::En));
-    assert_eq!(reference.len(), 4);
-    assert_eq!(
-        reference[0],
-        serde_json::json!({
-            "rule_name": "parser/template", "severity": "warning",
-            "message": "Duplicate attribute `tabIndex`. Keeping the repeated attribute so parsing can continue.",
-            "start": start, "end": start + 8, "help": null, "labels": [], "fix": null,
-        })
-    );
-    for (finding, attribute) in
-        reference
-            .iter()
-            .skip(1)
-            .zip(["tabindex='1'", "tabIndex='2'", "tabindex='3'"])
-    {
+    let tabindex_warning = |attribute: &str| {
         let start = source.find(attribute).unwrap();
-        assert_eq!(finding["rule_name"], "a11y/tabindex-no-positive");
-        assert_eq!(finding["start"], start);
-        assert_eq!(finding["end"], start + attribute.len());
-    }
+        serde_json::json!({
+            "rule_name": "a11y/tabindex-no-positive", "severity": "warning",
+            "message": "Avoid using positive tabindex values",
+            "start": start, "end": start + attribute.len(),
+            "help": "Use tabindex=\"0\" for focusable elements or tabindex=\"-1\" for programmatic focus only",
+            "labels": [], "fix": null,
+        })
+    };
+    assert_eq!(
+        reference,
+        vec![
+            tabindex_warning("tabindex='1'"),
+            serde_json::json!({
+                "rule_name": "parser/template", "severity": "warning",
+                "message": "Duplicate attribute `tabIndex`. Keeping the repeated attribute so parsing can continue.",
+                "start": start, "end": start + 8, "help": null, "labels": [], "fix": null,
+            }),
+            tabindex_warning("tabIndex='2'"),
+            tabindex_warning("tabindex='3'"),
+        ]
+    );
 }
 
 #[test]

@@ -86,3 +86,12 @@ normalized or removed. A separate valid nested-element fixture verifies three
 ordered full-diagnostic comparisons without a duplicate header. Existing
 image-alt/iframe inputs and equality assertions remain exact. Fresh exact-head
 Actions and protected terminal merge remain required.
+
+The next exact-head Check preserved all thirty other native laws and the
+duplicate refusal, but exposed a wrong oracle order expectation in that new
+control. The unchanged facade sorts complete diagnostics by `(start, end)`:
+the first tabindex warning precedes the repeated-name parser advisory, then
+the second tabindex warning and nested third warning follow. The retained
+original input now asserts that entire four-diagnostic vector in actual order,
+including every message, Help, range, severity, label and fix field. No
+diagnostic is filtered or normalized; source semantics are unchanged.
