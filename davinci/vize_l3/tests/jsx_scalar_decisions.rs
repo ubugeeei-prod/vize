@@ -95,10 +95,9 @@ fn jsx_and_tsx_scalar_body_reads_are_bound_to_the_genuine_original_function_scop
 }
 
 #[test]
-fn scalar_body_support_does_not_admit_compound_expressions_attributes_or_module_initializers()
+fn scalar_body_support_does_not_admit_compound_jsx_expressions_or_attributes()
 -> Result<(), &'static str> {
     for source in [
-        "const x = 1; const view = <div>{x}</div>;",
         "function render(x) { return <div>{x + 1}</div>; }",
         "function render(x) { return <div>{-1}</div>; }",
         "function render(x) { return <div id={x}/>; }",

@@ -23,8 +23,8 @@ const runtimeUrl = url(
       .join("\n"),
 );
 
-export function readPack() {
-  return JSON.parse(fs.readFileSync(fixtureUrl, "utf8"));
+export function readPack(url = fixtureUrl) {
+  return JSON.parse(fs.readFileSync(url, "utf8"));
 }
 
 export function checkVersions(pack) {

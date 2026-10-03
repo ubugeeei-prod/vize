@@ -16,6 +16,8 @@ pub use build::build_jsx_decisions;
 /// A target-neutral role derived from this owner's same-walk syntax record.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JsxDecisionKind<'a> {
+    /// A complete original non-JSX expression, copied without reinterpretation.
+    OriginalExpression,
     Root,
     Element,
     Opening {

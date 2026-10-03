@@ -10,7 +10,21 @@ use vize_l2::resolution::{SyntaxKind as Syntax, Usage};
 pub fn build_jsx_decisions(owner: JsxFile<'_>) -> BuildResult<'_> {
     let mut decisions = Vec::new();
     let mut issues = Vec::new();
+    let mut original_end = 0;
     for node in owner.nodes() {
+        // Only a whole original root with exclusively expression records can
+        // pass through. A JSX descendant or container never acquires this role.
+        if node.parent().is_none()
+            && node
+                .subtree()
+                .all(|child| child.kind().is_some_and(Syntax::is_expression))
+        {
+            original_end = node.index() + node.subtree().len();
+        }
+        if node.index() < original_end {
+            decisions.push(Decision::OriginalExpression);
+            continue;
+        }
         match classify(node) {
             Ok(kind) => decisions.push(kind),
             Err(kind) => {

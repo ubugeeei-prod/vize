@@ -202,10 +202,7 @@ fn equal_source_bytes_and_local_indices_never_authenticate_a_foreign_owner() -> 
 fn unsupported_constructs_refuse_whole_view_and_retain_original_custody() -> LawResult {
     for (source, issue) in [
         ("const view = <><div/></>;", Issue::Fragment),
-        (
-            "const x = 1; const view = <div>{x}</div>;",
-            Issue::Expression,
-        ),
+        ("const view = <div>{1 + 2}</div>;", Issue::Expression),
         (
             "const x = 1; const view = <div {...x}/>;",
             Issue::SpreadAttribute,
@@ -255,19 +252,21 @@ fn unsupported_constructs_refuse_whole_view_and_retain_original_custody() -> Law
 }
 
 #[test]
-fn complete_lower_non_jsx_expressions_do_not_become_script_or_module_admission() -> LawResult {
+fn complete_original_non_jsx_expressions_keep_custody_without_jsx_reinterpretation() -> LawResult {
     let arena = Allocator::default();
     let source = "const before = 1 + 2; const view = <div/>;";
     let owner = lower(&arena, source, SourceType::jsx())?;
     equal(owner.file().is_complete(), true)?;
-    let rejected = build_jsx_decisions(owner).err().required()?;
+    let admitted = build_jsx_decisions(owner).required()?;
     equal(
-        rejected
-            .issues()
-            .iter()
-            .any(|row| row.kind == Issue::Expression),
-        true,
-    )
+        admitted
+            .decisions()
+            .filter(|row| row.kind() == Decision::OriginalExpression)
+            .map(|row| row.node().source().unwrap_or_default())
+            .collect::<Vec<_>>(),
+        vec!["1 + 2", "1", "2"],
+    )?;
+    equal(admitted.owner().file().artifact().source(), source)
 }
 
 #[test]
