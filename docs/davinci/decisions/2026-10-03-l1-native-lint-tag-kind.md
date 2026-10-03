@@ -173,3 +173,21 @@ list and both authentic APIs. No root-text implementation or receipt is copied.
 The semantic provider, complete laws, layouts and costs remain unchanged; fresh
 exact-head proof and prospective merge cleanliness are required after this
 source-preserving coordination change.
+
+The final custody audit preserves additional real pre-mode counterexamples:
+ignored nested form, optional-closing p/li/dt/dd/option/optgroup and self-closing
+nested a/button can retain a different native pre scope from registered parsing.
+The actual header lexer sees the existing live mode before complete-header
+recovery. `header_is_literal` now records that genuine entry mode rather than
+post-truncate mode; no legacy pre value is substituted. A separate authentic
+recovery-context bit retains original authored ancestry at entry and after
+recovery, plus original stack depth at the conservative 4096 bound. Its source
+spelling fence also covers formatting ancestors; it is not a DOM/legacy recovery
+algorithm. New classification-dependent consumers must refuse these headers
+before bindings/facts/lookup; old merged rule admission is unchanged. Four new
+original-entry/ancestry/self-close/depth laws and the expanded disjoint aux law
+preserve every earlier source/assertion and existing Event/Token/OpenTag/Element
+caps. Facts are bundled privately in the same sole event; normal const-false
+constructors omit computation and keep exact bytes and unchanged ceilings.
+Fresh hosted proof is required; the previous semantic table/export heads are
+unadmitted while this genuine custody boundary is repaired.

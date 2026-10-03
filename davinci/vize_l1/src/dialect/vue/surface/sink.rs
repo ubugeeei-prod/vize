@@ -7,7 +7,7 @@ use crate::build::scope::{Frame, Recovery};
 use crate::event::{EventKind, Recorder};
 use crate::markup::entity::DecodedEntity;
 use crate::markup::token::{LexErrorCode, LexMode, QuoteType, Sink};
-use crate::surface::LintTagFact;
+use crate::surface::LintHeaderFact;
 use core::marker::PhantomData;
 
 struct ModeFrame<'a> {
@@ -16,6 +16,7 @@ struct ModeFrame<'a> {
     verbatim: bool,
     exact_pre: bool,
     table_context: bool,
+    recovery_context: bool,
 }
 
 impl<'a> Frame<'a> for ModeFrame<'a> {
@@ -57,10 +58,19 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         }
     }
 
-    fn finish_tag(&mut self, self_closing: bool) -> (bool, Option<LintTagFact>, bool, bool) {
+    fn finish_tag(&mut self, self_closing: bool) -> (bool, LintHeaderFact) {
         let Some(tag) = self.tag.take() else {
-            return (false, None, false, false);
+            return (false, LintHeaderFact::default());
         };
+        // The lexer read this live mode while consuming the actual header,
+        // before complete-header recovery can end an ancestor's scope.
+        let header_literal = P::LINT_TAGS && self.mode() == LexMode::Verbatim;
+        let entry_recovery = P::LINT_TAGS
+            && (self.stack.len() >= 4096
+                || self
+                    .stack
+                    .last()
+                    .is_some_and(|frame| frame.recovery_context));
         let (ns, implicit_depth) = self.recovery.open(&self.stack, tag, self_closing);
         if let Some(depth) = implicit_depth {
             self.stack.truncate(depth);
@@ -72,6 +82,11 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
             P::LINT_TAGS && self.stack.last().is_some_and(|frame| frame.exact_pre);
         let table_context =
             P::LINT_TAGS && self.stack.last().is_some_and(|frame| frame.table_context);
+        let recovery_context = P::LINT_TAGS
+            && self
+                .stack
+                .last()
+                .is_some_and(|frame| frame.recovery_context);
         let (heads, exact_head) = if inherited {
             (HeaderPolicy::default(), false)
         } else {
@@ -97,9 +112,19 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
                 verbatim,
                 exact_pre,
                 table_context: P::LINT_TAGS && (table_context || tag.eq_ignore_ascii_case("table")),
+                recovery_context: P::LINT_TAGS
+                    && (inherited_recovery || recovery_spelling(tag) || self.stack.len() >= 4096),
             });
         }
-        (verbatim, lint_tag, P::LINT_TAGS && inherited, table_context)
+        (
+            verbatim,
+            LintHeaderFact {
+                kind: lint_tag,
+                literal: header_literal,
+                table_context,
+                recovery_context,
+            },
+        )
     }
 
     /// Consume the current tag's existing complete heads after structural
@@ -207,16 +232,10 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
     }
 
     fn on_open_tag_end(&mut self, end: usize) {
-        let (verbatim, lint_tag, header_literal, table_context) = self.finish_tag(false);
+        let (verbatim, facts) = self.finish_tag(false);
         if P::LINT_TAGS {
-            self.recorder.opening_end_with_lint(
-                EventKind::OpenTagEnd,
-                end,
-                verbatim,
-                lint_tag,
-                header_literal,
-                table_context,
-            );
+            self.recorder
+                .opening_end_with_lint(EventKind::OpenTagEnd, end, verbatim, facts);
         } else {
             self.recorder
                 .opening_end(EventKind::OpenTagEnd, end, verbatim);
@@ -224,16 +243,10 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
     }
 
     fn on_self_closing_tag(&mut self, end: usize) {
-        let (verbatim, lint_tag, header_literal, table_context) = self.finish_tag(true);
+        let (verbatim, facts) = self.finish_tag(true);
         if P::LINT_TAGS {
-            self.recorder.opening_end_with_lint(
-                EventKind::SelfClosingTag,
-                end,
-                verbatim,
-                lint_tag,
-                header_literal,
-                table_context,
-            );
+            self.recorder
+                .opening_end_with_lint(EventKind::SelfClosingTag, end, verbatim, facts);
         } else {
             self.recorder
                 .opening_end(EventKind::SelfClosingTag, end, verbatim);
@@ -256,4 +269,14 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
             LexMode::Normal
         }
     }
+}
+
+// A conservative authored-ancestry boundary, not a DOM/legacy recovery algorithm.
+fn recovery_spelling(tag: &str) -> bool {
+    [
+        "p", "form", "a", "button", "li", "dt", "dd", "option", "optgroup", "b", "big", "code",
+        "em", "font", "i", "nobr", "s", "small", "strike", "strong", "tt", "u",
+    ]
+    .iter()
+    .any(|name| tag.eq_ignore_ascii_case(name))
 }

@@ -31,6 +31,7 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
                                 event.lint_tag(),
                                 event.lint_header_is_literal(),
                                 event.lint_in_table_context(),
+                                event.lint_in_recovery_context(),
                             );
                         }
                         event.start as usize
@@ -47,6 +48,7 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
                                 event.lint_tag(),
                                 event.lint_header_is_literal(),
                                 event.lint_in_table_context(),
+                                event.lint_in_recovery_context(),
                             );
                         }
                         event.start as usize

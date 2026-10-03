@@ -24,3 +24,12 @@ impl LintTagFact {
         }
     }
 }
+
+/// Private facts captured together by one original selected opening event.
+#[derive(Default)]
+pub(crate) struct LintHeaderFact {
+    pub kind: Option<LintTagFact>,
+    pub literal: bool,
+    pub table_context: bool,
+    pub recovery_context: bool,
+}

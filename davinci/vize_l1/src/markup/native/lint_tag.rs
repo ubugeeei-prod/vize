@@ -40,6 +40,7 @@ pub struct NativeLintTag<'o, 'a> {
     span: Span,
     header_literal: bool,
     table_context: bool,
+    recovery_context: bool,
 }
 
 impl core::fmt::Debug for NativeLintTag<'_, '_> {
@@ -50,6 +51,7 @@ impl core::fmt::Debug for NativeLintTag<'_, '_> {
             .field("span", &self.span)
             .field("header_literal", &self.header_literal)
             .field("table_context", &self.table_context)
+            .field("recovery_context", &self.recovery_context)
             .finish_non_exhaustive()
     }
 }
@@ -88,6 +90,15 @@ impl<'o, 'a> NativeLintTag<'o, 'a> {
     pub fn in_table_context(&self) -> bool {
         self.table_context
     }
+
+    /// Original authored ancestry whose optional-closing, ignored-start or
+    /// formatting behavior is outside this selected header provider's proof.
+    /// This conservative source fact neither resolves legacy tree recovery nor
+    /// substitutes a legacy inherited pre mode for the actual original mode.
+    #[must_use]
+    pub fn in_recovery_context(&self) -> bool {
+        self.recovery_context
+    }
 }
 
 impl<'o, 'a> NativeElement<'o, 'a> {
@@ -121,6 +132,7 @@ impl<'o, 'a> NativeElement<'o, 'a> {
             span,
             header_literal: element.open.lint_header_is_literal(),
             table_context: element.open.lint_in_table_context(),
+            recovery_context: element.open.lint_in_recovery_context(),
         })
     }
 }

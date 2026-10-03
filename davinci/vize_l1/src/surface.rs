@@ -9,7 +9,7 @@
 use vize_l0::{Box, Vec};
 
 mod lint_tag;
-pub(crate) use lint_tag::LintTagFact;
+pub(crate) use lint_tag::{LintHeaderFact, LintTagFact};
 
 /// Whether a token's syntax is present in the source or a typed hole.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -42,6 +42,7 @@ pub struct Token<'a> {
     lint_tag: Option<LintTagFact>,
     lint_header_literal: bool,
     lint_table_context: bool,
+    lint_recovery_context: bool,
 }
 
 // Keep public diagnostics and dumps independent of private construction facts.
@@ -69,6 +70,7 @@ impl<'a> Token<'a> {
             lint_tag: None,
             lint_header_literal: false,
             lint_table_context: false,
+            lint_recovery_context: false,
         }
     }
 
@@ -83,6 +85,7 @@ impl<'a> Token<'a> {
             lint_tag: None,
             lint_header_literal: false,
             lint_table_context: false,
+            lint_recovery_context: false,
         }
     }
 
@@ -99,10 +102,12 @@ impl<'a> Token<'a> {
         fact: Option<LintTagFact>,
         header_literal: bool,
         table_context: bool,
+        recovery_context: bool,
     ) {
         self.lint_tag = fact;
         self.lint_header_literal = header_literal;
         self.lint_table_context = table_context;
+        self.lint_recovery_context = recovery_context;
     }
 
     pub fn is_missing(&self) -> bool {
@@ -194,6 +199,10 @@ impl OpenTag<'_> {
 
     pub(crate) fn lint_in_table_context(&self) -> bool {
         self.lt_name.lint_table_context
+    }
+
+    pub(crate) fn lint_in_recovery_context(&self) -> bool {
+        self.lt_name.lint_recovery_context
     }
 
     /// The native dialect's resolved lexical mode for this opening tag.

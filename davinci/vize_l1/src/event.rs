@@ -17,7 +17,7 @@ use vize_l0::ErrorCode;
 use vize_l0::Vec;
 
 use crate::parse::SurfaceError;
-use crate::surface::LintTagFact;
+use crate::surface::{LintHeaderFact, LintTagFact};
 
 /// What a tokenizer callback reported. Directive name pieces
 /// (`on_dir_name` / `on_dir_arg` / `on_dir_modifier`) all record as
@@ -120,6 +120,14 @@ impl Event {
         self.aux & 32 != 0
     }
 
+    pub(crate) fn lint_in_recovery_context(&self) -> bool {
+        debug_assert!(matches!(
+            self.kind,
+            EventKind::OpenTagEnd | EventKind::SelfClosingTag
+        ));
+        self.aux & 64 != 0
+    }
+
     pub(crate) fn interpolation_width(&self) -> usize {
         debug_assert!(self.kind == EventKind::Interpolation);
         if self.aux == 3 { 3 } else { 2 }
@@ -173,9 +181,7 @@ impl Recorder<'_, '_> {
         kind: EventKind,
         end: usize,
         verbatim: bool,
-        fact: Option<LintTagFact>,
-        header_is_literal: bool,
-        in_table_context: bool,
+        facts: LintHeaderFact,
     ) {
         debug_assert!(matches!(
             kind,
@@ -184,9 +190,10 @@ impl Recorder<'_, '_> {
         self.events.push(Event {
             kind,
             aux: u8::from(verbatim)
-                | fact.map_or(0, |fact| (fact as u8) << 1)
-                | (u8::from(header_is_literal) << 4)
-                | (u8::from(in_table_context) << 5),
+                | facts.kind.map_or(0, |fact| (fact as u8) << 1)
+                | (u8::from(facts.literal) << 4)
+                | (u8::from(facts.table_context) << 5)
+                | (u8::from(facts.recovery_context) << 6),
             start: end as u32,
             end: end as u32,
         });
