@@ -1,5 +1,5 @@
-use super::{Allocator, NodeId, Op, StaticLevel, TargetPolicy, build_native_dom_file_decisions};
-use super::{check, completed, owner};
+use crate::{Allocator, NodeId, Op, StaticLevel, TargetPolicy, build_native_dom_file_decisions};
+use crate::{check, completed, owner};
 use vize_l0::Span;
 use vize_l2::{lang::js::NativeTemplateIssueKind, op::Namespace, walk::NodeRef};
 use vize_l3::decision::dom::{

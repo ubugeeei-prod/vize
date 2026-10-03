@@ -12,8 +12,9 @@ existing `build_native_dom_file_decisions` consumes that provider's completed
 pipeline; they do not construct a neutral File or pair a separate template
 with one.
 
-The fixture lives in `tests/native_template/element.rs`, registered as an
-ordinary child of the existing `native_template.rs` integration root. It
+The fixture lives in `tests/native_template_cases/element.rs`, registered
+through ordinary `mod native_template_cases` and `mod element` declarations
+below the existing `native_template.rs` integration root. It
 adds no Cargo-discovered helper target, production entry, side table, tree
 walk, pipeline stage or serialization. The root-only historical bounds in
 [the original entry decision](./2026-10-03-l3-original-template-analysis.md)
@@ -71,6 +72,13 @@ on the refreshed public provider. The native Stack, full merge-queue suites,
 unchanged instruction gates and terminal merge are still required; cached
 libraries and previous provider results grant no execution credit to these
 new laws. The paired issue decision is published with that child.
+
+The first child campaign at `22f1bf50d0` compiles successfully but rejects
+the original path-attributed module in the existing module-layout gate.
+The unchanged law body moves in a move-only commit; ordinary module
+discovery replaces the path attribute without a gate exception or new
+Cargo-discovered test target. The failed campaign remains failed, and the
+corrected child requires fresh exact-head Actions.
 
 No native output, complete module/map/runtime comparison, target or product
 acceptance credit is added. Element headers, operands, decoded text,
