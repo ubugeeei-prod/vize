@@ -30,6 +30,13 @@ unknown browser normalization is never silently admitted by changing the oracle
 options. L4 must encode text/attributes once and prove the real Vue 3.6.0-rc.9
 runtime, independently of the DOM/SSR lanes' Vue 3.5.35 authority.
 
+Root text beginning with `<` refuses in the same shared walk: the actual static
+runtime template helper treats that spelling as markup. Ordinary root text uses
+the helper's raw text branch so hydration adopts the server Text correctly;
+direct `createTextNode` mounted correctly but detached text during hydration and
+failed on unmount in the pinned runtime. This target-specific boundary does not
+change neutral text or any other target's facts.
+
 `NativeVaporFileAnalysis` privately retains one completed immutable File and
 derives its only artifact internally. Incomplete/interrupted files fail before
 the walk. Root lookup checks actual ownership in constant time; equal node IDs

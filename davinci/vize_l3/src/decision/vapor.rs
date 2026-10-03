@@ -25,6 +25,7 @@ pub enum VaporUnsupported {
     AttributeSemantics,
     DuplicateAttribute,
     TextNormalization,
+    RootTextMarkup,
     UnsafeComment,
     Binding,
 }

@@ -56,6 +56,9 @@ impl<'owner, 'arena> VaporBuilder<'owner, 'arena> {
                 (Some(element.as_ref()), void)
             }
             Op::Text(text) => {
+                if root && text.content.starts_with('<') {
+                    self.reject(node, span, VaporUnsupported::RootTextMarkup);
+                }
                 // These decoded bytes are stable under both Vue's default
                 // condense policy and the current native preserve policy.
                 if text.content.is_empty()
@@ -99,7 +102,7 @@ impl<'owner, 'arena> VaporBuilder<'owner, 'arena> {
         if element.namespace != Namespace::Html {
             self.reject(node, element.span, VaporUnsupported::Namespace);
         }
-        // No raw-text, RCDATA, formatting adoption, table/select/p paragraph
+        // No raw-text, RCDATA, table/select/p paragraph
         // recovery, custom-element, component or foreign-tree semantics.
         if !matches!(
             element.tag,
