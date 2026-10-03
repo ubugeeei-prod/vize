@@ -90,7 +90,6 @@ impl<'o, 'a> NativeVueCheck<'o, 'a> {
         &self.project
     }
     /// Every primary diagnostic has one authored span or a typed mapping refusal.
-    #[must_use]
     pub fn authored_spans(&self) -> &[Result<Span, MappingError>] {
         &self.authored_spans
     }
