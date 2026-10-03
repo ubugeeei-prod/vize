@@ -11,6 +11,7 @@ use vize_l0::Span;
 use crate::expr::JsExpr;
 
 mod for_head;
+mod handler;
 pub(crate) mod sink;
 mod syntax;
 pub use syntax::{SyntaxEdge, SyntaxKind};
@@ -19,6 +20,11 @@ mod walk;
 pub use for_head::{
     ForAlias, ForAliasDeclaration, ForAliasId, ForAliasRole, ForResolution, ForResolutionError,
     ForResolutionErrorKind, ForResolvedBinding, RejectedForResolution, resolve_for_head,
+};
+pub use handler::{
+    HandlerBinding, HandlerBindingRef, HandlerDeclaration, HandlerDeclarationKind, HandlerLocalId,
+    HandlerReference, HandlerResolution, HandlerScope, HandlerScopeId, RejectedHandlerResolution,
+    resolve_handler,
 };
 
 /// A binding identity supplied by the owning compile unit's binder.

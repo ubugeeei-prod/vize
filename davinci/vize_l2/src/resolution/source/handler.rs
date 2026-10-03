@@ -44,12 +44,16 @@ impl<'h, 'a> HandlerReferenceSource<'h, 'a> {
     /// Only the original parser's generated prefix is removed. UTF-8 boundaries
     /// and the complete original decoded window are checked before projection.
     pub(crate) fn decoded_span(&self, span: oxc_span::Span) -> Result<Span, SourceError> {
+        self.coordinates()
+            .span(span)
+            .ok_or(SourceError::InvalidDecodedSpan)
+    }
+
+    pub(in crate::resolution) fn coordinates(&self) -> ReferenceSource<'a> {
         ReferenceSource::Handler {
             text: self.owner.source().text(),
             prefix: self.owner.parser_prefix(),
         }
-        .span(span)
-        .ok_or(SourceError::InvalidDecodedSpan)
     }
 
     pub(crate) fn authored_span(&self, span: oxc_span::Span) -> Result<Span, SourceError> {

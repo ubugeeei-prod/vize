@@ -9,16 +9,17 @@ use crate::expr::JsExpr;
 mod budget;
 mod compound;
 mod for_head;
+mod handler;
 mod jsx;
 #[cfg(test)]
 mod syntax_tests;
 mod values;
 pub(super) use for_head::original as original_for_head;
+pub(super) use handler::handler_body;
 
 use super::sink::{ReferenceEvent, ReferenceSink};
 use super::source::ReferenceSource;
-use super::{ResolutionError, ResolutionErrorKind, Usage};
-use super::{SyntaxEdge, SyntaxKind};
+use super::{ResolutionError, ResolutionErrorKind, SyntaxEdge, SyntaxKind, Usage};
 
 pub(super) fn expression<'a>(
     expression: &JsExpr<'a>,
