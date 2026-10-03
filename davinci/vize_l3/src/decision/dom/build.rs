@@ -18,6 +18,7 @@ mod binding;
 mod control;
 mod dependencies;
 mod file;
+mod handler;
 use super::vue::policy::FileReads;
 
 pub(in crate::decision) struct DomBuilder<'facts, 'owner, 'arena, F, R> {
@@ -64,6 +65,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
                 controls: SideTable::new(),
                 dependencies: Vec::new(),
                 file_expressions: SideTable::new(),
+                file_handlers: SideTable::new(),
                 vue_expressions: SideTable::new(),
                 unsupported: Vec::new(),
             },

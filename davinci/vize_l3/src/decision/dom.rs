@@ -15,11 +15,13 @@ mod context;
 pub mod control;
 mod dependencies;
 mod file;
+mod handler;
 pub mod vue;
 
 pub use context::ContextOnly;
 pub use dependencies::DomDependency;
 pub use file::{DomFileExpression, NativeFileAnalysis, build_dom_file_decisions};
+pub use handler::DomFileHandler;
 
 /// A complete expression's references all have explicitly declared context bindings.
 ///
@@ -58,6 +60,7 @@ pub enum DomUnsupported {
     ConditionalCondition,
     ConditionalRoot,
     FileExpression,
+    FileHandler,
     FileScope,
     FileBinding,
     VueReadAccess,
@@ -183,6 +186,7 @@ pub struct DomFacts<'owner, 'arena> {
     pub(super) controls: SideTable<control::DomConditional<'owner, 'arena>>,
     pub(super) dependencies: Vec<DomDependency>,
     pub(super) file_expressions: SideTable<DomFileExpression<'owner, 'arena>>,
+    pub(super) file_handlers: SideTable<DomFileHandler<'owner, 'arena>>,
     pub(super) vue_expressions: SideTable<vue::VueRenderExpression<'owner, 'arena>>,
     pub(super) unsupported: Vec<DomRejection>,
 }
@@ -219,6 +223,13 @@ impl<'owner, 'arena> DomFacts<'owner, 'arena> {
     #[must_use]
     pub fn file_expression(&self, id: NodeId) -> Option<&DomFileExpression<'owner, 'arena>> {
         self.file_expressions.get(id)
+    }
+
+    /// The whole same-File handler observed at this owner's actual On event.
+    /// This row alone supplies no Vue inline/reference or runtime access policy.
+    #[must_use]
+    pub fn file_handler(&self, id: NodeId) -> Option<&DomFileHandler<'owner, 'arena>> {
+        self.file_handlers.get(id)
     }
 
     #[must_use]

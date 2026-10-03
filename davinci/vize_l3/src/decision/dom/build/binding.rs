@@ -13,6 +13,11 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
 {
     pub(in crate::decision) fn binding(&mut self, id: NodeId, binding: &'owner BindingOp<'arena>) {
         let span = NodeRef::Binding(binding).span();
+        if let BindingOp::On(on) = binding {
+            // Whole-handler custody is retained even while runtime semantics
+            // remain refused by the existing bounded target policy below.
+            self.record_handler(id, on);
+        }
         let BindingOp::Bind(bind) = binding else {
             self.reject(id, span, DomUnsupported::Binding);
             return;

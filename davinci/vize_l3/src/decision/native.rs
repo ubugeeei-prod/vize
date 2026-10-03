@@ -2,7 +2,7 @@
 
 use super::{
     DecisionBuildError, DecisionTables, NativeFileAnalysis, build_dom_file_decisions,
-    dom::{DomFacts, DomFileExpression},
+    dom::{DomFacts, DomFileExpression, DomFileHandler},
     policy::TargetPolicy,
 };
 use vize_l0::id::NodeId;
@@ -93,6 +93,13 @@ impl<'owner, 'arena> NativeTemplateDomAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn expression(&self, node: NodeId) -> Option<&DomFileExpression<'owner, 'arena>> {
         self.dom()?.file_expression(node)
+    }
+
+    /// Whole handler custody observed at this original File's actual On event.
+    /// Runtime inline/reference classification remains a separate prerequisite.
+    #[must_use]
+    pub fn handler(&self, node: NodeId) -> Option<&DomFileHandler<'owner, 'arena>> {
+        self.dom()?.file_handler(node)
     }
 }
 
