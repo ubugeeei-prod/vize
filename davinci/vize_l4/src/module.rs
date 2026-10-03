@@ -93,6 +93,7 @@ impl<'a, L: LinkSink> ModuleParts<'a, L> {
 }
 
 mod imports;
+pub mod setup;
 #[cfg(test)]
 mod template_tests;
 

@@ -1,0 +1,318 @@
+{
+  "schema": "vize.native-sfc.js-setup-dom-reference",
+  "compiler": {
+    "package": "@vue/compiler-sfc",
+    "version": "3.5.35"
+  },
+  "runtime": {
+    "package": "vue",
+    "version": "3.5.35"
+  },
+  "native": {
+    "adapter": "vize_atelier_sfc::compile_native_sfc",
+    "captureArtifact": "native-js-setup-whole-modules-v1",
+    "captureSha256": "bea8af839a5d032103154cba03789875b5d2ed7c53f4d4af4c87e42293bda2f7"
+  },
+  "fixtures": [
+    {
+      "bindings": ["count"],
+      "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=1\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString($setup.count), 1 /* TEXT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "id": "mutable-count",
+      "nativeMap": {
+        "file": "Setup雪🌸.vue",
+        "mappings": ";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA0B,mCAAA,4BAAKA",
+        "names": ["count"],
+        "sources": ["Setup雪🌸.vue"],
+        "sourcesContent": [
+          "<script setup>let count=1</script><template><p>{{count}}</p></template>"
+        ],
+        "version": 3
+      },
+      "script": "let count=1",
+      "source": "<script setup>let count=1</script><template><p>{{count}}</p></template>",
+      "template": "<p>{{count}}</p>",
+      "referenceScript": "\nconst _sfc_main = {\n  __name: 'Setup雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=1\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+      "referenceRender": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString($setup.count), 1 /* TEXT */))\n}",
+      "updates": {
+        "count": 4
+      },
+      "runtime": [
+        {
+          "type": "p",
+          "props": {},
+          "children": "1",
+          "patchFlag": 1
+        },
+        {
+          "type": "p",
+          "props": {},
+          "children": "4",
+          "patchFlag": 1
+        }
+      ]
+    },
+    {
+      "bindings": ["message"],
+      "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\n/* 雪🌸 */\nvar message='雪🌸'; // retained end\n;\n    const __returned__ = {\n      get message() { return message },\n      set message(__value) { message = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString($setup.message), 1 /* TEXT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "id": "unicode-var-comment",
+      "nativeMap": {
+        "file": "Setup雪🌸.vue",
+        "mappings": ";;;;AAAc;;;;UACVA,mBAAAA;UAAAA,mBAAAA;;;;;;;;SAAiD,mCAAA,4BAAMA",
+        "names": ["message"],
+        "sources": ["Setup雪🌸.vue"],
+        "sourcesContent": [
+          "<script setup>/* 雪🌸 */\nvar message='雪🌸'; // retained end</script><template><p>{{ message }}</p></template>"
+        ],
+        "version": 3
+      },
+      "script": "/* 雪🌸 */\nvar message='雪🌸'; // retained end",
+      "source": "<script setup>/* 雪🌸 */\nvar message='雪🌸'; // retained end</script><template><p>{{ message }}</p></template>",
+      "template": "<p>{{ message }}</p>",
+      "referenceScript": "\nconst _sfc_main = {\n  __name: 'Setup雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\n/* 雪🌸 */\nvar message='雪🌸'; // retained end\nconst __returned__ = { get message() { return message }, set message(v) { message = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+      "referenceRender": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString($setup.message), 1 /* TEXT */))\n}",
+      "updates": {
+        "message": "春🌸"
+      },
+      "runtime": [
+        {
+          "type": "p",
+          "props": {},
+          "children": "雪🌸",
+          "patchFlag": 1
+        },
+        {
+          "type": "p",
+          "props": {},
+          "children": "春🌸",
+          "patchFlag": 1
+        }
+      ]
+    },
+    {
+      "bindings": ["yes", "nil", "huge", "text", "number"],
+      "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet yes=true,nil=null,huge=2n;var text='雪🌸',number=1.5;\n;\n    const __returned__ = {\n      get yes() { return yes },\n      set yes(__value) { yes = __value },\n      get nil() { return nil },\n      set nil(__value) { nil = __value },\n      get huge() { return huge },\n      set huge(__value) { huge = __value },\n      get text() { return text },\n      set text(__value) { text = __value },\n      get number() { return number },\n      set number(__value) { number = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString($setup.yes) + \" \" + _toDisplayString($setup.nil) + \" \" + _toDisplayString($setup.huge) + \" \" + _toDisplayString($setup.text) + \" \" + _toDisplayString($setup.number), 1 /* TEXT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "id": "all-primitives",
+      "nativeMap": {
+        "file": "Setup雪🌸.vue",
+        "mappings": ";;;;AAAc;;;UAAIA,eAAAA;UAAAA,eAAAA;UAASC,eAAAA;UAAAA,eAAAA;UAASC,gBAAAA;UAAAA,gBAAAA;UAAYC,gBAAAA;UAAAA,gBAAAA;UAAWC,kBAAAA;UAAAA,kBAAAA;;;;;;;;SAA8B,mCAAA,4BAAKJ,cAAK,uBAAGC,cAAK,uBAAGC,eAAM,uBAAGC,eAAM,uBAAGC",
+        "names": ["yes", "nil", "huge", "text", "number"],
+        "sources": ["Setup雪🌸.vue"],
+        "sourcesContent": [
+          "<script setup>let yes=true,nil=null,huge=2n;var text='雪🌸',number=1.5;</script><template><p>{{yes}} {{nil}} {{huge}} {{text}} {{number}}</p></template>"
+        ],
+        "version": 3
+      },
+      "script": "let yes=true,nil=null,huge=2n;var text='雪🌸',number=1.5;",
+      "source": "<script setup>let yes=true,nil=null,huge=2n;var text='雪🌸',number=1.5;</script><template><p>{{yes}} {{nil}} {{huge}} {{text}} {{number}}</p></template>",
+      "template": "<p>{{yes}} {{nil}} {{huge}} {{text}} {{number}}</p>",
+      "referenceScript": "\nconst _sfc_main = {\n  __name: 'Setup雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet yes=true,nil=null,huge=2n;var text='雪🌸',number=1.5;\nconst __returned__ = { get yes() { return yes }, set yes(v) { yes = v }, get nil() { return nil }, set nil(v) { nil = v }, get huge() { return huge }, set huge(v) { huge = v }, get text() { return text }, set text(v) { text = v }, get number() { return number }, set number(v) { number = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+      "referenceRender": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString($setup.yes) + \" \" + _toDisplayString($setup.nil) + \" \" + _toDisplayString($setup.huge) + \" \" + _toDisplayString($setup.text) + \" \" + _toDisplayString($setup.number), 1 /* TEXT */))\n}",
+      "updates": {
+        "yes": false,
+        "text": "春",
+        "number": 3.25
+      },
+      "runtime": [
+        {
+          "type": "p",
+          "props": {},
+          "children": "true  2 雪🌸 1.5",
+          "patchFlag": 1
+        },
+        {
+          "type": "p",
+          "props": {},
+          "children": "false  2 春 3.25",
+          "patchFlag": 1
+        }
+      ]
+    },
+    {
+      "bindings": ["count"],
+      "code": "import { toDisplayString as _toDisplayString } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet \\u0063ount=7;\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _toDisplayString($setup.count)\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "id": "escaped-binding",
+      "nativeMap": {
+        "file": "Setup雪🌸.vue",
+        "mappings": ";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;0BAAmCA",
+        "names": ["count"],
+        "sources": ["Setup雪🌸.vue"],
+        "sourcesContent": [
+          "<script setup>let \\u0063ount=7;</script><template>{{ count }}</template>"
+        ],
+        "version": 3
+      },
+      "script": "let \\u0063ount=7;",
+      "source": "<script setup>let \\u0063ount=7;</script><template>{{ count }}</template>",
+      "template": "{{ count }}",
+      "referenceScript": "\nconst _sfc_main = {\n  __name: 'Setup雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet \\u0063ount=7;\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+      "referenceRender": "import { toDisplayString as _toDisplayString } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _toDisplayString($setup.count)\n}",
+      "updates": {
+        "count": 8
+      },
+      "runtime": [
+        {
+          "type": "text",
+          "props": {},
+          "children": "7",
+          "patchFlag": 0
+        },
+        {
+          "type": "text",
+          "props": {},
+          "children": "8",
+          "patchFlag": 0
+        }
+      ]
+    },
+    {
+      "bindings": [],
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\n/* owned */;;;\n;\n    const __returned__ = {\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, \"ready\"))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "id": "empty-statements",
+      "nativeMap": {
+        "file": "Setup雪🌸.vue",
+        "mappings": ";;;;AAAc;;;;;;;;;;SAAiC,mCAAA,WAAG",
+        "names": [],
+        "sources": ["Setup雪🌸.vue"],
+        "sourcesContent": [
+          "<script setup>/* owned */;;;</script><template><p>ready</p></template>"
+        ],
+        "version": 3
+      },
+      "script": "/* owned */;;;",
+      "source": "<script setup>/* owned */;;;</script><template><p>ready</p></template>",
+      "template": "<p>ready</p>",
+      "referenceScript": "\nconst _sfc_main = {\n  __name: 'Setup雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\n/* owned */;;;\nconst __returned__ = {  }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+      "referenceRender": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, \"ready\"))\n}",
+      "updates": {},
+      "runtime": [
+        {
+          "type": "p",
+          "props": {},
+          "children": "ready",
+          "patchFlag": 0
+        },
+        {
+          "type": "p",
+          "props": {},
+          "children": "ready",
+          "patchFlag": 0
+        }
+      ]
+    },
+    {
+      "bindings": ["message"],
+      "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\n;var message='x';;\n// final script comment\n;\n    const __returned__ = {\n      get message() { return message },\n      set message(__value) { message = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { title: $setup.message }, _toDisplayString($setup.message), 9 /* TEXT, PROPS */, [\"title\"]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "id": "separate-line-comment",
+      "nativeMap": {
+        "file": "Setup雪🌸.vue",
+        "mappings": ";;;;AAAc;;;;UAAKA,mBAAAA;UAAAA,mBAAAA;;;;;;;;SACuB,mCAAA,SAAK,OAAQA,mCAAWA,uCAAnB",
+        "names": ["message"],
+        "sources": ["Setup雪🌸.vue"],
+        "sourcesContent": [
+          "<script setup>;var message='x';;\n// final script comment</script><template><div :title=\"message\">{{message}}</div></template>"
+        ],
+        "version": 3
+      },
+      "script": ";var message='x';;\n// final script comment",
+      "source": "<script setup>;var message='x';;\n// final script comment</script><template><div :title=\"message\">{{message}}</div></template>",
+      "template": "<div :title=\"message\">{{message}}</div>",
+      "referenceScript": "\nconst _sfc_main = {\n  __name: 'Setup雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\n;var message='x';;\n// final script comment\nconst __returned__ = { get message() { return message }, set message(v) { message = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+      "referenceRender": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { title: $setup.message }, _toDisplayString($setup.message), 9 /* TEXT, PROPS */, [\"title\"]))\n}",
+      "updates": {
+        "message": "changed"
+      },
+      "runtime": [
+        {
+          "type": "div",
+          "props": {
+            "title": "x"
+          },
+          "children": "x",
+          "patchFlag": 9
+        },
+        {
+          "type": "div",
+          "props": {
+            "title": "changed"
+          },
+          "children": "changed",
+          "patchFlag": 9
+        }
+      ]
+    },
+    {
+      "bindings": ["message"],
+      "code": "import { toDisplayString as _toDisplayString } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\n\nlet message='ok';// original\n\n;\n    const __returned__ = {\n      get message() { return message },\n      set message(__value) { message = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _toDisplayString($setup.message)\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "id": "script-after-template",
+      "nativeMap": {
+        "file": "Setup雪🌸.vue",
+        "mappings": ";;;;AACc;;;;;UACVA,mBAAAA;UAAAA,mBAAAA;;;;;;;;0BAFSA",
+        "names": ["message"],
+        "sources": ["Setup雪🌸.vue"],
+        "sourcesContent": [
+          "<template>{{ message }}</template>\n<script setup>\nlet message='ok';// original\n</script>"
+        ],
+        "version": 3
+      },
+      "script": "\nlet message='ok';// original\n",
+      "source": "<template>{{ message }}</template>\n<script setup>\nlet message='ok';// original\n</script>",
+      "template": "{{ message }}",
+      "referenceScript": "\nconst _sfc_main = {\n  __name: 'Setup雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nlet message='ok';// original\n\nconst __returned__ = { get message() { return message }, set message(v) { message = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+      "referenceRender": "import { toDisplayString as _toDisplayString } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _toDisplayString($setup.message)\n}",
+      "updates": {
+        "message": "done"
+      },
+      "runtime": [
+        {
+          "type": "text",
+          "props": {},
+          "children": "ok",
+          "patchFlag": 0
+        },
+        {
+          "type": "text",
+          "props": {},
+          "children": "done",
+          "patchFlag": 0
+        }
+      ]
+    },
+    {
+      "bindings": ["日本語"],
+      "code": "import { toDisplayString as _toDisplayString } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet 日本語='雪';\n;\n    const __returned__ = {\n      get 日本語() { return 日本語 },\n      set 日本語(__value) { 日本語 = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _toDisplayString(/*keep*/ $setup.日本語)\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "id": "unicode-binding",
+      "nativeMap": {
+        "file": "Setup雪🌸.vue",
+        "mappings": ";;;;AAAc;;;UAAIA,eAAAA;UAAAA,eAAAA;;;;;;;;0BAA8B,SAASA",
+        "names": ["日本語"],
+        "sources": ["Setup雪🌸.vue"],
+        "sourcesContent": [
+          "<script setup>let 日本語='雪';</script><template>{{ /*keep*/ 日本語 }}</template>"
+        ],
+        "version": 3
+      },
+      "script": "let 日本語='雪';",
+      "source": "<script setup>let 日本語='雪';</script><template>{{ /*keep*/ 日本語 }}</template>",
+      "template": "{{ /*keep*/ 日本語 }}",
+      "referenceScript": "\nconst _sfc_main = {\n  __name: 'Setup雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet 日本語='雪';\nconst __returned__ = { get 日本語() { return 日本語 }, set 日本語(v) { 日本語 = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+      "referenceRender": "import { toDisplayString as _toDisplayString } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _toDisplayString(/*keep*/ $setup.日本語)\n}",
+      "updates": {
+        "日本語": "春"
+      },
+      "runtime": [
+        {
+          "type": "text",
+          "props": {},
+          "children": "雪",
+          "patchFlag": 0
+        },
+        {
+          "type": "text",
+          "props": {},
+          "children": "春",
+          "patchFlag": 0
+        }
+      ]
+    }
+  ]
+}

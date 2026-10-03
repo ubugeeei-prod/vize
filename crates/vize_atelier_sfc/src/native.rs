@@ -1,4 +1,4 @@
-//! Explicit native SFC product entry for the bounded scriptless DOM family.
+//! Explicit native SFC product entry for bounded scriptless and JS setup DOM.
 //!
 //! Original descriptor, syntax, diagnostics and partial File owners are always
 //! retained. Admission and target refusals never select a legacy compiler.
@@ -7,15 +7,25 @@ use vize_l0::{
     Allocator, Span, String,
     config::{VueDialect, VueVersion},
 };
-use vize_l1::{SurfaceParseOptions, container::vue::DescriptorOptions};
+use vize_l1::{
+    SurfaceParseOptions,
+    container::vue::{DescriptorOptions, ScriptRole},
+    embed::Lang,
+};
 use vize_l1_to_l2::native_file::{NativeSfcObservation, lower_sfc_native};
+use vize_l2::lang::js::SetupIssue;
 use vize_l3::decision::{DecisionBuildError, build_dom_file_decisions};
 use vize_l4::{
-    module::{AssemblyError, ModuleParts, RenderPlacement, RenderProperty, assemble},
+    module::{
+        AssemblyError, ModuleParts, RenderPlacement, RenderProperty, assemble,
+        setup::{COMPONENT_BINDING, SetupEmitError},
+    },
     runtime::Runtime,
     targets::dom::{DomError, emit_file},
     write::{EmitDocument, LinkSink, NoLinks, Recorded},
 };
+
+mod setup;
 
 /// Explicit native parsing/runtime policy; unsupported values remain refusals.
 #[derive(Debug, Clone, Copy)]
@@ -47,6 +57,8 @@ pub enum NativeSfcCompileError {
     ExternalBlock { container_index: usize, span: Span },
     Descriptor,
     ScriptCompilationUnavailable { container_index: usize, span: Span },
+    ScriptSetup(SetupIssue),
+    SetupEmission(SetupEmitError),
     MissingTemplate,
     Orchestration,
     Analysis(DecisionBuildError),
@@ -113,7 +125,8 @@ impl<'a> NativeSfcCompilation<'a> {
 /// Compile through the genuine admitted SFC/File, L3 and L4 owner chain.
 ///
 /// This additive entry supports scriptless static structure and retained
-/// literals. Scripts, macros, styles, custom/external blocks, unsupported
+/// literals, and original JS setup let/var primitive declarations plus empty
+/// statements. Other scripts, macros, styles, custom/external blocks, unsupported
 /// profiles and unavailable native target semantics return typed refusals.
 /// Every original observation survives, and no partial module is returned.
 #[must_use]
@@ -162,7 +175,17 @@ fn emit<L: LinkSink>(
         .descriptor()
         .admitted()
         .map_err(|_| NativeSfcCompileError::Descriptor)?;
-    if let Some(script) = observation.scripts().first() {
+    if let Some(script) = observation.scripts().first()
+        && (observation.scripts().len() != 1
+            || script.role() != ScriptRole::Setup
+            || script.lang() != Lang::Js
+            || observation.admitted().is_none()
+            || !script.syntax().is_some_and(|syntax| {
+                syntax
+                    .admitted_program()
+                    .is_some_and(|program| !program.program().body.is_empty())
+            }))
+    {
         return Err(NativeSfcCompileError::ScriptCompilationUnavailable {
             container_index: script.container_index(),
             span: script.block().span(),
@@ -174,11 +197,16 @@ fn emit<L: LinkSink>(
     let admitted = observation
         .admitted()
         .ok_or(NativeSfcCompileError::Orchestration)?;
-    let mut parts = ModuleParts::for_runtime(Runtime::VueDom, options.runtime_version, "_sfc_main")
-        .map_err(NativeSfcCompileError::Assembly)?;
-    let analysis = build_dom_file_decisions(admitted.file().file())
-        .map_err(NativeSfcCompileError::Analysis)?;
-    parts.render = Some(emit_file::<L>(&analysis).map_err(NativeSfcCompileError::Dom)?);
+    let mut parts =
+        ModuleParts::for_runtime(Runtime::VueDom, options.runtime_version, COMPONENT_BINDING)
+            .map_err(NativeSfcCompileError::Assembly)?;
+    if observation.scripts().is_empty() {
+        let analysis = build_dom_file_decisions(admitted.file().file())
+            .map_err(NativeSfcCompileError::Analysis)?;
+        parts.render = Some(emit_file::<L>(&analysis).map_err(NativeSfcCompileError::Dom)?);
+    } else {
+        setup::emit(&admitted, &mut parts)?;
+    }
     parts.placement = RenderPlacement::Function {
         binding: "render",
         property: RenderProperty::Render,
