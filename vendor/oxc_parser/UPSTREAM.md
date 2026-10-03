@@ -26,7 +26,6 @@ Failed type-argument and arrow probes share the existing table with disjoint
 one-word keys, avoiding another table initialization/drop for ordinary parses.
 The type-argument key retains all grammar-context bits.
 
-
 Vize publishes this unofficial fork as `vize_oxc_parser`, synchronized with the
 Vize workspace version. Its Rust library remains `oxc_parser`, and consumers
 use a direct `path` plus exact `version` dependency with the `package` alias.

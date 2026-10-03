@@ -26,7 +26,9 @@ async fn run_app() -> Int {
   if args.length() == 4 && args[0] == "--print-workspace-manifest-update" {
     match @tool.read_file_to_string(args[1]) {
       Some(content) => {
-        @stdio.stdout.write(update_workspace_manifest_versions(content, args[2], args[3]))
+        @stdio.stdout.write(
+          update_workspace_manifest_versions(content, args[2], args[3]),
+        )
         return 0
       }
       None => return 1

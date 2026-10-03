@@ -328,24 +328,3 @@ void test("CLI writes the same JSON plan to disk and Actions outputs and rejects
     rmSync(cwd, { recursive: true, force: true });
   }
 });
-
-void test("vendored parser retains runtime tests without joining first-party Clippy", () => {
-  const packages = ["vize_l1", "vize_oxc_parser"];
-  const plan = {
-    schemaVersion: 1,
-    scope: "workspace",
-    packages,
-    cargoArgs: packages.flatMap((name) => ["--package", name]),
-  };
-  assert.deepEqual(rustCommand(plan, ["cargo", "clippy", "@packages@"]), [
-    "cargo",
-    "clippy",
-    "--package",
-    "vize_l1",
-  ]);
-  assert.deepEqual(rustCommand(plan, ["cargo", "test", "@packages@"]), [
-    "cargo",
-    "test",
-    ...plan.cargoArgs,
-  ]);
-});

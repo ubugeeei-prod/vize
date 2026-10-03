@@ -15,7 +15,10 @@ fn write_string_to_file(path : String, content : String) -> Bool {
 
 fn crate_manifest_path(crate_name : String) -> String {
   if crate_name == "vize_oxc_parser" {
-    return @tool.join_path(@tool.join_path("vendor", "oxc_parser"), "Cargo.toml")
+    return @tool.join_path(
+      @tool.join_path("vendor", "oxc_parser"),
+      "Cargo.toml",
+    )
   }
   let native = @tool.join_path(@tool.join_path("davinci", crate_name), "Cargo.toml")
   if @tool.path_exists(native) {
