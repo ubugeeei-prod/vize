@@ -63,7 +63,7 @@ test("source planning installs the declared Node runtime before TypeScript impor
   );
 });
 
-test("selected PR tooling regenerates its plan while merge tooling retains the full receipt path", () => {
+test("every isolated tooling runner regenerates its tier and retains the full merge receipt path", () => {
   const job = source.jobs["pr-tooling-scripts"];
   assert.equal(job.strategy?.["fail-fast"], false);
   assert.equal(
@@ -71,17 +71,22 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
     "${{ fromJSON(needs.pr-source-plan.outputs.tooling-matrix) }}",
   );
   const steps = job.steps ?? [];
-  const regenerate = steps.findIndex((step) => step.name === "Regenerate PR tooling plan");
+  const regenerate = steps.findIndex((step) => step.name === "Regenerate tooling plan");
   const build = steps.findIndex((step) => step.name === "Build and install vize CLI");
   const selected = steps.findIndex((step) => step.name === "Test selected PR tooling scripts");
   const full = steps.findIndex((step) => step.name === "Test tooling scripts");
   assert.ok(regenerate >= 0 && regenerate < build && build < selected && selected < full);
-  for (const step of [steps[regenerate], steps[selected]]) {
+  for (const step of [steps[selected]]) {
     assert.equal(
       step.if,
       "${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}",
     );
   }
+  assert.equal(steps[regenerate].if, "${{ needs.pr-source-plan.outputs.tooling == 'true' }}");
+  assert.equal(
+    steps[regenerate].env?.TOOLING_TIER,
+    "${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}",
+  );
   assert.equal(
     steps[regenerate].env?.BASE_SHA,
     "${{ needs.pr-source-plan.outputs.comparison-base }}",
@@ -89,7 +94,7 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
   assert.match(steps[regenerate].run ?? "", /git fetch --no-tags --depth=1 origin "\$BASE_SHA"/);
   assert.match(
     steps[regenerate].run ?? "",
-    /--tier pr --output "\$RUNNER_TEMP\/tooling-plan\.json"/,
+    /--tier "\$TOOLING_TIER" --output "\$RUNNER_TEMP\/tooling-plan\.json"/,
   );
   assert.equal(steps[selected].env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
   assert.equal(
@@ -105,9 +110,15 @@ test("selected PR tooling regenerates its plan while merge tooling retains the f
     steps[full].if,
     "${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}",
   );
-  assert.equal(steps[full].run, "vp run --workspace-root test:scripts");
+  assert.equal(steps[full].run, "vp run --workspace-root test:scripts:planned");
   assert.equal(steps[full].env?.SOURCE_LENGTH_BASE_REF, undefined);
-  assert.equal(steps[full].env?.VIZE_TOOLING_TEST_SHARD, undefined);
+  assert.equal(steps[full].env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
+  assert.equal(
+    steps[full].env?.VIZE_TOOLING_TEST_SHARD,
+    "${{ format('{0}/{1}', matrix.index, matrix.total) }}",
+  );
+  assert.equal(steps[full].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
+  assert.equal(steps[full].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
   assert.equal(source.jobs["source-report"].if, "${{ always() }}");
   assert.ok(source.jobs["source-report"].needs?.includes("pr-tooling-scripts"));
   assert.equal(

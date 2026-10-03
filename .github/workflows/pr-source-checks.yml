@@ -168,13 +168,14 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-      - name: Regenerate PR tooling plan
-        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
+      - name: Regenerate tooling plan
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         env:
           BASE_SHA: ${{ needs.pr-source-plan.outputs.comparison-base }}
+          TOOLING_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
         run: |
           if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags --depth=1 origin "$BASE_SHA"; fi
-          node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json"
+          node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier "$TOOLING_TIER" --output "$RUNNER_TEMP/tooling-plan.json"
       - name: Install fixture and JS dependencies
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select && vp install --frozen-lockfile --prefer-offline
@@ -196,7 +197,9 @@ jobs:
         env:
           VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
-        run: vp run --workspace-root test:scripts
+          VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
+          VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
+        run: vp run --workspace-root test:scripts:planned
       - uses: ./.github/actions/upload-formatter-api-corpus-evidence
         if: ${{ always() && needs.pr-source-plan.outputs.tooling == 'true' }}
         with:

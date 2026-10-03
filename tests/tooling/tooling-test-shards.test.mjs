@@ -6,52 +6,72 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { toolingTestCommand } from "../../tools/support/compat/github/run-tooling-tests.mjs";
 import {
+  planToolingTests,
+  toolingTestFiles,
+} from "../../tools/support/compat/github/plan-tooling-tests.mjs";
+import {
   selectToolingShard,
   toolingShardMatrix,
 } from "../../tools/support/compat/github/tooling-test-shards.ts";
 
 const plan = (tests, tier = "pr") => ({ version: 1, tier, tests });
 
-void test("PR shards preserve every selected file exactly once and remain serial", () => {
-  for (let size = 0; size < 33; size += 1) {
-    const files = Array.from({ length: size }, (_, index) => `tests/tooling/${index}.test.ts`);
-    const input = plan(files);
-    const shards = toolingShardMatrix(input).include;
-    const selected = shards.flatMap(({ index, total }) => {
-      const shard = `${index}/${total}`;
-      const command = toolingTestCommand(input, files, shard);
-      assert.deepEqual(command.slice(0, 2), ["--test", "--test-concurrency=1"]);
-      assert.deepEqual(command.slice(2), selectToolingShard(input, shard));
-      return command.slice(2);
-    });
-    assert.deepEqual([...selected].sort(), [...files].sort());
-    assert.equal(new Set(selected).size, files.length);
-    assert.ok(shards.length <= 4);
-    if (size > 0)
-      assert.ok(
-        shards.every(
-          ({ index, total }) => selectToolingShard(input, `${index}/${total}`).length > 0,
-        ),
-      );
-  }
-});
+for (const tier of ["pr", "merge"]) {
+  void test(`${tier} shards preserve every selected file exactly once and remain serial`, () => {
+    for (let size = 0; size < 33; size += 1) {
+      const files = Array.from({ length: size }, (_, index) => `tests/tooling/${index}.test.ts`);
+      const input = plan(files, tier);
+      const shards = toolingShardMatrix(input).include;
+      const selected = shards.flatMap(({ index, total }) => {
+        const shard = `${index}/${total}`;
+        const command = toolingTestCommand(input, files, shard);
+        assert.deepEqual(command.slice(0, 2), ["--test", "--test-concurrency=1"]);
+        assert.deepEqual(command.slice(2), selectToolingShard(input, shard));
+        return command.slice(2);
+      });
+      assert.deepEqual([...selected].sort(), [...files].sort());
+      assert.equal(new Set(selected).size, files.length);
+      assert.ok(shards.length <= 4);
+      if (size > 0)
+        assert.ok(
+          shards.every(
+            ({ index, total }) => selectToolingShard(input, `${index}/${total}`).length > 0,
+          ),
+        );
+    }
+  });
+}
 
 void test("invalid or incomplete shard coordinates fail closed", () => {
   const files = Array.from({ length: 8 }, (_, index) => `tests/tooling/${index}.test.ts`);
-  for (const shard of [null, 1, "0/4", "5/4", "1/3", "1/5", "1.5/4", "1/4/2", "1/0"]) {
-    assert.throws(() => toolingTestCommand(plan(files), files, shard), /complete PR tooling shard/);
+  for (const tier of ["pr", "merge"]) {
+    for (const shard of [null, 1, "0/4", "5/4", "1/3", "1/5", "1.5/4", "1/4/2", "1/0"]) {
+      assert.throws(
+        () => toolingTestCommand(plan(files, tier), files, shard),
+        /complete tooling shard/,
+      );
+    }
   }
   assert.throws(() => toolingTestCommand(plan([files[0], files[0]]), files, "1/2"), /unrecognized/);
   assert.throws(() => toolingShardMatrix(plan([], "unknown")), /invalid/);
 });
 
-void test("merge keeps the full suite in one runner and refuses PR partition coordinates", () => {
-  const files = ["tests/tooling/a.test.ts", "tests/tooling/b.test.ts"];
-  const input = plan(files, "merge");
-  assert.deepEqual(toolingShardMatrix(input), { include: [{ index: 1, total: 1 }] });
-  assert.deepEqual(toolingTestCommand(input, files).slice(2), files);
-  assert.throws(() => toolingTestCommand(input, files, "1/1"), /complete PR tooling shard/);
-  assert.throws(() => toolingTestCommand(plan([], "merge"), files), /retain every test/);
+void test("real merge shards retain every discovered test, including all deferred runtime files", () => {
+  const files = toolingTestFiles();
+  const input = planToolingTests(["README.md"], { tier: "merge" });
+  const shards = toolingShardMatrix(input).include;
+  assert.equal(shards.length, 4);
+  const selected = shards.flatMap(({ index, total }) =>
+    toolingTestCommand(input, files, `${index}/${total}`).slice(2),
+  );
+  assert.deepEqual([...selected].sort(), files);
+  assert.equal(new Set(selected).size, files.length);
+  for (const tests of [[], files.slice(1), [...files, files[0]]]) {
+    assert.throws(
+      () => toolingTestCommand(plan(tests, "merge"), files, "1/4"),
+      /retain every test|unrecognized/,
+    );
+  }
 });
 
 void test("an empty selection does not invoke Node's implicit test discovery", () => {

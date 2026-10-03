@@ -2,10 +2,13 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 
 // These authored plans are compiled or read by Rust tests and compiler gates.
-// Keep the whole directory conservative as new contracts are added.
+// Keep new contracts conservative. The dated completion ledger is verified
+// prose, with no Rust input consumer; tooling still validates its docs.
 export function isSharedRustInput(path) {
   return (
-    path.startsWith("docs/davinci/plan/") || path === "npm/cli/schemas/vize.config.schema.json"
+    (path.startsWith("docs/davinci/plan/") &&
+      path !== "docs/davinci/plan/completion-2026-10-03.md") ||
+    path === "npm/cli/schemas/vize.config.schema.json"
   );
 }
 

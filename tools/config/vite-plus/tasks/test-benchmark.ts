@@ -116,6 +116,9 @@ export const testAndBenchmarkTasks = defineTasks({
   "test:scripts:pr": noCacheTask(
     `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && node tools/support/compat/github/run-tooling-tests.mjs`,
   ),
+  "test:scripts:planned": noCacheTask(
+    `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && node tools/support/compat/github/run-tooling-tests.mjs`,
+  ),
   "test:vscode-extension:vsix": noCacheTask(
     runInVscodeExtension(packageVscodeExtension, assertVscodePackage),
   ),

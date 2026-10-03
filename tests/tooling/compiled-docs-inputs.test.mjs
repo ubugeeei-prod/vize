@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
@@ -10,6 +18,7 @@ import {
   planSourceChecks,
 } from "../../tools/support/compat/github/plan-source-checks.mjs";
 import { planAffectedRust } from "../../tools/support/compat/github/plan-affected-rust.mjs";
+import { planToolingTests } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const packages = ["compiler", "unrelated"].map((name) => ({
@@ -60,15 +69,41 @@ void test("plan contracts remain conservative across renames while ordinary pros
     "docs/davinci/plan/new-contract.mdx",
     "docs/davinci/plan/remarks.schema.json",
     "docs/davinci/plan/reach-budgets.toml",
+    "docs/davinci/plan/completion-2026-10-04.md",
   ]) {
     assert.equal(planSourceChecks([path]).rust, true, path);
     assert.equal(planSourceChecks([path]).playground, true, path);
     assert.equal(planAffectedRust(metadata, [path]).scope, "workspace", path);
   }
-  for (const path of ["docs/guide/example.md", "docs/davinci/decisions/change.md"]) {
+  for (const path of [
+    "docs/guide/example.md",
+    "docs/davinci/decisions/change.md",
+    "docs/davinci/plan/completion-2026-10-03.md",
+  ]) {
     assert.equal(planSourceChecks([path]).rust, false, path);
     assert.equal(planAffectedRust(metadata, [path]).scope, "none", path);
   }
+});
+
+void test("the actual exempt ledger has no compiled Rust consumer and still selects tooling", () => {
+  const ledger = "docs/davinci/plan/completion-2026-10-03.md";
+  assert.ok(readFileSync(join(root, ledger), "utf8").startsWith("# Native completion ledger"));
+  const rustFiles = (directory) =>
+    readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(directory, entry.name);
+      return entry.isDirectory() ? rustFiles(path) : entry.name.endsWith(".rs") ? [path] : [];
+    });
+  for (const source of ["davinci", "crates"].flatMap((directory) =>
+    rustFiles(join(root, directory)),
+  )) {
+    const text = readFileSync(source, "utf8");
+    for (const [, literal] of text.matchAll(/\binclude_(?:str|bytes)!\s*\(\s*"([^"]+)"/g)) {
+      assert.notEqual(resolve(dirname(source), literal), resolve(root, ledger), source);
+    }
+  }
+  assert.ok(planToolingTests([ledger]).tests.length > 0);
+  assert.equal(planSourceChecks([ledger], "merge_group").rust, true);
+  assert.equal(planAffectedRust(metadata, [ledger], "merge_group").scope, "workspace");
 });
 
 void test("mutating the compiled CLI schema selects Rust while unrelated package schemas stay narrow", () => {

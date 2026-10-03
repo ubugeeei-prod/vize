@@ -24,7 +24,7 @@ for (const { file, job } of callers) {
       /cargo build --profile ci -p vize/.test(step.run ?? ""),
     );
     const tests = steps.findIndex((step) =>
-      /(?:^| )vp run --workspace-root test:scripts$/.test(step.run ?? ""),
+      /(?:^| )vp run --workspace-root test:scripts(?::planned)?$/.test(step.run ?? ""),
     );
     assert.ok(build >= 0 && tests > build);
     assert.match(

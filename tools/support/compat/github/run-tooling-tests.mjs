@@ -22,8 +22,8 @@ export function toolingTestCommand(plan, available = toolingTestFiles(), shard =
     throw new Error("merge tooling plan must retain every test file");
   }
   // Each isolated runner remains serial because fixtures and reports are shared
-  // between test files inside a checkout. Only the already-selected PR files
-  // may be partitioned; the full merge suite is never partitioned here.
+  // between test files inside a checkout. Merge plans must contain the whole
+  // discovered suite before its files can be partitioned across checkouts.
   return ["--test", "--test-concurrency=1", ...selectToolingShard(plan, shard)];
 }
 
