@@ -65,3 +65,16 @@ its genuine provider dependencies have already merged. Exact-head Actions,
 the guaranteed protected fresh native/browser capture, complete suites and all
 100 unchanged instruction ceilings must pass before actual merge is delivery.
 Ordinary routes, default selection, fix-history gates and budgets stay unchanged.
+
+The initial #7650 queue candidate e9d1161f52506eb5cbcf4ccdea5416080f0efa60
+ran Check 37156718174 from source fb15ffb7c129d6a395445817472e29fddb0054d0.
+Its guaranteed scoped step succeeded: all four single-class, three class-list
+and three empty current-source Rust captures match complete committed results,
+and actual Chromium 151.0.7922.34/Vue 3.5.35 passed the empty/runtime controls.
+Artifact 11285308621 retains these source-qualified positive receipts.
+The global JS job 111301605725 failed before build/history: the pinned Wild
+0.9.0 x86_64 release asset returned HTTP 503 across all five curl retries and
+exited 22. This is not a source or native-history failure. The known-red entry
+was actually dequeued, with source unchanged and queue/auto-merge both null.
+These scoped positives are not whole-candidate acceptance; targeted existing
+failed-gate recovery and a fresh protected candidate remain required.
