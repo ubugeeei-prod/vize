@@ -80,3 +80,12 @@ source checks pass again. Its existing mandatory first-shard action now runs
 after installed dependencies and checksum-pinned Pkl preparation, before CLI
 construction; incoming setup and DOM capture hooks keep their own anchors.
 The same complete capture contract and all merge-group gates remain required.
+
+The later atomic Stack queue exposed a generated L4 census conflict against
+the incoming JSX prefix, with no SSR candidate or runtime credit. The whole
+SSR prefix is removed until repaired. After #7538 actually merged as signed
+`1b9fce90998e`, the own-only SSR replay preserves that authentic shared source
+map repair, incoming setup/CI hooks and every functional source. The scanner
+regenerates the actual union rather than importing synthetic queued sources
+or guessing counts. Fresh replay Actions, mandatory queue captures and actual
+protected merge remain required.
