@@ -109,3 +109,15 @@ that facade product findings disappear. All 28 previous laws remain unchanged;
 this conservative boundary applies only to the new family, with no legacy tree
 algorithm, owner substitution or old merged rule admission change. Fresh Actions
 must certify the expanded 29-law Warning suite.
+
+Provider #7546 actually merged as signed 91540166b975e65e60af3ffcc39a651e9209461e
+at 2026-10-03T15:46:16Z after protected Check37133424399 and genuine100-ceiling
+acceptance. This child preserves all twenty-nine authored laws on fresh main.
+GitHub retained obsolete UNMERGEABLE child queue entries with feature bases;
+its public dequeue mutation rejected their missing feature-branch queue, and
+standard disable-auto/unstack could not release their branch locks. Reversible
+close/reopen removed only these two owned entries; source/reviews/evidence are
+retained, old registration is released and remaining children relink natively
+after source replay. No unrelated queue entry or protection is changed. Fresh
+exact-head Actions and a newly verified contiguous native prefix remain
+required before protected actual merge.
