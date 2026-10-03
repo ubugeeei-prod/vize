@@ -214,7 +214,10 @@ fn unsupported_constructs_refuse_whole_view_and_retain_original_custody() -> Law
         ("const view = <div v-show/>;", Issue::DirectiveOrSlot),
         ("const view = <div v-slots/>;", Issue::DirectiveOrSlot),
         ("const view = <div onClick='x'/>;", Issue::Attribute),
-        ("const x = 1; const view = <div id={x}/>;", Issue::Attribute),
+        (
+            "const x = 1; const view = <div id={x + 1}/>;",
+            Issue::Attribute,
+        ),
     ] {
         let arena = Allocator::default();
         let owner = lower(&arena, source, SourceType::jsx())?;

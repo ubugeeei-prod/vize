@@ -2,8 +2,8 @@
 
 Tracked in #6840 and #6829 after the original-expression child #7561 of
 native Stack #7504. The provider literally merged at `134c4ad549ce` on
-2026-10-03 at 12:59:16 UTC. This bounded target is independent draft #7597;
-its own fresh source, protected candidate and actual merge gates remain.
+2026-10-03 at 12:59:16 UTC. This bounded target is independent #7597;
+its actual protected delivery is recorded below.
 
 ## Decision
 
@@ -56,13 +56,31 @@ field. The independent Node judge passes all eighteen laws, including nine
 native and nine upstream real render executions, full upstream transforms
 and maps, every native anchor's UTF-16 bounds, exact intrinsic/root and named
 read coordinates, coherent stale-map refusal and complete ordered comments.
-Fresh exact-head hosted checks must prove the allocation repair preserves
-all frozen whole native modules/maps; historical capture is not that proof.
+Fresh exact-head hosted checks were required to prove the allocation repair
+preserves all frozen whole native modules/maps; historical capture alone did
+not supply that proof.
 
 No local Cargo/rustc/npm install, binary or Rust probe is used. Publish only
 from the actual #7561 merge and fresh-main integration, obtain exact-head
 hosted native observations without weakening assertions, then require fresh
 source checks, protected full/all-100 candidate acceptance and actual merge.
-Queue admission is held behind the literal #7580 canonical-census repair.
+Queue admission was held behind the literal #7580 canonical-census repair.
 Entities, component slots/children, TS erasure, compound JSX, dynamic
 attributes, wider grammar and product/default replacement remain unfinished.
+
+## Actual protected delivery
+
+The allocation repair at source `d1a1f9e2a59` passed exact-head Check 37127376636. Protected candidate `3880af491f52` passed terminal Check
+37128201606, Musea 37128201325 and Nuxt 37128201327. All four full Rust and
+tooling partitions passed, including the complete eight-module/map law and
+all eighteen independent native/upstream/runtime/map/comment controls.
+Instruction job 111217763855 proves all 100 benchmarks identical across
+three executions, all pinned ceilings plus ratchet verified and all ceilings
+hold. The candidate-qualified census under literally merged #7580 is current.
+
+PR #7597 actually merged at 2026-10-03T14:22:30Z as `3880af491f52`; fresh
+main retained every accepted source/test payload and all fourteen earlier
+fixtures. Its queue entry is null. This bounded target is delivered; the
+other language and product gaps above remain unfinished. Paired terminal
+receipts are on #6840 and #6829; this next provider change retains their
+actual acceptance in the dated ledger and central decision clause.

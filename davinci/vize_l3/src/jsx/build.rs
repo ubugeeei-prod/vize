@@ -80,34 +80,36 @@ fn classify<'a>(node: JsxNode<'_, 'a>) -> Result<Decision<'a>, Issue> {
         }
         Syntax::Member => Decision::Member,
         Syntax::Property(name) => Decision::Property(name),
-        Syntax::Attribute(name) => static_attribute(node, name)?,
+        Syntax::Attribute(name) => attribute(node, name)?,
         Syntax::AttributeName(name) => Decision::AttributeName(name),
         Syntax::AttributeString(value) => Decision::AttributeString(value),
         Syntax::Text(value) => Decision::Text(value),
-        Syntax::Container => {
-            let mut children = node.children();
-            let child = children.next().and_then(JsxNode::kind);
-            if children.next().is_some() {
-                return Err(Issue::Expression);
-            }
-            match child {
-                Some(Syntax::Empty) => Decision::EmptyContainer,
-                Some(
-                    Syntax::IdentifierExpression(_)
-                    | Syntax::NumberExpression(_)
-                    | Syntax::StringExpression(_)
-                    | Syntax::BooleanExpression(_)
-                    | Syntax::NullExpression,
-                ) => Decision::ExpressionContainer,
-                _ => return Err(Issue::Expression),
-            }
-        }
+        Syntax::Container => container(node)?,
         Syntax::Empty => Decision::Empty,
         Syntax::Fragment | Syntax::FragmentOpening | Syntax::FragmentClosing => {
             return Err(Issue::Fragment);
         }
         Syntax::SpreadAttribute => return Err(Issue::SpreadAttribute),
         Syntax::SpreadChild => return Err(Issue::SpreadChild),
+    })
+}
+
+fn container<'a>(node: JsxNode<'_, 'a>) -> Result<Decision<'a>, Issue> {
+    let mut children = node.children();
+    let child = children.next().and_then(JsxNode::kind);
+    if children.next().is_some() {
+        return Err(Issue::Expression);
+    }
+    Ok(match child {
+        Some(Syntax::Empty) => Decision::EmptyContainer,
+        Some(
+            Syntax::IdentifierExpression(_)
+            | Syntax::NumberExpression(_)
+            | Syntax::StringExpression(_)
+            | Syntax::BooleanExpression(_)
+            | Syntax::NullExpression,
+        ) => Decision::ExpressionContainer,
+        _ => return Err(Issue::Expression),
     })
 }
 
@@ -156,7 +158,7 @@ fn read_is_resolved(node: JsxNode<'_, '_>, name: &str) -> bool {
             .is_some_and(|binding| reference.target == ReferenceTarget::Resolved(binding.id()))
 }
 
-fn static_attribute<'a>(node: JsxNode<'_, 'a>, name: &'a str) -> Result<Decision<'a>, Issue> {
+fn attribute<'a>(node: JsxNode<'_, 'a>, name: &'a str) -> Result<Decision<'a>, Issue> {
     if name.starts_with("v-") || name.starts_with("vModel") || name.starts_with("vSlots") {
         return Err(Issue::DirectiveOrSlot);
     }
@@ -170,13 +172,22 @@ fn static_attribute<'a>(node: JsxNode<'_, 'a>, name: &'a str) -> Result<Decision
     if children.next().and_then(JsxNode::kind) != Some(Syntax::AttributeName(name)) {
         return Err(Issue::InvalidRecord);
     }
-    let value = match children.next().and_then(JsxNode::kind) {
-        None => None,
-        Some(Syntax::AttributeString(value)) => Some(value),
-        _ => return Err(Issue::Attribute),
-    };
+    let value = children.next();
     if children.next().is_some() {
         return Err(Issue::Attribute);
     }
-    Ok(Decision::StaticAttribute { name, value })
+    Ok(match value.and_then(JsxNode::kind) {
+        None => Decision::StaticAttribute { name, value: None },
+        Some(Syntax::AttributeString(value)) => Decision::StaticAttribute {
+            name,
+            value: Some(value),
+        },
+        Some(Syntax::Container)
+            if container(value.ok_or(Issue::InvalidRecord)?).map_err(|_| Issue::Attribute)?
+                == Decision::ExpressionContainer =>
+        {
+            Decision::ExpressionAttribute { name }
+        }
+        _ => return Err(Issue::Attribute),
+    })
 }

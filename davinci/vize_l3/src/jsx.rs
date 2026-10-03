@@ -1,7 +1,7 @@
 //! Vue JSX decisions beside the sole original owning L2 File.
 //!
 //! This projection accepts static structure, resolved component names and scalar
-//! expression-container children from original File records.
+//! expression-container children and attributes from original File records.
 //! It does not grant script/module emission, entity decoding, slots or runtime
 //! completion. The producer visits the existing flat records, never the AST.
 
@@ -31,6 +31,11 @@ pub enum JsxDecisionKind<'a> {
     StaticAttribute {
         name: &'a str,
         value: Option<&'a str>,
+    },
+    /// The value stays in this attribute's genuine scalar/Read container row.
+    /// A resolved Read does not establish its runtime value's type.
+    ExpressionAttribute {
+        name: &'a str,
     },
     AttributeName(&'a str),
     AttributeString(&'a str),
