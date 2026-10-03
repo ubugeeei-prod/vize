@@ -11,13 +11,13 @@ const registryPath = path.join(root, "tests", "_fixtures", "vue-ecosystem-fixtur
 
 type Registry = {
   lspAuthoredOracleGate: { minimumProjectCount: number; trackingIssue: number };
-  projects: Array<FixtureProject & { lspIncrementalBudget?: unknown }>;
+  projects: Array<FixtureProject & { repository: string; lspIncrementalBudget?: unknown }>;
 };
 
 test("authored LSP feature oracles are explicit and ratcheted", () => {
   const registry = JSON.parse(fs.readFileSync(registryPath, "utf8")) as Registry;
   const configured = registry.projects.filter(
-    (project): project is FixtureProject & { lspAuthoredOracle: LspAuthoredOracle } =>
+    (project): project is Registry["projects"][number] & { lspAuthoredOracle: LspAuthoredOracle } =>
       project.lspAuthoredOracle != null,
   );
 
@@ -99,5 +99,55 @@ test("authored LSP feature oracles are explicit and ratcheted", () => {
       assert.equal(fs.existsSync(path.resolve(fixtureDir, lifecycle.copiedFile)), false);
       assert.equal(fs.existsSync(path.resolve(fixtureDir, lifecycle.renamedFile)), false);
     }
+  }
+});
+
+test("event completion goldens remain bound to the six pinned component declarations", () => {
+  const registry = JSON.parse(fs.readFileSync(registryPath, "utf8")) as Registry;
+  const corpus = JSON.parse(
+    fs.readFileSync(
+      path.join(root, "tests/_fixtures/lsp-authored-component-event-contracts.json"),
+      "utf8",
+    ),
+  ) as {
+    cases: Array<{
+      projectId: string;
+      revision: string;
+      componentFile: string;
+      sourceUrl: string;
+      sourceBlob: string;
+      originalCompletionCount: number;
+      declaration: string;
+      source: string;
+      eventLabels: string[];
+    }>;
+  };
+  assert.deepEqual(
+    corpus.cases.map((entry) => entry.projectId),
+    ["vue-vben-admin", "pinia", "varlet", "element-plus", "vue-datepicker", "misskey"],
+  );
+  for (const entry of corpus.cases) {
+    const project = registry.projects.find((candidate) => candidate.id === entry.projectId);
+    assert.ok(project?.lspAuthoredOracle);
+    assert.equal(entry.revision, project.revision);
+    assert.equal(entry.componentFile, project.lspAuthoredOracle.componentBoundary.componentFile);
+    assert.match(entry.sourceBlob, /^[0-9a-f]{40}$/);
+    assert.equal(
+      entry.sourceUrl,
+      `${project.repository}/blob/${entry.revision}/${entry.componentFile}`,
+    );
+    assert.equal(entry.source, `<script setup lang="ts">\n${entry.declaration}\n</script>\n`);
+    const boundary = project.lspAuthoredOracle.componentBoundary;
+    assert.equal(
+      boundary.completionItemCount,
+      entry.originalCompletionCount + entry.eventLabels.length,
+    );
+    assert.deepEqual(
+      boundary.completionItems.slice(entry.originalCompletionCount),
+      entry.eventLabels.map((label, index) => ({
+        label,
+        rank: entry.originalCompletionCount + index,
+      })),
+    );
   }
 });

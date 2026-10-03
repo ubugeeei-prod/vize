@@ -1,0 +1,86 @@
+{
+  "description": "Reduced script-setup inputs retain byte-exact event declarations from registry-pinned upstream files. Source blobs identify the original whole files, not these reduced inputs.",
+  "originalMatrixRun": 37098199031,
+  "originalMatrixHead": "ae874862fb175f1e3a6df27cbd412b270f664d60",
+  "cases": [
+    {
+      "projectId": "vue-vben-admin",
+      "revision": "748b182e440863711dc9624924e92440f5ddc4d3",
+      "componentFile": "packages/effects/layouts/src/widgets/theme-toggle/theme-button.vue",
+      "sourceUrl": "https://github.com/vbenjs/vue-vben-admin/blob/748b182e440863711dc9624924e92440f5ddc4d3/packages/effects/layouts/src/widgets/theme-toggle/theme-button.vue",
+      "sourceBlob": "178f9776564a8a2f1833e778332296eabe8a5f11",
+      "originalCompletionCount": 30,
+      "declaration": "const isDark = defineModel<boolean>();",
+      "source": "<script setup lang=\"ts\">\nconst isDark = defineModel<boolean>();\n</script>\n",
+      "eventLabels": [
+        "@update:modelValue"
+      ]
+    },
+    {
+      "projectId": "pinia",
+      "revision": "59ec7da3f0130caa66fae6541557cf3c5b10f78b",
+      "componentFile": "packages/online-playground/src/VersionSelect.vue",
+      "sourceUrl": "https://github.com/vuejs/pinia/blob/59ec7da3f0130caa66fae6541557cf3c5b10f78b/packages/online-playground/src/VersionSelect.vue",
+      "sourceBlob": "2232594c0d503ddd48f67dde049bc1519b06ef15",
+      "originalCompletionCount": 31,
+      "declaration": "const version = defineModel()",
+      "source": "<script setup lang=\"ts\">\nconst version = defineModel()\n</script>\n",
+      "eventLabels": [
+        "@update:modelValue"
+      ]
+    },
+    {
+      "projectId": "varlet",
+      "revision": "1007097bde3f6c06326e0057ac6a7cf4ab7ff519",
+      "componentFile": "packages/varlet-ui-playground/src/Header.vue",
+      "sourceUrl": "https://github.com/varletjs/varlet/blob/1007097bde3f6c06326e0057ac6a7cf4ab7ff519/packages/varlet-ui-playground/src/Header.vue",
+      "sourceBlob": "93f620186e452e99ad4b6f223beebbeda667633c",
+      "originalCompletionCount": 30,
+      "declaration": "const emit = defineEmits(['update:theme'])",
+      "source": "<script setup lang=\"ts\">\nconst emit = defineEmits(['update:theme'])\n</script>\n",
+      "eventLabels": [
+        "@update:theme"
+      ]
+    },
+    {
+      "projectId": "element-plus",
+      "revision": "20298a21ae54a5417955373b80130ae7c548a6bb",
+      "componentFile": "packages/components/cascader-panel/src/node.vue",
+      "sourceUrl": "https://github.com/element-plus/element-plus/blob/20298a21ae54a5417955373b80130ae7c548a6bb/packages/components/cascader-panel/src/node.vue",
+      "sourceBlob": "f73ce1ac49870f4ee737dc27f6de942d3bd81d5d",
+      "originalCompletionCount": 30,
+      "declaration": "const emit = defineEmits(['expand'])",
+      "source": "<script setup lang=\"ts\">\nconst emit = defineEmits(['expand'])\n</script>\n",
+      "eventLabels": [
+        "@expand"
+      ]
+    },
+    {
+      "projectId": "vue-datepicker",
+      "revision": "f1a5c11028885e02e81ed379ff04107a7d99d964",
+      "componentFile": "packages/lib/src/VueDatePicker/components/Common/ArrowBtn.vue",
+      "sourceUrl": "https://github.com/Vuepic/vue-datepicker/blob/f1a5c11028885e02e81ed379ff04107a7d99d964/packages/lib/src/VueDatePicker/components/Common/ArrowBtn.vue",
+      "sourceBlob": "ed2f36efbf9bacbc54c3da3cd1c869a54c3c700b",
+      "originalCompletionCount": 32,
+      "declaration": "  const emit = defineEmits<{\n    activate: [];\n    'set-ref': [i: Ref<HTMLElement | null>];\n  }>();",
+      "source": "<script setup lang=\"ts\">\n  const emit = defineEmits<{\n    activate: [];\n    'set-ref': [i: Ref<HTMLElement | null>];\n  }>();\n</script>\n",
+      "eventLabels": [
+        "@activate",
+        "@set-ref"
+      ]
+    },
+    {
+      "projectId": "misskey",
+      "revision": "810faa8e5db4bbf9d6d408a61df148559340ee99",
+      "componentFile": "packages/frontend/src/components/MkTooltip.vue",
+      "sourceUrl": "https://github.com/misskey-dev/misskey/blob/810faa8e5db4bbf9d6d408a61df148559340ee99/packages/frontend/src/components/MkTooltip.vue",
+      "sourceBlob": "08a3f02f6578a17d567ba704270e1ce2871303cc",
+      "originalCompletionCount": 37,
+      "declaration": "const emit = defineEmits<{\n\t(ev: 'closed'): void;\n}>();",
+      "source": "<script setup lang=\"ts\">\nconst emit = defineEmits<{\n\t(ev: 'closed'): void;\n}>();\n</script>\n",
+      "eventLabels": [
+        "@closed"
+      ]
+    }
+  ]
+}

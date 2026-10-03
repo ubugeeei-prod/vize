@@ -90,6 +90,61 @@ test("authored LSP oracle fails closed when an enabled feature returns no result
   }
 });
 
+for (const [name, labels, failure] of [
+  ["accepts the complete declared event", ["v-if", "active", "@update:modelValue"], null],
+  ["rejects a missing declared event", ["v-if", "active"], /completion set size drifted/],
+  [
+    "rejects an undeclared extra event",
+    ["v-if", "active", "@update:modelValue", "@phantom"],
+    /completion set size drifted/,
+  ],
+  [
+    "rejects an event at the wrong rank",
+    ["v-if", "@update:modelValue", "active"],
+    /completion rank/,
+  ],
+] as const) {
+  test(`authored LSP oracle ${name}`, async () => {
+    const workspace = createFixtureWorkspace("vize-authored-lsp-event-");
+    const child = path.join(workspace, "FeatureChild.vue");
+    fs.writeFileSync(
+      child,
+      fs
+        .readFileSync(child, "utf8")
+        .replace("</script>", "const model = defineModel<string>()\n</script>"),
+    );
+    const session = new FakeAuthoredLspSession(workspace);
+    const request = session.request.bind(session);
+    session.request = async (method, params) => {
+      const response = await request(method, params);
+      if (method !== "textDocument/completion") return response;
+      const probe = (response as Array<{ label: string }>).some(
+        (item) => item.label === "vize-oracle-probe",
+      );
+      return [...labels, ...(probe ? ["vize-oracle-probe"] : [])].map((label) => ({ label }));
+    };
+    const oracle = fixtureOracle();
+    oracle.componentBoundary.completionItemCount = 3;
+    oracle.componentBoundary.completionItems.push({ label: "@update:modelValue", rank: 2 });
+    try {
+      if (failure == null) {
+        const result = await exerciseAuthoredLspOracle(session, workspace, oracle);
+        assert.equal(result.completion.count, 3);
+        assert.deepEqual(result.dependencyCompletion, {
+          baselineContainsProbe: false,
+          changedContainsProbe: true,
+          repairedContainsProbe: false,
+        });
+      } else {
+        await assert.rejects(() => exerciseAuthoredLspOracle(session, workspace, oracle), failure);
+      }
+      assert.deepEqual(session.openFiles, []);
+    } finally {
+      fs.rmSync(workspace, { recursive: true, force: true });
+    }
+  });
+}
+
 test("authored LSP oracle preserves its primary failure when cleanup also fails", async () => {
   const workspace = createFixtureWorkspace("vize-authored-lsp-cleanup-");
   const session = new FakeAuthoredLspSession(workspace, "textDocument/hover", true);
