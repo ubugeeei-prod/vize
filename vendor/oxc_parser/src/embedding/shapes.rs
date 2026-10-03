@@ -51,10 +51,7 @@ pub(super) fn shape_hole(
         span.start >= content.start
             && span.end <= content.end
             && span.start <= span.end
-            && program
-                .source_text
-                .get(span.start as usize..span.end as usize)
-                .is_some()
+            && program.source_text.get(span.start as usize..span.end as usize).is_some()
     };
     if goal == EmbeddingGoal::Expr {
         return expression(program)
@@ -72,11 +69,7 @@ pub(super) fn shape_hole(
                 && arrow.params.rest.is_none()
                 && arrow.body.span == Span::new(4, content.end + 2)
                 && arrow.body.directives.iter().all(|node| authored(node.span))
-                && arrow
-                    .body
-                    .statements
-                    .iter()
-                    .all(|node| authored(node.span()))
+                && arrow.body.statements.iter().all(|node| authored(node.span()))
         }
         EmbeddingGoal::Parameters => {
             arrow.span == Span::new(0, content.end + 6)
@@ -85,11 +78,7 @@ pub(super) fn shape_hole(
                 && arrow.body.directives.is_empty()
                 && arrow.body.statements.is_empty()
                 && arrow.params.items.iter().all(|node| authored(node.span))
-                && arrow
-                    .params
-                    .rest
-                    .as_deref()
-                    .is_none_or(|node| authored(node.span))
+                && arrow.params.rest.as_deref().is_none_or(|node| authored(node.span))
         }
         EmbeddingGoal::Expr => false,
     };

@@ -16,9 +16,7 @@ macro_rules! projection {
         }
         impl core::fmt::Debug for $owner<'_> {
             fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                f.debug_tuple(stringify!($owner))
-                    .field(&self.observation)
-                    .finish()
+                f.debug_tuple(stringify!($owner)).field(&self.observation).finish()
             }
         }
         /// A short private-origin borrow; raw ASTs and numeric windows cannot mint it.
@@ -87,24 +85,9 @@ macro_rules! projection {
     };
 }
 
-projection!(
-    ExpressionObservation,
-    AdmittedExpression,
-    Expression<'a>,
-    expression
-);
-projection!(
-    HandlerBodyObservation,
-    AdmittedHandlerBody,
-    FunctionBody<'a>,
-    body
-);
-projection!(
-    ParametersObservation,
-    AdmittedParameters,
-    FormalParameters<'a>,
-    parameters
-);
+projection!(ExpressionObservation, AdmittedExpression, Expression<'a>, expression);
+projection!(HandlerBodyObservation, AdmittedHandlerBody, FunctionBody<'a>, body);
+projection!(ParametersObservation, AdmittedParameters, FormalParameters<'a>, parameters);
 
 impl<'a> EmbeddingObservation<'a> {
     /// Consumption uses only the original stored arena, not a caller arena.
@@ -139,10 +122,7 @@ impl<'a> EmbeddingObservation<'a> {
         if self.hole.is_none() && root.is_none() {
             self.hole = Some(EmbeddingHole::InvalidExpressionShape);
         }
-        Ok(ExpressionObservation {
-            observation: self,
-            root,
-        })
+        Ok(ExpressionObservation { observation: self, root })
     }
 
     /// Raw FunctionBody roots cannot mint original-parser authority.
@@ -177,10 +157,7 @@ impl<'a> EmbeddingObservation<'a> {
         if self.hole.is_none() && root.is_none() {
             self.hole = Some(EmbeddingHole::InvalidWrappedShape);
         }
-        Ok(HandlerBodyObservation {
-            observation: self,
-            root,
-        })
+        Ok(HandlerBodyObservation { observation: self, root })
     }
 
     /// Raw formal parameters cannot replace the original selected owner.
@@ -207,9 +184,6 @@ impl<'a> EmbeddingObservation<'a> {
         if self.hole.is_none() && root.is_none() {
             self.hole = Some(EmbeddingHole::InvalidWrappedShape);
         }
-        Ok(ParametersObservation {
-            observation: self,
-            root,
-        })
+        Ok(ParametersObservation { observation: self, root })
     }
 }

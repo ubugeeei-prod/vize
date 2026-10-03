@@ -75,17 +75,13 @@ mod tests {
         state.failed_speculations.insert(key);
         assert!(state.failed_speculations.contains(&key));
         assert!(
-            !state
-                .failed_speculations
-                .contains(&FailedSpeculation::parenthesized_arrow(u32::MAX))
+            !state.failed_speculations.contains(&FailedSpeculation::parenthesized_arrow(u32::MAX))
         );
         assert!(
-            !state
-                .failed_speculations
-                .contains(&FailedSpeculation::type_arguments(
-                    u32::MAX,
-                    Context::In | Context::Yield,
-                ))
+            !state.failed_speculations.contains(&FailedSpeculation::type_arguments(
+                u32::MAX,
+                Context::In | Context::Yield,
+            ))
         );
     }
 }

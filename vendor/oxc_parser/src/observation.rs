@@ -101,12 +101,7 @@ fn observe_parser<'a, C: ParserConfig>(parser: Parser<'a, C>) -> ProgramObservat
     let source_type = parser.source_type;
     let options = parser.options;
     let parsed = parser.parse();
-    ProgramObservation {
-        parsed,
-        source_text,
-        source_type,
-        options,
-    }
+    ProgramObservation { parsed, source_text, source_type, options }
 }
 
 impl<'a> ProgramObservation<'a> {

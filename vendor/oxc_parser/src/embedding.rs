@@ -79,14 +79,7 @@ impl<'a> EmbeddingInput<'a> {
         wrapper.push_str(prefix);
         wrapper.push_str(content);
         wrapper.push_str(suffix);
-        Ok(Self {
-            allocator,
-            content,
-            source_type,
-            goal,
-            wrapper,
-            content_span,
-        })
+        Ok(Self { allocator, content, source_type, goal, wrapper, content_span })
     }
 
     /// The exact temporary parser input, available to the caller's resource guard.
@@ -114,9 +107,8 @@ impl<'a> EmbeddingInput<'a> {
     pub fn observe(self) -> EmbeddingObservation<'a> {
         let source = self.allocator.alloc_str(self.wrapper.as_str());
         let options = ParseOptions::default();
-        let parsed = Parser::new(self.allocator, source, self.source_type)
-            .with_options(options)
-            .parse();
+        let parsed =
+            Parser::new(self.allocator, source, self.source_type).with_options(options).parse();
         let hole = if parsed.is_flow_language {
             Some(EmbeddingHole::UnsupportedFlow)
         } else if parsed.panicked || parsed.diagnostics.has_errors() {

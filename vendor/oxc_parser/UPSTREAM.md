@@ -25,3 +25,14 @@ integration tests assert their diagnostic result and arena allocation ceiling.
 Failed type-argument and arrow probes share the existing table with disjoint
 one-word keys, avoiding another table initialization/drop for ordinary parses.
 The type-argument key retains all grammar-context bits.
+
+
+Vize publishes this unofficial fork as `vize_oxc_parser`, synchronized with the
+Vize workspace version. Its Rust library remains `oxc_parser`, and consumers
+use a direct `path` plus exact `version` dependency with the `package` alias.
+This preserves the admission/observation APIs outside the repository without
+relying on a root-only Cargo patch. The fork is published before its consumers;
+Cargo replaces the local path with the registry identity for published crates.
+Supporting Oxc crates retain the original pinned revision and registry version.
+Upstream source retains its own formatting and lint policy; Vize's workspace
+continues to compile and test the fork without imposing first-party Clippy rules.

@@ -69,8 +69,8 @@ use std::any::Any;
 pub mod config;
 mod context;
 mod cursor;
-mod error_handler;
 mod embedding;
+mod error_handler;
 mod modifiers;
 mod module_record;
 mod observation;
@@ -99,12 +99,6 @@ use oxc_span::{SourceType, Span};
 use oxc_syntax::module_record::ModuleRecord;
 
 pub use crate::lexer::{Kind, Token};
-pub use observation::{AdmittedProgram, ProgramObservation};
-pub use embedding::{
-    AdmittedExpression, AdmittedHandlerBody, AdmittedParameters, EmbeddingGoal, EmbeddingHole,
-    EmbeddingInput, EmbeddingInputError, EmbeddingObservation, ExpressionObservation,
-    HandlerBodyObservation, ParametersObservation,
-};
 use crate::{
     config::{
         LexerConfig, NoTokensParserConfig, ParserConfig, RuntimeParserConfig, TokensParserConfig,
@@ -116,6 +110,12 @@ use crate::{
     module_record::ModuleRecordBuilder,
     state::ParserState,
 };
+pub use embedding::{
+    AdmittedExpression, AdmittedHandlerBody, AdmittedParameters, EmbeddingGoal, EmbeddingHole,
+    EmbeddingInput, EmbeddingInputError, EmbeddingObservation, ExpressionObservation,
+    HandlerBodyObservation, ParametersObservation,
+};
+pub use observation::{AdmittedProgram, ProgramObservation};
 
 /// Maximum length of source which can be parsed (in bytes).
 /// ~4 GiB on 64-bit systems, ~2 GiB on 32-bit systems.

@@ -242,7 +242,7 @@ fn update_workspace_manifest_versions(
       continue
     }
     if section == "[workspace.dependencies]" &&
-      trimmed.has_prefix("vize_") &&
+      (trimmed.has_prefix("vize_") || line.contains("package = \"vize_")) &&
       line.contains("version = \"=\{current_version}\"") {
       updated.push(
         line.replace_all(
