@@ -64,6 +64,7 @@ pub enum DomUnsupported {
     FileExpression,
     FileHandler,
     FileForHead,
+    ForCollectionAccess,
     HandlerSyntax,
     HandlerAccess,
     FileScope,
@@ -240,7 +241,8 @@ impl<'owner, 'arena> DomFacts<'owner, 'arena> {
     }
 
     /// Whole original head custody at the actual introducing canonical event.
-    /// This supplies no collection access policy or loop target eligibility.
+    /// Bounded setup read classification grants no collection runtime spelling
+    /// or loop target eligibility.
     #[must_use]
     pub fn file_for_head(&self, id: NodeId) -> Option<&DomFileForHead<'owner, 'arena>> {
         self.file_for_heads.get(id)

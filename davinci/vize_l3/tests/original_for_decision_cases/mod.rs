@@ -53,11 +53,16 @@ fn nested_same_name_collection_borrows_parent_alias_before_child_shadowing() {
         HandlerBindingRef::Outer(inner_alias.id())
     );
     let refusals = analysis.dom().unwrap().unsupported();
-    assert_eq!(refusals.len(), 3);
+    assert_eq!(refusals.len(), 4);
     assert_eq!(refusals[0].reason, DomUnsupported::Operation);
-    assert_eq!(refusals[1].reason, DomUnsupported::Operation);
-    assert_eq!(refusals[2].reason, DomUnsupported::HandlerAccess);
-    assert_eq!(refusals[2].node, handler.id().node());
+    assert_eq!(refusals[1].reason, DomUnsupported::ForCollectionAccess);
+    assert_eq!(
+        refusals[1].span,
+        inner_row.resolution().collection_authored_span()
+    );
+    assert_eq!(refusals[2].reason, DomUnsupported::Operation);
+    assert_eq!(refusals[3].reason, DomUnsupported::HandlerAccess);
+    assert_eq!(refusals[3].node, handler.id().node());
     assert_eq!(analysis.tables().nodes.len(), 5);
     assert_eq!(analysis.tables().controls.len(), 2);
     assert_eq!(
@@ -189,3 +194,5 @@ fn later_header_hole_retains_the_whole_input_but_never_mints_a_receipt() {
         Err(DecisionBuildError::IncompleteFile)
     ));
 }
+
+mod read;

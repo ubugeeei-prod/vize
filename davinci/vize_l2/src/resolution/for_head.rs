@@ -92,6 +92,12 @@ impl<'a> ForResolution<'a> {
     pub const fn collection(&self) -> Occurrence<'a> {
         self.collection
     }
+    /// Borrow the actual stored occurrence beside its whole original owner.
+    /// This grants no File, setup exposure or loop runtime authority by itself.
+    #[must_use]
+    pub const fn collection_occurrence(&self) -> &Occurrence<'a> {
+        &self.collection
+    }
     #[must_use]
     pub const fn collection_authored_span(&self) -> Span {
         self.collection_authored

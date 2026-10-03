@@ -97,7 +97,8 @@ impl<'owner, 'arena> NativeTemplateDomAnalysis<'owner, 'arena> {
     }
 
     /// Whole original head joined during the sole DOM Enter walk.
-    /// Collection access and loop emission remain typed refusals.
+    /// Bounded setup reads retain identity; collection runtime spelling and
+    /// loop emission remain typed refusals.
     #[must_use]
     pub fn for_head(&self, node: NodeId) -> Option<&DomFileForHead<'owner, 'arena>> {
         self.dom()?.file_for_head(node)

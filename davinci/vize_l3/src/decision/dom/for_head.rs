@@ -1,13 +1,14 @@
 //! Whole original For custody joined during the existing canonical Enter event.
 
+use super::vue::VueRenderRead;
 use vize_l2::{
     file::{BindingRef, FileForHead},
     op::OriginalForOp,
     resolution::ForResolution,
 };
 
-/// An authentic same-File/allocation receipt, without collection access policy
-/// or loop runtime eligibility. All original observations remain normally owned
+/// An authentic same-File/allocation receipt with bounded original setup reads,
+/// without loop runtime eligibility. All original observations remain normally owned
 /// by the borrowed File; no AST, parameter or source copy is stored here.
 ///
 /// Caller-written combinations cannot mint this receipt:
@@ -16,7 +17,7 @@ use vize_l2::{
 /// use vize_l3::decision::dom::DomFileForHead;
 /// fn forge<'f, 'a>(head: FileForHead<'f, 'a>, original: &'f OriginalForOp<'a>,
 ///     resolution: &'f ForResolution<'a>, collection: BindingRef<'f, 'a>) {
-///     let _ = DomFileForHead { head, original, resolution, collection };
+///     let _ = DomFileForHead { head, original, resolution, collection, read: None };
 /// }
 /// ```
 /// ```compile_fail
@@ -40,6 +41,7 @@ pub struct DomFileForHead<'owner, 'arena> {
     pub(in crate::decision::dom) original: &'owner OriginalForOp<'arena>,
     pub(in crate::decision::dom) resolution: &'owner ForResolution<'arena>,
     pub(in crate::decision::dom) collection: BindingRef<'owner, 'arena>,
+    pub(in crate::decision::dom) read: Option<VueRenderRead<'owner, 'arena>>,
 }
 
 impl core::fmt::Debug for DomFileForHead<'_, '_> {
@@ -66,10 +68,17 @@ impl<'owner, 'arena> DomFileForHead<'owner, 'arena> {
         self.resolution
     }
     /// The enclosing collection binding may be a genuine parent template alias.
-    /// Its identity supplies no Vue runtime spelling or collection policy.
+    /// Its identity supplies no Vue runtime spelling or loop target policy.
     #[must_use]
     pub const fn collection(&self) -> BindingRef<'owner, 'arena> {
         self.collection
+    }
+    /// The actual setup collection occurrence and its sealed native access kind.
+    /// Parent-template aliases retain custody but have no setup read policy.
+    /// A positive read alone grants no loop target or executable output.
+    #[must_use]
+    pub fn collection_read(&self) -> Option<&VueRenderRead<'owner, 'arena>> {
+        self.read.as_ref()
     }
     #[must_use]
     pub fn accepts_original(&self, original: &OriginalForOp<'arena>) -> bool {

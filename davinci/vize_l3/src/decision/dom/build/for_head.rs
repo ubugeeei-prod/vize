@@ -8,6 +8,7 @@ use vize_l2::{
     op::OriginalForOp,
     resolution::ForAliasDeclaration,
 };
+mod read;
 
 impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
     DomBuilder<'_, 'owner, 'arena, F, R>
@@ -19,7 +20,15 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
     ) {
         let Some(file) = self.file else { return };
         match join(file, node, original) {
-            Ok(row) => {
+            Ok(mut row) => {
+                row.read = read::classify(&row);
+                if row.read.is_none() {
+                    self.reject(
+                        node,
+                        row.resolution().collection_authored_span(),
+                        DomUnsupported::ForCollectionAccess,
+                    );
+                }
                 self.facts.file_for_heads.insert(node, row);
             }
             Err(reason) => self.reject(node, original.span, reason),
@@ -87,6 +96,7 @@ fn join<'owner, 'arena>(
         original,
         resolution,
         collection,
+        read: None,
     })
 }
 
