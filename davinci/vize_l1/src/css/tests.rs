@@ -41,7 +41,7 @@ fn original_css_parser_tokens_declarations_and_absolute_spans_survive_once() {
         .iter()
         .find(|token| matches!(token.token(), Token::Ident(_)))
         .unwrap();
-    assert!(matches!(name.token(), Token::Ident(value) if value == "foo"));
+    assert!(matches!(name.token(), Token::Ident(value) if value.as_ref() == "foo"));
     assert_eq!(
         &source[name.span().start as usize..name.span().end as usize],
         "\\66 oo"
@@ -137,7 +137,7 @@ fn real_parser_refusals_retain_partial_rule_tokens_and_original_complete_source(
         .iter()
         .find(|token| matches!(token.token(), Token::Function(_)))
         .unwrap();
-    assert!(matches!(token.token(), Token::Function(value) if value == "v-bind"));
+    assert!(matches!(token.token(), Token::Function(value) if value.as_ref() == "v-bind"));
     assert_eq!(
         syntax.issue().unwrap().code,
         StyleIssueCode::UnsupportedValue
