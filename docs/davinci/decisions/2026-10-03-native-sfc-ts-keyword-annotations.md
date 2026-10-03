@@ -34,10 +34,17 @@ legacy compiler or default replacement is introduced.
 Meaningful source/profile/owner/interruption and unsupported-type laws,
 actual source-built whole modules/maps, an independent pinned Vue 3.5.35 and
 official TypeScript reference, and real native Vue execution are required.
-These new laws and captures are not yet executed. Validation will run in
-Actions; exact-head checks, full protected suites, all 100 unchanged instruction
-ceilings and actual merge remain required. No new public Stack layer is added
-to the healthy queued predecessor just to publish private development.
+The independent reference reproduces complete compiler bytes and maps with
+Vue 3.5.35 and official TypeScript 6.0.3, and its real Vue renders pass. New
+Rust laws, native modules/maps and native renders still require source-built
+Actions execution. The existing first-tooling-shard native setup action also
+runs on precisely affected PR source: its classifier forces a worker even
+when ordinary tooling selection is empty. The protected merge-group capture
+remains mandatory independently of that flag. Missing captures fail rather
+than substituting fixture bytes. Actual generated native modules/maps will be
+frozen before final acceptance; exact-head checks, full protected suites, all
+100 unchanged instruction ceilings and actual merge remain required. With
+the genuine predecessors merged, this successor is published independently.
 
 Broader TS erasure, ordinary scripts, macros, nonprimitive bodies, remaining Vue
 dialects/targets and compiler default migration remain unfinished. Compiler
