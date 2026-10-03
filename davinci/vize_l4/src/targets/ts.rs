@@ -9,6 +9,7 @@ use vize_l2::file::{FileArtifact, ScriptUnit};
 
 mod mapping;
 pub use mapping::MappingError;
+pub mod vue;
 
 const MODULE_SUFFIX: &str = "\n;\nexport {};\n";
 
