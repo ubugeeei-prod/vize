@@ -4,9 +4,12 @@ import { createRequire } from "node:module";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
-const pack = JSON.parse(fs.readFileSync(new URL(
-  "../../davinci/vize_l4/tests/fixtures/original-click-vue-3.5.35.json", import.meta.url,
-), "utf8"));
+const pack = JSON.parse(
+  fs.readFileSync(
+    new URL("../../davinci/vize_l4/tests/fixtures/original-click-vue-3.5.35.json", import.meta.url),
+    "utf8",
+  ),
+);
 const fromUi = createRequire(new URL("../../npm/ui/package.json", import.meta.url));
 const fromVue = createRequire(fromUi.resolve("vue/package.json"));
 const compiler = fromVue("@vue/compiler-dom");
@@ -14,8 +17,9 @@ const runtime = fromVue("vue");
 const url = (text: string) => `data:text/javascript;base64,${Buffer.from(text).toString("base64")}`;
 const runtimeUrl = url(
   `import runtime from ${JSON.stringify(pathToFileURL(fromVue.resolve("vue")).href)};\n` +
-  ["openBlock", "createElementBlock", "createElementVNode", "Fragment"]
-    .map((name) => `export const ${name} = runtime.${name};`).join("\n"),
+    ["openBlock", "createElementBlock", "createElementVNode", "Fragment"]
+      .map((name) => `export const ${name} = runtime.${name};`)
+      .join("\n"),
 );
 
 test("five whole original click byte-laws retain pinned code and complete reference maps", () => {
@@ -25,8 +29,14 @@ test("five whole original click byte-laws retain pinned code and complete refere
   assert.equal(fromVue("@vue/compiler-dom/package.json").version, "3.5.35");
   assert.equal(fromVue("vue/package.json").version, "3.5.35");
   assert.deepEqual(pack.options, {
-    mode: "module", hoistStatic: false, prefixIdentifiers: true, comments: true,
-    filename: "Click.vue", sourceMap: true, bindingMetadata: {}, cacheHandlers: false,
+    mode: "module",
+    hoistStatic: false,
+    prefixIdentifiers: true,
+    comments: true,
+    filename: "Click.vue",
+    sourceMap: true,
+    bindingMetadata: {},
+    cacheHandlers: false,
   });
   assert.equal(pack.fixtures.length, 5);
   assert.equal(new Set(pack.fixtures.map((fixture: any) => fixture.id)).size, 5);
@@ -38,7 +48,13 @@ test("five whole original click byte-laws retain pinned code and complete refere
   }
 });
 
-type Host = { type: string; children: Host[]; props: Record<string, any>; text: string; parent: Host | null };
+type Host = {
+  type: string;
+  children: Host[];
+  props: Record<string, any>;
+  text: string;
+  parent: Host | null;
+};
 const node = (type: string): Host => ({ type, children: [], props: {}, text: "", parent: null });
 
 function mountedRenderer() {
@@ -48,14 +64,20 @@ function mountedRenderer() {
     createElement: (type: string) => node(type),
     createText: (text: string) => ({ ...node("#text"), text }),
     createComment: (text: string) => ({ ...node("#comment"), text }),
-    setText: (target: Host, text: string) => { target.text = text; },
-    setElementText: (target: Host, text: string) => { target.text = text; },
+    setText: (target: Host, text: string) => {
+      target.text = text;
+    },
+    setElementText: (target: Host, text: string) => {
+      target.text = text;
+    },
     parentNode: (target: Host) => target.parent,
     nextSibling: (target: Host) => {
       const siblings = target.parent?.children ?? [];
       return siblings[siblings.indexOf(target) + 1] ?? null;
     },
-    patchProp: (target: Host, key: string, _previous: any, value: any) => { target.props[key] = value; },
+    patchProp: (target: Host, key: string, _previous: any, value: any) => {
+      target.props[key] = value;
+    },
     insert: (target: Host, parent: Host, anchor: Host | null) => {
       if (target.parent) {
         const previous = target.parent.children;
@@ -86,8 +108,17 @@ for (const fixture of pack.fixtures) {
   test(`${fixture.id} real Vue mount, callback replacement and unmount preserve event effects`, async () => {
     // The genuine Rust File test compares every native module byte to this
     // complete module. Only this loader's runtime import address is replaced.
-    const loaded = await import(url(fixture.code.replace('from "vue"', `from ${JSON.stringify(runtimeUrl)}`)));
-    const forbidden = new Proxy({}, { get(_target, key) { throw Error(`unexpected context read ${String(key)}`); } });
+    const loaded = await import(
+      url(fixture.code.replace('from "vue"', `from ${JSON.stringify(runtimeUrl)}`))
+    );
+    const forbidden = new Proxy(
+      {},
+      {
+        get(_target, key) {
+          throw Error(`unexpected context read ${String(key)}`);
+        },
+      },
+    );
     const { renderer, container } = mountedRenderer();
     let previous: ((event: any) => void) | undefined;
     let actualButton: Host | undefined;
@@ -100,7 +131,8 @@ for (const fixture of pack.fixtures) {
       actualButton = target;
       const handler = target.props.onClick;
       assert.equal(typeof handler, "function");
-      if (previous) assert.notEqual(handler, previous, "uncached real PROPS patch replaces the callback");
+      if (previous)
+        assert.notEqual(handler, previous, "uncached real PROPS patch replaces the callback");
       previous = handler;
       const event = structuredClone(fixture.events[phase]);
       const returned = handler(event);
