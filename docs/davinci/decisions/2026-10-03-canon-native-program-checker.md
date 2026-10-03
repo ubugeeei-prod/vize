@@ -94,16 +94,38 @@ existing editor fallback did not apply its authored project config. Privacy,
 minimal-feature and feature Clippy steps were not reached. Both failed runs and
 complete original payloads remain preserved.
 
-The reference now writes every frozen original source byte-for-byte into its
-configured TempDir before backend startup and opens its physical identity with
-the same `.mjs`/`.ts` ScriptKind. Separate directories preserve the two fixture
-families' distinct sources with overlapping case names. No projection marker is
-added to the original, expectation changed, or diagnostic filtered. The native
-checker uses a separate actual config-only workspace with the same options, so
-the hook must configure its own materialized session rather than relying on
-reference files to establish the project. A new exact-source
-full Actions run must execute all original and bounded comparisons and privacy
-laws before backend equivalence can be reported.
+The next full run 37112290503 retained mapping3 and guard4 but its actual
+positive Corsa law still failed at `ts-module-goal`: byte-exact physical original
+files were present before startup, yet applying the existing bridge's additional
+document overlay again produced global `name` diagnostics. Physical
+materialization alone did not establish equivalent Module settings. The
+existing session code documents that a second overlay can detach a configured
+physical document; this explains the next bounded reference correction without
+claiming that the new runtime proof has already passed.
+
+The independent original reference now opens the existing Corsa
+`ProjectSession` directly for its actual configured disk project and requests
+disk-file diagnostics through that retained snapshot/project. It adds no editor
+overlay. Actual backend metadata must identify the same canonical config,
+Module Force, strictness, allowJs and checkJs, and each requested physical file
+must belong to the returned root-file set. Its properly encoded physical URI
+must be retained by the complete compiler response. Unsupported methods,
+missing responses and transport errors propagate as failures; an existing file
+absent from the open snapshot and a request after closing the actual session
+must refuse rather than synthesize an empty vector. Syntactic, semantic and
+suggestion diagnostics retain the existing bridge order and complete public
+payload.
+
+Every frozen original source is still written byte-for-byte before backend
+startup. Separate directories retain the two families' distinct sources with
+overlapping names; original .mjs/.ts kinds and all independent expected vectors
+remain unchanged. The native checker keeps its separate config-only workspace
+and unchanged configured-session hook. No did_open, marker file, projection
+marker, source rewrite or alternate language extension is used for the original
+reference. All three failed campaigns and full payloads remain preserved; a
+fresh corrected-source full run must execute every original/bounded comparison,
+privacy law, minimal-feature check and strict Clippy before equivalence can be
+reported.
 
 The existing full Rust Actions recipe explicitly runs the feature's mapping,
 actual-backend and privacy tests, minimal-feature check and strict Clippy.

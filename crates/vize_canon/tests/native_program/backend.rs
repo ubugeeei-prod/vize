@@ -1,9 +1,9 @@
 //! Independent TypeScript references and complete original Corsa observations.
 
-use super::{TestResult, configured, require, require_equal, support};
+use super::{TestResult, configured, reference::DiskReference, require, require_equal, support};
 use std::path::Path;
+use vize_canon::LspDiagnostic;
 use vize_canon::native_program::{NativeProgramChecker, NativeProgramError};
-use vize_canon::{CorsaBridge, LspDiagnostic};
 use vize_l0::{
     Allocator, Span, cstr,
     line_index::{LineBreaks, utf16_len, utf16_offset},
@@ -26,10 +26,10 @@ fn real_backend_preserves_complete_original_diagnostics_and_independent_referenc
         )?;
         // Missing required executables fail this test; no optional backend skip.
         let project = tempfile::TempDir::new()?;
-        let config = configured(project.path(), backend.clone())?;
+        configured(project.path(), backend.clone())?;
         // Native startup must honor an actual config-only workspace itself.
         let native_project = tempfile::TempDir::new()?;
-        let native_config = configured(native_project.path(), backend)?;
+        let native_config = configured(native_project.path(), backend.clone())?;
         let pack: serde_json::Value = serde_json::from_str(include_str!(
             "../../../../davinci/vize_l4/tests/fixtures/program-checker.json"
         ))?;
@@ -56,9 +56,14 @@ fn real_backend_preserves_complete_original_diagnostics_and_independent_referenc
         prepare_references(&bounded_dir, bounded_cases)?;
         // The actual configured project contains exact original sources before
         // backend startup; inferred virtual projects are not reference inputs.
-        let reference = CorsaBridge::with_config(config);
+        let reference = DiskReference::spawn(project.path(), &backend).await?;
         let mut checker = NativeProgramChecker::with_config(native_config)?;
-        reference.spawn().await?;
+        let unknown = project.path().join("not-in-open-snapshot.ts");
+        std::fs::write(&unknown, "const unlisted=1;")?;
+        require(
+            reference.diagnostics(&unknown).await.is_err(),
+            "an existing unknown closed file cannot synthesize empty diagnostics",
+        )?;
         let mut accepted = 0;
         let mut refused = 0;
         for case in cases {
@@ -124,7 +129,14 @@ fn real_backend_preserves_complete_original_diagnostics_and_independent_referenc
             "positive JavaScript reference actually checked",
         )?;
         checker.shutdown().await?;
-        reference.shutdown().await?;
+        reference.close().await?;
+        require(
+            reference
+                .diagnostics(&bounded_dir.join("reference-js-valid.mjs"))
+                .await
+                .is_err(),
+            "a closed actual backend cannot synthesize empty diagnostics",
+        )?;
         Ok(())
     })
 }
@@ -154,7 +166,7 @@ fn prepare_references(directory: &Path, cases: &[serde_json::Value]) -> TestResu
 async fn check_case(
     case: &serde_json::Value,
     reference_dir: &Path,
-    reference: &CorsaBridge,
+    reference: &DiskReference,
     checker: &mut NativeProgramChecker,
 ) -> Result<bool, Box<dyn std::error::Error>> {
     let id = case
@@ -190,11 +202,7 @@ async fn check_case(
         std::fs::read(&path)? == source.as_bytes(),
         "reference file retains exact original bytes",
     )?;
-    let uri = reference
-        .open_virtual_document(path.to_str().ok_or("reference path")?, source)
-        .await?;
-    let original = reference.get_diagnostics(&uri).await?;
-    reference.close_virtual_document(&uri).await?;
+    let original = reference.diagnostics(&path).await?;
     let checked = checker.check(&projection).await?;
     require(
         core::ptr::eq(checked.projection(), &projection),
@@ -266,6 +274,13 @@ async fn check_case(
             id,
         )?;
     }
+    eprintln!(
+        "native Program reference {}/{id}: complete original payload matched",
+        reference_dir
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or("reference family")?,
+    );
     Ok(true)
 }
 
