@@ -73,3 +73,10 @@ Production routes, compiler-history #6880 and every instruction ceiling remain
 unchanged. Native SFC custody, complete whitespace/dialect/expression/control/
 component/slot/model/class/style families, upstream maps and whole-product
 performance/parity remain unfinished.
+
+The actual setup-prefix queue base exposed an adjacent-step insertion conflict
+in `pr-source-checks.yml`. The SSR entry is removed from that queue until its
+source checks pass again. Its existing mandatory first-shard action now runs
+after installed dependencies and checksum-pinned Pkl preparation, before CLI
+construction; incoming setup and DOM capture hooks keep their own anchors.
+The same complete capture contract and all merge-group gates remain required.
