@@ -285,3 +285,27 @@ unchanged observational scanner and verify its pure `--check`. This changes no
 product wiring, migration admission or baseline classification. The complexity
 tooling failure is the same corrected CFG coordinate compilation error. Fresh
 exact-head acceptance must prove both repairs; no known-red candidate is admitted.
+
+## Actual source acceptance and merged-provider replay
+
+Corrected source `ed4935e7174bddec7c4ed0221cf3d2a1d90abc39` passes
+[Check37137181691](https://github.com/ubugeeei-prod/vize/actions/runs/37137181691).
+Its actual affected archive executes 14,643 tests across four successful Rust
+workers, including all 13 authentic native For factory laws, four borrowed-owner
+laws, three real transport laws, caught post-park/post-scope unwind and the
+existing native Vapor missing-operand refusal. Strict affected production
+Clippy also executes successfully. This is source acceptance; complete protected
+workspace/docs, all 100 instruction measurements and terminal merge remain required.
+
+Handler providers #7542 and #7557 actually merge as `14988a0b38` and
+`bbb8e1a952` at 16:39:57/58 UTC. Rebase this true child onto its owner's freshly
+published upper Stack top `b91582c9cc4e132a50b9f93002aa88849bb9bdd8`, preserving
+the complete current decisions and additive ordinary/Event/For test registrations.
+The own For factory, one-header phases, visibility, original laws and every
+layout/allocation/depth/instruction budget remain identical to accepted `ed4935e7`;
+incoming File ordinary-script receipt access remains intact. The actual unchanged
+canonical20 and consumer-migration scanners regenerate cleanly. Prior source
+acceptance is historical after the replay: fresh configured exact-head Actions
+and actual protected Stack acceptance establish current delivery. Preserve the
+older Handler prefix and continue asynchronously without another local Cargo/npm
+or manual full campaign.
