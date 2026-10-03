@@ -3,11 +3,12 @@
     reason = "test assertions report genuine stock-profile and full-source admission refusals"
 )]
 
-#[path = "support/file_jsx.rs"]
-mod fixture;
-use fixture::{LawResult, Required, lower};
+mod support {
+    pub mod file_jsx;
+}
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use support::file_jsx::{LawResult, Required, lower};
 use vize_l0::{Allocator, SourceRoot, Span, String};
 use vize_l2::file::FileIssueKind;
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};

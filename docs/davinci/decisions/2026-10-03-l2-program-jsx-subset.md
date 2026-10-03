@@ -88,3 +88,12 @@ this layer from `main` and the separately reviewed static-name layer from this
 head, register both in one native Stack, and follow fresh exact-head and protected
 queue checks. The earlier local executions remain evidence of the original
 reviewed source; fresh hosted results qualify the replayed heads.
+
+The first hosted replay exposed two integration-only failures. Shared JSX test
+helpers now use ordinary module declarations, as required by the repository
+layout gate. The Vue profile law still requires the exact Vue refusal for JSX
+and TSX modules and preserves the original observations and unit receipts. Its
+retained generic File now completes for those supported profiles; CommonJS and
+declaration-file profiles remain incomplete. Generic File completion grants no
+Vue exposure or template admission. The original failed runs remain recorded;
+the corrected heads need fresh hosted checks.
