@@ -259,6 +259,11 @@ fn project<'o, 'a, L: LinkSink>(
                         .and_then(|script| script.syntax())
                         .and_then(|syntax| syntax.admitted_program())
                         .ok_or(VueProjectionError::Custody)?;
+                    // A primitive initializer does not certify an effective JS
+                    // JSDoc type. Vue Ref unwrapping remains unfinished here.
+                    if kind == SourceKind::JavaScript && program.has_jsdoc_comments() {
+                        return Err(VueProjectionError::UnsupportedTemplateBindings);
+                    }
                     VueSetup::checked(file, script, program)
                         .map_err(|_| VueProjectionError::UnsupportedTemplateBindings)?;
                     primitive_setup = true;

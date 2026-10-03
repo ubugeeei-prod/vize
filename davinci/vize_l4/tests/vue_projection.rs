@@ -15,6 +15,9 @@ use vize_l4::targets::ts::{
 #[path = "vue_projection/binding_reads.rs"]
 mod binding_reads;
 
+#[path = "vue_projection/jsdoc_reads.rs"]
+mod jsdoc_reads;
+
 fn options() -> DescriptorOptions {
     DescriptorOptions {
         version: VueVersion::V3,
