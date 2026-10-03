@@ -48,7 +48,8 @@ mod cases {
                 NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
                     .unwrap()
                     .unwrap();
-            let mut original = NativeTemplateOwner::new(selected).unwrap();
+            let mut original = NativeTemplateOwner::new(selected)
+                .unwrap_or_else(|_| panic!("the genuine selected owner"));
             original.parse_setup_program().unwrap();
             let syntax = original.retained_setup().unwrap();
             assert_eq!(syntax.diagnostics().count(), 0);

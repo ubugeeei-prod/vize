@@ -61,7 +61,12 @@ Two independent peers reviewed the actual pinned AST fields and readiness
 guards. Source review corrected the genuine Script versus Unambiguous profile
 fixture, replaced the invalid ambient initialized declaration with a genuinely
 admitted ambient source, and retained strict test-only lint boundaries. No
-local compile/build/backend installation is performed. Fresh exact-source
+local compile/build/backend installation is performed. The first exact source
+Actions build rejected a test-only `unwrap()` because the original selected
+owner's rejection type intentionally has no Debug implementation. Explicit
+test extraction fixes that bound without changing source admission or expected
+refusals; no test execution or merge acceptance is credited to that head.
+Fresh exact-source
 Actions, protected full suites and unchanged instruction ceilings, native Stack
 topology for the dependent consumer, and actual merge remain required. Full
 type syntax, configured graph snapshots, whole native SFC typing, #6879 history
