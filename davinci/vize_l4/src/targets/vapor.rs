@@ -44,7 +44,7 @@ pub fn emit_template<L: LinkSink>(
 ) -> Result<Emitted<L>, VaporError> {
     let error = |kind| VaporError {
         node: None,
-        span: Span::default(),
+        span: Span::new(0, 0),
         kind,
     };
     let facts = analysis
