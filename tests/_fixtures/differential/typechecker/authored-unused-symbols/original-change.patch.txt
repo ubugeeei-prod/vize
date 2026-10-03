@@ -1,0 +1,696 @@
+commit cd7156d28386e072953476fdbc354a963758dc89
+Author:     ubugeeei <ubuge1122@gmail.com>
+AuthorDate: Tue Jun 9 20:12:11 2026 +0900
+Commit:     GitHub <noreply@github.com>
+CommitDate: Tue Jun 9 20:12:11 2026 +0900
+
+    fix(typecheck): preserve user TS6133 diagnostics (#1271)
+
+diff --git a/crates/vize_canon/src/batch/executor/cli.rs b/crates/vize_canon/src/batch/executor/cli.rs
+index 5474995b14..3b9bfca720 100644
+--- a/crates/vize_canon/src/batch/executor/cli.rs
++++ b/crates/vize_canon/src/batch/executor/cli.rs
+@@ -7,6 +7,7 @@ use super::super::{Diagnostic, TypeCheckResult, VirtualProject};
+ use crate::batch::error::{CorsaError, CorsaResult};
+ use crate::batch::executor::diagnostics::{
+     DiagnosticMapper, relative_module_resolves_on_disk, should_skip_diagnostic,
++    should_skip_original_diagnostic,
+ };
+ use vize_carton::profile;
+ use vize_carton::{String, cstr};
+@@ -115,9 +116,15 @@ fn parse_cli_diagnostic_line(
+     if should_skip_diagnostic(code, message) {
+         return None;
+     }
++    if code == Some(6133) && !mapper.preserves_unused_diagnostics() {
++        return None;
++    }
+ 
+     let virtual_path = normalize_cli_path(path, project.virtual_root());
+     let original = mapper.map_to_original(&virtual_path, line, column)?;
++    if should_skip_original_diagnostic(code, &original) {
++        return None;
++    }
+ 
+     // Suppress the false `TS2307` raised for a relative import of a sibling that
+     // exists on disk but sits outside an explicit file subset. See the matching
+diff --git a/crates/vize_canon/src/batch/executor/diagnostics.rs b/crates/vize_canon/src/batch/executor/diagnostics.rs
+index 9c8f6ef02d..e8962e81f3 100644
+--- a/crates/vize_canon/src/batch/executor/diagnostics.rs
++++ b/crates/vize_canon/src/batch/executor/diagnostics.rs
+@@ -31,6 +31,7 @@ pub(super) fn map_batch_diagnostics(
+ 
+ pub(super) struct DiagnosticMapper<'a> {
+     project: &'a VirtualProject,
++    preserve_unused_diagnostics: bool,
+     original_sources: FxHashMap<PathBuf, CachedSource>,
+     virtual_line_indexes: FxHashMap<PathBuf, LineIndex>,
+ }
+@@ -39,11 +40,16 @@ impl<'a> DiagnosticMapper<'a> {
+     pub(super) fn new(project: &'a VirtualProject) -> Self {
+         Self {
+             project,
++            preserve_unused_diagnostics: project.tsconfig_preserves_unused_diagnostics(),
+             original_sources: FxHashMap::default(),
+             virtual_line_indexes: FxHashMap::default(),
+         }
+     }
+ 
++    pub(super) fn preserves_unused_diagnostics(&self) -> bool {
++        self.preserve_unused_diagnostics
++    }
++
+     fn map_lsp_diagnostic(
+         &mut self,
+         virtual_path: &Path,
+@@ -53,12 +59,21 @@ impl<'a> DiagnosticMapper<'a> {
+         if should_skip_diagnostic(code, &diagnostic.message) {
+             return None;
+         }
++        if code == Some(6133) && !self.preserve_unused_diagnostics {
++            return None;
++        }
+ 
+         let original = self.map_to_original(
+             virtual_path,
+             diagnostic.range.start.line,
+             diagnostic.range.start.character,
+         );
++        if original
++            .as_ref()
++            .is_some_and(|original| should_skip_original_diagnostic(code, original))
++        {
++            return None;
++        }
+ 
+         // A `vize check src/App.vue` subset registers only the named files, so a
+         // relative import of a sibling that exists on disk but sits outside the
+@@ -252,11 +267,7 @@ pub(super) fn should_skip_diagnostic(code: Option<u32>, _message: &str) -> bool
+     match code {
+         // TS2666: virtual-TS generation injects helper bindings that can trip
+         // this code outside the user's source — suppress to match vue-tsc.
+-        // TS6133 ("declared but never read"): virtual-TS shadows __setup
+-        // imports with macros, which generates spurious TS6133 at module
+-        // level; the virtual-TS generator emits `void` markers but the rest
+-        // is suppressed here. See virtual_ts/generator.rs.
+-        Some(2666) | Some(6133) => true,
++        Some(2666) => true,
+         // TS7006/TS7043/TS7044 (noImplicitAny family) are user-facing errors
+         // and must surface so `vize check` matches vue-tsc under
+         // `noImplicitAny`/`strict`. They were previously suppressed (#966).
+@@ -264,6 +275,17 @@ pub(super) fn should_skip_diagnostic(code: Option<u32>, _message: &str) -> bool
+     }
+ }
+ 
++pub(super) fn should_skip_original_diagnostic(
++    code: Option<u32>,
++    original: &OriginalPosition,
++) -> bool {
++    code == Some(6133) && original.block_type.is_none() && is_vue_source(&original.path)
++}
++
++fn is_vue_source(path: &Path) -> bool {
++    path.extension().is_some_and(|extension| extension == "vue")
++}
++
+ /// Extract the specifier from the first `Cannot find module "<spec>"` in
+ /// `message`, handling straight and smart quotes.
+ fn module_not_found_specifier(message: &str) -> Option<&str> {
+@@ -349,9 +371,9 @@ fn specifier_has_source_extension(specifier: &str) -> bool {
+ mod tests {
+     use super::{
+         LineIndex, map_batch_diagnostics, parse_diagnostic_code, parse_severity,
+-        should_skip_diagnostic, uri_to_path,
++        should_skip_diagnostic, should_skip_original_diagnostic, uri_to_path,
+     };
+-    use crate::batch::VirtualProject;
++    use crate::batch::{OriginalPosition, SfcBlockType, VirtualProject};
+     use serde_json::json;
+     use std::path::PathBuf;
+     use tempfile::TempDir;
+@@ -433,8 +455,10 @@ mod tests {
+         assert!(!should_skip_diagnostic(Some(2307), vue_ts_msg));
+         assert!(!should_skip_diagnostic(Some(2307), non_vue_msg));
+ 
+-        // TS6133 / TS2666 are virtual-TS-driven and still suppressed.
+-        assert!(should_skip_diagnostic(Some(6133), "any message"));
++        // TS6133 is location-sensitive: user-mapped diagnostics must survive,
++        // while generated virtual-SFC helper diagnostics are handled after
++        // source mapping by should_skip_original_diagnostic().
++        assert!(!should_skip_diagnostic(Some(6133), "any message"));
+         assert!(should_skip_diagnostic(Some(2666), "any message"));
+         // TS7006/7043/7044 (noImplicitAny family) must surface to match
+         // vue-tsc — #966.
+@@ -445,6 +469,33 @@ mod tests {
+         assert!(!should_skip_diagnostic(None, "any message"));
+     }
+ 
++    #[test]
++    fn ts6133_suppression_is_limited_to_unmapped_vue_generated_code() {
++        let unmapped_vue = OriginalPosition {
++            path: PathBuf::from("App.vue"),
++            line: 0,
++            column: 0,
++            block_type: None,
++        };
++        let mapped_vue = OriginalPosition {
++            path: PathBuf::from("App.vue"),
++            line: 1,
++            column: 6,
++            block_type: Some(SfcBlockType::ScriptSetup),
++        };
++        let plain_ts = OriginalPosition {
++            path: PathBuf::from("main.ts"),
++            line: 0,
++            column: 6,
++            block_type: None,
++        };
++
++        assert!(should_skip_original_diagnostic(Some(6133), &unmapped_vue));
++        assert!(!should_skip_original_diagnostic(Some(6133), &mapped_vue));
++        assert!(!should_skip_original_diagnostic(Some(6133), &plain_ts));
++        assert!(!should_skip_original_diagnostic(Some(2322), &unmapped_vue));
++    }
++
+     #[test]
+     fn ts2307_for_resolvable_relative_siblings_is_suppressed() {
+         use super::relative_module_resolves_on_disk;
+@@ -609,6 +660,67 @@ import ExistingPanel from './ExistingPanel.vue'
+         insta::assert_debug_snapshot!("maps_unmapped_diagnostics_snapshot", diagnostics);
+     }
+ 
++    #[test]
++    fn maps_user_ts6133_but_suppresses_generated_vue_ts6133() {
++        let temp_dir = TempDir::new().unwrap();
++        let source = temp_dir.path().join("src").join("App.vue");
++        std::fs::create_dir_all(source.parent().unwrap()).unwrap();
++        std::fs::write(
++            temp_dir.path().join("tsconfig.json"),
++            r#"{
++  "compilerOptions": {
++    "noUnusedLocals": true
++  },
++  "include": ["src/**/*"]
++}"#,
++        )
++        .unwrap();
++        std::fs::write(
++            &source,
++            r#"<script setup lang="ts">
++const used = 1
++const unusedLocal = 2
++</script>
++
++<template>{{ used }}</template>
++"#,
++        )
++        .unwrap();
++
++        let source = source.canonicalize().unwrap();
++        let mut project = VirtualProject::new(temp_dir.path()).unwrap();
++        project.register_path(&source).unwrap();
++        let virtual_file = project.find_by_original(&source).unwrap();
++        let virtual_uri = file_uri_for(&virtual_file.virtual_path);
++
++        let diagnostics = map_batch_diagnostics(
++            vec![(
++                virtual_uri,
++                vec![
++                    ts6133_diagnostic_at(
++                        virtual_file.content.as_str(),
++                        "unusedLocal",
++                        "'unusedLocal' is declared but its value is never read.",
++                    ),
++                    ts6133_diagnostic_at(
++                        virtual_file.content.as_str(),
++                        "function defineProps",
++                        "'defineProps' is declared but its value is never read.",
++                    ),
++                ],
++            )],
++            &project,
++        );
++
++        assert_eq!(diagnostics.len(), 1, "{diagnostics:#?}");
++        assert_eq!(diagnostics[0].file, source);
++        assert_eq!(diagnostics[0].line, 2);
++        assert_eq!(diagnostics[0].column, 6);
++        assert_eq!(diagnostics[0].code, Some(6133));
++        assert!(diagnostics[0].message.contains("unusedLocal"));
++        assert_eq!(diagnostics[0].block_type, Some(SfcBlockType::ScriptSetup));
++    }
++
+     fn ts2307_diagnostic_at(
+         virtual_source: &str,
+         needle: &str,
+@@ -630,6 +742,24 @@ import ExistingPanel from './ExistingPanel.vue'
+         }
+     }
+ 
++    fn ts6133_diagnostic_at(
++        virtual_source: &str,
++        needle: &str,
++        message: &str,
++    ) -> crate::corsa_client::LspDiagnostic {
++        let (line, character) = virtual_position_for(virtual_source, needle);
++        crate::corsa_client::LspDiagnostic {
++            range: crate::corsa_client::LspRange {
++                start: crate::corsa_client::LspPosition { line, character },
++                end: crate::corsa_client::LspPosition { line, character },
++            },
++            severity: Some(1),
++            code: Some(json!("TS6133")),
++            source: Some("ts".into()),
++            message: message.into(),
++        }
++    }
++
+     fn virtual_position_for(virtual_source: &str, needle: &str) -> (u32, u32) {
+         let offset = virtual_source
+             .find(needle)
+diff --git a/crates/vize_canon/src/batch/type_checker/tests.rs b/crates/vize_canon/src/batch/type_checker/tests.rs
+index 97ed0af3a7..e27699ac05 100644
+--- a/crates/vize_canon/src/batch/type_checker/tests.rs
++++ b/crates/vize_canon/src/batch/type_checker/tests.rs
+@@ -296,6 +296,70 @@ const $q = functionCall()
+     let _ = std::fs::remove_dir_all(&project_root);
+ }
+ 
++#[test]
++fn batch_type_checker_reports_user_ts6133_with_no_unused_locals() {
++    if resolve_test_tsgo_binary().is_none() {
++        return;
++    }
++
++    let project_root = create_project_case_without_node_modules(
++        "user-ts6133-no-unused-locals",
++        &[(
++            "src/App.vue",
++            r#"<script setup lang="ts">
++const used = 1
++const unusedLocal = 2
++</script>
++
++<template>{{ used }}</template>
++"#,
++        )],
++    );
++    std::fs::write(
++        project_root.join("tsconfig.json"),
++        r#"{
++  "compilerOptions": {
++    "strict": true,
++    "target": "ES2022",
++    "module": "ESNext",
++    "moduleResolution": "bundler",
++    "noEmit": true,
++    "noUnusedLocals": true
++  },
++  "include": ["src/**/*"]
++}"#,
++    )
++    .unwrap();
++
++    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
++        let _ = std::fs::remove_dir_all(&project_root);
++        return;
++    };
++
++    let ts6133: Vec<_> = snapshot
++        .iter()
++        .filter(|(file, code, _)| file == "src/App.vue" && *code == Some(6133))
++        .collect();
++
++    assert_eq!(
++        ts6133.len(),
++        1,
++        "expected one user TS6133, got: {snapshot:#?}"
++    );
++    assert!(
++        ts6133[0].2.contains("unusedLocal"),
++        "expected unusedLocal diagnostic, got: {snapshot:#?}"
++    );
++    assert!(
++        snapshot
++            .iter()
++            .all(|(_, _, message)| !message.contains("defineProps")),
++        "generated helper diagnostics should stay suppressed: {snapshot:#?}"
++    );
++
++    let _ = std::fs::remove_dir_all(&project_root);
++}
++
+ #[test]
+ fn batch_type_checker_accepts_nested_ref_value_component_props() {
+     if resolve_test_tsgo_binary().is_none() {
+diff --git a/crates/vize_canon/src/batch/virtual_project/build.rs b/crates/vize_canon/src/batch/virtual_project/build.rs
+index 13b988c4ec..c30b22ad26 100644
+--- a/crates/vize_canon/src/batch/virtual_project/build.rs
++++ b/crates/vize_canon/src/batch/virtual_project/build.rs
+@@ -40,6 +40,7 @@ pub(super) struct VirtualBuildContext<'a> {
+     pub(super) virtual_root: &'a Path,
+     pub(super) virtual_ts_options: &'a VirtualTsOptions,
+     pub(super) virtual_ts_check_options: VirtualTsCheckOptions,
++    pub(super) preserve_unused_diagnostics: bool,
+     pub(super) options_api: bool,
+     pub(super) legacy_vue2: bool,
+     pub(super) template_syntax: TemplateSyntaxMode,
+@@ -111,6 +112,7 @@ pub(super) fn build_vue_registered_file(
+             &effective_options,
+             VueCodegenOptions {
+                 check_options: context.virtual_ts_check_options,
++                preserve_unused_diagnostics: context.preserve_unused_diagnostics,
+                 options_api: context.options_api,
+                 legacy_vue2: context.legacy_vue2,
+                 template_syntax: context.template_syntax,
+diff --git a/crates/vize_canon/src/batch/virtual_project/mod.rs b/crates/vize_canon/src/batch/virtual_project/mod.rs
+index 20a319ddb3..d3d90af83e 100644
+--- a/crates/vize_canon/src/batch/virtual_project/mod.rs
++++ b/crates/vize_canon/src/batch/virtual_project/mod.rs
+@@ -77,6 +77,9 @@ pub struct VirtualProject {
+     /// Explicit tsconfig path, if one was provided by the caller.
+     tsconfig_path: Option<PathBuf>,
+ 
++    /// Whether the effective tsconfig asks TypeScript to report unused symbols.
++    preserve_unused_diagnostics: bool,
++
+     /// Global virtual TS options applied to every Vue file.
+     virtual_ts_options: VirtualTsOptions,
+ 
+diff --git a/crates/vize_canon/src/batch/virtual_project/project.rs b/crates/vize_canon/src/batch/virtual_project/project.rs
+index 4a8bbd8fc0..1cf6086cef 100644
+--- a/crates/vize_canon/src/batch/virtual_project/project.rs
++++ b/crates/vize_canon/src/batch/virtual_project/project.rs
+@@ -31,10 +31,11 @@ impl VirtualProject {
+             .join(".vize")
+             .join("canon");
+ 
+-        Ok(Self {
++        let mut project = Self {
+             project_root,
+             virtual_root,
+             tsconfig_path: None,
++            preserve_unused_diagnostics: false,
+             virtual_ts_options: VirtualTsOptions::default(),
+             virtual_ts_check_options: VirtualTsCheckOptions::default(),
+             options_api: false,
+@@ -46,12 +47,16 @@ impl VirtualProject {
+             original_contents: FxHashMap::default(),
+             diagnostics: Vec::new(),
+             rewriter: ImportRewriter::new(),
+-        })
++        };
++        project.preserve_unused_diagnostics =
++            project.resolve_tsconfig_preserves_unused_diagnostics();
++        Ok(project)
+     }
+ 
+     /// Set the tsconfig path to extend.
+     pub fn set_tsconfig_path(&mut self, tsconfig_path: Option<PathBuf>) {
+         self.tsconfig_path = tsconfig_path;
++        self.preserve_unused_diagnostics = self.resolve_tsconfig_preserves_unused_diagnostics();
+     }
+ 
+     /// Set the shared virtual TS options.
+@@ -101,6 +106,7 @@ impl VirtualProject {
+                 virtual_root: &self.virtual_root,
+                 virtual_ts_options: &self.virtual_ts_options,
+                 virtual_ts_check_options: self.virtual_ts_check_options,
++                preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
+                 options_api: self.options_api,
+                 legacy_vue2: self.legacy_vue2,
+                 template_syntax: self.template_syntax,
+@@ -139,11 +145,13 @@ impl VirtualProject {
+             return Ok(());
+         }
+ 
++        let preserve_unused_diagnostics = self.tsconfig_preserves_unused_diagnostics();
+         let build_context = VirtualBuildContext {
+             project_root: self.project_root.as_path(),
+             virtual_root: self.virtual_root.as_path(),
+             virtual_ts_options: &self.virtual_ts_options,
+             virtual_ts_check_options: self.virtual_ts_check_options,
++            preserve_unused_diagnostics,
+             options_api: self.options_api,
+             legacy_vue2: self.legacy_vue2,
+             template_syntax: self.template_syntax,
+@@ -175,6 +183,7 @@ impl VirtualProject {
+                 virtual_root: &self.virtual_root,
+                 virtual_ts_options: &self.virtual_ts_options,
+                 virtual_ts_check_options: self.virtual_ts_check_options,
++                preserve_unused_diagnostics: self.tsconfig_preserves_unused_diagnostics(),
+                 options_api: self.options_api,
+                 legacy_vue2: self.legacy_vue2,
+                 template_syntax: self.template_syntax,
+diff --git a/crates/vize_canon/src/batch/virtual_project/tsconfig_gen.rs b/crates/vize_canon/src/batch/virtual_project/tsconfig_gen.rs
+index 199eadd397..a365a11fbb 100644
+--- a/crates/vize_canon/src/batch/virtual_project/tsconfig_gen.rs
++++ b/crates/vize_canon/src/batch/virtual_project/tsconfig_gen.rs
+@@ -28,6 +28,22 @@ const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
+ ];
+ 
+ impl VirtualProject {
++    pub(crate) fn tsconfig_preserves_unused_diagnostics(&self) -> bool {
++        self.preserve_unused_diagnostics
++    }
++
++    pub(super) fn resolve_tsconfig_preserves_unused_diagnostics(&self) -> bool {
++        let Some(tsconfig_path) = self.resolved_tsconfig_path() else {
++            return false;
++        };
++        let Ok(compiler_options) = self.load_compiler_options(Some(tsconfig_path.as_path())) else {
++            return false;
++        };
++
++        compiler_option_enabled(&compiler_options, "noUnusedLocals")
++            || compiler_option_enabled(&compiler_options, "noUnusedParameters")
++    }
++
+     pub(super) fn write_tsconfig_file(
+         &self,
+         path: &Path,
+@@ -271,3 +287,8 @@ impl VirtualProject {
+         prefix
+     }
+ }
++
++#[allow(clippy::disallowed_types)]
++fn compiler_option_enabled(options: &Map<std::string::String, Value>, name: &str) -> bool {
++    options.get(name).and_then(Value::as_bool).unwrap_or(false)
++}
+diff --git a/crates/vize_canon/src/batch/virtual_project/vue_codegen.rs b/crates/vize_canon/src/batch/virtual_project/vue_codegen.rs
+index 21496c7b9d..cad07f50cd 100644
+--- a/crates/vize_canon/src/batch/virtual_project/vue_codegen.rs
++++ b/crates/vize_canon/src/batch/virtual_project/vue_codegen.rs
+@@ -41,6 +41,7 @@ pub(super) struct GeneratedVueFile {
+ #[derive(Clone, Copy)]
+ pub(super) struct VueCodegenOptions {
+     pub(super) check_options: VirtualTsCheckOptions,
++    pub(super) preserve_unused_diagnostics: bool,
+     pub(super) options_api: bool,
+     pub(super) legacy_vue2: bool,
+     pub(super) template_syntax: TemplateSyntaxMode,
+@@ -172,6 +173,7 @@ pub(super) fn generate_vue_virtual_ts(
+             options,
+             VirtualTsGenerationOptions {
+                 check_options: codegen_options.check_options,
++                preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,
+                 options_api: codegen_options.options_api,
+                 legacy_vue2: codegen_options.legacy_vue2,
+             },
+diff --git a/crates/vize_canon/src/virtual_ts/generator.rs b/crates/vize_canon/src/virtual_ts/generator.rs
+index 9d6e742a55..8cc974afb9 100644
+--- a/crates/vize_canon/src/virtual_ts/generator.rs
++++ b/crates/vize_canon/src/virtual_ts/generator.rs
+@@ -132,6 +132,14 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
+     let options_api = generation_options.options_api || legacy_vue2;
+     let mut ts = String::default();
+     let mut mappings: Vec<VizeMapping> = Vec::new();
++    let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
++    let template_referenced_names =
++        preserve_unused_diagnostics.then(|| collect_template_referenced_names(summary));
++    let reference_setup_bindings_comment = if preserve_unused_diagnostics {
++        "Reference setup bindings used by template generation"
++    } else {
++        "Reference setup bindings (used in template/CSS v-bind)"
++    };
+ 
+     // Header with ES target library references.
+     // These ensure import.meta, Promise, Array.includes(), etc. are available.
+@@ -494,17 +502,33 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
+             ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
+ 
+             // Collect ref bindings for auto-unwrapping in template
+-            let mut ref_bindings: Vec<&str> = summary
+-                .bindings
+-                .bindings
+-                .iter()
+-                .filter(|(name, binding_type)| {
+-                    summary.reactivity.needs_value_access(name.as_str())
+-                        || matches!(binding_type, BindingType::SetupMaybeRef)
+-                            && is_local_setup_binding(summary, name.as_str())
+-                })
+-                .map(|(name, _)| name.as_str())
+-                .collect();
++            let mut ref_bindings: Vec<&str> =
++                if let Some(template_referenced_names) = template_referenced_names.as_ref() {
++                    summary
++                        .bindings
++                        .bindings
++                        .iter()
++                        .filter(|(name, _)| template_referenced_names.contains(name.as_str()))
++                        .filter(|(name, binding_type)| {
++                            summary.reactivity.needs_value_access(name.as_str())
++                                || matches!(binding_type, BindingType::SetupMaybeRef)
++                                    && is_local_setup_binding(summary, name.as_str())
++                        })
++                        .map(|(name, _)| name.as_str())
++                        .collect()
++                } else {
++                    summary
++                        .bindings
++                        .bindings
++                        .iter()
++                        .filter(|(name, binding_type)| {
++                            summary.reactivity.needs_value_access(name.as_str())
++                                || matches!(binding_type, BindingType::SetupMaybeRef)
++                                    && is_local_setup_binding(summary, name.as_str())
++                        })
++                        .map(|(name, _)| name.as_str())
++                        .collect()
++                };
+             ref_bindings.sort_unstable();
+ 
+             // Capture ref types BEFORE template scope to avoid circular references.
+@@ -611,18 +635,31 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
+                 }
+             }
+ 
+-            // Reference all setup bindings to prevent TS6133 for variables
+-            // used only in CSS v-bind() or other non-template contexts
++            // In projects that opt into unused-local diagnostics, this list is
++            // narrowed to template-referenced names so user TS6133 can surface.
+             if !summary.bindings.bindings.is_empty() {
+-                ts.push_str("\n  // Reference setup bindings (used in template/CSS v-bind)\n  ");
+                 let mut first = true;
+-                let mut binding_names: Vec<&str> = summary
+-                    .bindings
+-                    .bindings
+-                    .keys()
+-                    .map(|name| name.as_str())
+-                    .collect();
++                let mut binding_names: Vec<&str> =
++                    if let Some(template_referenced_names) = template_referenced_names.as_ref() {
++                        summary
++                            .bindings
++                            .bindings
++                            .keys()
++                            .map(|name| name.as_str())
++                            .filter(|name| template_referenced_names.contains(*name))
++                            .collect()
++                    } else {
++                        summary
++                            .bindings
++                            .bindings
++                            .keys()
++                            .map(|name| name.as_str())
++                            .collect()
++                    };
+                 binding_names.sort_unstable();
++                if !binding_names.is_empty() {
++                    append!(ts, "\n  // {reference_setup_bindings_comment}\n  ");
++                }
+                 for name in binding_names {
+                     // Skip bindings that are JS keywords or would cause syntax errors
+                     if matches!(
+@@ -678,7 +715,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
+                     append!(ts, "void {name};");
+                     first = false;
+                 }
+-                ts.push('\n');
++                if !first {
++                    ts.push('\n');
++                }
+             }
+ 
+             ts.push_str("  })();\n");
+@@ -901,6 +940,65 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
+     VirtualTsOutput { code: ts, mappings }
+ }
+ 
++fn collect_template_referenced_names(summary: &Croquis) -> FxHashSet<String> {
++    let mut names = FxHashSet::default();
++
++    for expression in &summary.template_expressions {
++        collect_expression_identifiers(&mut names, expression.content.as_str());
++        if let Some(guard) = expression.vif_guard.as_ref() {
++            collect_expression_identifiers(&mut names, guard.as_str());
++        }
++    }
++
++    for usage in &summary.component_usages {
++        names.insert(usage.name.as_str().into());
++        if let Some(guard) = usage.vif_guard.as_ref() {
++            collect_expression_identifiers(&mut names, guard.as_str());
++        }
++        for prop in &usage.props {
++            if prop.is_dynamic
++                && let Some(value) = prop.value.as_ref()
++            {
++                collect_expression_identifiers(&mut names, value.as_str());
++            }
++        }
++        for event in &usage.events {
++            if let Some(handler) = event.handler.as_ref() {
++                collect_expression_identifiers(&mut names, handler.as_str());
++            }
++        }
++    }
++
++    for component in &summary.used_components {
++        names.insert(component.as_str().into());
++    }
++
++    for scope in summary.scopes.iter() {
++        match scope.data() {
++            ScopeData::VFor(data) => {
++                collect_expression_identifiers(&mut names, data.source.as_str());
++                if let Some(key_expression) = data.key_expression.as_ref() {
++                    collect_expression_identifiers(&mut names, key_expression.as_str());
++                }
++            }
++            ScopeData::EventHandler(data) => {
++                if let Some(handler) = data.handler_expression.as_ref() {
++                    collect_expression_identifiers(&mut names, handler.as_str());
++                }
++            }
++            _ => {}
++        }
++    }
++
++    names
++}
++
++fn collect_expression_identifiers(names: &mut FxHashSet<String>, expression: &str) {
++    for identifier in vize_croquis::analyzer::extract_identifiers_oxc(expression) {
++        names.insert(identifier.as_str().into());
++    }
++}
++
+ fn merge_overlapping_spans(mut spans: Vec<(u32, u32)>) -> Vec<(u32, u32)> {
+     spans.retain(|(start, end)| start < end);
+     spans.sort_by_key(|&(start, end)| (start, end));
+diff --git a/crates/vize_canon/src/virtual_ts/types.rs b/crates/vize_canon/src/virtual_ts/types.rs
+index 7fd3253b35..946ab8dbca 100644
+--- a/crates/vize_canon/src/virtual_ts/types.rs
++++ b/crates/vize_canon/src/virtual_ts/types.rs
+@@ -111,6 +111,9 @@ pub(crate) struct VirtualTsGenerationOptions {
+     pub(crate) options_api: bool,
+     /// Legacy Vue 2.7 / Nuxt 2 (implies `options_api` plus Nuxt 2 globals).
+     pub(crate) legacy_vue2: bool,
++    /// Preserve TypeScript's user-authored unused local/import diagnostics by
++    /// avoiding broad synthetic setup-binding references.
++    pub(crate) preserve_unused_diagnostics: bool,
+ }
+ 
+ /// Default plugin globals.

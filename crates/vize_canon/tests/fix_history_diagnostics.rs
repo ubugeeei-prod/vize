@@ -69,6 +69,7 @@ struct Pack {
     source_revision: String,
     diagnostic_contract: Contract,
     checker_options: Option<CheckerOptions>,
+    project_options: Option<serde_json::Value>,
     cases: Vec<Case>,
 }
 
@@ -183,6 +184,24 @@ fn options_api_any_instance_preserves_complete_original_diagnostics() {
     );
 }
 
+#[test]
+fn authored_unused_symbols_preserve_complete_original_diagnostics() {
+    check_pack(
+        "authored-unused-symbols",
+        "authored_unused_symbols_preserve_complete_original_diagnostics",
+        "cd7156d28386e072953476fdbc354a963758dc89",
+        Some(1271),
+        &[
+            "original-locals",
+            "inherited-locals",
+            "disabled-locals",
+            "parameters-only",
+            "default-locals",
+            "parameters-disabled",
+        ],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -205,7 +224,10 @@ fn check_pack(
     assert_eq!(
         pack.source_revision,
         match name {
-            "typed-import-meta" | "slot-outlet-key" | "options-api-any-instance" => regression,
+            "typed-import-meta"
+            | "slot-outlet-key"
+            | "options-api-any-instance"
+            | "authored-unused-symbols" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );
@@ -238,14 +260,20 @@ fn check_pack(
     );
     let vue = std::fs::canonicalize(root.join("tests/node_modules/vue"))
         .expect("the pinned real Vue package must be installed");
+    assert_eq!(
+        pack.project_options,
+        (name == "authored-unused-symbols").then(|| serde_json::json!({"vuePackage":"absent"}))
+    );
     let mut capture = observation::Capture::from_environment();
     for case in pack.cases {
         let project = tempfile::tempdir().expect("a project must be created");
         let project_root =
             std::fs::canonicalize(project.path()).expect("project identity must resolve");
-        std::fs::create_dir(project_root.join("node_modules"))
-            .expect("node_modules must be created");
-        link_vue(&vue, &project_root.join("node_modules/vue"));
+        if pack.project_options.is_none() {
+            std::fs::create_dir(project_root.join("node_modules"))
+                .expect("node_modules must be created");
+            link_vue(&vue, &project_root.join("node_modules/vue"));
+        }
         for input in &case.inputs {
             let file = safe_relative(&input.file);
             let source = safe_relative(&input.source);
@@ -254,6 +282,9 @@ fn check_pack(
                 .expect("input parents must be created");
             std::fs::copy(fixtures.join(source), destination)
                 .expect("exact fixture bytes must copy");
+        }
+        if pack.project_options.is_some() {
+            assert!(!project_root.join("node_modules").exists());
         }
         let mut checker = BatchTypeChecker::new(&project_root).expect("the checker must start");
         if pack

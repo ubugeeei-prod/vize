@@ -819,6 +819,241 @@
           "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
         }
       ]
-    }
+    },
+      {
+        "id": "typechecker/authored-unused-symbols/original-locals",
+        "state": "active",
+        "targets": [
+          "batch"
+        ],
+        "adapters": {
+          "legacy": "batch-typechecker-fixture-v1",
+          "native": null
+        },
+        "pack": "authored-unused-symbols",
+        "case": "original-locals",
+        "test": "authored_unused_symbols_preserve_complete_original_diagnostics",
+        "regressionCommit": "cd7156d28386e072953476fdbc354a963758dc89",
+        "sourceRevision": "cd7156d28386e072953476fdbc354a963758dc89",
+        "projectOptions": {
+          "vuePackage": "absent"
+        },
+        "packReference": {
+          "path": "authored-unused-symbols/cases.json",
+          "sha256": "1a6b00add7467920f1c4a7009970d70978da006093ca20b752a0f8f1bcdae5c9"
+        },
+        "inputs": [
+          {
+            "file": "src/App.vue",
+            "path": "authored-unused-symbols/App.vue.txt",
+            "sha256": "569fb22ad8042b8a7f077fbf9226123e940375ae4350b86a132ad15282cfcbcb"
+          },
+          {
+            "file": "tsconfig.json",
+            "path": "authored-unused-symbols/original-tsconfig.json.txt",
+            "sha256": "8d7d2a7250100da29ed298c16d6a9f32ce2cb77b11fd5cb90b08c0180cd68b31"
+          }
+        ]
+      },
+      {
+        "id": "typechecker/authored-unused-symbols/inherited-locals",
+        "state": "active",
+        "targets": [
+          "batch"
+        ],
+        "adapters": {
+          "legacy": "batch-typechecker-fixture-v1",
+          "native": null
+        },
+        "pack": "authored-unused-symbols",
+        "case": "inherited-locals",
+        "test": "authored_unused_symbols_preserve_complete_original_diagnostics",
+        "regressionCommit": "cd7156d28386e072953476fdbc354a963758dc89",
+        "sourceRevision": "cd7156d28386e072953476fdbc354a963758dc89",
+        "projectOptions": {
+          "vuePackage": "absent"
+        },
+        "packReference": {
+          "path": "authored-unused-symbols/cases.json",
+          "sha256": "1a6b00add7467920f1c4a7009970d70978da006093ca20b752a0f8f1bcdae5c9"
+        },
+        "inputs": [
+          {
+            "file": "src/App.vue",
+            "path": "authored-unused-symbols/App.vue.txt",
+            "sha256": "569fb22ad8042b8a7f077fbf9226123e940375ae4350b86a132ad15282cfcbcb"
+          },
+          {
+            "file": "tsconfig.json",
+            "path": "authored-unused-symbols/inherited-locals.json.txt",
+            "sha256": "5403ccfd0a82ae7ceecf83a356ed832ef2286b8d7e458aa2c6afbe73526a8477"
+          },
+          {
+            "file": "base.json",
+            "path": "authored-unused-symbols/base.json.txt",
+            "sha256": "06f015bffb08f3c8c0ef76cddb81a886beafe1b73da2d0674ab9f9c772f6ab8d"
+          }
+        ]
+      },
+      {
+        "id": "typechecker/authored-unused-symbols/disabled-locals",
+        "state": "active",
+        "targets": [
+          "batch"
+        ],
+        "adapters": {
+          "legacy": "batch-typechecker-fixture-v1",
+          "native": null
+        },
+        "pack": "authored-unused-symbols",
+        "case": "disabled-locals",
+        "test": "authored_unused_symbols_preserve_complete_original_diagnostics",
+        "regressionCommit": "cd7156d28386e072953476fdbc354a963758dc89",
+        "sourceRevision": "cd7156d28386e072953476fdbc354a963758dc89",
+        "projectOptions": {
+          "vuePackage": "absent"
+        },
+        "packReference": {
+          "path": "authored-unused-symbols/cases.json",
+          "sha256": "1a6b00add7467920f1c4a7009970d70978da006093ca20b752a0f8f1bcdae5c9"
+        },
+        "inputs": [
+          {
+            "file": "src/App.vue",
+            "path": "authored-unused-symbols/App.vue.txt",
+            "sha256": "569fb22ad8042b8a7f077fbf9226123e940375ae4350b86a132ad15282cfcbcb"
+          },
+          {
+            "file": "tsconfig.json",
+            "path": "authored-unused-symbols/disabled-locals.json.txt",
+            "sha256": "9fd92b071ba770f36017c27a42c36019afad155aeb4c9cd0965626942a50f144"
+          },
+          {
+            "file": "base.json",
+            "path": "authored-unused-symbols/base.json.txt",
+            "sha256": "06f015bffb08f3c8c0ef76cddb81a886beafe1b73da2d0674ab9f9c772f6ab8d"
+          }
+        ]
+      },
+      {
+        "id": "typechecker/authored-unused-symbols/parameters-only",
+        "state": "active",
+        "targets": [
+          "batch"
+        ],
+        "adapters": {
+          "legacy": "batch-typechecker-fixture-v1",
+          "native": null
+        },
+        "pack": "authored-unused-symbols",
+        "case": "parameters-only",
+        "test": "authored_unused_symbols_preserve_complete_original_diagnostics",
+        "regressionCommit": "cd7156d28386e072953476fdbc354a963758dc89",
+        "sourceRevision": "cd7156d28386e072953476fdbc354a963758dc89",
+        "projectOptions": {
+          "vuePackage": "absent"
+        },
+        "packReference": {
+          "path": "authored-unused-symbols/cases.json",
+          "sha256": "1a6b00add7467920f1c4a7009970d70978da006093ca20b752a0f8f1bcdae5c9"
+        },
+        "inputs": [
+          {
+            "file": "src/App.vue",
+            "path": "authored-unused-symbols/App.vue.txt",
+            "sha256": "569fb22ad8042b8a7f077fbf9226123e940375ae4350b86a132ad15282cfcbcb"
+          },
+          {
+            "file": "tsconfig.json",
+            "path": "authored-unused-symbols/parameters-only.json.txt",
+            "sha256": "9c0544e0d2e1454ae06f3ac2347dfe3d58e8db84bc85714a2e6d11d4f51f1688"
+          },
+          {
+            "file": "src/helper.ts",
+            "path": "authored-unused-symbols/helper.ts.txt",
+            "sha256": "8c9da8c30357f2768081854c49192f0078ba011a4f198f437a5f5a9388ffcf27"
+          }
+        ]
+      },
+      {
+        "id": "typechecker/authored-unused-symbols/default-locals",
+        "state": "active",
+        "targets": [
+          "batch"
+        ],
+        "adapters": {
+          "legacy": "batch-typechecker-fixture-v1",
+          "native": null
+        },
+        "pack": "authored-unused-symbols",
+        "case": "default-locals",
+        "test": "authored_unused_symbols_preserve_complete_original_diagnostics",
+        "regressionCommit": "cd7156d28386e072953476fdbc354a963758dc89",
+        "sourceRevision": "cd7156d28386e072953476fdbc354a963758dc89",
+        "projectOptions": {
+          "vuePackage": "absent"
+        },
+        "packReference": {
+          "path": "authored-unused-symbols/cases.json",
+          "sha256": "1a6b00add7467920f1c4a7009970d70978da006093ca20b752a0f8f1bcdae5c9"
+        },
+        "inputs": [
+          {
+            "file": "src/App.vue",
+            "path": "authored-unused-symbols/App.vue.txt",
+            "sha256": "569fb22ad8042b8a7f077fbf9226123e940375ae4350b86a132ad15282cfcbcb"
+          },
+          {
+            "file": "tsconfig.json",
+            "path": "authored-unused-symbols/default-locals.json.txt",
+            "sha256": "dc8dfa3a4e8b0710d4e5ac116b720ac314405742805e7ed31e7fd406724549a9"
+          }
+        ]
+      },
+      {
+        "id": "typechecker/authored-unused-symbols/parameters-disabled",
+        "state": "active",
+        "targets": [
+          "batch"
+        ],
+        "adapters": {
+          "legacy": "batch-typechecker-fixture-v1",
+          "native": null
+        },
+        "pack": "authored-unused-symbols",
+        "case": "parameters-disabled",
+        "test": "authored_unused_symbols_preserve_complete_original_diagnostics",
+        "regressionCommit": "cd7156d28386e072953476fdbc354a963758dc89",
+        "sourceRevision": "cd7156d28386e072953476fdbc354a963758dc89",
+        "projectOptions": {
+          "vuePackage": "absent"
+        },
+        "packReference": {
+          "path": "authored-unused-symbols/cases.json",
+          "sha256": "1a6b00add7467920f1c4a7009970d70978da006093ca20b752a0f8f1bcdae5c9"
+        },
+        "inputs": [
+          {
+            "file": "src/App.vue",
+            "path": "authored-unused-symbols/App.vue.txt",
+            "sha256": "569fb22ad8042b8a7f077fbf9226123e940375ae4350b86a132ad15282cfcbcb"
+          },
+          {
+            "file": "tsconfig.json",
+            "path": "authored-unused-symbols/disabled-locals.json.txt",
+            "sha256": "9fd92b071ba770f36017c27a42c36019afad155aeb4c9cd0965626942a50f144"
+          },
+          {
+            "file": "base.json",
+            "path": "authored-unused-symbols/base.json.txt",
+            "sha256": "06f015bffb08f3c8c0ef76cddb81a886beafe1b73da2d0674ab9f9c772f6ab8d"
+          },
+          {
+            "file": "src/helper.ts",
+            "path": "authored-unused-symbols/helper.ts.txt",
+            "sha256": "8c9da8c30357f2768081854c49192f0078ba011a4f198f437a5f5a9388ffcf27"
+          }
+        ]
+      }
   ]
 }

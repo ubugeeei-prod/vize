@@ -17,6 +17,9 @@ use vize_l2::{
 };
 use vize_l4::targets::ts::ProjectionError;
 
+#[path = "original_program_check/unused_history.rs"]
+mod unused_history;
+
 fn file<'a>(arena: &'a Allocator, source: &'a str, lang: Lang) -> FileArtifact<'a> {
     file_options(arena, source, ProgramOptions::module(lang))
 }
