@@ -37,6 +37,7 @@
 // no timestamps, no absolute paths).
 
 import { execFileSync } from "node:child_process";
+import { writeFileSync } from "node:fs";
 import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.mjs";
 import { analyzeConsumers } from "./lib/croquis-analysis.mjs";
 import { enumerateProducts } from "./lib/croquis-products.mjs";
@@ -59,8 +60,12 @@ function main() {
       cwd: repoRoot,
       encoding: "utf8",
     }).trim();
-    process.stdout.write(`Analyzed working tree at HEAD \`${revision}\`.\n\n`);
-    process.stdout.write(renderSummary(products, analysis));
+    // Both orphan and staleness failures intentionally exit below. Finish the
+    // complete report synchronously before either can truncate piped stdout.
+    writeFileSync(
+      1,
+      `Analyzed working tree at HEAD \`${revision}\`.\n\n${renderSummary(products, analysis)}`,
+    );
   }
   const violations = gateViolations(products, analysis);
   if (violations.missing.length > 0 || violations.stale.length > 0) {
