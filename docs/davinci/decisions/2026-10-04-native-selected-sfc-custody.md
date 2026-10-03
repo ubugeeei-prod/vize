@@ -41,6 +41,13 @@ siblings, external/custom/profile envelopes, refused/late original handlers,
 and root-text/interpolation provenance. Hosted exact-head Actions and protected
 full/instruction suites remain required; no local Cargo execution is claimed.
 
+Initial source `7cf84d7` executes all six laws and all three privacy docs in
+Check 37151355421: five laws and the docs pass; the late-header oracle fails
+because actual `v-if` is refused by the original Component preflight before
+any handler visit. Correct only that fixture to the existing proven `:id`
+late-header family; production admission/ownership stays unchanged. That head
+was never queued, and corrected exact-head acceptance remains required.
+
 DOM whole-SFC component assembly and pinned complete module/map/runtime laws
 are a dependent next slice. SSR/Vapor may consume this same lower custody through
 their own real dependent slices. Default compiler migration, #6880 closure,
