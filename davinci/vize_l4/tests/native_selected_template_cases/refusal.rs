@@ -1,6 +1,11 @@
 use crate::{check, completed, equal, owner};
-use vize_l0::Allocator;
-use vize_l2::{lang::js::NativeTemplateIssueKind as Kind, op::Op};
+use vize_l0::{Allocator, Span};
+use vize_l2::{
+    file::{FileIssueKind, RejectedFileHandler},
+    lang::js::NativeTemplateIssueKind as Kind,
+    op::Op,
+    resolution::ResolutionErrorKind,
+};
 use vize_l3::decision::native::build_native_dom_file_decisions;
 
 #[test]
@@ -31,7 +36,17 @@ fn late_original_header_refusals_never_reach_template_emission() -> Result<(), &
                 .child(children.next().ok_or("actual late header")?)
                 .err()
                 .ok_or("header refusal")?;
-            equal(refusal.kind, Kind::UnsupportedChild)?;
+            let expected = if rejected == "@click='handler'" {
+                let start = u32::try_from(source.find("handler").ok_or("authored handler")?)
+                    .map_err(|_| "authored offset")?;
+                Kind::Handler {
+                    span: Span::new(start, start + 7),
+                    kind: FileIssueKind::UnresolvedReference,
+                }
+            } else {
+                Kind::UnsupportedChild
+            };
+            equal(refusal.kind, expected)?;
             equal(
                 walk.child(children.next().ok_or("tail")?).err(),
                 Some(refusal),
@@ -60,6 +75,21 @@ fn late_original_header_refusals_never_reach_template_emission() -> Result<(), &
         };
         equal(prefix.content, "prefix")?;
         check(file.template_interruption().is_some())?;
+        if rejected == "@click='handler'" {
+            let [RejectedFileHandler::Resolution { input, error }] = file.rejected_handlers()
+            else {
+                return Err("whole original unresolved handler");
+            };
+            equal(error.kind, ResolutionErrorKind::MissingBinding)?;
+            equal(error.span, Span::new(0, 7))?;
+            equal(input.operand().raw_value(), "handler")?;
+            equal(input.operand().syntax().source().text(), "handler")?;
+            equal(input.operand().syntax().diagnostics().count(), 0)?;
+            check(core::ptr::eq(
+                input.operand().syntax().source().authored_root(),
+                source.as_str(),
+            ))?;
+        }
     }
     Ok(())
 }

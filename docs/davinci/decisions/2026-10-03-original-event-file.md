@@ -93,3 +93,12 @@ event decisions, L4 DOM emission, pinned output/maps/runtime comparisons and
 product routing remain unfinished. The current DOM decision policy refuses
 events. This is bounded File custody/association and typed transport, not
 native compiler completion, #6880 closure or default replacement.
+
+The actual selected-template emitter provider introduces a refusal law that
+previously classified every event as an unsupported header. With this genuine
+File provider, an unknown handler identifier instead fails actual bounded
+resolution as UnresolvedReference. The law now requires its exact authored
+handler window, original decoded MissingBinding span and normally retained
+whole input with every stock diagnostic, while all other unsupported headers
+still refuse before minting. This is a real integration boundary correction,
+not target runtime admission; source Actions must execute the updated union.
