@@ -124,7 +124,7 @@ fn incomplete_or_noncontiguous_dynamic_heads_keep_original_observations() {
         "<p :[key>`tail`]='value'/>",
         "<p v-:[key]='value'/>",
         "<p v-bind:[key].camel='value></p>",
-        "<p v-bind='object'/>",
+        "<p v-bind:='object'/>",
     ] {
         let allocator = Allocator::default();
         let parsed = parse_component(&allocator, source).unwrap();

@@ -118,10 +118,10 @@ fn recovered_syntax_keeps_original_errors_and_bytes_on_refusal() {
 fn incomplete_directives_use_shared_l1_syntax_and_are_explicitly_unsupported() {
     for source in [
         "<p :[].camel='value'/>",
-        "<p v-bind='value'/>",
+        "<p :='value'/>",
         "<p @[]='act()'/>",
         "<p #[]='item'/>",
-        "<p v-pre>{{raw}}</p>",
+        "<p v-/>",
     ] {
         let allocator = Allocator::default();
         let parsed = parse_component(&allocator, source).unwrap();

@@ -1,4 +1,4 @@
-//! Borrowed documents for typed Vue heads with complete arguments.
+//! Borrowed documents for complete typed Vue heads.
 
 use vize_l0::{Allocator, SourceBlock, Span, Vec};
 use vize_l1::markup::{ArgSyntax, DirectiveName, DirectivePrefix};
@@ -21,23 +21,24 @@ pub(super) fn name_document<'a>(
         offset: block.start() as usize,
     };
     let (argument, open, close) = match head.arg {
-        Some(ArgSyntax::Static(argument)) => (argument, None, None),
+        Some(ArgSyntax::Static(argument)) => (Some(argument), None, None),
         Some(ArgSyntax::Dynamic(argument)) => {
             let start = argument.start.checked_sub(1).ok_or_else(mismatch)?;
             let end = argument.end.checked_add(1).ok_or_else(mismatch)?;
             (
-                argument,
+                Some(argument),
                 Some(Span::new(start, argument.start)),
                 Some(Span::new(argument.end, end)),
             )
         }
+        None if head.prefix == DirectivePrefix::Full => (None, None, None),
         None => return Err(unsupported()),
     };
-    if argument.start == argument.end {
+    if argument.is_some_and(|span| span.start == span.end) {
         return Err(unsupported());
     }
-    let argument_start = open.map_or(argument.start, |span| span.start);
-    let argument_end = close.map_or(argument.end, |span| span.end);
+    let argument_start = open.or(argument).map_or(head.name.end, |span| span.start);
+    let argument_end = close.or(argument).map_or(head.name.end, |span| span.end);
     if head.modifiers != Span::new(argument_end, block.end()) {
         return Err(mismatch());
     }
@@ -54,14 +55,14 @@ pub(super) fn name_document<'a>(
                 return Err(unsupported());
             }
             if block.start().checked_add(2) != Some(head.name.start)
-                || head.name.end.checked_add(1) != Some(argument_start)
+                || argument.is_some() && head.name.end.checked_add(1) != Some(argument_start)
             {
                 return Err(mismatch());
             }
             (
                 Span::new(block.start(), head.name.start),
                 Some(head.name),
-                Some(Span::new(head.name.end, argument_start)),
+                argument.map(|_| Span::new(head.name.end, argument_start)),
             )
         }
         _ => {
@@ -97,7 +98,7 @@ pub(super) fn name_document<'a>(
         name,
         separator,
         open,
-        Some(argument),
+        argument,
         close,
         Some(head.modifiers),
     ]
@@ -108,6 +109,10 @@ pub(super) fn name_document<'a>(
     }
     Ok(Doc::concat(parts))
 }
+
+#[cfg(test)]
+#[path = "directive/full_tests.rs"]
+mod full_tests;
 
 #[cfg(test)]
 mod tests {

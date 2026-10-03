@@ -55,7 +55,8 @@ impl<'p, 'a> TemplateDocument<'p, 'a> {
 /// stay verbatim. Full `v-name:arg` and shorthand `:arg`, `.arg`, `@arg` and `#arg`
 /// heads use the shared typed Vue syntax without classifying directive semantics.
 /// Dynamic arguments retain their complete brackets and original expression bytes.
-/// This API refuses recovered/repaired trees, incomplete or missing arguments and
+/// Full heads also admit complete names without an argument, preserving modifier runs.
+/// This API refuses recovered/repaired trees, incomplete heads, missing shorthand arguments and
 /// interpolation; it never calls a legacy parser or parses values.
 /// Token source custody is checked in the same traversal that constructs Doc.
 pub fn template_document<'p, 'a>(

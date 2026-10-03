@@ -3,7 +3,7 @@
 //! This facility leaves all existing formatter entry points unchanged. The
 //! native template consumer lays out plain and typed directive opening tags and preserves
 //! content, comments, entities, attribute order and quoted values verbatim.
-//! Directives without complete arguments, embed formatting and the other
+//! Incomplete directive heads, missing shorthand arguments, embed formatting and the other
 //! Vue dialects remain unsupported.
 
 #[path = "native_doc/directive.rs"]
