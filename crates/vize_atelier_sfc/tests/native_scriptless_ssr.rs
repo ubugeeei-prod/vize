@@ -2,7 +2,7 @@ use vize_atelier_sfc::{
     NativeSsrSfcCompileError, NativeSsrSfcCompileOptions, compile_native_ssr_sfc,
 };
 use vize_l0::{Allocator, config::VueVersion};
-use vize_l1::embed::syntax::NativeForRefusal;
+use vize_l1::embed::syntax::{EmbedHole, NativeForRefusal};
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind;
 use vize_l2::{
     file::{FileIssueKind, RejectedFileFor, RejectedFileHandler},
@@ -295,7 +295,12 @@ fn refusals() -> Vec<serde_json::Value> {
                     input.operand().syntax().source().authored_root(),
                     source
                 ));
-                assert!(input.operand().syntax().diagnostics().count() > 0);
+                let syntax = input.operand().syntax();
+                assert_eq!(syntax.hole(), Some(EmbedHole::SafetyAdmission));
+                assert!(syntax.admitted_body().is_none());
+                assert!(syntax.body().is_none());
+                let diagnostic_rows: Vec<_> = syntax.diagnostics().collect();
+                assert!(diagnostic_rows.is_empty());
             }
             _ => {}
         }
