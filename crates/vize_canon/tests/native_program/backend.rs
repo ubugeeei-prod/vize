@@ -56,13 +56,28 @@ fn real_backend_preserves_complete_original_diagnostics_and_independent_referenc
         prepare_references(&bounded_dir, bounded_cases)?;
         // The actual configured project contains exact original sources before
         // backend startup; inferred virtual projects are not reference inputs.
-        let reference = DiskReference::spawn(project.path(), &backend).await?;
+        let mut reference = DiskReference::spawn(project.path(), &backend).await?;
         let mut checker = NativeProgramChecker::with_config(native_config)?;
         let unknown = project.path().join("not-in-open-snapshot.ts");
         std::fs::write(&unknown, "const unlisted=1;")?;
         require(
             reference.diagnostics(&unknown).await.is_err(),
             "an existing unknown closed file cannot synthesize empty diagnostics",
+        )?;
+        let probe = cases
+            .iter()
+            .find(|case| case.get("id") == Some(&serde_json::json!("ts-property")))
+            .ok_or("fixed original nonempty diagnostic probe")?;
+        require(
+            probe
+                .get("codes")
+                .and_then(serde_json::Value::as_array)
+                .is_some_and(|codes| !codes.is_empty()),
+            "fixed original probe requires a real nonempty compiler vector",
+        )?;
+        require(
+            check_case(probe, &original_dir, &reference, &mut checker).await?,
+            "fixed nonempty whole diagnostic payload actually checked first",
         )?;
         let mut accepted = 0;
         let mut refused = 0;

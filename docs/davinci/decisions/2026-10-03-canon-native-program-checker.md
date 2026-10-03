@@ -103,18 +103,42 @@ existing session code documents that a second overlay can detach a configured
 physical document; this explains the next bounded reference correction without
 claiming that the new runtime proof has already passed.
 
-The independent original reference now opens the existing Corsa
-`ProjectSession` directly for its actual configured disk project and requests
-disk-file diagnostics through that retained snapshot/project. It adds no editor
-overlay. Actual backend metadata must identify the same canonical config,
-Module Force, strictness, allowJs and checkJs, and each requested physical file
-must belong to the returned root-file set. Its properly encoded physical URI
-must be retained by the complete compiler response. Unsupported methods,
-missing responses and transport errors propagate as failures; an existing file
-absent from the open snapshot and a request after closing the actual session
-must refuse rather than synthesize an empty vector. Syntactic, semantic and
-suggestion diagnostics retain the existing bridge order and complete public
-payload.
+The direct disk API full run 37114821596 retained mapping3 and guard4 and
+observed the actual configured project with all 18 root files, Module Force=3,
+strictness, allowJs and checkJs. Its first file-diagnostic request then failed
+with an explicit Unsupported response; no complete comparison, privacy or
+feature Clippy law passed. An existing installed Darwin TypeScript 7.0.2 wire
+observer confirmed that describeCapabilities and file/project/snapshot
+diagnostic methods are all unknown. None was replaced with an empty vector.
+
+The original reference retains the genuine configured Corsa `ProjectSession`
+as its config/root-file authority and now requests closed physical-file
+diagnostics through the separate existing `LspClient`. A concrete local 7.0.2
+wire probe advertised diagnostics and returned the exact nonempty original
+ts-property diagnostic without did_open or an overlay, then refused a query
+after actual transport closure. Its first shutdown-envelope failure is retained;
+the corrected probe omits shutdown/exit params, matching the SDK's existing
+graceful-close method. This proves bounded transport support, not current
+Linux Actions, Corsa SDK execution or complete native equivalence.
+
+Actual backend metadata must identify the same canonical config, Module Force,
+strictness, allowJs and checkJs, and each requested physical file must belong to
+the returned root-file set. The existing LSP client correlates its mandatory
+complete report with the exact request and properly encoded physical URI; its
+initialize response must advertise diagnostics and UTF-16 positions. Missing,
+null, partial or transport-failed reports refuse. Server registration and
+positional configuration replies use the existing editor responder semantics;
+its fixture-only worker stops before the last process owner is dropped. An
+existing file absent from the open snapshot and a request after graceful actual
+closure must refuse rather than synthesize success. Every primary diagnostic
+keeps its original order and complete public payload.
+
+Before any empty diagnostic case, the original fixed ts-property input must
+produce its complete nonempty independent vector through both the reference
+and native checker. The original ten and bounded eight families, bad-to-good
+reuse and unrecorded errors remain required after that probe. Their exact
+expectations are unchanged; the nonempty probe is an existing fixture, not an
+alternative expected backend result.
 
 Every frozen original source is still written byte-for-byte before backend
 startup. Separate directories retain the two families' distinct sources with
@@ -122,7 +146,7 @@ overlapping names; original .mjs/.ts kinds and all independent expected vectors
 remain unchanged. The native checker keeps its separate config-only workspace
 and unchanged configured-session hook. No did_open, marker file, projection
 marker, source rewrite or alternate language extension is used for the original
-reference. All three failed campaigns and full payloads remain preserved; a
+reference. All four failed campaigns and full payloads remain preserved; a
 fresh corrected-source full run must execute every original/bounded comparison,
 privacy law, minimal-feature check and strict Clippy before equivalence can be
 reported.
