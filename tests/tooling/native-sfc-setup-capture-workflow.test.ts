@@ -17,6 +17,9 @@ test("actual native setup inputs qualify affected source capture while prose sta
     "crates/vize_atelier_sfc/src/native.rs",
     "crates/vize_atelier_sfc/src/native/setup/tests/annotations.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_sfc_ts_annotation_setup_vue_3_5_35.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native_sfc_ordinary_empty_vue_3_5_35.json",
+    "tests/tooling/native-sfc-ordinary-empty-reference.test.ts",
+    "tests/tooling/support/native-sfc-ordinary-reference.ts",
     "tests/tooling/native-sfc-primitive-setup-reference.test.ts",
     "tests/tooling/support/native-sfc-setup-reference.ts",
     ".github/actions/test-native-js-setup/action.yml",
@@ -65,6 +68,9 @@ test("the existing first-shard hook keeps unconditional protected capture and ex
   );
   assert.match(action, /cargo test --locked --profile ci -p vize_atelier_sfc/);
   assert.match(action, /three_source_owned_annotation_modules_and_maps_are_captured -- --exact/);
+  assert.match(action, /three_whole_ordinary_empty_modules_and_maps_are_captured -- --exact/);
+  assert.match(action, /VIZE_NATIVE_SFC_ORDINARY_EMPTY_CAPTURE: \$\{\{ runner\.temp \}\}/);
+  assert.match(action, /native-sfc-ordinary-empty-reference\.test\.ts/);
   assert.match(action, /native-js-setup-\$\{\{ github\.sha \}\}-\$\{\{ github\.run_attempt \}\}/);
   assert.match(action, /if-no-files-found: error/);
   assert.doesNotMatch(step, /continue-on-error|hashFiles|existsSync/);

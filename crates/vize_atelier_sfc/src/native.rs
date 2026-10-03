@@ -1,4 +1,4 @@
-//! Explicit native SFC product entry for bounded scriptless and JS/TS setup DOM.
+//! Explicit native SFC entry for bounded scriptless, setup and empty-option DOM.
 //!
 //! Original descriptor, syntax, diagnostics and partial File owners are always
 //! retained. Admission and target refusals never select a legacy compiler.
@@ -14,11 +14,12 @@ use vize_l1::{
     embed::Lang,
 };
 use vize_l1_to_l2::native_file::{NativeSfcObservation, lower_sfc_native};
-use vize_l2::lang::js::SetupIssue;
+use vize_l2::lang::js::{OrdinaryIssue, SetupIssue};
 use vize_l3::decision::{DecisionBuildError, build_dom_file_decisions};
 use vize_l4::{
     module::{
         AssemblyError, ModuleParts, RenderPlacement, RenderProperty, assemble,
+        ordinary::OrdinaryEmitError,
         setup::{COMPONENT_BINDING, SetupEmitError},
     },
     runtime::Runtime,
@@ -26,6 +27,7 @@ use vize_l4::{
     write::{EmitDocument, LinkSink, NoLinks, Recorded},
 };
 
+mod ordinary;
 mod setup;
 
 /// Explicit native parsing/runtime policy; unsupported values remain refusals.
@@ -72,6 +74,8 @@ pub enum NativeSfcCompileError {
     },
     ScriptSetup(SetupIssue),
     SetupEmission(SetupEmitError),
+    ScriptOrdinary(OrdinaryIssue),
+    OrdinaryEmission(OrdinaryEmitError),
     StyleCompilationUnavailable {
         container_index: usize,
         span: Span,
@@ -170,9 +174,10 @@ impl<'a> NativeSfcCompilation<'a> {
 ///
 /// This additive entry supports scriptless static structure and retained
 /// literals, original JS/TS setup let/var/const primitive declarations plus empty
-/// statements, and plain CSS without unproven binding syntax, plus one simple-class
-/// rule or literal class list per original scoped CSS block. Other scripts,
-/// macros, broader scoped/module/preprocessor styles, custom/external blocks, unsupported
+/// statements, sole ordinary JS/TS direct empty default objects, and plain CSS
+/// without unproven binding syntax, plus one simple-class rule or literal class
+/// list per original scoped CSS block. Other scripts, macros, broader scoped/
+/// module/preprocessor styles, custom/external blocks, unsupported
 /// profiles and unavailable native target semantics return typed refusals.
 /// Every original observation survives, and no partial module is returned.
 #[must_use]
@@ -235,7 +240,12 @@ fn emit<L: LinkSink>(
     )?;
     if let Some(script) = observation.scripts().first()
         && (observation.scripts().len() != 1
-            || script.role() != ScriptRole::Setup
+            || !(script.role() == ScriptRole::Setup
+                || (script.role() == ScriptRole::Ordinary
+                    && descriptor.setup().is_none()
+                    && observation.admitted().is_some_and(|admitted| {
+                        admitted.file().file().ordinary_empty_script().is_some()
+                    })))
             || !matches!(script.lang(), Lang::Js | Lang::Ts)
             || observation.admitted().is_none()
             || !script.syntax().is_some_and(|syntax| {
@@ -262,6 +272,8 @@ fn emit<L: LinkSink>(
         let analysis = build_dom_file_decisions(admitted.file().file())
             .map_err(NativeSfcCompileError::Analysis)?;
         parts.render = Some(emit_file::<L>(&analysis).map_err(NativeSfcCompileError::Dom)?);
+    } else if descriptor.ordinary().is_some() {
+        ordinary::emit(&admitted, &mut parts)?;
     } else {
         setup::emit(&admitted, &mut parts)?;
     }

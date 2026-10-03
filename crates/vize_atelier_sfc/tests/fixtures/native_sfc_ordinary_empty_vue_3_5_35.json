@@ -1,0 +1,229 @@
+{
+  "schema": "vize.native-sfc.ordinary-empty-dom-reference",
+  "compiler": "vue@3.5.35",
+  "fixtures": [
+    {
+      "id": "empty-js",
+      "source": "<script>export default {}</script><template><div>hello</div></template>",
+      "referenceScript": "const __sfc_main = {}",
+      "referenceScriptMap": {
+        "version": 3,
+        "sources": ["Ordinary雪🌸.vue"],
+        "names": [],
+        "mappings": "AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,CAAC",
+        "file": "Ordinary雪🌸.vue",
+        "sourceRoot": "",
+        "sourcesContent": [
+          "<script>export default {}</script><template><div>hello</div></template>"
+        ]
+      },
+      "referenceBindings": {},
+      "referenceRender": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, \"hello\"))\n}",
+      "referenceRenderMap": {
+        "version": 3,
+        "sources": ["Ordinary雪🌸.vue"],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAgB,aAAX,OAAK",
+        "sourcesContent": ["<div>hello</div>"]
+      },
+      "referenceModule": "const __sfc_main = {};\nimport { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\";\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n    return (_openBlock(), _createElementBlock(\"div\", null, \"hello\"));\n}\n__sfc_main.render = render;\nexport default __sfc_main;\n//# sourceMappingURL=Ordinary%E9%9B%AA%F0%9F%8C%B8.vue.reference.js.map",
+      "referenceModuleMap": {
+        "version": 3,
+        "file": "Ordinary雪🌸.vue.reference.js",
+        "sourceRoot": "",
+        "sources": ["Ordinary雪🌸.vue.reference.ts"],
+        "names": [],
+        "mappings": "AAAA,MAAM,UAAU,GAAG,EAAE,CAAA;AACrB,OAAO,EAAE,SAAS,IAAI,UAAU,EAAE,kBAAkB,IAAI,mBAAmB,EAAE,MAAM,KAAK,CAAA;AAExF,MAAM,UAAU,MAAM,CAAC,IAAI,EAAE,MAAM,EAAE,MAAM,EAAE,MAAM,EAAE,KAAK,EAAE,QAAQ;IAClE,OAAO,CAAC,UAAU,EAAE,EAAE,mBAAmB,CAAC,KAAK,EAAE,IAAI,EAAE,OAAO,CAAC,CAAC,CAAA;AAClE,CAAC;AACD,UAAU,CAAC,MAAM,GAAG,MAAM,CAAC;AAC3B,eAAe,UAAU,CAAC",
+        "sourcesContent": [
+          "const __sfc_main = {}\nimport { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, \"hello\"))\n}\n__sfc_main.render = render;\nexport default __sfc_main;\n"
+        ]
+      },
+      "referenceVNode": {
+        "type": "div",
+        "props": {},
+        "children": "hello",
+        "patchFlag": 0
+      },
+      "script": "export default {}",
+      "template": "<div>hello</div>",
+      "bindings": [],
+      "immutableBindings": [],
+      "runtime": [
+        {
+          "type": "div",
+          "props": {},
+          "children": "hello",
+          "patchFlag": 0
+        },
+        {
+          "type": "div",
+          "props": {},
+          "children": "hello",
+          "patchFlag": 0
+        }
+      ]
+    },
+    {
+      "id": "commented-js",
+      "source": "<script>/*雪🌸*/\n; export /* preserved */ default { /* retained */ }; //尾\n</script><template><!--雪--><p>hello &amp; world</p></template>",
+      "referenceScript": "/*雪🌸*/\n; const __sfc_main = { /* retained */ }; //尾\n",
+      "referenceScriptMap": {
+        "version": 3,
+        "sources": ["Ordinary雪🌸.vue"],
+        "names": [],
+        "mappings": "AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACN,EAAE,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,CAAC,EAAE,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,CAAC,EAAE,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,EAAE,CAAC,EAAE,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,CAAC,EAAE,CAAC,EAAE,CAAC,CAAC",
+        "file": "Ordinary雪🌸.vue",
+        "sourceRoot": "",
+        "sourcesContent": [
+          "<script>/*雪🌸*/\n; export /* preserved */ default { /* retained */ }; //尾\n</script><template><!--雪--><p>hello &amp; world</p></template>"
+        ]
+      },
+      "referenceBindings": {},
+      "referenceRender": "import { createCommentVNode as _createCommentVNode, createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\"雪\"),\n    _createElementVNode(\"p\", null, \"hello & world\")\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+      "referenceRenderMap": {
+        "version": 3,
+        "sources": ["Ordinary雪🌸.vue"],
+        "names": [],
+        "mappings": ";;;;IAAA,wBAAQ;IAAA,oBAAwB,WAArB,eAAiB",
+        "sourcesContent": ["<!--雪--><p>hello &amp; world</p>"]
+      },
+      "referenceModule": "/*雪🌸*/\n;\nconst __sfc_main = { /* retained */}; //尾\nimport { createCommentVNode as _createCommentVNode, createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\";\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n    return (_openBlock(), _createElementBlock(_Fragment, null, [\n        _createCommentVNode(\"雪\"),\n        _createElementVNode(\"p\", null, \"hello & world\")\n    ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */));\n}\n__sfc_main.render = render;\nexport default __sfc_main;\n//# sourceMappingURL=Ordinary%E9%9B%AA%F0%9F%8C%B8.vue.reference.js.map",
+      "referenceModuleMap": {
+        "version": 3,
+        "file": "Ordinary雪🌸.vue.reference.js",
+        "sourceRoot": "",
+        "sources": ["Ordinary雪🌸.vue.reference.ts"],
+        "names": [],
+        "mappings": "AAAA,OAAO;AACP,CAAC;AAAC,MAAM,UAAU,GAAG,EAAE,cAAc,CAAE,CAAC,CAAC,GAAG;AAE5C,OAAO,EAAE,kBAAkB,IAAI,mBAAmB,EAAE,kBAAkB,IAAI,mBAAmB,EAAE,QAAQ,IAAI,SAAS,EAAE,SAAS,IAAI,UAAU,EAAE,kBAAkB,IAAI,mBAAmB,EAAE,MAAM,KAAK,CAAA;AAErM,MAAM,UAAU,MAAM,CAAC,IAAI,EAAE,MAAM,EAAE,MAAM,EAAE,MAAM,EAAE,KAAK,EAAE,QAAQ;IAClE,OAAO,CAAC,UAAU,EAAE,EAAE,mBAAmB,CAAC,SAAS,EAAE,IAAI,EAAE;QACzD,mBAAmB,CAAC,GAAG,CAAC;QACxB,mBAAmB,CAAC,GAAG,EAAE,IAAI,EAAE,eAAe,CAAC;KAChD,EAAE,IAAI,CAAC,wCAAwC,CAAC,CAAC,CAAA;AACpD,CAAC;AACD,UAAU,CAAC,MAAM,GAAG,MAAM,CAAC;AAC3B,eAAe,UAAU,CAAC",
+        "sourcesContent": [
+          "/*雪🌸*/\n; const __sfc_main = { /* retained */ }; //尾\n\nimport { createCommentVNode as _createCommentVNode, createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\"雪\"),\n    _createElementVNode(\"p\", null, \"hello & world\")\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}\n__sfc_main.render = render;\nexport default __sfc_main;\n"
+        ]
+      },
+      "referenceVNode": {
+        "type": "fragment",
+        "props": {},
+        "children": [
+          {
+            "type": "comment",
+            "props": {},
+            "children": "雪",
+            "patchFlag": 0
+          },
+          {
+            "type": "p",
+            "props": {},
+            "children": "hello & world",
+            "patchFlag": 0
+          }
+        ],
+        "patchFlag": 2112
+      },
+      "script": "/*雪🌸*/\n; export /* preserved */ default { /* retained */ }; //尾\n",
+      "template": "<!--雪--><p>hello &amp; world</p>",
+      "bindings": [],
+      "immutableBindings": [],
+      "runtime": [
+        {
+          "type": "fragment",
+          "props": {},
+          "children": [
+            {
+              "type": "comment",
+              "props": {},
+              "children": "雪",
+              "patchFlag": 0
+            },
+            {
+              "type": "p",
+              "props": {},
+              "children": "hello & world",
+              "patchFlag": 0
+            }
+          ],
+          "patchFlag": 2112
+        },
+        {
+          "type": "fragment",
+          "props": {},
+          "children": [
+            {
+              "type": "comment",
+              "props": {},
+              "children": "雪",
+              "patchFlag": 0
+            },
+            {
+              "type": "p",
+              "props": {},
+              "children": "hello & world",
+              "patchFlag": 0
+            }
+          ],
+          "patchFlag": 2112
+        }
+      ]
+    },
+    {
+      "id": "empty-ts",
+      "source": "<script lang=\"ts\">export default {};</script><template><span>🌸</span></template>",
+      "referenceScript": "const __sfc_main = {};",
+      "referenceScriptMap": {
+        "version": 3,
+        "sources": ["Ordinary雪🌸.vue"],
+        "names": [],
+        "mappings": "AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,CAAC,CAAC",
+        "file": "Ordinary雪🌸.vue",
+        "sourceRoot": "",
+        "sourcesContent": [
+          "<script lang=\"ts\">export default {};</script><template><span>🌸</span></template>"
+        ]
+      },
+      "referenceBindings": {},
+      "referenceRender": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"span\", null, \"🌸\"))\n}",
+      "referenceRenderMap": {
+        "version": 3,
+        "sources": ["Ordinary雪🌸.vue"],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAe,cAAT,IAAE",
+        "sourcesContent": ["<span>🌸</span>"]
+      },
+      "referenceModule": "const __sfc_main = {};\nimport { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\";\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n    return (_openBlock(), _createElementBlock(\"span\", null, \"🌸\"));\n}\n__sfc_main.render = render;\nexport default __sfc_main;\n//# sourceMappingURL=Ordinary%E9%9B%AA%F0%9F%8C%B8.vue.reference.js.map",
+      "referenceModuleMap": {
+        "version": 3,
+        "file": "Ordinary雪🌸.vue.reference.js",
+        "sourceRoot": "",
+        "sources": ["Ordinary雪🌸.vue.reference.ts"],
+        "names": [],
+        "mappings": "AAAA,MAAM,UAAU,GAAG,EAAE,CAAC;AACtB,OAAO,EAAE,SAAS,IAAI,UAAU,EAAE,kBAAkB,IAAI,mBAAmB,EAAE,MAAM,KAAK,CAAA;AAExF,MAAM,UAAU,MAAM,CAAC,IAAI,EAAE,MAAM,EAAE,MAAM,EAAE,MAAM,EAAE,KAAK,EAAE,QAAQ;IAClE,OAAO,CAAC,UAAU,EAAE,EAAE,mBAAmB,CAAC,MAAM,EAAE,IAAI,EAAE,IAAI,CAAC,CAAC,CAAA;AAChE,CAAC;AACD,UAAU,CAAC,MAAM,GAAG,MAAM,CAAC;AAC3B,eAAe,UAAU,CAAC",
+        "sourcesContent": [
+          "const __sfc_main = {};\nimport { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"span\", null, \"🌸\"))\n}\n__sfc_main.render = render;\nexport default __sfc_main;\n"
+        ]
+      },
+      "referenceVNode": {
+        "type": "span",
+        "props": {},
+        "children": "🌸",
+        "patchFlag": 0
+      },
+      "script": "export default {};",
+      "template": "<span>🌸</span>",
+      "bindings": [],
+      "immutableBindings": [],
+      "runtime": [
+        {
+          "type": "span",
+          "props": {},
+          "children": "🌸",
+          "patchFlag": 0
+        },
+        {
+          "type": "span",
+          "props": {},
+          "children": "🌸",
+          "patchFlag": 0
+        }
+      ]
+    }
+  ],
+  "typescript": "typescript@6.0.3"
+}
