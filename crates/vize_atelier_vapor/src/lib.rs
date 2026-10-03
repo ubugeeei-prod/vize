@@ -47,6 +47,8 @@ mod tests_source_map;
 #[cfg(test)]
 mod tests_static_attribute_entities;
 #[cfg(test)]
+mod tests_static_style;
+#[cfg(test)]
 mod tests_template_children;
 #[cfg(test)]
 mod tests_valueless_attr;

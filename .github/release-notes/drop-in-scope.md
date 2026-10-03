@@ -19,6 +19,10 @@ the server ([#7502](https://github.com/ubugeeei-prod/vize/issues/7502)).
 Implicit default content beside a named slot template is also retained in the
 Vapor IR and generated slot functions ([#7570](https://github.com/ubugeeei-prod/vize/issues/7570)).
 
+Static style values are retained beside `:style` in whitespace-preserve and
+parser-recovery compilation, including the public `transform_to_ir` API
+([#7600](https://github.com/ubugeeei-prod/vize/issues/7600)).
+
 Thank you [@dannote](https://github.com/dannote) for these reproductions.
 
 ## Drop-in scope

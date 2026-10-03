@@ -101,8 +101,8 @@ pub(crate) fn transform_directive<'a>(
                         Vec::new_in(&ctx.allocator)
                     };
 
-                    let final_values = if key_exp.content == "class" {
-                        merge_static_class(ctx, el, values)
+                    let final_values = if matches!(key_exp.content, "class" | "style") {
+                        merge_static_binding(ctx, el, key_exp.content, values)
                     } else {
                         values
                     };
@@ -396,16 +396,16 @@ fn camelize(s: &str) -> vize_carton::String {
     result
 }
 
-/// Merge static class attribute value into the dynamic class values
-fn merge_static_class<'a>(
+/// Keep the static class or style before its dynamic binding.
+fn merge_static_binding<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
+    name: &str,
     dynamic_values: Vec<'a, Box<'a, SimpleExpressionNode<'a>>>,
 ) -> Vec<'a, Box<'a, SimpleExpressionNode<'a>>> {
-    // Look for a static class="..." attribute
-    let static_class = el.props.iter().find_map(|p| {
+    let static_value = el.props.iter().find_map(|p| {
         if let PropNode::Attribute(attr) = p
-            && attr.name == "class"
+            && attr.name == name
             && let Some(ref value) = attr.value
         {
             return Some(value.content);
@@ -413,8 +413,7 @@ fn merge_static_class<'a>(
         None
     });
 
-    if let Some(static_val) = static_class {
-        // Create a merged values list: the static class as the first entry
+    if let Some(static_val) = static_value {
         let mut merged = Vec::new_in(&ctx.allocator);
         let static_node = SimpleExpressionNode::new(static_val, true, SourceLocation::STUB);
         merged.push(Box::new_in(static_node, &ctx.allocator));
