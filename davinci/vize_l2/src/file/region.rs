@@ -18,6 +18,10 @@ use vize_l0::{Span, id::NodeId};
 /// A diagnostic-only filter of genuine declarations, never a name/ID producer.
 pub trait TemplatePolicy: Copy {
     fn visible(self, declaration: &Declaration) -> bool;
+    /// A filter of a genuine original template row, never a declaration producer.
+    fn visible_template(self, _: &super::TemplateDeclaration<'_, '_>) -> bool {
+        false
+    }
 }
 
 mod facade;
@@ -89,9 +93,13 @@ impl<P: TemplatePolicy> BindingLookup for Lookup<'_, '_, P> {
         let id = self
             .facts
             .lookup(self.scope, name, BindingNamespace::Value)?;
-        self.policy
-            .visible(self.facts.declarations.get(id.index() as usize)?)
-            .then_some(id)
+        if let Some(declaration) = self.facts.declarations.get(id.index() as usize) {
+            self.policy.visible(declaration).then_some(id)
+        } else {
+            self.policy
+                .visible_template(&self.facts.template_declaration(id)?)
+                .then_some(id)
+        }
     }
 }
 

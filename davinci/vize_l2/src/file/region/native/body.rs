@@ -1,6 +1,6 @@
 //! Only this private body consumes the original element's ordered children.
 
-use super::{NativeVisibility, handler::PreparedHandler};
+use super::{NativeVisibility, handler::ObservedHandler};
 use crate::artifact::{ComponentFactory, RegionBuilder};
 use crate::file::region::FileRegion;
 use crate::file::{TemplateBody, TemplateChildRegion};
@@ -13,7 +13,7 @@ use vize_l1::{
     markup::{NativeChild, NativeElement, NativeTemplateComponent},
 };
 
-mod header;
+pub(super) mod header;
 
 pub(super) fn construct<'a: 'b, 'b, R>(
     selected: &NativeTemplateComponent<'a>,
@@ -114,10 +114,29 @@ where
     }
     .ok_or(Kind::InvalidEvent)?;
     let span = Span::new(opening.start, ending.end);
-    let header::Header {
+    let mut header = header::construct(&original, selected, region)?;
+    if let Some(observed) = header.for_head.take() {
+        return super::for_body::construct(original, selected, span, header, observed, region);
+    }
+    let header = header.resolve_handlers(region)?;
+    element_ready(original, selected, span, header, region)
+}
+
+pub(super) fn element_ready<'a: 'b, 'b, R>(
+    original: NativeElement<'_, 'a>,
+    selected: &NativeTemplateComponent<'a>,
+    span: Span,
+    header: header::ReadyHeader<'a>,
+    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+) -> Result<NodeId, Kind>
+where
+    R: DerefMut<Target = RegionBuilder<'b, 'a>>,
+{
+    let tag = original.surface().tag();
+    let header::ReadyHeader {
         attributes,
         handlers,
-    } = header::construct(&original, selected, region)?;
+    } = header;
     let mut result = Err(Kind::IncompleteChildren);
     let node = region
         .element_body(
@@ -142,7 +161,7 @@ where
 struct OriginalBody<'selected, 'owner, 'result, 'a> {
     original: NativeElement<'owner, 'a>,
     selected: &'selected NativeTemplateComponent<'a>,
-    handlers: alloc::vec::Vec<PreparedHandler<'a>>,
+    handlers: alloc::vec::Vec<ObservedHandler<'a>>,
     result: &'result mut Result<(), Kind>,
 }
 
@@ -155,7 +174,14 @@ impl<'a> TemplateBody<'a, NativeVisibility> for OriginalBody<'_, '_, '_, 'a> {
         // Only a complete original header supplies these private prepared rows.
         // All attached nodes precede the same original parent's first child.
         for handler in self.handlers {
-            if let Err(kind) = region.inner.attach_handler(handler) {
+            let prepared = match region.inner.prepared_handler(handler) {
+                Ok(prepared) => prepared,
+                Err(kind) => {
+                    *self.result = Err(kind);
+                    return;
+                }
+            };
+            if let Err(kind) = region.inner.attach_handler(prepared) {
                 *self.result = Err(kind);
                 return;
             }

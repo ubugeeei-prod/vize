@@ -39,6 +39,6 @@ impl OriginalForOp<'_> {
 
 #[cfg(target_pointer_width = "64")]
 const _: () = {
-    assert!(core::mem::size_of::<OriginalForOp<'_>>() <= 96);
+    assert!(core::mem::size_of::<OriginalForOp<'_>>() == 40);
     assert!(!core::mem::needs_drop::<OriginalForOp<'_>>());
 };

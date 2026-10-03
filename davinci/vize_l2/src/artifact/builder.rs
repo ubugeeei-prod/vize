@@ -22,6 +22,7 @@ struct Frame<'a> {
 }
 
 enum Owner<'a> {
+    OriginalFor(crate::op::OriginalForId),
     Element {
         tag: &'a str,
         namespace: Namespace,
@@ -35,6 +36,7 @@ enum Owner<'a> {
 
 mod binding;
 mod factory;
+mod original_for;
 mod region;
 pub use factory::{ComponentBody, ComponentFactory};
 pub use region::RegionBuilder;
@@ -170,7 +172,7 @@ impl<'a> Builder<'a> {
             // After a caught callback unwind, retain every partial child and
             // pending owner. Closing only pending frames is not a tree walk.
             while let Some(frame) = self.frames.pop() {
-                self.close(frame);
+                let _ = self.close(frame);
             }
             return Err(RejectedArtifact {
                 error: ArtifactError::UnfinishedOwner { node },
@@ -243,15 +245,31 @@ impl<'a> Builder<'a> {
             .frames
             .pop()
             .ok_or(ArtifactError::UnfinishedOwner { node: id })?;
-        self.close(frame);
+        let _ = self.close(frame);
         Ok(())
     }
 
-    fn close(&mut self, frame: Frame<'a>) {
+    fn close(
+        &mut self,
+        frame: Frame<'a>,
+    ) -> Option<core::ptr::NonNull<crate::op::OriginalForOp<'a>>> {
         let children = Region { ops: frame.ops };
         let bindings = frame.bindings;
         let span = frame.span;
+        let mut original = None;
         let op = match frame.owner {
+            Owner::OriginalFor(id) => {
+                let owner = Box::new_in(
+                    crate::op::OriginalForOp {
+                        id,
+                        region: children,
+                        span,
+                    },
+                    &self.allocator,
+                );
+                original = Some(core::ptr::NonNull::from(owner.as_ref()));
+                Op::OriginalFor(owner)
+            }
             Owner::Element {
                 tag,
                 namespace,
@@ -279,6 +297,7 @@ impl<'a> Builder<'a> {
             )),
         };
         self.push(op);
+        original
     }
 
     fn push(&mut self, op: Op<'a>) {

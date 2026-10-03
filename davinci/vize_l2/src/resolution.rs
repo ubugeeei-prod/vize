@@ -11,6 +11,7 @@ use vize_l0::Span;
 use crate::expr::JsExpr;
 
 mod for_head;
+pub(crate) use for_head::resolve_for_facts;
 mod handler;
 pub(crate) use handler::resolve_handler_facts;
 pub(crate) mod sink;

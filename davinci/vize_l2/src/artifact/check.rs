@@ -109,7 +109,7 @@ fn check_node(
         }
     }
     let introduces = match node {
-        NodeRef::Op(Op::For(_)) => true,
+        NodeRef::Op(Op::For(_) | Op::OriginalFor(_)) => true,
         NodeRef::Binding(BindingOp::SlotContent(it)) => it.params.is_some(),
         NodeRef::Binding(BindingOp::VueSlotScope(it)) => it.params.is_some(),
         _ => false,

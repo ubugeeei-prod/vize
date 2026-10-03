@@ -11,20 +11,24 @@ use core::ops::DerefMut;
 use vize_l0::Span;
 use vize_l1::markup::{NativeAttribute, NativeTemplateComponent};
 
-pub(super) struct PreparedHandler<'a> {
+pub(super) struct ObservedHandler<'a> {
     pub(super) index: usize,
     pub(super) name: &'a str,
+}
+
+pub(super) struct PreparedHandler {
+    pub(super) index: usize,
 }
 
 impl<'a: 'b, 'b, R> FileRegion<'_, 'b, 'a, R, NativeVisibility>
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
 {
-    pub(super) fn prepare_handler(
+    pub(super) fn observe_handler(
         &mut self,
         selected: &NativeTemplateComponent<'a>,
         attribute: NativeAttribute<'_, 'a>,
-    ) -> Result<PreparedHandler<'a>, Kind> {
+    ) -> Result<ObservedHandler<'a>, Kind> {
         let block = selected.component().block();
         let name_span = block
             .span_of(attribute.surface().name.text)
@@ -91,6 +95,35 @@ where
         }
         #[cfg(test)]
         super::interruption::after_park();
+        let name = self.facts.pending_handlers[index]
+            .input
+            .as_ref()
+            .ok_or(Kind::InvalidEvent)?
+            .operand()
+            .argument();
+        Ok(ObservedHandler { index, name })
+    }
+
+    pub(super) fn resolve_handler(
+        &mut self,
+        observed: &ObservedHandler<'a>,
+    ) -> Result<PreparedHandler, Kind> {
+        let index = observed.index;
+        let pending = self
+            .facts
+            .pending_handlers
+            .get_mut(index)
+            .ok_or(Kind::InvalidEvent)?;
+        if pending.resolution.is_some() {
+            return Err(Kind::InvalidEvent);
+        }
+        pending.scope = self.scope;
+        let value_span = pending
+            .input
+            .as_ref()
+            .ok_or(Kind::InvalidEvent)?
+            .operand()
+            .value_span();
         // Keep the entire normal owner in File facts before the fallible walk.
         // A caught unwind leaves that same input parked, never dropped locally.
         let input = self
@@ -149,12 +182,29 @@ where
         let Some(resolution) = facts.join(&mut pending.input) else {
             return Err(self.handler_error(value_span, FileIssueKind::InvalidSource));
         };
-        let name = resolution.input().operand().argument();
         pending.resolution = Some(resolution);
-        Ok(PreparedHandler { index, name })
+        Ok(PreparedHandler { index })
     }
 
-    pub(super) fn attach_handler(&mut self, handler: PreparedHandler<'a>) -> Result<(), Kind> {
+    pub(super) fn prepared_handler(
+        &self,
+        observed: ObservedHandler<'a>,
+    ) -> Result<PreparedHandler, Kind> {
+        let pending = self
+            .facts
+            .pending_handlers
+            .get(observed.index)
+            .ok_or(Kind::InvalidEvent)?;
+        let resolution = pending.resolution.as_ref().ok_or(Kind::InvalidEvent)?;
+        if pending.scope != self.scope || resolution.input().operand().argument() != observed.name {
+            return Err(Kind::InvalidEvent);
+        }
+        Ok(PreparedHandler {
+            index: observed.index,
+        })
+    }
+
+    pub(super) fn attach_handler(&mut self, handler: PreparedHandler) -> Result<(), Kind> {
         let pending = self
             .facts
             .pending_handlers

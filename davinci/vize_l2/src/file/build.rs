@@ -24,6 +24,10 @@ pub(crate) struct Facts<'a> {
     pub handlers: SideTable<super::handler::HandlerRecord<'a>>,
     pub rejected_handlers: Vec<super::RejectedFileHandler<'a>>,
     pub pending_handlers: Vec<super::handler::PendingHandler<'a>>,
+    pub for_heads: SideTable<super::for_head::ForRecord<'a>>,
+    pub pending_for_heads: Vec<super::for_head::PendingFor<'a>>,
+    pub rejected_for_heads: Vec<super::RejectedFileFor<'a>>,
+    pub template_declarations: Vec<super::for_head::TemplateDeclarationRow>,
     pub template_issues: Vec<TemplateIssue>,
     pub template_walk: super::template::TemplateWalk,
     pub setup_annotations: Option<Box<crate::lang::js::file::setup::SetupAnnotationStorage>>,
@@ -42,6 +46,7 @@ struct Names {
     value_names: BTreeMap<String, BindingId>,
     type_names: BTreeMap<String, BindingId>,
 }
+mod template;
 
 /// The neutral owner builder exposes only actual checked tree factories.
 pub struct FileBuilder<'a> {
@@ -111,6 +116,10 @@ impl<'a> Facts<'a> {
             handlers: SideTable::new(),
             rejected_handlers: Vec::new(),
             pending_handlers: Vec::new(),
+            for_heads: SideTable::new(),
+            pending_for_heads: Vec::new(),
+            rejected_for_heads: Vec::new(),
+            template_declarations: Vec::new(),
             template_issues: Vec::new(),
             template_walk: super::template::TemplateWalk::Idle,
             setup_annotations: None,
@@ -189,6 +198,10 @@ impl<'a> Facts<'a> {
             self.issue(site.unit, site.span, FileIssueKind::BindingLimit);
             return None;
         };
+        if !template::script_binding_available(index, self.template_declarations.len()) {
+            self.issue(site.unit, site.span, FileIssueKind::BindingLimit);
+            return None;
+        }
         let id = BindingId::new(index);
         map.insert(String::from(site.name), id);
         self.declarations.push(Declaration {

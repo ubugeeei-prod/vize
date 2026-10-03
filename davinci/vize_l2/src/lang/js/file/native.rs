@@ -24,6 +24,7 @@ pub enum NativeTemplateIssueKind {
     UnsupportedExport,
     ReservedBinding,
     Handler { span: Span, kind: FileIssueKind },
+    For { span: Span, kind: FileIssueKind },
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct NativeTemplateIssue {

@@ -12,6 +12,19 @@ pub struct RegionBuilder<'s, 'a> {
 }
 
 impl<'a> RegionBuilder<'_, 'a> {
+    pub(crate) fn begin_original_for(
+        &mut self,
+        head: &crate::resolution::ForResolution<'a>,
+        span: Span,
+    ) -> Result<NodeId, ArtifactError> {
+        self.builder.begin_original_for(head, span)
+    }
+    pub(crate) fn finish_original_for(
+        &mut self,
+        node: NodeId,
+    ) -> Result<core::ptr::NonNull<crate::op::OriginalForOp<'a>>, ArtifactError> {
+        self.builder.finish_original_for(node)
+    }
     pub(crate) fn native_on(
         &mut self,
         handler: &crate::resolution::HandlerResolution<'a>,

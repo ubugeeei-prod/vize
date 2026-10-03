@@ -8,6 +8,7 @@ use super::{BindingId, BindingLookup, Occurrence, ResolutionErrorKind, walk};
 use crate::lang::js::NativeForInput;
 
 mod borrowed;
+pub(crate) use borrowed::resolve_for_facts;
 mod declaration;
 mod facts;
 mod sink;

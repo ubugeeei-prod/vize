@@ -15,8 +15,10 @@ pub use region::{
     TemplateBody, TemplateChildRegion, TemplatePolicy, TemplateRegion, TemplateScope,
     TemplateWalkRegion,
 };
+mod for_head;
 mod handler;
 mod interpolation;
+pub use for_head::{FileForHead, FileTemplateDeclaration, RejectedFileFor, TemplateDeclaration};
 mod query;
 pub use handler::{FileHandler, RejectedFileHandler};
 pub use interpolation::{NativeFileInterpolation, NativeFileInterpolationState};
@@ -63,10 +65,15 @@ impl<'a> FileArtifact<'a> {
 
     #[must_use]
     pub fn binding(&self, id: BindingId) -> Option<BindingRef<'_, 'a>> {
-        self.facts.declarations.get(id.index() as usize)?;
+        if self.facts.declarations.get(id.index() as usize).is_none()
+            && self.facts.template_declaration(id).is_none()
+        {
+            return None;
+        }
         Some(BindingRef { file: self, id })
     }
 
+    /// Script rows followed by authentic original-template rows in mint order.
     pub fn bindings(&self) -> impl Iterator<Item = BindingRef<'_, 'a>> {
         self.facts
             .declarations
@@ -75,6 +82,10 @@ impl<'a> FileArtifact<'a> {
                 file: self,
                 id: declaration.id,
             })
+            .chain(self.template_declarations().map(|declaration| BindingRef {
+                file: self,
+                id: declaration.declaration().id(),
+            }))
     }
 
     #[must_use]
@@ -186,6 +197,8 @@ impl<'f, 'a> BindingRef<'f, 'a> {
         self.id
     }
 
+    /// Original script declaration only; template aliases retain their whole
+    /// original parameter through `template_declaration` instead.
     #[must_use]
     pub fn declaration(self) -> Option<&'f Declaration> {
         self.file.facts.declarations.get(self.id.index() as usize)

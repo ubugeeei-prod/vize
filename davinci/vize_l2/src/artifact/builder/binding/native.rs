@@ -15,6 +15,9 @@ impl<'a> Builder<'a> {
             .frames
             .last()
             .ok_or(ArtifactError::BindingWithoutOwner { span })?;
+        if matches!(&frame.owner, super::super::Owner::OriginalFor(_)) {
+            return Err(ArtifactError::BindingWithoutOwner { span });
+        }
         if frame.children_started {
             return Err(ArtifactError::BindingAfterChild {
                 node: frame.id,

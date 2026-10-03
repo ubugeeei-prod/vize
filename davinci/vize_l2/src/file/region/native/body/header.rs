@@ -1,6 +1,6 @@
 //! Original ordinary static attributes must exhaust before an Element body.
 
-use super::super::{NativeVisibility, handler::PreparedHandler};
+use super::super::{NativeVisibility, for_head::ObservedFor, handler::ObservedHandler};
 use crate::artifact::RegionBuilder;
 use crate::file::region::FileRegion;
 use crate::lang::js::file::native::NativeTemplateIssueKind as Kind;
@@ -16,9 +16,10 @@ use vize_l1::{
     },
 };
 
-pub(super) struct Header<'a> {
+pub(in crate::file::region::native) struct Header<'a> {
     pub(super) attributes: Vec<'a, Attribute<'a>>,
-    pub(super) handlers: alloc::vec::Vec<PreparedHandler<'a>>,
+    pub(super) handlers: alloc::vec::Vec<ObservedHandler<'a>>,
+    pub(super) for_head: Option<ObservedFor>,
 }
 
 pub(super) fn construct<'a: 'b, 'b, R>(
@@ -30,7 +31,8 @@ where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
 {
     let mut attributes = Vec::new_in(&original.component().allocator());
-    let mut handlers: alloc::vec::Vec<PreparedHandler<'a>> = alloc::vec::Vec::new();
+    let mut handlers: alloc::vec::Vec<ObservedHandler<'a>> = alloc::vec::Vec::new();
+    let mut for_head = None;
     // One actual full header iterator. Only its normal end permits the Element
     // factory and original callback; pending owners remain parked on refusal.
     for (ordinal, attribute) in original.attributes().enumerate() {
@@ -67,7 +69,7 @@ where
                     || (directive.prefix == DirectivePrefix::Full
                         && directive.name.slice(block.root_source()) == "on") =>
             {
-                let handler = region.prepare_handler(selected, attribute)?;
+                let handler = region.observe_handler(selected, attribute)?;
                 if handlers
                     .iter()
                     .any(|previous| previous.name == handler.name)
@@ -76,13 +78,51 @@ where
                 }
                 handlers.push(handler);
             }
+            Ok(Some(directive))
+                if directive.prefix == DirectivePrefix::Full
+                    && directive.name.slice(block.root_source()) == "for" =>
+            {
+                let observed = region.observe_for(selected, attribute)?;
+                if for_head.is_some() {
+                    return Err(Kind::UnsupportedChild);
+                }
+                for_head = Some(observed);
+            }
             Ok(Some(_)) | Err(_) => return Err(Kind::UnsupportedChild),
         }
     }
     Ok(Header {
         attributes,
         handlers,
+        for_head,
     })
+}
+
+pub(in crate::file::region::native) struct ReadyHeader<'a> {
+    pub(super) attributes: Vec<'a, Attribute<'a>>,
+    pub(super) handlers: alloc::vec::Vec<ObservedHandler<'a>>,
+}
+
+impl<'a> Header<'a> {
+    pub(in crate::file::region::native) fn resolve_handlers<'b, R>(
+        self,
+        region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
+    ) -> Result<ReadyHeader<'a>, Kind>
+    where
+        'a: 'b,
+        R: DerefMut<Target = RegionBuilder<'b, 'a>>,
+    {
+        if self.for_head.is_some() {
+            return Err(Kind::InvalidEvent);
+        }
+        for handler in &self.handlers {
+            let _ = region.resolve_handler(handler)?;
+        }
+        Ok(ReadyHeader {
+            attributes: self.attributes,
+            handlers: self.handlers,
+        })
+    }
 }
 
 fn ordinary<'a>(original: NativeAttribute<'_, 'a>) -> Result<Attribute<'a>, Kind> {
