@@ -57,6 +57,8 @@ source/capture, the final actual protected candidate's full/all-100 gates and
 signed actual merge remain required. No local build/install or extra manual
 full campaign is used.
 
+The first exact-head source campaign compiled but one selected refusal law failed: authored `a,{b:1}` directly before the interpolation closer creates raw `}}}` and the genuine Descriptor rejects it as SafetyAdmission before an Expr is available. The original complete failed input is retained as an explicit earliest-owner SafetyAdmission control, and a separately authored spaced `a,{b:1} ` input checks admitted unsupported Object refusal. Production, expected outputs, prior assertions, providers, oracles and budgets stay exact. This adds one selected control, totaling twenty-two new Sequence laws (nine standalone/thirteen selected) and 142 native integrations. The failed source264179d3 and complete raw logs remain historical with no acceptance or queue entry; fresh corrected-head hosted and final protected actual merge remain required.
+
 TODO: other expression families, Spread and optional chains, full language
 early errors, every Vue dialect, directive values, other embeds, enclosing SFC
 assembly, options and checked edits remain unfinished. Whole native formatter

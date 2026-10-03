@@ -6,6 +6,49 @@ use vize_glyph::native_doc::{
     ExpressionRefusal, LineEnding, NativeTemplateRefusal, native_template_document,
 };
 use vize_l0::Allocator;
+use vize_l1::embed::syntax::EmbedHole;
+
+#[test]
+fn original_unseparated_object_closer_keeps_earliest_selected_safety_refusal() {
+    for script in SCRIPTS {
+        let arena = Allocator::default();
+        let source = vize_l0::cstr!(
+            "<template>{{{{a,b}}}}<p>{{{{/*原*/ a,{{b:1}}}}}}</p></template>{script}"
+        );
+        assert_eq!(
+            source.strip_suffix(script).unwrap(),
+            "<template>{{a,b}}<p>{{/*原*/ a,{b:1}}}</p></template>"
+        );
+        let owner = selected(&arena, &source);
+        let original = operands(&owner);
+        let operand = original.get(1).unwrap();
+        let syntax = operand.syntax();
+        assert_eq!(syntax.hole(), Some(EmbedHole::SafetyAdmission), "{source}");
+        assert!(syntax.admitted_expression().is_none());
+        assert!(syntax.expression().is_none());
+        let diagnostics = syntax.diagnostics().count();
+        let comments = syntax.comments().count();
+        let view = syntax.source();
+        let refs = original.iter().collect::<std::vec::Vec<_>>();
+        assert!(matches!(
+            native_template_document(&owner, &refs, &arena),
+            Err(NativeTemplateRefusal::OperandRejected {
+                index: 1,
+                hole: Some(EmbedHole::SafetyAdmission),
+                ..
+            })
+        ));
+        assert_eq!(syntax.hole(), Some(EmbedHole::SafetyAdmission));
+        assert_eq!(syntax.diagnostics().count(), diagnostics);
+        assert_eq!(syntax.comments().count(), comments);
+        assert!(core::ptr::eq(syntax.source().text(), view.text()));
+        assert!(core::ptr::eq(
+            syntax.source().authored_root(),
+            source.as_str()
+        ));
+        assert_eq!(operand.content_span().slice(&source), operand.raw_content());
+    }
+}
 
 #[test]
 fn unsupported_sequence_children_or_ancestors_refuse_the_complete_selected_document() {
@@ -13,7 +56,7 @@ fn unsupported_sequence_children_or_ancestors_refuse_the_complete_selected_docum
         ("this,b", false),
         ("a,this", false),
         ("a,[...b]", false),
-        ("a,{b:1}", false),
+        ("a,{b:1} ", false),
         ("a,(b=c)", false),
         ("a,b++", false),
         ("a,await b", false),
