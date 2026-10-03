@@ -155,14 +155,14 @@ fn update_await_and_unsupported_unary_operands_refuse_the_whole_selected_documen
 #[test]
 fn admitted_unary_depth_keeps_the_existing_whole_document_limit() {
     let supported = "!".repeat(16);
-    let source = vize_l0::cstr!("<template>{{{{{supported}a}}}}}</template>");
+    let source = vize_l0::cstr!("<template>{}{}a{}</template>", "{{", supported, "}}");
     assert_eq!(
         format(&source, PrintOptions::default()),
         vize_l0::cstr!("{{{{ {}a }}}}", "! ".repeat(16))
     );
     let arena = Allocator::default();
     let prefixes = "!".repeat(17);
-    let source = vize_l0::cstr!("<template>{{{{{prefixes}a}}}}}</template>");
+    let source = vize_l0::cstr!("<template>{}{}a{}</template>", "{{", prefixes, "}}");
     let owner = selected(&arena, &source);
     let original = operands(&owner);
     let operand = original.first().unwrap();

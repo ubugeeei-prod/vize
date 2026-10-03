@@ -53,6 +53,14 @@ exact-head affected Actions. Those source-built laws, protected full suites,
 all unchanged instruction ceilings and actual merge decide acceptance. Local
 Cargo caches or pre-existing executables provide no runtime acceptance credit.
 
+The first hosted source build on head `85ce9da4` in Check `37118937406`
+found unmatched closing braces in the two selected-template depth fixture
+format strings. Those fixtures did not compile and receive no runtime credit.
+The focused correction supplies the literal interpolation delimiters as format
+arguments around the same 16/17-prefix content; production source, intended
+input, assertions, output/refusal expectations and budgets stay unchanged.
+Fresh corrected-head Actions and protected actual merge remain required.
+
 TODO: other expression families, directive values, all Vue dialects, other
 embeds, enclosing SFC assembly, formatter options and checked edits remain
 unfinished. [#6882](https://github.com/ubugeeei-prod/vize/issues/6882) still gates
