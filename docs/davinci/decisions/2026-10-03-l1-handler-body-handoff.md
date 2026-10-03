@@ -25,7 +25,7 @@ Eight ordinary library laws cover original statement/directive/descendant and
 comment pointers, raw-root lifetime, admission/profile identity, entity/Unicode
 projection, TS syntax, complete diagnostics, context/wrapper/resource holes,
 empty/comment-only results and intact rejection of other original shapes.
-The private field rustdoc law guards observation substitution. Fresh exact-head
+The private field rustdoc law guards observation substitution. Hosted tooling found the new test-only diagnostic snapshots missing from the reviewed storage row and the L1 Span witness shard stale; both existing authoritative inventories are refreshed, preserving every other source count. Fresh exact-head
 Actions and the protected full/instruction merge queue decide acceptance.
 
 Remaining work is explicit: event Expr-versus-HandlerBody grammar selection,
