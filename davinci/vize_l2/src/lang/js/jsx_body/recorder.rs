@@ -80,7 +80,7 @@ impl<'a> FileObserver<'a> for Recorder<'a> {
             {
                 return Err(ResolutionErrorKind::InvalidSpan);
             }
-        } else if event.kind != SyntaxKind::Expression {
+        } else if !event.kind.is_expression() {
             return Err(ResolutionErrorKind::InvalidSpan);
         }
         let index = self.records.len();

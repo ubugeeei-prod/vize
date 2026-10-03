@@ -1,12 +1,14 @@
 //! Vue JSX decisions beside the sole original owning L2 File.
 //!
-//! This first projection accepts static structure and resolved component names.
+//! This projection accepts static structure, resolved component names and scalar
+//! expression-container children from original File records.
 //! It does not grant script/module emission, entity decoding, slots or runtime
 //! completion. The producer visits the existing flat records, never the AST.
 
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::Span;
 use vize_l2::lang::js::{JsxFile, JsxNode};
+use vize_l2::resolution::BindingId;
 
 mod build;
 pub use build::build_jsx_decisions;
@@ -33,6 +35,16 @@ pub enum JsxDecisionKind<'a> {
     /// Original parser value; JSX whitespace/entities still need target rules.
     Text(&'a str),
     EmptyContainer,
+    ExpressionContainer,
+    Read {
+        name: &'a str,
+        binding: BindingId,
+    },
+    /// Exact original numeric-literal bits; target formatting is still separate.
+    Number(u64),
+    String(&'a str),
+    Boolean(bool),
+    Null,
     Empty,
 }
 

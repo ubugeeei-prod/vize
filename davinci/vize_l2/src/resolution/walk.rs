@@ -10,6 +10,7 @@ mod compound;
 mod jsx;
 #[cfg(test)]
 mod syntax_tests;
+mod values;
 
 use super::sink::{ReferenceEvent, ReferenceSink};
 use super::source::ReferenceSource;
@@ -136,7 +137,11 @@ impl<'a, 'b, S: ReferenceSink<'a>> Resolver<'a, 'b, S> {
     ) -> Result<(), ResolutionError> {
         self.visit(expression.span(), depth)?;
         if self.source.allows_jsx() {
-            self.syntax(SyntaxKind::Expression, SyntaxEdge::Enter, expression.span())?;
+            self.syntax(
+                values::syntax_value(expression),
+                SyntaxEdge::Enter,
+                expression.span(),
+            )?;
         }
         let next = depth + 1;
         let result = match expression {
@@ -246,7 +251,11 @@ impl<'a, 'b, S: ReferenceSink<'a>> Resolver<'a, 'b, S> {
         };
         result?;
         if self.source.allows_jsx() {
-            self.syntax(SyntaxKind::Expression, SyntaxEdge::Leave, expression.span())?;
+            self.syntax(
+                values::syntax_value(expression),
+                SyntaxEdge::Leave,
+                expression.span(),
+            )?;
         }
         Ok(())
     }

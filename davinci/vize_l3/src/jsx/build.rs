@@ -37,12 +37,29 @@ fn classify<'a>(node: JsxNode<'_, 'a>) -> Result<Decision<'a>, Issue> {
             }
             Decision::Root
         }
+        Syntax::IdentifierExpression(name) => {
+            scalar_container_child(node)?;
+            let Some([reference]) = node.references() else {
+                return Err(Issue::Expression);
+            };
+            if !read_is_resolved(node, name) {
+                return Err(Issue::Expression);
+            }
+            let ReferenceTarget::Resolved(binding) = reference.target else {
+                return Err(Issue::Expression);
+            };
+            Decision::Read { name, binding }
+        }
+        Syntax::NumberExpression(value) => literal(node, Decision::Number(value))?,
+        Syntax::StringExpression(value) => literal(node, Decision::String(value))?,
+        Syntax::BooleanExpression(value) => literal(node, Decision::Boolean(value))?,
+        Syntax::NullExpression => literal(node, Decision::Null)?,
         Syntax::Element => Decision::Element,
         Syntax::Opening { self_closing } => Decision::Opening { self_closing },
         Syntax::Closing => Decision::Closing,
         Syntax::Intrinsic(name) => Decision::Intrinsic(name),
         Syntax::Component(name) => {
-            if !component_is_resolved(node, name) {
+            if !read_is_resolved(node, name) {
                 return Err(Issue::UnresolvedComponent);
             }
             Decision::Component(name)
@@ -55,12 +72,21 @@ fn classify<'a>(node: JsxNode<'_, 'a>) -> Result<Decision<'a>, Issue> {
         Syntax::Text(value) => Decision::Text(value),
         Syntax::Container => {
             let mut children = node.children();
-            if children.next().and_then(JsxNode::kind) != Some(Syntax::Empty)
-                || children.next().is_some()
-            {
+            let child = children.next().and_then(JsxNode::kind);
+            if children.next().is_some() {
                 return Err(Issue::Expression);
             }
-            Decision::EmptyContainer
+            match child {
+                Some(Syntax::Empty) => Decision::EmptyContainer,
+                Some(
+                    Syntax::IdentifierExpression(_)
+                    | Syntax::NumberExpression(_)
+                    | Syntax::StringExpression(_)
+                    | Syntax::BooleanExpression(_)
+                    | Syntax::NullExpression,
+                ) => Decision::ExpressionContainer,
+                _ => return Err(Issue::Expression),
+            }
         }
         Syntax::Empty => Decision::Empty,
         Syntax::Fragment | Syntax::FragmentOpening | Syntax::FragmentClosing => {
@@ -71,7 +97,24 @@ fn classify<'a>(node: JsxNode<'_, 'a>) -> Result<Decision<'a>, Issue> {
     })
 }
 
-fn component_is_resolved(node: JsxNode<'_, '_>, name: &str) -> bool {
+fn scalar_container_child(node: JsxNode<'_, '_>) -> Result<(), Issue> {
+    if node.parent().and_then(JsxNode::kind) != Some(Syntax::Container)
+        || node.children().next().is_some()
+    {
+        return Err(Issue::Expression);
+    }
+    Ok(())
+}
+
+fn literal<'a>(node: JsxNode<'_, 'a>, value: Decision<'a>) -> Result<Decision<'a>, Issue> {
+    scalar_container_child(node)?;
+    if node.references().is_none_or(|rows| !rows.is_empty()) {
+        return Err(Issue::Expression);
+    }
+    Ok(value)
+}
+
+fn read_is_resolved(node: JsxNode<'_, '_>, name: &str) -> bool {
     let Some(rows) = node.references() else {
         return false;
     };
