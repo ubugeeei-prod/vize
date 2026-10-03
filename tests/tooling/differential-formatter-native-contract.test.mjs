@@ -4,7 +4,11 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { bytes, hash } from "../../npm/native/scripts/formatter-history-build.mjs";
+import {
+  bytes,
+  hash,
+  nativeHistoryBuildEnvironment,
+} from "../../npm/native/scripts/formatter-history-build.mjs";
 import {
   loadPublicNativeManifest,
   NATIVE_FORMATTER_MANIFEST,
@@ -53,6 +57,7 @@ function controlReport() {
     nodeExecutable: "/synthetic/node",
     observer: "/synthetic/observer.mjs",
     nodeOptions: null,
+    cargoEnvironment: nativeHistoryBuildEnvironment(),
   };
   const rows = loaded.cases.map((fixture) => {
     let source = fixture.input.toString();
@@ -73,7 +78,12 @@ function controlReport() {
         buildReceiptSha256: hash(buildRaw),
         artifactSha256: build.frozen.sha256,
         observerSha256: hash(observer),
-        runtime: { node: process.version, nodeOptions: null, errorStackTraceLimit: 0 },
+        runtime: {
+          node: process.version,
+          nodeOptions: null,
+          cargoEnvironment: runtime.cargoEnvironment,
+          errorStackTraceLimit: 0,
+        },
         result,
         error: fixture.expectedError ? structuredClone(fixture.expectedError) : null,
       };

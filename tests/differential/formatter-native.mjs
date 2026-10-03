@@ -7,6 +7,7 @@ import {
   bytes,
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
+  nativeHistoryBuildEnvironment,
 } from "../../npm/native/scripts/formatter-history-build.mjs";
 import { nativePreparationIsActive } from "../../npm/native/scripts/test-preparation.mjs";
 import { loadPublicNativeManifest } from "./formatter-native-manifest.mjs";
@@ -88,6 +89,7 @@ export function validatePublicNativeReport(loaded, report, buildReceiptBytes, ob
         assert.deepEqual(packet.runtime, {
           node: report.buildReceipt.toolchain.node,
           nodeOptions: report.runtime.nodeOptions,
+          cargoEnvironment: report.runtime.cargoEnvironment,
           errorStackTraceLimit: 0,
         });
         if (fixture.outcome === "error") {
@@ -131,6 +133,7 @@ export function runPublicNativeFormatter(root) {
     nodeExecutable: process.execPath,
     observer,
     nodeOptions: process.env.NODE_OPTIONS ?? null,
+    cargoEnvironment: nativeHistoryBuildEnvironment(),
   };
   const rows = loaded.cases.map((fixture) => {
     const row = {

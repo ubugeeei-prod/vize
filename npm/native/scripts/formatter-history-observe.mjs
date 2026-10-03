@@ -8,6 +8,7 @@ import {
   hash,
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
+  nativeHistoryBuildEnvironment,
 } from "./formatter-history-build.mjs";
 
 const nativeDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -42,7 +43,7 @@ try {
     constructor: actual.constructor.name,
     ownProperties: Object.fromEntries(
       Object.getOwnPropertyNames(actual)
-        .sort()
+        .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0))
         .map((key) => [key, actual[key] === undefined ? { type: "undefined" } : actual[key]]),
     ),
   };
@@ -60,6 +61,7 @@ process.stdout.write(
     runtime: {
       node: process.version,
       nodeOptions: process.env.NODE_OPTIONS ?? null,
+      cargoEnvironment: nativeHistoryBuildEnvironment(),
       errorStackTraceLimit: Error.stackTraceLimit,
     },
     result,

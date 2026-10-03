@@ -74,7 +74,7 @@ object cannot substitute for that actual CLI execution.
 
 ## Delivery boundary
 
-Four pure source/process/error admission controls and the two parent build
+Four pure source/process/error admission controls and the three parent build
 controls pass and grant no runtime credit. Actual addon execution and all twenty-five calls remain unqualified until
 hosted evidence passes. Preserve failed build/process streams before admission or
 parsing and upload the frozen module/whole receipts/report in the existing JS job.
@@ -91,7 +91,7 @@ handled/equivalent/paired counts remain zero.
 The original dirty implementation remains intact in its private worktree and
 was snapshotted with every fixture hash before copying into isolated `wt`
 branches on actual main `ead89a75`. Parent #7630 contains only real Cargo build
-custody; this child branches directly from its corrected source `bc3d40d78`. Its complete
+custody; this child branches directly from its corrected source `9c76c3fbd`. Its complete
 existing API/config manifests, source witnesses, goldens and receipts remain
 immutable. Native source-only counts stay zero; legacy public-boundary history
 observations are a distinct migration prerequisite. No local Rust build or
@@ -99,3 +99,14 @@ package install was run. The parent is not individually auto-merged: both PRs
 will be registered in a genuine native Stack, checked at exact heads and queued
 only as a passing contiguous prefix. Every regenerated queue candidate needs
 fresh full/unchanged instruction acceptance and literal merge confirmation.
+
+Initial child244fbce25 Check37151362242 preserved a genuine build/frozen-addon
+packet (artifact11283519449) but refused before any NAPI call because build and
+observer Cargo job settings differed. Parent9c76c3fbd now authenticates the
+actual builder before/after environment; each observer also retains its own
+Cargo variables in its whole runtime packet. Source/toolchain/streams/emitted
+and frozen bytes remain checked. The same child also hit the zero-warning sort
+comparator rule; explicit ordinal comparators preserve the original ordering.
+Original inputs/options/results/error goldens and counts remain unchanged.
+Both failed original jobs are retained; fresh both-head Actions, twenty-five
+real calls and full protected actual merge remain required.

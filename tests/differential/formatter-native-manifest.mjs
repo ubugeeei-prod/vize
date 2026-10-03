@@ -119,6 +119,7 @@ export function loadPublicNativeManifest(root, manifestPath = NATIVE_FORMATTER_M
     );
     return { ...fixture, input, options, optionsRaw, expected };
   });
-  assert.deepEqual([...seen].sort(), Object.keys(references).sort());
+  const compare = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
+  assert.deepEqual([...seen].sort(compare), Object.keys(references).sort(compare));
   return { manifest, manifestSha256: sha256(raw), cases };
 }
