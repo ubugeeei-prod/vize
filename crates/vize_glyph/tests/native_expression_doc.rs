@@ -5,7 +5,6 @@ use vize_l1::embed::{
     Embed, EmbedSource, Grammar, Lang, Shape, prepare_attribute_value,
     syntax::{RetainedExpression, parse_once},
 };
-
 #[path = "native_expression_doc/array.rs"]
 mod array;
 #[path = "native_expression_doc/authored_newlines.rs"]
@@ -20,6 +19,8 @@ mod member;
 mod preservation;
 #[path = "native_expression_doc/refusals.rs"]
 mod refusals;
+#[path = "native_expression_doc/sequence.rs"]
+mod sequence;
 #[path = "native_expression_doc/unary.rs"]
 mod unary;
 fn retained<'a>(
@@ -47,7 +48,6 @@ fn retained<'a>(
     .into_expression()
     .unwrap()
 }
-
 fn format(source: &str, lang: Lang, decode: bool, options: PrintOptions) -> String {
     let allocator = Allocator::default();
     let original = retained(

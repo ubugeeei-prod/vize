@@ -27,6 +27,7 @@ pub(super) enum Syntax {
         std::boxed::Box<Syntax>,
         std::vec::Vec<Syntax>,
     ),
+    Sequence(std::vec::Vec<Syntax>),
     Array(std::vec::Vec<Syntax>),
     Elision(std::string::String),
     Conditional(
@@ -91,6 +92,13 @@ pub(super) fn fingerprint(
             member.optional,
             std::boxed::Box::new(fingerprint(original, &member.object)),
             std::boxed::Box::new(fingerprint(original, &member.expression)),
+        ),
+        Expression::SequenceExpression(sequence) => Syntax::Sequence(
+            sequence
+                .expressions
+                .iter()
+                .map(|child| fingerprint(original, child))
+                .collect(),
         ),
         Expression::ArrayExpression(array) => Syntax::Array(
             array

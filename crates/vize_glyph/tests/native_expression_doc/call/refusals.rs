@@ -23,7 +23,7 @@ fn optional_chain_spread_type_arguments_and_unsupported_call_descendants_refuse_
         "f([...a])",
         "f(a.#x)",
         "f(await a)",
-        "(a,b)(c)",
+        "(a,b)(...c)",
     ] {
         for lang in [Lang::Js, Lang::Ts] {
             let allocator = Allocator::default();

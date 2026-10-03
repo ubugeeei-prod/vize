@@ -77,6 +77,7 @@ impl<'a> Context<'_, 'a> {
             }
             Expression::CallExpression(call) => self.call(call, span, depth),
             Expression::ArrayExpression(array) => self.array(array, span, depth),
+            Expression::SequenceExpression(sequence) => self.sequence(sequence, span, depth),
             Expression::ConditionalExpression(conditional) => {
                 self.conditional(conditional, span, depth)
             }

@@ -24,6 +24,8 @@ mod member;
 mod preservation;
 #[path = "native_template_interpolations/refusals.rs"]
 mod refusals;
+#[path = "native_template_interpolations/sequence.rs"]
+mod sequence;
 #[path = "native_template_interpolations/unary.rs"]
 mod unary;
 

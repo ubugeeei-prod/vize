@@ -225,7 +225,7 @@ fn chains_private_fields_and_unsupported_call_member_descendants_refuse_whole_do
         "call(...x).x",
         "a[call(...x)]",
         "a.x(...x)",
-        "a[b,c]",
+        "a[b,call(...c)]",
         "a[await b]",
         "a[x=1]",
     ] {

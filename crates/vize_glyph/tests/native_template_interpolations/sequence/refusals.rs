@@ -1,4 +1,4 @@
-//! Complete array refusals retain genuine original syntax and source owners.
+//! Whole sequence refusals keep original source, observations and fixed bounds.
 
 use super::{SCRIPTS, assert_preserved, format, options};
 use crate::{operands, selected};
@@ -8,31 +8,35 @@ use vize_glyph::native_doc::{
 use vize_l0::Allocator;
 
 #[test]
-fn spread_or_unsupported_array_descendants_refuse_the_complete_selected_document() {
+fn unsupported_sequence_children_or_ancestors_refuse_the_complete_selected_document() {
     for (content, ts_only) in [
-        ("[...a]", false),
-        ("[...a,]", false),
-        ("[,a,...b]", false),
-        ("[a,...b,c]", false),
-        ("[a,1n]", false),
-        ("[a,/x/]", false),
-        ("[a,`x`]", false),
-        ("[a,()=>b]", false),
-        ("[a,function(){}]", false),
-        ("[a,{b:1}]", false),
-        ("[a,(b=c)]", false),
-        ("[a,(b,fn(...c))]", false),
-        ("[a,this]", false),
-        ("[a,new B]", false),
-        ("[a,import('b')]", false),
-        ("[a,super.b]", false),
-        ("[a,b++]", false),
-        ("[a,b?.c]", false),
-        ("[a,f(...b)]", false),
-        ("&#91;a&#44;&#46;&#46;&#46;b&#93;", false),
-        ("[a,(b as T)]", true),
-        ("[a,f<T>(b)]", true),
-        ("[a,b!]", true),
+        ("this,b", false),
+        ("a,this", false),
+        ("a,[...b]", false),
+        ("a,{b:1}", false),
+        ("a,(b=c)", false),
+        ("a,b++", false),
+        ("a,await b", false),
+        ("a,new B", false),
+        ("a,import('b')", false),
+        ("a,b=>c", false),
+        ("a,b?.c", false),
+        ("a,f(...b)", false),
+        ("a,1n", false),
+        ("a,/x/", false),
+        ("a,`x`", false),
+        ("a,super.b", false),
+        ("f((a,++b))", false),
+        ("[(a,++b)]", false),
+        ("obj[a,++b]", false),
+        ("(0,obj.#m)()", false),
+        ("(a,b)?.()", false),
+        ("a,&#123;b:1&#125;", false),
+        ("a,(b as T)", true),
+        ("(a as T),b", true),
+        ("a,f<T>(b)", true),
+        ("f<T>((a,b))", true),
+        ("a,b!", true),
     ] {
         for script in SCRIPTS {
             if ts_only && script.is_empty() {
@@ -40,7 +44,7 @@ fn spread_or_unsupported_array_descendants_refuse_the_complete_selected_document
             }
             let arena = Allocator::default();
             let source = vize_l0::cstr!(
-                "<template>{{{{[a,,]}}}}<p>{{{{/*原*/ {content}}}}}</p></template>{script}"
+                "<template>{{{{a,b}}}}<p>{{{{/*原*/ {content}}}}}</p></template>{script}"
             );
             let owner = selected(&arena, &source);
             let original = operands(&owner);
@@ -108,12 +112,12 @@ fn spread_or_unsupported_array_descendants_refuse_the_complete_selected_document
 }
 
 #[test]
-fn malformed_arrays_keep_their_syntax_holes_after_a_supported_sparse_original() {
-    for content in ["[", "[a,b", "[...]", "[a + ,b]", "[a,,b,)"] {
+fn sequence_holes_and_trailing_commas_remain_syntax_refusals_after_a_supported_original() {
+    for content in ["a,", "a,,b", "(a,)", "(,a)", "a,/*only*/", "f((a,))", ","] {
         for script in SCRIPTS {
             let arena = Allocator::default();
             let source = vize_l0::cstr!(
-                "<template>{{{{[a,,]}}}}<p>{{{{/*keep*/ {content}}}}}</p></template>{script}"
+                "<template>{{{{a,b}}}}<p>{{{{/*keep*/ {content}}}}}</p></template>{script}"
             );
             let owner = selected(&arena, &source);
             let original = operands(&owner);
@@ -141,14 +145,15 @@ fn malformed_arrays_keep_their_syntax_holes_after_a_supported_sparse_original() 
 }
 
 #[test]
-fn non_ascii_array_or_elision_gaps_have_no_plain_whitespace_formatting_authority() {
+fn non_ascii_sequence_operator_gaps_have_no_plain_whitespace_formatting_authority() {
     for content in [
-        "[\u{a0}a]",
-        "[a\u{a0},b]",
-        "[a,\u{a0}b]",
-        "[,\u{a0},a]",
-        "[a,,\u{a0}]",
-        "[a,&#160;b]",
+        "a\u{a0},b",
+        "a,\u{a0}b",
+        "(a,\u{a0}b)",
+        "obj[a,\u{a0}b]",
+        "a&#160;,b",
+        "a,&#160;b",
+        "a,\u{a0}(b,c)",
     ] {
         for script in SCRIPTS {
             let arena = Allocator::default();
@@ -177,11 +182,10 @@ fn non_ascii_array_or_elision_gaps_have_no_plain_whitespace_formatting_authority
 }
 
 #[test]
-fn sparse_array_operands_cannot_be_foreign_missing_extra_reversed_or_duplicated() {
+fn genuine_sequence_operands_cannot_be_foreign_missing_extra_reversed_or_duplicated() {
     for script in SCRIPTS {
         let arena = Allocator::default();
-        let source =
-            vize_l0::cstr!("<template>{{{{[,a]}}}}<p>{{{{[b,,]}}}}</p></template>{script}");
+        let source = vize_l0::cstr!("<template>{{{{a,b}}}}<p>{{{{c,d}}}}</p></template>{script}");
         let owner = selected(&arena, &source);
         let original = operands(&owner);
         let a = original.first().unwrap();
@@ -221,58 +225,45 @@ fn sparse_array_operands_cannot_be_foreign_missing_extra_reversed_or_duplicated(
             ],
             roots
         );
-        assert_eq!(a.raw_content(), "[,a]");
-        assert_eq!(b.raw_content(), "[b,,]");
+        assert_eq!(a.raw_content(), "a,b");
+        assert_eq!(b.raw_content(), "c,d");
     }
 }
 
 #[test]
-fn genuine_expression_and_elision_children_share_the_independent_immutable_depth_bound() {
-    for (supported, body, refused, leaf) in [
-        (
-            vize_l0::cstr!("[[[{}c]]]", "!".repeat(13)),
-            vize_l0::cstr!("[ [ [ {}c ] ] ]", "! ".repeat(13)),
-            vize_l0::cstr!("[[[{}c]]]", "!".repeat(14)),
-            "c",
-        ),
-        (
-            vize_l0::cstr!("{}[[[,]]]", "!".repeat(13)),
-            vize_l0::cstr!("{}[ [ [ , ] ] ]", "! ".repeat(13)),
-            vize_l0::cstr!("{}[[[,]]]", "!".repeat(14)),
-            ",",
-        ),
-    ] {
-        for script in SCRIPTS {
-            let source = vize_l0::cstr!("<template>{{{{{supported}}}}}</template>{script}");
-            assert_eq!(
-                format(&source, options(200, LineEnding::Lf)),
-                vize_l0::cstr!("{{{{ {body} }}}}")
-            );
-            let source = vize_l0::cstr!("<template>{{{{{refused}}}}}</template>{script}");
-            let arena = Allocator::default();
-            let owner = selected(&arena, &source);
-            let original = operands(&owner);
-            let operand = original.first().unwrap();
-            let syntax = operand.syntax();
-            assert_eq!(
-                syntax.hole(),
-                None,
-                "independent whole input remains within L1 admission"
-            );
-            assert!(syntax.admitted_expression().is_some());
-            let root = core::ptr::from_ref(syntax.expression().unwrap());
-            let refs = original.iter().collect::<std::vec::Vec<_>>();
-            let Err(NativeTemplateRefusal::Expression {
-                refusal: ExpressionRefusal::DepthLimit { span },
-                ..
-            }) = native_template_document(&owner, &refs, &arena)
-            else {
-                panic!("actual child at depth seventeen must refuse: {refused}")
-            };
-            assert_eq!(span.slice(syntax.source().text()), leaf);
-            assert_eq!(core::ptr::from_ref(syntax.expression().unwrap()), root);
-            assert_eq!(operand.content_span().slice(&source), operand.raw_content());
-        }
-        assert_preserved(&supported);
+fn genuine_sequence_unary_children_keep_independent_depth_sixteen_and_refuse_seventeen() {
+    let supported = vize_l0::cstr!("a,{}b", "!".repeat(15));
+    for script in SCRIPTS {
+        let source = vize_l0::cstr!("<template>{{{{{supported}}}}}</template>{script}");
+        assert_eq!(
+            format(&source, options(200, LineEnding::Lf)),
+            vize_l0::cstr!("{{{{ a, {}b }}}}", "! ".repeat(15))
+        );
+        let content = vize_l0::cstr!("a,{}b", "!".repeat(16));
+        let source = vize_l0::cstr!("<template>{{{{{content}}}}}</template>{script}");
+        let arena = Allocator::default();
+        let owner = selected(&arena, &source);
+        let original = operands(&owner);
+        let operand = original.first().unwrap();
+        let syntax = operand.syntax();
+        assert_eq!(
+            syntax.hole(),
+            None,
+            "whole parser input stays below the unchanged 31-unit bound"
+        );
+        assert!(syntax.admitted_expression().is_some());
+        let root = core::ptr::from_ref(syntax.expression().unwrap());
+        let refs = original.iter().collect::<std::vec::Vec<_>>();
+        let Err(NativeTemplateRefusal::Expression {
+            refusal: ExpressionRefusal::DepthLimit { span },
+            ..
+        }) = native_template_document(&owner, &refs, &arena)
+        else {
+            panic!("actual child at depth seventeen must refuse")
+        };
+        assert_eq!(span.slice(syntax.source().text()), "b");
+        assert_eq!(core::ptr::from_ref(syntax.expression().unwrap()), root);
+        assert_eq!(operand.content_span().slice(&source), operand.raw_content());
     }
+    assert_preserved(&supported);
 }
