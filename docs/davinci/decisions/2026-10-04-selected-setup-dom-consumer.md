@@ -176,3 +176,24 @@ that existing ownership relation explicitly. No owner lifetime, source scope,
 authority, eligibility, emitter bytes or test was relaxed; fresh Actions must
 prove this corrected head. The queued parent separately failed its immutable
 instruction ceiling and its owner removed that known-red candidate promptly.
+
+Historical corrected consumer head `659a079d17d6322775dd0ab8695714fb1ec39d65`
+passed exact source Check `37160042058`: strict production Clippy/archive,
+all eight decisive privacy/lifetime docs, and 14,956 selected PR Rust executions
+across four workers, including all eight new laws once each. Shard/filter skips
+are PR selection and confer no protected-full evidence. The mandatory first
+tooling worker captured all six full original modules/maps, matching the fixed
+independent desired outputs exactly. Actual Vue 3.5.35 source-capture receipts
+matched all six reference initializations/explicit updates/unmounts, with one
+real setup invocation, two renders and no authored import-shaped mutation.
+The tiny capture artifact and raw builder/tooling/four-worker logs were inspected;
+no local build/install or manual full campaign was run.
+
+The complete owned consumer delta was replayed from its genuine old parent f3
+onto corrected envelope head `e3098cd9c0fe8125bae7047d18e532c6fe9a6293`.
+Incoming scorer optimization/independent laws and every parent failed-candidate
+receipt remain intact. Consumer source/fixtures/capture bytes were compared and
+are unchanged from the historical passing head. This new combined head requires
+fresh source Actions and protected full/100-by-3 proof; prior success is not
+claimed as current merge proof. Native Stack #7664 remains the genuine provider
+#7658 and consumer #7663; no child admission against the failed old parent.
