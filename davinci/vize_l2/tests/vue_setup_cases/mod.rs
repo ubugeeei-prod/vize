@@ -34,6 +34,7 @@ use vize_l2::lang::js::{
 use vize_l2::resolution::ResolutionErrorKind;
 
 mod constants;
+mod strict;
 
 fn checked<'o, 'f, 'a>(
     original: &'o Observed<'a>,

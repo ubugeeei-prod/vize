@@ -51,6 +51,7 @@ pub struct ProgramInput<'p, 'a> {
     block: SourceBlock<'a>,
     index: u32,
     profile: ScriptProfile,
+    has_legacy_literals: bool,
 }
 
 impl<'p, 'a> ProgramInput<'p, 'a> {
@@ -94,6 +95,7 @@ impl<'p, 'a> ProgramInput<'p, 'a> {
             u32::try_from(container_index).map_err(|_| reject(FileIssueKind::BindingLimit))?;
         Ok(Self {
             references,
+            has_legacy_literals: admitted.has_legacy_literals(),
             block,
             index,
             profile: ScriptProfile {
@@ -143,7 +145,10 @@ impl<'a> FileProducer<'a> {
             input.block.span(),
             input.profile,
             scope == ProgramScope::Nested,
-            crate::file::ProgramOrigin::checked(input.references.program()),
+            crate::file::ProgramOrigin::checked(
+                input.references.program(),
+                input.has_legacy_literals,
+            ),
         ) else {
             return Err(ProgramInputError {
                 span: input.block.span(),

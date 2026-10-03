@@ -60,7 +60,7 @@ pub(crate) struct ProgramOrigin {
 }
 
 impl ProgramOrigin {
-    pub(crate) fn checked(program: &Program<'_>) -> Self {
+    pub(crate) fn checked(program: &Program<'_>, has_legacy_literals: bool) -> Self {
         Self {
             body: program.body.as_ptr() as usize,
             length: program.body.len(),
@@ -68,7 +68,7 @@ impl ProgramOrigin {
             has_comments: !program.comments.is_empty(),
             has_export: false,
             reserved_binding: false,
-            setup_eligible: crate::lang::js::file::setup::initial(program),
+            setup_eligible: crate::lang::js::file::setup::initial(program) && !has_legacy_literals,
         }
     }
 }

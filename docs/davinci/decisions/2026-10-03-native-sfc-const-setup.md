@@ -45,9 +45,9 @@ ten real Vue renders. Mutable updates keep the TEXT patch flag; primitive const
 leaves omit it. Reference and native complete rendered trees agree. Native output
 is never replaced by an upstream or legacy compiler result.
 
-Focused current-source locked Cargo validation passes 41 lower/exposure/READ
-laws and seven product setup laws; the combined original/new Node campaign has
-31 passes without skips, including thirteen actual native setup calls and 26
+Focused current-source locked Cargo validation passes 46 lower/exposure/READ
+laws and nine product setup laws; the combined original/new Node campaign has
+33 passes without skips, including thirteen actual native setup calls and 26
 native renders. The full-only hosted action adds the exact five-module law and
 new runtime checks, retaining both const JSON outputs beside existing captures.
 The actual merge-group tooling router invokes this action before its full
@@ -58,7 +58,24 @@ router wiring closes that current queue execution gap without adding PR work.
 Ordinary tooling explicitly skips six const capture/native cases when the
 fresh input is absent, and receives no native execution credit.
 
+Actual source-built modules exposed a strict-module early-error gap in the
+inherited Let/Var and additive Const family: the stock parser accepts some
+strict binding names, legacy zero-prefix numbers and decimal/octal string
+escapes without syntax diagnostics. Node rejected their unchanged module bytes.
+The current const PR was removed from the protected queue before repair.
+The [original lexer receipt provider](./2026-10-03-original-strict-literal-receipt.md)
+records legacy literal decoding during the existing parse and restores both
+checkpoint paths. Private ProgramInput and ProgramOrigin join that authentic
+receipt into initial unit eligibility; the existing declaration loop rejects
+actual decoded strict binding names, including escaped aliases. Neutral File
+facts, syntax admission, comments, ownership and observer behavior stay intact.
+Legal radix/Unicode/null/hex escapes remain supported. No source scan, parse or
+AST walk is added. Eleven actual complete strict-safe native modules pass Node
+module syntax checks; 39 original refused script bodies independently fail the
+same Node check. Their two fresh captures run once in the first actual
+merge-group tooling partition alongside the original/new Vue runtime campaign.
+
 Fresh exact-head Actions, all unchanged instruction ceilings/ratchets, protected
-native Stack candidate checks and actual merge remain necessary. Broader script,
+native Stack provider/consumer candidate checks and actual merge remain necessary. Broader script,
 macro, template-control, const expression evaluation, ordinary/TS output and
 compiler-history/default replacement remain unfinished.

@@ -194,6 +194,20 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             if initializer != InitializerKind::PrimitiveLiteral
                 || declaration.type_annotation.is_some()
                 || declaration.definite
+                || matches!(
+                    id.name.as_str(),
+                    "eval"
+                        | "arguments"
+                        | "implements"
+                        | "interface"
+                        | "let"
+                        | "package"
+                        | "private"
+                        | "protected"
+                        | "public"
+                        | "static"
+                        | "yield"
+                )
             {
                 super::setup::reject(self.facts, self.unit);
             }
