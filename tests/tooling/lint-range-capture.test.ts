@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
+import { verifyTrackedSource } from "../../tools/support/ci/lint-range-capture/preflight.ts";
 import { test } from "node:test";
 import { encodeFrames, decodeFrames } from "../../tools/support/ci/lint-range-capture/codec.ts";
 import {
@@ -169,4 +175,125 @@ test("lint-only dispatch keeps normal suites and preserves enforce failure artif
     reporterArgs[reporterArgs.indexOf("--project") + 1],
     projects.map((p) => p.id).join(","),
   );
+});
+
+test("lint capture retains actual dirty gitlink evidence without allowing the producer", () => {
+  const root = mkdtempSync(join(tmpdir(), "vize-lint-capture-drift-"));
+  const invoke = (cwd: string, ...args: string[]) =>
+    execFileSync("git", ["-C", cwd, ...args], { stdio: ["ignore", "pipe", "pipe"] });
+  const commit = (cwd: string) => {
+    invoke(cwd, "add", ".");
+    invoke(
+      cwd,
+      "-c",
+      "user.name=Capture Law",
+      "-c",
+      "user.email=capture@example.invalid",
+      "commit",
+      "-qm",
+      "fixture",
+    );
+  };
+  try {
+    const project = projects[3];
+    const cwd = join(root, project.fixturePath);
+    mkdirSync(cwd, { recursive: true });
+    invoke(cwd, "init", "-q");
+    writeFileSync(join(cwd, "App.vue"), "original fixture\n");
+    commit(cwd);
+    const fixtureHead = invoke(cwd, "rev-parse", "HEAD").toString().trim();
+    invoke(root, "init", "-q");
+    writeFileSync(join(root, "control.txt"), "original control\n");
+    commit(root);
+    const head = invoke(root, "rev-parse", "HEAD").toString().trim();
+    verifyTrackedSource(root, head);
+    writeFileSync(join(cwd, "App.vue"), "observed changed fixture\n");
+    assert.throws(() => verifyTrackedSource(root, head), /Tracked source has edits/u);
+    const path = join(root, "eslint-invalid-range-capture/source-drift.json");
+    const originalRecord = readFileSync(path);
+    const record = JSON.parse(originalRecord.toString());
+    assert.equal(record.expectedSource, head);
+    assert.equal(record.actualSource, head);
+    assert.equal(record.trackedPaths, project.fixturePath + "\n");
+    assert.match(record.repositoryStatus, /M tests\/_fixtures\/_git\/shadcn-vue/u);
+    assert.equal(record.fixtures.length, 1);
+    assert.equal(record.fixtures[0].expectedRevision, project.revision);
+    assert.equal(record.fixtures[0].actualRevision, fixtureHead);
+    assert.match(record.fixtures[0].status, /M App\.vue/u);
+    assert.match(record.fixtures[0].diff, /-original fixture/u);
+    assert.match(record.fixtures[0].diff, /\+observed changed fixture/u);
+    assert.equal(record.producerExecuted, false);
+    assert.equal(record.acceptance, false);
+    writeFileSync(join(cwd, "App.vue"), "original fixture\n");
+    verifyTrackedSource(root, head);
+    writeFileSync(join(root, "control.txt"), "later root change\n");
+    assert.throws(() => verifyTrackedSource(root, head), /Tracked source has edits/u);
+    assert.deepEqual(readFileSync(path), originalRecord);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("lint capture retains a real Git diff above one MiB through unchanged full frames", () => {
+  const root = mkdtempSync(join(tmpdir(), "vize-lint-capture-large-drift-"));
+  const invoke = (...args: string[]) =>
+    execFileSync("git", ["-C", root, ...args], { stdio: ["ignore", "pipe", "pipe"] });
+  const sha = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
+  try {
+    invoke("init", "-q");
+    writeFileSync(join(root, "fixture.txt"), "original\n");
+    invoke("add", ".");
+    invoke(
+      "-c",
+      "user.name=Capture Law",
+      "-c",
+      "user.email=capture@example.invalid",
+      "commit",
+      "-qm",
+      "fixture",
+    );
+    const head = invoke("rev-parse", "HEAD").toString().trim();
+    writeFileSync(
+      join(root, "fixture.txt"),
+      "observed changed fixture line abcdefghijklmnopqrstuvwxyz\n".repeat(24000),
+    );
+    const expectedDiff = execFileSync(
+      "git",
+      ["-C", root, "diff", "--no-ext-diff", "--submodule=diff", "HEAD"],
+      { maxBuffer: 4 * 1024 * 1024 },
+    );
+    assert.ok(expectedDiff.length > 1024 * 1024);
+    assert.throws(() => verifyTrackedSource(root, head), /Tracked source has edits/u);
+    const out = join(root, "eslint-invalid-range-capture");
+    const recordBytes = readFileSync(join(out, "source-drift.json"));
+    const record = JSON.parse(recordBytes.toString());
+    assert.equal(typeof record.repositoryDiff, "object");
+    assert.equal(record.repositoryDiff.bytes, expectedDiff.length);
+    assert.equal(record.repositoryDiff.sha256, sha(expectedDiff));
+    assert.deepEqual(readFileSync(join(out, record.repositoryDiff.path)), expectedDiff);
+    for (const row of record.gitOutputs)
+      for (const file of [row.stdout, row.stderr]) {
+        const bytes = readFileSync(join(out, file.path));
+        assert.equal(bytes.length, file.bytes);
+        assert.equal(sha(bytes), file.sha256);
+      }
+    const frames = execFileSync(process.execPath, [
+      fileURLToPath(
+        new URL("../../tools/support/ci/lint-range-capture/frames.ts", import.meta.url),
+      ),
+      root,
+      head,
+    ]).toString();
+    const decoded = decodeFrames(frames, head);
+    assert.deepEqual(decoded.files.get("source-drift.json"), recordBytes);
+    assert.deepEqual(decoded.files.get(record.repositoryDiff.path), expectedDiff);
+    assert.equal(decoded.header.complete, false);
+    assert.equal(decoded.header.actualProcessExit, null);
+    assert.equal(decoded.header.acceptance, false);
+    writeFileSync(join(root, "fixture.txt"), "later change\n");
+    assert.throws(() => verifyTrackedSource(root, head), /Tracked source has edits/u);
+    assert.deepEqual(readFileSync(join(out, "source-drift.json")), recordBytes);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

@@ -69,3 +69,23 @@ refusal. No fixture hydration, package installation, CLI build, ESLint producer
 or hosted capture has run from this source. TODO: Root publishes the reviewed
 source and runs this single capture, then diagnoses the original findings and
 validates a genuine correction through the mandatory ecosystem gate.
+
+The first bounded capture (run 37115392207, source 0a871) built the CLI but
+failed runtime preflight because Git reported tracked changes after hydration,
+install and build. The reporter did not run; only the original source receipt
+and partial verification were framed and uploaded. Retain the original red
+run. Record the exact changed paths, repository status/diff and actual fixture
+HEAD/status/diffs before the same strict dirty-source refusal so a subsequent
+capture can diagnose the real change. No dirty path is exempted or restored,
+and no original finding or successful reporter exit is claimed.
+
+The private first diagnostic bcb373 failed a real 1,365,125-byte Git-diff
+counterexample at Node child-process default output buffering before saving
+evidence. Preserve that failed proof. Stream Git stdout/stderr directly to
+owned evidence files, compute complete size/SHA-256 with a fixed-memory read,
+and reference large outputs in the bounded diagnostic record. Small original
+values remain inline; the inline threshold never limits raw capture. The
+unchanged recursive frames and artifact directory retain every raw file. An
+actual greater-than-one-MiB Git-diff law checks exact complete bytes and full
+frame recovery alongside the original nested-gitlink refusal law. The dirty
+source refusal and actual nineteen-project capture remain mandatory.
