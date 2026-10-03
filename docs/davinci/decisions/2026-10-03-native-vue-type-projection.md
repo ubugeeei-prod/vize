@@ -35,9 +35,11 @@ the same authored starts. A proposed const-context widening gap was not
 reproduced. This bounded dev oracle supplies no normal legacy dependency or
 whole-product parity claim; mandatory source-built native diagnostics remain
 separate acceptance evidence.
-The genuine TS primitive provider #7549 and const provider #7521 must actually
-merge before this consumer replays onto their literal main; their accepted
-queue prefix is not disturbed. No runtime eligibility flag is broadened here.
+The genuine const provider #7521 and TS primitive provider #7549 actually
+merged at 2026-10-03 12:10:34 UTC as da6b9c16 and b0b1b3d6, with terminal
+protected full/all-100 checks. This consumer replays onto actual main
+54308aa5; fresh source-built and protected acceptance remain required.
+No runtime eligibility flag is broadened here.
 Ordinary scripts and ordinary/setup mixtures are refused because their distinct
 original scopes cannot be faithfully concatenated. Styles, attached bindings,
 components, slots and structured controls are refused until their type
