@@ -94,7 +94,7 @@ fn lint(root: &Path, config_args: &[&str]) -> Output {
 }
 
 fn assert_diagnostics(output: &Output) {
-    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
     assert!(output.stderr.is_empty(), "{output:?}");
     let actual: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     let expected: serde_json::Value = serde_json::from_str(EXPECTED).unwrap();

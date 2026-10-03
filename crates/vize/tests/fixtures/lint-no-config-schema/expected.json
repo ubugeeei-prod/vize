@@ -1,20 +1,8 @@
 [
   {
     "file": "src/App.vue",
-    "messages": [
-      {
-        "ruleId": "script/custom-event-name-casing",
-        "ruleDocsPath": "docs/content/rules/type-and-script.md",
-        "severity": 2,
-        "message": "[vize:script/custom-event-name-casing] Custom event name 'update:current-step-index' is not camelCase.",
-        "line": 3,
-        "column": 6,
-        "endLine": 3,
-        "endColumn": 33,
-        "help": "Vue 3 recommends camelCase for emitted event names; rename this event to camelCase (e.g. myEvent)."
-      }
-    ],
-    "errorCount": 1,
+    "messages": [],
+    "errorCount": 0,
     "warningCount": 0
   }
 ]

@@ -205,3 +205,16 @@ CLI test target before the original nineteen-project producer. No new
 local CLI execution or hosted capture success is claimed; fresh source
 validation remains required, and the thirteen real budget failures are
 separate unfinished work.
+
+The actual 9c capture (37126104242) stopped at both focused CLI laws
+before the nineteen-project reporter. The fixture expectation wrongly
+borrowed a diagnostic from an explicitly enabled rule; the ecosystem
+preset produced the same complete JSON with no messages, errorCount zero
+and warningCount zero, exit zero and empty stderr in both invocations.
+Retain the failure, original 52 files and full log. Correct only that
+observed JSON and expected exit; the Vue/config inputs, production fix,
+workflow and nineteen pins/rules/budgets stay unchanged. Missing/stale
+schema cases still require every file and Git value to remain exact, and
+the configured control still requires the exact bundled schema write.
+Those inventory assertions were not reached in the failed run, so fresh
+actual CLI validation and the original nineteen capture remain pending.
