@@ -6,19 +6,18 @@ use crate::lower::transform_children;
 use vize_atelier_core::{SimpleExpressionNode, SourceLocation, TemplateChildNode};
 use vize_carton::Box;
 
-pub(super) fn lower<'a>(
-    ctx: &mut TransformContext<'a>,
-    children: &[TemplateChildNode<'a>],
-) -> Option<IRSlot<'a>> {
-    let meaningful = children.iter().any(|child| match child {
+pub(super) fn is_meaningful(child: &TemplateChildNode<'_>) -> bool {
+    match child {
         TemplateChildNode::Comment(_) => false,
         TemplateChildNode::Text(text) => !text.content.trim().is_empty(),
         _ => !structural_slots::is_slot(child),
-    });
-    if !meaningful {
-        return None;
     }
+}
 
+pub(super) fn lower<'a>(
+    ctx: &mut TransformContext<'a>,
+    children: &[TemplateChildNode<'a>],
+) -> IRSlot<'a> {
     let mut block = BlockIRNode::new(ctx.allocator);
     // Borrow contiguous runs: neither clone AST nodes nor lower named carriers
     // into the default slot. Preserve ordinary children in authored order.
@@ -30,7 +29,7 @@ pub(super) fn lower<'a>(
             block.returns.extend(lowered.returns);
         }
     }
-    Some(IRSlot {
+    IRSlot {
         name: Box::new_in(
             SimpleExpressionNode::new("default", true, SourceLocation::STUB),
             &ctx.allocator,
@@ -38,5 +37,5 @@ pub(super) fn lower<'a>(
         fn_exp: None,
         control: None,
         block,
-    })
+    }
 }
