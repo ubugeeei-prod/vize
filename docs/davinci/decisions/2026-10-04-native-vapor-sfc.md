@@ -90,3 +90,9 @@ Only an output and the existing step
 condition are added to the workflow, retaining the composed 350-line ceiling.
 Exact-head hosted Rust/module/runtime captures, unchanged full/instruction
 merge-group gates and literal protected merge are required before delivery.
+
+Initial source `0b8ff52991` failed Check37155285774's unchanged zero-warning
+JavaScript gate: two Node test registration promises and one unbound logger
+method. Awaiting both registrations and preserving the logger receiver corrects
+only the verification harness. The failed source was never queued; fresh hosted
+module/runtime acceptance remains required, with no warning-budget waiver.

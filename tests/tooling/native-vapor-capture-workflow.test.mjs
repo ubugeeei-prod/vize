@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { nativeVaporCaptureRequired } from "../../tools/support/compat/github/native-vapor-capture.mjs";
 import { toolingShardMatrix } from "../../tools/support/compat/github/tooling-test-shards.ts";
 
-test("original native Vapor source qualifies a fresh affected-PR capture without prose admissions", () => {
+await test("original native Vapor source qualifies a fresh affected-PR capture without prose admissions", () => {
   for (const path of [
     "davinci/vize_l1/src/container/vue/descriptor/policy.rs",
     "davinci/vize_l2/src/lang/js/file/native.rs",
@@ -42,7 +42,7 @@ test("original native Vapor source qualifies a fresh affected-PR capture without
   });
 });
 
-test("the existing first-shard hook preserves full protected capture and mandatory whole-source payloads", () => {
+await test("the existing first-shard hook preserves full protected capture and mandatory whole-source payloads", () => {
   const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
   const workflow = read(".github/workflows/pr-source-checks.yml");
   const step = workflow

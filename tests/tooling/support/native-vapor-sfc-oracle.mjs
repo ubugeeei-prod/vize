@@ -54,7 +54,7 @@ async function transform(source, filename, ssr) {
     isProduction: true,
     build: { sourcemap: true },
     define: {},
-    logger: { warn: context.warn },
+    logger: { warn: (warning) => context.warn(warning) },
   });
   plugin.buildStart.call(context);
   const result = await plugin.transform.handler.call(context, source, filename, { ssr });
