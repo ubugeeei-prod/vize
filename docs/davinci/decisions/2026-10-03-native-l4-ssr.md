@@ -91,3 +91,13 @@ map repair, incoming setup/CI hooks and every functional source. The scanner
 regenerates the actual union rather than importing synthetic queued sources
 or guessing counts. Fresh replay Actions, mandatory queue captures and actual
 protected merge remain required.
+
+After #7580 actually merged as `0c3f5bae33bd`, the own-only replay follows
+literal main `3b0618a9`: original selected DOM output/capture, literal receipts
+and Glyph fixes remain intact. The real canonical generator deletes raw-only
+L3/L4 shards and validates the remaining 20-file resolved/non-product inventory.
+Its unchanged strict `--check` still prints a complete fresh source-qualified
+raw/resolved diagnostic report; no counts, orphan gate or full acceptance gate
+are suppressed. SSR/native setup/DOM capture steps and the separate native
+navigation action all retain their real executor routes. Fresh source Actions,
+protected candidate captures/full gates and literal delivery remain required.
