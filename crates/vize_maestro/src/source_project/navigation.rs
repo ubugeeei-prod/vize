@@ -1,4 +1,4 @@
-//! Opt-in local JS/TS queries over one original Program per host snapshot.
+//! Opt-in local JS/TS/JSX/TSX queries over one original Program per host snapshot.
 #![expect(
     clippy::disallowed_types,
     reason = "async host queries retain immutable Arc snapshots and owned response summaries"

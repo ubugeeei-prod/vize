@@ -27,9 +27,11 @@ pub(super) struct NavigationSummary {
 
 impl NavigationSummary {
     pub(super) fn build(snapshot: Arc<SourceSnapshot>) -> Result<Self, NavigationRefusal> {
-        let lang = match snapshot.language_id() {
-            "javascript" => Lang::Js,
-            "typescript" => Lang::Ts,
+        let (lang, jsx) = match snapshot.language_id() {
+            "javascript" => (Lang::Js, false),
+            "typescript" => (Lang::Ts, false),
+            "javascriptreact" => (Lang::Js, true),
+            "typescriptreact" => (Lang::Ts, true),
             _ => return Err(NavigationRefusal::Language),
         };
         let arena = Allocator::default();
@@ -37,7 +39,14 @@ impl NavigationSummary {
         let block = root.whole_block();
         let input = EmbedSource::authored(snapshot.source(), block.span())
             .map_err(|_| NavigationRefusal::Projection)?;
-        let syntax = parse_program_once(&arena, input, ProgramOptions::module(lang));
+        let syntax = parse_program_once(
+            &arena,
+            input,
+            ProgramOptions {
+                jsx,
+                ..ProgramOptions::module(lang)
+            },
+        );
         let admitted = syntax.admitted_program().ok_or(NavigationRefusal::Syntax)?;
         let program =
             ProgramInput::checked(admitted, block, 0).map_err(|_| NavigationRefusal::Projection)?;

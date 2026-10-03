@@ -1,4 +1,5 @@
 //! Whole JSON-RPC envelopes through the actual production service builder.
+mod jsx;
 mod lifecycle;
 
 use crate::{

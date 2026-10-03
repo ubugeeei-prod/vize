@@ -2,6 +2,7 @@
     clippy::disallowed_types,
     reason = "tests compare actual immutable host snapshot Arc identities"
 )]
+mod jsx;
 mod lifecycle;
 mod refusals;
 
