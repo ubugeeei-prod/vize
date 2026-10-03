@@ -147,3 +147,52 @@ fn recovered_template_refuses_and_bare_api_keeps_interpolation_refusal() {
         })
     ));
 }
+
+#[test]
+fn raw_cr_or_absent_line_terminators_refuse_and_encoded_comments_keep_genuine_admission() {
+    let arena = Allocator::default();
+    for source in [
+        "<template>{{a //tail}}</template>",
+        "<template>{{a //tail\r}}</template>",
+    ] {
+        let descriptor = super::Vue.observe_descriptor(
+            &arena,
+            source,
+            super::DescriptorOptions {
+                version: super::VueVersion::V3,
+                dialect: super::VueDialect::Vue,
+                template: super::SurfaceParseOptions::default(),
+            },
+        );
+        assert!(descriptor.admitted().is_err());
+        assert!(
+            descriptor.issues().iter().any(|issue| issue.code
+                == vize_l1::container::vue::DescriptorIssueCode::UnsupportedBoundary)
+        );
+        assert!(core::ptr::eq(descriptor.source(), source));
+    }
+    let source = "<template>{{a &#47;&#47;tail}}</template>";
+    let selected = selected(&arena, source);
+    let original = operands(&selected);
+    let operand = original.first().unwrap();
+    assert!(operand.syntax().admitted_expression().is_some());
+    assert_eq!(operand.syntax().comments().count(), 1);
+    let refs = original.iter().collect::<std::vec::Vec<_>>();
+    let document = native_template_document(&selected, &refs, &arena).unwrap();
+    assert_eq!(
+        vize_glyph::native_doc::print(
+            document.document(),
+            &vize_glyph::native_doc::PrintOptions::default()
+        ),
+        "{{ a &#47;&#47;tail }}"
+    );
+    assert_eq!(
+        super::format(
+            "<template>{{ a &#47;&#47;tail }}</template>",
+            vize_glyph::native_doc::PrintOptions::default()
+        ),
+        "{{ a &#47;&#47;tail }}"
+    );
+    assert_eq!(operand.raw_content(), "a &#47;&#47;tail");
+    assert_eq!(operand.syntax().source().text(), "a //tail");
+}

@@ -103,7 +103,7 @@ fn complete_selected_blocks_are_fixed_points_at_extreme_widths() {
         "<template>{{&#32;a&#32;+&#9;b&#32;}}<!--kept-->{{'&amp;amp;'}}</template>",
         "<template><p v-pre>{{raw}}</p>{{a /*kept*/ +(b&amp;&amp;c)}}</template>",
         "<template>{{a + //inside\n b}}</template>",
-        "<template>{{a //tail}}</template>",
+        "<template>{{a //tail\n}}</template>",
     ] {
         for width in [0, 1, 7, 20, 80] {
             let options = PrintOptions {
@@ -113,6 +113,38 @@ fn complete_selected_blocks_are_fixed_points_at_extreme_widths() {
             let output = format(source, options);
             let wrapped = vize_l0::cstr!("<template>{output}</template>");
             assert_eq!(format(&wrapped, options), output);
+        }
+    }
+}
+
+#[test]
+fn authored_framing_tails_keep_lf_or_crlf_independently_of_decoded_ast_kind() {
+    for (tail, expression) in [
+        ("\n  ", "a //tail"),
+        ("\r\n  ", "a //tail"),
+        ("\n  ", "a //tail&#10;"),
+        ("\n  ", "a &#47;*//x*&#47;"),
+        ("\n  ", "&#39;//x&#39;"),
+    ] {
+        let source = vize_l0::cstr!("<template><p>{{{{{expression}{tail}}}}}</p></template>");
+        for width in [0, 1, 7, 80] {
+            for line_ending in [LineEnding::Lf, LineEnding::CrLf] {
+                let options = PrintOptions {
+                    width,
+                    line_ending,
+                    ..PrintOptions::default()
+                };
+                let opening = if line_ending == LineEnding::Lf {
+                    "\n"
+                } else {
+                    "\r\n"
+                };
+                let expected = vize_l0::cstr!("<p>{{{{{opening}    {expression}{tail}}}}}</p>");
+                let output = format(&source, options);
+                assert_eq!(output, expected);
+                let replay = vize_l0::cstr!("<template>{output}</template>");
+                assert_eq!(format(&replay, options), output);
+            }
         }
     }
 }

@@ -82,6 +82,8 @@ impl<'p, 'a> NativeTemplateDocument<'p, 'a> {
 /// remains text and requires no operand. Opening-tag layout uses the unchanged
 /// bare consumer's helpers. Interpolation framing gets breakable edge spaces;
 /// original expression comments, entities and literal bytes stay authored.
+/// Original trimmed tails containing LF/CRLF remain authored, preserving the
+/// enclosing Descriptor's physical boundary scan independently of decoded AST kind.
 /// This API performs no parse, decode, AST normalization or product default switch.
 ///
 /// ```compile_fail
@@ -237,11 +239,31 @@ impl<'p, 'a> Builder<'p, 'a> {
         content.push(Doc::line(Line::Space));
         content.push(expression);
         framed.push(Doc::concat(content).indent(depth + 1, self.allocator));
-        framed.push(Doc::line(Line::Space).indent(depth, self.allocator));
+        framed.push(closing_edge(operand, offset, depth, self.allocator)?);
         framed.push(Doc::text(interpolation.close.leading));
         framed.push(Doc::text(interpolation.close.text));
         parts.push(Doc::concat(framed).group(self.allocator));
         self.next += 1;
         Ok(())
     }
+}
+
+/// The Descriptor scans authored bytes before text decoding. Decoded comment
+/// or string kinds cannot classify that framing; preserve any actual trimmed
+/// LF tail without inventing a terminator from an entity or private wrapper.
+fn closing_edge<'a>(
+    operand: &NativeInterpolationOperand<'a>,
+    offset: usize,
+    depth: usize,
+    allocator: &'a Allocator,
+) -> Result<Doc<'a>, NativeTemplateRefusal> {
+    let source = operand.syntax().source();
+    let original_tail = source
+        .authored_root()
+        .get(source.span().end as usize..operand.content_span().end as usize)
+        .ok_or(TemplateRefusal::SourceMismatch { offset })?;
+    if original_tail.contains('\n') {
+        return Ok(Doc::text(original_tail));
+    }
+    Ok(Doc::line(Line::Space).indent(depth, allocator))
 }

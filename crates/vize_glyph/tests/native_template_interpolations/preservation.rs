@@ -62,10 +62,12 @@ fn fingerprint(original: &RetainedExpression<'_>, expression: &Expression<'_>) -
 fn actual_selected_js_ts_reparse_keeps_nodes_literals_operators_parentheses_and_comments() {
     for content in [
         "((a+0xCA_FE))*1_000",
-        "a /*x*/ + ('x\\x20y'&amp;&amp;true) //tail",
+        "a /*x*/ + ('x\\x20y'&amp;&amp;true) //tail\n",
         "//before\n a +b",
         "a + //inside\n b",
-        "a //tail&#10;",
+        "a //tail&#10;\n",
+        "a &#47;*//x*&#47;\n",
+        "&#39;//x&#39;\n",
         "a &#47;*encoded*&#47; + '&amp;amp;'",
         "&#32;&fjlig; &amp;&amp; (tr&#117;e)&#32;",
         "a&#32;+&#9;b",

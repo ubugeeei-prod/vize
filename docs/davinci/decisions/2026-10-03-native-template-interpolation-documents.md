@@ -29,10 +29,19 @@ root and nonzero block start. Canonical interpolation edge spaces can break
 according to the separate printer and actual structural depth. Only existing
 provider-selected authored HTML edge whitespace is replaced: expression
 comments, entity-produced whitespace, original literal/operator/entity
-spellings and internal authored newlines remain source slices. In particular,
-canonical closing spaces/newlines disappear during the ordinary pre-parse
-authored-edge selection on a real template reparse; they do not extend a
-trailing line comment. Private parser-wrapper LF is not emission authority.
+spellings and internal authored newlines remain source slices. Canonical
+closing spaces/newlines disappear during ordinary pre-parse authored-edge
+selection and do not extend the retained comment text. The enclosing
+Descriptor independently scans authored `//` through its next literal LF.
+For every interpolation, an original trimmed authored tail containing LF
+(including CRLF) is therefore emitted verbatim; other closing edges use the
+canonical layout. This rule depends only on genuine original wire bytes.
+Decoded AST or comment kinds cannot classify the outer authored scan: encoded
+block-comment delimiters containing literal `//` and encoded quotes around a
+`//` string also need that original physical LF. An entity-decoded LF or
+private parser-wrapper LF never supplies a replacement terminator. Encoded
+line comments without literal `//` remain supported through their authentic
+Descriptor admission; no new syntax gate or comment-classifier pass is added.
 
 Missing, extra, reordered, duplicate or foreign operands reject the whole
 document. Original syntax holes reject while retaining all diagnostics and
@@ -45,7 +54,7 @@ remain original Text and require no operand.
 
 ## Evidence and remaining work
 
-Thirteen new integration laws use the actual Descriptor, selected component,
+Fifteen new integration laws use the actual Descriptor, selected component,
 native body projections, once-retained decoder/parser and Doc printer. They
 cover complete selected-block output and ordering, JS/TS profile, nesting and
 width 0/1/7, CRLF and authored comment newlines, complete entities, native
@@ -56,6 +65,28 @@ and stable original AST/comment/map/content addresses. The independent
 reparse compares typed nodes, values, original atom spelling, parentheses,
 operators and complete decoded/authored comment text across LF/CRLF and
 flat/narrow widths. A compile-fail law prevents raw retained syntax admission.
+
+## Hosted framing correction
+
+The first published child head `91ee9e2236f9c8bb194620bcb61e47acfbd0f0da`
+in #7541 built successfully in Check `37114543673`, including the actual
+raw-syntax compile-fail doctest. Eleven integration laws passed; the fixed-point
+and semantic-reparse groups failed at Descriptor admission because their
+trailing `//` fixtures omitted the actual authored LF. They have no complete
+acceptance credit. Inspection of the existing `container/vue/scan.rs`
+established the additional outer framing requirement: pre-parse whitespace
+selection alone cannot make a flat closing edge safe after a line comment.
+
+The focused correction keeps original LF/CRLF tail bytes from every genuine
+operand, replaces those invalid inputs with actually admitted authored-LF
+fixtures, and adds whole output/full-Descriptor reparse/fixed-point controls
+for LF, CRLF and encoded LF followed by a physical LF. Independent review adds
+the encoded block-comment/literal-`//` and encoded quote/`//` string cases,
+which demonstrate why decoded last-comment classification is insufficient.
+Separate controls retain raw-CR-only/absent-LF Descriptor refusals and genuine
+encoded-line-comment admission. It changes no lower provider, parser, source
+map, capacity, oracle or parent queue head. The corrected head still needs
+fresh hosted validation and protected actual merge.
 
 Local source formatting, diff hygiene and generated Glyph inventories precede
 hosted acceptance. The new Rust laws have no acceptance credit until the
