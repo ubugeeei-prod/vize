@@ -78,11 +78,11 @@ pub(super) fn observe<'a>(
     start: usize,
     end: usize,
     raw: bool,
-) -> TextBinding<'a> {
+) -> Option<TextBinding<'a>> {
     // The existing lexer supplies checked UTF-8 source boundaries.
-    let raw_content = &block.source()[start..end];
-    let content_span = block.span_of(raw_content).expect("original callback bytes");
-    let full_raw = raw && block.source().get(end..end + 3) == Some("}}}");
+    let raw_content = block.source().get(start..end)?;
+    let content_span = block.span_of(raw_content)?;
+    let full_raw = raw && block.source().get(end..end.saturating_add(3)) == Some("}}}");
     let span = Span::new(
         content_span.start - if raw { 3 } else { 2 },
         (content_span.end + if full_raw { 3 } else { 2 }).min(block.end()),
@@ -103,14 +103,14 @@ pub(super) fn observe<'a>(
         Ok(source) => source,
         Err(_) => {
             binding.boundary = Some(TextBoundaryKind::SourcePreparation);
-            return binding;
+            return Some(binding);
         }
     };
     binding.source = Some(prepared);
     let text = prepared.text();
     let boundary = if raw {
         Some(TextBoundaryKind::RawInterpolation)
-    } else if block.source().get(end..end + 2) != Some("}}") {
+    } else if block.source().get(end..end.saturating_add(2)) != Some("}}") {
         Some(TextBoundaryKind::IncompleteDelimiter)
     } else if text.contains(['\r', '\u{2028}', '\u{2029}']) {
         // Historical `( . | \n )` excludes every CR, even in a CRLF pair.
@@ -128,11 +128,11 @@ pub(super) fn observe<'a>(
     };
     if let Some(kind) = boundary {
         binding.boundary = Some(kind);
-        return binding;
+        return Some(binding);
     }
     let Some(source) = trim(allocator, prepared) else {
         binding.boundary = Some(TextBoundaryKind::SourcePreparation);
-        return binding;
+        return Some(binding);
     };
     binding.source = Some(source);
     if source.text().is_empty() {
@@ -149,7 +149,7 @@ pub(super) fn observe<'a>(
             },
         ));
     }
-    binding
+    Some(binding)
 }
 
 fn encoded_brace(source: EmbedSource<'_>) -> bool {
@@ -157,7 +157,10 @@ fn encoded_brace(source: EmbedSource<'_>) -> bool {
         map.segments().iter().any(|segment| {
             let span = segment.decoded();
             segment.kind() == DecodeSegmentKind::Entity
-                && source.text()[span.start as usize..span.end as usize].contains(['{', '}'])
+                && source
+                    .text()
+                    .get(span.start as usize..span.end as usize)
+                    .is_none_or(|text| text.contains(['{', '}']))
         })
     })
 }

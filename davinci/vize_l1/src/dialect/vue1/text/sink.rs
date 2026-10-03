@@ -61,13 +61,11 @@ impl Sink for TextSink<'_, '_> {
         self.inner.on_text_entity_value(value, start, end);
     }
     fn on_interpolation(&mut self, start: usize, end: usize) {
-        self.bindings
-            .push(observe(self.allocator, self.block, start, end, false));
+        self.observe(start, end, false);
         self.inner.on_interpolation(start, end);
     }
     fn on_raw_interpolation(&mut self, start: usize, end: usize) {
-        self.bindings
-            .push(observe(self.allocator, self.block, start, end, true));
+        self.observe(start, end, true);
         self.inner.on_raw_interpolation(start, end);
     }
     fn mode(&self) -> LexMode {
@@ -75,6 +73,18 @@ impl Sink for TextSink<'_, '_> {
     }
 }
 impl TextSink<'_, '_> {
+    fn observe(&mut self, start: usize, end: usize, raw: bool) {
+        if let Some(binding) = observe(self.allocator, self.block, start, end, raw) {
+            self.bindings.push(binding);
+        } else {
+            // Private callbacks should always be authentic UTF-8 windows. Fail
+            // closed on an invalid one without inventing replacement bytes.
+            self.boundaries.push(TextBoundary {
+                span: self.block.span(),
+                kind: TextBoundaryKind::SourcePreparation,
+            });
+        }
+    }
     fn encoded_delimiter(&mut self, start: usize, end: usize) {
         // Literal v-pre retains entity spelling without interpretation.
         if self.inner.mode() == LexMode::Verbatim {

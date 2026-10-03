@@ -127,8 +127,8 @@ impl<'a> ComponentParse<'a> {
         if child.parent.is_some_and(|parent| parent.open.is_verbatim()) {
             return Err(TextRefusal::Verbatim);
         }
-        if !self.text_boundaries.is_empty() {
-            return Err(TextRefusal::Boundary(TextBoundaryKind::EncodedDelimiter));
+        if let Some(boundary) = self.text_boundaries.first() {
+            return Err(TextRefusal::Boundary(boundary.kind));
         }
         let start = self
             .block
@@ -138,7 +138,10 @@ impl<'a> ComponentParse<'a> {
             .bindings
             .binary_search_by_key(&start, TextBinding::cst_start)
             .map_err(|_| TextRefusal::UnmatchedCallback)?;
-        let binding = &self.bindings[index];
+        let binding = self
+            .bindings
+            .get(index)
+            .ok_or(TextRefusal::UnmatchedCallback)?;
         if let Some(kind) = binding.boundary() {
             return Err(TextRefusal::Boundary(kind));
         }
@@ -159,8 +162,12 @@ impl<'a> ComponentParse<'a> {
         if let Some(hole) = syntax.hole() {
             return Err(TextRefusal::NativeHole(hole));
         }
-        syntax.expression().ok_or(TextRefusal::UnmatchedCallback)?;
-        Ok(TextView { binding, child })
+        let expression = syntax.expression().ok_or(TextRefusal::UnmatchedCallback)?;
+        Ok(TextView {
+            binding,
+            child,
+            expression,
+        })
     }
 }
 
@@ -180,6 +187,7 @@ impl<'a> ComponentParse<'a> {
 pub struct TextView<'o, 'a> {
     binding: &'o TextBinding<'a>,
     child: TextChild<'o, 'a>,
+    expression: &'o Expression<'a>,
 }
 impl<'o, 'a> TextView<'o, 'a> {
     pub fn binding(&self) -> &'o TextBinding<'a> {
@@ -189,10 +197,7 @@ impl<'o, 'a> TextView<'o, 'a> {
         &self.child
     }
     pub fn expression(&self) -> &Expression<'a> {
-        self.binding
-            .syntax()
-            .and_then(|syntax| syntax.expression())
-            .expect("original admitted owner")
+        self.expression
     }
 }
 
