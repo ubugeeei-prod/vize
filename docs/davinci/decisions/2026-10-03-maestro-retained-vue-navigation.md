@@ -104,3 +104,10 @@ unchanged lifecycle laws into a bounded child module. No warning/length waiver,
 original input/golden or runtime behavior changes. Both required aggregates
 fail closed at that head, which is not queued; complete new-head acceptance is
 still required.
+
+Source `ed257eae` passes the corrected length/workflow structure but its feature
+compile exposes a missing explicit `Arc` import in the moved lifecycle module
+[before runtime](https://github.com/ubugeeei-prod/vize/actions/runs/37120900420/job/111196833536).
+Adding the existing parent's import changes no test body or input/golden.
+Its unexecuted feature tail receives no prior-head credit and it is not queued;
+all actual checks must run again at the corrected source.

@@ -1,4 +1,6 @@
-use super::{NavigationRefusal, Position, Url, block_on, new_project, occurrence, uri, worker};
+use super::{
+    Arc, NavigationRefusal, Position, Url, block_on, new_project, occurrence, uri, worker,
+};
 use crate::source_project::SnapshotRefusal;
 use std::{future::Future, sync::atomic::Ordering, task::Context};
 
