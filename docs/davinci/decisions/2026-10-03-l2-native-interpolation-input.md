@@ -66,3 +66,7 @@ priority. Whole-SFC/default product migration, complete expression and
 dialect grammar, controls and roadmap completion remain unfinished.
 
 The input-only source is replayed onto literal actual main `3b0618a9`, which contains the actually merged selected DOM entry, original expression scalar and source-census policy. All original input, ownership/refusal laws and cached metadata semantics remain unchanged; incoming For/JSX exports and decisions are preserved. Fresh exact-head hosted validation and actual native Stack queue acceptance remain required.
+
+Hosted post-policy source validation caught the central record crossing its existing 350-line cap. The owning-input paragraph is joined to its existing L2 paragraph without losing any decision text or changing Rust source, policy or limits; hosted validation must rerun on this corrected head.
+
+After source a3c44a4 passed hosted Check 37128615820, native Stack admission reached a known-unmergeable entry with no candidate head. It was promptly dequeued. Actual main `81478afd` differs only in adjacent central decisions; the input delta is replayed while preserving all incoming source/exports/inventory, and only the owned central prose moves to the existing L3 prerequisite introduction without losing text or growing its cap. Fresh exact-head hosted source and protected acceptance remain required.
