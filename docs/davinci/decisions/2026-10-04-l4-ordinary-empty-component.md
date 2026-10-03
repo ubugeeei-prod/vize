@@ -37,6 +37,13 @@ statement delimiters after an authored trailing line comment; this provider
 does not synthesize script-tail bytes or parse the prepared render fragment.
 Recorded and NoLinks emission must produce identical text and helper sets.
 
+After replay onto the actual refreshed L2 parent, read-only integration review
+finds the inherited mandatory `ModuleParts::scope_id` absent from six owned
+assembly literals. Each now explicitly supplies `None`, retaining the complete
+module, document, link and original-owner oracles. This source correction adds
+no scope authority or production API change; fresh hosted compilation remains
+required before publication or acceptance.
+
 Six genuine original-descriptor/parser/complete-File laws cover direct JS/TS
 fragments, exact borrowed leading/object/tail bytes and link boundaries, omitted
 prefix comments versus retained original observations, empty leading gaps,

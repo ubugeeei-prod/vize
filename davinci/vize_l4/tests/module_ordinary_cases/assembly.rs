@@ -28,6 +28,7 @@ fn genuine_script_only_module_copies_leading_object_and_tail_once_without_setup(
         render: None,
         placement: RenderPlacement::None,
         component: COMPONENT_BINDING,
+        scope_id: None,
     })
     .map_err(|_| "recorded assembly")?;
     let plain = assemble(ModuleParts {
@@ -39,6 +40,7 @@ fn genuine_script_only_module_copies_leading_object_and_tail_once_without_setup(
         render: None,
         placement: RenderPlacement::None,
         component: COMPONENT_BINDING,
+        scope_id: None,
     })
     .map_err(|_| "unrecorded assembly")?;
     equal(
@@ -113,6 +115,7 @@ fn genuine_ts_script_attaches_a_prepared_render_without_linking_synthesized_modu
             property: RenderProperty::Render,
         },
         component: COMPONENT_BINDING,
+        scope_id: None,
     })
     .map_err(|_| "recorded assembly")?;
     let mut render: Writer<NoLinks> = Writer::default();
@@ -129,6 +132,7 @@ fn genuine_ts_script_attaches_a_prepared_render_without_linking_synthesized_modu
             property: RenderProperty::Render,
         },
         component: COMPONENT_BINDING,
+        scope_id: None,
     })
     .map_err(|_| "unrecorded assembly")?;
     equal(
@@ -205,6 +209,7 @@ fn absent_leading_gap_mints_no_empty_link_and_leaves_generated_binding_and_defau
             render,
             placement,
             component: COMPONENT_BINDING,
+            scope_id: None,
         })
         .map_err(|_| "recorded assembly")?;
         let render = prepared_render.then(|| {
@@ -221,6 +226,7 @@ fn absent_leading_gap_mints_no_empty_link_and_leaves_generated_binding_and_defau
             render,
             placement,
             component: COMPONENT_BINDING,
+            scope_id: None,
         })
         .map_err(|_| "unrecorded assembly")?;
         let suffix = if prepared_render {
