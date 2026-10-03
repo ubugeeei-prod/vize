@@ -28,6 +28,9 @@ lifetime compilations, and a positive immutable-owner/mutable-recorder field
 split. The original no-std fixture and internal enum-copy lint failures remain
 preserved separately. These are local whole-L1 checks with exact parser and
 dependency inputs, not Actions or whole-Cargo acceptance.
+The original input manifest has 148 rows for 146 unique files, including all
+141 committed L1 Rust files. Two baseline native files appear twice with
+identical hashes; their duplicate labels do not add authored sources or tests.
 
 A Component parsed from an arbitrary checked block does not prove Descriptor
 template selection, script/no-script profile, complete File construction or
