@@ -154,7 +154,13 @@ fn append_child_templates(
             }
             TemplateChildNode::Element(child_el) if child_el.tag_type == ElementType::Template => {
                 ensure_sufficient_stack(|| {
-                    append_child_templates(template, &child_el.children, source, placeholders)
+                    append_child_templates(
+                        template,
+                        &child_el.children,
+                        scope_id,
+                        source,
+                        placeholders,
+                    )
                 });
             }
             TemplateChildNode::Element(child_el) if is_template_backed_element(child_el) => {
