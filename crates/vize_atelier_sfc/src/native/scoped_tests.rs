@@ -37,7 +37,7 @@ fn four_source_bound_scoped_modules_css_and_default_identity_match_complete_cont
                 ..NativeSfcCompileOptions::default()
             },
         );
-        let output = compilation.result().unwrap();
+        let output = compilation.result().expect(fixture["id"].as_str().unwrap());
         assert_eq!(
             output.code(),
             fixture["code"].as_str().unwrap(),

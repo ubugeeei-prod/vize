@@ -73,8 +73,8 @@
     },
     {
       "id": "default-setup",
-      "source": "<script setup>let count=1</script><template><p class=\"a\">{{count}}</p></template><style scoped>.a{color:blue}</style>",
-      "template": "<p class=\"a\">{{count}}</p>",
+      "source": "<script setup>let count=1</script><template><p :class=\"'a'\">{{count}}</p></template><style scoped>.a{color:blue}</style>",
+      "template": "<p :class=\"'a'\">{{count}}</p>",
       "script": "let count=1",
       "styles": [
         {
@@ -85,7 +85,7 @@
       "filename": "Scoped雪🌸.vue",
       "scopeId": "data-v-63f39f9f",
       "explicitScopeId": null,
-      "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=1\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", { class: \"a\" }, _toDisplayString($setup.count), 1 /* TEXT */))\n}\n_sfc_main.render = render\n_sfc_main.__scopeId = \"data-v-63f39f9f\"\nexport default _sfc_main\n",
+      "code": "import { toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=1\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", {\n    class: _normalizeClass('a')\n  }, _toDisplayString($setup.count), 1 /* TEXT */))\n}\n_sfc_main.render = render\n_sfc_main.__scopeId = \"data-v-63f39f9f\"\nexport default _sfc_main\n",
       "css": ".a[data-v-63f39f9f]{color:blue}",
       "ordinaryCss": ".a[data-v-63f39f9f]{color:blue}",
       "text": "1"

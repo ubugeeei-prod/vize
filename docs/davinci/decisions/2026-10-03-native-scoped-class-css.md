@@ -58,6 +58,12 @@ independently of another native feature's pending PR. Local fixture runtime
 checks are not relabelled as fresh Rust capture proof; hosted exact-head Actions
 and protected full/all100 gates remain required.
 
+Class-bearing templates use the existing genuine retained literal binding
+family, including the original setup/default-ID and escaped-selector map laws.
+An ordinary static class attribute remains a typed DOM refusal in this entry;
+CSS support does not manufacture broader template admission. Setup updates,
+complete module bytes and all original CSS/map obligations remain required.
+
 At-rules, multiple rules per scoped block, empty scoped blocks, pseudos,
 combinators, attribute selectors, nested rules/values/functions (including
 escaped v-bind), Modules/preprocessors/external/custom input and unproven
