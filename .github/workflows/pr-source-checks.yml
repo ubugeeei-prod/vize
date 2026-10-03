@@ -196,7 +196,7 @@ jobs:
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
         uses: ./.github/actions/test-native-js-setup
       - name: Test fresh native SSR modules in the merge queue
-        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
         uses: ./.github/actions/test-native-ssr
       - name: Test selected PR tooling scripts
         if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}

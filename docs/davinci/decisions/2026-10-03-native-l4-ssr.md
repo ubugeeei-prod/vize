@@ -42,8 +42,9 @@ and original anchor and its exact offset after component assembly; complete
 mapping fidelity beyond these anchors remains unfinished. Runtime evidence
 binds both template and prepared component code/map digests.
 
-The merge queue's actual PR tooling runner invokes the reusable native SSR
-action before its full tooling suite. Scheduled/manual full Rust checks reuse
+The merge queue's first PR tooling shard invokes the reusable native SSR
+action before its full tooling suite; additional shards retain the required
+full tooling aggregate without repeating the same capture or artifact name. Scheduled/manual full Rust checks reuse
 that same action; the queue invokes it once rather than duplicating the Rust
 differential lane. Fresh native module/maps are mandatory in the Node runtime
 judge, and both module/map and runtime JSON captures become nonempty Actions
