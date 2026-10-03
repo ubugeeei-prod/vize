@@ -72,6 +72,12 @@ The same input already passed independent AST/comment full-Descriptor reparse
 and fixed-point controls. This partial campaign does not complete acceptance;
 every law still requires fresh corrected-head hosted proof and protected merge.
 
+Check `37120465289` on `8f4e54cc` passed all four Rust partitions and all
+thirteen new native laws. Its tooling campaign rejected the stale generated
+Glyph consumer count after the multiline fixture added an L0 call. Regenerating
+only that owned canonical row changes the count from seven to eight; fresh
+exact-head Actions and protected actual merge still decide acceptance.
+
 TODO: other expression families, directive values, all Vue dialects, other
 embeds, enclosing SFC assembly, formatter options and checked edits remain
 unfinished. [#6882](https://github.com/ubugeeei-prod/vize/issues/6882) still gates
