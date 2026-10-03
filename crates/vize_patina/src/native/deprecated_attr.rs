@@ -16,14 +16,14 @@ pub(super) fn check(
 ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
     let tag = element.surface().tag();
     let mut matches: SmallVec<[(&str, &'static str, Span); 4]> = SmallVec::new();
-    let (kind, _) = header_rules::inspect(element, |binding| {
+    let (receipt, _) = header_rules::inspect_attributes(element, |_, binding| {
         if let header::Binding::Static { name, range, .. } = binding
             && let Some(suggestion) = deprecated_attr_suggestion(tag, name)
         {
             matches.push((name, suggestion, range));
         }
     })?;
-    if kind == NativeLintTagKind::Component {
+    if receipt.kind() == NativeLintTagKind::Component {
         return Ok(Vec::new());
     }
     Ok(matches
