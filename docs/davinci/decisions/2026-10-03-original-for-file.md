@@ -242,3 +242,23 @@ Only the actual canonical20 census files are regenerated. The genuine native
 missing-For-operand refusal remains registered in the existing transitional
 Vapor adapter tests; no nonexistent L3 native provider or orphan relocation is
 invented. Every new Rust law remains unexecuted until exact-head hosted Actions.
+
+## True current-parent publication
+
+A further NEW isolated branch starts at actual current Handler Stack top
+`0a13c55b6d02f40b3aa2b5103715d8453adb9ef6` (#7607). It replays only the
+complete owned checked File factory and original laws, preserving the entire
+current incoming source/decision/inventory. The authentic For, visibility,
+one-header phases, interpolation/root helpers and interruption source compare
+byte-identically with reviewed private `7d2e82e0d0`. No private two-provider
+merge or future candidate is published as dependency ancestry.
+
+Publish as a true child with actual #7607 branch base and native Stack #7517
+registration/ordered membership. The older Handler prefix keeps queue priority
+while this child's fresh source Actions may run asynchronously. Twelve pure
+storage/scanner/v-on laws, direct formatting of118 changed Rust files, reviewed
+source budgets and diff checks pass. Regenerate only the actual canonical20
+census; no local Cargo/npm or duplicate manual full campaign runs. New Rust
+laws remain unexecuted until this exact published head's configured Actions.
+Current source gates, composed protected full/instruction checks and actual
+terminal merge establish this bounded factory's delivery separately.
