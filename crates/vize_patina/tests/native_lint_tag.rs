@@ -450,16 +450,16 @@ fn duplicate_attribute_advisories_remain_in_the_complete_registered_output() {
 }
 
 #[test]
-fn non_void_self_closing_control_keeps_the_real_parser_advisory() {
+fn non_void_self_closing_control_keeps_the_registered_notice_suppression() {
     let source = "<template><div autofocus /></template>";
     let (output, result) = parity(source, Locale::En);
     assert_eq!(output.len(), 1);
     assert_eq!(output[0].kind, MarkupElementKind::Element);
     assert_eq!(result.error_count, 0);
-    assert_eq!(result.warning_count, 2);
-    assert_eq!(result.diagnostics.len(), 2);
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics.len(), 1);
     assert!(
-        result
+        !result
             .diagnostics
             .iter()
             .any(|diagnostic| diagnostic.rule_name == "parser/template")

@@ -81,6 +81,13 @@ ordinary constructor/output/layout preservation. They are authored controls
 pending hosted Rust execution; the ten focused storage/i18n laws and both
 canonical inventory checks pass locally.
 
+The unchanged non-void self-closing source control keeps the actual registered
+parser policy: `parse_diagnostics` suppresses its compatibility notice, leaving
+one autofocus warning and no parser warning. Duplicate-attribute advisories
+remain in the complete output. This corrects a source-audited control expectation
+without changing production behavior, filtering oracle diagnostics or removing
+the original input.
+
 The previous iframe and tabindex Stack #7516 is terminal: #7506 merged as
 `f9718b1b0ed8ea65cd3f8a4dff7a0ba11d10d76c`, and #7515 merged as
 `b967435f47341f37512871160ab945764a62d55d` at 2026-10-03T09:56:25Z. The child
