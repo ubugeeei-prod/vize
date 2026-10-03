@@ -50,7 +50,7 @@ fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a
 }
 
 #[test]
-fn original_receipts_emit_eight_complete_pinned_modules_and_whole_source_maps() {
+fn original_receipts_emit_nine_complete_pinned_modules_and_whole_source_maps() {
     let pack: serde_json::Value =
         serde_json::from_str(include_str!("fixtures/native-selected-ssr-vue-3.5.35.json")).unwrap();
     let mut modules = Vec::new();

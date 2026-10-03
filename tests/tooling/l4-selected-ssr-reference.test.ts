@@ -56,6 +56,8 @@ const contexts = [
   },
   { id: null, title: "${untrusted}\\`", disabled: false, "data-x": "猫&" },
 ];
+const lineEndingHtml =
+  '<div id="r\r\ns\rt\nu\u2028v\u2029w"><p title="a\nb\nc\nd\u2028e\u2029f"></p><!--a\nb\nc\nd\u2028e\u2029f--></div>';
 
 function grouped(code: string) {
   const imports = code.split("\n").filter((line) => line.startsWith("import "));
@@ -151,12 +153,12 @@ function anchors(map: any, code: string, source: string): number[][] {
   });
 }
 
-test("eight complete pinned SSR references retain original SFC inputs and full primary outputs", async () => {
+test("nine complete pinned SSR references retain original SFC inputs and full primary outputs", async () => {
   assert.equal(pack.schema, "vize.native-selected-ssr-reference");
   assert.equal(pack.version, 1);
   assert.deepEqual(pack.compiler, { name: "@vue/compiler-ssr", version: "3.5.35" });
-  assert.equal(pack.fixtures.length, 8);
-  assert.equal(new Set(pack.fixtures.map((row: any) => row.id)).size, 8);
+  assert.equal(pack.fixtures.length, 9);
+  assert.equal(new Set(pack.fixtures.map((row: any) => row.id)).size, 9);
   assert.equal(fromSfc("@vue/compiler-ssr/package.json").version, "3.5.35");
   assert.equal(fromVue("@vue/server-renderer/package.json").version, "3.5.35");
   assert.equal(fromVue("vue/package.json").version, "3.5.35");
@@ -180,7 +182,9 @@ test("eight complete pinned SSR references retain original SFC inputs and full p
       assert.equal(measured.code, row.referenceCode);
       assert.deepEqual(measured.map, row.referenceMap);
     }
-    assert.deepEqual(await direct(row.code), await direct(row.referenceCode));
+    const html = await direct(row.code);
+    assert.deepEqual(html, await direct(row.referenceCode));
+    if (row.id === "line-endings") assert.equal(html[0], lineEndingHtml);
     assert.deepEqual(await whole(prepared(row.code), true), await whole(row.referenceCode, false));
   }
 });
@@ -214,6 +218,19 @@ test(
         base.map(([line, ...segment]) => [line + 1, ...segment]),
       );
       const html = await direct(actual.code);
+      if (row.id === "line-endings") {
+        assert.equal(html[0], lineEndingHtml);
+        for (const token of ["id=", "title=", "<!--"]) {
+          const prefix = row.source.slice(0, row.source.indexOf(token));
+          const lines = prefix.split(/\r\n|[\r\n\u2028\u2029]/);
+          assert(
+            base.some(
+              (anchor) => anchor[3] === lines.length - 1 && anchor[4] === lines.at(-1).length,
+            ),
+            `original ${token} anchor follows every standard source line terminator`,
+          );
+        }
+      }
       assert.deepEqual(html, await direct(actual.sfcCode));
       assert.deepEqual(html, await direct(row.referenceCode));
       const componentHtml = await whole(actual.sfcCode, true);
@@ -262,13 +279,13 @@ test(
         JSON.stringify(
           {
             custody: capture.custody,
-            modules: 8,
+            modules: 9,
             originalRefusals: 4,
-            nativeExecutions: 24,
-            upstreamExecutions: 24,
-            preparedExecutions: 24,
-            preparedVueExecutions: 24,
-            upstreamVueExecutions: 24,
+            nativeExecutions: 27,
+            upstreamExecutions: 27,
+            preparedExecutions: 27,
+            preparedVueExecutions: 27,
+            upstreamVueExecutions: 27,
             completeUpstreamMapParity: false,
             runtime,
             refusals: capture.refusals,

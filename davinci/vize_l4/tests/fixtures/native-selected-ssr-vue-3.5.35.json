@@ -164,6 +164,27 @@
       "referenceMapSha256": "0a70bb7d7be7f031e218d792569c962a52a94cdb8b1a2ea8b7f5218ed86f74b2",
       "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({\n    id: \"original\",\n    title: \"世界\"\n  }, _attrs))}></div>`)\n}",
       "codeSha256": "238b41990ec982d19fac6df85c7d7b38c86c100a09c9c51132e5c3a63ce1b913"
+    },
+    {
+      "id": "line-endings",
+      "source": "<template><div id=\"r\r\ns\rt\nu v w\"><p title=\"a\r\nb\rc\nd e f\"/><!--a\r\nb\rc\nd e f--></div></template>",
+      "template": "<div id=\"r\r\ns\rt\nu v w\"><p title=\"a\r\nb\rc\nd e f\"/><!--a\r\nb\rc\nd e f--></div>",
+      "sourceSha256": "aed96bba3881b0f51a13766666daa2bce7d719dd976b0ca8f43d0bbc8f88bca2",
+      "templateSha256": "5701ebf009efc6366645630d787029655297c52567e67ba198fac541c60b187f",
+      "referenceCode": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ id: \"r\\r\\ns\\rt\\nu v w\" }, _attrs))}><p title=\"a\r\nb\rc\nd e f\"></p><!--a\r\nb\rc\nd e f--></div>`)\n}",
+      "referenceCodeSha256": "c96053b966c5ffd47b389656c1a0bb95d678cb67c7486af877e394739cd40938",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSelectedSsr.vue"],
+        "names": [],
+        "mappings": ";;;;6CAAK,EAAE,EAAC,kBAEF",
+        "sourcesContent": [
+          "<div id=\"r\r\ns\rt\nu v w\"><p title=\"a\r\nb\rc\nd e f\"/><!--a\r\nb\rc\nd e f--></div>"
+        ]
+      },
+      "referenceMapSha256": "b0f78a894dbc8408abf7930c33b8e3599153384a30a48888c09d5da68affc9d8",
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ id: \"r\\r\\ns\\rt\\nu v w\" }, _attrs))}><p title=\"a\r\nb\rc\nd e f\"></p><!--a\r\nb\rc\nd e f--></div>`)\n}",
+      "codeSha256": "0721d0ee476fc02e0f300e76ffb4f1733343dd193bfeec06df073b2494134317"
     }
   ]
 }
