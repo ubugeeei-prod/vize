@@ -73,6 +73,12 @@ instruction ceilings and actual native Stack merge remain mandatory; source
 implementation alone supplies no acceptance credit. No performance budget,
 methodology, workflow, product fixture output or legacy/default path changes.
 
+The first exact source Check 37133857957 compiled and passed its Rust laws,
+layout checks and doctests. The tooling proof policy rejected one prefix-only
+Options issue assertion. It now compares each entire authored default statement,
+retaining the original issue count, unit/scope and complete File checks. Fresh
+source Actions and protected acceptance remain required for this correction.
+
 TODOs remain the linked L4 default rewrite, real complete native module/map and
 Vue runtime capture closure, broader Options API and ordinary binding exposure,
 remaining JS/TS/Vue dialects and compiler fix-history/default migration. #6880

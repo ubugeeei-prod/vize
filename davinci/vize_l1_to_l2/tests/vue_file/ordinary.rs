@@ -74,16 +74,56 @@ fn original_js_and_ts_empty_default_complete_with_directives_comments_and_zero_b
 #[test]
 fn similar_options_families_keep_the_original_staged_issue_and_never_start_template() {
     let arena = Allocator::default();
-    for (content, lang, defaults) in [
-        ("export default {name: 'options'};", Lang::Js, 1),
-        ("export default ({});", Lang::Js, 1),
-        ("export default {} as const;", Lang::Ts, 1),
-        ("export default {} satisfies object;", Lang::Ts, 1),
-        ("import 'dep'; export default {};", Lang::Js, 1),
-        ("export default {}; export default {};", Lang::Ts, 2),
-        ("export default {}; export {};", Lang::Js, 1),
-        ("; 'post'; export default {};", Lang::Js, 1),
-        ("const local=1; export default {};", Lang::Js, 1),
+    for (content, lang, defaults, expected) in [
+        (
+            "export default {name: 'options'};",
+            Lang::Js,
+            1,
+            "export default {name: 'options'};",
+        ),
+        ("export default ({});", Lang::Js, 1, "export default ({});"),
+        (
+            "export default {} as const;",
+            Lang::Ts,
+            1,
+            "export default {} as const;",
+        ),
+        (
+            "export default {} satisfies object;",
+            Lang::Ts,
+            1,
+            "export default {} satisfies object;",
+        ),
+        (
+            "import 'dep'; export default {};",
+            Lang::Js,
+            1,
+            "export default {};",
+        ),
+        (
+            "export default {}; export default {};",
+            Lang::Ts,
+            2,
+            "export default {};",
+        ),
+        (
+            "export default {}; export {};",
+            Lang::Js,
+            1,
+            "export default {};",
+        ),
+        (
+            "; 'post'; export default {};",
+            Lang::Js,
+            1,
+            "export default {};",
+        ),
+        (
+            "const local=1; export default {};",
+            Lang::Js,
+            1,
+            "export default {};",
+        ),
     ] {
         let source = format!("<script>{content}</script><template>kept</template>");
         let (syntax, script_block) = script(&arena, &source, content, lang).unwrap();
@@ -109,9 +149,9 @@ fn similar_options_families_keep_the_original_staged_issue_and_never_start_templ
         for issue in staged {
             assert_eq!(issue.unit, Some(unit));
             assert_eq!(issue.scope, Some(rejected.ordinary().unwrap().scope()));
-            assert!(
-                source[issue.span.start as usize..issue.span.end as usize]
-                    .starts_with("export default")
+            assert_eq!(
+                &source[issue.span.start as usize..issue.span.end as usize],
+                expected
             );
         }
         let file = rejected.file().unwrap();
