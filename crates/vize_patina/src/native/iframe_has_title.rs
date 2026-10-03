@@ -21,7 +21,7 @@ pub(super) fn check(
                 value,
                 ..
             } => value.map(has_non_whitespace).transpose()?.unwrap_or(false),
-            header::Binding::Bind { name: "title" } => true,
+            header::Binding::Bind { name: "title", .. } => true,
             _ => false,
         };
     }

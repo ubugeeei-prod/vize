@@ -13,7 +13,7 @@ pub(super) fn check(
     let mut has_alt = false;
     for original in element.attributes() {
         has_alt |= match header::binding(element, &original)? {
-            header::Binding::Static { name, .. } | header::Binding::Bind { name } => {
+            header::Binding::Static { name, .. } | header::Binding::Bind { name, .. } => {
                 name.eq_ignore_ascii_case("alt")
             }
             header::Binding::Other => false,

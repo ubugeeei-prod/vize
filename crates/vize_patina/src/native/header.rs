@@ -43,11 +43,28 @@ pub(super) enum Binding<'a> {
     },
     Bind {
         name: &'a str,
+        range: Span,
     },
     Other,
 }
 
 pub(super) fn binding<'a>(
+    element: &NativeElement<'_, 'a>,
+    original: &NativeAttribute<'_, 'a>,
+) -> Result<Binding<'a>, NativeLintRefusal> {
+    binding_with_modifiers::<false>(element, original)
+}
+
+/// New full-result consumers refuse parser errors from empty modifier segments.
+/// Prior syntax rule admission keeps its original const-false behavior.
+pub(super) fn strict_binding<'a>(
+    element: &NativeElement<'_, 'a>,
+    original: &NativeAttribute<'_, 'a>,
+) -> Result<Binding<'a>, NativeLintRefusal> {
+    binding_with_modifiers::<true>(element, original)
+}
+
+fn binding_with_modifiers<'a, const STRICT: bool>(
     element: &NativeElement<'_, 'a>,
     original: &NativeAttribute<'_, 'a>,
 ) -> Result<Binding<'a>, NativeLintRefusal> {
@@ -65,7 +82,14 @@ pub(super) fn binding<'a>(
         value: attribute.value.as_ref().map(|value| value.content.text),
         range,
     };
-    if element.surface().open.is_verbatim() {
+    let verbatim = element.surface().open.is_verbatim();
+    if verbatim
+        && (!STRICT
+            || element
+                .lint_tag()
+                .map_err(|reason| NativeLintRefusal::LintTag { reason })?
+                .header_is_literal())
+    {
         return Ok(static_binding());
     }
     let head = VueDirectives
@@ -74,6 +98,18 @@ pub(super) fn binding<'a>(
     let Some(head) = head else {
         return Ok(static_binding());
     };
+    if STRICT && !head.modifiers.is_empty() {
+        let modifiers = attribute::project(block, head.modifiers)?;
+        if modifiers
+            .strip_prefix('.')
+            .is_none_or(|tail| tail.split('.').any(str::is_empty))
+        {
+            return Err(NativeLintRefusal::UnsupportedDirective { span: head_span });
+        }
+    }
+    if verbatim {
+        return Ok(static_binding());
+    }
     if matches!(head.arg, Some(ArgSyntax::Dynamic(_))) {
         return Err(NativeLintRefusal::UnresolvedBinding { span: head_span });
     }
@@ -105,5 +141,5 @@ pub(super) fn binding<'a>(
     if name.is_empty() {
         return Err(NativeLintRefusal::UnresolvedBinding { span: head_span });
     }
-    Ok(Binding::Bind { name })
+    Ok(Binding::Bind { name, range })
 }

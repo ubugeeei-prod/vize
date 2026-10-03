@@ -8,10 +8,11 @@ use vize_l0::{
     Span,
     diag::{Diagnostic, MessageLookup},
 };
-use vize_l1::markup::{NativeElement, NativeTemplateComponent};
+use vize_l1::markup::{NativeElement, NativeLintTagRefusal, NativeTemplateComponent};
 
 mod attribute;
 mod header;
+mod header_rules;
 mod iframe_has_title;
 mod img_alt;
 mod tabindex_no_positive;
@@ -25,6 +26,10 @@ pub const IFRAME_HAS_TITLE_RULE: &str = "a11y/iframe-has-title";
 /// The existing positive tabindex rule code; the native entry is separately opt-in.
 pub const TABINDEX_NO_POSITIVE_RULE: &str = "a11y/tabindex-no-positive";
 
+pub const NO_AUTOFOCUS_RULE: &str = "a11y/no-autofocus";
+pub const NO_ACCESS_KEY_RULE: &str = "a11y/no-access-key";
+pub const NO_DISTRACTING_ELEMENTS_RULE: &str = "a11y/no-distracting-elements";
+
 /// A refusal retains the caller's original component and observations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeLintRefusal {
@@ -36,6 +41,7 @@ pub enum NativeLintRefusal {
     UnresolvedBinding { span: Span },
     UnsupportedDirective { span: Span },
     DuplicateAttribute { span: Span },
+    LintTag { reason: NativeLintTagRefusal },
 }
 
 /// A finished L0 diagnostic and its original stable rule code.
@@ -148,5 +154,44 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
             return Err(NativeLintRefusal::ForeignElement);
         }
         tabindex_no_positive::check(element, messages)
+    }
+
+    /// Check exact static autofocus attribute/binding names, retaining original
+    /// full attribute ranges and actual default lint component exemptions.
+    pub fn no_autofocus(
+        &self,
+        element: &NativeElement<'_, 'a>,
+        messages: &impl MessageLookup,
+    ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
+        if !core::ptr::eq(self.owner.component(), element.component()) {
+            return Err(NativeLintRefusal::ForeignElement);
+        }
+        header_rules::no_autofocus(element, messages)
+    }
+
+    /// Check exact static accesskey attribute/binding names without evaluating
+    /// values. Any unsupported original header refuses the entire result.
+    pub fn no_access_key(
+        &self,
+        element: &NativeElement<'_, 'a>,
+        messages: &impl MessageLookup,
+    ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
+        if !core::ptr::eq(self.owner.component(), element.component()) {
+            return Err(NativeLintRefusal::ForeignElement);
+        }
+        header_rules::no_access_key(element, messages)
+    }
+
+    /// Check authored marquee/blink tag names with original opening ranges.
+    /// The original provider's ambiguous lint category remains a typed refusal.
+    pub fn no_distracting_elements(
+        &self,
+        element: &NativeElement<'_, 'a>,
+        messages: &impl MessageLookup,
+    ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
+        if !core::ptr::eq(self.owner.component(), element.component()) {
+            return Err(NativeLintRefusal::ForeignElement);
+        }
+        header_rules::no_distracting_elements(element, messages)
     }
 }
