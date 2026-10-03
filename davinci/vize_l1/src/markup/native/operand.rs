@@ -17,6 +17,10 @@ use crate::embed::{Embed, Grammar, Lang, Shape, SourceError, prepare_attribute_v
 use crate::markup::DirectiveNameError;
 use crate::{Attribute, Element};
 
+mod for_head;
+pub use for_head::{
+    NativeAttributeForHead, NativeAttributeForHeadFailure, NativeAttributeForHeadView,
+};
 mod origin;
 use origin::Origin;
 

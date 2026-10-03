@@ -38,7 +38,8 @@ pub use grammar::{MarkupGrammar, Vue};
 pub use lex::{Delimiters, LexOptions, Lexer};
 pub use native::{
     NativeAttribute, NativeAttributeExpression, NativeAttributeExpressionFailure,
-    NativeAttributeExpressionView, NativeAttributeOperandError, NativeAttributes, NativeChild,
+    NativeAttributeExpressionView, NativeAttributeForHead, NativeAttributeForHeadFailure,
+    NativeAttributeForHeadView, NativeAttributeOperandError, NativeAttributes, NativeChild,
     NativeChildren, NativeComponent, NativeConditionKind, NativeElement, NativeInterpolationError,
     NativeInterpolationFailure, NativeInterpolationOperand, NativeInterpolationView,
     NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar,

@@ -33,3 +33,15 @@ pub(crate) fn conditional_head(
         _ => None,
     })
 }
+
+/// Only the complete, argument/modifier-free Vue v-for header selects this owner.
+pub(crate) fn for_head(raw: &str, offset: u32, source: &str) -> Result<bool, DirectiveNameError> {
+    let Some(head) = VueDirectives.decompose(raw, offset)? else {
+        return Ok(false);
+    };
+    Ok(head.prefix == DirectivePrefix::Full
+        && head.arg.is_none()
+        && head.modifiers.start == head.modifiers.end
+        && head.name.end == offset + raw.len() as u32
+        && head.name.slice(source) == "for")
+}
