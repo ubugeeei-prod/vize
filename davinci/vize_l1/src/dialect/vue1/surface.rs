@@ -4,7 +4,13 @@
 //! component profile does not claim the browser document profile, attribute
 //! interpolation, filter/directive embeds, or runtime raw/one-time semantics.
 
+use alloc::vec::Vec as OwnedVec;
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, Vec};
+
+mod body;
+use super::text::sink::TextSink;
+use super::text::{TextBinding, TextBoundary};
+pub use body::{TextChild, TextChildren, TextRefusal, TextView};
 
 pub use vize_l0::SourceFrameError as SourceError;
 
@@ -50,6 +56,10 @@ pub struct ComponentParse<'a> {
     authored: Option<SurfaceTree<'a>>,
     errors: Vec<'a, SurfaceError>,
     unsupported: Vec<'a, SyntaxBoundary>,
+    // These observations own ordinary parser diagnostics; arena storage would
+    // skip their destructors. Source maps and actual ASTs still use the arena.
+    bindings: OwnedVec<TextBinding<'a>>,
+    text_boundaries: OwnedVec<TextBoundary>,
 }
 
 impl<'a> ComponentParse<'a> {
@@ -76,6 +86,16 @@ impl<'a> ComponentParse<'a> {
 
     pub fn unsupported(&self) -> &[SyntaxBoundary] {
         &self.unsupported
+    }
+
+    /// Original callback observations, including syntax holes. Inspection alone
+    /// does not join an observation to an original CST child.
+    pub fn bindings(&self) -> &[TextBinding<'a>] {
+        &self.bindings
+    }
+
+    pub fn text_boundaries(&self) -> &[TextBoundary] {
+        &self.text_boundaries
     }
 }
 
@@ -150,10 +170,19 @@ fn projection<'a>(
 ) -> ComponentParse<'a> {
     let source = block.source();
     let mut unsupported = Vec::new_in(&allocator);
+    let mut bindings = OwnedVec::new();
+    let mut text_boundaries = OwnedVec::new();
     let (tree, authored, mut errors) =
         construct::<true>(allocator, source, authored, |events, errors| {
             let recorder = Recorder { events, errors };
-            let sink = VueSink::<Vue1Policy>::new(allocator, source, recorder, &mut unsupported);
+            let inner = VueSink::<Vue1Policy>::new(allocator, source, recorder, &mut unsupported);
+            let sink = TextSink {
+                allocator,
+                block,
+                inner,
+                bindings: &mut bindings,
+                boundaries: &mut text_boundaries,
+            };
             Lexer::<Component, _>::new(
                 source,
                 sink,
@@ -179,10 +208,12 @@ fn projection<'a>(
         authored,
         errors,
         unsupported,
+        bindings,
+        text_boundaries,
     }
 }
 
-struct Vue1Policy;
+pub(super) struct Vue1Policy;
 
 impl SurfacePolicy for Vue1Policy {
     type Boundary = SyntaxBoundary;
