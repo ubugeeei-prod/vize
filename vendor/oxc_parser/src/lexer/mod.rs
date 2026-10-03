@@ -56,6 +56,7 @@ pub struct LexerCheckpoint<'a> {
     pure_comment: Option<usize>,
     has_no_side_effects_comment: bool,
     has_legacy_literals: bool,
+    has_jsdoc_comments: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -206,6 +207,7 @@ impl<'a, C: Config> Lexer<'a, C> {
             pure_comment: self.trivia_builder.pure_comment,
             has_no_side_effects_comment: self.trivia_builder.has_no_side_effects_comment,
             has_legacy_literals: self.has_legacy_literals,
+            has_jsdoc_comments: self.trivia_builder.has_jsdoc_comments,
         }
     }
 
@@ -225,6 +227,7 @@ impl<'a, C: Config> Lexer<'a, C> {
             pure_comment: self.trivia_builder.pure_comment,
             has_no_side_effects_comment: self.trivia_builder.has_no_side_effects_comment,
             has_legacy_literals: self.has_legacy_literals,
+            has_jsdoc_comments: self.trivia_builder.has_jsdoc_comments,
         }
     }
 
@@ -239,6 +242,7 @@ impl<'a, C: Config> Lexer<'a, C> {
         self.source.set_position(checkpoint.source_position);
         self.token = checkpoint.token;
         self.has_legacy_literals = checkpoint.has_legacy_literals;
+        self.trivia_builder.has_jsdoc_comments = checkpoint.has_jsdoc_comments;
         self.trivia_builder.pure_comment = checkpoint.pure_comment;
         self.trivia_builder.has_no_side_effects_comment = checkpoint.has_no_side_effects_comment;
     }
@@ -668,6 +672,48 @@ mod literal_receipt_tests {
             lexer.next_token();
             lexer.rewind(retained);
             assert!(lexer.has_legacy_literals, "actual earlier literal remains sticky");
+        }
+    }
+}
+
+#[cfg(test)]
+mod jsdoc_receipt_tests {
+    use super::*;
+    use crate::config::NoTokensLexerConfig;
+
+    #[test]
+    fn original_comment_peek_rewind_and_dedup_restore_both_checkpoint_kinds() {
+        let arena = Allocator::default();
+        for comment in ["/** @type {number} */", "/** @license original */"] {
+            let source = format!("1 {comment} 2 3");
+            let mut lexer = Lexer::new(
+                &arena,
+                &source,
+                SourceType::mjs(),
+                NoTokensLexerConfig,
+                UniquePromise::new_for_tests_and_benchmarks(),
+            );
+            lexer.first_token();
+            assert!(!lexer.trivia_builder.has_jsdoc_comments);
+            lexer.peek_token();
+            assert!(!lexer.trivia_builder.has_jsdoc_comments, "speculation grants no receipt");
+            let ordinary = lexer.checkpoint();
+            lexer.next_token();
+            assert!(lexer.trivia_builder.has_jsdoc_comments);
+            lexer.rewind(ordinary);
+            assert!(!lexer.trivia_builder.has_jsdoc_comments);
+            let recovery = lexer.checkpoint_with_error_recovery();
+            lexer.next_token();
+            assert!(lexer.trivia_builder.has_jsdoc_comments);
+            lexer.rewind(recovery);
+            assert!(!lexer.trivia_builder.has_jsdoc_comments);
+            lexer.next_token();
+            let retained = lexer.checkpoint();
+            lexer.next_token();
+            lexer.rewind(retained);
+            assert!(lexer.trivia_builder.has_jsdoc_comments);
+            assert_eq!(lexer.trivia_builder.comments.len(), 1);
+            assert!(!lexer.has_legacy_literals);
         }
     }
 }

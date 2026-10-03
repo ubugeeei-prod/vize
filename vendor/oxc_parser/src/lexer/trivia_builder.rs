@@ -33,6 +33,9 @@ pub struct TriviaBuilder<'a> {
     pub(super) pure_comment: Option<usize>,
 
     pub(super) has_no_side_effects_comment: bool,
+
+    // Presence from the original stock comment classifier, not a type claim.
+    pub(crate) has_jsdoc_comments: bool,
 }
 
 impl<'a> TriviaBuilder<'a> {
@@ -46,6 +49,7 @@ impl<'a> TriviaBuilder<'a> {
             previous_kind: Kind::Undetermined,
             pure_comment: None,
             has_no_side_effects_comment: false,
+            has_jsdoc_comments: false,
         }
     }
 
@@ -196,6 +200,8 @@ impl<'a> TriviaBuilder<'a> {
 
     /// Update `pure_comment` / `has_no_side_effects_comment` to point to the comment at `index`.
     fn set_annotation_flags(&mut self, comment: &Comment, index: usize) {
+        self.has_jsdoc_comments |=
+            matches!(comment.content, CommentContent::Jsdoc | CommentContent::JsdocLegal);
         if comment.is_pure() {
             self.pure_comment = Some(index);
         } else if comment.is_no_side_effects() {

@@ -207,6 +207,8 @@ pub struct ParserReturn<'a> {
 
     // Private original lexer receipt, distinct from syntax diagnostics.
     pub(crate) has_legacy_literals: bool,
+    // Original trivia classifier receipt; no effective JSDoc type is inferred.
+    pub(crate) has_jsdoc_comments: bool,
 }
 
 /// Parse options
@@ -784,6 +786,7 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
             panicked,
             is_flow_language,
             has_legacy_literals: self.lexer.has_legacy_literals,
+            has_jsdoc_comments: self.lexer.trivia_builder.has_jsdoc_comments,
         }
     }
 
@@ -858,6 +861,7 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
         // A committed selective reparse must not discard the completed tail's
         // original literal receipt when it rewinds an earlier statement.
         let original_legacy_literals = self.lexer.has_legacy_literals;
+        let original_jsdoc_comments = self.lexer.trivia_builder.has_jsdoc_comments;
         let checkpoints = std::mem::take(&mut self.state.potential_await_reparse);
         for (stmt_index, checkpoint) in checkpoints {
             // Rewind to the checkpoint
@@ -875,6 +879,7 @@ impl<'a, C: ParserConfig> ParserImpl<'a, C> {
         }
 
         self.lexer.has_legacy_literals |= original_legacy_literals;
+        self.lexer.trivia_builder.has_jsdoc_comments |= original_jsdoc_comments;
         if let Some(original_tokens) = original_tokens {
             self.lexer.set_tokens(original_tokens);
         }

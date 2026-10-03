@@ -155,6 +155,14 @@ impl<'p, 'a> AdmittedProgram<'p, 'a> {
         self.observation.parsed.has_legacy_literals
     }
 
+    /// Whether the original trivia classifier observed JSDoc or legal JSDoc.
+    /// This is presence only; it grants no effective type or binding semantics.
+    /// Checkpoints restore speculation, while committed reparses retain the fact.
+    #[must_use]
+    pub fn has_jsdoc_comments(&self) -> bool {
+        self.observation.parsed.has_jsdoc_comments
+    }
+
     /// Original requested profile, before any Unambiguous inference.
     #[must_use]
     pub fn source_type(&self) -> SourceType {
@@ -219,3 +227,7 @@ mod legacy_literal_tests {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "observation/jsdoc_tests.rs"]
+mod jsdoc_tests;
