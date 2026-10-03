@@ -63,6 +63,9 @@ fn caught_original_for_park_and_scope_unwind_preserve_whole_owner_parent_and_pre
         {
             let mut walk = owner.begin().unwrap();
             let selected = walk.selected();
+            let prefix_receipt = selected
+                .prepare_condensed_root_text(selected.children().next().unwrap())
+                .unwrap();
             walk.child(selected.children().next().unwrap()).unwrap();
             let parent = walk.root.scope;
             FAULT.with(|fault| fault.set(point));
@@ -101,6 +104,12 @@ fn caught_original_for_park_and_scope_unwind_preserve_whole_owner_parent_and_pre
                 );
                 assert_eq!(walk.root.facts.template_declarations.len(), 1);
             }
+            assert_eq!(walk.cursor, 1);
+            assert_eq!(
+                walk.root_text(&prefix_receipt).unwrap_err().kind,
+                NativeTemplateIssueKind::Interrupted
+            );
+            assert_eq!(walk.cursor, 1);
             assert_eq!(
                 walk.child(selected.children().nth(1).unwrap())
                     .unwrap_err()

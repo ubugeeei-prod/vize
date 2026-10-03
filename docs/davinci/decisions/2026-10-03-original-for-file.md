@@ -202,3 +202,43 @@ The exact per-file inventory is updated from the unchanged scanner, preserving
 all incoming rows/categories. Seven pure storage/scanner/summary laws pass;
 that is tooling evidence only, not execution of new Rust receiver laws or
 protected instruction/allocation proof.
+
+## Genuine current provider composition
+
+The new isolated private successor genuinely merges current Event/interpolation
+provider history `e463fce349c5bdf67287804ea813e1f03273211c` with the now
+actually merged For declaration source `ebd54374da2bc2d9dd517b9ac39019b1753c4cea`,
+then replays only the complete owned factory, checked indices, refusal/checker
+and original laws. It preserves incoming interpolation File records, original
+root text/interpolation methods, setup annotation custody and the early sticky
+completion guard beside the whole-child event guard. No old private provider
+merge is imported as current native Stack proof. The older Handler prefix
+retains next source/admission priority; publication must follow genuine actual
+provider delivery or a verified true native Stack dependency.
+
+The genuine positive setup policy makes the former blanket selected-setup
+event refusal oracle stale. Its successor proves an attached original handler
+resolves the exact actual selected setup BindingId in its actual File scope,
+retains the complete original source and denies foreign equal-source Attribute
+joins. A separate ordinary-script row still refuses precisely at the same
+original name and retains the whole rejected handler. This changes no runtime
+or wider script exposure contract.
+
+Root text now checks the same existing template interruption before original
+receipt/cursor validation. Both real For fault phases retry an authentic
+previous prefix receipt and observe sticky Interrupted without cursor advance;
+child retries and completion remain refused. The previous implementation could
+return InvalidEvent from the stale cursor after a caught fault, with no mint
+bypass. This successor preserves the shared observable interruption contract.
+
+The unchanged source scanner reviews File bound normal-Vec occurrences22+6=28
+from incoming interpolation plus the three original For fields/constructors.
+One test-only normal Vec collects the actual rejected head custody for the
+post-scope fault law. All incoming inventory categories and rows remain. Seven
+pure storage/scanner/summary laws pass. The shared resolver keeps338 lines
+through the separately reviewed move-only export_local extraction; all existing
+layout, allocation and depth64/node4096/instruction ceilings remain unchanged.
+Only the actual canonical20 census files are regenerated. The genuine native
+missing-For-operand refusal remains registered in the existing transitional
+Vapor adapter tests; no nonexistent L3 native provider or orphan relocation is
+invented. Every new Rust law remains unexecuted until exact-head hosted Actions.

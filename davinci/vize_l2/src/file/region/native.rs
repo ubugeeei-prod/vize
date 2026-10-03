@@ -107,7 +107,9 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
         &mut self,
         receipt: &NativeRootText<'a>,
     ) -> Result<Option<NodeId>, NativeTemplateIssue> {
-        if !matches!(self.state, NativeRouteState::Walking) {
+        if !matches!(self.state, NativeRouteState::Walking)
+            || self.root.facts.template_walk.interruption().is_some()
+        {
             return self.reject(NativeTemplateIssueKind::Interrupted);
         }
         let Some(view) = receipt.admitted_for_root_at(self.selected, self.cursor) else {
