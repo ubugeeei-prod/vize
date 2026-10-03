@@ -49,6 +49,16 @@ full suites, every unchanged instruction ceiling and actual signed merge are
 required. Prior Unary protected evidence proves its actual bounded laws;
 this newly identified internal-gap coverage was absent there.
 
+The first hosted source build on `650e8d03` in Check `37125201777`
+failed before native test execution: the new Descriptor negative control
+called `is_none()` on its actual `Result` admission API. That head receives
+no runtime acceptance credit and never entered the queue. Using `is_err()`
+corrects only that fixture call for the same complete absent-LF/CR-only
+inputs; additional assertions retain the original `UnsupportedBoundary`
+reason and source identity. Production policy, inputs, complete expected
+outputs, registered oracles and budgets remain unchanged. Fresh corrected
+Actions and protected actual merge remain required.
+
 TODO: Member consumer acceptance, other expression families, directive values,
 all Vue dialects, other embed shapes, enclosing SFC assembly, options and edits
 remain unfinished. [#6882](https://github.com/ubugeeei-prod/vize/issues/6882)

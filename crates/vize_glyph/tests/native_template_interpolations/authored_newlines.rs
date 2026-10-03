@@ -69,7 +69,10 @@ fn actual_descriptor_requires_physical_lf_after_encoded_quote_literal_slashes() 
                         template: super::SurfaceParseOptions::default(),
                     },
                 );
-                assert!(descriptor.admitted().is_none(), "{mutated}");
+                assert!(descriptor.admitted().is_err(), "{mutated}");
+                assert!(descriptor.issues().iter().any(|issue| issue.code
+                    == vize_l1::container::vue::DescriptorIssueCode::UnsupportedBoundary));
+                assert!(core::ptr::eq(descriptor.source(), mutated.as_str()));
             }
         }
     }
