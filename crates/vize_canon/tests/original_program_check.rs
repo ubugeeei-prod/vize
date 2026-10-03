@@ -318,15 +318,11 @@ fn assert_diagnosing_options(result: &vize_canon::OriginalProgramCheck<'_, '_>) 
         );
         assert!(
             observed
-                .response()
-                .projects
+                .projects()
                 .iter()
                 .any(|project| project.id == observed.project().id)
         );
     }
     // The pinned API allocates a new actual snapshot even for a no-op refresh.
-    assert_ne!(
-        custody.before().response().snapshot,
-        custody.after().response().snapshot
-    );
+    assert_ne!(custody.before().handle(), custody.after().handle());
 }

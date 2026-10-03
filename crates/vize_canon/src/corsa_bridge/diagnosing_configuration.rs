@@ -1,6 +1,6 @@
 //! Actual configuration observations from the same process returning diagnostics.
 
-use corsa::api::{ProjectResponse, UpdateSnapshotResponse};
+use corsa::api::{ProjectResponse, SnapshotChanges, SnapshotHandle};
 use corsa_lsp::InitializeApiSessionResult;
 
 /// Complete API observations before and after one native diagnostic request.
@@ -29,16 +29,26 @@ impl DiagnosingConfiguration {
     }
 }
 
-/// An unmodified snapshot response and the actual project's full response.
+/// Every public SDK snapshot response field and the actual project's full response.
 pub struct DiagnosingSnapshot {
-    pub(crate) response: UpdateSnapshotResponse,
+    pub(crate) handle: SnapshotHandle,
+    pub(crate) projects: Vec<ProjectResponse>,
+    pub(crate) changes: Option<SnapshotChanges>,
     pub(crate) project: ProjectResponse,
 }
 
 impl DiagnosingSnapshot {
     #[must_use]
-    pub fn response(&self) -> &UpdateSnapshotResponse {
-        &self.response
+    pub fn handle(&self) -> &SnapshotHandle {
+        &self.handle
+    }
+    #[must_use]
+    pub fn projects(&self) -> &[ProjectResponse] {
+        &self.projects
+    }
+    #[must_use]
+    pub fn changes(&self) -> Option<&SnapshotChanges> {
+        self.changes.as_ref()
     }
     #[must_use]
     pub fn project(&self) -> &ProjectResponse {

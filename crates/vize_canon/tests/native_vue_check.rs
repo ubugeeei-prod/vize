@@ -101,8 +101,7 @@ fn real_native_vue_checker_retains_complete_js_ts_diagnostics_and_original_owner
             );
             assert!(
                 state
-                    .response()
-                    .projects
+                    .projects()
                     .iter()
                     .any(|project| project.id == state.project().id)
             );

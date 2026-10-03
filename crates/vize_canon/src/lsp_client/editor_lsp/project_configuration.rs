@@ -82,11 +82,9 @@ impl DiagnosingApi {
                 return Err(ConfigurationError::Changed);
             }
             Ok(DiagnosingSnapshot {
-                response: corsa::api::UpdateSnapshotResponse {
-                    snapshot: snapshot.handle.clone(),
-                    projects: snapshot.projects.clone(),
-                    changes: snapshot.changes.clone(),
-                },
+                handle: snapshot.handle.clone(),
+                projects: snapshot.projects.clone(),
+                changes: snapshot.changes.clone(),
                 project,
             })
         })();

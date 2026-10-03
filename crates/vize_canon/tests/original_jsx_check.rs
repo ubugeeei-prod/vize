@@ -142,8 +142,7 @@ fn real_vue_jsx_and_tsx_keep_complete_raw_diagnostics_types_and_authored_owners(
             );
             assert!(
                 observed
-                    .response()
-                    .projects
+                    .projects()
                     .iter()
                     .any(|project| project.id == observed.project().id)
             );

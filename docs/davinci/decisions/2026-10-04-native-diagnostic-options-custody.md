@@ -38,8 +38,9 @@ normalizer. The backend program receives the same command-line options.
 [Shared response fields](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/api/proto.go#L496-L523),
 [actual program options](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/project/project.go#L286-L317).
 
-Success retains the full API-session response, both complete snapshot responses
-and selected project responses alongside the untouched raw diagnostic report
+Success retains the full API-session response, every public SDK snapshot response
+field (opaque handle, complete projects and optional changes) and selected project
+responses alongside the untouched raw diagnostic report
 and genuine original owner. Their released handles are historical observations,
 not live query capabilities. An options mismatch returns the existing typed
 `ConfigurationChanged` refusal. SDK targets without real Unix pipe attachment
@@ -95,5 +96,10 @@ Existing ten original Program whole vectors, native Vue vectors, real Vue JSX
 and annotated TSX related-declaration vectors, UTF-16 mapping, same-basename
 shadowing/profile/module refusal, root mutation and timeout/cleanup laws remain.
 Local verification is source formatting/diff only; no local compile/install.
-Exact source Actions and protected queue proof are pending at this decision.
+First source `98f97a9e2b` Check `37155293467` stopped at actual E0432/E0422:
+the SDK's internal `UpdateSnapshotResponse` is private. The corrected carrier
+retains every actual public `ManagedSnapshot` response field directly, without
+an input-params substitution, invented handle or dependency change. The first
+run executed no backend laws and was never queued; its build log is retained.
+Corrected exact source Actions and protected queue proof remain pending.
 All wider graph APIs, complete #6879 history and default migration remain open.
