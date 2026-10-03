@@ -63,15 +63,15 @@ fn whole_file_crlf_utf8_and_unicode_separators_keep_authored_lsp_lines() {
 }
 
 #[test]
-fn valid_typed_declaration_retains_ts_program_without_admitting_native_file() {
+fn unsupported_union_declaration_retains_ts_program_without_admitting_native_file() {
     let arena = Allocator::default();
-    let source = "\r\n<script lang=\"ts\">\r\n/* 😀\u{2028}\u{2029}\r\n 日本語\r\n*/\r\nconst value: number = 1;\r\n</script>";
+    let source = "\r\n<script lang=\"ts\">\r\n/* 😀\u{2028}\u{2029}\r\n 日本語\r\n*/\r\nconst value: number | string = 1;\r\n</script>";
     let observed = lower_sfc_native(&arena, source, options());
     let syntax = observed.scripts()[0].syntax().expect("retained TS Program");
     assert!(syntax.source_type().is_typescript());
     assert!(syntax.admitted_program().is_some());
-    // The current genuine File family refuses type annotations, even when the
-    // original TS Program is valid. A host or comment adapter cannot bypass it.
+    // A non-keyword union remains outside the genuine File family even when
+    // its original TS Program is valid. A host or comment adapter cannot bypass it.
     assert!(observed.admitted().is_none());
     assert!(!observed.issues().is_empty());
 }
@@ -106,4 +106,26 @@ fn rejected_template_cannot_promote_valid_script_comments_to_a_complete_file() {
     assert!(observed.scripts()[0].syntax().is_some());
     assert!(observed.admitted().is_none());
     assert!(!observed.issues().is_empty());
+}
+
+#[test]
+fn primitive_keyword_annotations_preserve_full_original_ts_file_comment_ranges() {
+    let arena = Allocator::default();
+    let source = "\r\n<script lang=\"ts\">\r\n/* 😀\u{2028}\u{2029}\r\n 日本語\r\n*/\r\nconst value: number = 1;\r\n</script>";
+    let observed = lower_sfc_native(&arena, source, options());
+    let syntax = observed.scripts()[0].syntax().unwrap();
+    assert!(syntax.source_type().is_typescript());
+    assert!(syntax.admitted_program().is_some());
+    assert!(core::ptr::eq(
+        syntax.source().text(),
+        observed.scripts()[0].block().source()
+    ));
+    let native = observed
+        .admitted()
+        .expect("same complete original annotated File");
+    assert!(core::ptr::eq(
+        native.file().file().artifact().source(),
+        source
+    ));
+    assert_eq!(sfc_comment_ranges(&native), Ok(vec![expected(2, 3)]));
 }

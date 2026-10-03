@@ -33,6 +33,11 @@ fn admitted_whole_modules_preserve_exact_bytes_kind_owner_links_and_bindings() {
             Lang::Ts,
             SourceKind::TypeScript,
         ),
+        (
+            "/*😀*/ const 日本語: /*🌸*/ number = 1; 日本語;",
+            Lang::Ts,
+            SourceKind::TypeScript,
+        ),
     ] {
         let arena = Allocator::default();
         let file = support::file(&arena, source, lang).unwrap();
@@ -177,7 +182,7 @@ fn neutral_empty_files_and_partial_or_multiple_real_units_cannot_be_projected() 
 fn incomplete_profiles_and_supported_parser_recovery_are_never_promoted() {
     let arena = Allocator::default();
     for (source, lang) in [
-        ("const value: number = 1;", Lang::Ts),
+        ("const value: number | string = 1;", Lang::Ts),
         ("class C {}", Lang::Js),
     ] {
         let file = support::file(&arena, source, lang).unwrap();

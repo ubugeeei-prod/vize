@@ -75,13 +75,13 @@ fn rejected_template_and_recovery_return_original_typed_issues_not_empty_success
 }
 
 #[test]
-fn valid_typescript_annotation_keeps_real_syntax_but_refuses_native_file_projection() {
+fn unsupported_union_annotation_keeps_real_syntax_but_refuses_native_file_projection() {
     let documents = DocumentStore::new();
     let project = SourceQueryProject::new(&documents);
     let uri = Url::parse("file:///typed-native-comment-refusal.vue").unwrap();
-    // Exact original positive fixture; the current File family refuses its
-    // valid TS annotation rather than admitting a recovered or fabricated File.
-    let source = "\r\n<script lang=\"ts\">\r\n/* 😀\u{2028}\u{2029}\r\n 日本語\r\n*/\r\nconst value: number = 1;\r\n</script>";
+    // The original union type parses normally but remains outside the genuine
+    // File family; a host cannot promote its comments into an admitted File.
+    let source = "\r\n<script lang=\"ts\">\r\n/* 😀\u{2028}\u{2029}\r\n 日本語\r\n*/\r\nconst value: number | string = 1;\r\n</script>";
     project.open(uri.clone(), source.into(), 7, "vue".into());
     let (query, _) = project.begin_query(&uri).unwrap();
     let retained = query.snapshot().clone();
@@ -101,5 +101,34 @@ fn valid_typescript_annotation_keeps_real_syntax_but_refuses_native_file_project
     assert_eq!(
         ready.publish(|value| value),
         Ok(Err(SfcQueryRefusal::Producer(original_issues)))
+    );
+}
+
+#[test]
+fn primitive_keyword_annotation_keeps_real_snapshot_and_full_sfc_comment_projection() {
+    let documents = DocumentStore::new();
+    let project = SourceQueryProject::new(&documents);
+    let uri = Url::parse("file:///typed-native-comment-admission.vue").unwrap();
+    let source = "\r\n<script lang=\"ts\">\r\n/* 😀\u{2028}\u{2029}\r\n 日本語\r\n*/\r\nconst value: number = 1;\r\n</script>";
+    project.open(uri.clone(), source.into(), 7, "vue".into());
+    let (query, _) = project.begin_query(&uri).unwrap();
+    let retained = query.snapshot().clone();
+    assert_eq!(retained.source(), source);
+    assert_eq!(retained.uri(), &uri);
+    assert_eq!(retained.version(), 7);
+    let arena = Allocator::default();
+    let observed = lower_sfc_native(&arena, retained.source(), options());
+    let native = observed
+        .admitted()
+        .expect("actual complete original keyword File");
+    assert!(core::ptr::eq(
+        native.file().file().artifact().source(),
+        retained.source()
+    ));
+    let ready = block_on(query_sfc_comments(query, options())).unwrap();
+    assert_eq!(ready.publish(|value| value), Ok(Ok(vec![expected(2, 3)])));
+    assert_eq!(
+        retained.native_file(&documents),
+        Err(SnapshotRefusal::NativeFileUnavailable)
     );
 }

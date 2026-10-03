@@ -51,7 +51,13 @@ The next source passes strict Clippy but exposes two inherited Maestro tests
 that blanket-refuse primitive annotations. Their inputs become genuine union
 types with exact authored issue spans; two new real navigation laws retain
 original standalone TS and full Vue binding ranges, Unicode/CRLF, escaped
-reads and the same cached owner. No Maestro production path changes.
+reads and the same cached owner. The actual 66-law navigation gate passes.
+A broader fixture audit also changes inherited RPC/folding and L4 Program
+projection blanket refusals to genuine unions, retaining whole error/refusal
+assertions. Added positives preserve the complete native RPC envelope, full
+original TS projection bytes/maps and genuine original File/snapshot folding
+coordinates. Standalone syntax-only folding positives remain untouched. No
+Maestro or checker production path changes; fresh source execution is pending.
 The existing first-tooling-shard native setup action also runs on precisely affected PR source: its classifier forces a worker even
 when ordinary tooling selection is empty. The protected merge-group capture
 remains mandatory independently of that flag. Missing captures fail rather

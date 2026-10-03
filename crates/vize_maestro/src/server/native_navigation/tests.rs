@@ -115,9 +115,24 @@ fn unsupported_language_and_actual_native_refusals_have_complete_error_envelopes
         send(&mut service, definition(3, 0, 7)),
         Some(error(3, -32002, "Native original Program refused"))
     );
-    open(&mut service, "const value:number=1;value;", "typescript", 1);
+    open(
+        &mut service,
+        "const value:number|string=1;value;",
+        "typescript",
+        1,
+    );
     assert_eq!(
         send(&mut service, definition(4, 0, 7)),
         Some(error(4, -32003, "Native File observation refused"))
+    );
+}
+
+#[test]
+fn original_primitive_keyword_annotation_has_complete_native_definition_envelope() {
+    let mut service = service();
+    open(&mut service, "const value:number=1;value;", "typescript", 1);
+    assert_eq!(
+        send(&mut service, definition(2, 0, 22)),
+        Some(json!({"jsonrpc":"2.0","id":2,"result":location(0,6,11)}))
     );
 }
