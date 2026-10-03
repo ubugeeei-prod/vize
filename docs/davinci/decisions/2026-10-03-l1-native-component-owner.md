@@ -18,6 +18,10 @@ owner, including empty roots, and prevent moving or dropping that owner while a
 projection remains in use. No tree clone, extra traversal, marker allocation or
 new pipeline stage is added.
 
+The unchanged storage scanner records only the new test-owned lists (one alloc
+Vec import and two bound uses) in the existing per-file inventory. Existing
+production storage rows and the complete Croquis census remain unchanged.
+
 The private actual-source check runs all 321 L1 unit laws, production and whole
 unit strict Clippy with the committed test configuration, six real privacy and
 lifetime compilations, and a positive immutable-owner/mutable-recorder field
