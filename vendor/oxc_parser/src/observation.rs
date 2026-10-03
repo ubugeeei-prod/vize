@@ -174,6 +174,18 @@ mod legacy_literal_tests {
     use oxc_allocator::Allocator;
 
     #[test]
+    fn completed_tail_receipt_survives_committed_unambiguous_await_reparse() {
+        let arena = Allocator::default();
+        for literal in ["010", "'\\8'"] {
+            let source = format!("await /x/u; export {{}}; const value={literal};");
+            let parsed = Parser::new(&arena, &source, SourceType::unambiguous()).parse_observed();
+            let admitted = parsed.admitted().expect("completed original syntax");
+            assert!(admitted.has_legacy_literals(), "{literal}");
+            assert!(admitted.program().source_type.is_module());
+        }
+    }
+
+    #[test]
     fn original_decoder_retains_legacy_facts_without_changing_syntax_admission() {
         let arena = Allocator::default();
         for literal in ["010", "08", "09.5", "'\\1'", "'\\8'", "'\\9'", "'\\00'"] {
