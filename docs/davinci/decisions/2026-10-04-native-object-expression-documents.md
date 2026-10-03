@@ -60,6 +60,18 @@ credit. Fresh exact-head hosted source/capture, final protected full/all-100
 acceptance and signed actual merge remain required. No local build/install
 or duplicate manual full campaign is used.
 
+The first Object source campaign `a5c4c423e8452c4e7e0782f19533ca3fac345fb9`
+returns the expected UnsupportedNode for decoded `__proto__`, but its sole
+failed law passes three encoded inputs to a helper for unmapped text. Preserve
+all three complete authored inputs and the original failed source/six raw logs
+with no runtime acceptance or queue entry. A local mapped refusal control now
+checks decoded key/property/value geometry independently from exact authored
+root/key spelling and original storage/decode-map/comment custody before and
+after the same receiver. It requires the exact refused property span. The shared
+unmapped helper, production, expected outputs, providers, oracles and budgets
+are unchanged; the same 163 integrations and 21 Object laws require corrected
+exact-head and final protected actual-merge proof.
+
 No L1 API, extra parse/decode/walk/stage, serialization, legacy history/default
 route, oracle or instruction budget change. TODO: other Object shapes,
 expression families, Spread/optional chains, full language early errors,
