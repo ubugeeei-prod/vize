@@ -49,6 +49,10 @@ fn real_typescript_checker_diagnostics_match_original_source_and_exact_mapping()
     );
     let evidence: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
     assert_eq!(evidence["version"], "6.0.3");
+    assert_eq!(
+        evidence["cases"].as_array().unwrap().len(),
+        pack["cases"].as_array().unwrap().len()
+    );
     for (case, result) in pack["cases"]
         .as_array()
         .unwrap()

@@ -74,7 +74,9 @@ The checker law runs the repository-selected TypeScript 6.0.3 on the actual
 Rust-generated projection and original source, comparing complete ordered
 diagnostic code/category/message/start/length values. JS JSDoc and the same TS
 source distinguish checker kinds; Unicode, hashbangs, trailing comments and
-multiple diagnostics exercise authored range mapping. These are native plain
+multiple diagnostics exercise authored range mapping. The Rust law checks that
+the helper returns exactly one result for every fixture before mapping them.
+These are native plain
 Program input/diagnostic laws, not Vue or fix-history acceptance.
 
 TODO: the opt-in Canon adapter must consume this sealed result through its real
