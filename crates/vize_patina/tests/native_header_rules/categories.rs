@@ -64,7 +64,7 @@ fn native_namespaces_do_not_change_authored_rule_predicates() {
                 if matches!(rule, HeaderRule::Distracting) {
                     2
                 } else {
-                    8
+                    7
                 }
             );
         }
@@ -103,8 +103,10 @@ fn distracting_elements_keep_whole_opening_ranges_and_full_catalog_help() {
             );
             if locale == Locale::Zh {
                 let help = result["diagnostics"][0]["help"].as_str().unwrap();
-                assert!(help.contains("```css"));
-                assert!(help.contains("prefers-reduced-motion"));
+                assert_eq!(
+                    help,
+                    "**问题:** 这些元素对认知障碍用户造成困扰。\n\n**修复:** 删除此元素或使用CSS动画（支持prefers-reduced-motion）:\n```css\n@media (prefers-reduced-motion: no-preference) {\n  .animated { animation: slide 3s ease; }\n}\n```"
+                );
             }
         }
     }

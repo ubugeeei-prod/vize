@@ -62,3 +62,18 @@ actual dev catalog callers (support and attribute controls) receive exact scoped
 i18n host import registrations; other locale callers use the existing public
 Patina Locale export. The wrong-path, import and storage boundary laws remain
 unchanged and include these registrations.
+
+Initial child Check 37117846891 compiled production and passed Clippy; complete
+registered/native namespace parity passed but its additional authored count check
+expected eight attribute warnings instead of the actual seven target-bearing
+tags. The exact source and full equality remain, and that count is corrected.
+The actual module-layout gate requires ordinary inline module discovery; both
+provider and child law roots now follow the previously merged syntax-law pattern.
+The assertion gate also rejected two substring Help probes, which now compare
+the complete unchanged Chinese Help literal including CSS. No allowlist or gate
+is weakened. Fresh exact-head Actions remains required.
+
+Parent Check 37117755805 executed all 24 unique new provider laws and all 31 prior
+image/iframe/tabindex laws successfully in four authenticated Rust shards. Its
+whole Check still failed the now-repaired module-layout source gate, so this is
+Rust-law evidence only, not terminal CI/queue/merge acceptance.
