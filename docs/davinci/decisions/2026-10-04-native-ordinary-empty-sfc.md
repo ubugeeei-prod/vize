@@ -71,3 +71,11 @@ implementation. This bounded empty-object family does not complete Options API,
 ordinary binding exposure, broader JS/TS/Vue dialects or default compiler
 migration. #6880 remains open; all those TODOs need real provider/consumer and
 fix-history closure rather than legacy-backed shortcuts.
+
+Initial hosted Check37135892033 refused the capture before execution because the
+Rust fixture include crossed one extra parent directory. The include now joins
+the real crate-owned fixture, without changing its content or native/reference
+checks. The mandatory tooling producer also identified six real new stage import
+rows; regenerate the canonical compiler migration surface from actual source,
+preserving every incoming row and the separate 20-file Croquis census. Fresh
+source CI is required; the draft still grants no native or protected acceptance.

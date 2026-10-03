@@ -21,7 +21,7 @@ fn text<'a>(value: &'a Value, key: &str) -> Result<&'a str, String> {
 #[test]
 fn three_whole_ordinary_empty_modules_and_maps_are_captured() -> Result<(), String> {
     let pack: Value = serde_json::from_str(include_str!(
-        "../../../../tests/fixtures/native_sfc_ordinary_empty_vue_3_5_35.json"
+        "../../../tests/fixtures/native_sfc_ordinary_empty_vue_3_5_35.json"
     ))
     .map_err(|error| cstr!("{error}"))?;
     let fixtures = pack
