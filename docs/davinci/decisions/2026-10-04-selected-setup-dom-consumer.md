@@ -197,3 +197,20 @@ are unchanged from the historical passing head. This new combined head requires
 fresh source Actions and protected full/100-by-3 proof; prior success is not
 claimed as current merge proof. Native Stack #7664 remains the genuine provider
 #7658 and consumer #7663; no child admission against the failed old parent.
+
+The first corrected-parent consumer head `c0d0681568629772829979c75ada81cd26226a9c`
+failed exact Check `37160860965` solely on the inherited newly authored
+logical-scoring control: nesting 64 correctly refused before AST under the
+unchanged limit 31. Its production builder, privacy docs and mandatory six
+whole module/map/Vue captures passed. The parent retains that exact negative
+input and separately requires genuine admission at the actual boundary.
+No consumer law, guard or instruction ceiling was changed.
+
+All five owned commits were then replayed once onto stable genuine parent
+`a26e268fbfddd3074b31ebc1418d3208b30b221c`, whose exact Check `37161255427`
+passed. The entire consumer source, fixtures, full maps and capture/action
+bytes remain identical to the prior child; only the real parent boundary
+laws and its durable failure record enter this union. Native Stack #7664
+still requires current source Actions for both ordered members and protected
+full/100-by-3 acceptance through their actual merges. Historical successful
+captures and this source-preserving replay grant no current delivery credit.
