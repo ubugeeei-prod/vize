@@ -11,6 +11,8 @@ use vize_l1::embed::{
 mod authored_newlines;
 #[path = "native_expression_doc/call.rs"]
 mod call;
+#[path = "native_expression_doc/conditional.rs"]
+mod conditional;
 #[path = "native_expression_doc/member.rs"]
 mod member;
 #[path = "native_expression_doc/preservation.rs"]
@@ -89,7 +91,6 @@ fn format(source: &str, lang: Lang, decode: bool, options: PrintOptions) -> Stri
     );
     print(document.document(), &options)
 }
-
 #[test]
 fn original_atoms_keep_unicode_escapes_and_literal_spellings_in_js_and_ts() {
     for lang in [Lang::Js, Lang::Ts] {
@@ -111,7 +112,6 @@ fn original_atoms_keep_unicode_escapes_and_literal_spellings_in_js_and_ts() {
         }
     }
 }
-
 #[test]
 fn whole_binary_and_logical_output_flattens_or_breaks_original_nodes() {
     assert_eq!(

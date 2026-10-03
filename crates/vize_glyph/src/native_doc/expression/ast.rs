@@ -1,6 +1,9 @@
 //! One immutable walk of genuine supported AST families.
 
-use oxc_ast::ast::{CallExpression, ComputedMemberExpression, Expression, StaticMemberExpression};
+use oxc_ast::ast::{
+    CallExpression, ComputedMemberExpression, ConditionalExpression, Expression,
+    StaticMemberExpression,
+};
 use oxc_span::GetSpan;
 use vize_l0::{Span, Vec};
 
@@ -73,8 +76,45 @@ impl<'a> Context<'_, 'a> {
                 self.computed_member(member, span, depth)
             }
             Expression::CallExpression(call) => self.call(call, span, depth),
+            Expression::ConditionalExpression(conditional) => {
+                self.conditional(conditional, span, depth)
+            }
             _ => Err(ExpressionRefusal::UnsupportedNode { span }),
         }
+    }
+
+    fn conditional(
+        &mut self,
+        conditional: &ConditionalExpression<'a>,
+        span: Span,
+        depth: usize,
+    ) -> Result<Doc<'a>, ExpressionRefusal> {
+        let test = self.decoded_span(conditional.test.span())?;
+        let consequent = self.decoded_span(conditional.consequent.span())?;
+        let alternate = self.decoded_span(conditional.alternate.span())?;
+        if test.start != span.start
+            || alternate.end != span.end
+            || test.end >= consequent.start
+            || consequent.start >= consequent.end
+            || consequent.end >= alternate.start
+        {
+            return Err(ExpressionRefusal::InvalidFraming { span });
+        }
+        let mut parts = Vec::new_in(&self.allocator);
+        parts.push(self.node(&conditional.test, span, depth + 1)?);
+        let question = self.token(Span::new(test.end, consequent.start), "?")?;
+        parts.push(self.gap(Span::new(test.end, question.start), Gap::Space)?);
+        parts.push(self.text(question)?);
+        let mut continuation = Vec::new_in(&self.allocator);
+        continuation.push(self.gap(Span::new(question.end, consequent.start), Gap::Break)?);
+        continuation.push(self.node(&conditional.consequent, span, depth + 1)?);
+        let colon = self.token(Span::new(consequent.end, alternate.start), ":")?;
+        continuation.push(self.gap(Span::new(consequent.end, colon.start), Gap::Space)?);
+        continuation.push(self.text(colon)?);
+        continuation.push(self.gap(Span::new(colon.end, alternate.start), Gap::Break)?);
+        continuation.push(self.node(&conditional.alternate, span, depth + 1)?);
+        parts.push(Doc::concat(continuation).indent(1, self.allocator));
+        Ok(Doc::concat(parts).group(self.allocator))
     }
 
     fn call(

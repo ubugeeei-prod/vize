@@ -24,7 +24,7 @@ fn unsupported_calls_and_descendants_refuse_the_complete_selected_document() {
         ("f({x:1})", false),
         ("f(&#91;a&#93;)", false),
         ("f(a=b)", false),
-        ("f(a?b:c)", false),
+        ("f(a?b:[c])", false),
         ("f(a++)", false),
         ("f<T>(a)", true),
         ("(f as T)(a)", true),

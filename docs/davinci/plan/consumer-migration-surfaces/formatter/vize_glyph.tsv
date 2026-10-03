@@ -97,6 +97,12 @@ formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/call/
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/call/custody.rs	4	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/call/refusals.rs	6	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/call/refusals.rs	6	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/conditional.rs	4	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/conditional/custody.rs	3	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/conditional/custody.rs	3	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/conditional/custody.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/conditional/refusals.rs	4	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/conditional/refusals.rs	4	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/member.rs	3	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/member.rs	3	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_expression_doc/member.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -126,6 +132,12 @@ formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolati
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/call/custody.rs	6	l0	L0	stage	vize_l0	preferred	3
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/call/custody.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/call/refusals.rs	6	l0	L0	stage	vize_l0	preferred	3
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/conditional.rs	4	l0	L0	stage	vize_l0	preferred	15
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/conditional.rs	4	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/conditional.rs	4	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/conditional/custody.rs	5	l0	L0	stage	vize_l0	preferred	4
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/conditional/custody.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/conditional/refusals.rs	8	l0	L0	stage	vize_l0	preferred	9
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/layout.rs	3	l0	L0	stage	vize_l0	preferred	5
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/layout.rs	3	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/member.rs	8	l0	L0	stage	vize_l0	preferred	12

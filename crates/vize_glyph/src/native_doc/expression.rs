@@ -33,6 +33,20 @@ pub enum ExpressionRefusal {
 }
 
 /// The document borrows the same admitted expression and authored source.
+/// Its original observation cannot be dropped while that borrow is returned.
+///
+/// ```compile_fail
+/// use vize_glyph::native_doc::{ExpressionDocument, expression_document};
+/// use vize_l0::{Allocator, SourceBlock};
+/// use vize_l1::embed::syntax::RetainedExpression;
+/// fn outlive_owner<'a>(
+///     arena: &'a Allocator,
+///     owner: RetainedExpression<'a>,
+///     block: SourceBlock<'a>,
+/// ) -> ExpressionDocument<'a, 'a> {
+///     expression_document(&owner, block, arena).unwrap()
+/// }
+/// ```
 #[derive(Debug)]
 pub struct ExpressionDocument<'p, 'a> {
     original: &'p RetainedExpression<'a>,
@@ -59,7 +73,8 @@ mod projection_tests;
 /// Build directly from the original retained compiler-profile AST, once.
 ///
 /// Identifier, numeric/string/boolean/null atoms, authored parentheses and
-/// binary/logical, prefix unary, ordinary static/computed member and call nodes are
+/// binary/logical, prefix unary, ordinary static/computed member, call and
+/// conditional nodes are
 /// supported. Plain unary/member gaps use separators so signs, keyword
 /// operators and numeric literal spellings cannot fuse with adjacent tokens.
 /// Nonoptional calls retain original callees and argument order, checked

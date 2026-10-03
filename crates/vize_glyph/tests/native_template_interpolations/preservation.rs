@@ -27,6 +27,11 @@ pub(super) enum Syntax {
         std::boxed::Box<Syntax>,
         std::vec::Vec<Syntax>,
     ),
+    Conditional(
+        std::boxed::Box<Syntax>,
+        std::boxed::Box<Syntax>,
+        std::boxed::Box<Syntax>,
+    ),
     Infix(
         &'static str,
         std::boxed::Box<Syntax>,
@@ -84,6 +89,11 @@ pub(super) fn fingerprint(
             member.optional,
             std::boxed::Box::new(fingerprint(original, &member.object)),
             std::boxed::Box::new(fingerprint(original, &member.expression)),
+        ),
+        Expression::ConditionalExpression(conditional) => Syntax::Conditional(
+            std::boxed::Box::new(fingerprint(original, &conditional.test)),
+            std::boxed::Box::new(fingerprint(original, &conditional.consequent)),
+            std::boxed::Box::new(fingerprint(original, &conditional.alternate)),
         ),
         Expression::CallExpression(call) => Syntax::Call(
             call.optional,

@@ -38,7 +38,7 @@ fn unsupported_original_nodes_and_descendants_refuse_the_complete_document() {
         "fn(...x)",
         "[a]",
         "a=b",
-        "a?b:c",
+        "a?b:[c]",
         "1n",
         "a as T",
         "a + fn(...x)",

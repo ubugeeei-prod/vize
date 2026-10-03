@@ -1,8 +1,8 @@
 //! Independent typed AST/comment fingerprints across a real second parse.
 
-use oxc_ast::ast::Expression;
+use oxc_ast::ast::{CommentKind, Expression};
 use oxc_span::GetSpan;
-use vize_glyph::native_doc::PrintOptions;
+use vize_glyph::native_doc::{LineEnding, PrintOptions};
 use vize_l0::{Allocator, Span};
 use vize_l1::embed::{Lang, syntax::RetainedExpression};
 
@@ -30,6 +30,11 @@ enum Syntax {
         bool,
         std::boxed::Box<Syntax>,
         std::vec::Vec<Syntax>,
+    ),
+    Conditional(
+        std::boxed::Box<Syntax>,
+        std::boxed::Box<Syntax>,
+        std::boxed::Box<Syntax>,
     ),
     Binary(
         &'static str,
@@ -72,6 +77,11 @@ fn fingerprint(original: &RetainedExpression<'_>, expression: &Expression<'_>) -
             member.optional,
             std::boxed::Box::new(fingerprint(original, &member.object)),
             std::boxed::Box::new(fingerprint(original, &member.expression)),
+        ),
+        Expression::ConditionalExpression(conditional) => Syntax::Conditional(
+            std::boxed::Box::new(fingerprint(original, &conditional.test)),
+            std::boxed::Box::new(fingerprint(original, &conditional.consequent)),
+            std::boxed::Box::new(fingerprint(original, &conditional.alternate)),
         ),
         Expression::CallExpression(call) => Syntax::Call(
             call.optional,
@@ -135,44 +145,96 @@ pub(super) fn assert_preserved(source: &str, decode: bool) {
         assert_eq!(original.hole(), None, "{source}");
         assert_eq!(original.diagnostics().count(), 0, "{source}");
         let expected = fingerprint(&original, original.expression().unwrap());
-        let comments = original
-            .comments()
-            .map(|comment| (comment.kind(), comment.text().unwrap().to_owned()))
-            .collect::<std::vec::Vec<_>>();
-        for width in [0, 7, 20, 200] {
-            let output = format(
-                source,
-                lang,
-                decode,
-                PrintOptions {
-                    width,
-                    ..PrintOptions::default()
-                },
-            );
-            let replay_allocator = Allocator::default();
-            let replay = retained(
-                &replay_allocator,
-                &output,
-                Span::new(0, output.len() as u32),
-                lang,
-                decode,
-            );
-            assert_eq!(replay.hole(), None);
-            assert_eq!(replay.diagnostics().count(), 0);
-            assert_eq!(replay.source_type(), original.source_type());
-            assert_eq!(
-                fingerprint(&replay, replay.expression().unwrap()),
-                expected,
-                "{source}: {output}"
-            );
-            assert_eq!(
-                replay
-                    .comments()
-                    .map(|comment| (comment.kind(), comment.text().unwrap().to_owned()))
-                    .collect::<std::vec::Vec<_>>(),
-                comments,
-                "{source}: {output}"
-            );
+        let comments = comment_fingerprint(&original);
+        for width in [0, 1, 7, 80, 200] {
+            for line_ending in [LineEnding::Lf, LineEnding::CrLf] {
+                let output = format(
+                    source,
+                    lang,
+                    decode,
+                    PrintOptions {
+                        width,
+                        line_ending,
+                        ..PrintOptions::default()
+                    },
+                );
+                let replay_allocator = Allocator::default();
+                let replay = retained(
+                    &replay_allocator,
+                    &output,
+                    Span::new(0, output.len() as u32),
+                    lang,
+                    decode,
+                );
+                assert_eq!(replay.hole(), None);
+                assert_eq!(replay.diagnostics().count(), 0);
+                assert_eq!(replay.source_type(), original.source_type());
+                assert_eq!(
+                    fingerprint(&replay, replay.expression().unwrap()),
+                    expected,
+                    "{source}: {output}"
+                );
+                assert_eq!(comment_fingerprint(&replay), comments, "{source}: {output}");
+            }
         }
+    }
+}
+
+fn comment_fingerprint(
+    original: &RetainedExpression<'_>,
+) -> std::vec::Vec<(CommentKind, std::string::String, std::string::String)> {
+    original
+        .comments()
+        .map(|comment| {
+            let span = comment.authored_span().unwrap();
+            (
+                comment.kind(),
+                comment.text().unwrap().to_owned(),
+                original
+                    .source()
+                    .authored_root()
+                    .get(span.start as usize..span.end as usize)
+                    .unwrap()
+                    .to_owned(),
+            )
+        })
+        .collect()
+}
+
+#[test]
+fn authored_comment_spelling_substitution_is_detected_even_with_equal_decoded_syntax() {
+    for lang in [Lang::Js, Lang::Ts] {
+        let arena = Allocator::default();
+        let source = "a&#63;&#47;*x*&#47;b&#58;c";
+        let substitute = "a &#63;/*x*/b &#58; c";
+        let original = retained(
+            &arena,
+            source,
+            Span::new(0, source.len() as u32),
+            lang,
+            true,
+        );
+        let replacement = retained(
+            &arena,
+            substitute,
+            Span::new(0, substitute.len() as u32),
+            lang,
+            true,
+        );
+        assert_eq!(original.hole(), None);
+        assert_eq!(replacement.hole(), None);
+        assert_eq!(
+            fingerprint(&original, original.expression().unwrap()),
+            fingerprint(&replacement, replacement.expression().unwrap())
+        );
+        let expected = comment_fingerprint(&original);
+        let changed = comment_fingerprint(&replacement);
+        assert_eq!(expected.len(), 1);
+        assert_eq!(changed.len(), 1);
+        assert_eq!(expected[0].0, changed[0].0);
+        assert_eq!(expected[0].1, changed[0].1);
+        assert_eq!(expected[0].2, "&#47;*x*&#47;");
+        assert_eq!(changed[0].2, "/*x*/");
+        assert_ne!(expected, changed);
     }
 }
