@@ -5,6 +5,8 @@ use vize_l0::{Span, String};
 
 /// HTML data/attribute escaping precedes template-string escaping. Every input
 /// character is consumed exactly once, so entity-looking values never recurse.
+/// Raw line endings retain JavaScript template-literal normalization, matching
+/// Vue SSR; JSON-quoted root props keep their separate string semantics.
 pub(super) fn template<L: LinkSink>(writer: &mut Writer<L>, text: &str, span: Span, html: bool) {
     let mut encoded = String::with_capacity(text.len());
     for character in text.chars() {
@@ -17,7 +19,6 @@ pub(super) fn template<L: LinkSink>(writer: &mut Writer<L>, text: &str, span: Sp
             '\\' => encoded.push_str("\\\\"),
             '`' => encoded.push_str("\\`"),
             '$' => encoded.push_str("\\$"),
-            '\r' => encoded.push_str("\\r"),
             character => encoded.push(character),
         }
     }

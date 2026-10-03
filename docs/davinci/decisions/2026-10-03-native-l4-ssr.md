@@ -11,8 +11,10 @@ content from the sole shared decision walk. L4 writes the prepared complete
 `ssrRender` declaration and attaches original node/attribute/text spans.
 
 HTML text and nested attribute values escape all five special characters
-once, then template-string escaping preserves backslashes, dollars, backticks
-and carriage returns without evaluating authored text. Safe authored comments
+once, then template-string escaping preserves backslashes, dollars and backticks
+without evaluating authored text. Raw CR/LF/CRLF retain JavaScript template-literal
+normalization, matching pinned Vue static attributes and comments; JSON-quoted
+root props retain their separate string semantics. Safe authored comments
 retain their content; unsafe comment delimiters and unsupported whole views
 produce an exact typed node/span error before any writer is returned. Void
 elements have no close tag; a non-void self-closing carrier has one. Single
