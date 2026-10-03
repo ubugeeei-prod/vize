@@ -95,3 +95,14 @@ the second tabindex warning and nested third warning follow. The retained
 original input now asserts that entire four-diagnostic vector in actual order,
 including every message, Help, range, severity, label and fix field. No
 diagnostic is filtered or normalized; source semantics are unchanged.
+
+The authentic iframe provider consumer parent #7506 actually merged through
+native Stack #7516's protected prefix on 2026-10-03 as
+`f9718b1b0ed8ea65cd3f8a4dff7a0ba11d10d76c`. Its repaired exact-head PR Check and
+actual queue Check 37111533378 passed all twenty retained native laws,
+production Clippy, full suites and instruction ceilings. Fresh `origin/main`
+contains that commit. GitHub automatically rebased and retargeted this child
+onto `main` as `c13cc0f1392b1275c7ac512d1b624ac59280b537`; all owned source,
+tests and canonical inventory bytes match the repaired child exactly. Native
+Stack #7516 remains size two and reports the child at position two. Fresh
+main-base child Actions and its actual protected merge remain required.
