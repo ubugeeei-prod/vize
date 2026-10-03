@@ -242,3 +242,12 @@ also retain rich typed payloads. This is bounded SDK/editor qualification,
 with compiler-history, default migration, filename authority, Vue, JS process
 reuse/performance, actual corrected backend/privacy/strict Actions and merge
 delivery still unfinished. No new public feature PR is created.
+
+The first source-only gate of this prerequisite detected a stale generated
+Canon consumer inventory and a two-line growth of the already oversized
+diagnostics module. The new native report module moves in a separate exact
+rename commit to the under-limit client parent; only its feature registration
+and the existing document-selection helper's parent visibility change. Its
+runtime body is unchanged. The actual inventory generator refreshes only the
+changed Canon census. The initial failure receipt stays preserved; neither a
+source-length waiver nor a performance budget adjustment is introduced.

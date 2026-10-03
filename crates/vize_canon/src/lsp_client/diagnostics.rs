@@ -17,8 +17,6 @@ const LSP_DIAGNOSTICS_BATCH_CHUNK_SIZE: usize = 128;
 const LSP_DIAGNOSTICS_BATCH_TRANSIENT_RETRIES: usize = 1;
 
 mod lsp_report;
-#[cfg(feature = "native-program")]
-mod native_program;
 mod virtual_overlay_diagnostics;
 
 impl CorsaProjectClient {
@@ -457,7 +455,7 @@ impl CorsaProjectClient {
         Ok(Some(results))
     }
 
-    fn editor_lsp_diagnostic_documents(
+    pub(super) fn editor_lsp_diagnostic_documents(
         &mut self,
         uris: &[String],
     ) -> Result<(EditorLspDiagnosticDocuments, EditorLspDiagnosticPairs), String> {

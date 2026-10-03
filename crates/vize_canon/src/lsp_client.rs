@@ -21,6 +21,8 @@ mod language_id;
 mod lifecycle;
 mod lifecycle_setup;
 mod materialized_refresh;
+#[cfg(feature = "native-program")]
+mod native_program;
 pub(crate) mod paths;
 mod queries;
 mod session;
