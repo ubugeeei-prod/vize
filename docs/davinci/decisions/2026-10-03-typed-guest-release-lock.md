@@ -65,6 +65,13 @@ Those failures remain preserved. Moving the parallel WIT job into the existing
 lines. The dependency-chain laws cover nested WIT failure, cancellation, skip
 and missing results through the outer required report; no gate or cap is waived.
 
+The next `81c` configured campaign confirms two additional strict source-report
+oracles still enumerate only the five original lanes. Both now require those
+unchanged five lanes plus WIT. Their remaining planner, full-suite, timeout,
+cache and fail-closed report assertions stay intact. The failed `81c` source
+epoch and successful Rust workers remain distinct evidence; all report
+dependency and command expectations are audited before the corrected campaign.
+
 Existing-family drain takes priority. When a predecessor regenerates a queue
 candidate, preserve its older green epoch as historical; require WIT/report
 success on the current candidate. Do not jump or duplicate entries, change

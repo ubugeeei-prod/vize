@@ -62,7 +62,7 @@ test("queue scope reaches the planner and every full source lane remains require
     source.jobs["pr-source-plan"].steps?.find((step) => step.name === "Plan source checks")?.run,
     'node tools/support/compat/github/plan-source-checks.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"',
   );
-  assert.deepEqual(source.jobs["source-report"].needs, lanes);
+  assert.deepEqual(source.jobs["source-report"].needs, [...lanes, "wit-contracts"]);
   assert.equal(source.jobs["source-report"].if, "${{ always() }}");
   assert.match(commands(source.jobs["source-report"]), /require-needs-success\.mjs/);
   assert.ok(check.jobs["test-report"].needs?.includes("pr-source-checks"));

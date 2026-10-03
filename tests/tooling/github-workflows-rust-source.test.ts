@@ -109,7 +109,10 @@ test("PR and merge-group source checks are included in the required report", () 
   assert.match(commands("pr-tooling-scripts"), /vp run --workspace-root test:scripts/);
   assert.match(commands("pr-playground-test"), /vp run --filter '\.\/playground' test:browser/);
   assert.equal(sourceWorkflow.jobs?.["source-report"]?.if, "${{ always() }}");
-  assert.deepEqual(sourceWorkflow.jobs?.["source-report"]?.needs, SOURCE_PR_JOBS);
+  assert.deepEqual(sourceWorkflow.jobs?.["source-report"]?.needs, [
+    ...SOURCE_PR_JOBS,
+    "wit-contracts",
+  ]);
   assert.match(commands("source-report"), /require-needs-success\.mjs/);
 });
 
