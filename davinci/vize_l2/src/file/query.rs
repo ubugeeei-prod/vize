@@ -8,6 +8,11 @@ use super::{
 };
 use vize_l0::Span;
 
+mod template;
+pub use template::{
+    HandlerLocalRef, TemplateQueryError, TemplateSiteRef, TemplateSiteScope, TemplateSymbolRef,
+};
+
 /// A position query never treats structural `finish()` as semantic completion.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PositionQueryError {

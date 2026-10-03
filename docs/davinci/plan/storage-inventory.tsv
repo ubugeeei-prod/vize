@@ -345,3 +345,5 @@ l2	lower	davinci/vize_l2/src/file/region/native/body.rs	1	0	0	0	0	0	0	0
 l2	-	davinci/vize_l2/src/artifact/builder/original_for.rs	0	0	0	0	2	0	0	0
 l2	-	davinci/vize_l2/src/file/build/template.rs	0	0	1	1	0	0	0	0
 l2	analysis	davinci/vize_l2/src/file/region/native/for_tests.rs	1	0	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/file/query/template/tests.rs	2	0	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/file/query/template/tests/refusals.rs	1	0	0	0	0	0	0	0

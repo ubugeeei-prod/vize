@@ -23,7 +23,10 @@ mod query;
 pub use handler::{FileHandler, RejectedFileHandler};
 pub use interpolation::{NativeFileInterpolation, NativeFileInterpolationState};
 mod records;
-pub use query::{PositionQueryError, ReferenceRef, ScopeRef};
+pub use query::{
+    HandlerLocalRef, PositionQueryError, ReferenceRef, ScopeRef, TemplateQueryError,
+    TemplateSiteRef, TemplateSiteScope, TemplateSymbolRef,
+};
 mod template;
 pub(crate) use records::ProgramOrigin;
 pub mod vue;
