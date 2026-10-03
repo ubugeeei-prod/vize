@@ -34,6 +34,13 @@ test("six original setup-let references preserve complete pinned modules, option
   assert.equal(new Set(fixtures.map((fixture: any) => fixture.id)).size, 6);
   for (const name of ["vue", "@vue/compiler-dom", "@vue/compiler-sfc"])
     assert.equal(fromVue(`${name}/package.json`).version, "3.5.35");
+  for (const pkg of metadata.packages) {
+    assert.equal(pkg.manifestSpecifier, `${pkg.name}/package.json`);
+    assert.equal(
+      hash(fs.readFileSync(fromVue.resolve(pkg.manifestSpecifier), "utf8")),
+      pkg.manifestSha256,
+    );
+  }
   for (const fixture of fixtures) {
     assert.equal(hash(fixture.source), fixture.sourceSha256);
     assert.equal(hash(fixture.template), fixture.templateSha256);
@@ -87,6 +94,7 @@ function shape(node: any): any {
 }
 
 async function execute(fixture: any, code: string) {
+  assert.equal(hash(JSON.stringify(fixture.executions)), fixture.executionsSha256);
   const component = (await import(url(fixture.compiledScript.code))).default;
   const state = vue.proxyRefs(component.setup(Object.create(null), { expose() {} }));
   const render = (
@@ -112,13 +120,40 @@ async function execute(fixture: any, code: string) {
       forbidden("data"),
       forbidden("options"),
     );
-    assert.deepEqual(shape(node), reference.vnode);
-    assert.deepEqual(JSON.parse(JSON.stringify(node)), reference.rawVNode);
+    const setupStateValues = Object.fromEntries(Object.entries(state));
+    const vnode = shape(node);
+    const rawVNode = JSON.parse(JSON.stringify(node));
+    assert.deepEqual(setupStateValues, reference.setupStateValues);
+    assert.deepEqual(vnode, reference.vnode);
+    assert.deepEqual(rawVNode, reference.rawVNode);
     assert.deepEqual(attemptedForeignReads, []);
-    outcomes.push({ context: reference.context, vnode: shape(node), attemptedForeignReads });
+    outcomes.push({
+      context: reference.context,
+      setupStateValues,
+      attemptedForeignReads,
+      vnode,
+      rawVNode,
+      outcome: "pass",
+    });
   }
+  assert.deepEqual(outcomes, fixture.executions);
+  assert.equal(hash(JSON.stringify(outcomes)), fixture.executionsSha256);
   return outcomes;
 }
+
+test("a coherently rehashed wrong setup state is rejected", async () => {
+  const fixture = structuredClone(fixtures[0]);
+  const firstName = Object.keys(fixture.executions[0].setupStateValues)[0];
+  fixture.executions[0].setupStateValues[firstName] = "incorrect-state";
+  fixture.executionsSha256 = hash(JSON.stringify(fixture.executions));
+  await assert.rejects(execute(fixture, fixture.code));
+});
+
+test("an incorrect execution digest is rejected", async () => {
+  const fixture = structuredClone(fixtures[0]);
+  fixture.executionsSha256 = "0".repeat(64);
+  await assert.rejects(execute(fixture, fixture.code));
+});
 
 for (const fixture of fixtures) {
   test(`${fixture.id} complete module reads actual setup state before and after mutation`, async () => {

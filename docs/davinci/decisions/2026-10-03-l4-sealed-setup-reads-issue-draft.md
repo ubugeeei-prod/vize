@@ -46,3 +46,21 @@ remain unfinished; no product default changes.
 
 Decision: `docs/davinci/decisions/2026-10-03-l4-sealed-setup-reads.md`, with the
 paired central-record update in the same source change.
+
+Follow-up for the current review: portable package manifest specifiers and a
+historical capture artifact ID replace developer-local fixture paths while
+all original package/recipe digests and six raw reference files stay exact.
+This addresses actual review threads `PRRT_kwDOQvjuaM6ofo6f` and
+`PRRT_kwDOQvjuaM6ofo6i` on #7465, not a review dismissal or approval.
+The reference observer checks actual enumerable setup-state values and full
+measured execution records against `executionsSha256`. Two negative witnesses
+prove the former observer accepted a coherently rehashed wrong state and an
+invalid digest; the corrected ten-case reference suite rejects both and
+replays twelve original setup-state render contexts. The optional native
+capture is absent, with no new native runtime or compiler credit. Rust source,
+code/maps, dependencies and budgets are unchanged. The delivery actor must
+verify the actual corrected public source before resolving the review threads,
+and rerun exact-head full/100 and protected queue checks before merge.
+
+Decision: `docs/davinci/decisions/2026-10-03-l4-reference-state-integrity.md`,
+with its paired central-record clause in the same change.

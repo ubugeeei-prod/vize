@@ -10,24 +10,24 @@
     {
       "name": "vue",
       "version": "3.5.35",
-      "manifestPath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/package.json",
+      "manifestSpecifier": "vue/package.json",
       "manifestSha256": "bfcb34fd1c45a973dff086362c30d477f664781edc82447acb7cd34ff97cee59"
     },
     {
       "name": "@vue/compiler-sfc",
       "version": "3.5.35",
-      "manifestPath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-sfc@3.5.35/node_modules/@vue/compiler-sfc/package.json",
+      "manifestSpecifier": "@vue/compiler-sfc/package.json",
       "manifestSha256": "6651b21ce07f6ea473c6991ae2286019e888349ceb6b17d01fd781f27838c773"
     },
     {
       "name": "@vue/compiler-dom",
       "version": "3.5.35",
-      "manifestPath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-dom@3.5.35/node_modules/@vue/compiler-dom/package.json",
+      "manifestSpecifier": "@vue/compiler-dom/package.json",
       "manifestSha256": "9ee91e0b32adffc7b30d1f5db1abd5b26189f89625359685e98c3e9925f6d4b7"
     }
   ],
   "recipe": {
-    "path": "/private/tmp/vize-l4-setup-let-six-reference-20261003.ts",
+    "artifactId": "vize-l4-setup-let-six-reference-20261003",
     "sha256": "c4055bf4377b14301a97b7fe61b381bf368325fd595bd91f0ee0699dcf76b811"
   },
   "filename": "VueSetupLet.vue",
