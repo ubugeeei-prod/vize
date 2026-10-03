@@ -12,7 +12,9 @@ Explicit active-block const/let/var references preserve their authored names
 in fresh pinned complete component output. The actual L3 On event may admit
 only a real borrowed reference from its own complete HandlerResolution table,
 with its exact HandlerLocalId, kind, original declaration, active scope chain
-and plain decoded/authored UTF-8 name. Copied or foreign reference facts and
+and plain decoded/authored UTF-8 name. Non-event locals admit only ordinary Read
+references; write/update, shorthand and constructor roles keep typed refusals.
+Copied or foreign reference facts and
 equal-index local identities confer no authority. Outer/setup reads refuse.
 Original stock FunctionBody, comments, profile and decode projections remain
 retained. The existing writer, complete body bytes and named spans are unchanged.
@@ -49,3 +51,5 @@ all prior laws. Add independent pinned original declaration/scope geometry to
 the existing complete capture law, and require a fresh hosted source; no native
 ten-component/runtime credit follows from the failed compilation. The draft
 stays unqueued and null maps remain an independently mandatory refusal.
+
+Corrected source f94ff6ffd / Check37159098112 actually captures all ten complete source-built modules/maps in artifact11287315868. Every source/code byte matches the untouched independent pinned component. Freeze only those real maps and remove the temporary Rust null-map branch; complete map equality is unconditional. Independent Node execution of this genuine capture passes all27 laws without skips, including10 native and15 reference components, preserved TDZ ReferenceError, own undefined, separate handlers/update replacements and cleanup. This local Node proof reuses installed pinned dependencies, never a Rust build. New exact-source hosted capture/runtime, protected full/all-100 and actual merge remain required. The final read-only local role gate refuses writes/updates/shorthand/constructors explicitly, retaining the previous EventParameter behavior and unchanged writer.

@@ -113,14 +113,10 @@ fn ten_original_block_local_components_and_maps_are_captured() -> Result<(), Str
             map["sourcesContent"] == serde_json::json!([source]),
             "{id}: whole owner map source"
         );
-        // Capture preparation only: mandatory Node acceptance rejects unready
-        // maps. Remove this branch after freezing the first actual hosted pack.
-        if !fixture["nativeMap"].is_null() {
-            require!(
-                map == fixture["nativeMap"],
-                "{id}: complete frozen map equality"
-            );
-        }
+        require!(
+            map == fixture["nativeMap"],
+            "{id}: complete frozen map equality"
+        );
         let original = mapped
             .observation()
             .admitted()

@@ -44,6 +44,10 @@ fn pinned_root_and_sibling_prefix_boundaries_return_no_whole_output() {
 #[test]
 fn active_block_proof_cannot_admit_mixed_outer_roles_or_unsupported_envelopes() {
     for template in [
+        "<button @click='let u;{let x=1;x=2;$event.c=x;}'/>",
+        "<button @click='let u;{let x=1;x++;$event.c=x;}'/>",
+        "<button @click='let u;{let x=1;$event.c={x};}'/>",
+        "<button @click='let u;{let x=1;new x;}'/>",
         "<button @click='let u;{let x=1;$event.c=x+y;}'/>",
         "<button @click='let u;{let x=1;return x;}'/>",
         "<button @click='let u;{let x:number=1;$event.c=x;}'/>",

@@ -184,3 +184,30 @@ fn forward_lexical_identity_is_not_a_promise_of_initialization() {
         "let u;{$event.c=x;let x=1;}"
     );
 }
+
+#[test]
+fn genuine_local_write_update_shorthand_and_constructor_roles_stay_refused() {
+    for body in [
+        "let u;{let x=1;x=2;$event.c=x;}",
+        "let u;{let x=1;x++;$event.c=x;}",
+        "let u;{let x=1;$event.c={x};}",
+        "let u;{let x=1;new x;}",
+    ] {
+        let arena = Allocator::default();
+        let source = alloc::format!("<template><button @click='{body}'/></template>");
+        let owner = completed(&arena, &source);
+        let resolution = resolution(&owner);
+        let (index, reference) = resolution
+            .references()
+            .iter()
+            .enumerate()
+            .find(|(_, reference)| {
+                reference.name == "x"
+                    && (reference.usage != Usage::Read
+                        || reference.shorthand
+                        || reference.constructor)
+            })
+            .unwrap();
+        assert!(!original(resolution, index, reference), "{body}");
+    }
+}

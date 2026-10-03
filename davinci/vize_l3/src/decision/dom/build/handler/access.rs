@@ -3,6 +3,7 @@
 use vize_l0::Span;
 use vize_l2::resolution::{
     HandlerBindingRef, HandlerDeclarationKind, HandlerReference, HandlerResolution, HandlerScopeId,
+    Usage,
 };
 
 pub(super) fn original(
@@ -41,6 +42,9 @@ pub(super) fn original(
     }
     if binding.kind == HandlerDeclarationKind::EventParameter {
         return id.index() == 0 && binding.scope.index() == 0 && binding.name == "$event";
+    }
+    if reference.usage != Usage::Read || reference.shorthand || reference.constructor {
+        return false;
     }
     // Vue's pinned statement transform prefixes root/sibling-block reads. An
     // active original block declaration preserves this writer's spelling.
