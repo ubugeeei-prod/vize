@@ -1,0 +1,21 @@
+name: Execute original selected-template literal modules
+description: Capture twelve genuine L1-L4 modules and run their pinned Vue laws
+runs:
+  using: composite
+  steps:
+    - name: Capture and execute original selected-template literal modules
+      shell: bash
+      env:
+        VIZE_L4_SELECTED_LITERAL_CAPTURE: ${{ runner.temp }}/native-selected-template-literals.json
+      run: |
+        rm -f "$VIZE_L4_SELECTED_LITERAL_CAPTURE"
+        cargo test -p vize_l4 --profile ci --test native_selected_template_literals original_modern_literals_keep_complete_module_map_and_projection_custody -- --exact
+        vp node tools/support/compat/davinci/selected-template-literals.mjs "$VIZE_L4_SELECTED_LITERAL_CAPTURE"
+    - name: Retain the actual literal module, map and range capture
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: native-selected-template-literals-${{ github.run_id }}-${{ github.sha }}
+        path: ${{ runner.temp }}/native-selected-template-literals.json
+        if-no-files-found: error
+        retention-days: 14

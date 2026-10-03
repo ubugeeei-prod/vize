@@ -1,0 +1,22 @@
+{
+  "id": "escaped-string",
+  "source": "<template>{{ '\\0' }}</template>",
+  "template": "{{ '\\0' }}",
+  "nodes": 1,
+  "sourceSha256": "15d18d3e55bd72a2ace5df276bd96c4302bb6d90eee714fbba2f670a31b2c947",
+  "templateSha256": "512494e16d494542a409deb32646fdba7e77e350ceeebe6dd827b7c95272a4f9",
+  "code": "import { toDisplayString as _toDisplayString } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _toDisplayString('\\0')\n}",
+  "codeSha256": "9e40b01b99f0d23dc27ee5e9c17b2e5422a08f52159e79f1f4928a554e1058cd",
+  "referenceMap": {
+    "version": 3,
+    "sources": ["SelectedTemplate.vue"],
+    "names": [],
+    "mappings": ";;;0BAAG,IAAI",
+    "sourcesContent": ["{{ '\\0' }}"]
+  },
+  "referenceMapSha256": "d3231cd43f497ea68d6956070dcc3b5af8c1c52226b7062cae94df08ae29b65c",
+  "runtime": {
+    "result": "string",
+    "value": "\u0000"
+  }
+}

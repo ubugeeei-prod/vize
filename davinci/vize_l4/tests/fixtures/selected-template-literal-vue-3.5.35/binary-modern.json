@@ -1,0 +1,22 @@
+{
+  "id": "binary-modern",
+  "source": "<template>{{0b101010}}</template>",
+  "template": "{{0b101010}}",
+  "nodes": 1,
+  "sourceSha256": "50830913631a08a1620537627a3f999c61a21547102b9bdb71fdb38943180963",
+  "templateSha256": "65087704707dd48878fb0193ee5643a2053ecddbd5708c0ee621863b8028d50d",
+  "code": "import { toDisplayString as _toDisplayString } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _toDisplayString(0b101010)\n}",
+  "codeSha256": "f386403b0f24696b04e36577b7a184d29a97806c71eb50d69f2adc0465e2caeb",
+  "referenceMap": {
+    "version": 3,
+    "sources": ["SelectedTemplate.vue"],
+    "names": [],
+    "mappings": ";;;0BAAE,QAAQ",
+    "sourcesContent": ["{{0b101010}}"]
+  },
+  "referenceMapSha256": "23cb779cb02b159a98a596b8e361236072a1832e69b9e95f5996731aa0b98845",
+  "runtime": {
+    "result": "string",
+    "value": "42"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "hex",
+  "source": "<template>{{0x2a}}</template>",
+  "template": "{{0x2a}}",
+  "nodes": 1,
+  "sourceSha256": "40000470352125c3564971ed62b9e519ea3844e5e1ed7655a1a50a86a7cfb817",
+  "templateSha256": "e38fde2cf76fc85024df53045f5d812a58fafe75e99c5559d39ed7ba846b58ca",
+  "code": "import { toDisplayString as _toDisplayString } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _toDisplayString(0x2a)\n}",
+  "codeSha256": "49a502035f57c20af365992c09f2023cd9464ea55e0fded75305932f57d5a660",
+  "referenceMap": {
+    "version": 3,
+    "sources": ["SelectedTemplate.vue"],
+    "names": [],
+    "mappings": ";;;0BAAE,IAAI",
+    "sourcesContent": ["{{0x2a}}"]
+  },
+  "referenceMapSha256": "9ce08147cbecbfbba31878aa735b639e7fbfe9c8cfc7d72d7df79cd6ba05c842",
+  "runtime": {
+    "result": "string",
+    "value": "42"
+  }
+}

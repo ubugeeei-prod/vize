@@ -218,6 +218,9 @@ jobs:
       - name: Execute original selected-template DOM modules
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
         uses: ./.github/actions/test-native-selected-template
+      - name: Execute original selected-template literal modules
+        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
+        uses: ./.github/actions/test-native-selected-template-literals
       - name: Test tooling scripts
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
         env:

@@ -1,0 +1,22 @@
+{
+  "id": "comment-literal",
+  "source": "<template>{{ /*keep*/ '雪&amp;🌸' }}</template>",
+  "template": "{{ /*keep*/ '雪&amp;🌸' }}",
+  "nodes": 1,
+  "sourceSha256": "604199ccc2f3853a8501f3621774e597cda189fa1cce31784240356b151a133f",
+  "templateSha256": "a33e759505fd08db82937481d2686fa26d46cbc4cc78133b39e195b6077e5ae3",
+  "code": "import { toDisplayString as _toDisplayString } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _toDisplayString(/*keep*/ '雪&🌸')\n}",
+  "codeSha256": "5c2ffd72c92a1de4842a3b03797af88ec8b86edf69a6c52e99f91350e8dbbce5",
+  "referenceMap": {
+    "version": 3,
+    "sources": ["SelectedTemplate.vue"],
+    "names": [],
+    "mappings": ";;;0BAAG,eAAmB",
+    "sourcesContent": ["{{ /*keep*/ '雪&amp;🌸' }}"]
+  },
+  "referenceMapSha256": "16733eb584c845968a3fdc852d5d366412a93c8f317cff978ca9ac583459f6ac",
+  "runtime": {
+    "result": "string",
+    "value": "雪&🌸"
+  }
+}

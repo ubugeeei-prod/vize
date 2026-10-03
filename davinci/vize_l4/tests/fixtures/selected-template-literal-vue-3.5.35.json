@@ -1,0 +1,69 @@
+{
+  "schema": "vize.selected-template-literal-reference",
+  "version": 1,
+  "compiler": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "options": {
+    "mode": "module",
+    "hoistStatic": false,
+    "prefixIdentifiers": true,
+    "comments": true,
+    "filename": "SelectedTemplate.vue",
+    "sourceMap": true,
+    "bindingMetadata": {},
+    "cacheHandlers": false
+  },
+  "nativeCapturePinned": false,
+  "fixtures": [
+    {
+      "id": "decimal",
+      "file": "selected-template-literal-vue-3.5.35/decimal.json"
+    },
+    {
+      "id": "hex",
+      "file": "selected-template-literal-vue-3.5.35/hex.json"
+    },
+    {
+      "id": "octal-modern",
+      "file": "selected-template-literal-vue-3.5.35/octal-modern.json"
+    },
+    {
+      "id": "binary-modern",
+      "file": "selected-template-literal-vue-3.5.35/binary-modern.json"
+    },
+    {
+      "id": "exponent",
+      "file": "selected-template-literal-vue-3.5.35/exponent.json"
+    },
+    {
+      "id": "bigint",
+      "file": "selected-template-literal-vue-3.5.35/bigint.json"
+    },
+    {
+      "id": "boolean",
+      "file": "selected-template-literal-vue-3.5.35/boolean.json"
+    },
+    {
+      "id": "null",
+      "file": "selected-template-literal-vue-3.5.35/null.json"
+    },
+    {
+      "id": "unicode-entity",
+      "file": "selected-template-literal-vue-3.5.35/unicode-entity.json"
+    },
+    {
+      "id": "escaped-string",
+      "file": "selected-template-literal-vue-3.5.35/escaped-string.json"
+    },
+    {
+      "id": "comment-literal",
+      "file": "selected-template-literal-vue-3.5.35/comment-literal.json"
+    },
+    {
+      "id": "mixed",
+      "file": "selected-template-literal-vue-3.5.35/mixed.json"
+    }
+  ]
+}

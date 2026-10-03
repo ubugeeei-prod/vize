@@ -1,0 +1,47 @@
+{
+  "id": "mixed",
+  "source": "<template>pré{{true}}<!--keep-->{{null}}</template>",
+  "template": "pré{{true}}<!--keep-->{{null}}",
+  "nodes": 4,
+  "sourceSha256": "180904038ca79cde6ac72a41c40976339dab4181588e758f6941d12bcdfb7726",
+  "templateSha256": "6fe1511062d545dd20fc08f14e1568dd7803618040412e26fdcd48fa1451e61f",
+  "code": "import { toDisplayString as _toDisplayString, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createTextVNode(\"pré\" + _toDisplayString(true)),\n    _createCommentVNode(\"keep\"),\n    _createTextVNode(_toDisplayString(null))\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+  "codeSha256": "455b49b2f161c3f8b04a43539ed4a8387741891e2d7ce32959a6d0e81677268c",
+  "referenceMap": {
+    "version": 3,
+    "sources": ["SelectedTemplate.vue"],
+    "names": [],
+    "mappings": ";;;;qBAAA,KAAG,oBAAE,IAAI;IAAE,2BAAW;sCAAE,IAAI",
+    "sourcesContent": ["pré{{true}}<!--keep-->{{null}}"]
+  },
+  "referenceMapSha256": "735c7f3a9882d86a5be562cf20b85375d25113e98d14a9fc779581227dcdce87",
+  "runtime": {
+    "result": "vnode",
+    "type": "fragment",
+    "props": {},
+    "children": [
+      {
+        "result": "vnode",
+        "type": "text",
+        "props": {},
+        "children": "prétrue",
+        "patchFlag": 0
+      },
+      {
+        "result": "vnode",
+        "type": "comment",
+        "props": {},
+        "children": "keep",
+        "patchFlag": 0
+      },
+      {
+        "result": "vnode",
+        "type": "text",
+        "props": {},
+        "children": "",
+        "patchFlag": 0
+      }
+    ],
+    "patchFlag": 64
+  }
+}

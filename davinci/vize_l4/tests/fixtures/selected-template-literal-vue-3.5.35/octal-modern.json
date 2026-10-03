@@ -1,0 +1,22 @@
+{
+  "id": "octal-modern",
+  "source": "<template>{{0o52}}</template>",
+  "template": "{{0o52}}",
+  "nodes": 1,
+  "sourceSha256": "39d80ba033675de3d2d086b6c3119b9afb67763eb0d3c0d0a0c8de0012237a9e",
+  "templateSha256": "bbaabf5c29a53e56295ac4a2a2aa3fb7d5e9b1e2be50370cfc1179f1e32b42bd",
+  "code": "import { toDisplayString as _toDisplayString } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _toDisplayString(0o52)\n}",
+  "codeSha256": "21da9d7f98a4f3677d17bfd93ecd77dff84f40bb88a589f6652d9aa3850c5f7a",
+  "referenceMap": {
+    "version": 3,
+    "sources": ["SelectedTemplate.vue"],
+    "names": [],
+    "mappings": ";;;0BAAE,IAAI",
+    "sourcesContent": ["{{0o52}}"]
+  },
+  "referenceMapSha256": "0509904623752c7f13c553585fb029e3d9c8388066d4a60de16743b8ad574330",
+  "runtime": {
+    "result": "string",
+    "value": "42"
+  }
+}
