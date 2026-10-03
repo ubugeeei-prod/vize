@@ -43,7 +43,6 @@ pub fn run(mut args: LintArgs) {
     let (format, rich) = rich::parse_format(args.format.as_str());
     let locale = rich::parse_locale(args.locale.as_str());
     let render_details = aggregate::should_render_details(format, args.quiet);
-    crate::config::write_schema(None);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     let (loaded_config, linter_plan, linter_features) = config_load::load(&mut args);
     let linter_enabled = linter_plan.plan.base.enabled;

@@ -20,6 +20,7 @@ pub(super) fn load(
             crate::config::LinterExecutionOptions::default(),
         )
     } else {
+        crate::config::write_schema(None);
         crate::config::try_load_linter_execution_with_source(args.config.as_deref()).unwrap_or_else(
             |error| {
                 eprintln!("\x1b[31mError:\x1b[0m {error}");

@@ -40,7 +40,9 @@ jobs:
       - name: Install the unchanged frozen repository dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build the exact source CLI once
-        run: cargo build --locked --profile ci -p vize
+        run: |
+          cargo build --locked --profile ci -p vize
+          cargo test --locked --profile ci -p vize --test lint_no_config_schema_cli
       - name: Verify installed baseline and compiled CLI
         run: node tools/support/ci/lint-range-capture/preflight.ts runtime "$GITHUB_WORKSPACE" "$GITHUB_SHA"
       - name: Capture canonical reporter once with enforced budgets

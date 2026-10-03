@@ -177,3 +177,31 @@ Eighteen finite laws pass on the combined source: seven real canonical
 provider laws and eleven capture/retention laws. The real provider law
 is registered in the existing T1 inventory; ordinary short PR selection
 and the original registered capture workflow remain unchanged.
+
+The e0 capture (37123576674) retained all nineteen complete reports with
+zero invalid baseline ranges. Six budgets passed and thirteen breached:
+144 false positives, 182 false negatives and 37 rule-location differences.
+The enforced producer still exited one. Post-verification separately
+refused seventeen status bytes for alexandrie: the exact untracked
+node_modules/.vize/vize.config.schema.json path. Its HEAD and tracked
+files were unchanged; the generated file contents were not captured.
+Issue #6830 comment 5969413865 binds the original 180 files and terminal
+failure. This does not identify c598’s earlier unretained seventeen bytes.
+
+The canonical reporter already uses lint --no-config. The CLI nevertheless
+materialized its optional editor schema before configuration loading.
+Move that call into the existing configured branch: no-config lint leaves
+fixture files untouched, while configured lint keeps schema generation.
+Do not redirect diagnostics, ignore generated paths, restore fixtures or
+weaken the original source guard. Original nineteen fixture/rule/runtime
+pins, severity and every enforced budget stay unchanged.
+
+An explicit Vue/config/full-JSON legacy regression runs the actual source
+CLI binary. It compares complete diagnostics and exit one, every fixture
+file byte and the Git HEAD/index/status for both missing and stale schema
+cases. The configured control checks the exact bundled schema and the
+same full diagnostics. The existing capture build runs only this focused
+CLI test target before the original nineteen-project producer. No new
+local CLI execution or hosted capture success is claimed; fresh source
+validation remains required, and the thirteen real budget failures are
+separate unfinished work.
