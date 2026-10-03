@@ -6,5 +6,6 @@ mod native_aria_unsupported_elements {
     mod custody;
     mod refusal;
     mod support;
+    mod table;
     mod verbatim;
 }

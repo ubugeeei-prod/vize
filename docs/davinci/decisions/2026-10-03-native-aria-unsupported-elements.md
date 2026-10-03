@@ -78,3 +78,17 @@ integration points and opaque static/bound is attributes. Read-only original
 parser classification confirms these heads do not alter the default authored
 lint predicate. The new input and all preceding full comparisons require fresh
 hosted execution; no production admission changes are made.
+
+The preserved `<template><table><html role></html></table></template>` control
+exposes a genuine complete-output gap: registered parsing retains a foster-parenting
+parser/template Error alongside the actual ARIA Error. The genuine original
+opening-time authored-table receipt now causes whole fact/result refusal before
+any catalog lookup. Three additional laws keep both complete Errors, all catalog
+locales/Full Help, original opening/attribute ranges, empty labels/no fixes and
+unchanged carrier observations. They include concrete annotation-xml namespace
+ambiguity and valid cells, whose stricter refusal is explicit rather than a claim
+of complete table admission. Caller traversal cannot produce partial results in
+these preserved controls. No legacy foster helper, second parse/walk or oracle
+filter is introduced. All earlier 15 authored Error laws and real SDK verification
+remain; fresh exact-head Actions prove the expanded 18-law consumer after this
+main/policy/source refresh. Existing default linter and #6881 remain unfinished.
