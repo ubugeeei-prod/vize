@@ -258,8 +258,14 @@ pub fn exercise_old_api() {
     // Default trait methods and tokenizer methods were part of the old API.
     tokenizer::Callbacks::on_raw_interpolation(&mut sink, 0, 0);
     tokenizer::Callbacks::on_in_tag_comment(&mut sink, 0, 0);
-    let mut lexer: armature::Tokenizer<'_, Sink> =
-        tokenizer::Tokenizer::with_delimiters("<div>x&amp;y</div>", sink.clone(), b"{{", b"}}");
+    assert_eq!(sink.interpolation.get(), 1);
+    sink.interpolation.set(0);
+    let mut lexer: armature::Tokenizer<'_, Sink> = tokenizer::Tokenizer::with_delimiters(
+        "<div>{{value}}x&amp;y</div>",
+        sink.clone(),
+        b"{{",
+        b"}}",
+    );
     lexer.set_tolerate_declarations(false);
     lexer.set_triple_mustache(false);
     lexer.set_in_tag_comments(false);
