@@ -84,9 +84,10 @@ impl Scorer<'_> {
     fn flatten<'a>(&mut self, logical: &LogicalExpression<'a>, run: &mut Run) {
         self.operand(&logical.left, run);
         run.operators = run.operators.saturating_add(1);
-        if run.last != Some(logical.operator) {
+        let operator = Some(logical.operator);
+        if run.last != operator {
             run.runs = run.runs.saturating_add(1);
-            run.last = Some(logical.operator);
+            run.last = operator;
         }
         self.operand(&logical.right, run);
     }

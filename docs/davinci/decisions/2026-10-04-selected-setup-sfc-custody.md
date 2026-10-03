@@ -71,6 +71,25 @@ at existing Clippy collapsible_if before laws; the same guarded owning parse
 and retained refusal are written as a let-chain, without lint relaxation.
 No failed-source acceptance is claimed.
 
+Exact sourcef3 Check37158936946 passes all seven envelope laws, six privacy
+and lifetime docs, unchanged Clippy and all source gates. Native Stack7664
+registers provider7658 before consumer7663, with the actual parent ancestry.
+Its first provider candidate3043 nevertheless fails the unchanged instruction
+ceiling: the same complexity fixture/methodology produces 5786 three times
+against ceiling5781, versus predecessorf8cd's 5766 three times. The complete
+20-instruction increase is exclusively Scorer::flatten self cost265→285;
+every other function self cost is identical. The known-red provider is
+promptly dequeued and retains its measurement and raw dumps.
+
+The narrow repair caches the same immutable logical operator once after the
+left operand and saturated operator increment, reusing it for comparison and
+conditional last-operator assignment. In-order traversal, saturation, change-only
+assignment and every recursion/stack guard stay intact. No alignment, inlining,
+harness, compiler, fixture or ceiling change is used. Full independent naive
+CFG rows and hand totals cover mixed parenthesized trees and deep left/right
+runs. Fresh exact-source semantics and all100×3/protected acceptance must prove
+this actual repair; earlier failed-candidate measurements grant no completion.
+
 This closes only a bounded original descriptor/setup/File ownership envelope.
 The peer DOM setup consumer needs this actual provider, qualified original
 segments/annotations and separate genuine L3/L4 code/map/runtime acceptance.

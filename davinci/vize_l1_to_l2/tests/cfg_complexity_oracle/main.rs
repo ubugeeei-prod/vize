@@ -117,6 +117,38 @@ fn an_operator_tree_inside_a_leaf_is_its_own_tree() {
     assert_eq!(logical, vec![(3, 17, 1, 1), (10, 16, 1, 1)]);
 }
 
+#[test]
+fn parenthesized_mixed_operator_trees_keep_all_independent_rows() {
+    for (template, expected) in [
+        ("{{ a && (b || (c && d)) }}", (4, 3, 0, 0)),
+        ("{{ ((a || b) && (c || d)) ?? (e && f) }}", (6, 5, 0, 0)),
+        ("{{ a && ((b ? (c || d) : (e && f))) }}", (5, 4, 0, 0)),
+    ] {
+        assert_eq!(totals(template), expected, "{template:?}");
+    }
+}
+
+#[test]
+fn deep_left_and_right_logical_runs_keep_full_naive_agreement() {
+    for right_nested in [false, true] {
+        let mut expression = String::from("leaf");
+        for _ in 0..64 {
+            expression = if right_nested {
+                format!("value && ({expression})")
+            } else {
+                format!("({expression}) && value")
+            };
+        }
+        let template = format!("{{{{ {expression} }}}}");
+        let (production, naive) = both_template(&template);
+        assert_eq!(production, naive, "right_nested={right_nested}");
+        assert_eq!(production.cyclomatic, 65);
+        assert_eq!(production.cognitive, 1);
+        assert_eq!(production.unknown, 0);
+        assert_eq!(production.rows.len(), 1);
+    }
+}
+
 fn matrix_dir() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/davinci-matrix")
 }
