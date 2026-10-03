@@ -48,3 +48,5 @@ runs:
           ${{ runner.temp }}/native-sfc-ordinary-empty-runtime.json
         if-no-files-found: error
         retention-days: 7
+    - name: Capture whole original selected SFC components and runtime
+      uses: ./.github/actions/test-native-selected-sfc-dom

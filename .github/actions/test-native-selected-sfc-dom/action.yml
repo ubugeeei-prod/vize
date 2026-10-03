@@ -1,0 +1,26 @@
+name: Native selected SFC DOM runtime
+description: Capture whole original SFC components and compare pinned Vue click effects
+runs:
+  using: composite
+  steps:
+    - name: Capture and execute source-built selected SFC components
+      shell: bash
+      env:
+        VIZE_NATIVE_SELECTED_SFC_DOM_CAPTURE: ${{ runner.temp }}/native-selected-sfc-dom-capture.json
+        VIZE_NATIVE_SELECTED_SFC_DOM_REQUIRE_CAPTURE: "1"
+        VIZE_NATIVE_SELECTED_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-selected-sfc-dom-runtime.json
+      run: |
+        cargo test --locked --profile ci -p vize_atelier_sfc native_selected::tests::five_whole_original_click_components_and_maps_are_captured -- --exact
+        vp node --test tests/tooling/native-selected-sfc-dom-reference.test.ts
+        test -s "$VIZE_NATIVE_SELECTED_SFC_DOM_CAPTURE"
+        test -s "$VIZE_NATIVE_SELECTED_SFC_DOM_RUNTIME_CAPTURE"
+    - name: Upload complete selected SFC component and runtime captures
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: native-selected-sfc-dom-${{ github.sha }}-${{ github.run_attempt }}
+        path: |
+          ${{ runner.temp }}/native-selected-sfc-dom-capture.json
+          ${{ runner.temp }}/native-selected-sfc-dom-runtime.json
+        if-no-files-found: error
+        retention-days: 7
