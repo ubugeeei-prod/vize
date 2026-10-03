@@ -89,3 +89,13 @@ unchanged recursive frames and artifact directory retain every raw file. An
 actual greater-than-one-MiB Git-diff law checks exact complete bytes and full
 frame recovery alongside the original nested-gitlink refusal law. The dirty
 source refusal and actual nineteen-project capture remain mandatory.
+
+The streamed-drift capture (run 37117688600, source c3f7454c) failed
+before fixture hydration because checkout depth two omitted pinned reporter
+commit ddef7f37. No reporter executed or original findings were captured;
+partial verification and the actual missing-ancestor error were retained.
+The direct correction requires four commits: correction, c3, 0a and ddef.
+Fetch that exact ancestry without changing the pinned reporter or ancestry
+assertion. A real local shallow-Git law rejects depths two and three and
+accepts depth four. Preserve both original failed hosted runs. Fresh hosted
+execution is still required; no invalid finding has been made usable.

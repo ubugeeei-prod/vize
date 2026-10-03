@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { pathToFileURL } from "node:url";
 import { createHash } from "node:crypto";
 import { verifyTrackedSource } from "../../tools/support/ci/lint-range-capture/preflight.ts";
 import { test } from "node:test";
@@ -165,6 +166,7 @@ test("lint-only dispatch keeps normal suites and preserves enforce failure artif
   assert.match(matrix, /uses: \.\/\.github\/workflows\/lint-range-capture\.yml/u);
   assert.equal(workflow.includes("continue-on-error"), false);
   assert.equal(workflow.includes("pull_request"), false);
+  assert.match(workflow, /fetch-depth: 4\n/u);
   assert.match(workflow, /--locked --profile ci -p vize/u);
   assert.match(workflow, /vp install --frozen-lockfile/u);
   assert.equal((workflow.match(/if: \$\{\{ always\(\) \}\}/gu) ?? []).length, 4);
@@ -175,6 +177,54 @@ test("lint-only dispatch keeps normal suites and preserves enforce failure artif
     reporterArgs[reporterArgs.indexOf("--project") + 1],
     projects.map((p) => p.id).join(","),
   );
+});
+
+test("lint capture checkout retains the pinned reporter through the actual shallow boundary", () => {
+  const root = mkdtempSync(join(tmpdir(), "vize-lint-capture-ancestry-"));
+  const invoke = (cwd: string, ...args: string[]) =>
+    execFileSync("git", ["-C", cwd, ...args], { stdio: ["ignore", "pipe", "pipe"] });
+  try {
+    const repository = join(root, "source");
+    mkdirSync(repository);
+    invoke(repository, "init", "-q");
+    let reporter = "";
+    for (const message of ["reporter", "capture", "drift retention", "checkout correction"]) {
+      writeFileSync(join(repository, "source.txt"), message + "\n");
+      invoke(repository, "add", ".");
+      invoke(
+        repository,
+        "-c",
+        "user.name=Capture Law",
+        "-c",
+        "user.email=capture@example.invalid",
+        "commit",
+        "-qm",
+        message,
+      );
+      if (!reporter) reporter = invoke(repository, "rev-parse", "HEAD").toString().trim();
+    }
+    const workflow = readFileSync(
+      new URL("../../.github/workflows/lint-range-capture.yml", import.meta.url),
+      "utf8",
+    );
+    const depth = Number(workflow.match(/fetch-depth: (\d+)/u)?.[1]);
+    for (const value of [2, depth - 1, depth]) {
+      const checkout = join(root, "checkout-" + value);
+      execFileSync("git", [
+        "clone",
+        "-q",
+        "--depth",
+        String(value),
+        pathToFileURL(repository).href,
+        checkout,
+      ]);
+      const ancestry = () => invoke(checkout, "merge-base", "--is-ancestor", reporter, "HEAD");
+      if (value < depth) assert.throws(ancestry, /Not a valid commit name/u);
+      else ancestry();
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test("lint capture retains actual dirty gitlink evidence without allowing the producer", () => {
