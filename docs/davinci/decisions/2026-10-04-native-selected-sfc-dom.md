@@ -97,3 +97,14 @@ existing Node generator (the Rust command delegates to it), preserving the
 two-entry maxima and all gates. No fixture is marked synthetic and no ceiling
 is changed. Exact fresh source, protected full/all-100 and actual merge remain
 unfinished acceptance; the green common-provider prefix proceeds independently.
+
+Frozen source `74b7c8c60` passes exact configured Check37154822377, all four
+actual Rust and tooling workers. Artifact11285800083 contains both complete
+five-module/map and mandatory current-source runtime receipts; all eight
+Node laws execute without skips and each native/reference component result
+and callback replacement agrees. No conditional map equality remains.
+After the real provider merge, GitHub normally retargets the remaining child
+to main while retaining native Stack7645 position2. Replay only this genuine
+consumer delta onto fresh literal main, preserving the incoming standalone
+output/query decisions and every production/fixture byte; require new
+exact-head Actions before the remaining layer enters the protected queue.

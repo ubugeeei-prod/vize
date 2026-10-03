@@ -63,3 +63,11 @@ DOM whole-SFC component assembly and pinned complete module/map/runtime laws
 are a dependent next slice. SSR/Vapor may consume this same lower custody through
 their own real dependent slices. Default compiler migration, #6880 closure,
 whole scripts/styles, broader event/control/dialect families remain unfinished.
+
+Provider #7633 actually merges at 2026-10-03T21:27:57Z as signed
+`d807a097efc081cf9501a626146370c84fb54c72` after exact source
+Check37153592080 and protected Check37154243123 succeed. The protected full
+Rust/tooling/differential and unchanged instruction gates retain the original
+six laws/privacy contracts. SSR/Vapor can now replay their own genuine consumer
+deltas on literal main independently. The current provider still refuses all
+scripts/styles; retaining a future original setup Program is separate work.
