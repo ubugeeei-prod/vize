@@ -3,6 +3,7 @@ use serde_json::Value;
 use vize_l0::{Allocator, String, cstr};
 use vize_l2::op::{BindingOp, OnOp, Op, Region};
 
+mod local;
 mod refusal;
 
 macro_rules! require {

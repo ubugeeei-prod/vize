@@ -1,0 +1,26 @@
+name: Original handler block-local SFC runtime
+description: Capture complete original local-handler components and pinned Vue execution
+runs:
+  using: composite
+  steps:
+    - name: Capture and execute original block-local handler components
+      shell: bash
+      env:
+        VIZE_NATIVE_HANDLER_LOCAL_SFC_DOM_CAPTURE: ${{ runner.temp }}/native-handler-local-sfc-dom-capture.json
+        VIZE_NATIVE_HANDLER_LOCAL_SFC_DOM_REQUIRE_CAPTURE: "1"
+        VIZE_NATIVE_HANDLER_LOCAL_SFC_DOM_RUNTIME_CAPTURE: ${{ runner.temp }}/native-handler-local-sfc-dom-runtime.json
+      run: |
+        cargo test --locked --profile ci -p vize_atelier_sfc native_selected::tests::local::ten_original_block_local_components_and_maps_are_captured -- --exact
+        vp node --test tests/tooling/native-handler-local-sfc-dom-reference.test.ts
+        test -s "$VIZE_NATIVE_HANDLER_LOCAL_SFC_DOM_CAPTURE"
+        test -s "$VIZE_NATIVE_HANDLER_LOCAL_SFC_DOM_RUNTIME_CAPTURE"
+    - name: Upload original local-handler whole components and runtime
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: native-handler-local-sfc-dom-${{ github.sha }}-${{ github.run_attempt }}
+        path: |
+          ${{ runner.temp }}/native-handler-local-sfc-dom-capture.json
+          ${{ runner.temp }}/native-handler-local-sfc-dom-runtime.json
+        if-no-files-found: error
+        retention-days: 7
