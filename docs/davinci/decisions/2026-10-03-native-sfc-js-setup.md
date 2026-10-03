@@ -118,6 +118,8 @@ The newer accepted TS projection `9cf1dd48` makes that PR source conflicted.
 This private replay preserves all native setup admission, refusal, fixture
 and capture bytes and the incoming TS namespace and package graph. A stale
 generated L4 census hunk is replaced by the unchanged canonical classifier
-over the combined source. Publication waits for the actual queued shared
-provider prefix to conserve the central record once; final current-source
-Actions, instruction gates and protected signed merge remain unfinished.
+over the combined source. The queued original-invocation and comment providers
+actually merged as `f7db6569` and `7f1c7d4f`. This final replay preserves their
+getters, comment/setup observations, package graph and central record alongside
+the accepted TS projection. Final current-source Actions, instruction gates and
+protected signed product merge remain unfinished.
