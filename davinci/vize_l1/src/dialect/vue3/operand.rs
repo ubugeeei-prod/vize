@@ -1,7 +1,8 @@
 //! Conditional operand selection belongs to the Vue dialect.
 
 use super::VueDirectives;
-use crate::markup::{DirectiveNameError, DirectivePrefix, DirectiveSyntax};
+use crate::markup::{ArgSyntax, DirectiveNameError, DirectivePrefix, DirectiveSyntax};
+use vize_l0::Span;
 
 /// The actual complete conditional directive spelling.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

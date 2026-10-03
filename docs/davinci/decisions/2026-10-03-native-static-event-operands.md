@@ -9,7 +9,9 @@ Issues: [#6836](https://github.com/ubugeeei-prod/vize/issues/6836),
 Vue 3 directive provider selects only complete static `@name` / `v-on:name`
 heads without modifiers. Dynamic arguments, object forms, modifiers, other
 directives and incomplete values refuse before decoding or parsing. Original
-recovery/extent and v-pre checks keep their existing error precedence.
+recovery/extent and v-pre checks keep their existing error precedence. The
+actual-main replay reuses the private original `Origin::check_original_header`
+shared by the merged For/conditional producers, with no extra visit or stage.
 
 The provider derives JS/TS exclusively from the original descriptor selection,
 decodes the full value once and parses it once as real `Shape::HandlerBody`.
