@@ -68,7 +68,7 @@ fn ts_setup_rejects_type_bearing_and_other_nonprimitive_syntax_without_erasure()
 -> Result<(), String> {
     let arena = Allocator::default();
     for body in [
-        "const value:number=1;",
+        "const value: number | string = 1;",
         "let value!:number;",
         "declare const value:number;",
         "const value=1 as number;",

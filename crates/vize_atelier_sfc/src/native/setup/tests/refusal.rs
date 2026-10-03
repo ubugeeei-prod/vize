@@ -80,7 +80,7 @@ fn prohibited_script_families_and_collisions_keep_their_original_program_observa
     for source in [
         "<script>let value=1;</script><template><p/></template>",
         "<script>let ordinary=1;</script><script setup>let value=1;</script><template><p/></template>",
-        "<script setup lang=ts>let value: number=1;</script><template><p/></template>",
+        "<script setup lang=ts>let value: number|string=1;</script><template><p/></template>",
         "<script setup>/* only comment */</script><template><p/></template>",
         "<script setup>import value from 'x';</script><template><p/></template>",
         "<script setup>export let value=1;</script><template><p/></template>",

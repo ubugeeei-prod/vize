@@ -22,6 +22,7 @@ jobs:
       js: ${{ steps.plan.outputs.js }}
       tooling: ${{ steps.tooling-plan.outputs.tooling }}
       tooling-matrix: ${{ steps.tooling-plan.outputs.tooling-matrix }}
+      native-setup-capture: ${{ steps.tooling-plan.outputs.native-setup-capture }}
       playground: ${{ steps.plan.outputs.playground }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -193,7 +194,7 @@ jobs:
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
       - name: Test source-bound native JS setup modules and runtime
-        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-setup-capture == 'true')) }}
         uses: ./.github/actions/test-native-js-setup
       - name: Test selected PR tooling scripts
         if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}

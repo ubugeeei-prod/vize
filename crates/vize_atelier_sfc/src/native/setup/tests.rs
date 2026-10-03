@@ -8,6 +8,7 @@ macro_rules! require {
     };
 }
 
+mod annotations;
 mod constants;
 mod refusal;
 mod strict;

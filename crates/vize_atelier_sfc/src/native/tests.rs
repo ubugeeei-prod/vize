@@ -103,7 +103,7 @@ fn ordinary_typed_and_empty_script_roles_keep_product_refusals_with_real_syntax(
             Lang::Js,
         ),
         (
-            "<script setup lang=ts>const value:number=1</script><template><p/></template>",
+            "<script setup lang=ts>const value:number|string=1</script><template><p/></template>",
             Lang::Ts,
         ),
         ("<script setup></script><template><p/></template>", Lang::Js),

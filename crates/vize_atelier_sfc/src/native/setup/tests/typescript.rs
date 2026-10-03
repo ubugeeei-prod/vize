@@ -23,7 +23,7 @@ fn ts_type_bearing_and_strict_invalid_bodies_keep_actual_owners_and_refuse_outpu
     use vize_l0::Allocator;
     let arena = Allocator::default();
     for body in [
-        "const value:number=1;",
+        "const value: number | string = 1;",
         "let value!:number;",
         "declare const value:number;",
         "const value=1 as number;",

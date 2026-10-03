@@ -33,6 +33,7 @@ use vize_l2::lang::js::{
 };
 use vize_l2::resolution::ResolutionErrorKind;
 
+mod annotations;
 mod constants;
 mod strict;
 mod typescript;

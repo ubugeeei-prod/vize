@@ -173,7 +173,7 @@ fn unsupported_subtrees_never_produce_false_complete_script_units() {
         "const {value} = obj;",
         "function f() { function nested() {} }",
         "class C {}",
-        "const value: number = 1;",
+        "const value: number | string = 1;",
     ] {
         let parsed =
             Parser::new(&arena, source, SourceType::ts().with_module(true)).parse_observed();
