@@ -148,6 +148,13 @@ export function assertFormatterError(api: string, internal: boolean, kind: strin
 }
 
 export function formatterApiKind(api: string, kind: string) {
+  if (api === "format_script_with_sort_imports") {
+    assert.equal(
+      kind,
+      "TypeScript",
+      "direct sorting observer uses the actual TypeScript source type",
+    );
+  }
   const kinds: Record<string, string> = {
     format_sfc: "Vue",
     "GlyphFormatter::format": "Vue",

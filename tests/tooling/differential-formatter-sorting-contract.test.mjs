@@ -86,6 +86,9 @@ void test("sorting history rejects altered API, options, complete probes and sou
       manifest.cases[0].api = "format_sfc";
     },
     (manifest) => {
+      manifest.cases[9].kind = "JavaScript";
+    },
+    (manifest) => {
       manifest.cases[0].importSorting.setting = false;
     },
     (manifest) => {
