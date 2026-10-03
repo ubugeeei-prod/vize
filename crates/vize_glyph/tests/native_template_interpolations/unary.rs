@@ -28,7 +28,6 @@ fn genuine_selected_unary_operators_keep_complete_output_and_token_boundaries() 
         ("&#33;ready", "&#33; ready"),
         ("&#43;&#32;&#43;a", "&#43;&#32;&#43; a"),
         ("!&#9;ready", "!&#9;ready"),
-        ("! /*kept\r\n*/ ready", "! /*kept\r\n*/ ready"),
     ] {
         for script in ["", "<script setup lang=ts>let a=1</script>"] {
             let source =
@@ -39,6 +38,15 @@ fn genuine_selected_unary_operators_keep_complete_output_and_token_boundaries() 
                 "{source}"
             );
         }
+    }
+    for script in ["", "<script setup lang=ts>let a=1</script>"] {
+        let source = vize_l0::cstr!(
+            "<!--前--><template><p>{{{{! /*kept\r\n*/ ready}}}}</p></template>{script}"
+        );
+        assert_eq!(
+            format(&source, PrintOptions::default()),
+            "<p>{{\n    ! /*kept\r\n*/ ready\n  }}</p>"
+        );
     }
     assert_eq!(
         format(

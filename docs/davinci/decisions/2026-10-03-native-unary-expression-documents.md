@@ -61,6 +61,17 @@ arguments around the same 16/17-prefix content; production source, intended
 input, assertions, output/refusal expectations and budgets stay unchanged.
 Fresh corrected-head Actions and protected actual merge remain required.
 
+The corrected format strings compiled in Check `37119581540` on `56f128b0`.
+All nine new standalone laws and three new selected-template laws passed; the
+remaining complete-output law expected flat edges around an authored CRLF
+comment. The existing printer has no flat width for that multiline Doc and
+correctly emits broken interpolation edges, retaining the original comment
+bytes. A separate full multiline expected block for the identical JS/TS input
+corrects that native fixture; registered oracles and production stay unchanged.
+The same input already passed independent AST/comment full-Descriptor reparse
+and fixed-point controls. This partial campaign does not complete acceptance;
+every law still requires fresh corrected-head hosted proof and protected merge.
+
 TODO: other expression families, directive values, all Vue dialects, other
 embeds, enclosing SFC assembly, formatter options and checked edits remain
 unfinished. [#6882](https://github.com/ubugeeei-prod/vize/issues/6882) still gates
