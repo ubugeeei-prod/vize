@@ -63,6 +63,11 @@ as signed e193630474a8b6d48db04e27a9047569efc2ffa5 after protected
 Check37157317336, Musea and Nuxt succeeded. All 14,953 full Rust executions
 passed, including the seven ownership laws; nine privacy docs passed too.
 
+The first hosted source732 stopped at an unresolved enum import in the new
+pre-cursor helper before Rust laws ran. Its existing public enum import is
+corrected without changing policy, storage, ownership or budgets; fresh exact
+source Actions remains required. No failed-source acceptance is claimed.
+
 This closes only a bounded original descriptor/setup/File ownership envelope.
 The peer DOM setup consumer needs this actual provider, qualified original
 segments/annotations and separate genuine L3/L4 code/map/runtime acceptance.

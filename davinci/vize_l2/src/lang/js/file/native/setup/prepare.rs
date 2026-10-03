@@ -2,9 +2,9 @@
 
 use super::{
     NativeRouteState, NativeSetupIssue, NativeSetupIssueKind, NativeTemplateIssue,
-    NativeTemplateIssueKind, NativeTemplateOwner,
+    NativeTemplateOwner,
 };
-use crate::lang::js::NativeTemplateWalk;
+use crate::lang::js::{NativeTemplateIssueKind, NativeTemplateWalk};
 
 impl<'a> NativeTemplateOwner<'a> {
     /// Begin the existing sole native root cursor only after this original
