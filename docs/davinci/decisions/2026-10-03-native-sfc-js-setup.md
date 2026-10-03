@@ -105,3 +105,19 @@ same full-only job; the root workflow keeps its original 690 lines. No source
 length exemption, test weakening or PR budget change is introduced. The first
 successful native runtime step and this source-length failure stay preserved;
 fresh repaired-source campaigns and protected terminal acceptance remain required.
+
+## Current provider replay
+
+The exact unsigned bot source `7bc7e5c5` passed required/full Actions and all
+100 instruction measurements, including nineteen capture/reference laws,
+eight complete native modules/maps and sixteen real Vue renders. Its signed
+provider base `574002ec` and all unrelated source entries are independently
+conserved; those successes remain attached to that exact checkout.
+
+The newer accepted TS projection `9cf1dd48` makes that PR source conflicted.
+This private replay preserves all native setup admission, refusal, fixture
+and capture bytes and the incoming TS namespace and package graph. A stale
+generated L4 census hunk is replaced by the unchanged canonical classifier
+over the combined source. Publication waits for the actual queued shared
+provider prefix to conserve the central record once; final current-source
+Actions, instruction gates and protected signed merge remain unfinished.
