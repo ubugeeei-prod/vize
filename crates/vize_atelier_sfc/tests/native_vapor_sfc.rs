@@ -260,7 +260,8 @@ fn original_numeric_for_refusal_keeps_the_actual_rejected_head() {
     );
     assert!(compilation.observation().admitted().is_none());
     let original = compilation.observation().template().unwrap();
-    let file = original.rejected_file().unwrap();
+    let file = original.file().unwrap();
+    assert!(!file.is_complete());
     let [RejectedFileFor::Syntax(head)] = file.rejected_for_heads() else {
         panic!("retain the actual unsupported original For syntax");
     };

@@ -107,3 +107,9 @@ widening the provider, alongside the original complete click File/Binding law.
 The actual consumer-migration inventory generator also updates the compiler's
 SFC shard for the new native dependency rows. This failed source was not queued;
 fresh full component/runtime capture remains mandatory.
+
+The next source `aa4bf1654b` confirmed that the refused For route retains an
+incomplete normal File, rather than a RejectedFile outcome. The law now borrows
+that actual File and explicitly denies completion before inspecting its retained
+CollectionShape head. All eleven full component/map equalities and the genuine
+complete click/Binding law passed; no For completion or runtime credit is inferred.
