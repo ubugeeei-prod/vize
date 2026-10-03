@@ -175,7 +175,7 @@ fn original_unsupported_parser_observations_refuse_before_deriving_root_text()
     assert_eq!(owner.component().carrier().unsupported.len(), 1);
     assert_eq!(
         owner.component().carrier().unsupported[0].error,
-        crate::dialect::vue::DirectiveNameError::NestingLimit
+        crate::markup::DirectiveNameError::NestingLimit
     );
     let child = owner.children().next().ok_or("original text prefix")?;
     let original = child.surface();
