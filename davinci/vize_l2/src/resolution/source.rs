@@ -11,13 +11,14 @@ use crate::expr::JsExpr;
 pub(super) enum ReferenceSource<'a> {
     Expression(JsExpr<'a>),
     Program(&'a str),
+    ProgramJsx(&'a str),
 }
 
 impl ReferenceSource<'_> {
     pub(super) fn span(self, span: oxc_span::Span) -> Option<Span> {
         match self {
             Self::Expression(expression) => expression.ast_span_to_source(span),
-            Self::Program(source) => {
+            Self::Program(source) | Self::ProgramJsx(source) => {
                 source.get(span.start as usize..span.end as usize)?;
                 Some(Span::new(span.start, span.end))
             }
@@ -26,8 +27,12 @@ impl ReferenceSource<'_> {
     pub(super) fn length(self) -> u32 {
         match self {
             Self::Expression(expression) => expression.source.len() as u32,
-            Self::Program(source) => source.len() as u32,
+            Self::Program(source) | Self::ProgramJsx(source) => source.len() as u32,
         }
+    }
+
+    pub(super) const fn allows_jsx(self) -> bool {
+        matches!(self, Self::ProgramJsx(_))
     }
 }
 
@@ -73,11 +78,12 @@ impl<'p, 'a> ProgramReferenceSource<'p, 'a> {
         expression: &Expression<'a>,
         sink: &mut impl ReferenceSink<'a>,
     ) -> Result<(), ResolutionError> {
-        walk::retained(
-            ReferenceSource::Program(self.program.source_text),
-            expression,
-            sink,
-        )
+        let source = if self.program.source_type.is_jsx() {
+            ReferenceSource::ProgramJsx(self.program.source_text)
+        } else {
+            ReferenceSource::Program(self.program.source_text)
+        };
+        walk::retained(source, expression, sink)
     }
 
     /// Only an actual local export leaf; imported/re-exported names are policy
@@ -125,5 +131,7 @@ impl<'p, 'a> ProgramReferenceSource<'p, 'a> {
 
 #[cfg(test)]
 mod calls;
+#[cfg(test)]
+mod jsx;
 #[cfg(test)]
 mod tests;

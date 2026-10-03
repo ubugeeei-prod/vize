@@ -275,6 +275,7 @@ l2	-	davinci/vize_l2/src/lang/js/file/walk/references.rs	0	0	1	1	0	0	0	0
 l2	-	davinci/vize_l2/src/file/region.rs	0	0	0	0	2	0	0	0
 l2	-	davinci/vize_l2/src/file/region/facade.rs	0	0	0	0	2	0	0	0
 l2	analysis	davinci/vize_l2/src/resolution/source/calls.rs	1	4	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/resolution/source/jsx.rs	1	6	1	0	0	0	0	0
 l1_to_l2	analysis	davinci/vize_l1_to_l2/src/vue_file.rs	1	7	0	0	0	0	0	0
 l1_to_l2	analysis	davinci/vize_l1_to_l2/src/vue_file/policy.rs	1	2	0	0	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/vue_file/region.rs	0	0	0	0	2	0	0	0

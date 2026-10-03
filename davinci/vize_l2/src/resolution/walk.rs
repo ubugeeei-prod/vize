@@ -7,6 +7,7 @@ use vize_l0::Span;
 use crate::expr::JsExpr;
 
 mod compound;
+mod jsx;
 
 use super::sink::{ReferenceEvent, ReferenceSink};
 use super::source::ReferenceSource;
@@ -134,6 +135,8 @@ impl<'a, 'b, S: ReferenceSink<'a>> Resolver<'a, 'b, S> {
         let next = depth + 1;
         match expression {
             Expression::Identifier(identifier) => self.identifier(identifier, Usage::Read, false),
+            Expression::JSXElement(value) => self.jsx_element(value, next),
+            Expression::JSXFragment(value) => self.jsx_fragment(value, next),
             Expression::BooleanLiteral(_)
             | Expression::NullLiteral(_)
             | Expression::NumericLiteral(_)

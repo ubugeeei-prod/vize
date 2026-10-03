@@ -106,7 +106,7 @@ fn original_source_and_default_module_authority_cannot_be_substituted_for_functi
     );
     for (profile, text) in [
         (SourceType::cjs(), source.as_str()),
-        (SourceType::jsx().with_module(true), source.as_str()),
+        (SourceType::jsx().with_script(true), source.as_str()),
         (
             SourceType::d_ts().with_module(true),
             "declare function f(value: number): number;",

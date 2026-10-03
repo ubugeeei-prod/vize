@@ -158,7 +158,6 @@ impl<'a> FileProducer<'a> {
             observer.unit(unit);
         }
         if !input.profile.module
-            || input.profile.jsx
             || input
                 .references
                 .program()
