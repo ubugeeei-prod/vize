@@ -1,7 +1,7 @@
 use vize_l0::{
     Allocator,
     config::{VueDialect, VueVersion},
-    dump::{Dump, Mode},
+    dump::{Dump, Mode, value::DumpValue},
 };
 use vize_l1::{
     SurfaceParseOptions,
@@ -81,9 +81,13 @@ fn original_file_handler_crosses_as_a_typed_id_without_js_source_or_diagnostic_a
     assert_eq!(operand.op.index(), id.node().index());
     let page = Page::of(&s3.program);
     let dump = page.print_to_string(Mode::Full);
-    assert!(dump.contains("native.handler"));
-    assert!(dump.contains(" handler-ref=1"));
-    assert!(!dump.contains("return $event"));
+    let native_row = page.operands.iter().find(|row| row.1 == Some(1)).unwrap();
+    let mut native_dump = vize_l0::String::default();
+    native_row.print_value(&mut native_dump).unwrap();
+    assert_eq!(
+        native_dump.as_str(),
+        "operand=[1,\"value\",0,null,null,\"native.handler\",\"\",\"\",18,53] handler-ref=1"
+    );
     assert_eq!(Page::parse(&dump).unwrap(), page);
     assert!(Page::parse(&dump.replace("handler-ref=1", "handler-ref=2")).is_err());
     assert!(Page::parse(&dump.replace(" handler-ref=1", "")).is_err());

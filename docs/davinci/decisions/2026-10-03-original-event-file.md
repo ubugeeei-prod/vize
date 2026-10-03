@@ -76,7 +76,9 @@ added. That failed head remains separate from fresh repaired-head acceptance.
 The subsequent hosted build reached integration compilation and exposed a
 missing test-helper import and one feature-enabled N-API diagnostic consumer
 still expecting ExprRef. The helper import and allocation-free expression
-projection are repaired; native body references supply no diagnostic JS text.
+projection are repaired; native body references supply no diagnostic JS text. Owned dump helpers keep
+their original expression field, and the native diagnostic carrier law uses
+an exact full row oracle rather than substring assertions.
 
 The current private NativeVisibility policy still refuses every outer setup
 binding. Only the supported handler-local subset and actual event `$event`

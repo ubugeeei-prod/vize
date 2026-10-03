@@ -89,7 +89,7 @@ fn assert_bindings(source: &str, root: SourceRoot<'_>, bindings: &[DumpBinding],
                 if let Some(name) = &on.name {
                     assert_name(source, root, name, context);
                 }
-                if let Some(handler) = &on.expression() {
+                if let Some(handler) = &on.handler {
                     assert_expr(source, root, handler, context);
                 }
             }
