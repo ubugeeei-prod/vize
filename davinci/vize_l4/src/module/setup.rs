@@ -1,9 +1,9 @@
 //! Link one sealed original setup body into the prepared component fragment.
 
 use crate::write::{LinkSink, Writer};
-use vize_l0::Span;
-use vize_l2::file::DeclarationKind;
-use vize_l2::lang::js::VueSetup;
+use vize_l0::{SourceBlock, Span};
+use vize_l2::file::{BindingRef, DeclarationKind};
+use vize_l2::lang::js::{NativeSelectedSetup, SetupAnnotation, VueSetup};
 
 pub const COMPONENT_BINDING: &str = "_sfc_main";
 
@@ -28,6 +28,48 @@ pub struct SetupEmitError {
 /// Generated-name refusals happen before a writer or partial fragment is created.
 pub fn emit_setup<L: LinkSink>(
     setup: &VueSetup<'_, '_, '_, '_>,
+) -> Result<Writer<L>, SetupEmitError> {
+    emit_body(setup)
+}
+
+/// Emit the normally owned original setup; no caller Program/File/source pairing.
+pub fn emit_selected_setup<L: LinkSink>(
+    setup: &NativeSelectedSetup<'_, '_>,
+) -> Result<Writer<L>, SetupEmitError> {
+    emit_body(setup)
+}
+
+// Only genuine sealed setup owners implement this private segment projection.
+// It borrows existing declaration/annotation rows, without walking the AST.
+trait SetupInput<'owner, 'arena> {
+    fn source(&self) -> SourceBlock<'arena>;
+    fn bindings(&self) -> impl Iterator<Item = BindingRef<'owner, 'arena>>;
+    fn type_annotations(&self) -> impl Iterator<Item = SetupAnnotation<'owner, 'arena>>;
+}
+impl<'owner, 'arena> SetupInput<'owner, 'arena> for VueSetup<'owner, '_, '_, 'arena> {
+    fn source(&self) -> SourceBlock<'arena> {
+        self.source()
+    }
+    fn bindings(&self) -> impl Iterator<Item = BindingRef<'owner, 'arena>> {
+        self.bindings()
+    }
+    fn type_annotations(&self) -> impl Iterator<Item = SetupAnnotation<'owner, 'arena>> {
+        self.type_annotations()
+    }
+}
+impl<'owner, 'arena> SetupInput<'owner, 'arena> for NativeSelectedSetup<'owner, 'arena> {
+    fn source(&self) -> SourceBlock<'arena> {
+        self.source()
+    }
+    fn bindings(&self) -> impl Iterator<Item = BindingRef<'owner, 'arena>> {
+        self.bindings()
+    }
+    fn type_annotations(&self) -> impl Iterator<Item = SetupAnnotation<'owner, 'arena>> {
+        self.type_annotations()
+    }
+}
+fn emit_body<'owner, 'arena, L: LinkSink>(
+    setup: &impl SetupInput<'owner, 'arena>,
 ) -> Result<Writer<L>, SetupEmitError> {
     let fail = |span, kind| SetupEmitError { span, kind };
     for binding in setup.bindings() {

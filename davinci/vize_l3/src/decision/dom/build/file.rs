@@ -34,7 +34,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             self.reject(node, expression.span, DomUnsupported::FileScope);
             return None;
         };
-        if let Some(rejected) = native::refusal(file, node, expression) {
+        if let Some(rejected) = native::refusal(file, node, expression, R::NATIVE_SETUP) {
             self.reject(rejected.node, rejected.span, rejected.reason);
             return None;
         }

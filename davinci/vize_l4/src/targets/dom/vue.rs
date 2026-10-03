@@ -3,8 +3,15 @@
 use core::cell::Cell;
 
 use vize_l0::id::NodeId;
+use vize_l2::file::FileArtifact;
 use vize_l2::{expr::ExprRef, resolution::Occurrence};
-use vize_l3::decision::dom::vue::{NativeVueRenderAnalysis, VueReadKind, VueRenderExpression};
+use vize_l3::decision::{
+    dom::{
+        DomFacts,
+        vue::{NativeVueRenderAnalysis, VueReadKind, VueRenderExpression},
+    },
+    native::NativeSelectedSetupDomAnalysis,
+};
 
 use super::expression::ExpressionWriter;
 use super::{DomError, DomErrorKind, encode};
@@ -38,14 +45,64 @@ pub fn emit_vue<L: LinkSink>(
         analysis.policy(),
         analysis.tables(),
         analysis.dom(),
-        VueExpressions { analysis },
+        VueExpressions {
+            analysis: VueRows::Ordinary(analysis),
+        },
     )
 }
 
-struct VueExpressions<'read, 'view, 'owner, 'descriptor, 'program, 'arena> {
-    analysis: &'read NativeVueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena>,
+/// Consume only genuine original setup/template read decisions.
+/// No neutral File analysis or caller accessor policy selects this entry.
+/// ```compile_fail
+/// use vize_l3::decision::NativeFileAnalysis;
+/// use vize_l4::{targets::dom::emit_selected_setup_template, write::NoLinks};
+/// fn promote(file: &NativeFileAnalysis<'_, '_>) {
+///     let _ = emit_selected_setup_template::<NoLinks>(file);
+/// }
+/// ```
+pub fn emit_selected_setup_template<L: LinkSink>(
+    analysis: &NativeSelectedSetupDomAnalysis<'_, '_, '_>,
+) -> Result<Writer<L>, DomError> {
+    encode(
+        analysis.artifact().source(),
+        analysis.policy(),
+        analysis.tables(),
+        analysis.dom(),
+        VueExpressions {
+            analysis: VueRows::Selected(analysis),
+        },
+    )
 }
 
+// This private union preserves both sealed owners without allocating or
+// accepting an external policy. The original expression encoder stays shared.
+enum VueRows<'read, 'view, 'owner, 'descriptor, 'program, 'arena> {
+    Ordinary(&'read NativeVueRenderAnalysis<'view, 'owner, 'descriptor, 'program, 'arena>),
+    Selected(&'read NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena>),
+}
+impl<'owner, 'arena> VueRows<'_, '_, 'owner, '_, '_, 'arena> {
+    fn file(&self) -> &'owner FileArtifact<'arena> {
+        match self {
+            Self::Ordinary(a) => a.file(),
+            Self::Selected(a) => a.file(),
+        }
+    }
+    fn dom(&self) -> Option<&DomFacts<'owner, 'arena>> {
+        match self {
+            Self::Ordinary(a) => a.dom(),
+            Self::Selected(a) => a.dom(),
+        }
+    }
+    fn expression(&self, node: NodeId) -> Option<&VueRenderExpression<'owner, 'arena>> {
+        match self {
+            Self::Ordinary(a) => a.expression(node),
+            Self::Selected(a) => a.expression(node),
+        }
+    }
+}
+struct VueExpressions<'read, 'view, 'owner, 'descriptor, 'program, 'arena> {
+    analysis: VueRows<'read, 'view, 'owner, 'descriptor, 'program, 'arena>,
+}
 impl ExpressionWriter for VueExpressions<'_, '_, '_, '_, '_, '_> {
     fn write_handler<L: LinkSink>(
         &self,
@@ -135,7 +192,7 @@ impl ExpressionWriter for VueExpressions<'_, '_, '_, '_, '_, '_> {
         }
         write_expression(
             writer,
-            self.analysis.artifact().source(),
+            self.analysis.file().artifact().source(),
             table,
             &SetupReads {
                 row,

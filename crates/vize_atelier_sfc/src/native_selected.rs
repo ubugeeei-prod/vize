@@ -51,6 +51,12 @@ pub struct NativeSelectedSfcDomOutput {
     source_map: Option<String>,
 }
 impl NativeSelectedSfcDomOutput {
+    pub(super) fn new(document: EmitDocument, source_map: Option<String>) -> Self {
+        Self {
+            document,
+            source_map,
+        }
+    }
     #[must_use]
     pub fn code(&self) -> &str {
         self.document.as_str()

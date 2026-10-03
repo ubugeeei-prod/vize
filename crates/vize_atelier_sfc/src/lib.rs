@@ -97,9 +97,14 @@ pub use native::{
     compile_native_sfc,
 };
 mod native_selected;
+mod native_selected_setup;
 pub use native_selected::{
     NativeSelectedSfcDomCompilation, NativeSelectedSfcDomError, NativeSelectedSfcDomOptions,
     NativeSelectedSfcDomOutput, compile_native_selected_sfc_dom,
+};
+pub use native_selected_setup::{
+    NativeSelectedSetupSfcDomCompilation, NativeSelectedSetupSfcDomError,
+    compile_native_selected_setup_sfc_dom,
 };
 pub use native_ssr::{
     NativeSsrSfcCompilation, NativeSsrSfcCompileError, NativeSsrSfcCompileOptions,

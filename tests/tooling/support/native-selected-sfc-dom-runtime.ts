@@ -13,7 +13,15 @@ const dataUrl = (text: string) =>
   `data:text/javascript;base64,${Buffer.from(text).toString("base64")}`;
 const runtimeUrl = dataUrl(
   `import runtime from ${JSON.stringify(pathToFileURL(fromVue.resolve("vue")).href)};\n` +
-    ["openBlock", "createElementBlock", "createElementVNode", "Fragment"]
+    [
+      "openBlock",
+      "createElementBlock",
+      "createElementVNode",
+      "Fragment",
+      "toDisplayString",
+      "createTextVNode",
+      "defineComponent",
+    ]
       .map((name) => `export const ${name} = runtime.${name};`)
       .join("\n"),
 );

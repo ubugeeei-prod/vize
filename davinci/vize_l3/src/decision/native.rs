@@ -1,5 +1,8 @@
 //! Preserve the original selected template custody through the existing L3 walk.
 
+mod setup;
+pub use setup::{NativeSelectedSetupDomAnalysis, build_native_selected_setup_dom_decisions};
+
 use super::{
     DecisionBuildError, DecisionTables, NativeFileAnalysis, build_dom_file_decisions,
     dom::{DomFacts, DomFileExpression, DomFileForHead, DomFileHandler},

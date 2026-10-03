@@ -35,7 +35,7 @@ pub use output::{
     NativeTemplateDomOutput, NativeTemplateDomOutputError, NativeTemplateDomOutputFailure,
     emit_template_output,
 };
-pub use vue::emit_vue;
+pub use vue::{emit_selected_setup_template, emit_vue};
 use write::{Helpers, helper, quoted};
 
 /// A target refuses the actual node rather than emitting partial JavaScript.

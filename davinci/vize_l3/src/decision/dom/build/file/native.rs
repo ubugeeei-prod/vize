@@ -9,10 +9,17 @@ pub(super) fn refusal<'a>(
     file: &FileArtifact<'a>,
     node: NodeId,
     expression: &JsExpr<'a>,
+    setup: bool,
 ) -> Option<DomRejection> {
     // Only the normal private receiver's actual node/input association grants
     // selected origin. Other File routes retain their existing policy.
-    let record = file.native_interpolation(node)?;
+    let Some(record) = file.native_interpolation(node) else {
+        return setup.then_some(DomRejection {
+            node,
+            span: expression.span,
+            reason: DomUnsupported::FileExpression,
+        });
+    };
     let operand = record.input().operand();
     let rejected = |reason| DomRejection {
         node,
@@ -42,5 +49,18 @@ pub(super) fn refusal<'a>(
             | Expression::BigIntLiteral(_)
             | Expression::StringLiteral(_)
     );
-    (!primitive || original.has_legacy_literals()).then(|| rejected(DomUnsupported::Expression))
+    let identifier = setup
+        && original
+            .expression()
+            .get_identifier_reference()
+            .is_some_and(|id| {
+                expression.ast_span_to_source(id.span).is_some_and(|span| {
+                    expression
+                        .source
+                        .get(span.start as usize..span.end as usize)
+                        == Some(id.name.as_str())
+                })
+            });
+    (!(primitive || identifier) || original.has_legacy_literals())
+        .then(|| rejected(DomUnsupported::Expression))
 }
