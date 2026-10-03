@@ -8,7 +8,9 @@ use alloc::vec::Vec;
 use cssparser::{CowRcStr, ParseError, ParseErrorKind, Token};
 use vize_l0::{SourceBlock, Span};
 
+mod list;
 mod parser;
+pub use list::SimpleClassListStyle;
 
 /// Why this original syntax cannot lend the simple-class scoped family.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -181,6 +183,12 @@ impl<'a> StyleSyntax<'a> {
             syntax: self,
             insertion: name.span.end,
         })
+    }
+
+    /// Lend a comma-separated list of at least two original simple classes.
+    /// Unproven comment/escape/pre-comma whitespace normalization refuses.
+    pub fn simple_class_list(&self) -> Result<SimpleClassListStyle<'_, 'a>, StyleIssue> {
+        list::observe(self)
     }
 }
 
