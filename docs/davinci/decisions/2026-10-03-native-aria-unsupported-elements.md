@@ -92,3 +92,19 @@ these preserved controls. No legacy foster helper, second parse/walk or oracle
 filter is introduced. All earlier 15 authored Error laws and real SDK verification
 remain; fresh exact-head Actions prove the expanded 18-law consumer after this
 main/policy/source refresh. Existing default linter and #6881 remain unfinished.
+
+The original complete-output recovery audit preserves five additional real
+pre-counterexamples: ignored nested form, optional-closing p/option/optgroup,
+and self-closing nested a. Each native original meta header was genuinely read
+in literal mode while the unchanged registered parser produces a full authored
+`:role` Error. The new classification-dependent fact provider refuses authentic
+entry/post-recovery context before any partial group or lookup; no legacy pre
+mode is substituted and the first whole-traversal refusal is independently
+checked. All original parser Errors, messages, spans, empty labels/fix, Full
+Help, filename and counts remain compared without filtering in En/Ja/Zh. A
+second law preserves the actual 4096-depth over-limit pre input, its genuine
+native literal receipt/refusal and complete registered depth Error plus ARIA
+Error. No recursive native rendering/debugging is added to that deep law.
+The eighteen earlier Error laws remain unchanged; twenty authored Error laws
+now await fresh exact-head hosted execution. Existing merged rule admissions,
+oracles, layout caps and all ceilings remain unchanged.

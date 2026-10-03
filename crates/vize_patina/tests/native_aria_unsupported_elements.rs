@@ -4,6 +4,7 @@
 mod native_aria_unsupported_elements {
     mod attributes;
     mod custody;
+    mod recovery;
     mod refusal;
     mod support;
     mod table;
