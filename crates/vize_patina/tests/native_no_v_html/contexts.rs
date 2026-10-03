@@ -79,14 +79,11 @@ fn ignored_form_refuses_and_keeps_the_complete_nonempty_registered_control() {
     for locale in LOCALES {
         assert_eq!(
             complete(&registered(source, locale)),
-            expected(vec![
-                parser(
-                    "error",
-                    "HTML tree construction ignored this start tag because an equivalent element is already open.",
-                    span(source, "<form v-html='x' />")
-                ),
-                warning(locale, span(source, "v-html='x'"))
-            ])
+            expected(vec![parser(
+                "error",
+                "HTML tree construction ignored this start tag because an equivalent element is already open.",
+                span(source, "<form v-html='x' />")
+            ),])
         );
     }
 }

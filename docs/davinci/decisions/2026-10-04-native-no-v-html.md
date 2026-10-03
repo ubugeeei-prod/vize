@@ -79,3 +79,13 @@ then genuine replay onto fresh main and fresh exact-head hosted Actions.
 No local build/install or duplicate manual100 run is used. Protected full suites,
 actual100 benchmarks across three executions and signed merge/main presence
 remain delivery requirements, not claims from authored laws or auto-merge.
+
+The [first hosted ignored-form correction](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5974378667)
+retains source43277fa6/Check37159779917: production build/Clippy and all source
+gates passed, all224 earlier laws and34 new laws passed. One full original
+expectation incorrectly transferred NoInlineStyle's facade output to NoVHtml's
+actual Relief route. The original ignored nested form produces only parser Error
+at16..35; native exact RecoveryContext already passed. Correct only that
+all-three-locale full expected vector, preserving its source, native refusal,
+all35 functions/inputs and every prior law. No production/registry/default or
+ceiling change; failed source stays unqueued and fresh exact-head proof is required.
