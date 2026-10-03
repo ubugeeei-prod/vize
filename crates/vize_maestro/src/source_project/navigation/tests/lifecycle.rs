@@ -61,7 +61,7 @@ fn post_mutation_notification_cancels_old_query_but_preserves_new_query_and_cach
     let (same, _) = project.source.begin_query(&uri()).unwrap();
     assert!(Arc::ptr_eq(&snapshot, same.snapshot()));
     assert!(matches!(
-        block_on(old.run(|_| async { () })),
+        block_on(old.run(|_| async {})),
         Err(SnapshotRefusal::Cancelled)
     ));
     assert_eq!(

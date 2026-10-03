@@ -56,6 +56,17 @@ fail-fast gate stopped. Its all100 campaign passed, but fresh exact-head full,
 feature/minimal/Clippy/all100 and protected terminal acceptance remain required.
 The known-red head was never queued. This completion guard grants no Vue proof.
 
+The corrective `daf4862c` full campaign `37096870315` genuinely passed all 44
+project laws, all five complete JSON-RPC wire laws and the minimal navigation
+feature check. Its all100 and all four configured PR checks also passed.
+Feature all-targets Clippy then rejected the redundant `()` in an async test
+block at `navigation/tests/lifecycle.rs:64` (`clippy::unused_unit`). Removing
+that expression preserves the test's unit result, source input and assertion;
+no warning allowance or behavior change is added. The original failure and its
+skipped workspace/differential/production tails remain head-scoped evidence.
+The subsequent exact head still requires fresh full/feature/minimal/Clippy,
+all100 and protected terminal acceptance before delivery.
+
 This is a bounded opt-in JS/TS capability, not native Vue admission, a default
 product replacement or completion of the LSP fix-history gate. #6883 remains open;
 original historical and actual merged #7466/#7467 evidence remains head-scoped.
