@@ -13,7 +13,7 @@ use vize_l1::{
 use vize_patina::{
     LintDiagnostic, Linter, RuleRegistry,
     native::{NativeLintFinding, NativeSyntaxLint},
-    rules::a11y::{IframeHasTitle, ImgAlt},
+    rules::a11y::{IframeHasTitle, ImgAlt, TabindexNoPositive},
 };
 
 pub fn owner<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
@@ -66,50 +66,72 @@ fn legacy(diagnostic: &LintDiagnostic) -> Value {
     })
 }
 
+#[derive(Clone, Copy)]
+enum SyntaxRule {
+    ImgAlt,
+    IframeTitle,
+    Tabindex,
+}
+
 // The test caller drives original children. The product entry never walks them.
 fn collect<'a>(
     lint: &NativeSyntaxLint<'_, 'a>,
     children: NativeChildren<'_, 'a>,
     locale: Locale,
-    iframe: bool,
+    rule: SyntaxRule,
     output: &mut Vec<Value>,
 ) {
     for child in children {
         if let Some(element) = child.into_element() {
             let messages = translator().for_locale(locale);
-            let result = if iframe {
-                lint.iframe_has_title(&element, &messages)
-            } else {
-                lint.img_alt(&element, &messages)
-            };
-            if let Some(finding) = result.unwrap() {
-                output.push(native(&finding));
+            match rule {
+                SyntaxRule::ImgAlt | SyntaxRule::IframeTitle => {
+                    let result = match rule {
+                        SyntaxRule::ImgAlt => lint.img_alt(&element, &messages),
+                        _ => lint.iframe_has_title(&element, &messages),
+                    };
+                    if let Some(finding) = result.unwrap() {
+                        output.push(native(&finding));
+                    }
+                }
+                SyntaxRule::Tabindex => {
+                    output.extend(
+                        lint.tabindex_no_positive(&element, &messages)
+                            .unwrap()
+                            .iter()
+                            .map(native),
+                    );
+                }
             }
-            collect(lint, element.children(), locale, iframe, output);
+            collect(lint, element.children(), locale, rule, output);
         }
     }
 }
 
 pub fn parity(source: &str, locale: Locale) -> Vec<Value> {
-    compare(source, locale, false)
+    compare(source, locale, SyntaxRule::ImgAlt)
 }
 
 pub fn iframe_parity(source: &str, locale: Locale) -> Vec<Value> {
-    compare(source, locale, true)
+    compare(source, locale, SyntaxRule::IframeTitle)
 }
 
-fn compare(source: &str, locale: Locale, iframe: bool) -> Vec<Value> {
+pub fn tabindex_parity(source: &str, locale: Locale) -> Vec<Value> {
+    compare(source, locale, SyntaxRule::Tabindex)
+}
+
+fn compare(source: &str, locale: Locale, rule: SyntaxRule) -> Vec<Value> {
     let arena = Allocator::default();
     let original = owner(&arena, source);
     let lint = NativeSyntaxLint::new(&original).unwrap();
     let before = original.component().carrier().tree.source;
     let mut actual = Vec::new();
-    collect(&lint, original.children(), locale, iframe, &mut actual);
+    collect(&lint, original.children(), locale, rule, &mut actual);
     let mut registry = RuleRegistry::new();
-    if iframe {
-        registry.register(Box::new(IframeHasTitle));
-    } else {
-        registry.register(Box::new(ImgAlt));
+    match rule {
+        SyntaxRule::ImgAlt => registry.register(Box::new(ImgAlt)),
+        SyntaxRule::IframeTitle => registry.register(Box::new(IframeHasTitle)),
+        SyntaxRule::Tabindex => registry.register(Box::new(TabindexNoPositive)),
     }
     let reference = Linter::with_registry(registry)
         .with_locale(locale)

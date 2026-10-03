@@ -14,12 +14,16 @@ mod attribute;
 mod header;
 mod iframe_has_title;
 mod img_alt;
+mod tabindex_no_positive;
 
 /// The existing rule code; the native entry is separately opt-in.
 pub const IMG_ALT_RULE: &str = "a11y/img-alt";
 
 /// The existing iframe title rule code; the native entry is separately opt-in.
 pub const IFRAME_HAS_TITLE_RULE: &str = "a11y/iframe-has-title";
+
+/// The existing positive tabindex rule code; the native entry is separately opt-in.
+pub const TABINDEX_NO_POSITIVE_RULE: &str = "a11y/tabindex-no-positive";
 
 /// A refusal retains the caller's original component and observations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -129,5 +133,19 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
             return Err(NativeLintRefusal::ForeignElement);
         }
         iframe_has_title::check(element, messages)
+    }
+
+    /// Check static authored tabindex values without parsing binding expressions.
+    /// Findings retain original attribute order and complete attribute spans.
+    /// A later unsupported header refuses the entire result.
+    pub fn tabindex_no_positive(
+        &self,
+        element: &NativeElement<'_, 'a>,
+        messages: &impl MessageLookup,
+    ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
+        if !core::ptr::eq(self.owner.component(), element.component()) {
+            return Err(NativeLintRefusal::ForeignElement);
+        }
+        tabindex_no_positive::check(element, messages)
     }
 }

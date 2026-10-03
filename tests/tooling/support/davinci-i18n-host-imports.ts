@@ -34,6 +34,9 @@ export const i18nHostImports: Record<string, readonly string[]> = {
   "crates/vize_patina/tests/native_syntax_img_alt/iframe_has_title.rs": [
     "use vize_carton::i18n::{Locale, translator};",
   ],
+  "crates/vize_patina/tests/native_syntax_img_alt/tabindex_no_positive.rs": [
+    "use vize_carton::i18n::{Locale, translator};",
+  ],
   "crates/vize_canon/src/lib.rs": ["pub use vize_carton::i18n::Locale;"],
   "crates/vize_canon/src/diagnostic.rs": ["use vize_carton::i18n::{Locale, t, t_fmt};"],
   "crates/vize_vitrine/src/wasm/lint.rs": [

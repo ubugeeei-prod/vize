@@ -19,6 +19,7 @@ pub(super) fn check(
             header::Binding::Static {
                 name: "title",
                 value,
+                ..
             } => value.map(has_non_whitespace).transpose()?.unwrap_or(false),
             header::Binding::Bind { name: "title" } => true,
             _ => false,

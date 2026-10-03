@@ -65,3 +65,29 @@ pub(super) fn project<'a>(
         .get(span.start as usize..span.end as usize)
         .ok_or(NativeLintRefusal::SourceMismatch)
 }
+
+/// Full authored attribute range after its original tokens have been checked.
+pub(super) fn full_span(
+    block: SourceBlock<'_>,
+    attribute: &Attribute<'_>,
+    head: Span,
+) -> Result<Span, NativeLintRefusal> {
+    let end = match &attribute.value {
+        Some(value) => {
+            span(
+                block,
+                value
+                    .close_quote
+                    .as_ref()
+                    .map_or(value.content.text, |quote| quote.text),
+            )?
+            .end
+        }
+        None => head.end,
+    };
+    let range = Span::new(head.start, end);
+    if !block.contains_block_span(range) {
+        return Err(NativeLintRefusal::SourceMismatch);
+    }
+    Ok(range)
+}

@@ -39,6 +39,7 @@ pub(super) enum Binding<'a> {
     Static {
         name: &'a str,
         value: Option<&'a str>,
+        range: Span,
     },
     Bind {
         name: &'a str,
@@ -58,9 +59,11 @@ pub(super) fn binding<'a>(
     let block = element.component().block();
     let attribute = original.surface();
     let head_span = attribute::attribute(block, attribute)?;
+    let range = attribute::full_span(block, attribute, head_span)?;
     let static_binding = || Binding::Static {
         name: attribute.name.text,
         value: attribute.value.as_ref().map(|value| value.content.text),
+        range,
     };
     if element.surface().open.is_verbatim() {
         return Ok(static_binding());

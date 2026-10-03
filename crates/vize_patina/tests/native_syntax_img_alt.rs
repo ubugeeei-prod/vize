@@ -3,6 +3,7 @@
 mod native_syntax_img_alt {
     mod iframe_has_title;
     pub mod support;
+    mod tabindex_no_positive;
 }
 
 use native_syntax_img_alt::support::{native, owner, parity};
