@@ -11,7 +11,7 @@ import {
 
 // Synthetic admission controls only. Real emitted addon custody is proved by
 // the mandatory existing hosted native build, not these generated vectors.
-test("Cargo admission requires genuine complete success and unambiguous typed native artifact", () => {
+void test("Cargo admission requires genuine complete success and unambiguous typed native artifact", () => {
   const artifact = {
     reason: "compiler-artifact",
     target: { name: "vize_vitrine", kind: ["cdylib", "rlib"] },
@@ -36,7 +36,7 @@ test("Cargo admission requires genuine complete success and unambiguous typed na
     assert.throws(() => emittedNativeArtifact(complete(rows)));
 });
 
-test("failed build admission retains raw actual command/process streams before qualification", (t) => {
+void test("failed build admission retains raw actual command/process streams before qualification", (t) => {
   const nativeDir = fs.mkdtempSync(path.join(os.tmpdir(), "native-build-custody-"));
   t.after(() => fs.rmSync(nativeDir, { recursive: true, force: true }));
   const stdout = Buffer.from("whole failed build stdout\0\n");

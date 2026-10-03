@@ -42,3 +42,9 @@ existing preparation owner is alive. That pack is not yet accepted. Public Vite
 resolved-configuration/real CLI integration, schema/WASM history, applicable
 Glyph measurements, genuine printer-error runtime and #6882 remain unfinished.
 No native handled/equivalent/paired or default replacement credit is granted.
+
+The first source2493203d1 campaign failed the zero-warning JS gate because
+the two Node test registrations returned unconsumed promises. Mark their
+registration results with `void`, preserving both callbacks, complete vectors,
+assertions and production build custody. No warning waiver or runtime credit
+is added; corrected-source Actions and protected acceptance remain required.
