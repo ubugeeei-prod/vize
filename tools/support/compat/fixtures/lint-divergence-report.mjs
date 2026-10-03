@@ -93,6 +93,9 @@ async function measureProject(context) {
     return null;
   }
   const files = collectVueInputPaths(cwd, project.vueGlobs);
+  if (project.expectedVueFileCount === 0 && files.length !== 0) {
+    throw new Error(`${project.id} matched ${files.length} Vue files, expected 0`);
+  }
   if (files.length === 0 && project.expectedVueFileCount !== 0) {
     throw new Error(`${project.id} matched no Vue files`);
   }
@@ -119,7 +122,7 @@ async function measureProject(context) {
     revision: project.revision,
     preset: args.preset ?? "all-mapped",
     evidence: context.evidence,
-    files: { comparedCount: files.length },
+    files: { comparedCount: files.length, expectedCount: project.expectedVueFileCount ?? null },
     baseline: {
       package: ruleMap.upstream.package,
       version: runtime.version,

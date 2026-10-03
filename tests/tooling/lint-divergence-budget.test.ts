@@ -101,6 +101,54 @@ test("record-only mode writes warnings without disarming validation", () => {
   ]);
 });
 
+test("only the explicit zero-Vue expectation makes an empty corpus usable", () => {
+  const declared = attachBudget({
+    ...baseArtifact(),
+    files: { comparedCount: 0, expectedCount: 0 },
+  });
+  assert.equal(declared.budget.verdict, "passed");
+  assert.doesNotThrow(() => assertBudgetsPassed([declared]));
+
+  for (const expectedCount of [undefined, null, 1, -1, "0"]) {
+    const unexpected = attachBudget({
+      ...baseArtifact(),
+      files: { comparedCount: 0, expectedCount },
+    });
+    assert.equal(unexpected.budget.verdict, "unusable");
+    assert.throws(() => assertBudgetsPassed([unexpected]), /the project selected no Vue files/u);
+  }
+  const mismatch = attachBudget({
+    ...baseArtifact(),
+    files: { comparedCount: 1, expectedCount: 0 },
+  });
+  assert.equal(mismatch.budget.verdict, "unusable");
+  assert.throws(() => assertBudgetsPassed([mismatch]), /expected zero Vue files/u);
+});
+
+test("an expected empty corpus keeps the baseline and diagnostic budgets enforced", () => {
+  for (const mutation of [
+    { baselineParseErrorCount: 1 },
+    { baselineInvalidRangeCount: 1 },
+    { falsePositiveCount: 1 },
+    { falseNegativeCount: 1 },
+  ]) {
+    const artifact = attachBudget({
+      ...baseArtifact(mutation),
+      files: { comparedCount: 0, expectedCount: 0 },
+    });
+    assert.equal(artifact.budget.passed, false);
+    assert.throws(() => assertBudgetsPassed([artifact]));
+  }
+  assert.equal(
+    attachBudget({
+      ...baseArtifact(),
+      files: { comparedCount: 0, expectedCount: 0 },
+      baseline: { comparedRuleCount: 0 },
+    }).budget.verdict,
+    "unusable",
+  );
+});
+
 test("lint divergence budget mode rejects typos instead of falling back", () => {
   assert.equal(parseBudgetMode("enforce"), "enforce");
   assert.equal(parseBudgetMode("record-only"), "record-only");

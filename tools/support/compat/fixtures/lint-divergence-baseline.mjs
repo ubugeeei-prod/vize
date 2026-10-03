@@ -134,6 +134,7 @@ export function retainEnabledFindings(results, rules) {
 export async function runBaseline(runtime, cwd, files, rules) {
   const eslint = new runtime.ESLint({
     cwd,
+    passOnNoPatterns: files.length === 0,
     overrideConfigFile: true,
     overrideConfig: baselineConfig(runtime, rules),
     errorOnUnmatchedPattern: false,
