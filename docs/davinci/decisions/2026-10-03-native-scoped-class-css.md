@@ -28,6 +28,13 @@ consumer. No legacy semantic helper runs in normal code. A pinned default
 `Scoped雪🌸.vue` fixture has `data-v-63f39f9f`, which is mounted through actual
 Vue 3.5.35 with the same ID. Scope options affect scoped styles only.
 
+The native and pinned Vue compiler preserve authored space before a rule's
+opening brace. The ordinary Rust scoped printer trims that selector space.
+Four separately pinned whole `ordinaryCss` results retain the exact dev-only
+oracle, including both divergent whitespace cases; native/Vue expected CSS and
+all original source/module/map contracts remain unchanged. No normalization or
+weaker CSS-equivalence comparison replaces either complete byte contract.
+
 L4 ScopeId validates CSS/JS-safe structure. ModuleParts.scope_id defaults to
 None, preserving every existing complete module byte and link. The native
 product supplies it after all styles are successfully emitted; assembly attaches

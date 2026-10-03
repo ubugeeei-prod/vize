@@ -18,6 +18,7 @@
       "explicitScopeId": "data-v-scoped_a",
       "code": "import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass('a'),\n    style: 'color:red'\n  }))\n}\n_sfc_main.render = render\n_sfc_main.__scopeId = \"data-v-scoped_a\"\nexport default _sfc_main\n",
       "css": ".a[data-v-scoped_a]{color:blue}",
+      "ordinaryCss": ".a[data-v-scoped_a]{color:blue}",
       "text": null
     },
     {
@@ -36,6 +37,7 @@
       "explicitScopeId": "data-v-Unicode_1",
       "code": "import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass('雪'),\n    style: 'color:red'\n  }))\n}\n_sfc_main.render = render\n_sfc_main.__scopeId = \"data-v-Unicode_1\"\nexport default _sfc_main\n",
       "css": "/* 雪🌸 */\r\n.雪[data-v-Unicode_1] { content:'雪🌸'; }",
+      "ordinaryCss": "/* 雪🌸 */\r\n.雪[data-v-Unicode_1]{ content:'雪🌸'; }",
       "text": null
     },
     {
@@ -66,6 +68,7 @@
       "explicitScopeId": "data-v-multi",
       "code": "import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass('a'),\n    style: 'color:red'\n  }))\n}\n_sfc_main.render = render\n_sfc_main.__scopeId = \"data-v-multi\"\nexport default _sfc_main\n",
       "css": ".a[data-v-multi]{color:blue}\n /* plain &amp; */ .external{color:red} \n.a[data-v-multi] { margin:0; }\n",
+      "ordinaryCss": ".a[data-v-multi]{color:blue}\n /* plain &amp; */ .external{color:red} \n.a[data-v-multi]{ margin:0; }\n",
       "text": null
     },
     {
@@ -84,6 +87,7 @@
       "explicitScopeId": null,
       "code": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=1\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", { class: \"a\" }, _toDisplayString($setup.count), 1 /* TEXT */))\n}\n_sfc_main.render = render\n_sfc_main.__scopeId = \"data-v-63f39f9f\"\nexport default _sfc_main\n",
       "css": ".a[data-v-63f39f9f]{color:blue}",
+      "ordinaryCss": ".a[data-v-63f39f9f]{color:blue}",
       "text": "1"
     }
   ]
