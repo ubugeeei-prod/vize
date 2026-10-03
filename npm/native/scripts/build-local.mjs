@@ -3,6 +3,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync, spawnSync } from "node:child_process";
 
+import { captureNativeHistoryBuild, nativeHistorySource } from "./formatter-history-build.mjs";
+
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const packageDir = path.resolve(scriptDir, "..");
 const outputDir = path.join(packageDir, ".artifacts", "native");
@@ -79,11 +81,23 @@ if (isRelease) {
   buildArgs.splice(4, 0, "--release");
 }
 
+const captureHistory =
+  process.env.GITHUB_ACTIONS === "true" && process.platform === "linux" && !isRelease;
+const before = captureHistory ? nativeHistorySource(packageDir) : null;
+if (captureHistory) buildArgs.push("--", "--message-format=json-render-diagnostics", "--locked");
+
 const buildResult = spawnSync("pnpm", buildArgs, {
   cwd: packageDir,
   env: resolveDarwinBuildEnv(),
-  stdio: "inherit",
+  stdio: captureHistory ? ["inherit", "pipe", "pipe"] : "inherit",
+  maxBuffer: 64 * 1024 * 1024,
 });
+
+if (captureHistory) {
+  process.stdout.write(buildResult.stdout ?? Buffer.alloc(0));
+  process.stderr.write(buildResult.stderr ?? Buffer.alloc(0));
+  captureNativeHistoryBuild(packageDir, before, ["pnpm", ...buildArgs], buildResult);
+}
 
 if (buildResult.status !== 0) {
   process.exit(buildResult.status ?? 1);
