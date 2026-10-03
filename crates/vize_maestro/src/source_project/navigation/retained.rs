@@ -91,7 +91,7 @@ pub(super) fn run(
         snapshot: &snapshot,
         file: &file,
         lines: &lines,
-        template: None,
+        native: None,
         #[cfg(test)]
         original,
     };
@@ -168,7 +168,7 @@ struct RetainedNavigation<'file, 'arena> {
     snapshot: &'file SourceSnapshot,
     file: &'file FileArtifact<'arena>,
     lines: &'file [usize],
-    template: Option<&'file vize_l1_to_l2::native_file::NativeTemplateObservation<'arena>>,
+    native: Option<vize_l1_to_l2::native_file::NativeSfc<'file, 'arena>>,
     #[cfg(test)]
     original: Original,
 }
@@ -186,69 +186,15 @@ impl<'file, 'arena> RetainedNavigation<'file, 'arena> {
         ))
     }
 
-    /// Read the same File's genuine resolution tables, never bind by spelling.
-    fn template_occurrences(
-        &self,
-        mut visit: impl FnMut(Span, BindingRef<'file, 'arena>) -> Result<(), NavigationRefusal>,
-    ) -> Result<(), NavigationRefusal> {
-        let Some(template) = self.template else {
-            return Ok(());
-        };
-        for embed in template.embeds() {
-            let resolution = self
-                .file
-                .expression(embed.node.ok_or(NavigationRefusal::Projection)?)
-                .ok_or(NavigationRefusal::Projection)?;
-            let table = resolution.table().ok_or(NavigationRefusal::Projection)?;
-            let expression = table.expression();
-            if !core::ptr::eq(
-                expression.ast,
-                embed
-                    .syntax
-                    .expression()
-                    .ok_or(NavigationRefusal::Projection)?,
-            ) || !core::ptr::eq(expression.source, embed.syntax.source().text())
-                || !core::ptr::eq(
-                    embed.syntax.source().authored_root(),
-                    self.snapshot.source(),
-                )
-                || expression.span != embed.syntax.source().span()
-            {
-                return Err(NavigationRefusal::Projection);
-            }
-            for occurrence in table.occurrences() {
-                // This is the original exact decoder/wrapper projection. No
-                // inverse decode, covering span, added walk or semantic index.
-                let span = expression
-                    .authored_span(occurrence.span)
-                    .ok_or(NavigationRefusal::Projection)?;
-                let binding = resolution
-                    .binding(occurrence.binding)
-                    .ok_or(NavigationRefusal::Projection)?;
-                if !core::ptr::eq(binding.file(), self.file) || !resolution.accepts(binding) {
-                    return Err(NavigationRefusal::Projection);
-                }
-                visit(span, binding)?;
-            }
-        }
-        Ok(())
-    }
-
     fn binding(&self, offset: u32) -> Result<Option<BindingRef<'file, 'arena>>, NavigationRefusal> {
-        let mut found = self
-            .file
+        if let Some(native) = &self.native {
+            return native
+                .binding_at_offset(offset)
+                .map_err(NavigationRefusal::NativeQuery);
+        }
+        self.file
             .binding_at_offset(offset)
-            .map_err(NavigationRefusal::Query)?;
-        self.template_occurrences(|span, binding| {
-            if span.start <= offset && offset < span.end {
-                if found.is_some() {
-                    return Err(NavigationRefusal::Projection);
-                }
-                found = Some(binding);
-            }
-            Ok(())
-        })?;
-        Ok(found)
+            .map_err(NavigationRefusal::Query)
     }
 
     fn definition(&self, position: Position) -> Result<Option<Location>, NavigationRefusal> {
@@ -268,19 +214,20 @@ impl<'file, 'arena> RetainedNavigation<'file, 'arena> {
         let Some(binding) = self.binding(self.offset(position)?)? else {
             return Ok(Vec::new());
         };
-        let mut spans = self
-            .file
-            .references()
-            .iter()
-            .filter(|reference| reference.target == ReferenceTarget::Resolved(binding.id()))
-            .map(|reference| reference.span)
-            .collect::<Vec<_>>();
-        self.template_occurrences(|span, original| {
-            if original.id() == binding.id() {
-                spans.push(span);
-            }
-            Ok(())
-        })?;
+        let mut spans = Vec::new();
+        if let Some(native) = &self.native {
+            native
+                .for_each_reference_to(binding, |reference| spans.push(reference.span()))
+                .map_err(NavigationRefusal::NativeQuery)?;
+        } else {
+            spans.extend(
+                self.file
+                    .references()
+                    .iter()
+                    .filter(|reference| reference.target == ReferenceTarget::Resolved(binding.id()))
+                    .map(|reference| reference.span),
+            );
+        }
         if include_declaration {
             spans.push(
                 binding

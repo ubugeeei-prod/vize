@@ -10,9 +10,11 @@ use vize_l0::{Allocator, Span};
 use vize_l1::container::{Vue, vue::DescriptorOptions};
 
 mod observe;
+mod query;
 mod script;
 mod template;
 pub use observe::{NativeScriptObservation, NativeSfc, NativeSfcObservation};
+pub use query::{NativePositionQueryError, NativeReferenceRef};
 pub use template::{NativeTemplateObservation, NativeTemplateOutcome};
 
 /// Source-owned orchestration refusal; all underlying observations are retained.

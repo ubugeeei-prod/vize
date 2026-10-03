@@ -70,7 +70,7 @@ fn query_error(refusal: NavigationRefusal) -> Error {
             ErrorCode::ServerError(-32004),
             "Native original span projection refused",
         ),
-        NavigationRefusal::Query(_) => (
+        NavigationRefusal::Query(_) | NavigationRefusal::NativeQuery(_) => (
             ErrorCode::ServerError(-32005),
             "Native File position refused",
         ),

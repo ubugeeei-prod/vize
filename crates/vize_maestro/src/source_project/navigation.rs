@@ -32,6 +32,7 @@ pub enum NavigationRefusal {
     Projection,
     Position,
     Query(PositionQueryError),
+    NativeQuery(vize_l1_to_l2::native_file::NativePositionQueryError),
     Busy,
     Capacity,
     WorkerUnavailable,

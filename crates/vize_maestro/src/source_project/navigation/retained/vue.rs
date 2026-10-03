@@ -54,7 +54,7 @@ pub(in crate::source_project::navigation) fn run(
         snapshot: &snapshot,
         file,
         lines: &lines,
-        template: observation.template(),
+        native: Some(native),
         #[cfg(test)]
         original: {
             let programs = observation
