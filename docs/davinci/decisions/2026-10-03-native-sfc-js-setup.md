@@ -90,3 +90,18 @@ fixtures, runtime captures and failed logs remain preserved. This packaging
 repair changes no native admission or generated output. Fresh whole Cargo,
 runtime capture, full Actions, instruction measurements and protected merge
 must pass on the repaired source; prior private proofs grant no hosted credit.
+
+## Hosted capture retention
+
+The same full-only job uploads its fresh module/map and runtime JSON captures
+after their custody and runtime laws succeed, identified by checkout and attempt.
+This retains actual eight-module and sixteen-render output separately from the
+historical private receipts; missing captures fail instead of granting credit.
+
+The next current required campaign rejected the seven-line growth of the
+already oversized root workflow. A bounded composite action now contains the
+unchanged plugin preparation and source-bound native runtime commands in the
+same full-only job; the root workflow keeps its original 690 lines. No source
+length exemption, test weakening or PR budget change is introduced. The first
+successful native runtime step and this source-length failure stay preserved;
+fresh repaired-source campaigns and protected terminal acceptance remain required.
