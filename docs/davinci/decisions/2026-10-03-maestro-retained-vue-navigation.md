@@ -93,3 +93,14 @@ captures only dev inspection data before the existing checked handoff. It adds
 no parser call, admission constructor or altered test input/golden. Runtime,
 minimal and strict feature checks were not reached at that failed head; it was
 never queued. A fresh corrected head requires complete hosted acceptance.
+
+Corrected source `0696f0a4` genuinely passes all sixty-four SourceProject laws,
+all nine whole RPC laws and the minimal non-default navigation library check in
+[its source feature job](https://github.com/ubugeeei-prod/vize/actions/runs/37120317274/job/111195356845).
+Strict all-targets Clippy then rejects one unchecked string slice in the new
+independent test oracle; the source-length ratchet separately rejects its new
+390-line test file. The next correction uses checked UTF-8 `get` and separates
+unchanged lifecycle laws into a bounded child module. No warning/length waiver,
+original input/golden or runtime behavior changes. Both required aggregates
+fail closed at that head, which is not queued; complete new-head acceptance is
+still required.

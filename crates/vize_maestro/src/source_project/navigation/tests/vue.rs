@@ -32,7 +32,7 @@ fn worker(project: &NativeNavigationProject<'_>) -> Arc<super::super::worker::Na
 // The expected locations select authored spellings, independently of native
 // resolution/decoder tables. In particular &fjlig; must retain all seven bytes.
 fn position(source: &str, byte: usize) -> Position {
-    let prefix = &source[..byte];
+    let prefix = source.get(..byte).unwrap();
     Position::new(
         prefix.bytes().filter(|byte| *byte == b'\n').count() as u32,
         prefix.rsplit('\n').next().unwrap().encode_utf16().count() as u32,
