@@ -93,9 +93,8 @@ impl<'o, 'a> NativeReferenceRef<'o, 'a> {
 }
 
 impl<'o, 'a> NativeSfc<'o, 'a> {
-    /// Find one original locally resolved use at a file-absolute UTF-8 boundary.
+    /// Find one original script/template use at a file-absolute UTF-8 boundary.
     /// Names are half-open; EOF, comments and opaque blocks have no invented use.
-    /// Original unresolved script uses have no fabricated local binding.
     /// Any overlapping observations refuse, including identical binding IDs.
     pub fn reference_at_offset(
         &self,
@@ -173,7 +172,7 @@ impl<'o, 'a> NativeSfc<'o, 'a> {
         }
         for row in file.references() {
             let ReferenceTarget::Resolved(id) = row.target else {
-                continue;
+                return Err(NativePositionQueryError::Projection);
             };
             let binding = file
                 .binding(id)

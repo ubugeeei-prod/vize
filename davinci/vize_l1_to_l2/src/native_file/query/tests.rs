@@ -8,7 +8,10 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 use vize_l1::{SurfaceParseOptions, container::vue::DescriptorOptions};
-use vize_l2::{file::PositionQueryError, resolution::Usage};
+use vize_l2::{
+    file::{FileIssueKind, PositionQueryError},
+    resolution::Usage,
+};
 
 fn observe<'a>(arena: &'a Allocator, source: &'a str) -> NativeSfcObservation<'a> {
     lower_sfc_native(
@@ -196,7 +199,7 @@ fn equal_bytes_and_equal_numeric_ids_do_not_accept_another_original_file_binding
 #[test]
 fn setup_shadow_and_import_aliases_use_original_declarations_not_name_fallback() {
     let arena = Allocator::default();
-    let source = "<script setup>import { run as local } from 'dep';const value=2;</script><script>const value=1;external;</script><template>{{local(value)}}</template>";
+    let source = "<script setup>import { run as local } from 'dep';const value=2;</script><script>const value=1;</script><template>{{local(value)}}</template>";
     let owner = observe(&arena, source);
     let native = owner.admitted().unwrap();
     let value = native
@@ -222,16 +225,6 @@ fn setup_shadow_and_import_aliases_use_original_declarations_not_name_fallback()
             .is_none()
     );
     assert!(uses(&native, at(source, "value", 1)).is_empty());
-    let external = at(source, "external", 0);
-    let original = native
-        .file()
-        .file()
-        .reference_at_offset(external)
-        .unwrap()
-        .unwrap();
-    assert!(original.binding().is_none());
-    assert!(native.reference_at_offset(external).unwrap().is_none());
-    assert!(native.binding_at_offset(external).unwrap().is_none());
 }
 
 #[test]
@@ -241,10 +234,30 @@ fn original_refused_assembly_cannot_mint_a_query_view_from_partial_file_facts() 
         "<script>const value=1;</script><template>{{value}}</template>",
         "<script setup>const value=1;</script><template><p v-if='value'>{{value}}</p></template>",
         "<script setup>const value=/x/uv;</script><template>{{value}}</template>",
+        "<script>external;</script><script setup>const value=1;</script><template>{{value}}</template>",
     ] {
         let original = observe(&arena, source);
         assert!(original.admitted().is_none());
         assert!(!original.issues().is_empty());
         assert!(core::ptr::eq(original.descriptor().source(), source));
+        if source.contains("external") {
+            let rejected = original.rejected_file().unwrap();
+            let issues = if let Some(file) = rejected.file() {
+                assert!(!file.is_complete());
+                assert!(matches!(
+                    file.binding_at_offset(at(source, "value", 1)),
+                    Err(PositionQueryError::IncompleteFile)
+                ));
+                file.issues()
+            } else {
+                rejected.rejected_file().unwrap().issues()
+            };
+            assert!(
+                issues
+                    .iter()
+                    .any(|issue| issue.kind == FileIssueKind::UnresolvedReference
+                        && issue.span == spelling(source, "external", 0))
+            );
+        }
     }
 }
