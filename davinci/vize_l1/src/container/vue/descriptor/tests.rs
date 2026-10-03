@@ -242,7 +242,7 @@ fn language_attributes_and_roles_refuse_ambiguous_original_evidence() {
         ),
         (
             "<style scoped>.x{}</style>",
-            DescriptorIssueCode::UnsupportedBlock,
+            DescriptorIssueCode::MissingComponentBlock,
         ),
         ("<custom>x</custom>", DescriptorIssueCode::UnsupportedBlock),
     ] {

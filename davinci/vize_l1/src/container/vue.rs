@@ -13,7 +13,7 @@ mod scan;
 
 pub use descriptor::{
     AdmittedDescriptor, DescriptorIssue, DescriptorIssueCode, DescriptorObservation,
-    DescriptorOptions, DescriptorRefusal, ScriptRole, ScriptView, TemplateView,
+    DescriptorOptions, DescriptorRefusal, ScriptRole, ScriptView, StyleView, TemplateView,
 };
 
 use scan::{find_bytes, find_close, find_template_close, read_open};

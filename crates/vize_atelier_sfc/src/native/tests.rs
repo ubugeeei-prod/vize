@@ -169,12 +169,8 @@ fn external_blocks_are_never_loaded_and_keep_every_original_capture() {
 }
 
 #[test]
-fn style_custom_template_languages_and_jsx_profiles_keep_descriptor_refusals() {
+fn custom_template_languages_and_jsx_profiles_keep_descriptor_refusals() {
     for (source, issue) in [
-        (
-            "<template><p/></template><style>p{color:red}</style>",
-            DescriptorIssueCode::UnsupportedBlock,
-        ),
         (
             "<template><p/></template><custom>original</custom>",
             DescriptorIssueCode::UnsupportedBlock,

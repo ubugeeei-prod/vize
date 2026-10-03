@@ -59,6 +59,7 @@ pub enum NativeSfcCompileError {
     ScriptCompilationUnavailable { container_index: usize, span: Span },
     ScriptSetup(SetupIssue),
     SetupEmission(SetupEmitError),
+    StyleCompilationUnavailable { container_index: usize, span: Span },
     MissingTemplate,
     Orchestration,
     Analysis(DecisionBuildError),
@@ -171,10 +172,16 @@ fn emit<L: LinkSink>(
             });
         }
     }
-    observation
+    let descriptor = observation
         .descriptor()
         .admitted()
         .map_err(|_| NativeSfcCompileError::Descriptor)?;
+    if let Some(style) = descriptor.styles().next() {
+        return Err(NativeSfcCompileError::StyleCompilationUnavailable {
+            container_index: style.container_index(),
+            span: style.block().span(),
+        });
+    }
     if let Some(script) = observation.scripts().first()
         && (observation.scripts().len() != 1
             || script.role() != ScriptRole::Setup
@@ -225,3 +232,6 @@ fn emit<L: LinkSink>(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod style_tests;

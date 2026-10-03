@@ -11,6 +11,8 @@ use crate::{embed::Lang, parse::SurfaceParseOptions};
 
 mod policy;
 #[cfg(test)]
+mod style_tests;
+#[cfg(test)]
 mod tests;
 
 /// Explicit file policy, retained even when the observation is rejected.
@@ -64,6 +66,12 @@ struct Selection<'a> {
     lang: Lang,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct StyleSelection<'a> {
+    index: usize,
+    block: SourceBlock<'a>,
+}
+
 /// Complete original observation. Fields and all admission constructors are private.
 ///
 /// Capture data cannot be promoted into admission:
@@ -115,6 +123,7 @@ pub struct DescriptorObservation<'a> {
     ordinary: Option<Selection<'a>>,
     setup: Option<Selection<'a>>,
     template: Option<Selection<'a>>,
+    styles: Vec<'a, StyleSelection<'a>>,
 }
 
 impl<'a> DescriptorObservation<'a> {
@@ -200,6 +209,17 @@ impl<'o, 'a> AdmittedDescriptor<'o, 'a> {
             selected,
         })
     }
+    /// Opaque style sources in authored order; this grants no CSS semantics.
+    pub fn styles(self) -> impl ExactSizeIterator<Item = StyleView<'o, 'a>> {
+        self.owner
+            .styles
+            .iter()
+            .copied()
+            .map(move |selected| StyleView {
+                owner: self.owner,
+                selected,
+            })
+    }
     /// Matching real script roles determine template language; no scripts means JS.
     pub fn template_lang(self) -> Lang {
         self.owner
@@ -254,6 +274,44 @@ impl<'a> TemplateView<'_, 'a> {
     }
 }
 
+/// Checked original style content and unchanged attributes, without CSS parsing.
+/// `lang`, `scoped` and `module` are raw source metadata, not resolved profiles.
+///
+/// A public capture cannot forge an original style capability:
+/// ```compile_fail
+/// use vize_l1::container::vue::{DescriptorObservation, StyleView};
+/// fn forge(owner: &DescriptorObservation<'_>) {
+///     let view = StyleView { owner, selected: todo!() };
+/// }
+/// ```
+#[derive(Debug, Clone, Copy)]
+pub struct StyleView<'o, 'a> {
+    owner: &'o DescriptorObservation<'a>,
+    selected: StyleSelection<'a>,
+}
+
+impl<'o, 'a> StyleView<'o, 'a> {
+    pub fn source(&self) -> &'a str {
+        self.owner.source()
+    }
+    pub fn container_index(&self) -> usize {
+        self.selected.index
+    }
+    pub fn block(&self) -> SourceBlock<'a> {
+        self.selected.block
+    }
+    #[expect(
+        clippy::indexing_slicing,
+        reason = "Only the original splitter records indices; the owner exposes no mutable blocks"
+    )]
+    pub fn original_block(&self) -> &'o crate::container::Block<'a> {
+        &self.owner.container.blocks[self.selected.index]
+    }
+    pub fn attrs(&self) -> &'o [crate::container::BlockAttr<'a>] {
+        &self.original_block().attrs
+    }
+}
+
 pub(super) fn observe<'a>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -276,5 +334,6 @@ pub(super) fn observe<'a>(
         ordinary: state.ordinary,
         setup: state.setup,
         template: state.template,
+        styles: state.styles,
     }
 }

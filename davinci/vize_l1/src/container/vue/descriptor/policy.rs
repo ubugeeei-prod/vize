@@ -3,7 +3,9 @@
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, SourceRoot, Span, Vec};
 
-use super::{DescriptorIssue, DescriptorIssueCode as Code, DescriptorOptions, Selection};
+use super::{
+    DescriptorIssue, DescriptorIssueCode as Code, DescriptorOptions, Selection, StyleSelection,
+};
 use crate::{container::Block, embed::Lang};
 
 pub(super) struct Policy<'a> {
@@ -12,6 +14,7 @@ pub(super) struct Policy<'a> {
     pub(super) ordinary: Option<Selection<'a>>,
     pub(super) setup: Option<Selection<'a>>,
     pub(super) template: Option<Selection<'a>>,
+    pub(super) styles: Vec<'a, StyleSelection<'a>>,
 }
 
 impl<'a> Policy<'a> {
@@ -26,6 +29,7 @@ impl<'a> Policy<'a> {
             ordinary: None,
             setup: None,
             template: None,
+            styles: Vec::new_in(&allocator),
         };
         for (unsupported, code) in [
             (options.version != VueVersion::V3, Code::UnsupportedVersion),
@@ -65,11 +69,19 @@ impl<'a> Policy<'a> {
     ) {
         let script = block.name.eq_ignore_ascii_case("script");
         let template = block.name.eq_ignore_ascii_case("template");
-        if !script && !template {
+        let style = block.name.eq_ignore_ascii_case("style");
+        if !script && !template && !style {
             self.issue(Code::UnsupportedBlock, Some(index), block.open_tag);
             return;
         }
-        if block.name != if script { "script" } else { "template" } {
+        let expected_name = if script {
+            "script"
+        } else if template {
+            "template"
+        } else {
+            "style"
+        };
+        if block.name != expected_name {
             self.issue(Code::UnsupportedBlockSpelling, Some(index), block.open_tag);
         }
         if uncertain || self_closing || block.close_tag.is_none() {
@@ -77,6 +89,7 @@ impl<'a> Policy<'a> {
         }
         let (mut lang, mut setup) = (Lang::Js, false);
         let (mut seen_lang, mut seen_setup, mut seen_src) = (false, false, false);
+        let (mut seen_scoped, mut seen_module) = (false, false);
         let mut previous_end = None;
         for attr in &block.attrs {
             if let Some(end) = previous_end {
@@ -103,6 +116,10 @@ impl<'a> Policy<'a> {
                 &mut seen_setup
             } else if attr.name.eq_ignore_ascii_case("src") {
                 &mut seen_src
+            } else if style && attr.name.eq_ignore_ascii_case("scoped") {
+                &mut seen_scoped
+            } else if style && attr.name.eq_ignore_ascii_case("module") {
+                &mut seen_module
             } else {
                 self.issue(Code::UnsupportedAttribute, Some(index), attr.span);
                 continue;
@@ -119,6 +136,7 @@ impl<'a> Policy<'a> {
                     Some("js") if script => lang = Lang::Js,
                     Some("ts") if script => lang = Lang::Ts,
                     Some("html") if template => {}
+                    Some(value) if style && !value.is_empty() => {}
                     _ => self.issue(Code::UnsupportedLanguage, Some(index), attr.span),
                 },
                 "setup" if script => {
@@ -128,6 +146,7 @@ impl<'a> Policy<'a> {
                     }
                 }
                 "src" => self.issue(Code::ExternalSource, Some(index), attr.span),
+                "scoped" | "module" if style => {}
                 _ => self.issue(Code::UnsupportedAttribute, Some(index), attr.span),
             }
         }
@@ -140,6 +159,13 @@ impl<'a> Policy<'a> {
             self.issue(Code::InvalidSourceFrame, Some(index), block.content);
             return;
         };
+        if style {
+            self.styles.push(StyleSelection {
+                index,
+                block: content,
+            });
+            return;
+        }
         let selected = Selection {
             index,
             block: content,

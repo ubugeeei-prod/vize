@@ -125,7 +125,7 @@ fn unadmitted_macro_remains_typed_and_keeps_original_parser_owner() {
 fn descriptor_refusal_preserves_blocks_without_parsing_untrusted_children() {
     let arena = Allocator::default();
     for source in [
-        "<script>const value = 1;</script><template>kept</template><style>p{color:red}</style>",
+        "<script>const value = 1;</script><template>kept</template><custom>original</custom>",
         "<script>const value = 1;",
     ] {
         let observed = lower_sfc_native(&arena, source, options());
@@ -136,6 +136,38 @@ fn descriptor_refusal_preserves_blocks_without_parsing_untrusted_children() {
         assert!(observed.template().is_none());
         assert!(observed.file().is_none());
         assert!(observed.rejected_file().is_none());
+    }
+}
+
+#[test]
+fn opaque_style_custody_does_not_discard_original_script_and_template_owners() {
+    let arena = Allocator::default();
+    let source = "<style lang=scss scoped module=theme>p{color:v-bind(color)}</style><script>const value=1</script><template><p/></template><style>raw &amp;</style>";
+    let observed = lower_sfc_native(&arena, source, options());
+    let descriptor = observed.descriptor().admitted().unwrap();
+    assert_eq!(descriptor.styles().len(), 2);
+    assert!(observed.admitted().is_some());
+    assert_eq!(observed.scripts().len(), 1);
+    let script = &observed.scripts()[0];
+    assert_eq!(script.container_index(), 1);
+    assert!(script.syntax().unwrap().admitted_program().is_some());
+    assert!(core::ptr::eq(script.block().root_source(), source));
+    let template = observed.template().unwrap();
+    assert!(core::ptr::eq(
+        template.component().unwrap().block().root_source(),
+        source
+    ));
+    let file = observed.file().unwrap().file();
+    assert!(core::ptr::eq(file.artifact().source(), source));
+    for index in [0, 3] {
+        let style = descriptor
+            .styles()
+            .find(|style| style.container_index() == index)
+            .unwrap();
+        assert!(core::ptr::eq(
+            style.original_block(),
+            &observed.descriptor().container().blocks[index]
+        ));
     }
 }
 
