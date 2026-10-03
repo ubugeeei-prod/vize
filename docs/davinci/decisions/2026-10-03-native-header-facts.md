@@ -93,3 +93,11 @@ carrier observations and parser cleanliness. All 13 original SDK demand/witness
 laws remain unchanged. The initial import repair has real passing hosted evidence
 in consumer Check 37125788038; standalone fresh provider proof is still required
 after this main/policy/source refresh.
+
+Authentic original header-entry/recovery ancestry/depth now fences genuine
+Bind-vs-Static pre discrepancies before fact issuance. Two additional custody
+laws preserve exact nested-form, p/div, self-closing-a, option/optgroup and
+4096-depth pre controls, actual original literal mode and complete owner custody.
+The provider returns typed `RecoveryContext` before its SDK artifact exists;
+it never substitutes a legacy pre value or emits a partial counterexample base.
+All 14 prior laws remain unchanged; fresh Actions must certify 16 provider laws.

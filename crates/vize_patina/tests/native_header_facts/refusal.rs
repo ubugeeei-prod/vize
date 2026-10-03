@@ -124,3 +124,88 @@ fn original_table_context_cannot_mint_partial_header_facts() {
         assert_eq!(cstr!("{:?}", owner.component().carrier()), before);
     }
 }
+
+#[test]
+fn original_pre_recovery_discrepancies_refuse_before_any_fact_artifact() {
+    for (source, path) in [
+        (
+            "<template><form><form v-pre><meta :role='x' /></form></form></template>",
+            &[0, 0, 0][..],
+        ),
+        (
+            "<template><p v-pre><div><meta :role='x' /></div></p></template>",
+            &[0, 0, 0][..],
+        ),
+        (
+            "<template><a v-pre><a /><meta :role='x' /></a></template>",
+            &[0, 1][..],
+        ),
+        (
+            "<template><select><option v-pre><option><meta :role='x' /></option></option></select></template>",
+            &[0, 0, 0, 0][..],
+        ),
+        (
+            "<template><select><optgroup v-pre><optgroup><meta :role='x' /></optgroup></optgroup></select></template>",
+            &[0, 0, 0, 0][..],
+        ),
+    ] {
+        let arena = Allocator::default();
+        let owner = selected(&arena, source);
+        let before = cstr!("{:?}", owner.component().carrier());
+        let mut original = owner
+            .children()
+            .nth(path[0])
+            .unwrap()
+            .into_element()
+            .unwrap();
+        for ordinal in &path[1..] {
+            original = original
+                .children()
+                .nth(*ordinal)
+                .unwrap()
+                .into_element()
+                .unwrap();
+        }
+        let receipt = original.lint_tag().unwrap();
+        assert!(receipt.header_is_literal());
+        assert!(receipt.in_recovery_context());
+        let lint = NativeSyntaxLint::new(&owner).unwrap();
+        assert_eq!(
+            lint.header_facts(&original).err(),
+            Some(NativeHeaderFactError::Header(
+                NativeLintRefusal::RecoveryContext {
+                    span: receipt.span()
+                }
+            ))
+        );
+        assert_eq!(cstr!("{:?}", owner.component().carrier()), before);
+    }
+}
+
+#[test]
+fn original_over_limit_pre_cannot_issue_a_partial_counterexample_base() {
+    let source = cstr!(
+        "<template>{}<div v-pre><meta :role='x' /></div>{}</template>",
+        "<div>".repeat(4096),
+        "</div>".repeat(4096)
+    );
+    let arena = Allocator::default();
+    let owner = selected(&arena, &source);
+    let mut original = owner.children().next().unwrap().into_element().unwrap();
+    for _ in 0..4096 {
+        original = original.children().next().unwrap().into_element().unwrap();
+    }
+    let meta = original.children().next().unwrap().into_element().unwrap();
+    let receipt = meta.lint_tag().unwrap();
+    assert!(receipt.header_is_literal());
+    assert!(receipt.in_recovery_context());
+    let lint = NativeSyntaxLint::new(&owner).unwrap();
+    assert_eq!(
+        lint.header_facts(&meta).err(),
+        Some(NativeHeaderFactError::Header(
+            NativeLintRefusal::RecoveryContext {
+                span: receipt.span()
+            }
+        ))
+    );
+}
