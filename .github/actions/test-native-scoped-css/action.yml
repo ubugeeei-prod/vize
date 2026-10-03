@@ -3,6 +3,14 @@ description: Check original SFC scoped CSS and fresh complete native modules in 
 runs:
   using: composite
   steps:
+    - name: Cache Chromium for original scoped empty selectors
+      id: cache-scoped-chromium
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+    - name: Install Chromium for scoped CSS behavior
+      uses: ./.github/actions/install-playwright-browsers
     - name: Capture scoped modules from the current Rust source and mount real Vue
       shell: bash
       env:
@@ -10,11 +18,15 @@ runs:
         VIZE_NATIVE_SCOPED_CSS_RUNTIME_CAPTURE: ${{ runner.temp }}/native-scoped-css-runtime.json
         VIZE_NATIVE_CLASS_LIST_CSS_CAPTURE: ${{ runner.temp }}/native-class-list-css-capture.json
         VIZE_NATIVE_CLASS_LIST_CSS_RUNTIME_CAPTURE: ${{ runner.temp }}/native-class-list-css-runtime.json
+        VIZE_NATIVE_EMPTY_CSS_CAPTURE: ${{ runner.temp }}/native-empty-css-capture.json
+        VIZE_NATIVE_EMPTY_CSS_RUNTIME_CAPTURE: ${{ runner.temp }}/native-empty-css-runtime.json
       run: |
         cargo test --locked --profile ci -p vize_atelier_sfc native::scoped_tests::four_source_bound_scoped_modules_css_and_default_identity_match_complete_contracts -- --exact
         cargo test --locked --profile ci -p vize_atelier_sfc native::class_list_tests::three_original_class_list_sfc_modules_css_maps_and_scope_id_match_whole_contracts -- --exact
+        cargo test --locked --profile ci -p vize_atelier_sfc native::scoped_empty_tests::three_original_empty_sfc_modules_css_maps_and_scope_id_match_whole_contracts -- --exact
         vp node --test tests/tooling/native-sfc-scoped-css-reference.test.ts
         vp node --test tests/tooling/native-sfc-scoped-class-list-reference.test.ts
+        vp node --test tests/tooling/native-sfc-scoped-empty-reference.test.ts
         git rev-parse HEAD > "$RUNNER_TEMP/native-scoped-css-source.txt"
     - name: Upload current-source scoped CSS modules and runtime captures
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -25,6 +37,8 @@ runs:
           ${{ runner.temp }}/native-scoped-css-runtime.json
           ${{ runner.temp }}/native-class-list-css-capture.json
           ${{ runner.temp }}/native-class-list-css-runtime.json
+          ${{ runner.temp }}/native-empty-css-capture.json
+          ${{ runner.temp }}/native-empty-css-runtime.json
           ${{ runner.temp }}/native-scoped-css-source.txt
         if-no-files-found: error
         retention-days: 7

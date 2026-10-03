@@ -1,0 +1,96 @@
+{
+  "schema": "vize.native-sfc.scoped-empty-reference",
+  "runtime": "vue@3.5.35",
+  "fixtures": [
+    {
+      "id": "simple",
+      "source": "<template><p :class=\"'a'\"></p></template><style scoped>.a:empty{background:blue}</style>",
+      "template": "<p :class=\"'a'\"></p>",
+      "script": null,
+      "styles": [
+        {
+          "scoped": true,
+          "source": ".a:empty{background:blue}"
+        }
+      ],
+      "filename": "Scoped雪🌸.vue",
+      "scopeId": "data-v-empty",
+      "explicitScopeId": "data-v-empty",
+      "code": "import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", {\n    class: _normalizeClass('a')\n  }))\n}\n_sfc_main.render = render\n_sfc_main.__scopeId = \"data-v-empty\"\nexport default _sfc_main\n",
+      "css": ".a[data-v-empty]:empty{background:blue}",
+      "ordinaryCss": ".a[data-v-empty]:empty{background:blue}",
+      "classname": "a",
+      "selector": ".a[data-v-empty]:empty",
+      "stockCssMap": {
+        "version": 3,
+        "sources": ["Scoped雪🌸.vue"],
+        "names": [],
+        "mappings": "AAAA,uBAAS,eAAe",
+        "file": "Scoped雪🌸.vue",
+        "sourcesContent": [
+          "<template><p :class=\"'a'\"></p></template><style scoped>.a:empty{background:blue}</style>"
+        ]
+      }
+    },
+    {
+      "id": "unicode",
+      "source": "<!-- source 雪🌸 -->\r\n<template><p :class=\"'雪'\"></p></template><style scoped>/* 雪🌸 */\r\n.雪:empty \t{ content:'雪🌸'; background:blue; }</style>",
+      "template": "<p :class=\"'雪'\"></p>",
+      "script": null,
+      "styles": [
+        {
+          "scoped": true,
+          "source": "/* 雪🌸 */\r\n.雪:empty \t{ content:'雪🌸'; background:blue; }"
+        }
+      ],
+      "filename": "Scoped雪🌸.vue",
+      "scopeId": "data-v-Unicode_1",
+      "explicitScopeId": "data-v-Unicode_1",
+      "code": "import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", {\n    class: _normalizeClass('雪')\n  }))\n}\n_sfc_main.render = render\n_sfc_main.__scopeId = \"data-v-Unicode_1\"\nexport default _sfc_main\n",
+      "css": "/* 雪🌸 */\r\n.雪[data-v-Unicode_1]:empty \t{ content:'雪🌸'; background:blue; }",
+      "ordinaryCss": "/* 雪🌸 */\r\n.雪[data-v-Unicode_1]:empty{ content:'雪🌸'; background:blue; }",
+      "classname": "雪",
+      "selector": ".雪[data-v-Unicode_1]:empty",
+      "stockCssMap": {
+        "version": 3,
+        "sources": ["Scoped雪🌸.vue"],
+        "names": [],
+        "mappings": "AACA,QAAQ;AACR,8BAAY,aAAa,EAAE,eAAe,EAAE",
+        "file": "Scoped雪🌸.vue",
+        "sourcesContent": [
+          "<!-- source 雪🌸 -->\r\n<template><p :class=\"'雪'\"></p></template><style scoped>/* 雪🌸 */\r\n.雪:empty \t{ content:'雪🌸'; background:blue; }</style>"
+        ]
+      }
+    },
+    {
+      "id": "default-setup",
+      "source": "<script setup>let text='';let label='from \"vue\"';/* from \"vue\" */</script><template><p :class=\"'a'\">{{text}}</p></template><style scoped>.a:empty{background:blue}</style>",
+      "template": "<p :class=\"'a'\">{{text}}</p>",
+      "script": "let text='';let label='from \"vue\"';/* from \"vue\" */",
+      "styles": [
+        {
+          "scoped": true,
+          "source": ".a:empty{background:blue}"
+        }
+      ],
+      "filename": "Scoped雪🌸.vue",
+      "scopeId": "data-v-63f39f9f",
+      "explicitScopeId": null,
+      "code": "import { toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet text='';let label='from \"vue\"';/* from \"vue\" */\n;\n    const __returned__ = {\n      get text() { return text },\n      set text(__value) { text = __value },\n      get label() { return label },\n      set label(__value) { label = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", {\n    class: _normalizeClass('a')\n  }, _toDisplayString($setup.text), 1 /* TEXT */))\n}\n_sfc_main.render = render\n_sfc_main.__scopeId = \"data-v-63f39f9f\"\nexport default _sfc_main\n",
+      "css": ".a[data-v-63f39f9f]:empty{background:blue}",
+      "ordinaryCss": ".a[data-v-63f39f9f]:empty{background:blue}",
+      "classname": "a",
+      "selector": ".a[data-v-63f39f9f]:empty",
+      "stockCssMap": {
+        "version": 3,
+        "sources": ["Scoped雪🌸.vue"],
+        "names": [],
+        "mappings": "AAAA,0BAAS,eAAe",
+        "file": "Scoped雪🌸.vue",
+        "sourcesContent": [
+          "<script setup>let text='';let label='from \"vue\"';/* from \"vue\" */</script><template><p :class=\"'a'\">{{text}}</p></template><style scoped>.a:empty{background:blue}</style>"
+        ]
+      }
+    }
+  ]
+}

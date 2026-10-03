@@ -1,4 +1,4 @@
-//! Scope a complete original parser-proven simple-class rule or class list.
+//! Scope an original parser-proven class, class list or literal class:empty rule.
 
 use super::NativeSfcCompileError;
 use vize_l0::Span;
@@ -27,17 +27,21 @@ pub(super) fn append(
         .iter()
         .find(|syntax| syntax.container_index() == original.container_index())
         .ok_or_else(unavailable)?;
-    let (single, list) = match observed.simple_class() {
-        Ok(receipt) => (Some(receipt), None),
-        Err(_) => (
-            None,
-            Some(observed.simple_class_list().map_err(|issue| {
-                NativeSfcCompileError::ScopedStyleUnavailable {
-                    container_index: original.container_index(),
-                    issue,
-                }
-            })?),
-        ),
+    let (single, list, empty) = match observed.simple_class() {
+        Ok(receipt) => (Some(receipt), None, None),
+        Err(_) => match observed.simple_class_list() {
+            Ok(receipt) => (None, Some(receipt), None),
+            Err(_) => (
+                None,
+                None,
+                Some(observed.empty_class().map_err(|issue| {
+                    NativeSfcCompileError::ScopedStyleUnavailable {
+                        container_index: original.container_index(),
+                        issue,
+                    }
+                })?),
+            ),
+        },
     };
     let scope = scope.ok_or_else(unavailable)?;
     let block = observed.source();
@@ -60,7 +64,8 @@ pub(super) fn append(
     let insertions = single
         .into_iter()
         .map(|receipt| receipt.insertion())
-        .chain(list.into_iter().flat_map(|receipt| receipt.insertions()));
+        .chain(list.into_iter().flat_map(|receipt| receipt.insertions()))
+        .chain(empty.into_iter().map(|receipt| receipt.insertion()));
     for insertion in insertions {
         let before_span = Span::new(cursor, insertion);
         let before = block

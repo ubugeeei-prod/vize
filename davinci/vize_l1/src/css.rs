@@ -8,8 +8,10 @@ use alloc::vec::Vec;
 use cssparser::{CowRcStr, ParseError, ParseErrorKind, Token};
 use vize_l0::{SourceBlock, Span};
 
+mod empty;
 mod list;
 mod parser;
+pub use empty::EmptyClassStyle;
 pub use list::SimpleClassListStyle;
 
 /// Why this original syntax cannot lend the simple-class scoped family.
@@ -189,6 +191,11 @@ impl<'a> StyleSyntax<'a> {
     /// Unproven comment/escape/pre-comma whitespace normalization refuses.
     pub fn simple_class_list(&self) -> Result<SimpleClassListStyle<'_, 'a>, StyleIssue> {
         list::observe(self)
+    }
+
+    /// Lend the fixed original `.class:empty` token window; no selector reparse.
+    pub fn empty_class(&self) -> Result<EmptyClassStyle<'_, 'a>, StyleIssue> {
+        empty::observe(self)
     }
 }
 

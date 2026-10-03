@@ -175,8 +175,8 @@ impl<'a> NativeSfcCompilation<'a> {
 /// This additive entry supports scriptless static structure and retained
 /// literals, original JS/TS setup let/var/const primitive declarations plus empty
 /// statements, sole ordinary JS/TS direct empty default objects, and plain CSS
-/// without unproven binding syntax, plus one simple-class rule or literal class
-/// list per original scoped CSS block. Other scripts, macros, broader scoped/
+/// without unproven binding syntax, plus one simple-class rule, literal class
+/// list or literal `.class:empty` rule per scoped block. Broader scripts/scoped/
 /// module/preprocessor styles, custom/external blocks, unsupported
 /// profiles and unavailable native target semantics return typed refusals.
 /// Every original observation survives, and no partial module is returned.
@@ -311,6 +311,8 @@ mod class_list_tests;
 mod css_tests;
 mod scope;
 mod scoped;
+#[cfg(test)]
+mod scoped_empty_tests;
 #[cfg(test)]
 mod scoped_tests;
 #[cfg(test)]
