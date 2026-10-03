@@ -7,6 +7,7 @@ use crate::{
     Context, ParserConfig as Config, ParserImpl, diagnostics,
     lexer::Kind,
     modifiers::{ModifierKind, ModifierKinds, Modifiers},
+    state::FailedSpeculation,
 };
 
 use super::{super::js::FunctionKind, statement::CallOrConstructorSignature};
@@ -938,8 +939,8 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         if !matches!(self.cur_kind(), Kind::LAngle | Kind::ShiftLeft) {
             return None;
         }
-        let probe = (self.cur_token().span().start, self.ctx);
-        if self.state.not_type_arguments_in_expression.contains(&probe) {
+        let probe = FailedSpeculation::type_arguments(self.cur_token().start(), self.ctx);
+        if self.state.failed_speculations.contains(&probe) {
             return None;
         }
         let checkpoint = self.checkpoint();
@@ -955,14 +956,14 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         // `a < b> = c` is valid but `a < b >= c` is BinaryExpression
         if matches!(self.re_lex_right_angle(), Kind::GtEq) {
             self.rewind(checkpoint);
-            self.state.not_type_arguments_in_expression.insert(probe);
+            self.state.failed_speculations.insert(probe);
             return None;
         }
         self.re_lex_ts_r_angle();
         self.expect(Kind::RAngle);
         if self.fatal_error.is_some() || !self.can_follow_type_arguments_in_expr() {
             self.rewind(checkpoint);
-            self.state.not_type_arguments_in_expression.insert(probe);
+            self.state.failed_speculations.insert(probe);
             return None;
         }
         let span = self.end_span(span);

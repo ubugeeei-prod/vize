@@ -21,3 +21,7 @@ nested malformed-generic allocation reported in Vize
 legacy JS/TS consumers and native admission. Exact campaign reproducers live
 in `tests/fuzz/regressions/l1_program/type-argument-*.*.input`; legacy TSX
 integration tests assert their diagnostic result and arena allocation ceiling.
+
+Failed type-argument and arrow probes share the existing table with disjoint
+one-word keys, avoiding another table initialization/drop for ordinary parses.
+The type-argument key retains all grammar-context bits.

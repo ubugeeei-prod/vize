@@ -4,7 +4,9 @@ use oxc_span::FileExtension;
 use oxc_syntax::precedence::Precedence;
 
 use super::{FunctionKind, Tristate};
-use crate::{Context, ParserConfig as Config, ParserImpl, diagnostics, lexer::Kind};
+use crate::{
+    Context, ParserConfig as Config, ParserImpl, diagnostics, lexer::Kind, state::FailedSpeculation,
+};
 
 struct ArrowFunctionHead<'a> {
     type_parameters: Option<ArenaBox<'a, TSTypeParameterDeclaration<'a>>>,
@@ -355,8 +357,8 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         &mut self,
         allow_return_type_in_arrow_function: bool,
     ) -> Option<Expression<'a>> {
-        let pos = self.cur_token().start();
-        if self.state.not_parenthesized_arrow.contains(&pos) {
+        let probe = FailedSpeculation::parenthesized_arrow(self.cur_token().start());
+        if self.state.failed_speculations.contains(&probe) {
             return None;
         }
 
@@ -364,7 +366,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
 
         let head = self.parse_parenthesized_arrow_function_head();
         if self.has_fatal_error() {
-            self.state.not_parenthesized_arrow.insert(pos);
+            self.state.failed_speculations.insert(probe);
             self.rewind(checkpoint);
             return None;
         }
@@ -397,7 +399,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
             // be a syntax error in JavaScript (as the second colon shouldn't be there).
 
             if !self.at(Kind::Colon) {
-                self.state.not_parenthesized_arrow.insert(pos);
+                self.state.failed_speculations.insert(probe);
                 self.rewind(checkpoint);
                 return None;
             }
