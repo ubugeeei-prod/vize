@@ -2,4 +2,5 @@
 
 pub(crate) mod file;
 pub use file::observer::{CallEvent, DeclaredEvent, FileObserver, InvocationEvent, StatementEvent};
+pub use file::setup::{SetupIssue, SetupIssueKind, VueSetup};
 pub use file::{FileProducer, ProgramInput, ProgramInputError, ProgramScope};

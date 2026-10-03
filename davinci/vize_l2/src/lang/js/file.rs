@@ -11,6 +11,7 @@ use vize_l0::{Allocator, SourceBlock, Span};
 
 mod guard;
 pub(crate) mod observer;
+pub(crate) mod setup;
 mod walk;
 use guard::ProgramWalkGuard;
 use observer::{FileObserver, NoObserver};

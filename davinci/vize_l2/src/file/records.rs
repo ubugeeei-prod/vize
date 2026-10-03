@@ -55,6 +55,7 @@ pub(crate) struct ProgramOrigin {
     pub(crate) has_call: bool,
     pub(crate) has_export: bool,
     pub(crate) reserved_binding: bool,
+    pub(crate) setup_eligible: bool,
 }
 
 impl ProgramOrigin {
@@ -65,6 +66,7 @@ impl ProgramOrigin {
             has_call: false,
             has_export: false,
             reserved_binding: false,
+            setup_eligible: crate::lang::js::file::setup::initial(program),
         }
     }
 }
