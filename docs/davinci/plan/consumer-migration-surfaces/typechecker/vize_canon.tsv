@@ -1052,6 +1052,11 @@ typechecker	Typechecker	test/dev	crates/vize_canon/tests/nuxt_false_positives.rs
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/options_api_runtime_props_value_scope.rs	3	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/options_api_runtime_props_value_scope.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/options_api_runtime_props_value_scope.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_jsx_check.rs	8	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_jsx_check.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	2
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_jsx_check.rs	8	l2	L2	stage	vize_l2	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_jsx_check.rs	8	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_jsx_check/stale.rs	7	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check.rs	9	l0	L0	stage	vize_l0	preferred	4
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check.rs	9	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check.rs	9	l1	L1	stage	vize_l1	preferred	1

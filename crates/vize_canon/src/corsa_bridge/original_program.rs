@@ -1,13 +1,14 @@
-//! Explicit checking of genuine completed JS/TS Modules at their authored path.
+//! Explicit checking of genuine completed JS/TS/JSX/TSX Modules at their authored path.
 
 use std::path::{Path, PathBuf};
 
 use lsp_types::{DocumentDiagnosticReport, DocumentDiagnosticReportResult, Range};
 use sha2::{Digest, Sha256};
 use vize_l0::{Span, String, cstr, line_index::LineBreaks};
-use vize_l2::file::FileArtifact;
+use vize_l2::{file::FileArtifact, lang::js::JsxFile};
 use vize_l4::targets::ts::{
-    MappingError, ProgramProjection, ProjectionError, SourceKind, project_program,
+    MappingError, ProgramProjection, ProjectionError, SourceKind, project_jsx_program,
+    project_program,
 };
 
 use super::{CorsaBridge, CorsaBridgeError};
@@ -44,7 +45,7 @@ impl std::error::Error for OriginalProgramError {}
 /// ```compile_fail
 /// use std::path::Path;
 /// use vize_canon::CorsaBridge;
-/// use vize_l2::file::FileArtifact;
+/// use vize_l2::{file::FileArtifact, lang::js::JsxFile};
 /// async fn discard(bridge: &CorsaBridge, file: FileArtifact<'_>, path: &Path) {
 ///     let result = bridge.check_original_program(&file, path).await.unwrap();
 ///     drop(file);
@@ -116,6 +117,42 @@ impl CorsaBridge {
         authored_path: &Path,
     ) -> Result<OriginalProgramCheck<'file, 'arena>, OriginalProgramError> {
         let projection = project_program(file).map_err(OriginalProgramError::Projection)?;
+        self.check_original_projection(projection, authored_path)
+            .await
+    }
+
+    /// Check the complete original JSX/TSX Module retained by its genuine owner.
+    ///
+    /// JSX remains JSX and TypeScript remains TypeScript. The actual authored
+    /// .jsx/.tsx file, configured project, and original snapshot govern the
+    /// checker; no runtime transformation or synthetic JSX namespace is used.
+    /// The result keeps the original owning observation and File alive:
+    /// ```compile_fail
+    /// use std::path::Path;
+    /// use vize_canon::CorsaBridge;
+    /// use vize_l2::lang::js::JsxFile;
+    /// async fn discard(bridge: &CorsaBridge, owner: JsxFile<'_>, path: &Path) {
+    ///     let result = bridge.check_original_jsx(&owner, path).await.unwrap();
+    ///     drop(owner);
+    ///     let _ = result.report();
+    /// }
+    /// ```
+    pub async fn check_original_jsx<'file, 'arena>(
+        &self,
+        owner: &'file JsxFile<'arena>,
+        authored_path: &Path,
+    ) -> Result<OriginalProgramCheck<'file, 'arena>, OriginalProgramError> {
+        let projection = project_jsx_program(owner).map_err(OriginalProgramError::Projection)?;
+        self.check_original_projection(projection, authored_path)
+            .await
+    }
+
+    async fn check_original_projection<'file, 'arena>(
+        &self,
+        projection: ProgramProjection<'file, 'arena>,
+        authored_path: &Path,
+    ) -> Result<OriginalProgramCheck<'file, 'arena>, OriginalProgramError> {
+        let file = projection.file();
         let root = self
             .config
             .working_dir
@@ -174,7 +211,8 @@ impl CorsaBridge {
                     && !source_path.to_string_lossy().ends_with(".d.ts")
                     && !source_path.to_string_lossy().ends_with(".d.mts")
             }
-            SourceKind::Jsx | SourceKind::Tsx => false,
+            SourceKind::Jsx => extension == Some("jsx"),
+            SourceKind::Tsx => extension == Some("tsx"),
         };
         if !correct_kind {
             return Err(OriginalProgramError::SourceKindMismatch);
