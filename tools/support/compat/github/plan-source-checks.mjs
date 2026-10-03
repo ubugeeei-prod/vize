@@ -1,13 +1,32 @@
 import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 
+const censusScripts = new Set([
+  "tools/support/compat/davinci/croquis-consumers.mjs",
+  "tools/support/compat/davinci/lib/croquis-render.mjs",
+  "tools/support/compat/davinci/lib/croquis-shards.mjs",
+]);
+
+// These Node-only census renderers and their owned generated reports have no
+// workspace Rust input consumer. The mandatory inventory gate checks the exact
+// generated shard set, including orphan files; unknown helpers/contracts stay
+// conservative. A source-grounded tooling law guards the Rust consumer boundary.
+export function isCensusToolingInput(path) {
+  return (
+    censusScripts.has(path) ||
+    path === "docs/davinci/plan/croquis-consumption.md" ||
+    /^docs\/davinci\/plan\/croquis-consumption\/vize(?:_[a-z0-9]+)*\.md$/.test(path)
+  );
+}
+
 // These authored plans are compiled or read by Rust tests and compiler gates.
 // Keep new contracts conservative. The dated completion ledger is verified
 // prose, with no Rust input consumer; tooling still validates its docs.
 export function isSharedRustInput(path) {
   return (
     (path.startsWith("docs/davinci/plan/") &&
-      path !== "docs/davinci/plan/completion-2026-10-03.md") ||
+      path !== "docs/davinci/plan/completion-2026-10-03.md" &&
+      !isCensusToolingInput(path)) ||
     path === "npm/cli/schemas/vize.config.schema.json"
   );
 }
@@ -23,6 +42,10 @@ export function planSourceChecks(paths, eventName = "pull_request") {
   // Compiler changes can affect the native JS binding and its package tests.
   const result = { rust: false, js: false, tooling: false, playground: false };
   for (const path of paths) {
+    if (isCensusToolingInput(path)) {
+      result.tooling = true;
+      continue;
+    }
     if (isSharedRustInput(path)) {
       result.rust = result.js = result.tooling = result.playground = true;
       continue;
