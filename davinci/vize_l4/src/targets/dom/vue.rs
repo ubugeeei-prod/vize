@@ -168,7 +168,7 @@ impl AccessProvider for SetupReads<'_, '_, '_> {
         }
         self.index.set(index + 1);
         match read.kind() {
-            VueReadKind::SetupLet => Ok(AccessSpelling::Rewrite {
+            VueReadKind::SetupLet | VueReadKind::SetupConst => Ok(AccessSpelling::Rewrite {
                 prefix: "$setup.",
                 replacement: Some(read.occurrence().name),
                 suffix: "",

@@ -2,7 +2,7 @@
 
 use super::VueReadKind;
 use vize_l2::{
-    file::{BindingRef, vue::VueExposure},
+    file::{BindingRef, DeclarationKind, InitializerKind, vue::VueExposure},
     resolution::{Occurrence, Usage},
 };
 
@@ -39,7 +39,18 @@ impl<'owner, 'arena> FileReads<'owner, 'arena> for ExposureReads<'_, 'owner, '_,
         occurrence: &Occurrence<'arena>,
         binding: BindingRef<'owner, 'arena>,
     ) -> Option<VueReadKind> {
-        (occurrence.usage == Usage::Read && self.0.binding(binding).is_ok())
-            .then_some(VueReadKind::SetupLet)
+        if occurrence.usage != Usage::Read || self.0.binding(binding).is_err() {
+            return None;
+        }
+        let declaration = binding.declaration()?;
+        match declaration.kind {
+            DeclarationKind::Const
+                if declaration.initializer == InitializerKind::PrimitiveLiteral =>
+            {
+                Some(VueReadKind::SetupConst)
+            }
+            DeclarationKind::Let | DeclarationKind::Var => Some(VueReadKind::SetupLet),
+            _ => None,
+        }
     }
 }

@@ -7,7 +7,7 @@ use vize_l4::{module::setup::SetupEmitErrorKind, targets::dom::DomErrorKind};
 fn complete_neutral_syntax_cannot_bypass_whole_setup_eligibility() -> Result<(), String> {
     let arena = Allocator::default();
     for script in [
-        "const value=1;",
+        "const value=1;42;",
         "let value=1;42;",
         "42;let value=1;",
         "let value=1;var copy=value;",

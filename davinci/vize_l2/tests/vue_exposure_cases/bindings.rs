@@ -2,7 +2,7 @@ use super::*;
 use vize_l2::file::{DeclarationKind, Namespace};
 
 #[test]
-fn only_real_direct_program_let_and_var_bindings_supply_the_bounded_view() {
+fn only_real_direct_program_const_let_and_var_bindings_supply_the_bounded_view() {
     let arena = Allocator::default();
     let observed = Observed::new(
         &arena,
@@ -20,7 +20,7 @@ fn only_real_direct_program_let_and_var_bindings_supply_the_bounded_view() {
             assert_ne!(declaration.scope, view.scope());
         } else if matches!(
             declaration.kind,
-            DeclarationKind::Let | DeclarationKind::Var
+            DeclarationKind::Const | DeclarationKind::Let | DeclarationKind::Var
         ) {
             assert!(actual.is_ok());
         } else {

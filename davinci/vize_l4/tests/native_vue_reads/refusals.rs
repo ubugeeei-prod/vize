@@ -16,7 +16,7 @@ fn genuine_read_classification_and_leaf_spelling_refuse_without_partial_output()
             DomErrorKind::Unsupported(DomUnsupported::VueReadAccess),
         ),
         (
-            "const msg = 1;",
+            "const msg = 1 + 2;",
             "msg",
             DomErrorKind::Unsupported(DomUnsupported::VueReadAccess),
         ),

@@ -2,6 +2,7 @@
 
 use crate::write::{LinkSink, Writer};
 use vize_l0::Span;
+use vize_l2::file::DeclarationKind;
 use vize_l2::lang::js::VueSetup;
 
 pub const COMPONENT_BINDING: &str = "_sfc_main";
@@ -20,7 +21,8 @@ pub struct SetupEmitError {
 
 /// Copy the original admitted script exactly once, retaining full-file links.
 /// Only genuine root setup bindings are returned. Mutable lexical bindings use
-/// getters/setters; no caller-supplied setup state or initializer lowering exists.
+/// getters/setters; immutable constants expose only a getter. No caller-supplied
+/// setup state or initializer lowering exists.
 /// Generated-name refusals happen before a writer or partial fragment is created.
 pub fn emit_setup<L: LinkSink>(
     setup: &VueSetup<'_, '_, '_, '_>,
@@ -54,11 +56,17 @@ pub fn emit_setup<L: LinkSink>(
         writer.push_named(name, span, name);
         writer.push("() { return ");
         writer.push_named(name, span, name);
-        writer.push(" },\n      set ");
-        writer.push_named(name, span, name);
-        writer.push("(__value) { ");
-        writer.push_named(name, span, name);
-        writer.push(" = __value },\n");
+        writer.push(" },\n");
+        if matches!(
+            declaration.kind,
+            DeclarationKind::Let | DeclarationKind::Var
+        ) {
+            writer.push("      set ");
+            writer.push_named(name, span, name);
+            writer.push("(__value) { ");
+            writer.push_named(name, span, name);
+            writer.push(" = __value },\n");
+        }
     }
     writer.push("    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n");
     Ok(writer)

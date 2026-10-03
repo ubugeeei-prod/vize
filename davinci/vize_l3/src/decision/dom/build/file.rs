@@ -3,7 +3,7 @@
 use super::{DomBuilder, DomExpressionFacts, DomUnsupported, ValueKind};
 use crate::decision::dom::file::{DomFileExpression, matches_expression};
 use crate::decision::dom::vue::policy::FileReads;
-use crate::decision::dom::vue::{VueRenderExpression, VueRenderRead};
+use crate::decision::dom::vue::{VueReadKind, VueRenderExpression, VueRenderRead};
 use alloc::vec::Vec;
 use vize_l0::id::NodeId;
 use vize_l2::{expr::JsExpr, file::Namespace};
@@ -59,7 +59,12 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
                 });
             }
         }
-        let value = if expression.ast.is_literal() {
+        // A direct identifier has no call/member descendants whose behavior
+        // could vary despite immutable reads. Complete read lists alone do not
+        // prove purity or constant evaluation of a compound expression.
+        let constant_read = expression.ast.is_identifier_reference()
+            && matches!(reads.as_slice(), [read] if read.kind == VueReadKind::SetupConst);
+        let value = if expression.ast.is_literal() || constant_read {
             ValueKind::LiteralConstant
         } else if !table.occurrences().is_empty() {
             ValueKind::FileDependent

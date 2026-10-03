@@ -189,7 +189,7 @@ impl<'f, 'd, 'p, 'a> VueExposure<'f, 'd, 'p, 'a> {
         }
         if !matches!(
             declaration.kind,
-            DeclarationKind::Let | DeclarationKind::Var
+            DeclarationKind::Const | DeclarationKind::Let | DeclarationKind::Var
         ) {
             return Err(reject(ExposureIssueKind::DeclarationKind, declaration.span));
         }

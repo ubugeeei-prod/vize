@@ -8,6 +8,7 @@ macro_rules! require {
     };
 }
 
+mod constants;
 mod refusal;
 
 fn pack() -> Result<Value, String> {
@@ -26,12 +27,20 @@ fn text<'a>(value: &'a Value, key: &str) -> Result<&'a str, String> {
 #[test]
 fn eight_whole_setup_modules_and_maps_match_actual_source_bound_pinned_fixtures()
 -> Result<(), String> {
-    let pack = pack()?;
+    capture_pack(
+        pack()?,
+        8,
+        "VIZE_NATIVE_SFC_SETUP_CAPTURE",
+        "vize.native-sfc.js-setup-capture",
+    )
+}
+
+fn capture_pack(pack: Value, count: usize, capture_env: &str, schema: &str) -> Result<(), String> {
     let fixtures = pack
         .get("fixtures")
         .and_then(Value::as_array)
         .ok_or("fixtures")?;
-    require!(fixtures.len() == 8, "eight whole original inputs");
+    require!(fixtures.len() == count, "{count} whole original inputs");
     let mut capture = Vec::new();
     for fixture in fixtures {
         let id = text(fixture, "id")?;
@@ -148,12 +157,19 @@ fn eight_whole_setup_modules_and_maps_match_actual_source_bound_pinned_fixtures(
                 declaration.initializer == vize_l2::file::InitializerKind::PrimitiveLiteral,
                 "{id}: original primitive fact"
             );
+            if let Some(immutable) = fixture.get("immutableBindings").and_then(Value::as_array) {
+                require!(
+                    (declaration.kind == vize_l2::file::DeclarationKind::Const)
+                        == immutable.contains(name),
+                    "{id}: genuine immutable declaration class"
+                );
+            }
         }
         capture.push(serde_json::json!({"id":id,"source":source,"code":output.code(),"nativeMap":map,"bindings":expected}));
     }
-    if let Some(path) = std::env::var_os("VIZE_NATIVE_SFC_SETUP_CAPTURE") {
+    if let Some(path) = std::env::var_os(capture_env) {
         std::fs::write(path, serde_json::to_vec_pretty(&serde_json::json!({
-            "schema":"vize.native-sfc.js-setup-capture", "adapter":"vize_atelier_sfc::compile_native_sfc", "fixtures":capture
+            "schema":schema, "adapter":"vize_atelier_sfc::compile_native_sfc", "fixtures":capture
         })).map_err(|error|cstr!("{error}"))?).map_err(|error|cstr!("{error}"))?;
     }
     Ok(())

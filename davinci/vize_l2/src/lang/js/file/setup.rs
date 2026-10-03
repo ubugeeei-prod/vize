@@ -43,7 +43,7 @@ pub struct SetupIssue {
     pub kind: SetupIssueKind,
 }
 
-/// The original JS setup body contains only direct let/var primitive literals
+/// The original JS setup body contains only direct const/let/var primitive literals
 /// and empty statements. The actual File walk and original Program stay borrowed.
 /// This is script eligibility, not native template custody or product completion.
 ///

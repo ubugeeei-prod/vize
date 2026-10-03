@@ -161,7 +161,9 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             || value.declare
             || !matches!(
                 value.kind,
-                VariableDeclarationKind::Let | VariableDeclarationKind::Var
+                VariableDeclarationKind::Const
+                    | VariableDeclarationKind::Let
+                    | VariableDeclarationKind::Var
             )
         {
             super::setup::reject(self.facts, self.unit);

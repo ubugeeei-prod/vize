@@ -33,6 +33,8 @@ use vize_l2::lang::js::{
 };
 use vize_l2::resolution::ResolutionErrorKind;
 
+mod constants;
+
 fn checked<'o, 'f, 'a>(
     original: &'o Observed<'a>,
     file: &'f FileArtifact<'a>,
@@ -82,7 +84,7 @@ fn neutral_complete_files_do_not_certify_the_whole_setup_statement_family() -> R
     for script in [
         "let value=1; 42;",
         "42; let value=1;",
-        "const value=1;",
+        "const original=1; const value=original;",
         "let value=1; var copy=value;",
         "var value;",
         "let value=1; value=2;",
@@ -113,6 +115,13 @@ fn unsupported_script_shapes_never_supply_a_setup_capability() -> Result<(), Str
     let arena = Allocator::default();
     for script in [
         "let value={};",
+        "const value={};",
+        "const value=[];",
+        "const value=/x/;",
+        "const value=`text`;",
+        "const value=-1;",
+        "const value=()=>1;",
+        "const {value}={value:1};",
         "let value=[];",
         "let value=/x/;",
         "let value=`text`;",
@@ -250,50 +259,53 @@ impl<'a> FileObserver<'a> for Interrupt {
 fn every_actual_setup_callback_interruption_refuses_sealing_with_original_owners()
 -> Result<(), String> {
     let arena = Allocator::default();
-    let original = Observed::new(
-        &arena,
-        "<script setup>/* kept */let first=1;var after=2;</script>",
-    )?;
-    let script = original.script()?;
-    for point in [Point::Unit, Point::Statement, Point::Declared] {
-        let mut producer =
-            FileProducer::new(&arena, original.descriptor.source()).map_err(|_| "file")?;
-        let mut observer = Interrupt(point);
-        let interrupted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            producer
-                .program_observed(
-                    ProgramInput::checked(
-                        original.syntax.admitted_program().ok_or("Program")?,
-                        script.block(),
-                        script.container_index(),
+    for body in [
+        "let first=1;var after=2;",
+        "const first=1;let mutable=2;var after=3;",
+    ] {
+        let source = cstr!("<script setup>/* kept */{body}</script>");
+        let original = Observed::new(&arena, &source)?;
+        let script = original.script()?;
+        for point in [Point::Unit, Point::Statement, Point::Declared] {
+            let mut producer =
+                FileProducer::new(&arena, original.descriptor.source()).map_err(|_| "file")?;
+            let mut observer = Interrupt(point);
+            let interrupted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                producer
+                    .program_observed(
+                        ProgramInput::checked(
+                            original.syntax.admitted_program().ok_or("Program")?,
+                            script.block(),
+                            script.container_index(),
+                        )
+                        .map_err(|_| "input")?,
+                        ProgramScope::Nested,
+                        &mut observer,
                     )
-                    .map_err(|_| "input")?,
-                    ProgramScope::Nested,
-                    &mut observer,
-                )
-                .map_err(|_| "unit")
-        }));
-        let payload = interrupted.err().ok_or("actual interruption")?;
-        equal!(
-            payload.downcast_ref::<&str>(),
-            Some(&"actual setup walk interruption")
-        );
-        let file = producer.finish().map_err(|_| "artifact")?;
-        require!(!file.is_complete(), "{point:?}");
-        require!(file.issues().is_empty());
-        equal!(file.interrupted_programs().count(), 1);
-        let unit = file.units().first().ok_or("retained unit")?;
-        equal!(
-            unit.interruption().ok_or("interrupted row")?.kind,
-            FileIssueKind::InterruptedProgram
-        );
-        equal!(
-            file.bindings().count(),
-            usize::from(point == Point::Declared)
-        );
-        require!(matches!(checked(&original, &file)?, Err(issue)
+                    .map_err(|_| "unit")
+            }));
+            let payload = interrupted.err().ok_or("actual interruption")?;
+            equal!(
+                payload.downcast_ref::<&str>(),
+                Some(&"actual setup walk interruption")
+            );
+            let file = producer.finish().map_err(|_| "artifact")?;
+            require!(!file.is_complete(), "{point:?}");
+            require!(file.issues().is_empty());
+            equal!(file.interrupted_programs().count(), 1);
+            let unit = file.units().first().ok_or("retained unit")?;
+            equal!(
+                unit.interruption().ok_or("interrupted row")?.kind,
+                FileIssueKind::InterruptedProgram
+            );
+            equal!(
+                file.bindings().count(),
+                usize::from(point == Point::Declared)
+            );
+            require!(matches!(checked(&original, &file)?, Err(issue)
             if issue.kind == SetupIssueKind::Exposure(ExposureIssueKind::IncompleteFile)));
-        equal!(original.syntax.comments().count(), 1);
+            equal!(original.syntax.comments().count(), 1);
+        }
     }
     Ok(())
 }

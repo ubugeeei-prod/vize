@@ -144,7 +144,7 @@ impl<'a> NativeSfcCompilation<'a> {
 /// Compile through the genuine admitted SFC/File, L3 and L4 owner chain.
 ///
 /// This additive entry supports scriptless static structure and retained
-/// literals, original JS setup let/var primitive declarations plus empty
+/// literals, original JS setup let/var/const primitive declarations plus empty
 /// statements, and plain CSS without unproven binding syntax. Other scripts,
 /// macros, scoped/module/preprocessor styles, custom/external blocks, unsupported
 /// profiles and unavailable native target semantics return typed refusals.

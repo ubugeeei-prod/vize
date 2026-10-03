@@ -12,9 +12,12 @@ use vize_l2::{
 
 pub(in crate::decision) mod policy;
 
-/// Vue's dynamic external-function read of an authenticated setup let/var.
+/// Vue's external-function read of an authenticated setup declaration.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VueReadKind {
+    /// An immutable binding with an actual primitive-literal initializer.
+    SetupConst,
+    /// Mutable let/var bindings retain dynamic value semantics.
     SetupLet,
 }
 

@@ -1,4 +1,6 @@
 //! Genuine descriptor/Program membership; diagnostic template custody stays distinct.
+#[path = "vue_render_support/constants.rs"]
+mod vue_render_constants;
 #[path = "vue_render_support/properties.rs"]
 mod vue_render_properties;
 mod vue_render_support;
@@ -110,7 +112,12 @@ fn writes_and_mixed_membership_never_publish_partial_read_lists() {
     for (program, text) in [
         ("let msg = 1;", "msg = 2"),
         ("let msg = 1;", "msg++"),
-        ("let msg = 1; const fixed = 2;", "msg + fixed"),
+        (
+            "let msg = 1; const original = 2; const fixed = original;",
+            "msg + fixed",
+        ),
+        ("const msg = 1;", "msg = 2"),
+        ("const msg = 1;", "msg++"),
         ("let msg = 1; function fixed() { return 1; }", "msg + fixed"),
         (
             "let msg = 1; import { fixed } from 'module';",
