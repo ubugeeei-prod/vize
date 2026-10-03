@@ -119,7 +119,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeId`                 |       23 |   31 |
 | `ScopeKind`               |       59 |   76 |
 | `SlotUsage`               |        1 |    3 |
-| `Span`                    |        0 |   62 |
+| `Span`                    |        0 |   70 |
 | `SpreadProp`              |        6 |   10 |
 | `Symbol`                  |        0 |    4 |
 | `SymbolId`                |        0 |    3 |

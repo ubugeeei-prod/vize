@@ -8,6 +8,15 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Test actual native Program checker backend
+      shell: bash
+      env: { VIZE_TEST_REQUIRE_TSGO: "1" }
+      run: |
+        cargo test --locked -p vize_canon --features native-program --lib native_program:: -- --nocapture
+        cargo test --locked -p vize_canon --features native-program --test native_program_backend -- --nocapture
+        cargo test --locked -p vize_canon --features native-program --doc
+        cargo check --locked -p vize_canon --no-default-features --features native-program
+        cargo clippy --locked -p vize_canon --features native-program --lib --test native_program_backend -- -D warnings
     - name: Test native Program comment projection
       shell: bash
       env: { VIZE_TEST_REQUIRE_TSGO: "1" }

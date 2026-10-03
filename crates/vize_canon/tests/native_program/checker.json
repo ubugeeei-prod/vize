@@ -1,0 +1,128 @@
+{
+  "reference": {
+    "version": "6.0.3",
+    "goal": "Module",
+    "moduleDetection": "force",
+    "options": "strict/noEmit/allowJs/checkJs/types=[]/ESNext/Bundler/skipLibCheck",
+    "source": "Complete independent original TypeScript CompilerHost diagnostics; actual genuine L4 projected vectors compared without filtering."
+  },
+  "cases": [
+    {
+      "id": "js-valid",
+      "kind": "js",
+      "source": "const msg='x'; msg.length;",
+      "codes": [],
+      "diagnostics": []
+    },
+    {
+      "id": "js-open-object",
+      "kind": "js",
+      "source": "const value={}; value.extra=1; value.extra;",
+      "codes": [],
+      "diagnostics": []
+    },
+    {
+      "id": "ts-open-object",
+      "kind": "ts",
+      "source": "const value={}; value.extra=1; value.extra;",
+      "codes": [2339, 2339],
+      "diagnostics": [
+        {
+          "code": 2339,
+          "category": 1,
+          "message": "Property 'extra' does not exist on type '{}'.",
+          "start": 22,
+          "length": 5,
+          "authored": "extra"
+        },
+        {
+          "code": 2339,
+          "category": 1,
+          "message": "Property 'extra' does not exist on type '{}'.",
+          "start": 37,
+          "length": 5,
+          "authored": "extra"
+        }
+      ]
+    },
+    {
+      "id": "unicode-js",
+      "kind": "js",
+      "source": "﻿const emoji='😀';\r\nconst 日本='é'; 日本.missing;",
+      "codes": [2339],
+      "diagnostics": [
+        {
+          "code": 2339,
+          "category": 1,
+          "message": "Property 'missing' does not exist on type '\"é\"'.",
+          "start": 37,
+          "length": 7,
+          "authored": "missing"
+        }
+      ]
+    },
+    {
+      "id": "unicode-ts",
+      "kind": "ts",
+      "source": "﻿const emoji='😀';\r\nconst 日本='é'; 日本.missing;",
+      "codes": [2339],
+      "diagnostics": [
+        {
+          "code": 2339,
+          "category": 1,
+          "message": "Property 'missing' does not exist on type '\"é\"'.",
+          "start": 37,
+          "length": 7,
+          "authored": "missing"
+        }
+      ]
+    },
+    {
+      "id": "js-hashbang",
+      "kind": "js",
+      "source": "#!/usr/bin/env node\nconst value=1; value.missing;",
+      "codes": [2339],
+      "diagnostics": [
+        {
+          "code": 2339,
+          "category": 1,
+          "message": "Property 'missing' does not exist on type '1'.",
+          "start": 41,
+          "length": 7,
+          "authored": "missing"
+        }
+      ]
+    },
+    {
+      "id": "ordered-ts-errors",
+      "kind": "ts",
+      "source": "const value=1; value.missing; value.other;",
+      "codes": [2339, 2339],
+      "diagnostics": [
+        {
+          "code": 2339,
+          "category": 1,
+          "message": "Property 'missing' does not exist on type '1'.",
+          "start": 21,
+          "length": 7,
+          "authored": "missing"
+        },
+        {
+          "code": 2339,
+          "category": 1,
+          "message": "Property 'other' does not exist on type '1'.",
+          "start": 36,
+          "length": 5,
+          "authored": "other"
+        }
+      ]
+    },
+    {
+      "id": "ts-module-goal",
+      "kind": "ts",
+      "source": "const name='x'; name.length;",
+      "codes": [],
+      "diagnostics": []
+    }
+  ]
+}

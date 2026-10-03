@@ -50,6 +50,8 @@ mod diagnostic;
 #[cfg(feature = "native")]
 mod file_uri;
 pub mod intelligence;
+#[cfg(feature = "native-program")]
+pub mod native_program;
 mod options_api_setup_spread;
 pub mod package_route;
 mod script_parse;
