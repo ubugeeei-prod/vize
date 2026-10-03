@@ -6,7 +6,7 @@ fn unavailable_style_profiles_never_disappear_into_a_successful_module() {
     for source in [
         "<template><p/></template><style scoped lang=scss>p{color:v-bind(color)}</style>",
         "<template><p/></template><style module=theme>p{color:red}</style><style></style>",
-        "<script>const x=1</script><template><p/></template><style scoped>p{color:red}</style>",
+        "<script>const x=1</script><template><p/></template><style scoped module>p{color:red}</style>",
     ] {
         let arena = Allocator::default();
         let compilation = compile_native_sfc(&arena, source, NativeSfcCompileOptions::default());

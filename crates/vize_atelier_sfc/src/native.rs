@@ -10,6 +10,7 @@ use vize_l0::{
 use vize_l1::{
     SurfaceParseOptions,
     container::vue::{DescriptorOptions, ScriptRole},
+    css::StyleIssue,
     embed::Lang,
 };
 use vize_l1_to_l2::native_file::{NativeSfcObservation, lower_sfc_native};
@@ -36,6 +37,8 @@ pub struct NativeSfcCompileOptions<'o> {
     pub source_map: bool,
     /// Trim each emitted plain CSS block; the ordinary SFC default is false.
     pub style_trim: bool,
+    /// Full `data-v-*` scope identity. None uses the ordinary filename hash.
+    pub scope_id: Option<&'o str>,
 }
 
 impl Default for NativeSfcCompileOptions<'static> {
@@ -50,6 +53,7 @@ impl Default for NativeSfcCompileOptions<'static> {
             runtime_version: "3.5.35",
             source_map: false,
             style_trim: false,
+            scope_id: None,
         }
     }
 }
@@ -57,13 +61,29 @@ impl Default for NativeSfcCompileOptions<'static> {
 /// The exact stage that refused this original whole-file observation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeSfcCompileError {
-    ExternalBlock { container_index: usize, span: Span },
+    ExternalBlock {
+        container_index: usize,
+        span: Span,
+    },
     Descriptor,
-    ScriptCompilationUnavailable { container_index: usize, span: Span },
+    ScriptCompilationUnavailable {
+        container_index: usize,
+        span: Span,
+    },
     ScriptSetup(SetupIssue),
     SetupEmission(SetupEmitError),
-    StyleCompilationUnavailable { container_index: usize, span: Span },
-    StyleBindSyntaxUnproven { container_index: usize, span: Span },
+    StyleCompilationUnavailable {
+        container_index: usize,
+        span: Span,
+    },
+    StyleBindSyntaxUnproven {
+        container_index: usize,
+        span: Span,
+    },
+    ScopedStyleUnavailable {
+        container_index: usize,
+        issue: StyleIssue,
+    },
     MissingTemplate,
     Orchestration,
     Analysis(DecisionBuildError),
@@ -78,9 +98,14 @@ pub struct NativeSfcOutput {
     source_map: Option<String>,
     css: Option<EmitDocument>,
     css_source_map: Option<String>,
+    scope_id: Option<String>,
 }
 
 impl NativeSfcOutput {
+    #[must_use]
+    pub fn scope_id(&self) -> Option<&str> {
+        self.scope_id.as_deref()
+    }
     #[must_use]
     pub fn code(&self) -> &str {
         self.document.as_str()
@@ -145,8 +170,9 @@ impl<'a> NativeSfcCompilation<'a> {
 ///
 /// This additive entry supports scriptless static structure and retained
 /// literals, original JS/TS setup let/var/const primitive declarations plus empty
-/// statements, and plain CSS without unproven binding syntax. Other scripts,
-/// macros, scoped/module/preprocessor styles, custom/external blocks, unsupported
+/// statements, and plain CSS without unproven binding syntax, plus one simple-class
+/// rule per original scoped CSS block. Other scripts, macros, broader scoped/module/
+/// preprocessor styles, custom/external blocks, unsupported
 /// profiles and unavailable native target semantics return typed refusals.
 /// Every original observation survives, and no partial module is returned.
 #[must_use]
@@ -195,7 +221,18 @@ fn emit<L: LinkSink>(
         .descriptor()
         .admitted()
         .map_err(|_| NativeSfcCompileError::Descriptor)?;
-    let css = styles::emit::<L>(descriptor, options.style_trim)?;
+    let scope_id = scope::for_styles(descriptor, options.scope_id, options.filename)?;
+    let scope = scope_id
+        .as_deref()
+        .map(vize_l4::module::ScopeId::new)
+        .transpose()
+        .map_err(NativeSfcCompileError::Assembly)?;
+    let css = styles::emit::<L>(
+        descriptor,
+        observation.style_syntax(),
+        scope,
+        options.style_trim,
+    )?;
     if let Some(script) = observation.scripts().first()
         && (observation.scripts().len() != 1
             || script.role() != ScriptRole::Setup
@@ -228,6 +265,7 @@ fn emit<L: LinkSink>(
     } else {
         setup::emit(&admitted, &mut parts)?;
     }
+    parts.scope_id = scope;
     parts.placement = RenderPlacement::Function {
         binding: "render",
         property: RenderProperty::Render,
@@ -248,6 +286,7 @@ fn emit<L: LinkSink>(
         source_map,
         css,
         css_source_map,
+        scope_id,
     })
 }
 
@@ -256,6 +295,10 @@ mod tests;
 
 #[cfg(test)]
 mod css_tests;
+mod scope;
+mod scoped;
+#[cfg(test)]
+mod scoped_tests;
 #[cfg(test)]
 mod style_tests;
 mod styles;

@@ -3,6 +3,7 @@ use crate::vue_file::{RejectedVueFile, VueFile, VueScriptReceipt};
 use alloc::vec::Vec;
 use vize_l0::SourceBlock;
 use vize_l1::container::vue::{DescriptorObservation, ScriptRole, ScriptView};
+use vize_l1::css::StyleSyntax;
 use vize_l1::embed::{Lang, syntax::NativeSyntax};
 use vize_l2::file::ScriptUnitId;
 
@@ -95,6 +96,7 @@ pub struct NativeSfcObservation<'a> {
     file: Option<Result<VueFile<'a>, RejectedVueFile<'a>>>,
     issues: Vec<NativeSfcIssue>,
     admitted: bool,
+    style_syntax: Vec<StyleSyntax<'a>>,
 }
 impl core::fmt::Debug for NativeSfcObservation<'_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -102,6 +104,7 @@ impl core::fmt::Debug for NativeSfcObservation<'_> {
             .debug_struct("NativeSfcObservation")
             .field("descriptor", &self.descriptor)
             .field("scripts", &self.scripts)
+            .field("style_syntax", &self.style_syntax)
             .field("template", &self.template)
             .field("issues", &self.issues)
             .field("admitted", &self.admitted)
@@ -153,6 +156,17 @@ impl<'a> NativeSfcObservation<'a> {
             });
         }
         let admitted = membership && issues.is_empty();
+        // Style syntax is neutral to File membership. Product consumers decide
+        // whether the retained original CSS family can be emitted.
+        let style_syntax = descriptor
+            .admitted()
+            .map(|view| {
+                view.styles()
+                    .filter(|style| style.attrs().iter().any(|attr| attr.name == "scoped"))
+                    .map(StyleSyntax::observe)
+                    .collect()
+            })
+            .unwrap_or_default();
         Self {
             descriptor,
             scripts,
@@ -160,11 +174,16 @@ impl<'a> NativeSfcObservation<'a> {
             file,
             issues,
             admitted,
+            style_syntax,
         }
     }
     #[must_use]
     pub fn descriptor(&self) -> &DescriptorObservation<'a> {
         &self.descriptor
+    }
+    #[must_use]
+    pub fn style_syntax(&self) -> &[StyleSyntax<'a>] {
+        &self.style_syntax
     }
     #[must_use]
     pub fn scripts(&self) -> &[NativeScriptObservation<'a>] {

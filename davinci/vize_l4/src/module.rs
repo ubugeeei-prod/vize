@@ -70,6 +70,8 @@ pub struct ModuleParts<'a, L: LinkSink> {
     pub placement: RenderPlacement<'a>,
     /// The generated JavaScript identifier defined by the script lane.
     pub component: &'a str,
+    /// Validated Vue component scope identity, attached after complete fragments.
+    pub scope_id: Option<ScopeId<'a>>,
 }
 
 impl<'a, L: LinkSink> ModuleParts<'a, L> {
@@ -88,11 +90,14 @@ impl<'a, L: LinkSink> ModuleParts<'a, L> {
             render: None,
             placement: RenderPlacement::None,
             component,
+            scope_id: None,
         })
     }
 }
 
 mod imports;
+mod scope;
+pub use scope::ScopeId;
 pub mod setup;
 #[cfg(test)]
 mod template_tests;
@@ -122,6 +127,7 @@ pub enum AssemblyError {
     UnexpectedInlineScript,
     UnknownHelper(Helper),
     InvalidModuleSpecifier,
+    InvalidScopeId,
 }
 
 /// Assemble one module without inserting text into any fragment.
@@ -137,6 +143,7 @@ pub fn assemble<L: LinkSink>(parts: ModuleParts<'_, L>) -> Result<Emitted<L>, As
         render,
         placement,
         component,
+        scope_id,
     } = parts;
     let mut body = prelude.unwrap_or_default();
     separate_statement(&mut body);
@@ -178,6 +185,12 @@ pub fn assemble<L: LinkSink>(parts: ModuleParts<'_, L>) -> Result<Emitted<L>, As
             end_line(&mut body);
         }
         (RenderPlacement::Inline, _, Some(_)) => return Err(AssemblyError::MissingInlineScript),
+    }
+    if let Some(scope_id) = scope_id {
+        body.push(component);
+        body.push(".__scopeId = \"");
+        body.push(scope_id.as_str());
+        body.push("\"\n");
     }
     body.push("export default ");
     body.push(component);

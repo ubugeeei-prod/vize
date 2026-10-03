@@ -1,7 +1,11 @@
 //! Emit a genuine source-owned plain CSS family; no legacy compiler helper.
 
 use vize_l0::Span;
-use vize_l1::container::vue::{AdmittedDescriptor, StyleView};
+use vize_l1::{
+    container::vue::{AdmittedDescriptor, StyleView},
+    css::StyleSyntax,
+};
+use vize_l4::module::ScopeId;
 use vize_l4::write::{EmitDocument, LinkSink};
 
 use super::NativeSfcCompileError;
@@ -55,11 +59,17 @@ impl<'o, 'a> PlainStyle<'o, 'a> {
 
 pub(super) fn emit<L: LinkSink>(
     descriptor: AdmittedDescriptor<'_, '_>,
+    syntax: &[StyleSyntax<'_>],
+    scope_id: Option<ScopeId<'_>>,
     trim: bool,
 ) -> Result<Option<EmitDocument>, NativeSfcCompileError> {
     let mut output = EmitDocument::new(L::RECORDING);
     for original in descriptor.styles() {
-        PlainStyle::observe(original)?.append(&mut output, trim);
+        if original.attrs().iter().any(|attr| attr.name == "scoped") {
+            super::scoped::append(original, syntax, scope_id, &mut output, trim)?;
+        } else {
+            PlainStyle::observe(original)?.append(&mut output, trim);
+        }
     }
     Ok((!output.is_empty()).then_some(output))
 }

@@ -221,7 +221,7 @@ fn conservative_binding_refusals_keep_exact_original_spans_and_every_owner() {
     }
 }
 
-fn position(source: &str, offset: u32) -> (i32, i32) {
+pub(super) fn position(source: &str, offset: u32) -> (i32, i32) {
     let prefix = source.get(..offset as usize).unwrap();
     let line = prefix.bytes().filter(|byte| *byte == b'\n').count() as i32;
     let column = prefix.rsplit('\n').next().unwrap().encode_utf16().count() as i32;
@@ -230,7 +230,7 @@ fn position(source: &str, offset: u32) -> (i32, i32) {
 
 /// Independent Source Map v3 decoder for the actual CSS output, without using
 /// the production writer's coordinate or VLQ implementation.
-fn decode_map(source: &str) -> Vec<((i32, i32), (i32, i32))> {
+pub(super) fn decode_map(source: &str) -> Vec<((i32, i32), (i32, i32))> {
     let alphabet = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let (mut original_line, mut original_column, mut source_index) = (0, 0, 0);
     let mut output = Vec::new();

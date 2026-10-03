@@ -28,6 +28,7 @@ fn bare<L: LinkSink>() -> ModuleParts<'static, L> {
         render: None,
         placement: RenderPlacement::None,
         component: "_sfc_main",
+        scope_id: None,
     }
 }
 
@@ -304,4 +305,26 @@ fn complete_statement_fragments_cannot_continue_a_previous_initializer() {
         assert!(emitted.text.contains("\n;\n(() => sideEffect())()"));
         assert!(emitted.text.ends_with("export default component\n"));
     }
+}
+
+#[test]
+fn scoped_component_metadata_preserves_whole_render_and_original_links() {
+    let mut parts = normal_module::<Recorded>();
+    parts.scope_id = Some(super::ScopeId::new("data-v-abc123").unwrap());
+    let scoped = assemble(parts).unwrap().into_document();
+    let ordinary = assemble(normal_module::<Recorded>())
+        .unwrap()
+        .into_document();
+    let expected = ordinary.as_str().replace(
+        "export default _sfc_main",
+        "_sfc_main.__scopeId = \"data-v-abc123\"\nexport default _sfc_main",
+    );
+    assert_eq!(scoped.as_str(), expected);
+    assert_eq!(scoped.links(), ordinary.links());
+    let mut plain_parts = normal_module::<NoLinks>();
+    plain_parts.scope_id = Some(super::ScopeId::new("data-v-abc123").unwrap());
+    assert_eq!(
+        assemble(plain_parts).unwrap().text.as_str(),
+        scoped.as_str()
+    );
 }
