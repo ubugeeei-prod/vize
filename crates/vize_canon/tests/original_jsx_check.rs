@@ -62,6 +62,18 @@ fn range(source: &str, start: usize, length: usize) -> serde_json::Value {
     serde_json::json!({"start":{"line":sl,"character":sc},"end":{"line":el,"character":ec}})
 }
 
+fn file_uri(path: &Path) -> vize_l0::String {
+    let mut uri = vize_l0::String::from("file://");
+    for byte in path.to_string_lossy().bytes() {
+        if byte.is_ascii_alphanumeric() || b"-._~/".contains(&byte) {
+            uri.push(char::from(byte));
+        } else {
+            uri.push_str(&cstr!("%{byte:02X}"));
+        }
+    }
+    uri
+}
+
 #[test]
 #[cfg(unix)]
 fn real_vue_jsx_and_tsx_keep_complete_raw_diagnostics_types_and_authored_owners() {
@@ -70,6 +82,22 @@ fn real_vue_jsx_and_tsx_keep_complete_raw_diagnostics_types_and_authored_owners(
         serde_json::from_slice(&std::fs::read(dependencies.join("vue/package.json")).unwrap())
             .unwrap();
     assert_eq!(package["version"], "3.5.35");
+    let vue = dependencies.join("vue").canonicalize().unwrap();
+    let declaration = vue
+        .parent()
+        .unwrap()
+        .join("@vue/runtime-dom/dist/runtime-dom.d.ts")
+        .canonicalize()
+        .unwrap();
+    let declaration_text = std::fs::read_to_string(&declaration).unwrap();
+    let declaration_id = declaration_text.find("\n    id?: string").unwrap() + 5;
+    let related = serde_json::json!([{
+        "location": {
+            "uri": file_uri(&declaration).as_str(),
+            "range": range(&declaration_text, declaration_id, 2),
+        },
+        "message": "The expected type comes from property 'id' which is declared here on type 'HTMLAttributes & ReservedProps'",
+    }]);
     for (annotation, profile, kind, missing_type) in [
         ("", SourceType::jsx(), SourceKind::Jsx, "1"),
         (
@@ -127,7 +155,7 @@ fn real_vue_jsx_and_tsx_keep_complete_raw_diagnostics_types_and_authored_owners(
         assert_eq!(
             serde_json::to_value(&full.full_document_diagnostic_report.items).unwrap(),
             serde_json::json!([
-                {"range":range(&source,id,2),"severity":1,"code":2322,"source":"ts","message":"Type 'number' is not assignable to type 'string'."},
+                {"range":range(&source,id,2),"severity":1,"code":2322,"source":"ts","message":"Type 'number' is not assignable to type 'string'.","relatedInformation":related},
                 {"range":range(&source,missing,7),"severity":1,"code":2339,"source":"ts","message":cstr!("Property 'missing' does not exist on type '{missing_type}'.").as_str()}
             ])
         );
