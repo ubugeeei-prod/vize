@@ -6,8 +6,10 @@ use vize_l0::{Allocator, SourceBlock};
 
 mod child;
 mod element;
+mod selected;
 pub use child::{NativeChild, NativeChildren};
 pub use element::{NativeAttribute, NativeAttributes, NativeElement};
+pub use selected::{NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar};
 
 /// Complete once-parsed Component privately paired with its checked source.
 /// Raw mutable carriers cannot be inserted; consuming transfer drops authority.

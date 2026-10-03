@@ -38,6 +38,7 @@ pub use grammar::{MarkupGrammar, Vue};
 pub use lex::{Delimiters, LexOptions, Lexer};
 pub use native::{
     NativeAttribute, NativeAttributes, NativeChild, NativeChildren, NativeComponent, NativeElement,
+    NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar,
 };
 pub use parse::{
     ComponentParse, ComponentSourceError, DirectiveAdmission, parse_component,
