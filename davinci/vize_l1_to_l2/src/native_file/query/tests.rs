@@ -196,7 +196,7 @@ fn equal_bytes_and_equal_numeric_ids_do_not_accept_another_original_file_binding
 #[test]
 fn setup_shadow_and_import_aliases_use_original_declarations_not_name_fallback() {
     let arena = Allocator::default();
-    let source = "<script setup>import { run as local } from 'dep';const value=2;</script><script>const value=1;</script><template>{{local(value)}}</template>";
+    let source = "<script setup>import { run as local } from 'dep';const value=2;</script><script>const value=1;external;</script><template>{{local(value)}}</template>";
     let owner = observe(&arena, source);
     let native = owner.admitted().unwrap();
     let value = native
@@ -222,6 +222,16 @@ fn setup_shadow_and_import_aliases_use_original_declarations_not_name_fallback()
             .is_none()
     );
     assert!(uses(&native, at(source, "value", 1)).is_empty());
+    let external = at(source, "external", 0);
+    let original = native
+        .file()
+        .file()
+        .reference_at_offset(external)
+        .unwrap()
+        .unwrap();
+    assert!(original.binding().is_none());
+    assert!(native.reference_at_offset(external).unwrap().is_none());
+    assert!(native.binding_at_offset(external).unwrap().is_none());
 }
 
 #[test]

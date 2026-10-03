@@ -25,6 +25,9 @@ and template uses at checked file-absolute UTF-8 boundaries. Names are half-open
 EOF, comments, remote import names and opaque source gaps have no fabricated
 local use. More than one use observation refuses even when binding IDs agree.
 Declarations and script use rules delegate to the original File query provider.
+Original unresolved script references retain no fabricated local binding and do
+not poison unrelated local navigation. The same original File still reports
+their unresolved occurrence; malformed resolved IDs remain explicit refusals.
 
 `NativeReferenceRef` borrows the actual File, original script/occurrence row,
 real binding, recorded lexical scope and exact authored spelling. Its private
@@ -84,6 +87,15 @@ borrows checked UTF-8, and records only this test module's one direct import and
 three bound vector uses as analysis storage. Production queries still allocate
 nothing; no scanner exception or storage baseline is relaxed. That failed head
 was never queued, and the corrected source requires fresh complete acceptance.
+
+A subsequent source review found that the moved traversal initially rejected
+all local navigation when an unrelated script row was unresolved, whereas the
+previous consumer selected only resolved rows for the requested binding. The
+provider now skips those unresolved targets without inventing a local use. The
+existing shadow/import law includes an actual ordinary-script external use and
+checks the original File's unresolved row, absent native local lookup, and
+unchanged genuine setup/template navigation. Fresh source and queue acceptance
+must execute this law; earlier successful runtime evidence is historical.
 
 Generic File-level template position queries, additional native grammar/dialects,
 JSX, external/workspace navigation and default product admission remain
