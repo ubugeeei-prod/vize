@@ -45,6 +45,13 @@ unchanged.
 
 ## Acceptance and limits
 
+The first exact source of #7593 failed the unchanged 350-line source-size gate:
+two existing test files grew from 251 to 352 and from 330 to 378 lines. The seven
+complete new laws move intact into a dedicated 157-line module, sharing the
+unchanged synthetic workspace fixture through a 26-line helper. The existing
+modules return to 251 and 305 lines. Every assertion, production classifier and
+size limit stays unchanged; corrected-head Actions remain required.
+
 Merge groups unconditionally validate every current workspace crate, all four
 full Rust test partitions, all four complete tooling partitions, the original
 differential corpora and all 100 pinned instruction probes. The four source
