@@ -2,10 +2,11 @@
 
 use super::{NativeRouteState, NativeTemplateIssue, NativeTemplateIssueKind, NativeTemplateOwner};
 use crate::file::ScriptUnitId;
-use crate::lang::js::file::{ProgramInput, ProgramScope};
+use crate::lang::js::file::{FileProducer, ProgramInput, ProgramScope};
 use oxc_parser::AdmittedProgram;
 use vize_l0::Span;
 use vize_l1::embed::Lang;
+use vize_l1::markup::NativeTemplateComponent;
 
 impl<'a> NativeTemplateOwner<'a> {
     pub fn ordinary_program(
@@ -25,10 +26,45 @@ impl<'a> NativeTemplateOwner<'a> {
         admitted: AdmittedProgram<'_, 'a>,
         setup: bool,
     ) -> Result<ScriptUnitId, NativeTemplateIssue> {
+        Parts {
+            selected: &self.selected,
+            producer: &mut self.producer,
+            state: &mut self.state,
+            ordinary: &mut self.ordinary,
+            setup: &mut self.setup,
+        }
+        .attach(admitted, setup)
+    }
+    pub(super) fn refuse<T>(
+        &mut self,
+        span: Span,
+        kind: NativeTemplateIssueKind,
+    ) -> Result<T, NativeTemplateIssue> {
+        let issue = NativeTemplateIssue { span, kind };
+        self.state = NativeRouteState::Refused(issue);
+        Err(issue)
+    }
+}
+
+/// Private field borrows preserve the original owner while its syntax is borrowed.
+pub(super) struct Parts<'owner, 'arena> {
+    pub(super) selected: &'owner NativeTemplateComponent<'arena>,
+    pub(super) producer: &'owner mut FileProducer<'arena>,
+    pub(super) state: &'owner mut NativeRouteState,
+    pub(super) ordinary: &'owner mut Option<ScriptUnitId>,
+    pub(super) setup: &'owner mut Option<ScriptUnitId>,
+}
+impl<'arena> Parts<'_, 'arena> {
+    pub(super) fn attach(
+        &mut self,
+        admitted: AdmittedProgram<'_, 'arena>,
+        setup: bool,
+    ) -> Result<ScriptUnitId, NativeTemplateIssue> {
         let span = self.selected.component().block().span();
-        if !matches!(self.state, NativeRouteState::Scripts) {
+        if !matches!(*self.state, NativeRouteState::Scripts) {
             return self.refuse(span, NativeTemplateIssueKind::Interrupted);
         }
+        *self.state = NativeRouteState::Interrupted;
         let selection = if setup {
             self.selected.setup()
         } else {
@@ -38,7 +74,7 @@ impl<'a> NativeTemplateOwner<'a> {
             return self.refuse(span, NativeTemplateIssueKind::MissingProgram);
         };
         let span = selection.block().span();
-        let previous = if setup { self.setup } else { self.ordinary };
+        let previous = if setup { *self.setup } else { *self.ordinary };
         if previous.is_some() {
             return self.refuse(span, NativeTemplateIssueKind::DuplicateProgram);
         }
@@ -74,19 +110,21 @@ impl<'a> NativeTemplateOwner<'a> {
             }
         };
         if setup {
-            self.setup = Some(unit);
+            *self.setup = Some(unit);
         } else {
-            self.ordinary = Some(unit);
+            *self.ordinary = Some(unit);
         }
+        *self.state = NativeRouteState::Scripts;
         Ok(unit)
     }
-    pub(super) fn refuse<T>(
+
+    fn refuse<T>(
         &mut self,
         span: Span,
         kind: NativeTemplateIssueKind,
     ) -> Result<T, NativeTemplateIssue> {
         let issue = NativeTemplateIssue { span, kind };
-        self.state = NativeRouteState::Refused(issue);
+        *self.state = NativeRouteState::Refused(issue);
         Err(issue)
     }
 }

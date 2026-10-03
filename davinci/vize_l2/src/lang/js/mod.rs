@@ -6,8 +6,9 @@ mod handler;
 pub mod interpolation;
 pub use crate::file::region::native::NativeTemplateWalk;
 pub use file::native::{
-    NativeTemplateFile, NativeTemplateIssue, NativeTemplateIssueKind, NativeTemplateOwner,
-    NativeTemplateView, RejectedNativeTemplateOwner,
+    NativeSelectedSetup, NativeSetupIssue, NativeSetupIssueKind, NativeTemplateFile,
+    NativeTemplateIssue, NativeTemplateIssueKind, NativeTemplateOwner, NativeTemplateView,
+    RejectedNativeTemplateOwner,
 };
 pub use file::observer::{
     CallEvent, DeclaredEvent, FileObserver, InvocationEvent, StatementEvent, SyntaxEvent,

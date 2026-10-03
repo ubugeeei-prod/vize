@@ -5,15 +5,21 @@ use crate::artifact::ArtifactError;
 use crate::file::region::native::NativeTemplateWalk;
 use crate::file::{FileArtifact, FileIssueKind, RejectedFile, ScriptUnitId};
 use vize_l0::Span;
-use vize_l1::markup::NativeTemplateComponent;
+use vize_l1::{embed::syntax::NativeSyntax, markup::NativeTemplateComponent};
 
 mod program;
+mod setup;
+pub use setup::{NativeSelectedSetup, NativeSetupIssue, NativeSetupIssueKind};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeTemplateIssueKind {
     Interpolation(super::super::NativeInterpolationInputError),
     Artifact(ArtifactError),
     Program(FileIssueKind),
+    SetupSyntax(vize_l1::embed::syntax::EmbedHole),
+    SetupSource(vize_l1::embed::SourceError),
+    UnsupportedOrdinaryScript,
+    UnsupportedStyle,
     MissingProgram,
     DuplicateProgram,
     InvalidProfile,
@@ -54,6 +60,7 @@ pub struct NativeTemplateOwner<'a> {
     producer: FileProducer<'a>,
     ordinary: Option<ScriptUnitId>,
     setup: Option<ScriptUnitId>,
+    retained_setup: Option<alloc::boxed::Box<NativeSyntax<'a>>>,
     state: NativeRouteState,
 }
 pub struct RejectedNativeTemplateOwner<'a> {
@@ -92,6 +99,7 @@ impl<'a> NativeTemplateOwner<'a> {
             producer,
             ordinary: None,
             setup: None,
+            retained_setup: None,
             state: NativeRouteState::Scripts,
         })
     }
@@ -163,6 +171,7 @@ impl<'a> NativeTemplateOwner<'a> {
             selected: self.selected,
             outcome: self.producer.finish(),
             state: self.state,
+            retained_setup: self.retained_setup,
         }
     }
 }
@@ -184,6 +193,7 @@ pub struct NativeTemplateFile<'a> {
     selected: NativeTemplateComponent<'a>,
     outcome: Result<FileArtifact<'a>, RejectedFile<'a>>,
     state: NativeRouteState,
+    retained_setup: Option<alloc::boxed::Box<NativeSyntax<'a>>>,
 }
 impl<'a> NativeTemplateFile<'a> {
     #[must_use]
