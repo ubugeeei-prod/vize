@@ -134,40 +134,44 @@ fn dropping_after_omission_interrupts_even_without_a_minted_node() -> Result<(),
 fn omitted_text_does_not_hide_later_unsupported_body_or_lose_prior_ops() -> Result<(), &'static str>
 {
     let arena = Allocator::default();
-    let source = "<template> \n<!--done--><svg/></template>";
-    let mut original = owner(&arena, source)?;
-    {
-        let mut walk = original.begin().map_err(|_| "begin")?;
-        let selected = walk.selected();
-        let mut children = selected.children();
-        let first = selected
-            .prepare_condensed_root_text(children.next().ok_or("first")?)
-            .map_err(|_| "omission")?;
-        equal(
-            walk.root_text(&first).map_err(|_| "consume omission")?,
-            None,
-        )?;
-        equal(
-            walk.child(children.next().ok_or("comment")?)
-                .map_err(|_| "prior comment")?,
-            NodeId::FIRST,
-        )?;
-        equal(
-            kind(walk.child(children.next().ok_or("actual unsupported")?))?,
-            Kind::UnsupportedChild,
-        )?;
-        equal(kind(walk.root_text(&first))?, Kind::UnsupportedChild)?;
-        equal(kind(walk.complete())?, Kind::UnsupportedChild)?;
+    for source in [
+        "<template> \n<!--done--><svg/></template>",
+        "<template> \n<!--done--><div>body</template>",
+    ] {
+        let mut original = owner(&arena, source)?;
+        {
+            let mut walk = original.begin().map_err(|_| "begin")?;
+            let selected = walk.selected();
+            let mut children = selected.children();
+            let first = selected
+                .prepare_condensed_root_text(children.next().ok_or("first")?)
+                .map_err(|_| "omission")?;
+            equal(
+                walk.root_text(&first).map_err(|_| "consume omission")?,
+                None,
+            )?;
+            equal(
+                walk.child(children.next().ok_or("comment")?)
+                    .map_err(|_| "prior comment")?,
+                NodeId::FIRST,
+            )?;
+            equal(
+                kind(walk.child(children.next().ok_or("actual unsupported")?))?,
+                Kind::UnsupportedChild,
+            )?;
+            equal(kind(walk.root_text(&first))?, Kind::UnsupportedChild)?;
+            equal(kind(walk.complete())?, Kind::UnsupportedChild)?;
+        }
+        let output = original.finish();
+        check(output.view().is_err())?;
+        let file = output.file().ok_or("actual prefix")?;
+        let [Op::Comment(comment)] = file.artifact().root().ops.as_slice() else {
+            return Err("exact completed comment prefix");
+        };
+        equal(comment.content, "done")?;
+        equal(file.artifact().node_count(), 1)?;
+        equal(file.template_issues().len(), 1)?;
+        check(!file.is_complete())?;
     }
-    let output = original.finish();
-    check(output.view().is_err())?;
-    let file = output.file().ok_or("actual prefix")?;
-    let [Op::Comment(comment)] = file.artifact().root().ops.as_slice() else {
-        return Err("exact completed comment prefix");
-    };
-    equal(comment.content, "done")?;
-    equal(file.artifact().node_count(), 1)?;
-    equal(file.template_issues().len(), 1)?;
-    check(!file.is_complete())?;
     Ok(())
 }

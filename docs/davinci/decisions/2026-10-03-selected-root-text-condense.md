@@ -66,11 +66,11 @@ root groups and sole File/owner identities, with no decisions for omitted
 source events. The four interpolation-neighbor cases retain L1 receipt
 coverage without claiming lower interpolation completion.
 
-Complete source-built module/runtime/map equality requires the separately
-owned genuine selected L4 `emit_template` provider. A real dependent output
-law slice will join only after both providers actually merge; this L2/L3
-change exposes no neutral analysis or target entry and claims no output
-closure yet. Native nested whitespace, text entities, inherited pre/RCDATA,
+Complete source-built module/runtime/map equality uses the separately owned
+genuine selected L4 `emit_template` provider, actually merged as
+`57ccfca26e485feed482d1e8a3d8b054892b40bb`. A real dependent output law
+slice will join after this lower prefix actually merges; this L2/L3 change
+exposes no neutral analysis or target entry and claims no output closure yet. Native nested whitespace, text entities, inherited pre/RCDATA,
 all Vue profiles/dialects, runtime families and complete product routes
 remain unfinished. Exact-head source Actions, protected complete suites and
 unchanged all-100 measurements, and actual merge are still required.
