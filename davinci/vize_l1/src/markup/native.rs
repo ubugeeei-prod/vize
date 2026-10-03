@@ -6,9 +6,14 @@ use vize_l0::{Allocator, SourceBlock};
 
 mod child;
 mod element;
+mod operand;
 mod selected;
 pub use child::{NativeChild, NativeChildren};
 pub use element::{NativeAttribute, NativeAttributes, NativeElement};
+pub use operand::{
+    NativeAttributeExpression, NativeAttributeExpressionFailure, NativeAttributeExpressionView,
+    NativeAttributeOperandError, NativeConditionKind,
+};
 pub use selected::{NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar};
 
 /// Complete once-parsed Component privately paired with its checked source.
