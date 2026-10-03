@@ -70,11 +70,9 @@ fn original_callback_cst_and_actual_expression_keep_nonzero_unicode_root_coordin
     assert!(core::ptr::eq(view.expression(), original));
     assert!(core::ptr::eq(view.binding(), binding));
     assert_eq!(children.len(), 0);
-    let authored_parent = owner.authored_children().unwrap().next().unwrap();
-    let authored = owner
-        .text_for(authored_parent.children().unwrap().nth(1).unwrap())
-        .unwrap();
-    assert!(core::ptr::eq(authored.expression(), original));
+    // The existing optional authored CST is created only after interactive
+    // repair; requesting it does not manufacture a second wellformed tree.
+    assert!(owner.authored_children().is_none());
 }
 
 #[test]
@@ -166,7 +164,7 @@ fn malformed_expression_retains_original_comment_diagnostics_and_typed_native_ho
 }
 
 #[test]
-fn recovered_normal_and_authored_children_retain_syntax_without_body_admission() {
+fn missing_close_retains_syntax_without_admission_or_a_fabricated_authored_tree() {
     let arena = Allocator::default();
     let owner = surface::parse_component_with_authored(&arena, "<p>{{ x }}").unwrap();
     assert_eq!(owner.bindings().len(), 1);
@@ -178,13 +176,7 @@ fn recovered_normal_and_authored_children_retain_syntax_without_body_admission()
             .unwrap_err(),
         TextRefusal::RecoveredComponent
     );
-    let authored = owner.authored_children().unwrap().next().unwrap();
-    assert_eq!(
-        owner
-            .text_for(authored.children().unwrap().next().unwrap())
-            .unwrap_err(),
-        TextRefusal::RecoveredComponent
-    );
+    assert!(owner.authored_children().is_none());
     assert_eq!(check_fidelity(owner.tree()), Ok(()));
 }
 

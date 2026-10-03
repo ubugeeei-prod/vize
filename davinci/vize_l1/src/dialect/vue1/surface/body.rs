@@ -106,7 +106,10 @@ impl<'a> ComponentParse<'a> {
         Some(TextChildren {
             component: self,
             parent: None,
-            recovered: false,
+            // The existing constructor retains this alternative only after
+            // an actual interactive repair. Inspection keeps its membership;
+            // it cannot grant clean original body admission.
+            recovered: true,
             children: self.authored.as_ref()?.children.iter().enumerate(),
         })
     }

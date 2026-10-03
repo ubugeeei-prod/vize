@@ -34,7 +34,11 @@ There is no public constructor pairing existing syntax with a supplied source,
 offset, interpolation or tree. The component's sealed `TextChildren` iterator
 produces only its own original direct children and their actual parent/ordinal.
 Nested children can only be projected from a sealed original element. Optional
-authored children come from that same original construction. Read-only raw CST
+authored children come from that same original construction, only when actual
+interactive repair required the existing optional alternative. That repair
+witness keeps original membership for inspection but always refuses body
+admission; requesting authored syntax never creates another wellformed tree.
+Read-only raw CST
 access remains available; a public lookalike node cannot produce a sealed view.
 
 `text_for` checks actual component identity, original block/token pointer spans,
@@ -71,7 +75,7 @@ Double-encoded input is decoded once, retaining its exact native source map.
 
 ## Evidence and remaining work
 
-Ten native laws cover actual AST pointer identity, nested normal/authored CST
+Eleven native laws cover actual AST pointer identity, nested normal/authored CST
 membership, complete-file Unicode/maps/comments/diagnostics, repeated and foreign
 same-buffer owners, moves, recovery, separators/once/pipes/raw framing, encoded
 brace and once-decoding boundaries, literal pre and every UTF-8 prefix. New
