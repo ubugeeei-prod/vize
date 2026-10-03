@@ -18,12 +18,13 @@ fn original_jsx_path_and_configured_module_refusals_preserve_complete_owners() {
             block_on(bridge.check_original_jsx(&original, Path::new("source.jsx"))),
             Err(OriginalProgramError::InvalidSourcePath)
         ));
-        let wrong = root.path().join(cstr!("source.{wrong_extension}").as_str());
+        let wrong = root.path().join(cstr!("wrong.{wrong_extension}").as_str());
         std::fs::write(&wrong, source).unwrap();
         assert!(matches!(
             block_on(bridge.check_original_jsx(&original, &wrong)),
             Err(OriginalProgramError::SourceKindMismatch)
         ));
+        std::fs::remove_file(&wrong).unwrap();
         std::fs::write(&path, "const changed=0;").unwrap();
         assert!(matches!(
             block_on(bridge.check_original_jsx(&original, &path)),
@@ -38,10 +39,17 @@ fn original_jsx_path_and_configured_module_refusals_preserve_complete_owners() {
             Err(OriginalProgramError::OutsideProject)
         ));
         block_on(bridge.spawn()).unwrap();
-        assert!(matches!(
-            block_on(bridge.check_original_jsx(&original, &path)),
-            Err(OriginalProgramError::UnsupportedModuleGoal)
-        ));
+        assert!(original.file().imports().is_empty());
+        assert!(original.file().exports().is_empty());
+        let checked = block_on(bridge.check_original_jsx(&original, &path));
+        assert!(
+            matches!(
+                checked.as_ref(),
+                Err(OriginalProgramError::UnsupportedModuleGoal)
+            ),
+            "{extension}: actual refusal {:?}",
+            checked.as_ref().err()
+        );
         configuration(root.path(), true, true);
         assert!(matches!(
             block_on(bridge.check_original_jsx(&original, &path)),

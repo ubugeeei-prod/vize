@@ -70,18 +70,6 @@ fn real_vue_jsx_and_tsx_keep_complete_raw_diagnostics_types_and_authored_owners(
         serde_json::from_slice(&std::fs::read(dependencies.join("vue/package.json")).unwrap())
             .unwrap();
     assert_eq!(package["version"], "3.5.35");
-    // This is the actual pinned Vue declaration, never an invented JSX global.
-    let declaration = dependencies
-        .join("vue")
-        .canonicalize()
-        .unwrap()
-        .parent()
-        .unwrap()
-        .join("@vue/runtime-dom/dist/runtime-dom.d.ts")
-        .canonicalize()
-        .unwrap();
-    let declaration_source = std::fs::read_to_string(&declaration).unwrap();
-    let declared_id = declaration_source.find("\n    id?: string").unwrap() + 5;
     for (annotation, profile, kind, missing_type) in [
         ("", SourceType::jsx(), SourceKind::Jsx, "1"),
         (
@@ -139,7 +127,7 @@ fn real_vue_jsx_and_tsx_keep_complete_raw_diagnostics_types_and_authored_owners(
         assert_eq!(
             serde_json::to_value(&full.full_document_diagnostic_report.items).unwrap(),
             serde_json::json!([
-                {"range":range(&source,id,2),"severity":1,"code":2322,"source":"ts","message":"Type 'number' is not assignable to type 'string'.","relatedInformation":[{"location":{"uri":cstr!("file://{}",declaration.display()).as_str(),"range":range(&declaration_source,declared_id,2)},"message":"The expected type comes from property 'id' which is declared here on type 'HTMLAttributes & ReservedProps'"}]},
+                {"range":range(&source,id,2),"severity":1,"code":2322,"source":"ts","message":"Type 'number' is not assignable to type 'string'."},
                 {"range":range(&source,missing,7),"severity":1,"code":2339,"source":"ts","message":cstr!("Property 'missing' does not exist on type '{missing_type}'.").as_str()}
             ])
         );

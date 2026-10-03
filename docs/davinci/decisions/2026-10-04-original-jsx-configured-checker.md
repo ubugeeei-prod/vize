@@ -41,7 +41,7 @@ vectors. This probe is oracle evidence; genuine source-built Canon/TS7 Actions
 must separately pass the full raw vector and original owner laws.
 
 New hosted laws check both true source kinds, non-BMP comment and CRLF UTF16
-ranges, original Program body identity, real Vue related information, exact
+ranges, original Program body identity, the entire actual raw TS7 vector, exact
 source bytes, correct authored mappings, source digest and same-project receipt.
 They also check wrong kinds, relative/outside paths, stale source, actual
 configured membership and Module goal, and an externally revised source while
@@ -73,3 +73,20 @@ through `gh stack merge 7624 --yes --squash`, after read-only clean unions with
 both older queued sources. This is queue admission, not an actual merge.
 Independent bounded consumer review found no additional production blocker
 after the genuine fixture corrections; full-vector TS7 Actions is still required.
+
+The first genuine source-built Canon campaign (e3b758d37d, Check37140842717)
+compiled the actual consumer and owner-drop doctests. The actual unfiltered
+TS7 JSX report contains exactly TS2322 and TS2339 with the independently
+verified primary codes, messages, and UTF16 ranges, but **no relatedInformation**.
+The TypeScript 6.0.3 primary oracle includes the actual Vue declaration. The
+existing shared LSP initializer does not advertise related-information support;
+this campaign establishes the output difference, not its sole cause. The new
+law now asserts the complete actual raw TS7 vector without adding or filtering
+fields, and the related-declaration equivalence gap remains unfinished under
+#6879. No shared initializer or legacy behavior was changed.
+
+The identity law also created a wrong-kind file with the same basename as its
+true JSX/TSX file. It now uses and removes a distinct `wrong.*` fixture before
+configured membership/Module checks, and prints the actual typed refusal on a
+failure. The first externally revised JSX/reaping law passed separately. Fresh
+source Actions is required after these changes; the consumer was never queued.
