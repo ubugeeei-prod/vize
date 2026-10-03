@@ -86,12 +86,10 @@ fn five_whole_original_click_components_and_maps_are_captured() -> Result<(), St
             map["names"] == serde_json::json!(["$event"]),
             "{id}: original EventParameter name"
         );
-        if !fixture["nativeMap"].is_null() {
-            require!(
-                map == fixture["nativeMap"],
-                "{id}: complete source-built frozen map"
-            );
-        }
+        require!(
+            map == fixture["nativeMap"],
+            "{id}: complete source-built frozen map"
+        );
         let observation = mapped.observation();
         require!(
             observation.issues().is_empty(),

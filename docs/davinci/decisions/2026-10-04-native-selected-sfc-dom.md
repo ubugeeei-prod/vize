@@ -79,3 +79,21 @@ consumer delta onto literal fresh main and publish independently. SSR and Vapor
 remain independent target consumers; no artificial cross-target chain is added.
 Default compiler migration, #6880 closure, whole scripts/styles, broad control/
 event/dialect coverage and complete Davinci readiness remain unfinished.
+
+Corrected actual source `ab02100e5` / Check37153881435 produces all five
+complete native modules/maps in artifact11285087863. Every source/code byte
+matches the independent pinned pack; the original owner/body/link laws execute
+and the maps retain the entire SFC, Unicode/CRLF/entity atoms and all named
+`$event` anchors. Freeze only these actual map values and make every Rust map
+equality unconditional. Independent real Vue execution of those captured
+modules passes all eight Node laws with zero skips, including five native and
+five reference mount/update/two-click/unmount runs and callback replacement.
+This local Node run reuses installed pinned dependencies without Rust builds;
+fresh configured hosted source capture/runtime remains required.
+
+The prior global source campaign also correctly rejects one missing natural
+`@click.stop` refusal-fixture row. Regenerate the actual v-on corpus using its
+existing Node generator (the Rust command delegates to it), preserving the
+two-entry maxima and all gates. No fixture is marked synthetic and no ceiling
+is changed. Exact fresh source, protected full/all-100 and actual merge remain
+unfinished acceptance; the green common-provider prefix proceeds independently.
