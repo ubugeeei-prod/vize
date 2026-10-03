@@ -16,8 +16,28 @@ The first family supports setup-only JS/TS and scriptless literal reads. It
 copies the complete selected setup Program unchanged, preserving comments,
 JSDoc and actual language kind, then emits each genuinely resolved original
 interpolation inside unlinked expression punctuation. This contract requires
-complete original File semantics, not runtime compiler `VueSetup` eligibility;
-it neither broadens that compiler flag nor asserts primitive-only syntax.
+complete original File semantics for the faithful whole-script copy. Whenever
+a template expression reads setup bindings, the existing `VueSetup::checked`
+provider must independently prove that the actual whole original unit contains
+only stable primitive declarations. Mere exposure membership does not grant Vue
+ref-unwrapping semantics: an imported Ref assigned to a visible setup binding
+must refuse until the genuine unwrap type projection exists. This uses the
+original sole-walk eligibility receipt, not an extra source/AST scan or a
+reconstructed declaration list. Scripts with no template binding reads retain
+their faithful complete copy, including imports and other completed syntax.
+The same original resolution occurrences must all have Read usage; Write and
+ReadWrite rows refuse the bounded template-read family without granting
+cross-interpolation script control-flow semantics.
+An independent official vue-tsc 3.3.11 / TypeScript 6.0.3 / Vue 3.5.35 oracle
+confirms primitive const comparison/member reads: its complete TS2367 and
+TS2339 code/message vector matches actual native TS 7.0.2 projection, with
+the same authored starts. A proposed const-context widening gap was not
+reproduced. This bounded dev oracle supplies no normal legacy dependency or
+whole-product parity claim; mandatory source-built native diagnostics remain
+separate acceptance evidence.
+The genuine TS primitive provider #7549 and const provider #7521 must actually
+merge before this consumer replays onto their literal main; their accepted
+queue prefix is not disturbed. No runtime eligibility flag is broadened here.
 Ordinary scripts and ordinary/setup mixtures are refused because their distinct
 original scopes cannot be faithfully concatenated. Styles, attached bindings,
 components, slots and structured controls are refused until their type

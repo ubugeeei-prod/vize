@@ -11,7 +11,9 @@ use vize_l0::{
     line_index::utf16_offset,
 };
 use vize_l1_to_l2::{native::NativeEmbed, native_file::NativeSfc};
-use vize_l2::{expr::ExprRef, file::FileArtifact, op::Op, walk::NodeRef};
+use vize_l2::{
+    expr::ExprRef, file::FileArtifact, lang::js::VueSetup, op::Op, resolution::Usage, walk::NodeRef,
+};
 
 use super::{MappingError, SourceKind};
 use crate::write::{EmitDocument, LinkSink, NoLinks, Recorded, Writer};
@@ -23,6 +25,7 @@ pub enum VueProjectionError {
     UnsupportedScripts,
     UnsupportedStyles,
     UnsupportedTemplate,
+    UnsupportedTemplateBindings,
     Custody,
     SourceTooLarge,
 }
@@ -193,6 +196,7 @@ fn project<'o, 'a, L: LinkSink>(
         .map_or(&[][..], |template| template.embeds());
     let mut expressions = Vec::with_capacity(if L::RECORDING { embeds.len() } else { 0 });
     let mut consumed = 0;
+    let mut primitive_setup = false;
     let mut result = Ok(());
     file.artifact()
         .visit_nodes(&mut |id, node| {
@@ -233,15 +237,31 @@ fn project<'o, 'a, L: LinkSink>(
                 {
                     return Err(VueProjectionError::Custody);
                 }
-                if table.occurrences().iter().any(|occurrence| {
-                    resolution
+                for occurrence in table.occurrences() {
+                    if occurrence.usage != Usage::Read {
+                        return Err(VueProjectionError::UnsupportedTemplateBindings);
+                    }
+                    let binding = resolution
                         .binding(occurrence.binding)
-                        .is_none_or(|binding| {
-                            !resolution.accepts(binding)
-                                || original.file().exposure(binding).is_none()
-                        })
-                }) {
-                    return Err(VueProjectionError::Custody);
+                        .ok_or(VueProjectionError::Custody)?;
+                    if !resolution.accepts(binding) || original.file().exposure(binding).is_none() {
+                        return Err(VueProjectionError::Custody);
+                    }
+                }
+                // Membership alone grants no Vue ref-unwrapping semantics.
+                // Reuse the original sole-walk whole-unit primitive proof;
+                // declarations are never reconstructed or scanned here.
+                if !table.occurrences().is_empty() && !primitive_setup {
+                    let script = descriptor.setup().ok_or(VueProjectionError::Custody)?;
+                    let program = observation
+                        .scripts()
+                        .first()
+                        .and_then(|script| script.syntax())
+                        .and_then(|syntax| syntax.admitted_program())
+                        .ok_or(VueProjectionError::Custody)?;
+                    VueSetup::checked(file, script, program)
+                        .map_err(|_| VueProjectionError::UnsupportedTemplateBindings)?;
+                    primitive_setup = true;
                 }
                 writer.push("void (\n");
                 let start =

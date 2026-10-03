@@ -12,6 +12,9 @@ use vize_l4::targets::ts::{
     vue::{VueProjectionError, project_vue, project_vue_no_links},
 };
 
+#[path = "vue_projection/binding_reads.rs"]
+mod binding_reads;
+
 fn options() -> DescriptorOptions {
     DescriptorOptions {
         version: VueVersion::V3,
@@ -178,6 +181,97 @@ fn scriptless_literals_and_line_comments_keep_complete_native_sources() {
             );
         }
         assert_eq!(observed.issues().len(), 0);
+    }
+}
+
+#[test]
+fn template_bindings_require_original_whole_unit_primitive_proof_without_restricting_script_copy() {
+    for attribute in ["", " lang=ts"] {
+        for script in [
+            "import {counter} from './counter'; let value=counter;",
+            "let value=1; value=2;",
+            "let value={n:1};",
+        ] {
+            let arena = Allocator::default();
+            let source = cstr!(
+                "<template>{{{{value.toFixed}}}}</template><script setup{attribute}>{script}</script>"
+            );
+            let observed = lower_sfc_native(&arena, &source, options());
+            assert!(observed.admitted().is_some(), "{:?}", observed.issues());
+            let file = observed.file().unwrap().file();
+            let embed = observed.template().unwrap().embeds().first().unwrap();
+            let resolution = file.expression(embed.node.unwrap()).unwrap();
+            let occurrences = resolution.table().unwrap().occurrences();
+            assert_eq!(occurrences.len(), 1);
+            let actual_binding = resolution.binding(occurrences[0].binding).unwrap();
+            assert!(observed.file().unwrap().exposure(actual_binding).is_some());
+            assert!(matches!(
+                project_vue(observed.admitted().unwrap()),
+                Err(VueProjectionError::UnsupportedTemplateBindings)
+            ));
+            assert!(matches!(
+                project_vue_no_links(observed.admitted().unwrap()),
+                Err(VueProjectionError::UnsupportedTemplateBindings)
+            ));
+            assert!(core::ptr::eq(
+                resolution.table().unwrap().expression().ast,
+                embed.syntax.expression().unwrap()
+            ));
+            assert_eq!(observed.scripts().first().unwrap().block().source(), script);
+
+            // The genuine original import and complete Program still receive
+            // checker projection when no template read needs Vue ref semantics.
+            for template in ["", "<template>{{1}}</template>"] {
+                let source = cstr!("{template}<script setup{attribute}>{script}</script>");
+                let observed = lower_sfc_native(&arena, &source, options());
+                let projection = project_vue(observed.admitted().unwrap()).unwrap();
+                assert_eq!(
+                    projection.document().as_str(),
+                    cstr!(
+                        "{script}\n;\nexport {{}};\n{}",
+                        if template.is_empty() {
+                            ""
+                        } else {
+                            "void (\n1\n);\n"
+                        }
+                    )
+                );
+                assert!(core::ptr::eq(
+                    projection.original().observation(),
+                    &observed
+                ));
+            }
+        }
+    }
+}
+
+#[test]
+fn original_sfc_call_refusals_keep_the_actual_program_for_script_and_template_sources() {
+    for attribute in ["", " lang=ts"] {
+        for template in ["", "<template>{{value}}</template>"] {
+            let arena = Allocator::default();
+            let script = "let value=Math.abs(-1);";
+            let source = cstr!("{template}<script setup{attribute}>{script}</script>");
+            let observed = lower_sfc_native(&arena, &source, options());
+            assert!(observed.admitted().is_none());
+            let retained = observed.scripts().first().unwrap();
+            assert_eq!(retained.block().source(), script);
+            assert_eq!(
+                retained
+                    .syntax()
+                    .unwrap()
+                    .admitted_program()
+                    .unwrap()
+                    .program()
+                    .source_text,
+                script
+            );
+            assert!(core::ptr::eq(
+                retained.block().source(),
+                retained.syntax().unwrap().source().text()
+            ));
+            assert!(!observed.issues().is_empty());
+        }
     }
 }
 
