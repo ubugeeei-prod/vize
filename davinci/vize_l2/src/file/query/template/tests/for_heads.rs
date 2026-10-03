@@ -1,4 +1,6 @@
-use super::{Allocator, TemplateSiteScope, TemplateSymbolRef, at, file, native, site, uses};
+use super::{
+    Allocator, TemplateSiteScope, TemplateSymbolRef, at, attempt, file, native, site, uses,
+};
 
 #[test]
 fn original_for_alias_declarations_and_collection_keep_distinct_real_file_origins() {
@@ -73,16 +75,16 @@ fn original_nested_for_collection_resolves_parent_alias_before_its_own_shadowing
 }
 
 #[test]
-fn original_for_alias_and_collection_entity_spans_keep_each_real_source_namespace() {
+fn original_for_unicode_sites_and_entity_refusals_keep_actual_source_namespaces() {
     let arena = Allocator::default();
-    let source = "<script setup>const items=2;</script><template><div v-for='caf&#233; in it&#101;ms' @click='café'/></template>";
+    let source = "<script setup>const items=2;</script><template><div v-for='café in items' @click='café'/></template>";
     let output = native(&arena, source);
     let file = file(&output);
-    let alias = site(file, source, "caf&#233; in");
-    let collection = site(file, source, "it&#101;ms");
+    let alias = site(file, source, "café in");
+    let collection = site(file, source, "items' @click");
     let reference = site(file, source, "café'/>");
-    assert_eq!(alias.span().slice(source), "caf&#233;");
-    assert_eq!(collection.span().slice(source), "it&#101;ms");
+    assert_eq!(alias.span().slice(source), "café");
+    assert_eq!(collection.span().slice(source), "items");
     assert_eq!(reference.span().slice(source), "café");
     assert!(alias.symbol().same_symbol(reference.symbol()));
     assert!(!alias.symbol().same_symbol(collection.symbol()));
@@ -101,4 +103,32 @@ fn original_for_alias_and_collection_entity_spans_keep_each_real_source_namespac
             .is_none()
     );
     assert_eq!(uses(file, alias.symbol()), [reference.span()]);
+    assert!(matches!(
+        file.template_symbol_at_offset(alias.span().start + 4),
+        Err(super::TemplateQueryError::Position(
+            super::PositionQueryError::NotCharBoundary
+        ))
+    ));
+
+    // The current genuine native For family refuses entity output itself.
+    // Preserve that original refusal, not a positive query over a partial File.
+    let encoded = "<script setup>const items=2;</script><template><div v-for='caf&#233; in it&#101;ms' @click='café'/></template>";
+    let refused = attempt(&arena, encoded, false);
+    assert!(refused.view().is_err());
+    let partial = refused.file().unwrap();
+    let [crate::file::RejectedFileFor::Syntax(original)] = partial.rejected_for_heads() else {
+        panic!("original native For syntax refusal")
+    };
+    assert_eq!(
+        original.kind,
+        vize_l1::embed::syntax::NativeForRefusal::EntityOutput
+    );
+    assert_eq!(original.operand().raw_value(), "caf&#233; in it&#101;ms");
+    assert!(original.operand().syntax().source().decode_map().is_some());
+    assert!(matches!(
+        partial.template_symbol_at_offset(at(encoded, "caf&#233;")),
+        Err(super::TemplateQueryError::Position(
+            super::PositionQueryError::IncompleteFile
+        ))
+    ));
 }

@@ -75,7 +75,8 @@ expected-row assembly grants acceptance. They cover:
   projection, half-open names, source holes and invalid UTF8 positions;
 - actual For value/key declarations, original Params/resolution membership,
   enclosing collection scope, nested parent-alias collection and shadowing,
-  and both alias/collection entity source namespaces;
+  admitted Unicode names and retained entity-output refusals in the
+  original alias/collection namespaces;
 - foreign equal-byte Files, equal local IDs in separate handlers, incomplete
   late-header outcomes with zero reference callbacks, moved owners and repeated
   queries without arena growth, query order and actual visitor-unwind reuse.
@@ -88,3 +89,13 @@ action remains in place; full queue archive/doctests/differential suites and
 unchanged all100 ×3 instruction ceilings/ratchets must pass at the candidate,
 followed by the literal protected merge. No skipped test or API-existence
 observation receives runtime or product completion credit.
+
+Initial source `ded1549db` compiled and passed affected Clippy, original native
+navigation/minimal/strict and doctests, but one of the ten new runtime laws
+wrongly expected encoded For names to be admitted. The genuine L1 For family
+explicitly refuses `EntityOutput` before File attachment. The correction keeps
+that exact authored encoded input and its actual retained syntax/refusal,
+requires incomplete File query refusal, and verifies positive name geometry
+only for the admitted original Unicode input. The other nine laws passed.
+No production grammar or refusal was widened; the superseded head was never
+queued. Fresh exact-head hosted and protected acceptance remain required.
