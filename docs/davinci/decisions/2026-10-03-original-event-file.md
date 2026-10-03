@@ -102,3 +102,13 @@ handler window, original decoded MissingBinding span and normally retained
 whole input with every stock diagnostic, while all other unsupported headers
 still refuse before minting. This is a real integration boundary correction,
 not target runtime admission; source Actions must execute the updated union.
+
+The original input/resolver prefix #7542/#7557 actually merged at
+2026-10-03T16:39:57/58Z as signed `14988a0b38e479814ba0107b27c340b9434ffbec`
+and `bbb8e1a952f47bc1386c55c6e73a73e2329dde27`. Exact protected
+Checks 37136484175/37136749005, full Rust workers, instruction gates, Nuxt
+and Musea are terminal SUCCESS. This successor follows that literal main and
+retains the actually merged ordinary-script provider/test registration beside
+the event laws. The only replay conflict was that test module registration;
+functional providers and source/storage policies are conserved. Fresh source
+Actions and actual protected acceptance for this File successor remain required.
