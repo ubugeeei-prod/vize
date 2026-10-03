@@ -10,6 +10,7 @@ use vize_relief::{CommentNode, ElementNode, PropNode, TemplateChildNode};
 
 pub use crate::visitor_scope::{parse_slot_scope_variables, parse_v_for_variables};
 
+mod branches;
 mod root;
 
 /// Visit the AST and run all rules
@@ -314,85 +315,6 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         }
 
         self.ctx.pop_element();
-    }
-
-    #[inline]
-    fn visit_if(&mut self, if_node: &vize_relief::IfNode<'a>) {
-        // Run if checks
-        let keep_mask = self.keep_mask;
-        profile!("patina.rules.check_if", {
-            for (index, (rule, rule_name)) in self
-                .rules
-                .iter()
-                .zip(self.rule_names.iter().copied())
-                .enumerate()
-            {
-                if !Self::rule_active(keep_mask, index) {
-                    continue;
-                }
-                self.ctx.current_rule = rule_name;
-                rule.check_if(self.ctx, if_node);
-            }
-        });
-
-        // Visit branches
-        for branch in if_node.branches.iter() {
-            for child in branch.children.iter() {
-                self.visit_child(child);
-            }
-        }
-    }
-
-    #[inline]
-    fn visit_for(&mut self, for_node: &vize_relief::ForNode<'a>) {
-        // Run for checks
-        let keep_mask = self.keep_mask;
-        profile!("patina.rules.check_for", {
-            for (index, (rule, rule_name)) in self
-                .rules
-                .iter()
-                .zip(self.rule_names.iter().copied())
-                .enumerate()
-            {
-                if !Self::rule_active(keep_mask, index) {
-                    continue;
-                }
-                self.ctx.current_rule = rule_name;
-                rule.check_for(self.ctx, for_node);
-            }
-        });
-
-        // Visit children
-        for child in for_node.children.iter() {
-            self.visit_child(child);
-        }
-    }
-
-    /// Extract variable names from v-for directive on an element
-    #[inline]
-    fn extract_v_for_vars(&self, el: &ElementNode<'a>) -> Vec<CompactString> {
-        for prop in el.props.iter() {
-            if let PropNode::Directive(dir) = prop
-                && dir.name == "for"
-                && let Some(exp) = &dir.exp
-            {
-                return parse_v_for_variables(exp);
-            }
-        }
-        Vec::new()
-    }
-
-    #[inline]
-    fn extract_slot_scope_vars(&self, el: &ElementNode<'a>) -> Vec<CompactString> {
-        for prop in el.props.iter() {
-            if let PropNode::Directive(dir) = prop
-                && dir.name == "slot"
-                && let Some(exp) = &dir.exp
-            {
-                return parse_slot_scope_variables(exp);
-            }
-        }
-        Vec::new()
     }
 }
 
