@@ -81,9 +81,10 @@ let
     buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ libiconv ];
   };
 
-  # Vize remains manifest-only, but the patched parser is a real dependency
-  # of official OXC crates. Its public API must survive Crane's local stubs.
+  # Vize remains manifest-only, but official OXC crates use the patched
+  # parser through its compatibility adapter. Both APIs must survive stubs.
   patchedParser = lib.cleanSource (root + /vendor/oxc_parser);
+  patchedParserCompat = lib.cleanSource (root + /vendor/oxc_parser_compat);
   cargoArtifacts = craneLib.buildDepsOnly (
     commonArgs
     // {
@@ -91,6 +92,9 @@ let
         rm -rf "$out/vendor/oxc_parser"
         cp -R ${patchedParser} "$out/vendor/oxc_parser"
         chmod -R +w "$out/vendor/oxc_parser"
+        rm -rf "$out/vendor/oxc_parser_compat"
+        cp -R ${patchedParserCompat} "$out/vendor/oxc_parser_compat"
+        chmod -R +w "$out/vendor/oxc_parser_compat"
       '';
     }
   );
