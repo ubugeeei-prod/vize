@@ -8,6 +8,8 @@ use alloc::vec::Vec;
 use vize_l0::id::NodeId;
 use vize_l2::{expr::JsExpr, file::Namespace};
 
+mod native;
+
 impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
     DomBuilder<'_, 'owner, 'arena, F, R>
 {
@@ -32,6 +34,10 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             self.reject(node, expression.span, DomUnsupported::FileScope);
             return None;
         };
+        if let Some(rejected) = native::refusal(file, node, expression) {
+            self.reject(rejected.node, rejected.span, rejected.reason);
+            return None;
+        }
         let table = resolution.table()?;
         // These identities were resolved by the actual minting factory. Check
         // recorded declarations only, rather than rerunning scope/name lookup.

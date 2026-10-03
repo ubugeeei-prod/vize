@@ -4850,6 +4850,7 @@ dependencies = [
 name = "vize_l3"
 version = "0.430.1"
 dependencies = [
+ "oxc_ast",
  "oxc_span",
  "serde_json",
  "toml",
