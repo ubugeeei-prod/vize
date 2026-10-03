@@ -172,13 +172,23 @@ fn selected_lint_tag_aux_never_changes_mode_quotes_width_or_event_layout() {
         ] {
             for verbatim in [false, true] {
                 for literal in [false, true] {
-                    recorder.opening_end_with_lint(kind, 19, verbatim, Some(fact), literal);
-                    let event = recorder.events.last().unwrap();
-                    assert_eq!(event.kind, kind);
-                    assert_eq!((event.start, event.end), (19, 19));
-                    assert_eq!(event.is_verbatim_opening(), verbatim);
-                    assert_eq!(event.lint_tag().unwrap() as u8, fact as u8);
-                    assert_eq!(event.lint_header_is_literal(), literal);
+                    for table_context in [false, true] {
+                        recorder.opening_end_with_lint(
+                            kind,
+                            19,
+                            verbatim,
+                            Some(fact),
+                            literal,
+                            table_context,
+                        );
+                        let event = recorder.events.last().unwrap();
+                        assert_eq!(event.kind, kind);
+                        assert_eq!((event.start, event.end), (19, 19));
+                        assert_eq!(event.is_verbatim_opening(), verbatim);
+                        assert_eq!(event.lint_tag().unwrap() as u8, fact as u8);
+                        assert_eq!(event.lint_header_is_literal(), literal);
+                        assert_eq!(event.lint_in_table_context(), table_context);
+                    }
                 }
             }
         }
@@ -187,8 +197,9 @@ fn selected_lint_tag_aux_never_changes_mode_quotes_width_or_event_layout() {
         assert_eq!(ordinary.aux, 0);
         assert!(ordinary.lint_tag().is_none());
         assert!(!ordinary.lint_header_is_literal());
+        assert!(!ordinary.lint_in_table_context());
     }
     assert_eq!(core::mem::size_of::<Event>(), 12);
-    assert_eq!(events.len(), 50);
+    assert_eq!(events.len(), 98);
     assert!(errors.is_empty());
 }

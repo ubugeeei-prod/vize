@@ -136,3 +136,23 @@ exemption, lower its severity or call the existing semantic helper. A clean
 created until this dependency is ready. Raw script/style observations for that
 Error consumer must be established separately; L2 body or target admission is
 not authority for this L1 header-only lint API.
+
+The complete-output audit preserved `<template><table><html role></html></table></template>`:
+the original native header retains one genuine ARIA counterexample, while the unchanged
+registered parser additionally emits a foster-parenting Error. The provider now retains
+an authentic opening-time `in_table_context` fact in the same complete-header event,
+from its existing live parser frame after actual recovery. It records any authored
+ASCII-insensitive `table` ancestor conservatively, including foreign namespace frames;
+it does not claim DOM table semantics or recreate the legacy foster algorithm. A table's
+own opening and later outside siblings do not inherit that fact. Dependent new header
+consumers must refuse these descendants before lookup, fact issuance or partial results.
+No old merged rule's admission or default route changes. Four additional original-owner
+scope laws and the expanded disjoint aux/layout law preserve the exact failed source,
+original tree placement, normal event bytes and existing size caps. The extra bool fits
+existing Token/frame padding; const-false normal constructors omit its computation.
+Fresh exact-head Actions and unchanged protected instruction ceilings are required.
+
+This source repair is replayed onto actual main after policy #7580 merged as
+`0c3f5bae33bd5b4ea49cc4349b01f35f9cc7eb93`. Its deleted grep-only L1 census stays
+deleted; authoritative migration/storage data and fresh source-qualified census reports
+remain mandatory. Prior controls and complete-output expectations remain unchanged.

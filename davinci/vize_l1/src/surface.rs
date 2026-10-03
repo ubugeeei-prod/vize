@@ -41,6 +41,7 @@ pub struct Token<'a> {
     raw_interpolation: bool,
     lint_tag: Option<LintTagFact>,
     lint_header_literal: bool,
+    lint_table_context: bool,
 }
 
 // Keep public diagnostics and dumps independent of private construction facts.
@@ -67,6 +68,7 @@ impl<'a> Token<'a> {
             raw_interpolation: false,
             lint_tag: None,
             lint_header_literal: false,
+            lint_table_context: false,
         }
     }
 
@@ -80,6 +82,7 @@ impl<'a> Token<'a> {
             raw_interpolation: false,
             lint_tag: None,
             lint_header_literal: false,
+            lint_table_context: false,
         }
     }
 
@@ -91,9 +94,15 @@ impl<'a> Token<'a> {
         self.raw_interpolation = true;
     }
 
-    pub(crate) fn mark_lint_tag(&mut self, fact: Option<LintTagFact>, header_literal: bool) {
+    pub(crate) fn mark_lint_tag(
+        &mut self,
+        fact: Option<LintTagFact>,
+        header_literal: bool,
+        table_context: bool,
+    ) {
         self.lint_tag = fact;
         self.lint_header_literal = header_literal;
+        self.lint_table_context = table_context;
     }
 
     pub fn is_missing(&self) -> bool {
@@ -181,6 +190,10 @@ impl OpenTag<'_> {
 
     pub(crate) fn lint_header_is_literal(&self) -> bool {
         self.lt_name.lint_header_literal
+    }
+
+    pub(crate) fn lint_in_table_context(&self) -> bool {
+        self.lt_name.lint_table_context
     }
 
     /// The native dialect's resolved lexical mode for this opening tag.

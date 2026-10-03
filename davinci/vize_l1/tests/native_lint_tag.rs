@@ -78,4 +78,5 @@ mod native_lint_tag {
 
     mod grammar;
     mod ownership;
+    mod table;
 }

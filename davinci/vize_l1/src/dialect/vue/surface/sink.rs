@@ -15,6 +15,7 @@ struct ModeFrame<'a> {
     ns: Namespace,
     verbatim: bool,
     exact_pre: bool,
+    table_context: bool,
 }
 
 impl<'a> Frame<'a> for ModeFrame<'a> {
@@ -56,9 +57,9 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         }
     }
 
-    fn finish_tag(&mut self, self_closing: bool) -> (bool, Option<LintTagFact>, bool) {
+    fn finish_tag(&mut self, self_closing: bool) -> (bool, Option<LintTagFact>, bool, bool) {
         let Some(tag) = self.tag.take() else {
-            return (false, None, false);
+            return (false, None, false, false);
         };
         let (ns, implicit_depth) = self.recovery.open(&self.stack, tag, self_closing);
         if let Some(depth) = implicit_depth {
@@ -69,6 +70,8 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         let inherited = self.mode() == LexMode::Verbatim;
         let inherited_exact =
             P::LINT_TAGS && self.stack.last().is_some_and(|frame| frame.exact_pre);
+        let table_context =
+            P::LINT_TAGS && self.stack.last().is_some_and(|frame| frame.table_context);
         let (heads, exact_head) = if inherited {
             (HeaderPolicy::default(), false)
         } else {
@@ -93,9 +96,10 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
                 ns,
                 verbatim,
                 exact_pre,
+                table_context: P::LINT_TAGS && (table_context || tag.eq_ignore_ascii_case("table")),
             });
         }
-        (verbatim, lint_tag, P::LINT_TAGS && inherited)
+        (verbatim, lint_tag, P::LINT_TAGS && inherited, table_context)
     }
 
     /// Consume the current tag's existing complete heads after structural
@@ -203,7 +207,7 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
     }
 
     fn on_open_tag_end(&mut self, end: usize) {
-        let (verbatim, lint_tag, header_literal) = self.finish_tag(false);
+        let (verbatim, lint_tag, header_literal, table_context) = self.finish_tag(false);
         if P::LINT_TAGS {
             self.recorder.opening_end_with_lint(
                 EventKind::OpenTagEnd,
@@ -211,6 +215,7 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
                 verbatim,
                 lint_tag,
                 header_literal,
+                table_context,
             );
         } else {
             self.recorder
@@ -219,7 +224,7 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
     }
 
     fn on_self_closing_tag(&mut self, end: usize) {
-        let (verbatim, lint_tag, header_literal) = self.finish_tag(true);
+        let (verbatim, lint_tag, header_literal, table_context) = self.finish_tag(true);
         if P::LINT_TAGS {
             self.recorder.opening_end_with_lint(
                 EventKind::SelfClosingTag,
@@ -227,6 +232,7 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
                 verbatim,
                 lint_tag,
                 header_literal,
+                table_context,
             );
         } else {
             self.recorder

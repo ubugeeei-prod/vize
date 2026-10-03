@@ -39,6 +39,7 @@ pub struct NativeLintTag<'o, 'a> {
     kind: NativeLintTagKind,
     span: Span,
     header_literal: bool,
+    table_context: bool,
 }
 
 impl core::fmt::Debug for NativeLintTag<'_, '_> {
@@ -48,6 +49,7 @@ impl core::fmt::Debug for NativeLintTag<'_, '_> {
             .field("kind", &self.kind)
             .field("span", &self.span)
             .field("header_literal", &self.header_literal)
+            .field("table_context", &self.table_context)
             .finish_non_exhaustive()
     }
 }
@@ -76,6 +78,15 @@ impl<'o, 'a> NativeLintTag<'o, 'a> {
     #[must_use]
     pub fn header_is_literal(&self) -> bool {
         self.header_literal
+    }
+
+    /// Whether this original opening inherited an authored `table` ancestor
+    /// from the live parser stack, after its actual structural recovery.
+    /// The name is ASCII-insensitive; this conservative source fact does not
+    /// establish DOM namespace, foster parenting or legacy parser semantics.
+    #[must_use]
+    pub fn in_table_context(&self) -> bool {
+        self.table_context
     }
 }
 
@@ -109,6 +120,7 @@ impl<'o, 'a> NativeElement<'o, 'a> {
             kind,
             span,
             header_literal: element.open.lint_header_is_literal(),
+            table_context: element.open.lint_in_table_context(),
         })
     }
 }
