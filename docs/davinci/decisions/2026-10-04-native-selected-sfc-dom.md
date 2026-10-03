@@ -108,3 +108,5 @@ to main while retaining native Stack7645 position2. Replay only this genuine
 consumer delta onto fresh literal main, preserving the incoming standalone
 output/query decisions and every production/fixture byte; require new
 exact-head Actions before the remaining layer enters the protected queue.
+
+Actual #7644 merges at 2026-10-03T22:20:30Z as b53df87a6a1bbb7057b0f327fefee1675ec7181e. Exact source5da Check37155994223 and protected Check37157143665 are terminal SUCCESS: all four full Rust/tooling workers, real 100 benchmarks measured three times, pinned ceilings/ratchet and Nuxt/Musea. Protected artifact11286486528 retains all five complete native modules/maps and mandatory current-source Vue runtime receipts, equal to frozen source/code/map and reference effects with replacement1/unmount and no warnings/errors. This is actual bounded scriptless/static-click delivery; broader history/default/script/style/control/event/dialect completion remains unfinished.

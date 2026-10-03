@@ -3,10 +3,9 @@
 use super::{DomBinding, DomBuilder, DomExpressionFacts, PropertyRole, ValueKind};
 use crate::decision::dom::{DomUnsupported, handler::DomFileHandler, vue::policy::FileReads};
 use vize_l0::id::NodeId;
-use vize_l2::{
-    op::{BindingOp, DynamicName, OnOp, Op},
-    resolution::{HandlerBindingRef, HandlerDeclarationKind},
-};
+use vize_l2::op::{BindingOp, DynamicName, OnOp, Op};
+
+mod access;
 
 impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
     DomBuilder<'_, 'owner, 'arena, F, R>
@@ -57,30 +56,10 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             self.reject(node, source.span(), DomUnsupported::HandlerAccess);
             return;
         }
-        // The first bounded writer spells genuine event-parameter references
-        // only. Local declarations are retained, but arbitrary locals/outer
-        // setup reads do not inherit framework access from binding identity.
-        for reference in resolution.references() {
-            let event = match reference.binding {
-                HandlerBindingRef::Local(id) => resolution
-                    .bindings()
-                    .get(id.index() as usize)
-                    .is_some_and(|row| {
-                        row.kind == HandlerDeclarationKind::EventParameter && row.name == "$event"
-                    }),
-                HandlerBindingRef::Outer(_) => false,
-            };
-            if !event
-                || source
-                    .text()
-                    .get(reference.span.start as usize..reference.span.end as usize)
-                    != Some("$event")
-                || source.authored_span(reference.span).ok().and_then(|span| {
-                    source
-                        .authored_root()
-                        .get(span.start as usize..span.end as usize)
-                }) != Some("$event")
-            {
+        // Event parameters and genuine active-block locals retain original
+        // spelling. Outer/setup and Vue-prefixed root/sibling reads still refuse.
+        for (index, reference) in resolution.references().iter().enumerate() {
+            if !access::original(resolution, index, reference) {
                 let span = source
                     .authored_covering_span(reference.span)
                     .unwrap_or(source.span());
