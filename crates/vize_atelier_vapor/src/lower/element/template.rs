@@ -11,8 +11,7 @@ use vize_carton::ensure_sufficient_stack;
 /// Generate element template string (recursively includes static children)
 #[inline(always)]
 pub(crate) fn generate_element_template(el: &ElementNode<'_>, scope_id: Option<&str>) -> String {
-    let mut template =
-        EmitDocument::with_capacity((el.loc.span.end - el.loc.span.start) as usize, false);
+    let mut template = EmitDocument::new(false);
     write_element_template(&mut template, el, scope_id);
     template.into_string()
 }
@@ -23,8 +22,7 @@ pub(crate) fn generate_element_template_spanned(
     el: &ElementNode<'_>,
     scope_id: Option<&str>,
 ) -> EmitDocument {
-    let mut template =
-        EmitDocument::with_capacity((el.loc.span.end - el.loc.span.start) as usize, true);
+    let mut template = EmitDocument::default();
     write_element_template(&mut template, el, scope_id);
     template
 }
@@ -45,6 +43,40 @@ fn write_element_template(
         template.push_str(scope_id);
     }
 
+    if !el.props.is_empty() {
+        write_static_attributes(template, el);
+    }
+
+    if is_void_element(el.tag) {
+        template.push_str(">");
+    } else if el.is_self_closing {
+        template.push_str("></");
+        template.push_str(el.tag);
+        template.push_str(">");
+    } else {
+        template.push_str(">");
+
+        // Recursively add template-backed children. `<template>` is a
+        // transparent wrapper in Vapor just as it is in the main element
+        // dispatcher, so its children contribute directly to the enclosing
+        // element's static template instead of producing a component lookup.
+        let placeholders = super::insertion::block_placeholders(&el.children);
+        append_child_templates(
+            template,
+            &el.children,
+            scope_id,
+            &mut placeholders.into_iter(),
+        );
+
+        template.push_str("</");
+        template.push_str(el.tag);
+        template.push_str(">");
+    }
+}
+
+// Keep the recursive template walk small; empty-prop elements skip attribute work.
+#[inline(never)]
+fn write_static_attributes(template: &mut EmitDocument, el: &ElementNode<'_>) {
     // Collect dynamic binding names to skip their static counterparts
     let mut has_static_attr = false;
     let dynamic_attrs: vize_carton::FxHashSet<&str> = el
@@ -81,10 +113,8 @@ fn write_element_template(
                 template.push_str("=\"");
                 // The template is parsed as HTML at runtime, after the Vue
                 // parser has already decoded this attribute's references.
-                if value
-                    .content
-                    .bytes()
-                    .any(|byte| matches!(byte, b'&' | b'<' | b'>' | b'"' | b'\''))
+                if memchr::memchr3(b'&', b'"', b'<', value.content.as_bytes()).is_some()
+                    || memchr::memchr2(b'>', b'\'', value.content.as_bytes()).is_some()
                 {
                     template.push_linked(&escape_html_text(value.content), value.loc.span);
                 } else {
@@ -93,32 +123,6 @@ fn write_element_template(
                 template.push_str("\"");
             }
         }
-    }
-
-    if is_void_element(el.tag) {
-        template.push_str(">");
-    } else if el.is_self_closing {
-        template.push_str("></");
-        template.push_str(el.tag);
-        template.push_str(">");
-    } else {
-        template.push_str(">");
-
-        // Recursively add template-backed children. `<template>` is a
-        // transparent wrapper in Vapor just as it is in the main element
-        // dispatcher, so its children contribute directly to the enclosing
-        // element's static template instead of producing a component lookup.
-        let placeholders = super::insertion::block_placeholders(&el.children);
-        append_child_templates(
-            template,
-            &el.children,
-            scope_id,
-            &mut placeholders.into_iter(),
-        );
-
-        template.push_str("</");
-        template.push_str(el.tag);
-        template.push_str(">");
     }
 }
 

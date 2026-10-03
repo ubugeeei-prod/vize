@@ -4420,6 +4420,7 @@ dependencies = [
  "criterion",
  "davinci_harness",
  "insta",
+ "memchr",
  "oxc_allocator",
  "oxc_ast",
  "oxc_ast_visit",
