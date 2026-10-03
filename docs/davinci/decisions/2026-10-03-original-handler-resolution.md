@@ -47,3 +47,11 @@ families, L3 meaning and native DOM runtime emission. Caller-provided enclosing
 identities confer no File association, product completion or runtime execution
 proof. Current native lowering/emission still refuse events. No legacy helper,
 default product route, numeric instruction ceiling or #6880 closure changes.
+
+The literal-main For resolver and original alias payload providers are preserved
+beside the genuine handler source family. Their combined registrations reach
+352 lines in the shared walk. A separate move-only commit relocates existing
+`export_local` verbatim into a private sibling and retains its private reexport,
+checkpoint/rollback and shared 4096/64 budget; the shared walk is now 338 lines.
+No additional parse, walk, allocation, stage or public authority is introduced.
+Fresh hosted exact-head and protected queue checks validate this composition.
