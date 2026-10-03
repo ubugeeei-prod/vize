@@ -154,7 +154,9 @@ fn original_selected_completion_is_the_sole_target_capability() {
     let selected = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
-    let mut owner = NativeTemplateOwner::new(selected).unwrap();
+    let mut owner = NativeTemplateOwner::new(selected)
+        .map_err(|_| "original owner")
+        .unwrap();
     {
         let mut walk = owner.begin().unwrap();
         let selected = walk.selected();
