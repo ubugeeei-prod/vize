@@ -18,6 +18,8 @@ const fromUi = createRequire(
 const fromVue = createRequire(fromUi.resolve("vue/package.json"));
 const fromSfc = createRequire(fromVue.resolve("@vue/compiler-sfc/package.json"));
 const compiler = fromSfc("@vue/compiler-ssr");
+const fromMagic = createRequire(fromSfc.resolve("magic-string/package.json"));
+const mapCodec = fromMagic("@jridgewell/sourcemap-codec");
 const url = (source: string) =>
   `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
 const runtimeUrl = (specifier: string, names: string[]) =>
@@ -125,6 +127,35 @@ for (const fixture of pack.fixtures) {
 
 const capturePath = process.env.VIZE_L4_SSR_NATIVE_CAPTURE;
 const requireNative = process.env.VIZE_L4_SSR_REQUIRE_NATIVE === "1";
+
+function mapAnchors(map: any, code: string, source: string): number[][] {
+  assert.equal(map.version, 3);
+  assert.equal(map.file, pack.options.filename);
+  assert(Array.isArray(map.names));
+  assert(map.names.every((name: unknown) => typeof name === "string"));
+  const generated = code.split("\n");
+  const authored = source.split("\n");
+  const decoded: number[][][] = mapCodec.decode(map.mappings);
+  assert.equal(mapCodec.encode(decoded), map.mappings);
+  const anchors = decoded.flatMap((segments, line) => {
+    let previous = -1;
+    return segments.map((segment) => {
+      assert([4, 5].includes(segment.length));
+      assert(segment.every(Number.isSafeInteger));
+      assert(line < generated.length);
+      assert(segment[0] >= 0 && segment[0] >= previous && segment[0] <= generated[line].length);
+      previous = segment[0];
+      assert.equal(segment[1], 0);
+      assert(segment[2] >= 0 && segment[2] < authored.length);
+      assert(segment[3] >= 0 && segment[3] <= authored[segment[2]].length);
+      if (segment.length === 5) assert(segment[4] >= 0 && segment[4] < map.names.length);
+      return [line, ...segment];
+    });
+  });
+  assert.equal(anchors.length > 0, source.length > 0);
+  return anchors;
+}
+
 test(
   "fresh source-built native modules execute with complete maps and real SSR helpers",
   { skip: !capturePath && !requireNative },
@@ -147,6 +178,18 @@ test(
       if (fixture.source) assert(capture.map.mappings.length > 0);
       assert.deepEqual(capture.sfcMap.sources, [pack.options.filename]);
       assert.deepEqual(capture.sfcMap.sourcesContent, [fixture.source]);
+      const templateAnchors = mapAnchors(capture.map, capture.code, fixture.source);
+      const componentAnchors = mapAnchors(capture.sfcMap, capture.sfcCode, fixture.source);
+      const functionLine = (code: string) =>
+        code.split("\n").findIndex((line) => /^(export )?function ssrRender\(/.test(line));
+      const shift = functionLine(capture.sfcCode) - functionLine(capture.code);
+      assert.equal(shift, 1);
+      assert.deepEqual(capture.sfcMap.names, capture.map.names);
+      assert.deepEqual(
+        componentAnchors,
+        templateAnchors.map(([line, ...segment]) => [line + shift, ...segment]),
+        `${fixture.id}: every prepared-module anchor retains its original UTF-16 position`,
+      );
       const imports = fixture.code.split("\n").filter((line: string) => line.startsWith("import "));
       const declaration = fixture.code.slice(imports.join("\n").length).trimStart();
       assert.equal(
@@ -170,6 +213,9 @@ test(
         id: fixture.id,
         codeSha256: hash(capture.code),
         mapSha256: hash(JSON.stringify(capture.map)),
+        sfcCodeSha256: hash(capture.sfcCode),
+        sfcMapSha256: hash(JSON.stringify(capture.sfcMap)),
+        referenceCodeSha256: fixture.referenceCodeSha256,
         html: native,
       });
     }
