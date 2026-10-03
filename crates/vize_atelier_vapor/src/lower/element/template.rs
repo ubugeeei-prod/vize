@@ -8,6 +8,9 @@ use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::Span;
 use vize_carton::ensure_sufficient_stack;
 
+mod writer;
+use writer::TemplateWriter;
+
 /// Generate element template string (recursively includes static children)
 #[inline(always)]
 pub(crate) fn generate_element_template(
@@ -15,9 +18,9 @@ pub(crate) fn generate_element_template(
     scope_id: Option<&str>,
     source: &str,
 ) -> String {
-    let mut template = EmitDocument::new(false);
-    write_element_template(&mut template, el, scope_id, &source);
-    template.into_string()
+    let mut template = String::default();
+    write_element_template(&mut template, el, scope_id, source);
+    template
 }
 
 /// [`generate_element_template`] linking the tag names, static attributes and
@@ -28,15 +31,15 @@ pub(crate) fn generate_element_template_spanned(
     source: &str,
 ) -> EmitDocument {
     let mut template = EmitDocument::default();
-    write_element_template(&mut template, el, scope_id, &source);
+    write_element_template(&mut template, el, scope_id, source);
     template
 }
 
 fn write_element_template(
-    template: &mut EmitDocument,
+    template: &mut impl TemplateWriter,
     el: &ElementNode<'_>,
     scope_id: Option<&str>,
-    source: &&str,
+    source: &str,
 ) {
     template.push_str("<");
     let tag_start = el.loc.span.start + 1;
@@ -138,10 +141,10 @@ fn write_element_template(
 }
 
 fn append_child_templates(
-    template: &mut EmitDocument,
+    template: &mut impl TemplateWriter,
     children: &[TemplateChildNode<'_>],
     scope_id: Option<&str>,
-    source: &&str,
+    source: &str,
     placeholders: &mut std::vec::IntoIter<bool>,
 ) {
     for child in children {
