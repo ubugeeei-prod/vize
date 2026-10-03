@@ -1,13 +1,14 @@
 //! Original root cursor and private ordinary HTML header/body construction.
 
 use super::{RootRegion, TemplatePolicy};
+use crate::artifact::ComponentFactory;
 use crate::file::template::TemplateWalk;
 use crate::file::{Declaration, FileBuilder, FileIssueKind, ScopeId, ScriptUnitId, TemplateIssue};
 use crate::lang::js::file::native::{
     NativeRouteState, NativeTemplateIssue, NativeTemplateIssueKind,
 };
 use vize_l0::id::NodeId;
-use vize_l1::markup::{NativeChild, NativeTemplateComponent};
+use vize_l1::markup::{NativeChild, NativeRootText, NativeTemplateComponent};
 
 mod body;
 
@@ -82,6 +83,34 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
             return self.reject(NativeTemplateIssueKind::InvalidEvent);
         }
         let result = body::construct(child, &mut self.root);
+        match result {
+            Ok(node) => {
+                self.cursor += 1;
+                Ok(node)
+            }
+            Err(kind) => self.reject(kind),
+        }
+    }
+    /// Consume the selected original root cursor through its sealed L1 text
+    /// receipt. Omitted source text advances custody without creating an op.
+    pub fn root_text(
+        &mut self,
+        receipt: &NativeRootText<'a>,
+    ) -> Result<Option<NodeId>, NativeTemplateIssue> {
+        if !matches!(self.state, NativeRouteState::Walking) {
+            return self.reject(NativeTemplateIssueKind::Interrupted);
+        }
+        let Some(view) = receipt.admitted_for_root_at(self.selected, self.cursor) else {
+            return self.reject(NativeTemplateIssueKind::InvalidEvent);
+        };
+        let result = match view.receipt().content() {
+            Some(content) => self
+                .root
+                .text(content, view.receipt().span())
+                .map(Some)
+                .map_err(NativeTemplateIssueKind::Artifact),
+            None => Ok(None),
+        };
         match result {
             Ok(node) => {
                 self.cursor += 1;

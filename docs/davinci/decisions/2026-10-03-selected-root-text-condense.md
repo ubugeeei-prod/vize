@@ -49,13 +49,31 @@ compiler oracle tests pass locally. Hosted exact-head native/strict checks
 and protected Stack/queue source suites, unchanged all-100 measurement and
 actual merge remain acceptance requirements.
 
-The next owned dependent L2 slice will add `root_text` to the existing original
-root walk, returning `Option<NodeId>`: omitted source events advance the actual
-cursor without a fabricated node or empty text op. Existing `child` and nested
-body refusals remain intact. Complete source-built module/runtime/map equality
-belongs to that consumer change, alongside normal completion and interruption
-laws. Native nested whitespace, text entities, inherited pre/RCDATA, all Vue
-profiles/dialects, runtime families and complete product routes remain unfinished.
+The dependent #6838 L2 slice adds `root_text(&NativeRootText)` to the existing
+original root walk, returning `Result<Option<NodeId>, NativeTemplateIssue>`.
+The receipt joins the genuine selected backing at the receiver's actual
+ordinal in O(1); no caller text/span/neighborhood enters the factory.
+Omitted source events advance the cursor without a fabricated node or empty
+text op. Nonempty values use the existing canonical Text factory with the
+complete original authored span. Existing `child` and private nested-body
+refusals remain intact, including direct whitespace and entity calls.
+
+Seven L2 laws retain exact node numbering, owner moves and pending growth,
+nonzero Unicode source, sticky foreign/reordered/duplicate refusals, completed
+prefixes and dropped/unconsumed omissions. A complete L3 law compares all 24
+pinned static root packets' operations, original spans, canonical node count,
+root groups and sole File/owner identities, with no decisions for omitted
+source events. The four interpolation-neighbor cases retain L1 receipt
+coverage without claiming lower interpolation completion.
+
+Complete source-built module/runtime/map equality requires the separately
+owned genuine selected L4 `emit_template` provider. A real dependent output
+law slice will join only after both providers actually merge; this L2/L3
+change exposes no neutral analysis or target entry and claims no output
+closure yet. Native nested whitespace, text entities, inherited pre/RCDATA,
+all Vue profiles/dialects, runtime families and complete product routes
+remain unfinished. Exact-head source Actions, protected complete suites and
+unchanged all-100 measurements, and actual merge are still required.
 
 ## Protected queue baseline refresh
 
