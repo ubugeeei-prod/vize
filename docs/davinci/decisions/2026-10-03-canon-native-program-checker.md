@@ -159,6 +159,34 @@ transport behavior, all original expectations and production are unchanged.
 This fifth failure remains saved without backend, guard or privacy credit.
 Corrected-source actual SDK and complete diagnostics remain unverified.
 
+The subsequent genuine SDK run matched the fixed nonempty ts-property full
+payload through both original and native routes, and passed mapping3/guards4.
+Its next js-property comparison failed: the original returned complete2339
+while the native checker returned an empty vector. The sixth failed full run
+and all eighteen unchanged source/expected vectors remain preserved. These
+partial results do not establish whole-backend, full-eight or privacy credit.
+
+Bounded ordinary TypeScript7.0.2 controls reproduced the same TS-first,
+close/delete-to-JS lifecycle using the original property bodies and genuine L4
+module suffix. A normal configured root checked the new JS; the existing
+node_modules overlay root returned empty. Explicit file notifications alone
+still returned empty. Restarting only the editor process of that exact failed
+project, without changing its source, config or path, returned full2339. These
+local wire observations identify stale configured-file discovery; they are not
+Corsa SDK/Linux Actions or complete native equivalence evidence.
+
+After the privately derived JavaScript document is materialized, the opt-in
+native route now invokes the existing disk-project invalidation before fetching
+diagnostics. It discards the stale editor view so the next existing LSP request
+reads the present file into its configured project. The genuine API session,
+workspace configuration, .mjs kind, same projection/file borrow, full ordered
+payload, guards and error/close cleanup remain intact. No generic overlay path,
+legacy route or original reference changes. This bounded correctness repair
+rebuilds the editor for native JS checks; process reuse and performance remain
+unqualified until a future supported incremental-discovery route is proven.
+Fresh complete original/bounded SDK comparisons, privacy, minimal feature,
+strict Clippy and whole terminal Actions are still required.
+
 The existing full Rust Actions recipe explicitly runs the feature's mapping,
 actual-backend and privacy tests, minimal-feature check and strict Clippy.
 Exact-head Actions, current all 100 instruction probes, native Stack ancestry,

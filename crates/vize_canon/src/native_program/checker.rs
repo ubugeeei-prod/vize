@@ -137,7 +137,18 @@ impl NativeProgramChecker {
                 return Err(NativeProgramError::Backend { error, cleanup });
             }
         };
-        let diagnostics = self.bridge.get_diagnostics(&uri).await;
+        // A newly materialized JavaScript file under node_modules can remain
+        // outside the reused editor's configured project. Rebuild that disk
+        // view after the exact file exists, preserving the actual API session.
+        let readiness = if projection.source_kind() == SourceKind::JavaScript {
+            self.bridge.invalidate_disk_project_state().await
+        } else {
+            Ok(())
+        };
+        let diagnostics = match readiness {
+            Ok(()) => self.bridge.get_diagnostics(&uri).await,
+            Err(error) => Err(error),
+        };
         let cleanup_error = self.bridge.close_virtual_document(&uri).await.err();
         let diagnostics = diagnostics.map_err(|error| NativeProgramError::Backend {
             error,
