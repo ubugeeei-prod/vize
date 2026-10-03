@@ -91,7 +91,7 @@ handled/equivalent/paired counts remain zero.
 The original dirty implementation remains intact in its private worktree and
 was snapshotted with every fixture hash before copying into isolated `wt`
 branches on actual main `ead89a75`. Parent #7630 contains only real Cargo build
-custody; this child branches directly from its corrected source `9c76c3fbd`. Its complete
+custody; this child branches directly from its repaired source `b417f7724`. Its complete
 existing API/config manifests, source witnesses, goldens and receipts remain
 immutable. Native source-only counts stay zero; legacy public-boundary history
 observations are a distinct migration prerequisite. No local Rust build or
@@ -110,3 +110,40 @@ comparator rule; explicit ordinal comparators preserve the original ordering.
 Original inputs/options/results/error goldens and counts remain unchanged.
 Both failed original jobs are retained; fresh both-head Actions, twenty-five
 real calls and full protected actual merge remain required.
+
+## Historical exact-source receipts and replay
+
+Child source `6cabd2b2ef590b05426ebfbe2ac873efebc3b9d7` passed Check
+37151994570. Its actual JS job 111287664708 retained all nine plans and
+twenty-five public calls, including the complete Error, with zero failures.
+The entire 714,304-byte report has SHA256
+`b47e29d9f21b9c9b7fd41499d0d52c998f49819a1da8e929db8c824d4d5b68de`;
+the entire 547,383-byte actual build receipt has SHA256
+`4889f2de929ae81bd93bae7656eb7bf2339ba7881b9d4ecad74b971b26f2798e`.
+Independent admission against that exact source validated full original-source
+qualification, all process frames, complete Cargo emission and identical
+emitted/generated/frozen module bytes. Native unsupported remains nine;
+native handled/equivalent/paired remains zero. These are historical source
+receipts, not acceptance for the replayed child or its future queue candidate.
+
+Parent `9c76c3fb` separately failed the unchanged 350-line workflow limit.
+Repair `b417f7724` restores 348 lines through the existing-command composite
+while preserving prior-job failure guards and unconditional evidence upload.
+Replay all three child commits unchanged onto that actual parent: `range-diff`
+reports exact equality for every child commit. The original dirty worktree,
+failed campaigns and source-scoped successful packet remain intact. Verify
+native Stack #7635 still reports both ordered positions, then require fresh
+parent/child source Actions and the complete protected candidate before merge.
+
+The preceding malformed CLI history is independently terminal: #7588 actually
+merged as signed `7929c626ce9f0ef08364349aafa6477dfa222c35`, accepted by
+protected Check 37132219824 and both Nuxt/Musea jobs. Its whole 51,166-byte
+report has SHA256
+`5b0fceefd3bb8bf9af0d632e3ac7e2199e7efd7a6d28f3fb343db74e5c2bd129`.
+All eight plans and sixteen actual calls retain complete protected file/config
+state before and after, with unchanged bytes. Every declared write fails with
+the whole authentic CLI error/status 2; the same input's no-config check
+succeeds with status 0. The actual `cargo build --profile ci -p vize` receipt
+binds its CLI bytes to that protected source. This is distinct legacy public
+compatibility history; all eight native plans remain unsupported with zero
+native credit. Main's cancelled push campaign is not used as acceptance.
