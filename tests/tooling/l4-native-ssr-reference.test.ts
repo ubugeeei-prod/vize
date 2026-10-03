@@ -133,8 +133,8 @@ function mapAnchors(map: any, code: string, source: string): number[][] {
   assert.equal(map.file, pack.options.filename);
   assert(Array.isArray(map.names));
   assert(map.names.every((name: unknown) => typeof name === "string"));
-  const generated = code.split("\n");
-  const authored = source.split("\n");
+  const generated = code.split(/\r\n|[\r\n\u2028\u2029]/);
+  const authored = source.split(/\r\n|[\r\n\u2028\u2029]/);
   const decoded: number[][][] = mapCodec.decode(map.mappings);
   assert.equal(mapCodec.encode(decoded), map.mappings);
   const anchors = decoded.flatMap((segments, line) => {

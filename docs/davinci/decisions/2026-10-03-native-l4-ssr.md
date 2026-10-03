@@ -38,7 +38,8 @@ ranges; complete upstream map parity is not claimed. Both writer sinks emit
 identical bytes and helper sets. The existing module assembler also preserves
 server attachment and the complete prepared component module.
 Independent dev-only VLQ decoding validates every retained UTF-16 generated
-and original anchor and its exact offset after component assembly; complete
+and original anchor against CRLF/CR/LF/U+2028/U+2029 line bounds and its exact
+offset after component assembly; complete
 mapping fidelity beyond these anchors remains unfinished. Runtime evidence
 binds both template and prepared component code/map digests.
 
