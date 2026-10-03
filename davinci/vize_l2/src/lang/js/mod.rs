@@ -1,6 +1,7 @@
 //! Shared JS/TS semantic production over actual retained language syntax.
 
 pub(crate) mod file;
+mod for_head;
 pub use crate::file::region::native::NativeTemplateWalk;
 pub use file::native::{
     NativeTemplateFile, NativeTemplateIssue, NativeTemplateIssueKind, NativeTemplateOwner,
@@ -11,6 +12,7 @@ pub use file::observer::{
 };
 pub use file::setup::{SetupIssue, SetupIssueKind, VueSetup};
 pub use file::{FileProducer, ProgramInput, ProgramInputError, ProgramScope};
+pub use for_head::{ForHeadInput, NativeForInput, RejectedForHeadInput, RejectedNativeForInput};
 
 mod jsx_body;
 pub use jsx_body::{JsxChildren, JsxFile, JsxFileError, JsxFileProducer, JsxNode, RejectedJsxFile};

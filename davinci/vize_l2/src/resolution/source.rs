@@ -36,6 +36,9 @@ impl ReferenceSource<'_> {
     }
 }
 
+mod for_head;
+pub(crate) use for_head::ForReferenceSource;
+
 /// Internal capability over the actual whole Program, never an expression window.
 /// The native owner must additionally supply its genuine no-hole observation.
 pub(crate) struct ProgramReferenceSource<'p, 'a> {
