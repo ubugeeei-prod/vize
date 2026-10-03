@@ -198,7 +198,7 @@ impl Responder {
                 };
                 // Match the existing Corsa editor responder's positional
                 // configuration response and registration acknowledgements.
-                let response = if method.as_ref() == "workspace/configuration" {
+                let response = if method.as_str() == "workspace/configuration" {
                     let count = params
                         .get("items")
                         .and_then(serde_json::Value::as_array)

@@ -151,6 +151,14 @@ fresh corrected-source full run must execute every original/bounded comparison,
 privacy law, minimal-feature check and strict Clippy before equivalence can be
 reported.
 
+The closed-LSP fixture campaign compiled and passed the three mapping laws,
+but its integration target stopped at a CompactString AsRef type ambiguity
+before any backend or guard law executed. The responder now uses the existing
+explicit as_str accessor for that one method comparison; response bytes,
+transport behavior, all original expectations and production are unchanged.
+This fifth failure remains saved without backend, guard or privacy credit.
+Corrected-source actual SDK and complete diagnostics remain unverified.
+
 The existing full Rust Actions recipe explicitly runs the feature's mapping,
 actual-backend and privacy tests, minimal-feature check and strict Clippy.
 Exact-head Actions, current all 100 instruction probes, native Stack ancestry,
