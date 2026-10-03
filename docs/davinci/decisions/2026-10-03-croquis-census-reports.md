@@ -42,3 +42,24 @@ The first hosted source check at `06c5822b5359be312a08218a2534149bd930403e`
 rejected four unhandled Node test registration promises under the existing
 zero-warning gate. Marking the registrations explicitly `void` preserves the
 same tests; fresh exact-head Actions remain required.
+
+The corrected source `795e3d312e68f45bbba0e03b9dc4bc0be359f181` passed
+[source Check 37121764436](https://github.com/ubugeeei-prod/vize/actions/runs/37121764436).
+Its actual tooling report identifies the hosted PR merge-tree HEAD
+`bfc7ea1f882985a18132285d6ca6cc05f059d372` and prints the complete per-product
+and per-crate disagreements before its successful artifact check. Those
+receipts remain historical after replay onto the actually merged Document
+commit `6f36ea1aee9598ae4a15fb7b025171f7ecd4a381`; fresh source checks and a
+protected candidate are still required. The replay regenerates only this
+change's canonical artifact set and preserves every incoming resolved site.
+
+Source `ce7373eec7efbbadf22d2eb7467fc027a61f864f` also passed
+[Check 37124289409](https://github.com/ubugeeei-prod/vize/actions/runs/37124289409).
+Its actual mandatory report names hosted PR merge-tree HEAD
+`986daeacae5f0e153cb012a51977d6fa66dbf557` and accepts the complete 20-file
+artifact set. The remaining accepted Vue, JSX and For predecessors then
+actually merged. Replay onto their literal final main
+`24f31e0608c83a42aef0a7522244f38037b1534c` regenerates the same policy and
+independently preserves all 19 authoritative tables, removing only the 14
+diagnostic-only shards. Source and regression implementation are unchanged;
+the final replay still needs fresh hosted source checks and protected merge.
