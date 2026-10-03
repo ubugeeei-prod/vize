@@ -90,3 +90,22 @@ true JSX/TSX file. It now uses and removes a distinct `wrong.*` fixture before
 configured membership/Module checks, and prints the actual typed refusal on a
 failure. The first externally revised JSX/reaping law passed separately. Fresh
 source Actions is required after these changes; the consumer was never queued.
+
+Provider #7624 actually merged at 2026-10-03T17:45:58Z as valid signed
+`1dd8c5c1466ff1f5b2c384b9cc3703ad1fb487b6`. Protected Check37140773088,
+Musea37140772699 and Nuxt37140772727 all succeeded. Every genuine L4 projection
+law passed again in the four full runtime workers; the complete workspace
+archive, doctests and differential corpora passed. Instruction job111254572962
+proved all 100 measurements identical across three executions and unchanged
+ceilings/ratchets. Fresh main contains the literal merge. Native Stack #7628
+preserves the merged bottom and retargets its genuine remaining child to main;
+GitHub's actual replay has the identical tree as a separately verified fresh-main
+rebase. The child's corrected exact source still needs its own Actions and
+protected merge proof.
+
+Independent primary TS6 source review confirms `.ts` shadows a same-basename
+`.tsx` in wildcard roots, so the old fixture could get `UnconfiguredSource`
+before Module-goal refusal. `.mjs` is a separate TS6 extension group and does not
+shadow `.jsx`; the old hidden failure did not identify its iteration. Distinct
+removed `wrong.*` files isolate the real laws without asserting an unproven
+TS7 cause; every remaining failure now reports the actual typed result.
