@@ -29,3 +29,7 @@ export function levelInstructionSuites(root) {
     return [pkg, matches[0]];
   });
 }
+
+export function formatterInstructionSuites() {
+  return [["vize_glyph", "formatter_instructions"]];
+}

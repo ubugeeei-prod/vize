@@ -6,7 +6,10 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { parseTomlLite } from "../../support/compat/davinci/toml-lite.mjs";
 import { reportOverBudgetHotspots } from "./instruction-hotspots.ts";
-import { levelInstructionSuites } from "./instruction-counts-suites.mjs";
+import {
+  levelInstructionSuites,
+  formatterInstructionSuites,
+} from "./instruction-counts-suites.mjs";
 import {
   baselineToml,
   checkMeasurement,
@@ -57,7 +60,8 @@ function writeJson(file, value) {
   fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-function collect(out, registry) {
+function collect(out, registry, formatter) {
+  const selectedSuites = formatter ? formatterInstructionSuites() : suites;
   assert.equal(process.platform, "linux", "instruction collection requires Linux");
   assert.equal(process.arch, "x64", "instruction collection requires x86_64");
   assert.equal(process.env.GITHUB_ACTIONS, "true", "baseline collection requires GitHub Actions");
@@ -117,8 +121,9 @@ function collect(out, registry) {
     "davinci_harness/instruction-counts",
     "--message-format=json",
   ];
-  for (const pkg of new Set(suites.map(([pkg]) => pkg))) cargoArgs.push("-p", pkg);
-  for (const bench of new Set(suites.map(([, bench]) => bench))) cargoArgs.push("--bench", bench);
+  for (const pkg of new Set(selectedSuites.map(([pkg]) => pkg))) cargoArgs.push("-p", pkg);
+  for (const bench of new Set(selectedSuites.map(([, bench]) => bench)))
+    cargoArgs.push("--bench", bench);
   const buildEnv = { ...process.env, RUSTFLAGS: "-C target-cpu=x86-64" };
   const freshBuild = process.env.VIZE_INSTRUCTION_REBUILD === "1";
   if (freshBuild) {
@@ -136,7 +141,7 @@ function collect(out, registry) {
       (row) =>
         row.reason === "compiler-artifact" && row.executable && row.target.kind.includes("bench"),
     );
-  const binaries = suites.map(([pkg, bench]) => {
+  const binaries = selectedSuites.map(([pkg, bench]) => {
     const directory =
       pkg === "davinci_harness"
         ? "tools/benchmarks/crates"
@@ -164,7 +169,10 @@ function collect(out, registry) {
   // routines branch on address aliasing even with the same binary and bytes.
   // Keep both environment and argv0 fixed, including across target renames.
   // Links stay outside the uploaded artifact so binaries do not bloat it.
-  const probeDir = path.join(path.dirname(out), "instruction-probes");
+  const probeDir = path.join(
+    path.dirname(out),
+    formatter ? "formatter-instruction-probes" : "instruction-probes",
+  );
   assert.ok(!fs.existsSync(probeDir), `refusing to reuse guest executable directory ${probeDir}`);
   fs.mkdirSync(probeDir);
   const probes = binaries.map((suite, index) => {
@@ -263,52 +271,56 @@ try {
     "--budgets",
     "--base-budgets",
     "--registry",
+    "--formatter",
   ]);
   for (let index = 0; index < args.length; index += 1) {
     assert.ok(allowed.has(args[index]), `unknown option ${args[index]}`);
-    if (!["--collect", "--check", "--baseline", "--verify-budgets"].includes(args[index]))
+    if (
+      !["--collect", "--check", "--baseline", "--verify-budgets", "--formatter"].includes(
+        args[index],
+      )
+    )
       index += 1;
   }
+  const formatter = args.includes("--formatter");
+  const plan = path.join(root, "docs/davinci/plan");
+  const budgetFile = path.join(
+    plan,
+    formatter ? "formatter-instruction-budgets.toml" : "instruction-budgets.toml",
+  );
+  const output = path.join(
+    root,
+    formatter ? "target/formatter-instruction-counts" : "target/instruction-counts",
+  );
   const registry = loadRegistry(
-    flag(args, "--registry", path.join(root, "docs/davinci/plan/budgets.toml")),
+    flag(
+      args,
+      "--registry",
+      path.join(plan, formatter ? "formatter-instruction-registry.toml" : "budgets.toml"),
+    ),
   );
   if (modes[0] === "--collect") {
-    collect(flag(args, "--out", path.join(root, "target/instruction-counts")), registry);
+    collect(flag(args, "--out", output), registry, formatter);
   } else if (modes[0] === "--verify-budgets") {
-    const budgets = loadBudgets(
-      flag(args, "--budgets", path.join(root, "docs/davinci/plan/instruction-budgets.toml")),
-      registry,
-    );
+    const budgets = loadBudgets(flag(args, "--budgets", budgetFile), registry);
     const base = flag(args, "--base-budgets");
     if (base) ratchetBudgets(budgets, loadBudgets(base));
     console.log(`instruction-counts: ${registry.size} pinned ceilings and ratchet verified`);
   } else {
     const report = validateMeasurement(
-      readJson(
-        flag(args, "--measurement", path.join(root, "target/instruction-counts/measurement.json")),
-      ),
+      readJson(flag(args, "--measurement", path.join(output, "measurement.json"))),
       registry,
     );
     if (modes[0] === "--baseline") {
-      fs.writeFileSync(
-        flag(args, "--out", path.join(root, "docs/davinci/plan/instruction-budgets.toml")),
-        baselineToml(report),
-      );
+      fs.writeFileSync(flag(args, "--out", budgetFile), baselineToml(report));
     } else {
-      const budgets = loadBudgets(
-        flag(args, "--budgets", path.join(root, "docs/davinci/plan/instruction-budgets.toml")),
-        registry,
-      );
+      const budgets = loadBudgets(flag(args, "--budgets", budgetFile), registry);
       const base = flag(args, "--base-budgets");
       // The base can have fewer rows when a new benchmark is introduced.
       if (base) ratchetBudgets(budgets, loadBudgets(base));
       try {
         reportOverBudgetHotspots(
-          flag(
-            args,
-            "--measurement",
-            path.join(root, "target/instruction-counts/measurement.json"),
-          ),
+          flag(args, "--measurement", path.join(output, "measurement.json")),
           report,
           budgets,
         );

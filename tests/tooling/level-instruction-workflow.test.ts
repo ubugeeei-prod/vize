@@ -112,3 +112,29 @@ test("required report keeps inventory and final dependency verification in the s
   assert.match(collect.run ?? "", /test-inventory\.mjs --json test-inventory\.json/);
   assert.match(upload.uses ?? "", /^actions\/upload-artifact@/);
 });
+
+test("original formatter calibration preserves level enforcement and retains its own full packet", () => {
+  const gate = instructionWorkflow.jobs?.["instruction-counts"];
+  const formatter = gate?.steps?.find(
+    (step) =>
+      step.name === "Measure original formatter routines three times without Criterion sampling",
+  );
+  assert.equal(formatter?.if, "env.MEASURE == 'true'");
+  assert.match(
+    formatter?.run ?? "",
+    /--formatter --collect --out "\$\{RUNNER_TEMP\}\/formatter-instruction-counts"/,
+  );
+  assert.equal(formatter?.["continue-on-error"], undefined);
+  const upload = gate?.steps?.find(
+    (step) =>
+      step.with?.name ===
+      "formatter-instruction-counts-${{ github.sha }}-${{ github.run_attempt }}",
+  );
+  assert.equal(upload?.if, "${{ always() && env.MEASURE == 'true' }}");
+  assert.equal(upload?.with?.path, "${{ runner.temp }}/formatter-instruction-counts");
+  assert.equal(upload?.with?.["if-no-files-found"], "error");
+  assert.equal(upload?.["continue-on-error"], undefined);
+  const tests = gate?.steps?.find((step) => step.name === "Test instruction parser and gates");
+  assert.match(tests?.run ?? "", /level-instruction-counts\.test\.mjs/);
+  assert.match(tests?.run ?? "", /formatter-instruction-counts\.test\.mjs/);
+});

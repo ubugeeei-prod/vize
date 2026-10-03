@@ -34,11 +34,16 @@ memchr.workspace = true
 
 [dev-dependencies]
 criterion.workspace = true
+davinci_harness.workspace = true
 insta.workspace = true
 serde_json.workspace = true
 
 [[bench]]
 name = "formatter"
+harness = false
+
+[[bench]]
+name = "formatter_instructions"
 harness = false
 
 [lints]

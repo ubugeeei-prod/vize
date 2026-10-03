@@ -1,0 +1,54 @@
+
+import { ref, computed, watch, onMounted, onUnmounted, reactive, toRefs, nextTick } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useStore } from 'vuex'
+
+const router = useRouter()
+const route = useRoute()
+const store = useStore()
+
+const state = reactive({
+  count: 0,
+  name: 'Vue',
+  items: [],
+  loading: false,
+  error: null,
+})
+
+const { count, name, items, loading, error } = toRefs(state)
+
+const doubled = computed(() => count.value * 2)
+const tripled = computed(() => count.value * 3)
+const quadrupled = computed(() => count.value * 4)
+
+function increment() {
+  count.value++
+}
+
+function decrement() {
+  count.value--
+}
+
+async function fetchData() {
+  loading.value = true
+  try {
+    const response = await fetch('/api/data')
+    items.value = await response.json()
+  } catch (e) {
+    error.value = e.message
+  } finally {
+    loading.value = false
+  }
+}
+
+watch(count, (newVal, oldVal) => {
+  console.log(`Count changed from ${oldVal} to ${newVal}`)
+})
+
+onMounted(() => {
+  fetchData()
+})
+
+onUnmounted(() => {
+  console.log('Component unmounted')
+})

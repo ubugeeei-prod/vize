@@ -9,6 +9,10 @@ on:
       - tools/benchmarks/crates/davinci_harness/**
       - tools/benchmarks/scripts/instruction-counts*.mjs
       - docs/davinci/plan/instruction-budgets.toml
+      - docs/davinci/plan/formatter-instruction-*.toml
+      - crates/vize_glyph/benches/formatter_instructions.rs
+      - crates/vize_glyph/benches/fixtures/formatter/**
+      - tests/tooling/formatter-instruction-counts.test.mjs
       - tests/tooling/level-instruction-counts.test.mjs
       - tests/tooling/level-instruction-workflow.test.ts
   workflow_dispatch:
@@ -58,12 +62,17 @@ jobs:
           key: instruction-counts-v1
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Test instruction parser and gates
-        run: node --test tests/tooling/level-instruction-counts.test.mjs
+        run: node --test tests/tooling/level-instruction-counts.test.mjs tests/tooling/formatter-instruction-counts.test.mjs
       - name: Test default harness and client request windows
         if: env.MEASURE == 'true'
         run: |
           cargo test --locked -p davinci_harness --lib
           cargo test --locked -p davinci_harness --lib --features instruction-counts
+      # Draft calibration only. Exact caps are frozen from this retained
+      # three-run packet before queue admission; no performance gate credit yet.
+      - name: Measure original formatter routines three times without Criterion sampling
+        if: env.MEASURE == 'true'
+        run: node tools/benchmarks/scripts/instruction-counts.mjs --formatter --collect --out "${RUNNER_TEMP}/formatter-instruction-counts"
       - name: Measure each stage three times without Criterion sampling
         if: env.MEASURE == 'true'
         run: node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "${RUNNER_TEMP}/instruction-counts"
@@ -103,4 +112,11 @@ jobs:
           name: instruction-counts-${{ github.sha }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/instruction-counts
           if-no-files-found: warn
+          retention-days: 30
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() && env.MEASURE == 'true' }}
+        with:
+          name: formatter-instruction-counts-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/formatter-instruction-counts
+          if-no-files-found: error
           retention-days: 30
