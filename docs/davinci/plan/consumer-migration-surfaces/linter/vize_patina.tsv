@@ -959,6 +959,7 @@ linter	Linter	test/dev	crates/vize_patina/tests/native_header_rules/duplicates.r
 linter	Linter	test/dev	crates/vize_patina/tests/native_header_rules/support.rs	2	l0	L0	stage	vize_l0	preferred	2
 linter	Linter	test/dev	crates/vize_patina/tests/native_header_rules/support.rs	2	carton	Carton host/compatibility	old	vize_carton	legacy	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_header_rules/support.rs	2	l1	L1	stage	vize_l1	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/native_header_rules/table.rs	5	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_header_rules/verbatim.rs	5	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_header_rules/verbatim.rs	5	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_lint_tag.rs	8	l0	L0	stage	vize_l0	preferred	1

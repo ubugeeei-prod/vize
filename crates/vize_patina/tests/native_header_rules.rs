@@ -8,5 +8,6 @@ mod native_header_rules {
     mod directives;
     mod duplicates;
     mod support;
+    mod table;
     mod verbatim;
 }

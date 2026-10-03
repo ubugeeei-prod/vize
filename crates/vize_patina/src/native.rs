@@ -42,6 +42,7 @@ pub enum NativeLintRefusal {
     UnsupportedDirective { span: Span },
     DuplicateAttribute { span: Span },
     LintTag { reason: NativeLintTagRefusal },
+    TableContext { span: Span },
 }
 
 /// A finished L0 diagnostic and its original stable rule code.

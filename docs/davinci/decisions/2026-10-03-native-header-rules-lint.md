@@ -88,3 +88,15 @@ target admission. Production admission and every previous source/equality
 assertion remain unchanged. All twenty-five current consumer laws require
 fresh exact-head hosted execution; earlier afdb complete Check37118457457
 proved the previous twenty-four laws and does not credit these new controls.
+
+The preserved original table-context counterexample adds a complete registered
+parser Error beyond the rule's Warning. The strict new-family inspector now reads
+the genuine original `in_table_context` receipt and returns typed `TableContext`
+before visiting attributes or performing any catalog lookup. It conservatively
+refuses all authored table descendants, even valid cells and exempt/nonmatching
+tags, without replicating the legacy foster algorithm or claiming DOM namespace
+parity. Table's own header and following outside siblings remain admitted.
+Three additional laws retain complete parser/product diagnostics in all locales,
+including full opening/attribute ranges, messages, Help, empty labels and no fixes;
+the exact original inputs and all earlier 25 laws remain. Previously merged
+img/iframe/tabindex admission is unchanged. Fresh source Actions are required.

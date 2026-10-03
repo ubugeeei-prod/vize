@@ -18,6 +18,11 @@ fn inspect(
     let receipt = element
         .lint_tag()
         .map_err(|reason| NativeLintRefusal::LintTag { reason })?;
+    if receipt.in_table_context() {
+        return Err(NativeLintRefusal::TableContext {
+            span: receipt.span(),
+        });
+    }
     let opening = header::opening_range(element)?;
     let mut names: SmallVec<[&str; 8]> = SmallVec::new();
     for original in element.attributes() {
