@@ -108,10 +108,9 @@ fn real_configured_original_programs_preserve_complete_diagnostics_and_source() 
         let result = block_on(bridge.check_original_program(&original, &source_path)).unwrap();
         assert!(std::ptr::eq(result.projection().file(), &original));
         assert_eq!(result.source_path(), source_path.canonicalize().unwrap());
-        assert!(
-            result
-                .source_uri()
-                .ends_with(if js { "source.mjs" } else { "source.ts" })
+        assert_eq!(
+            result.source_uri(),
+            vize_l0::cstr!("file://{}", source_path.canonicalize().unwrap().display())
         );
         assert_eq!(result.source_digest().len(), 64);
         let DocumentDiagnosticReportResult::Report(DocumentDiagnosticReport::Full(report)) =
