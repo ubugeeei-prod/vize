@@ -49,9 +49,14 @@ initializer, block comments and conditional effects, Unicode/entity windows,
 nested elements and a fragment. Genuine Rust File laws compare every emitted
 module byte, original owner/On/body facts, complete body map coverage, atomic
 entities and event-symbol links; ten bounded refusal cases require exact
-typed original windows and unchanged retained body. Hosted Rust execution
-remains pending. Seven independent Node laws passed using the actual pinned
-compiler and Vue custom-host renderer: mount, event effects, real PROPS callback
+typed original windows and unchanged retained body. Exact source 7fc051eaae
+passed Check 37131724088, including all four affected Rust and tooling partitions
+and these complete native byte/map and refusal laws. The genuine replay on
+literal interpolation providers 267c85f8/f85cb520/9af01c62 preserves their distinct
+File records, root helper and early completion interruption guard beside the
+handler rows and whole-child guard; fresh replayed-head acceptance is required.
+Seven independent Node laws passed using the actual pinned compiler and Vue
+custom-host renderer: mount, event effects, real PROPS callback
 replacement and unmount, plus the refused upstream grammar/rewrite boundaries.
 This is runtime execution through Vue's renderer, not a native browser DOM
 claim or whole-SFC/product completion. Protected full suites, immutable
