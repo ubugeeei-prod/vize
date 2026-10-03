@@ -54,4 +54,4 @@ pub use parse::{
 pub use profile::{Component, Document, Profile, ProfileKind};
 pub use token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
 
-pub use native::{NativeLintTag, NativeLintTagKind, NativeLintTagRefusal};
+pub use native::{NativeLintComponent, NativeLintTag, NativeLintTagKind, NativeLintTagRefusal};

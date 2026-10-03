@@ -7,6 +7,7 @@ use vize_l0::{Allocator, SourceBlock};
 mod child;
 mod element;
 mod interpolation;
+mod lint;
 mod lint_tag;
 mod operand;
 mod selected;
@@ -17,6 +18,7 @@ pub use interpolation::{
     NativeInterpolationError, NativeInterpolationFailure, NativeInterpolationOperand,
     NativeInterpolationView,
 };
+pub use lint::NativeLintComponent;
 pub use lint_tag::{NativeLintTag, NativeLintTagKind, NativeLintTagRefusal};
 pub use operand::{
     NativeAttributeExpression, NativeAttributeExpressionFailure, NativeAttributeExpressionView,
@@ -66,6 +68,14 @@ impl<'a> NativeComponent<'a> {
     }
     /// Retain original lint-header facts only for genuine Descriptor selection.
     pub(super) fn parse_selected_in(
+        allocator: &'a Allocator,
+        block: SourceBlock<'a>,
+    ) -> Result<Self, ComponentSourceError> {
+        Self::parse_lint_in(allocator, block)
+    }
+    // The caller's sealed owner determines bare or Descriptor-selected custody.
+    // Both use the same existing default Vue 3 lint event sink exactly once.
+    fn parse_lint_in(
         allocator: &'a Allocator,
         block: SourceBlock<'a>,
     ) -> Result<Self, ComponentSourceError> {
