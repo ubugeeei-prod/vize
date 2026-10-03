@@ -63,7 +63,9 @@ export function assertSourceRemediatedReport(value: unknown, status: number): st
     return [];
   }
   assert.deepEqual(
-    severe.map(({ advisory }) => advisory.github_advisory_id).sort(),
+    severe
+      .map(({ advisory }) => advisory.github_advisory_id)
+      .sort((a, b) => String(a).localeCompare(String(b))),
     [forgeId, bracesAdvisoryId].sort(),
     "unreviewed moderate-or-higher set",
   );

@@ -72,6 +72,10 @@ the original threshold. No audit exception or upstream patched-version claim
 substitutes for the actual installed-source proof.
 
 The temporary source and workflow are evidence only and excluded from the PR.
+The first ordinary source campaign passed its security audit but strict
+type-aware lint refused an implicit sort of unknown advisory IDs. Its failure
+is retained; the follow-up supplies an explicit comparator while preserving
+the original raw identity comparison and unchanged audit conditions.
 Fresh ordinary exact-head required/full/Contracts/Fuzz/all-100 Actions and actual
 protected-queue merge remain pending; the native children stay unqueued until
 the security repair is accepted. This does not finish compiler fix-history
