@@ -2,10 +2,13 @@
 
 This child adds a real source body to the existing original-Program JSX/TSX
 semantic provider. Its original semantic source is the frozen intrinsic/static-member
-`bbb71ec6d0e27406df6c22389c71a957e2452bd7`. Delivery uses the actual public
-repaired JSX prefix `cb3f3b0d0109560455f66018ba1079e683166c3f`, whose ordinary
-fixture modules and Vue/generic File separation repairs remain intact. The earlier semantic slices
-remain independently deliverable and do not wait for this owner.
+`bbb71ec6d0e27406df6c22389c71a957e2452bd7`. Initial owning source
+`94c2e5251984894ce7560ca42f50a41309f01df9` used the actual public repaired JSX
+prefix `cb3f3b0d0109560455f66018ba1079e683166c3f`. After those two semantic PRs
+actually merged, this owned child was replayed onto authenticated signed main
+`d36c4874739bd8e6e342c4d0aeb9ede1c8c6eb0b`. Its fixture modules and Vue/generic
+File separation repairs, incoming product changes and central clauses remain
+intact. The earlier semantic slices did not wait for this owner.
 
 ## Inputs, ownership and completion
 
@@ -71,10 +74,19 @@ Meaningful laws cover original owner moves/comments/full Unicode block spans,
 actual scopes and BindingIds, exact structural/reference ranges, source/profile
 and recovered-observation refusals, unresolved File completion, bodyless/pending
 seals, late rollback, checked projection before callbacks, genuine work limits
-and caught unwind. The prior semantic functions remain registered and pass.
-Whole production/unit and all selected File/resolver tests run with strict
-Clippy in one existing pinned OXC/L0/ordinary-L1 universe, without Cargo or
-rebuilt dependencies. Privacy checks deny external raw AST/row/node assembly.
+and caught unwind. The prior semantic functions remain registered. Original
+`94c2` source passed 152 selected Rust functions, strict whole production/unit
+and selected File/resolver Clippy in its pinned OXC/L0/ordinary-L1 universe,
+without Cargo or rebuilt dependencies. Its exact-head required/full Actions
+and 100 instruction cases measured three times also completed successfully.
+Privacy checks deny external raw AST/row/node assembly.
+
+The current replay preserves all 175 complete L2 source entries byte-exactly
+from `94c2`, and its current 14 source gates pass. Accepted L1 source changed
+in the new main, so a fresh compatible current-L1/parser build and new-head
+hosted gates are separate requirements; old execution receipts retain their
+original source qualification. Prior green results do not certify the new head,
+its protected candidate or its actual merge.
 
 This is an owned L2 provider. JSX transforms, JS/TSX emission, runtime access,
 L3 target decisions and native upper handoff remain unfinished. L1's existing
