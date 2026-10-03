@@ -20,6 +20,8 @@ mod conditional;
 mod layout;
 #[path = "native_template_interpolations/member.rs"]
 mod member;
+#[path = "native_template_interpolations/object.rs"]
+mod object;
 #[path = "native_template_interpolations/preservation.rs"]
 mod preservation;
 #[path = "native_template_interpolations/refusals.rs"]

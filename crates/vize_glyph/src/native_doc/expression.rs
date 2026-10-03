@@ -13,6 +13,8 @@ use super::Doc;
 mod array;
 #[path = "expression/ast.rs"]
 mod ast;
+#[path = "expression/object.rs"]
+mod object;
 #[path = "expression/sequence.rs"]
 mod sequence;
 #[path = "expression/source.rs"]
@@ -78,7 +80,11 @@ mod projection_tests;
 ///
 /// Identifier, numeric/string/boolean/null atoms, authored parentheses and
 /// binary/logical, prefix unary, ordinary static/computed member, call,
-/// conditional, array and sequence nodes are supported. Sequences retain all
+/// conditional, array, static explicit data object and sequence nodes are
+/// supported. Object key spelling/order stays original; computed, shorthand,
+/// methods/accessors, spreads, unsupported keys/values and decoded `__proto__`
+/// keys refuse without claiming full language early-error validation.
+/// Sequences retain all
 /// original children, checked commas and authored reference parentheses. Original array elements and
 /// elisions retain their order and exact comma custody, including checked
 /// authored trailing commas; spread elements refuse. Plain unary/member gaps use separators so signs, keyword

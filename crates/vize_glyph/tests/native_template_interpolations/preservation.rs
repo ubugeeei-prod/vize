@@ -1,6 +1,8 @@
 //! Actual selected-source reparse, with independent typed syntax fingerprints.
 
-use oxc_ast::ast::{ArrayExpressionElement, Expression};
+use oxc_ast::ast::{
+    ArrayExpressionElement, Expression, ObjectPropertyKind, PropertyKey, PropertyKind,
+};
 use oxc_span::GetSpan;
 use vize_glyph::native_doc::{LineEnding, PrintOptions, native_template_document, print};
 use vize_l0::Allocator;
@@ -27,6 +29,16 @@ pub(super) enum Syntax {
         std::boxed::Box<Syntax>,
         std::vec::Vec<Syntax>,
     ),
+    Object(std::vec::Vec<Syntax>),
+    Property(
+        PropertyKind,
+        bool,
+        bool,
+        bool,
+        std::boxed::Box<Syntax>,
+        std::boxed::Box<Syntax>,
+    ),
+    PropertyKey(&'static str, std::string::String, std::string::String),
     Sequence(std::vec::Vec<Syntax>),
     Array(std::vec::Vec<Syntax>),
     Elision(std::string::String),
@@ -92,6 +104,44 @@ pub(super) fn fingerprint(
             member.optional,
             std::boxed::Box::new(fingerprint(original, &member.object)),
             std::boxed::Box::new(fingerprint(original, &member.expression)),
+        ),
+        Expression::ObjectExpression(object) => Syntax::Object(
+            object
+                .properties
+                .iter()
+                .map(|property| {
+                    let ObjectPropertyKind::ObjectProperty(property) = property else {
+                        panic!("independent explicit property fixture")
+                    };
+                    let key_span = original.authored_span(property.key.span()).unwrap();
+                    let authored = original
+                        .source()
+                        .authored_root()
+                        .get(key_span.start as usize..key_span.end as usize)
+                        .unwrap()
+                        .to_owned();
+                    let (kind, value) = match &property.key {
+                        PropertyKey::StaticIdentifier(key) => {
+                            ("IdentifierName", key.name.as_str().to_owned())
+                        }
+                        PropertyKey::StringLiteral(key) => {
+                            ("StringLiteral", key.value.as_str().to_owned())
+                        }
+                        PropertyKey::NumericLiteral(key) => {
+                            ("NumericLiteral", key.value.to_bits().to_string())
+                        }
+                        _ => panic!("independent static key fixture"),
+                    };
+                    Syntax::Property(
+                        property.kind,
+                        property.method,
+                        property.shorthand,
+                        property.computed,
+                        std::boxed::Box::new(Syntax::PropertyKey(kind, value, authored)),
+                        std::boxed::Box::new(fingerprint(original, &property.value)),
+                    )
+                })
+                .collect(),
         ),
         Expression::SequenceExpression(sequence) => Syntax::Sequence(
             sequence

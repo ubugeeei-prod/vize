@@ -14,7 +14,7 @@ fn unsupported_ordered_children_refuse_the_whole_sequence_and_its_enclosing_cons
     for content in [
         "a,f(...b)",
         "a,[...b]",
-        "a,{x:b}",
+        "a,{x:f(...b)}",
         "a,b?.c",
         "a,f?.()",
         "a,b=c",

@@ -20,7 +20,7 @@ fn unsupported_conditional_test_consequent_or_alternate_refuses_the_complete_doc
         ("a?(b=c):d", false),
         ("a?b:(c=d)", false),
         ("[...a]?b:c", false),
-        ("a?{b:1}:c", false),
+        ("a?{...b}:c", false),
         ("a?b:()=>c", false),
         ("this?b:c", false),
         ("a?new B:c", false),

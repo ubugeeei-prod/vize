@@ -21,7 +21,7 @@ fn unsupported_calls_and_descendants_refuse_the_complete_selected_document() {
         ("super.f(a)", false),
         ("super(a)", false),
         ("f(()=>a)", false),
-        ("f({x:1})", false),
+        ("f({...x})", false),
         ("f(&#91;...a&#93;)", false),
         ("f(a=b)", false),
         ("f(a?b:[...c])", false),

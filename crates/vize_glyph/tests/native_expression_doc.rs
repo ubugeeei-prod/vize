@@ -15,6 +15,8 @@ mod call;
 mod conditional;
 #[path = "native_expression_doc/member.rs"]
 mod member;
+#[path = "native_expression_doc/object.rs"]
+mod object;
 #[path = "native_expression_doc/preservation.rs"]
 mod preservation;
 #[path = "native_expression_doc/refusals.rs"]
@@ -155,7 +157,6 @@ fn whole_binary_and_logical_output_flattens_or_breaks_original_nodes() {
         "(a +\n  b)"
     );
 }
-
 #[test]
 fn original_parentheses_and_precedence_are_never_removed_or_invented() {
     for (source, expected) in [
@@ -178,7 +179,6 @@ fn original_parentheses_and_precedence_are_never_removed_or_invented() {
         );
     }
 }
-
 #[test]
 fn every_original_binary_and_logical_operator_spelling_stays_exact() {
     for operator in [
