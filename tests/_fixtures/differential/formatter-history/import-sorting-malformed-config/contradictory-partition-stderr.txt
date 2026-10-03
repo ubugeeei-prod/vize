@@ -1,0 +1,1 @@
+Invalid formatter configuration: Failed to format script: `partitionByNewline: true` and `newlinesBetween: true` cannot be used together

@@ -129,4 +129,27 @@ void test("shared formatter API history observes complete source-built output an
     },
     JSON.stringify(configuration.rows, null, 2),
   );
+  const malformed = runSortingConfigPack({
+    repoRoot: root,
+    binaryPath: path.join(root, "target/ci", process.platform === "win32" ? "vize.exe" : "vize"),
+    manifestPath:
+      "tests/_fixtures/differential/formatter-history/import-sorting-malformed-config-manifest.json",
+  });
+  fs.writeFileSync(
+    path.join(evidenceDir, "import-sorting-malformed-config-report.json"),
+    JSON.stringify(malformed, null, 2) + "\n",
+  );
+  assert.deepEqual(
+    malformed.summary,
+    {
+      plannedCases: 8,
+      legacyMatches: 8,
+      legacyFailures: 0,
+      nativeUnsupported: 8,
+      nativeHandled: 0,
+      nativeEquivalent: 0,
+      pairedComparisons: 0,
+    },
+    JSON.stringify(malformed.rows, null, 2),
+  );
 });

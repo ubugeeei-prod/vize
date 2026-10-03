@@ -1,0 +1,1 @@
+Invalid formatter configuration: failed to parse {{workspace}}/vize.config.json: data did not match any variant of untagged enum SortImportsSetting at line 1 column 91

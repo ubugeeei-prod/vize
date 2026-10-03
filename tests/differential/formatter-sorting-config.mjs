@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.mjs";
 import { loadFormatterApiManifest } from "./formatter-api.mjs";
+import { assertOriginalSortingConfig } from "./formatter-sorting-config-source.mjs";
 import { sha256 } from "./manifest.mjs";
 
 export const SORTING_CONFIG_MANIFEST =
@@ -43,22 +44,42 @@ export function loadSortingConfigManifest(root, manifestPath = SORTING_CONFIG_MA
   assert.equal(manifest.issue, 6882);
   assert.equal(manifest.featureIssue, 7258);
   assert.equal(manifest.nativeHandled, 0);
+  if (manifest.providerConfigManifest) asset(root, manifest.providerConfigManifest);
   asset(root, manifest.apiManifest);
   const api = loadFormatterApiManifest(path.join(root, manifest.apiManifest.path), root);
   const ids = new Set();
+  const exactLiterals = new Set();
+  const historicalProfile = manifest.profile === "original-malformed-settings-v1";
+  if (historicalProfile) assert.equal(manifest.cases.length, 8);
   const cases = manifest.cases.map((fixture) => {
     assert.match(fixture.id, /^[a-z0-9/-]+$/);
     assert(!ids.has(fixture.id), "duplicate configuration scenario");
     ids.add(fixture.id);
+    if (historicalProfile || fixture.id.startsWith("import-sorting-malformed-config/")) {
+      assert.equal(manifest.profile, "original-malformed-settings-v1");
+      assert(fixture.historicalConfig, "original malformed configuration authority is required");
+      assert.match(fixture.witness.functionSha256, /^[a-f0-9]{64}$/);
+    }
     const reference = api.cases.find(({ id }) => id === fixture.apiCase);
     assert(reference, "unregistered API reference");
     const owner = asset(root, {
       path: fixture.witness.path,
       sha256: fixture.witness.sourceSha256,
-    }).toString();
+    });
     assert.match(fixture.witness.function, /^[a-z][a-z0-9_]+$/);
-    assert(owner.includes(`fn ${fixture.witness.function}(`), "missing original config law");
+    assert(
+      owner.toString().includes(`fn ${fixture.witness.function}(`),
+      "missing original config law",
+    );
     const initialFiles = files(root, fixture.initialFiles);
+    if (fixture.historicalConfig) {
+      const { literal } = fixture.historicalConfig;
+      if (historicalProfile) {
+        assert(!exactLiterals.has(literal), "duplicate original malformed configuration");
+        exactLiterals.add(literal);
+      }
+      assertOriginalSortingConfig(fixture, owner, initialFiles);
+    }
     assert.equal(typeof fixture.scriptBody, "boolean");
     const source = fixture.scriptBody
       ? Buffer.from(
@@ -230,12 +251,16 @@ export function recordSortingConfigProcess(row, step, inputFiles, result, readOu
   return pass;
 }
 
-export function runSortingConfigPack({ repoRoot, binaryPath }) {
+export function runSortingConfigPack({
+  repoRoot,
+  binaryPath,
+  manifestPath = SORTING_CONFIG_MANIFEST,
+}) {
   const build = expectedBuildIdentity(repoRoot);
   assert.equal(fs.realpathSync(binaryPath), fs.realpathSync(path.join(repoRoot, build.binaryPath)));
   const receipt = JSON.parse(fs.readFileSync(`${binaryPath}.differential-build.json`, "utf8"));
   validateBuildReceipt(receipt, build);
-  const loaded = loadSortingConfigManifest(repoRoot);
+  const loaded = loadSortingConfigManifest(repoRoot, manifestPath);
   const rows = loaded.cases.map((fixture) => {
     const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "formatter-sorting-config-"));
     const row = {
