@@ -1,5 +1,6 @@
 //! Whole JSON-RPC envelopes through the actual production service builder.
 mod capacity;
+mod highlights;
 mod jsx;
 mod lifecycle;
 mod selected;

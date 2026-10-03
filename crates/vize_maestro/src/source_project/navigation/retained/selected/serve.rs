@@ -14,6 +14,15 @@ pub(super) fn run(
             break;
         }
         match command {
+            Command::Highlights(request) => {
+                if !request.reply.is_canceled() {
+                    #[cfg(test)]
+                    control
+                        .queries
+                        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    let _ = request.reply.send(query.highlights(request.position));
+                }
+            }
             Command::TemplateDefinition(position, reply) => {
                 if !reply.is_canceled() {
                     #[cfg(test)]

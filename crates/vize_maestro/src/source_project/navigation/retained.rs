@@ -17,6 +17,7 @@ use vize_l2::{
     lang::js::{FileProducer, ProgramInput, ProgramScope},
 };
 
+mod highlights;
 pub(super) mod selected;
 pub(super) mod vue;
 
@@ -109,6 +110,15 @@ fn serve(query: &RetainedNavigation<'_, '_>, receiver: Receiver<Command>, contro
             break;
         }
         match command {
+            Command::Highlights(request) => {
+                if !request.reply.is_canceled() {
+                    #[cfg(test)]
+                    control
+                        .queries
+                        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    let _ = request.reply.send(query.highlights(request.position));
+                }
+            }
             Command::TemplateDefinition(_, reply) => {
                 if !reply.is_canceled() {
                     let _ = reply.send(Err(NavigationRefusal::Language));

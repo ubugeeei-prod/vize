@@ -16,6 +16,7 @@ use super::super::{
     worker::{Command, Control, refused},
 };
 
+mod highlights;
 mod serve;
 
 pub(in crate::source_project::navigation) fn run(

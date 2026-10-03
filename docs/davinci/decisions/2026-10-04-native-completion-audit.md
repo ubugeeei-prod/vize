@@ -1,130 +1,125 @@
 # Native completion audit on actual main
 
-Source: `ead89a7592e653a8ed585f4f3fed88fac71b3551`, fetched from `origin/main`
-on 2026-10-04 JST in a new `wt` worktree. Roadmaps #6826–#6830 and all
-five fix-history issues were read from GitHub. The only open PR was the
-release draft #7584; the actual merge queue was empty. This is a source and
-requirements audit, not a new execution receipt or a product replacement.
-Older dated ledgers and pending prose retain their historical attribution.
+Current source: `e193630474a8b6d48db04e27a9047569efc2ffa5`, fetched from
+`origin/main` on 2026-10-04 JST. Roadmaps #6826–#6830 and all five fix-history
+issues were rechecked live: all ten remain OPEN. The original audit used
+`ead89a7592e653a8ed585f4f3fed88fac71b3551`; its empty queue/release-only PR
+snapshot and old pending prose describe that earlier source, not current delivery.
+This current ledger accompanies a genuine original-symbol query consumer.
 
 ## Actual acceptance boundary
 
-All five product replacement gates (#6879–#6883) remain OPEN. Native explicit
-APIs and source-qualified runtime laws have genuinely landed, but default
-products still have separate history, dialect and whole-output obligations.
-The shared history adapters below deliberately report native unsupported;
-changing that accounting requires an executable complete native product
-observation for the same registered coordinate. API availability alone does
-not supply equivalent diagnostics, module/map bytes, edits or wire responses.
+All five product replacement gates (#6879–#6883) remain OPEN; default product
+switches remain zero. Explicit native APIs and their actual execution/merges
+are distinct from whole-history equivalence and default replacement. A public
+native addon built with `napi,legacy` is actual public-boundary compatibility
+history, not a Davinci formatter-native adapter. Unsupported native coordinates
+stay in every denominator. No immutable expected output or original issue
+population is rewritten.
 
-| Product/gate     | Actual existing support and history evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Missing acceptance and next bounded work                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Canon / #6879    | L4 original Program and specialized owning JSX/TSX projections; explicit configured `check_original_program`, `check_original_jsx` and `check_native_vue`. Actual authored files, root membership, raw backend reports, same diagnosing project and UTF16 links are retained. The shared history manifest registers 21 cases in nine source-bound packs.                                                                                                                                                     | `typechecker.ts` still baselines only start position/message/code/severity, explicitly missing end, relatedInformation and raw backend vectors. All 21 native adapters are null. The 271-row history ledger has 263 `not-admitted` rows and 31 pending classifications; its other prepared/local states are not terminal whole-history evidence. Register full diagnostic vectors for one original complete project, then genuine native comparison when its grammar is admitted. Keep the actual TS7 missing relatedInformation versus primary TS6 visible; investigate actual initializer/backend capability before changing the oracle. Coherent imported/configuration graph snapshots and unsaved-editor publication remain unfinished. |
-| Compiler / #6880 | `compile_native_sfc` is callable and opt-in: genuine descriptor/Program/File, static and primitive DOM, original JS/TS let/var/const setup with bounded keyword annotations, sole ordinary direct empty default object, plain CSS and bounded scoped simple-class/class-list output. Genuine selected SSR and static Vapor L3/L4 entries have complete source-bound runtime fixture routes. The shared history has five SFC, five SSR and five Vapor whole public Result cases plus the SSR slot-scope case. | All 16 shared native adapters are null. The pinned 626-row index has 596 semantic-review-pending and 30 linked-but-still-pending rows. Preserve complete seven-field SFC/four-field target Results, original options and map/diagnostic populations; review one original bundled fix before extending registrations. DOM factory body rejects nested interpolation and whitespace/entity text; most bindings/macros/options/components/slots/controls/dialects remain unavailable. Next native slices need original nested text/interpolation legalization or L3/L4 consumers of the already authentic For records, not a copied neutral op. Whole SFC SSR/Vapor script integration and byte/map/history parity remain unfinished.           |
-| Patina / #6881   | `NativeSyntaxLint` borrows genuine selected L1 headers. Current explicit methods include img-alt, iframe-title, positive tabindex, autofocus/accesskey/distracting elements, obsolete elements, inline style and classified ARIA support. Shared source-built history executes 44 complete public cases, diagnostics/help/labels/independent fixes and requery.                                                                                                                                              | The adapter still reports all 44 native unsupported. The pinned inventory records 258 fix-title candidates, 245 other titles and 48 merge supplements without treating title counts as semantic coverage. Full-locale, snapshot-delta and bundled historical branches remain open. Lowest ready product slice is a source-built native selected-header observation for one supported rule with complete public diagnostic/edit fields and actual configurable locale/preset policy; broader rule registration and semantic/autofix adapters require shared facts and checked edits.                                                                                                                                                          |
-| Glyph / #6882    | Genuine separate Doc/printer, selected templates/directive heads and retained atoms/parentheses/binary/logical/unary/member expression documents. The reconciled original audit has 300 public API plans, including all 87 retained binary references, plus five CLI scenarios. New import sorting has 14 API cases, six config scenarios and eight malformed config plans.                                                                                                                                  | Native history handling remains zero. Additional call/conditional/array/object/template expression Doc families, full comments/options/dialects/SFC/edits and printer properties remain unfinished. Recover original public NAPI and Vite+ source-only work described below; real addon/build identity and complete configuration/process/file observations must execute in hosted Actions before coverage. Schema/WASM, applicable Glyph-specific metrics and genuine printer-error execution remain open.                                                                                                                                                                                                                                  |
-| Maestro / #6883  | Original JS/TS and admitted Vue workers parse each immutable snapshot once, retain genuine arena/syntax/File owners, use bounded live/mailbox counts and refuse stale/cancelled publication. Opt-in custom native definition/references and original folding have actual wire laws. Existing source-backed edits are separately opt-in. Shared history registers seven complete response cases.                                                                                                              | The history adapter admits only documentLink/foldingRange/onTypeFormatting and hard-codes all seven native unsupported. Standard handlers still use existing IDE/Corsa services. The 255-row response ledger has 233 pending audits, 16 source-reviewed-pending and six prepared entries. Register one actual original native response coordinate without normalizing wire/state fields. Existing NativeSfc queries cover scripts and original expression embeds, while authentic selected File Handler/For sites need a distinct provider and a genuine selected-SFC retained consumer. JSX/TSX source profiles, document highlights, workspace/external symbols and default routing remain unfinished.                                     |
+| Product/gate     | Genuine current support and history                                                                                                                                                                                                                                                                                                                                                                | Missing acceptance / next lowest ready slice                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Canon / #6879    | Original Program, owning JSX/TSX and native Vue projections; explicit configured check APIs with actual authored files, diagnosing-project/options attestation and raw backend/UTF16 reports. Pull diagnostic related-information capability is now explicit. Shared history registers 21 cases in nine source-bound packs.                                                                        | `typechecker.ts` still baselines start/message/code/severity without full end/relatedInformation/raw backend vectors; all21 native adapters are null. The pinned271-row ledger contains263 not-admitted rows and31 pending classifications. Register one complete original configured-project diagnostic coordinate and retain genuine TS7/TS6 capability differences. Coherent imported graph snapshots and unsaved-editor publication remain unfinished.                                                                            |
+| Compiler / #6880 | Opt-in whole original DOM SFC entry, descriptor/Program/File, bounded JS/TS setup/keyword annotations, ordinary empty default object, primitive output and bounded CSS. #7644 now genuinely compiles whole original click components. Selected SSR/Vapor and scalar JSX attribute consumers are actual native APIs, with source/runtime/map laws. Shared history registers16 whole public Results. | All16 shared native adapters remain null; pinned626-row history has596 semantic-review-pending and30 linked-but-pending rows. Keep complete seven-field SFC/four-field target Results and actual options/map/error populations. Next genuine For target must join retained setup ownership and authentic collection/alias records, then iteration/lookup/visibility/codegen/maps. Broader bindings/macros/options/components/slots/controls, nested template families and whole SSR/Vapor/dialect parity remain unfinished.           |
+| Patina / #6881   | Borrowed genuine selected L1 headers support bounded accessibility/ARIA/style/obsolete/deprecated attribute observations. Shared source-built legacy history executes44 complete public diagnostics/help/labels/fixes/requery cases.                                                                                                                                                               | All44 native adapters remain unsupported. The pinned inventory has258 fix-title candidates,245 other titles and48 merge supplements, without semantic credit from title counts. Lowest product slice is one actual selected-header native observation with complete public diagnostic/edit fields and authentic configurable locale/preset policy. Full locale/snapshot/bundled-history branches, broader semantics/autofix and product/default migration remain open.                                                                |
+| Glyph / #6882    | Separate original Doc/printer and selected templates/directive heads; retained atoms, parentheses, binary/logical/unary/member/call/conditional expressions and now original arrays/elisions (#7653). Original300 API/five CLI plans, import API/config/malformed packs remain immutable. #7630/#7634 actually retain fresh emitted-addon custody plus nine public NAPI plans/25 real calls.       | The nine NAPI plans explicitly report native unsupported9 and handled/equivalent/paired0. Existing shared native history credit remains zero. Public Vite resolved configuration/actual CLI execution is the independent #7656 followup, not the five script controls already replayed through NAPI. Objects/templates/full comments/options/dialects/SFC/edits, printer properties/error execution, schema/WASM and applicable Glyph measurements remain unfinished.                                                                 |
+| Maestro / #6883  | Original JS/TS/JSX/TSX and admitted Vue workers retain once-parsed genuine owners with actual freshness/cancel/close/live/mailbox guards. #7640 shared sealed Handler/For File queries, #7633 whole selected owner and #7654 explicit selected definition/references are actually merged. Normal Program/NativeSfc routes and original folding/edits retain their own contracts.                   | Seven shared response cases remain native unsupported; the adapter admits only documentLink/foldingRange/onTypeFormatting. The pinned255-row ledger has233 pending audits,16 source-reviewed-pending and6 prepared entries. Original symbol highlights are the current bounded consumer; tag-pair #3471 requires original CST close/name authority. Scripted selected whole-SFC For/outer bindings, cross-file/workspace/config interpretation, exact shared-history response adapters and standard/default routes remain unfinished. |
 
-The source pointers for these accounting facts are
-`tests/differential/{typechecker,compiler-api,linter-api,lsp}.ts`,
-`tests/differential/formatter-api.mjs`, the corresponding
-`tests/_fixtures/differential/*/manifest.json` files and the committed
-`docs/davinci/plan/{typechecker,compiler,lsp}-fix-history*.tsv` files.
-No original issue denominator or immutable expected output is rewritten.
+Accounting source: `tests/differential/{typechecker,compiler-api,linter-api,lsp}.ts`,
+`formatter-api.mjs`, `formatter-native.mjs`, corresponding pinned manifests and
+`docs/davinci/plan/{typechecker,compiler,lsp}-fix-history*.tsv`.
 
-## Lowest ready source ledger
+## Literal deliveries since the original audit
 
-Each row describes a real source prerequisite, not an issue-open merge ban.
-Independent structural/native work can progress under the recorded parallel
-decision; product replacement still waits for its own full gate.
+These rows describe actual merged scopes, not closure of their parent roadmaps.
+The current main contains every literal commit below. Earlier source/queue
+receipts retain their own attribution; obsolete candidates grant no new credit.
 
-| Stage / issue                       | Genuine current provider                                                                                                                                                                                | Concrete next slice and prerequisite                                                                                                                                                                                                                                                                                                                                                                                  |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| L0 / #6834                          | L0 owns arena/source/span/line index/interner/hash/source IO/builder and substrate runtime; #6833 is closed.                                                                                            | Resolve the still explicit std/platform boundary: actual L0 exports config/dialect/profiler and has no no-std feature. Do not claim embedded portability from an empty default feature list. Move one platform-only ownership group with consumer preservation and real hosted target checks.                                                                                                                         |
-| Naming / #6832                      | Real level packages, deleted substrate, renamed incremental crate and strict dependency/naming gates exist.                                                                                             | Reconcile the original complete path/type/string/CLI capture scope against actual source and the published feature compatibility exception. Passing the current naming checker or deleting one codename package is not the full closure audit.                                                                                                                                                                        |
-| L1 / #6835, #6837, #6841–#6843      | Moved lexer/container, real descriptor and intrinsic profiles; Vue 1 text and Vue 2 filter/argument owners; native Document lexical tape and restricted explicit-envelope HTML ancestry.                | Extend genuine Document insertion modes, decoded node/value observations and scoped petite `v-scope`/`v-effect`; current ancestry admits only explicit html/head/body, selected static tags and no interpolation/directive semantics. Full implied-end/table/raw-text/foreign/adoption policies and historical dialect products remain open. Keep the sole original tape/arena and independent actual browser oracle. |
-| L2 / #6838, #6844, #6871            | Complete original Program queries; NativeSfc expression query facade; sealed selected-template Handler/OriginalFor records, real handler local tables and template-origin alias declarations.           | Implement borrowed position queries over attached original Handler/For rows. Preserve File BindingId versus HandlerLocalId, original Params declarations versus script-unit declarations, source/decode maps, query ambiguity and owner lifetime. No reparsing, AST walk, index or extra resident per-node allocation. This is the currently owned implementation slice.                                              |
-| L3/L4 / #6839, #6840                | Sole-owner DOM/setup READ and event policies, genuine static SSR/Vapor completion receipts, same-source link sinks/assembly, original JSX scalar/read consumers and complete original type projections. | Genuine For DOM decision/emission is independently owned by the For lane. Extend actual handler access/syntax families, bindings/controls and nested expressions only after their real File/provider facts. Full SFC SSR/Vapor, full upstream map/frame parity and runtime dialect products remain open. Never promote diagnostic File output into original completion.                                               |
-| Products / #6847–#6851, #6872–#6876 | Opt-in provider consumers, coarse retained workers, freshness/cancellation, shared path identity, checked original L1 edits and Doc IR are implemented in bounded scopes.                               | Join genuine selected-SFC ownership to Handler/For queries, then actual owned Locations/highlights or other selected response requests. Complete CLI/LSP config/workspace interpretation, graph freshness and product edit adapters independently. L3/L4 retained diagnostics and default routes do not follow from parse retention.                                                                                  |
-| Deletion / #6852–#6854, #6891–#6893 | Shared whole-observation envelope, original source receipts, acceptance and fail-closed deletion guards exist.                                                                                          | Add actual native adapters for ready registered coordinates, retain unsupported rows in denominators, reconcile remaining historical requirements/dialect gaps, execute real-project zero fallback through the required stability period. All five fix-history closures and default switches remain unfinished.                                                                                                       |
-| CI / #6830, #6863                   | Protected native Stacks/queue, full Rust archive/four workers, full tooling partitions, mandatory native runtime captures and unchanged all100 ×3 gates; other CI child issues are closed.              | Measure the actual affected Check end-to-end and improve remaining conservative task fallback using proven source inputs. Existing different-head partition timings are not a two-minute whole-gate result. Preserve mandatory source native actions, full queue union, failure reports and immutable ceilings.                                                                                                       |
-| Multi-framework / #6829             | Neutral container/markup/profile/lang/framework and decision vocabularies exist as bounded designs/providers.                                                                                           | Finish neutral design obligation where it constrains current Vue/JSX consumers. TSRX/Solid/Flow implementation stays after the Vue Fes priority under the original order; it cannot distract from unfinished in-scope Vue dialects, JS/TS and JSX/TSX products.                                                                                                                                                       |
+| PR    | Actual literal merge                                             | Current bounded result                                                                                                                                                                                                                   |
+| ----- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #7630 | `c141927e2b61d9c5ac4834b709e808e962b6c252`, 2026-10-03T21:54:25Z | Genuine successful Cargo typed emission, clean source/toolchain/streams and equal emitted/generated/frozen addon bytes.                                                                                                                  |
+| #7634 | `9c25fbea58d30a1dcf08b2ca039918a2527c503e`, 21:54:25Z            | All9 plans/25 actual public NAPI calls, full input/options/results/Error/process/build custody, zero failures; protected Check37155742925 SUCCESS. Actual native Stack7635 positions1/2 merged together. Native adapter credit remains0. |
+| #7653 | `a30dc9225937a80b6fd55e43a8e99ff25a507442`, 22:08:42Z            | Original array/elision Doc family; broader expression/printer/product grammar still incomplete.                                                                                                                                          |
+| #7644 | `b53df87a6a1bbb7057b0f327fefee1675ec7181e`, 22:20:30Z            | Whole original click DOM SFC route, preserving genuine descriptor/File/handler/target/map custody; no whole For or general event family claim.                                                                                           |
+| #7654 | `53960908048a014da7944f13f2b8be93b63737f8`, 22:20:31Z            | Actual selected-template worker and explicit definition/references. Exact-source Check37156250523 and protected Check37157144532 SUCCESS; all90 source/all18 RPC laws, minimal/strict and unchanged actual100 x3 passed.                 |
+| #7655 | `e193630474a8b6d48db04e27a9047569efc2ffa5`                       | Genuine L2 selected setup Program custody prerequisite; current whole-selected SFC consumer still refuses every script/style. An owning API alone does not open scripted product eligibility.                                            |
 
-## Query authority correction and next implementation
+#7654 instruction artifact11286383067 has SHA256
+`12b2f4e586187b42be38dd56eb3f187ad4b9f8855c79af78124971bf7341e47c`.
+Actual source builder111300378857 and protected full Rust111302832274 both
+executed all15+4 new laws once with zero ignored. Its native owner/query providers
+#7633/#7640 previously actually merged as `d807a097efc081cf9501a626146370c84fb54c72`
+and `c241d75fa0bceea9479098d24b820dc1411f539c`. JSX/TSX Maestro profiles likewise
+actually merged in #7639 as `329d0776edc5c2ff0da25866d104bc4de585d61e`.
+These ready providers/consumers are no longer pending audit recommendations.
 
-The existing `NativeSfcObservation` retains the original normal Component
-construction route. That route does not admit the separate selected-template
-Handler/OriginalFor factory records. Extending its query facade with new scans
-would therefore be an unreachable staged API. The new bounded query belongs
-to genuine L2 File rows, callable from the already completed selected receiver.
-It does not promote arbitrary `JsExpr` coordinates into native membership.
+## Lowest ready remaining source ledger
 
-`FileHandler` retains the attached original On allocation and its whole
-`HandlerResolution`; local identities have a separate namespace, including
-the implicit `$event` which has no authored declaration. `FileForHead`
-retains the actual attached `OriginalForOp`, collection in the enclosing scope
-and real alias declarations in the child scope. A collection can resolve to a
-parent template alias, so script-only `BindingRef::declaration()` is insufficient.
-The recorded scope introduction is not the complete body visibility extent.
+| Stage / issue                       | Existing authentic prerequisite                                                                                                                                            | Concrete next slice and acceptance                                                                                                                                                                                                                                                                                  |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| L0 / #6834                          | Arena/source/span/line index/interner/hash/source IO/builder and substrate runtime; #6833 closed.                                                                          | Resolve actual std/platform boundary: config/dialect/profiler still exported without a no-std feature. Move one real platform ownership group with consumer preservation/hosted target checks; empty defaults grant no embedded portability.                                                                        |
+| Naming / #6832                      | Level packages, substrate deletion, incremental rename and strict dependency/name gates.                                                                                   | Reconcile original path/type/string/CLI capture scope against actual source and explicit feature compatibility exception; current checker success alone is not full closure.                                                                                                                                        |
+| L1 / #6835, #6837, #6841–#6843      | Original descriptor/intrinsic profiles, Vue1 text/Vue2 filter/argument owners, real Document lexical tape and restricted explicit HTML ancestry.                           | Genuine insertion modes, decoded node/value observations, petite scoped v-scope/v-effect; implied ends/table/raw-text/foreign/adoption/dialect products remain unfinished. Keep sole tape/arena and independent browser oracle.                                                                                     |
+| L2 / #6838, #6844, #6871            | Complete original Program/NativeSfc queries and sealed HandlerLocal/File-alias position queries; genuine setup Program retained by #7655.                                  | Join the whole selected descriptor envelope to that exact setup receipt before scripted For/outer-binding consumption. Preserve File/Handler namespaces, every actual declaration site, decoded source, owner lifetimes and foreign/equal-ID refusals. No new AST walk, fake binding or coordinates-only admission. |
+| L3/L4 / #6839, #6840                | Sole-owner DOM/setup/event decisions, same-File For receipt and actual setup collection access, selected static SSR/Vapor, original JSX/scalar consumers/type projections. | Original For iteration/lookup/visibility and full target/module/map assembly after real whole-SFC setup prerequisite; broader event access/syntax, nested controls and full SSR/Vapor/dialect/raw-map parity remain unfinished.                                                                                     |
+| Products / #6847–#6851, #6872–#6876 | Genuine selected worker now merged; coarse owner retention, cancellation/config/close guards, source-backed edits and Doc IR.                                              | Current source slice adds explicit original symbol highlights using same rows/worker without parsing. Tag pair needs a distinct authentic CST receiver; CLI/workspace graph and complete product edits/history/default handlers remain separate.                                                                    |
+| Deletion / #6852–#6854, #6891–#6893 | Whole observation envelope/source receipts/fail-closed guards.                                                                                                             | Add genuine native adapter for a ready registered coordinate, retain unsupported denominators, complete all five history gates/dialects and real-project zero-fallback stability period before deleting/default switching.                                                                                          |
+| CI / #6830, #6863                   | Protected native Stacks/queue, full Rust archive/four workers/tooling/native captures and unchanged all100 x3; other CI child issues closed.                               | Measure actual affected Check end-to-end and improve proven conservative fallback inputs. Different-head partitions do not establish a two-minute whole gate. Keep mandatory source native action/full queue union/failure reports/ceilings.                                                                        |
+| Multi-framework / #6829             | Bounded neutral container/markup/profile/lang/framework/decision vocabulary.                                                                                               | Finish neutral obligations constraining Vue/JSX; TSRX/Solid/Flow implementation follows original Vue Fes priority, without distracting from unfinished Vue dialect/JS/TS/JSX/TSX products.                                                                                                                          |
 
-Events/For owners approved this additive read/query scope. Their native
-construction and L3 consumer files stay independently owned. A later Maestro
-consumer must depend on the real `NativeSelectedSfcObservation` being built
-by the event/SFC owner and retain that complete original owner in its worker;
-the old NativeSfc facade cannot serve as a substitute. Provider existence,
-private source, source checks, queued candidates and actual merges remain
-distinct delivery states.
+## Query authority and historical prerequisites
 
-An independent fresh-main Maestro review also identifies a ready retained
-JSX/TSX consumer: preserve full `ProgramOptions` in
-`source_project/navigation/profile.rs` and `retained.rs`, recognize actual
-`javascriptreact`/`typescriptreact` language IDs, and pass the genuine JSX Module
-profile to the already implemented File resolver. Original-binding document
-highlights can use existing real usage/spans; neither slice completes the
-historical #3471 matching-tag/linked-editing pair. That original whole-response
-fixture is independently ready for the shared LSP manifest, which currently
-rejects both methods. These are separate owners/slices, not this provider's
-implemented or executed functionality.
+Normal `NativeSfcObservation` and the once-selected `NativeSelectedSfcObservation`
+remain separate real construction routes. The latter owns completed selected
+Handler/For rows and is now genuinely retained by #7654. A generic facade over
+normal Component facts cannot substitute for selected authority. HandlerLocal
+keeps its actual On/HandlerResolution and distinct IDs; implicit event has no
+authored declaration. For collections may resolve a parent template alias, so
+script-only `BindingRef::declaration()` is insufficient. Scope introduction is
+not complete body visibility extent. Shared queries introduce no AST walk,
+parser, index, new stage or resident per-node allocation.
 
-## Formatter history recovery
+Original symbol highlights can use real Usage/spans from those retained owners.
+They do not complete #3471 matching-tag/linked-editing: actual NativeElement
+owns ElementClose tokens, but FileFacts lacks authenticated element/name-pair
+rows. A real CST pair receiver, malformed recovery and original endpoint policy
+must precede that shared complete-response coordinate. No source scanner,
+neutral span, handler binding or standard-handler promotion supplies its proof.
 
-[#7588](https://github.com/ubugeeei-prod/vize/pull/7588) actually merged at
-2026-10-03T15:24:38Z as
-`7929c626ce9f0ef08364349aafa6477dfa222c35`, from source
-`416d6545b31bfb350285b55b71d4e129e31f4bec`.
-[Protected Check37132219824](https://github.com/ubugeeei-prod/vize/actions/runs/37132219824)
-and its Musea/Nuxt merge-group runs are terminal successful. Its PR body still
-said acceptance was pending when this audit started; actual remote state is
-authoritative. The eight plans require 16 write-error/no-config calls; source
-registration is not a new audit execution of those calls.
+## Formatter recovery pointers and unfinished boundary
 
-The preserved private worktree is
-`/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-glyph-sort-native-api-history-20261003`,
-HEAD `c61008dbfa`, based on actual config-provider `62d3926a`.
-Root recovered its dirty work and owns implementation recovery. Do not edit,
-clean, rebase or remove it as an audit operation. Recovery pointers:
+Preserve the original dirty worktree
+`/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-glyph-sort-native-api-history-20261003`
+(HEAD `c61008dbfa`, parent `62d3926a`); root snapshotted and recovered its source
+into actual #7630/#7634. Do not clean/rebase/remove it as an audit operation.
+The recovered `formatter-native{,-manifest,-source}.mjs`, native
+`formatter-history-{build,observe}.mjs`, original nine-case pack and complete
+contract/public Vite tests are now source on main, not merely untracked plans.
 
-- Untracked `tests/differential/formatter-native{,-manifest,-source}.mjs`;
-  `npm/native/scripts/formatter-history-{build,observe}.mjs`; original
-  nine-case/25-call public addon pack; native contract and public Vite+ tests.
-- Modified native build/workflow and paired central/companion records.
-  Replay only the owned source onto actual main, preserve immutable inputs,
-  original caller flags/full result/fixed-point process chain and complete
-  live addon preparation/source-build receipt. No installed fallback or
-  inferred effective options can supply NAPI coverage.
-- Five real native/pinned-Oxfmt Vite+ controls need whole inheritance/false/
-  object configuration, the actual resolved temporary JSON before cleanup,
-  source-built CLI receipt and complete process/file effects. Spies, copied
-  configs and source-only plans do not execute the public boundary.
+Protected JS111298740583/artifact11285596806 independently validates all9/25
+whole calls. Report SHA256
+`0ed91604135a82dd1a8fa028f3d8a13f162616fcc7a809afec099426750b57e3`;
+build receipt SHA256
+`6de42a274aa8b449209362c3a73b2d4358c8ad6379c19c26fdeca6567eb4b428`.
+The observer declares stackTraceLimit0 before the genuine public Error and
+preserves all actual own properties; default-stack/printer-error proof remains
+unfinished. Original300 API/five CLI, six config/eight malformed packs retain
+unchanged denominators; #7588 malformed CLI history actually merged as
+`7929c626ce9f0ef08364349aafa6477dfa222c35` under protected Check37132219824.
 
-The original 300 API/five CLI corpus and six config/eight malformed packs stay
-unchanged. This recovery closes neither the native formatter nor #6882.
+The five original Vite script controls already execute through NAPI. Genuine
+public inheritance/false/object resolved configuration, actual temporary JSON
+before cleanup, source-built CLI argv/process/file effects remain #7656's
+independent followup. Spies/copied configs/addon execution alone do not execute
+that separate public CLI boundary. No native formatter/default/#6882 closure
+credit follows from the completed legacy public-boundary packs.
 
 ## Validation and durable delivery
 
-This audit used source reads, pinned manifest/index summaries and current
-GitHub issue/PR/queue queries only. No local Rust/npm install, compilation,
-new manual-full campaign, source execution credit or issue closure is claimed.
-The companion will ship with the genuine next query source change, paired to
-the existing central semantic-query paragraph and issue comments, rather than
-as a docs-only PR. Central stays within its unchanged 350-line cap.
+This audit refresh used actual source/manifest/index reads and live GitHub
+issues/PR/merge facts. No local Rust/npm install/build, extra manual-full campaign
+or new history execution credit is claimed. It ships in the genuine highlights
+source change with the paired central semantic-query decision and issue comments;
+central remains within its unchanged350-line cap. Hosted exact-head source,
+actual full queue/native laws/all100 and literal merge remain required for that
+new successor. Unfinished history/product/dialect/default work stays unfinished.

@@ -15,12 +15,14 @@ use tower_lsp::lsp_types::{Location, Position};
 
 use super::{NavigationRefusal, SourceSnapshot, profile::Profile, retained};
 
+pub(super) mod highlights;
 pub(super) mod selected;
 
 pub(super) const WORKER_LIMIT: usize = 16;
 const REQUEST_LIMIT: usize = 16;
 
 pub(super) enum Command {
+    Highlights(highlights::Request),
     TemplateDefinition(
         Position,
         oneshot::Sender<Result<Vec<Location>, NavigationRefusal>>,
@@ -303,6 +305,11 @@ pub(super) fn refused(receiver: Receiver<Command>, control: &Control, refusal: N
             break;
         }
         match command {
+            Command::Highlights(request) => {
+                if !request.reply.is_canceled() {
+                    let _ = request.reply.send(Err(refusal.clone()));
+                }
+            }
             Command::TemplateDefinition(_, reply) => {
                 if !reply.is_canceled() {
                     let _ = reply.send(Err(refusal.clone()));

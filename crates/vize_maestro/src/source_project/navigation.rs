@@ -5,6 +5,7 @@
 )]
 
 mod coordinates;
+mod highlights;
 pub(in crate::source_project) mod profile;
 mod retained;
 mod selected;

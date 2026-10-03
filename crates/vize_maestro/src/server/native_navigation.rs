@@ -3,15 +3,45 @@ use super::MaestroServer;
 use crate::source_project::{SnapshotRefusal, navigation::NavigationRefusal};
 use tower_lsp::{
     jsonrpc::{Error, ErrorCode, Result},
-    lsp_types::{GotoDefinitionParams, Location, ReferenceParams, Url},
+    lsp_types::{
+        DocumentHighlight, DocumentHighlightParams, GotoDefinitionParams, Location,
+        ReferenceParams, Url,
+    },
 };
 
 pub(super) const DEFINITION_METHOD: &str = "vize/nativeDefinition";
 pub(super) const REFERENCES_METHOD: &str = "vize/nativeReferences";
 pub(super) const TEMPLATE_DEFINITION_METHOD: &str = "vize/nativeTemplateDefinition";
 pub(super) const TEMPLATE_REFERENCES_METHOD: &str = "vize/nativeTemplateReferences";
+pub(super) const HIGHLIGHTS_METHOD: &str = "vize/nativeDocumentHighlight";
+pub(super) const TEMPLATE_HIGHLIGHTS_METHOD: &str = "vize/nativeTemplateDocumentHighlight";
 
 impl MaestroServer {
+    pub(super) async fn native_highlights(
+        &self,
+        params: DocumentHighlightParams,
+    ) -> Result<Vec<DocumentHighlight>> {
+        let request = params.text_document_position_params;
+        self.navigation
+            .as_ref()
+            .ok_or_else(Error::internal_error)?
+            .highlights(&request.text_document.uri, request.position)
+            .await
+            .map_err(query_error)
+    }
+
+    pub(super) async fn native_template_highlights(
+        &self,
+        params: DocumentHighlightParams,
+    ) -> Result<Vec<DocumentHighlight>> {
+        let request = params.text_document_position_params;
+        self.navigation
+            .as_ref()
+            .ok_or_else(Error::internal_error)?
+            .template_highlights(&request.text_document.uri, request.position)
+            .await
+            .map_err(query_error)
+    }
     pub(super) async fn native_template_definition(
         &self,
         params: GotoDefinitionParams,
