@@ -10,6 +10,7 @@ use oxc_parser::{AdmittedProgram, ParseOptions};
 use vize_l0::{Allocator, SourceBlock, Span};
 
 mod guard;
+pub mod native;
 pub(crate) mod observer;
 pub(crate) mod setup;
 mod walk;
