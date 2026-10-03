@@ -74,14 +74,9 @@ pub(super) fn quoted<L: LinkSink>(writer: &mut Writer<L>, text: &str, span: Span
 }
 
 pub(super) fn property<L: LinkSink>(writer: &mut Writer<L>, name: &str, span: Span) {
-    // Keep the accepted identifier subset explicit. Every other key is safely
-    // quoted, including hyphens, control characters and non-ASCII names.
-    let mut bytes = name.bytes();
-    let identifier = bytes
-        .next()
-        .is_some_and(|byte| byte.is_ascii_alphabetic() || matches!(byte, b'_' | b'$'))
-        && bytes.all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$'));
-    if identifier {
+    // Property spelling follows the stock ECMAScript IdentifierName grammar,
+    // including valid Unicode. This is encoding, never expression admission.
+    if oxc_syntax::identifier::is_identifier_name(name) {
         writer.push_linked(name, span);
     } else {
         quoted(writer, name, span);

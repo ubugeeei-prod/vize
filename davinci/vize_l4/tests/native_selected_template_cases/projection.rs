@@ -239,8 +239,8 @@ fn attribute_links(
     span: Span,
 ) -> Result<(), &'static str> {
     let key = match name {
-        "id" | "hidden" | "disabled" | "title" => name.to_owned(),
-        "data-empty" | "data-count" | "aria-label" | "data-note" | "data-id" | "名" => {
+        "id" | "hidden" | "disabled" | "title" | "名" => name.to_owned(),
+        "data-empty" | "data-count" | "aria-label" | "data-note" | "data-id" => {
             serde_json::to_string(name).map_err(|_| "quoted property key")?
         }
         _ => return Err("reviewed fixture property"),

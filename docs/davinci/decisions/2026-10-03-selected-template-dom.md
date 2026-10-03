@@ -29,6 +29,14 @@ property key/value links point to the complete authored Attribute span.
 Attributes create no node ids, expression rows, dynamic flags, normalization
 helpers or semantic side tables.
 
+The pinned original Unicode-name fixture exposed an existing byte mismatch:
+the ASCII-only key writer quoted `名`, while the reference emits that valid
+IdentifierName directly. Property spelling now uses the existing workspace
+stock syntax predicate, including Unicode; invalid identifiers remain quoted.
+The original input, complete pinned code/map and full-span link expectations
+stay authoritative. This is lexical encoding, with no expression parse or
+binding/tag-role admission, and needs fresh unchanged instruction gates.
+
 ## Structural HTML and target eligibility
 
 The neutral L2 provider remains unchanged: an original HTML `search`

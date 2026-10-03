@@ -4863,6 +4863,7 @@ name = "vize_l4"
 version = "0.430.1"
 dependencies = [
  "oxc_span",
+ "oxc_syntax",
  "serde_json",
  "vize_l0",
  "vize_l1",
