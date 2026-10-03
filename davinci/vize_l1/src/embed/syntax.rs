@@ -17,6 +17,7 @@ use super::{Embed, EmbedSource, Grammar, Lang, Shape, SourceError};
 mod admission;
 mod coordinates;
 mod for_head;
+mod handler;
 mod handoff;
 mod params;
 mod program;
@@ -30,6 +31,7 @@ pub use for_head::{
     NativeForInput, NativeForInputError, NativeForRefusal, RejectedNativeForInput,
     parse_vue_for_head_once,
 };
+pub use handler::RetainedHandlerBody;
 pub use handoff::RetainedExpression;
 pub use params::RetainedSlotParams;
 pub use program::{ProgramGoal, ProgramOptions, parse_program_once};
@@ -200,6 +202,13 @@ impl<'a> NativeSyntax<'a> {
     /// recovered expression.
     pub fn into_expression(self) -> Result<RetainedExpression<'a>, Box<Self>> {
         handoff::into_expression(self)
+    }
+
+    /// Consume the original non-async HandlerBody parser owner without cloning
+    /// or reparsing its AST. Every local hole keeps its complete observations;
+    /// another grammar shape returns the original owner intact.
+    pub fn into_handler_body(self) -> Result<RetainedHandlerBody<'a>, Box<Self>> {
+        handler::into_handler_body(self)
     }
 
     /// Consume only the original parser-owned arena and complete observations.
