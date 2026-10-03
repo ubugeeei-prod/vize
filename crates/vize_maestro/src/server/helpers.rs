@@ -37,6 +37,9 @@ impl MaestroServer {
         if !self.state.documents.apply_changes(uri, changes, version) {
             return;
         }
+        #[cfg(feature = "experimental-source-navigation")]
+        self.notify_native_navigation(uri);
+
         let Some(content) = self.state.documents.text(uri) else {
             return;
         };
@@ -47,9 +50,6 @@ impl MaestroServer {
 
         #[cfg(feature = "native")]
         drop(diagnostic_guard);
-
-        #[cfg(feature = "experimental-source-navigation")]
-        self.notify_native_navigation(uri);
 
         if let Some((diagnostic_version, diagnostics)) = diagnostics {
             self.publish_collected_diagnostics(uri, diagnostic_version, diagnostics)

@@ -32,6 +32,7 @@ fn change_close_reopen_invalidate_equal_version_buffers_without_aba() {
     );
     assert!(!Arc::ptr_eq(&original, &cached(&project)));
     project.source.close(&uri());
+    project.notify_host_change(&uri());
     assert_eq!(
         block_on(project.definition(&uri(), Position::new(0, 13))),
         Err(NavigationRefusal::Host(SnapshotRefusal::MissingDocument))
@@ -79,22 +80,26 @@ fn native_ready_response_is_refused_after_change_or_explicit_cancellation() {
     let project = NativeNavigationProject::new(SourceQueryProject::new(&documents));
     let (query, _) = project.source.begin_query(&uri()).unwrap();
     let owner = &project;
-    let ready =
-        block_on(query.run(|snapshot| async move {
-            owner.summary(snapshot)?.definition(Position::new(0, 15))
-        }))
-        .unwrap();
+    let ready = block_on(query.run(|snapshot| async move {
+        owner
+            .worker(snapshot)?
+            .definition(Position::new(0, 15))
+            .await
+    }))
+    .unwrap();
     documents.open(uri(), "const other=1;other;".into(), 1, "javascript".into());
     assert_eq!(
         ready.publish(|value| value),
         Err(SnapshotRefusal::Superseded)
     );
     let (query, cancel) = project.source.begin_query(&uri()).unwrap();
-    let ready =
-        block_on(query.run(|snapshot| async move {
-            owner.summary(snapshot)?.definition(Position::new(0, 15))
-        }))
-        .unwrap();
+    let ready = block_on(query.run(|snapshot| async move {
+        owner
+            .worker(snapshot)?
+            .definition(Position::new(0, 15))
+            .await
+    }))
+    .unwrap();
     cancel.abort();
     assert_eq!(
         ready.publish(|value| value),

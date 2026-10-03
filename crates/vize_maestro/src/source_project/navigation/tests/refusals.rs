@@ -66,14 +66,14 @@ fn recovered_program_and_incomplete_file_never_fall_back_to_legacy_queries() {
                 .collect::<Vec<_>>(),
             expected
         );
-        let snapshot = Arc::clone(&project.summaries.lock().get(&uri()).unwrap().snapshot);
+        let snapshot = Arc::clone(&project.workers.lock().get(&uri()).unwrap().snapshot);
         assert_eq!(
             block_on(project.references(&uri(), Position::new(0, 7), false)),
             Err(NavigationRefusal::Producer(issues))
         );
         assert!(Arc::ptr_eq(
             &snapshot,
-            &project.summaries.lock().get(&uri()).unwrap().snapshot
+            &project.workers.lock().get(&uri()).unwrap().snapshot
         ));
     }
 }

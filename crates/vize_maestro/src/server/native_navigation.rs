@@ -70,6 +70,22 @@ fn query_error(refusal: NavigationRefusal) -> Error {
             ErrorCode::ServerError(-32004),
             "Native original span projection refused",
         ),
+        NavigationRefusal::Query(_) => (
+            ErrorCode::ServerError(-32005),
+            "Native File position refused",
+        ),
+        NavigationRefusal::Busy => (
+            ErrorCode::ServerError(-32006),
+            "Native navigation request queue full",
+        ),
+        NavigationRefusal::Capacity => (
+            ErrorCode::ServerError(-32007),
+            "Native navigation worker capacity reached",
+        ),
+        NavigationRefusal::WorkerUnavailable => (
+            ErrorCode::ServerError(-32008),
+            "Native navigation worker unavailable",
+        ),
     };
     let mut error = Error::new(code);
     error.message = message.into();

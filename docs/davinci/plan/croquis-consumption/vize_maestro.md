@@ -79,7 +79,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `SymbolId`                        |        0 |    5 |
 | `TemplateExpression`              |        0 |   14 |
 | `Croquis.binding_spans`           |        0 |    1 |
-| `Croquis.bindings`                |        0 |    9 |
+| `Croquis.bindings`                |        0 |    8 |
 | `Croquis.component_registrations` |        0 |    1 |
 | `Croquis.import_statements`       |        0 |    1 |
 | `Croquis.macros`                  |       14 |   24 |

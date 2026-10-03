@@ -2,8 +2,10 @@
     clippy::disallowed_types,
     reason = "tests compare actual immutable host snapshot Arc identities"
 )]
+mod capacity;
 mod lifecycle;
 mod refusals;
+mod retention;
 
 use super::{NativeNavigationProject, NavigationRefusal, SourceQueryProject, coordinates};
 use crate::{document::DocumentStore, runtime::block_on};
@@ -20,10 +22,10 @@ fn location(start: (u32, u32), end: (u32, u32)) -> Location {
     )
 }
 
-fn cached(project: &NativeNavigationProject<'_>) -> Arc<super::summary::NavigationSummary> {
+fn cached(project: &NativeNavigationProject<'_>) -> Arc<super::worker::NavigationWorker> {
     Arc::clone(
         project
-            .summaries
+            .workers
             .lock()
             .get(&uri())
             .unwrap()
@@ -34,7 +36,7 @@ fn cached(project: &NativeNavigationProject<'_>) -> Arc<super::summary::Navigati
 }
 
 #[test]
-fn unicode_crlf_definitions_and_references_reuse_one_original_summary() {
+fn unicode_crlf_definitions_and_references_reuse_one_original_worker() {
     let documents = DocumentStore::new();
     documents.open(
         uri(),
@@ -140,7 +142,7 @@ fn utf16_surrogate_interiors_and_crlf_spill_are_refused() {
 }
 
 #[test]
-fn equal_foreign_snapshot_cannot_reuse_local_summary_or_binding_rows() {
+fn equal_foreign_snapshot_cannot_reuse_the_local_worker_or_file() {
     let documents = DocumentStore::new();
     let foreign = DocumentStore::new();
     for store in [&documents, &foreign] {
@@ -148,11 +150,16 @@ fn equal_foreign_snapshot_cannot_reuse_local_summary_or_binding_rows() {
     }
     let project = NativeNavigationProject::new(SourceQueryProject::new(&documents));
     let (local, _) = project.source.begin_query(&uri()).unwrap();
-    let summary = project.summary(Arc::clone(local.snapshot())).unwrap();
+    let worker = project.worker(Arc::clone(local.snapshot())).unwrap();
     let cache = crate::source_project::SourceSnapshotCache::default();
     let snapshot = cache.capture(&foreign, &uri()).unwrap();
     assert_eq!(snapshot.source(), local.snapshot().source());
-    assert!(!summary.belongs_to(&snapshot));
-    let rebuilt = project.summary(snapshot).unwrap();
-    assert!(!Arc::ptr_eq(&summary, &rebuilt));
+    assert!(!worker.belongs_to(&snapshot));
+    assert!(matches!(
+        project.worker(snapshot),
+        Err(NavigationRefusal::Host(
+            crate::source_project::SnapshotRefusal::Superseded
+        ))
+    ));
+    assert!(Arc::ptr_eq(&worker, &cached(&project)));
 }

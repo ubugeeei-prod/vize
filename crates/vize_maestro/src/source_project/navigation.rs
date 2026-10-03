@@ -1,22 +1,24 @@
 //! Opt-in local JS/TS queries over one original Program per host snapshot.
 #![expect(
     clippy::disallowed_types,
-    reason = "async host queries retain immutable Arc snapshots and owned response summaries"
+    reason = "async host queries retain immutable Arc snapshots and owned responses"
 )]
 
 mod coordinates;
-mod summary;
+mod retained;
 #[cfg(test)]
 mod tests;
+mod worker;
 
 use parking_lot::Mutex;
 use std::sync::Arc;
+use std::sync::atomic::AtomicUsize;
 use tower_lsp::lsp_types::{Location, Position, Url};
 use vize_l0::FxHashMap;
-use vize_l2::file::FileIssue;
+use vize_l2::file::{FileIssue, PositionQueryError};
 
 use super::{SnapshotRefusal, SourceQueryProject, SourceSnapshot};
-use summary::NavigationSummary;
+use worker::NavigationWorker;
 
 /// Unsupported observations remain refusals; no legacy query is substituted.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -27,61 +29,117 @@ pub enum NavigationRefusal {
     Producer(Vec<FileIssue>),
     Projection,
     Position,
+    Query(PositionQueryError),
+    Busy,
+    Capacity,
+    WorkerUnavailable,
 }
 
 struct CachedNavigation {
     snapshot: Arc<SourceSnapshot>,
-    result: Result<Arc<NavigationSummary>, NavigationRefusal>,
+    result: Result<Arc<NavigationWorker>, NavigationRefusal>,
 }
 
-/// Response summaries are consumer data, not retained level AST/artifacts.
-/// The same physical snapshot is required for a cache hit. Arena-owned original
-/// Program/File owners coexist during construction and never cross an await.
+/// Coarse snapshot workers retain genuine original syntax and File locally.
+/// Only commands and owned responses cross threads. Native owners never need
+/// Send/Sync or survive a snapshot replacement; active thread slots are bounded.
 pub struct NativeNavigationProject<'host> {
     source: SourceQueryProject<'host>,
-    summaries: Mutex<FxHashMap<Url, CachedNavigation>>,
+    workers: Mutex<FxHashMap<Url, CachedNavigation>>,
+    live: Arc<AtomicUsize>,
 }
 
 impl<'host> NativeNavigationProject<'host> {
     pub fn new(source: SourceQueryProject<'host>) -> Self {
         Self {
             source,
-            summaries: Mutex::new(FxHashMap::default()),
+            workers: Mutex::new(FxHashMap::default()),
+            live: Arc::new(AtomicUsize::new(0)),
         }
     }
 
     /// Called after the genuine host update, never instead of that mutation.
     pub fn notify_host_change(&self, uri: &Url) {
         self.source.notify_host_change(uri);
-        // This independent mutex is never acquired under a host read guard or
-        // ready publication callback. Recheck each retained snapshot against
-        // the live store, preserving any fresh entry created before this hook.
-        self.summaries
+        let snapshot = self
+            .workers
             .lock()
-            .retain(|key, cached| key != uri || self.source.snapshot_is_current(&cached.snapshot));
+            .get(uri)
+            .map(|cached| Arc::clone(&cached.snapshot));
+        if let Some(snapshot) = snapshot
+            && !self.source.snapshot_is_current(&snapshot)
+        {
+            // Preserve a fresh worker inserted between the host change and hook.
+            let retired = {
+                let mut workers = self.workers.lock();
+                if workers
+                    .get(uri)
+                    .is_some_and(|cached| Arc::ptr_eq(&cached.snapshot, &snapshot))
+                {
+                    workers.remove(uri)
+                } else {
+                    None
+                }
+            };
+            if let Some(CachedNavigation {
+                result: Ok(worker), ..
+            }) = retired
+            {
+                worker.retire();
+            }
+        }
     }
 
-    fn summary(
+    fn worker(
         &self,
         snapshot: Arc<SourceSnapshot>,
-    ) -> Result<Arc<NavigationSummary>, NavigationRefusal> {
-        let mut summaries = self.summaries.lock();
-        if let Some(cached) = summaries.get(snapshot.uri())
-            && Arc::ptr_eq(&cached.snapshot, &snapshot)
-        {
-            return cached.result.clone();
+    ) -> Result<Arc<NavigationWorker>, NavigationRefusal> {
+        loop {
+            let mut workers = self.workers.lock();
+            // A post-mutation hook must acquire this same mutex. If mutation
+            // precedes this check, refuse; if it follows, its hook retires the
+            // inserted entry. No host guard survives spawning or an await.
+            if !self.source.snapshot_is_current(&snapshot) {
+                return Err(NavigationRefusal::Host(SnapshotRefusal::Superseded));
+            }
+            if let Some(cached) = workers.get(snapshot.uri()) {
+                if Arc::ptr_eq(&cached.snapshot, &snapshot) {
+                    if let Ok(worker) = &cached.result
+                        && !worker.belongs_to(&snapshot)
+                    {
+                        return Err(NavigationRefusal::Projection);
+                    }
+                    return cached.result.clone();
+                }
+                if cached.snapshot.revision() > snapshot.revision() {
+                    return Err(NavigationRefusal::Host(SnapshotRefusal::Superseded));
+                }
+            }
+            if let Some(retired) = workers.remove(snapshot.uri()) {
+                drop(workers);
+                if let Ok(worker) = retired.result {
+                    worker.retire();
+                }
+                continue;
+            }
+            // Serialize misses, but parsing and response waits run outside locks.
+            // Transient capacity/spawn refusals are retryable, never memoized.
+            let result = NavigationWorker::spawn(Arc::clone(&snapshot), Arc::clone(&self.live));
+            if matches!(
+                result,
+                Err(NavigationRefusal::Capacity | NavigationRefusal::WorkerUnavailable)
+            ) {
+                return result;
+            }
+            workers.insert(
+                snapshot.uri().clone(),
+                CachedNavigation {
+                    snapshot,
+                    result: result.clone(),
+                },
+            );
+            return result;
         }
-        // Serialize cache misses for this project; parsing is synchronous and
-        // no store/project read occurs while this independent mutex is held.
-        let result = NavigationSummary::build(Arc::clone(&snapshot)).map(Arc::new);
-        summaries.insert(
-            snapshot.uri().clone(),
-            CachedNavigation {
-                snapshot,
-                result: result.clone(),
-            },
-        );
-        result
     }
 
     pub async fn definition(
@@ -94,7 +152,7 @@ impl<'host> NativeNavigationProject<'host> {
             .begin_query(uri)
             .map_err(NavigationRefusal::Host)?;
         let ready = query
-            .run(|snapshot| async move { self.summary(snapshot)?.definition(position) })
+            .run(|snapshot| async move { self.worker(snapshot)?.definition(position).await })
             .await
             .map_err(NavigationRefusal::Host)?;
         ready
@@ -114,13 +172,25 @@ impl<'host> NativeNavigationProject<'host> {
             .map_err(NavigationRefusal::Host)?;
         let ready = query
             .run(|snapshot| async move {
-                self.summary(snapshot)?
+                self.worker(snapshot)?
                     .references(position, include_declaration)
+                    .await
             })
             .await
             .map_err(NavigationRefusal::Host)?;
         ready
             .publish(|response| response)
             .map_err(NavigationRefusal::Host)?
+    }
+}
+
+impl Drop for NativeNavigationProject<'_> {
+    fn drop(&mut self) {
+        let retired = core::mem::take(self.workers.get_mut());
+        for cached in retired.into_values() {
+            if let Ok(worker) = cached.result {
+                worker.retire();
+            }
+        }
     }
 }
