@@ -1,10 +1,10 @@
 //! A short original setup/Program/unit join, without a second syntax walk.
 
 use super::{NativeSyntax, NativeTemplateFile};
-use crate::file::{FileArtifact, ScopeId, ScriptProfile, ScriptUnit, ScriptUnitId};
-use oxc_parser::{AdmittedProgram, ParseOptions};
+use crate::file::{FileArtifact, ScopeId, ScriptUnit, ScriptUnitId};
+use oxc_parser::AdmittedProgram;
 use vize_l0::Span;
-use vize_l1::{embed::Lang, markup::NativeScriptSelection};
+use vize_l1::markup::NativeScriptSelection;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeSetupIssueKind {
@@ -124,87 +124,19 @@ pub(super) fn checked<'owner, 'arena>(
     let reject = |kind| NativeSetupIssue { span, kind };
     owner.view().map_err(|_| reject(Kind::IncompleteFile))?;
     let file = owner.file().ok_or_else(|| reject(Kind::IncompleteFile))?;
-    let program = syntax
-        .admitted_program()
-        .ok_or_else(|| reject(Kind::UnsupportedSyntax))?;
-    if owner.selected().ordinary().is_some() || owner.selected().has_styles() {
-        return Err(reject(Kind::UnsupportedSyntax));
-    }
-    if syntax.source().span() != span
-        || !core::ptr::eq(
-            syntax.source().authored_root(),
-            selected.block().root_source(),
-        )
-        || !core::ptr::eq(program.source(), selected.block().source())
-        || !core::ptr::eq(file.artifact().source(), selected.block().root_source())
-    {
-        return Err(reject(Kind::Source));
-    }
-    let profile = program.source_type();
-    if !profile.is_module()
-        || profile.is_unambiguous()
-        || profile.is_jsx()
-        || profile.is_typescript_definition()
-        || program.program().source_type != profile
-        || program.options() != ParseOptions::default()
-        || profile.is_typescript() != (selected.lang() == Lang::Ts)
-        || !matches!(selected.lang(), Lang::Js | Lang::Ts)
-    {
-        return Err(reject(Kind::Profile));
-    }
-    if program.program().body.is_empty() {
-        return Err(reject(Kind::EmptyProgram));
-    }
-    if file.units().len() != 1 {
-        return Err(reject(Kind::MissingUnit));
-    }
-    let unit = file
-        .units()
-        .first()
-        .ok_or_else(|| reject(Kind::MissingUnit))?;
-    if unit.id.index() as usize != selected.container_index()
-        || unit.span != span
-        || unit.profile
-            != (ScriptProfile {
-                typescript: profile.is_typescript(),
-                jsx: false,
-                module: true,
-            })
-    {
-        return Err(reject(Kind::Profile));
-    }
-    if !unit.walk_completed() {
-        return Err(reject(Kind::IncompleteFile));
-    }
-    if unit.origin.body != program.program().body.as_ptr() as usize
-        || unit.origin.length != program.program().body.len()
-    {
-        return Err(reject(Kind::ProgramOrigin));
-    }
-    let scope = file
-        .scopes()
-        .get(unit.scope.index() as usize)
-        .ok_or_else(|| reject(Kind::Scope))?;
-    if unit.scope.index() == 0
-        || scope.id != unit.scope
-        || scope.parent != Some(ScopeId(0))
-        || scope.span != span
-    {
-        return Err(reject(Kind::Scope));
-    }
-    if !unit.origin.setup_eligible
-        || unit.origin.has_call
-        || unit.origin.has_export
-        || unit.origin.reserved_binding
-    {
-        return Err(reject(Kind::UnsupportedSyntax));
-    }
+    let joined = super::identity::checked(
+        owner.selected(),
+        syntax,
+        file.units(),
+        file.scopes(),
+        file.artifact().source(),
+    )?;
     Ok(NativeSelectedSetup {
         owner,
         syntax,
-        selected,
-        program,
-        unit,
+        selected: joined.selected,
+        program: joined.program,
+        unit: joined.unit,
         file,
     })
 }
