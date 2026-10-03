@@ -132,3 +132,30 @@ test("real runtime characterizes typed deferred families without native admissio
     });
   }
 });
+
+test("actual runtime preserves refused decoded text and evaluates subsequent bindings", () => {
+  for (const environment of ["test", "production"] as const) {
+    for (const [entity, decoded] of [
+      ["&#x2028;", "\u2028"], ["&#8233;", "\u2029"], ["&#13;", "\r"],
+    ]) {
+      for (const [authored, text] of [
+        [`${entity}value`, `${decoded}value`],
+        [`value${entity}+ 1`, `value${decoded}+ 1`],
+        [`value${entity}`, `value${decoded}`],
+      ]) {
+        assert.deepEqual(render(environment, `<div>前 {{ ${authored} }}|{{ value }} 後</div>`), {
+          vnode: { tag: "div", children: [{ text: `前 {{ ${text} }}|4 後` }] },
+          calls: [],
+        }, `${environment}: ${authored}`);
+      }
+    }
+    for (const authored of [
+      "&#13;&#10;value", "value&#13;&#10;", "&#13;\nvalue",
+      "value&#13;\n", "\r&#10;value", "value\r&#10;",
+    ]) {
+      assert.deepEqual(render(environment, `<div>{{ ${authored} }}</div>`), {
+        vnode: { tag: "div", children: [{ text: "4" }] }, calls: [],
+      }, `${environment}: ${authored}`);
+    }
+  }
+});

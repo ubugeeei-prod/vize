@@ -73,3 +73,38 @@ test("historical text framing and deferred families stay explicitly characterize
     assert.equal(result.ast.children[0].type, name === "v-pre" ? 3 : 2, name);
   }
 });
+
+test("complete decoded text framing rejects historical separators and preserves CRLF", () => {
+  for (const [entity, decoded] of [
+    ["&#x2028;", "\u2028"],
+    ["&#8233;", "\u2029"],
+    ["&#13;", "\r"],
+  ]) {
+    for (const [authored, text] of [
+      [`${entity}value`, `${decoded}value`],
+      [`value${entity}+ 1`, `value${decoded}+ 1`],
+      [`value${entity}`, `value${decoded}`],
+    ]) {
+      const compiled = compiler.compile(`<div>{{ ${authored} }}</div>`);
+      assert.deepEqual(plain(compiled.errors), [], authored);
+      assert.deepEqual(
+        plain(compiled.ast.children.map(({ type, text }) => ({ type, text }))),
+        [{ type: 3, text: `{{ ${text} }}` }],
+        authored,
+      );
+      assert.equal(parser.parseText(`{{ ${text} }}`), undefined, authored);
+    }
+  }
+  for (const authored of [
+    "&#13;&#10;value", "value&#13;&#10;", "&#13;\nvalue",
+    "value&#13;\n", "\r&#10;value", "value\r&#10;",
+  ]) {
+    const compiled = compiler.compile(`<div>{{ ${authored} }}</div>`);
+    assert.deepEqual(plain(compiled.errors), [], authored);
+    assert.deepEqual(
+      plain(compiled.ast.children.map(({ type, expression, tokens }) => ({ type, expression, tokens }))),
+      [{ type: 2, expression: "_s(value)", tokens: [{ "@binding": "value" }] }],
+      authored,
+    );
+  }
+});

@@ -9,8 +9,9 @@ use scan::scan;
 use alloc::vec::Vec;
 use vize_l0::{Allocator, SourceBlock, Span};
 
+use crate::embed::source::prepare_text_value;
 use crate::embed::syntax::{NativeSyntax, parse_once};
-use crate::embed::{Embed, EmbedSource, Grammar, Lang, Shape, prepare_vue_interpolation_in};
+use crate::embed::{Embed, EmbedSource, Grammar, Lang, Shape};
 
 /// A retained authored refusal; it does not discard later bindings or diagnostics.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -124,8 +125,7 @@ pub(super) fn observe<'a>(
         content_span.start.saturating_sub(2),
         (content_span.end + 2).min(block.end()),
     );
-    let prepared =
-        prepare_vue_interpolation_in(allocator, block.root_source(), content_span).ok()?;
+    let prepared = prepare_text_value(allocator, block.root_source(), content_span).ok()?;
     let source = trim(allocator, prepared)?;
     let mut binding = TextBinding {
         span,
@@ -135,10 +135,10 @@ pub(super) fn observe<'a>(
     };
     let boundary = if block.source().get(end..end + 2) != Some("}}") {
         Some(TextBoundaryKind::IncompleteDelimiter)
+    } else if historical_separator(prepared.text()) {
+        Some(TextBoundaryKind::HistoricalLineSeparator)
     } else if source.text().is_empty() {
         Some(TextBoundaryKind::EmptyInterpolation)
-    } else if historical_separator(content) {
-        Some(TextBoundaryKind::HistoricalLineSeparator)
     } else {
         None
     };

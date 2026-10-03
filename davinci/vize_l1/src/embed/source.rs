@@ -197,6 +197,16 @@ pub fn prepare_attribute_value<'a>(
     prepare_decoded_value(allocator, authored_source, span, EntityContext::Attribute)
 }
 
+/// Decode the complete selected HTML text window once, before dialect framing.
+/// The caller chooses its expression window only after checking decoded text.
+pub(crate) fn prepare_text_value<'a>(
+    allocator: &'a Allocator,
+    authored_source: &'a str,
+    span: Span,
+) -> Result<EmbedSource<'a>, SourceError> {
+    prepare_decoded_value(allocator, authored_source, span, EntityContext::Text)
+}
+
 fn prepare_decoded_value<'a>(
     allocator: &'a Allocator,
     authored_source: &'a str,

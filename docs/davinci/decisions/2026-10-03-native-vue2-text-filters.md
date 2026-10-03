@@ -116,3 +116,30 @@ PR; its required providers are already merged, so this bounded syntax slice
 is an independent queue candidate. Earlier source-head checks grant no current
 head or protected merge acceptance. Fresh hosted Check, full Check, all-100
 measurement and actual merge are tracked separately.
+
+## Decoded text framing correction
+
+Independent review found that the initial separator guard inspected authored
+bytes while the expression provider consumed decoded text. Entity-produced
+U+2028, U+2029 or a lone CR at an expression edge could disappear during trim
+and incorrectly grant native syntax admission. The complete pinned compiler
+and both actual runtimes instead keep these constructs as literal text, while
+subsequent valid interpolations still evaluate.
+
+The Vue 2 observer now prepares the complete original callback content span
+with the existing native Text entity decoder once. Its crate-private source
+helper preserves the authored root and complete checked map; the historical
+separator guard runs on that decoded window before ECMAScript trim. Complete
+encoded and mixed authored/entity CRLF remain supported, including a CR entity
+followed by authored trailing LF. Checking an already trimmed authored window
+would incorrectly orphan that CR. The public modern interpolation preparation
+and its selected-owner consumers retain their existing behavior.
+
+Three native laws retain exact nonzero Unicode block/source coordinates,
+unparsed refusal source, real AST pointer identity, single entity decoding,
+fidelity and subsequent bindings. Complete pinned compiler goldens and both
+real runtimes characterize nine separator positions plus six encoded/mixed
+CRLF controls. The six upstream/compiler/runtime tests pass locally; corrected
+head hosted laws, strict lint, full Check, all-100 measurement and protected
+queue/actual merge remain external acceptance gates. The initial source and
+its qualified checks remain historical evidence, not corrected-head credit.
