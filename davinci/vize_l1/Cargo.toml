@@ -42,6 +42,7 @@ oxc_span = { workspace = true }
 davinci_harness.workspace = true
 davinci_test_support.workspace = true
 htmlize.workspace = true
+serde_json.workspace = true
 vize_armature.workspace = true
 
 [[test]]

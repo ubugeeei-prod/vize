@@ -1,0 +1,3369 @@
+{
+  "schema": "vize.native-root-text.upstream-reference",
+  "version": 1,
+  "compiler": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "options": {
+    "comments": true,
+    "whitespace": "condense"
+  },
+  "vueVersion": "3.5.35",
+  "cases": [
+    {
+      "id": "empty-root",
+      "source": "<template></template>",
+      "template": "",
+      "templateSpan": [10, 10],
+      "nativeEligible": true,
+      "rootSlots": [],
+      "rootText": [],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "",
+        "children": [],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "source": ""
+        }
+      }
+    },
+    {
+      "id": "blank-space",
+      "source": "<template> </template>",
+      "template": " ",
+      "templateSpan": [10, 11],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": " ",
+          "span": [10, 11]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": " ",
+          "span": [10, 11],
+          "content": null
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": " ",
+        "children": [],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 2,
+            "line": 1,
+            "offset": 1
+          },
+          "source": " "
+        }
+      }
+    },
+    {
+      "id": "blank-all-ascii",
+      "source": "<template>\t\r\n\f </template>",
+      "template": "\t\r\n\f ",
+      "templateSpan": [10, 15],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "\t\r\n\f ",
+          "span": [10, 15]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "\t\r\n\f ",
+          "span": [10, 15],
+          "content": null
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "\t\r\n\f ",
+        "children": [],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 3,
+            "line": 2,
+            "offset": 5
+          },
+          "source": "\t\r\n\f "
+        }
+      }
+    },
+    {
+      "id": "identity-unicode",
+      "source": "<!--前 <template>ignored</template> 雪🌸--><template>雪🌸</template>",
+      "template": "雪🌸",
+      "templateSpan": [57, 64],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "雪🌸",
+          "span": [57, 64]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "雪🌸",
+          "span": [57, 64],
+          "content": "雪🌸"
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "雪🌸",
+        "children": [
+          {
+            "type": 2,
+            "content": "雪🌸",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 4,
+                "line": 1,
+                "offset": 3
+              },
+              "source": "雪🌸"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 4,
+            "line": 1,
+            "offset": 3
+          },
+          "source": "雪🌸"
+        }
+      }
+    },
+    {
+      "id": "identity-single-space",
+      "source": "<template>雪 a</template>",
+      "template": "雪 a",
+      "templateSpan": [10, 15],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "雪 a",
+          "span": [10, 15]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "雪 a",
+          "span": [10, 15],
+          "content": "雪 a"
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "雪 a",
+        "children": [
+          {
+            "type": 2,
+            "content": "雪 a",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 4,
+                "line": 1,
+                "offset": 3
+              },
+              "source": "雪 a"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 4,
+            "line": 1,
+            "offset": 3
+          },
+          "source": "雪 a"
+        }
+      }
+    },
+    {
+      "id": "mixed-ascii-unicode",
+      "source": "<!--前 <template>ignored</template> 雪🌸--><template>  雪🌸\t\r\n\f A  B </template>",
+      "template": "  雪🌸\t\r\n\f A  B ",
+      "templateSpan": [57, 76],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "  雪🌸\t\r\n\f A  B ",
+          "span": [57, 76]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "  雪🌸\t\r\n\f A  B ",
+          "span": [57, 76],
+          "content": " 雪🌸 A B "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "  雪🌸\t\r\n\f A  B ",
+        "children": [
+          {
+            "type": 2,
+            "content": " 雪🌸 A B ",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 8,
+                "line": 2,
+                "offset": 15
+              },
+              "source": "  雪🌸\t\r\n\f A  B "
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 8,
+            "line": 2,
+            "offset": 15
+          },
+          "source": "  雪🌸\t\r\n\f A  B "
+        }
+      }
+    },
+    {
+      "id": "trailing-ascii",
+      "source": "<template>雪  \t </template>",
+      "template": "雪  \t ",
+      "templateSpan": [10, 17],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "雪  \t ",
+          "span": [10, 17]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "雪  \t ",
+          "span": [10, 17],
+          "content": "雪 "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "雪  \t ",
+        "children": [
+          {
+            "type": 2,
+            "content": "雪 ",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 6,
+                "line": 1,
+                "offset": 5
+              },
+              "source": "雪  \t "
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 6,
+            "line": 1,
+            "offset": 5
+          },
+          "source": "雪  \t "
+        }
+      }
+    },
+    {
+      "id": "nbsp-at-edges",
+      "source": "<template>    </template>",
+      "template": "    ",
+      "templateSpan": [10, 15],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "    ",
+          "span": [10, 15]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "    ",
+          "span": [10, 15],
+          "content": "   "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "    ",
+        "children": [
+          {
+            "type": 2,
+            "content": "   ",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "source": "    "
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 5,
+            "line": 1,
+            "offset": 4
+          },
+          "source": "    "
+        }
+      }
+    },
+    {
+      "id": "u0085-at-edges",
+      "source": "<template>   </template>",
+      "template": "   ",
+      "templateSpan": [10, 15],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "   ",
+          "span": [10, 15]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "   ",
+          "span": [10, 15],
+          "content": "  "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "   ",
+        "children": [
+          {
+            "type": 2,
+            "content": "  ",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "source": "   "
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 5,
+            "line": 1,
+            "offset": 4
+          },
+          "source": "   "
+        }
+      }
+    },
+    {
+      "id": "non-ascii-whitespace",
+      "source": "<template>\u000b    　﻿</template>",
+      "template": "\u000b    　﻿",
+      "templateSpan": [10, 29],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "\u000b    　﻿",
+          "span": [10, 29]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "\u000b    　﻿",
+          "span": [10, 29],
+          "content": "\u000b    　﻿"
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "\u000b    　﻿",
+        "children": [
+          {
+            "type": 2,
+            "content": "\u000b    　﻿",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 8,
+                "line": 1,
+                "offset": 7
+              },
+              "source": "\u000b    　﻿"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 8,
+            "line": 1,
+            "offset": 7
+          },
+          "source": "\u000b    　﻿"
+        }
+      }
+    },
+    {
+      "id": "mixed-ascii-non-ascii",
+      "source": "<template>   \t   </template>",
+      "template": "   \t   ",
+      "templateSpan": [10, 20],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "   \t   ",
+          "span": [10, 20]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "   \t   ",
+          "span": [10, 20],
+          "content": "    "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "   \t   ",
+        "children": [
+          {
+            "type": 2,
+            "content": "    ",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 9,
+                "line": 1,
+                "offset": 8
+              },
+              "source": "   \t   "
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 9,
+            "line": 1,
+            "offset": 8
+          },
+          "source": "   \t   "
+        }
+      }
+    },
+    {
+      "id": "root-comment-edges",
+      "source": "<template> \n<!--a--> \n</template>",
+      "template": " \n<!--a--> \n",
+      "templateSpan": [10, 22],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": " \n",
+          "span": [10, 12]
+        },
+        {
+          "ordinal": 1,
+          "kind": "comment",
+          "raw": "<!--a-->",
+          "span": [12, 20]
+        },
+        {
+          "ordinal": 2,
+          "kind": "text",
+          "raw": " \n",
+          "span": [20, 22]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": " \n",
+          "span": [10, 12],
+          "content": null
+        },
+        {
+          "ordinal": 2,
+          "raw": " \n",
+          "span": [20, 22],
+          "content": null
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": " \n<!--a--> \n",
+        "children": [
+          {
+            "type": 3,
+            "content": "a",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 2,
+                "offset": 2
+              },
+              "end": {
+                "column": 9,
+                "line": 2,
+                "offset": 10
+              },
+              "source": "<!--a-->"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 1,
+            "line": 3,
+            "offset": 12
+          },
+          "source": " \n<!--a--> \n"
+        }
+      }
+    },
+    {
+      "id": "comment-comment-horizontal",
+      "source": "<template><!--a--> \t<!--b--></template>",
+      "template": "<!--a--> \t<!--b-->",
+      "templateSpan": [10, 28],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "comment",
+          "raw": "<!--a-->",
+          "span": [10, 18]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": " \t",
+          "span": [18, 20]
+        },
+        {
+          "ordinal": 2,
+          "kind": "comment",
+          "raw": "<!--b-->",
+          "span": [20, 28]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": " \t",
+          "span": [18, 20],
+          "content": null
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<!--a--> \t<!--b-->",
+        "children": [
+          {
+            "type": 3,
+            "content": "a",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 9,
+                "line": 1,
+                "offset": 8
+              },
+              "source": "<!--a-->"
+            }
+          },
+          {
+            "type": 3,
+            "content": "b",
+            "loc": {
+              "start": {
+                "column": 11,
+                "line": 1,
+                "offset": 10
+              },
+              "end": {
+                "column": 19,
+                "line": 1,
+                "offset": 18
+              },
+              "source": "<!--b-->"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 19,
+            "line": 1,
+            "offset": 18
+          },
+          "source": "<!--a--> \t<!--b-->"
+        }
+      }
+    },
+    {
+      "id": "comment-comment-newline",
+      "source": "<template><!--a-->\r\n<!--b--></template>",
+      "template": "<!--a-->\r\n<!--b-->",
+      "templateSpan": [10, 28],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "comment",
+          "raw": "<!--a-->",
+          "span": [10, 18]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": "\r\n",
+          "span": [18, 20]
+        },
+        {
+          "ordinal": 2,
+          "kind": "comment",
+          "raw": "<!--b-->",
+          "span": [20, 28]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": "\r\n",
+          "span": [18, 20],
+          "content": null
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<!--a-->\r\n<!--b-->",
+        "children": [
+          {
+            "type": 3,
+            "content": "a",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 9,
+                "line": 1,
+                "offset": 8
+              },
+              "source": "<!--a-->"
+            }
+          },
+          {
+            "type": 3,
+            "content": "b",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 2,
+                "offset": 10
+              },
+              "end": {
+                "column": 9,
+                "line": 2,
+                "offset": 18
+              },
+              "source": "<!--b-->"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 9,
+            "line": 2,
+            "offset": 18
+          },
+          "source": "<!--a-->\r\n<!--b-->"
+        }
+      }
+    },
+    {
+      "id": "comment-element",
+      "source": "<template><!--a--> <i/></template>",
+      "template": "<!--a--> <i/>",
+      "templateSpan": [10, 23],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "comment",
+          "raw": "<!--a-->",
+          "span": [10, 18]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": " ",
+          "span": [18, 19]
+        },
+        {
+          "ordinal": 2,
+          "kind": "element",
+          "raw": "<i/>",
+          "span": [19, 23]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": " ",
+          "span": [18, 19],
+          "content": null
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<!--a--> <i/>",
+        "children": [
+          {
+            "type": 3,
+            "content": "a",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 9,
+                "line": 1,
+                "offset": 8
+              },
+              "source": "<!--a-->"
+            }
+          },
+          {
+            "type": 1,
+            "tag": "i",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 10,
+                "line": 1,
+                "offset": 9
+              },
+              "end": {
+                "column": 14,
+                "line": 1,
+                "offset": 13
+              },
+              "source": "<i/>"
+            },
+            "isSelfClosing": true
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 14,
+            "line": 1,
+            "offset": 13
+          },
+          "source": "<!--a--> <i/>"
+        }
+      }
+    },
+    {
+      "id": "element-comment",
+      "source": "<template><i/> <!--b--></template>",
+      "template": "<i/> <!--b-->",
+      "templateSpan": [10, 23],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "element",
+          "raw": "<i/>",
+          "span": [10, 14]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": " ",
+          "span": [14, 15]
+        },
+        {
+          "ordinal": 2,
+          "kind": "comment",
+          "raw": "<!--b-->",
+          "span": [15, 23]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": " ",
+          "span": [14, 15],
+          "content": null
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<i/> <!--b-->",
+        "children": [
+          {
+            "type": 1,
+            "tag": "i",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "source": "<i/>"
+            },
+            "isSelfClosing": true
+          },
+          {
+            "type": 3,
+            "content": "b",
+            "loc": {
+              "start": {
+                "column": 6,
+                "line": 1,
+                "offset": 5
+              },
+              "end": {
+                "column": 14,
+                "line": 1,
+                "offset": 13
+              },
+              "source": "<!--b-->"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 14,
+            "line": 1,
+            "offset": 13
+          },
+          "source": "<i/> <!--b-->"
+        }
+      }
+    },
+    {
+      "id": "element-element-space",
+      "source": "<template><i/>  <b/></template>",
+      "template": "<i/>  <b/>",
+      "templateSpan": [10, 20],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "element",
+          "raw": "<i/>",
+          "span": [10, 14]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": "  ",
+          "span": [14, 16]
+        },
+        {
+          "ordinal": 2,
+          "kind": "element",
+          "raw": "<b/>",
+          "span": [16, 20]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": "  ",
+          "span": [14, 16],
+          "content": " "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<i/>  <b/>",
+        "children": [
+          {
+            "type": 1,
+            "tag": "i",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "source": "<i/>"
+            },
+            "isSelfClosing": true
+          },
+          {
+            "type": 2,
+            "content": " ",
+            "loc": {
+              "start": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "end": {
+                "column": 7,
+                "line": 1,
+                "offset": 6
+              },
+              "source": "  "
+            }
+          },
+          {
+            "type": 1,
+            "tag": "b",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 7,
+                "line": 1,
+                "offset": 6
+              },
+              "end": {
+                "column": 11,
+                "line": 1,
+                "offset": 10
+              },
+              "source": "<b/>"
+            },
+            "isSelfClosing": true
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 11,
+            "line": 1,
+            "offset": 10
+          },
+          "source": "<i/>  <b/>"
+        }
+      }
+    },
+    {
+      "id": "element-element-tab",
+      "source": "<template><i/>\t<b/></template>",
+      "template": "<i/>\t<b/>",
+      "templateSpan": [10, 19],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "element",
+          "raw": "<i/>",
+          "span": [10, 14]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": "\t",
+          "span": [14, 15]
+        },
+        {
+          "ordinal": 2,
+          "kind": "element",
+          "raw": "<b/>",
+          "span": [15, 19]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": "\t",
+          "span": [14, 15],
+          "content": " "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<i/>\t<b/>",
+        "children": [
+          {
+            "type": 1,
+            "tag": "i",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "source": "<i/>"
+            },
+            "isSelfClosing": true
+          },
+          {
+            "type": 2,
+            "content": " ",
+            "loc": {
+              "start": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "end": {
+                "column": 6,
+                "line": 1,
+                "offset": 5
+              },
+              "source": "\t"
+            }
+          },
+          {
+            "type": 1,
+            "tag": "b",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 6,
+                "line": 1,
+                "offset": 5
+              },
+              "end": {
+                "column": 10,
+                "line": 1,
+                "offset": 9
+              },
+              "source": "<b/>"
+            },
+            "isSelfClosing": true
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 10,
+            "line": 1,
+            "offset": 9
+          },
+          "source": "<i/>\t<b/>"
+        }
+      }
+    },
+    {
+      "id": "element-element-lf",
+      "source": "<template><i/>\n<b/></template>",
+      "template": "<i/>\n<b/>",
+      "templateSpan": [10, 19],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "element",
+          "raw": "<i/>",
+          "span": [10, 14]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": "\n",
+          "span": [14, 15]
+        },
+        {
+          "ordinal": 2,
+          "kind": "element",
+          "raw": "<b/>",
+          "span": [15, 19]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": "\n",
+          "span": [14, 15],
+          "content": null
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<i/>\n<b/>",
+        "children": [
+          {
+            "type": 1,
+            "tag": "i",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "source": "<i/>"
+            },
+            "isSelfClosing": true
+          },
+          {
+            "type": 1,
+            "tag": "b",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 2,
+                "offset": 5
+              },
+              "end": {
+                "column": 5,
+                "line": 2,
+                "offset": 9
+              },
+              "source": "<b/>"
+            },
+            "isSelfClosing": true
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 5,
+            "line": 2,
+            "offset": 9
+          },
+          "source": "<i/>\n<b/>"
+        }
+      }
+    },
+    {
+      "id": "element-element-cr",
+      "source": "<template><i/>\r<b/></template>",
+      "template": "<i/>\r<b/>",
+      "templateSpan": [10, 19],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "element",
+          "raw": "<i/>",
+          "span": [10, 14]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": "\r",
+          "span": [14, 15]
+        },
+        {
+          "ordinal": 2,
+          "kind": "element",
+          "raw": "<b/>",
+          "span": [15, 19]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": "\r",
+          "span": [14, 15],
+          "content": null
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<i/>\r<b/>",
+        "children": [
+          {
+            "type": 1,
+            "tag": "i",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "source": "<i/>"
+            },
+            "isSelfClosing": true
+          },
+          {
+            "type": 1,
+            "tag": "b",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 6,
+                "line": 1,
+                "offset": 5
+              },
+              "end": {
+                "column": 10,
+                "line": 1,
+                "offset": 9
+              },
+              "source": "<b/>"
+            },
+            "isSelfClosing": true
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 10,
+            "line": 1,
+            "offset": 9
+          },
+          "source": "<i/>\r<b/>"
+        }
+      }
+    },
+    {
+      "id": "element-element-ff",
+      "source": "<template><i/>\f<b/></template>",
+      "template": "<i/>\f<b/>",
+      "templateSpan": [10, 19],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "element",
+          "raw": "<i/>",
+          "span": [10, 14]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": "\f",
+          "span": [14, 15]
+        },
+        {
+          "ordinal": 2,
+          "kind": "element",
+          "raw": "<b/>",
+          "span": [15, 19]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": "\f",
+          "span": [14, 15],
+          "content": " "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<i/>\f<b/>",
+        "children": [
+          {
+            "type": 1,
+            "tag": "i",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "source": "<i/>"
+            },
+            "isSelfClosing": true
+          },
+          {
+            "type": 2,
+            "content": " ",
+            "loc": {
+              "start": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "end": {
+                "column": 6,
+                "line": 1,
+                "offset": 5
+              },
+              "source": "\f"
+            }
+          },
+          {
+            "type": 1,
+            "tag": "b",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 6,
+                "line": 1,
+                "offset": 5
+              },
+              "end": {
+                "column": 10,
+                "line": 1,
+                "offset": 9
+              },
+              "source": "<b/>"
+            },
+            "isSelfClosing": true
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 10,
+            "line": 1,
+            "offset": 9
+          },
+          "source": "<i/>\f<b/>"
+        }
+      }
+    },
+    {
+      "id": "comment-interpolation",
+      "source": "<template><!--a-->\n{{ value }}</template>",
+      "template": "<!--a-->\n{{ value }}",
+      "templateSpan": [10, 30],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "comment",
+          "raw": "<!--a-->",
+          "span": [10, 18]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": "\n",
+          "span": [18, 19]
+        },
+        {
+          "ordinal": 2,
+          "kind": "interpolation",
+          "raw": "{{ value }}",
+          "span": [19, 30]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": "\n",
+          "span": [18, 19],
+          "content": " "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<!--a-->\n{{ value }}",
+        "children": [
+          {
+            "type": 3,
+            "content": "a",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 9,
+                "line": 1,
+                "offset": 8
+              },
+              "source": "<!--a-->"
+            }
+          },
+          {
+            "type": 2,
+            "content": " ",
+            "loc": {
+              "start": {
+                "column": 9,
+                "line": 1,
+                "offset": 8
+              },
+              "end": {
+                "column": 1,
+                "line": 2,
+                "offset": 9
+              },
+              "source": "\n"
+            }
+          },
+          {
+            "type": 5,
+            "content": {
+              "type": 4,
+              "loc": {
+                "start": {
+                  "column": 4,
+                  "line": 2,
+                  "offset": 12
+                },
+                "end": {
+                  "column": 9,
+                  "line": 2,
+                  "offset": 17
+                },
+                "source": "value"
+              },
+              "content": "value",
+              "isStatic": false,
+              "constType": 0
+            },
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 2,
+                "offset": 9
+              },
+              "end": {
+                "column": 12,
+                "line": 2,
+                "offset": 20
+              },
+              "source": "{{ value }}"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 12,
+            "line": 2,
+            "offset": 20
+          },
+          "source": "<!--a-->\n{{ value }}"
+        }
+      }
+    },
+    {
+      "id": "interpolation-comment",
+      "source": "<template>{{ value }}\n<!--b--></template>",
+      "template": "{{ value }}\n<!--b-->",
+      "templateSpan": [10, 30],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "interpolation",
+          "raw": "{{ value }}",
+          "span": [10, 21]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": "\n",
+          "span": [21, 22]
+        },
+        {
+          "ordinal": 2,
+          "kind": "comment",
+          "raw": "<!--b-->",
+          "span": [22, 30]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": "\n",
+          "span": [21, 22],
+          "content": " "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "{{ value }}\n<!--b-->",
+        "children": [
+          {
+            "type": 5,
+            "content": {
+              "type": 4,
+              "loc": {
+                "start": {
+                  "column": 4,
+                  "line": 1,
+                  "offset": 3
+                },
+                "end": {
+                  "column": 9,
+                  "line": 1,
+                  "offset": 8
+                },
+                "source": "value"
+              },
+              "content": "value",
+              "isStatic": false,
+              "constType": 0
+            },
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 12,
+                "line": 1,
+                "offset": 11
+              },
+              "source": "{{ value }}"
+            }
+          },
+          {
+            "type": 2,
+            "content": " ",
+            "loc": {
+              "start": {
+                "column": 12,
+                "line": 1,
+                "offset": 11
+              },
+              "end": {
+                "column": 1,
+                "line": 2,
+                "offset": 12
+              },
+              "source": "\n"
+            }
+          },
+          {
+            "type": 3,
+            "content": "b",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 2,
+                "offset": 12
+              },
+              "end": {
+                "column": 9,
+                "line": 2,
+                "offset": 20
+              },
+              "source": "<!--b-->"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 9,
+            "line": 2,
+            "offset": 20
+          },
+          "source": "{{ value }}\n<!--b-->"
+        }
+      }
+    },
+    {
+      "id": "interpolation-interpolation",
+      "source": "<template>{{ first }}\n{{ second }}</template>",
+      "template": "{{ first }}\n{{ second }}",
+      "templateSpan": [10, 34],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "interpolation",
+          "raw": "{{ first }}",
+          "span": [10, 21]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": "\n",
+          "span": [21, 22]
+        },
+        {
+          "ordinal": 2,
+          "kind": "interpolation",
+          "raw": "{{ second }}",
+          "span": [22, 34]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": "\n",
+          "span": [21, 22],
+          "content": " "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "{{ first }}\n{{ second }}",
+        "children": [
+          {
+            "type": 5,
+            "content": {
+              "type": 4,
+              "loc": {
+                "start": {
+                  "column": 4,
+                  "line": 1,
+                  "offset": 3
+                },
+                "end": {
+                  "column": 9,
+                  "line": 1,
+                  "offset": 8
+                },
+                "source": "first"
+              },
+              "content": "first",
+              "isStatic": false,
+              "constType": 0
+            },
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 12,
+                "line": 1,
+                "offset": 11
+              },
+              "source": "{{ first }}"
+            }
+          },
+          {
+            "type": 2,
+            "content": " ",
+            "loc": {
+              "start": {
+                "column": 12,
+                "line": 1,
+                "offset": 11
+              },
+              "end": {
+                "column": 1,
+                "line": 2,
+                "offset": 12
+              },
+              "source": "\n"
+            }
+          },
+          {
+            "type": 5,
+            "content": {
+              "type": 4,
+              "loc": {
+                "start": {
+                  "column": 4,
+                  "line": 2,
+                  "offset": 15
+                },
+                "end": {
+                  "column": 10,
+                  "line": 2,
+                  "offset": 21
+                },
+                "source": "second"
+              },
+              "content": "second",
+              "isStatic": false,
+              "constType": 0
+            },
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 2,
+                "offset": 12
+              },
+              "end": {
+                "column": 13,
+                "line": 2,
+                "offset": 24
+              },
+              "source": "{{ second }}"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 13,
+            "line": 2,
+            "offset": 24
+          },
+          "source": "{{ first }}\n{{ second }}"
+        }
+      }
+    },
+    {
+      "id": "root-interpolation-edges",
+      "source": "<template>\t{{ value }} \n</template>",
+      "template": "\t{{ value }} \n",
+      "templateSpan": [10, 24],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "\t",
+          "span": [10, 11]
+        },
+        {
+          "ordinal": 1,
+          "kind": "interpolation",
+          "raw": "{{ value }}",
+          "span": [11, 22]
+        },
+        {
+          "ordinal": 2,
+          "kind": "text",
+          "raw": " \n",
+          "span": [22, 24]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "\t",
+          "span": [10, 11],
+          "content": null
+        },
+        {
+          "ordinal": 2,
+          "raw": " \n",
+          "span": [22, 24],
+          "content": null
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "\t{{ value }} \n",
+        "children": [
+          {
+            "type": 5,
+            "content": {
+              "type": 4,
+              "loc": {
+                "start": {
+                  "column": 5,
+                  "line": 1,
+                  "offset": 4
+                },
+                "end": {
+                  "column": 10,
+                  "line": 1,
+                  "offset": 9
+                },
+                "source": "value"
+              },
+              "content": "value",
+              "isStatic": false,
+              "constType": 0
+            },
+            "loc": {
+              "start": {
+                "column": 2,
+                "line": 1,
+                "offset": 1
+              },
+              "end": {
+                "column": 13,
+                "line": 1,
+                "offset": 12
+              },
+              "source": "{{ value }}"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 1,
+            "line": 2,
+            "offset": 14
+          },
+          "source": "\t{{ value }} \n"
+        }
+      }
+    },
+    {
+      "id": "element-gap-with-nbsp",
+      "source": "<template><i/>\n \t<b/></template>",
+      "template": "<i/>\n \t<b/>",
+      "templateSpan": [10, 22],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "element",
+          "raw": "<i/>",
+          "span": [10, 14]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": "\n \t",
+          "span": [14, 18]
+        },
+        {
+          "ordinal": 2,
+          "kind": "element",
+          "raw": "<b/>",
+          "span": [18, 22]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": "\n \t",
+          "span": [14, 18],
+          "content": "   "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<i/>\n \t<b/>",
+        "children": [
+          {
+            "type": 1,
+            "tag": "i",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "source": "<i/>"
+            },
+            "isSelfClosing": true
+          },
+          {
+            "type": 2,
+            "content": "   ",
+            "loc": {
+              "start": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "end": {
+                "column": 3,
+                "line": 2,
+                "offset": 7
+              },
+              "source": "\n \t"
+            }
+          },
+          {
+            "type": 1,
+            "tag": "b",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 3,
+                "line": 2,
+                "offset": 7
+              },
+              "end": {
+                "column": 7,
+                "line": 2,
+                "offset": 11
+              },
+              "source": "<b/>"
+            },
+            "isSelfClosing": true
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 7,
+            "line": 2,
+            "offset": 11
+          },
+          "source": "<i/>\n \t<b/>"
+        }
+      }
+    },
+    {
+      "id": "comment-gap-with-u0085",
+      "source": "<template><!--a-->\n\t<!--b--></template>",
+      "template": "<!--a-->\n\t<!--b-->",
+      "templateSpan": [10, 30],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "comment",
+          "raw": "<!--a-->",
+          "span": [10, 18]
+        },
+        {
+          "ordinal": 1,
+          "kind": "text",
+          "raw": "\n\t",
+          "span": [18, 22]
+        },
+        {
+          "ordinal": 2,
+          "kind": "comment",
+          "raw": "<!--b-->",
+          "span": [22, 30]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 1,
+          "raw": "\n\t",
+          "span": [18, 22],
+          "content": "  "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<!--a-->\n\t<!--b-->",
+        "children": [
+          {
+            "type": 3,
+            "content": "a",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 9,
+                "line": 1,
+                "offset": 8
+              },
+              "source": "<!--a-->"
+            }
+          },
+          {
+            "type": 2,
+            "content": "  ",
+            "loc": {
+              "start": {
+                "column": 9,
+                "line": 1,
+                "offset": 8
+              },
+              "end": {
+                "column": 3,
+                "line": 2,
+                "offset": 11
+              },
+              "source": "\n\t"
+            }
+          },
+          {
+            "type": 3,
+            "content": "b",
+            "loc": {
+              "start": {
+                "column": 3,
+                "line": 2,
+                "offset": 11
+              },
+              "end": {
+                "column": 11,
+                "line": 2,
+                "offset": 19
+              },
+              "source": "<!--b-->"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 11,
+            "line": 2,
+            "offset": 19
+          },
+          "source": "<!--a-->\n\t<!--b-->"
+        }
+      }
+    },
+    {
+      "id": "multiple-root-text-windows",
+      "source": "<!--前 <template>ignored</template> 雪🌸--><template> \n<!--a--> \n雪 \n<!--b--> \n</template>",
+      "template": " \n<!--a--> \n雪 \n<!--b--> \n",
+      "templateSpan": [57, 84],
+      "nativeEligible": true,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": " \n",
+          "span": [57, 59]
+        },
+        {
+          "ordinal": 1,
+          "kind": "comment",
+          "raw": "<!--a-->",
+          "span": [59, 67]
+        },
+        {
+          "ordinal": 2,
+          "kind": "text",
+          "raw": " \n雪 \n",
+          "span": [67, 74]
+        },
+        {
+          "ordinal": 3,
+          "kind": "comment",
+          "raw": "<!--b-->",
+          "span": [74, 82]
+        },
+        {
+          "ordinal": 4,
+          "kind": "text",
+          "raw": " \n",
+          "span": [82, 84]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": " \n",
+          "span": [57, 59],
+          "content": null
+        },
+        {
+          "ordinal": 2,
+          "raw": " \n雪 \n",
+          "span": [67, 74],
+          "content": " 雪 "
+        },
+        {
+          "ordinal": 4,
+          "raw": " \n",
+          "span": [82, 84],
+          "content": null
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": " \n<!--a--> \n雪 \n<!--b--> \n",
+        "children": [
+          {
+            "type": 3,
+            "content": "a",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 2,
+                "offset": 2
+              },
+              "end": {
+                "column": 9,
+                "line": 2,
+                "offset": 10
+              },
+              "source": "<!--a-->"
+            }
+          },
+          {
+            "type": 2,
+            "content": " 雪 ",
+            "loc": {
+              "start": {
+                "column": 9,
+                "line": 2,
+                "offset": 10
+              },
+              "end": {
+                "column": 1,
+                "line": 4,
+                "offset": 15
+              },
+              "source": " \n雪 \n"
+            }
+          },
+          {
+            "type": 3,
+            "content": "b",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 4,
+                "offset": 15
+              },
+              "end": {
+                "column": 9,
+                "line": 4,
+                "offset": 23
+              },
+              "source": "<!--b-->"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 1,
+            "line": 5,
+            "offset": 25
+          },
+          "source": " \n<!--a--> \n雪 \n<!--b--> \n"
+        }
+      }
+    },
+    {
+      "id": "deferred-entity-ascii",
+      "source": "<template>A&#32;&#9;B</template>",
+      "template": "A&#32;&#9;B",
+      "templateSpan": [10, 21],
+      "nativeEligible": false,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "A&#32;&#9;B",
+          "span": [10, 21]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "A&#32;&#9;B",
+          "span": [10, 21],
+          "content": "A B"
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "A&#32;&#9;B",
+        "children": [
+          {
+            "type": 2,
+            "content": "A B",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 12,
+                "line": 1,
+                "offset": 11
+              },
+              "source": "A&#32;&#9;B"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 12,
+            "line": 1,
+            "offset": 11
+          },
+          "source": "A&#32;&#9;B"
+        }
+      }
+    },
+    {
+      "id": "deferred-entity-blank",
+      "source": "<template>&#32;&#13;&#10;</template>",
+      "template": "&#32;&#13;&#10;",
+      "templateSpan": [10, 25],
+      "nativeEligible": false,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "&#32;&#13;&#10;",
+          "span": [10, 25]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "&#32;&#13;&#10;",
+          "span": [10, 25],
+          "content": null
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "&#32;&#13;&#10;",
+        "children": [],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 16,
+            "line": 1,
+            "offset": 15
+          },
+          "source": "&#32;&#13;&#10;"
+        }
+      }
+    },
+    {
+      "id": "deferred-entity-nbsp",
+      "source": "<template>&#160;&#32;&#160;</template>",
+      "template": "&#160;&#32;&#160;",
+      "templateSpan": [10, 27],
+      "nativeEligible": false,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "&#160;&#32;&#160;",
+          "span": [10, 27]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "&#160;&#32;&#160;",
+          "span": [10, 27],
+          "content": "   "
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "&#160;&#32;&#160;",
+        "children": [
+          {
+            "type": 2,
+            "content": "   ",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 18,
+                "line": 1,
+                "offset": 17
+              },
+              "source": "&#160;&#32;&#160;"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 18,
+            "line": 1,
+            "offset": 17
+          },
+          "source": "&#160;&#32;&#160;"
+        }
+      }
+    },
+    {
+      "id": "deferred-entity-single-decode",
+      "source": "<template>&amp;#32;</template>",
+      "template": "&amp;#32;",
+      "templateSpan": [10, 19],
+      "nativeEligible": false,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "&amp;#32;",
+          "span": [10, 19]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "&amp;#32;",
+          "span": [10, 19],
+          "content": "&#32;"
+        }
+      ],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "&amp;#32;",
+        "children": [
+          {
+            "type": 2,
+            "content": "&#32;",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 10,
+                "line": 1,
+                "offset": 9
+              },
+              "source": "&amp;#32;"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 10,
+            "line": 1,
+            "offset": 9
+          },
+          "source": "&amp;#32;"
+        }
+      }
+    },
+    {
+      "id": "deferred-nested-text",
+      "source": "<template><div>\n A \t B \n</div></template>",
+      "template": "<div>\n A \t B \n</div>",
+      "templateSpan": [10, 30],
+      "nativeEligible": false,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "element",
+          "raw": "<div>\n A \t B \n</div>",
+          "span": [10, 30]
+        }
+      ],
+      "rootText": [],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<div>\n A \t B \n</div>",
+        "children": [
+          {
+            "type": 1,
+            "tag": "div",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [
+              {
+                "type": 2,
+                "content": " A B ",
+                "loc": {
+                  "start": {
+                    "column": 6,
+                    "line": 1,
+                    "offset": 5
+                  },
+                  "end": {
+                    "column": 1,
+                    "line": 3,
+                    "offset": 14
+                  },
+                  "source": "\n A \t B \n"
+                }
+              }
+            ],
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 7,
+                "line": 3,
+                "offset": 20
+              },
+              "source": "<div>\n A \t B \n</div>"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 7,
+            "line": 3,
+            "offset": 20
+          },
+          "source": "<div>\n A \t B \n</div>"
+        }
+      }
+    },
+    {
+      "id": "deferred-pre-text",
+      "source": "<template><pre>\r\n A\t B\r\n</pre></template>",
+      "template": "<pre>\r\n A\t B\r\n</pre>",
+      "templateSpan": [10, 30],
+      "nativeEligible": false,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "element",
+          "raw": "<pre>\r\n A\t B\r\n</pre>",
+          "span": [10, 30]
+        }
+      ],
+      "rootText": [],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<pre>\r\n A\t B\r\n</pre>",
+        "children": [
+          {
+            "type": 1,
+            "tag": "pre",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [
+              {
+                "type": 2,
+                "content": " A\t B\n",
+                "loc": {
+                  "start": {
+                    "column": 6,
+                    "line": 1,
+                    "offset": 5
+                  },
+                  "end": {
+                    "column": 1,
+                    "line": 3,
+                    "offset": 14
+                  },
+                  "source": "\r\n A\t B\r\n"
+                }
+              }
+            ],
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 7,
+                "line": 3,
+                "offset": 20
+              },
+              "source": "<pre>\r\n A\t B\r\n</pre>"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 7,
+            "line": 3,
+            "offset": 20
+          },
+          "source": "<pre>\r\n A\t B\r\n</pre>"
+        }
+      }
+    },
+    {
+      "id": "deferred-svg-text",
+      "source": "<template><svg><text>\t雪  🌸</text></svg></template>",
+      "template": "<svg><text>\t雪  🌸</text></svg>",
+      "templateSpan": [10, 44],
+      "nativeEligible": false,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "element",
+          "raw": "<svg><text>\t雪  🌸</text></svg>",
+          "span": [10, 44]
+        }
+      ],
+      "rootText": [],
+      "upstreamErrors": [],
+      "upstreamAst": {
+        "type": 0,
+        "source": "<svg><text>\t雪  🌸</text></svg>",
+        "children": [
+          {
+            "type": 1,
+            "tag": "svg",
+            "ns": 1,
+            "tagType": 0,
+            "props": [],
+            "children": [
+              {
+                "type": 1,
+                "tag": "text",
+                "ns": 1,
+                "tagType": 0,
+                "props": [],
+                "children": [
+                  {
+                    "type": 2,
+                    "content": " 雪 🌸",
+                    "loc": {
+                      "start": {
+                        "column": 12,
+                        "line": 1,
+                        "offset": 11
+                      },
+                      "end": {
+                        "column": 18,
+                        "line": 1,
+                        "offset": 17
+                      },
+                      "source": "\t雪  🌸"
+                    }
+                  }
+                ],
+                "loc": {
+                  "start": {
+                    "column": 6,
+                    "line": 1,
+                    "offset": 5
+                  },
+                  "end": {
+                    "column": 25,
+                    "line": 1,
+                    "offset": 24
+                  },
+                  "source": "<text>\t雪  🌸</text>"
+                }
+              }
+            ],
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 31,
+                "line": 1,
+                "offset": 30
+              },
+              "source": "<svg><text>\t雪  🌸</text></svg>"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 31,
+            "line": 1,
+            "offset": 30
+          },
+          "source": "<svg><text>\t雪  🌸</text></svg>"
+        }
+      }
+    },
+    {
+      "id": "deferred-recovered-element",
+      "source": "<template>a  b<div></template>",
+      "template": "a  b<div>",
+      "templateSpan": [10, 19],
+      "nativeEligible": false,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "a  b",
+          "span": [10, 14]
+        },
+        {
+          "ordinal": 1,
+          "kind": "element",
+          "raw": "<div>",
+          "span": [14, 19]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "a  b",
+          "span": [10, 14],
+          "content": "a b"
+        }
+      ],
+      "upstreamErrors": [
+        {
+          "code": 24,
+          "message": "Element is missing end tag.",
+          "loc": {
+            "start": {
+              "column": 5,
+              "line": 1,
+              "offset": 4
+            },
+            "end": {
+              "column": 5,
+              "line": 1,
+              "offset": 4
+            },
+            "source": ""
+          }
+        }
+      ],
+      "upstreamAst": {
+        "type": 0,
+        "source": "a  b<div>",
+        "children": [
+          {
+            "type": 2,
+            "content": "a b",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "source": "a  b"
+            }
+          },
+          {
+            "type": 1,
+            "tag": "div",
+            "ns": 0,
+            "tagType": 0,
+            "props": [],
+            "children": [],
+            "loc": {
+              "start": {
+                "column": 5,
+                "line": 1,
+                "offset": 4
+              },
+              "end": {
+                "column": 10,
+                "line": 1,
+                "offset": 9
+              },
+              "source": "<div>"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 10,
+            "line": 1,
+            "offset": 9
+          },
+          "source": "a  b<div>"
+        }
+      }
+    },
+    {
+      "id": "deferred-recovered-comment",
+      "source": "<template>雪  <!--unclosed</template>",
+      "template": "雪  <!--unclosed",
+      "templateSpan": [10, 27],
+      "nativeEligible": false,
+      "rootSlots": [
+        {
+          "ordinal": 0,
+          "kind": "text",
+          "raw": "雪  ",
+          "span": [10, 15]
+        },
+        {
+          "ordinal": 1,
+          "kind": "comment",
+          "raw": "<!--unclosed",
+          "span": [15, 27]
+        }
+      ],
+      "rootText": [
+        {
+          "ordinal": 0,
+          "raw": "雪  ",
+          "span": [10, 15],
+          "content": "雪 "
+        }
+      ],
+      "upstreamErrors": [
+        {
+          "code": 7,
+          "message": "Unexpected EOF in comment.",
+          "loc": {
+            "start": {
+              "column": 16,
+              "line": 1,
+              "offset": 15
+            },
+            "end": {
+              "column": 16,
+              "line": 1,
+              "offset": 15
+            },
+            "source": ""
+          }
+        }
+      ],
+      "upstreamAst": {
+        "type": 0,
+        "source": "雪  <!--unclosed",
+        "children": [
+          {
+            "type": 2,
+            "content": "雪 ",
+            "loc": {
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+              },
+              "end": {
+                "column": 4,
+                "line": 1,
+                "offset": 3
+              },
+              "source": "雪  "
+            }
+          },
+          {
+            "type": 3,
+            "content": "unclosed",
+            "loc": {
+              "start": {
+                "column": 4,
+                "line": 1,
+                "offset": 3
+              },
+              "end": {
+                "column": 19,
+                "line": 1,
+                "offset": 18
+              },
+              "source": "<!--unclosed"
+            }
+          }
+        ],
+        "helpers": [],
+        "components": [],
+        "directives": [],
+        "hoists": [],
+        "imports": [],
+        "cached": [],
+        "temps": 0,
+        "loc": {
+          "start": {
+            "column": 1,
+            "line": 1,
+            "offset": 0
+          },
+          "end": {
+            "column": 16,
+            "line": 1,
+            "offset": 15
+          },
+          "source": "雪  <!--unclosed"
+        }
+      }
+    }
+  ]
+}

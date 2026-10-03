@@ -44,6 +44,7 @@ pub use native::{
     NativeAttributeHandlerView, NativeAttributeOperandError, NativeAttributes, NativeChild,
     NativeChildren, NativeComponent, NativeConditionKind, NativeElement, NativeInterpolationError,
     NativeInterpolationFailure, NativeInterpolationOperand, NativeInterpolationView,
+    NativeRootText, NativeRootTextError, NativeRootTextProfile, NativeRootTextView,
     NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar,
 };
 pub use parse::{

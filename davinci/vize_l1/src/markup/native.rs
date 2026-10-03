@@ -9,6 +9,7 @@ mod element;
 mod interpolation;
 mod operand;
 mod selected;
+mod text;
 pub use child::{NativeChild, NativeChildren};
 pub use element::{NativeAttribute, NativeAttributes, NativeElement};
 pub use interpolation::{
@@ -22,6 +23,7 @@ pub use operand::{
     NativeAttributeOperandError, NativeConditionKind,
 };
 pub use selected::{NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar};
+pub use text::{NativeRootText, NativeRootTextError, NativeRootTextProfile, NativeRootTextView};
 
 /// Complete once-parsed Component privately paired with its checked source.
 /// Raw mutable carriers cannot be inserted; consuming transfer drops authority.
@@ -76,6 +78,10 @@ impl<'a> NativeComponent<'a> {
     #[must_use]
     pub fn children(&self) -> NativeChildren<'_, 'a> {
         NativeChildren::root(self)
+    }
+    /// The immutable original root slot; no iteration or membership fabrication.
+    fn root_child_at(&self, ordinal: usize) -> Option<&crate::SurfaceChild<'a>> {
+        self.component.tree.children.get(ordinal)
     }
     #[must_use]
     pub fn into_carrier(self) -> ComponentParse<'a> {
