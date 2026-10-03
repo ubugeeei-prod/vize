@@ -92,3 +92,29 @@ runs under the team capacity constraint. Existing formatters and pure
 canonical inventory tools are permitted. Exact-head configured Actions,
 protected complete suites and unchanged instruction ceilings, followed by
 actual merge confirmation, establish delivery of this bounded custody slice.
+
+## Actual protected delivery
+
+PR #7636 actually merged at 2026-10-03 20:55:37 UTC as signed
+`6c96b8bb977d1b5bd7847df881ae84f9549e201f`. Exact source
+`fe0686d38d34ef960e7436c7be35a7a991766414` passed Check37151642115
+with strict affected Clippy, 14,713 Rust laws and all three privacy/lifetime
+doctests. Two independent source reviews found no remaining blocker after
+removing the fresh name lookup before publication.
+
+Protected merge-group Check37152353173, Nuxt37152352624 and Musea37152352647
+are terminal SUCCESS on that exact signed candidate. The raw planner selects
+all 40 workspace packages and all 733 tooling inputs with zero deferral. Full
+workspace strict Clippy, nextest archive/list, doctests, original parity,
+feature-enabled differential and production contracts passed. Four full
+workers passed 14,831/14,831 Rust laws, including all nine new genuine
+owner/foreign/shadow/movement/interruption/L4 refusal laws. Job111288655324
+measured all 100 probes identically three times, verified pinned ceilings
+and the immutable-base ratchet, and confirmed all 100 ceilings hold.
+
+Fetched main contains that signed merge and preserves the accepted original
+For receipt and law bytes. No owned open or queued layer remains. The markup
+1,577-file differential is explicitly smoke with closure_evidence=false; no
+whole-corpus, product, fix-history or loop/runtime completion is claimed.
+Collection runtime-read custody, genuine whole-SFC setup Program handoff,
+loop target shape and flat mapping remain separate concrete prerequisites.
