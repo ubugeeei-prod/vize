@@ -119,6 +119,13 @@ fn op_has_legacy_hoist(
             wrappers,
             allow_component_props_hoist,
         ),
+        Op::OriginalFor(for_op) => for_children_have_legacy_hoist(
+            walk,
+            &for_op.region.ops,
+            facts,
+            wrappers,
+            allow_component_props_hoist,
+        ),
         Op::Slot(slot) => {
             walk.skip(slot.bindings.len());
             skip_region(walk, &slot.fallback.ops);
@@ -415,25 +422,5 @@ fn skip_region(walk: &mut PageWalk, ops: &[Op<'_>]) {
 }
 
 fn skip_op_after_mint(walk: &mut PageWalk, op: &Op<'_>) {
-    match op {
-        Op::Element(element) => {
-            walk.skip(element.bindings.len());
-            ensure_sufficient_stack(|| skip_region(walk, &element.children.ops));
-        }
-        Op::Component(component) => {
-            walk.skip(component.bindings.len());
-            ensure_sufficient_stack(|| skip_region(walk, &component.children.ops));
-        }
-        Op::If(if_op) => {
-            for branch in if_op.branches.iter() {
-                ensure_sufficient_stack(|| skip_region(walk, &branch.region.ops));
-            }
-        }
-        Op::For(for_op) => ensure_sufficient_stack(|| skip_region(walk, &for_op.region.ops)),
-        Op::Slot(slot) => {
-            walk.skip(slot.bindings.len());
-            ensure_sufficient_stack(|| skip_region(walk, &slot.fallback.ops));
-        }
-        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {}
-    }
+    super::create_slots_walk::advance_after_op(walk, op);
 }

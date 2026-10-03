@@ -14,7 +14,7 @@
 use vize_atelier_core::{ElementNode, ElementType, TemplateChildNode};
 use vize_l0::side_table::SideTable;
 use vize_l1_to_l2::pass::StaticFacts;
-use vize_l2::dump::Op as DumpOp;
+use vize_l2::dump::{For, Op as DumpOp, OriginalFor};
 
 use super::hoist::{HoistCounters, Mode, replay_or_dormant, walk_for_body};
 use super::hoist_old::{Decision, decision_of};
@@ -48,6 +48,7 @@ pub fn structural_l2(ops: &[DumpOp]) -> Vec<&DumpOp> {
                     | DumpOp::Slot(_)
                     | DumpOp::If(_)
                     | DumpOp::For(_)
+                    | DumpOp::OriginalFor(_)
             )
         })
         .collect()
@@ -189,7 +190,11 @@ pub fn walk_position(
             }
             false
         }
-        (TemplateChildNode::For(node1), TemplateChildNode::For(node2), DumpOp::For(for_op)) => {
+        (
+            TemplateChildNode::For(node1),
+            TemplateChildNode::For(node2),
+            DumpOp::For(For { ops, .. }) | DumpOp::OriginalFor(OriginalFor { ops, .. }),
+        ) => {
             *next += 1;
             match (&node1.children[..], &node2.children[..]) {
                 ([TemplateChildNode::Element(el1)], [TemplateChildNode::Element(el2)])
@@ -208,7 +213,7 @@ pub fn walk_position(
                         source,
                         &el1.children,
                         &el2.children,
-                        &for_op.ops,
+                        ops,
                         mode,
                         suppressed,
                         next,
@@ -222,7 +227,7 @@ pub fn walk_position(
                         source,
                         &node1.children,
                         &node2.children,
-                        &for_op.ops,
+                        ops,
                         mode,
                         suppressed,
                         next,

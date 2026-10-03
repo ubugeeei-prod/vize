@@ -28,6 +28,7 @@ impl<'s, 'a> NodeRef<'s, 'a> {
                 Op::Comment(it) => it.span,
                 Op::If(it) => it.span,
                 Op::For(it) => it.span,
+                Op::OriginalFor(it) => it.span,
                 Op::Slot(it) => it.span,
             },
             Self::Binding(binding) => match binding {
@@ -58,7 +59,12 @@ impl<'s, 'a> NodeRef<'s, 'a> {
             Self::Op(Op::Slot(it)) => &it.attributes,
             Self::Binding(BindingOp::Model(it)) => &it.attributes,
             Self::Op(
-                Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) | Op::If(_) | Op::For(_),
+                Op::Text(_)
+                | Op::Interpolation(_)
+                | Op::Comment(_)
+                | Op::If(_)
+                | Op::For(_)
+                | Op::OriginalFor(_),
             )
             | Self::Binding(
                 BindingOp::Bind(_)
@@ -100,6 +106,8 @@ impl<'s, 'a> NodeRef<'s, 'a> {
                     optional(it.binding.key, visit);
                     optional(it.binding.index, visit);
                 }
+                // Original headers require their File owner, never a fabricated ExprRef.
+                Op::OriginalFor(_) => {}
                 Op::Slot(it) => name(Some(it.name), visit),
             },
             Self::Binding(binding) => match binding {

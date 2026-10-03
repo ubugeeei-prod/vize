@@ -76,6 +76,7 @@ fn walk_region(ops: &mut [DumpOp]) {
                 }
             }
             DumpOp::For(for_op) => walk_region(&mut for_op.ops),
+            DumpOp::OriginalFor(for_op) => walk_region(&mut for_op.ops),
             DumpOp::Slot(slot) => {
                 // The outlet's props surface (P2-9 series 5): static
                 // slot props sort under the same reorder quotient as

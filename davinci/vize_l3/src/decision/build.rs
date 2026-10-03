@@ -172,7 +172,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             Op::Interpolation(_) => (Levels::DYNAMIC_TEXT, None, None),
             Op::Comment(_) => (Levels::DYNAMIC, None, None),
             Op::If(_) => (Levels::DYNAMIC, None, Some(ControlKind::Conditional)),
-            Op::For(_) => (Levels::DYNAMIC, None, Some(ControlKind::Loop)),
+            Op::For(_) | Op::OriginalFor(_) => (Levels::DYNAMIC, None, Some(ControlKind::Loop)),
             Op::Slot(_) => (
                 Levels::DYNAMIC,
                 Some(BindingOwner::Slot),

@@ -41,7 +41,7 @@ fn keyword(op: &DumpOp) -> &'static str {
         DumpOp::Interpolation(_) => "ui.interpolation",
         DumpOp::Comment(_) => "ui.comment",
         DumpOp::If(_) => "ui.if",
-        DumpOp::For(_) => "ui.for",
+        DumpOp::For(_) | DumpOp::OriginalFor(_) => "ui.for",
         DumpOp::Slot(_) => "ui.slot",
     }
 }
@@ -56,6 +56,7 @@ fn op_span(op: &DumpOp) -> Span {
         DumpOp::Comment(comment) => comment.span,
         DumpOp::If(if_op) => if_op.span,
         DumpOp::For(for_op) => for_op.span,
+        DumpOp::OriginalFor(for_op) => for_op.span,
         DumpOp::Slot(slot) => slot.span,
     }
 }
@@ -112,6 +113,11 @@ fn visit_op(op: &DumpOp, owner: Owner, rigor: Rigor, out: &mut Vec<Violation>) {
         DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::Comment(_) => {}
         DumpOp::If(if_op) => visit_if(if_op, rigor, out),
         DumpOp::For(for_op) => {
+            for child in &for_op.ops {
+                visit_op(child, Some((kw, span)), rigor, out);
+            }
+        }
+        DumpOp::OriginalFor(for_op) => {
             for child in &for_op.ops {
                 visit_op(child, Some((kw, span)), rigor, out);
             }

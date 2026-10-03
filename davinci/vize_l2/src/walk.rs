@@ -144,6 +144,7 @@ fn visit_ops_guarded<'a>(
                 }
             }
             Op::For(for_op) => visit_ops(walk, &mut for_op.region.ops, visit),
+            Op::OriginalFor(for_op) => visit_ops(walk, &mut for_op.region.ops, visit),
             Op::Slot(slot) => {
                 walk.skip(slot.bindings.len());
                 visit_ops(walk, &mut slot.fallback.ops, visit);

@@ -89,6 +89,9 @@ fn emit_for_scoped(
                 has_dynamic_item_key(&component.bindings),
             ),
             [Op::Slot(slot)] => (slot.bindings.len(), has_dynamic_item_key(&slot.bindings)),
+            [Op::OriginalFor(original)] => {
+                return Err(EmitError::original_for_provider_unavailable(original));
+            }
             _ => return Err(EmitError::unsupported_at(Reason::ForItemShape, for_op.span)),
         }
     };
@@ -269,6 +272,7 @@ fn emit_plain_item(
             super::component::emit_for_item(cx, component, id, key.as_deref())
         }
         [Op::Slot(slot)] => super::outlet::emit_outlet(cx, slot, None, false),
+        [Op::OriginalFor(original)] => Err(EmitError::original_for_provider_unavailable(original)),
         _ => Err(EmitError::unsupported_at(Reason::ForItemShape, for_op.span)),
     }
 }

@@ -60,6 +60,9 @@ pub(super) fn collect_pieces(
                     })
                 })?;
             }
+            Op::OriginalFor(for_op) => {
+                return Err(EmitError::original_for_provider_unavailable(for_op));
+            }
             _ => {
                 let found = facts.groups.iter().enumerate().find(|(_, group)| {
                     matches!(
@@ -199,6 +202,7 @@ fn op_branch_key_count(cx: &EmitCx<'_>, op: &Op<'_>, walk: &mut PageWalk) -> u32
             u32::try_from(if_op.branches.len()).unwrap_or(u32::MAX)
         }
         Op::For(for_op) => region_branch_key_count(cx, &for_op.region, walk),
+        Op::OriginalFor(for_op) => region_branch_key_count(cx, &for_op.region, walk),
         Op::Slot(slot) => {
             walk.skip(slot.bindings.len());
             region_branch_key_count(cx, &slot.fallback, walk)

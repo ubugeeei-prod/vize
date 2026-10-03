@@ -126,6 +126,7 @@ fn walk_admit(region: &Region<'_>) -> Result<(), EmitError> {
                 }
             }
             Op::For(for_op) => walk_admit(&for_op.region)?,
+            Op::OriginalFor(for_op) => walk_admit(&for_op.region)?,
             Op::Slot(slot) => walk_admit(&slot.fallback)?,
         }
     }

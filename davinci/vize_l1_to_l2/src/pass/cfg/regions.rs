@@ -57,6 +57,18 @@ fn visit_region_guarded(
                 score(for_op.binding.source, id, depth, facts);
                 visit_nested(walk, &for_op.region.ops, depth + 1, facts);
             }
+            Op::OriginalFor(for_op) => {
+                // The original head remains File-qualified; score only real structure.
+                facts.push(Contribution {
+                    span: for_op.span,
+                    kind: DecisionKind::For,
+                    op: id,
+                    nesting: depth,
+                    cyclomatic: 1,
+                    cognitive: 1 + depth,
+                });
+                visit_nested(walk, &for_op.region.ops, depth + 1, facts);
+            }
             Op::Slot(slot) => {
                 // An outlet's fallback is not a decision of this template
                 // (the parent chooses), so it neither counts nor nests.

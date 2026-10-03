@@ -131,6 +131,9 @@ fn collect(
                     })?;
                 }
             }
+            Op::OriginalFor(for_op) => {
+                return Err(EmitError::original_for_provider_unavailable(for_op));
+            }
             Op::Element(element) => {
                 if let Some(content) = slot_template_content(element) {
                     entries.push(with_branch_key(cx, &mut entry_branch_key, |cx| {

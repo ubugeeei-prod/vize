@@ -295,6 +295,7 @@ fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<
             let id = cx.walk.mint();
             super::emit_for_op(cx, for_op, id, Some(key))
         }
+        [Op::OriginalFor(for_op)] => Err(EmitError::original_for_provider_unavailable(for_op)),
         _ => Err(EmitError::unsupported_at(
             Reason::IfBranchShape,
             branch.span,

@@ -8,7 +8,7 @@ use vize_l0::cstr;
 use vize_l0::dump::Error as DumpError;
 
 use crate::dump::owned::{
-    Attribute, Binding, Branch, Component, Element, For, If, Model, Op, Slot,
+    Attribute, Binding, Branch, Component, Element, For, If, Model, Op, OriginalFor, Slot,
 };
 use crate::dump::parse::Parser;
 use crate::dump::parse::line::err;
@@ -30,6 +30,7 @@ pub(super) enum Frame {
     If(If),
     Branch(Branch),
     For(For),
+    OriginalFor(OriginalFor),
     Slot(Slot, Phase),
 }
 
@@ -69,7 +70,7 @@ impl Parser {
                 Ok(())
             }
             Some(Frame::If(_)) => Err(err(line_no, cstr!("expected `branch` under `ui.if`"))),
-            None | Some(Frame::Branch(_) | Frame::For(_)) => {
+            None | Some(Frame::Branch(_) | Frame::For(_) | Frame::OriginalFor(_)) => {
                 Err(err(line_no, cstr!("`attr` outside an element")))
             }
         }
@@ -106,7 +107,7 @@ impl Parser {
             }
             Some(Frame::Model(_)) => Err(err(line_no, cstr!("expected `attr` under `ui.model`"))),
             Some(Frame::If(_)) => Err(err(line_no, cstr!("expected `branch` under `ui.if`"))),
-            None | Some(Frame::Branch(_) | Frame::For(_)) => {
+            None | Some(Frame::Branch(_) | Frame::For(_) | Frame::OriginalFor(_)) => {
                 Err(err(line_no, cstr!("binding outside an element")))
             }
         }
@@ -124,6 +125,7 @@ impl Parser {
                 | Frame::Component(..)
                 | Frame::Branch(_)
                 | Frame::For(_)
+                | Frame::OriginalFor(_)
                 | Frame::Slot(..),
             ) => Ok(()),
         }
@@ -143,6 +145,7 @@ impl Parser {
             }
             Some(Frame::Branch(branch)) => branch.ops.push(op),
             Some(Frame::For(for_op)) => for_op.ops.push(op),
+            Some(Frame::OriginalFor(for_op)) => for_op.ops.push(op),
             Some(Frame::Slot(slot, phase)) => {
                 *phase = Phase::Children;
                 slot.fallback.push(op);
@@ -167,6 +170,7 @@ impl Parser {
             }
             Frame::If(if_op) => self.attach_op(Op::If(if_op), line_no)?,
             Frame::For(for_op) => self.attach_op(Op::For(for_op), line_no)?,
+            Frame::OriginalFor(for_op) => self.attach_op(Op::OriginalFor(for_op), line_no)?,
             Frame::Slot(slot, _) => self.attach_op(Op::Slot(slot), line_no)?,
             Frame::Branch(branch) => match self.stack.last_mut() {
                 Some(Frame::If(if_op)) => if_op.branches.push(branch),

@@ -20,6 +20,7 @@ pub(super) fn slot_v_pre_interpolates(source: &str, ops: &[vize_l2::op::Op<'_>])
             .iter()
             .any(|branch| slot_v_pre_interpolates(source, &branch.region.ops)),
         vize_l2::op::Op::For(for_op) => slot_v_pre_interpolates(source, &for_op.region.ops),
+        vize_l2::op::Op::OriginalFor(for_op) => slot_v_pre_interpolates(source, &for_op.region.ops),
         _ => false,
     })
 }
@@ -33,6 +34,7 @@ fn has_interpolation(ops: &[vize_l2::op::Op<'_>]) -> bool {
             .iter()
             .any(|branch| has_interpolation(&branch.region.ops)),
         vize_l2::op::Op::For(for_op) => has_interpolation(&for_op.region.ops),
+        vize_l2::op::Op::OriginalFor(for_op) => has_interpolation(&for_op.region.ops),
         _ => false,
     })
 }

@@ -44,6 +44,7 @@ fn branch_region_is_supported(region: &Region<'_>) -> bool {
         }
         [Op::Component(component)] => component_is_supported(component),
         [Op::For(for_op)] => for_is_supported(for_op),
+        [Op::OriginalFor(_)] => false,
         _ => false,
     }
 }

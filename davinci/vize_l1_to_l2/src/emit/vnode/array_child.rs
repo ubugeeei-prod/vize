@@ -53,6 +53,7 @@ pub(in crate::emit) fn emit_array_child(
             }
             Op::If(if_op) => super::super::emit_if_op(cx, if_op, id),
             Op::For(for_op) => super::super::emit_for_op(cx, for_op, id, None),
+            Op::OriginalFor(for_op) => Err(EmitError::original_for_provider_unavailable(for_op)),
             Op::Slot(slot) => {
                 cx.walk.skip(slot.bindings.len());
                 super::super::outlet::emit_outlet(cx, slot, None, false)

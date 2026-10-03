@@ -178,6 +178,11 @@ impl<'a> L2Markup<'a> {
         {
             return None;
         }
+        if let [Op::OriginalFor(for_op)] = region
+            && for_op.span == span
+        {
+            return None;
+        }
         surface::element_at(self.surface?, span.start)
     }
 }
@@ -242,7 +247,12 @@ impl<'a> L2ElementOp<'a> {
             Op::Element(element) => Some(Self::Element(element)),
             Op::Component(component) => Some(Self::Component(component)),
             Op::Slot(slot) => Some(Self::Slot(slot)),
-            Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) | Op::If(_) | Op::For(_) => None,
+            Op::Text(_)
+            | Op::Interpolation(_)
+            | Op::Comment(_)
+            | Op::If(_)
+            | Op::For(_)
+            | Op::OriginalFor(_) => None,
         }
     }
 

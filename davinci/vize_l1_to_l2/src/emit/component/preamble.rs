@@ -78,6 +78,7 @@ fn collect_from_guarded<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {
                 }
             }
             Op::For(for_op) => collect_from(&for_op.region, names),
+            Op::OriginalFor(for_op) => collect_from(&for_op.region, names),
             _ => {}
         }
     }

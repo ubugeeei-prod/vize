@@ -128,6 +128,8 @@ fn op_is_supported(op: &Op<'_>) -> bool {
         Op::Component(component) => component_is_supported(component),
         Op::If(if_op) => control_flow::if_is_supported(if_op),
         Op::For(for_op) => control_flow::for_is_supported(for_op),
+        // The neutral emitter has no File-qualified original-head provider.
+        Op::OriginalFor(_) => false,
         Op::Comment(_) | Op::Slot(_) => false,
     }
 }

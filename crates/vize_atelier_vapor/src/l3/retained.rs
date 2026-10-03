@@ -62,6 +62,8 @@ impl<'s, 'a> Retained<'s, 'a> {
                         retained.insert(each.binding.source);
                         pending.push(&each.region);
                     }
+                    // Original head expressions remain with their File owner.
+                    Op::OriginalFor(each) => pending.push(&each.region),
                     Op::Component(component) => {
                         retained.bindings(&component.bindings);
                         pending.push(&component.children);

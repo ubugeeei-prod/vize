@@ -13,8 +13,8 @@ use vize_l0::{Span, String, cstr};
 
 use crate::dump::owned::{
     Attribute, Bind, Branch, Comment, Component, Element, For, ForBinding, If, Interpolation,
-    Model, Name, On, Op, Slot, SlotContent, Text, VueCloak, VueCssBind, VueDirective, VueHtml,
-    VueMemo, VueOnce, VueShow, VueSlotScope, VueSync, VueText,
+    Model, Name, On, Op, OriginalFor, Slot, SlotContent, Text, VueCloak, VueCssBind, VueDirective,
+    VueHtml, VueMemo, VueOnce, VueShow, VueSlotScope, VueSync, VueText,
 };
 use crate::dump::parse::expr_token::take_expr;
 use crate::op::Namespace;
@@ -231,6 +231,17 @@ fn comment(rest: &str, line_no: usize) -> Result<Item, DumpError> {
 }
 
 fn for_op(rest: &str, line_no: usize) -> Result<Item, DumpError> {
+    if let Some(rest) = rest.strip_prefix("original-ref=") {
+        let (node, tail) = rest.split_at(rest.find(' ').unwrap_or(rest.len()));
+        let node = node
+            .parse::<u32>()
+            .map_err(|_| err(line_no, cstr!("invalid original For reference `{node}`")))?;
+        return Ok(Item::Op(Op::OriginalFor(OriginalFor {
+            node,
+            ops: alloc::vec::Vec::new(),
+            span: tail_span(tail, line_no)?,
+        })));
+    }
     let Some(rest) = rest.strip_prefix("source=") else {
         return Err(err(line_no, cstr!("expected `source=`")));
     };

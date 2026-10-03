@@ -119,6 +119,16 @@ fn rewrite_ops<'a>(
                     facts,
                 );
             }
+            Op::OriginalFor(for_op) => {
+                rewrite_ops(
+                    allocator,
+                    source,
+                    walk,
+                    &mut for_op.region.ops,
+                    texts,
+                    facts,
+                );
+            }
             Op::Text(_) | Op::Comment(_) => {}
         }
     }

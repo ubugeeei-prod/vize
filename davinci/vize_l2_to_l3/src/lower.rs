@@ -181,6 +181,25 @@ impl<'a> Cx<'a> {
                 );
                 id
             }
+            l2::Op::OriginalFor(for_op) => {
+                // Structural transport only. The File-qualified original header has
+                // no neutral operands; native admission requires collection/alias
+                // facts and refuses this until an original L3 receipt joins them.
+                let id = self.push_op(
+                    OpKind::For,
+                    target_region,
+                    for_op.span,
+                    PartitionKind::Dynamic,
+                );
+                self.lower_region(
+                    &for_op.region,
+                    target_region,
+                    id,
+                    for_op.span,
+                    PartitionKind::Dynamic,
+                );
+                id
+            }
             l2::Op::Slot(slot) => {
                 let id = self.push_op(
                     OpKind::SlotOutlet,

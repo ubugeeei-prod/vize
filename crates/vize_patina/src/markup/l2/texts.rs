@@ -84,6 +84,7 @@ mod tests {
                     }
                 }
                 Op::For(for_op) => walk_interpolations(&for_op.region.ops, visit),
+                Op::OriginalFor(for_op) => walk_interpolations(&for_op.region.ops, visit),
                 Op::Text(_) | Op::Comment(_) => {}
             }
         }

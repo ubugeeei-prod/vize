@@ -119,6 +119,8 @@ pub enum SsrStringPlanErrorKind {
     MissingPartitionFact,
     PartitionSpanMismatch,
     ExtraPartitionFact,
+    /// The region-only plan has no File-qualified original-head provider.
+    UnsupportedOriginalFor,
 }
 
 /// Build the SSR L4 string plan from an L2 root and the shared L2->L3

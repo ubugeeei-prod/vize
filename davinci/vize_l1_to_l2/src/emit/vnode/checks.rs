@@ -36,6 +36,7 @@ fn op_has_interpolation_descendant(op: &Op<'_>) -> bool {
             .iter()
             .any(|branch| region_has_interpolation_descendant(&branch.region.ops)),
         Op::For(for_op) => region_has_interpolation_descendant(&for_op.region.ops),
+        Op::OriginalFor(for_op) => region_has_interpolation_descendant(&for_op.region.ops),
         Op::Slot(slot) => region_has_interpolation_descendant(&slot.fallback.ops),
         Op::Text(_) | Op::Comment(_) => false,
     }

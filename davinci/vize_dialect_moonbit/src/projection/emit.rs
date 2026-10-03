@@ -110,6 +110,13 @@ impl<'a> Emitter<'a> {
             },
             Op::If(if_op) => self.if_chain(if_op),
             Op::For(for_op) => self.for_loop(for_op),
+            Op::OriginalFor(for_op) => {
+                self.projection.unsupported.push(Unsupported {
+                    what: "ui.for (File-owned head)",
+                    span: for_op.span,
+                });
+                self.region(&for_op.region.ops);
+            }
             Op::Slot(slot) => {
                 if let DynamicName::Dynamic(name) = &slot.name {
                     self.demand("__vize_name", PositionKind::Argument, piece(*name));

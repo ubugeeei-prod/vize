@@ -72,6 +72,8 @@ fn project_op<D: ExprDialect>(document: &mut EmitDocument, dialect: &D, op: &Op<
             project_expr(document, dialect, for_op.binding.source);
             project_region(document, dialect, &for_op.region);
         }
+        // Original head expressions remain with their File owner.
+        Op::OriginalFor(for_op) => project_region(document, dialect, &for_op.region),
         Op::Slot(slot) => {
             project_name(document, dialect, Some(slot.name));
             project_bindings(document, dialect, &slot.bindings);

@@ -58,6 +58,7 @@ pub(super) fn region_span(region: &l2::Region<'_>, fallback: Span) -> Span {
             l2::Op::Comment(op) => op.span,
             l2::Op::If(op) => op.span,
             l2::Op::For(op) => op.span,
+            l2::Op::OriginalFor(op) => op.span,
             l2::Op::Slot(op) => op.span,
         };
         span = Some(match span {

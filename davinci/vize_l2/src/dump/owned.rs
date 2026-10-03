@@ -44,6 +44,8 @@ pub enum Op {
     If(If),
     /// `ui.for`.
     For(For),
+    /// `ui.for` retaining an original owner reference for diagnostics only.
+    OriginalFor(OriginalFor),
     /// `ui.slot`.
     Slot(Slot),
 }
@@ -158,6 +160,20 @@ pub struct For {
     pub span: Span,
 }
 
+/// Diagnostic mirror of [`crate::op::OriginalForOp`].
+///
+/// The numeric node is readback only: parsing this mirror cannot create an
+/// original op, recover its header, or authorize a lookup in a File.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OriginalFor {
+    /// The original owner node, without a typed capability.
+    pub node: u32,
+    /// The repeated region.
+    pub ops: Vec<Op>,
+    /// Source range.
+    pub span: Span,
+}
+
 /// Mirror of [`crate::op::SlotOp`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Slot {
@@ -253,6 +269,11 @@ fn own_op_guarded(op: &IrOp<'_>) -> Op {
             ops: own_region(&for_op.region),
             span: for_op.span,
         }),
+        IrOp::OriginalFor(for_op) => Op::OriginalFor(OriginalFor {
+            node: for_op.id().node().index(),
+            ops: own_region(&for_op.region),
+            span: for_op.span,
+        }),
         IrOp::Slot(slot) => Op::Slot(Slot {
             name: own_name(&slot.name),
             attributes: slot.attributes.iter().map(own_attribute).collect(),
@@ -301,6 +322,7 @@ fn count_op_guarded(op: &Op) -> u64 {
                 .sum::<u64>()
         }
         Op::For(for_op) => 1 + for_op.ops.iter().map(count_op).sum::<u64>(),
+        Op::OriginalFor(for_op) => 1 + for_op.ops.iter().map(count_op).sum::<u64>(),
         Op::Slot(slot) => {
             1 + slot.bindings.len() as u64 + slot.fallback.iter().map(count_op).sum::<u64>()
         }

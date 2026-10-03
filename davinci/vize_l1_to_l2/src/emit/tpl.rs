@@ -65,7 +65,7 @@ pub(super) fn emit_if_template_branch(
 fn should_unwrap_if(ops: &[Op<'_>]) -> bool {
     matches!(
         ops,
-        [Op::Element(_)] | [Op::Component(_)] | [Op::Slot(_)] | [Op::For(_)]
+        [Op::Element(_)] | [Op::Component(_)] | [Op::Slot(_)] | [Op::For(_)] | [Op::OriginalFor(_)]
     )
 }
 
@@ -120,6 +120,7 @@ fn emit_unwrapped_if(
             cx.template_if_for_branch_root = previous;
             result
         }
+        [Op::OriginalFor(for_op)] => Err(EmitError::original_for_provider_unavailable(for_op)),
         _ => Err(EmitError::unsupported_at(
             Reason::TemplateUnwrapShape,
             branch.span,

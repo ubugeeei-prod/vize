@@ -187,7 +187,8 @@ fn carrier_surface<'w, 'a>(
         | Op::Comment(_)
         | Op::Interpolation(_)
         | Op::If(_)
-        | Op::For(_) => None,
+        | Op::For(_)
+        | Op::OriginalFor(_) => None,
     }
 }
 

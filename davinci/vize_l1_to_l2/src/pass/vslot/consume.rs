@@ -1,13 +1,7 @@
-//! The shaped page-order recursion of the `v-slot` pass: spellings
-//! canonicalized and their scopes consumed where they stand, child
-//! views summarized for the owning component's grouping
-//! ([`super::group`]).
-//!
-//! The recursion mirrors the numbering law exactly — op line, attached
-//! bindings, then children — through the shared
-//! [`PageWalk`](super::super::walk::PageWalk) mints; the accounting
-//! assertion in [`super::run`] is what catches any drift from the
-//! lowering's minted ids.
+//! Page-order `v-slot` recursion: canonicalize spellings, consume scopes,
+//! and summarize child views for [`super::group`]. Numbering follows the
+//! shared [`PageWalk`](super::super::walk::PageWalk): op, attached bindings,
+//! then children. [`super::run`] checks the lowering's minted id accounting.
 
 use alloc::vec::Vec as StdVec;
 
@@ -96,14 +90,10 @@ pub(super) enum ChildKind {
     SlotTemplate(StdVec<SlotSpelling>),
     /// Whitespace-only text — never implicit-default content.
     Filler,
-    /// Anything else. `implicit` is the descending trimmed-content
-    /// answer the extraneous-children diagnostic reads (the legacy
-    /// `has_implicit_child`): `false` for a slot-carrying non-template
-    /// element or component, `true` otherwise, and for `ui.if`/`ui.for`
-    /// the recursive any-branch answer. `default_slot` is the shared
-    /// implicit-default predicate: component children that own their
-    /// own `v-slot` still belong to the parent default slot, but a
-    /// structural slot-template carrier does not.
+    /// Other content. `implicit` is false for slot-carrying non-template
+    /// owners, true otherwise, and recursive for `ui.if`/`ui.for` (the
+    /// legacy `has_implicit_child`). `default_slot` includes components
+    /// carrying their own `v-slot`, but excludes structural slot templates.
     Content {
         /// Whether the child counts for the extraneous diagnostic.
         implicit: bool,
@@ -123,11 +113,9 @@ fn implicit_default_content(id: Option<NodeId>, span: Span) -> ChildView {
     }
 }
 
-/// Whether any view in a region carries implicit content (the legacy
-/// `any_implicit_child`), plus unwrapped wrappers that hold nested
-/// `#slot` templates. Kept `#slot v-if` / `#slot v-for` carriers stay
-/// explicit `createSlots` inputs; unwrapped template wrappers flatten
-/// onto the default slot, even when they contain only one slot template.
+/// The legacy `any_implicit_child`, including unwrapped nested `#slot`
+/// wrappers. Kept structural slot carriers remain explicit `createSlots`
+/// inputs; unwrapped wrappers flatten onto the default slot.
 fn region_implicit(views: &[ChildView]) -> bool {
     let mut slot_templates = 0usize;
     for view in views {
@@ -300,6 +288,17 @@ fn visit<'a>(walk: &mut PageWalk, channels: &mut Channels<'_>, op: &Op<'a>) -> C
                 kind: ChildKind::Content {
                     implicit: for_region_implicit(from_template, &views),
                     default_slot: for_region_default_slot(from_template, &views),
+                },
+            }
+        }
+        Op::OriginalFor(for_op) => {
+            let views = region(walk, channels, &for_op.region.ops);
+            ChildView {
+                id,
+                span: for_op.span,
+                kind: ChildKind::Content {
+                    implicit: for_region_implicit(false, &views),
+                    default_slot: for_region_default_slot(false, &views),
                 },
             }
         }

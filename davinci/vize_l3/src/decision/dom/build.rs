@@ -115,7 +115,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
                 }
                 Op::Comment(_) => None,
                 Op::If(_) => None,
-                Op::Component(_) | Op::For(_) | Op::Slot(_) => {
+                Op::Component(_) | Op::For(_) | Op::OriginalFor(_) | Op::Slot(_) => {
                     self.reject(id, span, DomUnsupported::Operation);
                     None
                 }

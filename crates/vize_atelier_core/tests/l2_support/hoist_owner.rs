@@ -337,6 +337,10 @@ pub fn advance_ops(ops: &[DumpOp], next: &mut u32) {
                 *next += 1;
                 advance_ops(&for_op.ops, next);
             }
+            DumpOp::OriginalFor(for_op) => {
+                *next += 1;
+                advance_ops(&for_op.ops, next);
+            }
             DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::Comment(_) => *next += 1,
         }
     }

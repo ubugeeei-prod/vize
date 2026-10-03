@@ -60,6 +60,9 @@ fn structural_children_cross_boundary(
             })
         }),
         Op::For(for_op) => ensure_sufficient_stack(|| children_cross_boundary(ns, &for_op.region)),
+        Op::OriginalFor(for_op) => {
+            ensure_sufficient_stack(|| children_cross_boundary(ns, &for_op.region))
+        }
         Op::Component(_) | Op::Slot(_) | Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {
             false
         }
@@ -90,6 +93,9 @@ fn child_crosses(ns: Namespace, child: &Op<'_>) -> bool {
             .iter()
             .any(|branch| ensure_sufficient_stack(|| children_cross_boundary(ns, &branch.region))),
         Op::For(for_op) => ensure_sufficient_stack(|| children_cross_boundary(ns, &for_op.region)),
+        Op::OriginalFor(for_op) => {
+            ensure_sufficient_stack(|| children_cross_boundary(ns, &for_op.region))
+        }
         Op::Component(_) | Op::Slot(_) | Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {
             false
         }
@@ -98,11 +104,12 @@ fn child_crosses(ns: Namespace, child: &Op<'_>) -> bool {
 
 fn child_namespace_crosses(element: &ElementOp<'_>) -> bool {
     child_namespace(element) != element.namespace
-        && element
-            .children
-            .ops
-            .iter()
-            .any(|op| matches!(op, Op::Element(_) | Op::If(_) | Op::For(_)))
+        && element.children.ops.iter().any(|op| {
+            matches!(
+                op,
+                Op::Element(_) | Op::If(_) | Op::For(_) | Op::OriginalFor(_)
+            )
+        })
 }
 
 fn authored_template_branch(source: &str, branch: &vize_l2::op::IfBranch<'_>) -> bool {

@@ -156,6 +156,19 @@ impl Eval {
                 self.graph.edge(header, exit);
                 exit
             }
+            DumpOp::OriginalFor(for_op) => {
+                let n = self.nesting();
+                self.row("v-for", for_op.span, id, n, 1, 1 + n);
+                let header = self.graph.node();
+                self.graph.edge(line, header);
+                let body = self.graph.node();
+                self.graph.edge(header, body);
+                let body_end = self.inside(Frame::ForBody, &for_op.ops, body);
+                self.graph.edge(body_end, header);
+                let exit = self.graph.node();
+                self.graph.edge(header, exit);
+                exit
+            }
             DumpOp::Slot(slot) => {
                 let cur = self.name(&slot.name, id, line);
                 let (cur, _) = self.owner(&slot.bindings, cur);

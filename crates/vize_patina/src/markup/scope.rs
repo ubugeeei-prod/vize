@@ -12,7 +12,7 @@ use super::loc_to_range;
 use super::relief_scopes::ReliefChain;
 use crate::ir::ByteRange;
 use vize_l2::expr::{ExprRef, OpaqueReason};
-use vize_l2::op::{ForOp, IfOp};
+use vize_l2::op::{ForOp, IfOp, OriginalForOp};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, ForNode, IfNode, TemplateChildNode};
 
 #[derive(Clone, Copy)]
@@ -96,6 +96,10 @@ enum MarkupListInner<'a> {
         op: &'a ForOp<'a>,
         doc: &'a L2Markup<'a>,
     },
+    OriginalL2 {
+        op: &'a OriginalForOp<'a>,
+        doc: &'a L2Markup<'a>,
+    },
 }
 
 /// A list scope: a Vue `v-for`, a lowered JSX `items.map(...)`, or an L2
@@ -131,6 +135,12 @@ impl<'a> MarkupList<'a> {
         }
     }
 
+    pub(super) const fn from_original_l2(op: &'a OriginalForOp<'a>, doc: &'a L2Markup<'a>) -> Self {
+        Self {
+            inner: MarkupListInner::OriginalL2 { op, doc },
+        }
+    }
+
     /// The source iterable expression text (`items` in `item in items`).
     pub fn source_expression(&self) -> Option<&'a str> {
         match self.inner {
@@ -139,6 +149,8 @@ impl<'a> MarkupList<'a> {
                 split_directive(directive).map(|(_, source)| source)
             }
             MarkupListInner::L2 { op, .. } => admitted_text(&op.binding.source),
+            // The region-only facade does not borrow the original File head.
+            MarkupListInner::OriginalL2 { .. } => None,
         }
     }
 
@@ -150,6 +162,7 @@ impl<'a> MarkupList<'a> {
                 split_directive(directive).and_then(|(value, _)| value)
             }
             MarkupListInner::L2 { op, .. } => admitted_text(&op.binding.value),
+            MarkupListInner::OriginalL2 { .. } => None,
         }
     }
 
@@ -167,16 +180,12 @@ impl<'a> MarkupList<'a> {
             MarkupListInner::ReliefDirective { element, .. } => {
                 visitor(MarkupElement::new(element));
             }
-            MarkupListInner::L2 { op, doc } => match scope_region(doc, op.span, &op.region.ops) {
-                L2Step::Element(element, _) => visitor(element),
-                L2Step::Region(region) => {
-                    for op in region {
-                        if let Some(element) = L2ElementOp::from_op(op) {
-                            visitor(MarkupElement::from_l2(element, doc));
-                        }
-                    }
-                }
-            },
+            MarkupListInner::L2 { op, doc } => {
+                walk_list_elements(doc, op.span, &op.region.ops, visitor);
+            }
+            MarkupListInner::OriginalL2 { op, doc } => {
+                walk_list_elements(doc, op.span, &op.region.ops, visitor);
+            }
         }
     }
 
@@ -186,6 +195,7 @@ impl<'a> MarkupList<'a> {
             MarkupListInner::Relief(node) => loc_to_range(&node.loc),
             MarkupListInner::ReliefDirective { element, .. } => loc_to_range(&element.loc),
             MarkupListInner::L2 { op, doc } => doc.open_tag_range(op.span),
+            MarkupListInner::OriginalL2 { op, doc } => doc.open_tag_range(op.span),
         }
     }
 
@@ -195,7 +205,26 @@ impl<'a> MarkupList<'a> {
         match self.inner {
             MarkupListInner::ReliefDirective { .. } => true,
             MarkupListInner::L2 { doc, .. } => doc.surface.is_some(),
+            MarkupListInner::OriginalL2 { doc, .. } => doc.surface.is_some(),
             MarkupListInner::Relief(_) => false,
+        }
+    }
+}
+
+fn walk_list_elements<'a>(
+    doc: &'a L2Markup<'a>,
+    span: vize_l0::Span,
+    region: &'a [vize_l2::op::Op<'a>],
+    visitor: &mut impl FnMut(MarkupElement<'a>),
+) {
+    match scope_region(doc, span, region) {
+        L2Step::Element(element, _) => visitor(element),
+        L2Step::Region(region) => {
+            for op in region {
+                if let Some(element) = L2ElementOp::from_op(op) {
+                    visitor(MarkupElement::from_l2(element, doc));
+                }
+            }
         }
     }
 }

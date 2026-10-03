@@ -102,9 +102,12 @@ fn emit_slot_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
             cx.slot_if_branch_root = false;
             emitted
         }
-        Op::Element(_) | Op::Comment(_) | Op::If(_) | Op::For(_) | Op::Slot(_) => {
-            emit_array_child(cx, op, false, false)
-        }
+        Op::Element(_)
+        | Op::Comment(_)
+        | Op::If(_)
+        | Op::For(_)
+        | Op::OriginalFor(_)
+        | Op::Slot(_) => emit_array_child(cx, op, false, false),
     }
 }
 

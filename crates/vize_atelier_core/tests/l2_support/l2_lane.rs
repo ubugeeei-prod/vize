@@ -43,11 +43,8 @@ pub struct L2Chain {
     pub branches: Vec<L2Branch>,
 }
 
-/// One `ui.for`'s projected facts — the binding surface. An alias
-/// position is `None` when unauthored (for the value position: the
-/// zero-width escape of an absent alias; an *undecomposable* value
-/// never reaches the projection, because its lowering error skips the
-/// template pre-pass).
+/// One legacy `ui.for` binding surface. Absent aliases are `None`;
+/// undecomposable values are rejected before this projection.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct L2For {
     /// The iterated source's trimmed text.
@@ -308,6 +305,8 @@ fn walk(
                 };
                 walk(&for_op.ops, tables, region_state, next, out);
             }
+            #[expect(clippy::panic, reason = "the legacy oracle has no original File owner")]
+            DumpOp::OriginalFor(_) => panic!("original For head needs File-qualified projection"),
             DumpOp::Slot(slot) => {
                 let owner_index = *next;
                 *next += 1 + u32::try_from(slot.bindings.len()).expect("binding count fits");

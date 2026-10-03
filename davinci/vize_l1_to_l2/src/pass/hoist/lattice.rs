@@ -193,6 +193,14 @@ fn visit_region_guarded<R: RemarkSink>(
                     native: false,
                 }
             }
+            Op::OriginalFor(for_op) => {
+                visit_region(walk, &for_op.region.ops, ns, provenance, facts, remarks);
+                Contribution {
+                    level: ChildLevel::Dynamic,
+                    nested: false,
+                    native: false,
+                }
+            }
             Op::Slot(slot) => {
                 for _ in slot.bindings.iter() {
                     let _ = walk.mint();

@@ -108,6 +108,9 @@ fn regions<'s, 'a>(
                     }
                 }
                 Op::For(for_op) => regions(walk, &for_op.region.ops, Some(id), Some(span), visit)?,
+                Op::OriginalFor(for_op) => {
+                    regions(walk, &for_op.region.ops, Some(id), Some(span), visit)?
+                }
                 Op::Slot(slot) => {
                     bindings(walk, &slot.bindings, id, span, visit)?;
                     regions(walk, &slot.fallback.ops, Some(id), Some(span), visit)?;

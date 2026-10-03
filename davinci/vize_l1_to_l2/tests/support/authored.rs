@@ -81,6 +81,10 @@ fn assert_op(source: &str, root: SourceRoot<'_>, op: &Op<'_>) {
             assert_for_binding(source, root, for_op.binding);
             assert_region(source, root, &for_op.region);
         }
+        Op::OriginalFor(for_op) => {
+            assert_span(source, root, for_op.span, "original for");
+            assert_region(source, root, &for_op.region);
+        }
         Op::Slot(slot) => {
             assert_span(source, root, slot.span, "slot");
             assert_dynamic_name(source, root, slot.name);

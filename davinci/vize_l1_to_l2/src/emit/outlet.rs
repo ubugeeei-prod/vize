@@ -35,6 +35,7 @@ fn op_forwards(op: &Op<'_>) -> bool {
             .iter()
             .any(|branch| has_forwarded_outlet(&branch.region)),
         Op::For(for_op) => has_forwarded_outlet(&for_op.region),
+        Op::OriginalFor(for_op) => has_forwarded_outlet(&for_op.region),
         Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => false,
     }
 }
@@ -205,6 +206,7 @@ fn emit_fallback_units(
             start_fallback_item(cx, compact, first);
             emit_array_child(cx, op, false, false)
         }
+        Op::OriginalFor(for_op) => Err(EmitError::original_for_provider_unavailable(for_op)),
     }
 }
 
@@ -304,6 +306,7 @@ fn skip_op(cx: &mut EmitCx<'_>, op: &Op<'_>) {
             }
         }
         Op::For(for_op) => skip_region(cx, &for_op.region),
+        Op::OriginalFor(for_op) => skip_region(cx, &for_op.region),
         Op::Slot(slot) => {
             cx.walk.skip(slot.bindings.len());
             skip_region(cx, &slot.fallback);

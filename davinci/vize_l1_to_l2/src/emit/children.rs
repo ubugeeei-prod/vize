@@ -26,6 +26,9 @@ pub(super) fn emit_text_like(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), 
         match op {
             Op::Text(text) => emit_quoted_text(cx, text.content),
             Op::Interpolation(interp) => emit_interpolation(cx, interp, id)?,
+            Op::OriginalFor(for_op) => {
+                return Err(EmitError::original_for_provider_unavailable(for_op));
+            }
             Op::Element(_)
             | Op::Component(_)
             | Op::Comment(_)

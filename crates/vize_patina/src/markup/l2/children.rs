@@ -50,8 +50,15 @@ pub(in crate::markup) fn walk_nodes<'a>(
                     None => visitor(MarkupNode::For(doc.open_tag_range(for_op.span))),
                 }
             }
+            Op::OriginalFor(for_op) if doc.is_template() => {
+                match scope_carrier(doc, for_op.span, &for_op.region.ops) {
+                    Some(carrier) => visitor(MarkupNode::Element(carrier)),
+                    None => visitor(MarkupNode::For(doc.open_tag_range(for_op.span))),
+                }
+            }
             Op::If(if_op) => visitor(MarkupNode::If(if_range(doc, if_op))),
             Op::For(for_op) => visitor(MarkupNode::For(doc.open_tag_range(for_op.span))),
+            Op::OriginalFor(for_op) => visitor(MarkupNode::For(doc.open_tag_range(for_op.span))),
         }
         index += 1;
     }
@@ -68,6 +75,9 @@ pub(in crate::markup) fn scope_carrier<'a>(
     match scope_region(doc, span, region) {
         L2Step::Element(element, _) => Some(element),
         L2Step::Region([Op::For(for_op)]) if for_op.span == span => {
+            scope_carrier(doc, for_op.span, &for_op.region.ops)
+        }
+        L2Step::Region([Op::OriginalFor(for_op)]) if for_op.span == span => {
             scope_carrier(doc, for_op.span, &for_op.region.ops)
         }
         L2Step::Region([op]) => L2ElementOp::from_op(op)

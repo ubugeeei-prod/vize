@@ -259,6 +259,15 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &Op, depth: usize, mode: Style) -> 
             }
             Ok(())
         }
+        Op::OriginalFor(for_op) => {
+            indent(w, depth)?;
+            write!(w, "ui.for original-ref={}", for_op.node)?;
+            end_line(w, for_op.span, mode)?;
+            for child in &for_op.ops {
+                print_op(w, child, depth + 1, mode)?;
+            }
+            Ok(())
+        }
         Op::Slot(slot) => {
             indent(w, depth)?;
             w.write_str("ui.slot name=")?;

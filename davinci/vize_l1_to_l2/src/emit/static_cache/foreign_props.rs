@@ -77,6 +77,18 @@ pub(super) fn region_has_non_branch_foreign_props_hoist(
                     return true;
                 }
             }
+            Op::OriginalFor(for_op) => {
+                if ensure_sufficient_stack(|| {
+                    region_has_non_branch_foreign_props_hoist(
+                        walk,
+                        &for_op.region.ops,
+                        facts,
+                        false,
+                    )
+                }) {
+                    return true;
+                }
+            }
             Op::Slot(slot) => {
                 walk.skip(slot.bindings.len());
                 if ensure_sufficient_stack(|| {

@@ -78,6 +78,10 @@ fn shift_op(op: &mut DumpOp, shift: &mut Shift<'_>) {
             shift_for_binding(&mut for_op.binding, shift);
             shift_ops(&mut for_op.ops, shift);
         }
+        DumpOp::OriginalFor(for_op) => {
+            shift(&mut for_op.span);
+            shift_ops(&mut for_op.ops, shift);
+        }
         DumpOp::Slot(slot) => {
             shift(&mut slot.span);
             shift_name(&mut slot.name, shift);
@@ -206,3 +210,6 @@ fn shift_expr(expr: &mut DumpExpr, shift: &mut Shift<'_>) {
         | DumpExpr::Filter { span, .. } => shift(span),
     }
 }
+
+#[cfg(test)]
+mod tests;

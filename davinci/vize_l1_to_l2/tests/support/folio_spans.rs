@@ -50,6 +50,10 @@ fn assert_op(source: &str, root: SourceRoot<'_>, op: &DumpOp, context: &str) {
             assert_for_binding(source, root, &for_op.binding, context);
             assert_ops(source, root, &for_op.ops, context);
         }
+        DumpOp::OriginalFor(for_op) => {
+            assert_span(source, root, for_op.span, "original for", context);
+            assert_ops(source, root, &for_op.ops, context);
+        }
         DumpOp::Slot(slot) => {
             assert_span(source, root, slot.span, "slot", context);
             assert_name(source, root, &slot.name, context);

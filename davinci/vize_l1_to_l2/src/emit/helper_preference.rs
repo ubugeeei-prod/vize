@@ -195,6 +195,9 @@ fn prefer_op_helpers(
                 suppress_root_directives,
             );
         }
+        Op::OriginalFor(for_op) => {
+            prefer_region_helpers(buf, cx, walk, &for_op.region, slot_context, false);
+        }
         Op::Text(_) => buf.prefer(Helper::CreateText),
         Op::Comment(_) => buf.prefer(Helper::CreateComment),
         Op::Interpolation(_) => {

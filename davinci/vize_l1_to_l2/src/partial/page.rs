@@ -117,6 +117,7 @@ fn op_surface<'a>(op: &'a Op<'a>) -> (FragmentKind, Span, Option<&'a [BindingOp<
         Op::Comment(op) => (FragmentKind::Comment, op.span, None),
         Op::If(op) => (FragmentKind::If, op.span, None),
         Op::For(op) => (FragmentKind::For, op.span, None),
+        Op::OriginalFor(op) => (FragmentKind::For, op.span, None),
         Op::Slot(op) => (FragmentKind::Slot, op.span, Some(&op.bindings[..])),
     }
 }

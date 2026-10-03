@@ -248,6 +248,10 @@ fn visit<'a>(
             region(walk, channels, env, &for_op.region.ops);
             env.truncate(before);
         }
+        Op::OriginalFor(for_op) => {
+            // Alias facts live in the original File, not in neutral expression texts.
+            region(walk, channels, env, &for_op.region.ops);
+        }
         Op::Slot(slot) => {
             // Outlets never carry `ui.model` (the lowering rejects the
             // spelling), and the legacy lane opens no slot scope on

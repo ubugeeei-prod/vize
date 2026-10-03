@@ -36,7 +36,7 @@ fn op_keyword(op: &Op<'_>) -> &'static str {
         Op::Interpolation(_) => "ui.interpolation",
         Op::Comment(_) => "ui.comment",
         Op::If(_) => "ui.if",
-        Op::For(_) => "ui.for",
+        Op::For(_) | Op::OriginalFor(_) => "ui.for",
         Op::Slot(_) => "ui.slot",
     }
 }

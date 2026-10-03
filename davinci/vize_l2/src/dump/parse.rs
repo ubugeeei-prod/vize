@@ -241,6 +241,7 @@ impl Parser {
                     | Frame::Model(_)
                     | Frame::Branch(_)
                     | Frame::For(_)
+                    | Frame::OriginalFor(_)
                     | Frame::Slot(..),
                 ) => Err(err(line_no, cstr!("`branch` outside `ui.if`"))),
             },
@@ -255,6 +256,7 @@ impl Parser {
                     }
                     Op::If(if_op) => self.stack.push(Frame::If(if_op)),
                     Op::For(for_op) => self.stack.push(Frame::For(for_op)),
+                    Op::OriginalFor(for_op) => self.stack.push(Frame::OriginalFor(for_op)),
                     Op::Slot(slot) => self.stack.push(Frame::Slot(slot, Phase::Attrs)),
                     Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {
                         return self.attach_op(op, line_no);

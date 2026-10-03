@@ -204,6 +204,16 @@ impl<'facts, 'r, 'a> Cx<'facts, 'r, 'a> {
                     source,
                 );
             }
+            l2::Op::OriginalFor(for_op) => {
+                let (_, fact) = self.consume_fact(for_op.span);
+                self.errors.push(SsrStringPlanError {
+                    kind: SsrStringPlanErrorKind::UnsupportedOriginalFor,
+                    fact_index: fact,
+                    expected_span: for_op.span,
+                    actual_span: Some(for_op.span),
+                });
+                self.lower_region(&for_op.region);
+            }
             l2::Op::Slot(slot) => {
                 let slot: &'r l2::SlotOp<'a> = slot;
                 let (partition, fact) = self.consume_fact(slot.span);

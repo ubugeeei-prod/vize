@@ -43,6 +43,7 @@ fn expressions<'a>(ops: &[Op<'a>], out: &mut Vec<ExprRef<'a>>) {
                 out.extend(each.binding.index);
                 expressions(&each.region.ops, out);
             }
+            Op::OriginalFor(each) => expressions(&each.region.ops, out),
             Op::If(chain) => {
                 for branch in &chain.branches {
                     out.extend(branch.condition);

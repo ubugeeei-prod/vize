@@ -229,6 +229,11 @@ impl Walk {
                 });
                 self.region(&for_op.region, Some(at as u32));
             }
+            Op::OriginalFor(for_op) => {
+                // This region-only view cannot export the File-owned head.
+                let at = self.push(parent, op.mnemonic(), for_op.span, |_| {});
+                self.region(&for_op.region, Some(at as u32));
+            }
             Op::Slot(slot) => {
                 let at = self.push(parent, op.mnemonic(), slot.span, |node| {
                     node.name = static_name(Some(&slot.name));

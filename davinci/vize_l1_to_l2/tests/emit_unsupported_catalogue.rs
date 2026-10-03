@@ -1,6 +1,7 @@
 //! The refusal catalogue is closed: every bucket is either source-covered,
 //! direct-L2-covered, a defensive guard around an already-filtered helper, or a
-//! retired bucket kept stable for already-recorded census output.
+//! retired bucket kept stable for census output. Original providers remain
+//! explicitly unavailable until their actual File-qualified receipt joins them.
 
 use std::vec::Vec;
 
@@ -72,6 +73,11 @@ const INLINE_LANE: &[Reason] = &[Reason::HoistConstantGap];
 /// it (`--no-default-features` drops the `std`-only TS lane).
 const PORTABILITY: &[Reason] = &[Reason::TypeScriptLaneUnavailable];
 
+/// Original For emission awaits the actual File-qualified header provider.
+/// Its private constructor belongs to the original File factory laws; the
+/// neutral emitter cannot create a direct fixture by fabricating its ID.
+const ORIGINAL_PROVIDER: &[Reason] = &[Reason::OriginalForProviderUnavailable];
+
 const RETIRED: &[Reason] = &[
     Reason::BareStyleAttributeWithDynamicStyle,
     Reason::CreateSlotsMissingSlotTemplate,
@@ -91,6 +97,7 @@ fn reason_catalogue_is_fully_accounted_for() {
     accounted.extend_from_slice(PREFIX_LANE);
     accounted.extend_from_slice(PORTABILITY);
     accounted.extend_from_slice(INLINE_LANE);
+    accounted.extend_from_slice(ORIGINAL_PROVIDER);
 
     let mut accounted_codes = accounted
         .iter()

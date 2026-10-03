@@ -8,7 +8,7 @@ use core::fmt;
 
 use vize_l0::Span;
 use vize_l0::id::NodeId;
-use vize_l2::op::{BindingOp, Op};
+use vize_l2::op::{BindingOp, Op, OriginalForOp};
 
 /// Stable census bucket for an L2 DOM emission refusal.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -76,6 +76,9 @@ pub enum UnsupportedReason {
     UnrefAcrossReorderedSlots,
     UnsupportedBindingKind,
     WalkIdOverflow,
+    /// Original iteration parameters and collection require their actual
+    /// File-qualified provider; neutral emission cannot reconstruct them.
+    OriginalForProviderUnavailable,
 }
 
 impl UnsupportedReason {
@@ -113,6 +116,7 @@ impl UnsupportedReason {
         Self::OnHandlerNotJs,
         Self::OnNameNotJs,
         Self::OnNameNotStatic,
+        Self::OriginalForProviderUnavailable,
         Self::PrefixExpressionKind,
         Self::PrefixExpressionRejected,
         Self::ShowExpressionNotJs,
@@ -170,6 +174,7 @@ impl UnsupportedReason {
             Self::OnHandlerNotJs => "on_handler_not_js",
             Self::OnNameNotJs => "on_name_not_js",
             Self::OnNameNotStatic => "on_name_not_static",
+            Self::OriginalForProviderUnavailable => "original_for_provider_unavailable",
             Self::PrefixExpressionKind => "prefix_expression_kind",
             Self::PrefixExpressionRejected => "prefix_expression_rejected",
             Self::TypeScriptLaneUnavailable => "typescript_lane_unavailable",
@@ -271,6 +276,14 @@ impl EmitError {
         Self::unsupported_at(reason, op_span(op))
     }
 
+    pub(super) const fn original_for_provider_unavailable(op: &OriginalForOp<'_>) -> Self {
+        Self::unsupported_at_node(
+            UnsupportedReason::OriginalForProviderUnavailable,
+            op.span,
+            op.id().node(),
+        )
+    }
+
     #[must_use]
     pub const fn reason(&self) -> Option<UnsupportedReason> {
         match self {
@@ -308,6 +321,7 @@ fn op_span(op: &Op<'_>) -> Span {
         Op::Comment(op) => op.span,
         Op::If(op) => op.span,
         Op::For(op) => op.span,
+        Op::OriginalFor(op) => op.span,
         Op::Slot(op) => op.span,
     }
 }
