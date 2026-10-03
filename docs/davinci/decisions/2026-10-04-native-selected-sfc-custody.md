@@ -51,7 +51,13 @@ all six laws execute once and all three privacy docs pass. Fresh live queue
 tail `329d0776` conflicts only in the central decision paragraph; preserve
 every admitted incoming decision plus this provider in one canonical docs
 union, with production byte-identical and fresh exact-head Actions required
-before queue admission. No known-conflicting entry is admitted.
+before queue admission. That docs-only union alone cannot change the old
+Git merge ancestor. After literal predecessor main `1d02147b` lands, replay
+this genuine provider once onto that actual main: the complete live tail
+`cef6f00c` now composes cleanly, with original production byte-identical to
+source-green `5d253487`. Preserve the genuine two-layer Stack and require
+fresh exact-head Actions before its passing prefix enters the queue. No
+known-conflicting entry is admitted.
 
 DOM whole-SFC component assembly and pinned complete module/map/runtime laws
 are a dependent next slice. SSR/Vapor may consume this same lower custody through
