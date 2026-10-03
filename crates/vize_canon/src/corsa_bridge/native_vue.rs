@@ -51,6 +51,7 @@ pub struct NativeVueCheck<'o, 'a> {
     report: DocumentDiagnosticReportResult,
     configuration: corsa::api::ConfigResponse,
     project: corsa::api::ProjectResponse,
+    diagnostic_configuration_path: PathBuf,
     authored_spans: Vec<Result<Span, MappingError>>,
 }
 
@@ -89,6 +90,11 @@ impl<'o, 'a> NativeVueCheck<'o, 'a> {
     pub fn project(&self) -> &corsa::api::ProjectResponse {
         &self.project
     }
+    /// Actual configuration identity reported by the process returning diagnostics.
+    #[must_use]
+    pub fn diagnostic_configuration_path(&self) -> &Path {
+        &self.diagnostic_configuration_path
+    }
     /// Every primary diagnostic has one authored span or a typed mapping refusal.
     pub fn authored_spans(&self) -> &[Result<Span, MappingError>] {
         &self.authored_spans
@@ -119,7 +125,7 @@ impl CorsaBridge {
         let checked_source = String::from(source);
         let checked_bounds = bounds.clone();
         let checked_uri = projection_uri.clone();
-        let (report, configuration, project) = self
+        let (report, configuration, project, diagnostic_configuration_path) = self
             .with_client(move |client| {
                 Ok((|| {
                     checked_bounds.verify(&checked_source)?;
@@ -155,6 +161,7 @@ impl CorsaBridge {
             report,
             configuration,
             project,
+            diagnostic_configuration_path,
             authored_spans,
         })
     }

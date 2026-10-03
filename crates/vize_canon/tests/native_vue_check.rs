@@ -105,6 +105,10 @@ fn real_native_vue_checker_retains_complete_js_ts_diagnostics_and_original_owner
         assert_eq!(result.source_digest().len(), 64);
         assert_eq!(result.configuration().options["strict"], true);
         assert_eq!(
+            result.diagnostic_configuration_path(),
+            root.path().join("tsconfig.json").canonicalize().unwrap()
+        );
+        assert_eq!(
             result.project().config_file_name,
             root.path()
                 .join("tsconfig.json")

@@ -7,7 +7,8 @@ The explicit Canon API consumes the genuine L4 original SFC projection and an
 authoritative absolute existing `.vue` path. It retains that same original
 NativeSfc/File/Program/Component/embed ownership with the complete raw checker
 report, source path/URI/SHA-256, private projection URI, actual normalized
-configuration and actual ProjectSession response. Detached source strings or
+configuration and actual admission ProjectSession response, plus the actual
+configuration identity reported by the diagnosing process. Detached source strings or
 caller-supplied virtual documents cannot construct the result.
 
 The selected real root tsconfig/jsconfig must govern the source's directory.
@@ -30,6 +31,12 @@ rewrites a configuration to force acceptance.
 
 The same canonical projected URI and exact snapshot are checked through an
 independent actual native LSP session, retaining every raw diagnostic and field.
+That same diagnosing process must attest the selected real configuration through
+`custom/projectInfo` before and after the full diagnostic response; inferred,
+missing, relative, changed or foreign configuration identities refuse. The API
+ProjectSession is independent admission metadata and does not itself attest the
+diagnosing process. The actual pinned TS 7.0.2 transport probe confirmed configured
+inherited checkJs behavior and inferred membership for files-excluded projections.
 The configured API and LSP processes are closed on both successful and failed
 requests, including cleanup continuing after the bounded worker times out.
 Existing editor didChange notifications cannot replace either independent

@@ -11,6 +11,7 @@ use std::{path::Path, sync::Arc};
 use vize_l0::cstr;
 
 mod filesystem;
+mod project;
 
 impl CorsaProjectClient {
     pub(crate) fn native_vue_diagnostics(
@@ -24,6 +25,7 @@ impl CorsaProjectClient {
             DocumentDiagnosticReportResult,
             ConfigResponse,
             ProjectResponse,
+            std::path::PathBuf,
         ),
         NativeVueError,
     > {
@@ -77,13 +79,21 @@ impl CorsaProjectClient {
                 EditorLspSession::spawn(self.executable.as_str(), &self.cwd, &self.project_root)
                     .map_err(backend)?;
             let report = (|| {
-                editor.mirror(uri, text)?;
-                editor.diagnostics(uri)
+                editor.mirror(uri, text).map_err(backend)?;
+                let diagnosing_config = editor.native_vue_configuration(uri)?;
+                if diagnosing_config != config {
+                    return Err(NativeVueError::UnconfiguredProjection);
+                }
+                let report = editor.diagnostics(uri).map_err(backend)?;
+                if editor.native_vue_configuration(uri)? != diagnosing_config {
+                    return Err(NativeVueError::UnconfiguredProjection);
+                }
+                Ok((report, effective, project, diagnosing_config))
             })();
-            let cleanup = editor.shutdown();
+            let cleanup = editor.shutdown().map_err(backend);
             match (report, cleanup) {
-                (Ok(report), Ok(())) => Ok((report, effective, project)),
-                (Err(error), _) | (_, Err(error)) => Err(backend(error)),
+                (Ok(report), Ok(())) => Ok(report),
+                (Err(error), _) | (_, Err(error)) => Err(error),
             }
         })();
         let cleanup = block_on(session.close())

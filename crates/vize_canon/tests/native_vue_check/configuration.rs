@@ -21,7 +21,10 @@ fn actual_configuration_membership_inherited_options_and_source_guards_are_autho
         panic!("full report")
     };
     assert_eq!(full.full_document_diagnostic_report.items, []);
-    assert_eq!(result.authored_spans(), []);
+    assert_eq!(
+        result.authored_spans(),
+        Vec::<Result<Span, vize_l4::targets::ts::MappingError>>::new()
+    );
     drop(result);
     std::fs::write(root.path().join("base.json"), serde_json::to_vec(&serde_json::json!({"compilerOptions":{"strict":true,"types":[],"allowJs":true,"checkJs":true,"module":"ESNext","target":"ESNext","moduleResolution":"Bundler"}})).unwrap()).unwrap();
     let result = block_on(bridge.check_native_vue(observed.admitted().unwrap(), &path)).unwrap();
