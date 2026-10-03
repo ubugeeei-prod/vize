@@ -242,13 +242,13 @@ async function execute(code: string, fixture: any, native = false) {
     if (fixture.immutableBindings.includes(name)) {
       if (native) {
         assert.equal(typeof descriptor?.get, "function");
-        assert.equal(descriptor?.set, undefined);
+        assert.equal(typeof descriptor?.set, "undefined");
         const original = state[name];
         assert.equal(Reflect.set(state, name, Symbol("forbidden update")), false);
         assert.equal(state[name], original);
       } else {
-        assert.equal(descriptor?.get, undefined);
-        assert.equal(descriptor?.set, undefined);
+        assert.equal(typeof descriptor?.get, "undefined");
+        assert.equal(typeof descriptor?.set, "undefined");
       }
     } else {
       assert.equal(typeof descriptor?.get, "function");
