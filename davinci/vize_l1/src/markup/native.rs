@@ -12,7 +12,10 @@ mod operand;
 mod selected;
 mod text;
 pub use child::{NativeChild, NativeChildren};
-pub use element::{NativeAttribute, NativeAttributes, NativeElement};
+pub use element::{
+    NativeAttribute, NativeAttributes, NativeElement, NativeElementClosingName,
+    NativeElementNameRefusal, NativeElementNames,
+};
 pub use interpolation::{
     NativeInterpolationError, NativeInterpolationFailure, NativeInterpolationOperand,
     NativeInterpolationView,
