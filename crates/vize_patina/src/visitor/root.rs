@@ -68,9 +68,11 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         children: &[TemplateChildNode<'a>],
         forget_next_child: &mut bool,
     ) {
-        for (index, node) in children.iter().enumerate() {
-            self.prescan_suppression_in_child(children, index, node, forget_next_child);
-        }
+        vize_l0::recursion::ensure_sufficient_stack(|| {
+            for (index, node) in children.iter().enumerate() {
+                self.prescan_suppression_in_child(children, index, node, forget_next_child);
+            }
+        });
     }
 
     fn prescan_suppression_in_child(

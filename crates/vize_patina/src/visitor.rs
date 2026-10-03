@@ -88,6 +88,10 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
 
     #[inline]
     fn visit_child(&mut self, node: &TemplateChildNode<'a>) {
+        vize_l0::recursion::ensure_sufficient_stack(|| self.visit_child_inner(node));
+    }
+
+    fn visit_child_inner(&mut self, node: &TemplateChildNode<'a>) {
         match node {
             TemplateChildNode::Element(el) => {
                 if self.forget_next_element {
