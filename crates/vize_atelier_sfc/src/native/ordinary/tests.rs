@@ -71,15 +71,14 @@ fn three_whole_ordinary_empty_modules_and_maps_are_captured() -> Result<(), Stri
             map.get("names") == Some(&serde_json::json!([])),
             "{id}: zero bindings"
         );
-        // Initial hosted capture precedes frozen native fields. Queue admission
-        // requires those source-generated fields and unconditional comparisons.
-        if let Some(code) = fixture.get("code").and_then(Value::as_str) {
-            require!(output.code() == code, "{id}: whole frozen native module");
-            require!(
-                fixture.get("nativeMap") == Some(&map),
-                "{id}: whole frozen native map"
-            );
-        }
+        require!(
+            output.code() == text(fixture, "code")?,
+            "{id}: whole frozen native module"
+        );
+        require!(
+            fixture.get("nativeMap") == Some(&map),
+            "{id}: whole frozen native map"
+        );
         let owner = mapped.observation();
         let admitted = owner.admitted().ok_or("original admitted SFC")?;
         let file = admitted.file().file();

@@ -5,6 +5,17 @@
     {
       "id": "empty-js",
       "source": "<script>export default {}</script><template><div>hello</div></template>",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, \"hello\"))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "nativeMap": {
+        "file": "Ordinary雪🌸.vue",
+        "mappings": ";kBAAuB;;;SAAqB,mCAAA,aAAK",
+        "names": [],
+        "sources": ["Ordinary雪🌸.vue"],
+        "sourcesContent": [
+          "<script>export default {}</script><template><div>hello</div></template>"
+        ],
+        "version": 3
+      },
       "referenceScript": "const __sfc_main = {}",
       "referenceScriptMap": {
         "version": 3,
@@ -66,6 +77,17 @@
     {
       "id": "commented-js",
       "source": "<script>/*雪🌸*/\n; export /* preserved */ default { /* retained */ }; //尾\n</script><template><!--雪--><p>hello &amp; world</p></template>",
+      "code": "import { createCommentVNode as _createCommentVNode, createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n/*雪🌸*/\n; const _sfc_main = { /* retained */ }; //尾\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\"雪\"),\n    _createElementVNode(\"p\", null, \"hello & world\")\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "nativeMap": {
+        "file": "Ordinary雪🌸.vue",
+        "mappings": ";AAAQ;oBACyB;;;;wBACd;IAAQ,oBAAA,WAAG",
+        "names": [],
+        "sources": ["Ordinary雪🌸.vue"],
+        "sourcesContent": [
+          "<script>/*雪🌸*/\n; export /* preserved */ default { /* retained */ }; //尾\n</script><template><!--雪--><p>hello &amp; world</p></template>"
+        ],
+        "version": 3
+      },
       "referenceScript": "/*雪🌸*/\n; const __sfc_main = { /* retained */ }; //尾\n",
       "referenceScriptMap": {
         "version": 3,
@@ -166,6 +188,17 @@
     {
       "id": "empty-ts",
       "source": "<script lang=\"ts\">export default {};</script><template><span>🌸</span></template>",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {};\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"span\", null, \"🌸\"))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "nativeMap": {
+        "file": "Ordinary雪🌸.vue",
+        "mappings": ";kBAAiC;;;SAAsB,mCAAA,cAAM",
+        "names": [],
+        "sources": ["Ordinary雪🌸.vue"],
+        "sourcesContent": [
+          "<script lang=\"ts\">export default {};</script><template><span>🌸</span></template>"
+        ],
+        "version": 3
+      },
       "referenceScript": "const __sfc_main = {};",
       "referenceScriptMap": {
         "version": 3,

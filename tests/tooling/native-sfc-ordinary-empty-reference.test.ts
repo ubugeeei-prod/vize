@@ -90,10 +90,8 @@ test(
       assert.equal(row.id, fixture.id);
       assert.equal(row.source, fixture.source);
       assert.deepEqual(row.bindings, []);
-      if (fixture.code !== undefined) {
-        assert.equal(row.code, fixture.code);
-        assert.deepEqual(row.nativeMap, fixture.nativeMap);
-      }
+      assert.equal(row.code, fixture.code);
+      assert.deepEqual(row.nativeMap, fixture.nativeMap);
       assert.equal(typeof row.code, "string");
       assert(row.code.length > 0);
       checkOrdinaryMap({ ...fixture, code: row.code, nativeMap: row.nativeMap });
