@@ -102,6 +102,10 @@ impl<'owner, 'arena> NativeTemplateDomAnalysis<'owner, 'arena> {
 /// Missing File remains an explicit invariant refusal. The existing sole-file
 /// producer supplies all decisions; this wrapper adds no AST/tree walk, stage
 /// or runtime access classification.
+///
+/// Genuine L1 root text receipts permit selected-root condensation at the
+/// original cursor. Direct-child and nested-body whitespace/entity refusals
+/// remain unchanged. Omitted source events confer no node or target decision.
 pub fn build_native_dom_file_decisions<'owner, 'arena>(
     view: NativeTemplateView<'owner, 'arena>,
 ) -> Result<NativeTemplateDomAnalysis<'owner, 'arena>, DecisionBuildError> {
