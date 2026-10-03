@@ -17,6 +17,7 @@ fn builder(
         nodes: SideTable::new(),
         controls: SideTable::new(),
         dom: None,
+        ssr: None,
     }
 }
 

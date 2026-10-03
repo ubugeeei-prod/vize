@@ -17,6 +17,7 @@ mod build;
 pub mod dom;
 pub mod native;
 pub mod policy;
+pub mod ssr;
 
 pub use build::{DecisionBuildError, build_decisions, build_dom_decisions};
 pub use dom::{NativeFileAnalysis, build_dom_file_decisions};
@@ -59,6 +60,7 @@ pub struct NativeAnalysis<'owner, 'arena> {
     artifact: &'owner Artifact<'arena>,
     tables: DecisionTables,
     dom: Option<dom::DomFacts<'owner, 'arena>>,
+    ssr: Option<ssr::SsrFacts<'owner, 'arena>>,
 }
 
 impl<'owner, 'arena> NativeAnalysis<'owner, 'arena> {
@@ -78,6 +80,12 @@ impl<'owner, 'arena> NativeAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn dom(&self) -> Option<&dom::DomFacts<'owner, 'arena>> {
         self.dom.as_ref()
+    }
+
+    /// SSR semantics from this owner's original decision traversal.
+    #[must_use]
+    pub fn ssr(&self) -> Option<&ssr::SsrFacts<'owner, 'arena>> {
+        self.ssr.as_ref()
     }
 
     /// Complete decisions, borrowed read-only with their owner retained.

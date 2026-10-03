@@ -1,14 +1,13 @@
 //! Borrowed, native L2-node decisions beside a sealed canonical artifact.
 //!
-//! Every id comes from the artifact's single enter/leave walk. No flat
-//! program, expression parse, legacy facts or second numbering walk is
-//! needed. Placement stays inline until its independent analysis lands.
+//! One enter/leave walk owns every id; placement stays inline until analyzed.
 
 use alloc::vec::Vec;
 
 mod levels;
 use super::dom::vue::policy::{FileReads, NoReads};
 use super::dom::{DomExpressionFacts, LiteralExpressions, build::DomBuilder};
+use super::ssr::build::SsrBuilder;
 use levels::Levels;
 
 use super::{
@@ -58,6 +57,7 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
         frames: Vec::new(),
         nodes: SideTable::new(),
         controls: SideTable::new(),
+        ssr: (policy == TargetPolicy::Ssr).then(SsrBuilder::new),
         dom: (policy == TargetPolicy::Dom)
             .then(|| DomBuilder::new(expressions, artifact.root().ops.len(), file, reads)),
     };
@@ -73,10 +73,12 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
         return Err(error);
     }
     let dom = builder.dom.take().map(DomBuilder::finish);
+    let ssr = builder.ssr.take().map(SsrBuilder::finish);
     Ok(NativeAnalysis {
         artifact,
         tables: builder.finish()?,
         dom,
+        ssr,
     })
 }
 
@@ -107,6 +109,7 @@ struct Builder<'facts, 'owner, 'arena, F, R> {
     nodes: SideTable<NodeDecision>,
     controls: SideTable<ControlRegion>,
     dom: Option<DomBuilder<'facts, 'owner, 'arena, F, R>>,
+    ssr: Option<SsrBuilder<'owner, 'arena>>,
 }
 
 /// One open region op, released at its matching leave event.
@@ -204,6 +207,9 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         if let Some(dom) = &mut self.dom {
             dom.enter(id, op, owner_span)?;
         }
+        if let Some(ssr) = &mut self.ssr {
+            ssr.enter(id, op, self.frames.is_empty());
+        }
         self.frames.push(Frame {
             id,
             levels,
@@ -229,6 +235,9 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             .ok_or(DecisionBuildError::InvalidTraversal { node: id })?;
         if let Some(dom) = &mut self.dom {
             dom.binding(id, binding);
+        }
+        if let Some(ssr) = &mut self.ssr {
+            ssr.binding(id, binding, owner);
         }
         let role = match binding {
             BindingOp::On(_) => BindingRole::Event,
@@ -286,6 +295,9 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         }
         if let Some(dom) = &mut self.dom {
             dom.leave(id)?;
+        }
+        if let Some(ssr) = &mut self.ssr {
+            ssr.leave(id);
         }
         self.insert_node(
             id,
