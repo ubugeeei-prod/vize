@@ -18,6 +18,9 @@ use vize_l1_to_l2::native_file::lower_sfc_native;
 mod configuration;
 #[path = "native_vue_check/const_semantics.rs"]
 mod const_semantics;
+
+#[path = "native_vue_check/jsdoc_semantics.rs"]
+mod jsdoc_semantics;
 #[cfg(unix)]
 #[path = "native_vue_check/ref_semantics.rs"]
 mod ref_semantics;
@@ -70,11 +73,7 @@ fn real_native_vue_checker_retains_complete_js_ts_diagnostics_and_original_owner
         let arena = Allocator::default();
         let root = tempfile::TempDir::new().unwrap();
         let bridge = configured(root.path());
-        let script = if ts {
-            "/*😀*/ let 日本語 = 1; let other=2;"
-        } else {
-            "/** @type {number} */ let 日本語 = 'bad'; let other=2;"
-        };
+        let script = "/*😀*/ let 日本語 = 1; let other=2;";
         let source = cstr!(
             "\r\n<template><div>{{{{日本語.missing}}}}<span>{{{{other.missing}}}}</span></div></template>\r\n<script setup{}>{script}</script>",
             if ts { " lang=ts" } else { "" }
@@ -136,14 +135,6 @@ fn real_native_vue_checker_retains_complete_js_ts_diagnostics_and_original_owner
             serde_json::json!({"range":{"start":{"line":line,"character":character},"end":{"line":end_line,"character":end_character}},"severity":1,"code":code,"source":"ts","message":message})
         };
         let mut expected = Vec::new();
-        if !ts {
-            expected.push(diagnostic(
-                "日本語 =",
-                "日本語".len(),
-                2322,
-                String::from("Type 'string' is not assignable to type 'number'."),
-            ));
-        }
         expected.push(diagnostic(
             "missing",
             7,
@@ -158,10 +149,6 @@ fn real_native_vue_checker_retains_complete_js_ts_diagnostics_and_original_owner
             serde_json::to_value(&expected).unwrap()
         );
         let mut authored = Vec::new();
-        if !ts {
-            let start = source.find("日本語 =").unwrap() as u32;
-            authored.push(Ok(Span::new(start, start + "日本語".len() as u32)));
-        }
         for (start, _) in source.match_indices("missing") {
             authored.push(Ok(Span::new(start as u32, start as u32 + 7)));
         }

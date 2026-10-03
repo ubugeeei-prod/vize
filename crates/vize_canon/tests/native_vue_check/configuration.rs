@@ -3,7 +3,7 @@ use vize_canon::{NativeVueError, OriginalProgramError};
 
 #[test]
 fn actual_configuration_membership_inherited_options_and_source_guards_are_authoritative() {
-    let source = "<template>{{value.missing}}</template><script setup>/** @type {number} */ let value='bad';</script>";
+    let source = "<template>{{1}}</template><script setup>/** @type {number} */ let value='bad'; value.missing;</script>";
     let arena = Allocator::default();
     let observed = lower_sfc_native(&arena, source, options());
     let root = tempfile::TempDir::new().unwrap();
@@ -15,6 +15,10 @@ fn actual_configuration_membership_inherited_options_and_source_guards_are_autho
     block_on(bridge.spawn()).unwrap();
     let result = block_on(bridge.check_native_vue(observed.admitted().unwrap(), &path)).unwrap();
     assert_eq!(result.configuration().options["checkJs"], false);
+    assert_eq!(
+        result.diagnostic_configuration_path(),
+        root.path().join("tsconfig.json").canonicalize().unwrap()
+    );
     let DocumentDiagnosticReportResult::Report(DocumentDiagnosticReport::Full(full)) =
         result.report()
     else {
@@ -34,18 +38,43 @@ fn actual_configuration_membership_inherited_options_and_source_guards_are_autho
     else {
         panic!("full report")
     };
+    let text = result.projection().document().as_str();
+    let diagnostic = |needle: &str, length: usize, code: u32, message: &str| {
+        let byte = text.find(needle).unwrap();
+        let (line, character) = LineBreaks::Lsp.offset_to_position(text, byte);
+        let (end_line, end_character) = LineBreaks::Lsp.offset_to_position(text, byte + length);
+        serde_json::json!({"range":{"start":{"line":line,"character":character},"end":{"line":end_line,"character":end_character}},"severity":1,"code":code,"source":"ts","message":message})
+    };
     assert_eq!(
-        full.full_document_diagnostic_report
-            .items
-            .iter()
-            .map(|raw| raw.code.clone())
-            .collect::<Vec<_>>(),
-        vec![
-            Some(lsp_types::NumberOrString::Number(2322)),
-            Some(lsp_types::NumberOrString::Number(2339))
+        serde_json::to_value(&full.full_document_diagnostic_report.items).unwrap(),
+        serde_json::json!([
+            diagnostic(
+                "value='bad'",
+                5,
+                2322,
+                "Type 'string' is not assignable to type 'number'."
+            ),
+            diagnostic(
+                "missing",
+                7,
+                2339,
+                "Property 'missing' does not exist on type 'number'."
+            )
+        ])
+    );
+    let value = source.find("value='bad'").unwrap() as u32;
+    let member = source.find("missing").unwrap() as u32;
+    assert_eq!(
+        result.authored_spans(),
+        [
+            Ok(Span::new(value, value + 5)),
+            Ok(Span::new(member, member + 7))
         ]
     );
-    assert_eq!(result.authored_spans().len(), 2);
+    assert_eq!(
+        result.diagnostic_configuration_path(),
+        root.path().join("tsconfig.json").canonicalize().unwrap()
+    );
     drop(result);
     std::fs::write(&path, "changed original source").unwrap();
     assert!(matches!(
