@@ -1,0 +1,209 @@
+{
+  "schema": "vize.native-ssr-reference",
+  "version": 1,
+  "compiler": {
+    "name": "@vue/compiler-ssr",
+    "version": "3.5.35"
+  },
+  "options": {
+    "mode": "module",
+    "ssrRuntimeModuleName": "@vue/server-renderer",
+    "comments": true,
+    "filename": "NativeSsr.vue",
+    "sourceMap": true
+  },
+  "importOrder": "existing L4 runtime module grouping: server helpers before core helpers; all function bytes unchanged",
+  "fixtures": [
+    {
+      "id": "empty",
+      "source": "",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "referenceCode": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  \n}",
+      "referenceCodeSha256": "3dec280e9141de0475b995ce9d97f188f09cfd8a6848bcb9a9370bbdcc8e8b89",
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  \n}",
+      "codeSha256": "3dec280e9141de0475b995ce9d97f188f09cfd8a6848bcb9a9370bbdcc8e8b89",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [""]
+      },
+      "referenceMapSha256": "f30fb95c85accfcbfb029de69a37eab9bdd40a8e01fd22236df89ee3f90c43ac"
+    },
+    {
+      "id": "entities",
+      "source": "&lt;&amp;&quot;&apos;&gt;",
+      "sourceSha256": "28d1b1ee4477016bd9c866ac627a1f4f9eaa393d4ccdabcf5ace3694526f7075",
+      "referenceCode": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`&lt;&amp;&quot;&#39;&gt;`)\n}",
+      "referenceCodeSha256": "73c1cc7cd55de204173dbe7a6a62b62d11310ad3e027c126b7f8df339958053a",
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`&lt;&amp;&quot;&#39;&gt;`)\n}",
+      "codeSha256": "73c1cc7cd55de204173dbe7a6a62b62d11310ad3e027c126b7f8df339958053a",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["&lt;&amp;&quot;&apos;&gt;"]
+      },
+      "referenceMapSha256": "b6e3ce687be5b5b5b5b64322b736af136845db5197643a19bbd9d7b64ee532e7"
+    },
+    {
+      "id": "js-escaping",
+      "source": "hello ${count} \\ `猫`",
+      "sourceSha256": "145422faff2cfaa6d5ccee933a0b6d03337e0cdfd247a43bf3639d2f4aa971d1",
+      "referenceCode": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`hello \\${count} \\\\ \\`猫\\``)\n}",
+      "referenceCodeSha256": "0055e2e49c9211c1c1ad13905e435d17b9bf90bb2775d22002800141e83594ba",
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`hello \\${count} \\\\ \\`猫\\``)\n}",
+      "codeSha256": "0055e2e49c9211c1c1ad13905e435d17b9bf90bb2775d22002800141e83594ba",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["hello ${count} \\ `猫`"]
+      },
+      "referenceMapSha256": "b5b9b35898a716cfd6be338cb0ad935c48e4fd341f1c7c4d32c89bc895ca01bc"
+    },
+    {
+      "id": "comment",
+      "source": "<!--safe ${count} \\ `猫`-->",
+      "sourceSha256": "3f5f3eeceec5c9ed6fe66008ee46c649a8a00e7c1309be846f5344a56dd74421",
+      "referenceCode": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--safe \\${count} \\\\ \\`猫\\`-->`)\n}",
+      "referenceCodeSha256": "1da65ca72df47367b8aaa286613fa85cf0d9667ce9f3e9dd5d4313cebbe3af9c",
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--safe \\${count} \\\\ \\`猫\\`-->`)\n}",
+      "codeSha256": "1da65ca72df47367b8aaa286613fa85cf0d9667ce9f3e9dd5d4313cebbe3af9c",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["<!--safe ${count} \\ `猫`-->"]
+      },
+      "referenceMapSha256": "57dfd238ea36e6de16386c9e043e61de4929c2fe66e442cd074b345d2296865b"
+    },
+    {
+      "id": "element",
+      "source": "<div/>",
+      "sourceSha256": "fc7e6385a22749a8b3224a31b05f7cb995e2e62ab4af84ae526262af38c1753e",
+      "referenceCode": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}></div>`)\n}",
+      "referenceCodeSha256": "f8ef9c90a0ed80bc61ec3fc07ee6e33900757b5a2c532ac6e491f15fa3f988ac",
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}></div>`)\n}",
+      "codeSha256": "f8ef9c90a0ed80bc61ec3fc07ee6e33900757b5a2c532ac6e491f15fa3f988ac",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["<div/>"]
+      },
+      "referenceMapSha256": "6c8ecc26103d535a45fa5dcf811e5e230968c7a2a8c1e87b13e9f1a8ff3b8935"
+    },
+    {
+      "id": "nested-entities",
+      "source": "<div><p title=\"&quot;&amp;&lt;&gt;&#39;\">&lt;&amp;&quot;&apos;&gt;</p><br><input disabled></div>",
+      "sourceSha256": "8278269b6ec1a5198f39245c90f5b75caf7ebd012a2c5f8259b39d79782ce8bf",
+      "referenceCode": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><p title=\"&quot;&amp;&lt;&gt;&#39;\">&lt;&amp;&quot;&#39;&gt;</p><br><input disabled></div>`)\n}",
+      "referenceCodeSha256": "2d89f2b58524f2390b638a82bdf98c3dd42d193b150579258e7ca1897b1d72f7",
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><p title=\"&quot;&amp;&lt;&gt;&#39;\">&lt;&amp;&quot;&#39;&gt;</p><br><input disabled></div>`)\n}",
+      "codeSha256": "2d89f2b58524f2390b638a82bdf98c3dd42d193b150579258e7ca1897b1d72f7",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "<div><p title=\"&quot;&amp;&lt;&gt;&#39;\">&lt;&amp;&quot;&apos;&gt;</p><br><input disabled></div>"
+        ]
+      },
+      "referenceMapSha256": "1f29461f301ff673c8b64bbc55d00cc44c8fb13d188865593ab1390a05f7ef7f"
+    },
+    {
+      "id": "root-props",
+      "source": "<div id=\"one\"/>",
+      "sourceSha256": "f1bf6baf43861f7a54cf81de133f44ede770dfdfd81a1d81a530558ad2005d14",
+      "referenceCode": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ id: \"one\" }, _attrs))}></div>`)\n}",
+      "referenceCodeSha256": "78976c877854ca262384dd24f431033e625ad8b0142ab90c320f4241176af384",
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ id: \"one\" }, _attrs))}></div>`)\n}",
+      "codeSha256": "ef8efac90da23bff47677513932fae10b9853e0faabeaeb7b30d4e5d8cb9b627",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSsr.vue"],
+        "names": [],
+        "mappings": ";;;;6CAAK,EAAE,EAAC,KAAK",
+        "sourcesContent": ["<div id=\"one\"/>"]
+      },
+      "referenceMapSha256": "5ce44586408f4a5089c78aee78b00f0e0aa4a2c2cdaa3de9948fcab3f4cccbcb"
+    },
+    {
+      "id": "fragment",
+      "source": "<span>A</span><span>B</span>",
+      "sourceSha256": "52f85c4b0104903fc54e3f061274045ebc1e6c4aa4e86b875b8b7368c90c9aa8",
+      "referenceCode": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[--><span>A</span><span>B</span><!--]-->`)\n}",
+      "referenceCodeSha256": "fbc8b0ae55deec7f9d71cca22bf68216213ab5ac344c3a8a486d5ec008f8dad6",
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[--><span>A</span><span>B</span><!--]-->`)\n}",
+      "codeSha256": "fbc8b0ae55deec7f9d71cca22bf68216213ab5ac344c3a8a486d5ec008f8dad6",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["<span>A</span><span>B</span>"]
+      },
+      "referenceMapSha256": "fc946a91f17a85956c43b21f41396ec7cb2683749cf663cc68b4764249c55507"
+    },
+    {
+      "id": "comment-root",
+      "source": "<!--x--><div/>",
+      "sourceSha256": "8f347c71300eb9f5ac1f2123cfa314627615be7ce5f1a4265e8dc706038e2dc0",
+      "referenceCode": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[--><!--x--><div${_ssrRenderAttrs(_attrs)}></div><!--]-->`)\n}",
+      "referenceCodeSha256": "9e8fcca4ba32803cd52ea111b876febcc5f9bdde2769379c942d41352e684105",
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[--><!--x--><div${_ssrRenderAttrs(_attrs)}></div><!--]-->`)\n}",
+      "codeSha256": "9e8fcca4ba32803cd52ea111b876febcc5f9bdde2769379c942d41352e684105",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["<!--x--><div/>"]
+      },
+      "referenceMapSha256": "8c778b51b0bbdfe55047b71e89239329d93ba5d5498f8c8d96daed0c623f3156"
+    },
+    {
+      "id": "root-void",
+      "source": "<input disabled>",
+      "sourceSha256": "70696843146461bca0ccd99271d6da7077556e5d45ae99b975b84f88c9adba68",
+      "referenceCode": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<input${_ssrRenderAttrs(_mergeProps({ disabled: \"\" }, _attrs))}>`)\n}",
+      "referenceCodeSha256": "4b8f1ae56fefeb58878f6fa22ef457e60432f5f44fa24134503311acd62eb400",
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<input${_ssrRenderAttrs(_mergeProps({ disabled: \"\" }, _attrs))}>`)\n}",
+      "codeSha256": "934a35805f06f1c2b50c6ca61bbefcdecf2a0f6b4bc27459ebae8d54dd899ea4",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSsr.vue"],
+        "names": [],
+        "mappings": ";;;;+CAAO,QAAQ,EAAR,EAAQ",
+        "sourcesContent": ["<input disabled>"]
+      },
+      "referenceMapSha256": "cd501c9361f985acc9ff33d12b5e982d9d51167f425f43d240e42e8d351e1ee1"
+    },
+    {
+      "id": "void-elements",
+      "source": "<div><area><base><br><col><embed><hr><img><input><link><meta><param><source><track><wbr></div>",
+      "sourceSha256": "c253f602c54096c3b45af264a5571cbfa82b9a6c189df8cfa0f8ee7be1c69d17",
+      "referenceCode": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><area><base><br><col><embed><hr><img><input><link><meta><param><source><track><wbr></div>`)\n}",
+      "referenceCodeSha256": "8a8a0bfce670274c2a6a91ed39fb1878aa999545320734fb15b4f49c1a17f6ba",
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><area><base><br><col><embed><hr><img><input><link><meta><param><source><track><wbr></div>`)\n}",
+      "codeSha256": "8a8a0bfce670274c2a6a91ed39fb1878aa999545320734fb15b4f49c1a17f6ba",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSsr.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "<div><area><base><br><col><embed><hr><img><input><link><meta><param><source><track><wbr></div>"
+        ]
+      },
+      "referenceMapSha256": "71b72b6bffc216418507a63256dd0027ae7d2798d2a47c3d378e2c11d3eed789"
+    }
+  ]
+}

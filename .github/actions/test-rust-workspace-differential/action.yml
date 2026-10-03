@@ -40,6 +40,15 @@ runs:
     - name: Test native Program and Vue navigation responses
       uses: ./.github/actions/test-native-navigation
       env: { VIZE_TEST_REQUIRE_TSGO: "1" }
+    - name: Test fresh native SSR modules with pinned Vue runtime
+      shell: bash
+      env:
+        VIZE_L4_SSR_NATIVE_CAPTURE: ${{ runner.temp }}/native-ssr-modules.json
+        VIZE_L4_SSR_RUNTIME_CAPTURE: ${{ runner.temp }}/native-ssr-runtime.json
+        VIZE_L4_SSR_REQUIRE_NATIVE: "1"
+      run: |
+        cargo test --locked -p vize_l4 --test native_ssr -- --nocapture
+        vp node --test tests/tooling/l4-native-ssr-reference.test.ts
     - name: Test Rust workspace
       if: ${{ inputs.workspace-already-tested != 'true' }}
       shell: bash
