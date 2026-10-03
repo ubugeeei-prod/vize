@@ -3,7 +3,7 @@
 use super::{ProgramInput, Walk};
 use crate::file::build::Facts;
 use crate::file::{FileIssueKind, Namespace, Reference, ReferenceTarget, ScopeId, ScriptUnitId};
-use crate::lang::js::file::observer::{CallEvent, FileObserver, InvocationEvent};
+use crate::lang::js::file::observer::{CallEvent, FileObserver, InvocationEvent, SyntaxEvent};
 use crate::resolution::sink::{ReferenceEvent, ReferenceSink};
 use crate::resolution::{ResolutionError, ResolutionErrorKind};
 use oxc_ast::ast::{CallExpression, Expression, ModuleExportName};
@@ -23,6 +23,27 @@ impl<'a, O: FileObserver<'a>> ReferenceSink<'a> for Pending<'_, '_, 'a, O> {
 
     fn checkpoint(&self) -> Self::Checkpoint {
         (self.facts.references.len(), self.observer.checkpoint())
+    }
+
+    fn observe_syntax(
+        &mut self,
+        kind: crate::resolution::SyntaxKind<'a>,
+        edge: crate::resolution::SyntaxEdge,
+        span: Span,
+    ) -> Result<(), ResolutionErrorKind> {
+        let span = self
+            .input
+            .references
+            .authored_span(span)
+            .ok_or(ResolutionErrorKind::InvalidSpan)?;
+        self.observer.syntax(SyntaxEvent {
+            unit: self.unit,
+            scope: self.scope,
+            span,
+            kind,
+            edge,
+            reference_boundary: self.facts.references.len(),
+        })
     }
 
     fn reference(&mut self, event: ReferenceEvent<'a>) -> Result<(), ResolutionErrorKind> {

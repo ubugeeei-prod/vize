@@ -11,6 +11,8 @@ use vize_l0::Span;
 use crate::expr::JsExpr;
 
 pub(crate) mod sink;
+mod syntax;
+pub use syntax::{SyntaxEdge, SyntaxKind};
 pub(crate) mod source;
 mod walk;
 

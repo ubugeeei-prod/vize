@@ -8,10 +8,13 @@ use crate::expr::JsExpr;
 
 mod compound;
 mod jsx;
+#[cfg(test)]
+mod syntax_tests;
 
 use super::sink::{ReferenceEvent, ReferenceSink};
 use super::source::ReferenceSource;
 use super::{ResolutionError, ResolutionErrorKind, Usage};
+use super::{SyntaxEdge, SyntaxKind};
 
 pub(super) fn expression<'a>(
     expression: &JsExpr<'a>,
@@ -132,8 +135,11 @@ impl<'a, 'b, S: ReferenceSink<'a>> Resolver<'a, 'b, S> {
         depth: usize,
     ) -> Result<(), ResolutionError> {
         self.visit(expression.span(), depth)?;
+        if self.source.allows_jsx() {
+            self.syntax(SyntaxKind::Expression, SyntaxEdge::Enter, expression.span())?;
+        }
         let next = depth + 1;
-        match expression {
+        let result = match expression {
             Expression::Identifier(identifier) => self.identifier(identifier, Usage::Read, false),
             Expression::JSXElement(value) => self.jsx_element(value, next),
             Expression::JSXFragment(value) => self.jsx_fragment(value, next),
@@ -237,7 +243,27 @@ impl<'a, 'b, S: ReferenceSink<'a>> Resolver<'a, 'b, S> {
                 self.target(&value.argument, Usage::ReadWrite, next)
             }
             other => Err(self.fail(other.span(), ResolutionErrorKind::UnsupportedSyntax)),
+        };
+        result?;
+        if self.source.allows_jsx() {
+            self.syntax(SyntaxKind::Expression, SyntaxEdge::Leave, expression.span())?;
         }
+        Ok(())
+    }
+
+    fn syntax(
+        &mut self,
+        kind: SyntaxKind<'a>,
+        edge: SyntaxEdge,
+        ast_span: oxc_span::Span,
+    ) -> Result<(), ResolutionError> {
+        let span = self
+            .source
+            .span(ast_span)
+            .ok_or_else(|| self.fail(ast_span, ResolutionErrorKind::InvalidSpan))?;
+        self.sink
+            .observe_syntax(kind, edge, span)
+            .map_err(|kind| self.fail(ast_span, kind))
     }
 
     fn invocation(&mut self, expression: &Expression<'a>) -> Result<(), ResolutionError> {

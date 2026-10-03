@@ -22,8 +22,8 @@ _None._
 | -------------------- | -------: | ---: |
 | `Scope`              |        0 |   12 |
 | `ScopeBinding`       |        0 |   12 |
-| `ScopeId`            |        0 |   42 |
-| `Span`               |        0 |  487 |
+| `ScopeId`            |        0 |   46 |
+| `Span`               |        0 |  496 |
 | `Croquis.bindings`   |        1 |   34 |
 | `Croquis.reactivity` |        0 |    1 |
 | `Croquis.scopes`     |        0 |   21 |

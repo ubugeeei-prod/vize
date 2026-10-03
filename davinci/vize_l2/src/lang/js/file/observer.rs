@@ -2,6 +2,7 @@
 
 use crate::file::{Declaration, ScopeId, ScriptUnit, ScriptUnitId};
 use crate::resolution::ResolutionErrorKind;
+use crate::resolution::{SyntaxEdge, SyntaxKind};
 use oxc_ast::ast::{CallExpression, Expression, Statement};
 use vize_l0::Span;
 
@@ -31,6 +32,17 @@ pub struct InvocationEvent<'s, 'a> {
     pub expression: &'s Expression<'a>,
 }
 
+/// Checked original-walk structure and the real pending reference boundary.
+/// This event grants no owner construction or semantic insertion capability.
+pub struct SyntaxEvent<'a> {
+    pub unit: ScriptUnitId,
+    pub scope: ScopeId,
+    pub span: Span,
+    pub kind: SyntaxKind<'a>,
+    pub edge: SyntaxEdge,
+    pub reference_boundary: usize,
+}
+
 /// Diagnostic observation grants no native file admission or insertion capability.
 pub trait FileObserver<'a> {
     type Checkpoint;
@@ -40,6 +52,9 @@ pub trait FileObserver<'a> {
     fn checkpoint(&self) -> Self::Checkpoint;
     fn call(&mut self, event: CallEvent<'_, 'a>) -> Result<(), ResolutionErrorKind>;
     fn invocation(&mut self, _: InvocationEvent<'_, 'a>) -> Result<(), ResolutionErrorKind> {
+        Ok(())
+    }
+    fn syntax(&mut self, _: SyntaxEvent<'a>) -> Result<(), ResolutionErrorKind> {
         Ok(())
     }
     fn rollback(&mut self, checkpoint: Self::Checkpoint);
