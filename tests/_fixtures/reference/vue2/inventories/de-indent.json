@@ -1,0 +1,30 @@
+{
+  "name": "de-indent",
+  "version": "1.0.2",
+  "files": [
+    {
+      "path": "package/package.json",
+      "bytes": 542,
+      "sha256": "e490e1a063542f059140b60012beabf7f7b66c2404fae59f8d8c58f1bcf1208f",
+      "gitBlobSha1": "4c97e522e7697a832653d252e546800a545f80bb"
+    },
+    {
+      "path": "package/.npmignore",
+      "bytes": 23,
+      "sha256": "3f4f172d3ad42d8c5678ad58211562d0d95ee9e897f579e139076d4ba7548b71",
+      "gitBlobSha1": "fd4f2b066b339e4fd5c0efd44938231a398e9a81"
+    },
+    {
+      "path": "package/index.js",
+      "bytes": 896,
+      "sha256": "6cfabc60c7a069b9ca720c15be6a33a05c7913655c837102e9f10c10c81880db",
+      "gitBlobSha1": "87123e8fa00f8f5bc4a5f1da56de09820f447aa3"
+    },
+    {
+      "path": "package/test.js",
+      "bytes": 736,
+      "sha256": "2357a7a92bb379c0c23eff0fb8d27e0518b14b251c6d4995a7f77872ce3ddfe9",
+      "gitBlobSha1": "68b6036ce385f529a6cd2a61fd648c0b096bba86"
+    }
+  ]
+}

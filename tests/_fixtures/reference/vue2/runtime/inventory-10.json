@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "package": "vue",
+  "version": "2.7.16",
+  "index": 10,
+  "start": 216,
+  "count": 12,
+  "files": [
+    {
+      "path": "package/types/v3-directive.d.ts",
+      "bytes": 850,
+      "sha256": "680a3007565a1d785ba3a7711dda7eda3f3a6c82bc79c04ea6005b57fd5d68e5",
+      "gitBlobSha1": "f6b091f80e98d38ed4354da6bbc545339a064963"
+    },
+    {
+      "path": "package/types/v3-generated.d.ts",
+      "bytes": 15839,
+      "sha256": "a946d43895482291ec5cb34a07c1c65ee601263ff5e26053263c0b171057c7fc",
+      "gitBlobSha1": "c7a68b060be91609e84b1646d1ddd03d1681da8c"
+    },
+    {
+      "path": "package/types/v3-manual-apis.d.ts",
+      "bytes": 344,
+      "sha256": "47e03a25122f95a5d9af9461b521b079ad48acfab4ddd979071eb013f6ceb32c",
+      "gitBlobSha1": "8636c11d6b2bda420dd2817c4e7eda90e0dcefc5"
+    },
+    {
+      "path": "package/types/v3-setup-context.d.ts",
+      "bytes": 1270,
+      "sha256": "03fe1289f9b1ffcf0950aa06a370badc11b3e6a793308d2bee811955fe79df12",
+      "gitBlobSha1": "77b49bed8a6d486d1550c26ba5870fada70a540e"
+    },
+    {
+      "path": "package/types/v3-setup-helpers.d.ts",
+      "bytes": 4246,
+      "sha256": "a3970021befe3a68b5f0b076e6887db8b84ae0fa5332781cd8e35d8d3ef917a0",
+      "gitBlobSha1": "165605ee51b956b660cf7f1a0764305027d78654"
+    },
+    {
+      "path": "package/types/vnode.d.ts",
+      "bytes": 2780,
+      "sha256": "41a04f7afd58b9696cafd248a775524fa633aa47424c13c08922e029bd8fb03c",
+      "gitBlobSha1": "533e61f169b692d2c263ea26c902ad7c4bdb8028"
+    },
+    {
+      "path": "package/src/core/vdom/vnode.ts",
+      "bytes": 3617,
+      "sha256": "f711a5f23d9fd231a83df558ba6800197bf114034fe13b6ea3c37e9fd8a5e5dd",
+      "gitBlobSha1": "3b57f9aca0ce789c28567a2a97874b76506ef96a"
+    },
+    {
+      "path": "package/src/types/vnode.ts",
+      "bytes": 2667,
+      "sha256": "556815fca8b6122ad953246ee2757a2b827e66279126fea6b4052577bfe66b62",
+      "gitBlobSha1": "cbe8f0aa98fc21b1008f2c1aea9a37513b7a165a"
+    },
+    {
+      "path": "package/types/vue.d.ts",
+      "bytes": 10910,
+      "sha256": "f0e647e9f289a4acff1b3b4212ecc2ed2182df93bc2fdbc09f9ecc0c55b28804",
+      "gitBlobSha1": "f158cf017164fc8e78e000260f2870e1cb48234a"
+    },
+    {
+      "path": "package/packages/compiler-sfc/src/warn.ts",
+      "bytes": 401,
+      "sha256": "fe5620cdee339cbf43dafe887c06a3f38448b422fe13ebba42d7bdbe515dc6c7",
+      "gitBlobSha1": "e4b698dc4f511d2ec90db9c9dc20436d2232e6d2"
+    },
+    {
+      "path": "package/src/core/observer/watcher.ts",
+      "bytes": 6315,
+      "sha256": "f4c64dd7c33e4009f99edbfaa829f2ea44a47cd84563085ba69c08daeea24a2c",
+      "gitBlobSha1": "b2989b537721a833086d1f7013e16e54f9bb81b9"
+    },
+    {
+      "path": "package/package.json",
+      "bytes": 4536,
+      "sha256": "6e1a69987f7a1938e56b35f8fbddb10594708b520d3189dea536b5ecf8e63ad1",
+      "gitBlobSha1": "f12616a53720305d815fffc69458c3a3e0545fa5"
+    }
+  ]
+}

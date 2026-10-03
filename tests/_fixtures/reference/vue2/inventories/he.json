@@ -1,0 +1,42 @@
+{
+  "name": "he",
+  "version": "1.2.0",
+  "files": [
+    {
+      "path": "package/package.json",
+      "bytes": 1224,
+      "sha256": "3a776250efb03ffc16e87c251bddf5e0d82fca990059dc7f277a1e99a169b723",
+      "gitBlobSha1": "76eff317843f29ebbb24ed97b58f8173fce768bd"
+    },
+    {
+      "path": "package/he.js",
+      "bytes": 100899,
+      "sha256": "76c554d5bbfd032fe620595076a50abea5124b9cbd4e9ffe6ac94a4f855aeceb",
+      "gitBlobSha1": "14a58e9d6f192208ccdfe78da011f320da5aac54"
+    },
+    {
+      "path": "package/LICENSE-MIT.txt",
+      "bytes": 1077,
+      "sha256": "483acb265f182907d1caf6cff9c16c96f31325ed23792832cc5d8b12d5f88c8a",
+      "gitBlobSha1": "a41e0a7ef970ecdd83d82cd99bda97b22077bc62"
+    },
+    {
+      "path": "package/README.md",
+      "bytes": 14210,
+      "sha256": "03acb657befd1a86a6c0e8abde0b9ecc2b8111a7c3c17fa53a89ba19098fb5be",
+      "gitBlobSha1": "b2223a91f09dfb73e01531cc1b2e42701f03b7ca"
+    },
+    {
+      "path": "package/bin/he",
+      "bytes": 3626,
+      "sha256": "57128dfa85fab42a54122b672e0da36d63aed26ac96a51a2d307602252173df7",
+      "gitBlobSha1": "cfdfd6c31aaa09f26d7493680c5bfbd45f6e4384"
+    },
+    {
+      "path": "package/man/he.1",
+      "bytes": 3102,
+      "sha256": "77a135caf31be7c275135792c8a9bbd4dcf47371ee52aa71ffe2c49ad0de8789",
+      "gitBlobSha1": "7696628a3b57932d2b0c6be54163ff0da4ea9e27"
+    }
+  ]
+}

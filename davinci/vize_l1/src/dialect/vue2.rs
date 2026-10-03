@@ -1,5 +1,8 @@
 //! Vue 2 template capability table.
 
+pub mod surface;
+pub mod text;
+
 use super::vue::{DirectiveArgStyle, LegacyDialectCapabilities};
 
 /// Existing V2 template syntax, resolved once per file.
