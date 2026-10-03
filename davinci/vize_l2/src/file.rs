@@ -15,7 +15,9 @@ pub use region::{
     TemplateBody, TemplateChildRegion, TemplatePolicy, TemplateRegion, TemplateScope,
     TemplateWalkRegion,
 };
+mod query;
 mod records;
+pub use query::{PositionQueryError, ReferenceRef, ScopeRef};
 mod template;
 pub(crate) use records::ProgramOrigin;
 pub mod vue;
