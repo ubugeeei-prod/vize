@@ -12,7 +12,7 @@ pub(super) fn check(
     element: &NativeElement<'_, '_>,
     messages: &impl MessageLookup,
 ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
-    let range = header::ranges(element)?.authored;
+    let range = header::opening_range(element)?;
     let mut has_title = false;
     for original in element.attributes() {
         has_title |= match header::binding(element, &original)? {

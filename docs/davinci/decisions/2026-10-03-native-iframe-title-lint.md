@@ -37,8 +37,8 @@ Typed static `:title`, `.title` and `v-bind:title` arguments, including their
 original modifiers, satisfy title presence while keeping values opaque. Event
 and model bindings, differently cased names and `data-title` do not satisfy it.
 An admitted iframe without title returns a finished L0 Surface advisory Warning
-and full catalog Help over the entire original element range, including its
-closing tag. There are no secondary labels or fixes. The caller supplies the
+and full catalog Help over the original opening-tag span, including when an
+authentic closing tag is present and validated. There are no secondary labels or fixes. The caller supplies the
 actual L0 MessageLookup; diagnostic text is owned after the source arena drops.
 
 ## Validation and delivery
@@ -65,3 +65,18 @@ added. Source gates and authored laws alone do not establish hosted acceptance.
 Other syntax rules, unresolved dynamic/object admission, every Vue dialect,
 semantic linting on L2/facts, autofix span edits, complete linter fix-history,
 default route replacement and complete native Patina remain unfinished.
+
+The first PR Rust execution at `a01f2249` found two real full-diagnostic range
+mismatches in the unchanged closed-iframe fixtures. Native ended at byte 61
+versus the actual registered facade's byte 44; the nested Unicode iframe ended
+at 143 versus 130. Message, full Help, severity and starts matched. Eight new
+iframe laws and the original image-alt laws passed; these two retained failures
+are not whole integration acceptance. Whole production Clippy passed in the
+separate existing full Check.
+
+The native warning now uses the authentic opening `>` boundary while retaining
+all closing-token source checks. The original fixture bytes, catalog, legacy
+oracle and complete diagnostic equality assertions remain unchanged. The two
+supplementary native-only end expectations now assert the observed exact
+opening boundary. Original authenticated job logs remain retained. Fresh head
+Actions and protected full validation remain required.

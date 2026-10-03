@@ -12,7 +12,7 @@ fn complete_warning_help_and_closed_element_range_match_all_locales() {
         assert_eq!(output.len(), 1);
         assert_eq!(output[0]["rule_name"], "a11y/iframe-has-title");
         assert_eq!(output[0]["start"], 10);
-        assert_eq!(output[0]["end"], 10 + element.len());
+        assert_eq!(output[0]["end"], 10 + element.find('>').unwrap() + 1);
         assert_eq!(output[0]["severity"], "warning");
         assert_eq!(output[0]["labels"], serde_json::json!([]));
         assert_eq!(output[0]["fix"], serde_json::Value::Null);
@@ -122,7 +122,7 @@ fn nested_selected_elements_keep_full_absolute_unicode_spans() {
         .zip([first, second])
     {
         assert_eq!(finding["start"], start);
-        assert_eq!(finding["end"], start + element.len());
+        assert_eq!(finding["end"], start + element.find('>').unwrap() + 1);
     }
 }
 

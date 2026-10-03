@@ -9,7 +9,7 @@ pub(super) fn check(
     element: &NativeElement<'_, '_>,
     messages: &impl MessageLookup,
 ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
-    let range = header::ranges(element)?.opening;
+    let range = header::opening_range(element)?;
     let mut has_alt = false;
     for original in element.attributes() {
         has_alt |= match header::binding(element, &original)? {

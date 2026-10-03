@@ -9,12 +9,7 @@ use vize_l1::{
 
 use super::{NativeLintRefusal, attribute};
 
-pub(super) struct Ranges {
-    pub authored: Span,
-    pub opening: Span,
-}
-
-pub(super) fn ranges(element: &NativeElement<'_, '_>) -> Result<Ranges, NativeLintRefusal> {
+pub(super) fn opening_range(element: &NativeElement<'_, '_>) -> Result<Span, NativeLintRefusal> {
     let block = element.component().block();
     let surface = element.surface();
     attribute::token(block, &surface.open.lt_name)?;
@@ -37,7 +32,7 @@ pub(super) fn ranges(element: &NativeElement<'_, '_>) -> Result<Ranges, NativeLi
     if !block.contains_block_span(authored) {
         return Err(NativeLintRefusal::SourceMismatch);
     }
-    Ok(Ranges { authored, opening })
+    Ok(opening)
 }
 
 pub(super) enum Binding<'a> {
