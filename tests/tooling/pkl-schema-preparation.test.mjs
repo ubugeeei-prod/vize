@@ -22,7 +22,7 @@ const timeout = {
   stderr: "Exception when making request GET https://pkg.pkl-lang.org: request timed out",
 };
 
-test("the committed Pkl packages retain full versions and metadata checksums", () => {
+void test("the committed Pkl packages retain full versions and metadata checksums", () => {
   const packages = pinnedPklPackages(lock);
   assert.equal(packages.length, 2);
   for (const [key, dependency] of Object.entries(lock.resolvedDependencies)) {
@@ -47,7 +47,7 @@ test("the committed Pkl packages retain full versions and metadata checksums", (
   assert.throws(() => pinnedPklPackages({ schemaVersion: 1, resolvedDependencies: {} }), /empty/);
 });
 
-test("only the actual config-generation worker prepares Pkl, after validating the whole plan", () => {
+void test("only the actual config-generation worker prepares Pkl, after validating the whole plan", () => {
   const available = toolingTestFiles();
   const plan = planToolingTests(["README.md"], { tier: "merge" });
   const selected = toolingShardMatrix(plan).include.filter(({ index, total }) =>
@@ -65,7 +65,7 @@ test("only the actual config-generation worker prepares Pkl, after validating th
   );
 });
 
-test("Pkl preparation checks both the installed package and actual native CLI version", () => {
+void test("Pkl preparation checks both the installed package and actual native CLI version", () => {
   const manifest = { name: "@pkl-community/pkl", version: "0.30.2" };
   const run = (args, limit) => {
     assert.deepEqual(args, ["--version"]);
@@ -86,7 +86,7 @@ test("Pkl preparation checks both the installed package and actual native CLI ve
   }
 });
 
-test("locked downloads retry timeouts within a fixed bound while semantic and checksum errors remain fatal", () => {
+void test("locked downloads retry timeouts within a fixed bound while semantic and checksum errors remain fatal", () => {
   const packages = pinnedPklPackages(lock);
   const calls = [];
   downloadPklPackages(packages, "/fresh/cache", (args, limit) => {
