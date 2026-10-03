@@ -20,6 +20,13 @@ and unsafe comment is retained as an exact node/span typed refusal. Class,
 style, value, true/false-value and reserved props remain refused pending actual normalization
 semantics. L4 owns complete escaping and runtime spelling.
 
+The neutral HTML vocabulary retains `search`, while pinned Vue 3.5.35 resolves
+it as a component. The same SSR Element event therefore records an exact
+`ElementSemantics` refusal without changing neutral L2 structure, numbering or
+owner custody. Genuine original selected root/nested SFC laws preserve their
+HTML carriers and reject the whole SSR writer. This bounded known-role refusal
+does not provide complete Vue component/custom-element classification.
+
 `NativeSsrFileAnalysis` has private fields and derives its only artifact from
 one genuinely complete immutable `FileArtifact`; interrupted or erroneous files
 fail before walking. Its retained owner cannot be dropped or replaced. This is

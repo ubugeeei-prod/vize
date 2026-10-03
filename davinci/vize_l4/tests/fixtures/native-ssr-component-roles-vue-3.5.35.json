@@ -1,0 +1,63 @@
+{
+  "schema": "vize.native-ssr-component-role-reference",
+  "version": 1,
+  "compiler": {
+    "name": "@vue/compiler-ssr",
+    "version": "3.5.35"
+  },
+  "options": {
+    "mode": "module",
+    "comments": true,
+    "ssrRuntimeModuleName": "@vue/server-renderer",
+    "filename": "NativeSsrRole.vue",
+    "sourceMap": true
+  },
+  "fixtures": [
+    {
+      "id": "search-root",
+      "node": 0,
+      "source": "<template><search/></template>",
+      "template": "<search/>",
+      "templateSha256": "928623b5811f603fef2a63358b42b5c810574729ffbcaa36ff4977a9bc732385",
+      "referenceCode": "import { resolveComponent as _resolveComponent } from \"vue\"\nimport { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  const _component_search = _resolveComponent(\"search\")\n\n  _push(_ssrRenderComponent(_component_search, _attrs, null, _parent))\n}",
+      "referenceCodeSha256": "49d137f3a2133d885ab1748a6780aa0ecc971a614fc1cbe13fa1087c1b37990e",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSsrRole.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["<search/>"]
+      },
+      "referenceMapSha256": "92e20073d100d1636b807157eb78244372bc379a7c0409b64ade11915371b05e",
+      "unregisteredHtml": "<!---->",
+      "registeredHtml": "<strong>resolved</strong>",
+      "warnings": [
+        "Failed to resolve component: search\nIf this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.",
+        "Component <Anonymous> is missing template or render function."
+      ]
+    },
+    {
+      "id": "search-nested",
+      "node": 1,
+      "source": "<template><div><search/></div></template>",
+      "template": "<div><search/></div>",
+      "templateSha256": "a661f9782a783dd0364b98b656b7032ca6281d8e68499b0f21abc501566ba80a",
+      "referenceCode": "import { resolveComponent as _resolveComponent } from \"vue\"\nimport { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs) {\n  const _component_search = _resolveComponent(\"search\")\n\n  _push(`<div${_ssrRenderAttrs(_attrs)}>`)\n  _push(_ssrRenderComponent(_component_search, null, null, _parent))\n  _push(`</div>`)\n}",
+      "referenceCodeSha256": "ceb404a679a7d2b2698cb5ecd40ea6ae769fcc81a263cc23528ed57679fb6e90",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["NativeSsrRole.vue"],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": ["<div><search/></div>"]
+      },
+      "referenceMapSha256": "c16a15f8b59310673e1f1337bf9c3c052040546afeb4a8ffb43720186950a8fe",
+      "unregisteredHtml": "<div><!----></div>",
+      "registeredHtml": "<div><strong>resolved</strong></div>",
+      "warnings": [
+        "Failed to resolve component: search\nIf this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.",
+        "Component <Anonymous> is missing template or render function."
+      ]
+    }
+  ]
+}

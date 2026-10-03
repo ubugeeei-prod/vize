@@ -93,7 +93,7 @@ impl<'owner, 'arena> SsrBuilder<'owner, 'arena> {
         }
         if matches!(
             element.tag,
-            "script" | "style" | "textarea" | "template" | "slot" | "pre"
+            "script" | "style" | "textarea" | "template" | "slot" | "pre" | "search"
         ) {
             self.reject(node, element.span, SsrUnsupported::ElementSemantics);
         }

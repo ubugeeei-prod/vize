@@ -11,7 +11,7 @@ runs:
         VIZE_L4_SSR_RUNTIME_CAPTURE: ${{ runner.temp }}/native-ssr-runtime.json
         VIZE_L4_SSR_REQUIRE_NATIVE: "1"
       run: |
-        cargo test --locked --profile ci -p vize_l4 --test native_ssr -- --nocapture
+        cargo test --locked --profile ci -p vize_l4 --test native_ssr --test native_ssr_roles -- --nocapture
         vp node --test tests/tooling/l4-native-ssr-reference.test.ts
     - name: Preserve fresh SSR modules and actual runtime outcomes
       if: ${{ always() && steps.native-ssr.outcome != 'skipped' }}
@@ -20,6 +20,7 @@ runs:
         name: native-ssr-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
         path: |
           ${{ runner.temp }}/native-ssr-modules.json
+          ${{ runner.temp }}/native-ssr-modules.json.refusals.json
           ${{ runner.temp }}/native-ssr-runtime.json
         if-no-files-found: error
         retention-days: 14

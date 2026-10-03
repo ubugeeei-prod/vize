@@ -56,6 +56,16 @@ unauthorized static expression read. The regular tooling suite separately
 rechecks immutable upstream references, and marks absent native captures as
 explicitly skipped rather than fresh native credit.
 
+Original selected root/nested `search` SFCs keep genuine neutral HTML structure
+but return the provider's exact Vue-role node/span refusal, with no writer. A separate
+pinned complete-module/map reference proves real component resolution: missing
+registration produces the exact warning/comment output, and registered `search`
+produces the resolved component. The same action now requires these original
+selected-file refusal captures and saves them as a third JSON artifact file;
+all four Rust and fifteen Node laws must pass. The immutable eleven positive
+references remain unchanged. Negative original SFC custody does not grant
+positive complete SFC SSR admission or a general Vue role provider.
+
 This usable bounded body removes only the SSR skeleton and lowers L4's ratchet
 from two modules to one. The provider and target form a native GitHub Stack;
 exact-head hosted/full checks and the protected queue must reach actual merge.

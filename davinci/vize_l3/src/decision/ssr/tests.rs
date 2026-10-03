@@ -102,6 +102,7 @@ fn unsafe_comments_raw_text_namespaces_and_void_children_are_typed_refusals() {
     );
     for (tag, namespace, expected) in [
         ("script", Namespace::Html, SsrUnsupported::ElementSemantics),
+        ("search", Namespace::Html, SsrUnsupported::ElementSemantics),
         ("svg", Namespace::Svg, SsrUnsupported::Namespace),
         ("IMG", Namespace::Html, SsrUnsupported::ElementName),
     ] {

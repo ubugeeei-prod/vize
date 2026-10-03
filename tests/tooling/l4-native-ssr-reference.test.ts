@@ -27,8 +27,8 @@ const runtimeUrl = (specifier: string, names: string[]) =>
     `import runtime from ${JSON.stringify(pathToFileURL(fromVue.resolve(specifier)).href)};\n` +
       names.map((name) => `export const ${name} = runtime.${name};`).join("\n"),
   );
-const server = runtimeUrl("@vue/server-renderer", ["ssrRenderAttrs"]);
-const vue = runtimeUrl("vue", ["mergeProps"]);
+const server = runtimeUrl("@vue/server-renderer", ["ssrRenderAttrs", "ssrRenderComponent"]);
+const vue = runtimeUrl("vue", ["mergeProps", "resolveComponent"]);
 
 function groupedImports(code: string) {
   const imports = code.split("\n").filter((line) => line.startsWith("import "));
@@ -235,5 +235,110 @@ test(
           2,
         ) + "\n",
       );
+  },
+);
+
+const roles = JSON.parse(
+  fs.readFileSync(
+    new URL(
+      "../../davinci/vize_l4/tests/fixtures/native-ssr-component-roles-vue-3.5.35.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+);
+const roleRuntime: any[] = [];
+test("complete pinned search modules resolve Vue components with actual SSR outcomes", async () => {
+  assert.equal(roles.schema, "vize.native-ssr-component-role-reference");
+  assert.equal(roles.version, 1);
+  assert.equal(roles.compiler.name, "@vue/compiler-ssr");
+  assert.equal(roles.compiler.version, "3.5.35");
+  assert.deepEqual(roles.options, { ...pack.options, filename: "NativeSsrRole.vue" });
+  assert.equal(roles.fixtures.length, 2);
+  const core = fromVue("vue");
+  const renderer = fromVue("@vue/server-renderer");
+  for (const fixture of roles.fixtures) {
+    assert.equal(hash(fixture.template), fixture.templateSha256);
+    assert.equal(hash(fixture.referenceCode), fixture.referenceCodeSha256);
+    assert.equal(hash(JSON.stringify(fixture.referenceMap)), fixture.referenceMapSha256);
+    const measured = compiler.compile(fixture.template, roles.options);
+    assert.equal(measured.code, fixture.referenceCode);
+    assert.deepEqual(measured.map, fixture.referenceMap);
+    const loaded = await import(
+      url(
+        fixture.referenceCode
+          .replace('from "@vue/server-renderer"', `from ${JSON.stringify(server)}`)
+          .replace('from "vue"', `from ${JSON.stringify(vue)}`),
+      )
+    );
+    const warnings: string[] = [];
+    const previousWarn = console.warn;
+    let unregistered: string, registered: string;
+    console.warn = (...args: unknown[]) => {
+      warnings.push(args.map(String).join(" "));
+    };
+    try {
+      const app = core.createSSRApp({ ssrRender: loaded.ssrRender });
+      app.config.warnHandler = (message: string) => warnings.push(message);
+      unregistered = await renderer.renderToString(app);
+      registered = await renderer.renderToString(
+        core.createSSRApp({
+          components: {
+            search: {
+              ssrRender(_ctx: unknown, push: (text: string) => void) {
+                push("<strong>resolved</strong>");
+              },
+            },
+          },
+          ssrRender: loaded.ssrRender,
+        }),
+      );
+    } finally {
+      console.warn = previousWarn;
+    }
+    assert.equal(unregistered, fixture.unregisteredHtml);
+    assert.equal(registered, fixture.registeredHtml);
+    assert.deepEqual(warnings, fixture.warnings);
+    roleRuntime.push({
+      id: fixture.id,
+      referenceCodeSha256: fixture.referenceCodeSha256,
+      unregistered,
+      registered,
+      warnings,
+    });
+  }
+});
+
+test(
+  "fresh original selected search views preserve neutral HTML but refuse Vue SSR",
+  { skip: !capturePath && !requireNative },
+  () => {
+    assert(capturePath, "hosted SSR requires its fresh original selected role refusals");
+    const captures = JSON.parse(fs.readFileSync(`${capturePath}.refusals.json`, "utf8"));
+    assert.equal(captures.length, 2);
+    assert.equal(roleRuntime.length, 2);
+    for (const [index, fixture] of roles.fixtures.entries()) {
+      const capture = captures[index];
+      assert.equal(capture.id, fixture.id);
+      assert.equal(capture.source, fixture.source);
+      assert.equal(capture.template, fixture.template);
+      assert.equal(capture.outcome, "component_role_refusal");
+      assert.equal(capture.reason, "ElementSemantics");
+      assert.equal(capture.node, fixture.node);
+      assert.equal(
+        Buffer.from(capture.source).subarray(capture.span.start, capture.span.end).toString(),
+        "<search/>",
+      );
+    }
+    if (process.env.VIZE_L4_SSR_RUNTIME_CAPTURE) {
+      const runtime = JSON.parse(fs.readFileSync(process.env.VIZE_L4_SSR_RUNTIME_CAPTURE, "utf8"));
+      runtime.componentRoleRefusals = captures;
+      runtime.componentRoleReferenceExecutions = 4;
+      runtime.componentRoleRuntime = roleRuntime;
+      fs.writeFileSync(
+        process.env.VIZE_L4_SSR_RUNTIME_CAPTURE,
+        JSON.stringify(runtime, null, 2) + "\n",
+      );
+    }
   },
 );
