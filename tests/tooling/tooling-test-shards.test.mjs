@@ -84,7 +84,7 @@ void test("an empty selection does not invoke Node's implicit test discovery", (
       ["tools/support/compat/github/run-tooling-tests.mjs", file],
       {
         encoding: "utf8",
-        env: { ...process.env, VIZE_TOOLING_TEST_SHARD: "1/1" },
+        env: { ...process.env, VIZE_TOOLING_TEST_TIER: "pr", VIZE_TOOLING_TEST_SHARD: "1/1" },
       },
     );
     assert.equal(result.status, 0, result.stderr);
