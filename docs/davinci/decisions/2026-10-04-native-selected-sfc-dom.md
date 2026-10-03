@@ -41,7 +41,11 @@ components with Vue's real custom-host renderer: mount, forced update,
 uncached handler replacement, all event mutations and unmount. These are custom
 host laws, not browser-DOM proof. Source-map anchors are independently checked
 against the complete original SFC, including named `$event` and encoded atoms;
-native maps are not claimed byte-equal to official raw render maps.
+native maps are not claimed byte-equal to official raw render maps. The loader
+changes only actual Babel Vue ImportDeclaration source-literal ranges, leaving
+authored strings/comments untouched; an encoded import-shaped body control
+passes the independent reference-assembly preflight. This is not native
+acceptance before real hosted Rust capture and frozen equality.
 
 The first draft awaits actual hosted Rust capture. Native map fields are null
 until copied from that real source-built artifact; missing mandatory capture
