@@ -78,9 +78,9 @@ impl<'a> TransformContext<'a> {
     pub(crate) fn element_template(&self, el: &ElementNode<'_>) -> EmitDocument {
         let scope_id = self.scope_id.as_deref();
         if self.template_spans.is_some() {
-            super::element::template::generate_element_template_spanned(el, scope_id)
+            super::element::template::generate_element_template_spanned(el, scope_id, self.source)
         } else {
-            super::element::template::generate_element_template(el, scope_id).into()
+            super::element::template::generate_element_template(el, scope_id, self.source).into()
         }
     }
 

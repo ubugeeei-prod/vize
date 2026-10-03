@@ -26,7 +26,6 @@ oxc_parser = { workspace = true }
 oxc_span = { workspace = true }
 oxc_syntax = { workspace = true }
 
-memchr = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
 

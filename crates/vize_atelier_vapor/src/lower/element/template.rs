@@ -10,9 +10,13 @@ use vize_carton::ensure_sufficient_stack;
 
 /// Generate element template string (recursively includes static children)
 #[inline(always)]
-pub(crate) fn generate_element_template(el: &ElementNode<'_>, scope_id: Option<&str>) -> String {
+pub(crate) fn generate_element_template(
+    el: &ElementNode<'_>,
+    scope_id: Option<&str>,
+    source: &str,
+) -> String {
     let mut template = EmitDocument::new(false);
-    write_element_template(&mut template, el, scope_id);
+    write_element_template(&mut template, el, scope_id, source);
     template.into_string()
 }
 
@@ -21,9 +25,10 @@ pub(crate) fn generate_element_template(el: &ElementNode<'_>, scope_id: Option<&
 pub(crate) fn generate_element_template_spanned(
     el: &ElementNode<'_>,
     scope_id: Option<&str>,
+    source: &str,
 ) -> EmitDocument {
     let mut template = EmitDocument::default();
-    write_element_template(&mut template, el, scope_id);
+    write_element_template(&mut template, el, scope_id, source);
     template
 }
 
@@ -31,6 +36,7 @@ fn write_element_template(
     template: &mut EmitDocument,
     el: &ElementNode<'_>,
     scope_id: Option<&str>,
+    source: &str,
 ) {
     template.push_str("<");
     let tag_start = el.loc.span.start + 1;
@@ -43,40 +49,6 @@ fn write_element_template(
         template.push_str(scope_id);
     }
 
-    if !el.props.is_empty() {
-        write_static_attributes(template, el);
-    }
-
-    if is_void_element(el.tag) {
-        template.push_str(">");
-    } else if el.is_self_closing {
-        template.push_str("></");
-        template.push_str(el.tag);
-        template.push_str(">");
-    } else {
-        template.push_str(">");
-
-        // Recursively add template-backed children. `<template>` is a
-        // transparent wrapper in Vapor just as it is in the main element
-        // dispatcher, so its children contribute directly to the enclosing
-        // element's static template instead of producing a component lookup.
-        let placeholders = super::insertion::block_placeholders(&el.children);
-        append_child_templates(
-            template,
-            &el.children,
-            scope_id,
-            &mut placeholders.into_iter(),
-        );
-
-        template.push_str("</");
-        template.push_str(el.tag);
-        template.push_str(">");
-    }
-}
-
-// Keep the recursive template walk small; empty-prop elements skip attribute work.
-#[inline(never)]
-fn write_static_attributes(template: &mut EmitDocument, el: &ElementNode<'_>) {
     // Collect dynamic binding names to skip their static counterparts
     let mut has_static_attr = false;
     let dynamic_attrs: vize_carton::FxHashSet<&str> = el
@@ -111,10 +83,13 @@ fn write_static_attributes(template: &mut EmitDocument, el: &ElementNode<'_>) {
             template.push_linked(attr.name, attr.name_loc.span);
             if let Some(ref value) = attr.value {
                 template.push_str("=\"");
-                // The template is parsed as HTML at runtime, after the Vue
-                // parser has already decoded this attribute's references.
-                if memchr::memchr3(b'&', b'"', b'<', value.content.as_bytes()).is_some()
-                    || memchr::memchr2(b'>', b'\'', value.content.as_bytes()).is_some()
+                // Verbatim double-quoted values can retain their authored HTML.
+                // Decoded or synthesized values need escaping before HTML reparses
+                // them; single/unquoted values also need quote normalization.
+                let start = value.loc.span.start as usize;
+                if value.content.as_ptr() != source.as_ptr().wrapping_add(start)
+                    || value.content.len() != value.loc.span.len() as usize
+                    || source.as_bytes().get(start.wrapping_sub(1)) != Some(&b'"')
                 {
                     template.push_linked(&escape_html_text(value.content), value.loc.span);
                 } else {
@@ -124,12 +99,40 @@ fn write_static_attributes(template: &mut EmitDocument, el: &ElementNode<'_>) {
             }
         }
     }
+
+    if is_void_element(el.tag) {
+        template.push_str(">");
+    } else if el.is_self_closing {
+        template.push_str("></");
+        template.push_str(el.tag);
+        template.push_str(">");
+    } else {
+        template.push_str(">");
+
+        // Recursively add template-backed children. `<template>` is a
+        // transparent wrapper in Vapor just as it is in the main element
+        // dispatcher, so its children contribute directly to the enclosing
+        // element's static template instead of producing a component lookup.
+        let placeholders = super::insertion::block_placeholders(&el.children);
+        append_child_templates(
+            template,
+            &el.children,
+            scope_id,
+            source,
+            &mut placeholders.into_iter(),
+        );
+
+        template.push_str("</");
+        template.push_str(el.tag);
+        template.push_str(">");
+    }
 }
 
 fn append_child_templates(
     template: &mut EmitDocument,
     children: &[TemplateChildNode<'_>],
     scope_id: Option<&str>,
+    source: &str,
     placeholders: &mut std::vec::IntoIter<bool>,
 ) {
     for child in children {
@@ -142,11 +145,19 @@ fn append_child_templates(
             }
             TemplateChildNode::Element(child_el) if child_el.tag_type == ElementType::Template => {
                 ensure_sufficient_stack(|| {
-                    append_child_templates(template, &child_el.children, scope_id, placeholders)
+                    append_child_templates(
+                        template,
+                        &child_el.children,
+                        scope_id,
+                        source,
+                        placeholders,
+                    )
                 });
             }
             TemplateChildNode::Element(child_el) if is_template_backed_element(child_el) => {
-                ensure_sufficient_stack(|| write_element_template(template, child_el, scope_id));
+                ensure_sufficient_stack(|| {
+                    write_element_template(template, child_el, scope_id, source)
+                });
             }
             // Only a block followed by template-rendered siblings keeps its
             // insertion placeholder (see `insertion::block_placeholders`).

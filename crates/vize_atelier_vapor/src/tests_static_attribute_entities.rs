@@ -71,13 +71,18 @@ fn test_compile_static_attribute_entities_preserve_html_attribute_boundaries() {
             r#"<div title="&amp;amp;lt;">x</div>"#,
             r#"<div title="&amp;amp;lt;">x</div>"#,
         ),
-        (
-            r#"<div title="a&b">x</div>"#,
-            r#"<div title="a&amp;b">x</div>"#,
-        ),
+        (r#"<div title="a&b">x</div>"#, r#"<div title="a&b">x</div>"#),
         (
             r#"<div title='a&amp;lt;"b'>x</div>"#,
             r#"<div title="a&amp;lt;&quot;b">x</div>"#,
+        ),
+        (
+            r#"<div title='a"b'>x</div>"#,
+            r#"<div title="a&quot;b">x</div>"#,
+        ),
+        (
+            r#"<div title=a&b>x</div>"#,
+            r#"<div title="a&amp;b">x</div>"#,
         ),
         (
             r#"<div title="&lt;b&gt;">x</div>"#,
