@@ -171,10 +171,15 @@ fn sfc_module_assembly_preserves_ssr_attachment_and_whole_source_links() {
         property: RenderProperty::SsrRender,
     };
     let document = assemble(parts).unwrap().into_document();
-    assert!(
-        document
-            .as_str()
-            .ends_with("__sfc__.ssrRender = ssrRender\nexport default __sfc__\n")
+    assert_eq!(
+        document.as_str(),
+        concat!(
+            "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n",
+            "const __sfc__ = {}\n;\n",
+            "function ssrRender(_ctx, _push, _parent, _attrs) {\n",
+            "  _push(`<div${_ssrRenderAttrs(_attrs)}><p title=\"&quot;&amp;\">猫&amp;</p></div>`)\n",
+            "}\n__sfc__.ssrRender = ssrRender\nexport default __sfc__\n",
+        )
     );
     let link = document
         .links()
