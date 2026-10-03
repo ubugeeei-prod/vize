@@ -18,6 +18,7 @@ mod binding;
 mod control;
 mod dependencies;
 mod file;
+mod for_head;
 mod handler;
 use super::vue::policy::FileReads;
 
@@ -66,6 +67,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
                 dependencies: Vec::new(),
                 file_expressions: SideTable::new(),
                 file_handlers: SideTable::new(),
+                file_for_heads: SideTable::new(),
                 vue_expressions: SideTable::new(),
                 unsupported: Vec::new(),
             },
@@ -115,7 +117,12 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
                 }
                 Op::Comment(_) => None,
                 Op::If(_) => None,
-                Op::Component(_) | Op::For(_) | Op::OriginalFor(_) | Op::Slot(_) => {
+                Op::OriginalFor(original) => {
+                    self.record_for_head(id, original);
+                    self.reject(id, span, DomUnsupported::Operation);
+                    None
+                }
+                Op::Component(_) | Op::For(_) | Op::Slot(_) => {
                     self.reject(id, span, DomUnsupported::Operation);
                     None
                 }

@@ -15,12 +15,14 @@ mod context;
 pub mod control;
 mod dependencies;
 mod file;
+mod for_head;
 mod handler;
 pub mod vue;
 
 pub use context::ContextOnly;
 pub use dependencies::DomDependency;
 pub use file::{DomFileExpression, NativeFileAnalysis, build_dom_file_decisions};
+pub use for_head::DomFileForHead;
 pub use handler::DomFileHandler;
 
 /// A complete expression's references all have explicitly declared context bindings.
@@ -61,6 +63,7 @@ pub enum DomUnsupported {
     ConditionalRoot,
     FileExpression,
     FileHandler,
+    FileForHead,
     HandlerSyntax,
     HandlerAccess,
     FileScope,
@@ -190,6 +193,7 @@ pub struct DomFacts<'owner, 'arena> {
     pub(super) dependencies: Vec<DomDependency>,
     pub(super) file_expressions: SideTable<DomFileExpression<'owner, 'arena>>,
     pub(super) file_handlers: SideTable<DomFileHandler<'owner, 'arena>>,
+    pub(super) file_for_heads: SideTable<DomFileForHead<'owner, 'arena>>,
     pub(super) vue_expressions: SideTable<vue::VueRenderExpression<'owner, 'arena>>,
     pub(super) unsupported: Vec<DomRejection>,
 }
@@ -233,6 +237,13 @@ impl<'owner, 'arena> DomFacts<'owner, 'arena> {
     #[must_use]
     pub fn file_handler(&self, id: NodeId) -> Option<&DomFileHandler<'owner, 'arena>> {
         self.file_handlers.get(id)
+    }
+
+    /// Whole original head custody at the actual introducing canonical event.
+    /// This supplies no collection access policy or loop target eligibility.
+    #[must_use]
+    pub fn file_for_head(&self, id: NodeId) -> Option<&DomFileForHead<'owner, 'arena>> {
+        self.file_for_heads.get(id)
     }
 
     #[must_use]

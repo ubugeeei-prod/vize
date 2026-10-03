@@ -2,7 +2,7 @@
 
 use super::{
     DecisionBuildError, DecisionTables, NativeFileAnalysis, build_dom_file_decisions,
-    dom::{DomFacts, DomFileExpression, DomFileHandler},
+    dom::{DomFacts, DomFileExpression, DomFileForHead, DomFileHandler},
     policy::TargetPolicy,
 };
 use vize_l0::id::NodeId;
@@ -16,9 +16,10 @@ use vize_l2::{
 ///
 /// The lower route authenticates selected Text/Comment/empty roots and
 /// ordinary static HTML headers/bodies, with original HTML whitespace and
-/// directive operands refused before completion. Structural completion does
+/// unsupported directive operands refused before completion. Structural completion does
 /// not grant Vue tag roles: target holes retain the actual node and source.
-/// Runtime reads, controls and whole-SFC migration remain separate gates.
+/// Original For heads retain same-File custody, while runtime reads, loop
+/// targets and whole-SFC migration remain separate gates.
 ///
 /// A neutral analysis or an externally paired File cannot construct it:
 /// ```compile_fail
@@ -93,6 +94,13 @@ impl<'owner, 'arena> NativeTemplateDomAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn expression(&self, node: NodeId) -> Option<&DomFileExpression<'owner, 'arena>> {
         self.dom()?.file_expression(node)
+    }
+
+    /// Whole original head joined during the sole DOM Enter walk.
+    /// Collection access and loop emission remain typed refusals.
+    #[must_use]
+    pub fn for_head(&self, node: NodeId) -> Option<&DomFileForHead<'owner, 'arena>> {
+        self.dom()?.file_for_head(node)
     }
 
     /// Whole handler custody observed at this original File's actual On event.
