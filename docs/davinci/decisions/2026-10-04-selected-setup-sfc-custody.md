@@ -86,9 +86,16 @@ left operand and saturated operator increment, reusing it for comparison and
 conditional last-operator assignment. In-order traversal, saturation, change-only
 assignment and every recursion/stack guard stay intact. No alignment, inlining,
 harness, compiler, fixture or ceiling change is used. Full independent naive
-CFG rows and hand totals cover mixed parenthesized trees and deep left/right
-runs. Fresh exact-source semantics and all100×3/protected acceptance must prove
+CFG rows and hand totals cover mixed parenthesized trees and left/right
+runs at the existing admitted nesting boundary. Fresh exact-source semantics and all100×3/protected acceptance must prove
 this actual repair; earlier failed-candidate measurements grant no completion.
+First e309 semantic execution exposes an authored test mistake: its 64-depth
+fixture crosses the existing MAX_EXPRESSION_NESTING_DEPTH=31 guard and is
+honestly opaque before Oxc. The exact 64 fixture stays as a typed nesting-refusal
+control; positive trees use the real 31 boundary, require successful retained
+JsExpr admission, and retain independently derived hand totals/full naive rows.
+Production cache and safety guard stay unchanged; no observed opaque output
+is substituted for the admitted-tree expectation.
 
 This closes only a bounded original descriptor/setup/File ownership envelope.
 The peer DOM setup consumer needs this actual provider, qualified original

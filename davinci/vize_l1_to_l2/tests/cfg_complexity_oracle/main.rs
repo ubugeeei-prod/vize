@@ -128,24 +128,72 @@ fn parenthesized_mixed_operator_trees_keep_all_independent_rows() {
     }
 }
 
+fn nested_logical_run(depth: usize, right_nested: bool) -> String {
+    let mut expression = String::from("leaf");
+    for _ in 0..depth {
+        expression = if right_nested {
+            format!("value && ({expression})")
+        } else {
+            format!("({expression}) && value")
+        };
+    }
+    expression
+}
+
 #[test]
 fn deep_left_and_right_logical_runs_keep_full_naive_agreement() {
+    use vize_l0::expression_guard::{MAX_EXPRESSION_NESTING_DEPTH, expression_is_safe_to_parse};
+
     for right_nested in [false, true] {
-        let mut expression = String::from("leaf");
-        for _ in 0..64 {
-            expression = if right_nested {
-                format!("value && ({expression})")
-            } else {
-                format!("({expression}) && value")
-            };
-        }
+        let expression = nested_logical_run(MAX_EXPRESSION_NESTING_DEPTH, right_nested);
+        // Successful retained admission is required before this can prove AST scoring.
+        assert!(expression_is_safe_to_parse(&expression));
+        let arena = vize_l0::Allocator::new();
+        vize_l2::expr::JsExpr::parse_in(
+            &arena,
+            &expression,
+            vize_l0::Span::new(0, u32::try_from(expression.len()).expect("bounded fixture")),
+        )
+        .expect("the actual guard-boundary tree retains a real AST");
         let template = format!("{{{{ {expression} }}}}");
         let (production, naive) = both_template(&template);
         assert_eq!(production, naive, "right_nested={right_nested}");
-        assert_eq!(production.cyclomatic, 65);
+        assert_eq!(
+            production.cyclomatic,
+            u32::try_from(MAX_EXPRESSION_NESTING_DEPTH).expect("guard fits u32") + 1,
+        );
         assert_eq!(production.cognitive, 1);
         assert_eq!(production.unknown, 0);
         assert_eq!(production.rows.len(), 1);
+    }
+}
+
+#[test]
+fn past_guard_logical_runs_never_invent_retained_ast_facts() {
+    use vize_l0::expression_guard::expression_is_safe_to_parse;
+
+    // Preserve the exact 64-depth failed fixture as a genuine refusal control.
+    for right_nested in [false, true] {
+        let expression = nested_logical_run(64, right_nested);
+        assert!(!expression_is_safe_to_parse(&expression));
+        let arena = vize_l0::Allocator::new();
+        assert!(matches!(
+            vize_l2::expr::JsExpr::parse_in(
+                &arena,
+                &expression,
+                vize_l0::Span::new(0, u32::try_from(expression.len()).expect("bounded fixture")),
+            ),
+            Err(vize_l2::expr::OpaqueReason::NestingRefused),
+        ));
+        let template = format!("{{{{ {expression} }}}}");
+        let (production, naive) = both_template(&template);
+        assert_eq!(production, naive, "right_nested={right_nested}");
+        assert_eq!(production.unknown, 1);
+        assert_eq!(production.rows.len(), 1);
+        assert_eq!(
+            production.rows.first().expect("actual refusal row").kind,
+            "unknown"
+        );
     }
 }
 
