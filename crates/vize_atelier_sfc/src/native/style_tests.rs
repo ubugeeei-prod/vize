@@ -2,12 +2,11 @@ use super::{NativeSfcCompileError, NativeSfcCompileOptions, compile_native_sfc};
 use vize_l0::Allocator;
 
 #[test]
-fn original_style_sources_never_disappear_into_a_successful_module() {
+fn unavailable_style_profiles_never_disappear_into_a_successful_module() {
     for source in [
-        "<style>p{color:red}</style><template><p/></template>",
         "<template><p/></template><style scoped lang=scss>p{color:v-bind(color)}</style>",
         "<template><p/></template><style module=theme>p{color:red}</style><style></style>",
-        "<script>const x=1</script><template><p/></template><style>p{color:red}</style>",
+        "<script>const x=1</script><template><p/></template><style scoped>p{color:red}</style>",
     ] {
         let arena = Allocator::default();
         let compilation = compile_native_sfc(&arena, source, NativeSfcCompileOptions::default());

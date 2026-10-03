@@ -34,6 +34,8 @@ pub struct NativeSfcCompileOptions<'o> {
     pub filename: &'o str,
     pub runtime_version: &'o str,
     pub source_map: bool,
+    /// Trim each emitted plain CSS block; the ordinary SFC default is false.
+    pub style_trim: bool,
 }
 
 impl Default for NativeSfcCompileOptions<'static> {
@@ -47,6 +49,7 @@ impl Default for NativeSfcCompileOptions<'static> {
             filename: "anonymous.vue",
             runtime_version: "3.5.35",
             source_map: false,
+            style_trim: false,
         }
     }
 }
@@ -60,6 +63,7 @@ pub enum NativeSfcCompileError {
     ScriptSetup(SetupIssue),
     SetupEmission(SetupEmitError),
     StyleCompilationUnavailable { container_index: usize, span: Span },
+    StyleBindSyntaxUnproven { container_index: usize, span: Span },
     MissingTemplate,
     Orchestration,
     Analysis(DecisionBuildError),
@@ -72,6 +76,8 @@ pub enum NativeSfcCompileError {
 pub struct NativeSfcOutput {
     document: EmitDocument,
     source_map: Option<String>,
+    css: Option<EmitDocument>,
+    css_source_map: Option<String>,
 }
 
 impl NativeSfcOutput {
@@ -86,6 +92,18 @@ impl NativeSfcOutput {
     #[must_use]
     pub fn source_map(&self) -> Option<&str> {
         self.source_map.as_deref()
+    }
+    #[must_use]
+    pub fn css(&self) -> Option<&str> {
+        self.css.as_ref().map(EmitDocument::as_str)
+    }
+    #[must_use]
+    pub fn css_document(&self) -> Option<&EmitDocument> {
+        self.css.as_ref()
+    }
+    #[must_use]
+    pub fn css_source_map(&self) -> Option<&str> {
+        self.css_source_map.as_deref()
     }
 }
 
@@ -126,8 +144,9 @@ impl<'a> NativeSfcCompilation<'a> {
 /// Compile through the genuine admitted SFC/File, L3 and L4 owner chain.
 ///
 /// This additive entry supports scriptless static structure and retained
-/// literals, and original JS setup let/var primitive declarations plus empty
-/// statements. Other scripts, macros, styles, custom/external blocks, unsupported
+/// literals, original JS setup let/var primitive declarations plus empty
+/// statements, and plain CSS without unproven binding syntax. Other scripts,
+/// macros, scoped/module/preprocessor styles, custom/external blocks, unsupported
 /// profiles and unavailable native target semantics return typed refusals.
 /// Every original observation survives, and no partial module is returned.
 #[must_use]
@@ -176,12 +195,7 @@ fn emit<L: LinkSink>(
         .descriptor()
         .admitted()
         .map_err(|_| NativeSfcCompileError::Descriptor)?;
-    if let Some(style) = descriptor.styles().next() {
-        return Err(NativeSfcCompileError::StyleCompilationUnavailable {
-            container_index: style.container_index(),
-            span: style.block().span(),
-        });
-    }
+    let css = styles::emit::<L>(descriptor, options.style_trim)?;
     if let Some(script) = observation.scripts().first()
         && (observation.scripts().len() != 1
             || script.role() != ScriptRole::Setup
@@ -224,9 +238,16 @@ fn emit<L: LinkSink>(
     let source_map = options
         .source_map
         .then(|| document.source_map(options.filename, observation.descriptor().source()));
+    let css_source_map = css.as_ref().and_then(|document| {
+        options
+            .source_map
+            .then(|| document.source_map(options.filename, observation.descriptor().source()))
+    });
     Ok(NativeSfcOutput {
         document,
         source_map,
+        css,
+        css_source_map,
     })
 }
 
@@ -234,4 +255,7 @@ fn emit<L: LinkSink>(
 mod tests;
 
 #[cfg(test)]
+mod css_tests;
+#[cfg(test)]
 mod style_tests;
+mod styles;

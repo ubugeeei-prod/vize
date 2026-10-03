@@ -45,7 +45,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `SfcCustomBlock`                          |     2 |     2 |
 | `SfcDescriptor`                           |    18 |    45 |
 | `SfcError`                                |    22 |    64 |
-| `SfcParseOptions`                         |    18 |   119 |
+| `SfcParseOptions`                         |    19 |   120 |
 | `SfcScriptBlock`                          |     2 |     2 |
 | `SfcStyleBlock`                           |     5 |     8 |
 | `SfcTemplateBlock`                        |     7 |     9 |
@@ -89,7 +89,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ReactivityTracker`       |        0 |    1 |
 | `Scope`                   |        0 |    6 |
 | `ScopeKind`               |        2 |    3 |
-| `Span`                    |        0 |   13 |
+| `Span`                    |        0 |   23 |
 | `Symbol`                  |        0 |    5 |
 | `SymbolFlags`             |        0 |    5 |
 | `Croquis.bindings`        |       23 |  232 |
