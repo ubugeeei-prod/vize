@@ -10,6 +10,7 @@ void test("authentic SSR source dependencies require an affected PR capture", ()
     "crates/vize_atelier_sfc/src/lib.rs",
     "crates/vize_atelier_sfc/tests/native_scriptless_ssr.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native-sfc-ssr-vue-3.5.35.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native-scriptless-ssr-output.json",
     "davinci/vize_l0/src/markup/tags.rs",
     "davinci/vize_l1/src/container/vue/descriptor.rs",
     "davinci/vize_l1/src/markup/native.rs",
