@@ -20,6 +20,8 @@ baseline measurements, not projected savings or proof of a two-minute target.
 - Reuse the existing deterministic maximum-four partition. Each Actions
   runner owns a separate checkout and executes its files serially. The union
   is exactly the original full list, with no repeated file.
+- The test step declares its required tier; the runner rejects a partial PR
+  plan in merge execution before invoking any tests.
 - Every runner regenerates its plan from the shared comparison base with the
   actual event tier. On baseline `44533d11de`, the 709 full files partition as
   178/177/177/177, with zero deferred files.

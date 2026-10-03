@@ -31,6 +31,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const planPath =
     process.argv[2] ?? process.env.VIZE_TOOLING_TEST_PLAN ?? "target/tooling-test-plan.json";
   const plan = JSON.parse(readFileSync(planPath, "utf8"));
+  const requiredTier = process.env.VIZE_TOOLING_TEST_TIER;
+  if (requiredTier && (!["pr", "merge"].includes(requiredTier) || plan.tier !== requiredTier)) {
+    throw new Error("tooling plan does not match the required execution tier");
+  }
   const args = toolingTestCommand(plan, toolingTestFiles(), process.env.VIZE_TOOLING_TEST_SHARD);
   if (args.length > 2) {
     // Selection defers known scenarios. An unclassified new requirement must

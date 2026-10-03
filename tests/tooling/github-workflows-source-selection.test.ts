@@ -97,6 +97,7 @@ test("every isolated tooling runner regenerates its tier and retains the full me
     /--tier "\$TOOLING_TIER" --output "\$RUNNER_TEMP\/tooling-plan\.json"/,
   );
   assert.equal(steps[selected].env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
+  assert.equal(steps[selected].env?.VIZE_TOOLING_TEST_TIER, "pr");
   assert.equal(
     steps[selected].env?.VIZE_TOOLING_TEST_SHARD,
     "${{ format('{0}/{1}', matrix.index, matrix.total) }}",
@@ -113,6 +114,7 @@ test("every isolated tooling runner regenerates its tier and retains the full me
   assert.equal(steps[full].run, "vp run --workspace-root test:scripts:planned");
   assert.equal(steps[full].env?.SOURCE_LENGTH_BASE_REF, undefined);
   assert.equal(steps[full].env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
+  assert.equal(steps[full].env?.VIZE_TOOLING_TEST_TIER, "merge");
   assert.equal(
     steps[full].env?.VIZE_TOOLING_TEST_SHARD,
     "${{ format('{0}/{1}', matrix.index, matrix.total) }}",

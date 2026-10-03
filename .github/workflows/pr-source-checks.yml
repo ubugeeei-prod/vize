@@ -190,6 +190,7 @@ jobs:
         env:
           SOURCE_LENGTH_BASE_REF: ${{ needs.pr-source-plan.outputs.comparison-base }}
           VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
+          VIZE_TOOLING_TEST_TIER: "pr"
           VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
         run: vp run --workspace-root test:scripts:pr
       - name: Test tooling scripts
@@ -198,6 +199,7 @@ jobs:
           VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
           VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
+          VIZE_TOOLING_TEST_TIER: "merge"
           VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
         run: vp run --workspace-root test:scripts:planned
       - uses: ./.github/actions/upload-formatter-api-corpus-evidence

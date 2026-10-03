@@ -94,3 +94,26 @@ void test("an empty selection does not invoke Node's implicit test discovery", (
     rmSync(cwd, { recursive: true, force: true });
   }
 });
+
+void test("the real merge runner rejects a partial PR plan before starting any tests", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "vize-tooling-wrong-tier-"));
+  try {
+    const file = join(cwd, "plan.json");
+    writeFileSync(file, JSON.stringify(plan([])));
+    for (const tier of ["merge", "unknown"]) {
+      const result = spawnSync(
+        process.execPath,
+        ["tools/support/compat/github/run-tooling-tests.mjs", file],
+        {
+          encoding: "utf8",
+          env: { ...process.env, VIZE_TOOLING_TEST_TIER: tier, VIZE_TOOLING_TEST_SHARD: "1/1" },
+        },
+      );
+      assert.notEqual(result.status, 0);
+      assert.match(result.stderr, /required execution tier/);
+      assert.doesNotMatch(result.stdout, /No tooling tests selected|TAP version/);
+    }
+  } finally {
+    rmSync(cwd, { recursive: true, force: true });
+  }
+});
