@@ -1,4 +1,4 @@
-//! Borrowed documents for typed Vue heads with complete static arguments.
+//! Borrowed documents for typed Vue heads with complete arguments.
 
 use vize_l0::{Allocator, SourceBlock, Span, Vec};
 use vize_l1::markup::{ArgSyntax, DirectiveName, DirectivePrefix};
@@ -17,16 +17,28 @@ pub(super) fn name_document<'a>(
         offset: block.start() as usize,
         syntax: UnsupportedSyntax::Directive,
     };
-    let Some(ArgSyntax::Static(argument)) = head.arg else {
-        return Err(unsupported());
+    let mismatch = || TemplateRefusal::SourceMismatch {
+        offset: block.start() as usize,
+    };
+    let (argument, open, close) = match head.arg {
+        Some(ArgSyntax::Static(argument)) => (argument, None, None),
+        Some(ArgSyntax::Dynamic(argument)) => {
+            let start = argument.start.checked_sub(1).ok_or_else(mismatch)?;
+            let end = argument.end.checked_add(1).ok_or_else(mismatch)?;
+            (
+                argument,
+                Some(Span::new(start, argument.start)),
+                Some(Span::new(argument.end, end)),
+            )
+        }
+        None => return Err(unsupported()),
     };
     if argument.start == argument.end {
         return Err(unsupported());
     }
-    let mismatch = || TemplateRefusal::SourceMismatch {
-        offset: block.start() as usize,
-    };
-    if head.modifiers != Span::new(argument.end, block.end()) {
+    let argument_start = open.map_or(argument.start, |span| span.start);
+    let argument_end = close.map_or(argument.end, |span| span.end);
+    if head.modifiers != Span::new(argument_end, block.end()) {
         return Err(mismatch());
     }
     let spelling = match head.prefix {
@@ -42,23 +54,23 @@ pub(super) fn name_document<'a>(
                 return Err(unsupported());
             }
             if block.start().checked_add(2) != Some(head.name.start)
-                || head.name.end.checked_add(1) != Some(argument.start)
+                || head.name.end.checked_add(1) != Some(argument_start)
             {
                 return Err(mismatch());
             }
             (
                 Span::new(block.start(), head.name.start),
                 Some(head.name),
-                Some(Span::new(head.name.end, argument.start)),
+                Some(Span::new(head.name.end, argument_start)),
             )
         }
         _ => {
-            if block.start().checked_add(1) != Some(argument.start)
+            if block.start().checked_add(1) != Some(argument_start)
                 || head.name != Span::new(block.start(), block.start())
             {
                 return Err(mismatch());
             }
-            (Span::new(block.start(), argument.start), None, None)
+            (Span::new(block.start(), argument_start), None, None)
         }
     };
     let project = |span| {
@@ -70,7 +82,11 @@ pub(super) fn name_document<'a>(
             .get(span.start as usize..span.end as usize)
             .ok_or_else(mismatch)
     };
-    if project(prefix)? != spelling || separator.is_some_and(|span| project(span) != Ok(":")) {
+    if project(prefix)? != spelling
+        || separator.is_some_and(|span| project(span) != Ok(":"))
+        || open.is_some_and(|span| project(span) != Ok("["))
+        || close.is_some_and(|span| project(span) != Ok("]"))
+    {
         return Err(TemplateRefusal::SourceMismatch {
             offset: block.start() as usize,
         });
@@ -80,7 +96,9 @@ pub(super) fn name_document<'a>(
         Some(prefix),
         name,
         separator,
+        open,
         Some(argument),
+        close,
         Some(head.modifiers),
     ]
     .into_iter()
@@ -230,5 +248,70 @@ mod tests {
             name_document(foreign, Some(head), &allocator),
             Err(TemplateRefusal::SourceMismatch { .. })
         ));
+    }
+
+    #[test]
+    fn typed_dynamic_brackets_expression_and_modifiers_borrow_original_pieces() {
+        let allocator = Allocator::default();
+        let source = "é v-カスタム:[日本[鍵]]..camel";
+        let text = source.get(3..).unwrap();
+        let block = SourceRoot::new(source).unwrap().block(text, 3).unwrap();
+        let head = VueDirectives.decompose(text, 3).unwrap().unwrap();
+        let document = name_document(block, Some(head), &allocator).unwrap();
+        let Kind::Concat(parts) = document.kind else {
+            panic!("borrowed pieces")
+        };
+        let expected = ["v-", "カスタム", ":", "[", "日本[鍵]", "]", "..camel"];
+        assert_eq!(parts.len(), expected.len());
+        let mut start = 3;
+        for (part, expected) in parts.iter().zip(expected) {
+            let Kind::Text(actual) = part.kind else {
+                panic!("source text")
+            };
+            let original = source.get(start..start + expected.len()).unwrap();
+            assert_eq!(actual, expected);
+            assert!(core::ptr::eq(actual.as_ptr(), original.as_ptr()));
+            start += expected.len();
+        }
+        assert_eq!(start, source.len());
+    }
+
+    #[test]
+    fn forged_dynamic_brackets_utf8_modifiers_and_overflow_are_refused() {
+        let allocator = Allocator::default();
+        let source = ":[日本].camel";
+        let block = SourceRoot::new(source).unwrap().whole_block();
+        let head = VueDirectives.decompose(source, 0).unwrap().unwrap();
+        for altered in [
+            DirectiveName {
+                arg: Some(ArgSyntax::Dynamic(Span::new(0, 8))),
+                ..head
+            },
+            DirectiveName {
+                arg: Some(ArgSyntax::Dynamic(Span::new(2, 3))),
+                modifiers: Span::new(4, block.end()),
+                ..head
+            },
+            DirectiveName {
+                arg: Some(ArgSyntax::Dynamic(Span::new(2, u32::MAX))),
+                ..head
+            },
+            DirectiveName {
+                modifiers: Span::new(8, block.end()),
+                ..head
+            },
+        ] {
+            assert!(matches!(
+                name_document(block, Some(altered), &allocator),
+                Err(TemplateRefusal::SourceMismatch { .. })
+            ));
+        }
+        for source in [":(日本].camel", ":[日本).camel"] {
+            let foreign = SourceRoot::new(source).unwrap().whole_block();
+            assert!(matches!(
+                name_document(foreign, Some(head), &allocator),
+                Err(TemplateRefusal::SourceMismatch { .. })
+            ));
+        }
     }
 }

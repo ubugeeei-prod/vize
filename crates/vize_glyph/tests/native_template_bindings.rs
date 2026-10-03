@@ -67,15 +67,15 @@ fn binding_layout_preserves_attribute_order_and_is_a_fixed_point() {
 }
 
 #[test]
-fn dynamic_and_missing_arguments_keep_original_observations_on_refusal() {
+fn incomplete_and_missing_arguments_keep_original_observations_on_refusal() {
     for source in [
-        "<p :[key]='value'/>",
-        "<p .[key]='value'/>",
-        "<p @[key]='act()'/>",
-        "<p #[key]='item'/>",
-        "<p v-bind:[key]='value'/>",
-        "<p v-on:[key]='act()'/>",
-        "<p v-slot:[key]='item'/>",
+        "<p :[]='value'/>",
+        "<p .[]='value'/>",
+        "<p @[]='act()'/>",
+        "<p #[]='item'/>",
+        "<p v-bind:[]='value'/>",
+        "<p v-on:[]='act()'/>",
+        "<p v-slot:[]='item'/>",
         "<p v-bind='object'/>",
         "<p v-on='handlers'/>",
         "<p v-if='condition'/>",

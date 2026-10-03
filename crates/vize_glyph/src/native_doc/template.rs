@@ -48,13 +48,14 @@ impl<'p, 'a> TemplateDocument<'p, 'a> {
     }
 }
 
-/// Lay out plain and static directive attributes from a retained native Vue 3 parse.
+/// Lay out plain and typed directive attributes from a retained native Vue 3 parse.
 ///
 /// The caller parses once with L1's native `parse_component` entry point.
 /// Content whitespace, comments, entities, values, quotes and attribute order
 /// stay verbatim. Full `v-name:arg` and shorthand `:arg`, `.arg`, `@arg` and `#arg`
 /// heads use the shared typed Vue syntax without classifying directive semantics.
-/// This API refuses recovered/repaired trees, dynamic or missing arguments and
+/// Dynamic arguments retain their complete brackets and original expression bytes.
+/// This API refuses recovered/repaired trees, incomplete or missing arguments and
 /// interpolation; it never calls a legacy parser or parses values.
 /// Token source custody is checked in the same traversal that constructs Doc.
 pub fn template_document<'p, 'a>(
