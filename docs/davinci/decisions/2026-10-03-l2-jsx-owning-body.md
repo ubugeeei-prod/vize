@@ -10,6 +10,12 @@ actually merged, this owned child was replayed onto authenticated signed main
 File separation repairs, incoming product changes and central clauses remain
 intact. The earlier semantic slices did not wait for this owner.
 
+After the two semantic PRs merged, the official native Stack operation kept
+their closed Stack 7481 history and removed the remaining owner PR #7486,
+which was retargeted to `main`. The remaining provider and its genuine owning
+L3 child require a new native Stack before protected queue entry. The provider
+does not enable individual auto-merge.
+
 ## Inputs, ownership and completion
 
 `JsxFileProducer::new` consumes the original opaque `ProgramObservation` and
@@ -85,8 +91,10 @@ The current replay preserves all 175 complete L2 source entries byte-exactly
 from `94c2`, and its current 14 source gates pass. Accepted L1 source changed
 in the new main, so a fresh compatible current-L1/parser build and new-head
 hosted gates are separate requirements; old execution receipts retain their
-original source qualification. Prior green results do not certify the new head,
-its protected candidate or its actual merge.
+original source qualification. The current ordinary whole-L1 production and
+strict build and the current 152 selected L2 functions/strict checks also pass
+in that single compatible universe, without rebuilding the parser or cache.
+They do not certify new-head Actions, its protected candidate or actual merge.
 
 This is an owned L2 provider. JSX transforms, JS/TSX emission, runtime access,
 L3 target decisions and native upper handoff remain unfinished. L1's existing
