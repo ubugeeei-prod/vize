@@ -28,6 +28,7 @@ pub enum NativeSelectedSfcIssueKind {
     Script(ScriptRole),
     Style,
     MissingTemplate,
+    MissingSetup,
     Source(ComponentSourceError),
     FileCreation(ArtifactError),
     Template(NativeTemplateIssue),
@@ -161,6 +162,12 @@ impl<'o, 'a> NativeSelectedSfc<'o, 'a> {
     }
 }
 
+#[derive(Clone, Copy)]
+pub(super) enum SelectedMode {
+    Scriptless,
+    Setup,
+}
+
 /// Observe one whole SFC, parse its actual selected template once, and exhaust
 /// the original root cursor. Script/style/custom/external/profile refusals do
 /// not grant a template view or parse unsupported script bodies. Generic
@@ -170,6 +177,15 @@ pub fn lower_selected_sfc_native<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     options: DescriptorOptions,
+) -> NativeSelectedSfcObservation<'a> {
+    observe(allocator, source, options, SelectedMode::Scriptless)
+}
+
+pub(super) fn observe<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: DescriptorOptions,
+    mode: SelectedMode,
 ) -> NativeSelectedSfcObservation<'a> {
     let descriptor = Vue.observe_descriptor(allocator, source, options);
     let mut observation = NativeSelectedSfcObservation {
@@ -195,6 +211,9 @@ pub fn lower_selected_sfc_native<'a>(
         .into_iter()
         .flatten()
     {
+        if matches!(mode, SelectedMode::Setup) && script.role() == ScriptRole::Setup {
+            continue;
+        }
         observation.issues.push(NativeSelectedSfcIssue {
             container_index: Some(script.container_index()),
             span: script.block().span(),
@@ -206,6 +225,13 @@ pub fn lower_selected_sfc_native<'a>(
             container_index: Some(style.container_index()),
             span: style.block().span(),
             kind: NativeSelectedSfcIssueKind::Style,
+        });
+    }
+    if matches!(mode, SelectedMode::Setup) && descriptor.setup().is_none() {
+        observation.issues.push(NativeSelectedSfcIssue {
+            container_index: None,
+            span: whole,
+            kind: NativeSelectedSfcIssueKind::MissingSetup,
         });
     }
     if !observation.issues.is_empty() {
@@ -248,7 +274,22 @@ pub fn lower_selected_sfc_native<'a>(
             return observation;
         }
     };
-    if let Err(failure) = walk::construct(&mut owner) {
+    if matches!(mode, SelectedMode::Setup) {
+        if let Err(issue) = owner.parse_setup_program() {
+            observation.issues.push(NativeSelectedSfcIssue {
+                container_index: index,
+                span: issue.span,
+                kind: NativeSelectedSfcIssueKind::Template(issue),
+            });
+            observation.template = Some(owner.finish());
+            return observation;
+        }
+    }
+    let result = match mode {
+        SelectedMode::Scriptless => walk::construct(&mut owner),
+        SelectedMode::Setup => walk::construct_setup(&mut owner),
+    };
+    if let Err(failure) = result {
         observation.issues.push(NativeSelectedSfcIssue {
             container_index: index,
             span: failure.span.unwrap_or(span),

@@ -1,7 +1,9 @@
 use super::NativeSelectedSfcIssueKind as Kind;
 use vize_l0::Span;
 use vize_l1::{SurfaceChild, markup::NativeInterpolationFailure};
-use vize_l2::lang::js::{NativeInterpolationInput, NativeTemplateIssue, NativeTemplateOwner};
+use vize_l2::lang::js::{
+    NativeInterpolationInput, NativeTemplateIssue, NativeTemplateOwner, NativeTemplateWalk,
+};
 
 pub(super) struct Failure<'a> {
     pub span: Option<Span>,
@@ -19,7 +21,12 @@ impl From<NativeTemplateIssue> for Failure<'_> {
 }
 
 pub(super) fn construct<'a>(owner: &mut NativeTemplateOwner<'a>) -> Result<(), Failure<'a>> {
-    let mut walk = owner.begin()?;
+    construct_walk(owner.begin()?)
+}
+pub(super) fn construct_setup<'a>(owner: &mut NativeTemplateOwner<'a>) -> Result<(), Failure<'a>> {
+    construct_walk(owner.begin_setup()?)
+}
+fn construct_walk<'a>(mut walk: NativeTemplateWalk<'_, 'a>) -> Result<(), Failure<'a>> {
     let selected = walk.selected();
     for child in selected.children() {
         match child.surface() {

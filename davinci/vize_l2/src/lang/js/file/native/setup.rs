@@ -11,7 +11,9 @@ use vize_l1::embed::{
     syntax::{NativeSyntax, ProgramOptions, parse_program_once},
 };
 
+mod bindings;
 mod identity;
+mod prepare;
 mod receipt;
 pub use receipt::{NativeSelectedSetup, NativeSetupIssue, NativeSetupIssueKind};
 #[cfg(test)]

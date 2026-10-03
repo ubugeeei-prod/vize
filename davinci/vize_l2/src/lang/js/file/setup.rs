@@ -210,11 +210,24 @@ impl<'owner, 'descriptor, 'program, 'arena> VueSetup<'owner, 'descriptor, 'progr
     /// Original source order from the sole variable walk, for this unit only.
     /// The complete File/Program capability grants the receipt, not raw indices.
     pub fn type_annotations(&self) -> impl Iterator<Item = SetupAnnotation<'owner, 'arena>> + '_ {
-        let file = self.exposure.file();
-        let unit = self.exposure.unit();
-        file.setup_annotations()
+        self.exposure
+            .file()
+            .setup_annotations_for_unit(self.exposure.unit())
+    }
+}
+
+impl<'arena> FileArtifact<'arena> {
+    /// Private projection of real rows; public eligibility receipts choose the unit.
+    pub(crate) fn setup_annotations_for_unit(
+        &self,
+        unit: ScriptUnitId,
+    ) -> impl Iterator<Item = SetupAnnotation<'_, 'arena>> {
+        self.setup_annotations()
             .iter()
             .filter(move |row| row.unit == unit)
-            .map(move |original| SetupAnnotation { file, original })
+            .map(move |original| SetupAnnotation {
+                file: self,
+                original,
+            })
     }
 }

@@ -18,6 +18,7 @@ pub enum NativeTemplateIssueKind {
     Program(FileIssueKind),
     SetupSyntax(vize_l1::embed::syntax::EmbedHole),
     SetupSource(vize_l1::embed::SourceError),
+    SetupPolicy(NativeSetupIssueKind),
     UnsupportedOrdinaryScript,
     UnsupportedStyle,
     MissingProgram,
