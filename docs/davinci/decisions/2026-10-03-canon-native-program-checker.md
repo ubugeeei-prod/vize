@@ -251,3 +251,18 @@ and the existing document-selection helper's parent visibility change. Its
 runtime body is unchanged. The actual inventory generator refreshes only the
 changed Canon census. The initial failure receipt stays preserved; neither a
 source-length waiver nor a performance budget adjustment is introduced.
+
+The actual source073 full run, 37128405931, passed all six typed-report and
+mapping laws, five integration laws including every bounded editor/BOM vector,
+two privacy laws and the minimal-feature check. Its final feature test Clippy
+failed on the inherited responder Arc and a redundant range borrow. The test
+reference now signals its owned responder through a channel; empty polling,
+50ms event timeout, join, Drop and all-path cleanup stay intact. Production,
+original source bytes, complete oracle vectors and assertions are unchanged.
+This failed campaign is preserved; corrected strict and whole Actions remain
+required, and current-main, default/history, performance and merge gates stay
+unqualified.
+
+The first source check found only the generated Canon census line references
+stale after the import edit. The actual generator refreshes that owned table;
+the failure evidence is retained without any waiver.

@@ -9,11 +9,7 @@ use lsp_types::{DocumentDiagnosticReport, DocumentDiagnosticReportResult};
 use std::{
     fmt::Write,
     path::Path,
-    sync::{
-        Arc,
-        atomic::{AtomicBool, Ordering},
-        mpsc::RecvTimeoutError,
-    },
+    sync::mpsc::{self, RecvTimeoutError, Sender, TryRecvError},
     time::Duration,
 };
 use vize_l0::String;
@@ -179,17 +175,16 @@ impl lsp_types::request::Request for PhysicalDiagnostics {
 }
 
 struct Responder {
-    stop: Arc<AtomicBool>,
+    stop: Sender<()>,
     thread: Option<std::thread::JoinHandle<()>>,
 }
 
 impl Responder {
     fn spawn(client: LspClient) -> Self {
-        let stop = Arc::new(AtomicBool::new(false));
-        let stopped = stop.clone();
+        let (stop, stopped) = mpsc::channel();
         let events = client.subscribe();
         let thread = std::thread::spawn(move || {
-            while !stopped.load(Ordering::Relaxed) {
+            while matches!(stopped.try_recv(), Err(TryRecvError::Empty)) {
                 let InboundEvent::Request { id, method, params } =
                     (match events.recv_timeout(Duration::from_millis(50)) {
                         Ok(event) => event,
@@ -222,7 +217,7 @@ impl Responder {
     }
 
     fn stop(&mut self) -> TestResult {
-        self.stop.store(true, Ordering::Relaxed);
+        let _ = self.stop.send(());
         if let Some(thread) = self.thread.take() {
             thread
                 .join()

@@ -138,7 +138,7 @@ pub(super) async fn check_case(
         )?;
         require_equal(
             &serde_json::to_value(mapped.original_range())?,
-            &serde_json::to_value(&expected.range)?,
+            &serde_json::to_value(expected.range)?,
             id,
         )?;
     }
