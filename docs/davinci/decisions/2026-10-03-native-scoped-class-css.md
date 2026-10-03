@@ -71,3 +71,10 @@ boundaries remain typed refusals. CSS property semantics, broader scoped
 selector families, complete bindings/Modules/preprocessors, SSR scoped output
 and whole-product/history gates remain unfinished. Ordinary product routes,
 legacy oracles, output policy, history gates and instruction budgets are unchanged.
+
+Quoted declaration strings containing `v-bind` or comment markers also retain
+the original parser's UnsupportedValue refusal. Pinned real Vue proves that
+quoted bindings can change scoped CSS and that comment-bridged spellings can
+change descriptor CSS variables even when literal CSS stays unchanged. The
+native product preserves original syntax/File custody and returns no partial
+product for those inputs; actual returned tokens supply the boundary.

@@ -202,6 +202,10 @@ fn unsupported_scoped_css_and_invalid_scope_options_never_return_partial_product
         ".a:hover{}",
         ".a{color:v-bind(color)}",
         ".a{color:v\\2d bind(color)}",
+        ".a{content:'v-bind(color)'}",
+        ".a{content:\"v-bind (color)\"}",
+        ".a{content:'v/**/-bind(color)'}",
+        ".a{content:'v-/* x */bind(color)'}",
         "@charset 'utf-8';.a{}",
         ".a{color:red",
     ] {

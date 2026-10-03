@@ -93,6 +93,29 @@ test("scoped whole-SFC references keep pinned real CSS and complete native modul
   }
 });
 
+test("quoted binding spellings change real Vue CSS or descriptor variables and require refusal", () => {
+  for (const [value, expected] of [
+    ["'v-bind(color)'", "'var(--quoted-color)'"],
+    ['"v-bind (color)"', '"var(--quoted-color)"'],
+    ["'v/**/-bind(color)'", "'v/**/-bind(color)'"],
+    ["'v-/* x */bind(color)'", "'v-/* x */bind(color)'"],
+  ]) {
+    const css = `.a{content:${value}}`;
+    const parsed = compiler.parse(`<template><p/></template><style scoped>${css}</style>`);
+    assert.deepEqual(parsed.errors, []);
+    assert.deepEqual(parsed.descriptor.cssVars, ["color"]);
+    const result = compiler.compileStyle({
+      source: css,
+      filename: "Quoted.vue",
+      id: "data-v-quoted",
+      scoped: true,
+      trim: false,
+    });
+    assert.deepEqual(result.errors, []);
+    assert.equal(result.code, `.a[data-v-quoted]{content:${expected}}`);
+  }
+});
+
 test(
   "fresh Rust scoped captures match each entire committed source/module/CSS result",
   { skip: !captured },
