@@ -75,7 +75,10 @@ impl<'o, 'a> DocumentHtmlStructure<'o, 'a> {
     /// Elements in original start-tag order; each has its actual HTML parent.
     #[must_use]
     pub fn elements(&self) -> impl ExactSizeIterator<Item = DocumentHtmlElement<'_, 'o, 'a>> {
-        (0..self.elements.len()).map(|index| DocumentHtmlElement { tree: self, index })
+        self.elements.iter().map(|element| DocumentHtmlElement {
+            tree: self,
+            element,
+        })
     }
 }
 
@@ -96,12 +99,12 @@ impl<'o, 'a> DocumentHtmlStructure<'o, 'a> {
 #[derive(Debug)]
 pub struct DocumentHtmlElement<'s, 'o, 'a> {
     tree: &'s DocumentHtmlStructure<'o, 'a>,
-    index: usize,
+    element: &'s Element,
 }
 
 impl<'s, 'o, 'a> DocumentHtmlElement<'s, 'o, 'a> {
     fn element(&self) -> &Element {
-        &self.tree.elements[self.index]
+        self.element
     }
 
     #[must_use]
@@ -143,10 +146,13 @@ impl<'s, 'o, 'a> DocumentHtmlElement<'s, 'o, 'a> {
 
     #[must_use]
     pub fn parent(&self) -> Option<Self> {
-        self.element().parent.map(|index| Self {
-            tree: self.tree,
-            index,
-        })
+        self.element()
+            .parent
+            .and_then(|index| self.tree.elements.get(index))
+            .map(|element| Self {
+                tree: self.tree,
+                element,
+            })
     }
 
     /// Direct element children, following the producer's original adjacency.
@@ -155,8 +161,9 @@ impl<'s, 'o, 'a> DocumentHtmlElement<'s, 'o, 'a> {
         let mut next = self.element().first_child;
         core::iter::from_fn(move || {
             let index = next?;
-            next = tree.elements[index].next_sibling;
-            Some(Self { tree, index })
+            let element = tree.elements.get(index)?;
+            next = element.next_sibling;
+            Some(Self { tree, element })
         })
     }
 }

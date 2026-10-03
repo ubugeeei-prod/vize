@@ -97,3 +97,9 @@ Local browser startup failed on missing package installation. Neither failure
 is validation credit, and no further local builds/installations are run. Pure
 format/source/storage checks and exact-head hosted Rust/browser Actions,
 protected full/instruction candidate acceptance and actual merge decide delivery.
+
+The first hosted source gate at `34efee2819` rejected eight direct indexing
+operations under the unchanged strict Clippy policy before native tests ran.
+Element views now borrow actual original element references; adjacency reads and
+writes use checked access and typed refusals. Source/arena authority and admitted
+structure stay unchanged, with fresh hosted validation required.

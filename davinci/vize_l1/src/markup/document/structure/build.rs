@@ -151,12 +151,26 @@ impl Builder<'_, '_> {
             ignored_slash: slash && !void,
         });
         if let Some(parent) = parent {
-            if let Some(previous) = self.elements[parent].last_child {
-                self.elements[previous].next_sibling = Some(index);
+            let previous = self
+                .elements
+                .get(parent)
+                .ok_or(Refusal::InvalidFrame(name_span))?
+                .last_child;
+            if let Some(previous) = previous {
+                self.elements
+                    .get_mut(previous)
+                    .ok_or(Refusal::InvalidFrame(name_span))?
+                    .next_sibling = Some(index);
             } else {
-                self.elements[parent].first_child = Some(index);
+                self.elements
+                    .get_mut(parent)
+                    .ok_or(Refusal::InvalidFrame(name_span))?
+                    .first_child = Some(index);
             }
-            self.elements[parent].last_child = Some(index);
+            self.elements
+                .get_mut(parent)
+                .ok_or(Refusal::InvalidFrame(name_span))?
+                .last_child = Some(index);
         }
         if !void {
             self.stack.push(index);
@@ -187,7 +201,13 @@ impl Builder<'_, '_> {
             .last()
             .copied()
             .ok_or(Refusal::ImpliedEnd(name_span))?;
-        if self.elements[index].name != name {
+        if self
+            .elements
+            .get(index)
+            .ok_or(Refusal::InvalidFrame(name_span))?
+            .name
+            != name
+        {
             return Err(Refusal::ImpliedEnd(name_span));
         }
         self.mode = match (self.mode, name) {
@@ -200,7 +220,10 @@ impl Builder<'_, '_> {
         self.stack.pop();
         // SourceRoot bounds the complete source to u32 before this producer.
         let end = name_span.end as usize + gap + 1;
-        self.elements[index].closing = Some(Span::new(start, end as u32));
+        self.elements
+            .get_mut(index)
+            .ok_or(Refusal::InvalidFrame(name_span))?
+            .closing = Some(Span::new(start, end as u32));
         Ok(())
     }
 

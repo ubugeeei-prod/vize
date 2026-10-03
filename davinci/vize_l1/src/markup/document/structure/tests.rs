@@ -23,9 +23,12 @@ fn original_element_ancestry_matches_the_real_browser_census() {
     for row in CORPUS.lines().filter(|line| !line.starts_with('#')) {
         let columns: Vec<_> = row.split('\t').collect();
         assert_eq!(columns.len(), 3);
+        let label = columns.first().expect("original case label");
+        let original = columns.get(1).expect("original source");
+        let census = columns.get(2).expect("original browser census");
         let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(columns[1]));
-        let tree = owner.html_structure().expect(columns[0]);
+        let owner = NativeDocument::lex_in(&allocator, root(original));
+        let tree = owner.html_structure().expect(label);
         let elements: Vec<_> = tree.elements().collect();
         let actual: Vec<_> = elements
             .iter()
@@ -40,7 +43,7 @@ fn original_element_ancestry_matches_the_real_browser_census() {
                 (element.name(), parent)
             })
             .collect();
-        let expected: Vec<_> = columns[2]
+        let expected: Vec<_> = census
             .split(',')
             .map(|entry| {
                 let (name, parent) = entry.split_once(':').expect("real browser census entry");
@@ -51,7 +54,7 @@ fn original_element_ancestry_matches_the_real_browser_census() {
                 )
             })
             .collect();
-        assert_eq!(actual, expected, "{}", columns[0]);
+        assert_eq!(actual, expected, "{label}");
         assert_eq!(owner.unfinished_tree_policies().len(), 4);
         count += 1;
     }
@@ -65,7 +68,7 @@ fn nonvoid_slash_really_keeps_the_original_html_parent_open() {
     let owner = NativeDocument::lex_in(&allocator, root(&source));
     let tree = owner.html_structure().expect("explicit complete HTML");
     let elements: Vec<_> = tree.elements().collect();
-    let div = &elements[3];
+    let div = elements.get(3).expect("original div");
     assert_eq!(div.name(), "div");
     assert_eq!(div.authored_name(), "DIV");
     assert_eq!(div.opening(), "<DIV/>");
@@ -77,19 +80,19 @@ fn nonvoid_slash_really_keeps_the_original_html_parent_open() {
         ["span"]
     );
     assert_eq!(
-        elements[4]
+        elements
+            .get(4)
+            .expect("original span")
             .parent()
             .expect("actual div parent")
             .opening_span(),
         div.opening_span()
     );
-    assert_eq!(elements[5].name(), "br");
-    assert!(!elements[5].ignored_self_closing_slash());
-    assert_eq!(elements[5].closing_span(), None);
-    assert_eq!(
-        elements[5].parent().expect("void sibling parent").name(),
-        "body"
-    );
+    let br = elements.get(5).expect("original void br");
+    assert_eq!(br.name(), "br");
+    assert!(!br.ignored_self_closing_slash());
+    assert_eq!(br.closing_span(), None);
+    assert_eq!(br.parent().expect("void sibling parent").name(), "body");
 }
 
 #[test]
