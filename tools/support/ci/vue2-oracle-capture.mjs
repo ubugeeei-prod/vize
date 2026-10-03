@@ -8,7 +8,7 @@ const sha = (bytes, algorithm = 'sha256') => crypto.createHash(algorithm).update
 const record = (bytes) => ({ bytes: bytes.length, sha256: sha(bytes), base64: bytes.toString('base64') });
 const evidence = {
   schema: 1,
-  label: 'official-vue2-npm-oracle',
+  label: 'official-vue2-npm-oracle-missing-he',
   capturedAt: new Date().toISOString(),
   node: process.version,
   source: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
@@ -106,16 +106,7 @@ async function capture(name, version) {
 }
 
 try {
-  assert.equal(execFileSync('git', ['rev-parse', 'HEAD^'], { encoding: 'utf8' }).trim(), baseline);
-  const compiler = await capture('vue-template-compiler', '2.7.16');
-  const build = Buffer.from(compiler.file('build.js').base64, 'base64').toString('utf8');
-  compiler.file('LICENSE');
-  const requires = [...build.matchAll(/\brequire\(\s*(['"])([^'"]+)\1\s*\)/g)].map((match) => match[2]);
-  compiler.entry.literalRequires = [...new Set(requires)].sort();
-  assert.deepEqual(compiler.entry.literalRequires, ['de-indent', 'he']);
-  assert.equal(compiler.packageJson.dependencies['de-indent'], '^1.0.2');
-  assert.equal(compiler.packageJson.dependencies.he, '^1.2.0');
-  await capture('de-indent', '1.0.2');
+  assert.equal(execFileSync('git', ['rev-parse', 'HEAD^'], { encoding: 'utf8' }).trim(), '8657c0f1850c575b9c4b0db448787963dfc4cf7c');
   await capture('he', '1.2.0');
   evidence.success = true;
 } catch (error) {
