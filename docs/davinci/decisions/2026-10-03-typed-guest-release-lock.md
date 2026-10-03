@@ -39,20 +39,31 @@ stay exact; no selector is weakened or extended without an input audit.
 
 The original TS-48 workflow runs only on relevant pushes and explicit dispatch.
 The protected `Check` report therefore misses a real guest failure. Reuse the
-same workflow in one parallel `merge_group` job and make the existing required
-`test-report` depend on its result. Keep the four required contexts and rulesets
+same workflow in one parallel `merge_group` job inside the existing mandatory
+PR source workflow. Its unconditional `source-report` requires the WIT result;
+the existing required `test-report` then requires that source workflow's result.
+Keep the four required contexts and rulesets
 unchanged. No direct Contracts queue trigger is added, preventing duplicate
 guest builds; ordinary push/manual Contracts remain intact.
 
-The Check-only report mode requires this new row. It rejects missing, failed,
+The explicit source-report mode requires this new row. It rejects missing, failed,
 cancelled or skipped queue results and unknown event modes. Only this row may
 skip on supported nonqueue events (PR, push, schedule and dispatch), where its
-job is intentionally absent; every previous dependency remains strict. The
-shared report CLI keeps its old behavior. Both workflows retain read-only
+job is intentionally absent; all five prior source dependencies remain strict.
+The top report's original eight dependencies and command, plus the shared
+report CLI's default behavior, stay exact. All workflows retain read-only
 permissions and distinct concurrency prefixes, and PRs gain no Wasmtime build.
 The report's existing PR/queue condition stays exact.
 Source laws prove these modes; an actual protected candidate must execute the
 reusable WIT lane and its required report before merge acceptance.
+
+The `e83` runtime campaign executes all 36 laws successfully, but configured
+Check fails two source gates: the top workflow grows from 690 to 696 lines,
+and the old instruction-workflow oracle requires its unchanged report command.
+Those failures remain preserved. Moving the parallel WIT job into the existing
+332-line source workflow restores the top workflow exactly and stays under 350
+lines. The dependency-chain laws cover nested WIT failure, cancellation, skip
+and missing results through the outer required report; no gate or cap is waived.
 
 Existing-family drain takes priority. When a predecessor regenerates a queue
 candidate, preserve its older green epoch as historical; require WIT/report

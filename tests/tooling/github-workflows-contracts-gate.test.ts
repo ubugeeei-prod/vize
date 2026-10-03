@@ -13,11 +13,15 @@ type Workflow = {
   on: Record<string, unknown>;
   concurrency: { group: string; "cancel-in-progress": boolean };
   permissions: Record<string, string>;
-  jobs: Record<string, { if?: string; uses?: string; needs?: string[] }>;
+  jobs: Record<
+    string,
+    { if?: string; uses?: string; needs?: string[]; steps?: { run?: string }[] }
+  >;
 };
 const check = parse(readRepoFile(".github/workflows/check.yml")) as Workflow;
+const source = parse(readRepoFile(".github/workflows/pr-source-checks.yml")) as Workflow;
 const contracts = parse(readRepoFile(".github/workflows/davinci-contracts.yml")) as Workflow;
-const prior = [
+const topPrior = [
   "fmt-rust",
   "check-js",
   "security-audit",
@@ -27,18 +31,46 @@ const prior = [
   "instruction-counts",
   "level-dependency-direction",
 ];
+const prior = [
+  "pr-source-plan",
+  "pr-rust-source",
+  "pr-js-packages",
+  "pr-tooling-scripts",
+  "pr-playground-test",
+];
 const needs = (wit = "success") => ({
   ...Object.fromEntries(prior.map((job) => [job, { result: "success" }])),
   "wit-contracts": { result: wit },
 });
 
 test("one parallel reusable WIT lane gates merge groups without adding a PR build", () => {
-  assert.deepEqual(check.jobs["wit-contracts"], {
+  assert.equal(Object.hasOwn(check.jobs, "wit-contracts"), false);
+  assert.deepEqual(check.jobs["pr-source-checks"], {
+    name: "PR source checks",
+    if: "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
+    uses: "./.github/workflows/pr-source-checks.yml",
+  });
+  assert.deepEqual(source.on, { workflow_call: null });
+  assert.deepEqual(source.jobs["wit-contracts"], {
     name: "Guest contracts",
     if: "${{ github.event_name == 'merge_group' }}",
     uses: "./.github/workflows/davinci-contracts.yml",
   });
-  assert.deepEqual(check.jobs["test-report"].needs, [...prior, "wit-contracts"]);
+  assert.deepEqual(source.jobs["source-report"].needs, [...prior, "wit-contracts"]);
+  assert.equal(source.jobs["source-report"].if, "${{ always() }}");
+  assert.equal(
+    source.jobs["source-report"].steps?.at(-1)?.run,
+    "node tools/support/compat/github/require-needs-success.mjs --check",
+  );
+  assert.deepEqual(check.jobs["test-report"].needs, topPrior);
+  assert.equal(
+    check.jobs["test-report"].if,
+    "${{ always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}",
+  );
+  assert.equal(
+    check.jobs["test-report"].steps?.at(-1)?.run,
+    "node tools/support/compat/github/require-needs-success.mjs",
+  );
   assert.equal(Object.hasOwn(contracts.on, "workflow_call"), true);
   assert.equal(Object.hasOwn(contracts.on, "push"), true);
   assert.equal(Object.hasOwn(contracts.on, "workflow_dispatch"), true);
@@ -46,6 +78,7 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
   assert.equal(Object.hasOwn(contracts.on, "pull_request"), false);
   assert.deepEqual(contracts.permissions, { contents: "read" });
   assert.deepEqual(check.permissions, { contents: "read" });
+  assert.deepEqual(source.permissions, { contents: "read" });
   assert.equal(contracts.jobs["wit-contract"].if, undefined);
   assert.equal(contracts.concurrency["cancel-in-progress"], true);
   assert.equal(check.concurrency["cancel-in-progress"], true);
@@ -57,6 +90,32 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
     check.concurrency.group,
     "check-v3-${{ github.workflow }}-${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && format('full-{0}', github.sha) || (github.event.pull_request.number || github.ref) }}",
   );
+});
+
+test("failed, skipped and absent nested WIT results poison the existing required report", () => {
+  const outer = (sourceResult: string) =>
+    aggregateNeedsResults({
+      ...Object.fromEntries(topPrior.map((job) => [job, { result: "success" }])),
+      "pr-source-checks": { result: sourceResult },
+    });
+  for (const result of ["failure", "cancelled", "skipped"]) {
+    const inner = aggregateCheckNeedsResults(needs(result), "merge_group");
+    assert.equal(inner.exitCode, 1);
+    assert.equal(outer(inner.exitCode === 0 ? "success" : "failure").exitCode, 1);
+  }
+  for (const rows of [{}, { ...needs(), "wit-contracts": {} }]) {
+    assert.throws(() => aggregateCheckNeedsResults(rows, "merge_group"));
+    assert.equal(outer("failure").exitCode, 1);
+  }
+  assert.equal(outer("skipped").exitCode, 1);
+  for (const [event, wit] of [
+    ["pull_request", "skipped"],
+    ["merge_group", "success"],
+  ]) {
+    const inner = aggregateCheckNeedsResults(needs(wit), event);
+    assert.equal(inner.exitCode, 0);
+    assert.equal(outer(inner.exitCode === 0 ? "success" : "failure").exitCode, 0);
+  }
 });
 
 test("only the queue-only row may skip in the explicit supported nonqueue modes", () => {

@@ -10,6 +10,11 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  wit-contracts:
+    name: Guest contracts
+    if: ${{ github.event_name == 'merge_group' }}
+    uses: ./.github/workflows/davinci-contracts.yml
+
   pr-source-plan:
     name: Plan PR source checks
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -323,10 +328,11 @@ jobs:
       - pr-js-packages
       - pr-tooling-scripts
       - pr-playground-test
+      - wit-contracts
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Require every source gate to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
-        run: node tools/support/compat/github/require-needs-success.mjs
+        run: node tools/support/compat/github/require-needs-success.mjs --check
