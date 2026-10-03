@@ -77,6 +77,10 @@ fail. The Node proof imports captured native bytes, checks independently
 regenerated complete reference bytes/raw maps and runtime trees, and uses
 throwing contexts to reject hidden reads. It retains the actual native
 module/map capture as an artifact. No new job or pipeline stage is added.
+The capture hook follows the selected-PR step and precedes full tooling;
+that PR-only step is skipped in the queue. This preserves independently
+prepared setup capture hooks before the selected-PR anchor without a
+competing insertion at the same source boundary.
 
 Formatting, ordinary module discovery, storage and generated source-count
 checks precede publication. Fresh exact-head source Actions, captured queue

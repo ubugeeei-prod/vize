@@ -195,9 +195,6 @@ jobs:
       - name: Test source-bound native JS setup modules and runtime
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
         uses: ./.github/actions/test-native-js-setup
-      - name: Execute original selected-template DOM modules
-        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
-        uses: ./.github/actions/test-native-selected-template
       - name: Test selected PR tooling scripts
         if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
         env:
@@ -206,6 +203,9 @@ jobs:
           VIZE_TOOLING_TEST_TIER: "pr"
           VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
         run: vp run --workspace-root test:scripts:pr
+      - name: Execute original selected-template DOM modules
+        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
+        uses: ./.github/actions/test-native-selected-template
       - name: Test tooling scripts
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
         env:
