@@ -8,11 +8,6 @@ use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::Span;
 use vize_carton::ensure_sufficient_stack;
 
-struct TemplateSource<'a> {
-    scope_id: Option<&'a str>,
-    source: &'a str,
-}
-
 /// Generate element template string (recursively includes static children)
 #[inline(always)]
 pub(crate) fn generate_element_template(
@@ -21,7 +16,7 @@ pub(crate) fn generate_element_template(
     source: &str,
 ) -> String {
     let mut template = EmitDocument::new(false);
-    write_element_template(&mut template, el, &TemplateSource { scope_id, source });
+    write_element_template(&mut template, el, scope_id, &source);
     template.into_string()
 }
 
@@ -33,14 +28,15 @@ pub(crate) fn generate_element_template_spanned(
     source: &str,
 ) -> EmitDocument {
     let mut template = EmitDocument::default();
-    write_element_template(&mut template, el, &TemplateSource { scope_id, source });
+    write_element_template(&mut template, el, scope_id, &source);
     template
 }
 
 fn write_element_template(
     template: &mut EmitDocument,
     el: &ElementNode<'_>,
-    source: &TemplateSource<'_>,
+    scope_id: Option<&str>,
+    source: &&str,
 ) {
     template.push_str("<");
     let tag_start = el.loc.span.start + 1;
@@ -48,7 +44,7 @@ fn write_element_template(
         el.tag,
         Span::new(tag_start, tag_start + el.tag.len() as u32),
     );
-    if let Some(scope_id) = source.scope_id {
+    if let Some(scope_id) = scope_id {
         template.push_str(" ");
         template.push_str(scope_id);
     }
@@ -56,21 +52,26 @@ fn write_element_template(
     if !el.props.is_empty() {
         // Collect dynamic binding names to skip their static counterparts
         let mut has_static_attr = false;
-        let dynamic_attrs: vize_carton::FxHashSet<&str> = el
-            .props
-            .iter()
-            .filter_map(|p| match p {
-                PropNode::Attribute(_) => {
-                    has_static_attr = true;
-                    None
-                }
-                PropNode::Directive(dir) if dir.name == "bind" => match dir.arg.as_ref() {
-                    Some(ExpressionNode::Simple(key)) => Some(key.content),
-                    _ => None,
-                },
-                _ => None,
-            })
-            .collect();
+        let dynamic_attrs: vize_carton::FxHashSet<&str> =
+            if matches!(el.props.as_slice(), [PropNode::Attribute(_)]) {
+                has_static_attr = true;
+                vize_carton::FxHashSet::default()
+            } else {
+                el.props
+                    .iter()
+                    .filter_map(|p| match p {
+                        PropNode::Attribute(_) => {
+                            has_static_attr = true;
+                            None
+                        }
+                        PropNode::Directive(dir) if dir.name == "bind" => match dir.arg.as_ref() {
+                            Some(ExpressionNode::Simple(key)) => Some(key.content),
+                            _ => None,
+                        },
+                        _ => None,
+                    })
+                    .collect()
+            };
 
         // Add static attributes (skip those overridden by dynamic bindings).
         // This result depends only on the unchanged props. The first pass above
@@ -94,9 +95,9 @@ fn write_element_template(
                     // Decoded or synthesized values need escaping before HTML reparses
                     // them; single/unquoted values also need quote normalization.
                     let start = value.loc.span.start as usize;
-                    if value.content.as_ptr() != source.source.as_ptr().wrapping_add(start)
+                    if value.content.as_ptr() != source.as_ptr().wrapping_add(start)
                         || value.content.len() != value.loc.span.len() as usize
-                        || source.source.as_bytes().get(start.wrapping_sub(1)) != Some(&b'"')
+                        || source.as_bytes().get(start.wrapping_sub(1)) != Some(&b'"')
                     {
                         template.push_linked(&escape_html_text(value.content), value.loc.span);
                     } else {
@@ -125,6 +126,7 @@ fn write_element_template(
         append_child_templates(
             template,
             &el.children,
+            scope_id,
             source,
             &mut placeholders.into_iter(),
         );
@@ -138,7 +140,8 @@ fn write_element_template(
 fn append_child_templates(
     template: &mut EmitDocument,
     children: &[TemplateChildNode<'_>],
-    source: &TemplateSource<'_>,
+    scope_id: Option<&str>,
+    source: &&str,
     placeholders: &mut std::vec::IntoIter<bool>,
 ) {
     for child in children {
@@ -155,7 +158,9 @@ fn append_child_templates(
                 });
             }
             TemplateChildNode::Element(child_el) if is_template_backed_element(child_el) => {
-                ensure_sufficient_stack(|| write_element_template(template, child_el, source));
+                ensure_sufficient_stack(|| {
+                    write_element_template(template, child_el, scope_id, source)
+                });
             }
             // Only a block followed by template-rendered siblings keeps its
             // insertion placeholder (see `insertion::block_placeholders`).
