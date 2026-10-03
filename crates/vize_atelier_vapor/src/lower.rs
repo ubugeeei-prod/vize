@@ -99,30 +99,11 @@ fn transform_children_guarded<'a>(
     ctx: &mut TransformContext<'a>,
     children: &[TemplateChildNode<'a>],
 ) -> BlockIRNode<'a> {
-    let mut block = BlockIRNode::new(ctx.allocator);
-    transform_children_into_guarded(ctx, children, &mut block);
-    block
-}
-
-/// Append a contiguous authored child run to an existing slot block.
-pub(crate) fn transform_children_into<'a>(
-    ctx: &mut TransformContext<'a>,
-    children: &[TemplateChildNode<'a>],
-    block: &mut BlockIRNode<'a>,
-) {
-    ensure_sufficient_stack(|| transform_children_into_guarded(ctx, children, block));
-}
-
-#[inline(always)]
-fn transform_children_into_guarded<'a>(
-    ctx: &mut TransformContext<'a>,
-    children: &[TemplateChildNode<'a>],
-    block: &mut BlockIRNode<'a>,
-) {
     vize_atelier_core::walk_probe::record_visits(
         vize_atelier_core::walk_probe::WalkStage::VaporLower,
         children.len(),
     );
+    let mut block = BlockIRNode::new(ctx.allocator);
     // Note: Don't consume an ID for the block itself - element IDs should start from 0
 
     // Check if ALL children are text/interpolation (combined text case)
@@ -139,26 +120,26 @@ fn transform_children_into_guarded<'a>(
 
     if all_text_or_interp {
         // Combined text/interpolation: create a single text element with space template
-        transform_combined_block_text(ctx, children, block);
-        return;
+        transform_combined_block_text(ctx, children, &mut block);
+        return block;
     }
 
     for child in children {
         match child {
             TemplateChildNode::Element(el) => {
-                transform_element(ctx, el, block);
+                transform_element(ctx, el, &mut block);
             }
             TemplateChildNode::Text(text) => {
-                transform_text(ctx, text, block);
+                transform_text(ctx, text, &mut block);
             }
             TemplateChildNode::Interpolation(interp) => {
-                transform_interpolation(ctx, interp, block);
+                transform_interpolation(ctx, interp, &mut block);
             }
             TemplateChildNode::If(if_node) => {
-                transform_if_node(ctx, if_node, block);
+                transform_if_node(ctx, if_node, &mut block);
             }
             TemplateChildNode::For(for_node) => {
-                transform_for_node(ctx, for_node, block);
+                transform_for_node(ctx, for_node, &mut block);
             }
             TemplateChildNode::Comment(_) => {
                 // Comments are ignored in Vapor mode
@@ -166,6 +147,8 @@ fn transform_children_into_guarded<'a>(
             _ => {}
         }
     }
+
+    block
 }
 
 /// Transform combined text/interpolation children at block level.

@@ -2,7 +2,7 @@
 
 use super::{TransformContext, structural_slots};
 use crate::ir::{BlockIRNode, IRSlot};
-use crate::lower::transform_children_into;
+use crate::lower::transform_children;
 use vize_atelier_core::{SimpleExpressionNode, SourceLocation, TemplateChildNode};
 use vize_carton::Box;
 
@@ -24,7 +24,10 @@ pub(super) fn lower<'a>(
     // into the default slot. Preserve ordinary children in authored order.
     for run in children.split(structural_slots::is_slot) {
         if !run.is_empty() {
-            transform_children_into(ctx, run, &mut block);
+            let lowered = transform_children(ctx, run);
+            block.operation.extend(lowered.operation);
+            block.effect.extend(lowered.effect);
+            block.returns.extend(lowered.returns);
         }
     }
     Some(IRSlot {
