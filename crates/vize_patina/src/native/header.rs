@@ -43,9 +43,11 @@ pub(super) enum Binding<'a> {
     },
     Bind {
         name: &'a str,
+        argument_range: Span,
         range: Span,
     },
     Other {
+        full_directive_name: Option<&'a str>,
         range: Span,
     },
 }
@@ -115,26 +117,30 @@ fn binding_with_modifiers<'a, const STRICT: bool>(
     if matches!(head.arg, Some(ArgSyntax::Dynamic(_))) {
         return Err(NativeLintRefusal::UnresolvedBinding { span: head_span });
     }
-    let binds = match head.prefix {
-        DirectivePrefix::Bind | DirectivePrefix::Prop => true,
+    let (binds, full_directive_name) = match head.prefix {
+        DirectivePrefix::Bind | DirectivePrefix::Prop => (true, None),
         DirectivePrefix::Full => {
             let name = attribute::project(block, head.name)?;
-            match name {
+            let binds = match name {
                 "bind" => true,
                 "on" | "slot" | "if" | "else-if" | "else" | "for" | "show" | "html" | "text"
                 | "once" | "memo" | "model" | "cloak" | "pre" => false,
                 _ => return Err(NativeLintRefusal::UnsupportedDirective { span: head_span }),
-            }
+            };
+            (binds, Some(name))
         }
         DirectivePrefix::On | DirectivePrefix::Slot => {
             if head.arg.is_none() {
                 return Err(NativeLintRefusal::UnsupportedDirective { span: head_span });
             }
-            false
+            (false, None)
         }
     };
     if !binds {
-        return Ok(Binding::Other { range });
+        return Ok(Binding::Other {
+            full_directive_name,
+            range,
+        });
     }
     let Some(ArgSyntax::Static(argument)) = head.arg else {
         return Err(NativeLintRefusal::UnresolvedBinding { span: head_span });
@@ -143,5 +149,9 @@ fn binding_with_modifiers<'a, const STRICT: bool>(
     if name.is_empty() {
         return Err(NativeLintRefusal::UnresolvedBinding { span: head_span });
     }
-    Ok(Binding::Bind { name, range })
+    Ok(Binding::Bind {
+        name,
+        argument_range: argument,
+        range,
+    })
 }

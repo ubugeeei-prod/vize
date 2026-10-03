@@ -72,7 +72,7 @@ fn attribute_rule(
 ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
     let mut matches: SmallVec<[Span; 4]> = SmallVec::new();
     let (kind, _) = inspect(element, |binding| match binding {
-        header::Binding::Static { name, range, .. } | header::Binding::Bind { name, range }
+        header::Binding::Static { name, range, .. } | header::Binding::Bind { name, range, .. }
             if name == rule.attribute =>
         {
             matches.push(range);

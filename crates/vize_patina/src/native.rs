@@ -21,6 +21,7 @@ mod header_rules;
 mod iframe_has_title;
 mod img_alt;
 mod inline_style;
+mod no_v_html;
 mod tabindex_no_positive;
 mod textarea_mustache;
 
@@ -37,6 +38,7 @@ pub const NO_AUTOFOCUS_RULE: &str = "a11y/no-autofocus";
 pub const NO_ACCESS_KEY_RULE: &str = "a11y/no-access-key";
 pub const NO_DISTRACTING_ELEMENTS_RULE: &str = "a11y/no-distracting-elements";
 pub const NO_INLINE_STYLE_RULE: &str = "vue/no-inline-style";
+pub const NO_V_HTML_RULE: &str = "vue/no-v-html";
 pub const NO_TEXTAREA_MUSTACHE_RULE: &str = "vue/no-textarea-mustache";
 
 pub const ARIA_UNSUPPORTED_ELEMENTS_RULE: &str = "a11y/aria-unsupported-elements";
@@ -44,6 +46,7 @@ pub const DEPRECATED_ATTR_RULE: &str = "html/deprecated-attr";
 pub const DEPRECATED_ELEMENT_RULE: &str = "html/deprecated-element";
 
 pub use aria_unsupported_elements::NativeAriaLintError;
+pub use no_v_html::NativeVHtmlLintError;
 pub use textarea_mustache::NativeTextareaLintError;
 
 /// A refusal retains the caller's original component and observations.
@@ -253,6 +256,21 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
             return Err(NativeLintRefusal::ForeignElement);
         }
         deprecated_attr::check(element, messages)
+    }
+
+    /// Check original full `v-html` and static Bind/Prop HTML sink arguments.
+    /// Every header is strictly checked once before any catalog lookup. Values
+    /// remain opaque; host comment suppression and expression-dependent forms
+    /// require separate authority before whole-file/default integration.
+    pub fn no_v_html(
+        &self,
+        element: &NativeElement<'_, 'a>,
+        messages: &impl MessageLookup,
+    ) -> Result<Vec<NativeLintFinding>, NativeVHtmlLintError> {
+        if !core::ptr::eq(self.owner.component(), element.component()) {
+            return Err(NativeLintRefusal::ForeignElement.into());
+        }
+        no_v_html::check(element, messages)
     }
 
     /// Check exact static `style` attributes, including component attributes.

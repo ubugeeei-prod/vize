@@ -88,8 +88,8 @@ impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
                 header::Binding::Static { name, range, .. } => {
                     (NativeBindingKind::Static, name, range)
                 }
-                header::Binding::Bind { name, range } => (NativeBindingKind::Bind, name, range),
-                header::Binding::Other { range } => (
+                header::Binding::Bind { name, range, .. } => (NativeBindingKind::Bind, name, range),
+                header::Binding::Other { range, .. } => (
                     NativeBindingKind::Other,
                     original.surface().name.text,
                     range,
