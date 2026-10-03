@@ -26,6 +26,7 @@ jobs:
       tooling: ${{ steps.tooling-plan.outputs.tooling }}
       tooling-matrix: ${{ steps.tooling-plan.outputs.tooling-matrix }}
       native-setup-capture: ${{ steps.tooling-plan.outputs.native-setup-capture }}
+      native-ssr-capture: ${{ steps.tooling-plan.outputs.native-ssr-capture }}
       playground: ${{ steps.plan.outputs.playground }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -190,7 +191,7 @@ jobs:
           VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
         run: node tools/support/compat/github/prepare-pkl-schema.mjs
       - name: Test fresh native SSR modules in the merge queue
-        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-ssr-capture == 'true')) }}
         uses: ./.github/actions/test-native-ssr
       - name: Build and install vize CLI
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}

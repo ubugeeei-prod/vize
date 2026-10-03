@@ -16,6 +16,7 @@ import {
 import { changedPaths } from "./plan-source-checks.mjs";
 import { toolingShardMatrix } from "./tooling-test-shards.ts";
 import { nativeSetupCaptureRequired, toolingChecksRequired } from "./native-setup-capture.mjs";
+import { nativeSsrCaptureRequired } from "./native-ssr-capture.mjs";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const globalInputs = [...cacheInputs.workspace, "pnpm-workspace.yaml"];
@@ -115,7 +116,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   if (githubOutput && process.env.GITHUB_OUTPUT) {
     appendFileSync(
       process.env.GITHUB_OUTPUT,
-      `tooling=${toolingChecksRequired(plan, paths)}\nnative-setup-capture=${nativeSetupCaptureRequired(paths)}\ntooling-matrix=${JSON.stringify(toolingShardMatrix(plan))}\n`,
+      `tooling=${toolingChecksRequired(plan, paths) || nativeSsrCaptureRequired(paths)}\nnative-setup-capture=${nativeSetupCaptureRequired(paths)}\nnative-ssr-capture=${nativeSsrCaptureRequired(paths)}\ntooling-matrix=${JSON.stringify(toolingShardMatrix(plan))}\n`,
     );
   }
   const message = `Tooling tests: ${plan.tests.length}/${plan.totalTests}; ${plan.deferredTests} deferred to T1; ${plan.reason}.\n`;

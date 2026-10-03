@@ -41,6 +41,7 @@ pub mod css;
 pub(crate) mod module_map;
 pub mod module_shape;
 pub mod native;
+pub mod native_ssr;
 pub mod rewrite_default;
 pub mod script;
 pub mod style;
@@ -89,6 +90,10 @@ pub use css::{
 pub use native::{
     NativeSfcCompilation, NativeSfcCompileError, NativeSfcCompileOptions, NativeSfcOutput,
     compile_native_sfc,
+};
+pub use native_ssr::{
+    NativeSsrSfcCompilation, NativeSsrSfcCompileError, NativeSsrSfcCompileOptions,
+    NativeSsrSfcOutput, compile_native_ssr_sfc,
 };
 pub use parse::parse_sfc;
 pub use script::{TypeResolutionBatchGuard, begin_type_resolution_batch};
