@@ -4494,6 +4494,7 @@ dependencies = [
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
+ "vize_l4",
  "vize_oxc_parser",
  "vize_relief",
  "walkdir",
