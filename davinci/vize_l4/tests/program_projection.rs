@@ -189,15 +189,23 @@ fn incomplete_profiles_and_supported_parser_recovery_are_never_promoted() {
     }
     let source = "const value=1;";
     let block = SourceRoot::new(source).unwrap().whole_block();
-    for options in [
-        ProgramOptions {
-            jsx: true,
-            ..ProgramOptions::module(Lang::Ts)
-        },
-        ProgramOptions {
-            goal: vize_l1::embed::syntax::ProgramGoal::Script,
-            ..ProgramOptions::module(Lang::Js)
-        },
+    for (options, complete, expected) in [
+        (
+            ProgramOptions {
+                jsx: true,
+                ..ProgramOptions::module(Lang::Ts)
+            },
+            true,
+            ProjectionError::UnsupportedProfile,
+        ),
+        (
+            ProgramOptions {
+                goal: vize_l1::embed::syntax::ProgramGoal::Script,
+                ..ProgramOptions::module(Lang::Js)
+            },
+            false,
+            ProjectionError::IncompleteFile,
+        ),
     ] {
         let syntax = parse_program_once(
             &arena,
@@ -211,10 +219,9 @@ fn incomplete_profiles_and_supported_parser_recovery_are_never_promoted() {
                 ProgramScope::Module,
             )
             .unwrap();
-        assert!(matches!(
-            project_program(&producer.finish().unwrap()),
-            Err(ProjectionError::IncompleteFile)
-        ));
+        let file = producer.finish().unwrap();
+        assert_eq!(file.is_complete(), complete);
+        assert!(matches!(project_program(&file), Err(actual) if actual == expected));
     }
     let source = "const value=/x/uv;";
     let syntax = parse_program_once(

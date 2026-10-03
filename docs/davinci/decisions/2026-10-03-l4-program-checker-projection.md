@@ -18,6 +18,10 @@ This is a structural L4 provider using genuine existing Program/File APIs.
 It does not replace a product path while the #6849 product-order gates #6840
 and #6879 remain open. Existing lower admission defines its JS/TS syntax
 subset; primitive TS annotations currently remain incomplete and refuse.
+The neutral JSX provider can complete a genuine JSX-profile File; this target
+still refuses it with `UnsupportedProfile`. The profile law checks both that
+lower completion and the exact target refusal, independently of the incomplete
+Script-profile and unsupported-syntax laws.
 No additional parser, AST traversal, pipeline stage, legacy dependency or
 inter-level serialization is introduced.
 
