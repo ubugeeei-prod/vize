@@ -301,3 +301,6 @@ l1_to_l2	analysis	davinci/vize_l1_to_l2/src/native_file/template/tests.rs	1	3	0	
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/pending/vue/testing.rs	0	0	0	0	2	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/native/pending/vue/tests.rs	0	0	1	0	0	0	0	0
 l2	-	davinci/vize_l2/src/file/region/native/body.rs	0	0	0	0	1	0	0	0
+l3	analysis	davinci/vize_l3/src/decision/ssr.rs	1	2	0	0	0	0	0	0
+l3	analysis	davinci/vize_l3/src/decision/ssr/build.rs	1	5	0	0	0	0	0	0
+l3	-	davinci/vize_l3/src/decision/ssr/tests.rs	0	0	0	0	1	4	0	0
