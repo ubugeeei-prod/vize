@@ -74,6 +74,10 @@ open. Fresh exact-head required/full Actions, all unchanged instruction probes,
 protected queue candidates and actual merge are still required. Local semantic
 laws do not grant hosted performance or complete native-product acceptance.
 
+The static-name fixture also uses the ordinary shared module declaration required
+by the repository layout gate. Its original inputs and assertions are unchanged.
+The correction is a separate source commit with fresh hosted validation.
+
 The publication replay is a direct child of the first JSX layer replayed onto
 actual signed Exposure merge `5cdef3d638c8e7d9252cd365ffe131950092cd45`.
 Its reviewed Rust bytes are conserved. The first replay and this child are

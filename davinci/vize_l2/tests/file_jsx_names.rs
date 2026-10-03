@@ -3,10 +3,11 @@
     reason = "test assertions report complete intrinsic and static member File reference facts"
 )]
 
-#[path = "support/file_jsx.rs"]
-mod fixture;
-use fixture::{LawResult, Required, lower};
+mod support {
+    pub mod file_jsx;
+}
 use oxc_span::SourceType;
+use support::file_jsx::{LawResult, Required, lower};
 use vize_l0::{Allocator, Span};
 use vize_l2::file::{FileIssueKind, Namespace, ReferenceTarget};
 use vize_l2::resolution::Usage;
