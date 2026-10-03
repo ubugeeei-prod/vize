@@ -6,6 +6,7 @@ use vize_l0::{
     config::{VueDialect, VueVersion},
 };
 
+mod literal;
 mod ownership;
 mod refusals;
 

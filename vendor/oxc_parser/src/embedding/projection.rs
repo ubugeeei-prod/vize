@@ -89,6 +89,17 @@ projection!(ExpressionObservation, AdmittedExpression, Expression<'a>, expressio
 projection!(HandlerBodyObservation, AdmittedHandlerBody, FunctionBody<'a>, body);
 projection!(ParametersObservation, AdmittedParameters, FormalParameters<'a>, parameters);
 
+impl AdmittedExpression<'_, '_> {
+    /// Whether the original stock lexer decoded a legacy numeric literal or
+    /// string escape forbidden in a strict module. This borrows the complete
+    /// original parser observation; it adds no parse or source/AST scan.
+    /// Syntax admission is unchanged, and false does not certify semantics.
+    #[must_use]
+    pub const fn has_legacy_literals(&self) -> bool {
+        self.owner.observation.parsed.has_legacy_literals
+    }
+}
+
 impl<'a> EmbeddingObservation<'a> {
     /// Consumption uses only the original stored arena, not a caller arena.
     ///
