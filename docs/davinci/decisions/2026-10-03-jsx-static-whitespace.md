@@ -2,8 +2,8 @@
 
 Tracked in #6840 and #6829 after the original-expression child #7561 of
 native Stack #7504. The provider literally merged at `134c4ad549ce` on
-2026-10-03 at 12:59:16 UTC. This bounded target source is separate and has no
-native execution or merge credit yet.
+2026-10-03 at 12:59:16 UTC. This bounded target is independent draft #7597;
+its own fresh source, protected candidate and actual merge gates remain.
 
 ## Decision
 
@@ -26,10 +26,14 @@ produce a text child. Quoted attributes may retain the normalized empty
 string. Existing File helper collision facts and checked runtime vocabulary
 remain authoritative; original comments keep their source custody.
 
-Unchanged values avoid an additional normalization allocation. Changed values
-use a temporary compact string at the existing writer boundary, with the
-same original span for links. Source-map resolution stays in the shared
-already merged standard-line-terminator provider; it is not duplicated.
+Presence checks and emission share one borrowed normalized-character iterator.
+Helper and child checks consume its actual first result without allocating;
+changed values collect one final compact string only at the existing writer
+boundary. Unchanged values avoid this allocation. The same original span
+supplies links. Source-map resolution stays in the shared already merged
+standard-line-terminator provider; it is not duplicated. Read-only source
+review found repeated temporary strings in the first implementation; this
+shared stream removes those allocations without a raw-whitespace proxy.
 
 ## Prepared evidence and remaining work
 
@@ -42,16 +46,23 @@ moves from a refusal expectation into this complete admission fixture;
 entity and component-child refusals remain explicit. All eleven original
 module fixtures and three original-expression fixtures stay byte-exact.
 
-Strict whole native code/map fields are pending. The hosted Rust law must
-retain complete captures from the actual sole parse, walk, completed File,
-moved owner and same L3 rows; manual raw-value/helper facts and complete
-native code/maps stay exact assertions. The independent Node judge checks
-actual mounted trees, full upstream transforms/maps, every native map
-anchor's UTF-16 bounds and complete ordered comments.
+At source `4a99c46d259c`, hosted Check 37126380294 / Rust job 111213229849
+retained all eight complete native code/maps from the actual sole parse,
+walk, completed File, moved owner and same L3 rows. All manual raw-value
+and helper facts match. Initial Rust/tooling failures were the strict empty
+native fields, not provider failures; only measured native code/map fields
+are now populated, preserving every independent source/reference/runtime
+field. The independent Node judge passes all eighteen laws, including nine
+native and nine upstream real render executions, full upstream transforms
+and maps, every native anchor's UTF-16 bounds, exact intrinsic/root and named
+read coordinates, coherent stale-map refusal and complete ordered comments.
+Fresh exact-head hosted checks must prove the allocation repair preserves
+all frozen whole native modules/maps; historical capture is not that proof.
 
 No local Cargo/rustc/npm install, binary or Rust probe is used. Publish only
 from the actual #7561 merge and fresh-main integration, obtain exact-head
 hosted native observations without weakening assertions, then require fresh
 source checks, protected full/all-100 candidate acceptance and actual merge.
+Queue admission is held behind the literal #7580 canonical-census repair.
 Entities, component slots/children, TS erasure, compound JSX, dynamic
 attributes, wider grammar and product/default replacement remain unfinished.

@@ -81,8 +81,7 @@ fn actual_raw_jsx_values_keep_complete_normalized_module_fixtures() -> Result<()
             "rawTexts":raw_texts, "rawAttributes":raw_attributes, "helpers":helpers,
         }));
     }
-    // Strict pending fields deliberately fail until genuine exact-head hosted
-    // captures are retained. This marker preserves every complete observation.
+    // Preserve complete hosted observations before the frozen exact assertions.
     println!(
         "native-static-whitespace-capture={}",
         serde_json::to_string(&captures).map_err(|_| "capture")?

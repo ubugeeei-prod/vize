@@ -19,8 +19,19 @@
       "arguments": [
         []
       ],
-      "code": "",
-      "map": {},
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\nexport function render(){return _vize_createVNode0(\"div\", null, null);}\n",
+      "map": {
+        "file": "Whitespace.jsx",
+        "mappings": ";AAAA,gCAAgC,mBAAC,kBAE3B",
+        "names": [],
+        "sources": [
+          "Whitespace.jsx"
+        ],
+        "sourcesContent": [
+          "export function render(){return <div>\n  \t\n</div>;}\n"
+        ],
+        "version": 3
+      },
       "referenceCode": "import { createVNode as _createVNode } from \"vue\";\nexport function render() {\n  return _createVNode(\"div\", null, null);\n}",
       "referenceMap": {
         "version": 3,
@@ -79,8 +90,19 @@
       "arguments": [
         []
       ],
-      "code": "",
-      "map": {},
+      "code": "import { createVNode as _vize_createVNode0, createTextVNode as _vize_createTextVNode0 } from \"vue\";\nexport function render(){return _vize_createVNode0(\"div\", null, [_vize_createTextVNode0(\"Hello\"), _vize_createVNode0(\"span\", null, null), _vize_createTextVNode0(\"World\")]);}\n",
+      "map": {
+        "file": "Whitespace.jsx",
+        "mappings": ";AAAA,gCAAgC,mBAAC,qCAAI,UAEpC,mBAAC,4CAAM,UAEF",
+        "names": [],
+        "sources": [
+          "Whitespace.jsx"
+        ],
+        "sourcesContent": [
+          "export function render(){return <div>\r\n \tHello\r\n <span/>\r\n \tWorld\r\n</div>;}\n"
+        ],
+        "version": 3
+      },
       "referenceCode": "import { createVNode as _createVNode, createTextVNode as _createTextVNode } from \"vue\";\nexport function render() {\n  return _createVNode(\"div\", null, [_createTextVNode(\"Hello\"), _createVNode(\"span\", null, null), _createTextVNode(\"World\")]);\n}",
       "referenceMap": {
         "version": 3,
@@ -190,8 +212,19 @@
       "arguments": [
         []
       ],
-      "code": "",
-      "map": {},
+      "code": "import { createVNode as _vize_createVNode0, createTextVNode as _vize_createTextVNode0 } from \"vue\";\nexport function render(){return _vize_createVNode0(\"div\", { \"title\": \"  one two\" }, [_vize_createTextVNode0(\"x\")]);}\n",
+      "map": {
+        "file": "Whitespace.jsx",
+        "mappings": ";AAAA,gCAAgC,mBAAC,SAAI,SAAM,uCAEvC,MAAO",
+        "names": [],
+        "sources": [
+          "Whitespace.jsx"
+        ],
+        "sourcesContent": [
+          "export function render(){return <div title=\"  one\r \t two\r  \">x</div>;}\n"
+        ],
+        "version": 3
+      },
       "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nexport function render() {\n  return _createVNode(\"div\", {\n    \"title\": \"  one two\"\n  }, [_createTextVNode(\"x\")]);\n}",
       "referenceMap": {
         "version": 3,
@@ -271,8 +304,19 @@
       "arguments": [
         []
       ],
-      "code": "",
-      "map": {},
+      "code": "import { createVNode as _vize_createVNode0, createTextVNode as _vize_createTextVNode0 } from \"vue\";\nexport function render(){return _vize_createVNode0(\"div\", null, [_vize_createTextVNode0(\" \")]);}\n",
+      "map": {
+        "file": "Whitespace.jsx",
+        "mappings": ";AAAA,gCAAgC,mBAAC,qCAAI,MAAO",
+        "names": [],
+        "sources": [
+          "Whitespace.jsx"
+        ],
+        "sourcesContent": [
+          "export function render(){return <div>\t</div>;}\n"
+        ],
+        "version": 3
+      },
       "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nexport function render() {\n  return _createVNode(\"div\", null, [_createTextVNode(\" \")]);\n}",
       "referenceMap": {
         "version": 3,
@@ -348,8 +392,19 @@
       "arguments": [
         []
       ],
-      "code": "",
-      "map": {},
+      "code": "import { createVNode as _vize_createVNode0, createTextVNode as _vize_createTextVNode0 } from \"vue\";\nexport function render(){return _vize_createVNode0(\"div\", null, [_vize_createTextVNode0(\"   \")]);}\n",
+      "map": {
+        "file": "Whitespace.jsx",
+        "mappings": ";AAAA,gCAAgC,mBAAC,qCAAI;;KAE9B",
+        "names": [],
+        "sources": [
+          "Whitespace.jsx"
+        ],
+        "sourcesContent": [
+          "export function render(){return <div>   </div>;}\n"
+        ],
+        "version": 3
+      },
       "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nexport function render() {\n  return _createVNode(\"div\", null, [_createTextVNode(\"\\u2028\\u2029\\xA0\")]);\n}",
       "referenceMap": {
         "version": 3,
@@ -433,8 +488,19 @@
       "arguments": [
         []
       ],
-      "code": "",
-      "map": {},
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\n/* original module */\r\nexport function render(){return _vize_createVNode0(\"div\", { \"title\": \"\" }, null/* keep child */);}\r\n// original tail\r\n",
+      "map": {
+        "file": "Whitespace.jsx",
+        "mappings": ";AAAA;AACA,gCAAgC,mBAAC,SAAI,SAAM,UAGzC,iBACI;AACN",
+        "names": [],
+        "sources": [
+          "Whitespace.jsx"
+        ],
+        "sourcesContent": [
+          "/* original module */\r\nexport function render(){return <div title=\"\n \t\n\">\r\n {/* keep child */}\r\n</div>;}\r\n// original tail\r\n"
+        ],
+        "version": 3
+      },
       "referenceCode": "import { createVNode as _createVNode } from \"vue\";\n/* original module */\nexport function render() {\n  return _createVNode(\"div\", {\n    \"title\": \"\"\n  }, null);\n}\n// original tail",
       "referenceMap": {
         "version": 3,
@@ -496,8 +562,19 @@
       "arguments": [
         []
       ],
-      "code": "",
-      "map": {},
+      "code": "import { createVNode as _vize_createVNode0, createTextVNode as _vize_createTextVNode0 } from \"vue\";\nexport function render() { return _vize_createVNode0(\"div\", null, [_vize_createTextVNode0(\"text\")]); }",
+      "map": {
+        "file": "Whitespace.jsx",
+        "mappings": ";AAAA,kCAAkC,mBAAC,qCAAI,SAEjC",
+        "names": [],
+        "sources": [
+          "Whitespace.jsx"
+        ],
+        "sourcesContent": [
+          "export function render() { return <div>\n  text\n</div>; }"
+        ],
+        "version": 3
+      },
       "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nexport function render() {\n  return _createVNode(\"div\", null, [_createTextVNode(\"text\")]);\n}",
       "referenceMap": {
         "version": 3,
@@ -579,8 +656,21 @@
           0
         ]
       ],
-      "code": "",
-      "map": {},
+      "code": "import { createVNode as _vize_createVNode0, createTextVNode as _vize_createTextVNode1 } from \"vue\";\nconst _vize_createTextVNode0 = 11;\nexport function render(message){return _vize_createVNode0(\"div\", null, [message, _vize_createTextVNode1(\"Text data\")]);}\n",
+      "map": {
+        "file": "Whitespace.jsx",
+        "mappings": ";AAAA;AACA,uCAAuC,mBAAC,cACrCA,gCAAQ,cAEL",
+        "names": [
+          "message"
+        ],
+        "sources": [
+          "Whitespace.jsx"
+        ],
+        "sourcesContent": [
+          "const _vize_createTextVNode0 = 11;\nexport function render(message){return <div>\n \t{message}\n Text\tdata\n</div>;}\n"
+        ],
+        "version": 3
+      },
       "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nconst _vize_createTextVNode0 = 11;\nexport function render(message) {\n  return _createVNode(\"div\", null, [message, _createTextVNode(\"Text data\")]);\n}",
       "referenceMap": {
         "version": 3,
