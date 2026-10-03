@@ -79,3 +79,22 @@ checks. The mandatory tooling producer also identified six real new stage import
 rows; regenerate the canonical compiler migration surface from actual source,
 preserving every incoming row and the separate 20-file Croquis census. Fresh
 source CI is required; the draft still grants no native or protected acceptance.
+
+Corrected source `d5190b3444d94a08c6c78aa55974dfb795848934` passes Check
+37136590128. Its source-qualified first worker builds the actual PR checkout
+`b41c4bca191801a1f36ab48d0ab40dfcfb6472db` and produces artifact 11278903519.
+That actual Rust capture contains all three original source/fixture identities,
+complete native modules and raw maps. Its runtime receipt matches those whole
+module bytes and records two actual Vue 3.5.35 renders per case with no setup
+wrapper or state. The hosted combined native law set passes 57 laws without
+skips. Freeze the three complete native code/map fields from this artifact and
+make both Rust and Node comparisons unconditional; preserve the independent
+reference modules/maps, real mount/update, original-owner and link oracles.
+Artifact-driven Node execution passes all eight ordinary laws without skips.
+Replay this source onto the genuinely refreshed L4 parent, preserving incoming
+handler providers, CSS scope metadata and the complete decision record.
+
+Fresh configured exact-source checks must execute the unconditional frozen
+comparisons after this change. Protected full suites, all 100 unchanged
+instruction measurements and actual new native Stack merge remain required;
+the successful initial capture is source evidence rather than merge credit.
