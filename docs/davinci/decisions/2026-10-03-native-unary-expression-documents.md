@@ -27,8 +27,11 @@ prefix separator does not introduce another break.
 Updates, await nodes and unsupported descendants still refuse the complete
 document. This includes a supported unary parent containing an unsupported
 call/member child. Actual parser holes retain their original observations.
-Strict-module `delete` of an identifier cannot receive syntax admission credit;
-the positive operator control uses genuinely admitted `delete 0`.
+The positive `delete` operator control uses `delete 0`. Admission means the
+actual ordinary parser and its existing embedding checks, not full language
+early-error or runtime validity. In particular, the original unary parser does
+not establish strict-module delete-identifier validation; this formatter adds
+no semantic checker or acceptance credit for that unfinished provider concern.
 
 The Doc depth limit remains 16, and L1's existing 31-unit admission is unchanged.
 Unary nesting can reach that consumer bound while the actual L1 parser still
