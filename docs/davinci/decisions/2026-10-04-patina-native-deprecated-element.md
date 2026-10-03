@@ -83,3 +83,5 @@ is performed. Fresh shared-header-provider ancestry replay, exact-head Actions,
 native Stack registration, full protected suites/instruction ceilings and actual
 merge remain required. #6848 and #6881 remain open; this is an unfinished bounded
 consumer until those delivery gates pass.
+
+Genuine parent delivery is terminal: #7552 merged c5fa31f9b4b86005849b3e94adf005f897f82439, #7592 merged 08c9617c234b7691965b4c9addea745ffcb0d733 and #7596 merged 37a8ada930299ba7aceb5ee92d6cf9620e3787dd, all at 2026-10-03T16:51:26Z. Exact protected Checks37137455508/37137456754/37137457643 passed every required report and all four full Rust workers; top candidate measured 100 identical benchmarks three times and verified every pinned ceiling and ratchet. Literal main8107bca958 contains all three signed merges. This new parent exposes the unchanged native strict inspector only to sibling native modules; the Static-only inline-style child consumes that genuine capability. No old admission, original law, default route, SDK registry group or ceiling changes; fresh source Actions, native Stack identity and actual protected merges remain required for these two new consumers.
