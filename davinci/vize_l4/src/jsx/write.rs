@@ -84,8 +84,10 @@ pub(super) fn element<L: LinkSink>(
         writer.push("{ ");
         let mut separator = "";
         for attribute in header {
-            let Kind::StaticAttribute { name, value } = kind(analysis, attribute)? else {
-                return Err(invalid(attribute));
+            let decision = kind(analysis, attribute)?;
+            let name = match decision {
+                Kind::StaticAttribute { name, .. } | Kind::ExpressionAttribute { name } => name,
+                _ => return Err(invalid(attribute)),
             };
             writer.push(separator);
             separator = ", ";
@@ -95,20 +97,32 @@ pub(super) fn element<L: LinkSink>(
                 attribute.span().ok_or_else(|| invalid(attribute))?,
             );
             writer.push(": ");
-            if let Some(value) = value {
-                let value_node = attribute
-                    .children()
-                    .nth(1)
-                    .ok_or_else(|| invalid(attribute))?;
-                quoted(
-                    writer,
-                    super::whitespace::normalized(value)
-                        .as_ref()
-                        .map_or(value, |value| value.as_str()),
-                    value_node.span().ok_or_else(|| invalid(value_node))?,
-                );
-            } else {
-                writer.push("true");
+            match decision {
+                Kind::StaticAttribute {
+                    value: Some(value), ..
+                } => {
+                    let value_node = attribute
+                        .children()
+                        .nth(1)
+                        .ok_or_else(|| invalid(attribute))?;
+                    quoted(
+                        writer,
+                        super::whitespace::normalized(value)
+                            .as_ref()
+                            .map_or(value, |value| value.as_str()),
+                        value_node.span().ok_or_else(|| invalid(value_node))?,
+                    );
+                }
+                Kind::StaticAttribute { value: None, .. } => writer.push("true"),
+                Kind::ExpressionAttribute { .. } => {
+                    let value = attribute
+                        .children()
+                        .nth(1)
+                        .ok_or_else(|| invalid(attribute))?;
+                    // Preserve the admitted original expression, not JSX string rules.
+                    container(writer, analysis, value)?;
+                }
+                _ => return Err(invalid(attribute)),
             }
         }
         writer.push(" }");

@@ -82,8 +82,11 @@ pub(super) fn check(analysis: &NativeJsxAnalysis<'_>) -> Result<(), JsxEmitError
             Kind::Opening { .. } => {
                 let mut names = FxHashSet::default();
                 for attribute in node.children().skip(1) {
-                    let Kind::StaticAttribute { name, .. } = kind(analysis, attribute)? else {
-                        return Err(invalid(attribute));
+                    let name = match kind(analysis, attribute)? {
+                        Kind::StaticAttribute { name, .. } | Kind::ExpressionAttribute { name } => {
+                            name
+                        }
+                        _ => return Err(invalid(attribute)),
                     };
                     if !names.insert(name) {
                         return Err(JsxEmitError::at(Error::DuplicateAttribute, attribute));

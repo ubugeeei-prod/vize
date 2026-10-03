@@ -125,7 +125,8 @@ async function loadModule(code, fixture) {
   return import(url(addressed));
 }
 
-export async function execute(code, fixture) {
+async function executeMeasured(code, fixture, snapshot) {
+  const retain = (value) => (snapshot ? structuredClone(value) : value);
   const module = await loadModule(code, fixture);
   const render = module.render ?? module.default;
   assert.equal(typeof render, "function");
@@ -136,24 +137,36 @@ export async function execute(code, fixture) {
   for (const args of fixture.arguments) {
     const vnode = render(...args);
     assert(vue.isVNode(vnode));
-    const originalVNode = vnodeShape(vnode);
+    const originalVNode = retain(vnodeShape(vnode));
     renderer.render(vnode, root);
-    results.push({ arguments: args, vnode: originalVNode, tree: root.children.map(shape) });
+    results.push(retain({ arguments: args, vnode: originalVNode, tree: root.children.map(shape) }));
   }
   if (typeof module.first === "function") {
     const first = module.first();
-    const originalVNode = vnodeShape(first);
+    const originalVNode = retain(vnodeShape(first));
     renderer.render(first, root);
-    results.push({
-      export: "first",
-      arguments: [],
-      vnode: originalVNode,
-      tree: root.children.map(shape),
-    });
+    results.push(
+      retain({
+        export: "first",
+        arguments: [],
+        vnode: originalVNode,
+        tree: root.children.map(shape),
+      }),
+    );
   }
   renderer.render(null, root);
   assert.deepEqual(root.children, []);
   return { exports: Object.keys(module), results };
+}
+
+export async function execute(code, fixture) {
+  return executeMeasured(code, fixture, false);
+}
+
+// New changing-prop laws retain each actual pre-mount VNode and host state.
+// Existing frozen callers keep their original observation semantics.
+export async function executeSnapshots(code, fixture) {
+  return executeMeasured(code, fixture, true);
 }
 
 export async function executeRegistered(code, fixture) {
