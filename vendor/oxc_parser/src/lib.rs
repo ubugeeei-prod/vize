@@ -67,6 +67,10 @@
 use std::any::Any;
 
 pub mod config;
+// This third-party fork retains upstream implementation style. Workspace
+// membership is for distribution and regression tests, not Vize style rules.
+#![allow(clippy::all, clippy::wildcard_imports)]
+
 mod context;
 mod cursor;
 mod embedding;

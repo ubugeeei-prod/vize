@@ -34,4 +34,5 @@ relying on a root-only Cargo patch. The fork is published before its consumers;
 Cargo replaces the local path with the registry identity for published crates.
 Supporting Oxc crates retain the original pinned revision and registry version.
 Upstream source retains its own formatting and lint policy; Vize's workspace
-continues to compile and test the fork without imposing first-party Clippy rules.
+continues to compile and test the fork; its crate-level Clippy policy preserves
+upstream style without changing first-party check commands.

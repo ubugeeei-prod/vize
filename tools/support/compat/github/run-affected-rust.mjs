@@ -28,16 +28,7 @@ export function rustCommand(plan, command) {
   ) {
     throw new Error("expected a Cargo check command with one @packages@ argument");
   }
-  // Preserve the existing first-party style gate when the upstream parser
-  // joins the workspace for publication. Its tests still run in every plan.
-  const selectedArgs =
-    command[1] === "clippy"
-      ? plan.packages
-          .filter((name) => name !== "vize_oxc_parser")
-          .flatMap((name) => ["--package", name])
-      : cargoArgs;
-  if (!selectedArgs.length) throw new Error("Clippy plan must include a first-party consumer");
-  return command.flatMap((argument) => (argument === "@packages@" ? selectedArgs : [argument]));
+  return command.flatMap((argument) => (argument === "@packages@" ? cargoArgs : [argument]));
 }
 
 export function main(argv = process.argv.slice(2)) {

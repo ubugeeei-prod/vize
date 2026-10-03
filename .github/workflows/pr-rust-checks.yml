@@ -56,7 +56,7 @@ jobs:
         if: ${{ inputs.run-rust }}
       - name: Clippy
         if: ${{ inputs.run-rust }}
-        run: cargo clippy --workspace --exclude vize_oxc_parser -- -D warnings -D clippy::wildcard_imports
+        run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports
       - name: Skeleton todo ratchet
         if: ${{ inputs.run-rust }}
         run: rustc --edition 2024 tools/commands/ci/check-skeleton-todos.rs -o "$RUNNER_TEMP/check-skeleton-todos" && "$RUNNER_TEMP/check-skeleton-todos" --check
