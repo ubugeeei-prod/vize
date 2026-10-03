@@ -14,12 +14,15 @@ runs:
         VIZE_NATIVE_SFC_STRICT_SETUP_CAPTURE: ${{ runner.temp }}/native-sfc-strict-setup-capture.json
         VIZE_NATIVE_SFC_STRICT_SETUP_REFUSAL_CAPTURE: ${{ runner.temp }}/native-sfc-strict-setup-refusals.json
         VIZE_NATIVE_SFC_CONST_SETUP_CAPTURE: ${{ runner.temp }}/native-sfc-const-setup-capture.json
+        VIZE_NATIVE_SFC_TS_SETUP_CAPTURE: ${{ runner.temp }}/native-sfc-ts-setup-capture.json
+        VIZE_NATIVE_SFC_TS_SETUP_RUNTIME_CAPTURE: ${{ runner.temp }}/native-sfc-ts-setup-runtime.json
         VIZE_NATIVE_SFC_CONST_SETUP_RUNTIME_CAPTURE: ${{ runner.temp }}/native-sfc-const-setup-runtime.json
       run: |
         cargo test --locked --profile ci -p vize_atelier_sfc native::setup::tests::eight_whole_setup_modules_and_maps_match_actual_source_bound_pinned_fixtures -- --exact
         cargo test --locked --profile ci -p vize_atelier_sfc native::setup::tests::constants::five_whole_const_setup_modules_and_maps_match_actual_source_bound_pinned_fixtures -- --exact
+        cargo test --locked --profile ci -p vize_atelier_sfc native::setup::tests::typescript::three_whole_ts_primitive_setup_modules_and_maps_match_actual_source_bound_pinned_fixtures -- --exact
         cargo test --locked --profile ci -p vize_atelier_sfc native::setup::tests::strict --lib
-        vp node --test tests/tooling/native-sfc-js-setup-reference.test.ts tests/tooling/native-sfc-const-setup-reference.test.ts tests/tooling/native-sfc-strict-setup.test.ts
+        vp node --test tests/tooling/native-sfc-js-setup-reference.test.ts tests/tooling/native-sfc-primitive-setup-reference.test.ts tests/tooling/native-sfc-strict-setup.test.ts
     - name: Upload native JS setup module and runtime captures
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
@@ -29,6 +32,8 @@ runs:
           ${{ runner.temp }}/native-sfc-js-setup-runtime.json
           ${{ runner.temp }}/native-sfc-const-setup-capture.json
           ${{ runner.temp }}/native-sfc-const-setup-runtime.json
+          ${{ runner.temp }}/native-sfc-ts-setup-capture.json
+          ${{ runner.temp }}/native-sfc-ts-setup-runtime.json
           ${{ runner.temp }}/native-sfc-strict-setup-capture.json
           ${{ runner.temp }}/native-sfc-strict-setup-refusals.json
         if-no-files-found: error

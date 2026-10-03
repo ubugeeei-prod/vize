@@ -11,6 +11,7 @@ macro_rules! require {
 mod constants;
 mod refusal;
 mod strict;
+mod typescript;
 
 fn pack() -> Result<Value, String> {
     serde_json::from_str(include_str!(

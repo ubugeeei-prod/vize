@@ -1,4 +1,4 @@
-//! Explicit native SFC product entry for bounded scriptless and JS setup DOM.
+//! Explicit native SFC product entry for bounded scriptless and JS/TS setup DOM.
 //!
 //! Original descriptor, syntax, diagnostics and partial File owners are always
 //! retained. Admission and target refusals never select a legacy compiler.
@@ -144,7 +144,7 @@ impl<'a> NativeSfcCompilation<'a> {
 /// Compile through the genuine admitted SFC/File, L3 and L4 owner chain.
 ///
 /// This additive entry supports scriptless static structure and retained
-/// literals, original JS setup let/var/const primitive declarations plus empty
+/// literals, original JS/TS setup let/var/const primitive declarations plus empty
 /// statements, and plain CSS without unproven binding syntax. Other scripts,
 /// macros, scoped/module/preprocessor styles, custom/external blocks, unsupported
 /// profiles and unavailable native target semantics return typed refusals.
@@ -199,7 +199,7 @@ fn emit<L: LinkSink>(
     if let Some(script) = observation.scripts().first()
         && (observation.scripts().len() != 1
             || script.role() != ScriptRole::Setup
-            || script.lang() != Lang::Js
+            || !matches!(script.lang(), Lang::Js | Lang::Ts)
             || observation.admitted().is_none()
             || !script.syntax().is_some_and(|syntax| {
                 syntax

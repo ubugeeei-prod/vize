@@ -13,7 +13,7 @@ pub(crate) fn initial(program: &Program<'_>) -> bool {
     let profile = program.source_type;
     profile.is_module()
         && !profile.is_unambiguous()
-        && !profile.is_typescript()
+        && !profile.is_typescript_definition()
         && !profile.is_jsx()
         && program.directives.is_empty()
         && program.hashbang.is_none()
@@ -43,8 +43,9 @@ pub struct SetupIssue {
     pub kind: SetupIssueKind,
 }
 
-/// The original JS setup body contains only direct const/let/var primitive literals
-/// and empty statements. The actual File walk and original Program stay borrowed.
+/// The original JS/TS setup body contains only direct const/let/var primitive
+/// literals and empty statements, without type-bearing syntax or erasure.
+/// The actual File walk and original Program stay borrowed.
 /// This is script eligibility, not native template custody or product completion.
 ///
 /// A caller cannot supply an eligibility flag or construct the carrier:
@@ -93,7 +94,7 @@ impl<'owner, 'descriptor, 'program, 'arena> VueSetup<'owner, 'descriptor, 'progr
         let reject = |kind| SetupIssue { span, kind };
         let exposure = VueExposure::checked(file, script, program)
             .map_err(|issue| reject(SetupIssueKind::Exposure(issue.kind)))?;
-        if exposure.script().lang() != Lang::Js {
+        if !matches!(exposure.script().lang(), Lang::Js | Lang::Ts) {
             return Err(reject(SetupIssueKind::Profile));
         }
         let unit = file

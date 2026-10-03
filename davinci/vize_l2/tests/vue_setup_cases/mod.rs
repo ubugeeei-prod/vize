@@ -35,6 +35,7 @@ use vize_l2::resolution::ResolutionErrorKind;
 
 mod constants;
 mod strict;
+mod typescript;
 
 fn checked<'o, 'f, 'a>(
     original: &'o Observed<'a>,
@@ -156,8 +157,7 @@ fn unsupported_script_shapes_never_supply_a_setup_capability() -> Result<(), Str
 }
 
 #[test]
-fn genuine_empty_statements_admit_but_empty_and_non_js_or_ordinary_profiles_refuse()
--> Result<(), String> {
+fn genuine_empty_statements_admit_but_empty_or_ordinary_bodies_refuse() -> Result<(), String> {
     let arena = Allocator::default();
     let original = Observed::new(&arena, "<script setup>/* retained */;;;</script>")?;
     let file = original.file(&arena)?;
@@ -167,7 +167,6 @@ fn genuine_empty_statements_admit_but_empty_and_non_js_or_ordinary_profiles_refu
     for source in [
         "<script setup>/* retained */</script>",
         "<script>let value=1;</script>",
-        "<script setup lang=ts>let value=1;</script>",
     ] {
         let original = Observed::new(&arena, source)?;
         let file = original.file(&arena)?;
