@@ -8,7 +8,7 @@ const sha = (bytes, algorithm = 'sha256') => crypto.createHash(algorithm).update
 const record = (bytes) => ({ bytes: bytes.length, sha256: sha(bytes), base64: bytes.toString('base64') });
 const evidence = {
   schema: 1,
-  label: 'official-vue2-npm-oracle-missing-he',
+  label: 'official-vue2-npm-oracle-runtime',
   capturedAt: new Date().toISOString(),
   node: process.version,
   source: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
@@ -106,8 +106,13 @@ async function capture(name, version) {
 }
 
 try {
-  assert.equal(execFileSync('git', ['rev-parse', 'HEAD^'], { encoding: 'utf8' }).trim(), '8657c0f1850c575b9c4b0db448787963dfc4cf7c');
-  await capture('he', '1.2.0');
+  assert.equal(execFileSync('git', ['rev-parse', 'HEAD^'], { encoding: 'utf8' }).trim(), '7fb55ecd5a70360711c7af66feb0311fafcaf3e4');
+  const runtime = await capture('vue', '2.7.16');
+  assert.equal(runtime.packageJson.main, 'dist/vue.runtime.common.js');
+  runtime.file('dist/vue.runtime.common.js');
+  runtime.file('dist/vue.runtime.common.dev.js');
+  runtime.file('dist/vue.runtime.common.prod.js');
+  runtime.file('LICENSE');
   evidence.success = true;
 } catch (error) {
   evidence.success = false;
