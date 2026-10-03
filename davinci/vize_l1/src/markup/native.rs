@@ -18,6 +18,7 @@ pub use interpolation::{
 pub use operand::{
     NativeAttributeExpression, NativeAttributeExpressionFailure, NativeAttributeExpressionView,
     NativeAttributeForHead, NativeAttributeForHeadFailure, NativeAttributeForHeadView,
+    NativeAttributeHandler, NativeAttributeHandlerFailure, NativeAttributeHandlerView,
     NativeAttributeOperandError, NativeConditionKind,
 };
 pub use selected::{NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar};

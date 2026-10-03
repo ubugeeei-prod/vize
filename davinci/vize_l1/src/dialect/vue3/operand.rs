@@ -45,3 +45,30 @@ pub(crate) fn for_head(raw: &str, offset: u32, source: &str) -> Result<bool, Dir
         && head.name.end == offset + raw.len() as u32
         && head.name.slice(source) == "for")
 }
+
+/// First event head family: explicit complete static names with no modifiers.
+pub(crate) fn static_event_head(
+    raw: &str,
+    offset: u32,
+    source: &str,
+) -> Result<Option<Span>, DirectiveNameError> {
+    let Some(head) = VueDirectives.decompose(raw, offset)? else {
+        return Ok(None);
+    };
+    let expected = match head.prefix {
+        DirectivePrefix::On => offset.checked_add(1),
+        DirectivePrefix::Full if head.name.slice(source) == "on" => head.name.end.checked_add(1),
+        _ => return Ok(None),
+    };
+    let Some(ArgSyntax::Static(argument)) = head.arg else {
+        return Ok(None);
+    };
+    if head.modifiers.start != head.modifiers.end
+        || Some(argument.start) != expected
+        || argument.end != offset + raw.len() as u32
+        || argument.start == argument.end
+    {
+        return Ok(None);
+    }
+    Ok(Some(argument))
+}
