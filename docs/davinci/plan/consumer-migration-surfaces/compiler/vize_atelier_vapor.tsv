@@ -202,11 +202,14 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_slot_outlets.rs	14	
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_slot_outlets.rs	14	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_source_map.rs	27	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_source_map/support.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_static_attribute_entities.rs	10	carton	Carton host/compatibility	old	vize_carton	legacy	2
+compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_static_attribute_entities.rs	10	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_static_attribute_entities.rs	10	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_template_children.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_valueless_attr.rs	10	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_valueless_attr.rs	10	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_valueless_attr.rs	10	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/tests.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	44
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/tests.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	42
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/tests.rs	4	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/tests.rs	4	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_event_handlers/main.rs	27	carton	Carton host/compatibility	old	vize_carton	legacy	1
