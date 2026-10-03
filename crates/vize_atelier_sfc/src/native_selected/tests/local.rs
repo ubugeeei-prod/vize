@@ -24,6 +24,46 @@ fn utf16_span(text: &str, span: vize_l0::Span) -> Result<Value, String> {
     ]))
 }
 
+fn original_facts(
+    resolution: &vize_l2::resolution::HandlerResolution<'_>,
+    expected: &Value,
+) -> Result<(), String> {
+    let source = resolution.input().operand().syntax().source();
+    let scopes: Result<Vec<_>, String> = resolution
+        .scopes()
+        .iter()
+        .map(|scope| {
+            let span = scope
+                .span
+                .map(|span| utf16_span(source.text(), span))
+                .transpose()?;
+            Ok(serde_json::json!({"parent":scope.parent.map(|parent|parent.index()),"span":span}))
+        })
+        .collect();
+    require!(
+        serde_json::json!(scopes?) == expected["scopes"],
+        "independent original block scope geometry"
+    );
+    let declarations: Result<Vec<_>, String> = resolution.declarations().iter().map(|declaration| {
+        use vize_l2::resolution::HandlerDeclarationKind;
+        let kind = match declaration.kind {
+            HandlerDeclarationKind::Var => "var",
+            HandlerDeclarationKind::Let => "let",
+            HandlerDeclarationKind::Const => "const",
+            HandlerDeclarationKind::EventParameter => return Err(cstr!("implicit parameter has no authored declaration")),
+        };
+        let binding = resolution.bindings().get(declaration.binding.index() as usize).ok_or("real local binding")?;
+        require!(binding.id == declaration.binding && binding.name == declaration.name && binding.kind == declaration.kind, "exact original declaration/local identity");
+        require!(declaration.kind != HandlerDeclarationKind::Var || binding.scope.index() == 0, "actual var function ownership differs from block declaration site");
+        Ok(serde_json::json!({"name":declaration.name,"kind":kind,"scope":declaration.scope.index(),"span":utf16_span(source.text(),declaration.span)?}))
+    }).collect();
+    require!(
+        serde_json::json!(declarations?) == expected["declarations"],
+        "complete independent original declaration sites"
+    );
+    Ok(())
+}
+
 #[test]
 fn ten_original_block_local_components_and_maps_are_captured() -> Result<(), String> {
     let pack: Value = serde_json::from_str(include_str!(
@@ -108,6 +148,7 @@ fn ten_original_block_local_components_and_maps_are_captured() -> Result<(), Str
             let resolution = handler.resolution().ok_or("whole HandlerResolution")?;
             let syntax = resolution.input().operand().syntax();
             let source_window = syntax.source();
+            original_facts(resolution, expected)?;
             require!(
                 core::ptr::eq(source_window.authored_root(), source),
                 "{id}: actual handler source"

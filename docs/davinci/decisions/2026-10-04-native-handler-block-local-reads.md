@@ -41,3 +41,11 @@ all-100/instruction acceptance and actual merge are separate required receipts.
 No local Cargo/build/install, old fixture mutation or budget waiver is allowed.
 Setup/outer access, root/sibling prefixing, default/history migration and broad
 handler/For/runtime coverage remain unfinished.
+
+First source efc8f5048 / Check37158867010 fails before native capture because
+the new child test module appears before its parent's require macro declaration.
+Move only that module registration after the macro, retaining production and
+all prior laws. Add independent pinned original declaration/scope geometry to
+the existing complete capture law, and require a fresh hosted source; no native
+ten-component/runtime credit follows from the failed compilation. The draft
+stays unqueued and null maps remain an independently mandatory refusal.
