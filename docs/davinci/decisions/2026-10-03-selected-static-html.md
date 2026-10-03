@@ -60,3 +60,10 @@ empty in this slice. The unchanged Croquis generator updates only the L2
 source shard's two additional `Span` mentions; resolved legacy usage stays
 zero. Inventory classifiers, limits and numeric instruction budgets are
 unchanged.
+
+The first hosted source campaign on `85ce0a3e2` rejects the helper's arena
+constructor with E0277: L0 provides `GetAllocator` for the allocator reference,
+so this call must pass a reference to that genuine reference. The one-line
+correction matches existing canonical factory calls without changing the
+arena, owner, body, laws, storage count or budgets. The failed campaign stays
+failed; the corrected exact source requires fresh hosted execution.

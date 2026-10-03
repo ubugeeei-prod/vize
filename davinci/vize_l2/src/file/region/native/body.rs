@@ -93,7 +93,7 @@ fn element<'a, R: ComponentFactory<'a>>(
     }
     .ok_or(Kind::InvalidEvent)?;
     let span = Span::new(opening.start, ending.end);
-    let attributes = vize_l0::Vec::new_in(original.component().allocator());
+    let attributes = vize_l0::Vec::new_in(&original.component().allocator());
     let mut result = Err(Kind::IncompleteChildren);
     let node = region
         .element(
