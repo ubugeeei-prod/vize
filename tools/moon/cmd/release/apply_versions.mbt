@@ -179,6 +179,7 @@ async fn prepare_candidate(
   for manifest in [
     "davinci/vize_extension_host/tests/guests/expression-echo/Cargo.toml",
     "davinci/vize_extension_host/tests/guests/output-echo/Cargo.toml",
+    "davinci/vize_extension_host/tests/guests/typed-expression-echo/Cargo.toml",
     "examples/volt-target/Cargo.toml",
   ] {
     if !@tool.path_exists(manifest) {
