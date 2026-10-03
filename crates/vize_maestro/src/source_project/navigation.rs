@@ -7,6 +7,7 @@
 mod coordinates;
 pub(in crate::source_project) mod profile;
 mod retained;
+mod selected;
 #[cfg(test)]
 mod tests;
 mod worker;
@@ -34,6 +35,8 @@ pub enum NavigationRefusal {
     Position,
     Query(PositionQueryError),
     NativeQuery(vize_l1_to_l2::native_file::NativePositionQueryError),
+    TemplateQuery(vize_l2::file::TemplateQueryError),
+    SelectedSfcProducer(Vec<vize_l1_to_l2::native_file::NativeSelectedSfcIssue>),
     Busy,
     Capacity,
     WorkerUnavailable,
@@ -54,6 +57,7 @@ struct CachedNavigation {
 pub struct NativeNavigationProject<'host> {
     source: SourceQueryProject<'host>,
     workers: Mutex<FxHashMap<Url, CachedNavigation>>,
+    selected_workers: Mutex<FxHashMap<Url, CachedNavigation>>,
     live: Arc<AtomicUsize>,
 }
 
@@ -62,6 +66,7 @@ impl<'host> NativeNavigationProject<'host> {
         Self {
             source,
             workers: Mutex::new(FxHashMap::default()),
+            selected_workers: Mutex::new(FxHashMap::default()),
             live: Arc::new(AtomicUsize::new(0)),
         }
     }
@@ -69,31 +74,32 @@ impl<'host> NativeNavigationProject<'host> {
     /// Called after the genuine host update, never instead of that mutation.
     pub fn notify_host_change(&self, uri: &Url) {
         self.source.notify_host_change(uri);
-        let snapshot = self
-            .workers
-            .lock()
-            .get(uri)
-            .map(|cached| Arc::clone(&cached.snapshot));
-        if let Some(snapshot) = snapshot
-            && !self.source.snapshot_is_current(&snapshot)
-        {
-            // Preserve a fresh worker inserted between the host change and hook.
-            let retired = {
-                let mut workers = self.workers.lock();
-                if workers
-                    .get(uri)
-                    .is_some_and(|cached| Arc::ptr_eq(&cached.snapshot, &snapshot))
-                {
-                    workers.remove(uri)
-                } else {
-                    None
-                }
-            };
-            if let Some(CachedNavigation {
-                result: Ok(worker), ..
-            }) = retired
+        for cache in [&self.workers, &self.selected_workers] {
+            let snapshot = cache
+                .lock()
+                .get(uri)
+                .map(|cached| Arc::clone(&cached.snapshot));
+            if let Some(snapshot) = snapshot
+                && !self.source.snapshot_is_current(&snapshot)
             {
-                worker.retire();
+                // Preserve a fresh worker inserted between the host change and hook.
+                let retired = {
+                    let mut workers = cache.lock();
+                    if workers
+                        .get(uri)
+                        .is_some_and(|cached| Arc::ptr_eq(&cached.snapshot, &snapshot))
+                    {
+                        workers.remove(uri)
+                    } else {
+                        None
+                    }
+                };
+                if let Some(CachedNavigation {
+                    result: Ok(worker), ..
+                }) = retired
+                {
+                    worker.retire();
+                }
             }
         }
     }
@@ -102,15 +108,32 @@ impl<'host> NativeNavigationProject<'host> {
         &self,
         snapshot: Arc<SourceSnapshot>,
     ) -> Result<Arc<NavigationWorker>, NavigationRefusal> {
+        self.worker_for(snapshot, false)
+    }
+
+    fn worker_for(
+        &self,
+        snapshot: Arc<SourceSnapshot>,
+        selected: bool,
+    ) -> Result<Arc<NavigationWorker>, NavigationRefusal> {
+        let cache = if selected {
+            &self.selected_workers
+        } else {
+            &self.workers
+        };
         loop {
-            let mut workers = self.workers.lock();
+            let mut workers = cache.lock();
             // A post-mutation hook must acquire this same mutex. If mutation
             // precedes this check, refuse; if it follows, its hook retires the
             // inserted entry. No host guard survives spawning or an await.
             if !self.source.snapshot_is_current(&snapshot) {
                 return Err(NavigationRefusal::Host(SnapshotRefusal::Superseded));
             }
-            let profile = self.profile(&snapshot)?;
+            let profile = match (selected, self.profile(&snapshot)?) {
+                (true, Profile::Vue(configuration)) => Profile::SelectedVue(configuration),
+                (true, _) => return Err(NavigationRefusal::Language),
+                (false, profile) => profile,
+            };
             if let Some(cached) = workers.get(snapshot.uri()) {
                 if Arc::ptr_eq(&cached.snapshot, &snapshot) && cached.profile == profile {
                     if let Ok(worker) = &cached.result
@@ -179,7 +202,7 @@ impl<'host> NativeNavigationProject<'host> {
         result: Result<(Profile, Result<T, NavigationRefusal>), NavigationRefusal>,
     ) -> Result<T, NavigationRefusal> {
         let (profile, response) = result?;
-        if let Profile::Vue(configuration) = profile
+        if let Profile::Vue(configuration) | Profile::SelectedVue(configuration) = profile
             && self.source.native_vue_configuration() != Some(configuration)
         {
             return Err(NavigationRefusal::ConfigurationChanged);
@@ -188,22 +211,24 @@ impl<'host> NativeNavigationProject<'host> {
     }
 
     fn retire_changed_configuration(&self, uri: &Url) {
-        let retired = {
-            let mut workers = self.workers.lock();
-            let current = self.source.native_vue_configuration();
-            if workers.get(uri).is_some_and(|cached| {
-                matches!(cached.profile, Profile::Vue(configuration) if Some(configuration) != current)
+        for cache in [&self.workers, &self.selected_workers] {
+            let retired = {
+                let mut workers = cache.lock();
+                let current = self.source.native_vue_configuration();
+                if workers.get(uri).is_some_and(|cached| {
+                matches!(cached.profile, Profile::Vue(configuration) | Profile::SelectedVue(configuration) if Some(configuration) != current)
             }) {
                 workers.remove(uri)
             } else {
                 None
             }
-        };
-        if let Some(CachedNavigation {
-            result: Ok(worker), ..
-        }) = retired
-        {
-            worker.retire();
+            };
+            if let Some(CachedNavigation {
+                result: Ok(worker), ..
+            }) = retired
+            {
+                worker.retire();
+            }
         }
     }
 
@@ -264,10 +289,12 @@ impl<'host> NativeNavigationProject<'host> {
 
 impl Drop for NativeNavigationProject<'_> {
     fn drop(&mut self) {
-        let retired = core::mem::take(self.workers.get_mut());
-        for cached in retired.into_values() {
-            if let Ok(worker) = cached.result {
-                worker.retire();
+        for cache in [self.workers.get_mut(), self.selected_workers.get_mut()] {
+            let retired = core::mem::take(cache);
+            for cached in retired.into_values() {
+                if let Ok(worker) = cached.result {
+                    worker.retire();
+                }
             }
         }
     }

@@ -2,6 +2,7 @@
 mod capacity;
 mod jsx;
 mod lifecycle;
+mod selected;
 mod vue;
 
 use crate::{

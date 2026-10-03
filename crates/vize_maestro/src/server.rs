@@ -124,6 +124,14 @@ pub(crate) fn build_lsp_service() -> (LspService<MaestroServer>, ClientSocket) {
         .custom_method(
             native_navigation::REFERENCES_METHOD,
             MaestroServer::native_references,
+        )
+        .custom_method(
+            native_navigation::TEMPLATE_DEFINITION_METHOD,
+            MaestroServer::native_template_definition,
+        )
+        .custom_method(
+            native_navigation::TEMPLATE_REFERENCES_METHOD,
+            MaestroServer::native_template_references,
         );
     builder.finish()
 }

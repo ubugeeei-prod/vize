@@ -7,6 +7,7 @@ mod jsx;
 mod lifecycle;
 mod refusals;
 mod retention;
+mod selected;
 mod vue;
 
 use super::{NativeNavigationProject, NavigationRefusal, SourceQueryProject, coordinates};

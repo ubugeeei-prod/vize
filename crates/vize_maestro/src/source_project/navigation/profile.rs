@@ -8,6 +8,7 @@ use vize_l1::{
 pub(super) enum Profile {
     Program(ProgramOptions),
     Vue(VueConfiguration),
+    SelectedVue(VueConfiguration),
 }
 
 /// Coarse actual server settings; these confer no SFC or File admission.

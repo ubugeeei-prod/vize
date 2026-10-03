@@ -8,8 +8,40 @@ use tower_lsp::{
 
 pub(super) const DEFINITION_METHOD: &str = "vize/nativeDefinition";
 pub(super) const REFERENCES_METHOD: &str = "vize/nativeReferences";
+pub(super) const TEMPLATE_DEFINITION_METHOD: &str = "vize/nativeTemplateDefinition";
+pub(super) const TEMPLATE_REFERENCES_METHOD: &str = "vize/nativeTemplateReferences";
 
 impl MaestroServer {
+    pub(super) async fn native_template_definition(
+        &self,
+        params: GotoDefinitionParams,
+    ) -> Result<Vec<Location>> {
+        let request = params.text_document_position_params;
+        self.navigation
+            .as_ref()
+            .ok_or_else(Error::internal_error)?
+            .template_definition(&request.text_document.uri, request.position)
+            .await
+            .map_err(query_error)
+    }
+
+    pub(super) async fn native_template_references(
+        &self,
+        params: ReferenceParams,
+    ) -> Result<Vec<Location>> {
+        let request = params.text_document_position;
+        self.navigation
+            .as_ref()
+            .ok_or_else(Error::internal_error)?
+            .template_references(
+                &request.text_document.uri,
+                request.position,
+                params.context.include_declaration,
+            )
+            .await
+            .map_err(query_error)
+    }
+
     pub(super) fn notify_native_navigation(&self, uri: &Url) {
         if let Some(project) = &self.navigation {
             project.notify_host_change(uri);
@@ -70,7 +102,9 @@ fn query_error(refusal: NavigationRefusal) -> Error {
             ErrorCode::ServerError(-32004),
             "Native original span projection refused",
         ),
-        NavigationRefusal::Query(_) | NavigationRefusal::NativeQuery(_) => (
+        NavigationRefusal::Query(_)
+        | NavigationRefusal::NativeQuery(_)
+        | NavigationRefusal::TemplateQuery(_) => (
             ErrorCode::ServerError(-32005),
             "Native File position refused",
         ),
@@ -93,6 +127,10 @@ fn query_error(refusal: NavigationRefusal) -> Error {
         NavigationRefusal::SfcProducer(_) => (
             ErrorCode::ServerError(-32010),
             "Native original SFC observation refused",
+        ),
+        NavigationRefusal::SelectedSfcProducer(_) => (
+            ErrorCode::ServerError(-32011),
+            "Native original selected SFC observation refused",
         ),
         NavigationRefusal::WorkerUnavailable => (
             ErrorCode::ServerError(-32008),

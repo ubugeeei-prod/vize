@@ -15,10 +15,21 @@ use tower_lsp::lsp_types::{Location, Position};
 
 use super::{NavigationRefusal, SourceSnapshot, profile::Profile, retained};
 
+pub(super) mod selected;
+
 pub(super) const WORKER_LIMIT: usize = 16;
 const REQUEST_LIMIT: usize = 16;
 
 pub(super) enum Command {
+    TemplateDefinition(
+        Position,
+        oneshot::Sender<Result<Vec<Location>, NavigationRefusal>>,
+    ),
+    #[cfg(test)]
+    SelectedInspect(
+        Position,
+        oneshot::Sender<Result<selected::Inspection, NavigationRefusal>>,
+    ),
     Definition(
         Position,
         oneshot::Sender<Result<Option<Location>, NavigationRefusal>>,
@@ -148,6 +159,9 @@ impl NavigationWorker {
                     Profile::Program(options) => retained::run(owner, options, receiver, stop),
                     Profile::Vue(configuration) => {
                         retained::vue::run(owner, configuration, receiver, stop);
+                    }
+                    Profile::SelectedVue(configuration) => {
+                        retained::selected::run(owner, configuration, receiver, stop);
                     }
                 }
             })
@@ -289,6 +303,15 @@ pub(super) fn refused(receiver: Receiver<Command>, control: &Control, refusal: N
             break;
         }
         match command {
+            Command::TemplateDefinition(_, reply) => {
+                if !reply.is_canceled() {
+                    let _ = reply.send(Err(refusal.clone()));
+                }
+            }
+            #[cfg(test)]
+            Command::SelectedInspect(_, reply) => {
+                let _ = reply.send(Err(refusal.clone()));
+            }
             Command::Definition(_, reply) => {
                 if !reply.is_canceled() {
                     let _ = reply.send(Err(refusal.clone()));
