@@ -30,12 +30,14 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
                     self.section_start.saturating_sub(2),
                 );
             }
+            self.declaration_recovered = c == GT;
             self.state = State::InDeclaration;
         }
     }
 
     pub(super) fn state_in_declaration(&mut self, c: u8) {
         if c == GT {
+            self.finish_declaration(self.index + 1, true);
             self.state = State::Text;
             self.section_start = self.index + 1;
         }
@@ -57,7 +59,18 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
             self.current_sequence = Some(Sequence::CommentEnd);
             self.section_start = self.index + 1;
         } else {
+            self.declaration_recovered = c == GT;
             self.state = State::InDeclaration;
+        }
+    }
+
+    pub(super) fn finish_declaration(&mut self, end: usize, terminated: bool) {
+        if self.declaration_recovered {
+            self.sink
+                .on_declaration_recovery(self.declaration_start, end, terminated);
+        } else {
+            self.sink
+                .on_declaration(self.declaration_start, end, terminated);
         }
     }
 

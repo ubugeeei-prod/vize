@@ -13,6 +13,8 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
     pub(super) fn state_before_tag_name(&mut self, c: u8) {
         if c == EXCLAMATION_MARK {
             self.state = State::BeforeDeclaration;
+            self.declaration_start = self.index.saturating_sub(1);
+            self.declaration_recovered = false;
             self.section_start = self.index + 1;
         } else if c == QUESTION_MARK {
             self.sink.on_error(

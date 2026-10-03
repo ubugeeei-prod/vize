@@ -23,6 +23,7 @@
 //! Design: <https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929>.
 
 pub mod directive;
+pub mod document;
 pub mod entity;
 pub mod grammar;
 pub mod lex;

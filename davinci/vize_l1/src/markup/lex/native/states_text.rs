@@ -12,6 +12,12 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
         let has_section = self.section_start < self.index;
 
         match self.state {
+            State::BeforeDeclaration
+            | State::InDeclaration
+            | State::BeforeComment
+            | State::CDATASequence => {
+                self.finish_declaration(self.index, false);
+            }
             State::Text if has_section => {
                 self.sink.on_text(self.section_start, self.index);
             }

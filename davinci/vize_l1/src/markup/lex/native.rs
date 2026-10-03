@@ -60,6 +60,10 @@ pub struct Lexer<'a, P: Profile, S: Sink> {
     /// The state to return to after an entity.
     base_state: State,
     section_start: usize,
+    /// Original `<!` offset; recovery can advance `section_start` separately.
+    declaration_start: usize,
+    /// The preserved driver skipped an earlier declaration closing byte.
+    declaration_recovered: bool,
     index: usize,
     sink: S,
     delimiter_open: &'a [u8],
@@ -96,6 +100,8 @@ impl<'a, P: Profile, S: Sink> Lexer<'a, P, S> {
             state: State::Text,
             base_state: State::Text,
             section_start: 0,
+            declaration_start: 0,
+            declaration_recovered: false,
             index: 0,
             sink,
             delimiter_open: delimiters.open,
@@ -124,6 +130,12 @@ impl<'a, P: Profile, S: Sink> Lexer<'a, P, S> {
 
     pub fn into_sink(self) -> S {
         self.sink
+    }
+
+    /// Intrinsic EOF state of this actual driver. Silent pending states do
+    /// not certify a normal lexical run merely because `on_end` was reached.
+    pub(crate) fn normal_end_state(&self) -> bool {
+        matches!(self.state, State::Text | State::InRCDATA)
     }
 
     #[inline]

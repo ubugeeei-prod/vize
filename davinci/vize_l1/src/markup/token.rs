@@ -108,6 +108,17 @@ pub trait Sink {
     fn on_cdata(&mut self, start: usize, end: usize);
     fn on_processing_instruction(&mut self, start: usize, end: usize);
 
+    /// The original bytes of a markup declaration, including `<!` and a
+    /// present closing `>`. `terminated` is false when the driver reached EOF
+    /// while still reading it. Comments and complete CDATA are separate events.
+    /// Existing sinks keep the original declaration-skipping policy.
+    fn on_declaration(&mut self, _start: usize, _end: usize, _terminated: bool) {}
+
+    /// A skipped declaration recovery window: the existing driver swallowed
+    /// an earlier `>` while entering its declaration state. This is not an
+    /// exact declaration frame. Default sinks retain their original behavior.
+    fn on_declaration_recovery(&mut self, _start: usize, _end: usize, _terminated: bool) {}
+
     fn on_end(&mut self);
     fn on_error(&mut self, code: LexErrorCode, index: usize);
 
