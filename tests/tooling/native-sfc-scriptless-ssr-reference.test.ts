@@ -117,6 +117,7 @@ test(
       assert.equal(actual.source, expected.source);
       assert.equal(actual.filename, expected.filename);
       assert.equal(actual.outcome, "complete_original_sfc_module");
+      assert.deepEqual(JSON.parse(actual.mapText), actual.map);
       assert(actual.code.includes("export default _sfc_main"));
       assert(!actual.code.includes("useSSRContext"));
       const codec = checkMap(actual);
@@ -190,7 +191,8 @@ test(
         id: actual.id,
         sourceSha256: hash(actual.source),
         codeSha256: hash(actual.code),
-        mapSha256: hash(JSON.stringify(actual.map)),
+        mapSha256: hash(actual.mapText),
+        mapValueSha256: hash(JSON.stringify(actual.map)),
         linksSha256: hash(JSON.stringify(actual.links)),
         referenceCodeSha256: expected.referenceCodeSha256,
         referenceMapSha256: expected.referenceMapSha256,

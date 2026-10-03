@@ -109,7 +109,7 @@ fn original_whole_sfc_modules_keep_selected_custody_and_complete_maps() {
         assert!(plain.source_map().is_none());
         assert!(plain.document().links().is_empty());
         assert_eq!(file.artifact().provenance(), provenance);
-        modules.push(serde_json::json!({"id":fixture["id"],"source":source,"filename":filename,"code":output.code(),"map":map,"links":links,"handler":handler,"outcome":"complete_original_sfc_module"}));
+        modules.push(serde_json::json!({"id":fixture["id"],"source":source,"filename":filename,"code":output.code(),"map":map,"mapText":output.source_map().unwrap(),"links":links,"handler":handler,"outcome":"complete_original_sfc_module"}));
     }
     if let Ok(path) = std::env::var("VIZE_NATIVE_SFC_SSR_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&serde_json::json!({"custody":"once_selected_scriptless_sfc","modules":modules,"refusals":refusals()})).unwrap()).unwrap();
