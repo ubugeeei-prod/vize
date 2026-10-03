@@ -83,3 +83,13 @@ JS/TS SFC family. Vue dialects/macros/control constructs outside that family,
 JSX/TSX, external/workspace navigation, L3/L4 retention, standard endpoint
 routing, whole product adoption and complete fix history
 [#6883](https://github.com/ubugeeei-prod/vize/issues/6883) remain unfinished.
+
+The first hosted source head `2a2a0738` failed the actual feature compilation in
+[Check 37119631818](https://github.com/ubugeeei-prod/vize/actions/runs/37119631818/job/111194076938).
+Two response paths omitted propagation of the borrowed binding query's Result;
+the dev-only original Program inspection also read an admission handle after
+its authentic consumption. The correction propagates the original refusal and
+captures only dev inspection data before the existing checked handoff. It adds
+no parser call, admission constructor or altered test input/golden. Runtime,
+minimal and strict feature checks were not reached at that failed head; it was
+never queued. A fresh corrected head requires complete hosted acceptance.

@@ -53,6 +53,15 @@ pub(super) fn run(
     let Some(admitted) = syntax.admitted_program() else {
         return refused(receiver, &control, NavigationRefusal::Syntax);
     };
+    #[cfg(test)]
+    let original = {
+        let program = admitted.program();
+        Original {
+            program: program.body.as_ptr() as usize,
+            statements: program.body.len(),
+            sfc: None,
+        }
+    };
     let Ok(program) = ProgramInput::checked(admitted, block, 0) else {
         return refused(receiver, &control, NavigationRefusal::Projection);
     };
@@ -84,14 +93,7 @@ pub(super) fn run(
         lines: &lines,
         template: None,
         #[cfg(test)]
-        original: {
-            let original = admitted.program();
-            Original {
-                program: original.body.as_ptr() as usize,
-                statements: original.body.len(),
-                sfc: None,
-            }
-        },
+        original,
     };
     serve(&query, receiver, &control);
     // Explicit order: borrowed response work, then File, original syntax, arena.
@@ -250,7 +252,7 @@ impl<'file, 'arena> RetainedNavigation<'file, 'arena> {
     }
 
     fn definition(&self, position: Position) -> Result<Option<Location>, NavigationRefusal> {
-        self.binding(self.offset(position)?)
+        self.binding(self.offset(position)?)?
             .map(|binding| {
                 let declaration = binding.declaration().ok_or(NavigationRefusal::Projection)?;
                 self.location(declaration.span)
@@ -263,7 +265,7 @@ impl<'file, 'arena> RetainedNavigation<'file, 'arena> {
         position: Position,
         include_declaration: bool,
     ) -> Result<Vec<Location>, NavigationRefusal> {
-        let Some(binding) = self.binding(self.offset(position)?) else {
+        let Some(binding) = self.binding(self.offset(position)?)? else {
             return Ok(Vec::new());
         };
         let mut spans = self
