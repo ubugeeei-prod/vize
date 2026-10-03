@@ -141,6 +141,7 @@ impl<'a> FileProducer<'a> {
             input.block.span(),
             input.profile,
             scope == ProgramScope::Nested,
+            crate::file::ProgramOrigin::checked(input.references.program()),
         ) else {
             return Err(ProgramInputError {
                 span: input.block.span(),

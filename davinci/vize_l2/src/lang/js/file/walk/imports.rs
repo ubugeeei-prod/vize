@@ -53,6 +53,7 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
                 initializer: InitializerKind::Unknown,
                 import_source: Some(String::from(import.source.value.as_str())),
                 imported_name: Some(imported),
+                direct_program: true,
             });
             if let Some(declaration) =
                 binding.and_then(|id| self.facts.declarations.get(id.index() as usize))

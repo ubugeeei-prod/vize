@@ -1,5 +1,6 @@
 //! Crate-private construction capability fed only by real language events.
 
+use super::records::ProgramOrigin;
 use super::{
     Declaration, DeclarationKind, Export, FileArtifact, FileIssue, FileIssueKind, Import,
     InitializerKind, Namespace, Reference, ReferenceTarget, RejectedFile, Scope, ScopeId,
@@ -83,6 +84,7 @@ pub(crate) struct DeclarationSite<'a> {
     pub initializer: InitializerKind,
     pub import_source: Option<String>,
     pub imported_name: Option<String>,
+    pub direct_program: bool,
 }
 
 impl<'a> Facts<'a> {
@@ -116,6 +118,7 @@ impl<'a> Facts<'a> {
         span: Span,
         profile: ScriptProfile,
         nested: bool,
+        origin: ProgramOrigin,
     ) -> Option<(ScriptUnitId, ScopeId)> {
         let unit = ScriptUnitId(index);
         if self.units.iter().any(|existing| existing.id == unit) {
@@ -127,7 +130,8 @@ impl<'a> Facts<'a> {
         } else {
             ScopeId(0)
         };
-        self.units.push(ScriptUnit::new(unit, span, profile, scope));
+        self.units
+            .push(ScriptUnit::new(unit, span, profile, scope, origin));
         Some((unit, scope))
     }
 
@@ -186,7 +190,15 @@ impl<'a> Facts<'a> {
             initializer: site.initializer,
             import_source: site.import_source,
             imported_name: site.imported_name,
+            direct_program: site.direct_program,
         });
+        if site.direct_program
+            && site.namespace == Namespace::Value
+            && super::vue::reserved(site.name)
+            && let Some(unit) = self.units.iter_mut().find(|unit| unit.id == site.unit)
+        {
+            unit.origin.reserved_binding = true;
+        }
         Some(id)
     }
 

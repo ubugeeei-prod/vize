@@ -17,6 +17,8 @@ pub use region::{
 };
 mod records;
 mod template;
+pub(crate) use records::ProgramOrigin;
+pub mod vue;
 pub use records::{
     Declaration, DeclarationKind, Export, FileIssue, FileIssueKind, Import, InitializerKind,
     Namespace, Reference, ReferenceTarget, Scope, ScopeId, ScriptProfile, ScriptUnit, ScriptUnitId,

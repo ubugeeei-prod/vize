@@ -3,7 +3,7 @@
 use super::{ProgramInput, Walk};
 use crate::file::build::Facts;
 use crate::file::{FileIssueKind, Namespace, Reference, ReferenceTarget, ScopeId, ScriptUnitId};
-use crate::lang::js::file::observer::{CallEvent, FileObserver};
+use crate::lang::js::file::observer::{CallEvent, FileObserver, InvocationEvent};
 use crate::resolution::sink::{ReferenceEvent, ReferenceSink};
 use crate::resolution::{ResolutionError, ResolutionErrorKind};
 use oxc_ast::ast::{CallExpression, Expression, ModuleExportName};
@@ -45,6 +45,32 @@ impl<'a, O: FileObserver<'a>> ReferenceSink<'a> for Pending<'_, '_, 'a, O> {
         Ok(())
     }
 
+    fn observe_invocation(
+        &mut self,
+        expression: &Expression<'a>,
+        span: Span,
+    ) -> Result<(), ResolutionErrorKind> {
+        let span = self
+            .input
+            .references
+            .authored_span(span)
+            .ok_or(ResolutionErrorKind::InvalidSpan)?;
+        if let Some(unit) = self
+            .facts
+            .units
+            .iter_mut()
+            .find(|unit| unit.id == self.unit)
+        {
+            unit.origin.has_call = true;
+        }
+        self.observer.invocation(InvocationEvent {
+            unit: self.unit,
+            scope: self.scope,
+            span,
+            expression,
+        })
+    }
+
     fn observe_call(
         &mut self,
         call: &CallExpression<'a>,
@@ -55,6 +81,14 @@ impl<'a, O: FileObserver<'a>> ReferenceSink<'a> for Pending<'_, '_, 'a, O> {
             .references
             .authored_span(span)
             .ok_or(ResolutionErrorKind::InvalidSpan)?;
+        if let Some(unit) = self
+            .facts
+            .units
+            .iter_mut()
+            .find(|unit| unit.id == self.unit)
+        {
+            unit.origin.has_call = true;
+        }
         self.observer.call(CallEvent {
             unit: self.unit,
             scope: self.scope,

@@ -90,6 +90,19 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             span,
             statement,
         });
+        if matches!(
+            statement,
+            Statement::ExportNamedDeclaration(_)
+                | Statement::ExportDefaultDeclaration(_)
+                | Statement::ExportAllDeclaration(_)
+        ) && let Some(unit) = self
+            .facts
+            .units
+            .iter_mut()
+            .find(|unit| unit.id == self.unit)
+        {
+            unit.origin.has_export = true;
+        }
         if self.context == Context::Function
             && !matches!(
                 statement,
@@ -188,6 +201,7 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             initializer,
             import_source: None,
             imported_name: None,
+            direct_program: self.context == Context::Unit,
         })?;
         let initializer = match expression {
             Some(expression) => self.span(expression.span()).map(|span| (expression, span)),

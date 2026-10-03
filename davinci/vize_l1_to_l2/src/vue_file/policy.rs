@@ -3,7 +3,7 @@ use super::{VueDeclaration, VueFileIssue, VueFileIssueKind, VueScriptReceipt, Vu
 use alloc::vec::Vec;
 use oxc_ast::ast::Statement;
 use vize_l2::file::{Declaration, Namespace, ScopeId, ScriptUnit, ScriptUnitId, TemplatePolicy};
-use vize_l2::lang::js::{CallEvent, DeclaredEvent, FileObserver, StatementEvent};
+use vize_l2::lang::js::{CallEvent, DeclaredEvent, FileObserver, InvocationEvent, StatementEvent};
 use vize_l2::resolution::ResolutionErrorKind;
 
 #[derive(Clone, Copy)]
@@ -96,6 +96,15 @@ impl<'a> FileObserver<'a> for PolicyObserver<'_> {
             kind: VueFileIssueKind::UnsupportedCall {
                 optional: event.call.optional,
             },
+        });
+        Err(ResolutionErrorKind::UnsupportedSyntax)
+    }
+    fn invocation(&mut self, event: InvocationEvent<'_, 'a>) -> Result<(), ResolutionErrorKind> {
+        self.issues.push(VueFileIssue {
+            unit: Some(event.unit),
+            scope: Some(event.scope),
+            span: event.span,
+            kind: VueFileIssueKind::UnsupportedInvocation,
         });
         Err(ResolutionErrorKind::UnsupportedSyntax)
     }
