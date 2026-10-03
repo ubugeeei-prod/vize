@@ -19,6 +19,15 @@ const pack = JSON.parse(
     "utf8",
   ),
 );
+const nativePack = JSON.parse(
+  fs.readFileSync(
+    new URL(
+      "../../crates/vize_atelier_sfc/tests/fixtures/native-scriptless-ssr-output.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+);
 const refusalIds = [
   "ordinary-empty",
   "setup-empty",
@@ -39,6 +48,18 @@ const refusalIds = [
   "handler-global",
   "handler-syntax",
 ];
+
+function checkNativePacket(capture: any) {
+  assert.equal(nativePack.schema, "vize.native-sfc.scriptless-ssr-output");
+  assert.equal(nativePack.version, 1);
+  assert.equal(capture.custody, "once_selected_scriptless_sfc");
+  assert.equal(
+    Object.hasOwn(capture, "suiteCompletion"),
+    false,
+    "partial positive packet grants no runtime credit",
+  );
+  assert.deepEqual(capture, nativePack.capture);
+}
 
 test("fourteen official complete SFC transforms retain primary modules, maps and SSR context", async () => {
   checkVersions();
@@ -81,6 +102,10 @@ test("fourteen official complete SFC transforms retain primary modules, maps and
 });
 
 test("primary judge detects missing actual SSR-context registration and evaluated handlers", async () => {
+  assert.throws(
+    () => checkNativePacket({ ...nativePack.capture, suiteCompletion: "positive_modules_only" }),
+    /partial positive packet grants no runtime credit/,
+  );
   const row = pack.fixtures.find((row: any) => row.id === "handler-nested");
   const stripped = row.referenceCode.replace(
     '  ;(ssrContext.modules || (ssrContext.modules = new Set())).add("handler-nested.vue")\n',
@@ -106,7 +131,7 @@ test(
   async () => {
     assert(capturePath, "hosted SSR requires fresh whole-SFC source-built modules");
     const capture = JSON.parse(fs.readFileSync(capturePath, "utf8"));
-    assert.equal(capture.custody, "once_selected_scriptless_sfc");
+    checkNativePacket(capture);
     assert.deepEqual(
       capture.modules.map((row: any) => row.id),
       pack.fixtures.map((row: any) => row.id),
@@ -212,24 +237,22 @@ test(
       );
       assert(typeof row.source === "string" && row.source.length > 0);
     }
+    const runtimeCapture = {
+      custody: capture.custody,
+      modules: 14,
+      refusals: capture.refusals,
+      nativeWholeExecutions: 42,
+      nativeDirectExecutions: 42,
+      officialWholeExecutions: 42,
+      completeUpstreamMapParity: false,
+      viteContextParity: false,
+      runtime,
+    };
+    assert.deepEqual(runtimeCapture, nativePack.runtime);
     if (process.env.VIZE_NATIVE_SFC_SSR_RUNTIME_CAPTURE)
       fs.writeFileSync(
         process.env.VIZE_NATIVE_SFC_SSR_RUNTIME_CAPTURE,
-        JSON.stringify(
-          {
-            custody: capture.custody,
-            modules: 14,
-            refusals: capture.refusals,
-            nativeWholeExecutions: 42,
-            nativeDirectExecutions: 42,
-            officialWholeExecutions: 42,
-            completeUpstreamMapParity: false,
-            viteContextParity: false,
-            runtime,
-          },
-          null,
-          2,
-        ) + "\n",
+        JSON.stringify(runtimeCapture, null, 2) + "\n",
       );
   },
 );

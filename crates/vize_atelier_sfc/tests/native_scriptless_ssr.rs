@@ -5,9 +5,10 @@ use vize_l0::{Allocator, config::VueVersion};
 use vize_l1::embed::syntax::NativeForRefusal;
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind;
 use vize_l2::{
-    file::{FileIssueKind, RejectedFileFor},
-    lang::js::NativeTemplateIssueKind,
+    file::{FileIssueKind, RejectedFileFor, RejectedFileHandler},
+    lang::js::{HandlerInputErrorKind, NativeTemplateIssueKind},
     op::{BindingOp, OnOp, Op, Region},
+    resolution::ResolutionErrorKind,
 };
 use vize_l3::decision::ssr::SsrUnsupported;
 use vize_l4::module::AssemblyError;
@@ -116,10 +117,21 @@ fn original_whole_sfc_modules_keep_selected_custody_and_complete_maps() {
         assert_eq!(file.artifact().provenance(), provenance);
         modules.push(serde_json::json!({"id":fixture["id"],"source":source,"filename":filename,"code":output.code(),"map":map,"mapText":output.source_map().unwrap(),"links":links,"handler":handler,"outcome":"complete_original_sfc_module"}));
     }
-    if let Ok(path) = std::env::var("VIZE_NATIVE_SFC_SSR_CAPTURE") {
-        std::fs::write(path, serde_json::to_vec_pretty(&serde_json::json!({"custody":"once_selected_scriptless_sfc","modules":modules,"refusals":refusals()})).unwrap()).unwrap();
-    } else {
-        refusals();
+    let capture_path = std::env::var("VIZE_NATIVE_SFC_SSR_CAPTURE").ok();
+    if let Some(path) = &capture_path {
+        std::fs::write(
+            format!("{path}.positive.json"),
+            serde_json::to_vec_pretty(&serde_json::json!({"custody":"once_selected_scriptless_sfc","suiteCompletion":"positive_modules_only","modules":&modules})).unwrap(),
+        ).unwrap();
+    }
+    let capture = serde_json::json!({"custody":"once_selected_scriptless_sfc","modules":modules,"refusals":refusals()});
+    let frozen: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/native-scriptless-ssr-output.json")).unwrap();
+    assert_eq!(frozen["schema"], "vize.native-sfc.scriptless-ssr-output");
+    assert_eq!(frozen["version"], 1);
+    assert_eq!(capture, frozen["capture"]);
+    if let Some(path) = capture_path {
+        std::fs::write(path, serde_json::to_vec_pretty(&capture).unwrap()).unwrap();
     }
 }
 
@@ -177,6 +189,30 @@ fn refusals() -> Vec<serde_json::Value> {
             compilation.observation().descriptor().source(),
             source
         ));
+        match error {
+            NativeSsrSfcCompileError::Lowering(issue) => match issue.kind {
+                NativeSelectedSfcIssueKind::Descriptor
+                | NativeSelectedSfcIssueKind::Script(_)
+                | NativeSelectedSfcIssueKind::Style => {
+                    assert!(compilation.observation().template().is_none());
+                    assert!(compilation.observation().rejected_creation().is_none());
+                }
+                NativeSelectedSfcIssueKind::Template(_) => {
+                    let original = compilation.observation().template().unwrap();
+                    assert!(original.view().is_err());
+                    assert!(original.rejected_file().is_none());
+                    let file = original.file().unwrap();
+                    assert!(!file.is_complete());
+                    assert!(core::ptr::eq(file.artifact().source(), source));
+                }
+                _ => panic!("{id}: unexpected original lowering boundary: {error:?}"),
+            },
+            NativeSsrSfcCompileError::Ssr(_) => {
+                let admitted = compilation.observation().admitted().unwrap();
+                assert!(admitted.into_template_view().file().unwrap().is_complete());
+            }
+            _ => panic!("{id}: unexpected target boundary: {error:?}"),
+        }
         match id {
             "ordinary-empty" | "setup-empty" | "setup-constant" => assert!(
                 matches!(error, NativeSsrSfcCompileError::Lowering(issue) if matches!(issue.kind, NativeSelectedSfcIssueKind::Script(_)))
@@ -229,10 +265,37 @@ fn refusals() -> Vec<serde_json::Value> {
                 let collection = input.operand().syntax().collection().unwrap().unwrap();
                 assert!(core::ptr::eq(collection.source().authored_root(), source));
             }
+            "handler-global" => {
+                let original = compilation.observation().template().unwrap();
+                let [RejectedFileHandler::Resolution { input, error }] =
+                    original.file().unwrap().rejected_handlers()
+                else {
+                    panic!("{id}: original rejected handler resolution missing");
+                };
+                assert_eq!(error.kind, ResolutionErrorKind::MissingBinding);
+                assert_eq!(
+                    input.operand().value_span().slice(source),
+                    input.operand().raw_value()
+                );
+                assert!(core::ptr::eq(
+                    input.operand().syntax().source().authored_root(),
+                    source
+                ));
+            }
             "handler-syntax" => {
                 let original = compilation.observation().template().unwrap();
-                assert!(original.view().is_err());
-                assert!(!original.file().unwrap().rejected_handlers().is_empty());
+                let [RejectedFileHandler::Syntax(input)] =
+                    original.file().unwrap().rejected_handlers()
+                else {
+                    panic!("{id}: original rejected handler syntax missing");
+                };
+                assert_eq!(input.kind, HandlerInputErrorKind::IncompleteSyntax);
+                assert_eq!(input.operand().value_span().slice(source), "return (");
+                assert!(core::ptr::eq(
+                    input.operand().syntax().source().authored_root(),
+                    source
+                ));
+                assert!(input.operand().syntax().diagnostics().count() > 0);
             }
             _ => {}
         }
