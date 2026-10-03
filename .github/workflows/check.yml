@@ -282,6 +282,13 @@ jobs:
         run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
       - name: Prepare the pinned plugin isolation runtime
         run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
+      - name: Test native JS setup modules and real Vue runtime
+        env:
+          VIZE_NATIVE_SFC_SETUP_CAPTURE: ${{ runner.temp }}/native-sfc-js-setup-capture.json
+          VIZE_NATIVE_SFC_SETUP_RUNTIME_CAPTURE: ${{ runner.temp }}/native-sfc-js-setup-runtime.json
+        run: |
+          cargo test --locked --profile ci -p vize_atelier_sfc native::setup::tests::eight_whole_setup_modules_and_maps_match_actual_source_bound_pinned_fixtures -- --exact
+          vp node --test tests/tooling/native-sfc-js-setup-reference.test.ts
       - name: Test release scripts
         env:
           VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize

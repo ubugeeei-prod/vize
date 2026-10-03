@@ -59,3 +59,22 @@ fresh exact-head full Actions, all 100 unchanged measurements, native Stack,
 protected candidate acceptance and actual merge remain unfinished. Complete
 Vue/dialect, script/type/macro, template-control and fix-history families remain
 unfinished, with no default-route replacement or #6880 closure claimed.
+
+## Current READ/DOM publication replay
+
+The consumer is an own-only child of the eligibility replay on signed main
+`0fcd481e`, after the actual L3 READ and L4 DOM merge. Its reviewed `200fc8fa`
+runtime sources, thirteen Rust laws, eight complete modules/maps and reserved
+`__v_raw` refusal are preserved. All unrelated provider and default-product
+bytes remain incoming source. The original private source/library/runtime
+receipts remain historical evidence, without a new current-main execution.
+
+Full Check now invokes the exact eight-module Rust custody law with a fresh
+capture path, then runs the existing nineteen reference/capture/runtime laws
+against that same output. Missing output or a wrong test filter fails the
+consumer instead of silently granting runtime credit. This binds eight actual
+native setup calls and sixteen Vue 3.5.35 renders to the hosted source. The
+ordinary tooling run continues to qualify its skipped capture laws explicitly.
+Fresh whole Cargo, full Actions, all-100 measurements and protected terminal
+merge remain separate gates for this two-layer Stack; TS, macros, const,
+ordinary scripts, defaults and compiler history remain unfinished.

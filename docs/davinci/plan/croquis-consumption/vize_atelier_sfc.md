@@ -92,7 +92,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Span`                    |        0 |   12 |
 | `Symbol`                  |        0 |    5 |
 | `SymbolFlags`             |        0 |    5 |
-| `Croquis.bindings`        |       23 |  229 |
+| `Croquis.bindings`        |       23 |  232 |
 | `Croquis.hoists`          |        0 |    2 |
 | `Croquis.macros`          |       17 |  114 |
 | `Croquis.types`           |       16 |   28 |
