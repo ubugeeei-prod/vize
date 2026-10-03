@@ -128,7 +128,11 @@ impl ServerState {
     }
 
     /// Effective project Vue version used by type checking and formatting.
-    #[cfg(any(feature = "native", feature = "glyph"))]
+    #[cfg(any(
+        feature = "native",
+        feature = "glyph",
+        feature = "experimental-source-navigation"
+    ))]
     pub(crate) fn type_checker_vue_version(&self) -> vize_l0::config::VueVersion {
         *self.type_checker_vue_version.read()
     }

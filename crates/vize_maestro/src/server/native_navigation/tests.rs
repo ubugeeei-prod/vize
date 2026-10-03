@@ -1,6 +1,7 @@
 //! Whole JSON-RPC envelopes through the actual production service builder.
 mod capacity;
 mod lifecycle;
+mod vue;
 
 use crate::{
     runtime::block_on,
@@ -107,7 +108,7 @@ fn unsupported_language_and_actual_native_refusals_have_complete_error_envelopes
     open(&mut service, "const value=1;value;", "vue", 1);
     assert_eq!(
         send(&mut service, definition(2, 0, 15)),
-        Some(error(2, -32001, "Native navigation language unsupported"))
+        Some(error(2, -32010, "Native original SFC observation refused"))
     );
     open(&mut service, "const value = /x/uv; value;", "javascript", 1);
     assert_eq!(

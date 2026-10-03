@@ -13,9 +13,11 @@ use vize_l1::embed::{
     syntax::{ProgramOptions, parse_program_once},
 };
 use vize_l2::{
-    file::{FileArtifact, ReferenceTarget},
+    file::{BindingRef, FileArtifact, ReferenceTarget},
     lang::js::{FileProducer, ProgramInput, ProgramScope},
 };
+
+pub(super) mod vue;
 
 use super::{
     NavigationRefusal, SourceSnapshot, coordinates,
@@ -80,7 +82,24 @@ pub(super) fn run(
         snapshot: &snapshot,
         file: &file,
         lines: &lines,
+        template: None,
+        #[cfg(test)]
+        original: {
+            let original = admitted.program();
+            Original {
+                program: original.body.as_ptr() as usize,
+                statements: original.body.len(),
+                sfc: None,
+            }
+        },
     };
+    serve(&query, receiver, &control);
+    // Explicit order: borrowed response work, then File, original syntax, arena.
+    drop(file);
+    drop(syntax);
+}
+
+fn serve(query: &RetainedNavigation<'_, '_>, receiver: Receiver<Command>, control: &Control) {
     while !control.retired() {
         let Ok(command) = receiver.recv() else { break };
         if control.retired() {
@@ -110,21 +129,16 @@ pub(super) fn run(
             Command::Inspect(position, reply) => {
                 if !reply.is_canceled() {
                     let result = query.offset(position).and_then(|offset| {
-                        let binding = file
-                            .binding_at_offset(offset)
-                            .map_err(NavigationRefusal::Query)?;
-                        let original = syntax
-                            .admitted_program()
-                            .ok_or(NavigationRefusal::Syntax)?
-                            .program();
+                        let binding = query.binding(offset)?;
                         Ok(super::worker::Inspection {
-                            file: core::ptr::from_ref(&file) as usize,
-                            program: original.body.as_ptr() as usize,
-                            statements: original.body.len(),
+                            file: core::ptr::from_ref(query.file) as usize,
+                            program: query.original.program,
+                            statements: query.original.statements,
                             declaration: binding
                                 .and_then(|row| row.declaration())
                                 .map(|row| row.span),
                             parses: control.parses.load(std::sync::atomic::Ordering::Relaxed),
+                            sfc: query.original.sfc.clone(),
                         })
                     });
                     let _ = reply.send(result);
@@ -139,18 +153,25 @@ pub(super) fn run(
             Command::Panic => panic!("actual native worker unwind"),
         }
     }
-    // Explicit order: borrowed response work, then File, original syntax, arena.
-    drop(file);
-    drop(syntax);
+}
+
+#[cfg(test)]
+struct Original {
+    program: usize,
+    statements: usize,
+    sfc: Option<super::worker::SfcInspection>,
 }
 
 struct RetainedNavigation<'file, 'arena> {
     snapshot: &'file SourceSnapshot,
     file: &'file FileArtifact<'arena>,
     lines: &'file [usize],
+    template: Option<&'file vize_l1_to_l2::native_file::NativeTemplateObservation<'arena>>,
+    #[cfg(test)]
+    original: Original,
 }
 
-impl RetainedNavigation<'_, '_> {
+impl<'file, 'arena> RetainedNavigation<'file, 'arena> {
     fn offset(&self, position: Position) -> Result<u32, NavigationRefusal> {
         let offset = coordinates::offset(self.snapshot.source(), self.lines, position)?;
         u32::try_from(offset).map_err(|_| NavigationRefusal::Position)
@@ -163,10 +184,73 @@ impl RetainedNavigation<'_, '_> {
         ))
     }
 
+    /// Read the same File's genuine resolution tables, never bind by spelling.
+    fn template_occurrences(
+        &self,
+        mut visit: impl FnMut(Span, BindingRef<'file, 'arena>) -> Result<(), NavigationRefusal>,
+    ) -> Result<(), NavigationRefusal> {
+        let Some(template) = self.template else {
+            return Ok(());
+        };
+        for embed in template.embeds() {
+            let resolution = self
+                .file
+                .expression(embed.node.ok_or(NavigationRefusal::Projection)?)
+                .ok_or(NavigationRefusal::Projection)?;
+            let table = resolution.table().ok_or(NavigationRefusal::Projection)?;
+            let expression = table.expression();
+            if !core::ptr::eq(
+                expression.ast,
+                embed
+                    .syntax
+                    .expression()
+                    .ok_or(NavigationRefusal::Projection)?,
+            ) || !core::ptr::eq(expression.source, embed.syntax.source().text())
+                || !core::ptr::eq(
+                    embed.syntax.source().authored_root(),
+                    self.snapshot.source(),
+                )
+                || expression.span != embed.syntax.source().span()
+            {
+                return Err(NavigationRefusal::Projection);
+            }
+            for occurrence in table.occurrences() {
+                // This is the original exact decoder/wrapper projection. No
+                // inverse decode, covering span, added walk or semantic index.
+                let span = expression
+                    .authored_span(occurrence.span)
+                    .ok_or(NavigationRefusal::Projection)?;
+                let binding = resolution
+                    .binding(occurrence.binding)
+                    .ok_or(NavigationRefusal::Projection)?;
+                if !core::ptr::eq(binding.file(), self.file) || !resolution.accepts(binding) {
+                    return Err(NavigationRefusal::Projection);
+                }
+                visit(span, binding)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn binding(&self, offset: u32) -> Result<Option<BindingRef<'file, 'arena>>, NavigationRefusal> {
+        let mut found = self
+            .file
+            .binding_at_offset(offset)
+            .map_err(NavigationRefusal::Query)?;
+        self.template_occurrences(|span, binding| {
+            if span.start <= offset && offset < span.end {
+                if found.is_some() {
+                    return Err(NavigationRefusal::Projection);
+                }
+                found = Some(binding);
+            }
+            Ok(())
+        })?;
+        Ok(found)
+    }
+
     fn definition(&self, position: Position) -> Result<Option<Location>, NavigationRefusal> {
-        self.file
-            .binding_at_offset(self.offset(position)?)
-            .map_err(NavigationRefusal::Query)?
+        self.binding(self.offset(position)?)
             .map(|binding| {
                 let declaration = binding.declaration().ok_or(NavigationRefusal::Projection)?;
                 self.location(declaration.span)
@@ -179,11 +263,7 @@ impl RetainedNavigation<'_, '_> {
         position: Position,
         include_declaration: bool,
     ) -> Result<Vec<Location>, NavigationRefusal> {
-        let Some(binding) = self
-            .file
-            .binding_at_offset(self.offset(position)?)
-            .map_err(NavigationRefusal::Query)?
-        else {
+        let Some(binding) = self.binding(self.offset(position)?) else {
             return Ok(Vec::new());
         };
         let mut spans = self
@@ -193,6 +273,12 @@ impl RetainedNavigation<'_, '_> {
             .filter(|reference| reference.target == ReferenceTarget::Resolved(binding.id()))
             .map(|reference| reference.span)
             .collect::<Vec<_>>();
+        self.template_occurrences(|span, original| {
+            if original.id() == binding.id() {
+                spans.push(span);
+            }
+            Ok(())
+        })?;
         if include_declaration {
             spans.push(
                 binding

@@ -38,4 +38,21 @@ impl<'host> SourceQueryProject<'host> {
             lifecycle: Mutex::new(()),
         }
     }
+
+    /// Read only actual configuration; publication may hold a document guard.
+    /// Never re-enter DocumentStore here or infer server settings for a bare store.
+    #[cfg(feature = "experimental-source-navigation")]
+    pub(in crate::source_project) fn native_vue_configuration(
+        &self,
+    ) -> Option<super::super::navigation::profile::VueConfiguration> {
+        let DocumentHost::Server(state) = &self.host else {
+            return None;
+        };
+        Some(super::super::navigation::profile::VueConfiguration {
+            version: state.type_checker_vue_version(),
+            configured_dialect: state.get_dialect_config(),
+            legacy: state.legacy_vue2_enabled(),
+            patterned: state.patterned_template_enabled(),
+        })
+    }
 }

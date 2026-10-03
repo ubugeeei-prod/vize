@@ -6,6 +6,7 @@ mod capacity;
 mod lifecycle;
 mod refusals;
 mod retention;
+mod vue;
 
 use super::{NativeNavigationProject, NavigationRefusal, SourceQueryProject, coordinates};
 use crate::{document::DocumentStore, runtime::block_on};

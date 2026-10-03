@@ -1,10 +1,11 @@
-//! Opt-in local JS/TS queries over one original Program per host snapshot.
+//! Opt-in local queries over original Program or SFC owners per host snapshot.
 #![expect(
     clippy::disallowed_types,
     reason = "async host queries retain immutable Arc snapshots and owned responses"
 )]
 
 mod coordinates;
+pub(in crate::source_project) mod profile;
 mod retained;
 #[cfg(test)]
 mod tests;
@@ -18,6 +19,7 @@ use vize_l0::FxHashMap;
 use vize_l2::file::{FileIssue, PositionQueryError};
 
 use super::{SnapshotRefusal, SourceQueryProject, SourceSnapshot};
+use profile::Profile;
 use worker::NavigationWorker;
 
 /// Unsupported observations remain refusals; no legacy query is substituted.
@@ -33,10 +35,14 @@ pub enum NavigationRefusal {
     Busy,
     Capacity,
     WorkerUnavailable,
+    Configuration,
+    ConfigurationChanged,
+    SfcProducer(Vec<vize_l1_to_l2::native_file::NativeSfcIssue>),
 }
 
 struct CachedNavigation {
     snapshot: Arc<SourceSnapshot>,
+    profile: Profile,
     result: Result<Arc<NavigationWorker>, NavigationRefusal>,
 }
 
@@ -102,8 +108,9 @@ impl<'host> NativeNavigationProject<'host> {
             if !self.source.snapshot_is_current(&snapshot) {
                 return Err(NavigationRefusal::Host(SnapshotRefusal::Superseded));
             }
+            let profile = self.profile(&snapshot)?;
             if let Some(cached) = workers.get(snapshot.uri()) {
-                if Arc::ptr_eq(&cached.snapshot, &snapshot) {
+                if Arc::ptr_eq(&cached.snapshot, &snapshot) && cached.profile == profile {
                     if let Ok(worker) = &cached.result
                         && !worker.belongs_to(&snapshot)
                     {
@@ -124,7 +131,8 @@ impl<'host> NativeNavigationProject<'host> {
             }
             // Serialize misses, but parsing and response waits run outside locks.
             // Transient capacity/spawn refusals are retryable, never memoized.
-            let result = NavigationWorker::spawn(Arc::clone(&snapshot), Arc::clone(&self.live));
+            let result =
+                NavigationWorker::spawn(Arc::clone(&snapshot), Arc::clone(&self.live), profile);
             if matches!(
                 result,
                 Err(NavigationRefusal::Capacity | NavigationRefusal::WorkerUnavailable)
@@ -135,10 +143,57 @@ impl<'host> NativeNavigationProject<'host> {
                 snapshot.uri().clone(),
                 CachedNavigation {
                     snapshot,
+                    profile,
                     result: result.clone(),
                 },
             );
             return result;
+        }
+    }
+
+    fn profile(&self, snapshot: &SourceSnapshot) -> Result<Profile, NavigationRefusal> {
+        match snapshot.language_id() {
+            "javascript" => Ok(Profile::Program(vize_l1::embed::Lang::Js)),
+            "typescript" => Ok(Profile::Program(vize_l1::embed::Lang::Ts)),
+            "vue" if !crate::utils::is_standalone_html_path(snapshot.uri().path()) => self
+                .source
+                .native_vue_configuration()
+                .map(Profile::Vue)
+                .ok_or(NavigationRefusal::Configuration),
+            _ => Err(NavigationRefusal::Language),
+        }
+    }
+
+    fn checked_response<T>(
+        &self,
+        result: Result<(Profile, Result<T, NavigationRefusal>), NavigationRefusal>,
+    ) -> Result<T, NavigationRefusal> {
+        let (profile, response) = result?;
+        if let Profile::Vue(configuration) = profile
+            && self.source.native_vue_configuration() != Some(configuration)
+        {
+            return Err(NavigationRefusal::ConfigurationChanged);
+        }
+        response
+    }
+
+    fn retire_changed_configuration(&self, uri: &Url) {
+        let retired = {
+            let mut workers = self.workers.lock();
+            let current = self.source.native_vue_configuration();
+            if workers.get(uri).is_some_and(|cached| {
+                matches!(cached.profile, Profile::Vue(configuration) if Some(configuration) != current)
+            }) {
+                workers.remove(uri)
+            } else {
+                None
+            }
+        };
+        if let Some(CachedNavigation {
+            result: Ok(worker), ..
+        }) = retired
+        {
+            worker.retire();
         }
     }
 
@@ -152,12 +207,19 @@ impl<'host> NativeNavigationProject<'host> {
             .begin_query(uri)
             .map_err(NavigationRefusal::Host)?;
         let ready = query
-            .run(|snapshot| async move { self.worker(snapshot)?.definition(position).await })
+            .run(|snapshot| async move {
+                let worker = self.worker(snapshot)?;
+                Ok((worker.profile(), worker.definition(position).await))
+            })
             .await
             .map_err(NavigationRefusal::Host)?;
-        ready
-            .publish(|response| response)
-            .map_err(NavigationRefusal::Host)?
+        let result = ready
+            .publish(|response| self.checked_response(response))
+            .map_err(NavigationRefusal::Host)?;
+        if matches!(result, Err(NavigationRefusal::ConfigurationChanged)) {
+            self.retire_changed_configuration(uri);
+        }
+        result
     }
 
     pub async fn references(
@@ -172,15 +234,21 @@ impl<'host> NativeNavigationProject<'host> {
             .map_err(NavigationRefusal::Host)?;
         let ready = query
             .run(|snapshot| async move {
-                self.worker(snapshot)?
-                    .references(position, include_declaration)
-                    .await
+                let worker = self.worker(snapshot)?;
+                Ok((
+                    worker.profile(),
+                    worker.references(position, include_declaration).await,
+                ))
             })
             .await
             .map_err(NavigationRefusal::Host)?;
-        ready
-            .publish(|response| response)
-            .map_err(NavigationRefusal::Host)?
+        let result = ready
+            .publish(|response| self.checked_response(response))
+            .map_err(NavigationRefusal::Host)?;
+        if matches!(result, Err(NavigationRefusal::ConfigurationChanged)) {
+            self.retire_changed_configuration(uri);
+        }
+        result
     }
 }
 

@@ -82,6 +82,18 @@ fn query_error(refusal: NavigationRefusal) -> Error {
             ErrorCode::ServerError(-32007),
             "Native navigation worker capacity reached",
         ),
+        NavigationRefusal::ConfigurationChanged => (
+            ErrorCode::ContentModified,
+            "Native Vue configuration superseded",
+        ),
+        NavigationRefusal::Configuration => (
+            ErrorCode::ServerError(-32009),
+            "Native Vue configuration unavailable or unsupported",
+        ),
+        NavigationRefusal::SfcProducer(_) => (
+            ErrorCode::ServerError(-32010),
+            "Native original SFC observation refused",
+        ),
         NavigationRefusal::WorkerUnavailable => (
             ErrorCode::ServerError(-32008),
             "Native navigation worker unavailable",

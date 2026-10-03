@@ -12,9 +12,8 @@ use std::sync::{
 
 use futures::channel::oneshot;
 use tower_lsp::lsp_types::{Location, Position};
-use vize_l1::embed::Lang;
 
-use super::{NavigationRefusal, SourceSnapshot, retained};
+use super::{NavigationRefusal, SourceSnapshot, profile::Profile, retained};
 
 pub(super) const WORKER_LIMIT: usize = 16;
 const REQUEST_LIMIT: usize = 16;
@@ -49,6 +48,17 @@ pub(super) struct Inspection {
     pub(super) statements: usize,
     pub(super) declaration: Option<vize_l0::Span>,
     pub(super) parses: usize,
+    pub(super) sfc: Option<SfcInspection>,
+}
+
+#[cfg(test)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(super) struct SfcInspection {
+    pub(super) observation: usize,
+    pub(super) descriptor: usize,
+    pub(super) programs: Vec<(usize, usize, vize_l0::Span)>,
+    pub(super) expressions: Vec<(usize, vize_l0::Span)>,
+    pub(super) productions: usize,
 }
 
 pub(super) struct Control {
@@ -56,6 +66,8 @@ pub(super) struct Control {
     finished: AtomicBool,
     #[cfg(test)]
     pub(super) parses: AtomicUsize,
+    #[cfg(test)]
+    pub(super) sfc_productions: AtomicUsize,
     #[cfg(test)]
     pub(super) queries: AtomicUsize,
 }
@@ -89,6 +101,7 @@ impl Drop for Exit {
 /// No native arena, AST or File is stored in this cross-thread handle.
 pub(super) struct NavigationWorker {
     snapshot: Weak<SourceSnapshot>,
+    profile: Profile,
     commands: SyncSender<Command>,
     control: Arc<Control>,
     #[cfg(test)]
@@ -99,12 +112,8 @@ impl NavigationWorker {
     pub(super) fn spawn(
         snapshot: Arc<SourceSnapshot>,
         live: Arc<AtomicUsize>,
+        profile: Profile,
     ) -> Result<Arc<Self>, NavigationRefusal> {
-        let lang = match snapshot.language_id() {
-            "javascript" => Lang::Js,
-            "typescript" => Lang::Ts,
-            _ => return Err(NavigationRefusal::Language),
-        };
         live.fetch_update(Ordering::AcqRel, Ordering::Acquire, |count| {
             (count < WORKER_LIMIT).then_some(count + 1)
         })
@@ -116,6 +125,8 @@ impl NavigationWorker {
             finished: AtomicBool::new(false),
             #[cfg(test)]
             parses: AtomicUsize::new(0),
+            #[cfg(test)]
+            sfc_productions: AtomicUsize::new(0),
             #[cfg(test)]
             queries: AtomicUsize::new(0),
         });
@@ -133,16 +144,26 @@ impl NavigationWorker {
                     signal,
                 };
                 let _slot = slot;
-                retained::run(owner, lang, receiver, stop);
+                match profile {
+                    Profile::Program(lang) => retained::run(owner, lang, receiver, stop),
+                    Profile::Vue(configuration) => {
+                        retained::vue::run(owner, configuration, receiver, stop);
+                    }
+                }
             })
             .map_err(|_| NavigationRefusal::WorkerUnavailable)?;
         Ok(Arc::new(Self {
             snapshot: Arc::downgrade(&snapshot),
+            profile,
             commands,
             control,
             #[cfg(test)]
             exited: parking_lot::Mutex::new(exited),
         }))
+    }
+
+    pub(super) fn profile(&self) -> Profile {
+        self.profile
     }
 
     pub(super) fn retire(&self) {
@@ -242,6 +263,11 @@ impl NavigationWorker {
             self.control.parses.load(Ordering::Acquire),
             self.control.queries.load(Ordering::Acquire),
         )
+    }
+
+    #[cfg(test)]
+    pub(super) fn sfc_productions(&self) -> usize {
+        self.control.sfc_productions.load(Ordering::Acquire)
     }
 
     #[cfg(test)]

@@ -18,8 +18,8 @@ experimental-source-folding = ["dep:vize_l1"]
 experimental-sfc-folding = ["dep:vize_l1", "dep:vize_l1_to_l2"]
 # Optional genuine native edit and original Program observation adapters.
 experimental-source-project = ["dep:vize_l1"]
-# Opt-in same-file JS/TS definitions and references from original native syntax.
-experimental-source-navigation = ["experimental-source-project"]
+# Opt-in same-file JS/TS/Vue queries from original retained native owners.
+experimental-source-navigation = ["experimental-source-project", "dep:vize_l1_to_l2"]
 # Opt-in legacy Vue (v0.10 / v0.11 / v1 / v2) editor / LSP surface. Not enabled by the
 # default Vue 3 build; turns on the type-checker-side legacy feature too.
 legacy = ["vize_canon/legacy"]
