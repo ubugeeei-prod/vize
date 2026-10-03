@@ -78,3 +78,5 @@ impl<'a> NativeComponent<'a> {
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod reborrow_tests;

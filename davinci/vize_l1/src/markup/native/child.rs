@@ -56,6 +56,17 @@ pub struct NativeChild<'o, 'a> {
     child: &'o SurfaceChild<'a>,
 }
 impl<'o, 'a> NativeChild<'o, 'a> {
+    /// Borrow this exact original child before its consuming body operation.
+    /// No new iteration, parent selection or membership construction occurs.
+    #[must_use]
+    pub fn reborrow(&self) -> NativeChild<'_, 'a> {
+        NativeChild {
+            component: self.component,
+            parent: self.parent,
+            ordinal: self.ordinal,
+            child: self.child,
+        }
+    }
     #[must_use]
     pub fn component(&self) -> &'o NativeComponent<'a> {
         self.component
