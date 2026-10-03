@@ -118,4 +118,7 @@ exact-head Actions remain required after these source repairs.
 
 Check 37117544592 then exposed missing explicit integration-test module paths
 after the split. Both roots now declare the exact private file paths; the
-original cases, source strings and full comparisons stay unchanged.
+original cases, source strings and full comparisons stay unchanged. The next
+hosted tooling capture required ordinary discovery rather than path attributes;
+the roots now use inline modules with ordinary private child declarations, as
+the previously merged native syntax laws do. No module-layout gate is bypassed.
