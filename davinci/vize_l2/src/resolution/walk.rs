@@ -7,10 +7,15 @@ use vize_l0::Span;
 use crate::expr::JsExpr;
 
 mod compound;
+mod for_head;
 mod jsx;
 #[cfg(test)]
 mod syntax_tests;
 mod values;
+pub(super) use for_head::original as original_for_head;
+
+const MAX_DEPTH: usize = 64;
+const MAX_NODES: usize = 4096;
 
 use super::sink::{ReferenceEvent, ReferenceSink};
 use super::source::ReferenceSource;
@@ -89,7 +94,7 @@ impl<'a, 'b, S: ReferenceSink<'a>> Resolver<'a, 'b, S> {
     fn visit(&mut self, span: oxc_span::Span, depth: usize) -> Result<Span, ResolutionError> {
         // Bound retained-tree recursion/work independently of parser admission.
         self.visited += 1;
-        if depth > 64 || self.visited > 4096 {
+        if depth > MAX_DEPTH || self.visited > MAX_NODES {
             return Err(self.fail(span, ResolutionErrorKind::TraversalLimit));
         }
         self.source

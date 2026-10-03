@@ -10,11 +10,16 @@ use vize_l0::Span;
 
 use crate::expr::JsExpr;
 
+mod for_head;
 pub(crate) mod sink;
 mod syntax;
 pub use syntax::{SyntaxEdge, SyntaxKind};
 pub(crate) mod source;
 mod walk;
+pub use for_head::{
+    ForAlias, ForAliasId, ForAliasRole, ForResolution, ForResolutionError, ForResolutionErrorKind,
+    ForResolvedBinding, RejectedForResolution, resolve_for_head,
+};
 
 /// A binding identity supplied by the owning compile unit's binder.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

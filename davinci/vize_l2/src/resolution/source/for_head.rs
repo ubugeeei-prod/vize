@@ -7,6 +7,8 @@ use vize_l1::embed::{
     syntax::{AdmittedDenseForHead, NativeForHead, RetainedExpression, RetainedSlotParams},
 };
 
+use super::ReferenceSource;
+
 /// Only an original two-observation capability may establish this source.
 /// This remains a short whole-owner borrow, never a public AST/source tuple.
 pub(crate) struct ForReferenceSource<'h, 'a> {
@@ -28,6 +30,10 @@ impl<'h, 'a> ForReferenceSource<'h, 'a> {
     }
     pub(crate) fn collection(&self) -> &'a Expression<'a> {
         self.head.collection().expression()
+    }
+    /// Mint the collection namespace only from this complete original head.
+    pub(in crate::resolution) fn collection_source(&self) -> ReferenceSource<'a> {
+        ReferenceSource::ForCollection(self.collection.source().text())
     }
     pub(crate) fn alias_decoded_span(&self, span: oxc_span::Span) -> Result<Span, SourceError> {
         self.aliases.decoded_span(span)
