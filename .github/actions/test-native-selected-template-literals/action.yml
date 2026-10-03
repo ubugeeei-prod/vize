@@ -8,6 +8,8 @@ runs:
       env:
         VIZE_L4_SELECTED_LITERAL_CAPTURE: ${{ runner.temp }}/native-selected-template-literals.json
       run: |
+        cargo test -p vize_l4 --profile ci --test native_selected_template_output
+        cargo test -p vize_l4 --profile ci --doc targets::dom::output
         rm -f "$VIZE_L4_SELECTED_LITERAL_CAPTURE"
         cargo test -p vize_l4 --profile ci --test native_selected_template_literals original_modern_literals_keep_complete_module_map_and_projection_custody -- --exact
         vp node tools/support/compat/davinci/selected-template-literals.mjs "$VIZE_L4_SELECTED_LITERAL_CAPTURE"

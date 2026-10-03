@@ -14,7 +14,7 @@ use vize_l3::decision::native::build_native_dom_file_decisions;
 use vize_l4::{
     module::assemble_template,
     runtime::{Runtime, vocabulary},
-    targets::dom::emit_template,
+    targets::dom::{emit_template, emit_template_output},
     write::{NoLinks, Recorded},
 };
 
@@ -148,8 +148,15 @@ fn original_modern_literals_keep_complete_module_map_and_projection_custody()
         native_selected_template_literal_cases::inspect(
             id, &original, &analysis, &document, nodes,
         )?;
+        let output = core::hint::black_box(
+            emit_template_output(analysis).map_err(|_| "sealed recorded output")?,
+        );
+        equal(output.code(), document.as_str())?;
+        equal(output.links(), document.links())?;
+        check(core::ptr::eq(output.analysis().owner(), &original))?;
+        check(core::ptr::eq(output.source_block().root_source(), source))?;
         let map: serde_json::Value =
-            serde_json::from_str(&document.source_map("SelectedTemplate.vue", source))
+            serde_json::from_str(&output.source_map("SelectedTemplate.vue"))
                 .map_err(|_| "actual whole-source map")?;
         equal(&map["version"], &serde_json::json!(3))?;
         equal(&map["file"], &serde_json::json!("SelectedTemplate.vue"))?;
@@ -164,7 +171,7 @@ fn original_modern_literals_keep_complete_module_map_and_projection_custody()
                 .as_str()
                 .is_some_and(|text| !text.is_empty()),
         )?;
-        let links: Vec<_> = document
+        let links: Vec<_> = output
             .links()
             .iter()
             .map(|link| {
@@ -177,7 +184,7 @@ fn original_modern_literals_keep_complete_module_map_and_projection_custody()
             })
             .collect();
         captured.push(serde_json::json!({
-            "id": id, "source": source, "code": document.as_str(), "map": map,
+            "id": id, "source": source, "code": output.code(), "map": map,
             "nodes": nodes, "links": links,
         }));
     }

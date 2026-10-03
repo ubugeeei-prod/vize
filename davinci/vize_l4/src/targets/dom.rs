@@ -23,6 +23,7 @@ mod element;
 mod expression;
 mod file;
 mod handler;
+mod output;
 #[cfg(test)]
 mod tests;
 mod vue;
@@ -30,6 +31,10 @@ mod write;
 
 use expression::{BareExpressions, ExpressionWriter};
 pub use file::{emit_file, emit_template};
+pub use output::{
+    NativeTemplateDomOutput, NativeTemplateDomOutputError, NativeTemplateDomOutputFailure,
+    emit_template_output,
+};
 pub use vue::emit_vue;
 use write::{Helpers, helper, quoted};
 
