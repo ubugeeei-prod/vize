@@ -85,6 +85,14 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
         if self.context != Context::Unit
             || !matches!(
                 statement,
+                Statement::ExportDefaultDeclaration(_) | Statement::EmptyStatement(_)
+            )
+        {
+            super::ordinary::reject(self.facts, self.unit);
+        }
+        if self.context != Context::Unit
+            || !matches!(
+                statement,
                 Statement::VariableDeclaration(_) | Statement::EmptyStatement(_)
             )
         {

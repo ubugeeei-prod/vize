@@ -1,6 +1,7 @@
 //! Crate-private Program source admission for the owning statement walker.
 
 use oxc_ast::ast::{Expression, ModuleExportName, Program};
+use oxc_parser::AdmittedProgram;
 use oxc_span::{GetSpan, SourceType};
 use vize_l0::Span;
 
@@ -49,19 +50,20 @@ mod for_head;
 pub(crate) use for_head::ForReferenceSource;
 
 /// Internal capability over the actual whole Program, never an expression window.
-/// The native owner must additionally supply its genuine no-hole observation.
+/// The genuine no-hole parser observation stays borrowed through the sole walk.
 pub(crate) struct ProgramReferenceSource<'p, 'a> {
-    program: &'p Program<'a>,
+    admitted: AdmittedProgram<'p, 'a>,
     content: Span,
 }
 
 impl<'p, 'a> ProgramReferenceSource<'p, 'a> {
     pub(crate) fn checked(
-        program: &'p Program<'a>,
+        admitted: AdmittedProgram<'p, 'a>,
         file: &'a str,
         content: Span,
         source_type: SourceType,
     ) -> Result<Self, ResolutionError> {
+        let program = admitted.program();
         let fail = || ResolutionError {
             span: Span::new(0, 0),
             kind: ResolutionErrorKind::InvalidSpan,
@@ -77,12 +79,16 @@ impl<'p, 'a> ProgramReferenceSource<'p, 'a> {
         {
             return Err(fail());
         }
-        Ok(Self { program, content })
+        Ok(Self { admitted, content })
     }
 
     #[must_use]
-    pub(crate) const fn program(&self) -> &'p Program<'a> {
-        self.program
+    pub(crate) fn program(&self) -> &'p Program<'a> {
+        self.admitted.program()
+    }
+
+    pub(crate) const fn admitted(&self) -> &AdmittedProgram<'p, 'a> {
+        &self.admitted
     }
 
     pub(crate) fn expression(
@@ -90,10 +96,10 @@ impl<'p, 'a> ProgramReferenceSource<'p, 'a> {
         expression: &Expression<'a>,
         sink: &mut impl ReferenceSink<'a>,
     ) -> Result<(), ResolutionError> {
-        let source = if self.program.source_type.is_jsx() {
-            ReferenceSource::ProgramJsx(self.program.source_text)
+        let source = if self.program().source_type.is_jsx() {
+            ReferenceSource::ProgramJsx(self.program().source_text)
         } else {
-            ReferenceSource::Program(self.program.source_text)
+            ReferenceSource::Program(self.program().source_text)
         };
         walk::retained(source, expression, sink)
     }
@@ -114,7 +120,7 @@ impl<'p, 'a> ProgramReferenceSource<'p, 'a> {
             }
             other => {
                 return Err(ResolutionError {
-                    span: ReferenceSource::Program(self.program.source_text)
+                    span: ReferenceSource::Program(self.program().source_text)
                         .span(other.span())
                         .unwrap_or(Span::new(0, 0)),
                     kind: ResolutionErrorKind::UnsupportedSyntax,
@@ -122,7 +128,7 @@ impl<'p, 'a> ProgramReferenceSource<'p, 'a> {
             }
         };
         walk::export_local(
-            ReferenceSource::Program(self.program.source_text),
+            ReferenceSource::Program(self.program().source_text),
             span,
             name,
             sink,
@@ -131,7 +137,7 @@ impl<'p, 'a> ProgramReferenceSource<'p, 'a> {
 
     #[must_use]
     pub(crate) fn authored_span(&self, span: Span) -> Option<Span> {
-        self.program
+        self.program()
             .source_text
             .get(span.start as usize..span.end as usize)?;
         Some(Span::new(

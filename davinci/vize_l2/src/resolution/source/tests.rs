@@ -70,10 +70,15 @@ fn actual_program_references_are_deferred_until_real_later_declaration_and_expor
     let raw = file
         .get(content.start as usize..content.end as usize)
         .required()?;
-    let parsed = Parser::new(allocator.as_oxc(), raw, SourceType::mjs()).parse();
-    assert!(!parsed.panicked && !parsed.diagnostics.has_errors());
-    let source = ProgramReferenceSource::checked(&parsed.program, file, content, SourceType::mjs())
-        .required()?;
+    let parsed = Parser::new(allocator.as_oxc(), raw, SourceType::mjs()).parse_observed();
+    assert!(!parsed.panicked() && !parsed.diagnostics().has_errors());
+    let source = ProgramReferenceSource::checked(
+        parsed.admitted().required()?,
+        file,
+        content,
+        SourceType::mjs(),
+    )
+    .required()?;
     let mut sink = Pending::default();
     let [
         Statement::VariableDeclaration(first),
@@ -129,10 +134,10 @@ fn actual_program_references_are_deferred_until_real_later_declaration_and_expor
 fn program_walk_preserves_writes_member_reads_escaped_shorthand_and_new_callee() -> LawResult {
     let allocator = Allocator::default();
     let file = r"count += value; state.key = count; ++count; ({ \u0063ount }); new Box(arg);";
-    let parsed = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse();
-    assert!(!parsed.panicked && !parsed.diagnostics.has_errors());
+    let parsed = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse_observed();
+    assert!(!parsed.panicked() && !parsed.diagnostics().has_errors());
     let source = ProgramReferenceSource::checked(
-        &parsed.program,
+        parsed.admitted().required()?,
         file,
         Span::new(0, file.len() as u32),
         SourceType::mjs(),
@@ -179,11 +184,16 @@ fn real_program_comments_unicode_and_block_offset_keep_exact_authored_spans() ->
     let raw = file
         .get(content.start as usize..content.end as usize)
         .required()?;
-    let parsed = Parser::new(allocator.as_oxc(), raw, SourceType::mjs()).parse();
-    assert!(!parsed.panicked && !parsed.diagnostics.has_errors());
-    let comments = parsed.program.comments.as_ptr();
-    let source = ProgramReferenceSource::checked(&parsed.program, file, content, SourceType::mjs())
-        .required()?;
+    let parsed = Parser::new(allocator.as_oxc(), raw, SourceType::mjs()).parse_observed();
+    assert!(!parsed.panicked() && !parsed.diagnostics().has_errors());
+    let comments = parsed.admitted().required()?.program().comments.as_ptr();
+    let source = ProgramReferenceSource::checked(
+        parsed.admitted().required()?,
+        file,
+        content,
+        SourceType::mjs(),
+    )
+    .required()?;
     let mut sink = Pending::default();
     expressions(&source, &mut sink)?;
     assert_eq!(source.program().comments.len(), 2);
@@ -211,10 +221,10 @@ fn real_program_comments_unicode_and_block_offset_keep_exact_authored_spans() ->
 fn incomplete_expression_and_sink_failure_restore_previous_pending_rows() -> LawResult {
     let allocator = Allocator::default();
     let file = "seed; first + (() => missing); first + refused;";
-    let parsed = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse();
-    assert!(!parsed.panicked && !parsed.diagnostics.has_errors());
+    let parsed = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse_observed();
+    assert!(!parsed.panicked() && !parsed.diagnostics().has_errors());
     let source = ProgramReferenceSource::checked(
-        &parsed.program,
+        parsed.admitted().required()?,
         file,
         Span::new(0, file.len() as u32),
         SourceType::mjs(),
@@ -259,10 +269,10 @@ fn a_short_program_borrow_keeps_arena_semantic_names_without_a_root_handoff() ->
     let file = r"\u006eame + 作者;";
     let mut sink = Pending::default();
     {
-        let parsed = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse();
-        assert!(!parsed.panicked && !parsed.diagnostics.has_errors());
+        let parsed = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse_observed();
+        assert!(!parsed.panicked() && !parsed.diagnostics().has_errors());
         let source = ProgramReferenceSource::checked(
-            &parsed.program,
+            parsed.admitted().required()?,
             file,
             Span::new(0, file.len() as u32),
             SourceType::mjs(),
@@ -281,8 +291,10 @@ fn a_short_program_borrow_keeps_arena_semantic_names_without_a_root_handoff() ->
 fn invalid_unicode_endpoint_rolls_back_before_a_reference_is_visible() -> LawResult {
     let allocator = Allocator::default();
     let file = "作者;";
-    let mut parsed = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse();
-    let Statement::ExpressionStatement(statement) = parsed.program.body.first_mut().required()?
+    let parsed = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse_observed();
+    // Mutate a private resolver probe; it never establishes Program admission.
+    let mut probe = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse();
+    let Statement::ExpressionStatement(statement) = probe.program.body.first_mut().required()?
     else {
         return Err("expression fixture");
     };
@@ -291,14 +303,13 @@ fn invalid_unicode_endpoint_rolls_back_before_a_reference_is_visible() -> LawRes
     };
     identifier.span = oxc_span::Span::new(1, 6);
     let source = ProgramReferenceSource::checked(
-        &parsed.program,
+        parsed.admitted().required()?,
         file,
         Span::new(0, file.len() as u32),
         SourceType::mjs(),
     )
     .required()?;
-    let Statement::ExpressionStatement(statement) = source.program().body.first().required()?
-    else {
+    let Statement::ExpressionStatement(statement) = probe.program.body.first().required()? else {
         return Err("expression fixture");
     };
     let mut sink = Pending::default();

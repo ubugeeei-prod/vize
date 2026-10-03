@@ -88,16 +88,19 @@ fn existing_call_and_all_invocation_hooks_run_once_inside_actual_jsx_containers(
     let arena = Allocator::default();
     let file = "<Comp a={run(value)}>{new Maker(value)}{tag`x${value}`}{import('dep')}</Comp>;";
     let profile = SourceType::jsx();
-    let parsed = Parser::new(&arena, file, profile).parse();
-    assert!(!parsed.panicked && !parsed.diagnostics.has_errors());
+    let parsed = Parser::new(&arena, file, profile).parse_observed();
+    assert!(!parsed.panicked() && !parsed.diagnostics().has_errors());
     let source = ProgramReferenceSource::checked(
-        &parsed.program,
+        parsed.admitted().required()?,
         file,
         Span::new(0, file.len() as u32),
         profile,
     )
     .required()?;
-    assert!(core::ptr::eq(source.program(), &parsed.program));
+    assert!(core::ptr::eq(
+        source.program(),
+        parsed.admitted().required()?.program()
+    ));
     let original = expression(source.program(), 0)?;
     let Expression::JSXElement(element) = original else {
         return Err("JSX root");
@@ -151,9 +154,9 @@ fn late_unsupported_and_sink_refusal_restore_seed_rows_calls_and_invocations() -
     let arena = Allocator::default();
     let file = "seed(); <Comp>{new Maker(value)}{run(value)}<ns:tag/></Comp>; <Comp>{run(value)}<Other/></Comp>;";
     let profile = SourceType::jsx();
-    let parsed = Parser::new(&arena, file, profile).parse();
+    let parsed = Parser::new(&arena, file, profile).parse_observed();
     let source = ProgramReferenceSource::checked(
-        &parsed.program,
+        parsed.admitted().required()?,
         file,
         Span::new(0, file.len() as u32),
         profile,
@@ -198,8 +201,10 @@ fn invalid_unicode_attribute_leaf_rejects_before_its_runtime_callback_and_rolls_
     let arena = Allocator::default();
     let file = "seed(); <Comp 作者={run(value)}/>;";
     let profile = SourceType::jsx();
-    let mut parsed = Parser::new(&arena, file, profile).parse();
-    let Statement::ExpressionStatement(statement) = parsed.program.body.get_mut(1).required()?
+    let parsed = Parser::new(&arena, file, profile).parse_observed();
+    // Mutate a private resolver probe; it never establishes Program admission.
+    let mut probe = Parser::new(&arena, file, profile).parse();
+    let Statement::ExpressionStatement(statement) = probe.program.body.get_mut(1).required()?
     else {
         return Err("statement");
     };
@@ -216,7 +221,7 @@ fn invalid_unicode_attribute_leaf_rejects_before_its_runtime_callback_and_rolls_
     };
     name.span.start += 1;
     let source = ProgramReferenceSource::checked(
-        &parsed.program,
+        parsed.admitted().required()?,
         file,
         Span::new(0, file.len() as u32),
         profile,
@@ -230,7 +235,7 @@ fn invalid_unicode_attribute_leaf_rejects_before_its_runtime_callback_and_rolls_
     let calls = sink.calls.clone();
     assert_eq!(
         source
-            .expression(expression(source.program(), 1)?, &mut sink)
+            .expression(expression(&probe.program, 1)?, &mut sink)
             .err()
             .required()?
             .kind,
@@ -246,8 +251,8 @@ fn invalid_unicode_attribute_leaf_rejects_before_its_runtime_callback_and_rolls_
 fn raw_expression_route_does_not_acquire_program_jsx_or_target_authority() -> LawResult {
     let arena = Allocator::default();
     let file = "<Comp/>;";
-    let parsed = Parser::new(&arena, file, SourceType::jsx()).parse();
-    let original = expression(&parsed.program, 0)?;
+    let parsed = Parser::new(&arena, file, SourceType::jsx()).parse_observed();
+    let original = expression(parsed.admitted().required()?.program(), 0)?;
     let source = file.get(..7).required()?;
     let expression = JsExpr {
         ast: original,
@@ -278,10 +283,10 @@ fn actual_fragment_container_work_is_bounded_by_the_existing_resolver_budget() -
     }
     file.push_str("</>;");
     let profile = SourceType::jsx();
-    let parsed = Parser::new(&arena, file.as_str(), profile).parse();
-    assert!(!parsed.panicked && !parsed.diagnostics.has_errors());
+    let parsed = Parser::new(&arena, file.as_str(), profile).parse_observed();
+    assert!(!parsed.panicked() && !parsed.diagnostics().has_errors());
     let source = ProgramReferenceSource::checked(
-        &parsed.program,
+        parsed.admitted().required()?,
         file.as_str(),
         Span::new(0, file.len() as u32),
         profile,

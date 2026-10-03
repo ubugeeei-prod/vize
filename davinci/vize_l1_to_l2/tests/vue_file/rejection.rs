@@ -117,7 +117,7 @@ fn actual_setup_exports_options_and_macros_remain_typed_unfinished() {
             VueFileIssueKind::SetupExport,
         ),
         (
-            "export default {};",
+            "export default {name: 'options'};",
             false,
             VueFileIssueKind::UnsupportedOptions,
         ),

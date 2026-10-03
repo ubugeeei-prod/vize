@@ -96,10 +96,15 @@ fn real_nested_and_chain_calls_observe_original_nodes_once_with_unicode_authored
     let raw = file
         .get(content.start as usize..content.end as usize)
         .required()?;
-    let parsed = Parser::new(allocator.as_oxc(), raw, SourceType::mjs()).parse();
-    assert!(!parsed.panicked && !parsed.diagnostics.has_errors());
-    let source = ProgramReferenceSource::checked(&parsed.program, file, content, SourceType::mjs())
-        .required()?;
+    let parsed = Parser::new(allocator.as_oxc(), raw, SourceType::mjs()).parse_observed();
+    assert!(!parsed.panicked() && !parsed.diagnostics().has_errors());
+    let source = ProgramReferenceSource::checked(
+        parsed.admitted().required()?,
+        file,
+        content,
+        SourceType::mjs(),
+    )
+    .required()?;
     let root = call(expression(source.program(), 0)?)?;
     let inner = call(root.arguments.first().required()?.to_expression())?;
     let tail = call(root.arguments.get(1).required()?.to_expression())?;
@@ -147,10 +152,10 @@ fn real_nested_and_chain_calls_observe_original_nodes_once_with_unicode_authored
 fn later_unsupported_argument_and_observer_refusal_restore_all_prior_rows() -> LawResult {
     let allocator = Allocator::default();
     let file = "seed(); first(keep, () => missing); outer(inner(value));";
-    let parsed = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse();
-    assert!(!parsed.panicked && !parsed.diagnostics.has_errors());
+    let parsed = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse_observed();
+    assert!(!parsed.panicked() && !parsed.diagnostics().has_errors());
     let source = ProgramReferenceSource::checked(
-        &parsed.program,
+        parsed.admitted().required()?,
         file,
         Span::new(0, file.len() as u32),
         SourceType::mjs(),
@@ -186,9 +191,11 @@ fn later_unsupported_argument_and_observer_refusal_restore_all_prior_rows() -> L
 fn invalid_utf8_call_projection_rejects_before_observer_and_preserves_prior_rows() -> LawResult {
     let allocator = Allocator::default();
     let file = "seed(); 作者();";
-    let mut parsed = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse();
-    assert!(!parsed.panicked && !parsed.diagnostics.has_errors());
-    let Statement::ExpressionStatement(statement) = parsed.program.body.get_mut(1).required()?
+    let parsed = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse_observed();
+    assert!(!parsed.panicked() && !parsed.diagnostics().has_errors());
+    // Mutate a private resolver probe; it never establishes Program admission.
+    let mut probe = Parser::new(allocator.as_oxc(), file, SourceType::mjs()).parse();
+    let Statement::ExpressionStatement(statement) = probe.program.body.get_mut(1).required()?
     else {
         return Err("actual expression fixture");
     };
@@ -197,7 +204,7 @@ fn invalid_utf8_call_projection_rejects_before_observer_and_preserves_prior_rows
     };
     call.span.start += 1; // adversarial retained subtree with an interior UTF-8 endpoint
     let source = ProgramReferenceSource::checked(
-        &parsed.program,
+        parsed.admitted().required()?,
         file,
         Span::new(0, file.len() as u32),
         SourceType::mjs(),
@@ -209,7 +216,7 @@ fn invalid_utf8_call_projection_rejects_before_observer_and_preserves_prior_rows
         .required()?;
     let references = sink.references.clone();
     let calls = sink.calls.clone();
-    let invalid = source.expression(expression(source.program(), 1)?, &mut sink);
+    let invalid = source.expression(expression(&probe.program, 1)?, &mut sink);
     assert_eq!(
         invalid.err().required()?.kind,
         ResolutionErrorKind::InvalidSpan
@@ -224,15 +231,18 @@ fn direct_eval_and_type_arguments_remain_refused_before_observation() -> LawResu
     let allocator = Allocator::default();
     let file = "eval(value); generic<Type>(value);";
     let source_type = SourceType::ts().with_module(true);
-    let parsed = Parser::new(allocator.as_oxc(), file, source_type).parse();
-    assert!(!parsed.panicked && !parsed.diagnostics.has_errors());
-    assert_eq!(parsed.program.source_type, source_type);
+    let parsed = Parser::new(allocator.as_oxc(), file, source_type).parse_observed();
+    assert!(!parsed.panicked() && !parsed.diagnostics().has_errors());
     assert_eq!(
-        parsed.program.span,
+        parsed.admitted().required()?.program().source_type,
+        source_type
+    );
+    assert_eq!(
+        parsed.admitted().required()?.program().span,
         oxc_span::Span::new(0, file.len() as u32)
     );
     let source = ProgramReferenceSource::checked(
-        &parsed.program,
+        parsed.admitted().required()?,
         file,
         Span::new(0, file.len() as u32),
         source_type,

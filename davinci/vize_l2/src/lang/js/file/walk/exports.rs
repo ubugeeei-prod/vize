@@ -1,10 +1,12 @@
 //! Source-linked export records; missing reference support stays explicit.
 
-use super::{Walk, imports::namespace};
+use super::{Context, Walk, imports::namespace};
 use crate::file::{Export, Namespace};
 use crate::lang::js::file::observer::FileObserver;
 use crate::resolution::BindingId;
-use oxc_ast::ast::{ExportAllDeclaration, ExportDefaultDeclaration, ExportNamedDeclaration};
+use oxc_ast::ast::{
+    ExportAllDeclaration, ExportDefaultDeclaration, ExportNamedDeclaration, Expression,
+};
 use oxc_span::GetSpan;
 use vize_l0::{Span, String};
 
@@ -66,6 +68,7 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
     }
 
     pub(super) fn export_default(&mut self, export: &ExportDefaultDeclaration<'a>) {
+        self.ordinary_empty_default(export);
         let Some(span) = self.span(export.span) else {
             return;
         };
@@ -74,6 +77,41 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             self.expression(expression);
         } else {
             self.unsupported(export.declaration.span());
+        }
+    }
+
+    fn ordinary_empty_default(&mut self, export: &ExportDefaultDeclaration<'a>) {
+        let valid = self.context == Context::Unit
+            && export.declaration.as_expression().is_some_and(|expression| {
+                matches!(expression, Expression::ObjectExpression(object) if object.properties.is_empty())
+            });
+        let receipt = self.input.references.admitted().sole_default_export();
+        let valid = valid
+            && receipt.as_ref().is_some_and(|receipt| {
+                receipt.statement_span() == export.span
+                    && receipt.declaration_span() == export.declaration.span()
+            });
+        if !valid {
+            super::super::ordinary::reject(self.facts, self.unit);
+            return;
+        }
+        let Some(receipt) = receipt else { return };
+        let statement = self.span(receipt.statement_span());
+        let export_keyword = receipt
+            .statement_span()
+            .start
+            .checked_add(6)
+            .and_then(|end| self.span(oxc_span::Span::new(receipt.statement_span().start, end)));
+        let keyword = self.span(receipt.default_keyword_span());
+        let object = self.span(receipt.declaration_span());
+        if !matches!((statement, export_keyword, keyword, object),
+            (Some(statement), Some(export_keyword), Some(keyword), Some(object))
+            if statement.start == export_keyword.start && export_keyword.end <= keyword.start
+                && keyword.end.checked_sub(keyword.start) == Some(7)
+                && keyword.end <= object.start && object.start < object.end
+                && object.end <= statement.end)
+        {
+            super::super::ordinary::reject(self.facts, self.unit);
         }
     }
 

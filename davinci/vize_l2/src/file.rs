@@ -90,6 +90,15 @@ impl<'a> FileArtifact<'a> {
         &self.facts.imports
     }
 
+    /// Same completed File's original bounded ordinary script family.
+    #[must_use]
+    pub fn ordinary_empty_script(&self) -> Option<crate::lang::js::OrdinaryEmptyScript<'_>> {
+        if !self.is_complete() {
+            return None;
+        }
+        crate::lang::js::file::ordinary::OrdinaryEmptyScript::from_facts(&self.facts)
+    }
+
     pub(crate) fn setup_annotations(
         &self,
     ) -> &[crate::lang::js::file::setup::SetupAnnotationRecord] {

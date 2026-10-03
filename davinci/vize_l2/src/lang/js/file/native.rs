@@ -193,12 +193,18 @@ impl<'a> NativeTemplateOwner<'a> {
             );
         }
         let carrier = self.selected.component().carrier();
+        let ordinary_empty = self.setup.is_none()
+            && self
+                .producer
+                .ordinary_empty_script()
+                .is_some_and(|receipt| Some(receipt.unit()) == self.ordinary);
         // The same Program walk records these bits even without an observer.
         // This private two-selected-unit preflight does not enumerate the AST.
         for unit in &self.producer.builder.facts.units {
             let kind = if unit.origin.has_call {
                 Some(NativeTemplateIssueKind::UnsupportedInvocation)
-            } else if unit.origin.has_export {
+            } else if unit.origin.has_export && !(ordinary_empty && Some(unit.id) == self.ordinary)
+            {
                 Some(NativeTemplateIssueKind::UnsupportedExport)
             } else if unit.origin.reserved_binding {
                 Some(NativeTemplateIssueKind::ReservedBinding)

@@ -1,7 +1,7 @@
 //! Neutral file declarations and references; no framework access spelling.
 
 use crate::resolution::{BindingId, Usage};
-use oxc_ast::ast::Program;
+use oxc_parser::AdmittedProgram;
 use vize_l0::{Span, String};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -57,10 +57,12 @@ pub(crate) struct ProgramOrigin {
     pub(crate) has_export: bool,
     pub(crate) reserved_binding: bool,
     pub(crate) setup_eligible: bool,
+    pub(crate) ordinary_empty_eligible: bool,
 }
 
 impl ProgramOrigin {
-    pub(crate) fn checked(program: &Program<'_>, has_legacy_literals: bool) -> Self {
+    pub(crate) fn checked(admitted: &AdmittedProgram<'_, '_>) -> Self {
+        let program = admitted.program();
         Self {
             body: program.body.as_ptr() as usize,
             length: program.body.len(),
@@ -68,7 +70,9 @@ impl ProgramOrigin {
             has_comments: !program.comments.is_empty(),
             has_export: false,
             reserved_binding: false,
-            setup_eligible: crate::lang::js::file::setup::initial(program) && !has_legacy_literals,
+            setup_eligible: crate::lang::js::file::setup::initial(program)
+                && !admitted.has_legacy_literals(),
+            ordinary_empty_eligible: crate::lang::js::file::ordinary::initial(admitted),
         }
     }
 }

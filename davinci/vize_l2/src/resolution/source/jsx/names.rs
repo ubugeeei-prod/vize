@@ -17,10 +17,10 @@ fn original_member_root_is_one_borrowed_reference_and_properties_are_static_sour
     let arena = Allocator::default();
     let file = "<ui.組.Button>{value}</ui.組.Button>;";
     let profile = SourceType::jsx();
-    let parsed = Parser::new(&arena, file, profile).parse();
-    assert!(!parsed.panicked && !parsed.diagnostics.has_errors());
+    let parsed = Parser::new(&arena, file, profile).parse_observed();
+    assert!(!parsed.panicked() && !parsed.diagnostics().has_errors());
     let source = ProgramReferenceSource::checked(
-        &parsed.program,
+        parsed.admitted().required()?,
         file,
         Span::new(0, file.len() as u32),
         profile,
@@ -63,9 +63,10 @@ fn invalid_original_tag_leaves_restore_opening_and_late_closing_events() -> LawR
             "seed(); <UI.作者>{run(value)}</UI.作者>;"
         };
         let profile = SourceType::jsx();
-        let mut parsed = Parser::new(&arena, file, profile).parse();
-        let Statement::ExpressionStatement(statement) =
-            parsed.program.body.get_mut(1).required()?
+        let parsed = Parser::new(&arena, file, profile).parse_observed();
+        // Mutate a private resolver probe; it never establishes Program admission.
+        let mut probe = Parser::new(&arena, file, profile).parse();
+        let Statement::ExpressionStatement(statement) = probe.program.body.get_mut(1).required()?
         else {
             return Err("statement");
         };
@@ -84,7 +85,7 @@ fn invalid_original_tag_leaves_restore_opening_and_late_closing_events() -> LawR
         };
         span.start += if intrinsic { 4 } else { 1 };
         let source = ProgramReferenceSource::checked(
-            &parsed.program,
+            parsed.admitted().required()?,
             file,
             Span::new(0, file.len() as u32),
             profile,
@@ -98,7 +99,7 @@ fn invalid_original_tag_leaves_restore_opening_and_late_closing_events() -> LawR
         let calls = sink.calls.clone();
         assert_eq!(
             source
-                .expression(expression(source.program(), 1)?, &mut sink)
+                .expression(expression(&probe.program, 1)?, &mut sink)
                 .err()
                 .required()?
                 .kind,
@@ -116,9 +117,9 @@ fn late_namespace_and_real_member_root_sink_refusals_restore_prior_invocation_ro
     let arena = Allocator::default();
     let file = "seed(); <div><UI.Button>{new Maker(value)}</UI.Button><ns:tag/></div>; <div>{run(value)}<Other.Button/></div>;";
     let profile = SourceType::jsx();
-    let parsed = Parser::new(&arena, file, profile).parse();
+    let parsed = Parser::new(&arena, file, profile).parse_observed();
     let source = ProgramReferenceSource::checked(
-        &parsed.program,
+        parsed.admitted().required()?,
         file,
         Span::new(0, file.len() as u32),
         profile,
@@ -167,10 +168,10 @@ fn original_static_member_chain_uses_the_existing_depth_budget_without_partial_f
     }
     file.push_str("/>;");
     let profile = SourceType::jsx();
-    let parsed = Parser::new(&arena, file.as_str(), profile).parse();
-    assert!(!parsed.panicked && !parsed.diagnostics.has_errors());
+    let parsed = Parser::new(&arena, file.as_str(), profile).parse_observed();
+    assert!(!parsed.panicked() && !parsed.diagnostics().has_errors());
     let source = ProgramReferenceSource::checked(
-        &parsed.program,
+        parsed.admitted().required()?,
         file.as_str(),
         Span::new(0, file.len() as u32),
         profile,

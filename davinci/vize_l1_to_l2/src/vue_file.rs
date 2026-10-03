@@ -6,6 +6,7 @@ use vize_l2::artifact::ArtifactError;
 use vize_l2::file::{BindingRef, FileArtifact, RejectedFile, ScriptUnitId};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
 
+mod ordinary;
 mod policy;
 mod profile;
 mod records;
@@ -113,7 +114,12 @@ impl<'a> VueFileProducer<'a> {
                 return Err(issue);
             }
         };
-        if !self.issues.is_empty()
+        let staged = ordinary::staged_options(
+            self.ordinary,
+            self.setup,
+            self.producer.ordinary_empty_script(),
+        );
+        if self.issues.iter().any(|issue| Some(*issue) != staged)
             || !self.producer.issues().is_empty()
             || self.producer.interrupted_programs().next().is_some()
         {
@@ -157,6 +163,13 @@ impl<'a> VueFileProducer<'a> {
             self.issues.push(issue);
         }
         let file = self.producer.finish();
+        if let Ok(file) = &file
+            && let Some(staged) =
+                ordinary::staged_options(self.ordinary, self.setup, file.ordinary_empty_script())
+            && let Some(index) = self.issues.iter().position(|issue| *issue == staged)
+        {
+            self.issues.remove(index);
+        }
         match file {
             Ok(file) if file.is_complete() && self.issues.is_empty() => Ok(VueFile {
                 file,

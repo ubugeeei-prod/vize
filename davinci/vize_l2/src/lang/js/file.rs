@@ -12,6 +12,7 @@ use vize_l0::{Allocator, SourceBlock, Span};
 mod guard;
 pub mod native;
 pub(crate) mod observer;
+pub(crate) mod ordinary;
 pub(crate) mod setup;
 mod walk;
 use guard::ProgramWalkGuard;
@@ -51,7 +52,6 @@ pub struct ProgramInput<'p, 'a> {
     block: SourceBlock<'a>,
     index: u32,
     profile: ScriptProfile,
-    has_legacy_literals: bool,
 }
 
 impl<'p, 'a> ProgramInput<'p, 'a> {
@@ -85,7 +85,7 @@ impl<'p, 'a> ProgramInput<'p, 'a> {
             return Err(reject(FileIssueKind::InvalidSource));
         }
         let references = ProgramReferenceSource::checked(
-            program,
+            admitted,
             block.root_source(),
             block.span(),
             source_type,
@@ -95,7 +95,6 @@ impl<'p, 'a> ProgramInput<'p, 'a> {
             u32::try_from(container_index).map_err(|_| reject(FileIssueKind::BindingLimit))?;
         Ok(Self {
             references,
-            has_legacy_literals: admitted.has_legacy_literals(),
             block,
             index,
             profile: ScriptProfile {
@@ -145,10 +144,7 @@ impl<'a> FileProducer<'a> {
             input.block.span(),
             input.profile,
             scope == ProgramScope::Nested,
-            crate::file::ProgramOrigin::checked(
-                input.references.program(),
-                input.has_legacy_literals,
-            ),
+            crate::file::ProgramOrigin::checked(input.references.admitted()),
         ) else {
             return Err(ProgramInputError {
                 span: input.block.span(),
@@ -183,6 +179,13 @@ impl<'a> FileProducer<'a> {
 
     pub fn finish(self) -> Result<FileArtifact<'a>, RejectedFile<'a>> {
         self.builder.finish()
+    }
+
+    /// Original sole completed ordinary script facts, before template custody.
+    /// This borrows the producer and grants no finished File or product authority.
+    #[must_use]
+    pub fn ordinary_empty_script(&self) -> Option<ordinary::OrdinaryEmptyScript<'_>> {
+        ordinary::OrdinaryEmptyScript::from_facts(&self.builder.facts)
     }
 
     #[must_use]
