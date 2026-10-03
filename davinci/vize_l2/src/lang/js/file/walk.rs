@@ -13,6 +13,7 @@ use oxc_ast::ast::{
 use oxc_span::GetSpan;
 use vize_l0::Span;
 
+mod annotations;
 mod exports;
 mod functions;
 mod imports;
@@ -191,8 +192,14 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
                 Some(value) if primitive(value) => InitializerKind::PrimitiveLiteral,
                 _ => InitializerKind::Unknown,
             };
+            let type_supported = self.type_annotation(
+                declaration,
+                self.context == Context::Unit
+                    && !exported
+                    && initializer == InitializerKind::PrimitiveLiteral,
+            );
             if initializer != InitializerKind::PrimitiveLiteral
-                || declaration.type_annotation.is_some()
+                || !type_supported
                 || declaration.definite
                 || matches!(
                     id.name.as_str(),
@@ -215,7 +222,7 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             if exported && let Some(span) = self.span(id.span) {
                 self.push_export(id.name.as_str(), binding, None, Namespace::Value, span);
             }
-            if declaration.type_annotation.is_some() {
+            if !type_supported {
                 self.unsupported(declaration.span);
             }
             if let Some(expression) = &declaration.init {

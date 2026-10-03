@@ -3,11 +3,68 @@
 use crate::file::build::Facts;
 use crate::file::vue::{ExposureIssueKind, VueExposure};
 use crate::file::{BindingRef, FileArtifact, ScopeId, ScriptUnitId};
+use alloc::{boxed::Box, vec::Vec};
 use oxc_ast::ast::Program;
 use oxc_parser::AdmittedProgram;
 use vize_l0::{SourceBlock, Span};
 use vize_l1::container::vue::ScriptView;
 use vize_l1::embed::Lang;
+
+/// A primitive keyword on the genuine original TypeScript annotation node.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SetupPrimitiveType {
+    BigInt,
+    Boolean,
+    Null,
+    Number,
+    String,
+    Symbol,
+    Undefined,
+}
+
+pub(crate) struct SetupAnnotationRecord {
+    pub unit: ScriptUnitId,
+    pub span: Span,
+    pub kind: SetupPrimitiveType,
+}
+
+pub(super) fn record_annotation(
+    facts: &mut Facts<'_>,
+    unit: ScriptUnitId,
+    span: Span,
+    kind: SetupPrimitiveType,
+) {
+    facts
+        .setup_annotations
+        .get_or_insert_with(|| Box::new(Vec::new()))
+        .push(SetupAnnotationRecord { unit, span, kind });
+}
+
+/// An original annotation receipt borrowed from the same sealed File.
+/// Its span includes the original colon and is never supplied by a caller.
+/// ```compile_fail
+/// use vize_l2::lang::js::SetupAnnotation;
+/// fn forge() { let _ = SetupAnnotation { span: true }; }
+/// ```
+pub struct SetupAnnotation<'owner, 'arena> {
+    file: &'owner FileArtifact<'arena>,
+    original: &'owner SetupAnnotationRecord,
+}
+
+impl<'owner, 'arena> SetupAnnotation<'owner, 'arena> {
+    #[must_use]
+    pub fn file(&self) -> &'owner FileArtifact<'arena> {
+        self.file
+    }
+    #[must_use]
+    pub fn span(&self) -> Span {
+        self.original.span
+    }
+    #[must_use]
+    pub fn kind(&self) -> SetupPrimitiveType {
+        self.original.kind
+    }
+}
 
 pub(crate) fn initial(program: &Program<'_>) -> bool {
     let profile = program.source_type;
@@ -44,7 +101,7 @@ pub struct SetupIssue {
 }
 
 /// The original JS/TS setup body contains only direct const/let/var primitive
-/// literals and empty statements, without type-bearing syntax or erasure.
+/// literals and empty statements, with only genuine primitive keyword annotations.
 /// The actual File walk and original Program stay borrowed.
 /// This is script eligibility, not native template custody or product completion.
 ///
@@ -134,5 +191,16 @@ impl<'owner, 'descriptor, 'program, 'arena> VueSetup<'owner, 'descriptor, 'progr
             .file()
             .bindings()
             .filter(|binding| self.exposure.binding(*binding).is_ok())
+    }
+
+    /// Original source order from the sole variable walk, for this unit only.
+    /// The complete File/Program capability grants the receipt, not raw indices.
+    pub fn type_annotations(&self) -> impl Iterator<Item = SetupAnnotation<'owner, 'arena>> + '_ {
+        let file = self.exposure.file();
+        let unit = self.exposure.unit();
+        file.setup_annotations()
+            .iter()
+            .filter(move |row| row.unit == unit)
+            .map(move |original| SetupAnnotation { file, original })
     }
 }

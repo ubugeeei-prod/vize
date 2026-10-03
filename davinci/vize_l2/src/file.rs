@@ -88,6 +88,15 @@ impl<'a> FileArtifact<'a> {
         &self.facts.imports
     }
 
+    pub(crate) fn setup_annotations(
+        &self,
+    ) -> &[crate::lang::js::file::setup::SetupAnnotationRecord] {
+        self.facts
+            .setup_annotations
+            .as_deref()
+            .map_or(&[], |rows| rows.as_slice())
+    }
+
     /// Borrowed name lookup inside an actual file scope; no context fallback.
     #[must_use]
     pub fn lookup(

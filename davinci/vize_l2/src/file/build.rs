@@ -23,6 +23,7 @@ pub(crate) struct Facts<'a> {
     pub expressions: SideTable<ScopedResolution<'a>>,
     pub template_issues: Vec<TemplateIssue>,
     pub template_walk: super::template::TemplateWalk,
+    pub setup_annotations: Option<Box<Vec<crate::lang::js::file::setup::SetupAnnotationRecord>>>,
     names: Vec<Names>,
 }
 
@@ -104,6 +105,7 @@ impl<'a> Facts<'a> {
             expressions: SideTable::new(),
             template_issues: Vec::new(),
             template_walk: super::template::TemplateWalk::Idle,
+            setup_annotations: None,
             names: alloc::vec![Names::default()],
         }
     }
