@@ -29,6 +29,7 @@
 extern crate alloc;
 
 pub mod expr;
+pub mod jsx;
 pub mod module;
 pub mod runtime;
 pub mod targets;

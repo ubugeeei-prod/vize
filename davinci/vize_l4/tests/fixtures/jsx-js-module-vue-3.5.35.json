@@ -1,0 +1,1150 @@
+{
+  "schema": "vize.native-jsx.js-module",
+  "vueVersion": "3.5.35",
+  "babelVersion": "7.29.0",
+  "pluginVersion": "2.0.1",
+  "pluginOptions": {
+    "optimize": false,
+    "enableObjectSlots": false
+  },
+  "fixtures": [
+    {
+      "id": "static-scalar-comments",
+      "source": "/* module 雪🌸 */\nexport function render(message) { // original function\n  return <div id=\"root\" class=\"a b\">Hello<span title=\"quote '\">雪🌸</span>{/* actual read */message}{0x10}{'\\u0041'}{false}{null}{/* empty child */}</div>;\n}\n// original tail\n",
+      "comments": [
+        "/* module 雪🌸 */",
+        "// original function",
+        "/* actual read */",
+        "/* empty child */",
+        "// original tail"
+      ],
+      "arguments": [["前"], [0], [false], [null]],
+      "code": "import { createVNode as _vize_createVNode0, createTextVNode as _vize_createTextVNode0 } from \"vue\";\n/* module 雪🌸 */\nexport function render(message) { // original function\n  return _vize_createVNode0(\"div\", { \"id\": \"root\", \"class\": \"a b\" }, [_vize_createTextVNode0(\"Hello\"), _vize_createVNode0(\"span\", { \"title\": \"quote '\" }, [_vize_createTextVNode0(\"雪🌸\")]), /* actual read */message, 0x10, '\\u0041', false, null/* empty child */]);\n}\n// original tail\n",
+      "map": {
+        "file": "Native雪🌸.jsx",
+        "mappings": ";AAAA;AACA;AACA,SAAS,mBAAC,SAAI,MAAG,QAAO,SAAM,iCAAM,UAAK,mBAAC,UAAK,SAAM,qCAAU,UAAW,iBAAiBA,SAAS,MAAM,UAAU,OAAO,IAAM,mBAAwB;AACzJ;AACA",
+        "names": ["message"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* module 雪🌸 */\nexport function render(message) { // original function\n  return <div id=\"root\" class=\"a b\">Hello<span title=\"quote '\">雪🌸</span>{/* actual read */message}{0x10}{'\\u0041'}{false}{null}{/* empty child */}</div>;\n}\n// original tail\n"
+        ],
+        "version": 3
+      },
+      "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\n/* module 雪🌸 */\nexport function render(message) {\n  // original function\n  return _createVNode(\"div\", {\n    \"id\": \"root\",\n    \"class\": \"a b\"\n  }, [_createTextVNode(\"Hello\"), _createVNode(\"span\", {\n    \"title\": \"quote '\"\n  }, [_createTextVNode(\"\\u96EA\\uD83C\\uDF38\")]), /* actual read */message, 0x10, '\\u0041', false, null]);\n}\n// original tail",
+      "referenceMap": {
+        "version": 3,
+        "names": ["render", "message", "_createVNode", "_createTextVNode"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* module 雪🌸 */\nexport function render(message) { // original function\n  return <div id=\"root\" class=\"a b\">Hello<span title=\"quote '\">雪🌸</span>{/* actual read */message}{0x10}{'\\u0041'}{false}{null}{/* empty child */}</div>;\n}\n// original tail\n"
+        ],
+        "mappings": ";AAAA;AACA,OAAO,SAASA,MAAMA,CAACC,OAAO,EAAE;EAAE;EAChC,OAAAC,YAAA;IAAA;IAAA;EAAA,IAAAC,gBAAA,WAAAD,YAAA;IAAA;EAAA,IAAAC,gBAAA,0BAAwE,iBAAiBF,OAAO,EAAE,IAAI,EAAE,QAAQ,EAAE,KAAK,EAAE,IAAI;AAC/H;AACA",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": ["render"],
+        "results": [
+          {
+            "arguments": ["前"],
+            "vnode": {
+              "type": "div",
+              "props": {
+                "id": "root",
+                "class": "a b"
+              },
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": "Hello"
+                },
+                {
+                  "type": "span",
+                  "props": {
+                    "title": "quote '"
+                  },
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 17,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": [
+                    {
+                      "type": "vue-text",
+                      "props": null,
+                      "key": null,
+                      "ref": null,
+                      "shapeFlag": 8,
+                      "patchFlag": 0,
+                      "dynamicProps": null,
+                      "dynamicChildren": null,
+                      "children": "雪🌸"
+                    }
+                  ]
+                },
+                "前",
+                16,
+                "A",
+                false,
+                null
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {
+                  "id": "root",
+                  "class": "a b"
+                },
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "Hello"
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "span",
+                    "props": {
+                      "title": "quote '"
+                    },
+                    "children": [
+                      {
+                        "kind": "text",
+                        "text": "雪🌸"
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "text",
+                    "text": "前"
+                  },
+                  {
+                    "kind": "text",
+                    "text": "16"
+                  },
+                  {
+                    "kind": "text",
+                    "text": "A"
+                  },
+                  {
+                    "kind": "comment",
+                    "text": ""
+                  },
+                  {
+                    "kind": "comment",
+                    "text": ""
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "arguments": [0],
+            "vnode": {
+              "type": "div",
+              "props": {
+                "id": "root",
+                "class": "a b"
+              },
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": "Hello"
+                },
+                {
+                  "type": "span",
+                  "props": {
+                    "title": "quote '"
+                  },
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 17,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": [
+                    {
+                      "type": "vue-text",
+                      "props": null,
+                      "key": null,
+                      "ref": null,
+                      "shapeFlag": 8,
+                      "patchFlag": 0,
+                      "dynamicProps": null,
+                      "dynamicChildren": null,
+                      "children": "雪🌸"
+                    }
+                  ]
+                },
+                0,
+                16,
+                "A",
+                false,
+                null
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {
+                  "id": "root",
+                  "class": "a b"
+                },
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "Hello"
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "span",
+                    "props": {
+                      "title": "quote '"
+                    },
+                    "children": [
+                      {
+                        "kind": "text",
+                        "text": "雪🌸"
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "text",
+                    "text": "0"
+                  },
+                  {
+                    "kind": "text",
+                    "text": "16"
+                  },
+                  {
+                    "kind": "text",
+                    "text": "A"
+                  },
+                  {
+                    "kind": "comment",
+                    "text": ""
+                  },
+                  {
+                    "kind": "comment",
+                    "text": ""
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "arguments": [false],
+            "vnode": {
+              "type": "div",
+              "props": {
+                "id": "root",
+                "class": "a b"
+              },
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": "Hello"
+                },
+                {
+                  "type": "span",
+                  "props": {
+                    "title": "quote '"
+                  },
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 17,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": [
+                    {
+                      "type": "vue-text",
+                      "props": null,
+                      "key": null,
+                      "ref": null,
+                      "shapeFlag": 8,
+                      "patchFlag": 0,
+                      "dynamicProps": null,
+                      "dynamicChildren": null,
+                      "children": "雪🌸"
+                    }
+                  ]
+                },
+                false,
+                16,
+                "A",
+                false,
+                null
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {
+                  "id": "root",
+                  "class": "a b"
+                },
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "Hello"
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "span",
+                    "props": {
+                      "title": "quote '"
+                    },
+                    "children": [
+                      {
+                        "kind": "text",
+                        "text": "雪🌸"
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "comment",
+                    "text": ""
+                  },
+                  {
+                    "kind": "text",
+                    "text": "16"
+                  },
+                  {
+                    "kind": "text",
+                    "text": "A"
+                  },
+                  {
+                    "kind": "comment",
+                    "text": ""
+                  },
+                  {
+                    "kind": "comment",
+                    "text": ""
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "arguments": [null],
+            "vnode": {
+              "type": "div",
+              "props": {
+                "id": "root",
+                "class": "a b"
+              },
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": "Hello"
+                },
+                {
+                  "type": "span",
+                  "props": {
+                    "title": "quote '"
+                  },
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 17,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": [
+                    {
+                      "type": "vue-text",
+                      "props": null,
+                      "key": null,
+                      "ref": null,
+                      "shapeFlag": 8,
+                      "patchFlag": 0,
+                      "dynamicProps": null,
+                      "dynamicChildren": null,
+                      "children": "雪🌸"
+                    }
+                  ]
+                },
+                null,
+                16,
+                "A",
+                false,
+                null
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {
+                  "id": "root",
+                  "class": "a b"
+                },
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "Hello"
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "span",
+                    "props": {
+                      "title": "quote '"
+                    },
+                    "children": [
+                      {
+                        "kind": "text",
+                        "text": "雪🌸"
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "comment",
+                    "text": ""
+                  },
+                  {
+                    "kind": "text",
+                    "text": "16"
+                  },
+                  {
+                    "kind": "text",
+                    "text": "A"
+                  },
+                  {
+                    "kind": "comment",
+                    "text": ""
+                  },
+                  {
+                    "kind": "comment",
+                    "text": ""
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "all-scope-helper-collision",
+      "source": "function unused(_vize_createVNode1, _vize_createTextVNode0) {}\nexport function render(_vize_createVNode0, message) { return <p>prefix{message}</p>; }\n",
+      "comments": [],
+      "arguments": [
+        ["ignored", "first"],
+        [null, "updated"]
+      ],
+      "code": "import { createVNode as _vize_createVNode2, createTextVNode as _vize_createTextVNode1 } from \"vue\";\nfunction unused(_vize_createVNode1, _vize_createTextVNode0) {}\nexport function render(_vize_createVNode0, message) { return _vize_createVNode2(\"p\", null, [_vize_createTextVNode1(\"prefix\"), message]); }\n",
+      "map": {
+        "file": "Native雪🌸.jsx",
+        "mappings": ";AAAA;AACA,6DAA6D,mBAAC,mCAAE,WAAOA,SAAY",
+        "names": ["message"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "function unused(_vize_createVNode1, _vize_createTextVNode0) {}\nexport function render(_vize_createVNode0, message) { return <p>prefix{message}</p>; }\n"
+        ],
+        "version": 3
+      },
+      "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nfunction unused(_vize_createVNode1, _vize_createTextVNode0) {}\nexport function render(_vize_createVNode0, message) {\n  return _createVNode(\"p\", null, [_createTextVNode(\"prefix\"), message]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": [
+          "unused",
+          "_vize_createVNode1",
+          "_vize_createTextVNode0",
+          "render",
+          "_vize_createVNode0",
+          "message",
+          "_createVNode",
+          "_createTextVNode"
+        ],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "function unused(_vize_createVNode1, _vize_createTextVNode0) {}\nexport function render(_vize_createVNode0, message) { return <p>prefix{message}</p>; }\n"
+        ],
+        "mappings": ";AAAA,SAASA,MAAMA,CAACC,kBAAkB,EAAEC,sBAAsB,EAAE,CAAC;AAC7D,OAAO,SAASC,MAAMA,CAACC,kBAAkB,EAAEC,OAAO,EAAE;EAAE,OAAAC,YAAA,aAAAC,gBAAA,YAAiBF,OAAO;AAAO",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": ["render"],
+        "results": [
+          {
+            "arguments": ["ignored", "first"],
+            "vnode": {
+              "type": "p",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": "prefix"
+                },
+                "first"
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "p",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "prefix"
+                  },
+                  {
+                    "kind": "text",
+                    "text": "first"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "arguments": [null, "updated"],
+            "vnode": {
+              "type": "p",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "vue-text",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 8,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": "prefix"
+                },
+                "updated"
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "p",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "prefix"
+                  },
+                  {
+                    "kind": "text",
+                    "text": "updated"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "actual-component-binding",
+      "source": "function Widget() { return <b>component</b>; }\nexport function render() { return <div><Widget title=\"native\" disabled/></div>; }\n",
+      "comments": [],
+      "arguments": [[]],
+      "code": "import { createVNode as _vize_createVNode0, createTextVNode as _vize_createTextVNode0 } from \"vue\";\nfunction Widget() { return _vize_createVNode0(\"b\", null, [_vize_createTextVNode0(\"component\")]); }\nexport function render() { return _vize_createVNode0(\"div\", null, [_vize_createVNode0(Widget, { \"title\": \"native\", \"disabled\": true }, null)]); }\n",
+      "map": {
+        "file": "Native雪🌸.jsx",
+        "mappings": ";AAAA,2BAA2B,mBAAC,mCAAE,cAAa;AAC3C,kCAAkC,mBAAC,cAAI,mBAACA,UAAO,SAAM,UAAS,2BAAgB",
+        "names": ["Widget"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "function Widget() { return <b>component</b>; }\nexport function render() { return <div><Widget title=\"native\" disabled/></div>; }\n"
+        ],
+        "version": 3
+      },
+      "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\nfunction Widget() {\n  return _createVNode(\"b\", null, [_createTextVNode(\"component\")]);\n}\nexport function render() {\n  return _createVNode(\"div\", null, [_createVNode(Widget, {\n    \"title\": \"native\",\n    \"disabled\": true\n  }, null)]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": ["Widget", "_createVNode", "_createTextVNode", "render"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "function Widget() { return <b>component</b>; }\nexport function render() { return <div><Widget title=\"native\" disabled/></div>; }\n"
+        ],
+        "mappings": ";AAAA,SAASA,MAAMA,CAAA,EAAG;EAAE,OAAAC,YAAA,aAAAC,gBAAA;AAAyB;AAC7C,OAAO,SAASC,MAAMA,CAAA,EAAG;EAAE,OAAAF,YAAA,eAAAA,YAAA,CAAAD,MAAA;IAAA;IAAA;EAAA;AAAqD",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": ["render"],
+        "results": [
+          {
+            "arguments": [],
+            "vnode": {
+              "type": "div",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "function:Widget",
+                  "props": {
+                    "title": "native",
+                    "disabled": true
+                  },
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 2,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": null
+                }
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "element",
+                    "tag": "b",
+                    "props": {},
+                    "children": [
+                      {
+                        "kind": "text",
+                        "text": "component"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "unicode-escaped-read",
+      "source": "/* 日本語 */\nexport function render(作者) { return <section>{\\u4f5c者}{'前🌸'}<i>後</i></section>; }\n",
+      "comments": ["/* 日本語 */"],
+      "arguments": [["作者一"], ["作者二"]],
+      "code": "import { createVNode as _vize_createVNode0, createTextVNode as _vize_createTextVNode0 } from \"vue\";\n/* 日本語 */\nexport function render(作者) { return _vize_createVNode0(\"section\", null, [\\u4f5c者, '前🌸', _vize_createVNode0(\"i\", null, [_vize_createTextVNode0(\"後\")])]); }\n",
+      "map": {
+        "file": "Native雪🌸.jsx",
+        "mappings": ";AAAA;AACA,oCAAoC,mBAAC,kBAASA,SAAS,OAAM,mBAAC,mCAAE,QAAe",
+        "names": ["作者"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* 日本語 */\nexport function render(作者) { return <section>{\\u4f5c者}{'前🌸'}<i>後</i></section>; }\n"
+        ],
+        "version": 3
+      },
+      "referenceCode": "import { createTextVNode as _createTextVNode, createVNode as _createVNode } from \"vue\";\n/* 日本語 */\nexport function render(作者) {\n  return _createVNode(\"section\", null, [作者, '前🌸', _createVNode(\"i\", null, [_createTextVNode(\"\\u5F8C\")])]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": ["render", "作者", "_createVNode", "_createTextVNode"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* 日本語 */\nexport function render(作者) { return <section>{\\u4f5c者}{'前🌸'}<i>後</i></section>; }\n"
+        ],
+        "mappings": ";AAAA;AACA,OAAO,SAASA,MAAMA,CAACC,EAAE,EAAE;EAAE,OAAAC,YAAA,mBAAiBD,EAAO,EAAE,KAAK,EAAAC,YAAA,aAAAC,gBAAA;AAAqB",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": ["render"],
+        "results": [
+          {
+            "arguments": ["作者一"],
+            "vnode": {
+              "type": "section",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                "作者一",
+                "前🌸",
+                {
+                  "type": "i",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 17,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": [
+                    {
+                      "type": "vue-text",
+                      "props": null,
+                      "key": null,
+                      "ref": null,
+                      "shapeFlag": 8,
+                      "patchFlag": 0,
+                      "dynamicProps": null,
+                      "dynamicChildren": null,
+                      "children": "後"
+                    }
+                  ]
+                }
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "section",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "作者一"
+                  },
+                  {
+                    "kind": "text",
+                    "text": "前🌸"
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "i",
+                    "props": {},
+                    "children": [
+                      {
+                        "kind": "text",
+                        "text": "後"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "arguments": ["作者二"],
+            "vnode": {
+              "type": "section",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                "作者二",
+                "前🌸",
+                {
+                  "type": "i",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 17,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": [
+                    {
+                      "type": "vue-text",
+                      "props": null,
+                      "key": null,
+                      "ref": null,
+                      "shapeFlag": 8,
+                      "patchFlag": 0,
+                      "dynamicProps": null,
+                      "dynamicChildren": null,
+                      "children": "後"
+                    }
+                  ]
+                }
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "section",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "作者二"
+                  },
+                  {
+                    "kind": "text",
+                    "text": "前🌸"
+                  },
+                  {
+                    "kind": "element",
+                    "tag": "i",
+                    "props": {},
+                    "children": [
+                      {
+                        "kind": "text",
+                        "text": "後"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "multiple-original-roots",
+      "source": "export function first() { return <div/>; }\nexport function render(message) { return <section><div/>{message}</section>; }\n",
+      "comments": [],
+      "arguments": [["after"], [16]],
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\nexport function first() { return _vize_createVNode0(\"div\", null, null); }\nexport function render(message) { return _vize_createVNode0(\"section\", null, [_vize_createVNode0(\"div\", null, null), message]); }\n",
+      "map": {
+        "file": "Native雪🌸.jsx",
+        "mappings": ";AAAA,iCAAiC,mBAAC,kBAAK;AACvC,yCAAyC,mBAAC,kBAAQ,mBAAC,oBAAMA,SAAkB",
+        "names": ["message"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "export function first() { return <div/>; }\nexport function render(message) { return <section><div/>{message}</section>; }\n"
+        ],
+        "version": 3
+      },
+      "referenceCode": "import { createVNode as _createVNode } from \"vue\";\nexport function first() {\n  return _createVNode(\"div\", null, null);\n}\nexport function render(message) {\n  return _createVNode(\"section\", null, [_createVNode(\"div\", null, null), message]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": ["first", "_createVNode", "render", "message"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "export function first() { return <div/>; }\nexport function render(message) { return <section><div/>{message}</section>; }\n"
+        ],
+        "mappings": ";AAAA,OAAO,SAASA,KAAKA,CAAA,EAAG;EAAE,OAAAC,YAAA;AAAe;AACzC,OAAO,SAASC,MAAMA,CAACC,OAAO,EAAE;EAAE,OAAAF,YAAA,mBAAAA,YAAA,qBAAuBE,OAAO;AAAa",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": ["first", "render"],
+        "results": [
+          {
+            "arguments": ["after"],
+            "vnode": {
+              "type": "section",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "div",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 1,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": null
+                },
+                "after"
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "section",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "element",
+                    "tag": "div",
+                    "props": {},
+                    "children": []
+                  },
+                  {
+                    "kind": "text",
+                    "text": "after"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "arguments": [16],
+            "vnode": {
+              "type": "section",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": [
+                {
+                  "type": "div",
+                  "props": null,
+                  "key": null,
+                  "ref": null,
+                  "shapeFlag": 1,
+                  "patchFlag": 0,
+                  "dynamicProps": null,
+                  "dynamicChildren": null,
+                  "children": null
+                },
+                16
+              ]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "section",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "element",
+                    "tag": "div",
+                    "props": {},
+                    "children": []
+                  },
+                  {
+                    "kind": "text",
+                    "text": "16"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "export": "first",
+            "arguments": [],
+            "vnode": {
+              "type": "div",
+              "props": null,
+              "key": null,
+              "ref": null,
+              "shapeFlag": 1,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": null
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "div",
+                "props": {},
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "static-attributes-and-line-comments",
+      "source": "export function render(message) { return <button disabled title=\"a\\b\" data-id=\"雪🌸\" aria-label=\"label\">{// original child line\nmessage}</button>; }\n",
+      "comments": ["// original child line"],
+      "arguments": [["value"]],
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\nexport function render(message) { return _vize_createVNode0(\"button\", { \"disabled\": true, \"title\": \"a\\\\b\", \"data-id\": \"雪🌸\", \"aria-label\": \"label\" }, [// original child line\nmessage]); }\n",
+      "map": {
+        "file": "Native雪🌸.jsx",
+        "mappings": ";AAAA,yCAAyC,mBAAC,YAAO,kBAAS,SAAM,QAAM,WAAQ,OAAM,cAAW,YAAS;AACxGA,SAAiB",
+        "names": ["message"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "export function render(message) { return <button disabled title=\"a\\b\" data-id=\"雪🌸\" aria-label=\"label\">{// original child line\nmessage}</button>; }\n"
+        ],
+        "version": 3
+      },
+      "referenceCode": "import { createVNode as _createVNode } from \"vue\";\nexport function render(message) {\n  return _createVNode(\"button\", {\n    \"disabled\": true,\n    \"title\": \"a\\\\b\",\n    \"data-id\": \"\\u96EA\\uD83C\\uDF38\",\n    \"aria-label\": \"label\"\n  }, [\n  // original child line\n  message]);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": ["render", "message", "_createVNode"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "export function render(message) { return <button disabled title=\"a\\b\" data-id=\"雪🌸\" aria-label=\"label\">{// original child line\nmessage}</button>; }\n"
+        ],
+        "mappings": ";AAAA,OAAO,SAASA,MAAMA,CAACC,OAAO,EAAE;EAAE,OAAAC,YAAA;IAAA;IAAA;IAAA;IAAA;EAAA;EAAsE;EACxGD,OAAO;AAAY",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": ["render"],
+        "results": [
+          {
+            "arguments": ["value"],
+            "vnode": {
+              "type": "button",
+              "props": {
+                "disabled": true,
+                "title": "a\\b",
+                "data-id": "雪🌸",
+                "aria-label": "label"
+              },
+              "key": null,
+              "ref": null,
+              "shapeFlag": 17,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": ["value"]
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "button",
+                "props": {
+                  "disabled": true,
+                  "title": "a\\b",
+                  "data-id": "雪🌸",
+                  "aria-label": "label"
+                },
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "original-import-named-export",
+      "source": "/* genuine import */\nimport { Widget } from \"jsx-fixture-widget\";\nexport function render() { return <Widget title=\"imported\"/>; }\n",
+      "comments": ["/* genuine import */"],
+      "arguments": [[]],
+      "modules": {
+        "jsx-fixture-widget": "import { createVNode } from \"vue\"; export function Widget() { return createVNode(\"strong\", null, \"imported\"); }"
+      },
+      "code": "import { createVNode as _vize_createVNode0 } from \"vue\";\n/* genuine import */\nimport { Widget } from \"jsx-fixture-widget\";\nexport function render() { return _vize_createVNode0(Widget, { \"title\": \"imported\" }, null); }\n",
+      "map": {
+        "file": "Native雪🌸.jsx",
+        "mappings": ";AAAA;AACA;AACA,kCAAkC,mBAACA,UAAO,SAAM,mBAAY",
+        "names": ["Widget"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* genuine import */\nimport { Widget } from \"jsx-fixture-widget\";\nexport function render() { return <Widget title=\"imported\"/>; }\n"
+        ],
+        "version": 3
+      },
+      "referenceCode": "import { createVNode as _createVNode } from \"vue\";\n/* genuine import */\nimport { Widget } from \"jsx-fixture-widget\";\nexport function render() {\n  return _createVNode(Widget, {\n    \"title\": \"imported\"\n  }, null);\n}",
+      "referenceMap": {
+        "version": 3,
+        "names": ["Widget", "render", "_createVNode"],
+        "sources": ["Native雪🌸.jsx"],
+        "sourcesContent": [
+          "/* genuine import */\nimport { Widget } from \"jsx-fixture-widget\";\nexport function render() { return <Widget title=\"imported\"/>; }\n"
+        ],
+        "mappings": ";AAAA;AACA,SAASA,MAAM,QAAQ,oBAAoB;AAC3C,OAAO,SAASC,MAAMA,CAAA,EAAG;EAAE,OAAAC,YAAA,CAAAF,MAAA;IAAA;EAAA;AAAmC",
+        "ignoreList": []
+      },
+      "runtime": {
+        "exports": ["render"],
+        "results": [
+          {
+            "arguments": [],
+            "vnode": {
+              "type": "function:Widget",
+              "props": {
+                "title": "imported"
+              },
+              "key": null,
+              "ref": null,
+              "shapeFlag": 2,
+              "patchFlag": 0,
+              "dynamicProps": null,
+              "dynamicChildren": null,
+              "children": null
+            },
+            "tree": [
+              {
+                "kind": "element",
+                "tag": "strong",
+                "props": {},
+                "children": [
+                  {
+                    "kind": "text",
+                    "text": "imported"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

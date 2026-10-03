@@ -4862,12 +4862,14 @@ dependencies = [
 name = "vize_l4"
 version = "0.430.0"
 dependencies = [
+ "oxc_span",
  "serde_json",
  "vize_l0",
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
  "vize_l3",
+ "vize_oxc_parser",
 ]
 
 [[package]]

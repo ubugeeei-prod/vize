@@ -88,6 +88,18 @@ impl<'a> NativeJsxAnalysis<'a> {
         &self.owner
     }
 
+    /// Query one existing row only after checking the actual retained owner.
+    #[must_use]
+    pub fn decision_for<'f>(&'f self, node: JsxNode<'f, 'a>) -> Option<JsxDecision<'f, 'a>> {
+        if !core::ptr::eq(node.owner(), &self.owner) {
+            return None;
+        }
+        Some(JsxDecision {
+            node,
+            kind: *self.decisions.get(node.index())?,
+        })
+    }
+
     pub fn decisions(&self) -> impl Iterator<Item = JsxDecision<'_, 'a>> {
         self.decisions
             .iter()

@@ -37,6 +37,11 @@ impl<'f, 'a> JsxNode<'f, 'a> {
     pub fn owner(self) -> &'f JsxFile<'a> {
         self.owner
     }
+    /// Preorder position inside this owner; never a cross-owner admission key.
+    #[must_use]
+    pub fn index(self) -> usize {
+        self.index
+    }
     #[must_use]
     pub fn kind(self) -> Option<SyntaxKind<'a>> {
         Some(self.record()?.kind)
