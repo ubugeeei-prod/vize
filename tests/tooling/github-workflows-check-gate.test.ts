@@ -18,6 +18,7 @@ const PR_JOBS = [
   "pr-source-checks",
   "instruction-counts",
   "level-dependency-direction",
+  "wit-contracts",
 ];
 const FULL_SUITE_JOBS = [
   "nix-flake",
@@ -108,7 +109,7 @@ test("source gates cover PRs and merge groups while extra checks require schedul
   );
   assert.equal(
     workflow.jobs?.["test-report"]?.steps?.at(-1)?.run,
-    "node tools/support/compat/github/require-needs-success.mjs",
+    "node tools/support/compat/github/require-needs-success.mjs --check",
   );
   const commands = (job: string) =>
     (workflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
@@ -217,10 +218,14 @@ test("report fails closed when any PR check fails or skips", () => {
 
 test("report command exits nonzero for a failed dependency", () => {
   const script = "tools/support/compat/github/require-needs-success.mjs";
-  const result = spawnSync(process.execPath, [script], {
+  const result = spawnSync(process.execPath, [script, "--check"], {
     cwd: root,
     encoding: "utf8",
-    env: { ...process.env, NEEDS_JSON: JSON.stringify(needs({ "check-vize-apps": "failure" })) },
+    env: {
+      ...process.env,
+      GITHUB_EVENT_NAME: "pull_request",
+      NEEDS_JSON: JSON.stringify(needs({ "check-vize-apps": "failure" })),
+    },
   });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /check-vize-apps: failure/);

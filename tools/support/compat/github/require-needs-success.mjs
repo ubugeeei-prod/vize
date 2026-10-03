@@ -78,7 +78,24 @@ export function aggregateNeedsResults(needs, skippableJobs = PULL_REQUEST_SKIPPE
   };
 }
 
+/** The queue-only guest job must succeed before the existing Check report. */
+export function aggregateCheckNeedsResults(needs, eventName) {
+  const nonqueue = ["pull_request", "push", "schedule", "workflow_dispatch"];
+  if (eventName !== "merge_group" && !nonqueue.includes(eventName)) {
+    throw new Error(`Unsupported Check event: ${eventName}`);
+  }
+  if (!needs || !Object.hasOwn(needs, "wit-contracts")) {
+    throw new Error("Check needs context is missing wit-contracts");
+  }
+  const skippable = eventName === "merge_group" ? {} : { "wit-contracts": "queue-only" };
+  return aggregateNeedsResults(needs, skippable);
+}
+
 function main() {
+  const args = process.argv.slice(2);
+  if (args.length > 1 || (args.length === 1 && args[0] !== "--check")) {
+    throw new Error("Unknown report mode");
+  }
   const raw = process.env.NEEDS_JSON;
   if (!raw) {
     console.error(
@@ -87,7 +104,11 @@ function main() {
     process.exitCode = 1;
     return;
   }
-  const { exitCode, message } = aggregateNeedsResults(JSON.parse(raw));
+  const results = JSON.parse(raw);
+  const { exitCode, message } =
+    args[0] === "--check"
+      ? aggregateCheckNeedsResults(results, process.env.GITHUB_EVENT_NAME)
+      : aggregateNeedsResults(results);
   if (exitCode === 0) {
     console.log(message);
     return;

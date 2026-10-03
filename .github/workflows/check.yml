@@ -35,6 +35,11 @@ jobs:
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     uses: ./.github/workflows/level-instruction-counts.yml
 
+  wit-contracts:
+    name: Guest contracts
+    if: ${{ github.event_name == 'merge_group' }}
+    uses: ./.github/workflows/davinci-contracts.yml
+
   level-dependency-direction:
     uses: ./.github/workflows/level-dependencies.yml
 
@@ -645,6 +650,7 @@ jobs:
       - pr-source-checks
       - instruction-counts
       - level-dependency-direction
+      - wit-contracts
     permissions:
       contents: read
     steps:
@@ -653,7 +659,7 @@ jobs:
       # Runs last so the inventory is collected and uploaded either way.
       - name: Require every needed job to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
-        run: node tools/support/compat/github/require-needs-success.mjs
+        run: node tools/support/compat/github/require-needs-success.mjs --check
 
   test-report-comment:
     name: test-report-comment

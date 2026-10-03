@@ -15,9 +15,10 @@ const selected = (path) =>
   planToolingTests([path]).tests.filter((file) => file.startsWith("tests/tooling/release/"));
 
 void test("audited release contracts have complete imports and leave unresolved cases broad", () => {
-  assert.equal(releaseFiles.length, 28);
+  assert.equal(releaseFiles.length, 29);
   assert.equal(scoped.length, 26);
   assert.deepEqual(unscoped, [
+    "tests/tooling/release/release-guest-locks.test.ts",
     "tests/tooling/release/release-smoke-init-fresh.test.ts",
     "tests/tooling/release/release-smoke-init-typecheck.test.ts",
   ]);

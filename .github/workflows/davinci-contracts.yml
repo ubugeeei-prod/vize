@@ -3,8 +3,8 @@ name: Davinci Contracts
 # TS-48: the `vize:contracts` WIT worlds round-trip through real component
 # guests, out of process and in process under wasmtime. wasmtime is reachable
 # only through `vize_extension_host`'s `extension-host` feature (charter #39),
-# so this lane is the one place CI compiles it; `check.yml` runs the crate's
-# feature-free contract tests with the workspace and audits the lockfile.
+# so this lane owns its build, including Check's reusable merge-queue call.
+# Workspace checks retain the feature-free tests and the lockfile audit.
 
 on:
   push:
@@ -23,6 +23,7 @@ on:
       - "docs/davinci/plan/test-suites.md"
       - ".github/workflows/davinci-contracts.yml"
   workflow_dispatch:
+  workflow_call:
 
 concurrency:
   group: davinci-contracts-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
