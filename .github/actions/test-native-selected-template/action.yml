@@ -19,3 +19,5 @@ runs:
         path: ${{ runner.temp }}/native-selected-template-dom.json
         if-no-files-found: error
         retention-days: 14
+    - name: Execute original selected-template literal modules
+      uses: ./.github/actions/test-native-selected-template-literals

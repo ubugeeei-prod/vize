@@ -15,7 +15,7 @@
     "bindingMetadata": {},
     "cacheHandlers": false
   },
-  "nativeCapturePinned": false,
+  "nativeCapturePinned": true,
   "fixtures": [
     {
       "id": "decimal",
@@ -65,5 +65,13 @@
       "id": "mixed",
       "file": "selected-template-literal-vue-3.5.35/mixed.json"
     }
-  ]
+  ],
+  "nativeCapture": {
+    "sourceHead": "58875123d3ef36642b3d80f71342b791bad576a8",
+    "executionSha": "b0d5e20b0da5f00d7f32322f764ada6c1ecc3164",
+    "run": 37132559971,
+    "job": 111231431037,
+    "artifact": 11276764559,
+    "sha256": "229fb5a076048bc157dbd90f3e6760b8b9180702363f81dfb5871539aa7f0671"
+  }
 }

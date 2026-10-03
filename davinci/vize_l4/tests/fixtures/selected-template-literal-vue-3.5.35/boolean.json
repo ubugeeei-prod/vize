@@ -18,5 +18,7 @@
   "runtime": {
     "result": "string",
     "value": "true"
-  }
+  },
+  "nativeMapSha256": "c4c23d5033ba622aad5cc447eb525a092082720e798998db3fd27b96f04d459d",
+  "nativeLinksSha256": "e196f3658fc4927885efe9c43ddd9f6ad34341f21c7637b4e71c5d1d7dcf82e4"
 }

@@ -183,6 +183,7 @@ assert.deepEqual(
 );
 const captured = mode === "--check-reference" ? null : JSON.parse(fs.readFileSync(mode, "utf8"));
 if (mode !== "--check-reference") {
+  assert.equal(pack.nativeCapturePinned, true, "actual hosted map/link freeze required");
   assert(Array.isArray(captured) && captured.length === 12, "all twelve native outputs required");
   assert.deepEqual(
     captured.map((item) => item.id),

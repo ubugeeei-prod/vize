@@ -18,5 +18,7 @@
   "runtime": {
     "result": "string",
     "value": "雪&🌸"
-  }
+  },
+  "nativeMapSha256": "18809f039f0052e8a98531b7f5d582a70c7eceabde17f2512729accf843bae5a",
+  "nativeLinksSha256": "4eccd9505bb7e40d760efc17aba4ee3faca95f6af08f3d71daca7f23927a9ced"
 }
