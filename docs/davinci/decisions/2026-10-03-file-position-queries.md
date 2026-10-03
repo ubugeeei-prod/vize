@@ -44,13 +44,13 @@ ceilings and an actual protected merge remain required before delivery.
 
 ## Remaining implementation
 
-| Slice | Required native behavior | Actual prerequisite |
-| --- | --- | --- |
-| File template queries | Resolve original retained template occurrence positions to the same File binding and scope | Actual completed template construction and authored span maps; no fabricated script unit |
-| Maestro consumer | Reuse the shared position API and retain real current-snapshot artifacts per block/embed | This provider plus genuine artifact retention; default route replacement still requires #6883 |
-| Document/petite | Apply case folding, HTML self-closing rules, implied end tags and table semantics in the native tree builder | Existing Document lexer profile; its declared constants alone are not implemented tree semantics |
-| Vapor target | Write complete JS directly from the L3 program without the legacy IR generator | Genuine L3 decisions/schedule and runtime helper vocabulary; current L4 target is a skeleton |
-| Product integration | Exercise the native producer/decision/emitter through complete public results | Real providers and per-product fix-history gates; opt-in `compile_sfc_native` is a consumer, not whole-product completion |
+| Slice                 | Required native behavior                                                                                     | Actual prerequisite                                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| File template queries | Resolve original retained template occurrence positions to the same File binding and scope                   | Actual completed template construction and authored span maps; no fabricated script unit                                  |
+| Maestro consumer      | Reuse the shared position API and retain real current-snapshot artifacts per block/embed                     | This provider plus genuine artifact retention; default route replacement still requires #6883                             |
+| Document/petite       | Apply case folding, HTML self-closing rules, implied end tags and table semantics in the native tree builder | Existing Document lexer profile; its declared constants alone are not implemented tree semantics                          |
+| Vapor target          | Write complete JS directly from the L3 program without the legacy IR generator                               | Genuine L3 decisions/schedule and runtime helper vocabulary; current L4 target is a skeleton                              |
+| Product integration   | Exercise the native producer/decision/emitter through complete public results                                | Real providers and per-product fix-history gates; opt-in `compile_sfc_native` is a consumer, not whole-product completion |
 
 #6871 remains open for broader semantic queries and genuine product consumers.
 The independent provider can merge without waiting for unrelated whole-Issue
