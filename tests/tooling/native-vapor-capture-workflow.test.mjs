@@ -23,6 +23,8 @@ test("original native Vapor source qualifies a fresh affected-PR capture without
     "tests/tooling/support/native-vapor-primary-lifecycle.mjs",
     "tests/tooling/support/vue-vapor-release.mjs",
     ".github/actions/test-native-vapor/action.yml",
+    ".github/workflows/check.yml",
+    ".github/workflows/pr-source-checks.yml",
   ])
     assert.equal(nativeVaporCaptureRequired([path]), true, path);
   for (const path of [
@@ -57,9 +59,9 @@ test("the existing first-shard hook preserves full protected capture and mandato
   const planner = read("tools/support/compat/github/plan-tooling-tests.mjs");
   assert.match(
     planner,
-    /tooling=\$\{[^}]*toolingChecksRequired\(plan, paths\)[^}]*\|\| nativeVaporCaptureRequired\(paths\)/,
+    /tooling=\$\{[^}]*toolingChecksRequired\(plan, paths\)[^}]*\|\| nativeVaporCaptureRequired\(capturePaths\)/,
   );
-  assert.match(planner, /native-vapor-capture=\$\{nativeVaporCaptureRequired\(paths\)\}/);
+  assert.match(planner, /native-vapor-capture=\$\{nativeVaporCaptureRequired\(capturePaths\)\}/);
   const action = read(".github/actions/test-native-vapor/action.yml");
   for (const path of [
     "native-vapor-modules.json",

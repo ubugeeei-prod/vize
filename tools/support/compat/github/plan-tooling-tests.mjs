@@ -112,12 +112,13 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     else throw new Error(`unknown option: ${options[index]}`);
   }
   const paths = /^0+$/.test(base) ? [] : changedPaths(base, head, root);
+  const capturePaths = /^0+$/.test(base) ? [".github/workflows/check.yml"] : paths;
   const plan = planToolingTests(paths, { tier });
   writeToolingPlan(plan, output);
   if (githubOutput && process.env.GITHUB_OUTPUT) {
     appendFileSync(
       process.env.GITHUB_OUTPUT,
-      `tooling=${toolingChecksRequired(plan, paths) || nativeVaporCaptureRequired(paths)}\nnative-vapor-capture=${nativeVaporCaptureRequired(paths)}\nnative-setup-capture=${nativeSetupCaptureRequired(paths)}\ntooling-matrix=${JSON.stringify(toolingShardMatrix(plan))}\n`,
+      `tooling=${toolingChecksRequired(plan, paths) || nativeVaporCaptureRequired(capturePaths)}\nnative-vapor-capture=${nativeVaporCaptureRequired(capturePaths)}\nnative-setup-capture=${nativeSetupCaptureRequired(paths)}\ntooling-matrix=${JSON.stringify(toolingShardMatrix(plan))}\n`,
     );
   }
   const message = `Tooling tests: ${plan.tests.length}/${plan.totalTests}; ${plan.deferredTests} deferred to T1; ${plan.reason}.\n`;

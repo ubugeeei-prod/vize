@@ -74,5 +74,12 @@ stock modules/maps/SSR HTML and the accepted standalone template surface.
 No wrapper cleanup is invented and the existing zero-residue gate is unchanged.
 Resolving genuine clean fragment lifecycle, broader native grammar/runtime
 families, full compiler history, default replacement and #6880 remain unfinished.
+The existing first tooling worker captures both standalone and whole-component
+Rust modules before their mandatory Node consumers for actual affected PR inputs.
+An unknown comparison base qualifies capture conservatively; ordinary planning
+keeps its existing broad unknown-base behavior. Prose-only source changes do not
+qualify this expensive hook. Protected merge groups stay unconditional, and
+nonempty captures are fatal requirements. Only an output and the existing step
+condition are added to the workflow, retaining the composed 350-line ceiling.
 Exact-head hosted Rust/module/runtime captures, unchanged full/instruction
 merge-group gates and literal protected merge are required before delivery.
