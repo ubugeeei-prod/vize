@@ -36,6 +36,10 @@ const sourceWorkflow = parse(readRepoFile(".github", "workflows", "pr-source-che
 const rustWorkflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
   jobs?: Record<string, Job>;
 };
+const jsHistoryPath = "./.github/actions/test-js-packages-with-history";
+const jsHistory = parse(readRepoFile(jsHistoryPath, "action.yml")) as {
+  runs: { using: string; steps: NonNullable<Job["steps"]> };
+};
 
 test("PR and merge-group source checks are included in the required report", () => {
   assert.equal(
@@ -77,7 +81,10 @@ test("PR and merge-group source checks are included in the required report", () 
   assert.deepEqual(sourceWorkflow.jobs?.["pr-tooling-scripts"]?.needs, "pr-source-plan");
   assert.deepEqual(sourceWorkflow.jobs?.["pr-playground-test"]?.needs, "pr-source-plan");
   const commands = (job: string) =>
-    (sourceWorkflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
+    (sourceWorkflow.jobs?.[job]?.steps ?? [])
+      .flatMap((step) => (step.uses === jsHistoryPath ? jsHistory.runs.steps : [step]))
+      .map((step) => step.run ?? "")
+      .join("\n");
   assert.equal(
     sourceWorkflow.jobs?.["pr-rust-source"]?.uses,
     "./.github/workflows/pr-rust-checks.yml",
@@ -104,6 +111,8 @@ test("PR and merge-group source checks are included in the required report", () 
     /cargo nextest archive --workspace --cargo-profile ci --timings/,
   );
   assert.match(rustSteps[runIndex]?.run ?? "", /cargo test --workspace --profile ci --doc(?:;|$)/m);
+  assert.equal(jsHistory.runs.using, "composite");
+  assert.equal(jsHistory.runs.steps[0].if, "${{ success() && job.status == 'success' }}");
   assert.match(commands("pr-js-packages"), /vp run --workspace-root test:js/);
   assert.match(commands("pr-js-packages"), /vp run --filter '\.\/npm\/ui' check/);
   assert.match(commands("pr-tooling-scripts"), /vp run --workspace-root test:scripts/);

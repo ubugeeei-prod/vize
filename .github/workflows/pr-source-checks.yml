@@ -122,16 +122,8 @@ jobs:
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
         run: vp install --frozen-lockfile --prefer-offline
       - name: Test JS packages
-        if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-        run: vp run --workspace-root test:js
-      - name: Preserve public native formatter evidence
         if: ${{ always() && needs.pr-source-plan.outputs.js == 'true' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}
-          path: npm/native/.artifacts/native/formatter-history/**
-          if-no-files-found: warn
-          retention-days: 14
+        uses: ./.github/actions/test-js-packages-with-history
       - name: Check Fresco native declarations and consumer types
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
         run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types

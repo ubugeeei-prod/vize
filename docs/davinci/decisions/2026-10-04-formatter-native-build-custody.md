@@ -59,3 +59,21 @@ emitted/generated/frozen bytes across actors; do not infer runtime Cargo setting
 from the earlier build. A new admission law rejects within-builder mutation and
 malformed/unknown fields. The failed original packet remains source-scoped and
 grants no public-call acceptance. Fresh both-head Actions remain required.
+
+The repaired parent `9c76c3fb` source campaign preserved builder/observer custody
+but failed the unchanged source-length gate: `pr-source-checks.yml` grew from
+348 to 356 lines. Move only its existing JS package command and always-upload
+history step into the local `test-js-packages-with-history` composite, restoring
+the owning workflow to 348 lines. The selected-JS invocation remains `always()`
+so prior build failures can upload raw evidence; tests additionally require the
+outer `job.status` to be success, and upload remains unconditional within the
+invoked composite. Runner 2.337.0 scopes composite `success()` to action status
+([official implementation](https://github.com/actions/runner/blob/v2.337.0/src/Runner.Worker/Expressions/SuccessFunction.cs)),
+so that function alone cannot retain the prior outer-job success guard.
+
+The source witnesses follow the real local action and retain the entire original
+JS command, declaration/type/UI tail, selection, upload settings and fail-closed
+required aggregates. No build, job, gate, instruction budget or default path is
+added or removed. The failed original log stays source-qualified; new parent
+and child Actions plus protected candidate execution and actual merge remain
+required. Earlier child `6cabd2b2`'s 25 genuine calls qualify only that source.

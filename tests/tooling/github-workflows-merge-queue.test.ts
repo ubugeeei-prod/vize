@@ -55,7 +55,15 @@ const tailCommands = [
   "cargo test -p vize_vitrine --no-default-features --features wasm",
   'VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_patina --features legacy-differential --test davinci_markup_differential -- --nocapture',
 ];
-const commands = (job: Job) => (job.steps ?? []).map((step) => step.run ?? "").join("\n");
+const jsHistoryPath = "./.github/actions/test-js-packages-with-history";
+const jsHistory = parse(readRepoFile(jsHistoryPath, "action.yml")) as {
+  runs: { using: string; steps: Step[] };
+};
+const commands = (job: Job) =>
+  (job.steps ?? [])
+    .flatMap((step) => (step.uses === jsHistoryPath ? jsHistory.runs.steps : [step]))
+    .map((step) => step.run ?? "")
+    .join("\n");
 
 test("queue scope reaches the planner and every full source lane remains required", () => {
   assert.equal(
@@ -76,6 +84,12 @@ test("queue scope reaches the planner and every full source lane remains require
     assert.ok(check.jobs["test-report"].needs?.includes(required), `${required} remains mandatory`);
   }
   assert.equal(check.jobs["pr-source-checks"].uses, "./.github/workflows/pr-source-checks.yml");
+  assert.equal(
+    source.jobs["pr-js-packages"].steps?.find((step) => step.uses === jsHistoryPath)?.if,
+    "${{ always() && needs.pr-source-plan.outputs.js == 'true' }}",
+  );
+  assert.equal(jsHistory.runs.using, "composite");
+  assert.equal(jsHistory.runs.steps[0].if, "${{ success() && job.status == 'success' }}");
   assert.match(commands(source.jobs["pr-js-packages"]), /vp run --workspace-root test:js/);
   assert.match(commands(source.jobs["pr-tooling-scripts"]), /vp run --workspace-root test:scripts/);
   assert.match(commands(source.jobs["pr-tooling-scripts"]), /cargo build --profile ci -p vize/);

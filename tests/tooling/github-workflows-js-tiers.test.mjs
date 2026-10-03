@@ -22,8 +22,11 @@ import { aggregateNeedsResults } from "../../tools/support/compat/github/require
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const workflow = parse(readFileSync(join(root, ".github/workflows/pr-source-checks.yml"), "utf8"));
 const selectedJs = "${{ needs.pr-source-plan.outputs.js == 'true' }}";
+const selectedHistory = "${{ always() && needs.pr-source-plan.outputs.js == 'true' }}";
 const selectedMerge =
   "${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.js == 'true' }}";
+const historyActionPath = "./.github/actions/test-js-packages-with-history";
+const history = parse(readFileSync(join(root, historyActionPath, "action.yml"), "utf8"));
 
 function recordingCli(directory, source = "process.exit(0);") {
   const calls = join(directory, "calls.jsonl");
@@ -53,8 +56,11 @@ void test("PR keeps native declaration/type checks; merge queue preserves the co
   );
   assert.deepEqual(
     steps.map((step) => step.if),
-    [selectedJs, selectedJs, selectedMerge],
+    [selectedHistory, selectedJs, selectedMerge],
   );
+  assert.equal(steps[0].uses, historyActionPath);
+  const testStep = history.runs.steps.find((step) => step.name === "Test JS packages");
+  assert.equal(testStep.run, "vp run --workspace-root test:js");
   assert.ok(workflow.jobs["source-report"].needs.includes("pr-js-packages"));
   for (const result of ["failure", "cancelled", "skipped"]) {
     assert.equal(aggregateNeedsResults({ "pr-js-packages": { result } }).exitCode, 1);
@@ -71,7 +77,8 @@ void test("PR keeps native declaration/type checks; merge queue preserves the co
       rmSync(cli.calls, { force: true });
       for (const step of steps) {
         if (!js || (step.if === selectedMerge && event !== "merge_group")) continue;
-        const result = spawnSync("/bin/sh", ["-c", step.run], {
+        const command = step.uses === historyActionPath ? testStep.run : step.run;
+        const result = spawnSync("/bin/sh", ["-c", command], {
           cwd: root,
           env: cli.env,
           encoding: "utf8",
@@ -99,6 +106,29 @@ void test("PR keeps native declaration/type checks; merge queue preserves the co
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }
+});
+
+void test("public native evidence remains reachable after prior build or package test failure", () => {
+  const seam = workflow.jobs["pr-js-packages"].steps.find(
+    (step) => step.uses === historyActionPath,
+  );
+  assert.equal(seam.if, selectedHistory);
+  assert.equal(seam["continue-on-error"], undefined);
+  assert.equal(history.runs.using, "composite");
+  assert.equal(history.runs.steps.length, 2);
+  const [execute, upload] = history.runs.steps;
+  assert.equal(execute.if, "${{ success() && job.status == 'success' }}");
+  assert.equal(execute.shell, "bash");
+  assert.equal(execute.run, "vp run --workspace-root test:js");
+  assert.equal(execute["continue-on-error"], undefined);
+  assert.equal(upload.if, "${{ always() }}");
+  assert.equal(upload.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
+  assert.deepEqual(upload.with, {
+    name: "public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}",
+    path: "npm/native/.artifacts/native/formatter-history/**",
+    "if-no-files-found": "warn",
+    "retention-days": 14,
+  });
 });
 
 void test("Fresco checks generate declarations and invoke static TypeScript without executing the loader", () => {
