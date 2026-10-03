@@ -99,3 +99,36 @@ Fetch that exact ancestry without changing the pinned reporter or ancestry
 assertion. A real local shallow-Git law rejects depths two and three and
 accepts depth four. Preserve both original failed hosted runs. Fresh hosted
 execution is still required; no invalid finding has been made usable.
+
+The next original capture (0f7e42fe, run 37118686362) reached installed
+runtime verification but refused the unchanged source guard before reporter
+execution. All nineteen actual fixture HEADs matched their fixed revisions.
+The other eighteen fixtures were clean; shadcn-vue reported 734 registry JSON
+changes. Complete retained diffs contain only CRLF/LF comparisons. Actual
+original-blob reproduction establishes that the physical CRLF bytes survive
+ordinary first checkout while upstream text/eol attributes make Git classify
+its own original blobs as dirty; installation-induced rewriting is not
+established. Preserve the 91 complete partial log-frame files, original
+failed exit and issue #6830 comment 5968741971. There are still no original
+reporter findings or successful producer exit.
+
+For this capture alone, initialize and fetch the same pinned shadcn revision
+without a checkout. Before its FIRST checkout, write per-repository info
+attributes only for the two existing registry JSON patterns, disabling text
+and eol conversion for those paths. Keep Vue/style attributes inherited.
+Compare every physical tracked file or symlink with the original full Git
+blob and mode, retaining the complete tree and hashed inventory through the
+unchanged always-frames and artifact path. The other eighteen fixtures use
+the original shallow submodule command; all nineteen revisions, Vue globs,
+producer rules and budgets are unchanged. No dirty fixture is restored,
+ignored or normalized. The unchanged whole-source guard remains mandatory
+after hydration, installation and CLI build.
+
+The real Git law retains original CRLF and Vue/style bytes, reproduces the
+ordinary self-dirty checkout, proves the raw FIRST checkout is clean, and
+refuses a later one-byte mutation with the actual unchanged guard. Complete
+blob attestation independently rejects that mutation. The unchanged frames
+recover the full attestation, tree and dirty-source evidence. Capture-only
+fetch-depth zero retains the original pinned reporter across the genuine
+five-commit source chain; normal Matrix and PR gates are untouched. Ten
+finite laws pass; actual hosted nineteen-project capture is still required.

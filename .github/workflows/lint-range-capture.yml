@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.sha }}
-          fetch-depth: 4
+          fetch-depth: 0
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -36,11 +36,7 @@ jobs:
       - name: Verify literal source and nineteen fixture contracts
         run: node tools/support/ci/lint-range-capture/preflight.ts source "$GITHUB_WORKSPACE" "$GITHUB_SHA"
       - name: Hydrate only the original nineteen gitlinks
-        shell: bash
-        run: |
-          mapfile -t paths < <(node tools/support/ci/lint-range-capture/preflight.ts paths "$GITHUB_WORKSPACE" "$GITHUB_SHA")
-          test "${#paths[@]}" -eq 19
-          git submodule update --init --depth 1 -- "${paths[@]}"
+        run: node tools/support/ci/lint-range-capture/hydrate.ts "$GITHUB_WORKSPACE" "$GITHUB_SHA"
       - name: Install the unchanged frozen repository dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build the exact source CLI once
