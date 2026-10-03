@@ -70,11 +70,20 @@ owner/refusal/range and empty-template checks. These executions do not replace
 the ten whole Patina integration laws or exact-head hosted Cargo validation.
 The original failed source harness attempts are retained separately.
 
-Publication follows the genuine selected-owner provider in a native GitHub
-Stack. Fresh exact-head Actions, whole Patina Clippy, protected full suites and
+The genuine selected-owner and operand provider merged as native Stack #7473
+on 2026-10-03 at 04:40:26 UTC, ending at signed `ec97593f`. The own-only
+consumer follows that delivered provider as an independent PR.
+Fresh exact-head Actions, whole Patina Clippy, protected full suites and
 instruction-count gates, queue conservation and actual terminal merge remain
 mandatory. Until they finish, this is a source-only opt-in slice, not a
 completed product route.
+
+The first existing full Check on frozen source `2bc3fef0` (run
+37097363700) built production with whole Clippy, but its source-coverage
+test build found a private `diagnostic::LintDiagnostic` import. The test
+adapter now uses the existing public root re-export. This changes no oracle,
+case, assertion or product API. The original failed source and complete log
+remain retained; no ten-law execution is credited from that attempt.
 
 Other syntax rules, dynamic/object binding admission, every Vue dialect,
 semantic linting on L2/facts, autofix span edits, complete linter fix-history,

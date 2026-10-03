@@ -11,8 +11,7 @@ use vize_l1::{
     markup::{NativeChildren, NativeTemplateComponent},
 };
 use vize_patina::{
-    Linter, RuleRegistry,
-    diagnostic::LintDiagnostic,
+    LintDiagnostic, Linter, RuleRegistry,
     native::{NativeLintFinding, NativeSyntaxLint},
     rules::a11y::ImgAlt,
 };
