@@ -17,7 +17,7 @@ Native-element event listeners and cloak are omitted under the existing SSR
 policy. Every other binding, expression/control/component/slot, non-HTML
 namespace, raw-text/pre/template surface, duplicate/unsafe/special attribute
 and unsafe comment is retained as an exact node/span typed refusal. Class,
-style, value and reserved props remain refused pending actual normalization
+style, value, true/false-value and reserved props remain refused pending actual normalization
 semantics. L4 owns complete escaping and runtime spelling.
 
 `NativeSsrFileAnalysis` has private fields and derives its only artifact from

@@ -114,10 +114,20 @@ impl<'owner, 'arena> SsrBuilder<'owner, 'arena> {
             }
             if matches!(
                 name,
-                "class" | "style" | "key" | "ref" | "is" | "slot" | "value" | "__proto__"
+                "class"
+                    | "style"
+                    | "key"
+                    | "ref"
+                    | "is"
+                    | "slot"
+                    | "value"
+                    | "__proto__"
+                    | "true-value"
+                    | "false-value"
             ) || name.starts_with("on")
                 || name.starts_with("v-")
                 || name.starts_with(':')
+                || name.starts_with('.')
             {
                 self.reject(node, attribute.span, SsrUnsupported::AttributeSemantics);
             }
