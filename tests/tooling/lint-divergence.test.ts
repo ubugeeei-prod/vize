@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { attachBudget } from "../../tools/support/compat/fixtures/lint-divergence-budget.mjs";
 import { compare, eslintResult, span } from "./_helpers/lint-divergence-fixture.ts";
 
 test("the divergence ledger keys on the full location tuple, not on counts", () => {
@@ -246,6 +247,24 @@ test("baseline findings with invalid ranges are counted out as unusable evidence
   assert.deepEqual(result.falseNegatives, []);
   assert.equal(result.summary.baselineInvalidRangeCount, 1);
   assert.equal(result.summary.baselineFindingCount, 0);
+  assert.deepEqual(result.baselineInvalidRanges, [
+    {
+      file: "src/App.vue",
+      finding: {
+        ruleId: "vue/no-v-html",
+        severity: 2,
+        ...span(7, 1, 0, 0),
+        message: "bad location",
+      },
+    },
+  ]);
+  const artifact = attachBudget({
+    files: { comparedCount: 1 },
+    baseline: { comparedRuleCount: 1 },
+    divergence: result,
+  });
+  assert.equal(artifact.budget.verdict, "unusable");
+  assert.equal(artifact.budget.passed, false);
 });
 
 test("patina findings with invalid ranges remain fail-closed", () => {

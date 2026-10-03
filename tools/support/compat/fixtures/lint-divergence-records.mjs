@@ -94,6 +94,7 @@ export function collectBaselineFindings(results, cwd) {
   let parseErrorCount = 0;
   let excludedNonVueCount = 0;
   let invalidRangeCount = 0;
+  const invalidRanges = [];
   for (const [index, result] of results.entries()) {
     const label = `eslint results[${index}]`;
     if (result == null || typeof result !== "object" || !Array.isArray(result.messages)) {
@@ -120,6 +121,7 @@ export function collectBaselineFindings(results, cwd) {
       };
       if (!isValidRange(range)) {
         invalidRangeCount += 1;
+        invalidRanges.push({ file, finding: structuredClone(message) });
         continue;
       }
       findings.push(
@@ -133,7 +135,7 @@ export function collectBaselineFindings(results, cwd) {
       );
     }
   }
-  return { findings, parseErrorCount, excludedNonVueCount, invalidRangeCount };
+  return { findings, parseErrorCount, excludedNonVueCount, invalidRangeCount, invalidRanges };
 }
 
 function isValidRange(range) {

@@ -13,7 +13,7 @@
 
 use glob::{MatchOptions, Pattern};
 use ignore::WalkBuilder;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -425,13 +425,11 @@ fn compare_lint_findings(
     let mut patina_outside_baseline_surface = Vec::new();
     let mut pug_bodies = BTreeMap::<String, Option<(u64, u64)>>::new();
     for finding in patina {
-        let pug_body = pug_bodies
-            .entry(finding.file.clone())
-            .or_insert_with(|| {
-                fs::read_to_string(cwd.join(&finding.file))
-                    .ok()
-                    .and_then(|source| pug_template_lines(&source))
-            });
+        let pug_body = pug_bodies.entry(finding.file.clone()).or_insert_with(|| {
+            fs::read_to_string(cwd.join(&finding.file))
+                .ok()
+                .and_then(|source| pug_template_lines(&source))
+        });
         if pug_body.is_some_and(|(start, end)| (start..=end).contains(&finding.line)) {
             patina_outside_baseline_surface.push(finding.to_value());
         } else if index.patina_targets.contains(&finding.rule_id) {
@@ -532,7 +530,7 @@ fn compare_lint_findings(
         "patinaOutsideBaselineSurface": patina_outside_baseline_surface,
         "documentedDivergences": documented_divergences,
     });
-    let hash_input = json!({
+    let mut hash_input = json!({
         "summary": summary,
         "shared": classified["shared"],
         "messageDifferences": classified["messageDifferences"],
@@ -545,7 +543,10 @@ fn compare_lint_findings(
         "patinaOutsideBaselineSurface": classified["patinaOutsideBaselineSurface"],
         "documentedDivergences": classified["documentedDivergences"],
     });
-    Ok(json!({
+    if !baseline_input.invalid_ranges.is_empty() {
+        hash_input["baselineInvalidRanges"] = json!(baseline_input.invalid_ranges);
+    }
+    let mut divergence = json!({
         "schema": "vize.fixtureLintDivergence",
         "version": 1,
         "project": project_id,
@@ -565,7 +566,11 @@ fn compare_lint_findings(
         "patinaOutsideBaselineSurface": classified["patinaOutsideBaselineSurface"],
         "documentedDivergences": classified["documentedDivergences"],
         "sha256": sha256(&hash_input.to_string()),
-    }))
+    });
+    if !baseline_input.invalid_ranges.is_empty() {
+        divergence["baselineInvalidRanges"] = json!(baseline_input.invalid_ranges);
+    }
+    Ok(divergence)
 }
 
 /// The 1-based line range of an inline `<template lang="pug">` body — the
@@ -597,6 +602,7 @@ struct BaselineInput {
     parse_error_count: u64,
     excluded_non_vue_count: u64,
     invalid_range_count: u64,
+    invalid_ranges: Vec<Value>,
 }
 
 struct ComparableRules {
@@ -789,6 +795,7 @@ fn collect_baseline_findings(results: &[Value], cwd: &Path) -> Result<BaselineIn
     let mut parse_error_count = 0;
     let mut excluded_non_vue_count = 0;
     let mut invalid_range_count = 0;
+    let mut invalid_ranges = Vec::new();
     for (index, result) in results.iter().enumerate() {
         let label = format!("eslint results[{index}]");
         let file = normalize_path(required_str(result, "filePath", &label)?, cwd, "filePath")?;
@@ -811,6 +818,7 @@ fn collect_baseline_findings(results: &[Value], cwd: &Path) -> Result<BaselineIn
                 baseline_range(message, &file, &rule_id)
             else {
                 invalid_range_count += 1;
+                invalid_ranges.push(json!({ "file": file, "finding": message }));
                 continue;
             };
             findings.push(LintRecord {
@@ -831,6 +839,7 @@ fn collect_baseline_findings(results: &[Value], cwd: &Path) -> Result<BaselineIn
         parse_error_count,
         excluded_non_vue_count,
         invalid_range_count,
+        invalid_ranges,
     })
 }
 
@@ -1907,9 +1916,15 @@ mod tests {
     fn pug_template_bodies_are_located_by_line() {
         let sfc = "<script setup>\nconst a = 1\n</script>\n<template lang=\"pug\">\ndiv\n  p x\n</template>\n";
         assert_eq!(pug_template_lines(sfc), Some((5, 7)));
-        assert_eq!(pug_template_lines("<template lang='pug'>div</template>"), Some((1, 1)));
+        assert_eq!(
+            pug_template_lines("<template lang='pug'>div</template>"),
+            Some((1, 1))
+        );
         assert_eq!(pug_template_lines("<template>\n<div/>\n</template>"), None);
-        assert_eq!(pug_template_lines("<template lang=\"pug\" src=\"./a.pug\"></template>"), None);
+        assert_eq!(
+            pug_template_lines("<template lang=\"pug\" src=\"./a.pug\"></template>"),
+            None
+        );
     }
 
     #[test]
@@ -1937,6 +1952,13 @@ mod tests {
         assert!(baseline.findings.is_empty());
         assert_eq!(baseline.invalid_range_count, 1);
         assert_eq!(baseline.parse_error_count, 0);
+        assert_eq!(
+            baseline.invalid_ranges,
+            vec![json!({
+                "file": "src/App.vue",
+                "finding": results[0]["messages"][0]
+            })]
+        );
     }
 
     #[test]
@@ -1972,5 +1994,12 @@ mod tests {
         assert_eq!(baseline.findings[0].rule_id, "vue/require-v-for-key");
         assert_eq!(baseline.findings[0].line, 9);
         assert_eq!(baseline.invalid_range_count, 1);
+        assert_eq!(
+            baseline.invalid_ranges,
+            vec![json!({
+                "file": "src/App.vue",
+                "finding": results[0]["messages"][0]
+            })]
+        );
     }
 }

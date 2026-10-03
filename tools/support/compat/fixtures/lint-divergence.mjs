@@ -151,6 +151,9 @@ export function compareLintFindings({
     intentionalDivergences,
     patinaOnlyRuleFindings,
     documentedDivergences: documented,
+    ...(baselineInput.invalidRanges.length > 0
+      ? { baselineInvalidRanges: baselineInput.invalidRanges }
+      : {}),
   };
   const summary = {
     patinaFindingCount: patina.length,
