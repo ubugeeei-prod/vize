@@ -1,17 +1,15 @@
-//! Root cursor prototype. Element/header/operand routes remain unavailable.
+//! Original root cursor and private zero-header HTML body construction.
 
 use super::{RootRegion, TemplatePolicy};
-use crate::artifact::ComponentFactory;
 use crate::file::template::TemplateWalk;
 use crate::file::{Declaration, FileBuilder, FileIssueKind, ScopeId, ScriptUnitId, TemplateIssue};
 use crate::lang::js::file::native::{
     NativeRouteState, NativeTemplateIssue, NativeTemplateIssueKind,
 };
 use vize_l0::id::NodeId;
-use vize_l1::{
-    SurfaceChild,
-    markup::{NativeChild, NativeTemplateComponent},
-};
+use vize_l1::markup::{NativeChild, NativeTemplateComponent};
+
+mod body;
 
 #[derive(Clone, Copy)]
 pub(crate) struct NativeVisibility;
@@ -83,41 +81,13 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
         {
             return self.reject(NativeTemplateIssueKind::InvalidEvent);
         }
-        let (token, comment) = match child.surface() {
-            SurfaceChild::Text(token) => (token, false),
-            SurfaceChild::Comment(token) => (token, true),
-            _ => return self.reject(NativeTemplateIssueKind::UnsupportedChild),
-        };
-        let Some(span) = self.selected.component().block().span_of(token.text) else {
-            return self.reject(NativeTemplateIssueKind::InvalidEvent);
-        };
-        let result = if comment {
-            let Some(body) = token
-                .text
-                .strip_prefix("<!--")
-                .and_then(|text| text.strip_suffix("-->"))
-            else {
-                return self.reject(NativeTemplateIssueKind::UnsupportedChild);
-            };
-            self.root.comment(body, span)
-        } else {
-            // No second decoding pass: entity support awaits the actual decoder.
-            if token.text.contains('&')
-                || token
-                    .text
-                    .bytes()
-                    .any(|byte| matches!(byte, b'\t' | b'\n' | b'\x0c' | b'\r' | b' '))
-            {
-                return self.reject(NativeTemplateIssueKind::UnsupportedChild);
-            }
-            self.root.text(token.text, span)
-        };
+        let result = body::construct(child, &mut self.root);
         match result {
             Ok(node) => {
                 self.cursor += 1;
                 Ok(node)
             }
-            Err(error) => self.reject(NativeTemplateIssueKind::Artifact(error)),
+            Err(kind) => self.reject(kind),
         }
     }
     fn reject<T>(&mut self, kind: NativeTemplateIssueKind) -> Result<T, NativeTemplateIssue> {

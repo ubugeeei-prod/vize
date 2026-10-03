@@ -258,7 +258,7 @@ fn unresolved_program_and_original_element_entity_roots_stay_unadmitted() -> Res
         Kind::Program(vize_l2::file::FileIssueKind::UnsupportedSyntax),
     )?;
     check(original.finish().view().is_err())?;
-    for source in ["<template><div/></template>", "<template>&amp;</template>"] {
+    for source in ["<template><svg/></template>", "<template>&amp;</template>"] {
         let mut original = owner(&arena, source)?;
         {
             let mut walk = original.begin().map_err(|_| "begin")?;

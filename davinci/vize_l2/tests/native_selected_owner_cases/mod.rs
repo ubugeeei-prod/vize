@@ -299,5 +299,6 @@ fn missing_and_foreign_source_programs_cannot_bypass_selected_receipts() -> Resu
     Ok(())
 }
 
+mod element;
 mod rejection;
 mod text;

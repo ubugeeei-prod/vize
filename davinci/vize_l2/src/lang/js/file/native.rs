@@ -1,4 +1,4 @@
-//! Selected-owner prototype. Only text/comment/empty root bodies can complete.
+//! Selected ownership with Text/Comment/empty and zero-header HTML bodies.
 
 use super::{FileProducer, ProgramInput, ProgramScope};
 use crate::artifact::ArtifactError;
