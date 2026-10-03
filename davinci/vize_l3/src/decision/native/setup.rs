@@ -19,8 +19,13 @@ use vize_l2::{
 /// Native runtime reads borrow the normal whole setup owner and its own template.
 /// A caller cannot pair another File or substitute a neutral analysis.
 /// ```compile_fail
+/// use vize_l2::lang::js::{NativeSelectedSetup, NativeTemplateView};
+/// use vize_l3::decision::NativeAnalysis;
 /// use vize_l3::decision::native::NativeSelectedSetupDomAnalysis;
-/// fn forge() { let _ = NativeSelectedSetupDomAnalysis { analysis: true }; }
+/// fn forge<'v, 'o, 'a>(setup: &'v NativeSelectedSetup<'o, 'a>,
+///     template: NativeTemplateView<'o, 'a>, analysis: NativeAnalysis<'o, 'a>) {
+///     let _ = NativeSelectedSetupDomAnalysis { setup, template, analysis };
+/// }
 /// ```
 /// ```compile_fail
 /// use vize_l2::lang::js::NativeSelectedSetup;

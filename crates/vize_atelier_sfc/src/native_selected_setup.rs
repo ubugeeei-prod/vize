@@ -29,8 +29,13 @@ pub enum NativeSelectedSetupSfcDomError {
 /// File stay owned even when script or target emission refuses.
 /// This is additive; the compiler's default/legacy entry is unchanged.
 /// ```compile_fail
-/// use vize_atelier_sfc::NativeSelectedSetupSfcDomCompilation;
-/// fn forge() { let _ = NativeSelectedSetupSfcDomCompilation { result: true }; }
+/// use vize_l1_to_l2::native_file::NativeSelectedSetupSfcObservation;
+/// use vize_atelier_sfc::{NativeSelectedSetupSfcDomCompilation,
+///     NativeSelectedSetupSfcDomError, NativeSelectedSfcDomOutput};
+/// fn forge<'a>(observation: NativeSelectedSetupSfcObservation<'a>,
+///     result: Result<NativeSelectedSfcDomOutput, NativeSelectedSetupSfcDomError>) {
+///     let _ = NativeSelectedSetupSfcDomCompilation { observation, result };
+/// }
 /// ```
 /// ```compile_fail
 /// use vize_atelier_sfc::NativeSelectedSetupSfcDomCompilation;
