@@ -642,8 +642,13 @@ mod literal_receipt_tests {
     fn speculative_peek_and_both_checkpoint_kinds_restore_original_literal_fact() {
         let arena = Allocator::default();
         for source in ["1 010", "1 '\\8'"] {
-            let mut lexer = Lexer::new(&arena, source, SourceType::mjs(), NoTokensLexerConfig,
-                UniquePromise::new_for_tests_and_benchmarks());
+            let mut lexer = Lexer::new(
+                &arena,
+                source,
+                SourceType::mjs(),
+                NoTokensLexerConfig,
+                UniquePromise::new_for_tests_and_benchmarks(),
+            );
             lexer.first_token();
             assert!(!lexer.has_legacy_literals);
             lexer.peek_token();

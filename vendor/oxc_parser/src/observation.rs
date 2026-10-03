@@ -196,10 +196,26 @@ mod legacy_literal_tests {
             assert!(parsed.diagnostics().is_empty());
             assert_eq!(admitted.source(), source);
         }
-        for literal in ["0", "0o10", "0x10", "0b10", "0.1", "0e1", "'雪'", "'\\0'", "'\\x01'", "'\\u0001'", "'\\\\1'", "'\\🌸'"] {
+        for literal in [
+            "0",
+            "0o10",
+            "0x10",
+            "0b10",
+            "0.1",
+            "0e1",
+            "'雪'",
+            "'\\0'",
+            "'\\x01'",
+            "'\\u0001'",
+            "'\\\\1'",
+            "'\\🌸'",
+        ] {
             let source = format!("const value={literal};");
             let parsed = Parser::new(&arena, &source, SourceType::mjs()).parse_observed();
-            assert!(!parsed.admitted().expect("actual admission").has_legacy_literals(), "{literal}");
+            assert!(
+                !parsed.admitted().expect("actual admission").has_legacy_literals(),
+                "{literal}"
+            );
         }
     }
 }
