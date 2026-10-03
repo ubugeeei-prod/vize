@@ -16,6 +16,11 @@ use vize_l1_to_l2::native_file::lower_sfc_native;
 
 #[path = "native_vue_check/configuration.rs"]
 mod configuration;
+#[path = "native_vue_check/const_semantics.rs"]
+mod const_semantics;
+#[cfg(unix)]
+#[path = "native_vue_check/ref_semantics.rs"]
+mod ref_semantics;
 
 fn options() -> DescriptorOptions {
     DescriptorOptions {

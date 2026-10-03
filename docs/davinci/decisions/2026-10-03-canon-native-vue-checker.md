@@ -50,6 +50,17 @@ script/template spans, Unicode/CRLF, original owner/source preservation,
 inherited checkJs reload, files/exclusion/allowJs membership refusals, source
 changes, collisions, absolute/nested/outside boundaries and actual failed or
 timed-out session reaping. They do not skip when a backend is unavailable.
+An actual Vue 3.5.35 dependency exports a genuine `ref(1)` to both original JS
+and TS setup Programs. Their unchanged script-only/literal-template projections
+must retain the complete real TS2339 Ref diagnostic and authored source range;
+the same original Program with a template binding read must refuse until native
+Vue unwrapping semantics exist. The L4 whole-unit primitive/read-only proof is
+required here; visibility and complete raw script copies alone do not supply it.
+The primitive const comparison/member fixture asserts the full actual native
+TS2367/TS2339 vector, exact generated UTF-16 ranges and original authored spans.
+Its code/messages and authored starts were independently confirmed by official
+vue-tsc 3.3.11 / TypeScript 6.0.3 / Vue 3.5.35; no normal oracle dependency or
+general type-context parity is claimed.
 Local compilation was interrupted by disk exhaustion before backend execution;
 source-built Actions supplies the required actual checker evidence. This is
 an original-source/root-config snapshot, not an atomic complete dependency,
