@@ -23,6 +23,11 @@ fn inspect(
             span: receipt.span(),
         });
     }
+    if receipt.in_recovery_context() {
+        return Err(NativeLintRefusal::RecoveryContext {
+            span: receipt.span(),
+        });
+    }
     let opening = header::opening_range(element)?;
     let mut names: SmallVec<[&str; 8]> = SmallVec::new();
     for original in element.attributes() {

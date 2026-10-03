@@ -100,3 +100,12 @@ Three additional laws retain complete parser/product diagnostics in all locales,
 including full opening/attribute ranges, messages, Help, empty labels and no fixes;
 the exact original inputs and all earlier 25 laws remain. Previously merged
 img/iframe/tabindex admission is unchanged. Fresh source Actions are required.
+
+The final pre-custody audit adds typed `RecoveryContext` refusal from the authentic
+original header-entry/ancestry/depth receipt before attributes or catalog lookup.
+One complete three-locale nested-form control preserves both actual registered
+parser Error and authored SFC-facade Warnings: ignored Relief starts do not imply
+that facade product findings disappear. All 28 previous laws remain unchanged;
+this conservative boundary applies only to the new family, with no legacy tree
+algorithm, owner substitution or old merged rule admission change. Fresh Actions
+must certify the expanded 29-law Warning suite.

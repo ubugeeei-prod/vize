@@ -43,6 +43,7 @@ pub enum NativeLintRefusal {
     DuplicateAttribute { span: Span },
     LintTag { reason: NativeLintTagRefusal },
     TableContext { span: Span },
+    RecoveryContext { span: Span },
 }
 
 /// A finished L0 diagnostic and its original stable rule code.

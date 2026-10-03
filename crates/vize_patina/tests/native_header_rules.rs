@@ -7,6 +7,7 @@ mod native_header_rules {
     mod custody;
     mod directives;
     mod duplicates;
+    mod recovery;
     mod support;
     mod table;
     mod verbatim;
