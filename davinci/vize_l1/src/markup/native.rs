@@ -7,6 +7,7 @@ use vize_l0::{Allocator, SourceBlock};
 mod child;
 mod element;
 mod interpolation;
+mod lint_tag;
 mod operand;
 mod selected;
 pub use child::{NativeChild, NativeChildren};
@@ -15,6 +16,7 @@ pub use interpolation::{
     NativeInterpolationError, NativeInterpolationFailure, NativeInterpolationOperand,
     NativeInterpolationView,
 };
+pub use lint_tag::{NativeLintTag, NativeLintTagKind, NativeLintTagRefusal};
 pub use operand::{
     NativeAttributeExpression, NativeAttributeExpressionFailure, NativeAttributeExpressionView,
     NativeAttributeForHead, NativeAttributeForHeadFailure, NativeAttributeForHeadView,
@@ -58,6 +60,20 @@ impl<'a> NativeComponent<'a> {
             allocator,
             block,
             component: parse_component(allocator, block.source())?,
+        })
+    }
+    /// Retain original lint-header facts only for genuine Descriptor selection.
+    pub(super) fn parse_selected_in(
+        allocator: &'a Allocator,
+        block: SourceBlock<'a>,
+    ) -> Result<Self, ComponentSourceError> {
+        Ok(Self {
+            allocator,
+            block,
+            component: crate::dialect::vue3::surface::parse_component_with_lint(
+                allocator,
+                block.source(),
+            )?,
         })
     }
     #[must_use]

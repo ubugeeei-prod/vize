@@ -8,6 +8,9 @@
 
 use vize_l0::{Box, Vec};
 
+mod lint_tag;
+pub(crate) use lint_tag::LintTagFact;
+
 /// Whether a token's syntax is present in the source or a typed hole.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenStatus {
@@ -36,6 +39,7 @@ pub struct Token<'a> {
     pub status: TokenStatus,
     verbatim_opening: bool,
     raw_interpolation: bool,
+    lint_tag: Option<LintTagFact>,
 }
 
 // Keep public diagnostics and dumps independent of private construction facts.
@@ -60,6 +64,7 @@ impl<'a> Token<'a> {
             status: TokenStatus::Present,
             verbatim_opening: false,
             raw_interpolation: false,
+            lint_tag: None,
         }
     }
 
@@ -71,6 +76,7 @@ impl<'a> Token<'a> {
             status: TokenStatus::Missing,
             verbatim_opening: false,
             raw_interpolation: false,
+            lint_tag: None,
         }
     }
 
@@ -80,6 +86,10 @@ impl<'a> Token<'a> {
 
     pub(crate) fn mark_raw_interpolation(&mut self) {
         self.raw_interpolation = true;
+    }
+
+    pub(crate) fn mark_lint_tag(&mut self, fact: Option<LintTagFact>) {
+        self.lint_tag = fact;
     }
 
     pub fn is_missing(&self) -> bool {
@@ -161,6 +171,10 @@ pub struct OpenTag<'a> {
 }
 
 impl OpenTag<'_> {
+    pub(crate) fn lint_tag(&self) -> Option<LintTagFact> {
+        self.lt_name.lint_tag
+    }
+
     /// The native dialect's resolved lexical mode for this opening tag.
     /// Includes inherited mode after recovery; raw/compatibility construction
     /// defaults to false. This fact does not admit L2 control semantics.

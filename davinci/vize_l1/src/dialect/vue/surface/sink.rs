@@ -2,17 +2,19 @@
 
 use vize_l0::{Allocator, Namespace, Vec, is_void_tag};
 
-use super::SurfacePolicy;
+use super::{HeaderPolicy, SurfacePolicy};
 use crate::build::scope::{Frame, Recovery};
 use crate::event::{EventKind, Recorder};
 use crate::markup::entity::DecodedEntity;
 use crate::markup::token::{LexErrorCode, LexMode, QuoteType, Sink};
+use crate::surface::LintTagFact;
 use core::marker::PhantomData;
 
 struct ModeFrame<'a> {
     tag: &'a str,
     ns: Namespace,
     verbatim: bool,
+    exact_pre: bool,
 }
 
 impl<'a> Frame<'a> for ModeFrame<'a> {
@@ -54,9 +56,9 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         }
     }
 
-    fn finish_tag(&mut self, self_closing: bool) -> bool {
+    fn finish_tag(&mut self, self_closing: bool) -> (bool, Option<LintTagFact>) {
         let Some(tag) = self.tag.take() else {
-            return false;
+            return (false, None);
         };
         let (ns, implicit_depth) = self.recovery.open(&self.stack, tag, self_closing);
         if let Some(depth) = implicit_depth {
@@ -64,19 +66,39 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         }
         // Inherit after recovery: an implicitly closed owner cannot affect
         // the newly opened sibling, even when it has the same authored name.
-        let verbatim = self.mode() == LexMode::Verbatim || self.resolve_heads();
+        let inherited = self.mode() == LexMode::Verbatim;
+        let inherited_exact =
+            P::LINT_TAGS && self.stack.last().is_some_and(|frame| frame.exact_pre);
+        let (heads, exact_head) = if inherited {
+            (HeaderPolicy::default(), false)
+        } else {
+            self.resolve_heads()
+        };
+        let verbatim = inherited || heads.pre;
+        let exact_pre = inherited_exact || exact_head;
+        let lint_tag = if P::LINT_TAGS {
+            P::lint_tag(tag, heads.structural_template, verbatim, exact_pre)
+        } else {
+            None
+        };
         if !self_closing && !is_void_tag(tag) {
-            self.stack.push(ModeFrame { tag, ns, verbatim });
+            self.stack.push(ModeFrame {
+                tag,
+                ns,
+                verbatim,
+                exact_pre,
+            });
         }
-        verbatim
+        (verbatim, lint_tag)
     }
 
     /// Consume the current tag's existing complete heads after structural
     /// recovery. Inherited verbatim content short-circuits this hook entirely.
-    fn resolve_heads(&mut self) -> bool {
+    fn resolve_heads(&mut self) -> (HeaderPolicy, bool) {
         let unsupported_start = self.unsupported.len();
         let mut name_start = None;
-        let mut pre = false;
+        let mut policy = HeaderPolicy::default();
+        let mut exact_pre = false;
         for event in self.recorder.events.iter().skip(self.tag_events) {
             match event.kind {
                 EventKind::AttrName => {
@@ -86,8 +108,20 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
                     if let Some(start) = name_start.take()
                         && let Some(raw) = self.source.get(start as usize..event.start as usize)
                     {
-                        match P::pre(raw, start, self.source) {
-                            Ok(control) => pre |= control,
+                        let header = if P::LINT_TAGS {
+                            P::lint_header(raw, start, self.source)
+                        } else {
+                            P::pre(raw, start, self.source).map(|pre| HeaderPolicy {
+                                pre,
+                                structural_template: false,
+                            })
+                        };
+                        match header {
+                            Ok(header) => {
+                                policy.pre |= header.pre;
+                                policy.structural_template |= header.structural_template;
+                                exact_pre |= P::LINT_TAGS && raw == "v-pre";
+                            }
                             Err(boundary) => self.unsupported.push(boundary),
                         }
                     }
@@ -95,12 +129,12 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
                 _ => {}
             }
         }
-        if pre {
+        if policy.pre {
             // An admitted control makes every other head on this same tag raw,
             // regardless of attribute order. Preserve facts from prior tags.
             self.unsupported.truncate(unsupported_start);
         }
-        pre
+        (policy, exact_pre)
     }
 }
 
@@ -163,15 +197,25 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
     }
 
     fn on_open_tag_end(&mut self, end: usize) {
-        let verbatim = self.finish_tag(false);
-        self.recorder
-            .opening_end(EventKind::OpenTagEnd, end, verbatim);
+        let (verbatim, lint_tag) = self.finish_tag(false);
+        if P::LINT_TAGS {
+            self.recorder
+                .opening_end_with_lint(EventKind::OpenTagEnd, end, verbatim, lint_tag);
+        } else {
+            self.recorder
+                .opening_end(EventKind::OpenTagEnd, end, verbatim);
+        }
     }
 
     fn on_self_closing_tag(&mut self, end: usize) {
-        let verbatim = self.finish_tag(true);
-        self.recorder
-            .opening_end(EventKind::SelfClosingTag, end, verbatim);
+        let (verbatim, lint_tag) = self.finish_tag(true);
+        if P::LINT_TAGS {
+            self.recorder
+                .opening_end_with_lint(EventKind::SelfClosingTag, end, verbatim, lint_tag);
+        } else {
+            self.recorder
+                .opening_end(EventKind::SelfClosingTag, end, verbatim);
+        }
     }
 
     fn on_close_tag(&mut self, start: usize, end: usize) {

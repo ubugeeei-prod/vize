@@ -6,7 +6,7 @@ use super::{Builder, Frame};
 use crate::event::{Event, EventKind};
 use crate::surface::{Attribute, CloseTag, Element, ElementClose, OpenTag, SurfaceChild, Token};
 
-impl<'a, const RAW: bool> Builder<'a, '_, RAW> {
+impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
     pub(super) fn element(&mut self, ev: Event) {
         let (name_s, name_e) = (ev.start as usize, ev.end as usize);
         self.i += 1;
@@ -26,6 +26,9 @@ impl<'a, const RAW: bool> Builder<'a, '_, RAW> {
                 Some(EventKind::OpenTagEnd) => {
                     let idx = self.events.get(self.i).map_or(self.cursor, |event| {
                         lt_name.mark_verbatim_opening(event.is_verbatim_opening());
+                        if LINT {
+                            lt_name.mark_lint_tag(event.lint_tag());
+                        }
                         event.start as usize
                     });
                     self.i += 1;
@@ -35,6 +38,9 @@ impl<'a, const RAW: bool> Builder<'a, '_, RAW> {
                 Some(EventKind::SelfClosingTag) => {
                     let idx = self.events.get(self.i).map_or(self.cursor, |event| {
                         lt_name.mark_verbatim_opening(event.is_verbatim_opening());
+                        if LINT {
+                            lt_name.mark_lint_tag(event.lint_tag());
+                        }
                         event.start as usize
                     });
                     self.i += 1;

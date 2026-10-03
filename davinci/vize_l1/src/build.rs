@@ -48,13 +48,13 @@ impl<'a> scope::Frame<'a> for Frame<'a> {
     }
 }
 
-pub(crate) fn build<'a, const RAW: bool>(
+pub(crate) fn build<'a, const RAW: bool, const LINT: bool>(
     allocator: &'a Allocator,
     src: &'a str,
     events: &[Event],
     repair_interactive: bool,
 ) -> (SurfaceTree<'a>, bool) {
-    let mut b = Builder::<RAW> {
+    let mut b = Builder::<RAW, LINT> {
         src,
         allocator,
         events,
@@ -88,7 +88,7 @@ pub(crate) fn build<'a, const RAW: bool>(
     )
 }
 
-struct Builder<'a, 'e, const RAW: bool> {
+struct Builder<'a, 'e, const RAW: bool, const LINT: bool> {
     src: &'a str,
     allocator: &'a Allocator,
     events: &'e [Event],
@@ -100,7 +100,7 @@ struct Builder<'a, 'e, const RAW: bool> {
     repaired: bool,
 }
 
-impl<'a, const RAW: bool> Builder<'a, '_, RAW> {
+impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
     fn run(&mut self) {
         while let Some(ev) = self.events.get(self.i).copied() {
             match ev.kind {

@@ -17,6 +17,7 @@ use vize_l0::ErrorCode;
 use vize_l0::Vec;
 
 use crate::parse::SurfaceError;
+use crate::surface::LintTagFact;
 
 /// What a tokenizer callback reported. Directive name pieces
 /// (`on_dir_name` / `on_dir_arg` / `on_dir_modifier`) all record as
@@ -59,6 +60,7 @@ pub(crate) enum EventKind {
 pub(crate) struct Event {
     pub kind: EventKind,
     /// Quote type on AttrEnd; resolved verbatim mode on opening-tag ends.
+    /// Selected Vue 3 lint-tag facts occupy the higher opening-end bits.
     /// Raw interpolation delimiter width on Interpolation; otherwise zero.
     /// These interpretations never overlap.
     pub aux: u8,
@@ -91,7 +93,15 @@ impl Event {
             self.kind,
             EventKind::OpenTagEnd | EventKind::SelfClosingTag
         ));
-        self.aux != 0
+        self.aux & 1 != 0
+    }
+
+    pub(crate) fn lint_tag(&self) -> Option<LintTagFact> {
+        debug_assert!(matches!(
+            self.kind,
+            EventKind::OpenTagEnd | EventKind::SelfClosingTag
+        ));
+        LintTagFact::from_aux(self.aux)
     }
 
     pub(crate) fn interpolation_width(&self) -> usize {
@@ -137,6 +147,25 @@ impl Recorder<'_, '_> {
         self.events.push(Event {
             kind,
             aux: u8::from(verbatim),
+            start: end as u32,
+            end: end as u32,
+        });
+    }
+
+    pub(crate) fn opening_end_with_lint(
+        &mut self,
+        kind: EventKind,
+        end: usize,
+        verbatim: bool,
+        fact: Option<LintTagFact>,
+    ) {
+        debug_assert!(matches!(
+            kind,
+            EventKind::OpenTagEnd | EventKind::SelfClosingTag
+        ));
+        self.events.push(Event {
+            kind,
+            aux: u8::from(verbatim) | fact.map_or(0, |fact| (fact as u8) << 1),
             start: end as u32,
             end: end as u32,
         });

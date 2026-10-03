@@ -4,17 +4,18 @@ use vize_l0::{Allocator, Span, Vec};
 
 use crate::event::Recorder;
 use crate::markup::{Component, DirectiveNameError, LexOptions, Lexer};
-use crate::parse::{SurfaceError, SurfaceParseOptions, construct};
-use crate::surface::SurfaceTree;
+use crate::parse::{SurfaceError, SurfaceParseOptions, construct_with_lint};
+use crate::surface::{LintTagFact, SurfaceTree};
 
 use super::VueDirectives;
-use crate::dialect::vue::surface::{SurfacePolicy, sink::VueSink};
+use crate::dialect::vue::surface::{HeaderPolicy, SurfacePolicy, sink::VueSink};
 use crate::markup::directive::{DirectivePrefix, DirectiveSyntax};
 
-struct Vue3Policy;
+struct Vue3Policy<const LINT: bool>;
 
-impl SurfacePolicy for Vue3Policy {
+impl<const LINT: bool> SurfacePolicy for Vue3Policy<LINT> {
     type Boundary = DirectiveAdmission;
+    const LINT_TAGS: bool = LINT;
 
     fn pre(raw: &str, offset: u32, source: &str) -> Result<bool, Self::Boundary> {
         VueDirectives
@@ -28,6 +29,57 @@ impl SurfacePolicy for Vue3Policy {
                 span: Span::new(offset, offset.saturating_add(raw.len() as u32)),
                 error,
             })
+    }
+
+    fn lint_header(raw: &str, offset: u32, source: &str) -> Result<HeaderPolicy, Self::Boundary> {
+        VueDirectives
+            .decompose(raw, offset)
+            .map(|head| {
+                let Some(head) = head else {
+                    return HeaderPolicy::default();
+                };
+                let name = head.name.slice(source);
+                HeaderPolicy {
+                    pre: head.prefix == DirectivePrefix::Full && name == "pre",
+                    structural_template: head.prefix == DirectivePrefix::Slot
+                        || head.prefix == DirectivePrefix::Full
+                            && matches!(name, "if" | "else-if" | "else" | "for" | "slot"),
+                }
+            })
+            .map_err(|error| DirectiveAdmission {
+                span: Span::new(offset, offset.saturating_add(raw.len() as u32)),
+                error,
+            })
+    }
+
+    fn lint_tag(
+        tag: &str,
+        structural_template: bool,
+        verbatim: bool,
+        exact_pre: bool,
+    ) -> Option<LintTagFact> {
+        // Lexical pre heads may accept modifiers/arguments that default lint
+        // freezing does not. Preserve the mode and refuse that semantic gap.
+        Some(if verbatim && !exact_pre {
+            LintTagFact::AmbiguousVerbatim
+        } else if tag == "slot" {
+            LintTagFact::Slot
+        } else if tag == "template" && !exact_pre && structural_template {
+            LintTagFact::Template
+        } else if matches!(
+            tag,
+            "Teleport"
+                | "Suspense"
+                | "KeepAlive"
+                | "BaseTransition"
+                | "Transition"
+                | "TransitionGroup"
+        ) || tag.chars().next().is_some_and(char::is_uppercase)
+        {
+            LintTagFact::Component
+        } else {
+            LintTagFact::Element
+        })
     }
 }
 
@@ -83,7 +135,7 @@ pub fn parse_component_with_options<'a>(
     source: &'a str,
     options: SurfaceParseOptions,
 ) -> Result<ComponentParse<'a>, ComponentSourceError> {
-    projection(allocator, source, options, false)
+    projection::<false>(allocator, source, options, false)
 }
 
 /// Parse once and retain an authored projection when interactive-tag recovery
@@ -92,10 +144,18 @@ pub fn parse_component_with_authored<'a>(
     allocator: &'a Allocator,
     source: &'a str,
 ) -> Result<ComponentParse<'a>, ComponentSourceError> {
-    projection(allocator, source, SurfaceParseOptions::default(), true)
+    projection::<false>(allocator, source, SurfaceParseOptions::default(), true)
 }
 
-fn projection<'a>(
+/// Private genuine selected-owner construction; no caller can supply facts.
+pub(crate) fn parse_component_with_lint<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+) -> Result<ComponentParse<'a>, ComponentSourceError> {
+    projection::<true>(allocator, source, SurfaceParseOptions::default(), false)
+}
+
+fn projection<'a, const LINT: bool>(
     allocator: &'a Allocator,
     source: &'a str,
     options: SurfaceParseOptions,
@@ -106,9 +166,10 @@ fn projection<'a>(
     }
     let mut unsupported = Vec::new_in(&allocator);
     let (tree, authored, errors) =
-        construct::<false>(allocator, source, authored, |events, errors| {
+        construct_with_lint::<false, LINT>(allocator, source, authored, |events, errors| {
             let recorder = Recorder { events, errors };
-            let sink = VueSink::<Vue3Policy>::new(allocator, source, recorder, &mut unsupported);
+            let sink =
+                VueSink::<Vue3Policy<LINT>>::new(allocator, source, recorder, &mut unsupported);
             Lexer::<Component, _>::new(
                 source,
                 sink,

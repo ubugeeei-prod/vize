@@ -101,6 +101,21 @@ pub(crate) fn construct<'a, const RAW: bool>(
     Option<SurfaceTree<'a>>,
     Vec<'a, SurfaceError>,
 ) {
+    construct_with_lint::<RAW, false>(allocator, source, authored, record)
+}
+
+/// The selected native owner may retain already-resolved lint-header facts.
+/// Other constructors instantiate the unchanged const-false path.
+pub(crate) fn construct_with_lint<'a, const RAW: bool, const LINT: bool>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    authored: bool,
+    record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),
+) -> (
+    SurfaceTree<'a>,
+    Option<SurfaceTree<'a>>,
+    Vec<'a, SurfaceError>,
+) {
     let mut events: Vec<'a, Event> = Vec::new_in(&allocator);
     let mut errors: Vec<'a, SurfaceError> = Vec::new_in(&allocator);
     // L1 addresses sources with `u32` offsets. A larger source keeps byte
@@ -112,9 +127,9 @@ pub(crate) fn construct<'a, const RAW: bool>(
         return (SurfaceTree { source, children }, None, errors);
     }
     record(&mut events, &mut errors);
-    let (tree, repaired) = build::<RAW>(allocator, source, &events, true);
+    let (tree, repaired) = build::<RAW, LINT>(allocator, source, &events, true);
     let authored =
-        (authored && repaired).then(|| build::<RAW>(allocator, source, &events, false).0);
+        (authored && repaired).then(|| build::<RAW, LINT>(allocator, source, &events, false).0);
     debug_assert!(
         check_fidelity(&tree).is_ok(),
         "L1 fidelity: render(tree) != source"

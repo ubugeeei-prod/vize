@@ -151,3 +151,39 @@ fn raw_interpolation_width_is_disjoint_from_quote_and_opening_aux() {
     assert_eq!(events.len(), 3);
     assert!(errors.is_empty());
 }
+
+#[test]
+fn selected_lint_tag_aux_never_changes_mode_quotes_width_or_event_layout() {
+    use crate::surface::LintTagFact;
+    let allocator = Allocator::new();
+    let (mut events, mut errors) = record(&allocator, "", true, false);
+    let mut recorder = Recorder {
+        events: &mut events,
+        errors: &mut errors,
+    };
+    for kind in [EventKind::OpenTagEnd, EventKind::SelfClosingTag] {
+        for fact in [
+            LintTagFact::Element,
+            LintTagFact::Component,
+            LintTagFact::Slot,
+            LintTagFact::Template,
+            LintTagFact::AmbiguousVerbatim,
+        ] {
+            for verbatim in [false, true] {
+                recorder.opening_end_with_lint(kind, 19, verbatim, Some(fact));
+                let event = recorder.events.last().unwrap();
+                assert_eq!(event.kind, kind);
+                assert_eq!((event.start, event.end), (19, 19));
+                assert_eq!(event.is_verbatim_opening(), verbatim);
+                assert_eq!(event.lint_tag().unwrap() as u8, fact as u8);
+            }
+        }
+        recorder.opening_end(kind, 23, false);
+        let ordinary = recorder.events.last().unwrap();
+        assert_eq!(ordinary.aux, 0);
+        assert!(ordinary.lint_tag().is_none());
+    }
+    assert_eq!(core::mem::size_of::<Event>(), 12);
+    assert_eq!(events.len(), 22);
+    assert!(errors.is_empty());
+}
