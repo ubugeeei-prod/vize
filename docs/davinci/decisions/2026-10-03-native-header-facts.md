@@ -78,3 +78,7 @@ merge. The separately reviewable Error consumer still needs complete original
 registered diagnostics, all locales/help/labels/fixes, parser/refusal controls
 and terminal queue delivery. Default linter admission, other rule families,
 semantic linting, autofixes, dialect coverage and #6881 remain unfinished.
+
+The initial exact-head Check 37124950787 stopped production Clippy on an unused
+root `Span` import. Remove that import without changing any original fixture,
+predicate or SDK assertion; the repaired head requires fresh hosted acceptance.

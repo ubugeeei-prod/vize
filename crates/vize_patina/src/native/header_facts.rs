@@ -5,7 +5,7 @@
 //! resolution are not inferred. This provider emits no diagnostic.
 
 use vize_l0::{
-    Span, String,
+    String,
     diag::{
         WitnessChain, WitnessLink,
         verify::{WitnessError, verify_chain},
