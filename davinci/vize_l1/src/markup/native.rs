@@ -6,10 +6,15 @@ use vize_l0::{Allocator, SourceBlock};
 
 mod child;
 mod element;
+mod interpolation;
 mod operand;
 mod selected;
 pub use child::{NativeChild, NativeChildren};
 pub use element::{NativeAttribute, NativeAttributes, NativeElement};
+pub use interpolation::{
+    NativeInterpolationError, NativeInterpolationFailure, NativeInterpolationOperand,
+    NativeInterpolationView,
+};
 pub use operand::{
     NativeAttributeExpression, NativeAttributeExpressionFailure, NativeAttributeExpressionView,
     NativeAttributeOperandError, NativeConditionKind,

@@ -39,8 +39,9 @@ pub use lex::{Delimiters, LexOptions, Lexer};
 pub use native::{
     NativeAttribute, NativeAttributeExpression, NativeAttributeExpressionFailure,
     NativeAttributeExpressionView, NativeAttributeOperandError, NativeAttributes, NativeChild,
-    NativeChildren, NativeComponent, NativeConditionKind, NativeElement, NativeScriptSelection,
-    NativeTemplateComponent, NativeTemplateGrammar,
+    NativeChildren, NativeComponent, NativeConditionKind, NativeElement, NativeInterpolationError,
+    NativeInterpolationFailure, NativeInterpolationOperand, NativeInterpolationView,
+    NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar,
 };
 pub use parse::{
     ComponentParse, ComponentSourceError, DirectiveAdmission, parse_component,
