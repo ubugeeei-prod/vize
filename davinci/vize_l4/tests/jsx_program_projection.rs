@@ -215,7 +215,7 @@ fn rejected_original_profiles_holes_and_incomplete_files_never_supply_jsx_owners
         ),
         (
             "const view = <div/>;",
-            SourceType::jsx().with_module(false),
+            SourceType::jsx().with_script(true),
             JsxFileError::InvalidProfile,
         ),
         (

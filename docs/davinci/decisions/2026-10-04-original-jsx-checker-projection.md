@@ -60,3 +60,10 @@ All100 benchmarks were identical across three executions and passed unchanged
 ceilings/ratchet (instruction job111245211451, artifact11279710647).
 This new L4 provider replays onto that literal main; it inherits no pending
 Canon source or historical acceptance.
+
+The first exact-source Check 37139256453 compiled the actual source and passed
+all three positive projection laws (including the annotated original TSX Module),
+but the rejected-profile law used `with_module(false)`. Oxc explicitly leaves
+the existing Module kind unchanged when that argument is false. The law now
+uses the actual `with_script(true)` profile; no production eligibility or
+instruction budget changes. Its genuine corrected source still requires Actions.
