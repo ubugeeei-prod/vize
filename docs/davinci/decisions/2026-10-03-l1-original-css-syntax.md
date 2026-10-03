@@ -30,6 +30,14 @@ values are refused. Original blocks, partial actual rule/token data and real
 errors survive every refusal. No API accepts caller-supplied source, tokens,
 spans or completion flags as authority.
 
+The pinned Vue 3.5.35 audit also proves that a returned QuotedString containing
+`v-bind(color)` is not a transform-free flat value: its CSS and descriptor CSS
+variables change. Comment markers inside quoted tokens can bridge descriptor
+binding spellings even when CSS output stays literal. Actual returned quoted
+tokens containing `v-bind` or `/*` therefore retain UnsupportedValue refusals,
+their original token spans and partial declaration data. This is a conservative
+token-family boundary, not whole-style scanning or a binding implementation.
+
 This provider does not implement Vue scoping or claim property semantics. The
 existing plain CSS consumer and typed scoped-style guard stay unchanged here.
 Its dependent product slice must insert only generated scope attributes at

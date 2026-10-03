@@ -135,6 +135,11 @@ fn tokens<'a>(
                 Some(StyleIssueCode::MissingBoundary)
             } else if raw.get(1..raw.len() - 1) != Some(decoded.as_ref()) {
                 Some(StyleIssueCode::UnsupportedValue)
+            } else if decoded.contains("v-bind") || decoded.contains("/*") {
+                // Vue observes binding spellings inside quoted declaration
+                // tokens too; comment markers can bridge its CSS-var spelling.
+                // The original returned token retains the refusal authority.
+                Some(StyleIssueCode::UnsupportedValue)
             } else {
                 None
             }

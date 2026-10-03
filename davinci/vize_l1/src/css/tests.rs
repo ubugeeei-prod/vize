@@ -169,3 +169,43 @@ fn non_css_style_profile_is_retained_without_parsing_the_wrong_grammar() {
         syntax.source().span()
     );
 }
+
+#[test]
+fn quoted_binding_spellings_and_comment_markers_refuse_from_actual_retained_tokens() {
+    for value in [
+        "'v-bind(color)'",
+        "\"v-bind (color)\"",
+        "'v/**/-bind(color)'",
+        "'v-/* x */bind(color)'",
+        "'v-bind/* x */(color)'",
+        "'v-bind'",
+    ] {
+        let source = alloc::format!(
+            "<!-- 雪 -->\r\n<template><p/></template><style scoped>.a{{content:{value}}}</style>"
+        );
+        let arena = Allocator::default();
+        let descriptor = Vue.observe_descriptor(&arena, &source, options());
+        let syntax = StyleSyntax::observe(descriptor.admitted().unwrap().styles().next().unwrap());
+        assert!(syntax.simple_class().is_err());
+        let token = syntax.rule().unwrap().declarations()[0]
+            .value()
+            .iter()
+            .find(|token| matches!(token.token(), Token::QuotedString(_)))
+            .unwrap();
+        let issue = syntax.issue().unwrap();
+        assert_eq!(issue.code, StyleIssueCode::UnsupportedValue);
+        assert_eq!(issue.span, token.span());
+        assert_eq!(
+            &source[token.span().start as usize..token.span().end as usize],
+            value
+        );
+        assert!(matches!(
+            syntax.parser_error().unwrap().kind,
+            cssparser::ParseErrorKind::Custom(actual) if actual == issue
+        ));
+        assert!(core::ptr::eq(
+            syntax.source().root_source(),
+            source.as_str()
+        ));
+    }
+}
