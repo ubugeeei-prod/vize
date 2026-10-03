@@ -96,6 +96,13 @@ full queue suites, unchanged all100 x3 instruction ceilings/ratchets and the
 literal protected merge are required before acceptance. No skipped law,
 API availability or private source body receives runtime credit.
 
+First source b1187ffd genuinely passed all 90 SourceProject and 18 whole RPC
+laws, including all nineteen new laws, and minimal feature compilation in
+builder 111299299493 / Check37155938187. Strict Clippy then refused two new
+test-oracle direct string slices. Checked UTF8 `get` access preserves every
+fixture and complete expectation without a lint waiver; that failed source
+was never queued. Fresh corrected source and protected acceptance are required.
+
 The source refresh onto actual main preserves incoming JSX/profile/source laws
 and the central paragraph; only the source-qualified Maestro migration shard
 changes in the canonical inventories. TODO: publish this consumer, execute the existing hosted action and

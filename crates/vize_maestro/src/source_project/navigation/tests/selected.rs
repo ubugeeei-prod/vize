@@ -43,7 +43,7 @@ fn original_worker(
     )
 }
 fn position(source: &str, byte: usize) -> Position {
-    let prefix = &source[..byte];
+    let prefix = source.get(..byte).unwrap();
     Position::new(
         prefix.bytes().filter(|byte| *byte == b'\n').count() as u32,
         prefix.rsplit('\n').next().unwrap().encode_utf16().count() as u32,

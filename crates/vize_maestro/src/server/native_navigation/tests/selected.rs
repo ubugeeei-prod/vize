@@ -22,7 +22,7 @@ fn location(line: u32, start: u32, end: u32) -> Value {
     json!({"uri":URI,"range":{"start":{"line":line,"character":start},"end":{"line":line,"character":end}}})
 }
 fn position(source: &str, byte: usize) -> (u32, u32) {
-    let prefix = &source[..byte];
+    let prefix = source.get(..byte).unwrap();
     (
         prefix.bytes().filter(|byte| *byte == b'\n').count() as u32,
         prefix.rsplit('\n').next().unwrap().encode_utf16().count() as u32,
