@@ -1,0 +1,605 @@
+{
+  "schema": "vize.native-sfc.scriptless-ssr-reference",
+  "version": 1,
+  "compiler": {
+    "name": "@vitejs/plugin-vue",
+    "version": "6.0.7",
+    "vue": "3.5.35"
+  },
+  "fixtures": [
+    {
+      "id": "empty",
+      "source": "<template></template>",
+      "filename": "/native-ssr/empty.vue",
+      "sourceSha256": "a3f83c203801aec76992765f9bee184b00ccdf9928069d492406cf7ec90176aa",
+      "referenceCode": "const _sfc_main = {  }\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  \n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"empty.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/empty.vue",
+        "names": [],
+        "sources": [],
+        "sourcesContent": [
+          "<template></template>"
+        ],
+        "mappings": "",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "aa35f23f45363f625dde164665a1e0fd4be84ac6d244ad777ba1f7a4f8f2206d",
+      "referenceMapSha256": "510446e73f9a7944001fc796333cc9dba02fd603076192d2ee1e205a15ed2441",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": "",
+          "modules": [
+            "empty.vue"
+          ]
+        },
+        {
+          "html": "",
+          "modules": [
+            "empty.vue"
+          ]
+        },
+        {
+          "html": "",
+          "modules": [
+            "empty.vue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unicode",
+      "source": "<template>hé世界</template>",
+      "filename": "/native-ssr/unicode.vue",
+      "sourceSha256": "e4e1c9e9cda0ee4d30979a183d47bd168a75c2c1e70ade5936ea61590e58ce3b",
+      "referenceCode": "const _sfc_main = {  }\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`hé世界`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"unicode.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/unicode.vue",
+        "names": [],
+        "sources": [],
+        "sourcesContent": [
+          "<template>hé世界</template>"
+        ],
+        "mappings": "",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "30f15110c12e23e5a3109a426e38b9723469078b54c638b4df0810d95275277b",
+      "referenceMapSha256": "72cd86c7338bbcb01582bbaf4e457bb91078c83edcf783d4cee1025bdd09609a",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": "hé世界",
+          "modules": [
+            "unicode.vue"
+          ]
+        },
+        {
+          "html": "hé世界",
+          "modules": [
+            "unicode.vue"
+          ]
+        },
+        {
+          "html": "hé世界",
+          "modules": [
+            "unicode.vue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "js-text",
+      "source": "<template>\"'>\\${payload}`</template>",
+      "filename": "/native-ssr/js-text.vue",
+      "sourceSha256": "295b7eb80536cdeb3a2bb128f7c054595db94642ec87d7d67c866fc4f2b629d8",
+      "referenceCode": "const _sfc_main = {  }\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`&quot;&#39;&gt;\\\\\\${payload}\\``)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"js-text.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/js-text.vue",
+        "names": [],
+        "sources": [],
+        "sourcesContent": [
+          "<template>\"'>\\${payload}`</template>"
+        ],
+        "mappings": "",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "f1d3ce832f060e1728c916503a62300a625b1142488705b2dfcfc3baeb79b6c9",
+      "referenceMapSha256": "bf1787c5cf245d3152d1f7e779c11c91fe0914c143bfde11562d4dce409f3f6a",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": "&quot;&#39;&gt;\\${payload}`",
+          "modules": [
+            "js-text.vue"
+          ]
+        },
+        {
+          "html": "&quot;&#39;&gt;\\${payload}`",
+          "modules": [
+            "js-text.vue"
+          ]
+        },
+        {
+          "html": "&quot;&#39;&gt;\\${payload}`",
+          "modules": [
+            "js-text.vue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "comment",
+      "source": "<template><!--safe--></template>",
+      "filename": "/native-ssr/comment.vue",
+      "sourceSha256": "2287b2c66e3b99a3fd17da16258506f0a99244f84565c4528d4fb9205082589f",
+      "referenceCode": "const _sfc_main = {  }\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--safe-->`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"comment.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/comment.vue",
+        "names": [],
+        "sources": [],
+        "sourcesContent": [
+          "<template><!--safe--></template>"
+        ],
+        "mappings": "",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "33b12ec7fa39a2a10a673f1ec01e855c8fdcb84f4771373715ed20613b4aca33",
+      "referenceMapSha256": "49e14d1ebe03e3afbf4e2b37bd8318c54b9024c682981b1865bbd332d8cc6bf7",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": "<!--safe-->",
+          "modules": [
+            "comment.vue"
+          ]
+        },
+        {
+          "html": "<!--safe-->",
+          "modules": [
+            "comment.vue"
+          ]
+        },
+        {
+          "html": "<!--safe-->",
+          "modules": [
+            "comment.vue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "root",
+      "source": "<template><div/></template>",
+      "filename": "/native-ssr/root.vue",
+      "sourceSha256": "9555dce5b64d5f2707a739e3ba65c3727d035a815154a0e8cee736cba87b4168",
+      "referenceCode": "const _sfc_main = {  }\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}></div>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"root.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/root.vue",
+        "names": [],
+        "sources": [],
+        "sourcesContent": [
+          "<template><div/></template>"
+        ],
+        "mappings": "",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "4fde55613d7a0aae213ba6cf248b7933e0e5f49120720ecbb69baf04ae6790cf",
+      "referenceMapSha256": "c473eb41902642f435ebeb663f3faab90b47ded36652b020c6e3108acbdf1ba2",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": "<div></div>",
+          "modules": [
+            "root.vue"
+          ]
+        },
+        {
+          "html": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled></div>",
+          "modules": [
+            "root.vue"
+          ]
+        },
+        {
+          "html": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\"></div>",
+          "modules": [
+            "root.vue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nested",
+      "source": "<template><div><p>hé</p><br/></div></template>",
+      "filename": "/native-ssr/nested.vue",
+      "sourceSha256": "7b873b7ea1fc010f2a76940350ca078e15c56bc737225abbd966f48eb6c48929",
+      "referenceCode": "const _sfc_main = {  }\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><p>hé</p><br></div>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"nested.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/nested.vue",
+        "names": [],
+        "sources": [],
+        "sourcesContent": [
+          "<template><div><p>hé</p><br/></div></template>"
+        ],
+        "mappings": "",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "8ec88684de32c66696aa14502b45485de94635a70fd6a00f4aed858d9f0e032f",
+      "referenceMapSha256": "13bccb91678ee6b7944a42a5dfb9adabba488e14406db35e31a7120bd097d648",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": "<div><p>hé</p><br></div>",
+          "modules": [
+            "nested.vue"
+          ]
+        },
+        {
+          "html": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled><p>hé</p><br></div>",
+          "modules": [
+            "nested.vue"
+          ]
+        },
+        {
+          "html": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\"><p>hé</p><br></div>",
+          "modules": [
+            "nested.vue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fragment",
+      "source": "<template><p/><i/></template>",
+      "filename": "/native-ssr/fragment.vue",
+      "sourceSha256": "e569958a9a11cfd5f1b5c8bc4b12e9a6557f1c13a558603ca658cad344f0d931",
+      "referenceCode": "const _sfc_main = {  }\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[--><p></p><i></i><!--]-->`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"fragment.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/fragment.vue",
+        "names": [],
+        "sources": [],
+        "sourcesContent": [
+          "<template><p/><i/></template>"
+        ],
+        "mappings": "",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "1bb0f2e95218a954ebf4dc21123869d5fcaefa0bbd9b2ce92e1a513200e1f05c",
+      "referenceMapSha256": "311cd96eb17955863d07a492fbca78d757c0dbdcd7af4231cfa370e82185767a",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": "<!--[--><p></p><i></i><!--]-->",
+          "modules": [
+            "fragment.vue"
+          ]
+        },
+        {
+          "html": "<!--[--><p></p><i></i><!--]-->",
+          "modules": [
+            "fragment.vue"
+          ]
+        },
+        {
+          "html": "<!--[--><p></p><i></i><!--]-->",
+          "modules": [
+            "fragment.vue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ordinary-props",
+      "source": "<template><div id=\"original\" title=\"世界\"/></template>",
+      "filename": "/native-ssr/ordinary-props.vue",
+      "sourceSha256": "e42d3d30c588edbb811111a7ff508704feeec0227ec18cf2c3ecc664176fa6fb",
+      "referenceCode": "const _sfc_main = {  }\nimport { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({\n    id: \"original\",\n    title: \"世界\"\n  }, _attrs))}></div>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"ordinary-props.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/ordinary-props.vue",
+        "names": [],
+        "sources": [
+          "/native-ssr/ordinary-props.vue"
+        ],
+        "sourcesContent": [
+          "<template><div id=\"original\" title=\"世界\"/></template>"
+        ],
+        "mappings": ";;;;;;IAAe,EAAE,EAAC,UAAU;IAAC,KAAK,EAAC,IAAI",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "8ba52206b9190dea057d0de68488c7e5172b6a1daa535394643b04beb3759ffe",
+      "referenceMapSha256": "76f04d071d7db68da7d1db5bef91492f6d17d58b6ec8cbbf5e65e1fbc7573079",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": "<div id=\"original\" title=\"世界\"></div>",
+          "modules": [
+            "ordinary-props.vue"
+          ]
+        },
+        {
+          "html": "<div id=\"override\" title=\"&quot;&lt;&amp;&gt;\" class=\"root active\" style=\"color:red;\" disabled></div>",
+          "modules": [
+            "ordinary-props.vue"
+          ]
+        },
+        {
+          "html": "<div title=\"${untrusted}\\`\" class=\"雪 🌸\" style=\"display:block;\" data-x=\"猫&amp;\"></div>",
+          "modules": [
+            "ordinary-props.vue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "line-endings",
+      "source": "<template><div id=\"r\r\ns\rt\nu v w\"><p title=\"a\r\nb\rc\nd e f\"/><!--a\r\nb\rc\nd e f--></div></template>",
+      "filename": "/native-ssr/line-endings.vue",
+      "sourceSha256": "aed96bba3881b0f51a13766666daa2bce7d719dd976b0ca8f43d0bbc8f88bca2",
+      "referenceCode": "const _sfc_main = {  }\nimport { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ id: \"r\\r\\ns\\rt\\nu v w\" }, _attrs))}><p title=\"a\r\nb\rc\nd e f\"></p><!--a\r\nb\rc\nd e f--></div>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"line-endings.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/line-endings.vue",
+        "names": [],
+        "sources": [
+          "/native-ssr/line-endings.vue"
+        ],
+        "sourcesContent": [
+          "<template><div id=\"r\r\ns\rt\nu v w\"><p title=\"a\r\nb\rc\nd e f\"/><!--a\r\nb\rc\nd e f--></div></template>"
+        ],
+        "mappings": ";;;;;6CAAe,EAAE,EAAC,kBAEZ",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "7bc22e02f600b717cb79e60fd4c82bde4f0c29ba1999e1ae990405d129806565",
+      "referenceMapSha256": "9cce46b11d1e1d6574e9306c8b045b2a68bd71b4ac0d0b096ce348879ecaf3a6",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": "<div id=\"r\r\ns\rt\nu v w\"><p title=\"a\nb\nc\nd e f\"></p><!--a\nb\nc\nd e f--></div>",
+          "modules": [
+            "line-endings.vue"
+          ]
+        },
+        {
+          "html": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled><p title=\"a\nb\nc\nd e f\"></p><!--a\nb\nc\nd e f--></div>",
+          "modules": [
+            "line-endings.vue"
+          ]
+        },
+        {
+          "html": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\"><p title=\"a\nb\nc\nd e f\"></p><!--a\nb\nc\nd e f--></div>",
+          "modules": [
+            "line-endings.vue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "import-shaped-comment",
+      "source": "<template><!--from \"vue\"; from 'vue/server-renderer'--></template>",
+      "filename": "/native-ssr/import-shaped-comment.vue",
+      "sourceSha256": "e3bfe3abb183a2d4ece9774f5116c12bc700df986b75c8a21c79bcdd1c61170b",
+      "referenceCode": "const _sfc_main = {  }\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--from \"vue\"; from 'vue/server-renderer'-->`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"import-shaped-comment.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/import-shaped-comment.vue",
+        "names": [],
+        "sources": [],
+        "sourcesContent": [
+          "<template><!--from \"vue\"; from 'vue/server-renderer'--></template>"
+        ],
+        "mappings": "",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "e4fdbf7c80e8a4a01cb50bbe8a7813205e544df3f10dda7341e9b99f2a564560",
+      "referenceMapSha256": "66e72d8b48aec1558c57d6f30d2e8eb079d923d1695a645e21765f6fc3032154",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": "<!--from \"vue\"; from 'vue/server-renderer'-->",
+          "modules": [
+            "import-shaped-comment.vue"
+          ]
+        },
+        {
+          "html": "<!--from \"vue\"; from 'vue/server-renderer'-->",
+          "modules": [
+            "import-shaped-comment.vue"
+          ]
+        },
+        {
+          "html": "<!--from \"vue\"; from 'vue/server-renderer'-->",
+          "modules": [
+            "import-shaped-comment.vue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "root-condense",
+      "source": "<template>\r\n  hé \t世界\r\n  \r\n</template>",
+      "filename": "/native-ssr/root-condense.vue",
+      "sourceSha256": "d0500812a09ee8660b8921fca3f44c49fabf85c7c86a8106365989b3e6c893d4",
+      "referenceCode": "const _sfc_main = {  }\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(` hé 世界 `)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"root-condense.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/root-condense.vue",
+        "names": [],
+        "sources": [],
+        "sourcesContent": [
+          "<template>\r\n  hé \t世界\r\n  \r\n</template>"
+        ],
+        "mappings": "",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "8ba05784b37f43b511e997b369cff2745628e897dc069c6842cd79d2f9d540c4",
+      "referenceMapSha256": "853f3649c0da4e9b9d2cee0cc6758c9a3b5addd08f7b7a07d14557aa71423cc5",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": " hé 世界 ",
+          "modules": [
+            "root-condense.vue"
+          ]
+        },
+        {
+          "html": " hé 世界 ",
+          "modules": [
+            "root-condense.vue"
+          ]
+        },
+        {
+          "html": " hé 世界 ",
+          "modules": [
+            "root-condense.vue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "whole-source-offset",
+      "source": "<!--whole雪\r\na\rb\nc d e-->\r\n<template><div id=\"offset\"><!--kept--></div></template>",
+      "filename": "/native-ssr/whole-source-offset.vue",
+      "sourceSha256": "bbfc444338d663b20894dac4bd5f73d2ab73e172d440cb622bced804c8bc14fa",
+      "referenceCode": "const _sfc_main = {  }\nimport { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ id: \"offset\" }, _attrs))}><!--kept--></div>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"whole-source-offset.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/whole-source-offset.vue",
+        "names": [],
+        "sources": [
+          "/native-ssr/whole-source-offset.vue"
+        ],
+        "sourcesContent": [
+          "<!--whole雪\r\na\rb\nc d e-->\r\n<template><div id=\"offset\"><!--kept--></div></template>"
+        ],
+        "mappings": ";;;;;6CAGe,EAAE,EAAC,QAAQ",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "3306a2c9646666069d8729f87b08bc0ee004f1e5b1b315959f014cf908ed866f",
+      "referenceMapSha256": "d32bb9997b3332765447db05998b917930832b0e8c80514c7c81eb3b84649608",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": "<div id=\"offset\"><!--kept--></div>",
+          "modules": [
+            "whole-source-offset.vue"
+          ]
+        },
+        {
+          "html": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled><!--kept--></div>",
+          "modules": [
+            "whole-source-offset.vue"
+          ]
+        },
+        {
+          "html": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\"><!--kept--></div>",
+          "modules": [
+            "whole-source-offset.vue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "handler-root",
+      "source": "<template><button @click=\"const unused=&quot;雪🌸&quot;; $event.count+=2;\">go</button></template>",
+      "filename": "/native-ssr/handler-root.vue",
+      "sourceSha256": "d036f16c8b1c140a50a764d3c5b4721ea00cbd193297033439df8d23405aab7a",
+      "referenceCode": "const _sfc_main = {  }\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<button${_ssrRenderAttrs(_attrs)}>go</button>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"handler-root.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/handler-root.vue",
+        "names": [],
+        "sources": [],
+        "sourcesContent": [
+          "<template><button @click=\"const unused=&quot;雪🌸&quot;; $event.count+=2;\">go</button></template>"
+        ],
+        "mappings": "",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "972be9fa962bc94ef695c32041267dc830eb1b571f452d38804ed7f1bb49dba1",
+      "referenceMapSha256": "09054543d5ce453583c0713b7612f65e61ef23189206109b0d6350e51d8aff33",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": "<button>go</button>",
+          "modules": [
+            "handler-root.vue"
+          ]
+        },
+        {
+          "html": "<button id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled>go</button>",
+          "modules": [
+            "handler-root.vue"
+          ]
+        },
+        {
+          "html": "<button class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\">go</button>",
+          "modules": [
+            "handler-root.vue"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "handler-nested",
+      "source": "<template><div><button @click='globalThis.__vize_ssr_event_probe += 1;'>go</button></div></template>",
+      "filename": "/native-ssr/handler-nested.vue",
+      "sourceSha256": "a22a0c84d404d84dcaff078b5918d3330655875e816bb1d75f140ad87d1f232c",
+      "referenceCode": "const _sfc_main = {  }\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><button>go</button></div>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"handler-nested.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "referenceMap": {
+        "version": 3,
+        "file": "/native-ssr/handler-nested.vue",
+        "names": [],
+        "sources": [],
+        "sourcesContent": [
+          "<template><div><button @click='globalThis.__vize_ssr_event_probe += 1;'>go</button></div></template>"
+        ],
+        "mappings": "",
+        "ignoreList": []
+      },
+      "referenceHelper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+      "referenceCodeSha256": "9c4551d77bf3b290413fe14e725a1bae9676c2eddbfdb21955f01ee0d7492572",
+      "referenceMapSha256": "26642b77782c4c668d8ff0f3b1f63de17d1d9650ced87b8cdc57a3be7e94dbc5",
+      "referenceHelperSha256": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+      "executions": [
+        {
+          "html": "<div><button>go</button></div>",
+          "modules": [
+            "handler-nested.vue"
+          ]
+        },
+        {
+          "html": "<div id=\"override\" class=\"root active\" style=\"color:red;\" title=\"&quot;&lt;&amp;&gt;\" disabled><button>go</button></div>",
+          "modules": [
+            "handler-nested.vue"
+          ]
+        },
+        {
+          "html": "<div class=\"雪 🌸\" style=\"display:block;\" title=\"${untrusted}\\`\" data-x=\"猫&amp;\"><button>go</button></div>",
+          "modules": [
+            "handler-nested.vue"
+          ]
+        }
+      ]
+    }
+  ]
+}
