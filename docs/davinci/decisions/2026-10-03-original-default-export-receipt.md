@@ -66,3 +66,13 @@ Its actual source-built native49 laws have zero skips; all 19 complete native
 module/map packs, 19 setup calls/38 Vue renders and all five annotation laws pass,
 alongside all 100 unchanged ceilings collected across three executions. This
 acceptance does not certify the new original-export provider or its consumers.
+
+The original receipt provider #7612 actually merged at 2026-10-03T15:54:03Z
+as signed `0f01055dc4a2689361e97d984ff49682a9807164`, confirmed in fresh main.
+Exact source [Check 37132220677](https://github.com/ubugeeei-prod/vize/actions/runs/37132220677)
+and protected [Check 37133949052](https://github.com/ubugeeei-prod/vize/actions/runs/37133949052)
+are terminal success, with full Rust/tooling/differential suites and all 100
+unchanged ceilings collected across three executions. Its five original parser
+laws and compile-fail owner docs pass. This accepts only the original L1 receipt;
+L2 ordinary eligibility, linked emission and complete product captures still
+require their own source, protected acceptance and actual native Stack merge.
