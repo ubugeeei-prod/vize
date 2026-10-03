@@ -75,5 +75,5 @@ Actions recipes, corpus helpers, current suite commands and tooling assertions
 move together. This is a feature-name change only: corpus environment variables
 and emitted messages, test target names, profile keys, archived fixtures and
 compiler output stay as they are. The scoped
-`tools/support/levels/rename-differential-features.py` script replays the
+`tools/support/levels/rename-differential-features.ts` script replays the
 change on the then-current main and skips fixture/snapshot paths.

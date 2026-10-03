@@ -1,18 +1,18 @@
 consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	carton	Carton host/compatibility	old	vize_carton	legacy	1
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	l1	L1	stage	vize_l1	preferred	1
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	l2	L2	stage	vize_l2	preferred	1
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	old_ast	old AST/parser	old	vize_armature	legacy	1
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	raw_oxc	raw OXC	raw	oxc_codegen	raw	1
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
-compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	48	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	l1	L1	stage	vize_l1	preferred	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	l2	L2	stage	vize_l2	preferred	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	old_ast	old AST/parser	old	vize_armature	legacy	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	raw_oxc	raw OXC	raw	oxc_codegen	raw	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
+compiler	Compiler	manifest	crates/vize_atelier_sfc/Cargo.toml	49	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/bundler/asset_rewrite.rs	4	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/bundler/asset_rewrite.rs	4	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/bundler/asset_rewrite.rs	4	raw_oxc	raw OXC	raw	oxc_ast	raw	1
