@@ -147,7 +147,21 @@ test(
       if (fixture.source) assert(capture.map.mappings.length > 0);
       assert.deepEqual(capture.sfcMap.sources, [pack.options.filename]);
       assert.deepEqual(capture.sfcMap.sourcesContent, [fixture.source]);
-      assert(capture.sfcCode.endsWith("__sfc__.ssrRender = ssrRender\nexport default __sfc__\n"));
+      const imports = fixture.code.split("\n").filter((line: string) => line.startsWith("import "));
+      const declaration = fixture.code.slice(imports.join("\n").length).trimStart();
+      assert.equal(
+        capture.sfcCode,
+        [
+          ...imports,
+          "const __sfc__ = {}",
+          ";",
+          declaration.replace(/^export /, ""),
+          "__sfc__.ssrRender = ssrRender",
+          "export default __sfc__",
+          "",
+        ].join("\n"),
+        `${fixture.id}: complete prepared component module`,
+      );
       const native = await execute(capture.code);
       const sfc = await execute(capture.sfcCode);
       assert.deepEqual(sfc, native, `${fixture.id}: whole prepared component module`);

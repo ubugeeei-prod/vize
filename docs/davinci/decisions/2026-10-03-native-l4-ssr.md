@@ -38,9 +38,12 @@ ranges; complete upstream map parity is not claimed. Both writer sinks emit
 identical bytes and helper sets. The existing module assembler also preserves
 server attachment and the complete prepared component module.
 
-The reused full Check/merge-queue Rust action builds fresh native module/maps
-and then mandates their capture in the Node runtime judge. Missing capture is
-a failure. Real pinned server/core helpers execute each native template and
+The merge queue's actual PR tooling runner invokes the reusable native SSR
+action before its full tooling suite. Scheduled/manual full Rust checks reuse
+that same action; the queue invokes it once rather than duplicating the Rust
+differential lane. Fresh native module/maps are mandatory in the Node runtime
+judge, and both module/map and runtime JSON captures become nonempty Actions
+artifacts. Missing capture is a failure. Real pinned helpers execute each native template and
 prepared component under three fallthrough contexts (33 calls each); all HTML
 equals the complete upstream function. Context/parent proxies reject any
 unauthorized static expression read. The regular tooling suite separately

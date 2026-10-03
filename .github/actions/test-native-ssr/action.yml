@@ -1,0 +1,25 @@
+name: Test fresh native SSR modules
+description: Require source-built module maps and actual pinned Vue SSR executions
+runs:
+  using: composite
+  steps:
+    - name: Test fresh native SSR modules with pinned Vue runtime
+      id: native-ssr
+      shell: bash
+      env:
+        VIZE_L4_SSR_NATIVE_CAPTURE: ${{ runner.temp }}/native-ssr-modules.json
+        VIZE_L4_SSR_RUNTIME_CAPTURE: ${{ runner.temp }}/native-ssr-runtime.json
+        VIZE_L4_SSR_REQUIRE_NATIVE: "1"
+      run: |
+        cargo test --locked --profile ci -p vize_l4 --test native_ssr -- --nocapture
+        vp node --test tests/tooling/l4-native-ssr-reference.test.ts
+    - name: Preserve fresh SSR modules and actual runtime outcomes
+      if: ${{ always() && steps.native-ssr.outcome != 'skipped' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: native-ssr-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+        path: |
+          ${{ runner.temp }}/native-ssr-modules.json
+          ${{ runner.temp }}/native-ssr-runtime.json
+        if-no-files-found: error
+        retention-days: 14
