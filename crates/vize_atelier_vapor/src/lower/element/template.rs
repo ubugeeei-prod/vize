@@ -77,7 +77,17 @@ fn write_element_template(
             template.push_linked(attr.name, attr.name_loc.span);
             if let Some(ref value) = attr.value {
                 template.push_str("=\"");
-                template.push_linked(value.content, value.loc.span);
+                // The template is parsed as HTML at runtime, after the Vue
+                // parser has already decoded this attribute's references.
+                if value
+                    .content
+                    .bytes()
+                    .any(|byte| matches!(byte, b'&' | b'<' | b'>' | b'"' | b'\''))
+                {
+                    template.push_linked(&escape_html_text(value.content), value.loc.span);
+                } else {
+                    template.push_linked(value.content, value.loc.span);
+                }
                 template.push_str("\"");
             }
         }

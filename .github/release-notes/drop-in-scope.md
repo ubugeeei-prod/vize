@@ -10,6 +10,14 @@
 
 Thank you [@naitokosuke](https://github.com/naitokosuke) for these reports and proposals.
 
+## Vapor static attributes
+
+`compileVapor` preserves nested character references and quoted values in static
+attributes when HTML templates are parsed at runtime or rendered from the IR on
+the server ([#7502](https://github.com/ubugeeei-prod/vize/issues/7502)).
+
+Thank you [@dannote](https://github.com/dannote) for the reproduction.
+
 ## Drop-in scope
 
 `@vizejs/vite-plugin` is a drop-in replacement for `@vitejs/plugin-vue` on **Vue 3 SFCs**
