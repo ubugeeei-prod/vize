@@ -173,6 +173,12 @@ foreign equal-ID allocation denial, movement/storage growth, precise typed
 refusals and the normal minted prefix. Test-only faults after real whole-input
 parking and after actual alias-scope installation check caught unwind, retained
 head/events, unmodified parent scope, sticky interruption and denied completion.
+Source review corrected the scope-fault oracle to the existing builder's real
+`RejectedFile` path: an unfinished introducing frame retains the original head,
+alias row, parked event and minted prefix with `UnfinishedOwner`, and never seals
+an allocation association. The earlier park fault retains an incomplete File
+with no introducing frame. This strengthens the actual distinct custody laws;
+it is an unexecuted source correction, not an observed Rust run failure.
 No production fault flag, extra decode/parse/AST/header walk, pipeline stage,
 serialization, legacy route or budget increase is introduced. All new Rust
 laws remain unexecuted until exact-head hosted Actions; source review, direct

@@ -114,36 +114,75 @@ fn caught_original_for_park_and_scope_unwind_preserve_whole_owner_parent_and_pre
         }
         let output = owner.finish();
         assert!(output.view().is_err());
-        let file = output.file().unwrap();
-        assert!(!file.is_complete());
-        assert!(file.template_interruption().is_some());
-        assert_eq!(file.artifact().node_count(), if point == 1 { 1 } else { 2 });
-        assert_eq!(
-            file.unattached_for_heads()
-                .next()
-                .unwrap()
-                .operand()
-                .raw_value(),
-            "item in items"
-        );
-        assert_eq!(
-            file.unattached_handlers()
-                .next()
-                .unwrap()
-                .operand()
-                .raw_value(),
-            "item"
-        );
-        let crate::op::Op::Text(prefix) = &file.artifact().root().ops[0] else {
-            panic!("prefix");
-        };
-        assert_eq!(prefix.content, "prefix");
-        if point == 2 {
-            let crate::op::Op::OriginalFor(original) = &file.artifact().root().ops[1] else {
+        if point == 1 {
+            let file = output.file().unwrap();
+            assert!(output.rejected_file().is_none());
+            assert!(!file.is_complete());
+            assert!(file.template_interruption().is_some());
+            assert_eq!(file.artifact().node_count(), 1);
+            assert_eq!(
+                file.unattached_for_heads()
+                    .next()
+                    .unwrap()
+                    .operand()
+                    .raw_value(),
+                "item in items"
+            );
+            assert_eq!(
+                file.unattached_handlers()
+                    .next()
+                    .unwrap()
+                    .operand()
+                    .raw_value(),
+                "item"
+            );
+            let crate::op::Op::Text(prefix) = &file.artifact().root().ops[0] else {
+                panic!("prefix");
+            };
+            assert_eq!(prefix.content, "prefix");
+        } else {
+            assert!(output.file().is_none());
+            let rejected = output.rejected_file().unwrap();
+            assert!(rejected.template_interruption().is_some());
+            assert_eq!(rejected.source(), source);
+            let inputs: alloc::vec::Vec<_> = rejected.original_for_inputs().collect();
+            assert_eq!(inputs.len(), 1);
+            assert_eq!(inputs[0].operand().raw_value(), "item in items");
+            assert_eq!(rejected.facts.pending_handlers.len(), 1);
+            assert_eq!(
+                rejected.facts.pending_handlers[0]
+                    .input
+                    .as_ref()
+                    .unwrap()
+                    .operand()
+                    .raw_value(),
+                "item"
+            );
+            let ops = &rejected.artifact().parts.root.ops;
+            assert_eq!(ops.len(), 2);
+            let crate::op::Op::Text(prefix) = &ops[0] else {
+                panic!("prefix");
+            };
+            assert_eq!(prefix.content, "prefix");
+            let crate::op::Op::OriginalFor(original) = &ops[1] else {
                 panic!("partial For");
             };
-            assert!(file.for_head_for(original).is_none());
+            assert_eq!(original.id().node().index(), 1);
+            assert_eq!(
+                rejected.artifact().error,
+                crate::artifact::ArtifactError::UnfinishedOwner {
+                    node: original.id().node(),
+                }
+            );
             assert!(original.region.ops.is_empty());
+            let record = rejected.facts.for_heads.get(original.id().node()).unwrap();
+            assert!(record.original.is_none());
+            assert!(core::ptr::eq(record.resolution.input(), inputs[0]));
+            assert_eq!(rejected.facts.template_declarations.len(), 1);
+            assert_eq!(
+                rejected.scopes()[record.scope.index() as usize].parent,
+                Some(record.enclosing)
+            );
         }
     }
 }
