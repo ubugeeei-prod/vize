@@ -62,6 +62,7 @@ function mapBounds(fixture: any) {
     sourceColumn = 0,
     nameIndex = 0,
     count = 0;
+  const anchors: any[] = [];
   fixture.map.mappings.split(";").forEach((line: string, generatedLine: number) => {
     let column = 0;
     for (const encoded of line.split(",").filter(Boolean)) {
@@ -87,10 +88,50 @@ function mapBounds(fixture: any) {
         nameIndex += entry[4];
         assert.equal(typeof fixture.map.names[nameIndex], "string");
       }
+      anchors.push({
+        generated: [generatedLine, column],
+        original: [sourceLine, sourceColumn],
+        name: entry.length === 5 ? fixture.map.names[nameIndex] : null,
+      });
       count += 1;
     }
   });
   assert(count > 0);
+  return anchors;
+}
+
+function position(text: string, offset: number) {
+  assert(offset >= 0);
+  const lines = text.slice(0, offset).split(/\r\n|[\r\n\u2028\u2029]/u);
+  return [lines.length - 1, lines.at(-1)!.length];
+}
+
+function retainedAnchors(fixture: any) {
+  const actual = mapBounds(fixture);
+  // The frozen intrinsic roots have independently identifiable original and
+  // generated starts; a bounded but wrong source coordinate must still fail.
+  for (const [original, generated] of [
+    ["<div", '_vize_createVNode0("div"'],
+    ["<span", '_vize_createVNode0("span"'],
+  ]) {
+    if (!fixture.source.includes(original)) continue;
+    const expected = {
+      generated: position(fixture.code, fixture.code.indexOf(generated)),
+      original: position(fixture.source, fixture.source.indexOf(original)),
+      name: null,
+    };
+    assert(actual.some((anchor) => JSON.stringify(anchor) === JSON.stringify(expected)));
+  }
+  const names = fixture.id === "helper-collision-and-read" ? ["message"] : [];
+  assert.deepEqual(fixture.map.names, names);
+  assert.deepEqual(
+    actual.filter((anchor) => anchor.name !== null),
+    names.map((name) => ({
+      generated: position(fixture.code, fixture.code.lastIndexOf(name)),
+      original: position(fixture.source, fixture.source.lastIndexOf(name)),
+      name,
+    })),
+  );
 }
 
 for (const fixture of pack.fixtures) {
@@ -106,7 +147,7 @@ for (const fixture of pack.fixtures) {
     assert.equal(fixture.map.file, "Whitespace.jsx");
     assert.deepEqual(fixture.map.sources, ["Whitespace.jsx"]);
     assert.deepEqual(fixture.map.sourcesContent, [fixture.source]);
-    mapBounds(fixture);
+    retainedAnchors(fixture);
     if (fixture.comments) {
       const parsed = babel.parseSync(fixture.code, {
         babelrc: false,
@@ -120,3 +161,11 @@ for (const fixture of pack.fixtures) {
     }
   });
 }
+
+test("coherent source movement cannot bless stale bounded native map coordinates", () => {
+  const fixture = structuredClone(pack.fixtures[0]);
+  fixture.source = fixture.source.replace("return ", "return  ");
+  fixture.map.sourcesContent = [fixture.source];
+  assert.doesNotThrow(() => mapBounds(fixture));
+  assert.throws(() => retainedAnchors(fixture));
+});

@@ -2,11 +2,9 @@ use vize_l0::String;
 
 /// The pinned JSX transform drops normalized-empty text, including its helper.
 pub(super) fn has_text(value: &str) -> bool {
-    if value.contains(['\r', '\n']) {
-        value.contains(|character| !matches!(character, ' ' | '\t' | '\r' | '\n'))
-    } else {
-        !value.is_empty()
-    }
+    normalized(value)
+        .as_ref()
+        .map_or(!value.is_empty(), |value| !value.is_empty())
 }
 
 /// Normalize actual retained values; unchanged payloads need no allocation.

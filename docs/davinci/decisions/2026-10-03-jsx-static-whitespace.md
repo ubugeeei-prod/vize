@@ -19,7 +19,8 @@ U+2028/U+2029 and nonbreaking spaces remain actual text. Entity decoding is
 a separate unimplemented boundary and keeps the existing typed refusal.
 
 Normalized-empty Text rows remain in the neutral owner but are omitted from
-target children and helper selection. A childless intrinsic uses null,
+target children and helper selection using the actual normalization result,
+never a proxy classification of raw whitespace. A childless intrinsic uses null,
 preserving the complete pinned VNode flags. Single-line spaces and TAB still
 produce a text child. Quoted attributes may retain the normalized empty
 string. Existing File helper collision facts and checked runtime vocabulary

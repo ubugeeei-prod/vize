@@ -128,23 +128,21 @@ pub(super) fn element<L: LinkSink>(
         match kind(analysis, child)? {
             Kind::Closing => {}
             Kind::EmptyContainer => container(writer, analysis, child)?,
-            Kind::Text(value) if super::whitespace::has_text(value) => {
+            Kind::Text(value) => {
+                let normalized = super::whitespace::normalized(value);
+                let value = normalized.as_ref().map_or(value, |value| value.as_str());
+                if value.is_empty() {
+                    continue;
+                }
                 writer.push(separator);
                 separator = ", ";
                 let text_helper = helper.text.as_ref().ok_or_else(|| invalid(child))?;
                 writer.use_helper(text_helper.id);
                 writer.push(text_helper.alias.as_str());
                 writer.push("(");
-                quoted(
-                    writer,
-                    super::whitespace::normalized(value)
-                        .as_ref()
-                        .map_or(value, |value| value.as_str()),
-                    child.span().ok_or_else(|| invalid(child))?,
-                );
+                quoted(writer, value, child.span().ok_or_else(|| invalid(child))?);
                 writer.push(")");
             }
-            Kind::Text(_) => {}
             Kind::Element => {
                 writer.push(separator);
                 separator = ", ";
