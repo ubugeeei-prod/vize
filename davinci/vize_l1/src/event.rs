@@ -104,6 +104,14 @@ impl Event {
         LintTagFact::from_aux(self.aux)
     }
 
+    pub(crate) fn lint_header_is_literal(&self) -> bool {
+        debug_assert!(matches!(
+            self.kind,
+            EventKind::OpenTagEnd | EventKind::SelfClosingTag
+        ));
+        self.aux & 16 != 0
+    }
+
     pub(crate) fn interpolation_width(&self) -> usize {
         debug_assert!(self.kind == EventKind::Interpolation);
         if self.aux == 3 { 3 } else { 2 }
@@ -158,6 +166,7 @@ impl Recorder<'_, '_> {
         end: usize,
         verbatim: bool,
         fact: Option<LintTagFact>,
+        header_is_literal: bool,
     ) {
         debug_assert!(matches!(
             kind,
@@ -165,7 +174,9 @@ impl Recorder<'_, '_> {
         ));
         self.events.push(Event {
             kind,
-            aux: u8::from(verbatim) | fact.map_or(0, |fact| (fact as u8) << 1),
+            aux: u8::from(verbatim)
+                | fact.map_or(0, |fact| (fact as u8) << 1)
+                | (u8::from(header_is_literal) << 4),
             start: end as u32,
             end: end as u32,
         });

@@ -56,9 +56,9 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         }
     }
 
-    fn finish_tag(&mut self, self_closing: bool) -> (bool, Option<LintTagFact>) {
+    fn finish_tag(&mut self, self_closing: bool) -> (bool, Option<LintTagFact>, bool) {
         let Some(tag) = self.tag.take() else {
-            return (false, None);
+            return (false, None, false);
         };
         let (ns, implicit_depth) = self.recovery.open(&self.stack, tag, self_closing);
         if let Some(depth) = implicit_depth {
@@ -77,7 +77,13 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
         let verbatim = inherited || heads.pre;
         let exact_pre = inherited_exact || exact_head;
         let lint_tag = if P::LINT_TAGS {
-            P::lint_tag(tag, heads.structural_template, verbatim, exact_pre)
+            P::lint_tag(
+                tag,
+                heads.structural_template,
+                verbatim,
+                exact_pre,
+                inherited,
+            )
         } else {
             None
         };
@@ -89,7 +95,7 @@ impl<'a, 'v, P: SurfacePolicy> VueSink<'a, 'v, P> {
                 exact_pre,
             });
         }
-        (verbatim, lint_tag)
+        (verbatim, lint_tag, P::LINT_TAGS && inherited)
     }
 
     /// Consume the current tag's existing complete heads after structural
@@ -197,10 +203,15 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
     }
 
     fn on_open_tag_end(&mut self, end: usize) {
-        let (verbatim, lint_tag) = self.finish_tag(false);
+        let (verbatim, lint_tag, header_literal) = self.finish_tag(false);
         if P::LINT_TAGS {
-            self.recorder
-                .opening_end_with_lint(EventKind::OpenTagEnd, end, verbatim, lint_tag);
+            self.recorder.opening_end_with_lint(
+                EventKind::OpenTagEnd,
+                end,
+                verbatim,
+                lint_tag,
+                header_literal,
+            );
         } else {
             self.recorder
                 .opening_end(EventKind::OpenTagEnd, end, verbatim);
@@ -208,10 +219,15 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
     }
 
     fn on_self_closing_tag(&mut self, end: usize) {
-        let (verbatim, lint_tag) = self.finish_tag(true);
+        let (verbatim, lint_tag, header_literal) = self.finish_tag(true);
         if P::LINT_TAGS {
-            self.recorder
-                .opening_end_with_lint(EventKind::SelfClosingTag, end, verbatim, lint_tag);
+            self.recorder.opening_end_with_lint(
+                EventKind::SelfClosingTag,
+                end,
+                verbatim,
+                lint_tag,
+                header_literal,
+            );
         } else {
             self.recorder
                 .opening_end(EventKind::SelfClosingTag, end, verbatim);

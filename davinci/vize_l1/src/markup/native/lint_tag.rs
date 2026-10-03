@@ -20,6 +20,7 @@ pub enum NativeLintTagKind {
 pub enum NativeLintTagRefusal {
     Unavailable,
     AmbiguousVerbatim,
+    InheritedTemplate,
     IncompleteHeader,
     SourceMismatch,
 }
@@ -37,6 +38,7 @@ pub struct NativeLintTag<'o, 'a> {
     element: &'o Element<'a>,
     kind: NativeLintTagKind,
     span: Span,
+    header_literal: bool,
 }
 
 impl core::fmt::Debug for NativeLintTag<'_, '_> {
@@ -45,6 +47,7 @@ impl core::fmt::Debug for NativeLintTag<'_, '_> {
             .debug_struct("NativeLintTag")
             .field("kind", &self.kind)
             .field("span", &self.span)
+            .field("header_literal", &self.header_literal)
             .finish_non_exhaustive()
     }
 }
@@ -67,6 +70,13 @@ impl<'o, 'a> NativeLintTag<'o, 'a> {
     pub fn span(&self) -> Span {
         self.span
     }
+
+    /// Whether inherited lexical pre made this original header literal before
+    /// its own attributes were lexed. Own `v-pre` freezes only after that header.
+    #[must_use]
+    pub fn header_is_literal(&self) -> bool {
+        self.header_literal
+    }
 }
 
 impl<'o, 'a> NativeElement<'o, 'a> {
@@ -83,6 +93,9 @@ impl<'o, 'a> NativeElement<'o, 'a> {
             Some(LintTagFact::AmbiguousVerbatim) => {
                 return Err(NativeLintTagRefusal::AmbiguousVerbatim);
             }
+            Some(LintTagFact::InheritedTemplate) => {
+                return Err(NativeLintTagRefusal::InheritedTemplate);
+            }
             None => return Err(NativeLintTagRefusal::Unavailable),
         };
         let block = self.component().block();
@@ -95,6 +108,7 @@ impl<'o, 'a> NativeElement<'o, 'a> {
             element,
             kind,
             span,
+            header_literal: element.open.lint_header_is_literal(),
         })
     }
 }

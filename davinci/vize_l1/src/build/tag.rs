@@ -27,7 +27,7 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
                     let idx = self.events.get(self.i).map_or(self.cursor, |event| {
                         lt_name.mark_verbatim_opening(event.is_verbatim_opening());
                         if LINT {
-                            lt_name.mark_lint_tag(event.lint_tag());
+                            lt_name.mark_lint_tag(event.lint_tag(), event.lint_header_is_literal());
                         }
                         event.start as usize
                     });
@@ -39,7 +39,7 @@ impl<'a, const RAW: bool, const LINT: bool> Builder<'a, '_, RAW, LINT> {
                     let idx = self.events.get(self.i).map_or(self.cursor, |event| {
                         lt_name.mark_verbatim_opening(event.is_verbatim_opening());
                         if LINT {
-                            lt_name.mark_lint_tag(event.lint_tag());
+                            lt_name.mark_lint_tag(event.lint_tag(), event.lint_header_is_literal());
                         }
                         event.start as usize
                     });

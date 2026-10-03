@@ -27,12 +27,12 @@ and unmatched source provenance refuse; original observations are retained.
 
 The recorded grammar follows this order:
 
-| Authored tag/header                                                                                         | Default lint kind             |
-| ----------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| Exact `slot`                                                                                                | Slot, including frozen scopes |
-| Exact `template`, not exact-pre frozen, with an original `if`, `else-if`, `else`, `for` or `slot` directive | Template                      |
-| The six capitalized Vue built-ins or a first Unicode uppercase character                                    | Component                     |
-| Every other authored tag                                                                                    | Element                       |
+| Authored tag/header                                                                             | Default lint kind             |
+| ----------------------------------------------------------------------------------------------- | ----------------------------- |
+| Exact `slot`                                                                                    | Slot, including frozen scopes |
+| Exact `template` with an originally resolved `if`, `else-if`, `else`, `for` or `slot` directive | Template                      |
+| The six capitalized Vue built-ins or a first Unicode uppercase character                        | Component                     |
+| Every other authored tag                                                                        | Element                       |
 
 Slot shorthand and complete directive arguments/modifiers use the existing
 native typed head decomposition in that same header visit. Case is preserved;
@@ -43,15 +43,26 @@ it. This is explicitly not the compiler's dynamic/custom component admission.
 The lexer admits an ASCII letter as the initial tag byte; tests do not fabricate
 Unicode-first NativeElements that the genuine parser never constructed.
 
-The default registered lint facade freezes only exact raw `v-pre`, whereas the
-native lexical policy also accepts modified/argument pre heads. The existing
-live parser scope now separately retains exact-pre freezing. Exact and inherited
-exact-pre scopes agree. Modified/argument-only scopes preserve their actual
+The native lexical policy accepts modified/argument pre heads, while the default
+registered L2 facade treats every parsed Pre head as freezing for bindings. Its
+original tag classification separately inspects raw structural template heads,
+even on the opening pre header. The existing live parser scope retains exact
+raw pre and actual inherited lexical mode independently. Modified/argument-only scopes preserve their actual
 lexical mode and original owner but record typed ambiguity instead of inventing
 a lint kind. That ambiguity conservatively persists through their descendants,
 even if a later descendant spells exact `v-pre`; no extra header walk recovers it.
 An exact `v-pre` on the same complete opening header resolves that scope in either
-attribute order. Existing scope recovery controls actual sibling inheritance.
+attribute order. Original structural heads on that opening template still establish
+its actual registered Template kind. An inherited literal template instead carries
+a typed InheritedTemplate refusal: the original producer did not resolve those
+raw heads, while the registered route may introduce a synthetic L2 Template
+carrier. No extra scan guesses its category. Other literal descendant kinds remain
+header-known. Existing scope recovery controls actual sibling inheritance.
+
+The same original event retains whether the header was already literal through
+inherited pre before its attributes were lexed. The sealed receipt exposes this
+fact so dependent rules distinguish own pre headers (whose malformed modifiers
+still emit parser errors) from inherited raw headers (which emit no such errors).
 
 Opening-end Event aux uses its original low mode bit plus disjoint optional
 lint-kind bits. The existing mode accessor masks only its own bit; quote and raw
@@ -73,7 +84,7 @@ comparisons and truthful parser-advisory refusals. No default route changes or
 #6881 history admission are included. Fresh exact-head Actions, verified native
 Stack membership, protected full/100 gates and actual merges decide delivery.
 
-The provider adds 13 original L1 laws, nine complete registered-facade controls
+The provider adds 14 original L1 laws, nine complete registered-facade controls
 and one Event aux/layout law. These cover original owner identity, moves and
 reborrowing, absolute Unicode-prefix spans, namespaces, structural heads, exact
 and inherited pre scopes, ambiguity, live recovery, incomplete framing and
@@ -95,3 +106,12 @@ main-base Check 37112741576 passed all 31 unique native laws; its actual queue
 Check 37113432095 passed full suites and instruction ceilings. Fresh origin/main
 contains both actual merge commits. This new provider starts on that genuine
 main, with a separate dependent consumer worktree planned.
+
+The first actual hosted Check 37116528412 passed existing native rule laws and
+production compilation, but exposed the inherited-template category mismatch and
+an incorrect modified-pre control warning count. The original input and complete
+registered output remain; the provider now refuses the unknown inherited category,
+known own structural template heads retain Template, and the unchanged modified-pre
+control checks its actual single outside warning. The source-length gate also
+required splitting new test modules under its unchanged 350-line limit. Fresh
+exact-head Actions remain required after these source repairs.

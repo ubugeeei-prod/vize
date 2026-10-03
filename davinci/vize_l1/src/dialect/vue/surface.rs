@@ -31,6 +31,7 @@ pub(crate) trait SurfacePolicy {
         _structural_template: bool,
         _verbatim: bool,
         _exact_pre: bool,
+        _inherited: bool,
     ) -> Option<LintTagFact> {
         None
     }
