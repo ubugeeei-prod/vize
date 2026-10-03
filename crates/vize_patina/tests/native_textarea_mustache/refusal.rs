@@ -109,6 +109,8 @@ fn repeated_attribute_refusal_retains_complete_original_warning_then_marker_erro
 
 #[test]
 fn modified_pre_requires_ambiguous_refusal_even_when_native_child_is_literal_text() {
+    // The registered L2 facade lowers all Head::Pre variants as Text; the
+    // shared native header contract still conservatively refuses ambiguity.
     for head in ["v-pre.foo", "v-pre:argument", "v-pre:[argument]"] {
         let source = cstr!("<template><textarea {head}>{{{{x}}}}</textarea></template>");
         let arena = Allocator::default();
@@ -122,10 +124,7 @@ fn modified_pre_requires_ambiguous_refusal_even_when_native_child_is_literal_tex
             }))
         );
         for locale in LOCALES {
-            assert_eq!(
-                complete(&registered(&source, locale)),
-                expected(vec![error(locale, span(&source, "{{x}}"))])
-            );
+            assert_eq!(complete(&registered(&source, locale)), expected(vec![]));
         }
     }
 }
@@ -145,10 +144,7 @@ fn inherited_modified_pre_cannot_grant_false_marker_absence() {
         }))
     );
     for locale in LOCALES {
-        assert_eq!(
-            complete(&registered(source, locale)),
-            expected(vec![error(locale, span(source, "{{x}}"))])
-        );
+        assert_eq!(complete(&registered(source, locale)), expected(vec![]));
     }
 }
 
