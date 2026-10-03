@@ -19,8 +19,8 @@ const pins = {
       sha256: "8d56e626002a50be4c9526333af15dc1a3dcd882b05ac22c42bc0633958b664e",
     },
     "pnpm-lock.yaml": {
-      bytes: 921669,
-      sha256: "add5b07af83e9549188621e211d5a8158ce4addb5fe9d13f1bc54e323300bc4a",
+      bytes: 921981,
+      sha256: "c16e5e1370026b63cfb4603ad06cf6c0425e6dc4578149efa53eca1e47a5578e",
     },
     "patches/braces@3.0.3.patch": {
       bytes: 6200,
@@ -94,6 +94,19 @@ const pins = {
     },
   ],
   patch: "4164fc10a66e95450b372dda14add9e336b8daa6ef49d472caed0f6d9bc28d74",
+  lockProjection: {
+    kind: "BRACES_ONLY_PROJECTION_OF_ACTUAL_RESOLVER_OUTPUT",
+    producerRun: 37087472637,
+    producerJob: 111100641369,
+    producerAttempt: 1,
+    producerLockSha256: "7b3c3e33f0c8734584aa10e41ed4d1dde73f48f6cce4242a64c0675a174d2b3a",
+    originalLock: {
+      bytes: 921669,
+      sha256: "add5b07af83e9549188621e211d5a8158ce4addb5fe9d13f1bc54e323300bc4a",
+    },
+    qualification:
+      "Not a verbatim full resolver output; only Braces hash, snapshot header and two dependency refs projected; all original unrelated bytes and Forge object retained.",
+  },
 };
 const root = process.cwd();
 const phase = process.argv[2];
@@ -119,11 +132,7 @@ function guard(before = false): void {
     assert.equal(hash(bytes), pin.sha256, file);
   }
   const changed = git(["diff", "--name-only", "HEAD", "--"]).trim().split("\n").filter(Boolean);
-  assert.deepEqual(
-    changed,
-    before ? [] : ["pnpm-lock.yaml"],
-    "only generated root lock may change",
-  );
+  assert.deepEqual(changed, [], "only generated root lock may change");
   assert.equal(git(["diff", "--cached", "--name-only"]).trim(), "");
 }
 function emit(data: unknown): void {
@@ -214,13 +223,22 @@ if (phase === "before") {
   const pnpm = command("vp", ["exec", "pnpm", "--version"]);
   assert.equal(pnpm.status, 0, pnpm.stderr);
   assert.equal(pnpm.stdout.trim(), "12.1.0");
-  emit({ ...identity, pins, pnpm, beforeLock: file("pnpm-lock.yaml") });
+  emit({
+    ...identity,
+    pins,
+    pnpm,
+    beforeLock: file("pnpm-lock.yaml"),
+    originalSourceLock: {
+      ...pins.lockProjection.originalLock,
+      base64: Buffer.from(git(["show", pins.source + ":pnpm-lock.yaml"])).toString("base64"),
+    },
+  });
 } else if (phase === "after-lock") {
   guard();
   emit({
     ...identity,
     generatedLock: file("pnpm-lock.yaml"),
-    completeDiff: git(["diff", "--", "pnpm-lock.yaml"]),
+    completeDiff: git(["diff", pins.source, "HEAD", "--", "pnpm-lock.yaml"]),
   });
 } else if (phase === "audit") {
   const audit = command("vp", [

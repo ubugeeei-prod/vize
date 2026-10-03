@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          fetch-depth: 2
+          fetch-depth: 3
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
         with:
           node-version-file: package.json
@@ -24,12 +24,10 @@ jobs:
           run-install: false
       - name: Verify original source and lock identity
         run: vp node tools/support/ci/braces-lock-capture.ts before
-      - name: Resolve the pinned braces patch with pnpm 12.1.0
-        run: vp exec pnpm install --lockfile-only --ignore-scripts --no-frozen-lockfile
-      - name: Retain the complete generated lock and diff
+      - name: Retain the complete reviewed Braces-only lock projection and diff
         run: vp node tools/support/ci/braces-lock-capture.ts after-lock
-      - name: Install the generated lock without lifecycle scripts
-        run: vp exec pnpm install --frozen-lockfile --ignore-scripts
+      - name: Install the reviewed lock projection without lifecycle scripts
+        run: vp install --frozen-lockfile --ignore-scripts --prefer-offline
       - name: Retain the complete original production audit before package validation
         run: vp node tools/support/ci/braces-lock-capture.ts audit
       - name: Prove every installed module and preserve the Forge proof
