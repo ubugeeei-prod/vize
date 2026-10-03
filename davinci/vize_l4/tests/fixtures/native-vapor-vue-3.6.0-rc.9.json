@@ -1,0 +1,576 @@
+{
+  "version": "3.6.0-rc.9",
+  "fixtures": [
+    {
+      "id": "empty",
+      "source": "<template></template>",
+      "template": "",
+      "code": "\nexport function render(_ctx) {\n  return []\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template></template>"
+        ]
+      },
+      "anchors": [],
+      "upstreamCode": "\nexport function render(_ctx) {\n  return []\n}",
+      "upstreamMap": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          ""
+        ]
+      }
+    },
+    {
+      "id": "text",
+      "source": "<template>hello</template>",
+      "template": "hello",
+      "code": "import { createTextNode as _createTextNode } from \"vue\"\n\nexport function render(_ctx) {\n  const n0 = _createTextNode(\"hello\")\n  return n0\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";;;8BAAU",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template>hello</template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 118,
+          "source": 10
+        }
+      ],
+      "upstreamCode": "import { template as _template } from 'vue';\nconst t0 = _template(\"hello\", 2)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "upstreamMap": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "hello"
+        ]
+      }
+    },
+    {
+      "id": "unicode",
+      "source": "<template>雪🌸 a</template>",
+      "template": "雪🌸 a",
+      "code": "import { createTextNode as _createTextNode } from \"vue\"\n\nexport function render(_ctx) {\n  const n0 = _createTextNode(\"雪🌸 a\")\n  return n0\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";;;8BAAU",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template>雪🌸 a</template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 118,
+          "source": 10
+        }
+      ],
+      "upstreamCode": "import { template as _template } from 'vue';\nconst t0 = _template(\"雪🌸 a\", 2)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "upstreamMap": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "雪🌸 a"
+        ]
+      }
+    },
+    {
+      "id": "comment",
+      "source": "<template><!--雪🌸--></template>",
+      "template": "<!--雪🌸-->",
+      "code": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<!--雪🌸-->\", 2)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAU",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template><!--雪🌸--></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 66,
+          "source": 10
+        }
+      ],
+      "upstreamCode": "import { template as _template } from 'vue';\nconst t0 = _template(\"<!--雪🌸-->\", 2)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "upstreamMap": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "<!--雪🌸-->"
+        ]
+      }
+    },
+    {
+      "id": "nested",
+      "source": "<template><div><span>hello</span><br><img></div></template>",
+      "template": "<div><span>hello</span><br><img></div>",
+      "code": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<div><span>hello</span><br><img></div>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAU,KAAK,MAAM,KAAY,OAAA,IAAI,KAAW",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template><div><span>hello</span><br><img></div></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 66,
+          "source": 10
+        },
+        {
+          "generated": 71,
+          "source": 15
+        },
+        {
+          "generated": 77,
+          "source": 21
+        },
+        {
+          "generated": 82,
+          "source": 33
+        },
+        {
+          "generated": 89,
+          "source": 33
+        },
+        {
+          "generated": 93,
+          "source": 37
+        },
+        {
+          "generated": 98,
+          "source": 48
+        }
+      ],
+      "upstreamCode": "import { template as _template } from 'vue';\nconst t0 = _template(\"<div><span>hello</span><br><img>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "upstreamMap": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "<div><span>hello</span><br><img></div>"
+        ]
+      }
+    },
+    {
+      "id": "siblings",
+      "source": "<template><span>a</span><div>b</div></template>",
+      "template": "<span>a</span><div>b</div>",
+      "code": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span>a</span>\", 2)\nconst t1 = _template(\"<div>b</div>\", 2)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const n1 = t1()\n  return [n0, n1]\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAU,MAAM,CAAQ;sBAAA,KAAK,CAAO",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template><span>a</span><div>b</div></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 66,
+          "source": 10
+        },
+        {
+          "generated": 72,
+          "source": 16
+        },
+        {
+          "generated": 73,
+          "source": 24
+        },
+        {
+          "generated": 108,
+          "source": 24
+        },
+        {
+          "generated": 113,
+          "source": 29
+        },
+        {
+          "generated": 114,
+          "source": 36
+        }
+      ],
+      "upstreamCode": "import { template as _template } from 'vue';\nconst t0 = _template(\"<span>a\", 2)\nconst t1 = _template(\"<div>b\", 2)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const n1 = t1()\n  return [n0, n1]\n}",
+      "upstreamMap": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "<span>a</span><div>b</div>"
+        ]
+      }
+    },
+    {
+      "id": "comment-root",
+      "source": "<template><!--a--><section>hello</section><!--b--></template>",
+      "template": "<!--a--><section>hello</section><!--b-->",
+      "code": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<!--a-->\", 2)\nconst t1 = _template(\"<section>hello</section>\", 3)\nconst t2 = _template(\"<!--b-->\", 2)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const n1 = t1()\n  const n2 = t2()\n  return [n0, n1, n2]\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAU;sBAAQ,SAAS,KAAe;sBAAA",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template><!--a--><section>hello</section><!--b--></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 66,
+          "source": 10
+        },
+        {
+          "generated": 102,
+          "source": 18
+        },
+        {
+          "generated": 111,
+          "source": 27
+        },
+        {
+          "generated": 116,
+          "source": 42
+        },
+        {
+          "generated": 154,
+          "source": 42
+        }
+      ],
+      "upstreamCode": "import { template as _template } from 'vue';\nconst t0 = _template(\"<!--a-->\", 2)\nconst t1 = _template(\"<section>hello\", 3)\nconst t2 = _template(\"<!--b-->\", 2)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const n1 = t1()\n  const n2 = t2()\n  return [n0, n1, n2]\n}",
+      "upstreamMap": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "<!--a--><section>hello</section><!--b-->"
+        ]
+      }
+    },
+    {
+      "id": "quoted-text",
+      "source": "<template><div>a\"b\\c</div></template>",
+      "template": "<div>a\"b\\c</div>",
+      "code": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<div>a\\\"b\\\\c</div>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAU,KAAK,OAAW",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template><div>a\"b\\c</div></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 66,
+          "source": 10
+        },
+        {
+          "generated": 71,
+          "source": 15
+        },
+        {
+          "generated": 78,
+          "source": 26
+        }
+      ],
+      "upstreamCode": "import { template as _template } from 'vue';\nconst t0 = _template(\"<div>a&quot;b\\\\c\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "upstreamMap": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "<div>a\"b\\c</div>"
+        ]
+      }
+    },
+    {
+      "id": "attributes",
+      "source": "<template><div id=\"x\" title='a\"b\\c' data-probe=\"雪🌸\" aria-label=\"hello\"><span lang=\"ja\">雪🌸</span></div></template>",
+      "template": "<div id=\"x\" title='a\"b\\c' data-probe=\"雪🌸\" aria-label=\"hello\"><span lang=\"ja\">雪🌸</span></div>",
+      "code": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<div id=\\\"x\\\" title=\\\"a&quot;b\\\\c\\\" data-probe=\\\"雪🌸\\\" aria-label=\\\"hello\\\"><span lang=\\\"ja\\\">雪🌸</span></div>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAU,KAAK,SAAO,sBAAc,mBAAiB,qBAAmB,MAAM,YAAU,GAAU,OAAM",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<template><div id=\"x\" title='a\"b\\c' data-probe=\"雪🌸\" aria-label=\"hello\"><span lang=\"ja\">雪🌸</span></div></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 66,
+          "source": 10
+        },
+        {
+          "generated": 71,
+          "source": 15
+        },
+        {
+          "generated": 80,
+          "source": 22
+        },
+        {
+          "generated": 102,
+          "source": 36
+        },
+        {
+          "generated": 125,
+          "source": 57
+        },
+        {
+          "generated": 146,
+          "source": 76
+        },
+        {
+          "generated": 152,
+          "source": 82
+        },
+        {
+          "generated": 164,
+          "source": 92
+        },
+        {
+          "generated": 171,
+          "source": 106
+        },
+        {
+          "generated": 178,
+          "source": 112
+        }
+      ],
+      "upstreamCode": "import { template as _template } from 'vue';\nconst t0 = _template(\"<div id=x title=\\\"a&quot;b\\\\c\\\" data-probe=雪🌸 aria-label=hello><span lang=ja>雪🌸\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "upstreamMap": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "<div id=\"x\" title='a\"b\\c' data-probe=\"雪🌸\" aria-label=\"hello\"><span lang=\"ja\">雪🌸</span></div>"
+        ]
+      }
+    },
+    {
+      "id": "crlf-source",
+      "source": "\r\n<!--prefix-->\r\n<template><div><span>雪🌸</span></div></template>",
+      "template": "<div><span>雪🌸</span></div>",
+      "code": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<div><span>雪🌸</span></div>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAEU,KAAK,MAAM,GAAU,OAAM",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "\r\n<!--prefix-->\r\n<template><div><span>雪🌸</span></div></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 66,
+          "source": 27
+        },
+        {
+          "generated": 71,
+          "source": 32
+        },
+        {
+          "generated": 77,
+          "source": 38
+        },
+        {
+          "generated": 84,
+          "source": 52
+        },
+        {
+          "generated": 91,
+          "source": 58
+        }
+      ],
+      "upstreamCode": "import { template as _template } from 'vue';\nconst t0 = _template(\"<div><span>雪🌸\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "upstreamMap": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "<div><span>雪🌸</span></div>"
+        ]
+      }
+    },
+    {
+      "id": "cr-source",
+      "source": "\r<!--prefix-->\r<template><div><span>雪🌸</span></div></template>",
+      "template": "<div><span>雪🌸</span></div>",
+      "code": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<div><span>雪🌸</span></div>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAEU,KAAK,MAAM,GAAU,OAAM",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "\r<!--prefix-->\r<template><div><span>雪🌸</span></div></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 66,
+          "source": 25
+        },
+        {
+          "generated": 71,
+          "source": 30
+        },
+        {
+          "generated": 77,
+          "source": 36
+        },
+        {
+          "generated": 84,
+          "source": 50
+        },
+        {
+          "generated": 91,
+          "source": 56
+        }
+      ],
+      "upstreamCode": "import { template as _template } from 'vue';\nconst t0 = _template(\"<div><span>雪🌸\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "upstreamMap": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "<div><span>雪🌸</span></div>"
+        ]
+      }
+    },
+    {
+      "id": "unicode-lines",
+      "source": "<!--prefix-->  <template><div>a b 雪🌸</div></template>",
+      "template": "<div>a b 雪🌸</div>",
+      "code": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<div>a\\u2028b\\u2029雪🌸</div>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAEU,KAAK,iBAEN",
+        "file": "NativeVapor.vue",
+        "sourcesContent": [
+          "<!--prefix-->  <template><div>a b 雪🌸</div></template>"
+        ]
+      },
+      "anchors": [
+        {
+          "generated": 66,
+          "source": 29
+        },
+        {
+          "generated": 71,
+          "source": 34
+        },
+        {
+          "generated": 92,
+          "source": 55
+        }
+      ],
+      "upstreamCode": "import { template as _template } from 'vue';\nconst t0 = _template(\"<div>a b 雪🌸\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}",
+      "upstreamMap": {
+        "version": 3,
+        "sources": [
+          "NativeVapor.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "<div>a b 雪🌸</div>"
+        ]
+      }
+    }
+  ]
+}
