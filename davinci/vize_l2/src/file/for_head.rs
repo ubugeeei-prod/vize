@@ -42,6 +42,12 @@ pub enum RejectedFileFor<'a> {
 
 /// A short original declaration view, minted only from a real attached row.
 /// Numeric IDs and an original AST alone do not mint this whole-owner borrow.
+/// ```compile_fail
+/// use vize_l2::{file::TemplateDeclaration, resolution::BindingId};
+/// fn overwrite(declaration: &mut TemplateDeclaration<'_, '_>) {
+///     declaration.id = BindingId::new(0);
+/// }
+/// ```
 pub struct TemplateDeclaration<'f, 'a> {
     pub(crate) record: &'f ForRecord<'a>,
     pub(crate) row: &'f TemplateDeclarationRow,
@@ -71,6 +77,14 @@ impl<'f, 'a> TemplateDeclaration<'f, 'a> {
 }
 
 /// The exact normally owned File remains borrowed beside the declaration row.
+/// ```compile_fail
+/// use vize_l2::file::FileArtifact;
+/// fn discard(file: FileArtifact<'_>) {
+///     let original = file.template_declarations().next().unwrap();
+///     drop(file);
+///     let _ = original.declaration().original();
+/// }
+/// ```
 pub struct FileTemplateDeclaration<'f, 'a> {
     file: &'f FileArtifact<'a>,
     declaration: TemplateDeclaration<'f, 'a>,

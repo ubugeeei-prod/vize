@@ -168,7 +168,8 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
             return Err(issue);
         }
         let span = match kind {
-            NativeTemplateIssueKind::Handler { span, .. } => span,
+            NativeTemplateIssueKind::Handler { span, .. }
+            | NativeTemplateIssueKind::For { span, .. } => span,
             _ => self.selected.component().block().span(),
         };
         let issue = NativeTemplateIssue { span, kind };

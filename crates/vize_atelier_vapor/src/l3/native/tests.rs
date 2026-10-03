@@ -98,3 +98,5 @@ fn damaged_structural_slot_branch_never_emits_partial_component() {
         assert_eq!(result.error_messages.len(), 1);
     }
 }
+
+mod original_for;

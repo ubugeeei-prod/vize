@@ -89,6 +89,8 @@ pub enum ArtifactError {
     InvalidBindingName { node: NodeId, span: Span },
     /// A direct whole-handler reference names a different attached node.
     InvalidHandlerReference { node: NodeId, handler: NodeId },
+    /// A whole original head names a different introducing node.
+    InvalidOriginalForReference { node: NodeId, original: NodeId },
     /// An authored span is inverted, outside source, or cuts UTF-8.
     InvalidSpan { node: Option<NodeId>, span: Span },
     /// A node or payload span escapes its immediate source owner.

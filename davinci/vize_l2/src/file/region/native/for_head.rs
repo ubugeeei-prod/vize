@@ -95,6 +95,23 @@ where
         let facts = match result {
             Ok(facts) => facts,
             Err(error) => {
+                let original_source = match error.part {
+                    vize_l1::embed::syntax::ForHeadPart::Aliases => input
+                        .operand()
+                        .syntax()
+                        .aliases()
+                        .and_then(Result::ok)
+                        .map(|aliases| aliases.source()),
+                    vize_l1::embed::syntax::ForHeadPart::Collection => input
+                        .operand()
+                        .syntax()
+                        .collection()
+                        .and_then(Result::ok)
+                        .map(|collection| collection.source()),
+                };
+                let span = original_source
+                    .and_then(|source| source.authored_covering_span(error.span).ok())
+                    .unwrap_or(span);
                 let input = self
                     .facts
                     .pending_for_heads
