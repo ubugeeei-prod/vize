@@ -96,13 +96,19 @@ test("complete decoded text framing rejects historical separators and preserves 
     }
   }
   for (const authored of [
-    "&#13;&#10;value", "value&#13;&#10;", "&#13;\nvalue",
-    "value&#13;\n", "\r&#10;value", "value\r&#10;",
+    "&#13;&#10;value",
+    "value&#13;&#10;",
+    "&#13;\nvalue",
+    "value&#13;\n",
+    "\r&#10;value",
+    "value\r&#10;",
   ]) {
     const compiled = compiler.compile(`<div>{{ ${authored} }}</div>`);
     assert.deepEqual(plain(compiled.errors), [], authored);
     assert.deepEqual(
-      plain(compiled.ast.children.map(({ type, expression, tokens }) => ({ type, expression, tokens }))),
+      plain(
+        compiled.ast.children.map(({ type, expression, tokens }) => ({ type, expression, tokens })),
+      ),
       [{ type: 2, expression: "_s(value)", tokens: [{ "@binding": "value" }] }],
       authored,
     );
