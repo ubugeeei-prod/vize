@@ -52,6 +52,13 @@ unchanged synthetic workspace fixture through a 26-line helper. The existing
 modules return to 251 and 305 lines. Every assertion, production classifier and
 size limit stays unchanged; corrected-head Actions remain required.
 
+Corrected source `001790af` passed hosted Check 37125761701. A later prospective
+queue prefix was unmergeable solely because #7590 appended its WIT lock record to
+the same central CI paragraph; no candidate validation ran for this slice. It was
+removed immediately, then replayed on actual merged main `e56082b3`, retaining
+both complete decisions and unchanged production/controls. Fresh exact-head
+Actions and protected acceptance are required for the replay.
+
 Merge groups unconditionally validate every current workspace crate, all four
 full Rust test partitions, all four complete tooling partitions, the original
 differential corpora and all 100 pinned instruction probes. The four source
