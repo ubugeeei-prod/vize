@@ -1,0 +1,3 @@
+ScriptFormatError(
+    "sortImports boundary must sit between two groups",
+)

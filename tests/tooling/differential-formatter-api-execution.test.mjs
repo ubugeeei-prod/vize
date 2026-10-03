@@ -80,4 +80,31 @@ void test("shared formatter API history observes complete source-built output an
     root,
     reports.map(({ report }) => report),
   );
+  const sorting = runFormatterApiPack({
+    manifestPath: path.join(
+      root,
+      "tests/_fixtures/differential/formatter-history/import-sorting-manifest.json",
+    ),
+    repoRoot: root,
+    ...built,
+  });
+  fs.writeFileSync(
+    path.join(evidenceDir, "import-sorting-report.json"),
+    JSON.stringify(sorting, null, 2) + "\n",
+  );
+  assert.deepEqual(
+    sorting.summary,
+    {
+      plannedCases: 14,
+      legacyByteMatches: 11,
+      legacyInternalObservations: 0,
+      legacyErrorMatches: 3,
+      legacyFailures: 0,
+      nativeUnsupported: 14,
+      nativeHandled: 0,
+      nativeEquivalent: 0,
+      pairedComparisons: 0,
+    },
+    JSON.stringify(sorting.rows, null, 2),
+  );
 });

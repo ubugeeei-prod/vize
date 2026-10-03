@@ -19,6 +19,8 @@ import {
 
 const APIS = {
   format_script: "--script",
+  format_script_with_sort_imports: "--sorted-script",
+  "GlyphFormatter::format": "--sorted-sfc",
   format_sfc: "--sfc",
   format_style: "--style",
   format_template: "--template",
@@ -60,6 +62,21 @@ export function loadFormatterApiManifest(manifestPath, repoRoot) {
     const internal = fixture.profile === "skip_script_stabilization";
     assert(!internal || ["format_script", "format_sfc"].includes(fixture.api));
     const options = configuredFormatterOptions(fixture);
+    if (manifest.featureIssue === 7258) assert(fixture.importSorting, "missing feature options");
+    if (fixture.importSorting) {
+      assert.equal(manifest.featureIssue, 7258);
+      assert.deepEqual(
+        JSON.parse(immutableArtifact(repoRoot, fixture.sourceOptionsProbe).toString()),
+        options.effective,
+        "complete recorded import sorting probe changed",
+      );
+      const owner = immutableArtifact(repoRoot, {
+        path: fixture.witness.path,
+        sha256: fixture.witness.sourceSha256,
+      }).toString();
+      assert.match(fixture.witness.function, /^[a-z][a-z0-9_]+$/);
+      assert(owner.includes(`fn ${fixture.witness.function}(`), "missing original option law");
+    }
     const error = fixture.outcome === "error";
     assert(fixture.outcome === undefined || ["success", "error"].includes(fixture.outcome));
     if (error) assertFormatterError(fixture.api, internal, fixture.typedError);
@@ -109,7 +126,10 @@ export function loadFormatterApiManifest(manifestPath, repoRoot) {
       input,
       expected,
       argv: [APIS[fixture.api], ...options.flags, ...(error ? ["--expect-error"] : [])],
-      optionsArgv: ["--options-json", ...options.flags],
+      optionsArgv: [
+        fixture.importSorting ? "--sort-options-json" : "--options-json",
+        ...options.flags,
+      ],
       effectiveOptions: options.effective,
       passCount: internal || error ? 1 : 3,
       contract: error
@@ -125,7 +145,7 @@ export function loadFormatterApiManifest(manifestPath, repoRoot) {
 function expectedStderr(fixture, input, output) {
   return fixture.outcome === "error"
     ? Buffer.from(`error=${fixture.typedError}\n`)
-    : fixture.api === "format_sfc"
+    : ["format_sfc", "GlyphFormatter::format"].includes(fixture.api)
       ? Buffer.from(`changed=${!input.equals(output)}\n`)
       : Buffer.alloc(0);
 }

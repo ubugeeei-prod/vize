@@ -12,6 +12,7 @@ type Fixture = {
   api: string;
   vueVersion?: string;
   profile: string;
+  importSorting?: { provided: boolean; setting: unknown; resolvedOptions: string };
   options: {
     base: string;
     internalOverrides: Record<string, boolean>;
@@ -79,7 +80,29 @@ export function configuredFormatterOptions(fixture: Fixture) {
       );
     }
   }
+  const sortingApi = ["GlyphFormatter::format", "format_script_with_sort_imports"].includes(
+    fixture.api,
+  );
+  assert.equal(
+    sortingApi,
+    fixture.importSorting !== undefined,
+    "sorting API needs its actual option probe",
+  );
+  const sorting = fixture.importSorting;
+  if (sorting) {
+    assert.deepEqual(Object.keys(sorting).sort(), ["provided", "resolvedOptions", "setting"]);
+    assert.equal(typeof sorting.provided, "boolean");
+    assert.equal(typeof sorting.resolvedOptions, "string");
+    assert.match(
+      sorting.resolvedOptions,
+      /^(?:Ok\((?:None|Some\(SortImportsOptions \{)|Err\(ScriptFormatError\()/,
+    );
+    assert(!internal, "import sorting must observe the public stabilization path");
+    if (!sorting.provided) assert.equal(sorting.setting, null);
+    else assert(sorting.setting !== null, "explicit null is not an import sorting setting");
+  }
   const flags = [
+    ...(sorting?.provided ? ["--sort-imports", JSON.stringify(sorting.setting)] : []),
     ...(Object.keys(overrides).length ? ["--options", JSON.stringify(overrides)] : []),
     ...(internal ? ["--legacy-single-pass"] : []),
     ...(fixture.vueVersion === undefined ? [] : ["--vue-version", fixture.vueVersion]),
@@ -90,6 +113,13 @@ export function configuredFormatterOptions(fixture: Fixture) {
       ...DEFAULT_OPTIONS,
       ...overrides,
       skipScriptStabilization: internal,
+      ...(sorting
+        ? {
+            sortImportsProvided: sorting.provided,
+            sortImports: sorting.setting,
+            resolvedSortImports: sorting.resolvedOptions,
+          }
+        : {}),
       ...(fixture.vueVersion === undefined ? {} : { vueVersion: fixture.vueVersion }),
     },
   };
@@ -101,6 +131,8 @@ export function assertFormatterError(api: string, internal: boolean, kind: strin
     format_json: ["JsonFormatError"],
     format_jsonc: ["JsonFormatError"],
     format_script: ["ScriptParseError", "ScriptFormatError"],
+    format_script_with_sort_imports: ["ScriptParseError", "ScriptFormatError"],
+    "GlyphFormatter::format": ["ScriptParseError", "ScriptFormatError"],
     format_template: ["TemplateParseError", "TemplateFormatError"],
     format_sfc: [
       "ParseError",
@@ -118,12 +150,13 @@ export function assertFormatterError(api: string, internal: boolean, kind: strin
 export function formatterApiKind(api: string, kind: string) {
   const kinds: Record<string, string> = {
     format_sfc: "Vue",
+    "GlyphFormatter::format": "Vue",
     format_style: "CSS",
     format_json: "JSON",
     format_jsonc: "JSONC",
     format_template: "VueTemplate",
   };
-  return api === "format_script"
+  return ["format_script", "format_script_with_sort_imports"].includes(api)
     ? kind === "JavaScript"
       ? "JavaScript"
       : "TypeScript"

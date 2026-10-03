@@ -9,10 +9,11 @@
 use std::io::{self, Read, Write};
 use std::process::ExitCode;
 use vize_glyph::{
-    FormatError, FormatOptions, VueVersion, format_json, format_jsonc, format_script, format_sfc,
-    format_sfc_with_vue_version, format_style, format_template, format_template_with_vue_version,
+    Allocator, FormatError, FormatOptions, GlyphFormatter, VueVersion, format_json, format_jsonc,
+    format_script, format_script_with_sort_imports, format_sfc, format_sfc_with_vue_version,
+    format_style, format_template, format_template_with_vue_version, resolve_sort_imports,
 };
-use vize_l0::{ToCompactString, cstr};
+use vize_l0::{ToCompactString, config::SortImportsSetting, cstr};
 
 fn invalid(message: impl Into<std::string::String>) -> FormatError {
     io::Error::new(io::ErrorKind::InvalidInput, message.into()).into()
@@ -20,15 +21,36 @@ fn invalid(message: impl Into<std::string::String>) -> FormatError {
 
 fn configured_options(
     args: &[std::string::String],
-) -> Result<(FormatOptions, bool, Option<VueVersion>), FormatError> {
+) -> Result<
+    (
+        FormatOptions,
+        bool,
+        Option<VueVersion>,
+        Option<serde_json::Value>,
+    ),
+    FormatError,
+> {
     let mut options = FormatOptions::default();
     let mut single_pass = false;
     let mut expect_error = false;
     let mut configured = false;
     let mut vue_version = None;
+    let mut sort_imports = None;
     let mut remaining = args;
     while let Some((flag, tail)) = remaining.split_first() {
         match flag.as_str() {
+            "--sort-imports" if sort_imports.is_none() => {
+                let Some((json, tail)) = tail.split_first() else {
+                    return Err(invalid("missing import sorting JSON"));
+                };
+                let value: serde_json::Value = serde_json::from_str(json)
+                    .map_err(|error| invalid(error.to_compact_string()))?;
+                serde_json::from_value::<SortImportsSetting>(value.clone())
+                    .map_err(|error| invalid(error.to_compact_string()))?;
+                sort_imports = Some(value);
+                remaining = tail;
+                continue;
+            }
             "--vue-version" if vue_version.is_none() => {
                 let Some((version, tail)) = tail.split_first() else {
                     return Err(invalid("missing Vue version"));
@@ -71,7 +93,7 @@ fn configured_options(
         remaining = tail;
     }
     options.skip_script_stabilization = single_pass;
-    Ok((options, expect_error, vue_version))
+    Ok((options, expect_error, vue_version, sort_imports))
 }
 
 fn error_kind(error: &FormatError) -> &'static str {
@@ -93,7 +115,17 @@ fn observe() -> Result<ExitCode, FormatError> {
         return Err(invalid("expected API"));
     };
     let api = api.as_str();
-    let (options, expect_error, vue_version) = configured_options(flags)?;
+    let (options, expect_error, vue_version, sort_imports) = configured_options(flags)?;
+    let sorting_profile = matches!(
+        api,
+        "--sorted-script" | "--sorted-sfc" | "--sort-options-json"
+    );
+    let setting = sort_imports
+        .clone()
+        .map(serde_json::from_value::<SortImportsSetting>)
+        .transpose()
+        .map_err(|error| invalid(error.to_compact_string()))?;
+    let sorting = resolve_sort_imports(setting.as_ref());
     if !matches!(
         api,
         "--script"
@@ -104,13 +136,23 @@ fn observe() -> Result<ExitCode, FormatError> {
             | "--jsonc"
             | "--defaults"
             | "--options-json"
+            | "--sorted-script"
+            | "--sorted-sfc"
+            | "--sort-options-json"
     ) || (options.skip_script_stabilization
         && !matches!(api, "--script" | "--sfc" | "--defaults" | "--options-json"))
-        || (expect_error && matches!(api, "--defaults" | "--options-json"))
+        || (expect_error && matches!(api, "--defaults" | "--options-json" | "--sort-options-json"))
+        || (sort_imports.is_some() && !sorting_profile)
+        || (sorting_profile && options.skip_script_stabilization)
         || (vue_version.is_some()
             && !matches!(
                 api,
-                "--sfc" | "--template" | "--defaults" | "--options-json"
+                "--sfc"
+                    | "--template"
+                    | "--defaults"
+                    | "--options-json"
+                    | "--sorted-sfc"
+                    | "--sort-options-json"
             ))
     {
         return Err(io::Error::new(io::ErrorKind::InvalidInput, "unsupported API/profile").into());
@@ -119,7 +161,7 @@ fn observe() -> Result<ExitCode, FormatError> {
         writeln!(io::stdout().lock(), "{options:#?}")?;
         return Ok(ExitCode::SUCCESS);
     }
-    if api == "--options-json" {
+    if matches!(api, "--options-json" | "--sort-options-json") {
         let mut value =
             serde_json::to_value(&options).map_err(|error| invalid(error.to_compact_string()))?;
         let Some(object) = value.as_object_mut() else {
@@ -132,12 +174,49 @@ fn observe() -> Result<ExitCode, FormatError> {
         if let Some(version) = vue_version {
             object.insert("vueVersion".into(), version.as_str().into());
         }
+        if sorting_profile {
+            object.insert("sortImportsProvided".into(), sort_imports.is_some().into());
+            object.insert(
+                "sortImports".into(),
+                sort_imports.unwrap_or(serde_json::Value::Null),
+            );
+            object.insert(
+                "resolvedSortImports".into(),
+                cstr!("{sorting:?}").as_str().into(),
+            );
+        }
         writeln!(io::stdout().lock(), "{value}")?;
         return Ok(ExitCode::SUCCESS);
     }
     let mut source = std::string::String::new();
     io::stdin().read_to_string(&mut source)?;
+    let allocator = Allocator::with_capacity(source.len() * 2);
     let observed = match api {
+        "--sorted-script" => sorting.and_then(|sorting| {
+            format_script_with_sort_imports(
+                &source,
+                &options,
+                &allocator,
+                oxc_span::SourceType::ts(),
+                sorting.as_ref(),
+            )
+        }),
+        "--sorted-sfc" => sorting
+            .and_then(|sorting| {
+                GlyphFormatter::new_with_vue_version(
+                    &options,
+                    &allocator,
+                    vue_version.unwrap_or(VueVersion::V3),
+                )
+                .with_sort_imports(sorting.as_ref())
+                .format(&source)
+            })
+            .and_then(|result| {
+                if !expect_error {
+                    writeln!(io::stderr().lock(), "changed={}", result.changed)?;
+                }
+                Ok(result.code)
+            }),
         "--script" => format_script(&source, &options),
         "--style" => format_style(&source, &options),
         "--template" => vue_version.map_or_else(

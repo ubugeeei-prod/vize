@@ -1,0 +1,5 @@
+<script lang="ts">
+import A from "./a";
+import B from "./b";
+export default [B, A];
+</script>
