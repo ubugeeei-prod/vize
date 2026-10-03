@@ -70,14 +70,14 @@ fn genuine_handler_shadowing_and_implicit_event_have_exact_site_roles() {
 
 #[test]
 fn original_entity_crlf_non_bmp_write_sites_keep_one_handler_body_and_utf16() {
-    let source = "<template><button @click='/*kept\r\n😀*/ let café=$event;caf&#233;=1;café++;return café'/></template>";
+    let source = "<template><button @click='/*kept\r\n😀*/ let count=$event;co&#117;nt=1;count++;return count'/></template>";
     let (_, project) = project(source, "vue");
-    let query = occurrence(source, "café", 0).0;
-    let mut wanted = expected(source, "café", &[(0, Kind::TEXT)]);
-    wanted.extend(expected(source, "caf&#233;", &[(0, Kind::WRITE)]));
+    let query = occurrence(source, "count", 0).0;
+    let mut wanted = expected(source, "count", &[(0, Kind::TEXT)]);
+    wanted.extend(expected(source, "co&#117;nt", &[(0, Kind::WRITE)]));
     wanted.extend(expected(
         source,
-        "café",
+        "count",
         &[(1, Kind::WRITE), (2, Kind::READ)],
     ));
     assert_eq!(
@@ -86,7 +86,7 @@ fn original_entity_crlf_non_bmp_write_sites_keep_one_handler_body_and_utf16() {
     );
     let original = worker(&project, true);
     let before = block_on(original.selected_inspect(query)).unwrap();
-    let entity_tail = position(source, source.find("&#233;").unwrap() + 2);
+    let entity_tail = position(source, source.find("&#117;").unwrap() + 2);
     assert_eq!(
         block_on(project.template_highlights(&uri(), entity_tail)),
         Ok(wanted)
@@ -99,7 +99,7 @@ fn original_entity_crlf_non_bmp_write_sites_keep_one_handler_body_and_utf16() {
         Err(NavigationRefusal::Position)
     );
     assert_eq!(
-        block_on(project.template_highlights(&uri(), occurrence(source, "café", 2).1.end)),
+        block_on(project.template_highlights(&uri(), occurrence(source, "count", 2).1.end)),
         Ok(vec![])
     );
     assert_eq!(
@@ -114,6 +114,7 @@ fn whole_selected_script_style_and_encoded_for_refusals_never_fallback_for_highl
         "<script setup>let value=1;</script><template>{{value}}</template>",
         "<template><button @click='$event'/></template><style>button{color:red}</style>",
         "<template><div v-for='caf&#233; in it&#101;ms'/></template>",
+        "<template><button @click='/*kept\r\n😀*/ let café=$event;caf&#233;=1;café++;return café'/></template>",
     ] {
         let (_, project) = project(source, "vue");
         for _ in 0..2 {

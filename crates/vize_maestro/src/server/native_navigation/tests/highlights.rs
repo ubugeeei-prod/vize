@@ -139,16 +139,16 @@ fn whole_original_and_selected_entity_utf16_profiles_preserve_typed_refusals() {
         ),
         Some(error(4, -32602, "Invalid native UTF-16 position"))
     );
-    let selected = "<template><button @click='/*kept\r\n😀*/ let café=$event;caf&#233;=1;café++;return café'/></template>";
+    let selected = "<template><button @click='/*kept\r\n😀*/ let count=$event;co&#117;nt=1;count++;return count'/></template>";
     open(&mut service, selected, "vue");
-    let (at, write) = occurrence(selected, "caf&#233;", 0, 3);
+    let (at, write) = occurrence(selected, "co&#117;nt", 0, 3);
     assert_eq!(
         send(
             &mut service,
             request(5, "vize/nativeTemplateDocumentHighlight", at)
         ),
         Some(
-            json!({"jsonrpc":"2.0","id":5,"result":[occurrence(selected,"café",0,1).1,write,occurrence(selected,"café",1,3).1,occurrence(selected,"café",2,2).1]})
+            json!({"jsonrpc":"2.0","id":5,"result":[occurrence(selected,"count",0,1).1,write,occurrence(selected,"count",1,3).1,occurrence(selected,"count",2,2).1]})
         )
     );
     assert_eq!(

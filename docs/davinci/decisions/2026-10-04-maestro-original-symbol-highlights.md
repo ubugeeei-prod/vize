@@ -95,3 +95,14 @@ source/protected receipts and record the literal terminal merge. Preserve all
 nineteen parent laws and the updated actual-main completion audit in this same
 genuine source change. Full product,
 cross-file/whole-dialect/default/highlight/tag-pair history remain unfinished.
+
+First published b236 source Check37158927834 / builder111308164946 genuinely
+compiled and ran106 source laws:105pass/1fail0ignored. The selected Unicode
+write/update fixture exceeded the existing conservative wrapped31-unit gate
+(38), so its complete original producer correctly refused the whole value.
+That source was never queued; RPC/minimal/strict tails were unexecuted. The
+corrected positive `count`/`co&#117;nt` fixture fits30 while preserving all four
+actual TEXT/Write/ReadWrite/Read sites, CRLF/emoji/entity/UTF16 and same-owner
+checks. The original long body remains a sticky producer-refusal control.
+No grammar/resource/provider gate or expectation is waived; fresh hosted exact
+source and protected acceptance remain required.
