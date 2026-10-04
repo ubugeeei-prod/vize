@@ -38,3 +38,54 @@ pub(super) fn write(output: &mut Vec<u8>, source: &str, indent: &[u8], newline: 
         );
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::write;
+
+    #[test]
+    fn raw_boundaries_keep_authored_separators_then_resume_layout() {
+        let raw = "\nfirst\r\n  second\r\n\r  third\n";
+        for newline in [b"\n".as_slice(), b"\r\n", b"\r"] {
+            for (open, close) in [
+                ("<pre>", "</pre>"),
+                ("<textarea>", "</textarea>"),
+                ("<listing>", "</listing>"),
+                ("<div v-pre>", "</div>"),
+                ("<!--", "-->"),
+                ("<div title=\"", "\">x</div>"),
+                ("<div>{{ `", "` }}</div>"),
+            ] {
+                let source = [
+                    open.as_bytes(),
+                    raw.as_bytes(),
+                    close.as_bytes(),
+                    newline,
+                    b"<p>x</p>",
+                ]
+                .concat();
+                let expected = [
+                    b"  ".as_slice(),
+                    open.as_bytes(),
+                    raw.as_bytes(),
+                    close.as_bytes(),
+                    newline,
+                    b"  <p>x</p>",
+                    newline,
+                ]
+                .concat();
+                let mut output = Vec::new();
+                write(
+                    &mut output,
+                    std::str::from_utf8(&source).unwrap(),
+                    b"  ",
+                    newline,
+                );
+                assert_eq!(
+                    output, expected,
+                    "raw opening/closing separator and following layout boundary"
+                );
+            }
+        }
+    }
+}

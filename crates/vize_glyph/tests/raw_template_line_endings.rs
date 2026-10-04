@@ -46,25 +46,31 @@ fn raw_separators_survive_every_layout_style_and_vue_version() {
                 ("<listing>", "</listing>"),
                 ("<div v-pre>", "</div>"),
             ] {
-                let body = format!("first{raw}  second{raw}{raw}  third");
-                let source = format!(
-                    "<template>{layout}{open}{body}{close}{layout}<p>{{{{value}}}}</p>{layout}</template>{layout}"
-                );
-                let expected = format!(
-                    "<template>{layout}  {open}{body}{close}{layout}  <p>{{{{ value }}}}</p>{layout}</template>{layout}"
-                );
-                for version in [VueVersion::V2, VueVersion::V2_7, VueVersion::V3] {
-                    let first = format_sfc_with_vue_version(&source, &options, version).unwrap();
-                    assert_eq!(
-                        first.code.as_bytes(),
-                        expected.as_bytes(),
-                        "{ending:?}/{raw:?}/{open}/{version:?}"
+                for body in [
+                    format!("first{raw}  second{raw}{raw}  third"),
+                    format!("{raw}first{raw}  second{raw}{raw}  third{raw}"),
+                    "first\n  second\r\n  third\r  fourth".to_owned(),
+                ] {
+                    let source = format!(
+                        "<template>{layout}{open}{body}{close}{layout}<p>{{{{value}}}}</p>{layout}</template>{layout}"
                     );
-                    for _ in 0..2 {
-                        let fixed =
-                            format_sfc_with_vue_version(&first.code, &options, version).unwrap();
-                        assert_eq!(fixed.code.as_bytes(), expected.as_bytes());
-                        assert!(!fixed.changed);
+                    let expected = format!(
+                        "<template>{layout}  {open}{body}{close}{layout}  <p>{{{{ value }}}}</p>{layout}</template>{layout}"
+                    );
+                    for version in [VueVersion::V2, VueVersion::V2_7, VueVersion::V3] {
+                        let first =
+                            format_sfc_with_vue_version(&source, &options, version).unwrap();
+                        assert_eq!(
+                            first.code.as_bytes(),
+                            expected.as_bytes(),
+                            "{ending:?}/{raw:?}/{open}/{version:?}"
+                        );
+                        for _ in 0..2 {
+                            let fixed = format_sfc_with_vue_version(&first.code, &options, version)
+                                .unwrap();
+                            assert_eq!(fixed.code.as_bytes(), expected.as_bytes());
+                            assert!(!fixed.changed);
+                        }
                     }
                 }
             }
