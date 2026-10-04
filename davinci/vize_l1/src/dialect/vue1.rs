@@ -1,6 +1,7 @@
 //! Vue 1 template capability table.
 
 pub mod surface;
+pub mod text;
 
 use super::vue::{DirectiveArgStyle, LegacyDialectCapabilities};
 

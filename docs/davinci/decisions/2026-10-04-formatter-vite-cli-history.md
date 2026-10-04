@@ -165,3 +165,22 @@ bounded correction. No expected data, descriptor reference, output, original
 control, production behavior or build recipe changes. The corrected source
 needs its own complete capture and all required Actions before queue admission;
 protected full/all100 and actual merge remain required.
+
+## Actual protected delivery
+
+PR #7656 actually merged on 2026-10-03 at 23:25:41 UTC as signed
+`d013629e9ebc190bdd6e1f2780d54b20d4bee4a0`; fresh origin/main equals it.
+Corrected source ffbb65ec Check 37160372408 and protected Check 37160846382,
+Musea 37160845953 and Nuxt 37160845975 are terminal SUCCESS. Candidate's own
+JS job 111313876801/artifact 11288065133 independently qualifies all 9/27
+complete public/config/process/file/addon/accessor laws. Whole report is
+2,902,301 bytes, SHA256
+`361c15e6ffa704d6f18ba62573246930824edde1b9f424687922e025ea8f75e6`.
+Actual fresh=false emitted/generated/frozen addon and all child loads join
+SHA256 `92200ac793144254906e8071f0d084ce3802750a544b101f4788c1e3484e957b`.
+Full Rust/differential corpus and four Rust/tooling shards pass. Instruction
+job 111313775623/artifact 11286798404 proves original all100 across three real
+executions and unchanged budgets/ratchet, without formatter metric credit.
+Historical failures remain preserved; no predecessor runtime is substituted.
+Native counts remain zero, and broader formatter history/default/error/metric
+obligations remain separate and unfinished.

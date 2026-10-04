@@ -1046,6 +1046,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/tests/native_vue_check.rs	8	l
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/native_vue_check.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/native_vue_check.rs	8	l1	L1	stage	vize_l1	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/native_vue_check.rs	8	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/native_vue_check/array_annotations.rs	4	l0	L0	stage	vize_l0	preferred	3
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/nested_vif_narrowing.rs	6	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/no_space_default_export.rs	3	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/no_space_default_export.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
@@ -1063,6 +1064,9 @@ typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check.
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check.rs	9	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check.rs	9	l1	L1	stage	vize_l1	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check.rs	9	l2	L2	stage	vize_l2	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/array_annotations.rs	6	l0	L0	stage	vize_l0	preferred	3
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/array_annotations.rs	6	l2	L2	stage	vize_l2	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/array_annotations.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/patterned_typechecking.rs	320	l0	L0	stage	vize_l0	preferred	2
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/patterned_typechecking/component_props.rs	40	l0	L0	stage	vize_l0	preferred	2
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/patterned_typechecking/guards.rs	31	l0	L0	stage	vize_l0	preferred	3

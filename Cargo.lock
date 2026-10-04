@@ -4693,6 +4693,7 @@ name = "vize_glyph"
 version = "0.430.1"
 dependencies = [
  "criterion",
+ "davinci_harness",
  "insta",
  "lightningcss",
  "memchr",

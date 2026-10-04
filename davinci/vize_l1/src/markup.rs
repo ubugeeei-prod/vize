@@ -42,7 +42,8 @@ pub use native::{
     NativeAttributeExpressionView, NativeAttributeForHead, NativeAttributeForHeadFailure,
     NativeAttributeForHeadView, NativeAttributeHandler, NativeAttributeHandlerFailure,
     NativeAttributeHandlerView, NativeAttributeOperandError, NativeAttributes, NativeChild,
-    NativeChildren, NativeComponent, NativeConditionKind, NativeElement, NativeInterpolationError,
+    NativeChildren, NativeComponent, NativeConditionKind, NativeElement, NativeElementClosingName,
+    NativeElementNameRefusal, NativeElementNames, NativeInterpolationError,
     NativeInterpolationFailure, NativeInterpolationOperand, NativeInterpolationView,
     NativeRootText, NativeRootTextError, NativeRootTextProfile, NativeRootTextView,
     NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar,
@@ -54,4 +55,4 @@ pub use parse::{
 pub use profile::{Component, Document, Profile, ProfileKind};
 pub use token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
 
-pub use native::{NativeLintTag, NativeLintTagKind, NativeLintTagRefusal};
+pub use native::{NativeLintComponent, NativeLintTag, NativeLintTagKind, NativeLintTagRefusal};

@@ -1,0 +1,7 @@
+# Named original public formatter instruction probes only.
+# No allocation ceiling or instruction count is inferred by this registry.
+[bench]
+formatter_sfc_simple = {}
+formatter_sfc_reuse = {}
+formatter_script_large = {}
+formatter_template_complex = {}

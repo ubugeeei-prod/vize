@@ -181,3 +181,24 @@ this `3290` observation does not reclassify them or claim a second `3290` run.
 Applicable formatter metrics, OXC printer-error execution and #7258 feature
 history remain unfinished. #6882 stays open; native handling, equivalence and
 paired counts in this differential campaign remain zero.
+
+## Supplemental public history and original instruction calibration
+
+The later [public Vite+ custody record](./2026-10-04-formatter-vite-cli-history.md)
+retains #7656's actual signed d013629e merge with successful protected full
+Check 37160846382 and an independently qualified complete nine-plan/27-call
+packet. Original inputs, expected objects/output and prior campaign evidence
+remain unchanged. This supplies genuine public configuration/packaged Node CLI
+sorting history; native whole-SFC handling/equivalence/default admission remains
+separate. It does not rewrite the original 56-fix/300-plan denominator.
+
+The [original instruction record](./2026-10-04-formatter-instruction-metrics.md)
+adds source-qualified a41/c225 draft calibration: job 111321340463/artifact
+11287839981 genuinely measures all four original public routines three times,
+with identical positive stage-return counts and exact original input bodies.
+Only those actual counts become the four initial ceilings; the old 100 rows,
+protocol and ratchet remain unchanged. Fresh cap-frozen source and protected
+acceptance/actual merge are still required. Allocation/wall/RSS coverage and
+genuine original OXC printer-error execution remain unqualified. No injected
+error, settings-error alias or native Doc refusal substitutes for the printer
+arm, and #6882 stays open.

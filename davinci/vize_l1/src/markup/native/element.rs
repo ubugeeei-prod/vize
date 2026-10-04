@@ -2,6 +2,9 @@ use super::child::Parent;
 use super::{NativeChildren, NativeComponent};
 use crate::{Attribute, Element};
 
+mod names;
+pub use names::{NativeElementClosingName, NativeElementNameRefusal, NativeElementNames};
+
 /// Original element derived only from an authenticated child projection.
 pub struct NativeElement<'o, 'a> {
     component: &'o NativeComponent<'a>,

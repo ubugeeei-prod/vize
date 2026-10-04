@@ -9,6 +9,10 @@ on:
       - tools/benchmarks/crates/davinci_harness/**
       - tools/benchmarks/scripts/instruction-counts*.mjs
       - docs/davinci/plan/instruction-budgets.toml
+      - docs/davinci/plan/formatter-instruction-*.toml
+      - crates/vize_glyph/benches/formatter_instructions.rs
+      - crates/vize_glyph/benches/fixtures/formatter/**
+      - tests/tooling/formatter-instruction-counts.test.mjs
       - tests/tooling/level-instruction-counts.test.mjs
       - tests/tooling/level-instruction-workflow.test.ts
   workflow_dispatch:
@@ -58,12 +62,15 @@ jobs:
           key: instruction-counts-v1
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Test instruction parser and gates
-        run: node --test tests/tooling/level-instruction-counts.test.mjs
+        run: node --test tests/tooling/level-instruction-counts.test.mjs tests/tooling/formatter-instruction-counts.test.mjs
       - name: Test default harness and client request windows
         if: env.MEASURE == 'true'
         run: |
           cargo test --locked -p davinci_harness --lib
           cargo test --locked -p davinci_harness --lib --features instruction-counts
+      - name: Measure original formatter routines three times without Criterion sampling
+        if: env.MEASURE == 'true'
+        run: node tools/benchmarks/scripts/instruction-counts.mjs --formatter --collect --out "${RUNNER_TEMP}/formatter-instruction-counts"
       - name: Measure each stage three times without Criterion sampling
         if: env.MEASURE == 'true'
         run: node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "${RUNNER_TEMP}/instruction-counts"
@@ -87,6 +94,15 @@ jobs:
             echo '17c3947044c033d03b0a86d13b2c3fa6dc2d1e90cb2222033921f649e97a826f  docs/davinci/plan/instruction-budgets.toml' | sha256sum --check --strict
           fi
           node tools/benchmarks/scripts/instruction-counts.mjs --verify-budgets "${BASE_ARGS[@]}"
+          FORMATTER_BASE_ARGS=()
+          if git cat-file -e "$BASE_SHA:docs/davinci/plan/formatter-instruction-budgets.toml" 2>/dev/null; then
+            git show "$BASE_SHA:docs/davinci/plan/formatter-instruction-budgets.toml" > "${RUNNER_TEMP}/base-formatter-instruction-budgets.toml"
+            FORMATTER_BASE_ARGS=(--base-budgets "${RUNNER_TEMP}/base-formatter-instruction-budgets.toml")
+          else
+            # First introduction: exact reviewed three-run formatter calibration.
+            echo 'e49d7c38a43fcdfa3bf7114c50ef91734f355d943269d42bc1d18821d444de99  docs/davinci/plan/formatter-instruction-budgets.toml' | sha256sum --check --strict
+          fi
+          node tools/benchmarks/scripts/instruction-counts.mjs --formatter --verify-budgets "${FORMATTER_BASE_ARGS[@]}"
       - name: Enforce pinned ceilings
         if: env.MEASURE == 'true'
         run: |
@@ -97,10 +113,27 @@ jobs:
           fi
           node tools/benchmarks/scripts/instruction-counts.mjs --check \
             --measurement "${RUNNER_TEMP}/instruction-counts/measurement.json" "${BASE_ARGS[@]}"
+      - name: Enforce original formatter ceilings
+        if: env.MEASURE == 'true'
+        run: |
+          set -euo pipefail
+          BASE_ARGS=()
+          if [[ -f "${RUNNER_TEMP}/base-formatter-instruction-budgets.toml" ]]; then
+            BASE_ARGS=(--base-budgets "${RUNNER_TEMP}/base-formatter-instruction-budgets.toml")
+          fi
+          node tools/benchmarks/scripts/instruction-counts.mjs --formatter --check \
+            --measurement "${RUNNER_TEMP}/formatter-instruction-counts/measurement.json" "${BASE_ARGS[@]}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ always() && env.MEASURE == 'true' }}
         with:
           name: instruction-counts-${{ github.sha }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/instruction-counts
           if-no-files-found: warn
+          retention-days: 30
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() && env.MEASURE == 'true' }}
+        with:
+          name: formatter-instruction-counts-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/formatter-instruction-counts
+          if-no-files-found: error
           retention-days: 30

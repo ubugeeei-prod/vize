@@ -22,6 +22,8 @@ mod const_semantics;
 #[path = "native_vue_check/unused_history.rs"]
 mod unused_history;
 
+#[path = "native_vue_check/array_annotations.rs"]
+mod array_annotations;
 #[path = "native_vue_check/jsdoc_semantics.rs"]
 mod jsdoc_semantics;
 #[cfg(unix)]

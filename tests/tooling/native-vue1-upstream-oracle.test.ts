@@ -35,7 +35,10 @@ const Vue = module.exports as {
   config: { silent: boolean };
   options: object;
   compiler: { compile(node: object, options: object, partial: boolean): unknown };
-  parsers: { text: { parseText(source: string): unknown } };
+  parsers: {
+    text: { parseText(source: string): unknown; tokensToExp(tokens: unknown): string };
+    directive: { parseDirective(source: string): unknown };
+  };
 };
 assert.equal(Vue.version, "1.0.28");
 Vue.config.silent = true;
@@ -107,4 +110,76 @@ test("the actual Vue1 compiler suppresses children only for a literal pre attrib
     Vue.compiler.compile(node, Vue.options, true);
     assert.equal(childrenRead, name !== "v-pre", name);
   }
+});
+
+test("actual Vue1 text and directive owners retain the bounded expression spellings", () => {
+  for (const [source, expression] of [
+    ["{{ value }}", "value"],
+    ["{{ user.name }}", "user.name"],
+    ["{{ left + right }}", "left + right"],
+    ["{{ ready ? yes : no }}", "ready ? yes : no"],
+    ["{{ call(value, 2) }}", "call(value, 2)"],
+    ["{{ [first, next] }}", "[first, next]"],
+    ["{{ /*keep*/ msg && 条件 }}", "/*keep*/ msg && 条件"],
+    ["{{\n value\n}}", "value"],
+    ["{{\u00a0\ufeffvalue\u3000}}", "value"],
+    ["{{ '&#42;' }}", "'&#42;'"],
+    ["{{ /*kept*/ value + }}", "/*kept*/ value +"],
+  ]) {
+    const tokens = parse(source);
+    assert.deepEqual(tokens, [{ tag: true, value: expression, html: false, oneTime: false }]);
+    assert.deepEqual(JSON.parse(JSON.stringify(Vue.parsers.directive.parseDirective(expression))), {
+      expression,
+    });
+    assert.equal(Vue.parsers.text.tokensToExp(tokens), expression);
+  }
+  // These are historical framing/spelling oracles. They do not evaluate JS,
+  // prove native AST admission, or substitute generated text for parser input.
+});
+
+test("actual Vue1 pipe grammar proves why the whole pipe family remains deferred", () => {
+  for (const [source, expected] of [
+    ["left || right", { expression: "left || right" }],
+    ["'a|b'", { expression: "'a|b'" }],
+    ["value | upper", { expression: "value", filters: [{ name: "upper" }] }],
+    [
+      "value | upper 'arg' flag 2",
+      {
+        expression: "value",
+        filters: [
+          {
+            name: "upper",
+            args: [
+              { value: "arg", dynamic: false },
+              { value: "flag", dynamic: true },
+              { value: 2, dynamic: false },
+            ],
+          },
+        ],
+      },
+    ],
+  ] as const) {
+    assert.deepEqual(
+      JSON.parse(JSON.stringify(Vue.parsers.directive.parseDirective(source))),
+      expected,
+    );
+  }
+});
+
+test("actual Vue1 decoded framing checks separators and the once marker before trim", () => {
+  // Explicit already-decoded browser text inputs: the original Vue1 parser
+  // does not decode HTML. Native decode-map laws independently prove one decode.
+  for (const source of ["{{\r x }}", "{{ a\r\n b }}", "{{ x \u2028}}", "{{ x \u2029}}"])
+    assert.equal(parse(source), null, source);
+  for (const [source, value, oneTime] of [
+    ["{{* x }}", "x", true],
+    ["{{ * x }}", "* x", false],
+    ["{{ }}", "", false],
+    ["{{ '雪' }}", "'雪'", false],
+  ] as const)
+    assert.deepEqual(parse(source), [{ tag: true, value, html: false, oneTime }]);
+  assert.deepEqual(parse("{{ '}}' }}"), [
+    { tag: true, value: "'", html: false, oneTime: false },
+    { value: "' }}" },
+  ]);
 });
