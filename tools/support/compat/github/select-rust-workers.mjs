@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { appendFileSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import {
+  appendFileSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { githubApiPages, githubApiRequest } from "./release-preflight-github.mjs";
 import { selectRustWorkers, verifyRustWorkerDirectories } from "./rust-worker-selection.mjs";
@@ -31,6 +38,10 @@ export async function runRustWorkerSelection(argv, env = process.env, options = 
     ["select", "verify"].includes(mode) && receiptPath,
     "Expected select|verify RECEIPT [ARTIFACT_ROOT]",
   );
+  for (const name of ["report.json", "acceptance.json"]) {
+    rmSync(join(dirname(receiptPath), name), { force: true });
+  }
+  if (mode === "select") rmSync(receiptPath, { force: true });
   assert.equal(env.GITHUB_WORKFLOW, "Check", "Unexpected Rust workflow context");
   assert.equal(env.GITHUB_EVENT_NAME, "merge_group", "Unexpected Rust event context");
   const context = {

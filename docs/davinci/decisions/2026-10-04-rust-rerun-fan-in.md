@@ -1,6 +1,6 @@
 # Rust worker reconciliation after a failed-only rerun
 
-Refs: #6830, #6861. This repairs the existing full Rust report without changing
+Refs: #7773, #6830, #6861. This repairs the existing full Rust report without changing
 the workspace archive, test partitions, product stages, coverage or timeouts.
 The prospective #6863 tooling latency proposal remains separate.
 
@@ -79,6 +79,31 @@ binary identities, genuine JUnit/test/capture identities, full registered
 counts, duplicate rejection and all original failure guards. Rebuilding an
 archive while reusing workers from a different build still fails its identical
 receipt/binary checks. No archive, worker receipt, artifact or test is relabelled.
+
+## Packet identity and refusal outputs (#7773)
+
+The paired [source review](https://github.com/ubugeeei-prod/vize/pull/7779#pullrequestreview-5405137048)
+and [issue decision](https://github.com/ubugeeei-prod/vize/issues/7773#issuecomment-5978290748)
+select this implementation alone. The collector now binds each packet's shard
+to its official artifact directory, in addition to the unchanged full shard set
+and source/archive/runtime/JUnit/input/result checks. Public report/acceptance
+outputs are removed at aggregation entry before any manifest or packet refusal.
+Metadata select/verify entry clears those same known outputs before context or
+API refusal; select also removes its prior selection receipt, while verify keeps
+the input receipt for its unchanged equality check. New outputs still follow
+complete successful validation. No entire output directory or input is removed.
+
+Synthetic laws swap two whole worker/JUnit payloads while keeping all four labels,
+write complete reports before refused manifest/packet/runtime retries, and write
+a valid selection before refused metadata/context/verification retries. They
+prove custody and output ownership only; all thirteen original metadata laws
+and full validators remain. #7776's separate names-only selector/four-argument
+API is not imported. Its future supersession remains pending root qualification.
+The verified #7773 reporter is the existing primary GitHub account 71201308;
+the meaningful appended commit records its public noreply footer. PR attribution
+and final account normalization still require readback.
+Fresh replacement-source Actions/protected full gates/literal merge remain
+required. The old sources' passing checks cannot qualify this changed source.
 
 ## Source validation and pending delivery
 
