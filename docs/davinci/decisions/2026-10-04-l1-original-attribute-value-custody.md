@@ -78,8 +78,7 @@ protected candidate/actual merge receipt.
 Protected full suites, all 100+4 actual instruction measurements/unchanged ceilings
 and literal signed merge decide delivery. No local Cargo/build/install is run.
 
-Corrected source 4f1b3a3cd03c375c53399bbdaa4ccebfbb9bc882 passed hosted Check
-37167900069. Queue attribution was independently inspected: this repository uses
+Corrected source 4f1b3a3cd03c375c53399bbdaa4ccebfbb9bc882 passed hosted Check 37167900069. Queue attribution was independently inspected: this repository uses
 PR_TITLE/BLANK squash messages, and queued candidates omitted the supplied merge
 body even when auto-merge was enabled with the verified reporter trailer.
 The source decision commit therefore credits #7502 reporter Danila Poyarkov using
