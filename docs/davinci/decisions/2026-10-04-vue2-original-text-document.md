@@ -133,13 +133,14 @@ counts/read-only inspection must stay distinct from executed fixtures.
 
 ## Coordination and held TODO
 
-Formatter peer confirms no active Expr Context/source edits. Incoming #7693
-`5eebcb1b` replays the frozen `e83f1db4` SFC exports/provider/laws and legacy
-memmem restoration onto actual `6987c523`, plus a qualification-doc commit;
-its expression provider blobs equal this actual main. It remains open and is
-not an imported
-baseline or dependency: this consumer needs only already-merged #7726 and
-the existing Glyph Doc provider. Preserve its SFC/header/handler/conditional
+Formatter peer confirms no active Expr Context/source edits. The plan audited
+incoming #7693 `5eebcb1b`, a frozen `e83f1db4` SFC/provider/law replay onto
+`6987c523`. It subsequently actually merged signed `aae579abe6`; private
+consumer source replays onto literal actual main `7516c514bc`, preserving
+those genuine SFC exports. Expression/provider/dialect blobs are unchanged.
+This consumer needs only the already-merged #7726 and existing Glyph Doc
+provider; file adjacency supplies no fake pending-provider Stack or historical
+whole-SFC completion. Preserve its SFC/header/handler/conditional
 targets; recheck literal main and leases before any later implementation.
 The reused peer's exact first-freeze `60719f0d` review is clear for bounded
 source readiness only; the explicit law refinements above grant no execution
@@ -153,8 +154,8 @@ versioned SFC, other dialects and default replacement remain explicit TODOs.
 ## Private source and unexecuted acceptance
 
 The isolated `feat/glyph-native-vue2-text-document-20261004` wt starts from
-literal released `6987c523ec`; old wts and the reviewed private design remain
-intact. Production adds only the private sealed reference origin, factors the
+literal released `6987c523ec`, then replays onto actual `7516c514bc` after
+formatter delivery; old wts and the reviewed private design remain intact. Production adds only the private sealed reference origin, factors the
 existing root callback/Context source checks and adds the public view-owning
 Vue2 Doc wrapper. All four AST visitors, public retained APIs/error order,
 limits, historical callbacks/storage/scanners and pinned oracles are unchanged.
