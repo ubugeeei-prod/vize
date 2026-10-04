@@ -6,15 +6,18 @@ import { test } from "node:test";
 import { buildProductObserver } from "../differential/observer-build.ts";
 import { FOCUS_OBSERVER } from "../differential/focus-history.ts";
 import { runFocusCapture } from "../differential/focus-history-capture.ts";
+import { compareFocusCurrentOutputs } from "../differential/focus-history-current-oracle.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-void test("first source-built focus witnesses retain whole unaccepted captures and genuine native refusals", (t) => {
+void test("source-built focus witnesses match reviewed whole current outputs and retain genuine native refusals", (t) => {
   const evidenceDir = path.resolve(
     root,
     process.env.VIZE_FOCUS_HISTORY_EVIDENCE_DIR ?? "target/differential/focus-history",
   );
   fs.mkdirSync(evidenceDir, { recursive: true });
+  const comparisonPath = path.join(evidenceDir, "current-output-comparison.json");
+  fs.rmSync(comparisonPath, { force: true });
   try {
     const built = buildProductObserver({
       spec: FOCUS_OBSERVER,
@@ -29,8 +32,10 @@ void test("first source-built focus witnesses retain whole unaccepted captures a
       path.join(evidenceDir, "unaccepted-capture.json"),
       `${JSON.stringify(report, null, 2)}\n`,
     );
+    const comparison = compareFocusCurrentOutputs(root, report, built.receipt);
+    fs.writeFileSync(comparisonPath, `${JSON.stringify(comparison, null, 2)}\n`);
     t.diagnostic(
-      `Exploratory full observations and source/Cargo receipt, still unaccepted: ${evidenceDir}`,
+      `Complete current-output comparison and unchanged raw capture/source receipt: ${evidenceDir}`,
     );
     assert.deepEqual(
       report.summary,

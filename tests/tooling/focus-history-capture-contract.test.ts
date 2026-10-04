@@ -164,10 +164,13 @@ void test("the first real source-built capture is retained only in full T1; pure
     "tests/differential/focus-history.ts",
     "tests/differential/focus-history-capture.ts",
     "tests/differential/focus-history-report.ts",
+    "tests/differential/focus-history-current-oracle.ts",
+    "crates/vize_patina/tests/fixtures/focus-history/reviewed-current-capture.capture",
     "crates/vize_patina/src/linter/config/constructors.rs",
     "crates/vize_patina/src/rules/a11y/no_autofocus.rs",
     "crates/vize_patina/src/rules/a11y/no_access_key.rs",
     "docs/davinci/decisions/2026-10-04-linter-focus-history-capture.md",
+    "docs/davinci/decisions/2026-10-04-linter-focus-current-oracles.md",
   ]) {
     const pr = planToolingTests([input], { cwd: root }).tests;
     const full = planToolingTests([input], { tier: "merge", cwd: root }).tests;
