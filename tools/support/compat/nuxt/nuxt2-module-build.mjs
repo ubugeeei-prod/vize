@@ -104,7 +104,7 @@ try {
     await serverExited;
     fs.closeSync(serverLog);
   }
-  await verifyNuxt2LintConfig(fixture, artifacts);
+  verifyNuxt2LintConfig(fixture, artifacts);
   fs.writeFileSync(
     path.join(artifacts, "proof.json"),
     JSON.stringify(
