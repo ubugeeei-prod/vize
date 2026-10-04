@@ -334,3 +334,9 @@ actual owner/input/assertion, production, complete maps and inherited packet.
 retains the failed full-workspace log. Private preparation grants no provider
 merge credit; wait for literal accepted main, preserve all incoming source in
 the owned replay, then retained peer/fresh Actions/full104 and signed merge.
+
+Git blame identifies actual accepted `e194307ca13` (#7750) as the fourth-cursor
+introducer, already an ancestor of actual main `4158645a`. The earlier inferred
+wait for queued7777 is unnecessary. All thirteen owned commits rebase cleanly
+onto literal415, preserving its complete provider and every owned source/oracle
+byte except the two generic law arguments; fresh exact Actions are required.
