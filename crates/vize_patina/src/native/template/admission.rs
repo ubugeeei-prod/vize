@@ -45,9 +45,9 @@ fn checked_token(component: &NativeComponent<'_>, token: &Token<'_>) -> Result<S
     Ok(span)
 }
 
-pub(super) fn children<'a>(
-    component: &NativeComponent<'a>,
-    children: NativeChildren<'_, 'a>,
+pub(super) fn children<'o, 'a>(
+    component: &'o NativeComponent<'a>,
+    children: NativeChildren<'o, 'a>,
     context: &mut NativeTemplateLintContext<'_, 'a>,
     callbacks: &[(&'static str, &dyn NativeTemplateRule)],
     profile: NativeTemplateAttributeProfile,
@@ -63,8 +63,9 @@ pub(super) fn children<'a>(
                     // The same original header iteration checks and retains the
                     // whole admitted header before dispatching any callbacks.
                     let mut refused_attribute = None;
-                    let mut attributes = SmallVec::new();
-                    let visit = |checked: header::CheckedAttribute<'_, 'a>, binding| {
+                    let mut attributes: SmallVec<[NativeTemplateAttribute<'o, 'a>; 8]> =
+                        SmallVec::new();
+                    let visit = |checked: header::CheckedAttribute<'o, 'a>, binding| {
                         if !header_gaps(checked.original().surface()) {
                             refused_attribute.get_or_insert(checked.range());
                         } else {

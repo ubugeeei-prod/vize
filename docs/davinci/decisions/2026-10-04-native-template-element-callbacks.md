@@ -116,6 +116,20 @@ All eight actual focus builtins still refuse UnprovidedRule; their callback
 capability, capture producer/admission and all original fixture bytes stay
 unchanged. This is current-refusal comparison, never native/legacy equivalence.
 
+## First hosted owner-lifetime repair
+
+The [paired source repair](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5976646331)
+retains rejected Draft #7747 source `9437e6b1` and Check 37177446564.
+Rust build job 111363008321 found E0521: the explicitly anonymous owner borrow
+of the closure's checked attribute cannot escape into the invariant mutable
+SmallVec. This library compile failure also stops real product captures, so the
+source-only c541 CLEAR grants no new Rust/runtime credit. The private existing
+child traversal now names its genuine owner lifetime `'o` across component,
+NativeChildren, retained checked attributes and callback; original element
+attributes/children already expose that same owner. Only type annotations change,
+with no unsafe/clone/fabricated owner, additional walk, policy or expected-vector
+change. All 29 laws and four compile-fail controls require fresh Actions proof.
+
 ## Validation and paired TODO
 
 Twenty-six new integration laws, three private owner/reporter laws and four
