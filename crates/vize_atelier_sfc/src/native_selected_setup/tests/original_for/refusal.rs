@@ -132,7 +132,7 @@ fn dynamic_nested_keyed_attribute_and_mixed_root_bodies_remain_sticky_refusals()
 }
 
 #[test]
-fn constant_generic_and_zero_occurrence_literal_for_never_gain_mutable_policy() {
+fn constant_full_capture_generic_and_zero_occurrence_literal_preserve_distinct_policies() {
     let arena = Allocator::default();
     let source = "<script setup>const count=2</script><template><i v-for='item in count'>fixed</i></template>";
     let compiled = compile_native_selected_setup_sfc_dom(
@@ -140,13 +140,16 @@ fn constant_generic_and_zero_occurrence_literal_for_never_gain_mutable_policy() 
         source,
         NativeSelectedSfcDomOptions::default(),
     );
-    assert!(matches!(
-        compiled.result().err(),
-        Some(NativeSelectedSetupSfcDomError::Dom(DomError {
-            kind: DomErrorKind::Unsupported(DomUnsupported::Operation),
-            ..
-        }))
-    ));
+    let pack: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../tests/fixtures/native_original_for_constant_sfc_vue_3_5_35.json"
+    ))
+    .unwrap();
+    let positive = &pack["fixtures"][0];
+    assert_eq!(positive["source"].as_str(), Some(source));
+    assert_eq!(
+        compiled.result().unwrap().code(),
+        positive["expectedCode"].as_str().unwrap()
+    );
     let view = compiled.observation().admitted().unwrap();
     let file = view.setup().file();
     let generic = vize_l3::decision::build_dom_file_decisions(file).unwrap();

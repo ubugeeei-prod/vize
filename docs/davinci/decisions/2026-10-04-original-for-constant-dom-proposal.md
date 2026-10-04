@@ -15,8 +15,12 @@ Element containing empty/static text or the already supported single current
 value-alias interpolation. For example:
 
 ```vue
-<script setup>const count=2</script>
-<template><i v-for='item in count'>{{item}}</i></template>
+<script setup>
+const count = 2;
+</script>
+<template>
+  <i v-for="item in count">{{ item }}</i>
+</template>
 ```
 
 The actual normally owned Descriptor, Program, completed File, attached
@@ -118,3 +122,61 @@ independent peer/root review, required contexts, protected full suites and all
 - #6838/#6839/#6840/#6880 remain open. Registered component-loop diagnostics and
   historical dynamic ref/array/component cases grant no output or default/history
   closure. This bounded constant consumer is not general Vue control completion.
+
+## Private source freeze recipe
+
+The authored change keeps executable production in the three existing For files.
+The existing read row chooses the constant tracking mode; the same Enter/Leave
+frames seal its direct child vnode and L4 consumes the genuine selected setup
+collection. No L2 operation, normal-operation layout, row, frame, allocation,
+setup admission, shared collector or SSR executable source changes. All mutable
+Let/Var code/map/control bytes and accepted value6/For10/setup7/click5 fixtures
+and runtime helpers are conserved. The old exact constant static-body negative
+is retained as the first complete new positive, while all remaining negative
+inputs keep their typed reasons.
+
+Eight authored Rust laws cover the eleven complete mapped/NoLinks modules,
+actual SetupConst declaration/occurrence/File identity, current alias scope,
+constant-versus-counterfeit mutable/foreign policy, generic/neutral refusal,
+original excluded body/root/header/key shapes, earliest vnode-helper prefix
+refusal, original Syntax-hole RejectedFile custody and caught Enter interruption.
+The inherited normal-owner movement/drop/privacy laws remain applicable without
+another constructor or lifetime type. Rust compilation and these laws have not
+run locally.
+
+The independently authored fixture contains ten positive originals: the exact
+old static source, current value, direct TS with Unicode, same-name shadowing,
+UTF-16 string units, two actual empty carrier vnodes, zero, null, false and bigint.
+A fractional-range original is a separate eleventh control, retaining the whole
+module and raw map. The model invokes neither native nor primary compiler/runtime.
+Every desired complete map object and serialized string retains original
+setup/collection/parameter/body anchors. No native output is used to regenerate
+an expectation.
+
+The new `native-original-for-constant-sfc-dom-reference.test.ts` recipe requires
+all eleven source-built Rust rows before runtime credit. It retains complete
+pinned primary script/render modules and maps, uses the actual literal-const
+metadata and non-hoisted template policy, and compares the complete render
+function to the independent desired native function. Each actual component must
+cold mount, keep Const unchanged, perform a normal force-update, retain host
+node identities, observe setup once/render twice, and unmount empty. String
+iteration is checked against independent UTF-16 units; zero/null/false/bigint
+retain empty lists. Fractional development warning/empty Fragment and production
+RangeError/comment fallback/error-reference metadata remain distinct controls.
+
+A separate process runner parks both development and production raw stdout,
+stderr, exit/signal/error and current source-capture hashes before judging either
+process. There is no retry or fallback. Missing/partial/wrong-code/source/object
+or raw-map captures fail; all old mandatory actions remain unchanged. Both-mode
+process outputs and complete original primary runtime modules are uploaded for
+independent review. This recipe is authored, not an executed native/primary proof.
+
+Pure source checks currently pass: the two additive routing/action guards,
+ordinary module discovery and storage policy (eight guards), source-resolved
+consumer/croquis inventories and the SourceLocation inventory. Canonical
+consumer regeneration adds only the three genuine new SFC test-source rows;
+no storage ledger, ceiling, ratchet, benchmark registry or output oracle is
+relaxed. Independent source review, fresh exact-head Actions including both
+runtime processes, all required contexts, protected full suites/all104 unchanged
+measurements, and actual signed merge remain required. Publication is not yet
+authorized for this private freeze.

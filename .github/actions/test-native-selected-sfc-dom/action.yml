@@ -47,6 +47,17 @@ runs:
         vp node --test tests/tooling/native-original-for-value-sfc-dom-reference.test.ts
         test -s "$VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_CAPTURE"
         test -s "$VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_RUNTIME_CAPTURE"
+    - name: Capture and qualify original constant For components in both runtime modes
+      shell: bash
+      env:
+        VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_CAPTURE: ${{ runner.temp }}/native-original-for-constant-sfc-dom-capture.json
+        VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_REQUIRE_CAPTURE: "1"
+      run: |
+        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_for_constant::eleven_whole_original_constant_for_components_and_raw_maps_are_captured -- --exact
+        vp node tests/tooling/support/native-original-for-constant-sfc-dom-processes.ts
+        test -s "$VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_CAPTURE"
+        test -s "${{ runner.temp }}/native-original-for-constant-sfc-dom-development-runtime.json"
+        test -s "${{ runner.temp }}/native-original-for-constant-sfc-dom-production-runtime.json"
     - name: Upload complete selected SFC component and runtime captures
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -61,5 +72,11 @@ runs:
           ${{ runner.temp }}/native-original-for-sfc-dom-runtime.json
           ${{ runner.temp }}/native-original-for-value-sfc-dom-capture.json
           ${{ runner.temp }}/native-original-for-value-sfc-dom-runtime.json
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-capture.json
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-development-runtime.json
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-production-runtime.json
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-*.stdout
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-*.stderr
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-*.process.json
         if-no-files-found: error
         retention-days: 7
