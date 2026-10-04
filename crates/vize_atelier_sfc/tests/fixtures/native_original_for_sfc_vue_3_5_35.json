@@ -21,6 +21,12 @@
       "updates": {
         "count": 4
       },
+      "forRuntime": {
+        "initialChildren": 2,
+        "updatedChildren": 4,
+        "tag": "i",
+        "text": "fixed"
+      },
       "expectedCode": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=2\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (item) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
       "nativeMap": {
         "file": "OriginalFor雪🌸.vue",
@@ -37,6 +43,7 @@
         ],
         "version": 3
       },
+      "nativeMapRaw": "{\"file\":\"OriginalFor雪🌸.vue\",\"mappings\":\";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA0B,2EAAkBA,QAARC;WAAV,mCAAA,WAAyB\",\"names\":[\"count\",\"item\"],\"sources\":[\"OriginalFor雪🌸.vue\"],\"sourcesContent\":[\"<script setup>let count=2</script><template><i v-for='item in count'>fixed</i></template>\"],\"version\":3}",
       "referenceScript": "\nconst _sfc_main = {\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=2\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
       "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (item) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
       "referenceMap": {
@@ -49,12 +56,6 @@
         "sourcesContent": [
           "<i v-for='item in count'>fixed</i>"
         ]
-      },
-      "forRuntime": {
-        "initialChildren": 2,
-        "updatedChildren": 4,
-        "tag": "i",
-        "text": "fixed"
       }
     },
     {
@@ -68,6 +69,12 @@
       "immutableBindings": [],
       "updates": {
         "count": 0
+      },
+      "forRuntime": {
+        "initialChildren": 2,
+        "updatedChildren": 0,
+        "tag": "i",
+        "text": "fixed"
       },
       "expectedCode": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nvar count=2\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (item) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
       "nativeMap": {
@@ -85,6 +92,7 @@
         ],
         "version": 3
       },
+      "nativeMapRaw": "{\"file\":\"OriginalFor雪🌸.vue\",\"mappings\":\";;;;AAAwB,SAAgB;;;UAAZA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAAiC,2EAAkBA,QAARC;WAAV,mCAAA,WAAyB\",\"names\":[\"count\",\"item\"],\"sources\":[\"OriginalFor雪🌸.vue\"],\"sourcesContent\":[\"<script setup lang=\\\"ts\\\">var count:number=2</script><template><i v-for='item in count'>fixed</i></template>\"],\"version\":3}",
       "referenceScript": "import { defineComponent as _defineComponent } from 'vue'\n\nconst _sfc_main = /*@__PURE__*/_defineComponent({\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nvar count:number=2\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
       "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (item) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
       "referenceMap": {
@@ -97,12 +105,6 @@
         "sourcesContent": [
           "<i v-for='item in count'>fixed</i>"
         ]
-      },
-      "forRuntime": {
-        "initialChildren": 2,
-        "updatedChildren": 0,
-        "tag": "i",
-        "text": "fixed"
       }
     },
     {
@@ -116,6 +118,12 @@
       "immutableBindings": [],
       "updates": {
         "count": 2
+      },
+      "forRuntime": {
+        "initialChildren": 0,
+        "updatedChildren": 2,
+        "tag": "i",
+        "text": ""
       },
       "expectedCode": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=0\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (item) => {\n    return (_openBlock(), _createElementBlock(\"i\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
       "nativeMap": {
@@ -133,6 +141,7 @@
         ],
         "version": 3
       },
+      "nativeMapRaw": "{\"file\":\"OriginalFor雪🌸.vue\",\"mappings\":\";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA0B,2EAAkBA,QAARC;WAAV,mCAAA\",\"names\":[\"count\",\"item\"],\"sources\":[\"OriginalFor雪🌸.vue\"],\"sourcesContent\":[\"<script setup>let count=0</script><template><i v-for='item in count'></i></template>\"],\"version\":3}",
       "referenceScript": "\nconst _sfc_main = {\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=0\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
       "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (item) => {\n    return (_openBlock(), _createElementBlock(\"i\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
       "referenceMap": {
@@ -145,12 +154,6 @@
         "sourcesContent": [
           "<i v-for='item in count'></i>"
         ]
-      },
-      "forRuntime": {
-        "initialChildren": 0,
-        "updatedChildren": 2,
-        "tag": "i",
-        "text": ""
       }
     },
     {
@@ -164,6 +167,12 @@
       "immutableBindings": [],
       "updates": {
         "count": "雪"
+      },
+      "forRuntime": {
+        "initialChildren": 3,
+        "updatedChildren": 1,
+        "tag": "b",
+        "text": "雪🌸"
       },
       "expectedCode": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=\"a🌸\"\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (item) => {\n    return (_openBlock(), _createElementBlock(\"b\", null, \"雪🌸\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
       "nativeMap": {
@@ -181,6 +190,7 @@
         ],
         "version": 3
       },
+      "nativeMapRaw": "{\"file\":\"OriginalFor雪🌸.vue\",\"mappings\":\";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA8B,2EAAkBA,QAARC;WAAV,mCAAA,WAAyB\",\"names\":[\"count\",\"item\"],\"sources\":[\"OriginalFor雪🌸.vue\"],\"sourcesContent\":[\"<script setup>let count=\\\"a🌸\\\"</script><template><b v-for='item in count'>雪🌸</b></template>\"],\"version\":3}",
       "referenceScript": "\nconst _sfc_main = {\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=\"a🌸\"\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
       "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (item) => {\n    return (_openBlock(), _createElementBlock(\"b\", null, \"雪🌸\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
       "referenceMap": {
@@ -193,12 +203,6 @@
         "sourcesContent": [
           "<b v-for='item in count'>雪🌸</b>"
         ]
-      },
-      "forRuntime": {
-        "initialChildren": 3,
-        "updatedChildren": 1,
-        "tag": "b",
-        "text": "雪🌸"
       }
     },
     {
@@ -212,6 +216,12 @@
       "immutableBindings": [],
       "updates": {
         "count": 3
+      },
+      "forRuntime": {
+        "initialChildren": 0,
+        "updatedChildren": 3,
+        "tag": "i",
+        "text": "fixed"
       },
       "expectedCode": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=null\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (item) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
       "nativeMap": {
@@ -229,6 +239,7 @@
         ],
         "version": 3
       },
+      "nativeMapRaw": "{\"file\":\"OriginalFor雪🌸.vue\",\"mappings\":\";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA6B,2EAAkBA,QAARC;WAAV,mCAAA,WAAyB\",\"names\":[\"count\",\"item\"],\"sources\":[\"OriginalFor雪🌸.vue\"],\"sourcesContent\":[\"<script setup>let count=null</script><template><i v-for='item in count'>fixed</i></template>\"],\"version\":3}",
       "referenceScript": "\nconst _sfc_main = {\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=null\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
       "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (item) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
       "referenceMap": {
@@ -241,12 +252,6 @@
         "sourcesContent": [
           "<i v-for='item in count'>fixed</i>"
         ]
-      },
-      "forRuntime": {
-        "initialChildren": 0,
-        "updatedChildren": 3,
-        "tag": "i",
-        "text": "fixed"
       }
     },
     {
@@ -260,6 +265,12 @@
       "immutableBindings": [],
       "updates": {
         "count": true
+      },
+      "forRuntime": {
+        "initialChildren": 0,
+        "updatedChildren": 0,
+        "tag": "i",
+        "text": "fixed"
       },
       "expectedCode": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=false\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (item) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
       "nativeMap": {
@@ -277,6 +288,7 @@
         ],
         "version": 3
       },
+      "nativeMapRaw": "{\"file\":\"OriginalFor雪🌸.vue\",\"mappings\":\";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA8B,2EAAkBA,QAARC;WAAV,mCAAA,WAAyB\",\"names\":[\"count\",\"item\"],\"sources\":[\"OriginalFor雪🌸.vue\"],\"sourcesContent\":[\"<script setup>let count=false</script><template><i v-for='item in count'>fixed</i></template>\"],\"version\":3}",
       "referenceScript": "\nconst _sfc_main = {\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=false\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
       "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (item) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
       "referenceMap": {
@@ -289,19 +301,13 @@
         "sourcesContent": [
           "<i v-for='item in count'>fixed</i>"
         ]
-      },
-      "forRuntime": {
-        "initialChildren": 0,
-        "updatedChildren": 0,
-        "tag": "i",
-        "text": "fixed"
       }
     },
     {
-      "id": "safe-render-list-alias",
-      "source": "<script setup>let count=2</script><template><i v-for='_renderList in count'>fixed</i></template>",
+      "id": "plain-render-list-alias",
+      "source": "<script setup>let count=2</script><template><i v-for='renderList in count'>fixed</i></template>",
       "script": "let count=2",
-      "template": "<i v-for='_renderList in count'>fixed</i>",
+      "template": "<i v-for='renderList in count'>fixed</i>",
       "bindings": [
         "count"
       ],
@@ -309,47 +315,48 @@
       "updates": {
         "count": 1
       },
-      "expectedCode": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=2\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (_renderList) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "forRuntime": {
+        "initialChildren": 2,
+        "updatedChildren": 1,
+        "tag": "i",
+        "text": "fixed"
+      },
+      "expectedCode": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=2\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (renderList) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
       "nativeMap": {
         "file": "OriginalFor雪🌸.vue",
-        "mappings": ";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA0B,2EAAyBA,QAAfC;WAAV,mCAAA,WAAgC",
+        "mappings": ";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA0B,2EAAwBA,QAAdC;WAAV,mCAAA,WAA+B",
         "names": [
           "count",
-          "_renderList"
+          "renderList"
         ],
         "sources": [
           "OriginalFor雪🌸.vue"
         ],
         "sourcesContent": [
-          "<script setup>let count=2</script><template><i v-for='_renderList in count'>fixed</i></template>"
+          "<script setup>let count=2</script><template><i v-for='renderList in count'>fixed</i></template>"
         ],
         "version": 3
       },
+      "nativeMapRaw": "{\"file\":\"OriginalFor雪🌸.vue\",\"mappings\":\";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA0B,2EAAwBA,QAAdC;WAAV,mCAAA,WAA+B\",\"names\":[\"count\",\"renderList\"],\"sources\":[\"OriginalFor雪🌸.vue\"],\"sourcesContent\":[\"<script setup>let count=2</script><template><i v-for='renderList in count'>fixed</i></template>\"],\"version\":3}",
       "referenceScript": "\nconst _sfc_main = {\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=2\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
-      "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (_renderList) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+      "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (renderList) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
       "referenceMap": {
         "version": 3,
         "sources": [
           "OriginalFor雪🌸.vue"
         ],
         "names": [],
-        "mappings": ";;;4BAAA,oBAAyC,6BAAhB,YAAK,GAApB,WAAW;0BAArB,oBAAyC,WAAT,OAAK",
+        "mappings": ";;;4BAAA,oBAAwC,6BAAhB,YAAK,GAAnB,UAAU;0BAApB,oBAAwC,WAAT,OAAK",
         "sourcesContent": [
-          "<i v-for='_renderList in count'>fixed</i>"
+          "<i v-for='renderList in count'>fixed</i>"
         ]
-      },
-      "forRuntime": {
-        "initialChildren": 2,
-        "updatedChildren": 1,
-        "tag": "i",
-        "text": "fixed"
       }
     },
     {
-      "id": "safe-fragment-alias",
-      "source": "<script setup>let count=2</script><template><i v-for='_Fragment in count'>fixed</i></template>",
+      "id": "plain-fragment-alias",
+      "source": "<script setup>let count=2</script><template><i v-for='Fragment in count'>fixed</i></template>",
       "script": "let count=2",
-      "template": "<i v-for='_Fragment in count'>fixed</i>",
+      "template": "<i v-for='Fragment in count'>fixed</i>",
       "bindings": [
         "count"
       ],
@@ -357,40 +364,41 @@
       "updates": {
         "count": 3
       },
-      "expectedCode": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=2\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (_Fragment) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "forRuntime": {
+        "initialChildren": 2,
+        "updatedChildren": 3,
+        "tag": "i",
+        "text": "fixed"
+      },
+      "expectedCode": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=2\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (Fragment) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
       "nativeMap": {
         "file": "OriginalFor雪🌸.vue",
-        "mappings": ";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA0B,2EAAuBA,QAAbC;WAAV,mCAAA,WAA8B",
+        "mappings": ";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA0B,2EAAsBA,QAAZC;WAAV,mCAAA,WAA6B",
         "names": [
           "count",
-          "_Fragment"
+          "Fragment"
         ],
         "sources": [
           "OriginalFor雪🌸.vue"
         ],
         "sourcesContent": [
-          "<script setup>let count=2</script><template><i v-for='_Fragment in count'>fixed</i></template>"
+          "<script setup>let count=2</script><template><i v-for='Fragment in count'>fixed</i></template>"
         ],
         "version": 3
       },
+      "nativeMapRaw": "{\"file\":\"OriginalFor雪🌸.vue\",\"mappings\":\";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA0B,2EAAsBA,QAAZC;WAAV,mCAAA,WAA6B\",\"names\":[\"count\",\"Fragment\"],\"sources\":[\"OriginalFor雪🌸.vue\"],\"sourcesContent\":[\"<script setup>let count=2</script><template><i v-for='Fragment in count'>fixed</i></template>\"],\"version\":3}",
       "referenceScript": "\nconst _sfc_main = {\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=2\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
-      "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (_Fragment) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+      "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (Fragment) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
       "referenceMap": {
         "version": 3,
         "sources": [
           "OriginalFor雪🌸.vue"
         ],
         "names": [],
-        "mappings": ";;;4BAAA,oBAAuC,6BAAhB,YAAK,GAAlB,SAAS;0BAAnB,oBAAuC,WAAT,OAAK",
+        "mappings": ";;;4BAAA,oBAAsC,6BAAhB,YAAK,GAAjB,QAAQ;0BAAlB,oBAAsC,WAAT,OAAK",
         "sourcesContent": [
-          "<i v-for='_Fragment in count'>fixed</i>"
+          "<i v-for='Fragment in count'>fixed</i>"
         ]
-      },
-      "forRuntime": {
-        "initialChildren": 2,
-        "updatedChildren": 3,
-        "tag": "i",
-        "text": "fixed"
       }
     },
     {
@@ -404,6 +412,12 @@
       "immutableBindings": [],
       "updates": {
         "count": 3
+      },
+      "forRuntime": {
+        "initialChildren": 2,
+        "updatedChildren": 3,
+        "tag": "i",
+        "text": "fixed"
       },
       "expectedCode": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=2\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (count) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
       "nativeMap": {
@@ -420,6 +434,7 @@
         ],
         "version": 3
       },
+      "nativeMapRaw": "{\"file\":\"OriginalFor雪🌸.vue\",\"mappings\":\";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA0B,2EAAmBA,QAATA;WAAV,mCAAA,WAA0B\",\"names\":[\"count\"],\"sources\":[\"OriginalFor雪🌸.vue\"],\"sourcesContent\":[\"<script setup>let count=2</script><template><i v-for='count in count'>fixed</i></template>\"],\"version\":3}",
       "referenceScript": "\nconst _sfc_main = {\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=2\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
       "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (count) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
       "referenceMap": {
@@ -432,12 +447,6 @@
         "sourcesContent": [
           "<i v-for='count in count'>fixed</i>"
         ]
-      },
-      "forRuntime": {
-        "initialChildren": 2,
-        "updatedChildren": 3,
-        "tag": "i",
-        "text": "fixed"
       }
     },
     {
@@ -451,6 +460,12 @@
       "immutableBindings": [],
       "updates": {
         "雪": 1
+      },
+      "forRuntime": {
+        "initialChildren": 2,
+        "updatedChildren": 1,
+        "tag": "b",
+        "text": "雪🌸"
       },
       "expectedCode": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet 雪=2\n;\n    const __returned__ = {\n      get 雪() { return 雪 },\n      set 雪(__value) { 雪 = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.雪, (花) => {\n    return (_openBlock(), _createElementBlock(\"b\", null, \"雪🌸\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
       "nativeMap": {
@@ -468,6 +483,7 @@
         ],
         "version": 3
       },
+      "nativeMapRaw": "{\"file\":\"OriginalFor雪🌸.vue\",\"mappings\":\";;;;AAAc;;;UAAIA,aAAAA;UAAAA,aAAAA;;;;;;;;SAAsB,2EAAeA,IAALC;WAAV,mCAAA,WAAkB\",\"names\":[\"雪\",\"花\"],\"sources\":[\"OriginalFor雪🌸.vue\"],\"sourcesContent\":[\"<script setup>let 雪=2</script><template><b v-for='花 in 雪'>雪🌸</b></template>\"],\"version\":3}",
       "referenceScript": "\nconst _sfc_main = {\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet 雪=2\nconst __returned__ = { get 雪() { return 雪 }, set 雪(v) { 雪 = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
       "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.雪, (花) => {\n    return (_openBlock(), _createElementBlock(\"b\", null, \"雪🌸\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
       "referenceMap": {
@@ -480,13 +496,89 @@
         "sourcesContent": [
           "<b v-for='花 in 雪'>雪🌸</b>"
         ]
-      },
-      "forRuntime": {
-        "initialChildren": 2,
-        "updatedChildren": 1,
-        "tag": "b",
-        "text": "雪🌸"
       }
+    }
+  ],
+  "refusals": [
+    {
+      "id": "reserved-renderList-alias",
+      "source": "<script setup>let count=2</script><template><i v-for='_renderList in count'>fixed</i></template>",
+      "script": "let count=2",
+      "template": "<i v-for='_renderList in count'>fixed</i>",
+      "referenceScript": "\nconst _sfc_main = {\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=2\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+      "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (_renderList) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "OriginalFor雪🌸.vue"
+        ],
+        "names": [],
+        "mappings": ";;;4BAAA,oBAAyC,6BAAhB,YAAK,GAApB,WAAW;0BAArB,oBAAyC,WAAT,OAAK",
+        "sourcesContent": [
+          "<i v-for='_renderList in count'>fixed</i>"
+        ]
+      },
+      "expectedRefusal": "ReservedAlias"
+    },
+    {
+      "id": "reserved-Fragment-alias",
+      "source": "<script setup>let count=2</script><template><i v-for='_Fragment in count'>fixed</i></template>",
+      "script": "let count=2",
+      "template": "<i v-for='_Fragment in count'>fixed</i>",
+      "referenceScript": "\nconst _sfc_main = {\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=2\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+      "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (_Fragment) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "OriginalFor雪🌸.vue"
+        ],
+        "names": [],
+        "mappings": ";;;4BAAA,oBAAuC,6BAAhB,YAAK,GAAlB,SAAS;0BAAnB,oBAAuC,WAAT,OAAK",
+        "sourcesContent": [
+          "<i v-for='_Fragment in count'>fixed</i>"
+        ]
+      },
+      "expectedRefusal": "ReservedAlias"
+    },
+    {
+      "id": "reserved-openBlock-alias",
+      "source": "<script setup>let count=2</script><template><i v-for='_openBlock in count'>fixed</i></template>",
+      "script": "let count=2",
+      "template": "<i v-for='_openBlock in count'>fixed</i>",
+      "referenceScript": "\nconst _sfc_main = {\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=2\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+      "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (_openBlock) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "OriginalFor雪🌸.vue"
+        ],
+        "names": [],
+        "mappings": ";;;4BAAA,oBAAwC,6BAAhB,YAAK,GAAnB,UAAU;0BAApB,oBAAwC,WAAT,OAAK",
+        "sourcesContent": [
+          "<i v-for='_openBlock in count'>fixed</i>"
+        ]
+      },
+      "expectedRefusal": "ReservedAlias"
+    },
+    {
+      "id": "reserved-createElementBlock-alias",
+      "source": "<script setup>let count=2</script><template><i v-for='_createElementBlock in count'>fixed</i></template>",
+      "script": "let count=2",
+      "template": "<i v-for='_createElementBlock in count'>fixed</i>",
+      "referenceScript": "\nconst _sfc_main = {\n  __name: 'OriginalFor雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=2\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+      "referenceRender": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.count, (_createElementBlock) => {\n    return (_openBlock(), _createElementBlock(\"i\", null, \"fixed\"))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "OriginalFor雪🌸.vue"
+        ],
+        "names": [],
+        "mappings": ";;;4BAAA,oBAAiD,6BAAhB,YAAK,GAA5B,mBAAmB;0BAA7B,oBAAiD,WAAT,OAAK",
+        "sourcesContent": [
+          "<i v-for='_createElementBlock in count'>fixed</i>"
+        ]
+      },
+      "expectedRefusal": "ReservedAlias"
     }
   ]
 }

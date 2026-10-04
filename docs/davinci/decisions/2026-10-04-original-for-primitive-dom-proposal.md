@@ -4,7 +4,8 @@ Tracked in [#6839](https://github.com/ubugeeei-prod/vize/issues/6839) and
 [#6840](https://github.com/ubugeeei-prod/vize/issues/6840).
 Root approved private implementation with callback hygiene and all applicable
 protected caps. Independent review confirms the SetupLet/static-body owner/frame
-shape. This plan contains no production change or native loop execution credit.
+shape. The draft implements only this bounded family; actual native loop acceptance
+and protected merge remain pending.
 
 ## Exact initial scope
 
@@ -55,7 +56,9 @@ Enter/Leave events establish the complete static body and semantic helper order.
 Root finalization must preserve the genuine For block bit. Callback parameter
 spelling must be checked against every actual helper/synthetic name used inside
 that callback; derive helper aliases from the checked vocabulary and refuse
-collisions such as `_openBlock`, with no fictional hygienic rename. The initial
+collisions such as `_openBlock`, with no fictional hygienic rename. The
+existing L2 ReservedAlias gate already refuses every `_`/`$` prefix, so this
+L4 guard is defense beyond that gate and grants no wider alias admission. The initial
 callback uses only the actual openBlock/createElementBlock helper aliases and
 introduces no generated callback local.
 Keep every existing Op/OriginalFor/Declaration/Binding/For receipt layout and
@@ -144,7 +147,7 @@ Musea37166024312 passed; the independent main-push campaign is separate. All
 four full Rust workers passed15,213 executions and each new provider law once.
 Actual100+4 instruction rows are identical×3 with immutable ceilings/ratchet
 and holds, including complexity5761×3. Seven complete original setup DOM
-modules/raw maps/current-source runtime hash joins pass; six prior payloads
+modules/full parsed map objects/current-source runtime hash joins pass; six prior payloads
 remain byte-identical and the original nested seventh remains accepted.
 Packet2a570ede5bac57f203d9c3021757dd82c1fb9843bac497953d002e414dea1661
 is preserved. Native nested provider #7672 is actual b2801bd8 at00:56:45Z
@@ -162,9 +165,9 @@ and all104 protected cap checks remain required before delivery.
 
 The authored consumer pack contains ten independent JS/TS whole modules and
 full authored-anchor maps, including number/string/null/boolean collections,
-empty/static text, Unicode, safe outside-callback helper aliases and a value
+empty/static text, Unicode, plain helper-like aliases and a value
 alias shadowing its enclosing setup name. Pinned Vue3.5.35 whole script/render
-code and raw maps are retained separately. Twenty current Node laws pass,
+code and raw maps are retained separately. Twenty-one current Node laws pass,
 including ten native-desired/primary runtime pairs and original setup/nested
 regressions; no Rust native execution credit is inferred from these models.
 Each pair checks Fragment256, exact child counts/text, real host fragment
@@ -172,7 +175,7 @@ anchors, setup once, explicit getter/setter update and complete unmount.
 
 Seven Rust laws are authored for whole modules/maps and NoLinks equality,
 actual File/Program/collection/Params/scopes and alias namespace, foreign
-equal-source/ID refusal, owner movement, exact callback helper collisions,
+equal-source/ID refusal, owner movement, earliest reserved-prefix refusals,
 sticky dynamic/nested/keyed/header/mixed body refusals, unchanged constant/
 generic/literal refusal, and a caught private policy unwind at the genuine
 sole For Enter. The original whole setup/File remains live across that
@@ -193,3 +196,30 @@ the child after that unchanged macro. Production policy, full fixture/map
 oracles, refusal laws, budgets and capture requirements stay unchanged.
 Failed raw builder/tooling logs are retained; fresh exact-source Actions
 must establish native execution. The draft remains unqueued.
+
+Source11fa Check37168493452 passed strict compilation/Clippy and docs; its
+mandatory capture matched the first six actual complete native For modules and
+map objects, then stopped at `_renderList` with Observation refusal. No complete
+ten-case native/runtime packet was produced. The unchanged L2 resolver reserves
+all `_`/`$` alias prefixes; `_renderList`, `_Fragment`, `_openBlock` and
+`_createElementBlock` therefore retain exact normally owned ReservedAlias
+refusals before target emission. Their full original sources and pinned primary
+script/render/maps are preserved. Two admitted plain aliases replace only the
+two incorrectly positive models; eight other complete desired payloads remain
+unchanged apart from additive serialized-map retention. No admission lift is
+made, and callback collision defense is not claimed as an exercised target law.
+
+The same source campaign also exposed imprecise new negative oracles: the
+original class header refuses before For body legality, while literal `item in
+2` is the L1 CollectionShape Syntax refusal and may retain a normally returned
+File outcome rather than RejectedFile. Both exact inputs stay explicit lower
+controls, with their original Program/head custody retained. An admitted `id`
+header separately tests target ForBody refusal. Actual Let/Var selected success
+is contrasted with generic Operation refusal on that same File. The new ten-case
+packet retains the exact serialized native map string as well as its full object,
+checks both whole artifacts, and hashes both into current-source runtime rows;
+this adds no serialized-byte claim to the older seven/five packets. Focused
+emitter-only selector controls cover the actual For writer, collector and helper
+registrations. All21 model/primary/runtime Node laws pass, but refreshed hosted
+native capture, all seven actual Rust laws, independent review and protected104
+acceptance remain required. The draft stays unqueued.

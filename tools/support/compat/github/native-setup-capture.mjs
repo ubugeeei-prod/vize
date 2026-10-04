@@ -12,7 +12,7 @@ export function nativeSetupCaptureRequired(paths) {
       selectedSfcInput.test(path) ||
       selectedSetupInput.test(path) ||
       localHandlerInput.test(path) ||
-      /^(?:davinci\/vize_l2\/src\/(?:file(?:\.rs|\/)|lang\/js\/file(?:\.rs|\/))|davinci\/vize_l3\/src\/decision\/dom\/(?:vue(?:\.rs|\/)|build\/for_head(?:\.rs|\/))|davinci\/vize_l4\/src\/(?:module(?:\.rs|\/)|targets\/dom\/vue(?:\.rs|\/)|expr\.rs$)|crates\/vize_atelier_sfc\/src\/native(?:\.rs|\/)|crates\/vize_atelier_sfc\/tests\/fixtures\/native_sfc_(?:(?:js|const|ts[^/]*)_setup_|ordinary_empty_)|tests\/tooling\/native-sfc-(?:(?:js|primitive|strict|annotation)-setup|ordinary-empty-reference\.test\.ts$)|tests\/tooling\/support\/native-sfc-(?:setup|ordinary)-reference\.ts$|vendor\/oxc_parser\/src\/|\.github\/actions\/test-native-js-setup\/|tools\/support\/compat\/github\/native-setup-capture\.mjs$)/.test(
+      /^(?:davinci\/vize_l2\/src\/(?:file(?:\.rs|\/)|lang\/js\/file(?:\.rs|\/))|davinci\/vize_l3\/src\/decision\/dom\/(?:vue(?:\.rs|\/)|build(?:\.rs|\/)|dependencies\.rs$)|davinci\/vize_l4\/src\/(?:module(?:\.rs|\/)|targets\/dom(?:\.rs$|\/(?:vue(?:\.rs|\/)|(?:for_head|expression|write)\.rs$))|expr\.rs$)|crates\/vize_atelier_sfc\/src\/native(?:\.rs|\/)|crates\/vize_atelier_sfc\/tests\/fixtures\/native_sfc_(?:(?:js|const|ts[^/]*)_setup_|ordinary_empty_)|tests\/tooling\/native-sfc-(?:(?:js|primitive|strict|annotation)-setup|ordinary-empty-reference\.test\.ts$)|tests\/tooling\/support\/native-sfc-(?:setup|ordinary)-reference\.ts$|vendor\/oxc_parser\/src\/|\.github\/actions\/test-native-js-setup\/|tools\/support\/compat\/github\/native-setup-capture\.mjs$)/.test(
         path,
       ),
   );

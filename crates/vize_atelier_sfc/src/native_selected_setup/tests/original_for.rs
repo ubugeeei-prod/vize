@@ -46,8 +46,12 @@ fn ten_whole_original_for_components_and_maps_are_captured() -> Result<(), Strin
                 && unlinked.source_map().is_none(),
             "{id}: actual NoLinks equality"
         );
-        let map: Value =
-            serde_json::from_str(output.source_map().ok_or("map")?).map_err(|e| cstr!("{e}"))?;
+        let raw_map = output.source_map().ok_or("map")?;
+        require!(
+            raw_map == text(fixture, "nativeMapRaw")?,
+            "{id}: complete serialized native map"
+        );
+        let map: Value = serde_json::from_str(raw_map).map_err(|e| cstr!("{e}"))?;
         require!(
             map == fixture["nativeMap"],
             "{id}: complete independent original map"
@@ -153,7 +157,7 @@ fn ten_whole_original_for_components_and_maps_are_captured() -> Result<(), Strin
             );
         }
         captured.push(
-            serde_json::json!({"id":id,"source":source,"code":output.code(),"nativeMap":map}),
+            serde_json::json!({"id":id,"source":source,"code":output.code(),"nativeMap":map,"nativeMapRaw":raw_map}),
         );
     }
     if let Some(path) = std::env::var_os("VIZE_NATIVE_ORIGINAL_FOR_SFC_DOM_CAPTURE") {
@@ -265,6 +269,10 @@ fn moving_complete_for_output_keeps_whole_program_params_collection_and_maps() {
     assert_eq!(
         moved.result().unwrap().code(),
         pack["fixtures"][0]["expectedCode"].as_str().unwrap()
+    );
+    assert_eq!(
+        moved.result().unwrap().source_map().unwrap(),
+        pack["fixtures"][0]["nativeMapRaw"].as_str().unwrap()
     );
     let map: Value = serde_json::from_str(moved.result().unwrap().source_map().unwrap()).unwrap();
     assert_eq!(map, pack["fixtures"][0]["nativeMap"]);

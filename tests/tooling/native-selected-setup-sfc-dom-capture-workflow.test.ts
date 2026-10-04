@@ -12,7 +12,15 @@ test("actual selected setup consumers require source-built whole-module runtime 
     "tests/tooling/native-selected-setup-sfc-dom-capture-workflow.test.ts",
     "tests/tooling/support/native-selected-setup-sfc-dom-runtime.ts",
     "davinci/vize_l3/src/decision/native/setup.rs",
+    "davinci/vize_l3/src/decision/dom/build.rs",
+    "davinci/vize_l3/src/decision/dom/build/binding.rs",
+    "davinci/vize_l3/src/decision/dom/dependencies.rs",
     "davinci/vize_l3/src/decision/dom/build/for_head/runtime.rs",
+    "davinci/vize_l4/src/targets/dom.rs",
+    "davinci/vize_l4/src/targets/dom/for_head.rs",
+    "davinci/vize_l4/src/targets/dom/vue/for_head.rs",
+    "davinci/vize_l4/src/targets/dom/expression.rs",
+    "davinci/vize_l4/src/targets/dom/write.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_for_sfc_vue_3_5_35.json",
     "tests/tooling/native-original-for-sfc-dom-reference.test.ts",
   ])
@@ -25,6 +33,16 @@ test("actual selected setup consumers require source-built whole-module runtime 
   );
   assert.equal(
     nativeSetupCaptureRequired(["crates/vize_atelier_sfc/src/native_selected_setup_unrelated.rs"]),
+    false,
+  );
+  assert.equal(
+    nativeSetupCaptureRequired(["davinci/vize_l4/src/targets/dom/for_head_other.rs"]),
+    false,
+  );
+  assert.equal(
+    nativeSetupCaptureRequired([
+      "docs/davinci/decisions/2026-10-04-original-for-primitive-dom-proposal.md",
+    ]),
     false,
   );
   const action = fs.readFileSync(

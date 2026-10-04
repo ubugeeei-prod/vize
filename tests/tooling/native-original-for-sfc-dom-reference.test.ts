@@ -39,6 +39,7 @@ test("ten original mutable For components retain pinned Vue whole JS/TS module d
         source: f.source,
         code: f.expectedCode,
         nativeMap: f.nativeMap,
+        nativeMapRaw: f.nativeMapRaw,
       })),
     );
   }
@@ -76,6 +77,43 @@ test("ten original mutable For components retain pinned Vue whole JS/TS module d
       ...new Set([...fixture.bindings, /v-for='([^ ]+) in/.exec(fixture.template)![1]]),
     ]);
     assert.equal(fixture.nativeMap.version, 3);
+    assert.equal(fixture.nativeMapRaw, JSON.stringify(fixture.nativeMap));
+    assert.deepEqual(JSON.parse(fixture.nativeMapRaw), fixture.nativeMap);
+  }
+});
+
+test("all four original reserved aliases retain pinned whole primary sources and earliest native refusals", () => {
+  assert.equal(pack.refusals.length, 4);
+  assert.deepEqual(
+    pack.refusals.map((f: any) => /v-for='([^ ]+) in/.exec(f.template)![1]),
+    ["_renderList", "_Fragment", "_openBlock", "_createElementBlock"],
+  );
+  for (const fixture of pack.refusals) {
+    assert.equal(fixture.expectedRefusal, "ReservedAlias");
+    const parsed = compiler.parse(fixture.source, { filename: pack.filename });
+    assert.deepEqual(parsed.errors, []);
+    const script = compiler.compileScript(parsed.descriptor, {
+      id: fixture.id,
+      genDefaultAs: "_sfc_main",
+    });
+    assert.equal(script.content, fixture.referenceScript);
+    const render = compiler.compileTemplate({
+      source: fixture.template,
+      filename: pack.filename,
+      id: fixture.id,
+      sourceMap: true,
+      compilerOptions: {
+        mode: "module",
+        hoistStatic: false,
+        prefixIdentifiers: true,
+        comments: true,
+        bindingMetadata: script.bindings,
+        cacheHandlers: false,
+      },
+    });
+    assert.deepEqual(render.errors, []);
+    assert.equal(render.code, fixture.referenceRender);
+    assert.deepEqual(render.map, fixture.referenceMap);
   }
 });
 
@@ -130,6 +168,7 @@ for (const fixture of pack.fixtures) {
       sourceHash: hash(fixture.source),
       nativeCodeHash: hash(code),
       nativeMapHash: hash(JSON.stringify(row?.nativeMap ?? fixture.nativeMap)),
+      nativeMapRawHash: hash(row?.nativeMapRaw ?? fixture.nativeMapRaw),
       referenceCodeHash: hash(referenceCode),
       origin: captured ? "current-source-rust-capture" : "independent-desired-module",
       native,
