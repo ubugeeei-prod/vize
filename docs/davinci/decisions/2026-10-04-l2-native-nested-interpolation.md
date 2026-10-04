@@ -65,3 +65,13 @@ outer-handler/For controls remain. #7672 stays unqueued until the complete
 actual Rust modules/maps and native/primary runtime match on the final source.
 No future candidate graft, duplicate producer, artificial dependency or gate
 weakening is allowed. Prior source-law acceptance alone does not close this TODO.
+
+First hosted integration at bb11b3e7 captured all seven whole native modules and
+full raw maps in artifact 11289501052 (Check 37164738479). Every field equals
+the independent fixtures; actual source/code/map hashes join all seven runtime
+rows, and native equals pinned Vue primary. The exact original p renders 1,
+updates to 4 with TEXT 1, initializes setup once, renders twice and unmounts.
+The mandatory native Node suite passes 8/8 with zero skips on the custom Vue
+createRenderer host. Independent review corroborates the complete artifact.
+This campaign failed only companion Markdown formatting, now corrected; fresh
+exact-head Actions, protected full/all100 and literal merge remain required.
