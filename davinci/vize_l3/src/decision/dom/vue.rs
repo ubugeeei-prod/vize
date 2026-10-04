@@ -12,16 +12,26 @@ use vize_l2::{
 
 pub(in crate::decision) mod policy;
 
-/// Vue's external-function read of an authenticated setup declaration.
+/// Vue reads of genuine setup declarations or the current original callback.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VueReadKind {
     /// An immutable binding with an actual primitive-literal initializer.
     SetupConst,
     /// Mutable let/var bindings retain dynamic value semantics.
     SetupLet,
+    /// The current original For callback value in its genuine alias scope.
+    ForValue,
 }
 
 /// One read retains the exact original resolver occurrence, including duplicates.
+/// A public kind does not authorize an externally paired occurrence/binding:
+/// ```compile_fail
+/// use vize_l2::{file::BindingRef, resolution::Occurrence};
+/// use vize_l3::decision::dom::vue::{VueReadKind, VueRenderRead};
+/// fn forge<'o, 'a>(occurrence: &'o Occurrence<'a>, binding: BindingRef<'o, 'a>) {
+///     let _ = VueRenderRead { occurrence, binding, kind: VueReadKind::ForValue };
+/// }
+/// ```
 pub struct VueRenderRead<'owner, 'arena> {
     pub(in crate::decision::dom) occurrence: &'owner Occurrence<'arena>,
     pub(in crate::decision::dom) binding: BindingRef<'owner, 'arena>,

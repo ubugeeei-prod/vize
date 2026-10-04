@@ -81,6 +81,9 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         match op {
             Op::Element(element) if carrier && element.attributes.is_empty() => true,
             Op::Text(_) if !carrier => false,
+            // The original interpolation must still pass the same-scope value
+            // receipt and single-node closure below; this grants no outer read.
+            Op::Interpolation(_) if !carrier && self.frames.len() == 2 => false,
             _ => {
                 self.reject(node, NodeRef::Op(op).span(), DomUnsupported::ForBody);
                 false
@@ -102,14 +105,17 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             [DomChild::Node(body)] => self.facts.node(*body).is_some_and(|fact| {
                 fact.block_eligible
                     && matches!(fact.op(), Op::Element(element) if element.attributes.is_empty())
-                    && matches!(
-                        &fact.children,
-                        DomChildren::Empty
-                            | DomChildren::Text(crate::decision::dom::DomText {
-                                dynamic: false,
-                                ..
-                            })
-                    )
+                    && match &fact.children {
+                        DomChildren::Empty => true,
+                        DomChildren::Text(text) if !text.dynamic => true,
+                        DomChildren::Text(text) => match text.nodes.as_slice() {
+                            [node] => self.facts.vue_expressions.get(*node).is_some_and(|row| {
+                                matches!(row.reads(), [read] if read.kind() == VueReadKind::ForValue)
+                            }),
+                            _ => false,
+                        },
+                        DomChildren::Array(_) => false,
+                    }
             }),
             _ => false,
         };

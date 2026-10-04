@@ -12,6 +12,7 @@ macro_rules! require {
     };
 }
 mod original_for;
+mod original_for_value;
 
 fn text<'a>(value: &'a Value, key: &str) -> Result<&'a str, String> {
     value

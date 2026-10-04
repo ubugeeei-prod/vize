@@ -10,6 +10,7 @@ use vize_l2::{
 };
 mod read;
 mod runtime;
+mod value;
 
 impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
     DomBuilder<'_, 'owner, 'arena, F, R>

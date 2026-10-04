@@ -243,6 +243,9 @@ impl AccessProvider for SetupReads<'_, '_, '_> {
         }
         self.index.set(index + 1);
         match read.kind() {
+            // The sealed row already proves normalized current-parameter
+            // spelling; keep its original bytes and source link unchanged.
+            VueReadKind::ForValue => Ok(AccessSpelling::Verbatim),
             VueReadKind::SetupLet | VueReadKind::SetupConst => Ok(AccessSpelling::Rewrite {
                 prefix: "$setup.",
                 replacement: Some(read.occurrence().name),

@@ -72,10 +72,8 @@ fn dynamic_nested_keyed_attribute_and_mixed_root_bodies_remain_sticky_refusals()
             "<i v-for='item in count'>{{count}}</i>",
             DomUnsupported::ForBody,
         ),
-        (
-            "<i v-for='item in count'>{{item}}</i>",
-            DomUnsupported::ForBody,
-        ),
+        // This exact original counterexample is now covered by the full
+        // six-source original_for_value code/raw-map/runtime capture law.
         (
             "<i id='fixed' v-for='item in count'>fixed</i>",
             DomUnsupported::ForBody,

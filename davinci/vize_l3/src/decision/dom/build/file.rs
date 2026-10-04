@@ -38,23 +38,43 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             self.reject(rejected.node, rejected.span, rejected.reason);
             return None;
         }
+        if self.in_original_for_body()
+            && expression
+                .ast
+                .get_identifier_reference()
+                .is_some_and(|identifier| expression.source != identifier.name.as_str())
+        {
+            self.reject(node, expression.span, DomUnsupported::ForBody);
+            return None;
+        }
         let table = resolution.table()?;
         // These identities were resolved by the actual minting factory. Check
         // recorded declarations only, rather than rerunning scope/name lookup.
         let mut reads = Vec::new();
         for occurrence in table.occurrences() {
-            let Some(binding) = resolution.binding(occurrence.binding).filter(|binding| {
-                resolution.accepts(*binding)
-                    && binding.declaration().is_some_and(|declaration| {
-                        declaration.namespace == Namespace::Value
-                            && declaration.name == occurrence.name
-                    })
-            }) else {
+            let Some(binding) = resolution
+                .binding(occurrence.binding)
+                .filter(|binding| resolution.accepts(*binding))
+            else {
                 self.reject(node, expression.span, DomUnsupported::FileBinding);
                 return None;
             };
+            let script = binding.declaration().is_some_and(|declaration| {
+                declaration.namespace == Namespace::Value && declaration.name == occurrence.name
+            });
+            let original_value = if script {
+                None
+            } else {
+                self.for_value(resolution, expression, occurrence, binding)
+            };
+            if !script && original_value.is_none() {
+                self.reject(node, expression.span, DomUnsupported::FileBinding);
+                return None;
+            }
             if R::RECORD {
-                let Some(kind) = self.reads.classify(occurrence, binding) else {
+                let Some(kind) =
+                    original_value.or_else(|| self.reads.classify(occurrence, binding))
+                else {
                     self.reject(node, expression.span, DomUnsupported::VueReadAccess);
                     return None;
                 };
@@ -64,6 +84,13 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
                     kind,
                 });
             }
+        }
+        if self.in_original_for_body()
+            && !(expression.ast.is_identifier_reference()
+                && matches!(reads.as_slice(), [read] if read.kind == VueReadKind::ForValue))
+        {
+            self.reject(node, expression.span, DomUnsupported::ForBody);
+            return None;
         }
         // A direct identifier has no call/member descendants whose behavior
         // could vary despite immutable reads. Complete read lists alone do not

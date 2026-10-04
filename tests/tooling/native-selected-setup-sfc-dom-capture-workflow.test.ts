@@ -27,6 +27,9 @@ test("actual selected setup consumers require source-built whole-module runtime 
     "davinci/vize_l4/src/targets/dom/write.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_for_sfc_vue_3_5_35.json",
     "tests/tooling/native-original-for-sfc-dom-reference.test.ts",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_for_value_sfc_vue_3_5_35.json",
+    "tests/tooling/native-original-for-value-sfc-dom-reference.test.ts",
+    "davinci/vize_l3/src/decision/dom/build/for_head/value.rs",
   ])
     assert(nativeSetupCaptureRequired([path]), path);
   assert.equal(
@@ -71,6 +74,18 @@ test("actual selected setup consumers require source-built whole-module runtime 
     /original_for::ten_whole_original_for_components_and_maps_are_captured -- --exact/,
   );
   assert.match(action, /native-original-for-sfc-dom-runtime\.json/);
+  assert.match(action, /VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_REQUIRE_CAPTURE: "1"/);
+  assert.match(
+    action,
+    /original_for_value::six_whole_original_for_value_components_and_raw_maps_are_captured -- --exact/,
+  );
+  assert.match(
+    action,
+    /vp node --test tests\/tooling\/native-original-for-value-sfc-dom-reference\.test\.ts/,
+  );
+  assert.match(action, /test -s "\$VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_CAPTURE"/);
+  assert.match(action, /test -s "\$VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_RUNTIME_CAPTURE"/);
+  assert.match(action, /native-original-for-value-sfc-dom-runtime\.json/);
   assert.doesNotMatch(action, /continue-on-error|hashFiles|existsSync|--test-name-pattern/);
 });
 
@@ -90,6 +105,9 @@ test("individual For resolver, DOM collector and writer changes keep mandatory f
     "davinci/vize_l4/src/targets/dom/expression.rs",
     "davinci/vize_l4/src/targets/dom/write.rs",
     "davinci/vize_l4/src/targets/dom/vue/for_head.rs",
+    "davinci/vize_l3/src/decision/dom/build/for_head/value.rs",
+    "tests/tooling/native-original-for-value-sfc-dom-reference.test.ts",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_for_value_sfc_vue_3_5_35.json",
     "davinci/vize_l4/src/expr.rs",
     "davinci/vize_l4/src/expr/vue.rs",
   ]) {
@@ -103,6 +121,9 @@ test("individual For resolver, DOM collector and writer changes keep mandatory f
     "davinci/vize_l4/src/targets/dom_unrelated.rs",
     "davinci/vize_l4/src/targets/ssr.rs",
     "davinci/vize_l4/src/expr_unrelated.rs",
+    "tests/tooling/native-original-for-value-sfc-dom-reference_unrelated.test.ts",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_for_value_sfc_unrelated.json",
+    "docs/davinci/decisions/2026-10-04-original-for-alias-body-dom-proposal.md",
     "docs/davinci/decisions/2026-10-04-original-for-primitive-dom-proposal.md",
   ]) {
     assert.equal(nativeSetupCaptureRequired([path]), false, path);
