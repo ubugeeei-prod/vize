@@ -16,9 +16,12 @@ await test("original native Vapor source qualifies a fresh affected-PR capture w
     "davinci/vize_l4/tests/native_vapor.rs",
     "crates/vize_atelier_sfc/src/lib.rs",
     "crates/vize_atelier_sfc/src/native_vapor.rs",
+    "crates/vize_atelier_sfc/src/native_vapor_setup.rs",
     "crates/vize_atelier_sfc/tests/native_vapor_sfc.rs",
+    "crates/vize_atelier_sfc/tests/native_vapor_setup_sfc.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_vapor_sfc_vue_3_6_rc9.json",
     "tests/tooling/native-vapor-sfc-reference.test.mjs",
+    "tests/tooling/native-vapor-setup-sfc-reference.test.mjs",
     "tests/tooling/support/native-vapor-sfc-oracle.mjs",
     "tests/tooling/support/native-vapor-primary-lifecycle.mjs",
     "tests/tooling/support/native-vapor-process-capture.mjs",
@@ -71,6 +74,8 @@ await test("the existing first-shard hook preserves full protected capture and m
     "native-vapor-sfc-runtime.json",
     "native-vapor-primary-lifecycle.json",
     "native-vapor-processes.jsonl",
+    "native-vapor-setup-sfc-modules.json",
+    "native-vapor-setup-sfc-runtime.json",
   ])
     assert.ok(action.includes(path), path);
   assert.match(action, /cargo test --locked --profile ci -p vize_l4 --test native_vapor/);

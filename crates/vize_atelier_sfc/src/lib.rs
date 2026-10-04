@@ -41,6 +41,11 @@ pub mod css;
 pub(crate) mod module_map;
 pub mod module_shape;
 pub mod native_vapor;
+pub mod native_vapor_setup;
+pub use native_vapor_setup::{
+    NativeVaporSetupSfcCompilation, NativeVaporSetupSfcCompileError,
+    NativeVaporSetupSfcOutput, compile_native_vapor_setup_sfc,
+};
 pub use native_vapor::{
     NativeVaporSfcCompilation, NativeVaporSfcCompileError, NativeVaporSfcCompileOptions,
     NativeVaporSfcOutput, compile_native_vapor_sfc,

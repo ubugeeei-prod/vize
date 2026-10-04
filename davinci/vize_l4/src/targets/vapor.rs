@@ -14,7 +14,9 @@ use crate::write::{Emitted, LinkSink, Writer};
 mod component;
 mod literal;
 mod roots;
+mod setup;
 pub use component::emit_component;
+pub use setup::emit_selected_setup_component;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VaporErrorKind {
@@ -25,7 +27,11 @@ pub enum VaporErrorKind {
     ScriptSource,
     StyledSource,
     ComponentFragmentLifecycle,
+    ComponentEmptySetupTemplate,
     Assembly(AssemblyError),
+    Setup(crate::module::setup::SetupEmitError),
+    GeneratedBindingCollision,
+    Expression(crate::expr::EmitError),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
