@@ -43,10 +43,10 @@ pub(super) fn children<'s, 'o, 'a>(
     ) {
         return Err(Refusal::UnsupportedNodeParent(parent.opening));
     }
-    if parent.name == "body" {
-        if let Some(span) = tree.body_tail_text {
-            return Err(Refusal::OutsideBodyText(span));
-        }
+    if parent.name == "body"
+        && let Some(span) = tree.body_tail_text
+    {
+        return Err(Refusal::OutsideBodyText(span));
     }
     Ok(DocumentHtmlChildNodes {
         tree,

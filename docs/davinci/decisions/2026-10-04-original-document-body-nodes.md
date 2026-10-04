@@ -84,3 +84,11 @@ and [#6843](https://github.com/ubugeeei-prod/vize/issues/6843#issuecomment-59764
 Independent source/law review is clear on `8ceb27281767`; the workload wording
 correction changes no Rust, whole fixture bytes, assertions or storage counts.
 Hosted execution and protected/actual delivery remain required.
+
+First exact source `f65fabb0e9` [Check 37176568522](https://github.com/ubugeeei-prod/vize/actions/runs/37176568522)
+fails the unchanged production Clippy `collapsible_if` gate before new native
+laws or doctests execute. The sole correction uses the equivalent body-tail
+let-chain condition, without a lint exemption or changing original inputs,
+assertions, admission, storage or scalar rules. Its old instruction dispatch
+is superseded after this source edit; fresh exact-head native/browser/100+4
+proof is required before admission, then protected full/actual merge.
