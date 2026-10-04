@@ -2,8 +2,9 @@
 
 Tracked in [#6839](https://github.com/ubugeeei-prod/vize/issues/6839) and
 [#6840](https://github.com/ubugeeei-prod/vize/issues/6840).
-This is a bounded implementation proposal, with no production change or native
-loop execution credit.
+Root approved private implementation with callback hygiene and all applicable
+protected caps. Independent review confirms the SetupLet/static-body owner/frame
+shape. This plan contains no production change or native loop execution credit.
 
 ## Exact initial scope
 
@@ -17,10 +18,12 @@ let count = 2;
 ```
 
 Require the actual normally owned selected setup envelope, completed same File,
-one original root For, one plain original value parameter and one unkeyed plain
+one original root For with actual SetupLet (Let/Var) access, one plain original
+value parameter and one unkeyed plain
 HTML carrier with empty or static-text body. No other authored attributes,
 handler, interpolation, nested For, component, slot, template wrapper, key/ref,
-alias read or parent-alias collection gains runtime authority in this first
+alias read, SetupConst collection or parent-alias collection gains runtime
+authority in this first
 slice. Literal collections such as `item in 2` retain the original zero-occurrence
 source refusal. Imports, arrays, calls and wider setup syntax remain refused by
 the existing sole-walk module eligibility provider.
@@ -49,6 +52,12 @@ all older generic/ordinary/scriptless policies retain Operation refusal. The
 same existing frames and For row retain the accepted original body carrier;
 the actual direct Element Enter receives loop-body block eligibility. Existing
 Enter/Leave events establish the complete static body and semantic helper order.
+Root finalization must preserve the genuine For block bit. Callback parameter
+spelling must be checked against every actual helper/synthetic name used inside
+that callback; derive helper aliases from the checked vocabulary and refuse
+collisions such as `_openBlock`, with no fictional hygienic rename. The initial
+callback uses only the actual openBlock/createElementBlock helper aliases and
+introduces no generated callback local.
 Keep every existing Op/OriginalFor/Declaration/Binding/For receipt layout and
 allocation budget unchanged. Do not create a synthetic loop Op, another side
 table/vector, ExprRef/ScriptUnit for aliases, body pre-scan or later eligibility
@@ -74,7 +83,9 @@ behavior rather than an invented compiler guard.
 supplies the concrete unkeyed Fragment/block contract. For this mutable setup
 Identifier, its actual output calls `openBlock(true)`, `createElementBlock` on
 `Fragment`, `renderList($setup.count, original parameter callback)` and the
-callback's Element block, with `256 /* UNKEYED_FRAGMENT */`. The current pinned
+callback's Element block, with `256 /* UNKEYED_FRAGMENT */`. The separately positive SetupConst read receipt stays retained but its
+STABLE_FRAGMENT64/tracking-enabled/child-vnode branch needs separate full
+qualification before runtime admission. The current pinned
 compiler reports `count: setup-let` and imports renderList/Fragment/openBlock/
 createElementBlock in that order. Preserve actual canonical helper demands and
 full-file collection/parameter/element/text links through module assembly.
@@ -106,8 +117,9 @@ setup Programs. Hosted capture hashes must bind every full original source,
 whole native code/map and runtime observation to the exact source campaign.
 
 No local Rust build/install or duplicate manual full campaign is authorized.
-Configured source Actions, protected full/differential suites, immutable all100
-three-run gates and actual merge remain mandatory. Genuine dependent PRs require
+Configured source Actions, protected full/differential suites, every unchanged applicable
+protected cap (including the four formatter rows after actual #7673), three-run
+ratchets and actual merge remain mandatory. Genuine dependent PRs require
 native Stack registration before queue submission; no cosmetic layers or fake
 target dependencies should be created.
 
