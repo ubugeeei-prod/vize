@@ -1,6 +1,6 @@
 //! Original Descriptor-selected templates with genuine once-retained embeds.
 
-use vize_l0::{Allocator, Vec};
+use vize_l0::{Allocator, Span, Vec};
 use vize_l1::embed::syntax::EmbedHole;
 use vize_l1::markup::{NativeInterpolationOperand, NativeTemplateComponent};
 
@@ -15,12 +15,16 @@ mod builder;
 mod input;
 #[path = "selected_template/observed.rs"]
 mod observed;
+#[path = "selected_template/value.rs"]
+mod value;
 use builder::Builder;
 use input::Borrowed;
+pub use value::NativeTemplateValuePolicy;
+use value::ValuePolicy;
 
 pub use observed::{
     ObservedNativeTemplateDocument, ObservedNativeTemplateFailure, ObservedNativeTemplateRefusal,
-    observed_native_template_document,
+    observed_native_template_document, observed_native_template_document_with_policy,
 };
 
 /// Offsets are relative to the selected template block. Wrapped expression
@@ -28,6 +32,10 @@ pub use observed::{
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeTemplateRefusal {
     Template(TemplateRefusal),
+    /// Exact original directive-value content in authored-file coordinates.
+    DirectiveValue {
+        span: Span,
+    },
     MissingOperand {
         offset: usize,
         index: usize,
@@ -121,6 +129,10 @@ pub fn native_template_document<'p, 'a>(
             offset: 0,
         },
         allocator,
+        values: ValuePolicy::new(
+            original.component().block(),
+            NativeTemplateValuePolicy::PreserveOpaque,
+        ),
     };
     let mut parts = Vec::new_in(&allocator);
     builder.children(original.children(), &mut parts, 0)?;

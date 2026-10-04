@@ -6,7 +6,9 @@ use vize_l1::markup::{NativeInterpolationOperand, NativeTemplateComponent};
 
 use super::super::template::Cursor;
 use super::input::Observed;
-use super::{Builder, Doc, TemplateRefusal, check_selected};
+use super::{
+    Builder, Doc, NativeTemplateValuePolicy, TemplateRefusal, ValuePolicy, check_selected,
+};
 
 #[path = "observed/failure.rs"]
 mod failure;
@@ -83,6 +85,25 @@ pub fn observed_native_template_document<'p, 'a>(
     original: &'p NativeTemplateComponent<'a>,
     allocator: &'a Allocator,
 ) -> Result<ObservedNativeTemplateDocument<'p, 'a>, ObservedNativeTemplateFailure<'p, 'a>> {
+    observed_native_template_document_with_policy(
+        original,
+        allocator,
+        NativeTemplateValuePolicy::PreserveOpaque,
+    )
+}
+
+/// Observe through the same original traversal with an explicit value policy.
+///
+/// Strict policy refuses every complete typed directive having an original
+/// value, after the existing value token's source/recovery check and before
+/// visiting that element's body. Static attribute values stay authored. The
+/// same typed head is decomposed once; no value parse or preliminary scan is
+/// added. The failure keeps the actual selected source and observed prefix.
+pub fn observed_native_template_document_with_policy<'p, 'a>(
+    original: &'p NativeTemplateComponent<'a>,
+    allocator: &'a Allocator,
+    policy: NativeTemplateValuePolicy,
+) -> Result<ObservedNativeTemplateDocument<'p, 'a>, ObservedNativeTemplateFailure<'p, 'a>> {
     if let Err(refusal) = check_selected(original) {
         return Err(ObservedNativeTemplateFailure::new(
             original,
@@ -100,6 +121,7 @@ pub fn observed_native_template_document<'p, 'a>(
             offset: 0,
         },
         allocator,
+        values: ValuePolicy::new(original.component().block(), policy),
     };
     let mut parts = Vec::new_in(&allocator);
     let result = builder

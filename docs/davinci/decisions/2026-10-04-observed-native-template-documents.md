@@ -53,12 +53,24 @@ Only the existing contiguous Cursor reaching exact selected block length
 establishes complete template Doc construction. This provider still covers one
 template block. Original order/spans/storage/comment kinds+authored bytes/maps/
 grammar, literal/entity spelling and trimmed physical-LF tails remain genuine.
-Seventeen frozen laws cover independently authored complete template outputs, repeated printing,
+Twenty-one frozen laws cover independently authored complete template outputs, repeated printing,
 v-pre, zero/multiple/nested operands, late failures, carrier moves/transfers,
 foreign-source/owner, genuine normal success/failure unwind, deliberate owned
 remainder forget and real 16/17,31/32,4096/4097 boundary controls require
 independent review and own fresh hosted runtime. Structural checks do not prove
 parse-count performance, language early errors or JavaScript execution.
+
+A genuine explicit NativeTemplateValuePolicy selects PreserveOpaque or
+RefuseValuedDirectives at the SAME existing original attribute value visit.
+Bare/preobserved/default observed APIs keep PreserveOpaque exactly. After
+original content token/trivia custody, the actual selected SourceBlock derives
+and checks the value span/root slice identity; strict recognized heads return
+typed DirectiveValue with the precise authored-file span and retained prefix,
+before body observation. Existing head/cursor/recovery priority stays first.
+Four additional laws pin complete lower outputs, strict first/late/empty/
+unquoted ranges, static attributes/v-pre and old malformed/recovery priority.
+No second head/value scan/parse or pass; the whole owner consumes strict policy.
+Paired [strict-policy decision](https://github.com/ubugeeei-prod/vize/issues/6847#issuecomment-5975168791) retains the separate corrected-source proof.
 
 The dependent product must own actual Descriptor/selected/observations/Doc and
 complete explicit options/outcome, constructing from the original source and
@@ -79,7 +91,9 @@ confirms decoded `a+f(...b)` and Call `2..9`, authored Call after `a&#43;`
 at relative `6..13`. Correct only those coordinates and add independent
 decoded/authored spelling witnesses, retaining all original inputs, full
 outputs, refusal and ownership assertions. Production and budgets stay exact;
-fresh corrected-head acceptance remains required.
+the coordinate-only successor `0c2e0358` passes all205/17/4 and two owner
+compile-fail controls with original six-log capture. That source remains
+historical after the genuine strict-policy successor; new acceptance is required.
 
 Only pure format/source/canonical checks run locally. No Cargo/npm build/test/
 install or duplicate manual full campaign; fresh exact-head Actions/capture,

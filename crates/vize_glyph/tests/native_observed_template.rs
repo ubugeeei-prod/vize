@@ -12,6 +12,8 @@ use vize_l1::{SurfaceChild, SurfaceParseOptions};
 mod budgets;
 #[path = "native_observed_template/custody.rs"]
 mod custody;
+#[path = "native_observed_template/directive_values.rs"]
+mod directive_values;
 #[path = "native_observed_template/layout.rs"]
 mod layout;
 #[path = "native_observed_template/lifecycle.rs"]

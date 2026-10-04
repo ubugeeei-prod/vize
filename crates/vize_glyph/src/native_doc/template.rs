@@ -10,8 +10,11 @@ use super::{Doc, Line};
 mod cursor;
 #[path = "template/layout.rs"]
 mod layout;
+#[path = "template/value.rs"]
+mod value;
 pub(super) use cursor::{Cursor, verbatim};
 pub(super) use layout::{close_element, open_element};
+pub(super) use value::{AttributeValuePolicy, PreserveOpaque};
 
 /// Work still requiring typed dialect/embed formatting providers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -148,7 +151,7 @@ fn element_document<'a>(
     allocator: &'a Allocator,
     depth: usize,
 ) -> Result<(), TemplateRefusal> {
-    open_element(element, parts, cursor, allocator, depth)?;
+    open_element(element, parts, cursor, allocator, depth, &PreserveOpaque)?;
     children(&element.children, parts, cursor, allocator, depth + 1)?;
     close_element(element, parts, cursor)
 }

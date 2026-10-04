@@ -5,15 +5,18 @@ use vize_l1::dialect::vue3::VueDirectives;
 use vize_l1::markup::DirectiveSyntax;
 use vize_l1::{Attribute, Element, ElementClose};
 
-use super::{Cursor, Doc, Line, TemplateRefusal, UnsupportedSyntax, verbatim};
+use super::{
+    AttributeValuePolicy, Cursor, Doc, Line, TemplateRefusal, UnsupportedSyntax, verbatim,
+};
 
-pub(in crate::native_doc) fn open_element<'a>(
+pub(in crate::native_doc) fn open_element<'a, P: AttributeValuePolicy<'a>>(
     element: &Element<'a>,
     parts: &mut Vec<'a, Doc<'a>>,
     cursor: &mut Cursor<'a>,
     allocator: &'a Allocator,
     depth: usize,
-) -> Result<(), TemplateRefusal> {
+    policy: &P,
+) -> Result<(), P::Refusal> {
     cursor.token(&element.open.lt_name)?;
     parts.push(Doc::text(element.open.lt_name.leading));
     let mut opening = Vec::new_in(&allocator);
@@ -21,7 +24,7 @@ pub(in crate::native_doc) fn open_element<'a>(
     let mut attributes = Vec::new_in(&allocator);
     for attribute in &element.open.attrs {
         attributes.push(Doc::line(Line::Space));
-        attribute_document(attribute, &mut attributes, cursor, allocator)?;
+        attribute_document(attribute, &mut attributes, cursor, allocator, policy)?;
     }
     if !attributes.is_empty() {
         opening.push(Doc::concat(attributes).indent(depth + 1, allocator));
@@ -66,12 +69,13 @@ pub(in crate::native_doc) fn close_element<'a>(
     Ok(())
 }
 
-fn attribute_document<'a>(
+fn attribute_document<'a, P: AttributeValuePolicy<'a>>(
     attribute: &Attribute<'a>,
     parts: &mut Vec<'a, Doc<'a>>,
     cursor: &mut Cursor<'a>,
     allocator: &'a Allocator,
-) -> Result<(), TemplateRefusal> {
+    policy: &P,
+) -> Result<(), P::Refusal> {
     let start = cursor.offset.saturating_add(attribute.name.leading.len());
     let offset =
         u32::try_from(start).map_err(|_| TemplateRefusal::SourceMismatch { offset: start })?;
@@ -96,10 +100,14 @@ fn attribute_document<'a>(
         if let Some(open) = &value.open_quote {
             cursor.trivia(open)?;
             value_parts.push(Doc::text(open.text));
+            let offset = cursor.offset;
             cursor.token(&value.content)?;
+            policy.value(head.is_some(), &value.content, offset)?;
             verbatim(&mut value_parts, &value.content);
         } else {
+            let offset = cursor.offset;
             cursor.trivia(&value.content)?;
+            policy.value(head.is_some(), &value.content, offset)?;
             value_parts.push(Doc::text(value.content.text));
         }
         if let Some(close) = &value.close_quote {

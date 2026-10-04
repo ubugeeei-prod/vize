@@ -8,6 +8,7 @@ use vize_l1::markup::{
 
 use super::super::template::{Cursor, close_element, open_element, verbatim};
 use super::input::Input;
+use super::value::ValuePolicy;
 use super::{
     Doc, Line, NativeTemplateRefusal, TemplateRefusal, UnsupportedSyntax, expression_document,
 };
@@ -18,6 +19,7 @@ pub(super) struct Builder<'p, 'a, I> {
     pub(super) next: usize,
     pub(super) cursor: Cursor<'a>,
     pub(super) allocator: &'a Allocator,
+    pub(super) values: ValuePolicy<'a>,
 }
 
 impl<'p, 'a, I: Input<'p, 'a>> Builder<'p, 'a, I> {
@@ -48,6 +50,7 @@ impl<'p, 'a, I: Input<'p, 'a>> Builder<'p, 'a, I> {
                         &mut self.cursor,
                         self.allocator,
                         depth,
+                        &self.values,
                     )?;
                     self.children(element.children(), parts, depth + 1)?;
                     close_element(element.surface(), parts, &mut self.cursor)?;
