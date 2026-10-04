@@ -3,7 +3,7 @@ use vize_atelier_sfc::{
     compile_native_setup_ssr_sfc,
 };
 use vize_l0::{Allocator, config::VueVersion};
-use vize_l1::embed::ScriptRole;
+use vize_l1::container::vue::ScriptRole;
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind as Lower;
 use vize_l2::{
     file::{FileIssueKind, RejectedFileHandler},
@@ -166,6 +166,9 @@ pub fn capture() -> Vec<serde_json::Value> {
                 assert!(syntax.program().is_some());
                 assert_eq!(syntax.diagnostics().count(), 0);
                 assert!(original.view().is_err());
+                assert!(original.rejected_file().is_none());
+                let file = original.file().unwrap();
+                assert_eq!(file.is_complete(), expected != Template::UnsupportedChild);
                 serde_json::json!([])
             }
             Expected::Ssr(expected) => {
@@ -234,7 +237,7 @@ pub fn capture() -> Vec<serde_json::Value> {
                     }
                     ("handler-safety", [RejectedFileHandler::Syntax(input)]) => {
                         assert_eq!(
-                            input.error().kind,
+                            input.kind,
                             vize_l2::lang::js::HandlerInputErrorKind::IncompleteSyntax
                         );
                         let syntax = input.operand().syntax();
@@ -244,7 +247,7 @@ pub fn capture() -> Vec<serde_json::Value> {
                         );
                         assert_eq!(input.operand().raw_value(), "return (");
                         assert!(core::ptr::eq(syntax.source().authored_root(), source));
-                        assert!(syntax.observed().is_none() && syntax.admitted_body().is_none());
+                        assert!(syntax.body().is_none() && syntax.admitted_body().is_none());
                         let diagnostics: Vec<_> = syntax.diagnostics().collect();
                         assert!(diagnostics.is_empty());
                     }
