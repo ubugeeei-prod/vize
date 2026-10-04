@@ -49,6 +49,7 @@ pub use native::{
     NativeInterpolationFailure, NativeInterpolationOperand, NativeInterpolationView,
     NativeRootText, NativeRootTextError, NativeRootTextProfile, NativeRootTextView,
     NativeScriptSelection, NativeStaticBindingHead, NativeTemplateComponent, NativeTemplateGrammar,
+    NativeTextValue, NativeTextValueError, NativeTextValueFailure, NativeTextValueView,
 };
 pub use parse::{
     ComponentParse, ComponentSourceError, DirectiveAdmission, parse_component,
