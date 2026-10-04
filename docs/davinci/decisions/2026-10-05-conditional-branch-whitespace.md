@@ -82,3 +82,16 @@ their correction requires fresh Actions and receives no transferred acceptance.
 
 The issue reporter is attributed as `ubugeeei <ubuge1122@gmail.com>`, verified
 from public commits authored by the issue's GitHub identity.
+
+The prospective Stack projection onto main `688da7cc` conflicted only because
+this record and the accepted pnpm setup decision appended to the same physical
+paragraph. Retain that new main entry and move the complete compiler decision
+to an existing stable paragraph, preserving all other source bytes and the
+350-line canonical record. Fresh exact-head source Actions remain required.
+
+The authorized actual-main replay follows #7840's signed `5d879b27` merge.
+Real-rebase all five child commits onto preserved parent `08183052`, retaining
+the full incoming #7828, parent #7838 and compiler #7831 canonical clauses.
+All 27 owned production/fixture blobs and each original author/message/trailer
+remain exact. Previous proof IDs retain their original source; the new actual
+composition requires fresh source Actions before highest-only Stack admission.
