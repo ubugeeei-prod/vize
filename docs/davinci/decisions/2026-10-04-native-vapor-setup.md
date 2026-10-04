@@ -233,3 +233,11 @@ comment entity semantics, including physical UTF-8 SSR hydration and cleanup.
 Their historical raw-comment byte contract is not universal stock equivalence;
 this bounded successor does not silently rewrite that earlier acceptance.
 Compiler #6880, default replacement and wider setup semantics remain unfinished.
+
+First scoped-refusal head `7c844900` / Check `37173114676` exposes E0716 in
+the new test: a temporary admitted view cannot outlive its genuine setup borrow.
+The law now retains that original selected view explicitly. Production guard and
+all seventeen positive expectations are unchanged; no native/browser capture was
+granted by that failed build. Fresh exact-head source and protected proof remain
+required. Source-only measured 104-by-three run `37173111736` passed unchanged
+ceilings independently; it cannot substitute for the new head's required checks.

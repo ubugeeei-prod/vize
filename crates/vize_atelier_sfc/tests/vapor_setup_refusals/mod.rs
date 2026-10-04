@@ -268,7 +268,8 @@ fn complete_original_normalizing_comments_are_precise_setup_target_refusals() {
                 source.as_str()
             ));
             assert_eq!(observation.original().issues(), [], "{source}");
-            let setup = observation.admitted().unwrap().setup();
+            let selected = observation.admitted().unwrap();
+            let setup = selected.setup();
             assert!(setup.file().is_complete());
             let analysis = build_native_selected_setup_vapor_decisions(setup).unwrap();
             let facts = analysis.vapor().unwrap();
