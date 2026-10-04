@@ -55,7 +55,7 @@ broader nested text/entities, controls, setup products and #6880 remain separate
 The setup product #7663 actually merged as 85d3afe2256d at 00:14:11Z with full
 protected acceptance. Its owner supplied a narrow independent proof commit:
 all six original full fixture payloads stay unchanged; the exact original
-<script setup>let count=1</script><template><p>{{count}}</p></template> is the
+`<script setup>let count=1</script><template><p>{{count}}</p></template>` is the
 seventh complete desired module/authored-anchor map/pinned Vue source. Nine
 primary/desired Node laws passed without local native Rust credit. This true
 consumer evidence is integrated only on literal main with the new original
