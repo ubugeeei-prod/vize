@@ -114,3 +114,10 @@ Keep #7838 open until exact-source Actions and protected actual delivery
 are verified. Release identity, a reviewed measurement observer, a concrete
 runner and explicit measurement authorization remain TODOs. No performance
 improvement is claimed.
+
+The initial source Check 37225561805 at `686656ca90dc3d6aeb23c2a9ed6a63953176550a`
+failed only the zero-warning JS gate: the new proof target sort required an
+explicit comparator. Preserve its original UTF-16 ordering with that
+comparator; no fixture, compiler, runtime assertion or performance change.
+The initial source-native build was still running and grants no execution
+credit. Fresh exact-head Actions are required after this correction.

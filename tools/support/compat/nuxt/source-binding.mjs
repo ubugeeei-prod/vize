@@ -138,6 +138,6 @@ export function verifyNuxtSourceBindingEvents(custody, events) {
     profile: custody.profile,
     calls,
     processes: loaded.size,
-    fixtureTargets: [...compiled].sort(),
+    fixtureTargets: [...compiled].sort((left, right) => (left < right ? -1 : Number(left > right))),
   };
 }
