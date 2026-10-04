@@ -2,9 +2,11 @@
 
 Issues: [#6879](https://github.com/ubugeeei-prod/vize/issues/6879),
 [#6849](https://github.com/ubugeeei-prod/vize/issues/6849).
-Private implementation based on literal main
-`298f87942349401db0a3cbed2891897ba62c0eb8`; fresh source-built Actions and
-protected actual delivery remain required. No runtime acceptance is inferred.
+The original source review used literal main
+`298f87942349401db0a3cbed2891897ba62c0eb8`; the unchanged owned implementation
+was replayed onto actual main `7f7b63122456fd066c86bcab7c281c9c6c9d389a`.
+Fresh source-built Actions and protected actual delivery remain required.
+No runtime acceptance is inferred.
 
 The single proposed `v-for-source-original` pack retains the whole original
 HTML callback function from fix `04aedfb8e8b41dfae89fe65256e2703fc3718cf3`
