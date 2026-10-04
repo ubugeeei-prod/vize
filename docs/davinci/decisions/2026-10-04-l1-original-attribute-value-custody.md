@@ -78,6 +78,15 @@ protected candidate/actual merge receipt.
 Protected full suites, all 100+4 actual instruction measurements/unchanged ceilings
 and literal signed merge decide delivery. No local Cargo/build/install is run.
 
+Corrected source 4f1b3a3cd03c375c53399bbdaa4ccebfbb9bc882 passed hosted Check
+37167900069. Queue attribution was independently inspected: this repository uses
+PR_TITLE/BLANK squash messages, and queued candidates omitted the supplied merge
+body even when auto-merge was enabled with the verified reporter trailer.
+The source decision commit therefore credits #7502 reporter Danila Poyarkov using
+the public GitHub profile email dev@dannote.net. This documentation refresh keeps
+every Rust/fixture byte and ceiling unchanged; its fresh exact-head source and
+protected candidate checks and final commit attribution still require verification.
+
 The previous nested interpolation provider #7672 actually merged as signed-valid
 b2801bd82c3d at 2026-10-04T00:56:45Z. Protected Check 37165718664, Musea and Nuxt
 are SUCCESS; four full workers passed 15,209 tests including nine new custody
