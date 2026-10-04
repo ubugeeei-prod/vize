@@ -47,7 +47,7 @@ fn owned_snapshots_preserve_every_supplied_telemetry_field() {
         .with_block("template")
         .with_span(5, 9);
     let export = export_report_from_snapshots(
-        vec![("davinci.snapshot.span", attribution, span)],
+        vec![("profile.snapshot.span", attribution, span)],
         vec![("io.read.bytes", counter(&[7, 9]))],
         &ProfileExportOptions {
             allocation: Some(AllocationSnapshot {
@@ -77,7 +77,7 @@ fn owned_snapshots_preserve_every_supplied_telemetry_field() {
             "budget": { "max_spans": 512, "max_counters": 256 },
             "truncation": { "dropped_spans": 0, "dropped_counters": 0 },
             "spans": [{
-                "key": "davinci.snapshot.span", "count": 2,
+                "key": "profile.snapshot.span", "count": 2,
                 "wall_ns": {
                     "total": 40, "self": 40, "min": 10, "max": 30,
                     "p50": 1000, "p95": 1000, "p99": 1000,
@@ -105,10 +105,10 @@ fn native_and_owned_inputs_have_exact_wire_equality_after_source_disposal() {
     let template = SpanAttribution::new()
         .with_stage("s2")
         .with_block("template");
-    profiler.record("davinci.snapshot.b", Duration::from_nanos(7000));
-    profiler.record("davinci.snapshot.a", Duration::from_nanos(7000));
-    profiler.record_attributed("davinci.snapshot.a", template, Duration::from_nanos(3000));
-    profiler.record_attributed("davinci.snapshot.a", template, Duration::from_nanos(9000));
+    profiler.record("profile.snapshot.b", Duration::from_nanos(7000));
+    profiler.record("profile.snapshot.a", Duration::from_nanos(7000));
+    profiler.record_attributed("profile.snapshot.a", template, Duration::from_nanos(3000));
+    profiler.record_attributed("profile.snapshot.a", template, Duration::from_nanos(9000));
     profiler.record_counter("io.read.bytes", 7);
     profiler.record_counter("io.read.bytes", 9);
     profiler.record_counter("io.read.calls", 1);
@@ -130,7 +130,7 @@ fn native_and_owned_inputs_have_exact_wire_equality_after_source_disposal() {
             .collect::<Vec<_>>(),
         vec![
             (
-                "davinci.snapshot.a",
+                "profile.snapshot.a",
                 2,
                 Some(vize_carton::profile_export::ProfileExportAttribution {
                     stage: Some("s2"),
@@ -140,8 +140,8 @@ fn native_and_owned_inputs_have_exact_wire_equality_after_source_disposal() {
                     span: None,
                 })
             ),
-            ("davinci.snapshot.a", 1, None),
-            ("davinci.snapshot.b", 1, None),
+            ("profile.snapshot.a", 1, None),
+            ("profile.snapshot.b", 1, None),
         ]
     );
     assert_eq!(owned.allocation, None);
@@ -154,13 +154,13 @@ fn owned_inputs_preserve_full_tiebreaks_and_explicit_truncation() {
     let late = SpanAttribution::new().with_stage("s2");
     let export = export_report_from_snapshots(
         vec![
-            ("davinci.snapshot.a", late, metrics(&[5000])),
+            ("profile.snapshot.a", late, metrics(&[5000])),
             (
-                "davinci.snapshot.b",
+                "profile.snapshot.b",
                 SpanAttribution::EMPTY,
                 metrics(&[5000]),
             ),
-            ("davinci.snapshot.a", early, metrics(&[5000])),
+            ("profile.snapshot.a", early, metrics(&[5000])),
         ],
         vec![("io.z", counter(&[2])), ("io.a", counter(&[3]))],
         &ProfileExportOptions {
@@ -179,11 +179,11 @@ fn owned_inputs_preserve_full_tiebreaks_and_explicit_truncation() {
             "budget": { "max_spans": 2, "max_counters": 1 },
             "truncation": { "dropped_spans": 1, "dropped_counters": 1 },
             "spans": [
-                { "key": "davinci.snapshot.a", "count": 1,
+                { "key": "profile.snapshot.a", "count": 1,
                   "wall_ns": { "total": 5000, "self": 5000, "min": 5000, "max": 5000,
                                "p50": 8000, "p95": 8000, "p99": 8000 },
                   "alloc": null, "attribution": { "stage": "s1" } },
-                { "key": "davinci.snapshot.a", "count": 1,
+                { "key": "profile.snapshot.a", "count": 1,
                   "wall_ns": { "total": 5000, "self": 5000, "min": 5000, "max": 5000,
                                "p50": 8000, "p95": 8000, "p99": 8000 },
                   "alloc": null, "attribution": { "stage": "s2" } },
@@ -210,14 +210,14 @@ fn owned_inputs_keep_empty_unavailable_and_duration_saturation_contracts() {
     let mut huge = Metrics::new();
     huge.record(Duration::MAX);
     let huge = export_report_from_snapshots(
-        vec![("davinci.snapshot.huge", SpanAttribution::EMPTY, huge)],
+        vec![("profile.snapshot.huge", SpanAttribution::EMPTY, huge)],
         Vec::new(),
         &options(),
     );
     assert_eq!(
         serde_json::to_value(&huge.spans).unwrap(),
         serde_json::json!([{
-            "key": "davinci.snapshot.huge", "count": 1,
+            "key": "profile.snapshot.huge", "count": 1,
             "wall_ns": { "total": u64::MAX, "self": u64::MAX, "min": u64::MAX, "max": u64::MAX,
                          "p50": 140737488355328000_u64, "p95": 140737488355328000_u64,
                          "p99": 140737488355328000_u64 },
