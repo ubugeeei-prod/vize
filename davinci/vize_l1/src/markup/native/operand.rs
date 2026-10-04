@@ -27,6 +27,8 @@ pub use for_head::{
 };
 mod origin;
 use origin::Origin;
+mod value;
+pub use value::{NativeAttributeValue, NativeAttributeValueFailure, NativeAttributeValueView};
 
 /// Preparation refusals leave the original selected surface owner untouched.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

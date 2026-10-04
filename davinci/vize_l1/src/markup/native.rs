@@ -27,7 +27,8 @@ pub use operand::{
     NativeAttributeExpression, NativeAttributeExpressionFailure, NativeAttributeExpressionView,
     NativeAttributeForHead, NativeAttributeForHeadFailure, NativeAttributeForHeadView,
     NativeAttributeHandler, NativeAttributeHandlerFailure, NativeAttributeHandlerView,
-    NativeAttributeOperandError, NativeConditionKind,
+    NativeAttributeOperandError, NativeAttributeValue, NativeAttributeValueFailure,
+    NativeAttributeValueView, NativeConditionKind,
 };
 pub use selected::{NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar};
 pub use text::{NativeRootText, NativeRootTextError, NativeRootTextProfile, NativeRootTextView};
