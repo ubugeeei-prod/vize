@@ -124,3 +124,17 @@ canonical record and retaining the original child details/pending words in
 the linked historical companion. All other incoming lane paragraphs remain
 exact. This child's fresh exact-source Actions, measured unchanged ceilings
 and actual protected native Stack merge remain mandatory.
+
+The first fresh-main whole source `0b2b08b2` fails manual run `37174030155`: all
+original100 and three formatter ceilings pass, while the complex template is
+244667 above its unchanged244347 ceiling. Its complete artifact11292408064
+and failure remain historical; it never enters the queue. Restore the complete
+original suppression source94b99ca1 byte for byte while retaining the genuine
+empty/singleton static-sort and accepted wrapper/whitespace/hex improvements.
+The original exact whole-source witness path already qualifies its unchanged
+placement law; retain historical accepted6ed and script553 owner metadata.
+The mutation test selects the original-owner missing-function refusal when
+that exact original file is present, keeping source/pin/revision drift fatal.
+No original source/history asset, law, native runtime or original29 whole-law
+blob changes. Fresh hosted104/source/full acceptance remains required; the
+release window holds new queue admissions until the coordinator reopens it.

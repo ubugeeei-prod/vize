@@ -212,7 +212,9 @@ void test("optimized suppression owner preserves the original placement law and 
   );
   assert.throws(
     () => validateCurrentFormatterWitness(scratch, entry, "unregistered_retained_function"),
-    /unregistered retained Rust law transition/,
+    sha256(current) === entry.sha256
+      ? /retained Rust law is missing/
+      : /unregistered retained Rust law transition/,
   );
   fs.writeFileSync(file, Buffer.concat([current, Buffer.from("\n// drifted owner\n")]));
   assert.throws(
