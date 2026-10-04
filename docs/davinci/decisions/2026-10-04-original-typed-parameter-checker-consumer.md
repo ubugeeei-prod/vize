@@ -165,3 +165,24 @@ formatter caps and three-run ratchets remain unchanged. Imported graph/config
 closure, source/diagnostic snapshots, SDK/ABA coherence, contextual Vue typing,
 history closure and default migration remain unfinished. Reproducible
 same-diagnostic 10x remains an unmeasured target; no new benchmark dispatch.
+
+
+## Actual native-phase harness prerequisite
+
+The new actual main `912d311c` adds the source-bound native-phase workflow and
+its real scripts/example. Its automatic preflight on the older `9702c014`-based
+consumer `a3fe9035` failed before build: run 37186337776, job 111388930458,
+`MODULE_NOT_FOUND` for `tools/benchmarks/scripts/typechecker-native-phases.mjs`.
+Complete failure log SHA256 is
+`3615ebbfc2d41b5914645963edb090763ba2ac0456354eef3405b08828163760`.
+Return provider/consumer runs 37186377940 / 37186380409 report the same genuine
+missing prerequisite. The original Check campaigns remain historical source
+observations; no phase/projection/diagnostic packet was captured by these failed
+prebuild runs, and none is credited.
+
+Integrate the complete literal `912d311c` ancestor across the five real Stack
+children, preserving every owned production/law/oracle/census blob and all
+incoming central clauses. This imports the actual merged workflow/helper source
+rather than copying a substitute or waiving its failure. Fresh exact-source
+Actions, real native-phase packets, full protected suites/104 ratchets and signed
+Stack delivery remain required. No unchanged retry or local build is performed.
