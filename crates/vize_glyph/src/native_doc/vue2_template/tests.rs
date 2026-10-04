@@ -35,7 +35,7 @@ fn consumed_text_doc_refuses_foreign_same_bytes_and_different_original_occurrenc
             &arena,
         )
         .unwrap();
-        let mut parts = Vec::new_in(&arena);
+        let mut parts = Vec::new_in(&&arena);
         assert_eq!(
             append_text(&expected, event, doc, &mut parts, &arena, 0),
             Err(NativeVue2SfcRefusal::Frame {
@@ -47,7 +47,7 @@ fn consumed_text_doc_refuses_foreign_same_bytes_and_different_original_occurrenc
     }
     let second = component.children().nth(1).unwrap();
     let doc = vue2_text_document(component.text_for(second).unwrap(), &arena).unwrap();
-    let mut parts = Vec::new_in(&arena);
+    let mut parts = Vec::new_in(&&arena);
     assert_eq!(
         append_text(&expected, event, doc, &mut parts, &arena, 0),
         Err(NativeVue2SfcRefusal::Frame {

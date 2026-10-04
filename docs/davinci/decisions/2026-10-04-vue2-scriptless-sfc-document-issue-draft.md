@@ -130,3 +130,10 @@ source/maps/ownership/unwind/full-print assertions remain; add a root-after-drop
 compile-fail control alongside all original nine (ten total), with no API
 lifetime promotion, AST clone/unsafe or synthetic authority. Whole capture was
 absent and the oracle explicitly unexecuted/null; no partial32 credit exists.
+
+Fresh8073 Check37198253980 affected-test build reaches two actual E0277 errors
+in owned crossed-TextDoc unit Vec::new_in calls. GetAllocator is implemented
+for &Allocator, so pass &&arena at both sites, retaining the exact original
+arena, Doc buffer and every foreign/original assertion. Production/fixtures/
+CF/collector/actions/caps stay exact. The rejected build supplies no fresh
+whole-suite acceptance; the exact successor requires fresh automatic Actions.
