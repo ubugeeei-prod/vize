@@ -127,7 +127,10 @@ function check(root: string, patterns: string[], servers: number): Receipt {
     stderr: result.stderr,
     stdout: result.stdout,
   };
-  const output = path.join(repoRoot, "target/vize-tests/metrics/pnpm-workspace-routes");
+  const output = path.join(
+    repoRoot,
+    "target/vize-tests/metrics/check-fixtures-topology/pnpm-workspace-routes",
+  );
   fs.mkdirSync(output, { recursive: true });
   const bytes = `${JSON.stringify(receipt, null, 2)}\n`;
   fs.writeFileSync(path.join(output, `${sha256(bytes)}.json`), bytes);
@@ -144,7 +147,7 @@ function diagnosticVector(receipt: Receipt): unknown {
   };
 }
 
-function assertClean(receipt: Receipt, expected: string[]): void {
+function assertClean(receipt: Receipt, expected: string[], roots = expected): void {
   assert.deepEqual(diagnosticVector(receipt), {
     status: 0,
     errorCount: 0,
@@ -153,7 +156,7 @@ function assertClean(receipt: Receipt, expected: string[]): void {
     files: expected.map((file) => ({ file, diagnostics: [] })),
   });
   assert.equal(receipt.report.programs.length, 1);
-  assert.deepEqual(receipt.report.programs[0]?.files, expected);
+  assert.deepEqual(receipt.report.programs[0]?.files, roots);
   assert.ok(receipt.report.files.every((file) => typeof file.virtualTs === "string"));
 }
 
@@ -162,8 +165,10 @@ for (const pnpm of [false, true]) {
     const root = workspace(pnpm);
     try {
       for (const servers of [1, 2]) {
-        assertClean(check(root, [sources[0]!], servers), sources);
-        assertClean(check(root, ["packages/c/src/index.ts"], servers), sources.slice(2));
+        assertClean(check(root, [sources[0]!], servers), sources, [sources[0]!]);
+        assertClean(check(root, ["packages/c/src/index.ts"], servers), sources.slice(2), [
+          "packages/c/src/index.ts",
+        ]);
         assertClean(check(root, [], servers), sources);
       }
     } finally {
@@ -186,8 +191,8 @@ for (const pnpm of [false, true]) {
       fs.writeFileSync(path.join(root, "tsconfig.json"), `${JSON.stringify(config)}\n`);
       const expected = [...sources, consumer];
       const clean = check(root, [consumer], 1);
-      assertClean(clean, expected);
-      assertClean(check(root, [consumer], 2), expected);
+      assertClean(clean, expected, [consumer]);
+      assertClean(check(root, [consumer], 2), expected, [consumer]);
 
       fs.writeFileSync(button, cleanTypedButton.replace("= 1", "= 'broken'"));
       const broken = check(root, [consumer], 1);
@@ -206,9 +211,36 @@ for (const pnpm of [false, true]) {
       });
       assert.deepEqual(diagnosticVector(check(root, [consumer], 2)), diagnosticVector(broken));
 
+      // A clean callback alone cannot prove the event payload is not any.
+      // Changing its declared type must expose this authored toFixed access.
+      fs.writeFileSync(button, cleanTypedButton.replace("value: number", "value: string"));
+      const event = check(root, [consumer], 1);
+      const eventDiagnostics = event.report.files.find(
+        (file) => file.file === consumer,
+      )?.diagnostics;
+      assert.equal(eventDiagnostics?.length, 1);
+      const column = typedConsumer.split("\n")[6]!.indexOf("toFixed") + 1;
+      assert.match(
+        eventDiagnostics![0]!,
+        new RegExp(
+          `^error:7:${column} \\[TS(2339|2551)\\] Property 'toFixed' does not exist on type 'string'`,
+        ),
+      );
+      assert.deepEqual(diagnosticVector(event), {
+        status: 1,
+        errorCount: 1,
+        warningCount: 0,
+        fileCount: expected.length,
+        files: expected.map((file) => ({
+          file,
+          diagnostics: file === consumer ? eventDiagnostics : [],
+        })),
+      });
+      assert.deepEqual(diagnosticVector(check(root, [consumer], 2)), diagnosticVector(event));
+
       fs.writeFileSync(button, cleanTypedButton);
       const repaired = check(root, [consumer], 2);
-      assertClean(repaired, expected);
+      assertClean(repaired, expected, [consumer]);
       assert.deepEqual(
         repaired.report,
         clean.report,

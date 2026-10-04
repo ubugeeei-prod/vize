@@ -56,7 +56,10 @@ Vue companions and installation links retain their existing ownership rules.
   mapped TS2322, and checks the complete ordered diagnostic vector and repaired
   virtual TS/report, original bytes and raw symlink targets. Raw command
   streams/status, source/CLI/native identities, input hashes and full reports are retained under
-  `target/vize-tests/metrics/pnpm-workspace-routes` in the existing parity lane.
+  `target/vize-tests/metrics/check-fixtures-topology/pnpm-workspace-routes` in
+  the existing uploaded topology artifact. The event control changes the
+  emitted number payload to string and requires the authored callback's
+  `toFixed` access to fail, rejecting a silent `any` fallback.
 
 The literal package manifest retains the reporter's Vue 3.5.38 and TypeScript
 5.9.3 requests. The Actions oracle uses the repository-installed Vue types and
@@ -84,6 +87,16 @@ failed before executing the native command because its cached Vite+ wrapper
 does not forward `VIZE_TEST_BIN`; the successor binds the lane's actual
 `target/ci/vize` build directly. These are retained failed receipts, not
 evidence of original-backend failure or a completed repair.
+
+Successor `f822dde9d237b8c513fa2aa35f4ee4c5958bcc0b` full Check
+`37225958714` launched real native commands: all four initial root/pnpm literal
+and typed-consumer checks have clean complete diagnostic vectors. The oracle
+then failed its own incorrect assertion that JSON `programs.files` lists
+transitive package dependencies; that field records initial program roots.
+The next source separates exact root membership from complete reported source
+membership, retains the full report, and stores receipts in the lane's actual
+uploaded directory. This partial observation does not establish the remaining
+server/direct/default/error/repair controls or whole-PR acceptance.
 
 Both #7834 and #6982 currently identify `ubugeeei` (GitHub numeric id 71201308)
 as their author. The commit includes that verified issue-author Co-author
