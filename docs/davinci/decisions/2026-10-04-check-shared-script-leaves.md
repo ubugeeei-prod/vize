@@ -2,6 +2,7 @@
 
 Issue: [#7698](https://github.com/ubugeeei-prod/vize/issues/7698).
 Decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5975869928).
+Visibility guard: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5975989259).
 
 A 62-byte imported TS leaf joins 501 SFC roots into one component. The actual
 default fixture expands 2,015,553 source bytes to 11,275,428 virtual TS bytes;
@@ -25,10 +26,18 @@ augmentations keep their existing shared registration.
 
 Any partitioned script whose explicit module identity is uncertain blocks new
 leaf sharing, including global namespaces, implicit/CommonJS scripts and
-syntax errors. After finding candidates, existing OXC parses check top-level
+syntax errors. After a prospective plan passes the existing parallelism threshold, OXC
+parses check top-level
 module declarations; comment text cannot establish identity. This conservative
 screen prevents a former dominant component from hiding global script roots
-when split. The source graph is scanned once for the cost model. Successful
+when split. Cost-model specifiers are collected once; a conservative original-source
+visibility screen additionally refuses unknown bare/absolute module loads,
+unregistered relative targets, source escapes and reference directives. The shared helper
+already loads Vue in every program, so uniform Vue dependencies qualify.
+Package-loaded globals imported by only one root retain the former component
+plan instead of becoming invisible in sibling programs. Failed admission
+replays the unchanged original plan; a transitive/barrel graph that stays
+connected pays no additional OXC or dependency-visibility pass. Successful
 plans export actual shard, shared-leaf and duplicate-byte profile counters.
 
 Required evidence preserves generated500/shared-barrel500 corpora and their
@@ -36,7 +45,7 @@ existing plants, max and 1T, cold first-process and alternating paired timing.
 The added shared-leaf501 corpus uses the exact rejected fixture and actual
 default collection with no path patterns. Real-runtime minimal cases compare
 complete ordered JSON reports across before/after and one/two servers, with
-leaf errors, module augmentation, namespace/config, checkJs and Vue/transitive
+leaf errors, module augmentation, namespace/config, checkJs, package/relative ambient augmentation and Vue/transitive
 coupling. Profile probes run separately from timings. No throughput claim or
 queue adoption follows merely from a green parity job; all whole-command
 ratios require review. The full 10x criterion remains unfinished.

@@ -23,6 +23,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/executor/cli/diagno
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/cli/import_resolution.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/executor/cli/import_resolution.rs	47	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/cli/partition.rs	9	carton	Carton host/compatibility	old	vize_carton	legacy	2
+typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/cli/partition/dependency_visibility.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/cli/partition/shared_leaves.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/cli/partition/shared_leaves.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor/cli/partition/shared_leaves.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	1

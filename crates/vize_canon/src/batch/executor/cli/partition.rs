@@ -8,6 +8,7 @@ use super::{ShardPlan, declares_program_wide_types, is_ambient_declaration};
 use crate::batch::{VirtualFile, VirtualProject};
 use vize_carton::{FxHashMap, String, cstr};
 
+mod dependency_visibility;
 mod shared_leaves;
 
 /// Partition the project's source files into shard programs along the
@@ -20,6 +21,11 @@ mod shared_leaves;
 /// program without being imported. Bounded cheap shared script leaves also
 /// remain visible everywhere, rather than coupling all their importers.
 pub(super) fn partition_virtual_files(project: &VirtualProject, servers: usize) -> ShardPlan<'_> {
+    partition(project, servers, true)
+}
+
+fn partition(project: &VirtualProject, servers: usize, allow_leaves: bool) -> ShardPlan<'_> {
+    let requested_servers = servers;
     let files = project.virtual_files_sorted();
     let mut partitioned: Vec<&VirtualFile> = Vec::new();
     let mut shared: Vec<&Path> = Vec::new();
@@ -64,7 +70,11 @@ pub(super) fn partition_virtual_files(project: &VirtualProject, servers: usize) 
         .iter()
         .map(|file| import_specifiers(&file.content))
         .collect();
-    let leaves = shared_leaves::select(&partitioned, &imports, &index_by_virtual, servers);
+    let leaves = if allow_leaves {
+        shared_leaves::select(&partitioned, &imports, &index_by_virtual, servers)
+    } else {
+        Default::default()
+    };
     for (index, file) in partitioned.iter().enumerate() {
         if leaves.contains(&index) {
             shared.push(file.virtual_path.as_path());
@@ -164,6 +174,17 @@ pub(super) fn partition_virtual_files(project: &VirtualProject, servers: usize) 
     // per-program work on shared and ambient sources outweighs the win.
     if largest.unwrap_or(0) * 4 >= total_weight * 3 {
         return no_sharding;
+    }
+
+    // Only a useful leaf plan pays the additional semantic visibility screen.
+    // Unchanged transitive/barrel graphs stop above without parsing scripts.
+    // Uncertain plans replay the original cost model exactly, including its
+    // independent-component parallelism and diagnostic ownership.
+    if !leaves.is_empty()
+        && (!shared_leaves::has_explicit_modules(&partitioned)
+            || !dependency_visibility::permits_sharing(project, &partitioned, &index_by_virtual))
+    {
+        return partition(project, requested_servers, false);
     }
 
     let mut shards: Vec<Vec<&Path>> = Vec::with_capacity(bins.len());

@@ -61,21 +61,6 @@ pub(super) fn select(
         duplicate_bytes += extra;
         selected.insert(index);
     }
-    // A previously dominant component may have kept all global script roots
-    // together. Do not introduce sharding when an unrelated namespace/script
-    // root could supply a global used by a duplicated module. Ambients were
-    // already separated and shared by the caller. Parse only after finding a
-    // candidate; syntax errors or implicit/CommonJS module status fail closed.
-    if !selected.is_empty()
-        && files.iter().any(|file| {
-            file.original_path
-                .extension()
-                .is_none_or(|extension| extension != "vue")
-                && !is_explicit_module(file)
-        })
-    {
-        selected.clear();
-    }
     selected
 }
 
@@ -92,6 +77,17 @@ fn is_leaf(file: &VirtualFile) -> bool {
         && !["import", "from", "require", "<reference", "\\"]
             .iter()
             .any(|token| file.content.contains(token))
+}
+
+// A formerly dominant component may have kept all global script roots
+// together. Run this screen only for a plan that would actually split it.
+pub(super) fn has_explicit_modules(files: &[&VirtualFile]) -> bool {
+    files.iter().all(|file| {
+        file.original_path
+            .extension()
+            .is_some_and(|extension| extension == "vue")
+            || is_explicit_module(file)
+    })
 }
 
 fn is_explicit_module(file: &VirtualFile) -> bool {

@@ -1,7 +1,7 @@
 /** Real-runtime, complete-vector regression cases for shared-script sharding. */
 import assert from "node:assert/strict";
 import { copyFileSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 const CASES = [
   {
@@ -52,6 +52,25 @@ const CASES = [
     split: true,
   },
   {
+    id: "package-global-augmentation",
+    leaf: "export const value: LeafGlobal = 1;",
+    extra: {
+      "node_modules/leaf-global/package.json":
+        '{"name":"leaf-global","version":"1.0.0","types":"index.d.ts"}',
+      "node_modules/leaf-global/index.d.ts":
+        "export {}; declare global { type LeafGlobal = number; }",
+    },
+    vueImport: "import /* trivia */ 'leaf-global';",
+    split: false,
+  },
+  {
+    id: "relative-ambient-augmentation",
+    leaf: "export const value: LeafGlobal = 1;",
+    extra: { "types/custom.d.ts": "export {}; declare global { type LeafGlobal = number; }" },
+    vueImport: "import './types/custom';",
+    split: false,
+  },
+  {
     id: "transitive-vue",
     leaf: "export { value } from './other';",
     extra: { "other.ts": "export const value = 1;" },
@@ -84,10 +103,12 @@ export function checkLeafParity(directory, vuePackageDir, run) {
       include: ["*.vue", "*.ts", "*.js"],
     });
     for (const [file, content] of Object.entries(sources)) {
+      mkdirSync(dirname(join(dir, file)), { recursive: true });
+      mkdirSync(dirname(join(input, file)), { recursive: true });
       writeFileSync(join(dir, file), content);
       copyFileSync(join(dir, file), join(input, file));
     }
-    mkdirSync(join(dir, "node_modules"));
+    mkdirSync(join(dir, "node_modules"), { recursive: true });
     symlinkSync(vuePackageDir, join(dir, "node_modules/vue"), "dir");
     const corpus = { id: `leaf-parity-${fixture.id}`, args: ["--no-config"] };
     let reference;
