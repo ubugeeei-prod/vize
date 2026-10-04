@@ -13,8 +13,7 @@ use vize_l1::dialect::LegacyVueVersion;
 use vize_l1::dialect::vue2::surface::{self, TextChildren, TextRefusal, TextView};
 use vize_l1::render::check_fidelity;
 
-#[path = "native_vue2_custody/mod.rs"]
-mod cases;
+mod native_vue2_custody_cases;
 
 fn visits<'o, 'a>(
     owner: &'o surface::ComponentParse<'a>,

@@ -188,6 +188,10 @@ custody; the previous modern-conversion refusal remains. Existing whole pinned
 2.7.16 compiler/development/production closure is retained. These are prepared
 source laws; execution credit requires real current-head hosted Actions.
 Independent frozen source/law review is clear; that is source readiness only.
+Initial source head 0d6 passed build/Clippy and all six new compile-fail laws,
+but tooling refused its path-attributed test helper. A move-only rename and
+ordinary module declaration correct discovery without changing any law or
+production source; old-head results do not grant current acceptance.
 Protected full suites,
 all applicable instruction/formatter caps and actual signed merge/main proof
 remain mandatory. Registry resolution, L2 meaning, native runtime emission,
