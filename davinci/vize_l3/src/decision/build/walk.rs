@@ -101,13 +101,23 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             control
         };
         if let Some(dom) = &mut self.dom {
-            dom.enter(id, op, owner_span)?;
+            dom.enter(id, op, owner_span, &mut self.original_attributes)?;
         }
         if let Some(ssr) = &mut self.ssr {
-            ssr.enter(id, op, self.frames.is_empty());
+            ssr.enter(
+                id,
+                op,
+                self.frames.is_empty(),
+                &mut self.original_attributes,
+            );
         }
         if let Some(vapor) = &mut self.vapor {
-            vapor.enter(id, op, self.frames.is_empty());
+            vapor.enter(
+                id,
+                op,
+                self.frames.is_empty(),
+                &mut self.original_attributes,
+            );
         }
         self.frames.push(Frame {
             id,

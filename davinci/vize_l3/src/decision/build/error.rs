@@ -6,6 +6,8 @@ use vize_l0::id::NodeId;
 pub enum DecisionBuildError {
     /// Script/template failure or interrupted admission is retained by the file.
     IncompleteFile,
+    /// The actual native attribute event did not consume its own whole value row.
+    OriginalAttributeValue { node: Option<NodeId>, slot: usize },
     /// The shared L2 walk exhausted its stage-local id space.
     NodeLimit,
     /// A node's enter/leave or attached owner violated the shared walk.

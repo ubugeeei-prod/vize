@@ -370,3 +370,4 @@ l1	-	davinci/vize_l1/src/container/vue/descriptor/vue2/tests.rs	0	0	1	0	0	0	0	0
 l2	-	davinci/vize_l2/src/artifact/builder/element.rs	0	0	0	0	1	0	0	0
 l2	-	davinci/vize_l2/src/file/region/child/element.rs	0	0	0	0	1	0	0	0
 l2	-	davinci/vize_l2/src/file/region/native/attribute_value/tests/ownership.rs	0	0	1	0	3	0	0	0
+l3	-	davinci/vize_l3/src/decision/attribute_value/tests/refusal.rs	0	0	0	0	1	1	0	0
