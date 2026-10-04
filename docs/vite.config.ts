@@ -83,9 +83,9 @@ export default defineConfig({
           },
 
           header: {
-            logo: "/logo.svg",
-            logoDark: "/logo-light.svg",
-            logoWidth: 68,
+            logo: "/logo-mark.svg",
+            logoDark: "/logo-mark-light.svg",
+            logoWidth: 34,
             logoHeight: 34,
           },
 
@@ -101,8 +101,8 @@ export default defineConfig({
 
           embed: {
             head: [
-              '<link rel="icon" href="/logo.svg" type="image/svg+xml">',
-              '<link rel="icon" href="/logo-light.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)">',
+              '<link rel="icon" href="/logo-mark.svg" type="image/svg+xml">',
+              '<link rel="icon" href="/logo-mark-light.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)">',
               '<link rel="preconnect" href="https://fonts.googleapis.com">',
               '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
               '<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">',

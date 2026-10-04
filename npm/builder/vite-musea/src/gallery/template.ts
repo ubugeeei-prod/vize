@@ -35,21 +35,9 @@ export function generateGalleryBody(basePath: string): string {
   <header class="header">
     <div class="header-left">
       <a href="${escapedBasePath}" class="logo">
-        <svg class="logo-svg" width="32" height="32" viewBox="0 0 200 200" fill="none">
-          <g transform="translate(30, 25) scale(1.2)">
-            <g transform="translate(15, 10) skewX(-15)">
-              <path d="M 65 0 L 40 60 L 70 20 L 65 0 Z" fill="currentColor"/>
-              <path d="M 20 0 L 40 60 L 53 13 L 20 0 Z" fill="currentColor"/>
-            </g>
-          </g>
-          <g transform="translate(110, 120)">
-            <line x1="5" y1="10" x2="5" y2="50" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-            <line x1="60" y1="10" x2="60" y2="50" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-            <path d="M 0 10 L 32.5 0 L 65 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="15" y="18" width="14" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
-            <rect x="36" y="18" width="14" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
-            <rect x="23" y="35" width="18" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
-          </g>
+        <svg class="logo-svg" width="32" height="32" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <path d="M8 12H24L34 38L28 54Z" fill="currentColor"/>
+          <path d="M46 12H60L40 54H34Z" fill="currentColor"/>
         </svg>
         Musea
       </a>

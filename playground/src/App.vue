@@ -100,11 +100,14 @@ onMounted(async () => {
     <header class="header">
       <div class="logo">
         <div class="logo-icon">
-          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <g transform="translate(15, 10) skewX(-15)">
-              <path d="M 65 0 L 40 60 L 70 20 L 65 0 Z" fill="currentColor" />
-              <path d="M 20 0 L 40 60 L 53 13 L 20 0 Z" fill="currentColor" />
-            </g>
+          <svg
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path d="M8 12H24L34 38L28 54Z" fill="currentColor" />
+            <path d="M46 12H60L40 54H34Z" fill="currentColor" />
           </svg>
         </div>
         <div class="logo-text">

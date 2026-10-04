@@ -132,18 +132,9 @@ function openSearchModal() {
     <header class="header">
       <div class="header-left">
         <RouterLink to="/" class="logo">
-          <svg class="logo-svg" viewBox="232 24 300 210" fill="none" aria-hidden="true">
-            <g transform="translate(180, 50)">
-              <g transform="translate(180, 80) skewX(-20)">
-                <rect x="0" y="0" width="150" height="4" rx="2" fill="currentColor" />
-                <rect x="20" y="25" width="100" height="3" rx="1.5" fill="currentColor" />
-                <rect x="10" y="-25" width="80" height="2" rx="1" fill="currentColor" />
-              </g>
-              <g transform="skewX(-15)">
-                <path d="M 200 0 L 120 180 L 210 60 L 200 0 Z" fill="currentColor" />
-                <path d="M 60 0 L 120 180 L 160 40 L 60 0 Z" fill="currentColor" />
-              </g>
-            </g>
+          <svg class="logo-svg" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+            <path d="M8 12H24L34 38L28 54Z" fill="currentColor" />
+            <path d="M46 12H60L40 54H34Z" fill="currentColor" />
           </svg>
           Musea
         </RouterLink>

@@ -2,20 +2,20 @@
 
 /* Override logo assets for dark mode */
 [data-theme="dark"] .header-title img {
-  content: url("/logo-light.svg");
+  content: url("/logo-mark-light.svg");
 }
 
 [data-theme="dark"] .hero-image img {
-  content: url("/logo-light.svg");
+  content: url("/logo-mark-light.svg");
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .header-title img {
-    content: url("/logo-light.svg");
+    content: url("/logo-mark-light.svg");
   }
 
   :root:not([data-theme="light"]) .hero-image img {
-    content: url("/logo-light.svg");
+    content: url("/logo-mark-light.svg");
   }
 }
 
@@ -114,8 +114,8 @@ body:not(.entry-page) .header {
 }
 
 .header-title img {
-  content: url("/logo.svg");
-  width: 4.25rem !important;
+  content: url("/logo-mark.svg");
+  width: 2.125rem !important;
   height: 2.125rem !important;
   flex: 0 0 auto !important;
   padding: 0 !important;

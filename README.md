@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="./assets/readme-screenshot.png" alt="Vize" width="600" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/logo-light.svg" />
+    <img src="./assets/logo.svg" alt="Vize" width="320" height="128" />
+  </picture>
 </p>
 
 <p align="center">

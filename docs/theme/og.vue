@@ -10,7 +10,7 @@ const props = defineProps<{
   <div class="og">
     <div class="left">
       <div class="header">
-        <img alt="" class="header-logo" height="28" src="/logo.svg" width="28" />
+        <img alt="" class="header-logo" height="28" src="/logo-mark.svg" width="28" />
         <span class="site-name"> VIZE </span>
       </div>
       <div class="title-area">
@@ -24,7 +24,7 @@ const props = defineProps<{
       <span class="url"> vizejs.dev </span>
     </div>
     <div class="right">
-      <img alt="" class="logo" src="/logo.svg" />
+      <img alt="" class="logo" src="/logo-mark.svg" />
       <span class="tagline"> High-Performance Vue.js Toolchain in Rust </span>
     </div>
   </div>

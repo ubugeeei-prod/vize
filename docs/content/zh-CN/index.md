@@ -7,7 +7,7 @@ hero:
   text: Rust 中的高性能Vue.js工具链
   tagline: /viːz/ —— 一个能看穿你代码的智慧工具。编译、剥离、格式化、类型检查和探索Vue组件——所有这些都由Rust驱动。⚠️ 还没准备好量产。
   image:
-    src: logo.svg
+    src: logo-mark.svg
     alt: Vize标志
   actions:
     - theme: brand

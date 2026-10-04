@@ -7,7 +7,7 @@
 > The [Open Questions entry](../open-questions.md#level-restructure-2026-09-27)
 > records what changed against the charter.
 
-Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (restructure), [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) (products), [#6828](https://github.com/ubugeeei-prod/vize/issues/6828) (legacy deletion), [#6829](https://github.com/ubugeeei-prod/vize/issues/6829) (multi-framework), [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) (CI). [SSR option compatibility](./2026-09-27-ssr-source-compatibility.md).
+Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (restructure), [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) (products), [#6828](https://github.com/ubugeeei-prod/vize/issues/6828) (legacy deletion), [#6829](https://github.com/ubugeeei-prod/vize/issues/6829) (multi-framework), [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) (CI). [Open V identity](./2026-10-05-open-v-identity.md) records #7848’s common vector geometry, square icons and separate outlined lockup; hosted checks and live publication remain required. [SSR option compatibility](./2026-09-27-ssr-source-compatibility.md).
 
 ## Levels and naming
 

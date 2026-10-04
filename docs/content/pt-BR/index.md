@@ -7,7 +7,7 @@ hero:
   text: Cadeia de Ferramentas Vue.js de Alto Desempenho na Ferrugem
   tagline: /viːz/ — Uma ferramenta sábia que enxerga através do seu código. Compile, faça fia, formate, cheque de tipos e explore componentes do Vue — tudo alimentado por Rust. ⚠️ Ainda não está pronto para produção.
   image:
-    src: logo.svg
+    src: logo-mark.svg
     alt: Vize Logo
   actions:
     - theme: brand

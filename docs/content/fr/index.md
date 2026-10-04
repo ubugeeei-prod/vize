@@ -7,7 +7,7 @@ hero:
   text: Chaîne d’outils Vue.js haute performance dans la rouille
   tagline: /viːz/ — Un outil avisé qui voit clair dans votre code. Compiler, lintuer, formater, vérifier les tapes et explorer les composants Vue — le tout alimenté par Rust. ⚠️ Pas encore prêts pour la production.
   image:
-    src: logo.svg
+    src: logo-mark.svg
     alt: Vize Logo
   actions:
     - theme: brand
