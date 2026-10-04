@@ -58,7 +58,9 @@ fn actual_constant_scope_uses_vnodes_and_rejects_a_counterfeit_mutable_access_ki
     let foreign_view = foreign_observation.admitted().unwrap();
     let foreign_reads = WrongMode(foreign_view.setup());
     let mut foreign = DomBuilder::new(&LiteralExpressions, 1, Some(file), &foreign_reads);
-    foreign.enter(original.id().node(), root, None).unwrap();
+    foreign
+        .enter(original.id().node(), root, None, &mut None)
+        .unwrap();
     assert_eq!(
         foreign.facts.unsupported[0].reason,
         DomUnsupported::ForCollectionRuntime
@@ -66,7 +68,9 @@ fn actual_constant_scope_uses_vnodes_and_rejects_a_counterfeit_mutable_access_ki
     assert!(!foreign.frames[0].1.node.block_eligible);
     let wrong = WrongMode(setup);
     let mut builder = DomBuilder::new(&LiteralExpressions, 1, Some(file), &wrong);
-    builder.enter(original.id().node(), root, None).unwrap();
+    builder
+        .enter(original.id().node(), root, None, &mut None)
+        .unwrap();
     assert_eq!(
         builder.facts.unsupported[0].reason,
         DomUnsupported::ForCollectionRuntime

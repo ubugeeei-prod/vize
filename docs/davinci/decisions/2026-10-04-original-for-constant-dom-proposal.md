@@ -321,3 +321,16 @@ repair is included. This partial rejected head grants no production-native proof
 the complete private successor needs root/peer review and fresh exact Actions.
 The official release hold is lifted; readiness/protected104/actual merge still
 require real new-source qualification. Paired [primary contract correction](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5978575681).
+
+## Actual incoming cursor compatibility
+
+The exactbddef source suite and whole twelve-case packet pass, but protected
+ed60 on actual queue predecessorbcf3 fails two new counterfactual test calls:
+the genuine original-attribute provider adds a fourth private Enter cursor.
+Only own7781 is dequeued promptly; its full104 instruction gate already passes.
+The two attribute-free generic calls receive `&mut None`, preserving every
+actual owner/input/assertion, production, complete maps and inherited packet.
+[The paired cursor decision](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5978957976)
+retains the failed full-workspace log. Private preparation grants no provider
+merge credit; wait for literal accepted main, preserve all incoming source in
+the owned replay, then retained peer/fresh Actions/full104 and signed merge.
