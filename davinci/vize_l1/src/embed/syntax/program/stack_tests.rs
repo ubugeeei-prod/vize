@@ -1,8 +1,11 @@
+extern crate std;
+
+use alloc::vec::Vec;
 use oxc_ast::ast::{ArrayExpression, ArrayExpressionElement, Comment, Expression, Statement};
 use oxc_diagnostics::Diagnostics;
 use oxc_parser::{ParseOptions, Parser};
 use oxc_span::SourceType;
-use vize_l0::{Allocator, Span};
+use vize_l0::{Allocator, Span, String};
 
 use super::{EmbedSource, Lang, ProgramGoal, ProgramOptions, parse_program_once};
 use crate::embed::syntax::EmbedHole;
@@ -64,7 +67,7 @@ fn reference(text: &str, options: ProgramOptions) -> Observation {
     assert_eq!(parsed.program.source_type, options.source_type());
     let admitted = !parsed.panicked && !parsed.is_flow_language && !parsed.diagnostics.has_errors();
     Observation {
-        source: parsed.program.source_text.to_owned(),
+        source: String::from(parsed.program.source_text),
         profile: parsed.program.source_type,
         panicked: parsed.panicked,
         flow: parsed.is_flow_language,
@@ -111,7 +114,7 @@ fn native(text: &str, options: ProgramOptions) -> Observation {
         }
     }
     let result = Observation {
-        source: syntax.source().text().to_owned(),
+        source: String::from(syntax.source().text()),
         profile: syntax.source_type(),
         panicked: observation.panicked(),
         flow: observation.is_flow_language(),
@@ -189,7 +192,7 @@ fn assert_deep_array(root: &ArrayExpression<'_>, depth: usize) {
 }
 
 fn deep_source() -> String {
-    let mut text = "[".repeat(DEPTH);
+    let mut text = String::from("[".repeat(DEPTH));
     text.push('0');
     text.push_str(&"]".repeat(DEPTH));
     text.push(';');

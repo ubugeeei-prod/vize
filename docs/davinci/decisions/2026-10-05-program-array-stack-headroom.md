@@ -64,6 +64,14 @@ Owned results drop before their original allocator. No recursive AST Debug,
 serialization or visitor is used for these checks.
 
 Source compilation and execution remain pending until fresh automatic Actions.
+Initial source `b6923eb8ea5ca83d99f9012d5f2d9cea2bdfe495`, Check
+`37224517771`, stopped at authentic Rust Build job `111501400083` with seven
+`E0433`/`E0425`/`E0599` errors: the new `no_std` unit module lacked explicit
+test-only std/container imports. Its four laws were unexecuted. The correction
+adds `extern crate std`, `alloc::vec::Vec` and preferred `vize_l0::String`,
+using actual owned String conversions. One measured test-only inventory row
+records alloc Vec `1/1` and L0 String `1/5`; all old rows remain byte-exact.
+Parser source, original inputs, expected diagnostics and budgets are unchanged.
 Actual nightly-ASan fixed-input replay is separately pending; no replay success
 is claimed from these source laws. Root review precedes queue admission. The
 protected full Rust suites and unchanged 104 instruction ceilings, actual
