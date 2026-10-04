@@ -15,7 +15,7 @@ use super::vapor::build::VaporBuilder;
 use levels::Levels;
 
 use super::{
-    ControlRegion, DecisionTables, NativeAnalysis, NodeDecision,
+    ControlRegion, NativeAnalysis, NodeDecision,
     policy::{BindingOwner, TargetPolicy},
 };
 use vize_l0::{id::NodeId, side_table::SideTable};
