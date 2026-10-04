@@ -24,6 +24,8 @@ Proposed comment body for both issues:
 > retained and independently checked. No raw capture, modern selected owner,
 > caller source/AST tuple, extra parser/walk, legacy bridge or File/runtime
 > admission is introduced. The Glyph TextView-to-Doc lane remains independent.
+> HTML comments supply genuine positive CST controls; expression comments
+> retain the actual `CommentSyntax` refusal, never a fabricated admitted view.
 >
 > Required source/lifetime/foreign/sibling/movement/drop/unwind/count laws,
 > original full-source/CST geometry, existing V3/Vue 2 oracles, honest storage

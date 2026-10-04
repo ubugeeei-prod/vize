@@ -142,16 +142,25 @@ entry's parse count, storage footprint or whole-source construction cost.
 ## Meaningful hosted laws required after authorization
 
 - Positive whole-source empty/static/interpolation/filter templates, optional
-  `lang=html`, comments and Unicode/nonzero prefixes; original root/content
+  `lang=html`, HTML comments and Unicode/nonzero prefixes; original root/content
   fat pointers, block index, opening/content/closing geometry and complete
-  CST fidelity must agree. A filter read checks the existing actual AST,
-  comments/diagnostics and authored maps through its genuine TextView.
+  CST fidelity must agree. An admitted filter read checks the existing actual
+  AST, genuinely empty comment/diagnostic records and authored maps through
+  its genuine TextView; it never manufactures a comment-bearing admission.
 - Original splitter diagnostics and all profile/block/attribute/boundary
   refusals above; no Component parse for a failed envelope, including a
   later script/style/custom sibling or duplicate template.
 - Recovery/verbatim/encoded-delimiter/argument-hole/body syntax inputs retain
   their normally owned Component and exact existing TextRefusal. Selected
   envelope custody must not silently become clean-body admission.
+  Use scanner-complete inputs that reach this envelope: an uncertain or
+  unclosed interpolation rejected by `find_template_close` instead belongs
+  to the zero-parse envelope controls. Require the actual reachable child and
+  `text_for` result; never manufacture an interpolation child after refusal.
+- Expression `//` and `/*` controls retain the original Component/binding
+  `CommentSyntax` boundary and require the actual TextView refusal. The current
+  Vue 2 scanner refuses them before admitted chain parsing; do not invent
+  a started NativeSyntax or comment-bearing TextView for those inputs.
 - Same-buffer second parse, equal foreign source allocation/arena, sibling
   child, original parent/ordinal and moved owner controls. A foreign child's
   existing `text_for` join refuses even when bytes/spans match.
@@ -166,7 +175,8 @@ entry's parse count, storage footprint or whole-source construction cost.
 Count proof uses test-only observation at the actual existing splitter and
 parser entry, rather than a source-length proxy or added runtime counter.
 Its exact hook placement and storage must be peer-reviewed before source
-freeze. Automatic exact-head Actions establish actual compilation, laws,
+freeze, with per-test/thread isolation against concurrent law contamination.
+Automatic exact-head Actions establish actual compilation, laws,
 doctests and inventory; protected full suites/unchanged 104 gates and actual
 merge would be separate later acceptance, not a private-plan credit.
 
@@ -185,3 +195,16 @@ product/history/default replacement and V2_7/other dialects remain unfinished.
 No roadmap or fix-history issue closes from this structural owner. This
 plan and the local paired issue draft are frozen for root and retained peer
 review before any production edits.
+
+## Retained peer clarification
+
+Completion audit's full read-only review of `82bd09e11f` is design CLEAR,
+with actual test-hook placement/counts, later-sibling no-parse and normal
+diagnostic drop/unwind laws still required at implementation freeze. The
+retained dialect peer identified ambiguous positive-comment law wording:
+the actual Vue 2 scanner refuses expression comments as `CommentSyntax`.
+The plan now distinguishes HTML-comment positives, genuinely empty comment
+records on admitted chains, and original expression-comment refusals. This
+also distinguishes zero-parse splitter refusals from scanner-complete body
+refusals with actual reachable child custody. These are law-premise
+corrections only, with no implementation or execution credit.
