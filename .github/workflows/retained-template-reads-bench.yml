@@ -1,0 +1,156 @@
+name: Retained template reads benchmark
+
+on:
+  pull_request:
+    paths:
+      - "crates/vize_atelier_sfc/src/script/import_usage_check/**"
+      - "crates/vize_atelier_core/src/retained/**"
+      - "crates/vize_atelier_core/src/retained.rs"
+      - "crates/vize_canon/examples/retained_template_reads_projection.rs"
+      - "tools/benchmarks/scripts/retained-template-reads-cli-*.mjs"
+      - "tools/benchmarks/scripts/typecheck-command.mjs"
+      - "tools/benchmarks/scripts/benchmark-binary.mjs"
+      - "tools/benchmarks/scripts/check-gate-env.mjs"
+      - "tools/benchmarks/scripts/check-gate-plants.mjs"
+      - "tools/benchmarks/scripts/generate.mjs"
+      - ".github/workflows/retained-template-reads-bench.yml"
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: "Optional exact baseline SHA; otherwise use the common ancestor with main"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: retained-template-reads-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  paired-cli:
+    name: Retained template reads projection and actual CLI parity
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          path: head
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Select the exact baseline
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          DISPATCH_BASE_SHA: ${{ inputs.base_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          if [[ -n "$DISPATCH_BASE_SHA" ]]; then
+            [[ "$DISPATCH_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+            retained_base_sha="$DISPATCH_BASE_SHA"
+          elif [[ -n "$PR_BASE_SHA" ]]; then
+            [[ "$PR_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+            retained_base_sha="$(git -C head merge-base "$PR_BASE_SHA" "$HEAD_SHA")"
+          else
+            retained_base_sha="$(git -C head merge-base origin/main "$HEAD_SHA")"
+          fi
+          [[ "$retained_base_sha" =~ ^[0-9a-f]{40}$ ]]
+          echo "BASE_SHA=$retained_base_sha" >> "$GITHUB_ENV"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          path: base
+          ref: ${{ env.BASE_SHA }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with:
+          wild-version: "0.9.0"
+      - uses: ./head/.github/actions/setup-rust-sticky-cache
+        with:
+          key: retained-template-reads-head
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          target-path: head/target
+          secondary-key: retained-template-reads-base
+          secondary-target-path: base/target
+          secondary-cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: head/package.json
+          run-install: false
+      - name: Check timing protocol, complete reports and deterministic inputs
+        working-directory: head
+        run: node tools/benchmarks/scripts/retained-template-reads-cli-paired.mjs --self-test
+      - name: Install the shared Vue and native TypeScript dependencies
+        working-directory: head
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify import retention semantics and production lint
+        working-directory: head
+        run: |
+          cargo test --locked -p vize_atelier_sfc --lib script::import_usage_check
+          cargo clippy --locked -p vize_atelier_sfc --lib -- -D warnings
+      - name: Build exact base and head with identical harness and projection probe
+        run: |
+          set -euo pipefail
+          [[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
+          [[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
+          git -C head diff --exit-code HEAD
+          git -C base diff --exit-code HEAD
+          for helper in head/tools/benchmarks/scripts/retained-template-reads-cli-*.mjs; do
+            cp "$helper" "base/tools/benchmarks/scripts/$(basename "$helper")"
+            cmp "$helper" "base/tools/benchmarks/scripts/$(basename "$helper")"
+          done
+          for helper in generate.mjs check-gate-env.mjs check-gate-plants.mjs typecheck-command.mjs benchmark-binary.mjs; do
+            cmp "head/tools/benchmarks/scripts/$helper" "base/tools/benchmarks/scripts/$helper"
+          done
+          mkdir -p base/crates/vize_canon/examples
+          cp head/crates/vize_canon/examples/retained_template_reads_projection.rs base/crates/vize_canon/examples/
+          cmp head/crates/vize_canon/examples/retained_template_reads_projection.rs base/crates/vize_canon/examples/retained_template_reads_projection.rs
+          for side in base head; do
+            cargo build --locked --manifest-path "$side/Cargo.toml" --target-dir "$side/target" --profile ci-opt \
+              -p vize --bin vize \
+              --config 'profile.ci-opt.inherits="release"' \
+              --config 'profile.ci-opt.lto="thin"' \
+              --config 'profile.ci-opt.codegen-units=16' \
+              --config 'profile.ci-opt.package.vize.strip="symbols"'
+            cargo build --locked --manifest-path "$side/Cargo.toml" --target-dir "$side/target" --profile ci-opt \
+              -p vize_canon --example retained_template_reads_projection \
+              --config 'profile.ci-opt.inherits="release"' \
+              --config 'profile.ci-opt.lto="thin"' \
+              --config 'profile.ci-opt.codegen-units=16'
+          done
+      - name: Gate complete projections and diagnostics, then measure nine alternating pairs
+        env:
+          RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
+          BASE_PROJECTION: ${{ github.workspace }}/base/target/ci-opt/examples/retained_template_reads_projection
+          HEAD_PROJECTION: ${{ github.workspace }}/head/target/ci-opt/examples/retained_template_reads_projection
+        run: |
+          node head/tools/benchmarks/scripts/retained-template-reads-cli-paired.mjs \
+            "$GITHUB_WORKSPACE/base/target/ci-opt/vize" \
+            "$GITHUB_WORKSPACE/head/target/ci-opt/vize" \
+            "$GITHUB_WORKSPACE/retained-template-reads-cli-bench.json"
+          cat retained-template-reads-cli-bench.json.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload inputs, complete projections, every process report and separate profiles
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: retained-template-reads-cli-bench
+          path: |
+            retained-template-reads-cli-bench.json
+            retained-template-reads-cli-bench.json.md
+            retained-template-reads-cli-bench.json.samples/provenance.json
+            retained-template-reads-cli-bench.json.samples/failure.json
+            retained-template-reads-cli-bench.json.samples/runs.ndjson
+            retained-template-reads-cli-bench.json.samples/inputs/
+            retained-template-reads-cli-bench.json.samples/raw/
+            retained-template-reads-cli-bench.json.samples/profiles/
+            retained-template-reads-cli-bench.json.samples/projections/
+          if-no-files-found: error
+          retention-days: 30

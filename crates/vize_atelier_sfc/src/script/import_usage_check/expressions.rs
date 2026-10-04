@@ -5,9 +5,14 @@ use oxc_ast::ast as oxc_ast_types;
 use oxc_ast_visit::{Visit, walk::walk_arrow_function_expression};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use vize_atelier_core::retained::js_module_compatible;
 use vize_atelier_core::{ExpressionNode, SimpleExpressionNode};
 use vize_carton::{FxHashSet, String, ToCompactString, cstr, is_simple_identifier};
 use vize_croquis::builtins::is_global_allowed;
+use vize_l0::profiler::global_profiler;
+
+#[cfg(test)]
+mod retained_tests;
 
 pub(super) fn extract_slot_pattern_identifiers(node: &ExpressionNode, ids: &mut FxHashSet<String>) {
     if let ExpressionNode::Simple(simple) = node {
@@ -59,7 +64,18 @@ fn extract_identifiers_from_simple_expression(
     if !content.is_empty() && is_simple_identifier(content) {
         ids.insert(content.to_compact_string());
     } else if !content.is_empty() {
-        extract_identifiers_from_js_expression(content, ids);
+        if let Some(js) = node
+            .js_ast
+            .as_ref()
+            .filter(|js| js.raw == node.content && js_module_compatible(js))
+        {
+            // Transforms can change content while retaining the original AST.
+            // The module gate also preserves the strict wrapped-parse goal.
+            global_profiler().record_counter("atelier.template_reads.retained", 1);
+            extract_identifiers_from_ast(js.ast, ids);
+        } else {
+            extract_identifiers_from_js_expression(content, ids);
+        }
     }
 }
 
@@ -75,10 +91,15 @@ fn extract_identifiers_from_js_expression(content: &str, ids: &mut FxHashSet<Str
     wrapped.push(')');
 
     let parser = Parser::new(&allocator, &wrapped, source_type);
+    global_profiler().record_counter("atelier.template_reads.parses", 1);
     let Ok(expr) = parser.parse_expression() else {
         return;
     };
 
+    extract_identifiers_from_ast(&expr, ids);
+}
+
+fn extract_identifiers_from_ast(expr: &oxc_ast_types::Expression<'_>, ids: &mut FxHashSet<String>) {
     #[derive(Default)]
     struct TemplateIdentifierVisitor {
         ids: FxHashSet<String>,
@@ -140,7 +161,7 @@ fn extract_identifiers_from_js_expression(content: &str, ids: &mut FxHashSet<Str
     }
 
     let mut visitor = TemplateIdentifierVisitor::default();
-    visitor.visit_expression(&expr);
+    visitor.visit_expression(expr);
     ids.extend(visitor.ids);
 }
 
