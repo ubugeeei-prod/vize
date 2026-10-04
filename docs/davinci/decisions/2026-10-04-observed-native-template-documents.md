@@ -110,3 +110,14 @@ equality. Preserve strict source04a278d5 and its complete raw failure log; input
 production, refusal, full positive output, maps, allowlist and budgets stay
 unchanged. All209 native/21 provider/four projection/two owner controls require
 a corrected exact source and final protected actual merge.
+
+The [current-main integration](https://github.com/ubugeeei-prod/vize/issues/6847#issuecomment-5975291130)
+replays the unqueued exact-custody source8e1a0fc9 onto literal db31cc119 main.
+All eighteen noncentral/noncanonical owned blobs stay exact; incoming central
+records are preserved plus the exact provider tail, with only owned Glyph
+shards regenerated. The actual accepted instruction/fixture-history companions
+now exist for the dependent assessment carrier. Strict04a passes209 native/21
+provider/four projection/two owner controls but its entire tooling gate fails,
+so its original six logs and the pre-replay successor remain historical only.
+Fresh current-main source Actions and the verified true Stack's protected
+full/applicable unchanged ceilings and literal signed merges remain required.
