@@ -4,6 +4,8 @@ Tracking [#6842](https://github.com/ubugeeei-prod/vize/issues/6842), following
 the [original selected-descriptor provider](2026-10-04-vue2-selected-descriptor-plan.md).
 The [paired preparation decision](https://github.com/ubugeeei-prod/vize/issues/6842#issuecomment-5979765603)
 records the same scope and unexecuted acceptance boundary.
+The [acceptance-route qualification](https://github.com/ubugeeei-prod/vize/issues/6842#issuecomment-5979887189)
+records the technical review and required protected gates.
 This is a distinct, explicitly consuming L1 capability. The existing borrowed
 descriptor, Component, TextView and NativeExpressionView stay owner-borrowed.
 Their production borrowed behavior and existing lifetime/foreign-owner laws
@@ -137,10 +139,12 @@ the Vue2 historical action's source-path selector omits L1. Source PR success
 therefore supplies no guaranteed Vue2 capture/native/oracle join artifact.
 The merge-group route force-selects both historical composites. No action
 selector or frozen input is modified by this preparation.
-Manual Check alone omits the historical composite and its instruction job;
-the separate existing `level-instruction-counts.yml` manual lane must measure
-the unchanged original100 and formatter4, then the actual protected candidate
-must pass full Rust/capture/104 gates before any delivery credit.
+Manual Check omits the historical composite and its instruction job. The actual
+protected candidate must pass unchanged original100 plus formatter4 gates,
+both historical Vue2 48-case and Vue1 64-case capture/oracle composites, full
+Rust suites and current32 observations before any delivery credit. A separate
+manual104 campaign is not a prerequisite; supported manual tooling remains
+available for a concrete failure investigation when needed.
 
 Whole Glyph integration is still required: its actual whole observation must
 consume the complete descriptor pool while retaining its original Doc, outcome,
