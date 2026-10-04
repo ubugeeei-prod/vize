@@ -129,3 +129,27 @@ test("matcher imports allow only the existing scoped host symbols", () => {
     forbiddenCartonStorage,
   );
 });
+
+test("applied module context retains only its exact reviewed host ProjectModel import", () => {
+  const file = "crates/vize_maestro/src/server/state/module_links.rs";
+  const declaration = "use vize_carton::config::ProjectModel;";
+  for (const path of [file, file.replaceAll("/", "\\")]) {
+    assert.doesNotMatch(withoutHostRuntimeReferences(source(file), path), forbiddenCartonStorage);
+    for (const unreviewed of [
+      "use vize_carton::config::{ProjectModel, TypeCheckerConfig};",
+      "use vize_carton::config::ProjectModel as CopiedProject;",
+      "use vize_carton::config::*;",
+      "use vize_carton::String;",
+      "vize_carton::config::ProjectModel::new(None, None, &config)",
+      "vize_carton::config::ProjectModel::default()",
+    ]) {
+      assert.match(
+        withoutHostRuntimeReferences(`${source(file)}\n${unreviewed}`, path),
+        forbiddenCartonStorage,
+      );
+    }
+  }
+  for (const foreign of [...hostFiles, "davinci/vize_l2/src/config.rs", `${file}.other`]) {
+    assert.match(withoutHostRuntimeReferences(declaration, foreign), forbiddenCartonStorage);
+  }
+});

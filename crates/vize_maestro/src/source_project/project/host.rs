@@ -9,6 +9,8 @@ use std::sync::Arc;
 use super::{ActiveQueries, AtomicU64, Mutex, SourceQueryProject, SourceSnapshotCache};
 use crate::document::DocumentStore;
 use crate::server::ServerState;
+#[cfg(feature = "experimental-source-navigation")]
+mod modules;
 mod names;
 
 /// The variants keep physical host ownership; none grant native File admission.

@@ -7,8 +7,11 @@
 
 mod art_template_context;
 mod config;
+mod default;
 mod features;
 mod lint_hover;
+#[cfg(feature = "experimental-source-navigation")]
+mod module_links;
 #[cfg(feature = "experimental-source-navigation")]
 mod native_names;
 mod resident;
@@ -58,6 +61,10 @@ use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
 
 pub use features::LspFeatureConfig;
 #[cfg(feature = "experimental-source-navigation")]
+pub(crate) use module_links::{
+    ModuleLinkContext, ModuleLinkContextError, ModuleLinkRetirement, ModuleLinkTerminationLease,
+};
+#[cfg(feature = "experimental-source-navigation")]
 pub(crate) use native_names::{
     NativeLinkedNamesRoute, NativeLinkedNamesTicket, NativeNamesConfigurationError,
     NativeNamesParserTicket, NativeNamesSettings,
@@ -74,6 +81,8 @@ pub struct ServerState {
     native_linked_editing: AtomicBool,
     #[cfg(feature = "experimental-source-navigation")]
     native_names: RwLock<native_names::Generations>,
+    #[cfg(feature = "experimental-source-navigation")]
+    module_links: RwLock<module_links::Session>,
     /// Memoized SFC descriptors, one parse per buffer revision (P5-6a).
     pub(crate) resident: resident::ResidentCache,
     /// Virtual code generator (reusable)
@@ -188,12 +197,6 @@ pub struct ServerState {
     corsa_overlays: corsa_overlays::CorsaOverlayCache,
 }
 
-impl Default for ServerState {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl ServerState {
     pub fn new() -> Self {
         let default_features = LspFeatureConfig::default();
@@ -214,6 +217,8 @@ impl ServerState {
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             type_checker_config: RwLock::new((TypeCheckerConfig::default(), 60_000)),
+            #[cfg(feature = "experimental-source-navigation")]
+            module_links: RwLock::new(module_links::Session::default()),
             global_types: RwLock::new(GlobalTypesConfig::default()),
             // Options API matches vue-tsc by default; config may opt out.
             type_checker_options_api: RwLock::new(true),
