@@ -60,7 +60,7 @@ ancestry/attribute/petite source bytes and goldens remain unchanged.
 Seven native laws cover whole-node census, nonzero Unicode/actual event
 addresses, owner/tree movement, distinct equal-buffer authority, explicit
 comment/Vue/general-policy refusals, outer-mode refusals and repeated actual
-512-reference/32-deep subtree workload readback. Seven compile-fail controls
+512-block/32-deep subtree workload readback (1,536 original references). Seven compile-fail controls
 and one positive public example cover private constructors, non-Clone views
 and owner/tree lifetimes. These are written execution requirements; no local
 Rust build/test or hosted execution has yet been claimed.
@@ -80,3 +80,7 @@ native/default formatter completion. #6835/#6843 remain open; #6836 stays closed
 
 The same-change decision is paired on [#6835](https://github.com/ubugeeei-prod/vize/issues/6835#issuecomment-5976474663)
 and [#6843](https://github.com/ubugeeei-prod/vize/issues/6843#issuecomment-5976474940).
+
+Independent source/law review is clear on `8ceb27281767`; the workload wording
+correction changes no Rust, whole fixture bytes, assertions or storage counts.
+Hosted execution and protected/actual delivery remain required.
