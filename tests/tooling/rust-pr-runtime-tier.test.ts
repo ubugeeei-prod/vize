@@ -55,6 +55,10 @@ const canonDeferred = [
     name: "component_v_for_source_preserves_complete_original_diagnostics",
     pack: "v-for-component-source-original",
   },
+  {
+    name: "template_suppression_preserves_complete_original_diagnostics",
+    pack: "template-suppression-original",
+  },
 ];
 type Step = { name?: string; run?: string };
 const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {

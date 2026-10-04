@@ -189,6 +189,17 @@ fn component_v_for_source_preserves_complete_original_diagnostics() {
     );
 }
 
+#[test]
+fn template_suppression_preserves_complete_original_diagnostics() {
+    check_pack(
+        "template-suppression-original",
+        "template_suppression_preserves_complete_original_diagnostics",
+        "e199979dfb32dfd8eb9ad32a2928fb010768f239",
+        Some(6009),
+        &["complete-original-template-suppression"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -218,7 +229,8 @@ fn check_pack(
             | "split-script-original"
             | "v-for-source-original"
             | "v-for-component-source-original"
-            | "declared-prop-names-original" => regression,
+            | "declared-prop-names-original"
+            | "template-suppression-original" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

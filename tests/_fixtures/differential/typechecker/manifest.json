@@ -1202,6 +1202,38 @@
           "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
         }
       ]
+    },
+    {
+      "id": "typechecker/template-suppression-original/complete-original-template-suppression",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "template-suppression-original",
+      "case": "complete-original-template-suppression",
+      "test": "template_suppression_preserves_complete_original_diagnostics",
+      "regressionCommit": "e199979dfb32dfd8eb9ad32a2928fb010768f239",
+      "sourceRevision": "e199979dfb32dfd8eb9ad32a2928fb010768f239",
+      "packReference": {
+        "path": "template-suppression-original/cases.json",
+        "sha256": "0eb481484badb04dd3007562f83ca91ad5df5663a922cb48862b90ac2ebf094f"
+      },
+      "inputs": [
+        {
+          "file": "src/App.vue",
+          "path": "template-suppression-original/original-project/src/App.vue.txt",
+          "sha256": "c25ca8f918e9d83a8f6282cbab0c8a8d5970a5e81bd8de2ca566235c8a0ebeae"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "template-suppression-original/original-project/tsconfig.json.txt",
+          "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"
+        }
+      ]
     }
   ]
 }

@@ -24,6 +24,7 @@ export const TYPECHECKER_TESTS = {
   "declared-prop-names-original": "declared_prop_names_preserve_complete_original_diagnostics",
   "v-for-component-source-original":
     "component_v_for_source_preserves_complete_original_diagnostics",
+  "template-suppression-original": "template_suppression_preserves_complete_original_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -42,6 +43,7 @@ const sourceRevisions = {
   "v-for-source-original": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
   "declared-prop-names-original": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
   "v-for-component-source-original": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+  "template-suppression-original": "e199979dfb32dfd8eb9ad32a2928fb010768f239",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };
