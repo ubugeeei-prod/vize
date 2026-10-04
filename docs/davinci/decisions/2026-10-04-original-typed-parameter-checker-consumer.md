@@ -3,9 +3,14 @@
 Issues: [#6849](https://github.com/ubugeeei-prod/vize/issues/6849),
 [#6879](https://github.com/ubugeeei-prod/vize/issues/6879).
 
-This private test consumer is a genuine child of the independently reviewed
+This test consumer began as a genuine private child of the independently reviewed
 [original parameter provider](./2026-10-04-original-typed-parameter-provider.md),
-exact `0b3190b3e5f90899cdec65fdec765a39570d85af`, in a new isolated `wt`.
+exact `0b3190b3e5f90899cdec65fdec765a39570d85af`, in an isolated `wt`.
+Published #7758 remains the actual provider-branch child in server-verified
+native Stack #7759, positions 1/2 for #7756 → #7758. The literal main
+`da894691fff4da81b4acbe71a935c7c67fb0539a` union preserves all owned source,
+oracle and inventory bytes while the genuine provider parent becomes
+`98638bc6d769f9f5979527d8a14902a098b8ce67`. Earlier heads remain historical.
 The coordinating review authorizes private dependent implementation while the
 provider validates. Publication requires frozen source and independent review;
 actual native Stack registration and contiguous prefix source qualification
@@ -83,7 +88,9 @@ profile guards retain their independent laws unchanged.
 
 ## Gates and unfinished work
 
-No consumer Rust build, TS7 execution or runtime acceptance is claimed here.
+The original frozen source review carried no Rust/TS7 execution credit.
+The separately qualified earlier source heads are recorded below; every replay
+requires its own fresh source execution, protected gates and actual merge.
 Normal exact-head hosted source Actions and protected full workers must run the
 new bodies and inherited original Program/Vue/JSX/TSX/array/history controls.
 The authenticated pure Node canonical consumer census first reported only
@@ -106,6 +113,45 @@ bytewise canonical lowercase hex recipe, without dependency/feature or oracle
 changes. The full failed build log remains retained; this grants no diagnostic
 execution or successful JSON packet. All original source/vectors and full report
 assertions stay unchanged, and the corrected head needs fresh hosted Actions.
+
+## Actual source qualification and retained pre-prompt failure
+
+Earlier exact child `1a7e44a6` / Check 37182179144 succeeded: all three new
+consumer laws and 15,481 affected-source cases across four workers pass with
+zero failure/error/skip. The difference from provider `1ee`'s 15,386 is exactly
+three consumer laws plus 83 existing parser and nine existing derive tests,
+with no removed cases. These are actual source selectors, not protected full
+repository denominators. Hosted checkout `d0762dc8` joins all seventeen
+cumulative owned blobs to source `1a7`. Successful packets retain all twelve
+whole primary/configured reports, actual backend/source identities, complete
+ConfigResponse and before/after same-session compiler-options ProjectResponses.
+Independent artifact comparison preserves every ordered exposed diagnostic and
+both related endpoints; no expected recapture or unknown-wire-field claim occurs.
+Primary packet SHA256 is
+`4d186dc968a78748d5eba74524e7ea4adb7bfd9bba5bd73c7fa6e283a51fb857`;
+Canon packet SHA256 is
+`5942314764441aefca9e733505f46e1d0bc6b9725c98546963c15494c570af3d`.
+
+Bottom `1ee`'s first Check 37181643416 failed only the existing release PTY abort
+law: status 124 at 25 seconds, before any prompt or release-version output.
+The complete failed log SHA256 is
+`a68fce5b8dcf1a7cf13dc38e3f3fbc0c8b4f1ae3cefd105ae893648cf239e8a8`.
+One explicitly authorized diagnostic retry of only the failed tooling job
+succeeds on unchanged `1ee` (attempt 2 / job 111378407508), with the same real prompt,
+response, deadlines, exit/status/repository assertions and 1,364.242336ms law.
+Complete retry log SHA256 is
+`705e2f17082ccf9a490baba0246c6bac88cdd710715a56cd46a97fd7781a4ab4`.
+This is nonreproduction, not a source fix or isolated cause. TODO: registry
+refresh/compiler/build-lock/startup delay remains unidentified; retain the
+failure-only lifecycle diagnostic proposal if it recurs, with no further retry,
+timeout relaxation or masking. Paired decisions are recorded on
+[#6879](https://github.com/ubugeeei-prod/vize/issues/6879#issuecomment-5977362662)
+and [#6849](https://github.com/ubugeeei-prod/vize/issues/6849#issuecomment-5977362866).
+
+The current central-only union retains all complete incoming literal-main
+clauses and every exact reviewed owned clause. Replayed source heads require
+fresh Actions and native Stack verification; no old execution is transferred.
+Protected full suites/all 100+4 and literal signed Stack delivery remain pending.
 
 All old historical packs, vectors and native-null adapters stay byte-identical:
 29 projects / 12 packs / 102 carriers; ledger 271 / 263 / 31. Incoming #7734
