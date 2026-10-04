@@ -81,3 +81,11 @@ Document, SSR/Vapor/For providers and all old packs remain intact. Ten source
 laws still need actual hosted execution, and the reviewed new-file-only
 original14 qualification child still needs full real modules/maps/fixed mounts.
 No new queue admission is made during the release flight.
+
+The first published cdc/8da source Actions failed before actual capture: two
+L3 checks called a nonexistent FileArtifact.source accessor (E0599). The narrow
+correction derives the same original root through file.artifact().source at
+both checks, preserving every allocation, name/value pointer, span and complete
+cursor guard. The failed logs remain historical; no Rust or runtime acceptance
+is inferred. Fresh corrected-parent and true qualification-child Actions are
+required, distinct from the later intentional unfrozen-output rejection.

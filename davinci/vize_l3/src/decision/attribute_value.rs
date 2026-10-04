@@ -101,13 +101,14 @@ impl<'owner, 'arena> OriginalAttributeCursor<'owner, 'arena> {
             }
             let value = joined.observation()?;
             let source = value.source();
-            if !core::ptr::eq(source.authored_root(), self.file.source())
+            if !core::ptr::eq(source.authored_root(), self.file.artifact().source())
                 || source.span() != value.value_span()
                 || attribute.span.start != value.name_span().start
                 || attribute.span.end != value.full_value_span().end
                 || !core::ptr::eq(
                     value.raw_value(),
                     self.file
+                        .artifact()
                         .source()
                         .get(value.value_span().start as usize..value.value_span().end as usize)?,
                 )
