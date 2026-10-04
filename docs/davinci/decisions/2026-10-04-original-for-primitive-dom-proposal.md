@@ -184,3 +184,12 @@ current-source runtime hash joins are mandatory, with all old seven/five
 setup/click packs preserved. Native compilation/output/maps, independent
 review of these new laws, exact-head Actions and protected104cap acceptance
 are pending; the branch stays unqueued.
+
+First draft #7695 sourcec9e Check37168249498 caught two new-test compile
+errors before any loop capture: DescriptorOptions has no Default implementation
+and the child module was registered before the parent lexical require macro.
+The correction uses explicit genuine Vue3 DescriptorOptions and registers
+the child after that unchanged macro. Production policy, full fixture/map
+oracles, refusal laws, budgets and capture requirements stay unchanged.
+Failed raw builder/tooling logs are retained; fresh exact-source Actions
+must establish native execution. The draft remains unqueued.

@@ -4,7 +4,6 @@ use vize_l0::{String, cstr, id::NodeId};
 use vize_l3::decision::{dom::vue::VueReadKind, native::build_native_selected_setup_dom_decisions};
 
 mod nested;
-mod original_for;
 mod refusal;
 
 macro_rules! require {
@@ -12,6 +11,8 @@ macro_rules! require {
         if !$condition { return Err(cstr!($($message)+)); }
     };
 }
+mod original_for;
+
 fn text<'a>(value: &'a Value, key: &str) -> Result<&'a str, String> {
     value
         .get(key)

@@ -1,7 +1,11 @@
 extern crate std;
 use super::*;
 use core::cell::Cell;
-use vize_l0::Allocator;
+use vize_l0::{
+    Allocator,
+    config::{VueDialect, VueVersion},
+};
+use vize_l1::{SurfaceParseOptions, container::vue::DescriptorOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{
     file::BindingRef,
@@ -33,7 +37,15 @@ impl<'owner, 'arena> FileReads<'owner, 'arena> for InterruptedReads<'_, 'owner, 
 fn caught_enter_unwind_keeps_normal_program_collection_params_and_alias_scope() {
     let arena = Allocator::default();
     let source = "<script setup>let count=2</script><template><i v-for='count in count'>fixed</i></template>";
-    let observation = lower_selected_setup_sfc_native(&arena, source, Default::default());
+    let observation = lower_selected_setup_sfc_native(
+        &arena,
+        source,
+        DescriptorOptions {
+            version: VueVersion::V3,
+            dialect: VueDialect::Vue,
+            template: SurfaceParseOptions::default(),
+        },
+    );
     let view = observation.admitted().unwrap();
     let setup = view.setup();
     let file = setup.file();
