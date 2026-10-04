@@ -49,3 +49,11 @@ both lexer checkpoint/rewind paths and is exposed only from the immutable
 original admitted Program observation. Ordinary ASTs, diagnostics and syntax
 admission remain unchanged; the receipt does not certify general semantics.
 Native setup eligibility consumes it without another source scan or AST walk.
+
+The complete original array-expression body now uses direct pinned
+`stacker = "=0.1.25"` with 512 KiB headroom and 4 MiB growth segments for the
+authenticated Vize #7805 Program reproducer. Token, grammar, recovery and
+diagnostic work stay on the same parser. This guards array descent only;
+other recursive grammar paths, unsupported stacker targets and hostile-input
+quotas remain separate. The original source is retained in the Program fuzz
+regressions and seeded in all eight explicit source profiles.

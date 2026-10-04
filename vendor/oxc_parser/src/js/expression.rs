@@ -511,22 +511,25 @@ impl<'a, C: Config> ParserImpl<'a, C> {
     ///     [ `ElementList`[?Yield, ?Await] ]
     ///     [ `ElementList`[?Yield, ?Await] , Elisionopt ]
     pub(crate) fn parse_array_expression(&mut self) -> Expression<'a> {
-        let span = self.start_span();
-        let opening_span = self.cur_token().span();
-        self.expect(Kind::LBrack);
-        let (elements, comma_span) = self.context_add(Context::In, |p| {
-            p.parse_delimited_list(
-                Kind::RBrack,
-                Kind::Comma,
-                opening_span,
-                Self::parse_array_expression_element,
-            )
-        });
-        if let Some(comma_span) = comma_span {
-            self.state.trailing_commas.insert(span, self.end_span(comma_span));
-        }
-        self.expect(Kind::RBrack);
-        Expression::new_array_expression(self.end_span(span), elements, self)
+        // Grow only across array descent; grammar and recovery stay on the same parser.
+        stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, || {
+            let span = self.start_span();
+            let opening_span = self.cur_token().span();
+            self.expect(Kind::LBrack);
+            let (elements, comma_span) = self.context_add(Context::In, |p| {
+                p.parse_delimited_list(
+                    Kind::RBrack,
+                    Kind::Comma,
+                    opening_span,
+                    Self::parse_array_expression_element,
+                )
+            });
+            if let Some(comma_span) = comma_span {
+                self.state.trailing_commas.insert(span, self.end_span(comma_span));
+            }
+            self.expect(Kind::RBrack);
+            Expression::new_array_expression(self.end_span(span), elements, self)
+        })
     }
 
     fn parse_array_expression_element(&mut self) -> ArrayExpressionElement<'a> {
