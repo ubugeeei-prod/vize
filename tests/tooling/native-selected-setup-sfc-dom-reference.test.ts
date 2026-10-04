@@ -25,8 +25,8 @@ test("whole original selected setup sources retain independent pinned Vue JS/TS 
   assert.equal(runtime.version, "3.5.35");
   assert.equal(ts.version, "6.0.3");
   assert.equal(pack.schema, "vize.native-sfc.selected-setup-reference");
-  assert.equal(pack.fixtures.length, 6);
-  assert.equal(new Set(pack.fixtures.map((f: any) => f.id)).size, 6);
+  assert.equal(pack.fixtures.length, 7);
+  assert.equal(new Set(pack.fixtures.map((f: any) => f.id)).size, 7);
   if (requireCapture)
     assert(captured, "hosted acceptance requires the actual source-built Rust components");
   if (captured) {
@@ -42,6 +42,13 @@ test("whole original selected setup sources retain independent pinned Vue JS/TS 
       })),
     );
   }
+  const exactNested = pack.fixtures.find(
+    (fixture: any) => fixture.id === "nested-original-counterexample",
+  );
+  assert.equal(
+    exactNested?.source,
+    "<script setup>let count=1</script><template><p>{{count}}</p></template>",
+  );
   for (const fixture of pack.fixtures) {
     const parsed = compiler.parse(fixture.source, { filename: pack.filename });
     assert.deepEqual(parsed.errors, []);

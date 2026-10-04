@@ -42,11 +42,10 @@ fn unsupported_original_programs_and_whole_envelopes_remain_owned_refusals() {
 }
 
 #[test]
-fn compound_escaped_nested_and_outer_handler_reads_never_gain_setup_target_authority() {
+fn compound_escaped_and_outer_handler_reads_never_gain_setup_target_authority() {
     for template in [
         "{{count+1}}",
         r"{{c\u006funt}}",
-        "<p>{{count}}</p>",
         "<button @click='let unused=$event;count++;'/>",
     ] {
         let arena = Allocator::default();

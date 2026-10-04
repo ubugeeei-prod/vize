@@ -31,7 +31,7 @@ test("actual selected setup consumers require source-built whole-module runtime 
   assert.match(action, /VIZE_NATIVE_SELECTED_SETUP_SFC_DOM_REQUIRE_CAPTURE: "1"/);
   assert.match(
     action,
-    /cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::six_whole_original_setup_components_and_maps_are_captured -- --exact/,
+    /cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::seven_whole_original_setup_components_and_maps_are_captured -- --exact/,
   );
   assert.match(
     action,
