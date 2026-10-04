@@ -153,3 +153,15 @@ the original ElementOp allocation. Both assertions now explicitly borrow
 slot, span/map and completion check. Production and old fixtures are unchanged.
 Raw rejected build logs remain historical; new laws and captures still require
 fresh corrected Actions, with no runtime credit or queue admission.
+
+The e978 replay mistakenly staged three unresolved storage-ledger conflict
+markers. Croquis checks20 separate outputs and did not parse or rewrite this
+reviewed per-file ledger; source tooling correctly refused its malformed row368.
+The correction removes only the three markers, preserving every actual incoming
+Vue2/Head and reviewed L2 measurement row byte-for-byte. The real TypeScript
+parseStorageInventory/scanStorage policy and storage-summary/run-bundle tests
+validate all11 fields and the complete source measurements without exemptions.
+This necessary replay also follows literal912d so its actual native-backend
+phase harness remains present, rather than copying a missing helper. All L2
+production/laws/frozen payloads stay unchanged; invalid source heads/raw logs
+are retained historically and fresh whole Stack gates remain mandatory.

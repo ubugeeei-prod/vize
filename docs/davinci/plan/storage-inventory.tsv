@@ -365,11 +365,8 @@ l2	-	davinci/vize_l2/src/file/build/template.rs	0	0	1	1	0	0	0	0
 l2	analysis	davinci/vize_l2/src/file/region/native/for_tests.rs	1	0	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/file/query/template/tests.rs	2	0	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/file/query/template/tests/refusals.rs	1	0	0	0	0	0	0	0
-<<<<<<< HEAD
 l1	-	davinci/vize_l1/src/container/vue/descriptor/vue2.rs	0	0	0	0	1	1	0	0
 l1	-	davinci/vize_l1/src/container/vue/descriptor/vue2/tests.rs	0	0	1	0	0	0	0	0
-=======
 l2	-	davinci/vize_l2/src/artifact/builder/element.rs	0	0	0	0	1	0	0	0
 l2	-	davinci/vize_l2/src/file/region/child/element.rs	0	0	0	0	1	0	0	0
 l2	-	davinci/vize_l2/src/file/region/native/attribute_value/tests/ownership.rs	0	0	1	0	3	0	0	0
->>>>>>> 496c9b1dcd (feat(l2): retain original attribute value ownership)
