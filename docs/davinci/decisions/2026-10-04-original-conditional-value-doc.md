@@ -13,8 +13,11 @@ named type alias and boxes only the optional actual attribute-failure payload
 in the lower failure owner, reducing its `Err` size without allocating for
 `None`. Accessors and transfers borrow/move that same normally owned payload.
 No parser, pass, Doc, refusal order, law, golden or instruction cap changes.
-Fresh exact-source Actions, protected validation and actual merge remain
-required.
+The first compact successor removed all three initial lints, then failed
+on one `explicit_auto_deref` lint before law execution; the next spelling uses
+Rust field auto-dereference to move the same boxed failure. Both failed heads
+and logs remain historical only. Fresh exact-source Actions, protected
+validation and actual merge remain required.
 
 ## Same original header event
 

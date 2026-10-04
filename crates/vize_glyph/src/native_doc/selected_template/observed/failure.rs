@@ -127,7 +127,7 @@ impl<'p, 'a> ObservedNativeTemplateFailure<'p, 'a> {
             self.attributes,
             self.refusal,
             self.interpolation_failure,
-            self.attribute_failure.map(|failure| (*failure).2),
+            self.attribute_failure.map(|failure| failure.2),
         )
     }
     /// Preserve the original interpolation-only transfer contract.
