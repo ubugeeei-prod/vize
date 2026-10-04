@@ -46,6 +46,15 @@ fn dom_options() -> DomCompilerOptions {
     }
 }
 
+fn dom_parser_options() -> ParserOptions {
+    ParserOptions {
+        is_void_tag: vize_l0::is_void_tag,
+        is_native_tag: Some(vize_l0::is_native_tag),
+        comments: true,
+        ..Default::default()
+    }
+}
+
 fn assert_diagnostics(template: &str, errors: &[CompilerError]) {
     // Keep the reporter's original <div />. The ordinary compiler recovers it
     // with this existing diagnostic, also seen in the real Nuxt build.
@@ -85,7 +94,7 @@ fn successful_chains_remove_only_their_whitespace_gaps() {
     for whitespace in [WhitespaceStrategy::Preserve, WhitespaceStrategy::Condense] {
         let allocator = Allocator::new();
         let (mut root, errors) = with_whitespace_strategy(whitespace, || {
-            parse_with_options(&allocator, NUXT_ROOT, ParserOptions::default())
+            parse_with_options(&allocator, NUXT_ROOT, dom_parser_options())
         });
         assert_diagnostics(NUXT_ROOT, &errors);
         assert!(transform(&allocator, &mut root, TransformOptions::default(), None).is_empty());
@@ -103,7 +112,7 @@ fn successful_chains_remove_only_their_whitespace_gaps() {
             parse_with_options(
                 &allocator,
                 "<p><i v-if=\"a\">1</i> <!-- between --> <b v-else>2</b> <em>{{ end }}</em></p>",
-                ParserOptions::default(),
+                dom_parser_options(),
             )
         });
         assert!(errors.is_empty(), "{errors:?}");

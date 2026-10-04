@@ -52,6 +52,8 @@ generated modules to the real Vue production runtime and server renderer. Both
 whitespace strategies exercise 18 states, for 36 DOM and 36 complete SSR
 comparisons. Core parse/transform AST assertions separately cover the single Suspense child, comments,
 outside space and the existing invalid-adjacency error.
+Those AST observations use the product's DOM tag classifiers; generic parser
+defaults classify `<component />` differently and cannot be its AST oracle.
 The original self-closing `<div />` is retained with its existing recoverable
 diagnostic code, complete message and authored span pinned in both compilers.
 
