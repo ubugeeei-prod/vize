@@ -71,6 +71,7 @@ fn original_completed_owner_supplies_all_ssr_decisions_after_descriptor_drop() {
                 SsrPart::Open { element, .. } | SsrPart::Close { element, .. } => element.span,
                 SsrPart::Text { text, .. } => text.span,
                 SsrPart::Comment { comment, .. } => comment.span,
+                SsrPart::Interpolation { interpolation, .. } => interpolation.span,
             };
             assert!(source.get(span.start as usize..span.end as usize).is_some());
         }

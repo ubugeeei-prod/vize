@@ -15,17 +15,11 @@ use super::vapor::build::VaporBuilder;
 use levels::Levels;
 
 use super::{
-    ControlKind, ControlRegion, DecisionTables, NativeAnalysis, NodeDecision, StaticLevel,
-    policy::{BindingOwner, BindingRole, TargetPolicy},
+    ControlRegion, DecisionTables, NativeAnalysis, NodeDecision,
+    policy::{BindingOwner, TargetPolicy},
 };
-use crate::placement::Placement;
-use vize_l0::{Span, id::NodeId, side_table::SideTable};
-use vize_l2::{
-    artifact::Artifact,
-    file::FileArtifact,
-    op::{BindingOp, Op},
-    walk::{NodeEvent, NodeRef},
-};
+use vize_l0::{id::NodeId, side_table::SideTable};
+use vize_l2::{artifact::Artifact, file::FileArtifact, lang::js::NativeSelectedSetup};
 
 /// Compute conservative shared facts for every canonical L2 node.
 ///
@@ -55,13 +49,44 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
     file: Option<&'owner FileArtifact<'arena>>,
     reads: &impl FileReads<'owner, 'arena>,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
+    build_with_context(artifact, policy, expressions, file, reads, None)
+}
+
+pub(in crate::decision) fn build_with_ssr_setup<'owner, 'arena>(
+    setup: &NativeSelectedSetup<'owner, 'arena>,
+) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
+    let file = setup.file();
+    if !file.is_complete() {
+        return Err(DecisionBuildError::IncompleteFile);
+    }
+    build_with_context(
+        file.artifact(),
+        TargetPolicy::Ssr,
+        &LiteralExpressions,
+        Some(file),
+        &NoReads,
+        Some(setup),
+    )
+}
+
+fn build_with_context<'owner, 'arena>(
+    artifact: &'owner Artifact<'arena>,
+    policy: TargetPolicy,
+    expressions: &impl DomExpressionFacts,
+    file: Option<&'owner FileArtifact<'arena>>,
+    reads: &impl FileReads<'owner, 'arena>,
+    ssr_setup: Option<&NativeSelectedSetup<'owner, 'arena>>,
+) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
     let mut builder = Builder {
         policy,
         node_count: artifact.node_count(),
         frames: Vec::new(),
         nodes: SideTable::new(),
         controls: SideTable::new(),
-        ssr: (policy == TargetPolicy::Ssr).then(SsrBuilder::new),
+        ssr: (policy == TargetPolicy::Ssr).then(|| match ssr_setup {
+            Some(setup) => SsrBuilder::new_setup(setup),
+            None => SsrBuilder::new(),
+        }),
         vapor: (policy == TargetPolicy::Vapor).then(VaporBuilder::new),
         dom: (policy == TargetPolicy::Dom)
             .then(|| DomBuilder::new(expressions, artifact.root().ops.len(), file, reads)),
@@ -96,7 +121,7 @@ struct Builder<'facts, 'owner, 'arena, F, R> {
     nodes: SideTable<NodeDecision>,
     controls: SideTable<ControlRegion>,
     dom: Option<DomBuilder<'facts, 'owner, 'arena, F, R>>,
-    ssr: Option<SsrBuilder<'owner, 'arena>>,
+    ssr: Option<SsrBuilder<'facts, 'owner, 'arena>>,
     vapor: Option<VaporBuilder<'owner, 'arena>>,
 }
 
@@ -110,3 +135,5 @@ struct Frame {
     dynamic_bindings: Vec<NodeId>,
 }
 
+#[cfg(test)]
+mod tests;

@@ -1,11 +1,24 @@
 //! The unchanged canonical Enter/Binding/Leave visitor.
 
-use super::*;
+use super::{Builder, Frame, Levels};
+use crate::decision::{
+    ControlKind, ControlRegion, DecisionBuildError, DecisionTables, NodeDecision, StaticLevel,
+    dom::DomExpressionFacts,
+    dom::vue::policy::FileReads,
+    policy::{BindingOwner, BindingRole},
+};
+use crate::placement::Placement;
+use alloc::vec::Vec;
+use vize_l0::{Span, id::NodeId};
+use vize_l2::{
+    op::{BindingOp, Op},
+    walk::{NodeEvent, NodeRef},
+};
 
 impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
     Builder<'_, 'owner, 'arena, F, R>
 {
-    fn finish(self) -> Result<DecisionTables, DecisionBuildError> {
+    pub(super) fn finish(self) -> Result<DecisionTables, DecisionBuildError> {
         if let Some(frame) = self.frames.last() {
             return Err(DecisionBuildError::InvalidTraversal { node: frame.id });
         }
@@ -22,7 +35,10 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         })
     }
 
-    fn visit(&mut self, event: NodeEvent<'owner, 'arena>) -> Result<(), DecisionBuildError> {
+    pub(super) fn visit(
+        &mut self,
+        event: NodeEvent<'owner, 'arena>,
+    ) -> Result<(), DecisionBuildError> {
         match event {
             NodeEvent::Enter {
                 id,
@@ -218,7 +234,11 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         Ok(())
     }
 
-    fn insert_node(&mut self, id: NodeId, row: NodeDecision) -> Result<(), DecisionBuildError> {
+    pub(super) fn insert_node(
+        &mut self,
+        id: NodeId,
+        row: NodeDecision,
+    ) -> Result<(), DecisionBuildError> {
         self.check_key(id)?;
         if self.nodes.insert(id, row).is_some() {
             return Err(DecisionBuildError::DuplicateNode { node: id });
@@ -226,7 +246,11 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         Ok(())
     }
 
-    fn insert_control(&mut self, id: NodeId, row: ControlRegion) -> Result<(), DecisionBuildError> {
+    pub(super) fn insert_control(
+        &mut self,
+        id: NodeId,
+        row: ControlRegion,
+    ) -> Result<(), DecisionBuildError> {
         self.check_key(id)?;
         if self.controls.insert(id, row).is_some() {
             return Err(DecisionBuildError::DuplicateControl { node: id });
@@ -234,6 +258,3 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         Ok(())
     }
 }
-
-#[cfg(test)]
-mod tests;

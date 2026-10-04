@@ -1,7 +1,8 @@
 use super::{
-    Builder, ControlKind, ControlRegion, DecisionBuildError, NodeDecision, NodeId, Placement,
-    SideTable, StaticLevel, TargetPolicy,
+    Builder, ControlRegion, DecisionBuildError, NodeDecision, NodeId, SideTable, TargetPolicy,
 };
+use crate::decision::{ControlKind, StaticLevel};
+use crate::placement::Placement;
 
 fn id(index: u32) -> NodeId {
     NodeId::from_index(index).unwrap()
