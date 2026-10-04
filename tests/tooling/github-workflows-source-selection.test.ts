@@ -188,7 +188,7 @@ test("the Rust report waits for the builder and all four independently executing
   const reportSteps = rust.jobs["rust-source-report"].steps ?? [];
   const gate = reportSteps.findIndex((step) => step.name === "Require the complete Rust tier");
   const download = reportSteps.findIndex(
-    (step) => step.name === "Download the four current full Rust workers",
+    (step) => step.name === "Download same-run full Rust workers across attempts",
   );
   const reconcile = reportSteps.findIndex(
     (step) => step.name === "Require all registered typechecker observations",
@@ -200,6 +200,14 @@ test("the Rust report waits for the builder and all four independently executing
     RUN_RUST: "${{ inputs.run-rust }}",
     NEEDS_JSON: "${{ toJSON(needs) }}",
   });
+  assert.equal(reportSteps[download].with?.pattern, "rust-test-shard-*-${{ github.run_id }}-*");
+  assert.match(reportSteps[reconcile].run ?? "", /"\$GITHUB_RUN_ID" "\$GITHUB_RUN_ATTEMPT"$/);
+  for (const step of [reportSteps[download], reportSteps[reconcile]]) {
+    assert.equal(
+      step.if,
+      "${{ github.event_name == 'merge_group' && inputs.run-rust && needs.pr-rust-shard.result == 'success' }}",
+    );
+  }
 });
 
 test("merge Rust timing receipts remain available after workspace failure", () => {

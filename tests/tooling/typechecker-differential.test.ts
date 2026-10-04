@@ -215,6 +215,7 @@ test("four-worker reconciliation rejects missing workers, stale sources and dupl
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   const artifacts = path.join(directory, "artifacts");
   const outputDir = path.join(directory, "output");
+  const runContext = { runId: "37182670251", runAttempt: 1 };
   const git = (...args: string[]) =>
     execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
   const sha = git("rev-parse", "HEAD");
@@ -238,7 +239,7 @@ test("four-worker reconciliation rejects missing workers, stale sources and dupl
   );
   for (const item of assignment) item.archiveReceiptSha256 = sha256(actualReceipt);
   const write = (shard: number, captures: Capture[]) => {
-    const destination = path.join(artifacts, `shard-${shard}`);
+    const destination = path.join(artifacts, `rust-test-shard-${shard}-${runContext.runId}-1`);
     fs.mkdirSync(path.join(destination, "typechecker-fixtures"), { recursive: true });
     const tests = captures.map((item) => item.test);
     const xml = Buffer.from(tests.map((name) => junit(name)).join("\n"));
@@ -260,7 +261,12 @@ test("four-worker reconciliation rejects missing workers, stale sources and dupl
     );
   };
   const run = () =>
-    aggregateTypecheckerWorkers({ repoRoot: root, artifactRoot: artifacts, outputDir });
+    aggregateTypecheckerWorkers({
+      repoRoot: root,
+      artifactRoot: artifacts,
+      outputDir,
+      run: runContext,
+    });
   write(1, assignment);
   write(2, []);
   write(3, []);
@@ -270,9 +276,62 @@ test("four-worker reconciliation rejects missing workers, stale sources and dupl
   write(4, [assignment[0]]);
   assert.throws(run, /duplicate captured test body/);
   write(4, []);
-  const fourth = path.join(artifacts, "shard-4/typechecker-fixtures/worker.json");
+  const fourth = path.join(
+    artifacts,
+    `rust-test-shard-4-${runContext.runId}-1/typechecker-fixtures/worker.json`,
+  );
   const stale = JSON.parse(fs.readFileSync(fourth, "utf8"));
   stale.sourceRevision = "0".repeat(40);
   fs.writeFileSync(fourth, JSON.stringify(stale));
   assert.throws(run);
+  write(4, []);
+  runContext.runAttempt = 2;
+  const first = path.join(artifacts, `rust-test-shard-1-${runContext.runId}-1`);
+  const second = path.join(artifacts, `rust-test-shard-1-${runContext.runId}-2`);
+  fs.cpSync(first, second, { recursive: true });
+  const current = path.join(second, "typechecker-fixtures/worker.json");
+  const original = fs.readFileSync(current);
+  assert.deepEqual(
+    run().artifacts.map(({ attempt }) => attempt),
+    [2, 1, 1, 1],
+  );
+  for (const change of [
+    (value: Record<string, unknown>) => {
+      value.sourceRevision = "0".repeat(40);
+    },
+    (value: Record<string, unknown>) => {
+      value.sourceTree = "0".repeat(40);
+    },
+    (value: Record<string, unknown>) => {
+      value.manifestSha256 = "0".repeat(64);
+    },
+    (value: Record<string, unknown>) => {
+      value.junitSha256 = "0".repeat(64);
+    },
+    (value: Record<string, unknown>) => {
+      value.shard = 2;
+    },
+    (value: Record<string, unknown>) => {
+      (value.captures as Array<{ binarySha256: string }>)[0].binarySha256 = "0".repeat(64);
+    },
+    (value: Record<string, unknown>) => {
+      const receipt = JSON.parse(actualReceipt.toString());
+      receipt.archiveSha256 = "1".repeat(64);
+      value.receiptBase64 = Buffer.from(JSON.stringify(receipt)).toString("base64");
+    },
+    (value: Record<string, unknown>) => {
+      const receipt = JSON.parse(actualReceipt.toString());
+      receipt.requireTsgo = null;
+      value.receiptBase64 = Buffer.from(JSON.stringify(receipt)).toString("base64");
+    },
+  ]) {
+    const changed = JSON.parse(original.toString());
+    change(changed);
+    fs.writeFileSync(current, JSON.stringify(changed));
+    assert.throws(run, "an invalid newer packet cannot fall back to the valid attempt1 packet");
+    for (const name of ["report.json", "acceptance.json"]) {
+      assert.equal(fs.existsSync(path.join(outputDir, name)), false);
+    }
+    fs.writeFileSync(current, original);
+  }
 });

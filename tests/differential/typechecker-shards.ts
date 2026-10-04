@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { sha256 } from "./harness.mjs";
 import { summarizeNativeAcceptance } from "./acceptance-rates.mjs";
+import { selectRustWorkerArtifacts, type RustWorkerRun } from "./rust-worker-artifacts.ts";
 import {
   TYPECHECKER_TESTS,
   loadTypecheckerManifest,
@@ -183,30 +184,37 @@ export function aggregateTypecheckerWorkers({
   repoRoot,
   artifactRoot,
   outputDir,
+  run,
 }: {
   repoRoot: string;
   artifactRoot: string;
   outputDir: string;
+  run: RustWorkerRun;
 }) {
+  for (const name of ["report.json", "acceptance.json"]) {
+    fs.rmSync(path.join(outputDir, name), { force: true });
+  }
   const loaded = loadTypecheckerManifest(
     path.join(repoRoot, "tests/_fixtures/differential/typechecker/manifest.json"),
   );
   const expected = checkout(repoRoot);
-  const workers = fs
-    .readdirSync(artifactRoot)
-    .sort()
-    .map((directory) => {
-      const root = path.join(artifactRoot, directory);
-      const worker: Worker = JSON.parse(
-        fs.readFileSync(path.join(root, "typechecker-fixtures/worker.json"), "utf8"),
-      );
-      return validateWorker(
-        loaded,
-        worker,
-        fs.readFileSync(path.join(root, "junit.xml")),
-        expected,
-      );
-    });
+  const entries = fs.readdirSync(artifactRoot, { withFileTypes: true });
+  assert(
+    entries.every((entry) => entry.isDirectory()),
+    "named worker directories are required",
+  );
+  const artifacts = selectRustWorkerArtifacts(
+    entries.map((entry) => entry.name),
+    run,
+  );
+  const workers = artifacts.map(({ directory, shard }) => {
+    const root = path.join(artifactRoot, directory);
+    const worker: Worker = JSON.parse(
+      fs.readFileSync(path.join(root, "typechecker-fixtures/worker.json"), "utf8"),
+    );
+    assert.equal(worker.shard, shard, "worker packet must match its artifact shard");
+    return validateWorker(loaded, worker, fs.readFileSync(path.join(root, "junit.xml")), expected);
+  });
   assert.equal(workers.length, 4, "all four complete worker artifacts are required");
   assert.deepEqual(new Set(workers.map((worker) => worker.shard)), new Set([1, 2, 3, 4]));
   assert.equal(
@@ -233,7 +241,7 @@ export function aggregateTypecheckerWorkers({
   for (const [name, value] of Object.entries({ report, acceptance })) {
     fs.writeFileSync(path.join(outputDir, `${name}.json`), `${JSON.stringify(value, null, 2)}\n`);
   }
-  return { report, acceptance };
+  return { report, acceptance, artifacts };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -253,16 +261,17 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
         projects: worker.captures.reduce((n, capture) => n + capture.cases.length, 0),
       }),
     );
-  } else if (operation === "aggregate" && args.length === 2) {
+  } else if (operation === "aggregate" && args.length === 4) {
     const result = aggregateTypecheckerWorkers({
       repoRoot: process.cwd(),
       artifactRoot: path.resolve(args[0]),
       outputDir: path.resolve(args[1]),
+      run: { runId: args[2], runAttempt: Number(args[3]) },
     });
-    console.log(JSON.stringify(result.report.summary));
+    console.log(JSON.stringify({ ...result.report.summary, workerArtifacts: result.artifacts }));
   } else {
     throw new Error(
-      "usage: typechecker-shards.ts worker CAPTURES RECEIPT JUNIT SHARD | aggregate ARTIFACTS OUTPUT",
+      "usage: typechecker-shards.ts worker CAPTURES RECEIPT JUNIT SHARD | aggregate ARTIFACTS OUTPUT RUN ATTEMPT",
     );
   }
 }

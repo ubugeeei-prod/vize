@@ -338,7 +338,7 @@ See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-
 
 [Nuxt critical CSS module identity](./2026-09-27-nuxt-critical-css.md) records [#6897](https://github.com/ubugeeei-prod/vize/issues/6897); compiler migration and SSR slot scope remain separate.
 
-- **Full queue Rust execution (#6830, #6861):** reuse one bound workspace archive and four unfiltered workers; keep required TSGO, doctests and all 11 feature recipes. Runtime evidence and acceptance conditions are in [the full Rust shard decision](./2026-09-27-ci-full-rust-shards.md).
+- **Full queue Rust execution (#6830, #6861):** reuse one bound workspace archive and four unfiltered workers; keep required TSGO, doctests and all 11 feature recipes. Runtime evidence and acceptance conditions are in [the full Rust shard decision](./2026-09-27-ci-full-rust-shards.md). [Partial rerun reconciliation](./2026-10-04-ci-rust-partial-reruns.md) records #7773's actual7ceb attempt2 ENOTDIR and still-failed historical gate. Same-run latest bounded attempts retain four complete packets without relabelling inherited workers or falling back from invalid newer evidence; current-needs failures and exact source/archive/runtime/executable/JUnit/body checks stay fatal. Fresh source/protected100+4/actual merge remain required, with no performance/native/history credit or original download-cause claim.
 
 [Options API computed regressions](./2026-09-27-options-computed-regressions.md)
 record #6921 owner history, shared parse facts, setter guards and registered typechecker fixtures for #6879.
