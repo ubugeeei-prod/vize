@@ -344,7 +344,7 @@ direct-hook workflow law adapts to the exact outer order/always/base/guard350.
 V1/V2 exports and23 canonical additions preserve all parent rows; full review
 confirms equivalent literal-parent replay; protected104/actual merge stay pending.
 
-Initial1e9 rejects unused Span, derived refusal and post-owner AST loans: keep
-AST owner-live, Copy maps/spans and ten CF. Fresh8073 build rejects two unit
-Vec::new_in arguments: use &&arena for actual &Allocator GetAllocator; retain
-both foreign Doc assertions/all production/32 goldens/actions/caps; fresh proof required.
+Initial1e9 owner-loan/import/refusal laws and8073 allocator arguments need
+source corrections. Fresh5328 nested-template expectation selects the outer
+envelope by first match: pin original nested opening28..(29+tag.len()), retaining
+all11 inputs/assertions and production/32/CF/action/caps; fresh proof required.

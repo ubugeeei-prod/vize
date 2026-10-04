@@ -137,3 +137,12 @@ for &Allocator, so pass &&arena at both sites, retaining the exact original
 arena, Doc buffer and every foreign/original assertion. Production/fixtures/
 CF/collector/actions/caps stay exact. The rejected build supplies no fresh
 whole-suite acceptance; the exact successor requires fresh automatic Actions.
+
+Fresh5328 Check37198664184 executes all whole32 print/compiler/devprod packets
+and all tenCF/positive successfully, but shard3 rejects one authored refusal
+position: for nested tag template, the test first-match helper finds the outer
+SFC envelope0..9 while the genuine original nested token is28..37. Pin the same
+fixed28-byte prefix and tag length for all unchanged eleven tag inputs. Every
+refusal category/owner/custody/full-output assertion and production/32 fixture/
+CF/helper/collector/action/cap remains unchanged; rejected source supplies no
+overall acceptance, and the exact successor needs fresh automatic proof.

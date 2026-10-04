@@ -158,7 +158,8 @@ fn conservative_header_refusals_follow_actual_original_visit_order() {
         refused(
             &owner,
             Refusal::UnsupportedElement {
-                span: span(&source, &format!("<{tag}")),
+                // The original nested opening follows the fixed 28-byte envelope/body prefix.
+                span: Span::new(28, 29 + tag.len() as u32),
             },
         );
         assert!(owner.descriptor().component().is_some());
