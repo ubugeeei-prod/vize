@@ -1,0 +1,115 @@
+name: Type checker native backend phases
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/typechecker-native-phases.yml"
+      - "tools/benchmarks/scripts/typechecker-native-*.mjs"
+      - "tools/benchmarks/scripts/type-snapshot-cli-corpus.mjs"
+      - "tools/benchmarks/scripts/type-snapshot-cli-leaf-corpus.mjs"
+      - "tools/benchmarks/scripts/type-snapshot-cli-protocol.mjs"
+      - "crates/vize_canon/examples/native_phase_projection.rs"
+      - "docs/davinci/decisions/2026-10-04-typechecker-native-phases.md"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: typechecker-native-phases-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+
+jobs:
+  native-phases:
+    name: Actual CLI shard native phase evidence
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify exact head and source baseline
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          [[ "$BASE_REF" == "main" ]]
+          [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          source_base_sha="$(git merge-base "$BASE_SHA" "$SOURCE_SHA")"
+          echo "MAIN_SOURCE_SHA=$source_base_sha" >> "$GITHUB_ENV"
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: typechecker-native-phases
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          target-path: target
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: package.json
+          run-install: false
+      - name: Verify infrastructure-only source boundary
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          node --input-type=module - <<'JS'
+          import assert from 'node:assert/strict';
+          import { execFileSync } from 'node:child_process';
+          const base=execFileSync('git',['merge-base',process.env.BASE_SHA,process.env.SOURCE_SHA],{encoding:'utf8'}).trim();
+          const paths=execFileSync('git',['diff','--name-only',base,process.env.SOURCE_SHA],{encoding:'utf8'}).trim().split('\n');
+          for(const path of paths) assert(/^(?:tools\/benchmarks\/scripts\/(?:typechecker-native-[^/]+|type-snapshot-cli-(?:corpus|leaf-corpus|protocol))\.mjs|crates\/vize_canon\/examples\/native_phase_projection\.rs|\.github\/workflows\/typechecker-native-phases\.yml|docs\/davinci\/decisions\/(?:2026-10-04-typechecker-native-phases|2026-09-27-level-restructure)\.md)$/.test(path),`production change in phase-only probe: ${path}`);
+          JS
+      - name: Install pinned native runtime and shared Vue dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Check exact neutral inputs, strict phase parser and projection probe
+        run: |
+          node tools/benchmarks/scripts/typechecker-native-phases.mjs --self-test
+          cargo clippy --locked -p vize_canon --example native_phase_projection -- -D warnings
+      - name: Build the unchanged production CLI and standalone projection example
+        run: |
+          set -euo pipefail
+          git diff --exit-code HEAD
+          cargo build --locked --profile ci-opt -p vize \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16' \
+            --config 'profile.ci-opt.package.vize.strip="symbols"'
+          cargo build --locked --profile ci-opt -p vize_canon --example native_phase_projection \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16'
+      - name: Capture every actual shard with byte, map, diagnostic and freshness gates
+        env:
+          RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
+        run: |
+          node tools/benchmarks/scripts/typechecker-native-phases.mjs \
+            "$GITHUB_WORKSPACE/target/ci-opt/vize" \
+            "$GITHUB_WORKSPACE/target/ci-opt/examples/native_phase_projection" \
+            "$GITHUB_WORKSPACE/typechecker-native-phases.json"
+      - name: Upload raw native phases, memberships, full reports and generated sources
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: typechecker-native-phases
+          path: |
+            typechecker-native-phases.json
+            typechecker-native-phases.json.samples/provenance.json
+            typechecker-native-phases.json.samples/failure.json
+            typechecker-native-phases.json.samples/inputs/
+            typechecker-native-phases.json.samples/raw/
+            typechecker-native-phases.json.samples/native/
+            typechecker-native-phases.json.samples/projections/
+            typechecker-native-phases.json.samples/virtual-ts/
+          if-no-files-found: error
+          retention-days: 30
