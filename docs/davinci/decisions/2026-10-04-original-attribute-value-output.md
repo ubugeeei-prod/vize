@@ -157,3 +157,22 @@ all capture/runtime protocol bytes and frozen payloads stay unchanged. No layout
 exemption, extra integration binary or acceptance fallback is added. The failed
 raw source log remains preserved; this top-only successor needs fresh complete
 source Actions before any Stack prefix can enter the protected queue.
+
+Actual7765/7768 merge at07:19:52/53Z moves literal main to9702c014.
+Their original attribute-head inventory rows conflict with this Stack's generated
+whole inventory, and the conflicted bottom prevents the new top merge ref/Check
+from being produced. The true three-layer replay now follows that exact actual
+main, regenerating the inventory from the complete source union. All reviewed
+L2/L3/target/helper/test/frozen bytes stay identical to1ba; incoming Vue2/Head,
+Glyph/Canon history and every accepted pack remain present. No queue candidate
+source is imported as a provider or base. Fresh automatic source checks for all
+three replayed heads, unconditional complete native equality/runtime and the
+protected104/literal merge still establish delivery. Prior green source receipts
+remain bound to their historical heads.
+
+The actual Vue2 capture step and this mandatory value step combine to354
+workflow lines. Pure source validation catches that inherited composition before
+publication. Keeping every job, output, guard and action, the workflow now uses
+the equivalent flow spelling of the null workflow_call mapping and omits three
+job-separator blank lines. Parsed complete YAML objects remain identical; the
+unchanged350-line law passes, with no hook, selection or policy exemption.

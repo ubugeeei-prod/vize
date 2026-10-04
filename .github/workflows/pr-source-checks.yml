@@ -1,6 +1,5 @@
 name: PR source checks
-on:
-  workflow_call:
+on: { workflow_call: null }
 permissions:
   contents: read
 env:
@@ -128,7 +127,6 @@ jobs:
       - name: Check UI package conformance in merge queue
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.js == 'true' }}
         run: vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check
-
   pr-tooling-scripts:
     name: PR tooling scripts (${{ matrix.index }}/${{ matrix.total }})
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -237,7 +235,6 @@ jobs:
         if: ${{ always() && needs.pr-source-plan.outputs.tooling == 'true' }}
         with:
           shard: ${{ matrix.index }}
-
   pr-playground-test:
     name: PR playground browser tests
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -334,7 +331,6 @@ jobs:
       - name: Fail if VRT failed
         if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
         run: exit 1
-
   source-report:
     name: PR source report
     if: ${{ always() }}
