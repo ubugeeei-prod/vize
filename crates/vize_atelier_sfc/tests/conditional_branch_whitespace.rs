@@ -15,8 +15,10 @@ use std::{
     process::{Command, Stdio},
 };
 use vize_atelier_core::{
-    CodegenMode, CompilerError, ErrorCode, TemplateChildNode, WhitespaceStrategy,
-    parser::with_whitespace_strategy,
+    CodegenMode, CompilerError, ErrorCode, ParserOptions, TemplateChildNode, TransformOptions,
+    WhitespaceStrategy,
+    parser::{parse_with_options, with_whitespace_strategy},
+    transform,
 };
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
@@ -82,28 +84,30 @@ fn assert_diagnostics(template: &str, errors: &[CompilerError]) {
 fn successful_chains_remove_only_their_whitespace_gaps() {
     for whitespace in [WhitespaceStrategy::Preserve, WhitespaceStrategy::Condense] {
         let allocator = Allocator::new();
-        let (root, errors, output) = with_whitespace_strategy(whitespace, || {
-            compile_template_with_options(&allocator, NUXT_ROOT, dom_options())
+        let (mut root, errors) = with_whitespace_strategy(whitespace, || {
+            parse_with_options(&allocator, NUXT_ROOT, ParserOptions::default())
         });
         assert_diagnostics(NUXT_ROOT, &errors);
+        assert!(transform(&allocator, &mut root, TransformOptions::default(), None).is_empty());
         let Some(TemplateChildNode::Element(suspense)) = root.children.first() else {
             panic!("the reporter Suspense root must survive compilation");
         };
-        assert_eq!(suspense.children.len(), 1, "{}", output.code);
+        assert_eq!(suspense.children.len(), 1);
         let Some(TemplateChildNode::If(chain)) = suspense.children.first() else {
             panic!("Suspense must receive one conditional child");
         };
         assert_eq!(chain.branches.len(), 5);
 
         let allocator = Allocator::new();
-        let (root, errors, _) = with_whitespace_strategy(whitespace, || {
-            compile_template_with_options(
+        let (mut root, errors) = with_whitespace_strategy(whitespace, || {
+            parse_with_options(
                 &allocator,
                 "<p><i v-if=\"a\">1</i> <!-- between --> <b v-else>2</b> <em>{{ end }}</em></p>",
-                dom_options(),
+                ParserOptions::default(),
             )
         });
         assert!(errors.is_empty(), "{errors:?}");
+        assert!(transform(&allocator, &mut root, TransformOptions::default(), None).is_empty());
         let Some(TemplateChildNode::Element(parent)) = root.children.first() else {
             panic!("parent element must survive compilation");
         };

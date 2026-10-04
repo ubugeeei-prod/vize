@@ -263,7 +263,7 @@ l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/pug/refusal.rs	0	0	1	1	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/pug/view.rs	0	0	1	2	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/show.rs	0	0	1	2	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/slot.rs	0	0	1	4	1	4	0	0
-l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/structural.rs	1	14	1	4	1	14	0	0
+l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/structural.rs	1	12	1	4	1	14	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/structural/wrapper.rs	1	7	1	15	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/sugar.rs	1	1	1	2	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/table.rs	0	0	0	0	1	11	0	0

@@ -19,10 +19,21 @@ credit. Instruction ceilings remain unchanged.
 The existing native L1-to-L2 lowerer also saved and re-emitted the same branch
 gaps to match the old compiler. Remove that preservation and its per-chain
 vector, while keeping `drop.branch-gap` provenance and outside whitespace. The
+reviewed storage ledger lowers this file's `allocVec` bound uses from 14 to 12:
+the removed scratch vector's type and constructor are the only deleted uses.
 existing native Vapor parity law retains its branch and comment controls and
-adds the original inline reporter plus an outside-space control. Native DOM,
+adds the original inline reporter plus an outside-space control as their
+existing explicit `Legacy(Element)` routes, without extending admission. Native DOM,
 Vapor and SSR consumers must agree with the corrected compiler; this repair is
 not a feature-stage completion claim.
+
+The lint facade presents authored nodes rather than rendered roots. Its L2
+projection now reads gap text from its existing L1 surface and shares the native
+lowerer's whitespace normalization, including inherited `<pre>` and Unicode
+whitespace. This keeps every original differential trace and the pinned battery
+census intact after compiler regions stop emitting gap text. The original inline
+reporter, comment gaps, nested `<pre>` and Unicode gaps add independent controls;
+no new pipeline stage, legacy-provider dependency or census relaxation is added.
 
 ## Preserved evidence
 
@@ -39,7 +50,7 @@ APIs instead of changing that unrelated CLI contract. The Rust regression in
 `crates/vize_atelier_sfc/tests/conditional_branch_whitespace.rs` supplies complete
 generated modules to the real Vue production runtime and server renderer. Both
 whitespace strategies exercise 18 states, for 36 DOM and 36 complete SSR
-comparisons. AST assertions separately cover the single Suspense child, comments,
+comparisons. Core parse/transform AST assertions separately cover the single Suspense child, comments,
 outside space and the existing invalid-adjacency error.
 The original self-closing `<div />` is retained with its existing recoverable
 diagnostic code, complete message and authored span pinned in both compilers.
@@ -60,6 +71,12 @@ repository's pinned Vue 3.5.43, and the genuine candidate Nuxt binding must pass
 the existing build, SSR and browser checks. Full protected suites and unchanged
 instruction ceilings, actual merge and release remain required. The PR stays
 draft and outside the queue until the batch owner's concrete review.
+
+Actions [37225787003](https://github.com/ubugeeei-prod/vize/actions/runs/37225787003)
+at source `385203ee8a7b440286f250d8188002739862e374` executed and passed the
+complete 36-state production DOM/SSR runtime law. That run still failed the
+authored lint view, storage ledger and two test assumptions described above;
+their correction requires fresh Actions and receives no transferred acceptance.
 
 The issue reporter is attributed as `ubugeeei <ubuge1122@gmail.com>`, verified
 from public commits authored by the issue's GitHub identity.
