@@ -170,3 +170,8 @@ Pinned authority:
 [defineVaporComponent](https://github.com/vuejs/core/blob/v3.6.0-rc.9/packages/runtime-vapor/src/apiDefineComponent.ts),
 [component setup](https://github.com/vuejs/core/blob/v3.6.0-rc.9/packages/runtime-vapor/src/component.ts),
 [renderEffect](https://github.com/vuejs/core/blob/v3.6.0-rc.9/packages/runtime-vapor/src/renderEffect.ts).
+
+Initial child source `17a70c27` / Check `37170729387` failed only the inherited
+Markdown table formatting and the new public export's normal Rust ordering/wrap.
+Both raw jobs are retained; formatting is corrected without changing any native
+module/map expectation or target/runtime semantics. Fresh exact proof is pending.
