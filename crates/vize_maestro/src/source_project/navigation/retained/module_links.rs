@@ -87,7 +87,7 @@ pub(super) fn admit<'f, 'p, 'a>(
 ) -> Admission<'f, 'p, 'a> {
     let admitted = syntax
         .admitted_program()
-        .ok_or_else(|| ModuleOperandRefusal::Navigation(NavigationRefusal::Syntax))?;
+        .ok_or(ModuleOperandRefusal::Navigation(NavigationRefusal::Syntax))?;
     // The original decoder retains strict-module violations without changing
     // neutral syntax admission. This consumer must refuse that same receipt.
     if admitted.has_legacy_literals() {

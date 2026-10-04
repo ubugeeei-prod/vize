@@ -229,7 +229,7 @@ fn module_link_original_legacy_receipt_refuses_only_links_and_keeps_modern_contr
         );
         let target = tower_lsp::lsp_types::Url::parse("file:///observed/child.ts").unwrap();
         assert_eq!(
-            operands.into_links(&[target.clone()]),
+            operands.into_links(std::slice::from_ref(&target)),
             Ok(vec![tower_lsp::lsp_types::DocumentLink {
                 range: range((0, 19), (0, 34)),
                 target: Some(target),
