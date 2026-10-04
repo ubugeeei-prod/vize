@@ -184,3 +184,61 @@ passed at `9e07bfe280`; its first post-Stack raw observations belong to that sou
 A test-only successor can prove unchanged collector/production blobs, but cannot
 transfer that run's head qualification. Final source checks remain required;
 manual profiling, semantic decoding, Ready and queue admission stay unqualified.
+
+## Verified manual dependency link after the failed first campaign
+
+The [first actual-main manual campaign 37195795568](https://github.com/ubugeeei-prod/vize/actions/runs/37195795568)
+failed before projection Clippy, production build or native capture. Its retained
+pre-install custody proves workflow, driver, source and baseline were all immutable
+`bcf3e024bde363a4d9e3cc2e7745af771cd5b51f`; all seven bridge hashes matched and all
+98 synthetic laws passed. After the locked install, the workflow intentionally
+created `sourceRoot/node_modules` pointing to `driverRoot/node_modules`. The source
+`.gitignore` rule `node_modules/` matches a directory but leaves that symlink
+untracked, so the next strict custody gate rejected `node_modules`.
+
+[Failed artifact 11301276123](https://github.com/ubugeeei-prod/vize/actions/runs/37195795568/artifacts/11301276123),
+ZIP SHA-256 `04202ba866579bcd89e9211401f0f614e4bcaeea0258fb3835817f066e234876`,
+contains only successful pre-install custody. No newer failure receipt, native
+graph, full product report, code/map projection or CPU/allocation profile was
+produced. Duplicate-tree equivalence was never evaluated. Preserve this failed
+campaign separately; its 98 laws establish no actual profile or speed result.
+
+After exact manual context, commits, fetched-main ancestry, production delta and
+all seven bridge checks pass, verify only the literal source dependency link.
+Its raw target must equal the canonical absolute `driverRoot/node_modules`; the
+driver target must be a physical directory, opened with directory/no-follow
+flags and matched by descriptor identity. Retain canonical target and the complete
+symlink device/inode/mode/size/mtime/ctime revision, fenced before and after the
+read. Record target directory device/inode/mode; cache namespace changes do not
+pretend to be content changes. This proves directory identity, not recursive
+immutability of installed dependencies: native runtime/member byte and revision
+checks remain required at capture.
+
+Use NUL-delimited Git paths. Only that verified manual source `node_modules`
+token can be admitted; inspect its target even if an ignore rule hides it.
+An existing manual driver root must be physical even before source-link setup.
+Relative, offsite, dangling, cyclic or driver-side links, retargeting/replacement
+and every other untracked input remain rejected. PR custody and existing ignored
+physical-directory handling stay the same. Pre-install absence may transition to
+the verified install link; the benchmark's post-install initial and final custody
+must match exactly. Do not change `.gitignore` or bypass the untracked guard.
+
+The original twelve infrastructure paths stay byte-for-byte in their closed list.
+One dedicated dependency-link test path expands the explicit additions from eleven
+to twelve (24 total), with its driver-provenance hash pinned. Keep the existing
+40 laws, all assertion bodies and the zero-warning policy; only the explicit
+allowlist-count expectations change. Add real filesystem/Git integration controls
+for install linkage, hidden bad targets, replacement and unrelated input paths.
+Local 36 new controls plus the original 40 laws pass (76/76, no skips/failures);
+configured formatting and type-aware lint pass with zero warnings. These include
+real in-call symlink-revision and directory-replacement fences, without a native run.
+
+The [paired #7698 decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5979312568)
+retains the failure and this narrow repair; local controls do not qualify a new
+source head or an actual profiling campaign.
+
+Require root review of this narrow repair, fresh exact-source Actions, all protected
+queue gates and actual signed merge before proposing another actual-main campaign.
+No automatic redispatch, production/API/provider/cache/scheduler/flag/corpus/map
+normalizer or instruction-ceiling change follows from this failure. CPU/allocation
+profiles, semantic attribution, startup/Program ownership and 10x remain unmeasured.
