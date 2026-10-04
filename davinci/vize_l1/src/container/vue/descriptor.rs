@@ -11,9 +11,11 @@ use crate::{embed::Lang, parse::SurfaceParseOptions};
 
 mod policy;
 mod template;
+pub(super) mod vue1;
 pub(super) mod vue2;
 pub use template::{NativeTemplateFrameNameRefusal, NativeTemplateFrameNames, TemplateView};
 use template::{TemplateNamePair, TemplateSelection};
+pub use vue1::{Vue1DescriptorObservation, Vue1DescriptorRefusal, Vue1TemplateView};
 pub use vue2::{Vue2DescriptorObservation, Vue2DescriptorRefusal, Vue2TemplateView};
 #[cfg(test)]
 mod style_tests;

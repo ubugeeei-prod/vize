@@ -36,7 +36,9 @@ Reuse the existing `split_with` block emission callback and narrow existing
 Policy version constructor. The same block event rejects every script (including
 empty/setup), style, custom/external block, nonliteral spelling, ambiguous or
 encoded language, duplicate/missing template, recovery, self-closing selection,
-unsupported options/version/dialect. Initially the outer template has no attrs.
+unsupported options/version/dialect. At the same emitted block event, an O(1)
+`Block.attrs.is_empty()` check refuses all outer template attrs without revisiting
+its header.
 Do not rescan headers, walk a Container again or reinterpret selected capture rows.
 Only after the complete splitter result is clean, check actual root/block/name
 slices and call Vue1 `parse_component_block` once on that original selected block.
@@ -70,7 +72,10 @@ Doc-or-refusal outcome, with selected views reborrowed on demand: no self-refere
 Require genuine selected owner and original complete clean body; refuse recovery,
 raw/once/all-pipe/framing/encoded-boundary/native-hole and unsupported expression
 forms using existing earliest typed APIs. The first static family has one actual
-root element among div/span/p/section/a/br/input, original text/comments and nested
+root Element among div/span/p/section/a/br/input, allowing only original outside
+whitespace/comments. Root interpolation/nonwhitespace text refuses in this same
+child visit; Vueify outer template-count validation certifies neither this body-root
+policy nor a required template. Allow original inside text/comments and nested
 same-owner children. Empty/multiple-root/unrecognized element and every authored
 attribute refuse. This is deliberate: V1 interpolates decoded attribute values;
 V2 plain-header admission cannot authorize V1 attributes without a real provider.
