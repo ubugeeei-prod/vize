@@ -57,7 +57,7 @@ None values remain their separate original policy. Only normal sole-walk finish
 with every row consumed can seal analysis. This proposed consumption has no new
 indexed table or second header/Op walk; it is not implemented by this provider.
 
-New independent source laws cover all fourteen inputs, complete Unicode/entity
+Twelve new independent source laws cover all fourteen inputs, complete Unicode/entity
 maps, nonzero origin, empty/unknown/bare values, growth and movement, sibling and
 foreign allocation refusals, actual For/handler scope and pointer preservation,
 late policy/header/body refusals, complete preparation failure, duplicate root
@@ -71,3 +71,20 @@ Independent root and peer source review precede publication. Actual Actions must
 compile/run the new laws/privacy docs and required whole-output captures; full
 protected validation and 100+4 actual instruction ceilings then decide merge.
 No local Cargo/build/install is run. A source-only review grants no Rust execution.
+
+Peer review clears production custody and exact For/handler phases. It correctly
+found the proposed literal `item in 2` positive exceeds the unchanged L1
+Identifier collection family. That original source is retained as a precise
+CollectionShape/UnsupportedSyntax negative, while the actual JS/TS positive owns
+its genuine selected setup Program once and uses parse_setup_program/begin_setup
+with `item in items`. No production admission changes to satisfy that oracle.
+The neutral Element counterfactual copies equal populated attributes/name/value
+pointers, directly testing allocation authority rather than an absent slot.
+
+Delivery is held: a completed entity-valued File automatically reaches existing
+public native DOM/Vapor/SSR attribute writers, so a structural-only description
+cannot certify the new output. The genuine sole-Enter row consumer is a required
+true dependent child. Bottom stays draft/unqueued until that independently
+reviewed whole-row gate and the original14 complete native modules/raw maps/fixed
+fresh-mount qualification pass. No wrong rc.9 byte-equality or hydration-only
+oracle substitutes. The existing L1 parent remains independent and healthy.

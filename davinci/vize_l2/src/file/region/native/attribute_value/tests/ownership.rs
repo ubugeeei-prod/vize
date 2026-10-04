@@ -171,64 +171,90 @@ fn equal_source_files_sibling_slots_and_neutral_elements_cannot_borrow_value_aut
                 .is_none(),
         )?;
     }
+    let mut attributes = vize_l0::Vec::new_in(&arena);
+    for attribute in &actual.attributes {
+        attributes.push(crate::op::Attribute {
+            name: attribute.name,
+            value: attribute.value,
+            span: attribute.span,
+        });
+    }
     let neutral = ElementOp {
         tag: actual.tag,
         namespace: actual.namespace,
         span: actual.span,
-        attributes: vize_l0::Vec::new_in(&arena),
+        attributes,
         bindings: vize_l0::Vec::new_in(&arena),
         children: crate::op::Region {
             ops: vize_l0::Vec::new_in(&arena),
         },
     };
+    same(neutral.attributes[0].span, actual.attributes[0].span)?;
+    check(core::ptr::eq(
+        neutral.attributes[0].name,
+        actual.attributes[0].name,
+    ))?;
+    check(core::ptr::eq(
+        neutral.attributes[0].value.ok_or("neutral copied value")?,
+        actual.attributes[0].value.ok_or("actual value")?,
+    ))?;
     check(file.native_attribute_value_for(0, &neutral, 0).is_none())?;
     Ok(())
 }
 
 #[test]
 fn actual_for_allocation_alias_scope_and_same_original_handler_join_survive_value_slots() -> Test {
-    let arena = Allocator::default();
-    let source = "<template><div title='&amp;lt;' v-for='item in 2' @click='$event.count++'>x</div></template>";
-    let output = lower(&arena, source)?;
-    let file = output
-        .view()
-        .map_err(|_| "normal original view")?
-        .file()
-        .ok_or("File")?;
-    let Some(Op::OriginalFor(actual_for)) = file.artifact().root().ops.first() else {
-        return Err("original For");
-    };
-    let head = file
-        .for_head_for(actual_for)
-        .ok_or("exact original For allocation")?;
-    let Some(Op::Element(actual)) = actual_for.region.ops.first() else {
-        return Err("original For Element");
-    };
-    check(file.native_attribute_value_for(0, actual, 0).is_some())?;
-    let Some(crate::op::BindingOp::On(on)) = actual.bindings.first() else {
-        return Err("actual same handler");
-    };
-    let handler = file
-        .handler_for(on)
-        .ok_or("unchanged exact handler allocation")?;
-    same(handler.scope(), head.scope())?;
-    same(
-        handler
-            .resolution()
-            .ok_or("whole resolution")?
-            .input()
-            .operand()
-            .raw_value(),
-        "$event.count++",
-    )?;
-    same(
-        file.native_attribute_values()[0]
-            .observation()
-            .ok_or("normal value")?
-            .source()
-            .text(),
-        "&lt;",
-    )?;
+    for lang in ["", " lang='ts'"] {
+        let arena = Allocator::default();
+        let source = alloc::format!(
+            "<script setup{lang}>let items=2</script><template><div title='&amp;lt;' v-for='item in items' @click='$event.count++'>x</div></template>"
+        );
+        let output = lower_setup(&arena, &source)?;
+        let setup = output.setup().map_err(|_| "authentic owned setup")?;
+        check(core::ptr::eq(
+            setup.syntax(),
+            output.retained_setup().ok_or("whole original Program")?,
+        ))?;
+        let file = output
+            .view()
+            .map_err(|_| "normal original view")?
+            .file()
+            .ok_or("File")?;
+        let Some(Op::OriginalFor(actual_for)) = file.artifact().root().ops.first() else {
+            return Err("original For");
+        };
+        let head = file
+            .for_head_for(actual_for)
+            .ok_or("exact original For allocation")?;
+        let Some(Op::Element(actual)) = actual_for.region.ops.first() else {
+            return Err("original For Element");
+        };
+        check(file.native_attribute_value_for(0, actual, 0).is_some())?;
+        let Some(crate::op::BindingOp::On(on)) = actual.bindings.first() else {
+            return Err("actual same handler");
+        };
+        let handler = file
+            .handler_for(on)
+            .ok_or("unchanged exact handler allocation")?;
+        same(handler.scope(), head.scope())?;
+        same(
+            handler
+                .resolution()
+                .ok_or("whole resolution")?
+                .input()
+                .operand()
+                .raw_value(),
+            "$event.count++",
+        )?;
+        same(
+            file.native_attribute_values()[0]
+                .observation()
+                .ok_or("normal value")?
+                .source()
+                .text(),
+            "&lt;",
+        )?;
+    }
     Ok(())
 }
 

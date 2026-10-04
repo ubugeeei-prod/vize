@@ -133,3 +133,47 @@ fn duplicate_original_child_never_reprepares_or_reassociates_the_existing_slot()
     )?;
     Ok(())
 }
+
+#[test]
+fn original_literal_for_collection_keeps_value_owner_but_refuses_unchanged_collection_shape() -> Test
+{
+    let arena = Allocator::default();
+    let source = "<template><div title='&amp;lt;' v-for='item in 2' @click='$event.count++'>x</div></template>";
+    let mut original = owner(&arena, source)?;
+    {
+        let mut walk = original.begin().map_err(|_| "begin")?;
+        let selected = walk.selected();
+        let issue = walk
+            .child(selected.children().next().ok_or("original child")?)
+            .err()
+            .ok_or("literal collection admitted")?;
+        check(matches!(
+            issue.kind,
+            Kind::For {
+                kind: crate::file::FileIssueKind::UnsupportedSyntax,
+                ..
+            }
+        ))?;
+    }
+    let output = original.finish();
+    check(output.view().is_err())?;
+    let file = output.file().ok_or("retained File")?;
+    let [record] = file.native_attribute_values() else {
+        return Err("whole value parked");
+    };
+    same(record.state(), State::Pending)?;
+    same(
+        record.observation().ok_or("whole value")?.source().text(),
+        "&lt;",
+    )?;
+    let [crate::file::RejectedFileFor::Syntax(refusal)] = file.rejected_for_heads() else {
+        return Err("genuine original collection syntax refusal");
+    };
+    same(
+        refusal.kind,
+        vize_l1::embed::syntax::NativeForRefusal::CollectionShape,
+    )?;
+    same(refusal.operand().raw_value(), "item in 2")?;
+    same(file.artifact().node_count(), 0)?;
+    check(!file.is_complete())
+}

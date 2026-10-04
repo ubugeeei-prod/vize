@@ -66,6 +66,27 @@ fn lower<'a>(
     }
     Ok(core::hint::black_box(original.finish()))
 }
+fn lower_setup<'a>(
+    arena: &'a Allocator,
+    source: &'a str,
+) -> Result<NativeTemplateFile<'a>, &'static str> {
+    let mut original = owner(arena, source)?;
+    original
+        .parse_setup_program()
+        .map_err(|_| "owning setup Program")?;
+    {
+        let mut walk = original
+            .begin_setup()
+            .map_err(|_| "same-owner setup readiness")?;
+        let selected = walk.selected();
+        for child in selected.children() {
+            walk.child(child).map_err(|_| "actual original child")?;
+        }
+        walk.complete()
+            .map_err(|_| "complete original setup root")?;
+    }
+    Ok(core::hint::black_box(original.finish()))
+}
 fn element<'f, 'a>(
     file: &'f FileArtifact<'a>,
     index: usize,
