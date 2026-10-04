@@ -223,3 +223,27 @@ emitter-only selector controls cover the actual For writer, collector and helper
 registrations. All21 model/primary/runtime Node laws pass, but refreshed hosted
 native capture, all seven actual Rust laws, independent review and protected104
 acceptance remain required. The draft stays unqueued.
+
+## Conservative contract and complete capture dependency selection
+
+The independent review's unpushed broader alias proposal 1e4d8430 and #6839
+comment5975579202 are superseded for #7695 by the actual external sourceab9f
+contract. Preserve its neutral ReservedAlias policy, all ten admitted plain
+alias module/raw-map goldens and four original owned prefix refusals; exact
+callback collision defense remains unexercised target scope. TODO: valid `_`/`$`
+alias admission needs a separate bounded provider/target decision and genuine
+callback collision/full-module/map/runtime controls before any later lift. No
+broader resolver change is included in this PR.
+
+Independent review additionally found path-only L2 resolver, L3 DOM root or
+L4 shared expression/submodule changes missing from affected-source capture
+selection. The selector now qualifies the actual resolution, DOM collector,
+DOM writer and shared expression dependency trees, including their root files.
+Path-only positive and adjacent-root/other-target negative laws bind planner
+output, the first worker and its nested selected-SFC action even with no
+ordinary tooling selection. Every file within the DOM tree qualifies; unrelated
+root names, other targets and prose remain outside. Merge-group capture stays
+unconditional. Golden/refusal semantics, the old seven/five packs and immutable
+budgets are preserved from external sourceab9f. Refreshed exact-source Actions,
+current native packets, independent review and all protected caps remain required
+before readiness or queue; this bounded slice closes no larger compiler issue.
