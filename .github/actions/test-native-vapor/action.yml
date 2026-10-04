@@ -12,6 +12,8 @@ runs:
         VIZE_NATIVE_VAPOR_SFC_RUNTIME_CAPTURE: ${{ runner.temp }}/native-vapor-sfc-runtime.json
         VIZE_NATIVE_VAPOR_PRIMARY_LIFECYCLE_CAPTURE: ${{ runner.temp }}/native-vapor-primary-lifecycle.json
         VIZE_NATIVE_VAPOR_PROCESS_CAPTURE: ${{ runner.temp }}/native-vapor-processes.jsonl
+        VIZE_NATIVE_VAPOR_SETUP_SFC_CAPTURE: ${{ runner.temp }}/native-vapor-setup-sfc-modules.json
+        VIZE_NATIVE_VAPOR_SETUP_SFC_RUNTIME_CAPTURE: ${{ runner.temp }}/native-vapor-setup-sfc-runtime.json
         VIZE_NATIVE_VAPOR_REQUIRE_CAPTURE: "1"
       run: |
         cargo test --locked --profile ci -p vize_l4 --test native_vapor
@@ -24,6 +26,10 @@ runs:
         test -s "$VIZE_NATIVE_VAPOR_SFC_RUNTIME_CAPTURE"
         test -s "$VIZE_NATIVE_VAPOR_PRIMARY_LIFECYCLE_CAPTURE"
         test -s "$VIZE_NATIVE_VAPOR_PROCESS_CAPTURE"
+        cargo test --locked --profile ci -p vize_atelier_sfc --test native_vapor_setup_sfc
+        test -s "$VIZE_NATIVE_VAPOR_SETUP_SFC_CAPTURE"
+        vp node --test tests/tooling/native-vapor-setup-sfc-reference.test.mjs
+        test -s "$VIZE_NATIVE_VAPOR_SETUP_SFC_RUNTIME_CAPTURE"
     - name: Upload original Vapor module and runtime captures
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -36,5 +42,7 @@ runs:
           ${{ runner.temp }}/native-vapor-sfc-runtime.json
           ${{ runner.temp }}/native-vapor-primary-lifecycle.json
           ${{ runner.temp }}/native-vapor-processes.jsonl
+          ${{ runner.temp }}/native-vapor-setup-sfc-modules.json
+          ${{ runner.temp }}/native-vapor-setup-sfc-runtime.json
         if-no-files-found: error
         retention-days: 7

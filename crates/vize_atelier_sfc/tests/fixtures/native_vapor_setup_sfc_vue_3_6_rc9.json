@@ -1,0 +1,3682 @@
+{
+  "schema": "vize.native-vapor.primitive-setup-sfc",
+  "version": "3.6.0-rc.9",
+  "pluginVersion": "6.0.7",
+  "filename": "NativeVaporSetup.vue",
+  "declarationPlacement": "Original pure declarations stay inside native setup; independent native expectations, no stock const-hoisting/code equality claim.",
+  "fixtures": [
+    {
+      "id": "mutable-js",
+      "source": "<script setup>let count=1</script><template>{{count}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, renderEffect as _renderEffect, unref as _unref, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nlet count=1\n;\n\n    const n0 = t0()\n    _renderEffect(() => _setText(n0, _toDisplayString(_unref(count\n))))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [
+          "count"
+        ],
+        "mappings": ";;;;;;AAAc;;;;6DAAgCA",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup>let count=1</script><template>{{count}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 308,
+          "generatedEnd": 319,
+          "source": 14,
+          "sourceEnd": 25,
+          "name": null
+        },
+        {
+          "generated": 404,
+          "generatedEnd": 409,
+          "source": 46,
+          "sourceEnd": 51,
+          "name": "count"
+        }
+      ],
+      "reference": {
+        "source": "<script setup>let count=1</script><template>{{count}}</template>",
+        "id": "mutable-js",
+        "filename": "/native-vapor-setup/mutable-js.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { unref as _unref, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\" \")\n\nconst _sfc_main = {\n  __name: 'mutable-js',\n  __vapor: true,\n  setup(__props) {\nlet count=1\n\n  const n0 = t0()\n  _renderEffect(() => _setText(n0, _toDisplayString(_unref(count))))\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/mutable-js.vue"
+            ],
+            "names": [],
+            "mappings": ";;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAtB,aAAK",
+            "sourcesContent": [
+              "<script setup>let count=1</script><template>{{count}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>let count=1</script><template>{{count}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 26,
+                  "line": 1,
+                  "offset": 25
+                },
+                "source": "let count=1"
+              },
+              "template": {
+                "start": {
+                  "column": 45,
+                  "line": 1,
+                  "offset": 44
+                },
+                "end": {
+                  "column": 54,
+                  "line": 1,
+                  "offset": 53
+                },
+                "source": "{{count}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "count": "setup-let"
+              },
+              "code": "import { unref as _unref, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\" \")\n\nconst _sfc_main = {\n  __name: 'mutable-js',\n  __vapor: true,\n  setup(__props) {\nlet count=1\n\n  const n0 = t0()\n  _renderEffect(() => _setText(n0, _toDisplayString(_unref(count))))\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/mutable-js.vue"
+                ],
+                "names": [],
+                "mappings": ";;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAtB,aAAK",
+                "sourcesContent": [
+                  "<script setup>let count=1</script><template>{{count}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\n\nconst _sfc_main = {\n  __name: 'mutable-js',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\nlet count=1\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(_unref(count))}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"mutable-js.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/mutable-js.vue"
+            ],
+            "names": [],
+            "mappings": ";;;;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAtB,aAAK",
+            "sourcesContent": [
+              "<script setup>let count=1</script><template>{{count}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>let count=1</script><template>{{count}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 26,
+                  "line": 1,
+                  "offset": 25
+                },
+                "source": "let count=1"
+              },
+              "template": {
+                "start": {
+                  "column": 45,
+                  "line": 1,
+                  "offset": 44
+                },
+                "end": {
+                  "column": 54,
+                  "line": 1,
+                  "offset": 53
+                },
+                "source": "{{count}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "count": "setup-let"
+              },
+              "code": "import { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\n\nconst _sfc_main = {\n  __name: 'mutable-js',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\nlet count=1\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(_unref(count))}`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/mutable-js.vue"
+                ],
+                "names": [],
+                "mappings": ";;;;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAtB,aAAK",
+                "sourcesContent": [
+                  "<script setup>let count=1</script><template>{{count}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "1",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "var-unicode-crlf",
+      "source": "<!--雪🌸-->\r\n<script setup>/* import x from 'vue' */\r\nvar 雪='🌸'</script><template>{{雪}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, renderEffect as _renderEffect, unref as _unref, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\n/* import x from 'vue' */\r\nvar 雪='🌸'\n;\n\n    const n0 = t0()\n    _renderEffect(() => _setText(n0, _toDisplayString(_unref(雪\n))))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [
+          "雪"
+        ],
+        "mappings": ";;;;;;AACc;;;;;6DACiBA",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<!--雪🌸-->\r\n<script setup>/* import x from 'vue' */\r\nvar 雪='🌸'</script><template>{{雪}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 308,
+          "generatedEnd": 349,
+          "source": 30,
+          "sourceEnd": 71,
+          "name": null
+        },
+        {
+          "generated": 434,
+          "generatedEnd": 437,
+          "source": 92,
+          "sourceEnd": 95,
+          "name": "雪"
+        }
+      ],
+      "reference": {
+        "source": "<!--雪🌸-->\r\n<script setup>/* import x from 'vue' */\r\nvar 雪='🌸'</script><template>{{雪}}</template>",
+        "id": "var-unicode-crlf",
+        "filename": "/native-vapor-setup/var-unicode-crlf.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { unref as _unref, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\" \")\n\nconst _sfc_main = {\n  __name: 'var-unicode-crlf',\n  __vapor: true,\n  setup(__props) {\n/* import x from 'vue' */\r\nvar 雪='🌸'\n\n  const n0 = t0()\n  _renderEffect(() => _setText(n0, _toDisplayString(_unref(雪))))\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/var-unicode-crlf.vue"
+            ],
+            "names": [],
+            "mappings": ";;;;;;;AACc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACvC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAP,SAAC",
+            "sourcesContent": [
+              "<!--雪🌸-->\r\n<script setup>/* import x from 'vue' */\r\nvar 雪='🌸'</script><template>{{雪}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<!--雪🌸-->\r\n<script setup>/* import x from 'vue' */\r\nvar 雪='🌸'</script><template>{{雪}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 2,
+                  "offset": 26
+                },
+                "end": {
+                  "column": 11,
+                  "line": 3,
+                  "offset": 63
+                },
+                "source": "/* import x from 'vue' */\r\nvar 雪='🌸'"
+              },
+              "template": {
+                "start": {
+                  "column": 30,
+                  "line": 3,
+                  "offset": 82
+                },
+                "end": {
+                  "column": 35,
+                  "line": 3,
+                  "offset": 87
+                },
+                "source": "{{雪}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "雪": "setup-let"
+              },
+              "code": "import { unref as _unref, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\" \")\n\nconst _sfc_main = {\n  __name: 'var-unicode-crlf',\n  __vapor: true,\n  setup(__props) {\n/* import x from 'vue' */\r\nvar 雪='🌸'\n\n  const n0 = t0()\n  _renderEffect(() => _setText(n0, _toDisplayString(_unref(雪))))\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/var-unicode-crlf.vue"
+                ],
+                "names": [],
+                "mappings": ";;;;;;;AACc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACvC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAAP,SAAC",
+                "sourcesContent": [
+                  "<!--雪🌸-->\r\n<script setup>/* import x from 'vue' */\r\nvar 雪='🌸'</script><template>{{雪}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\n\nconst _sfc_main = {\n  __name: 'var-unicode-crlf',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n/* import x from 'vue' */\r\nvar 雪='🌸'\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(_unref(雪))}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"var-unicode-crlf.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/var-unicode-crlf.vue"
+            ],
+            "names": [],
+            "mappings": ";;;;;;;;;AACc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACvC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAP,SAAC",
+            "sourcesContent": [
+              "<!--雪🌸-->\r\n<script setup>/* import x from 'vue' */\r\nvar 雪='🌸'</script><template>{{雪}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<!--雪🌸-->\r\n<script setup>/* import x from 'vue' */\r\nvar 雪='🌸'</script><template>{{雪}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 2,
+                  "offset": 26
+                },
+                "end": {
+                  "column": 11,
+                  "line": 3,
+                  "offset": 63
+                },
+                "source": "/* import x from 'vue' */\r\nvar 雪='🌸'"
+              },
+              "template": {
+                "start": {
+                  "column": 30,
+                  "line": 3,
+                  "offset": 82
+                },
+                "end": {
+                  "column": 35,
+                  "line": 3,
+                  "offset": 87
+                },
+                "source": "{{雪}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "雪": "setup-let"
+              },
+              "code": "import { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\n\nconst _sfc_main = {\n  __name: 'var-unicode-crlf',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n/* import x from 'vue' */\r\nvar 雪='🌸'\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(_unref(雪))}`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/var-unicode-crlf.vue"
+                ],
+                "names": [],
+                "mappings": ";;;;;;;;;AACc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACvC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAP,SAAC",
+                "sourcesContent": [
+                  "<!--雪🌸-->\r\n<script setup>/* import x from 'vue' */\r\nvar 雪='🌸'</script><template>{{雪}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "🌸",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "const-boolean",
+      "source": "<script setup>const enabled=true</script><template>{{enabled}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst enabled=true\n;\n\n    const n0 = t0()\n    _setText(n0, _toDisplayString(enabled\n))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [
+          "enabled"
+        ],
+        "mappings": ";;;;;;AAAc;;;;kCAAuCA",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup>const enabled=true</script><template>{{enabled}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 260,
+          "generatedEnd": 278,
+          "source": 14,
+          "sourceEnd": 32,
+          "name": null
+        },
+        {
+          "generated": 336,
+          "generatedEnd": 343,
+          "source": 53,
+          "sourceEnd": 60,
+          "name": "enabled"
+        }
+      ],
+      "reference": {
+        "source": "<script setup>const enabled=true</script><template>{{enabled}}</template>",
+        "id": "const-boolean",
+        "filename": "/native-vapor-setup/const-boolean.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst enabled=true\nconst _sfc_main = {\n  __name: 'const-boolean',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(enabled))\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/const-boolean.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAA7B,OAAO",
+            "sourcesContent": [
+              "<script setup>const enabled=true</script><template>{{enabled}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const enabled=true</script><template>{{enabled}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 33,
+                  "line": 1,
+                  "offset": 32
+                },
+                "source": "const enabled=true"
+              },
+              "template": {
+                "start": {
+                  "column": 52,
+                  "line": 1,
+                  "offset": 51
+                },
+                "end": {
+                  "column": 63,
+                  "line": 1,
+                  "offset": 62
+                },
+                "source": "{{enabled}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "enabled": "literal-const"
+              },
+              "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst enabled=true\nconst _sfc_main = {\n  __name: 'const-boolean',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(enabled))\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/const-boolean.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAA7B,OAAO",
+                "sourcesContent": [
+                  "<script setup>const enabled=true</script><template>{{enabled}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst enabled=true\nconst _sfc_main = {\n  __name: 'const-boolean',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(enabled)}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"const-boolean.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/const-boolean.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAA7B,OAAO",
+            "sourcesContent": [
+              "<script setup>const enabled=true</script><template>{{enabled}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const enabled=true</script><template>{{enabled}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 33,
+                  "line": 1,
+                  "offset": 32
+                },
+                "source": "const enabled=true"
+              },
+              "template": {
+                "start": {
+                  "column": 52,
+                  "line": 1,
+                  "offset": 51
+                },
+                "end": {
+                  "column": 63,
+                  "line": 1,
+                  "offset": 62
+                },
+                "source": "{{enabled}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "enabled": "literal-const"
+              },
+              "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst enabled=true\nconst _sfc_main = {\n  __name: 'const-boolean',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(enabled)}`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/const-boolean.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAA7B,OAAO",
+                "sourcesContent": [
+                  "<script setup>const enabled=true</script><template>{{enabled}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "true",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "const-lf",
+      "source": "<script setup>const count='a\\nb'</script><template>{{count}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst count='a\\nb'\n;\n\n    const n0 = t0()\n    _setText(n0, _toDisplayString(count\n))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [
+          "count"
+        ],
+        "mappings": ";;;;;;AAAc;;;;kCAAuCA",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup>const count='a\\nb'</script><template>{{count}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 260,
+          "generatedEnd": 278,
+          "source": 14,
+          "sourceEnd": 32,
+          "name": null
+        },
+        {
+          "generated": 336,
+          "generatedEnd": 341,
+          "source": 53,
+          "sourceEnd": 58,
+          "name": "count"
+        }
+      ],
+      "reference": {
+        "source": "<script setup>const count='a\\nb'</script><template>{{count}}</template>",
+        "id": "const-lf",
+        "filename": "/native-vapor-setup/const-lf.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst count='a\\nb'\nconst _sfc_main = {\n  __name: 'const-lf',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(count))\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/const-lf.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAA7B,KAAK",
+            "sourcesContent": [
+              "<script setup>const count='a\\nb'</script><template>{{count}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const count='a\\nb'</script><template>{{count}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 33,
+                  "line": 1,
+                  "offset": 32
+                },
+                "source": "const count='a\\nb'"
+              },
+              "template": {
+                "start": {
+                  "column": 52,
+                  "line": 1,
+                  "offset": 51
+                },
+                "end": {
+                  "column": 61,
+                  "line": 1,
+                  "offset": 60
+                },
+                "source": "{{count}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "count": "literal-const"
+              },
+              "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst count='a\\nb'\nconst _sfc_main = {\n  __name: 'const-lf',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(count))\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/const-lf.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAA7B,KAAK",
+                "sourcesContent": [
+                  "<script setup>const count='a\\nb'</script><template>{{count}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst count='a\\nb'\nconst _sfc_main = {\n  __name: 'const-lf',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(count)}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"const-lf.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/const-lf.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAA7B,KAAK",
+            "sourcesContent": [
+              "<script setup>const count='a\\nb'</script><template>{{count}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const count='a\\nb'</script><template>{{count}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 33,
+                  "line": 1,
+                  "offset": 32
+                },
+                "source": "const count='a\\nb'"
+              },
+              "template": {
+                "start": {
+                  "column": 52,
+                  "line": 1,
+                  "offset": 51
+                },
+                "end": {
+                  "column": 61,
+                  "line": 1,
+                  "offset": 60
+                },
+                "source": "{{count}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "count": "literal-const"
+              },
+              "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst count='a\\nb'\nconst _sfc_main = {\n  __name: 'const-lf',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(count)}`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/const-lf.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAA7B,KAAK",
+                "sourcesContent": [
+                  "<script setup>const count='a\\nb'</script><template>{{count}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "a\nb",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "const-valid-pair",
+      "source": "<script setup>const count='a\\ud83c\\udf38b'</script><template>{{count}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst count='a\\ud83c\\udf38b'\n;\n\n    const n0 = t0()\n    _setText(n0, _toDisplayString(count\n))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [
+          "count"
+        ],
+        "mappings": ";;;;;;AAAc;;;;kCAAiDA",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup>const count='a\\ud83c\\udf38b'</script><template>{{count}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 260,
+          "generatedEnd": 288,
+          "source": 14,
+          "sourceEnd": 42,
+          "name": null
+        },
+        {
+          "generated": 346,
+          "generatedEnd": 351,
+          "source": 63,
+          "sourceEnd": 68,
+          "name": "count"
+        }
+      ],
+      "reference": {
+        "source": "<script setup>const count='a\\ud83c\\udf38b'</script><template>{{count}}</template>",
+        "id": "const-valid-pair",
+        "filename": "/native-vapor-setup/const-valid-pair.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst count='a\\ud83c\\udf38b'\nconst _sfc_main = {\n  __name: 'const-valid-pair',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(count))\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/const-valid-pair.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAvC,KAAK",
+            "sourcesContent": [
+              "<script setup>const count='a\\ud83c\\udf38b'</script><template>{{count}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const count='a\\ud83c\\udf38b'</script><template>{{count}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 43,
+                  "line": 1,
+                  "offset": 42
+                },
+                "source": "const count='a\\ud83c\\udf38b'"
+              },
+              "template": {
+                "start": {
+                  "column": 62,
+                  "line": 1,
+                  "offset": 61
+                },
+                "end": {
+                  "column": 71,
+                  "line": 1,
+                  "offset": 70
+                },
+                "source": "{{count}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "count": "literal-const"
+              },
+              "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst count='a\\ud83c\\udf38b'\nconst _sfc_main = {\n  __name: 'const-valid-pair',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(count))\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/const-valid-pair.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAvC,KAAK",
+                "sourcesContent": [
+                  "<script setup>const count='a\\ud83c\\udf38b'</script><template>{{count}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst count='a\\ud83c\\udf38b'\nconst _sfc_main = {\n  __name: 'const-valid-pair',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(count)}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"const-valid-pair.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/const-valid-pair.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAvC,KAAK",
+            "sourcesContent": [
+              "<script setup>const count='a\\ud83c\\udf38b'</script><template>{{count}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const count='a\\ud83c\\udf38b'</script><template>{{count}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 43,
+                  "line": 1,
+                  "offset": 42
+                },
+                "source": "const count='a\\ud83c\\udf38b'"
+              },
+              "template": {
+                "start": {
+                  "column": 62,
+                  "line": 1,
+                  "offset": 61
+                },
+                "end": {
+                  "column": 71,
+                  "line": 1,
+                  "offset": 70
+                },
+                "source": "{{count}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "count": "literal-const"
+              },
+              "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst count='a\\ud83c\\udf38b'\nconst _sfc_main = {\n  __name: 'const-valid-pair',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(count)}`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/const-valid-pair.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAvC,KAAK",
+                "sourcesContent": [
+                  "<script setup>const count='a\\ud83c\\udf38b'</script><template>{{count}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "a🌸b",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "const-replacement",
+      "source": "<script setup>const count='a\\ufffdb'</script><template>{{count}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst count='a\\ufffdb'\n;\n\n    const n0 = t0()\n    _setText(n0, _toDisplayString(count\n))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [
+          "count"
+        ],
+        "mappings": ";;;;;;AAAc;;;;kCAA2CA",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup>const count='a\\ufffdb'</script><template>{{count}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 260,
+          "generatedEnd": 282,
+          "source": 14,
+          "sourceEnd": 36,
+          "name": null
+        },
+        {
+          "generated": 340,
+          "generatedEnd": 345,
+          "source": 57,
+          "sourceEnd": 62,
+          "name": "count"
+        }
+      ],
+      "reference": {
+        "source": "<script setup>const count='a\\ufffdb'</script><template>{{count}}</template>",
+        "id": "const-replacement",
+        "filename": "/native-vapor-setup/const-replacement.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst count='a\\ufffdb'\nconst _sfc_main = {\n  __name: 'const-replacement',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(count))\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/const-replacement.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAjC,KAAK",
+            "sourcesContent": [
+              "<script setup>const count='a\\ufffdb'</script><template>{{count}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const count='a\\ufffdb'</script><template>{{count}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 37,
+                  "line": 1,
+                  "offset": 36
+                },
+                "source": "const count='a\\ufffdb'"
+              },
+              "template": {
+                "start": {
+                  "column": 56,
+                  "line": 1,
+                  "offset": 55
+                },
+                "end": {
+                  "column": 65,
+                  "line": 1,
+                  "offset": 64
+                },
+                "source": "{{count}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "count": "literal-const"
+              },
+              "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst count='a\\ufffdb'\nconst _sfc_main = {\n  __name: 'const-replacement',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(count))\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/const-replacement.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAjC,KAAK",
+                "sourcesContent": [
+                  "<script setup>const count='a\\ufffdb'</script><template>{{count}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst count='a\\ufffdb'\nconst _sfc_main = {\n  __name: 'const-replacement',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(count)}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"const-replacement.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/const-replacement.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAjC,KAAK",
+            "sourcesContent": [
+              "<script setup>const count='a\\ufffdb'</script><template>{{count}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const count='a\\ufffdb'</script><template>{{count}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 37,
+                  "line": 1,
+                  "offset": 36
+                },
+                "source": "const count='a\\ufffdb'"
+              },
+              "template": {
+                "start": {
+                  "column": 56,
+                  "line": 1,
+                  "offset": 55
+                },
+                "end": {
+                  "column": 65,
+                  "line": 1,
+                  "offset": 64
+                },
+                "source": "{{count}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "count": "literal-const"
+              },
+              "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst count='a\\ufffdb'\nconst _sfc_main = {\n  __name: 'const-replacement',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(count)}`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/const-replacement.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAjC,KAAK",
+                "sourcesContent": [
+                  "<script setup>const count='a\\ufffdb'</script><template>{{count}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "a�b",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "const-ts-number",
+      "source": "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst count=1\n;\n\n    const n0 = t0()\n    _setText(n0, _toDisplayString(count\n))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [
+          "count"
+        ],
+        "mappings": ";;;;;;AAAwB,WAAkB;;;;kCAAuBA",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 260,
+          "generatedEnd": 271,
+          "source": 24,
+          "sourceEnd": 35,
+          "name": null
+        },
+        {
+          "generated": 271,
+          "generatedEnd": 273,
+          "source": 42,
+          "sourceEnd": 44,
+          "name": null
+        },
+        {
+          "generated": 331,
+          "generatedEnd": 336,
+          "source": 65,
+          "sourceEnd": 70,
+          "name": "count"
+        }
+      ],
+      "reference": {
+        "source": "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>",
+        "id": "const-ts-number",
+        "filename": "/native-vapor-setup/const-ts-number.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import _sfc_main from \"/native-vapor-setup/const-ts-number.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-vapor-setup/const-ts-number.vue?vue&type=script&setup=true&lang.ts\";\nexport default _sfc_main;\n",
+          "map": {
+            "mappings": ""
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [
+            {
+              "id": "/native-vapor-setup/const-ts-number.vue?vue&type=script&setup=true&lang.ts",
+              "loaded": {
+                "code": "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst count:number=1\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'const-ts-number',\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(count))\n  return n0\n\n}\n\n})",
+                "map": {
+                  "version": 3,
+                  "sources": [
+                    "/native-vapor-setup/const-ts-number.vue"
+                  ],
+                  "names": [],
+                  "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;gCAAzC,KAAK",
+                  "sourcesContent": [
+                    "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>"
+                  ]
+                }
+              },
+              "transformed": {
+                "code": "import { defineVaporComponent as _defineVaporComponent } from \"vue\";\nimport { toDisplayString as _toDisplayString, setText as _setText, template as _template } from \"vue\";\nconst t0 = _template(\" \");\nconst count = 1;\nexport default /*@__PURE__*/ _defineVaporComponent({\n\t__name: \"const-ts-number\",\n\tsetup(__props) {\n\t\tconst n0 = t0();\n\t\t_setText(n0, _toDisplayString(count));\n\t\treturn n0;\n\t}\n});\n",
+                "map": {
+                  "mappings": ";;;AAAwB,MAAM,QAAa;;;;;gCAAzC,KAAK,CAAA",
+                  "names": [],
+                  "sources": [
+                    "/native-vapor-setup/const-ts-number.vue"
+                  ],
+                  "version": 3,
+                  "sourcesContent": [
+                    "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>"
+                  ]
+                }
+              },
+              "loader": "stock plugin-vue resolveId/load",
+              "transform": "actual Vite transformWithOxc(lang:ts,sourcemap:true)"
+            }
+          ],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 25,
+                  "line": 1,
+                  "offset": 24
+                },
+                "end": {
+                  "column": 45,
+                  "line": 1,
+                  "offset": 44
+                },
+                "source": "const count:number=1"
+              },
+              "template": {
+                "start": {
+                  "column": 64,
+                  "line": 1,
+                  "offset": 63
+                },
+                "end": {
+                  "column": 73,
+                  "line": 1,
+                  "offset": 72
+                },
+                "source": "{{count}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "count": "literal-const"
+              },
+              "code": "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst count:number=1\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'const-ts-number',\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(count))\n  return n0\n\n}\n\n})",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/const-ts-number.vue"
+                ],
+                "names": [],
+                "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;gCAAzC,KAAK",
+                "sourcesContent": [
+                  "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import _sfc_main from \"/native-vapor-setup/const-ts-number.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-vapor-setup/const-ts-number.vue?vue&type=script&setup=true&lang.ts\";\nimport { useSSRContext as __vite_useSSRContext } from \"vue\";\nconst _sfc_setup = _sfc_main.setup;\n_sfc_main.setup = (props, ctx) => {\n\tconst ssrContext = __vite_useSSRContext();\n\t(ssrContext.modules || (ssrContext.modules = new Set())).add(\"const-ts-number.vue\");\n\treturn _sfc_setup ? _sfc_setup(props, ctx) : undefined;\n};\nexport default _sfc_main;\n",
+          "map": {
+            "mappings": ""
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [
+            {
+              "id": "/native-vapor-setup/const-ts-number.vue?vue&type=script&setup=true&lang.ts",
+              "loaded": {
+                "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst count:number=1\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'const-ts-number',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`${_ssrInterpolate(count)}`)\n}\n}\n\n})",
+                "map": {
+                  "version": 3,
+                  "sources": [
+                    "/native-vapor-setup/const-ts-number.vue"
+                  ],
+                  "names": [],
+                  "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzC,KAAK",
+                  "sourcesContent": [
+                    "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>"
+                  ]
+                }
+              },
+              "transformed": {
+                "code": "import { defineComponent as _defineComponent } from \"vue\";\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nconst count = 1;\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"const-ts-number\",\n\t__ssrInlineRender: true,\n\t__vapor: true,\n\tsetup(__props) {\n\t\treturn (_ctx, _push, _parent, _attrs) => {\n\t\t\t_push(`${_ssrInterpolate(count)}`);\n\t\t};\n\t}\n});\n",
+                "map": {
+                  "mappings": ";;AAAwB,MAAM,QAAa;;;;;;;4BAAzC,KAAK,GAAA",
+                  "names": [],
+                  "sources": [
+                    "/native-vapor-setup/const-ts-number.vue"
+                  ],
+                  "version": 3,
+                  "sourcesContent": [
+                    "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>"
+                  ]
+                }
+              },
+              "loader": "stock plugin-vue resolveId/load",
+              "transform": "actual Vite transformWithOxc(lang:ts,sourcemap:true)"
+            }
+          ],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 25,
+                  "line": 1,
+                  "offset": 24
+                },
+                "end": {
+                  "column": 45,
+                  "line": 1,
+                  "offset": 44
+                },
+                "source": "const count:number=1"
+              },
+              "template": {
+                "start": {
+                  "column": 64,
+                  "line": 1,
+                  "offset": 63
+                },
+                "end": {
+                  "column": 73,
+                  "line": 1,
+                  "offset": 72
+                },
+                "source": "{{count}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "count": "literal-const"
+              },
+              "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst count:number=1\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'const-ts-number',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`${_ssrInterpolate(count)}`)\n}\n}\n\n})",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/const-ts-number.vue"
+                ],
+                "names": [],
+                "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzC,KAAK",
+                "sourcesContent": [
+                  "<script setup lang=\"ts\">const count:number=1</script><template>{{count}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "1",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "let-ts-unused",
+      "source": "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, renderEffect as _renderEffect, unref as _unref, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst unused='unused'; let count=2\n;\n\n    const n0 = t0()\n    _renderEffect(() => _setText(n0, _toDisplayString(_unref(count\n))))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [
+          "count"
+        ],
+        "mappings": ";;;;;;AAAwB,YAAmB,oBAA2B;;;;6DAAuBA",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 308,
+          "generatedEnd": 320,
+          "source": 24,
+          "sourceEnd": 36,
+          "name": null
+        },
+        {
+          "generated": 320,
+          "generatedEnd": 340,
+          "source": 43,
+          "sourceEnd": 63,
+          "name": null
+        },
+        {
+          "generated": 340,
+          "generatedEnd": 342,
+          "source": 70,
+          "sourceEnd": 72,
+          "name": null
+        },
+        {
+          "generated": 427,
+          "generatedEnd": 432,
+          "source": 93,
+          "sourceEnd": 98,
+          "name": "count"
+        }
+      ],
+      "reference": {
+        "source": "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>",
+        "id": "let-ts-unused",
+        "filename": "/native-vapor-setup/let-ts-unused.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import _sfc_main from \"/native-vapor-setup/let-ts-unused.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-vapor-setup/let-ts-unused.vue?vue&type=script&setup=true&lang.ts\";\nexport default _sfc_main;\n",
+          "map": {
+            "mappings": ""
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [
+            {
+              "id": "/native-vapor-setup/let-ts-unused.vue?vue&type=script&setup=true&lang.ts",
+              "loaded": {
+                "code": "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { unref as _unref, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused:string='unused'; \nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'let-ts-unused',\n  setup(__props) {\nlet count:number=2\n\n  const n0 = t0()\n  _renderEffect(() => _setText(n0, _toDisplayString(_unref(count))))\n  return n0\n\n}\n\n})",
+                "map": {
+                  "version": 3,
+                  "sources": [
+                    "/native-vapor-setup/let-ts-unused.vue"
+                  ],
+                  "names": [],
+                  "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;AAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAArE,aAAK",
+                  "sourcesContent": [
+                    "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>"
+                  ]
+                }
+              },
+              "transformed": {
+                "code": "import { defineVaporComponent as _defineVaporComponent } from \"vue\";\nimport { unref as _unref, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from \"vue\";\nconst t0 = _template(\" \");\nconst unused = \"unused\";\nexport default /*@__PURE__*/ _defineVaporComponent({\n\t__name: \"let-ts-unused\",\n\tsetup(__props) {\n\t\tlet count = 2;\n\t\tconst n0 = t0();\n\t\t_renderEffect(() => _setText(n0, _toDisplayString(_unref(count))));\n\t\treturn n0;\n\t}\n});\n",
+                "map": {
+                  "mappings": ";;;AAAwB,MAAM,SAAc;;;;EAAU,IAAI,QAAa;;oDAArE,OAAA,KAAA,CAAK,CAAA,CAAA",
+                  "names": [],
+                  "sources": [
+                    "/native-vapor-setup/let-ts-unused.vue"
+                  ],
+                  "version": 3,
+                  "sourcesContent": [
+                    "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>"
+                  ]
+                }
+              },
+              "loader": "stock plugin-vue resolveId/load",
+              "transform": "actual Vite transformWithOxc(lang:ts,sourcemap:true)"
+            }
+          ],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 25,
+                  "line": 1,
+                  "offset": 24
+                },
+                "end": {
+                  "column": 73,
+                  "line": 1,
+                  "offset": 72
+                },
+                "source": "const unused:string='unused'; let count:number=2"
+              },
+              "template": {
+                "start": {
+                  "column": 92,
+                  "line": 1,
+                  "offset": 91
+                },
+                "end": {
+                  "column": 101,
+                  "line": 1,
+                  "offset": 100
+                },
+                "source": "{{count}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "unused": "literal-const",
+                "count": "setup-let"
+              },
+              "code": "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { unref as _unref, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused:string='unused'; \nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'let-ts-unused',\n  setup(__props) {\nlet count:number=2\n\n  const n0 = t0()\n  _renderEffect(() => _setText(n0, _toDisplayString(_unref(count))))\n  return n0\n\n}\n\n})",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/let-ts-unused.vue"
+                ],
+                "names": [],
+                "mappings": ";;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;AAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAArE,aAAK",
+                "sourcesContent": [
+                  "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import _sfc_main from \"/native-vapor-setup/let-ts-unused.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-vapor-setup/let-ts-unused.vue?vue&type=script&setup=true&lang.ts\";\nimport { useSSRContext as __vite_useSSRContext } from \"vue\";\nconst _sfc_setup = _sfc_main.setup;\n_sfc_main.setup = (props, ctx) => {\n\tconst ssrContext = __vite_useSSRContext();\n\t(ssrContext.modules || (ssrContext.modules = new Set())).add(\"let-ts-unused.vue\");\n\treturn _sfc_setup ? _sfc_setup(props, ctx) : undefined;\n};\nexport default _sfc_main;\n",
+          "map": {
+            "mappings": ""
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [
+            {
+              "id": "/native-vapor-setup/let-ts-unused.vue?vue&type=script&setup=true&lang.ts",
+              "loaded": {
+                "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused:string='unused'; \nexport default /*@__PURE__*/_defineComponent({\n  __name: 'let-ts-unused',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\nlet count:number=2\nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`${_ssrInterpolate(_unref(count))}`)\n}\n}\n\n})",
+                "map": {
+                  "version": 3,
+                  "sources": [
+                    "/native-vapor-setup/let-ts-unused.vue"
+                  ],
+                  "names": [],
+                  "mappings": ";;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;AAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAArE,aAAK",
+                  "sourcesContent": [
+                    "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>"
+                  ]
+                }
+              },
+              "transformed": {
+                "code": "import { defineComponent as _defineComponent } from \"vue\";\nimport { unref as _unref } from \"vue\";\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nconst unused = \"unused\";\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"let-ts-unused\",\n\t__ssrInlineRender: true,\n\t__vapor: true,\n\tsetup(__props) {\n\t\tlet count = 2;\n\t\treturn (_ctx, _push, _parent, _attrs) => {\n\t\t\t_push(`${_ssrInterpolate(_unref(count))}`);\n\t\t};\n\t}\n});\n",
+                "map": {
+                  "mappings": ";;;AAAwB,MAAM,SAAc;;;;;;EAAU,IAAI,QAAa;;4BAArE,OAAA,KAAA,CAAK,GAAA",
+                  "names": [],
+                  "sources": [
+                    "/native-vapor-setup/let-ts-unused.vue"
+                  ],
+                  "version": 3,
+                  "sourcesContent": [
+                    "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>"
+                  ]
+                }
+              },
+              "loader": "stock plugin-vue resolveId/load",
+              "transform": "actual Vite transformWithOxc(lang:ts,sourcemap:true)"
+            }
+          ],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 25,
+                  "line": 1,
+                  "offset": 24
+                },
+                "end": {
+                  "column": 73,
+                  "line": 1,
+                  "offset": 72
+                },
+                "source": "const unused:string='unused'; let count:number=2"
+              },
+              "template": {
+                "start": {
+                  "column": 92,
+                  "line": 1,
+                  "offset": 91
+                },
+                "end": {
+                  "column": 101,
+                  "line": 1,
+                  "offset": 100
+                },
+                "source": "{{count}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "unused": "literal-const",
+                "count": "setup-let"
+              },
+              "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused:string='unused'; \nexport default /*@__PURE__*/_defineComponent({\n  __name: 'let-ts-unused',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\nlet count:number=2\nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`${_ssrInterpolate(_unref(count))}`)\n}\n}\n\n})",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/let-ts-unused.vue"
+                ],
+                "names": [],
+                "mappings": ";;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;AAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAArE,aAAK",
+                "sourcesContent": [
+                  "<script setup lang=\"ts\">const unused:string='unused'; let count:number=2</script><template>{{count}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "2",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "var-ts-boolean",
+      "source": "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, renderEffect as _renderEffect, unref as _unref, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nvar enabled=false\n;\n\n    const n0 = t0()\n    _renderEffect(() => _setText(n0, _toDisplayString(_unref(enabled\n))))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [
+          "enabled"
+        ],
+        "mappings": ";;;;;;AAAwB,WAAmB;;;;6DAA2BA",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 308,
+          "generatedEnd": 319,
+          "source": 24,
+          "sourceEnd": 35,
+          "name": null
+        },
+        {
+          "generated": 319,
+          "generatedEnd": 325,
+          "source": 43,
+          "sourceEnd": 49,
+          "name": null
+        },
+        {
+          "generated": 410,
+          "generatedEnd": 417,
+          "source": 70,
+          "sourceEnd": 77,
+          "name": "enabled"
+        }
+      ],
+      "reference": {
+        "source": "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>",
+        "id": "var-ts-boolean",
+        "filename": "/native-vapor-setup/var-ts-boolean.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import _sfc_main from \"/native-vapor-setup/var-ts-boolean.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-vapor-setup/var-ts-boolean.vue?vue&type=script&setup=true&lang.ts\";\nexport default _sfc_main;\n",
+          "map": {
+            "mappings": ""
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [
+            {
+              "id": "/native-vapor-setup/var-ts-boolean.vue?vue&type=script&setup=true&lang.ts",
+              "loaded": {
+                "code": "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { unref as _unref, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\" \")\n\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'var-ts-boolean',\n  setup(__props) {\nvar enabled:boolean=false\n\n  const n0 = t0()\n  _renderEffect(() => _setText(n0, _toDisplayString(_unref(enabled))))\n  return n0\n\n}\n\n})",
+                "map": {
+                  "version": 3,
+                  "sources": [
+                    "/native-vapor-setup/var-ts-boolean.vue"
+                  ],
+                  "names": [],
+                  "mappings": ";;;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAA9C,eAAO",
+                  "sourcesContent": [
+                    "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>"
+                  ]
+                }
+              },
+              "transformed": {
+                "code": "import { defineVaporComponent as _defineVaporComponent } from \"vue\";\nimport { unref as _unref, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from \"vue\";\nconst t0 = _template(\" \");\nexport default /*@__PURE__*/ _defineVaporComponent({\n\t__name: \"var-ts-boolean\",\n\tsetup(__props) {\n\t\tvar enabled = false;\n\t\tconst n0 = t0();\n\t\t_renderEffect(() => _setText(n0, _toDisplayString(_unref(enabled))));\n\t\treturn n0;\n\t}\n});\n",
+                "map": {
+                  "mappings": ";;;;;;EAAwB,IAAI,UAAgB;;oDAA1C,OAAA,OAAA,CAAO,CAAA,CAAA",
+                  "names": [],
+                  "sources": [
+                    "/native-vapor-setup/var-ts-boolean.vue"
+                  ],
+                  "version": 3,
+                  "sourcesContent": [
+                    "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>"
+                  ]
+                }
+              },
+              "loader": "stock plugin-vue resolveId/load",
+              "transform": "actual Vite transformWithOxc(lang:ts,sourcemap:true)"
+            }
+          ],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 25,
+                  "line": 1,
+                  "offset": 24
+                },
+                "end": {
+                  "column": 50,
+                  "line": 1,
+                  "offset": 49
+                },
+                "source": "var enabled:boolean=false"
+              },
+              "template": {
+                "start": {
+                  "column": 69,
+                  "line": 1,
+                  "offset": 68
+                },
+                "end": {
+                  "column": 80,
+                  "line": 1,
+                  "offset": 79
+                },
+                "source": "{{enabled}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "enabled": "setup-let"
+              },
+              "code": "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { unref as _unref, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\" \")\n\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'var-ts-boolean',\n  setup(__props) {\nvar enabled:boolean=false\n\n  const n0 = t0()\n  _renderEffect(() => _setText(n0, _toDisplayString(_unref(enabled))))\n  return n0\n\n}\n\n})",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/var-ts-boolean.vue"
+                ],
+                "names": [],
+                "mappings": ";;;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;oDAA9C,eAAO",
+                "sourcesContent": [
+                  "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import _sfc_main from \"/native-vapor-setup/var-ts-boolean.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-vapor-setup/var-ts-boolean.vue?vue&type=script&setup=true&lang.ts\";\nimport { useSSRContext as __vite_useSSRContext } from \"vue\";\nconst _sfc_setup = _sfc_main.setup;\n_sfc_main.setup = (props, ctx) => {\n\tconst ssrContext = __vite_useSSRContext();\n\t(ssrContext.modules || (ssrContext.modules = new Set())).add(\"var-ts-boolean.vue\");\n\treturn _sfc_setup ? _sfc_setup(props, ctx) : undefined;\n};\nexport default _sfc_main;\n",
+          "map": {
+            "mappings": ""
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [
+            {
+              "id": "/native-vapor-setup/var-ts-boolean.vue?vue&type=script&setup=true&lang.ts",
+              "loaded": {
+                "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'var-ts-boolean',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\nvar enabled:boolean=false\nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`${_ssrInterpolate(_unref(enabled))}`)\n}\n}\n\n})",
+                "map": {
+                  "version": 3,
+                  "sources": [
+                    "/native-vapor-setup/var-ts-boolean.vue"
+                  ],
+                  "names": [],
+                  "mappings": ";;;;;;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAA9C,eAAO",
+                  "sourcesContent": [
+                    "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>"
+                  ]
+                }
+              },
+              "transformed": {
+                "code": "import { defineComponent as _defineComponent } from \"vue\";\nimport { unref as _unref } from \"vue\";\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"var-ts-boolean\",\n\t__ssrInlineRender: true,\n\t__vapor: true,\n\tsetup(__props) {\n\t\tvar enabled = false;\n\t\treturn (_ctx, _push, _parent, _attrs) => {\n\t\t\t_push(`${_ssrInterpolate(_unref(enabled))}`);\n\t\t};\n\t}\n});\n",
+                "map": {
+                  "mappings": ";;;;;;;;EAAwB,IAAI,UAAgB;;4BAA1C,OAAA,OAAA,CAAO,GAAA",
+                  "names": [],
+                  "sources": [
+                    "/native-vapor-setup/var-ts-boolean.vue"
+                  ],
+                  "version": 3,
+                  "sourcesContent": [
+                    "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>"
+                  ]
+                }
+              },
+              "loader": "stock plugin-vue resolveId/load",
+              "transform": "actual Vite transformWithOxc(lang:ts,sourcemap:true)"
+            }
+          ],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 25,
+                  "line": 1,
+                  "offset": 24
+                },
+                "end": {
+                  "column": 50,
+                  "line": 1,
+                  "offset": 49
+                },
+                "source": "var enabled:boolean=false"
+              },
+              "template": {
+                "start": {
+                  "column": 69,
+                  "line": 1,
+                  "offset": 68
+                },
+                "end": {
+                  "column": 80,
+                  "line": 1,
+                  "offset": 79
+                },
+                "source": "{{enabled}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "enabled": "setup-let"
+              },
+              "code": "import { defineComponent as _defineComponent } from 'vue'\nimport { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'var-ts-boolean',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\nvar enabled:boolean=false\nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`${_ssrInterpolate(_unref(enabled))}`)\n}\n}\n\n})",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/var-ts-boolean.vue"
+                ],
+                "names": [],
+                "mappings": ";;;;;;;;;;AAAwB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAA9C,eAAO",
+                "sourcesContent": [
+                  "<script setup lang=\"ts\">var enabled:boolean=false</script><template>{{enabled}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "false",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "scalar-number",
+      "source": "<script setup>const unused=1</script><template>{{123}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst unused=1\n;\n\n    const n0 = t0()\n    _setText(n0, _toDisplayString(123\n))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;;;AAAc;;;;kCAAmC",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup>const unused=1</script><template>{{123}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 260,
+          "generatedEnd": 274,
+          "source": 14,
+          "sourceEnd": 28,
+          "name": null
+        },
+        {
+          "generated": 332,
+          "generatedEnd": 335,
+          "source": 49,
+          "sourceEnd": 52,
+          "name": null
+        }
+      ],
+      "reference": {
+        "source": "<script setup>const unused=1</script><template>{{123}}</template>",
+        "id": "scalar-number",
+        "filename": "/native-vapor-setup/scalar-number.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-number',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(123))\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/scalar-number.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,GAAG",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template>{{123}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template>{{123}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 55,
+                  "line": 1,
+                  "offset": 54
+                },
+                "source": "{{123}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-number',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(123))\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/scalar-number.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,GAAG",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template>{{123}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-number',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(123)}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"scalar-number.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/scalar-number.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,GAAG",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template>{{123}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template>{{123}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 55,
+                  "line": 1,
+                  "offset": 54
+                },
+                "source": "{{123}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-number',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(123)}`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/scalar-number.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,GAAG",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template>{{123}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "123",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "scalar-boolean",
+      "source": "<script setup>const unused=1</script><template>{{false}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst unused=1\n;\n\n    const n0 = t0()\n    _setText(n0, _toDisplayString(false\n))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;;;AAAc;;;;kCAAmC",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup>const unused=1</script><template>{{false}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 260,
+          "generatedEnd": 274,
+          "source": 14,
+          "sourceEnd": 28,
+          "name": null
+        },
+        {
+          "generated": 332,
+          "generatedEnd": 337,
+          "source": 49,
+          "sourceEnd": 54,
+          "name": null
+        }
+      ],
+      "reference": {
+        "source": "<script setup>const unused=1</script><template>{{false}}</template>",
+        "id": "scalar-boolean",
+        "filename": "/native-vapor-setup/scalar-boolean.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-boolean',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(false))\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/scalar-boolean.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,KAAK",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template>{{false}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template>{{false}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 57,
+                  "line": 1,
+                  "offset": 56
+                },
+                "source": "{{false}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-boolean',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(false))\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/scalar-boolean.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,KAAK",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template>{{false}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-boolean',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(false)}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"scalar-boolean.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/scalar-boolean.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,KAAK",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template>{{false}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template>{{false}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 57,
+                  "line": 1,
+                  "offset": 56
+                },
+                "source": "{{false}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-boolean',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(false)}`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/scalar-boolean.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,KAAK",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template>{{false}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "false",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "scalar-null",
+      "source": "<script setup>const unused=1</script><template>{{null}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst unused=1\n;\n\n    const n0 = t0()\n    _setText(n0, _toDisplayString(null\n))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;;;AAAc;;;;kCAAmC",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup>const unused=1</script><template>{{null}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 260,
+          "generatedEnd": 274,
+          "source": 14,
+          "sourceEnd": 28,
+          "name": null
+        },
+        {
+          "generated": 332,
+          "generatedEnd": 336,
+          "source": 49,
+          "sourceEnd": 53,
+          "name": null
+        }
+      ],
+      "reference": {
+        "source": "<script setup>const unused=1</script><template>{{null}}</template>",
+        "id": "scalar-null",
+        "filename": "/native-vapor-setup/scalar-null.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-null',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(null))\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/scalar-null.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,IAAI",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template>{{null}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template>{{null}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 56,
+                  "line": 1,
+                  "offset": 55
+                },
+                "source": "{{null}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-null',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(null))\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/scalar-null.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,IAAI",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template>{{null}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-null',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(null)}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"scalar-null.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/scalar-null.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,IAAI",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template>{{null}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template>{{null}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 56,
+                  "line": 1,
+                  "offset": 55
+                },
+                "source": "{{null}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-null',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(null)}`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/scalar-null.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,IAAI",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template>{{null}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "scalar-bigint",
+      "source": "<script setup>const unused=1</script><template>{{12n}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst unused=1\n;\n\n    const n0 = t0()\n    _setText(n0, _toDisplayString(12n\n))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;;;AAAc;;;;kCAAmC",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup>const unused=1</script><template>{{12n}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 260,
+          "generatedEnd": 274,
+          "source": 14,
+          "sourceEnd": 28,
+          "name": null
+        },
+        {
+          "generated": 332,
+          "generatedEnd": 335,
+          "source": 49,
+          "sourceEnd": 52,
+          "name": null
+        }
+      ],
+      "reference": {
+        "source": "<script setup>const unused=1</script><template>{{12n}}</template>",
+        "id": "scalar-bigint",
+        "filename": "/native-vapor-setup/scalar-bigint.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-bigint',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(12n))\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/scalar-bigint.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,GAAG",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template>{{12n}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template>{{12n}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 55,
+                  "line": 1,
+                  "offset": 54
+                },
+                "source": "{{12n}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-bigint',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, _toDisplayString(12n))\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/scalar-bigint.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;gCAAzB,GAAG",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template>{{12n}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-bigint',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(12n)}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"scalar-bigint.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/scalar-bigint.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,GAAG",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template>{{12n}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template>{{12n}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 55,
+                  "line": 1,
+                  "offset": 54
+                },
+                "source": "{{12n}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-bigint',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(12n)}`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/scalar-bigint.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,GAAG",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template>{{12n}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "12",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "scalar-string",
+      "source": "<script setup>const unused=1</script><template>{{'a<雪🌸'}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst unused=1\n;\n\n    const n0 = t0()\n    _setText(n0, _toDisplayString('a<雪🌸'\n))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;;;AAAc;;;;kCAAmC",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup>const unused=1</script><template>{{'a<雪🌸'}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 260,
+          "generatedEnd": 274,
+          "source": 14,
+          "sourceEnd": 28,
+          "name": null
+        },
+        {
+          "generated": 332,
+          "generatedEnd": 343,
+          "source": 49,
+          "sourceEnd": 60,
+          "name": null
+        }
+      ],
+      "reference": {
+        "source": "<script setup>const unused=1</script><template>{{'a<雪🌸'}}</template>",
+        "id": "scalar-string",
+        "filename": "/native-vapor-setup/scalar-string.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-string',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, 'a<雪🌸')\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/scalar-string.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;eAAzB,OAAO",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template>{{'a<雪🌸'}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template>{{'a<雪🌸'}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 59,
+                  "line": 1,
+                  "offset": 58
+                },
+                "source": "{{'a<雪🌸'}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-string',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, 'a<雪🌸')\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/scalar-string.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;eAAzB,OAAO",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template>{{'a<雪🌸'}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-string',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate('a<雪🌸')}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"scalar-string.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/scalar-string.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,OAAO",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template>{{'a<雪🌸'}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template>{{'a<雪🌸'}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 59,
+                  "line": 1,
+                  "offset": 58
+                },
+                "source": "{{'a<雪🌸'}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-string',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate('a<雪🌸')}`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/scalar-string.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,OAAO",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template>{{'a<雪🌸'}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "a&lt;雪🌸",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "scalar-empty-string",
+      "source": "<script setup>const unused=1</script><template>{{''}}</template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent, setText as _setText, toDisplayString as _toDisplayString } from \"vue\"\nconst t0 = _template(\" \")\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst unused=1\n;\n\n    const n0 = t0()\n    _setText(n0, _toDisplayString(''\n))\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;;;AAAc;;;;kCAAmC",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup>const unused=1</script><template>{{''}}</template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 260,
+          "generatedEnd": 274,
+          "source": 14,
+          "sourceEnd": 28,
+          "name": null
+        },
+        {
+          "generated": 332,
+          "generatedEnd": 334,
+          "source": 49,
+          "sourceEnd": 51,
+          "name": null
+        }
+      ],
+      "reference": {
+        "source": "<script setup>const unused=1</script><template>{{''}}</template>",
+        "id": "scalar-empty-string",
+        "filename": "/native-vapor-setup/scalar-empty-string.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-empty-string',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, '')\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/scalar-empty-string.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;eAAzB,EAAE",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template>{{''}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template>{{''}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 54,
+                  "line": 1,
+                  "offset": 53
+                },
+                "source": "{{''}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { setText as _setText, template as _template } from 'vue';\nconst t0 = _template(\" \")\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-empty-string',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  _setText(n0, '')\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/scalar-empty-string.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;eAAzB,EAAE",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template>{{''}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-empty-string',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate('')}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"scalar-empty-string.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/scalar-empty-string.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,EAAE",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template>{{''}}</template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template>{{''}}</template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 54,
+                  "line": 1,
+                  "offset": 53
+                },
+                "source": "{{''}}"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'scalar-empty-string',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate('')}`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/scalar-empty-string.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;2BAAzB,EAAE",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template>{{''}}</template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    },
+    {
+      "id": "unused-static",
+      "source": "<script setup>const unused=1</script><template><div><span>static</span><!--雪🌸--></div></template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"<div><span>static</span><!--雪🌸--></div>\", 3)\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst unused=1\n;\n\n    const n0 = t0()\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAA+C,KAAK,MAAM,MAAa,OAAA,UAAgB;;;;;AAAzE",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup>const unused=1</script><template><div><span>static</span><!--雪🌸--></div></template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 113,
+          "generatedEnd": 113,
+          "source": 47,
+          "sourceEnd": 47,
+          "name": null
+        },
+        {
+          "generated": 118,
+          "generatedEnd": 118,
+          "source": 52,
+          "sourceEnd": 52,
+          "name": null
+        },
+        {
+          "generated": 124,
+          "generatedEnd": 124,
+          "source": 58,
+          "sourceEnd": 58,
+          "name": null
+        },
+        {
+          "generated": 130,
+          "generatedEnd": 130,
+          "source": 71,
+          "sourceEnd": 71,
+          "name": null
+        },
+        {
+          "generated": 137,
+          "generatedEnd": 137,
+          "source": 71,
+          "sourceEnd": 71,
+          "name": null
+        },
+        {
+          "generated": 151,
+          "generatedEnd": 151,
+          "source": 91,
+          "sourceEnd": 91,
+          "name": null
+        },
+        {
+          "generated": 248,
+          "generatedEnd": 262,
+          "source": 14,
+          "sourceEnd": 28,
+          "name": null
+        }
+      ],
+      "reference": {
+        "source": "<script setup>const unused=1</script><template><div><span>static</span><!--雪🌸--></div></template>",
+        "id": "unused-static",
+        "filename": "/native-vapor-setup/unused-static.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<div><span>static</span><!--雪🌸-->\", 3)\nconst unused=1\nconst _sfc_main = {\n  __name: 'unused-static',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/unused-static.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template><div><span>static</span><!--雪🌸--></div></template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template><div><span>static</span><!--雪🌸--></div></template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 88,
+                  "line": 1,
+                  "offset": 87
+                },
+                "source": "<div><span>static</span><!--雪🌸--></div>"
+              },
+              "rootElement": true,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<div><span>static</span><!--雪🌸-->\", 3)\nconst unused=1\nconst _sfc_main = {\n  __name: 'unused-static',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/unused-static.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template><div><span>static</span><!--雪🌸--></div></template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'unused-static',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span>static</span><!--雪🌸--></div>`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"unused-static.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/unused-static.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+            "sourcesContent": [
+              "<script setup>const unused=1</script><template><div><span>static</span><!--雪🌸--></div></template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused=1</script><template><div><span>static</span><!--雪🌸--></div></template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 29,
+                  "line": 1,
+                  "offset": 28
+                },
+                "source": "const unused=1"
+              },
+              "template": {
+                "start": {
+                  "column": 48,
+                  "line": 1,
+                  "offset": 47
+                },
+                "end": {
+                  "column": 88,
+                  "line": 1,
+                  "offset": 87
+                },
+                "source": "<div><span>static</span><!--雪🌸--></div>"
+              },
+              "rootElement": true,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nconst unused=1\nconst _sfc_main = {\n  __name: 'unused-static',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span>static</span><!--雪🌸--></div>`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/unused-static.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+                "sourcesContent": [
+                  "<script setup>const unused=1</script><template><div><span>static</span><!--雪🌸--></div></template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "<div><span>static</span><!--雪🌸--></div>",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": true
+      }
+    },
+    {
+      "id": "module-comment",
+      "source": "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"<!--import { template as _template } from vue-->\", 2)\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst unused='import x';\n;\n\n    const n0 = t0()\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeVaporSetup.vue"
+        ],
+        "names": [],
+        "mappings": ";sBAAyD;;;;;AAA3C",
+        "file": "NativeVaporSetup.vue",
+        "sourcesContent": [
+          "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>"
+        ]
+      },
+      "links": [
+        {
+          "generated": 113,
+          "generatedEnd": 113,
+          "source": 57,
+          "sourceEnd": 57,
+          "name": null
+        },
+        {
+          "generated": 252,
+          "generatedEnd": 276,
+          "source": 14,
+          "sourceEnd": 38,
+          "name": null
+        }
+      ],
+      "reference": {
+        "source": "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>",
+        "id": "module-comment",
+        "filename": "/native-vapor-setup/module-comment.vue",
+        "mode": "inline-production",
+        "pluginVersion": "6.0.7",
+        "compilerVersion": "3.6.0-rc.9",
+        "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
+        "client": {
+          "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<!--import { template as _template } from vue-->\", 2)\nconst unused='import x';\nconst _sfc_main = {\n  __name: 'module-comment',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/module-comment.vue"
+            ],
+            "names": [],
+            "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+            "sourcesContent": [
+              "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 39,
+                  "line": 1,
+                  "offset": 38
+                },
+                "source": "const unused='import x';"
+              },
+              "template": {
+                "start": {
+                  "column": 58,
+                  "line": 1,
+                  "offset": 57
+                },
+                "end": {
+                  "column": 106,
+                  "line": 1,
+                  "offset": 105
+                },
+                "source": "<!--import { template as _template } from vue-->"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": false,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<!--import { template as _template } from vue-->\", 2)\nconst unused='import x';\nconst _sfc_main = {\n  __name: 'module-comment',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  return n0\n\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/module-comment.vue"
+                ],
+                "names": [],
+                "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+                "sourcesContent": [
+                  "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>"
+                ]
+              },
+              "imports": {}
+            }
+          ]
+        },
+        "ssr": {
+          "code": "\nconst unused='import x';\nconst _sfc_main = {\n  __name: 'module-comment',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<!--import { template as _template } from vue-->`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"module-comment.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "map": {
+            "version": 3,
+            "sources": [
+              "/native-vapor-setup/module-comment.vue"
+            ],
+            "names": [],
+            "mappings": ";AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+            "sourcesContent": [
+              "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>"
+            ]
+          },
+          "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+          "virtualModules": [],
+          "graph": [
+            {
+              "api": "parse",
+              "originalSource": "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>",
+              "selectedVapor": true,
+              "scriptSetup": {
+                "start": {
+                  "column": 15,
+                  "line": 1,
+                  "offset": 14
+                },
+                "end": {
+                  "column": 39,
+                  "line": 1,
+                  "offset": 38
+                },
+                "source": "const unused='import x';"
+              },
+              "template": {
+                "start": {
+                  "column": 58,
+                  "line": 1,
+                  "offset": 57
+                },
+                "end": {
+                  "column": 106,
+                  "line": 1,
+                  "offset": 105
+                },
+                "source": "<!--import { template as _template } from vue-->"
+              },
+              "rootElement": false,
+              "errors": []
+            },
+            {
+              "api": "compileScript",
+              "inlineTemplate": true,
+              "isProd": true,
+              "ssr": true,
+              "bindings": {
+                "unused": "literal-const"
+              },
+              "code": "\nconst unused='import x';\nconst _sfc_main = {\n  __name: 'module-comment',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<!--import { template as _template } from vue-->`)\n}\n}\n\n}",
+              "map": {
+                "version": 3,
+                "sources": [
+                  "/native-vapor-setup/module-comment.vue"
+                ],
+                "names": [],
+                "mappings": ";AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+                "sourcesContent": [
+                  "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>"
+                ]
+              },
+              "imports": {}
+            }
+          ],
+          "serverHtml": "<!--import { template as _template } from vue-->",
+          "serverDiagnostics": [],
+          "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
+          "propsBeforeNormalization": {},
+          "propsAfterNormalization": {},
+          "inheritAttrs": true,
+          "defaultAuthority": {
+            "vapor": true,
+            "inlineSSR": true,
+            "setup": "function",
+            "render": "undefined",
+            "ssrRender": "undefined"
+          }
+        },
+        "rootElement": false
+      }
+    }
+  ]
+}
