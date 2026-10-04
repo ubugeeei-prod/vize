@@ -123,6 +123,11 @@ impl<'o, 'a> Vue2TextDocument<'o, 'a> {
     pub fn document(&self) -> &Doc<'a> {
         &self.document
     }
+
+    // Trusted whole-owner composition; no public original/Doc transfer.
+    pub(super) fn into_parts(self) -> (TextView<'o, 'a>, Doc<'a>) {
+        (self.original, self.document)
+    }
 }
 
 /// Project the original admitted base and arguments through the same Glyph

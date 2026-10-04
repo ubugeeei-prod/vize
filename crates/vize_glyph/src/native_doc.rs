@@ -55,3 +55,12 @@ mod vue1_text;
 pub use vue1_text::{
     Vue1TextDocument, Vue1TextDocumentRefusal, Vue1TextPrintRefusal, vue1_text_document,
 };
+
+#[path = "native_doc/vue2_sfc.rs"]
+mod vue2_sfc;
+#[path = "native_doc/vue2_template.rs"]
+mod vue2_template;
+pub use vue2_sfc::{
+    NativeVue2SfcNode, NativeVue2SfcObservation, NativeVue2SfcOptions, NativeVue2SfcRefusal,
+    observe_native_vue2_sfc_in,
+};

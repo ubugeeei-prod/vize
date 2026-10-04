@@ -219,7 +219,7 @@ jobs:
         uses: ./.github/actions/test-native-selected-template
       - name: Join original historical Vue interpolation Docs to pinned whole goldens
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
-        uses: ./.github/actions/test-native-historical-text-documents
+        uses: ./.github/actions/test-native-historical-sfc-documents
         with:
           comparison-base: ${{ needs.pr-source-plan.outputs.comparison-base }}
       - name: Test tooling scripts
