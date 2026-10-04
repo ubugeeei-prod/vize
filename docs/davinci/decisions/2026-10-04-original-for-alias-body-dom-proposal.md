@@ -173,3 +173,11 @@ compilation/privacy and nine owning laws. Source green grants no terminal merge
 credit. Queue admission waits for official 0.431 publication verification; full
 protected suites, all 104 immutable rows/ratchets and actual signed merge remain
 required. Earlier private/failure/terminal receipts retain their historical scope.
+
+The [first source correction](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5976604311)
+retains failed exact f7 Check 37177040075: production Clippy, JS and formatting
+pass, but the new refusal-law build reports E0614 because its matched
+DomUnsupported is owned. Mandatory native capture stops at the same compile
+error. Removing only the dereference preserves all ten body inputs/reasons,
+nine authored laws, full six models, production and old packs. No new native
+runtime or law acceptance is inferred; fresh automatic Actions remain required.

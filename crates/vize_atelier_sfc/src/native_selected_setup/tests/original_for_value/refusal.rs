@@ -33,7 +33,7 @@ fn only_current_value_singleton_admits_while_outer_literal_mixed_and_compound_bo
             matches!(compiled.result().err(),
             Some(NativeSelectedSetupSfcDomError::Dom(DomError {
                 kind: DomErrorKind::Unsupported(actual), ..
-            })) if *actual == reason),
+            })) if actual == reason),
             "{body}: {:?}",
             compiled.result().err()
         );
