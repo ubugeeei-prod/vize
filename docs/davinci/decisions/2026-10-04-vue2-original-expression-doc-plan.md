@@ -14,7 +14,11 @@ to literal remote main `1d91f0aed0ac7496e5f334801f49afb598215332` for review, th
 to actual main `c13900eff34eccab876f449f69216d385d23835c` before the private
 plan freeze. The authorized provider was created from that literal head and
 then replayed onto actual main `7f7b63122456fd066c86bcab7c281c9c6c9d389a`
-before production/law review. The provider/parser/historical sources remain
+before production/law review. After the first hosted test-compilation failure,
+the stable message-borrow correction was replayed onto literal actual main
+`fcf8f9e5960efaca1c4626cd6748b38f8db28abd`; the reviewed production blobs
+remain identical, and incoming central decision clauses are preserved.
+The provider/parser/historical sources remain
 unchanged across this refresh; incoming original attribute-value, Document
 entity and delivery-control changes are preserved without being consumed.
 Audited parser, L1 Vue 1/2 embeds, L2 expression/interpolation APIs, Glyph
