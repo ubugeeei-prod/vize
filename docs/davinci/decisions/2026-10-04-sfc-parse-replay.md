@@ -111,6 +111,50 @@ or of layout causing the timing difference. These initial successful packets
 lack the actual ELF files; preserve them as historical and require a fresh
 packet after the independent review's binary-custody repair.
 
+## Completed replay with original ELF custody
+
+Exact recipe source `6c57207a3a09a0b78f7bace56fc03d48b14f6058`,
+[replay 37184606689](https://github.com/ubugeeei-prod/vize/actions/runs/37184606689),
+succeeded on jobs `111383818201` (runner 1), `111383818351` (runner 2)
+and `111383818338` (runner 3). Complete artifact IDs are `11296547353`,
+`11296497811` and `11296467165`. Independently checked all 108 unique
+chronological windows, 10800 raw Criterion sample pairs, frozen source/locks,
+pre-window builds/inspection, and all six retained ELF files against the
+recorded SHA256 and size. All base/head hashes match the initial experiment.
+Every runner summary recomputes exactly from its complete raw observations.
+
+| Runner | Case    | Paired median head/base | Conditional 95% interval | Base first | Head first |
+| ------ | ------- | ----------------------: | ------------------------ | ---------: | ---------: |
+| 1      | simple  |                  1.0070 | 0.9860–1.0296            |     0.9865 |     1.0217 |
+| 1      | medium  |                  1.0350 | 1.0073–1.0673            |     1.0569 |     1.0230 |
+| 1      | complex |                  1.0732 | 1.0403–1.0855            |     1.0655 |     1.0755 |
+| 2      | simple  |                  0.9589 | 0.9368–0.9770            |     0.9597 |     0.9581 |
+| 2      | medium  |                  1.0437 | 1.0004–1.0658            |     1.0459 |     1.0416 |
+| 2      | complex |                  1.0540 | 1.0023–1.1105            |     1.1068 |     1.0334 |
+| 3      | simple  |                  0.9475 | 0.9302–1.0002            |     0.9366 |     0.9520 |
+| 3      | medium  |                  1.0225 | 1.0032–1.0497            |     1.0305 |     1.0116 |
+| 3      | complex |                  1.0700 | 1.0657–1.1041            |     1.0709 |     1.0675 |
+
+Medium medians are +2.25% to +4.37%; complex +5.40% to +7.32%.
+Each medium/complex interval in this repeat is above 1, conditional on its
+runner and fixed binaries; no pooled or cross-runner significance claim follows.
+Simple medians differ in direction across runners. The smaller slowdown
+candidate persists, but the original 18% magnitude, actual original compiler,
+user impact and cause remain unresolved. No production fix or issue closure.
+
+The parser disassembly has 3062 matching operation rows after normalizing
+only displayed linked target addresses and RIP-relative displacements while
+retaining operations, registers, immediates and symbolic targets/offsets.
+This is not byte identity and does not compare callee bodies or data contents.
+The +352-byte location change remains a candidate for controlled layout
+investigation, not an established explanation or a speedup claim.
+
+The paired evidence update changes only this decision prose; the recipe,
+workflow, benchmark inputs and production code stay identical to the measured
+6c57207a source. Final PR checks and the actual protected candidate's unchanged
+100+4 instruction proof and merge remain required. Manual full Check runs
+non-queue validation and skips instruction ceilings by existing configuration.
+
 ## Remaining work
 
 Initial source `1bc535ddd748d196733e3d5b4bf38fe9314d45cc` started replay
@@ -130,7 +174,7 @@ Independent peer review identified that hashes and disassembly alone did not
 retain the original ELF bytes. The packet now retains verified copies of both
 measured binaries, enabling later independent section/layout and hash inspection.
 
-Run the exact source lane and inspect all three runner packets and order effects.
+The bounded replay and complete packet inspection above are finished; protected delivery remains pending.
 If a smaller signal persists, inspect emitted parser code and layout before
 choosing a bounded control or real fix. If results differ by runner/order,
 report those differences and uncertainty. Original compiler identity, cause,
