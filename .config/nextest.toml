@@ -21,7 +21,8 @@ default-filter = '''not ((package(=vize_maestro) & (
   test(=authored_unused_symbols_preserve_complete_original_diagnostics) |
   test(=split_script_setup_preserves_complete_original_diagnostics) |
   test(=v_for_source_callbacks_preserve_complete_original_diagnostics) |
-  test(=declared_prop_names_preserve_complete_original_diagnostics)
+  test(=declared_prop_names_preserve_complete_original_diagnostics) |
+  test(=component_v_for_source_preserves_complete_original_diagnostics)
 )))'''
 fail-fast = false
 retries = 0

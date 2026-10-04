@@ -178,6 +178,17 @@ fn declared_prop_names_preserve_complete_original_diagnostics() {
     );
 }
 
+#[test]
+fn component_v_for_source_preserves_complete_original_diagnostics() {
+    check_pack(
+        "v-for-component-source-original",
+        "component_v_for_source_preserves_complete_original_diagnostics",
+        "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+        Some(3818),
+        &["complete-original-component-callback"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -206,6 +217,7 @@ fn check_pack(
             | "authored-unused-symbols"
             | "split-script-original"
             | "v-for-source-original"
+            | "v-for-component-source-original"
             | "declared-prop-names-original" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
