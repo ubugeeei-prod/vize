@@ -29,6 +29,23 @@ existing order and acceptance records; they do not waive native product gates.
   command. Verify terminal publication and registry/editor visibility; neither a
   merged PR nor a tag proves publication.
 
+## Reporter attribution through the queue
+
+The repository previously used `PR_TITLE` and `BLANK` for squash messages.
+Protected merge `78866102` (#7691) still retained the distinct community reporter
+Danila Poyarkov automatically, but `298f8794` (#7700) omitted an explicit trailer
+whose identity was already the primary author. A source trailer therefore cannot
+establish that the final message contains the requested attribution.
+
+Use `PR_TITLE` with `COMMIT_MESSAGES` for squash merges. Each source change carries
+the relevant reporter's verified public identity as `Co-authored-by`; preserving
+source messages gives the queue an explicit attribution record, including when
+the reporter is also the primary author. Conventional titles, protected checks,
+Stack order and queue admission stay unchanged. The setting can be restored to
+`BLANK`, but existing signed history is never rewritten. Previously generated
+queue candidates remain historical; inspect each newly generated candidate and
+its actual final merge for the expected trailer before claiming attribution.
+
 ## Typechecker measurement and remaining work
 
 The target is 10x the current typecheck throughput with the same diagnostic
