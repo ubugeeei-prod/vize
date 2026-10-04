@@ -118,7 +118,16 @@ captured ticket before Names admission; the separate paused-original-worker and
 ready.publish SourceProject laws exercise actual completed-response publication.
 No scheduling sleep, production timing hook or mock worker is introduced.
 
-These laws are authored, not yet hosted acceptance. Existing affected native
+Initial draft #7737 source fa721 executes all146 SourceProject/all43 RPC-module
+laws, including every new13+5+1 once with no ignored laws, and the minimal feature
+check. Strict Clippy then refuses the obsolete QueryFamily::Names selector:
+production Names now uses the genuine ticket path directly, while only unchanged
+private custody tests construct that selector. Its private enum variant and
+corresponding cache arms are therefore cfg(test), with no dead-code waiver,
+ignored law or production parser change. The failed source was never queued;
+its successes are historical and cannot qualify the corrected whole head.
+
+Fresh whole-source hosted acceptance is still pending. Existing affected native
 navigation Actions must execute them, all inherited controls, minimal/strict
 and required source aggregation. Fresh protected full/all104 gates and actual
 merge are required; previous heads' receipts cannot qualify this source.

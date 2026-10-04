@@ -41,5 +41,6 @@ impl VueConfiguration {
 pub(super) enum QueryFamily {
     Program,
     Selected,
+    #[cfg(test)]
     Names,
 }
