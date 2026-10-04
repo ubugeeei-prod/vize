@@ -1,7 +1,11 @@
 //! Template-block indentation without paying for raw-region lexing when the
 //! formatted template cannot contain a raw continuation line.
 
-use super::raw_mask::{compute_raw_line_mask, starts_v_pre_attribute_at};
+mod raw_lines;
+
+#[cfg(test)]
+use super::raw_mask::compute_raw_line_mask;
+use super::raw_mask::starts_v_pre_attribute_at;
 use crate::template::WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS;
 use memchr::{memchr, memchr2, memchr3};
 
@@ -61,7 +65,7 @@ fn needs_raw_line_mask(source: &[u8]) -> bool {
         let quote = source.get(cursor).copied().unwrap_or_default();
         let tail = source.get(cursor + 1..).unwrap_or_default();
         let close = memchr(quote, tail);
-        let newline = memchr(b'\n', tail);
+        let newline = memchr2(b'\r', b'\n', tail);
         if newline.is_some_and(|line| close.is_none_or(|end| line < end)) {
             return true;
         }
@@ -114,11 +118,7 @@ pub(super) fn write_indented_template(
         return;
     }
 
-    let lines: Vec<_> = source.as_bytes().split(|byte| *byte == b'\n').collect();
-    let raw_mask = compute_raw_line_mask(&lines);
-    for (line, raw) in lines.into_iter().zip(raw_mask) {
-        write_line(output, line, indent, b"\n", raw);
-    }
+    raw_lines::write(output, source, indent, b"\n");
 }
 
 #[cold]
@@ -129,57 +129,20 @@ fn write_indented_non_lf_template(
     indent: &[u8],
     newline: &[u8],
 ) {
+    if needs_raw_line_mask(source.as_bytes()) {
+        raw_lines::write(output, source, indent, newline);
+        return;
+    }
     if newline == b"\r" {
-        write_indented_cr_template(output, source, indent);
-        return;
-    }
-    if newline == b"\r\n" {
-        write_indented_crlf_template(output, source, indent);
-        return;
-    }
-    if !needs_raw_line_mask(source.as_bytes()) {
-        for line in source.as_bytes().split(|byte| *byte == b'\n') {
+        for line in source.as_bytes().split(|byte| *byte == b'\r') {
+            let line = line.strip_prefix(b"\n").unwrap_or(line);
             write_line(output, line, indent, newline, false);
         }
         return;
     }
-    let lines: Vec<_> = source.as_bytes().split(|byte| *byte == b'\n').collect();
-    let raw_mask = compute_raw_line_mask(&lines);
-    for (line, raw) in lines.into_iter().zip(raw_mask) {
-        write_line(output, line, indent, newline, raw);
-    }
-}
-
-#[cold]
-#[inline(never)]
-fn write_indented_cr_template(output: &mut Vec<u8>, source: &str, indent: &[u8]) {
-    let lines: Vec<_> = source
-        .as_bytes()
-        .split(|byte| *byte == b'\r')
-        .map(|line| line.strip_prefix(b"\n").unwrap_or(line))
-        .collect();
-    let raw_mask = compute_raw_line_mask(&lines);
-    for (line, raw) in lines.into_iter().zip(raw_mask) {
-        write_line(output, line, indent, b"\r", raw);
-    }
-}
-
-#[cold]
-#[inline(never)]
-fn write_indented_crlf_template(output: &mut Vec<u8>, source: &str, indent: &[u8]) {
-    if !needs_raw_line_mask(source.as_bytes()) {
-        for line in source.as_bytes().split(|byte| *byte == b'\n') {
-            let line = line.strip_suffix(b"\r").unwrap_or(line);
-            write_line(output, line, indent, b"\r\n", false);
-        }
-        return;
-    }
-
-    let lines: Vec<_> = source.as_bytes().split(|byte| *byte == b'\n').collect();
-    let raw_mask = compute_raw_line_mask(&lines);
-    for (line, raw) in lines.into_iter().zip(raw_mask) {
+    for line in source.as_bytes().split(|byte| *byte == b'\n') {
         let line = line.strip_suffix(b"\r").unwrap_or(line);
-        write_line(output, line, indent, b"\r\n", raw);
+        write_line(output, line, indent, newline, false);
     }
 }
 

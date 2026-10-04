@@ -1,0 +1,11 @@
+<script setup>
+const value=1
+</script>
+<template>
+<pre>first
+  second</pre>
+<p>{{value}}</p>
+</template>
+<style>
+.box{color:red}
+</style>

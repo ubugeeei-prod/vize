@@ -91,3 +91,12 @@ complete independent references specify the resulting document style.
 The source-built CLI checks all eight cases on three passes and does not
 rewrite source inputs, config, historical captures or original obligations.
 Physical inputs remain `.vue.txt`; native acceptance credit remains zero.
+
+## Mixed raw line endings (#7745)
+
+A ninth case selects explicit CRLF layout while `<pre>` contains authored LF.
+Its complete 170-byte reference retains those raw bytes under the original #963
+contract. It is the independently authored reference exposed by #7740, with a
+separate explicit config that reproduces the core defect without the Node bridge.
+The source-built CLI checks all nine cases over three passes; original eight
+inputs, references, captures and history plans remain unchanged.

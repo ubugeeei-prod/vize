@@ -965,6 +965,143 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/mixed-raw-line-endings",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-mixed-raw-line-endings",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "2bcec8b77089a0085419af9faa51fead6506f51fabbccae798857db661b04c23",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "ba9e04be07cb0c6159c7fca39970ef74098ce34081a92ed329e39c98d6a8d8d8",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          7745,
+          963,
+          6098
+        ],
+        "commits": [
+          {
+            "sha": "c34b3d7a9881c10d8ceedff25f7f850df5a6698d",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/formatter/template_indent.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 7745,
+            "path": "crates/vize_glyph/tests/raw_template_line_endings.rs",
+            "symbol": "mixed_raw_line_ending_corpus_preserves_every_byte_and_reaches_a_fixed_point"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/raw_template_line_endings.rs",
+          "symbol": "mixed_raw_line_ending_corpus_preserves_every_byte_and_reaches_a_fixed_point",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "idempotence",
+            "FormatResult.changed",
+            "options-immutable"
+          ],
+          "limitations": [
+            "Actual current-source public Rust and CLI execution require Actions; no native provider acceptance credit."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "script-setup",
+              "html-template",
+              "css",
+              "raw-pre",
+              "explicit-crlf"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with explicit pinned JSON project config; branch Actions execution remains pending.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-mixed-raw-line-endings/reference.expected.txt",
+              "sha256": "a93a49423d33fadda3ab1e73dcb69bce6bb9032efc70f19401bef0716a4f6b41",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 7745,
+                "path": "crates/vize_glyph/tests/raw_template_line_endings.rs",
+                "symbol": "mixed_raw_line_ending_corpus_preserves_every_byte_and_reaches_a_fixed_point",
+                "assertion": "complete independent SFC reference retains authored LF raw body within explicit CRLF layout; exact second/third bytes plus changed=false"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-7745-authored-raw-line-ending-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {
