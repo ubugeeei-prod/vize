@@ -270,17 +270,11 @@ The toolchain aims to be extremely fast. The layering must not add pipelines or 
 
 ## Toolchain practice
 
-[Native API release classification](./2026-10-04-release-minor-api-additions.md)
-records [#6239](https://github.com/ubugeeei-prod/vize/issues/6239): preserve the
-implemented public native additions, supersede unpublished patch candidate
-#7584 with a command-generated `0.431.0` minor candidate, retain every SemVer
-and exact-head release gate, and verify all publication channels before credit.
-
 [External report attribution](../../../CONTRIBUTING.md#fix-requests) prioritizes reports
 through regression, verified co-authors, actual CI/merge and public release verification.
 [Release acknowledgements](../../../.github/release-notes/drop-in-scope.md#reporter-acknowledgements)
 credit nine reports already shipped in v0.429.1 without rewriting fix/tag history;
-the four documented workspace-only experiments remain unpublished.
+the four documented workspace-only experiments remain unpublished. [Native API release classification](./2026-10-04-release-minor-api-additions.md) records [#6239](https://github.com/ubugeeei-prod/vize/issues/6239): preserve the public native additions, supersede unpublished #7584 with a command-generated `0.431.0` minor candidate, retain every SemVer and exact-head gate, and verify all publication channels before credit.
 
 Vize follows language-toolchain practice, not compiler-only practice. It stays lightweight and fast. It avoids the heaviness of rust-analyzer-style designs: fine-grained per-node queries, per-node reference-counted trees and whole-workspace resident state.
 
