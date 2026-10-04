@@ -274,16 +274,17 @@ fn original_typed_ref_call_keeps_full_diagnostic_and_actual_original_file_refusa
             "labels": [{ "message": "declared as a template ref", "start": 64, "end": 98 }], "fix": null })]
             )
         );
-        // Provider parent still refuses the actual unprovided builtin before parsing.
+        // The genuine bounded builtin now reaches the original File refusal;
+        // the complete historical call warning above remains unchanged.
         assert_eq!(
             original.lint_native_sfc(source, "History.vue").unwrap_err(),
-            Refusal::UnprovidedRule { rule: RULE.into() }
+            error
         );
     }
 }
 
 #[test]
-fn the_two_original_string_witnesses_only_supply_real_provider_eligibility_in_parent() {
+fn the_two_original_string_witnesses_supply_provider_and_actual_bounded_builtin_output() {
     let typed = SOURCE.replace("ref(null)", "ref<HTMLInputElement | null>(null)");
     for source in [SOURCE, typed.as_str()] {
         let arena = Allocator::new();
@@ -320,8 +321,8 @@ fn the_two_original_string_witnesses_only_supply_real_provider_eligibility_in_pa
                 empty("History.vue")
             );
             assert_eq!(
-                original.lint_native_sfc(source, "History.vue").unwrap_err(),
-                Refusal::UnprovidedRule { rule: RULE.into() }
+                complete(&original.lint_native_sfc(source, "History.vue").unwrap()),
+                empty("History.vue")
             );
         }
     }
