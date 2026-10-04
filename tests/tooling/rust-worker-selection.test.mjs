@@ -12,7 +12,7 @@ import {
   time,
 } from "./_helpers/rust-worker-selection-fixture.mjs";
 
-test("failed-only rerun binds latest outcomes to original unchanged executions and immutable IDs", () => {
+void test("failed-only rerun binds latest outcomes to original unchanged executions and immutable IDs", () => {
   const value = fixture();
   value.jobs[0].conclusion = "cancelled";
   value.artifacts = value.artifacts.filter((item) => item.id !== 1001);
@@ -37,7 +37,7 @@ test("failed-only rerun binds latest outcomes to original unchanged executions a
   assert(result.workers.every((worker) => /^[a-f0-9]{64}$/.test(worker.executionSha256)));
 });
 
-test("sparse genuine jobs and full reruns retain four complete workers", () => {
+void test("sparse genuine jobs and full reruns retain four complete workers", () => {
   const sparse = fixture();
   sparse.jobs = sparse.jobs.filter((worker) => worker.id < 202);
   assert.deepEqual(
@@ -53,7 +53,7 @@ test("sparse genuine jobs and full reruns retain four complete workers", () => {
   );
 });
 
-test("a latest failure or incomplete outcome cannot fall back to an old successful artifact", () => {
+void test("a latest failure or incomplete outcome cannot fall back to an old successful artifact", () => {
   for (const conclusion of ["failure", "cancelled", "timed_out", "skipped", "neutral", null]) {
     const value = fixture();
     value.jobs[4].conclusion = conclusion;
@@ -66,7 +66,7 @@ test("a latest failure or incomplete outcome cannot fall back to an old successf
   }
 });
 
-test("carried reuse requires exact original times, all steps, outcome and runner metadata", () => {
+void test("carried reuse requires exact original times, all steps, outcome and runner metadata", () => {
   for (const change of [
     (worker) => worker.steps.push({ ...worker.steps[0], number: 5, name: "different step" }),
     (worker) => {
@@ -96,13 +96,13 @@ test("carried reuse requires exact original times, all steps, outcome and runner
   );
 });
 
-test("new successful execution without its own artifact cannot fall back", () => {
+void test("new successful execution without its own artifact cannot fall back", () => {
   const value = fixture();
   value.artifacts = value.artifacts.filter((item) => item.id !== 2001);
   assert.throws(() => select(value), /Expected exactly one artifact: rust-test-shard-1-123-2/);
 });
 
-test("missing, duplicated, future and foreign workers cannot manufacture four workers", () => {
+void test("missing, duplicated, future and foreign workers cannot manufacture four workers", () => {
   for (const change of [
     (value) => {
       value.jobs = value.jobs.filter((worker) => !worker.name.endsWith("(4/4)"));
@@ -133,7 +133,7 @@ test("missing, duplicated, future and foreign workers cannot manufacture four wo
     });
 });
 
-test("successful worker steps must execute archive, complete tests, capture and upload in order", () => {
+void test("successful worker steps must execute archive, complete tests, capture and upload in order", () => {
   for (const change of [
     (worker) => {
       worker.steps[1].conclusion = "skipped";
@@ -161,7 +161,7 @@ test("successful worker steps must execute archive, complete tests, capture and 
     });
 });
 
-test("artifacts require unique IDs, exact run/source/repository, digest, lifetime and original upload", () => {
+void test("artifacts require unique IDs, exact run/source/repository, digest, lifetime and original upload", () => {
   for (const change of [
     (value) => {
       value.artifacts.push(structuredClone(value.artifacts[0]));
@@ -207,7 +207,7 @@ test("artifacts require unique IDs, exact run/source/repository, digest, lifetim
     });
 });
 
-test("workflow identity cannot drift across source, attempt, run, caller or event", () => {
+void test("workflow identity cannot drift across source, attempt, run, caller or event", () => {
   for (const change of [
     (run) => {
       run.head_sha = "b".repeat(40);
@@ -235,7 +235,7 @@ test("workflow identity cannot drift across source, attempt, run, caller or even
     });
 });
 
-test("downloaded artifacts must be exactly the four selected directories", () => {
+void test("downloaded artifacts must be exactly the four selected directories", () => {
   const result = select(fixture());
   const entries = result.workers.map((worker) => ({
     name: worker.artifactName,
@@ -277,7 +277,7 @@ function transport(value, { jobTail = [], artifactTail = [], afterRun } = {}) {
   };
 }
 
-test("official all-attempt job and artifact inventories are fully paginated before selection", async () => {
+void test("official all-attempt job and artifact inventories are fully paginated before selection", async () => {
   const value = fixture();
   value.jobs.push(
     ...Array.from({ length: 100 - value.jobs.length }, () => ({ name: "unrelated" })),
@@ -295,7 +295,7 @@ test("official all-attempt job and artifact inventories are fully paginated befo
   assert(api.calls.some((url) => url.includes("/artifacts?") && url.includes("page=2")));
 });
 
-test("a failed latest worker on a later API page cannot hide behind first-page success", async () => {
+void test("a failed latest worker on a later API page cannot hide behind first-page success", async () => {
   const value = fixture();
   value.jobs = value.jobs.filter((worker) => worker.id < 202);
   value.jobs.push(
@@ -308,7 +308,7 @@ test("a failed latest worker on a later API page cannot hide behind first-page s
   );
 });
 
-test("source or attempt changes during official inventory reads fail closed", async () => {
+void test("source or attempt changes during official inventory reads fail closed", async () => {
   for (const changed of [{ run_attempt: 3 }, { head_sha: "b".repeat(40) }]) {
     const value = fixture();
     const api = transport(value, { afterRun: { ...value.run, ...changed } });

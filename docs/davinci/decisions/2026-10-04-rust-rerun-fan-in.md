@@ -91,6 +91,13 @@ digest/upload windows, later-page failures, identity drift and four-directory
 inventory. Existing workflow and archive-reuse laws are retained and extended
 only for the explicit read permission and source-bound selection wiring.
 
+The first publication source `3e04d07cf60817c605d2f3cafa4352ed81f88367`
+failed `check-js` in Check `37187992781`: exactly 13 floating Node test
+registration promises violated the existing zero-warning rule. Marking those
+registrations with `void` retains all callbacks and assertions; no production,
+worker selection or coverage contract changes. The failed source is retained
+separately, and corrected-source hosted validation remains required.
+
 Pure laws and metadata checks are not hosted source execution. Root and peer
 source reviews cleared the frozen contract and authorized publication. Post the paired issue decision,
 require exact-head Actions, full protected validation and literal merge; retain
