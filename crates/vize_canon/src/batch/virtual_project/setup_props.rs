@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use vize_atelier_sfc::{SfcDescriptor, croquis::merge_resolved_props_into_croquis};
+use vize_atelier_sfc::{SfcDescriptor, croquis::merge_resolved_props_into_croquis_with_sources};
 use vize_carton::FxHashSet;
 use vize_croquis::{BindingType, Croquis};
 
@@ -24,7 +24,12 @@ pub(super) fn augment_type_based_props_from_script_context(
     cache: &RuntimePropResolveCache,
 ) {
     let path_string = path.to_string_lossy();
-    merge_resolved_props_into_croquis(croquis, descriptor, path_string.as_ref());
+    merge_resolved_props_into_croquis_with_sources(
+        croquis,
+        descriptor,
+        path_string.as_ref(),
+        &cache.type_sources,
+    );
     merge_imported_runtime_props_into_croquis(croquis, descriptor, path, cache);
 
     let script_setup_source = descriptor

@@ -18,6 +18,7 @@ mod setup_props;
 mod source_types;
 mod tsconfig_extends;
 mod tsconfig_native_options;
+mod type_source_snapshot;
 mod windows_paths;
 mod workspace_package_dependency_shadows;
 mod workspace_package_routes;
