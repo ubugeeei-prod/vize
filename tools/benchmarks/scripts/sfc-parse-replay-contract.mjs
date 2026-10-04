@@ -106,6 +106,26 @@ export function buildArgs(targetDir) {
   ];
 }
 
+export function parseBuiltExecutable(output) {
+  // Cargo -vv also emits labelled build-script stdout. The complete stream is
+  // retained; only Cargo's JSON message lines participate in artifact selection.
+  const messages = output
+    .split("\n")
+    .filter((line) => line.startsWith("{"))
+    .map((line) => JSON.parse(line));
+  const finished = messages.filter((row) => row.reason === "build-finished");
+  assert.deepEqual(finished, [{ reason: "build-finished", success: true }]);
+  const artifacts = messages.filter(
+    (row) =>
+      row.reason === "compiler-artifact" &&
+      row.target.name === "sfc_parse" &&
+      row.target.kind.includes("bench") &&
+      row.executable,
+  );
+  assert.equal(artifacts.length, 1, "exactly one SFC parse executable is required");
+  return artifacts[0].executable;
+}
+
 export function measureArgs(name) {
   assert.ok(CASES.includes(name), "only the three frozen SFC parse cases are measured");
   return [

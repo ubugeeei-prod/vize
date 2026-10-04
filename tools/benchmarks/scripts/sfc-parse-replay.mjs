@@ -21,6 +21,7 @@ import {
   TOOLCHAIN,
   buildArgs,
   measureArgs,
+  parseBuiltExecutable,
   pairPlan,
   sha256,
   validateBuildEnvironment,
@@ -159,16 +160,7 @@ for (const side of runner === 2 ? ["head", "base"] : ["base", "head"]) {
     cwd: data.directory,
     env: { CARGO_TARGET_DIR: data.target },
   });
-  const artifacts = jsonLines
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => JSON.parse(line))
-    .filter(
-      (row) =>
-        row.reason === "compiler-artifact" && row.target.name === "sfc_parse" && row.executable,
-    );
-  assert.equal(artifacts.length, 1, "exactly one SFC parse executable is required");
-  data.binary = artifacts[0].executable;
+  data.binary = parseBuiltExecutable(jsonLines);
   data.binarySha256 = sha256(readFileSync(data.binary));
   data.binaryBytes = readFileSync(data.binary).length;
   const symbols = command("nm", ["-S", "-n", "-C", data.binary], `${side}-symbols`);

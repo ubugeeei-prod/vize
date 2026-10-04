@@ -9,6 +9,7 @@ import {
   TOOLCHAIN,
   buildArgs,
   measureArgs,
+  parseBuiltExecutable,
   pairPlan,
   validateBuildEnvironment,
   validateFrozenFiles,
@@ -79,6 +80,20 @@ test("every case has three adjacent AB and BA pairs and balanced case positions"
   const args = measureArgs("complex");
   assert.ok(args.includes("--bench"), "Criterion direct execution must measure instead of test");
   assert.equal(args[args.indexOf("--exact") + 1], "sfc_parse/complex");
+});
+
+test("verbose build-script stdout cannot hide a failed or ambiguous Cargo artifact", () => {
+  const artifact = JSON.stringify({
+    reason: "compiler-artifact",
+    target: { name: "sfc_parse", kind: ["bench"] },
+    executable: "/isolated/sfc_parse",
+  });
+  const finished = JSON.stringify({ reason: "build-finished", success: true });
+  const output = `[quote 1.0.45] cargo:rerun-if-changed=build.rs\n${artifact}\n${finished}\n`;
+  assert.equal(parseBuiltExecutable(output), "/isolated/sfc_parse");
+  assert.throws(() => parseBuiltExecutable(output.replace('"success":true', '"success":false')));
+  assert.throws(() => parseBuiltExecutable(`${artifact}\n${output}`));
+  assert.throws(() => parseBuiltExecutable("[quote 1.0.45] cargo:rerun-if-changed=build.rs\n"));
 });
 
 function observations() {

@@ -76,6 +76,13 @@ the copied generated stable installer pin as unreachable. The replay wrapper
 now uses verified upstream master `7e38f4b43b4db5c8dd498af069a4f6196df1d067`
 with the same explicit 1.98.0 input. The initial attempts were superseded;
 partial artifacts and failed audit remain historical, with no performance credit.
+The initial replay itself stopped after its first successful locked build:
+Cargo `-vv` interleaved labelled build-script stdout with JSON messages.
+Artifact selection now parses only Cargo JSON lines, requires successful
+build completion and one unambiguous bench executable, and preserves the
+entire stdout/stderr streams. Regression guards cover the actual mixed stream.
+Initial partial artifact IDs are `11295943362` (runner 1), `11295709076`
+(runner 2) and `11296525246` (runner 3); none contains timed observations.
 
 Run the exact source lane and inspect all three runner packets and order effects.
 If a smaller signal persists, inspect emitted parser code and layout before
