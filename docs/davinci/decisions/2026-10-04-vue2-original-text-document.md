@@ -3,9 +3,10 @@
 Private design for #6842/#6882, pinned to literal actual main
 `6987c523ecd2bee6e8489e2973e4b7499ce25018`. The first private freeze used
 literal `c34b3d7a98`; audited expression/provider/dialect blobs are unchanged.
-Root authorized design only;
-implementation requires root review. No source implementation, build/install,
-public PR, queue entry or manual campaign is included during the 0.431 release.
+Root first authorized design only. Frozen peer/root design review is clear;
+root subsequently authorized the bounded private implementation below. It
+remains unbuilt and unpublished, with source review required before Actions.
+No build/install, workflow dispatch, public PR, queue or manual campaign occurred.
 
 ## Genuine available owners and boundary
 
@@ -142,9 +143,43 @@ the existing Glyph Doc provider. Preserve its SFC/header/handler/conditional
 targets; recheck literal main and leases before any later implementation.
 The reused peer's exact first-freeze `60719f0d` review is clear for bounded
 source readiness only; the explicit law refinements above grant no execution
-credit. Root implementation review and authorization remain pending.
-After frozen-plan peer/root review, implementation still needs authorization.
+credit. Root subsequently authorized private source only, after plan review.
+The frozen plan review grants only the explicitly authorized private source scope.
 Future source/full Actions, immutable all-104 caps, protected queue and actual
 merge remain required; release-flight restrictions remain in force. Historical
 File/receiver, complete dialect grammar/registry, classic 2.7.16 ABI/runtime,
 versioned SFC, other dialects and default replacement remain explicit TODOs.
+
+## Private source and unexecuted acceptance
+
+The isolated `feat/glyph-native-vue2-text-document-20261004` wt starts from
+literal released `6987c523ec`; old wts and the reviewed private design remain
+intact. Production adds only the private sealed reference origin, factors the
+existing root callback/Context source checks and adds the public view-owning
+Vue2 Doc wrapper. All four AST visitors, public retained APIs/error order,
+limits, historical callbacks/storage/scanners and pinned oracles are unchanged.
+The complete authored cursor covers the exact binding span without filter
+rescan or new decoding/parsing. Original fields are never moved or cloned.
+
+Eleven Rust laws, eight real privacy/lifetime compile-fail examples and one
+positive example are written but unexecuted. Full Doc trees, source/map/stock
+record identity, foreign same-buffer/equal-heap roots, nonzero Unicode/nested
+children, module lexer facts, ordinary Drop/unwind, genuine L1 refusals and
+whole Doc refusal are explicit. The 48 authored print/compiler rows cover
+LF/CRLF, zero/narrow width, historical division, entities/trim, blank/zero
+lists and separate lookup/read/invocation events. Expected goldens contain
+no fabricated native output or receipt. Full old seven Vue2/five Vue1 packets
+remain byte-identical; this is source custody, not fresh execution credit.
+
+A distinct composite action, narrowly selected on source shard one and
+mandatory in merge groups, writes a fresh real Rust output packet and joins
+it to the complete pinned compiler and bounded div/text runtime expectations.
+It records actual source head separately from execution commit/run and retains
+the raw artifact. The unchanged official compiler/runtime helpers authenticate
+every original package byte. Ordinary oracle discovery explicitly skips its
+native join without that capture; the dedicated source/merge hook requires
+all 48 actual rows. No failed candidate may gain credit by later recapture.
+No native historical compiler, File, ABI, SFC/default or full grammar is added.
+Complete source/law review, then authorized exact Actions, all-104 protected
+acceptance and actual merge are still pending; release hold lift does not
+authorize publication of this privately held source.

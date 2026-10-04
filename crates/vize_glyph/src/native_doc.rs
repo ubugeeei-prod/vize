@@ -44,3 +44,7 @@ pub use sfc::{
     observe_native_sfc_in,
 };
 pub use template::{TemplateDocument, TemplateRefusal, UnsupportedSyntax, template_document};
+
+#[path = "native_doc/vue2_text.rs"]
+mod vue2_text;
+pub use vue2_text::{Vue2TextDocument, Vue2TextDocumentRefusal, vue2_text_document};

@@ -220,6 +220,11 @@ jobs:
       - name: Execute original selected-template DOM modules
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
         uses: ./.github/actions/test-native-selected-template
+      - name: Join original Vue2 interpolation Docs to pinned whole goldens
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
+        uses: ./.github/actions/test-native-vue2-text-document
+        with:
+          comparison-base: ${{ needs.pr-source-plan.outputs.comparison-base }}
       - name: Test tooling scripts
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
         env:

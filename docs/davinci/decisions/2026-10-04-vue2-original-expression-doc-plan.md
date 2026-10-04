@@ -8,7 +8,8 @@ after complete source/law review. The provider actually merged signed
 #6842 comment 5976281003 and #6882 comment 5976281152 supersede the historical
 publication-stage pending status below. Native formatter and historical
 runtime are unfinished; the [private original TextView Doc consumer plan](./2026-10-04-vue2-original-text-document.md)
-now records a separately authorized design, requiring root review before implementation.
+now records the separately reviewed design and authorized private consumer source,
+requiring complete source/law review before execution or publication.
 Its provider is now actual main, so that independent successor does not need
 to fabricate the pre-merge provider Stack described in the historical plan below.
 

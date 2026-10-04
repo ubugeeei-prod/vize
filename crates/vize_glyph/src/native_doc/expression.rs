@@ -4,7 +4,7 @@ use oxc_span::GetSpan;
 use vize_l0::{Allocator, SourceBlock, Span, Vec};
 use vize_l1::embed::{
     SourceError,
-    syntax::{EmbedHole, RetainedExpression},
+    syntax::{EmbedHole, NativeExpressionView, RetainedExpression},
 };
 
 use super::Doc;
@@ -15,10 +15,13 @@ mod array;
 mod ast;
 #[path = "expression/object.rs"]
 mod object;
+#[path = "expression/origin.rs"]
+mod origin;
 #[path = "expression/sequence.rs"]
 mod sequence;
 #[path = "expression/source.rs"]
 mod source;
+use origin::Origin;
 use source::{Context, Gap};
 
 /// A bounded syntax consumer; larger L1 safety admissions remain independent.
@@ -109,28 +112,34 @@ pub fn expression_document<'p, 'a>(
     block: SourceBlock<'a>,
     allocator: &'a Allocator,
 ) -> Result<ExpressionDocument<'p, 'a>, ExpressionRefusal> {
-    let admitted = original
-        .admitted_expression()
-        .ok_or(ExpressionRefusal::Unadmitted {
-            hole: original.hole(),
-        })?;
-    if admitted.content().len() != original.source().text().len()
-        || admitted.content().as_ptr() != original.source().text().as_ptr()
-    {
-        return Err(ExpressionRefusal::SourceMismatch {
-            span: original.source().span(),
-        });
-    }
-    let mut context = Context::new(original, block, allocator)?;
+    let document = root_document(Origin::Retained(original), block, allocator)?;
+    Ok(ExpressionDocument { original, document })
+}
+
+pub(super) fn borrowed_document<'p, 'a>(
+    original: &'p NativeExpressionView<'p, 'a>,
+    block: SourceBlock<'a>,
+    allocator: &'a Allocator,
+) -> Result<Doc<'a>, ExpressionRefusal> {
+    root_document(Origin::Borrowed(original), block, allocator)
+}
+
+fn root_document<'p, 'a>(
+    original: Origin<'p, 'a>,
+    block: SourceBlock<'a>,
+    allocator: &'a Allocator,
+) -> Result<Doc<'a>, ExpressionRefusal> {
+    let admitted = original.expression()?;
+    let mut context = match original {
+        Origin::Retained(retained) => Context::new(retained, block, allocator)?,
+        Origin::Borrowed(_) => Context::from_origin(original, block, allocator)?,
+    };
     let entire = Span::new(0, original.source().text().len() as u32);
-    let root = context.decoded_span(admitted.expression().span())?;
+    let root = context.decoded_span(admitted.span())?;
     let mut parts = Vec::new_in(&allocator);
     parts.push(context.gap(Span::new(0, root.start), Gap::Empty)?);
-    parts.push(context.node(admitted.expression(), entire, 0)?);
+    parts.push(context.node(admitted, entire, 0)?);
     parts.push(context.gap(Span::new(root.end, entire.end), Gap::Empty)?);
     context.finish()?;
-    Ok(ExpressionDocument {
-        original,
-        document: Doc::concat(parts),
-    })
+    Ok(Doc::concat(parts))
 }
