@@ -17,6 +17,8 @@ use vize_l2::{
 };
 use vize_l4::targets::ts::ProjectionError;
 
+#[path = "original_program_check/array_annotations.rs"]
+mod array_annotations;
 #[path = "original_program_check/unused_history.rs"]
 mod unused_history;
 
