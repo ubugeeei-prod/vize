@@ -1,0 +1,10 @@
+//! Provider laws use actual configured test instances, never builtin credit.
+mod configuration;
+mod custody;
+mod envelope;
+mod frame_profile;
+mod grammar;
+mod output;
+mod ownership;
+mod refusal;
+mod support;

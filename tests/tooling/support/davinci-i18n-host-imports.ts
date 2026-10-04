@@ -19,6 +19,7 @@ export const i18nHostImports: Record<string, readonly string[]> = {
   "crates/vize_patina/src/lib.rs": ["pub use vize_carton::i18n::Locale;"],
   "crates/vize_patina/src/context.rs": ["use vize_carton::i18n::{Locale, t, t_fmt};"],
   "crates/vize_patina/src/linter/config.rs": ["use vize_carton::i18n::Locale;"],
+  "crates/vize_patina/src/native/sfc/context.rs": ["use vize_carton::i18n::{Locale, t, t_fmt};"],
   "crates/vize_patina/src/native/template/context.rs": [
     "use vize_carton::i18n::{Locale, t, t_fmt};",
   ],
