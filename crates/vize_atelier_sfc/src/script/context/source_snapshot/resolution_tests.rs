@@ -52,13 +52,22 @@ fn sibling_importers_share_only_the_same_directory_and_exact_specifier() {
         None
     );
     assert_eq!(sources.resolutions.lock().unwrap().len(), 4);
-    // A filename that is literally node_modules retains the compatibility
-    // resolver's existing package exclusion, even outside that directory.
+    // Its disk-global resolver can reuse a warmed package hit before checking
+    // the unusual filename. Preserve that existing returned path as well.
     assert_eq!(
         sources.resolve_import(&root.join("node_modules"), "@scope/api"),
-        None
+        Some(outer_package)
     );
     assert_eq!(sources.resolutions.lock().unwrap().len(), 5);
+    let cold = root.join("cold");
+    let cold_package = package(&cold, "cold");
+    let blocked = cold.join("node_modules");
+    assert_eq!(sources.resolve_import(&blocked, "@scope/api"), None);
+    assert_eq!(
+        sources.resolve_import(&cold.join("App.vue"), "@scope/api"),
+        Some(cold_package)
+    );
+    assert_eq!(sources.resolve_import(&blocked, "@scope/api"), None);
     let unusual = root.join("node_modules");
     assert_eq!(sources.resolve_import(&unusual, "./later"), None);
     let later = root.join("later.ts");

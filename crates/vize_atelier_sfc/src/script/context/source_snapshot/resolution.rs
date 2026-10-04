@@ -21,7 +21,7 @@ const INDEX_NAMES: &[&str] = &[
 impl TypeSourceSnapshot {
     pub fn resolve_import(&self, current_file: &Path, specifier: &str) -> Option<PathBuf> {
         let current_file = source_path(current_file);
-        // The compatibility package resolver rejects a node_modules component,
+        // The uncached compatibility package resolver rejects node_modules,
         // even when it is the filename. Parentless paths also differ from a
         // normal importer in the root directory. Keep these rare file contexts
         // separate while retaining their positive and negative snapshot cells.
