@@ -9,6 +9,12 @@ mod project;
 mod query;
 mod snapshot;
 
+#[cfg(feature = "experimental-source-navigation")]
+#[allow(
+    unused_imports,
+    reason = "private applied-context provider for a later target/consumer"
+)]
+pub(crate) use project::ModuleLinkPublicationError;
 pub use project::{ProjectQuery, ProjectQueryResult, SourceQueryProject};
 pub use query::{SourceQuery, SourceQueryResult};
 pub use snapshot::{SnapshotKey, SnapshotRefusal, SourceSnapshot, SourceSnapshotCache};

@@ -95,7 +95,14 @@ impl ServerState {
     /// Set the workspace root path.
     #[cfg(feature = "native")]
     pub fn set_workspace_root(&self, path: PathBuf) {
-        *self.workspace_root.write() = Some(path);
+        #[cfg(feature = "experimental-source-navigation")]
+        self.update_module_link_context(None, || {
+            *self.workspace_root.write() = Some(path);
+        });
+        #[cfg(not(feature = "experimental-source-navigation"))]
+        {
+            *self.workspace_root.write() = Some(path);
+        }
         self.lint_hover_cache.clear();
         self.package_route_resolver.lock().clear();
         self.global_component_references.invalidate();

@@ -11,6 +11,41 @@ use std::{
 use tower_lsp::lsp_types::TextDocumentContentChangeEvent;
 use vize_l0::Span;
 
+#[cfg(feature = "native")]
+#[test]
+fn module_link_actual_context_change_preserves_original_program_worker_and_unrelated_queries() {
+    let state = Arc::new(crate::server::ServerState::new());
+    state.set_workspace_root("/original-root".into());
+    let project = NativeNavigationProject::new(SourceQueryProject::new_server(Arc::clone(&state)));
+    project
+        .source
+        .open(uri(), "const value=1;value;".into(), 1, "javascript".into());
+    assert_eq!(
+        block_on(project.definition(&uri(), Position::new(0, 15))),
+        Ok(Some(location((0, 6), (0, 11))))
+    );
+    let original = cached(&project);
+    let before = block_on(original.inspect(Position::new(0, 15))).unwrap();
+    let context = project.source.capture_module_link_context().unwrap();
+    let (_, cancel) = project.source.begin_query(&uri()).unwrap();
+    state.set_workspace_root("/new-root".into());
+    assert!(!cancel.is_aborted());
+    assert_eq!(
+        state.with_current_module_link_context(&context, || ()),
+        Err(crate::server::ModuleLinkContextError::Superseded)
+    );
+    assert_eq!(
+        block_on(project.references(&uri(), Position::new(0, 7), true)),
+        Ok(vec![location((0, 6), (0, 11)), location((0, 14), (0, 19))])
+    );
+    assert!(Arc::ptr_eq(&original, &cached(&project)));
+    assert_eq!(
+        block_on(original.inspect(Position::new(0, 15))).unwrap(),
+        before
+    );
+    assert_eq!(before.parses, 1);
+}
+
 fn project(documents: &DocumentStore) -> NativeNavigationProject<'_> {
     documents.open(uri(), "const value=1;value;".into(), 1, "javascript".into());
     NativeNavigationProject::new(SourceQueryProject::new(documents))
