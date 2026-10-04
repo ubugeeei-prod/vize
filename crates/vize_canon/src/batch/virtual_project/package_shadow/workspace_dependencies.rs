@@ -7,6 +7,22 @@ use vize_carton::FxHashSet;
 use super::{PackageShadowTopology, VirtualProject};
 
 impl VirtualProject {
+    pub(super) fn private_dependencies_for(&self, manifest: &Path) -> Vec<crate::PackageRoute> {
+        let mut routes = self
+            .package_route_manifests
+            .get(manifest)
+            .into_iter()
+            .flatten()
+            .filter_map(|key| self.package_routes.get(key))
+            .filter(|binding| binding.specifier.starts_with('#'))
+            .filter_map(|binding| binding.route.as_ref())
+            .flat_map(|route| route.nested_routes.iter().cloned())
+            .collect::<Vec<_>>();
+        routes.sort_by(|left, right| left.manifest_path.cmp(&right.manifest_path));
+        routes.dedup();
+        routes
+    }
+
     pub(super) fn collect_workspace_dependency_shadows(
         &self,
         route: &crate::PackageRoute,

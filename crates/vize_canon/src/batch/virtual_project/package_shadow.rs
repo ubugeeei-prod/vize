@@ -137,22 +137,6 @@ impl VirtualProject {
         self.package_shadow_dirty_keys.extend(keys);
     }
 
-    fn private_dependencies_for(&self, manifest: &Path) -> Vec<crate::PackageRoute> {
-        let mut routes = self
-            .package_route_manifests
-            .get(manifest)
-            .into_iter()
-            .flatten()
-            .filter_map(|key| self.package_routes.get(key))
-            .filter(|binding| binding.specifier.starts_with('#'))
-            .filter_map(|binding| binding.route.as_ref())
-            .flat_map(|route| route.nested_routes.iter().cloned())
-            .collect::<Vec<_>>();
-        routes.sort_by(|left, right| left.manifest_path.cmp(&right.manifest_path));
-        routes.dedup();
-        routes
-    }
-
     fn collect_route_shadow_topology(
         &self,
         route: &crate::PackageRoute,
