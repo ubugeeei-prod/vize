@@ -150,8 +150,11 @@ to the same foreground session. Delegate reads without a module guard; on a
 nonempty-buffer poll_read returning Ok(0), or a terminal underlying read error,
 synchronously retire that session before returning the unchanged read result.
 Pending and empty-buffer reads do not mean EOF. Preserve buffer/vector read
-semantics and the original failure classification; recoverable protocol/parse
-errors are not read termination and must not retire the session. No wrapper
+semantics and the original failure classification. Codec errors above the
+reader do not directly retire the module session; normal transport completion
+still retires it. Pinned async-codec-lite 0.0.2 stops its stream after a codec
+error, so live admission during that existing drain does not prove later malformed
+JSON requests recover or continue. No wrapper
 may fabricate bytes, swallow errors, close unrelated requests or skip legacy
 draining. The original 3f2286 lease proposal remains preserved as predecessor.
 
@@ -227,8 +230,9 @@ foreground drop and background spawn failure/drop without false retirement.
 Hold a genuine ready/in-flight source/context query and its actual state Arc,
 observe real input EOF before the handler drain completes, then require its
 guarded publication to refuse. Retain the original unrelated drain behavior.
-Terminal read failure must receive the same complete test; Pending, empty read
-buffers and recoverable parse errors must preserve the live session. An outer
+Terminal read failure must receive the same complete test; Pending and empty
+read buffers preserve the live session. Codec-error-without-read-EOF keeps
+admission live during the existing drain, then completion retires it. An outer
 future-return assertion alone does not prove EOF-time retirement.
 Author full expected values and complete envelopes before execution; never
 recapture expectations from observed native output. All cases are planned here,
@@ -274,7 +278,9 @@ the same owned object a failed handoff would destroy, without claiming an
 executed OS spawn failure. Shutdown retires before its unchanged Ok response.
 The input wrapper delegates original scalar and vectored reads without a gate,
 then synchronously retires nonempty EOF/terminal errors. Pending, zero capacity,
-Interrupted/WouldBlock controls and codec errors keep their original results.
+Interrupted/WouldBlock controls keep their original results. Codec errors
+retain live reader admission during the original drain, followed by transport
+completion retirement; no later-request recovery is claimed.
 First retirement remains sticky; repeated drop/shutdown cannot revive a session.
 
 Authored laws use real configuration files/loaders/root setters, same-value and

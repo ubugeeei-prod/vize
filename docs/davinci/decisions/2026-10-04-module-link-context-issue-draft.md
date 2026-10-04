@@ -28,7 +28,9 @@ shares its state but must never own a termination lease. Pinned tower-lsp drains
 in-flight handlers after input EOF, so an outer lease alone retires too late.
 A real AsyncRead observer retires on nonempty-buffer EOF/terminal read error
 before returning the original read result. Outer/foreground leases remain
-completion/drop fallbacks; parse errors are recoverable and do not retire.
+completion/drop fallbacks. Codec errors above the reader do not directly retire
+the session; pinned framing ends its stream and normal transport completion
+still retires after the existing drain. No later-request recovery is claimed.
 Shutdown and actual input termination retire independently of retained state Arcs. Source
 publication uses the result's own real DocumentHost, existing guarded revision/
 cancellation checks, then the module read gate held through ready publication.
@@ -56,7 +58,8 @@ with state Arcs retained. Background diagnostics exit must not retire the live
 foreground session. A genuine held source/context query with its state Arc
 must refuse publication after observed EOF, before legacy handler drain ends;
 future-return-only assertions grant no EOF-time proof. Preserve original drain,
-Pending/empty-buffer/recoverable-parse behavior, #7737 Names and every control.
+Pending/empty-buffer behavior and codec-error drain/completion, #7737 Names
+and every control.
 
 The metadata contract makes no filesystem guarantee. Real target identity,
 event coverage and point-in-time validation remain a separate unfinished
