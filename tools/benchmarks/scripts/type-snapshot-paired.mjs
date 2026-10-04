@@ -39,20 +39,46 @@ function assertParity(base, head) {
   const shape = (sample) => sample.rows.map(({ elapsed_ns: _elapsed, ...row }) => row);
   assert.deepEqual(shape(head), shape(base), "complete type-world facts or workloads differ");
 }
-for (let pass = 0; pass < 2; pass++) assertParity(run("base", `warmup-${pass}`), run("head", `warmup-${pass}`));
+for (let pass = 0; pass < 2; pass++)
+  assertParity(run("base", `warmup-${pass}`), run("head", `warmup-${pass}`));
 for (let pair = 0; pair < 9; pair++) {
   const current = {};
-  for (const side of pair % 2 === 0 ? ["base", "head"] : ["head", "base"]) current[side] = run(side, pair);
+  for (const side of pair % 2 === 0 ? ["base", "head"] : ["head", "base"])
+    current[side] = run(side, pair);
   assertParity(current.base, current.head);
   for (const side of ["base", "head"]) samples[side].push(current[side]);
 }
-function median(values) { return [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)]; }
+function median(values) {
+  return [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
+}
 const rows = samples.head[0].rows.map((row, index) => {
   const base = samples.base.map((sample) => sample.rows[index].elapsed_ns);
   const head = samples.head.map((sample) => sample.rows[index].elapsed_ns);
-  return { ...row, elapsed_ns: undefined, base_median_ns: median(base), head_median_ns: median(head),
-    ratio: median(head) / median(base), base_samples_ns: base, head_samples_ns: head };
+  return {
+    ...row,
+    elapsed_ns: undefined,
+    base_median_ns: median(base),
+    head_median_ns: median(head),
+    ratio: median(head) / median(base),
+    base_samples_ns: base,
+    head_samples_ns: head,
+  };
 });
-writeFileSync(output, `${JSON.stringify({ schema: 1, base_sha: process.env.BASE_SHA,
-  head_sha: process.env.HEAD_SHA, pairs: 9, warmups: 2, platform: process.platform, arch: process.arch, rows }, null, 2)}\n`);
+writeFileSync(
+  output,
+  `${JSON.stringify(
+    {
+      schema: 1,
+      base_sha: process.env.BASE_SHA,
+      head_sha: process.env.HEAD_SHA,
+      pairs: 9,
+      warmups: 2,
+      platform: process.platform,
+      arch: process.arch,
+      rows,
+    },
+    null,
+    2,
+  )}\n`,
+);
 for (const row of rows) console.log(`${row.id}: ${(1 / row.ratio).toFixed(2)}x`);
