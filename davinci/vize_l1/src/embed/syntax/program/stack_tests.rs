@@ -1,7 +1,9 @@
 extern crate std;
 
 use alloc::vec::Vec;
-use oxc_ast::ast::{ArrayExpression, ArrayExpressionElement, Comment, Expression, Statement};
+use oxc_ast::ast::{
+    ArrayExpression, ArrayExpressionElement, Comment, Expression, Statement, TSTupleElement, TSType,
+};
 use oxc_diagnostics::Diagnostics;
 use oxc_parser::{ParseOptions, Parser};
 use oxc_span::SourceType;
@@ -251,4 +253,47 @@ fn original_deep_expression_entry_retains_ast_and_small_thread_unwinds_normally(
         unwind.downcast_ref::<&str>(),
         Some(&"expected deep-expression caller unwind")
     );
+}
+
+#[test]
+fn valid_deep_tuple_types_keep_all_original_nodes_on_small_threads() {
+    on_stack(SMALL_STACK, || {
+        let mut text = String::from("type T = ");
+        let start = text.len() as u32;
+        text.push_str(&"[".repeat(DEPTH));
+        text.push_str(&"]".repeat(DEPTH));
+        text.push(';');
+        for selector in [1, 3, 5, 7] {
+            let allocator = Allocator::default();
+            let syntax = parse_program_once(&allocator, source(&text), options(selector));
+            assert_eq!(syntax.hole(), None);
+            assert_eq!(syntax.diagnostics().count(), 0);
+            let program = syntax.program().unwrap();
+            assert_eq!(program.source_text.as_ptr(), text.as_ptr());
+            assert_eq!(program.body.len(), 1);
+            let Statement::TSTypeAliasDeclaration(alias) = program.body.first().unwrap() else {
+                panic!("original type alias statement")
+            };
+            let TSType::TSTupleType(root) = &alias.type_annotation else {
+                panic!("original tuple type root")
+            };
+            let mut tuple = &**root;
+            for level in 0..DEPTH {
+                assert_eq!(
+                    tuple.span,
+                    oxc_span::Span::new(start + level as u32, start + (2 * DEPTH - level) as u32)
+                );
+                if level + 1 == DEPTH {
+                    assert_eq!(tuple.element_types.len(), 0);
+                } else {
+                    assert_eq!(tuple.element_types.len(), 1);
+                    let TSTupleElement::TSTupleType(child) = tuple.element_types.first().unwrap()
+                    else {
+                        panic!("each original tuple retains its actual nested type")
+                    };
+                    tuple = child;
+                }
+            }
+        }
+    });
 }

@@ -32,7 +32,7 @@ to array parsing. Other recursion paths require their own evidence.
 
 The existing pinned `stacker = "=0.1.25"` becomes a direct vendor-parser
 dependency. The lock adds only that existing dependency edge. The complete
-original `parse_array_expression` body executes in
+original `parse_array_expression` and `parse_tuple_type` bodies execute in
 `stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, ...)`, before its token/span
 work. It uses the same parser, arena, context, trailing-comma bookkeeping,
 grammar and ordinary diagnostics. Flat scalar elements do not each gain a
@@ -41,7 +41,7 @@ retry, panic suppression, input skip or extra pipeline stage is added.
 
 These constants reuse L0's stack-headroom configuration; that does not prove
 parser frame sizes or ASan safety. Stack growth can allocate, and unsupported
-stacker platforms do not grow. Computed members, TypeScript tuples/types,
+stacker platforms do not grow. Computed members, other TypeScript types,
 parentheses, objects, JSX and later recursive AST consumers remain separate
 paths. This change does not claim universal hostile-input safety or quotas.
 
@@ -69,9 +69,24 @@ Initial source `b6923eb8ea5ca83d99f9012d5f2d9cea2bdfe495`, Check
 `E0433`/`E0425`/`E0599` errors: the new `no_std` unit module lacked explicit
 test-only std/container imports. Its four laws were unexecuted. The correction
 adds `extern crate std`, `alloc::vec::Vec` and preferred `vize_l0::String`,
-using actual owned String conversions. One measured test-only inventory row
-records alloc Vec `1/1` and L0 String `1/5`; all old rows remain byte-exact.
+using actual owned String conversions. Its measured test-only inventory row
+initially recorded alloc Vec `1/1` and L0 String `1/5`.
 Parser source, original inputs, expected diagnostics and budgets are unchanged.
+That import repair at `d0114e1899b09493228dd605b0d9d58857e70c29`, Check
+`37224992778`, compiled successfully. Worker `111503918025` passed 3,864 of
+3,865 tests but the original eight-profile law still aborted with stack
+overflow. The other three workers passed. This is a real failed acceptance;
+the anonymous thread report does not establish its active profile or named
+frames. Static inspection reveals another unguarded recursive route during
+TypeScript `<` speculation: type arguments, indexed access, tuple parsing,
+tuple element and `parse_ts_type`. The next correction wraps the complete
+original tuple parser before its token work with the same headroom guard,
+preserving every rest/optional diagnostic and final AST allocation. The
+original full-payload comparison remains unchanged. A fifth source law checks
+every actual node and span of an 8,192-level valid tuple in all four TS profiles
+on small threads. The only inventory change adds its one owned L0 String use,
+making `1/6`; old rows and all budgets stay unchanged. Fresh execution remains
+pending, and the static route is not claimed as an authenticated runtime trace.
 Actual nightly-ASan fixed-input replay is separately pending; no replay success
 is claimed from these source laws. Root review precedes queue admission. The
 protected full Rust suites and unchanged 104 instruction ceilings, actual
