@@ -125,6 +125,14 @@ independent peer/root review, required contexts, protected full suites and all
 
 ## Private source freeze recipe
 
+[The paired private freeze](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5977826843)
+binds authored executable source `e1d4d48e9d` to this recipe and the explicit
+actual-main base. Its read-only conservation receipt is
+`/tmp/vize-for-constant-private-source-conservation.json`, SHA256
+`d61ce2e7cf00e7a6568a94f35dc7b0b2c462306c565f83e0ae0996a6107628fc`.
+The recorded checks are pure source/model checks; no compiler/runtime campaign,
+published PR, Actions, protected measurement or merge is credited.
+
 The authored change keeps executable production in the three existing For files.
 The existing read row chooses the constant tracking mode; the same Enter/Leave
 frames seal its direct child vnode and L4 consumes the genuine selected setup
