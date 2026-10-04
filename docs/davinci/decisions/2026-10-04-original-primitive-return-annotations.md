@@ -136,8 +136,11 @@ A generic JSX File must remain refused where the owning JsxFile is required.
 
 Small inputs can include `function read(value:number):number{return value;}`
 and `function read(value:string):number{return value;}` under the actual
-strict configured project. Their distinct expected results are authored
-before execution. Unicode/non-BMP/CRLF, missing-return and later unsupported
+strict configured project with its original `moduleDetection: "force"`. These
+local-only `.ts` fixtures have no export/import Module-goal proof; strict and
+module:ESNext alone do not authorize `check_original_program`. A genuine `.mts`
+or later original export is a separate eligible control. Their distinct
+expected results and actual root tsconfig are authored before execution. Unicode/non-BMP/CRLF, missing-return and later unsupported
 unit controls must be included where accepted source grammar genuinely permits
 those cases. Preserve all old TS/TSX source/map/config/identity negative laws.
 No test may call a legacy generator to grant native authority; dev-only

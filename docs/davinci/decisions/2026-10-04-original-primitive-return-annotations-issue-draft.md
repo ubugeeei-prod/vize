@@ -27,6 +27,8 @@ refusals, original observer unwind and genuine setup rejection. They are not
 executed by this design. The existing exact original L4 projection needs no
 printer change; complete independent TS6/TS7 raw diagnostics and authored maps
 remain a genuine consumer law follow-through, not provider completion credit.
+Local-only `.ts` checker fixtures explicitly use their actual root tsconfig
+`moduleDetection: "force"`; strict/module:ESNext alone cannot prove Module goal.
 
 [Full private design](./2026-10-04-original-primitive-return-annotations.md)
 and the central decision carry the same boundaries. Root/peer source review,
