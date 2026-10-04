@@ -63,7 +63,22 @@ Further canonicalization reuse is deferred: the compatibility resolver can
 return its original path when canonicalization fails, so a private trusted
 path shortcut requires separate complete path and world-identity proof.
 
-## Exact source receipts
+## Corrected prerequisite hold
+
+The leaf prerequisite is corrected at `e027dacb36da6ae5614288fc8fcd7063753b5b16`.
+Its [guard receipt](./2026-10-04-check-shared-script-leaves.md) records actual
+failures involving template package imports, nested Vue package/alias context,
+trivia-separated global declarations, optional JS require and malformed
+import/export recovery. Twenty-one local complete ordered cases pass in both
+one/two-server modes: 84 base/head comparisons plus 21 separate profiles.
+Resolver source/tests are unchanged from `91a4b93b`; the combined graph at
+`f7fdb531a1a9811d9d36ee423afda7472d80e1fc` requires renewed exact hosted
+contextual/API/CLI parity, all 104 ceilings and same-run full-command timings.
+The three timed corpora, generators, protocol and workflow remain identical.
+Earlier green checks and timings qualify their recorded historical graph only.
+Native Stack queue admission also remains held during the release freeze.
+
+## Historical exact source receipts
 
 [Run 37173344543](https://github.com/ubugeeei-prod/vize/actions/runs/37173344543)
 passed all contextual tests, complete module-fact parity and full CLI gates at
@@ -146,20 +161,28 @@ A separate imported-max profile observes summed worker augmentation
 1251.252→551.709 ms for 500 roots while the single backend command remains
 218.376→221.619 ms. These are one profiled observation and summed worker time,
 not full-command medians. Generated max's sharded backend remains
-327.612→318.610 ms out of approximately 433 ms whole-command time.
+327.612→318.610 ms in separate profiles. The head profile
+observes 327.95 ms total backend wall; its unprofiled whole-command median is
+432.83 ms. These populations cannot be subtracted to decompose that median.
 
-The next measured acceptance lane is persistent backend/session reuse or an
-equivalent backend-cost repair: the default generated500 backend alone still
-exceeds the 42.55 ms target. Further snapshot/local-stage gains alone cannot
-demonstrate 10x. Real projects, persistent no-op/leaf/shared-dependency edits,
-source revision freshness and complete ordered authored diagnostics remain
-required. Native product completion keeps its native implementation and
-fix-history gates; no legacy-backed shortcut qualifies it.
+The next measured lane begins with the pinned native backend's
+`--extendedDiagnostics` phase receipts before attributing startup, program
+construction or checking costs. An isolated per-shard incremental-state trial
+must keep build-info outside virtual-tree pruning, compare full virtual bytes,
+mapper state, program membership and ordered diagnostics, and prove config,
+package and edit freshness against a fresh checker. Fresh CLI, disk-state-warm
+processes and live sessions remain separate populations. Persistent no-op
+experiments must assert session starts/reuses/fallbacks: the current
+`check_incremental(&[])` path invokes a fresh CLI rather than a session no-op.
+No backend cache speedup has been measured or accepted. Real-project edits,
+source freshness and the original fresh-command 42.55 ms/10x target remain
+unfinished; native product and fix-history gates still apply.
 
-The final receipt update changes documentation only relative to measured
-source `3712c7cb784848655050221538a6b9cfa8bb0dd9`; Rust, tests, benchmark harness,
-dependencies, workflows and instruction budgets remain identical. Fresh
-exact-head Actions and actual protected Stack delivery remain required.
+Receipt `91a4b93b9d3d8b9946998da22f9aaadea97d5b4c` changed documentation only
+relative to measured source `3712c7cb784848655050221538a6b9cfa8bb0dd9`.
+The corrected prerequisite changes the combined source graph, so those old
+receipts do not authorize acceptance or queue admission. Renewed exact-head
+Actions and actual protected Stack delivery remain required.
 
 ## Raw full-command pairs
 
