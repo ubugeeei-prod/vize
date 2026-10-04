@@ -1,0 +1,77 @@
+Case {
+    id: "accesskey-bind",
+    fix: "c3f6780cb9f7642503137ccf78797b3faf215725",
+    parent: "c0402a3b3d16c13fa94ff8eeb16b7bb7c2693085",
+    witness_revision: "c3f6780cb9f7642503137ccf78797b3faf215725",
+    witness_blob: "206d5e56818bd4be09f0aa55fce8f5477fd2bdf8",
+    rule_path: "crates/vize_patina/src/rules/a11y/no_access_key.rs",
+    test: "test_invalid_has_bound_accesskey",
+    witness_kind: "introduced-by-fix",
+    source: "<div :accesskey=\"'h'\">Content</div>",
+    source_sha256: "9d7fc41439af68d7a7807af78bc160ed903810d260d15ced663b9000e1712947",
+    filename: "test.vue",
+    entry: "template",
+    rule: "a11y/no-access-key",
+    vue_version: None,
+    vapor: None,
+    locale: None,
+    help_level: None,
+    severity: None,
+    original_warning_count: 1,
+}
+RuleIdentity {
+    concrete_type: "vize_patina::rules::a11y::no_access_key::NoAccessKey",
+    name: "a11y/no-access-key",
+    description: "Disallow the use of the accesskey attribute",
+    category: Accessibility,
+    fixable: false,
+    default_severity: Warning,
+    registry_names: [
+        "a11y/no-access-key",
+    ],
+    locale: En,
+    constructor_default_help: Full,
+}
+Observation {
+    initial: LintResult {
+        filename: "test.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/no-access-key",
+                severity: Warning,
+                message: "The accesskey attribute should not be used. Access keys create keyboard shortcut conflicts",
+                start: 5,
+                end: 21,
+                help: Some(
+                    "Remove the accesskey attribute. Access keys create inconsistent keyboard shortcuts across platforms and conflict with assistive technology shortcuts",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "test.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/no-access-key",
+                    severity: Warning,
+                    message: "The accesskey attribute should not be used. Access keys create keyboard shortcut conflicts",
+                    start: 5,
+                    end: 21,
+                    help: Some(
+                        "Remove the accesskey attribute. Access keys create inconsistent keyboard shortcuts across platforms and conflict with assistive technology shortcuts",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

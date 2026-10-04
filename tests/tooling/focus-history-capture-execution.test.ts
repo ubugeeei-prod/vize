@@ -6,10 +6,14 @@ import { test } from "node:test";
 import { buildProductObserver } from "../differential/observer-build.ts";
 import { FOCUS_OBSERVER } from "../differential/focus-history.ts";
 import { runFocusCapture } from "../differential/focus-history-capture.ts";
+import {
+  compareFocusCurrentOutputs,
+  validateFocusCurrentReport,
+} from "../differential/focus-history-current-output.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-void test("first source-built focus witnesses retain whole unaccepted captures and genuine native refusals", (t) => {
+void test("source-built focus witnesses retain exploratory captures and match reviewed current outputs/refusals", (t) => {
   const evidenceDir = path.resolve(
     root,
     process.env.VIZE_FOCUS_HISTORY_EVIDENCE_DIR ?? "target/differential/focus-history",
@@ -29,8 +33,14 @@ void test("first source-built focus witnesses retain whole unaccepted captures a
       path.join(evidenceDir, "unaccepted-capture.json"),
       `${JSON.stringify(report, null, 2)}\n`,
     );
+    const current = compareFocusCurrentOutputs(root, report, built.receipt);
+    fs.writeFileSync(
+      path.join(evidenceDir, "current-output-report.json"),
+      `${JSON.stringify(current, null, 2)}\n`,
+    );
+    validateFocusCurrentReport(root, current, built.receipt);
     t.diagnostic(
-      `Exploratory full observations and source/Cargo receipt, still unaccepted: ${evidenceDir}`,
+      `Raw captures/source receipt and separate current-output-only comparisons: ${evidenceDir}`,
     );
     assert.deepEqual(
       report.summary,
@@ -45,6 +55,22 @@ void test("first source-built focus witnesses retain whole unaccepted captures a
         pairedComparisons: 0,
       },
       JSON.stringify(report.rows, null, 2),
+    );
+    assert.deepEqual(
+      current.summary,
+      {
+        plannedOriginalInputs: 8,
+        legacyCurrentMatches: 8,
+        nativeRefusalMatches: 8,
+        currentOutputDrift: 0,
+        captureFailures: 0,
+        wholeCurrentComparisons: 32,
+        historicalCompleteOutputAuthorities: 0,
+        nativeHandled: 0,
+        nativeEquivalent: 0,
+        pairedComparisons: 0,
+      },
+      JSON.stringify(current.rows, null, 2),
     );
   } catch (error) {
     // Compile logs already retained by the shared source-build helper are not

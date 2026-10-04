@@ -1,0 +1,51 @@
+Case {
+    id: "accesskey-absent",
+    fix: "c3f6780cb9f7642503137ccf78797b3faf215725",
+    parent: "c0402a3b3d16c13fa94ff8eeb16b7bb7c2693085",
+    witness_revision: "c0402a3b3d16c13fa94ff8eeb16b7bb7c2693085",
+    witness_blob: "17c2cdd179248b8df6baa05ba7a831e999b7efeb",
+    rule_path: "crates/vize_patina/src/rules/a11y/no_access_key.rs",
+    test: "test_valid_no_accesskey",
+    witness_kind: "parent-control",
+    source: "<div>Content</div>",
+    source_sha256: "2360fdb25ad49438468c2b6017ac2536dfb6d1d3c6b7968272cf63fdc79ba912",
+    filename: "test.vue",
+    entry: "template",
+    rule: "a11y/no-access-key",
+    vue_version: None,
+    vapor: None,
+    locale: None,
+    help_level: None,
+    severity: None,
+    original_warning_count: 0,
+}
+RuleIdentity {
+    concrete_type: "vize_patina::rules::a11y::no_access_key::NoAccessKey",
+    name: "a11y/no-access-key",
+    description: "Disallow the use of the accesskey attribute",
+    category: Accessibility,
+    fixable: false,
+    default_severity: Warning,
+    registry_names: [
+        "a11y/no-access-key",
+    ],
+    locale: En,
+    constructor_default_help: Full,
+}
+Observation {
+    initial: LintResult {
+        filename: "test.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "test.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

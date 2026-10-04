@@ -1,0 +1,90 @@
+{
+  "schema": "vize.differential.observer-build",
+  "version": 1,
+  "spec": {
+    "product": "linter",
+    "packageName": "vize_patina",
+    "exampleName": "focus_history_observer",
+    "sourcePath": "crates/vize_patina/examples/focus_history_observer/main.rs",
+    "probes": [
+      [
+        "--contract"
+      ]
+    ]
+  },
+  "source": {
+    "sourceRevision": "7f7b63122456fd066c86bcab7c281c9c6c9d389a",
+    "sourceTree": "44eeeedb7ed5198f04392f19b84d0ded92185cc1",
+    "productSourceTree": "aff9bdeb6983bebafa9f88298e29bd1af9c0e692",
+    "cargoLockSha256": "88227fb6c49020dd2299778023e9d86870e3bfd1a61db7575bf373a5d1fa7b5b",
+    "observerSourceSha256": "07e8207a384c94eac2caed58112af35b1e4662a764dcfe61afca36fa840d0d04"
+  },
+  "profileName": "ci",
+  "offline": false,
+  "binaryPath": "/home/runner/_work/vize/vize/target/differential/focus-history/focus_history_observer",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "ci",
+    "-p",
+    "vize_patina",
+    "--example",
+    "focus_history_observer",
+    "--message-format=json-render-diagnostics"
+  ],
+  "logs": {
+    "stdout": {
+      "path": "/home/runner/_work/vize/vize/target/differential/focus-history/cargo.jsonl",
+      "sha256": "929774699712150ef43eec3540212ae260cd10dc4303b477f944fe1687ce49e6"
+    },
+    "stderr": {
+      "path": "/home/runner/_work/vize/vize/target/differential/focus-history/cargo.stderr.txt",
+      "sha256": "a564bf65dbaa20cf4a7b8780eba671d0e2d067956ffbb7d787319494583586e9"
+    }
+  },
+  "exitStatus": 0,
+  "artifact": {
+    "packageId": "path+file:///home/runner/_work/vize/vize/crates/vize_patina#0.430.1",
+    "target": {
+      "kind": [
+        "example"
+      ],
+      "crate_types": [
+        "bin"
+      ],
+      "name": "focus_history_observer",
+      "src_path": "/home/runner/_work/vize/vize/crates/vize_patina/examples/focus_history_observer/main.rs",
+      "edition": "2024",
+      "doc": false,
+      "doctest": false,
+      "test": false
+    },
+    "profile": {
+      "opt_level": "0",
+      "debuginfo": 0,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": false
+    },
+    "features": [],
+    "executable": "/home/runner/_work/vize/vize/target/differential/focus-history/focus_history_observer",
+    "cargoExecutable": "/home/runner/_work/vize/vize/target/ci/examples/focus_history_observer",
+    "sha256": "ed20f95725dc9c807f781cb19e8307fa3e9b791c0159b292456bd7f9d937e2f0"
+  },
+  "toolchain": {
+    "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+    "cargo": "cargo 1.98.0 (797e8a9bc 2026-08-05)"
+  },
+  "probes": [
+    {
+      "argv": [
+        "--contract"
+      ],
+      "exitStatus": 0,
+      "stdoutBase64": "eyJzY2hlbWEiOiJ2aXplLmZvY3VzLWhpc3Rvcnktb2JzZXJ2ZXIiLCJ2ZXJzaW9uIjoxLCJhcGlzIjpbIi0tbGVnYWN5IiwiLS1uYXRpdmUiXSwiZW50cnkiOiJsaW50X3RlbXBsYXRlIiwiZmlsZW5hbWUiOiJ0ZXN0LnZ1ZSIsInJlZ2lzdHJ5Ijoib25lLWNvbmNyZXRlLW9yaWdpbmFsLXJ1bGUiLCJvcHRpb25zIjoib3JpZ2luYWwtdW5zcGVjaWZpZWQiLCJvdXRwdXQiOiJDYXNlK1J1bGVJZGVudGl0eStPYnNlcnZhdGlvbiIsImFjY2VwdGFuY2UiOiJjYXB0dXJlLW9ubHkiLCJmYWxsYmFjayI6ZmFsc2V9Cg==",
+      "sha256": "9b9c0fedefbe90889229579738cbf7c71366eda05f21a08d367b633c85a3ca79"
+    }
+  ]
+}

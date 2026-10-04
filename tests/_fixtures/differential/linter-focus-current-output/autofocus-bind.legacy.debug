@@ -1,0 +1,77 @@
+Case {
+    id: "autofocus-bind",
+    fix: "c3f6780cb9f7642503137ccf78797b3faf215725",
+    parent: "c0402a3b3d16c13fa94ff8eeb16b7bb7c2693085",
+    witness_revision: "c3f6780cb9f7642503137ccf78797b3faf215725",
+    witness_blob: "101fccd9272e0174d4f88bf02662f0033e16435d",
+    rule_path: "crates/vize_patina/src/rules/a11y/no_autofocus.rs",
+    test: "test_invalid_has_bound_autofocus",
+    witness_kind: "introduced-by-fix",
+    source: "<input type=\"text\" :autofocus=\"true\" />",
+    source_sha256: "10962cb19a89610ce7802ce6b26b034999e3b260b2aec3f6ff0701b750379660",
+    filename: "test.vue",
+    entry: "template",
+    rule: "a11y/no-autofocus",
+    vue_version: None,
+    vapor: None,
+    locale: None,
+    help_level: None,
+    severity: None,
+    original_warning_count: 1,
+}
+RuleIdentity {
+    concrete_type: "vize_patina::rules::a11y::no_autofocus::NoAutofocus",
+    name: "a11y/no-autofocus",
+    description: "Disallow the use of the autofocus attribute",
+    category: Accessibility,
+    fixable: false,
+    default_severity: Warning,
+    registry_names: [
+        "a11y/no-autofocus",
+    ],
+    locale: En,
+    constructor_default_help: Full,
+}
+Observation {
+    initial: LintResult {
+        filename: "test.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/no-autofocus",
+                severity: Warning,
+                message: "The autofocus attribute should not be used. It can disrupt navigation for screen reader users",
+                start: 19,
+                end: 36,
+                help: Some(
+                    "Remove the autofocus attribute. Manage focus programmatically when needed using ref and focus()",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "test.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/no-autofocus",
+                    severity: Warning,
+                    message: "The autofocus attribute should not be used. It can disrupt navigation for screen reader users",
+                    start: 19,
+                    end: 36,
+                    help: Some(
+                        "Remove the autofocus attribute. Manage focus programmatically when needed using ref and focus()",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

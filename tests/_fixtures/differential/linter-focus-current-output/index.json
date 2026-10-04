@@ -1,0 +1,149 @@
+{
+  "schema": "vize.focus-history.current-output-baseline",
+  "version": 1,
+  "authority": "reviewed-current-output-only",
+  "originalFixture": {
+    "path": "crates/vize_patina/tests/fixtures/focus-history/cases.json",
+    "sha256": "5ab754f0a882fc9c7f8eb843edf454af7909793debe985c0096daa6b132708ba"
+  },
+  "observed": {
+    "source": {
+      "sourceRevision": "7f7b63122456fd066c86bcab7c281c9c6c9d389a",
+      "sourceTree": "44eeeedb7ed5198f04392f19b84d0ded92185cc1",
+      "productSourceTree": "aff9bdeb6983bebafa9f88298e29bd1af9c0e692",
+      "cargoLockSha256": "88227fb6c49020dd2299778023e9d86870e3bfd1a61db7575bf373a5d1fa7b5b",
+      "observerSourceSha256": "07e8207a384c94eac2caed58112af35b1e4662a764dcfe61afca36fa840d0d04"
+    },
+    "checkRun": 37170632227,
+    "toolingJob": 111342777797,
+    "artifact": {
+      "id": 11291905348,
+      "name": "formatter-api-corpus-37170632227-1-pr-tooling-scripts-3"
+    },
+    "captureSha256": "736810bac683e88f986dd1c10f6cd0920a161ec47d868b837ef9a0477003c9e4",
+    "buildReceipt": {
+      "path": "tests/_fixtures/differential/linter-focus-current-output/observed-build-receipt.json",
+      "sha256": "ab4e3d96aacafcb604ca4536970151be6c5e1aac98abe1839e317ffbf3e85416"
+    }
+  },
+  "review": {
+    "completeLegacyOutputs": 8,
+    "completeNativeRefusals": 8,
+    "freshProcessAttempts": 32,
+    "authoredOptions": "None",
+    "observedDefaults": {
+      "locale": "En",
+      "helpLevel": "Full"
+    },
+    "historicalFullOutputAuthority": false,
+    "otherOptionsAuthority": false,
+    "exercisedFixAuthority": false,
+    "nativeEquivalenceAuthority": false
+  },
+  "rows": [
+    {
+      "id": "autofocus-bind",
+      "inputSha256": "1bae5267d6dd6d83353c2c5665512d3ebff4d0f582cc182e3e24fee0b397abcc",
+      "sourceSha256": "10962cb19a89610ce7802ce6b26b034999e3b260b2aec3f6ff0701b750379660",
+      "legacy": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/autofocus-bind.legacy.debug",
+        "sha256": "561db7fffea183cc05185da34131b0796d7a1fd26b0e3779487c19d29bf8b4e3"
+      },
+      "native": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/autofocus-bind.native.json",
+        "sha256": "ff54eeea2d030796957e4d0a40e4e4e75dba2a44aa50bec7b0a05eac0f004b3a"
+      }
+    },
+    {
+      "id": "accesskey-bind",
+      "inputSha256": "9a9495b2e8c98bd08f46be93fccd654678cf111b1582b798b52a8fc17a956a37",
+      "sourceSha256": "9d7fc41439af68d7a7807af78bc160ed903810d260d15ced663b9000e1712947",
+      "legacy": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/accesskey-bind.legacy.debug",
+        "sha256": "61763126aa4c044ea7a88ff9e2d3d64e1a98fdb268c02d5bcff69f16f104c2d2"
+      },
+      "native": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/accesskey-bind.native.json",
+        "sha256": "cccb306f13f756250a882d8091784575f48fcdb787a61c505fc44682af61652d"
+      }
+    },
+    {
+      "id": "accesskey-dynamic",
+      "inputSha256": "a4a1572a4e5a7945e76b87a1c0a35da7247fd4e39a2f85ff802f1d5392da6f50",
+      "sourceSha256": "73929c3e0c074eaf4f59fbfee06ac58c38a244452ff112623136e21cdb2e0009",
+      "legacy": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/accesskey-dynamic.legacy.debug",
+        "sha256": "5c2311b1d5e6ee440b0cac0eda8815f93d82cf798afdc7e7c842b04409bbe41e"
+      },
+      "native": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/accesskey-dynamic.native.json",
+        "sha256": "3cd626080736e7b5ac0dfecca9dbd4f68023f46bb2e69ab0704e21e0ee28937d"
+      }
+    },
+    {
+      "id": "autofocus-dynamic",
+      "inputSha256": "6bfb3d4b06645c1a99ef35f9513f326f7afe07bb81f0ae5a9e05047d2e1684e4",
+      "sourceSha256": "f3dee271864e87886b29a9e8b27be0e72fa3f689ab40776755821c88ec620692",
+      "legacy": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/autofocus-dynamic.legacy.debug",
+        "sha256": "01c680cd318322088c826f3d4f510d7a90e603208165b753aaf450939395cb6d"
+      },
+      "native": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/autofocus-dynamic.native.json",
+        "sha256": "e8695be35f530651c5b7e30625ddde7af9268f3cf0307df82cd203e65df7abe4"
+      }
+    },
+    {
+      "id": "autofocus-absent",
+      "inputSha256": "962444bf59880a889d319b6dede03efdd89f6adc5aacc9200a5026bbf1ad3657",
+      "sourceSha256": "75f1fe73016b7280bfb5c5ce6921a0a4ef23f1c605614b270c61a60916ab4ac8",
+      "legacy": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/autofocus-absent.legacy.debug",
+        "sha256": "1033c02b3297b38321427966f0221cace72259df3e5d5e9ed80d5313ddef5ce8"
+      },
+      "native": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/autofocus-absent.native.json",
+        "sha256": "b3cef6eb5cccd7cd22d5e220001d65b81d963bfdd3d3253049f9c4d35691c097"
+      }
+    },
+    {
+      "id": "autofocus-static",
+      "inputSha256": "f1f5fe27c7af536a1ac3807ef39368414b224c5eb73d17041b4d8adf4ec726be",
+      "sourceSha256": "8d35e943b612857d7d38d708392cfba891e0d19e1add64cd55ecadb95659e144",
+      "legacy": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/autofocus-static.legacy.debug",
+        "sha256": "b40dba08be0e8f3f8562626a4158f05352bbebb1b18012e4b205d89acfa328c3"
+      },
+      "native": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/autofocus-static.native.json",
+        "sha256": "274572bd20be6bdcc59f70b0021dafb8c9be4aac0bd5a0649ac2977fcbd256f7"
+      }
+    },
+    {
+      "id": "accesskey-absent",
+      "inputSha256": "a3c4e3e899710aaa66c6a99bab9febabbc879132210f02afaf7babeecd2e283e",
+      "sourceSha256": "2360fdb25ad49438468c2b6017ac2536dfb6d1d3c6b7968272cf63fdc79ba912",
+      "legacy": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/accesskey-absent.legacy.debug",
+        "sha256": "29cc482ee71b34533139fb606b6c2e843fe901506a66d3ba322460f88688a9c5"
+      },
+      "native": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/accesskey-absent.native.json",
+        "sha256": "4162adcff1edbf83d2060f2b65daa82e8bdd131c8d8a5ab1683091d05fbb8ff9"
+      }
+    },
+    {
+      "id": "accesskey-static",
+      "inputSha256": "d60e79836c6e0c51e07da972801876f932d2a539f3dbd5a99043e124a1e65bbe",
+      "sourceSha256": "c894456a8d8a14dd0d505a81b62b27b29e0b20316da78874a1113373df531035",
+      "legacy": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/accesskey-static.legacy.debug",
+        "sha256": "3540a6b96eb35be01a33f53063905776637e66ef28b4e905b5e9cd0fd87c22c0"
+      },
+      "native": {
+        "path": "tests/_fixtures/differential/linter-focus-current-output/accesskey-static.native.json",
+        "sha256": "985a31adcf1ad295b726581e14e7f0c2289eb4d47eea061f27cd834c55a11cf4"
+      }
+    }
+  ]
+}
