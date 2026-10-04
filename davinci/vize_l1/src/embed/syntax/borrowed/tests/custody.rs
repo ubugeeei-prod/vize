@@ -141,7 +141,8 @@ fn facade_refuses_local_holes_and_other_shapes_without_moving_full_diagnostics()
     assert!(!observed.is_empty());
     for (view, actual) in observed.iter().zip(original.diagnostics().iter()) {
         assert!(core::ptr::eq(view.diagnostic, actual));
-        assert_eq!(view.message(), actual.message.as_str());
+        let actual_message: &str = &actual.message;
+        assert_eq!(view.message(), actual_message);
         for label in view.labels() {
             let decoded = label.decoded_span().unwrap();
             assert!(

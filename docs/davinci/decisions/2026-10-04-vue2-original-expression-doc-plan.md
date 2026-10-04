@@ -237,8 +237,14 @@ independent publication. The reviewed Rust blobs are unchanged by the
 publication-status update. Focused rustfmt, oxfmt, two pure-Node module-layout
 controls and the complete source-qualified canonical Croquis check passed;
 none executes the new Rust API laws or doctests. No local Rust build/tests
-or npm install was performed. Hosted source/full/protected acceptance and
-actual merge remain pending. Existing old worktrees are preserved. The
+or npm install was performed. The first hosted exact-head `00e64f55c2` affected Clippy completed, but
+archive/lib-test compilation rejected a test's `.as_str()` call as unstable
+`str_as_str`. The law now borrows the original diagnostic message through
+an explicit stable `&str` coercion, retaining its complete comparison and
+actual record-address proof. Production Rust remains unchanged from the
+reviewed source. No API law or new doctest executed on that rejected head;
+fresh corrected-head proof is required. Hosted source/full/protected
+acceptance and actual merge remain pending. Existing old worktrees are preserved. The
 Glyph consumer and shared expression adapter still require separate
 authorization; no such source edits are included. Reuse existing peers
 without new agent threads.
