@@ -44,9 +44,11 @@ manual campaign or acceptance is granted by this design.
 The genuine future source change must pair this issue decision with the
 central record, preserve original incoming clauses and acquire root/retained
 peer frozen review before automatic Actions/publication. Both syntax/text
-providers are delivered; current orchestration genuinely depends on #7777 f3.
-Use its actual branch base and verified ordered native Stack; no individual
-layer auto-merge, and release sequencing still holds new queue admission.
+providers are delivered; the private orchestration union has genuine #7777 f3
+ancestry. The earlier native-Stack publication plan is superseded after release
+hold lift: preserve independently queued #7777's healthy entry/membership, then
+replay owned source onto fresh actual main after its literal signed merge.
+Qualify the independent child afterward; frozen review still holds publication.
 Historical full grammar/SFC/options, File/L2/native classic runtime/maps and
 default completion remain unfinished.
 
@@ -90,8 +92,9 @@ A NEW wt genuinely branches from verified current #7777
 fixtures are exact. Additive exports and own canonical rows retain both lanes.
 One new outer action invokes unchanged neutral Vue2→Vue1 then wholeV2 with
 always(), replacing only the existing workflow uses line; same guard/base/
-order350. Full root/retained-peer corrected union review precedes publication
-and genuine Stack linkage; release hold blocks new queue admission only.
+order350. Full root/retained-peer corrected union review still precedes child
+publication. The release hold is lifted; #7777 queues independently and must not
+wait for this private child. No public child or native Stack has been created.
 
 Root authorizes the sole necessary parent workflow-law representation change:
 prove outer [unchanged neutral text, wholeV2], second always(), equal base and

@@ -10,7 +10,7 @@ build, dispatch, publication and queue admission remain withheld pending the
 complete frozen source review. Source readiness is distinct from execution.
 The current private child genuinely branches from #7777's verified actual
 `f3bb6ac4d08b773311194175b124bb8575c72357`; that green Vue1/text orchestration
-parent is not merged and grants no literal-delivery credit.
+parent now queues independently; unmerged source grants no delivery credit.
 
 ## Actual providers and the complete owner
 
@@ -256,11 +256,11 @@ all old48/sevenV2/fiveV1 goldens without failure-driven recapture. Coordinate
 Vue1 capture and preserve workflow350/guards/order; no unpublished receipt
 receives dependency or execution credit.
 
-Both syntax/text providers merged, but current capture wiring genuinely
-requires the public #7777 parent. Publish with its actual branch as base,
-register/verify the true ordered native Stack and queue only its green prefix
-with gh stack merge; no individual layer auto-merge. Release sequencing holds
-new queue admission, while private preparation remains separately authorized.
+Both syntax/text providers merged; private wiring has genuine f3 ancestry.
+The earlier native-Stack publication plan is superseded by independent #7777
+admission after release-hold lift. Preserve its healthy entry and membership;
+replay owned source onto fresh actual main after its literal merge, then qualify
+the independent child. Frozen source review still holds child publication.
 Full protected suites, all104 immutable caps/actual three-run evidence and both
 real-parent ratchets, current whole capture and actual signed main merge are
 mandatory; no additional manual campaign or local Rust/build/install.
@@ -342,7 +342,7 @@ exact; no new local runtime/Rust/build/dispatch occurs. The final genuine f3
 union preserves parent production/runtime laws/fixtures/actions; only the
 direct-hook workflow law adapts to the exact outer order/always/base/guard350.
 V1/V2 exports and23 canonical additions preserve all parent rows; full review
-precedes publication/Stack; protected104/current captures/actual merge stay pending.
+precedes publication after literal-parent replay; protected104/actual merge stay pending.
 
 The d3 source review rejects two Node mistakes: authored projection renamed its
 frozen runtimeCredit key, and host Error branding lost VM name/message/stack.
