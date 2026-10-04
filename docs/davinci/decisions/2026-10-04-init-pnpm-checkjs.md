@@ -27,12 +27,14 @@ checkout, runs exact dry/apply/idempotent init plans, installs only planned
 dependencies from the packed artifacts, checks project-local package versions
 and Corsa discovery, runs complete clean/broken/repaired diagnostics, and
 executes the documented generated command with outside-vize PATH poison.
-The JavaScript shape also requires an absent .vscode start. Pnpm uses pinned
-Corepack 11.21.0 and its existing tarball redirects; no manager policy changes.
+The JavaScript shape also requires an absent .vscode start. Pnpm 11.21.0 is
+invoked through Corepack with its existing tarball redirects; no manager policy
+changes.
 
 The focused matrix/toolchain/environment guards validate source contracts.
 Actual package installation and authored diagnostics require an exact-head
-Native Smoke run; ordinary PR source checks alone do not prove the new cell.
+Native Smoke run after verified v0.433.0 publication; ordinary PR source checks
+alone do not prove the new cell.
 Record every executed host/Node cell and failure without substituting source
 guards for runtime evidence. The protected queue must retain all full checks
 and unchanged instruction ceilings before actual merge. Verify reporter source
