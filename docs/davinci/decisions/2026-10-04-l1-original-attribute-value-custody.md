@@ -64,6 +64,17 @@ complete frame/source/map retention and neutral semantics. Peer negative/source
 premise review and exact-head hosted laws/privacy docs are still required before
 publication. All new malformed-input expectations must reflect their actual
 Descriptor versus Component boundary, retaining the original input and failure.
+The first source 70fed campaign compiled but tooling reports two unreviewed test
+storage rows. The unchanged actual scanner measures exactly one alloc Vec direct
+path and zero bound uses in each new parking law file. Both are intentionally
+recorded as analysis/test observations; production adds no owned Vec/String,
+classifier rule, masking exception or instruction ceiling. The failed source/raw
+log remains historical and unqueued; fresh corrected source Actions is required.
+All seven new laws executed exactly once and passed in its actual JUnit shards,
+including every original fourteen-case input, no-allocation/empty values and the
+source-reviewed malformed premises; both complete privacy docs passed. These
+first source observations do not override its failed inventory gate or grant a
+protected candidate/actual merge receipt.
 Protected full suites, all 100+4 actual instruction measurements/unchanged ceilings
 and literal signed merge decide delivery. No local Cargo/build/install is run.
 
