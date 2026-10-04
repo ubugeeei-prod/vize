@@ -65,18 +65,40 @@ path shortcut requires separate complete path and world-identity proof.
 
 ## Corrected prerequisite hold
 
-The leaf prerequisite is corrected at `e027dacb36da6ae5614288fc8fcd7063753b5b16`.
-Its [guard receipt](./2026-10-04-check-shared-script-leaves.md) records actual
-failures involving template package imports, nested Vue package/alias context,
-trivia-separated global declarations, optional JS require and malformed
-import/export recovery. Twenty-one local complete ordered cases pass in both
-one/two-server modes: 84 base/head comparisons plus 21 separate profiles.
-Resolver source/tests are unchanged from `91a4b93b`; the combined graph at
-`f7fdb531a1a9811d9d36ee423afda7472d80e1fc` requires renewed exact hosted
-contextual/API/CLI parity, all 104 ceilings and same-run full-command timings.
-The three timed corpora, generators, protocol and workflow remain identical.
-Earlier green checks and timings qualify their recorded historical graph only.
-Native Stack queue admission also remains held during the release freeze.
+The leaf prerequisite is corrected at `59067a34ce54cb5e99cace756ee27a18f0fd452d`,
+with production unchanged from `944da15b00c406935ba5044df0d8b01cbeda5924`.
+Its final tuple-typing repair passes type-aware checks with all 239 inputs
+byte-identical and the 124 ordered vectors and 31 profiles replayed.
+Its [guard receipt](./2026-10-04-check-shared-script-leaves.md) retains actual
+module/global failures and the subsequent entity, script-src and JSX repairs.
+Thirty-one local complete ordered cases pass in both one/two-server modes:
+124 base/head comparisons plus 31 separate profiles and 13 focused tests.
+This count establishes those cases only, not general admission soundness.
+
+Admission screens every root for authored source before shared-root exemption.
+Ordinary TS/JS source must contain no `<`; Vue requires canonical TS/JS script
+and HTML template languages, no external script source, and no script-body `<`.
+Unsupported language, JSX, generated or unavailable source declines the whole
+optimization. Known authored ambient `.d.ts` roots retain the existing shared
+exception. Materialized compiler options must be readable and valid; absent
+or malformed options and any JSX configuration decline. Unknown decoded or
+escaped visibility syntax also declines. Failure preserves the complete
+original component plan and owners, including independent-component sharding.
+The resolver delta does not widen this bounded source/compiler-option domain.
+
+[PR #7754](https://github.com/ubugeeei-prod/vize/pull/7754) separately repairs
+five actual native-trivia module/global failures. It is the fifth layer of
+Stack #7720 and remains required after this resolver's rebase; its owner
+replays that isolated delta. Final acceptance requires the complete five-layer
+source, 36 actual ordered cases, exact contextual/API/CLI gates, all 104
+ceilings and fresh same-run full-command timings. This resolver's 31-case
+parent result cannot qualify the five-layer candidate.
+
+Resolver source/tests are unchanged from `401295c324`; the three timed corpora,
+generators, protocol, build modes and budgets remain identical. Earlier green
+checks and timings at `3712c7cb`, `91a4b93b` and `401295c324` qualify only their
+recorded historical graphs. Native Stack queue admission remains held pending
+renewed proof, acceptance and the release-freeze owner's authorization.
 
 ## Historical exact source receipts
 
