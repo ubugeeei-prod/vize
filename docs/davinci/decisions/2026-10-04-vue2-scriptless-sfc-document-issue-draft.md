@@ -1,10 +1,11 @@
 # Original Vue 2 whole scriptless SFC document: paired private decision
 
-Unposted draft for #6842/#6882. This is a genuine private source preparation change on
-literal actual main `912d311cc378db3506eb7ce78a6f51b0a37f91ff` after the
-initial671f audit. Root and retained peer clear ca5 source design; private
-production/law/reference/capture preparation is authorized, while native
-build, dispatch, public PR and queue admission await complete frozen review.
+Paired source decision for #6842/#6882. Initial671f audit and actual912d private
+preparation retain their source qualifiers. Root/peer clear ca5 design and final
+f3d9 whole source; genuine #7777 actually merged as signed-valid
+`bcf3e024bde363a4d9e3cc2e7745af771cd5b51f` at 2026-10-04T10:27:55Z.
+Equivalent literal-main replay and independent Draft/automatic Actions are authorized;
+fresh native/CF/runtime/protected104 and actual signed delivery remain pending.
 
 The [complete plan](./2026-10-04-vue2-scriptless-sfc-document-plan.md) uses the
 actually merged #7762 original Vue2Descriptor (`54b475fb`) and #7761 original
@@ -44,11 +45,11 @@ manual campaign or acceptance is granted by this design.
 The genuine future source change must pair this issue decision with the
 central record, preserve original incoming clauses and acquire root/retained
 peer frozen review before automatic Actions/publication. Both syntax/text
-providers are delivered; the private orchestration union has genuine #7777 f3
-ancestry. The earlier native-Stack publication plan is superseded after release
-hold lift: preserve independently queued #7777's healthy entry/membership, then
-replay owned source onto fresh actual main after its literal signed merge.
-Qualify the independent child afterward; frozen review still holds publication.
+providers and genuine #7777 are delivered; literal bcf3 now supplies the original
+orchestration APIs/actions. The historical native-Stack plan was superseded by
+independent parent admission. Lossless actual-main replay preserves incoming
+exports/docs/canonical/wiring and all reviewed whole blobs; retained peer verifies
+that union before independent Draft publication and fresh automatic Actions.
 Historical full grammar/SFC/options, File/L2/native classic runtime/maps and
 default completion remain unfinished.
 
@@ -93,8 +94,8 @@ fixtures are exact. Additive exports and own canonical rows retain both lanes.
 One new outer action invokes unchanged neutral Vue2→Vue1 then wholeV2 with
 always(), replacing only the existing workflow uses line; same guard/base/
 order350. Full root/retained-peer corrected union review still precedes child
-publication. The release hold is lifted; #7777 queues independently and must not
-wait for this private child. No public child or native Stack has been created.
+publication. #7777's independent actual merge now supplies the real parent;
+no membership change or native Stack is needed for this independent successor.
 
 Root authorizes the sole necessary parent workflow-law representation change:
 prove outer [unchanged neutral text, wholeV2], second always(), equal base and

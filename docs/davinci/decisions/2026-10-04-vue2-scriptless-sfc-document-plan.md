@@ -1,16 +1,16 @@
 # Original Vue 2 scriptless SFC document: private source preparation
 
-Private source preparation for #6842/#6882, initially pinned to literal actual main
-`671f2a754e8067d729d3085f9f0bad2be90b2f82`; refreshed onto actual
-`912d311cc378db3506eb7ce78a6f51b0a37f91ff` with all audited Descriptor/Vue2/
-CST/Glyph projection and layout bytes unchanged. Root and the retained provider
-peer clear the complete design at `ca5a14679c109f04f74837419f2b3e0cb577ebde`;
-root authorizes private production/law/reference/capture preparation. Native
-build, dispatch, publication and queue admission remain withheld pending the
-complete frozen source review. Source readiness is distinct from execution.
-The current private child genuinely branches from #7777's verified actual
-`f3bb6ac4d08b773311194175b124bb8575c72357`; that green Vue1/text orchestration
-parent now queues independently; unmerged source grants no delivery credit.
+Independent source preparation for #6842/#6882, initially audited on literal
+`671f2a754e8067d729d3085f9f0bad2be90b2f82` and prepared on actual
+`912d311cc378db3506eb7ce78a6f51b0a37f91ff`. Root and retained peer clear
+complete design ca5 and final genuine-parent source `f3d962a55fd908a7a880c2a323611a35e019d5c1`.
+Original #7777 parent actually merged at 2026-10-04T10:27:55Z as signed-valid
+`bcf3e024bde363a4d9e3cc2e7745af771cd5b51f`; the equivalent child now replays
+onto that literal main. Original whole source/goldens and actual parent APIs/
+actions stay conserved, with lossless incoming exports/docs/canonical/wiring.
+Root authorizes independent Draft publication and automatic exact-source Actions
+after retained incoming-union review. Fresh native/CF/runtime/protected104 and
+actual signed delivery remain pending; source CLEAR grants no execution credit.
 
 ## Actual providers and the complete owner
 
@@ -256,11 +256,11 @@ all old48/sevenV2/fiveV1 goldens without failure-driven recapture. Coordinate
 Vue1 capture and preserve workflow350/guards/order; no unpublished receipt
 receives dependency or execution credit.
 
-Both syntax/text providers merged; private wiring has genuine f3 ancestry.
-The earlier native-Stack publication plan is superseded by independent #7777
-admission after release-hold lift. Preserve its healthy entry and membership;
-replay owned source onto fresh actual main after its literal merge, then qualify
-the independent child. Frozen source review still holds child publication.
+Both syntax/text providers and the genuine #7777 orchestration parent merged.
+The historical native-Stack plan was superseded by independent parent admission.
+Signed bcf3 is now the actual source base, retaining every real parent API/action
+and incoming clause. Root/peer final source CLEAR authorizes equivalent replay;
+qualify the independent Draft through fresh automatic Actions and actual queue.
 Full protected suites, all104 immutable caps/actual three-run evidence and both
 real-parent ratchets, current whole capture and actual signed main merge are
 mandatory; no additional manual campaign or local Rust/build/install.
@@ -342,7 +342,7 @@ exact; no new local runtime/Rust/build/dispatch occurs. The final genuine f3
 union preserves parent production/runtime laws/fixtures/actions; only the
 direct-hook workflow law adapts to the exact outer order/always/base/guard350.
 V1/V2 exports and23 canonical additions preserve all parent rows; full review
-precedes publication after literal-parent replay; protected104/actual merge stay pending.
+confirms equivalent literal-parent replay; protected104/actual merge stay pending.
 
 The d3 source review rejects two Node mistakes: authored projection renamed its
 frozen runtimeCredit key, and host Error branding lost VM name/message/stack.
