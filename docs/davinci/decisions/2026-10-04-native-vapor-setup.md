@@ -279,3 +279,31 @@ The real browser comparison keeps its separate exact primary regression oracle.
 Fresh reconciled source Actions, authenticated original captures, reviewed real
 browser recipe and full protected/literal merge remain required; no old changed
 source or original30d receipt substitutes for that new exact-source proof.
+
+## Reviewed reconciliation and current-main qualification
+
+Coordinated approval and an independent peer clear private source
+`10543195492c506afe464f88b9416e1834ceef88` and the frozen strict qualifier
+`c7d74523da68964c54bec6f2d45837ac5242c351a5c70824e1f3c048dff17c2a`.
+The independent final comparison review is SHA256
+`95e451517b79a032e7a87eb36b9b635813353388d17d9f866e2203aa1a5fd20a`;
+all seven current recipe hashes match its frozen manifest. The owned successor
+composes actual main `ac1675fef35c5637c38b1e366a91d6bdfe419885`, preserving
+all original30d production/fixture/generator bytes and incoming split tests,
+retained selected-view lifetime and exact dependency capture closure.
+
+This is source review only. Authored native quote Comment.data remains exact;
+the escaped pinned-primary CSR fresh tree is an independently asserted negative.
+`universalPrimaryParity=false` is mandatory. Ordinary sixteen complete parity,
+all 171 raw rows, 116 unique app joins, full comparison metadata, ordered original
+SSR descendants, both-owner API refusals and strict zero cleanup stay fatal.
+The original strict failure and complete diagnostic keep their original statuses.
+The separate historical747/ed00 successful changed-input receipts are preserved
+in #6840 comment5976295797 and do not qualify the restored original seventeen.
+
+Fresh exact-source Actions, measured104-by-three, authenticated eight-payload
+original-product capture and the exact reviewed qualified real-Chromium recipe
+for both builds are required before admission. The release freeze still holds
+queue admission; a fresh protected candidate and actual signed Stack merge must
+then complete independently. No expectation recapture, primary-output patch,
+normalization, extra stage/parser/walk or instruction-budget change is added.

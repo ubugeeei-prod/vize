@@ -101,8 +101,7 @@ pub(super) fn write_indented_template(
     indent: &[u8],
     newline: &[u8],
 ) {
-    // Specialize the common LF copy to a single known byte. Keep non-LF
-    // normalization and owned line/mask storage on the cold path.
+    // LF uses a known one-byte copy; non-LF storage and normalization stay cold.
     if newline != b"\n" {
         write_indented_non_lf_template(output, source, indent, newline);
         return;
@@ -130,6 +129,10 @@ fn write_indented_non_lf_template(
     indent: &[u8],
     newline: &[u8],
 ) {
+    if newline == b"\r" {
+        write_indented_cr_template(output, source, indent);
+        return;
+    }
     if newline == b"\r\n" {
         write_indented_crlf_template(output, source, indent);
         return;
@@ -144,6 +147,20 @@ fn write_indented_non_lf_template(
     let raw_mask = compute_raw_line_mask(&lines);
     for (line, raw) in lines.into_iter().zip(raw_mask) {
         write_line(output, line, indent, newline, raw);
+    }
+}
+
+#[cold]
+#[inline(never)]
+fn write_indented_cr_template(output: &mut Vec<u8>, source: &str, indent: &[u8]) {
+    let lines: Vec<_> = source
+        .as_bytes()
+        .split(|byte| *byte == b'\r')
+        .map(|line| line.strip_prefix(b"\n").unwrap_or(line))
+        .collect();
+    let raw_mask = compute_raw_line_mask(&lines);
+    for (line, raw) in lines.into_iter().zip(raw_mask) {
+        write_line(output, line, indent, b"\r", raw);
     }
 }
 

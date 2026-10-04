@@ -85,6 +85,19 @@ impl<'a> GlyphFormatter<'a> {
 
     /// Format a Vue SFC source string
     pub fn format(&self, source: &str) -> Result<FormatResult, FormatError> {
+        if self.options.end_of_line == crate::EndOfLine::Auto {
+            return self
+                .options
+                .format_with_source_line_ending(source, |options| {
+                    GlyphFormatter {
+                        options,
+                        allocator: self.allocator,
+                        vue_version: self.vue_version,
+                        sort_imports: self.sort_imports,
+                    }
+                    .format(source)
+                });
+        }
         // Parse the SFC
         let descriptor = parse_sfc(source, SfcParseOptions::default())?;
         let newline = self.options.newline_bytes();

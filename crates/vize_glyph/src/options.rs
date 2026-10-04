@@ -2,6 +2,8 @@
 //!
 //! These options are designed to be compatible with Prettier and oxfmt.
 
+mod line_ending;
+
 use serde::{Deserialize, Serialize};
 use vize_l0::{String, ToCompactString};
 
@@ -191,7 +193,7 @@ pub enum EndOfLine {
     Crlf,
     /// Carriage Return only (\r)
     Cr,
-    /// Maintain existing line endings
+    /// Resolve layout endings from the first source terminator (LF if absent)
     Auto,
 }
 

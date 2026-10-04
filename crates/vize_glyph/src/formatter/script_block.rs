@@ -53,7 +53,7 @@ pub(super) fn write_script_block(
         );
     } else {
         output.extend_from_slice(formatted_content.as_bytes());
-        if !formatted_content.ends_with('\n') {
+        if !formatted_content.ends_with(options.newline_string()) {
             output.extend_from_slice(options.newline_bytes());
         }
     }

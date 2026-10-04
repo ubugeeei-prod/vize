@@ -26,11 +26,6 @@ use vize_l0::{String, ToCompactString};
 /// comments during parse. Nested comments keep the original block text instead
 /// of risking silent data loss.
 pub fn format_style_content(source: &str, options: &FormatOptions) -> Result<String, FormatError> {
-    if options.end_of_line == crate::EndOfLine::Auto {
-        return options.format_with_source_line_ending(source, |options| {
-            format_style_content(source, options)
-        });
-    }
     let trimmed = source.trim();
     if trimmed.is_empty() {
         return Ok(String::default());

@@ -8,8 +8,10 @@ use oxc_span::{SourceType, Span};
 
 use crate::{ParseOptions, Parser, ParserReturn};
 
+mod borrowed;
 mod projection;
 mod shapes;
+pub use borrowed::AdmittedBorrowedExpression;
 pub use projection::{
     AdmittedExpression, AdmittedHandlerBody, AdmittedParameters, ExpressionObservation,
     HandlerBodyObservation, ParametersObservation,

@@ -38,7 +38,7 @@ fn format_chunk_once(trimmed: &str, options: &FormatOptions) -> Result<String, F
     let mut code = super::number::add_leading_zero_to_fractional_numbers(&result.code);
 
     // lightningcss uses 2-space indent by default; re-indent if needed
-    if options.use_tabs || indent_width != 2 {
+    if options.use_tabs || indent_width != 2 || options.newline_bytes() != b"\n" {
         code = super::authored::reindent_css(&code, options);
     }
 

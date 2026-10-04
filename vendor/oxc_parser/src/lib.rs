@@ -115,6 +115,7 @@ use crate::{
     module_record::ModuleRecordBuilder,
     state::ParserState,
 };
+pub use embedding::AdmittedBorrowedExpression;
 pub use embedding::{
     AdmittedExpression, AdmittedHandlerBody, AdmittedParameters, EmbeddingGoal, EmbeddingHole,
     EmbeddingInput, EmbeddingInputError, EmbeddingObservation, ExpressionObservation,

@@ -52,6 +52,11 @@ fn format_document(
     options: &FormatOptions,
     jsonc: bool,
 ) -> Result<String, FormatError> {
+    if options.end_of_line == crate::EndOfLine::Auto {
+        return options.format_with_source_line_ending(source, |options| {
+            format_document(source, options, jsonc)
+        });
+    }
     if source.trim().is_empty() {
         return Ok(String::default());
     }

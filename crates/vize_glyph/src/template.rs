@@ -45,6 +45,11 @@ pub(crate) fn format_template_content_with_vue_version(
     options: &FormatOptions,
     vue_version: crate::VueVersion,
 ) -> Result<String, FormatError> {
+    if options.end_of_line == crate::EndOfLine::Auto {
+        return options.format_with_source_line_ending(source, |options| {
+            format_template_content_with_vue_version(source, options, vue_version)
+        });
+    }
     let bytes = source.as_bytes();
 
     // Fast path: all whitespace

@@ -15,6 +15,7 @@ use vize_l0::{Allocator, Span};
 use super::{Embed, EmbedSource, Grammar, Lang, Shape, SourceError};
 
 mod admission;
+mod borrowed;
 mod coordinates;
 mod for_head;
 mod handler;
@@ -25,6 +26,7 @@ mod shapes;
 mod views;
 mod wrapped;
 pub use admission::NATIVE_SYNTAX_UNIT_LIMIT;
+pub use borrowed::NativeExpressionView;
 use coordinates::Coordinates;
 pub use for_head::{
     AdmittedDenseForHead, DenseForHeadView, ForHeadHole, ForHeadPart, ForKeyword, NativeForHead,

@@ -31,11 +31,11 @@ impl<'a> Parser<'a> {
         let mut saw_newline = false;
         while let Some(c) = self.peek() {
             match c {
-                '\n' => {
+                '\n' | '\r' => {
                     saw_newline = true;
                     self.advance();
                 }
-                ' ' | '\t' | '\r' => {
+                ' ' | '\t' => {
                     self.advance();
                 }
                 _ => break,
@@ -66,7 +66,7 @@ impl<'a> Parser<'a> {
             Some('/') => {
                 let mut text = String::default();
                 while let Some(c) = self.peek() {
-                    if c == '\n' {
+                    if matches!(c, '\n' | '\r') {
                         break;
                     }
                     text.push(c);

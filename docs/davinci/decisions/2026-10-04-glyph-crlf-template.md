@@ -26,10 +26,11 @@ required `[13, 10]` (exit 101). This is helper evidence only; actual current-sou
 public API, CLI, full suites and unchanged instruction budgets must pass in
 Actions before protected merge completion is reported.
 
-TODO #6098: `EndOfLine::Auto` currently resolves to LF in the newline helpers and
-OXC conversion. Detecting the source's line-ending style and consistently applying
-it to every public formatter surface needs its own exact corpus/config coverage.
-The broader profiles/configuration issue remains open.
+The Auto newline TODO is handled separately by
+[#7704](https://github.com/ubugeeei-prod/vize/issues/7704) and its
+[decision](./2026-10-04-glyph-auto-line-endings.md), with separate corpus and
+Actions/merge-queue evidence. The broader #6098 profiles/configuration issue
+remains open.
 
 The first protected queue candidate (`b50cafb2`, Check 37171010927) exceeded
 only the original SFC/reuse ceilings by 74 instructions (293649/274797).
