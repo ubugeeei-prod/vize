@@ -7,6 +7,8 @@
 
 mod resolution;
 #[cfg(test)]
+mod resolution_tests;
+#[cfg(test)]
 mod tests;
 
 use std::path::{Component, Path, PathBuf};
@@ -17,12 +19,13 @@ use super::external_types::FileTypeSummary;
 use super::type_world::ParsedTypeModule;
 
 type ModuleCell = Arc<OnceLock<Option<ParsedTypeModule>>>;
+type ResolutionCell = Arc<OnceLock<Option<PathBuf>>>;
 
 #[derive(Debug, Default)]
 pub struct TypeSourceSnapshot {
     overlays: FxHashMap<PathBuf, Arc<str>>,
     disk: Mutex<FxHashMap<PathBuf, Option<Arc<str>>>>,
-    resolutions: Mutex<FxHashMap<(PathBuf, String), Option<PathBuf>>>,
+    resolutions: Mutex<FxHashMap<(PathBuf, String), ResolutionCell>>,
     pub(super) summaries: Mutex<FxHashMap<PathBuf, FileTypeSummary>>,
     /// Unresolved dependency facts; each world resolves targets on its own clone.
     pub(super) modules: Mutex<FxHashMap<PathBuf, ModuleCell>>,

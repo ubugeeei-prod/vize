@@ -166,7 +166,7 @@ fn resolve_target(
     follow: bool,
     sources: &TypeSourceSnapshot,
 ) {
-    if let Some(path) = sources.resolve_import(current, &target.specifier) {
+    if let Some(path) = sources.resolve_import_normalized(current, &target.specifier) {
         target.module = Some(path_key(&path));
         if follow {
             pending.push((path, None));

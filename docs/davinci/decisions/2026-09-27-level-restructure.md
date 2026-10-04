@@ -343,6 +343,8 @@ See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-
 [Options API computed regressions](./2026-09-27-options-computed-regressions.md)
 record #6921 owner history, shared parse facts, setter guards and registered typechecker fixtures for #6879. [Typechecker snapshot performance](./2026-10-04-typechecker-snapshot-performance.md) records #7698's exact full-command 10x baseline and immutable dependency-fact cache. The [batch source snapshot record](./2026-10-04-typechecker-batch-source-snapshot.md) adds scan-local CLI adoption, preserved per-world limits and full-command paired parity: shared imports improve 1T by 1.72x, but default max gains are unproven and Stack #7720 remains outside the queue pending contention work. It also retains #7705's rejected neutral CLI experiment; demonstrated 10x, real-project and persistent-session edit acceptance remain unfinished. [Bounded shared script leaves](./2026-10-04-check-shared-script-leaves.md) records fixed duplicate-byte limits, closed source/compiler-option admission, preserved global/diagnostic boundaries and required actual default CLI evidence.
 
+[Snapshot resolution sharing](./2026-10-04-typechecker-snapshot-resolution.md) records #7698's directory-scoped import cells, filesystem resolution outside the snapshot map lock, fresh public importer identities and unchanged contextual Canon resolution. Complete same-run CLI parity and performance acceptance remain pending before native Stack delivery.
+
 [Canon slot outlet regression preparation](./2026-09-27-canon-slot-outlet-union.md)
 records #6922 owner history, unbounded inferred payloads, string widening and required full diagnostic proof.
 

@@ -21,11 +21,43 @@ const INDEX_NAMES: &[&str] = &[
 impl TypeSourceSnapshot {
     pub fn resolve_import(&self, current_file: &Path, specifier: &str) -> Option<PathBuf> {
         let current_file = source_path(current_file);
-        let key = (current_file.clone(), specifier.to_compact_string());
-        let mut resolutions = self.resolutions.lock().ok()?;
-        resolutions
+        self.resolve_import_normalized(&current_file, specifier)
+    }
+
+    /// Type-world paths are normalized once when a caller supplies its root or
+    /// this resolver identifies a dependency. Keep public callers fresh while
+    /// avoiding another canonicalization for every edge in that same world.
+    pub(in crate::script::context) fn resolve_import_normalized(
+        &self,
+        current_file: &Path,
+        specifier: &str,
+    ) -> Option<PathBuf> {
+        let Some(directory) = current_file.parent() else {
+            return self.resolve_uncached(current_file, specifier);
+        };
+        // The compatibility package resolver rejects a node_modules component,
+        // even when it is the filename. Preserve that unusual public input.
+        if current_file
+            .file_name()
+            .is_some_and(|name| name == "node_modules")
+        {
+            return self.resolve_uncached(current_file, specifier);
+        }
+        // This resolver uses only the importer directory and exact specifier,
+        // including for package ancestry and @/ aliases. It has no module-mode
+        // input; Canon's contextual package route resolver remains separate.
+        let key = (directory.to_path_buf(), specifier.to_compact_string());
+        let entry = self
+            .resolutions
+            .lock()
+            .ok()?
             .entry(key)
-            .or_insert_with(|| self.resolve_uncached(&current_file, specifier))
+            .or_default()
+            .clone();
+        // A shared import resolves once. Filesystem work never holds the map
+        // lock, so unrelated directories and specifiers can resolve in parallel.
+        entry
+            .get_or_init(|| self.resolve_uncached(current_file, specifier))
             .clone()
     }
 
@@ -48,7 +80,7 @@ impl TypeSourceSnapshot {
         }
         // Package exports are handled by the existing package resolver. Source
         // reads still go through this snapshot once the module is identified.
-        resolve_import_path(current_file, specifier)
+        resolve_import_path(current_file, specifier).map(|path| source_path(&path))
     }
 
     fn exists(&self, candidate: &Path) -> Option<PathBuf> {
