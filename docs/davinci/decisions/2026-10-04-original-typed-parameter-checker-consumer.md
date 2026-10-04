@@ -153,9 +153,11 @@ clauses and every exact reviewed owned clause. Replayed source heads require
 fresh Actions and native Stack verification; no old execution is transferred.
 Protected full suites/all 100+4 and literal signed Stack delivery remain pending.
 
-All old historical packs, vectors and native-null adapters stay byte-identical:
-29 projects / 12 packs / 102 carriers; ledger 271 / 263 / 31. Incoming #7734
-is separate. This is original native Program coverage, not historical callback
+The historical 29-project / 12-pack / 102-input qualification remains an old
+source receipt. Actual main `9702c014` now registers 32 projects / 15 packs /
+112 input occurrences, all with native-null adapters; the fix ledger stays
+271 / 263 / 31. This replay preserves all incoming history source and vectors.
+Incoming #7734 is separate. This is original native Program coverage, not historical callback
 or whole-SFC typing credit. Functions still reject setup/ordinary eligibility;
 unsupported types, direct typed exports, return types, optional parameters and
 body/profile gaps keep the genuine File incomplete. All 100 stage plus four
