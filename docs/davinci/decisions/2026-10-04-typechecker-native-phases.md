@@ -6,7 +6,7 @@ Initial unchanged main production source: `ac1675fef35c5637c38b1e366a91d6bdfe419
 The source must be refreshed and the phase probe rerun after the corrected
 performance Stack merges; this independent lane creates no dependency on it.
 Current independent-infrastructure main base after the verified 0.431.0 release:
-`6987c523ecd2bee6e8489e2973e4b7499ce25018`. Fresh exact-head source/phase
+`7516c514bc58a73f1415585021ea34d801b5836d`. Fresh exact-head source/phase
 Actions on that actual main are required before this PR's independent delivery.
 
 This is an independent benchmark-only follow-up to the fresh-process type
@@ -287,3 +287,17 @@ Stack 7720 actually merged:
 change after those source changes. Retained disk/session results cannot be used
 as the original fresh-CLI 10x result; semantic state is a different contract.
 No incremental or persistent production implementation is authorized here.
+
+## Canonical placement after concurrent main delivery
+
+[Same-slice placement and fresh-main decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5977048591).
+
+The next rebase preserves the newly merged original declared-prop history and
+all other main records. The native phase sentence moves to the existing
+canonical Type check introduction, leaving the complete Type checker product
+paragraph byte-exact to main and keeping the canonical 350-line cap. Main now
+includes formatter/L1 changes and additional Canon history fixtures, so the
+prior `6987…` phase receipt cannot qualify this new base. Rebuild and rerun exact
+head source/phase Actions and every direct/wrapped byte/map/ordered report gate
+on `7516c514bc58a73f1415585021ea34d801b5836d` before independent queue admission.
+No production or benchmark source is modified by this record placement.
