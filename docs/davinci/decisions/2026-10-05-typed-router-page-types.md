@@ -207,3 +207,13 @@ fails E0618 because a configuration fixture local shadows its `project` helper.
 Rename that private helper to `fixture_project`, preserving every configuration
 input and assertion; fresh-source Rust execution remains required. Native-phase
 default corpus observations do not execute the new primary Router oracle.
+
+Source `59a55279` passes Rust test compilation and native-phase checks, but
+[tooling shard2](https://github.com/ubugeeei-prod/vize/actions/runs/37231614560/job/111522675273)
+rejects the stale generated Canon consumer inventory and
+[shard3](https://github.com/ubugeeei-prod/vize/actions/runs/37231614560/job/111522675227)
+rejects the new oracle's missing snapshot-mode declaration. Register its existing
+complete ordered runtime assertions as an assertion-based oracle, then regenerate
+only the Canon TSV with the exact existing inventory generator. Existing
+snapshot tests and inventory checks pass locally; no gate, cap, source assertion
+or provider recipe is loosened, and fresh hosted qualification remains required.
