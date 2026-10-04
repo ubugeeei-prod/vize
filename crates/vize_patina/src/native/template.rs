@@ -8,7 +8,6 @@ use vize_l1::markup::{ComponentSourceError, NativeLintComponent};
 
 use super::NativeLintRefusal;
 
-mod admission;
 mod component_name;
 mod context;
 mod driver;

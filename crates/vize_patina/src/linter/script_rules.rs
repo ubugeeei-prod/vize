@@ -6,6 +6,7 @@ use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
 use vize_l0::profile;
 
 mod html_scripts;
+pub(crate) mod native;
 mod prefilter;
 mod registry;
 mod template_context;
@@ -235,9 +236,8 @@ fn resolved_rule<'a>(
     }
 }
 
-/// Whether `entry` could match `source`. A configured override bypasses the
-/// byte prefilter (its deny list may reference identifiers the default prefilter
-/// does not know about), so the block is always parsed for overridden rules.
+/// A configured override bypasses the byte prefilter: its deny list may name
+/// identifiers unknown to that prefilter, so overridden rules always parse the block.
 #[inline]
 fn entry_may_match(
     linter: &Linter,

@@ -189,6 +189,10 @@ where
     O: futures::io::AsyncWrite,
 {
     let (service, socket) = server::build_lsp_service();
+    #[cfg(feature = "experimental-source-navigation")]
+    let _module_termination = service.inner().module_link_transport_lease();
+    #[cfg(feature = "experimental-source-navigation")]
+    let read = server::ModuleLinkInput::new(read, service.inner().module_link_transport_lease());
     let (service, exit_notification) = server::with_exit_signal(service);
     let transport = Server::new(read, write, socket).serve(service);
 

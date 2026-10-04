@@ -12,6 +12,18 @@ pub struct RegionBuilder<'s, 'a> {
 }
 
 impl<'a> RegionBuilder<'_, 'a> {
+    pub(crate) fn native_element(
+        &mut self,
+        tag: &'a str,
+        namespace: Namespace,
+        attributes: vize_l0::Vec<'a, Attribute<'a>>,
+        span: Span,
+        children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
+    ) -> Result<(NodeId, super::ElementAllocation<'a>), ArtifactError> {
+        self.builder
+            .native_element(tag, namespace, attributes, span, children)
+    }
+
     pub(crate) fn begin_original_for(
         &mut self,
         head: &crate::resolution::ForResolution<'a>,

@@ -22,7 +22,7 @@ mod alias;
 #[cfg(test)]
 mod pug_tests;
 
-#[cfg(any(test, feature = "native"))]
+#[cfg(feature = "native")]
 pub(super) use alias::normalize_bound_name_definition;
 
 /// Barrels can chain; three hops covers a package barrel re-exporting a

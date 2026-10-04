@@ -33,7 +33,15 @@ impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
         }
     }
 
-    pub fn enter(&mut self, node: NodeId, op: &'owner Op<'arena>, root: bool) {
+    pub fn enter(
+        &mut self,
+        node: NodeId,
+        op: &'owner Op<'arena>,
+        root: bool,
+        original_values: &mut Option<
+            crate::decision::attribute_value::OriginalAttributeCursor<'owner, 'arena>,
+        >,
+    ) {
         let span = NodeRef::Op(op).span();
         if root {
             self.facts.roots.push(VaporRoot {
@@ -50,7 +58,7 @@ impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
         let (element, void) = match op {
             Op::Element(element) => {
                 let void = matches!(element.tag, "br" | "hr" | "img");
-                self.element(node, element, void);
+                self.element(node, element, void, original_values);
                 self.facts.parts.push(VaporPart::Open {
                     node,
                     element,
@@ -116,7 +124,15 @@ impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
         self.frames.push((node, element, void));
     }
 
-    fn element(&mut self, node: NodeId, element: &ElementOp<'arena>, void: bool) {
+    fn element(
+        &mut self,
+        node: NodeId,
+        element: &'owner ElementOp<'arena>,
+        void: bool,
+        original_values: &mut Option<
+            crate::decision::attribute_value::OriginalAttributeCursor<'owner, 'arena>,
+        >,
+    ) {
         if element.namespace != Namespace::Html {
             self.reject(node, element.span, VaporUnsupported::Namespace);
         }
@@ -144,7 +160,8 @@ impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
             self.reject(node, element.span, VaporUnsupported::VoidChildren);
         }
         let mut names = Vec::new();
-        for attribute in &element.attributes {
+        for (slot, attribute) in element.attributes.iter().enumerate() {
+            crate::decision::attribute_value::observe(original_values, node, element, slot);
             let name = attribute.name;
             let generic = matches!(name, "id" | "title" | "role" | "dir" | "lang")
                 || (name.starts_with("data-") || name.starts_with("aria-")) && name.len() > 5;

@@ -9,6 +9,8 @@ use crate::provenance::ProvenanceRecord;
 use core::{marker::PhantomData, ops::DerefMut};
 use vize_l0::{Span, id::NodeId};
 
+mod element;
+
 /// A child minted by the real file recorder, with no raw builder extraction.
 ///
 /// ```compile_fail

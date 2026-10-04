@@ -139,10 +139,11 @@ where
     let header::ReadyHeader {
         attributes,
         handlers,
+        values,
     } = header;
     let mut result = Err(Kind::IncompleteChildren);
-    let node = region
-        .element_body(
+    let (node, allocation) = region
+        .native_element_body(
             tag,
             Namespace::Html,
             attributes,
@@ -158,6 +159,7 @@ where
     // A callback's normal return can contain a typed refusal. Never advance
     // the original root cursor or confer native completion on that prefix.
     result?;
+    region.attach_attribute_values(values, node, allocation)?;
     Ok(node)
 }
 

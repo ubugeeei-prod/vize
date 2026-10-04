@@ -1,6 +1,5 @@
 name: PR source checks
-on:
-  workflow_call:
+on: { workflow_call: null }
 permissions: { contents: read }
 env:
   CARGO_TERM_COLOR: always
@@ -25,6 +24,7 @@ jobs:
       native-vapor-capture: ${{ steps.tooling-plan.outputs.native-vapor-capture }}
       native-setup-capture: ${{ steps.tooling-plan.outputs.native-setup-capture }}
       native-ssr-capture: ${{ steps.tooling-plan.outputs.native-ssr-capture }}
+      native-attribute-values-7502-capture: ${{ steps.tooling-plan.outputs.native-attribute-values-7502-capture }}
       playground: ${{ steps.plan.outputs.playground }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -203,6 +203,9 @@ jobs:
       - name: Capture original native Vapor modules and runtime
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-vapor-capture == 'true')) }}
         uses: ./.github/actions/test-native-vapor
+      - name: Capture original attribute values across native targets
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-attribute-values-7502-capture == 'true')) }}
+        uses: ./.github/actions/test-native-attribute-values-7502
       - name: Test selected PR tooling scripts
         if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
         env:
@@ -232,7 +235,6 @@ jobs:
         if: ${{ always() && needs.pr-source-plan.outputs.tooling == 'true' }}
         with:
           shard: ${{ matrix.index }}
-
   pr-playground-test:
     name: PR playground browser tests
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -329,7 +331,6 @@ jobs:
       - name: Fail if VRT failed
         if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
         run: exit 1
-
   source-report:
     name: PR source report
     if: ${{ always() }}

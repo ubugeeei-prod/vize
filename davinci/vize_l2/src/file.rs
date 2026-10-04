@@ -15,6 +15,10 @@ pub use region::{
     TemplateBody, TemplateChildRegion, TemplatePolicy, TemplateRegion, TemplateScope,
     TemplateWalkRegion,
 };
+mod attribute_value;
+pub use attribute_value::{
+    FileAttributeValue, NativeFileAttributeValue, NativeFileAttributeValueState,
+};
 mod for_head;
 mod handler;
 mod interpolation;

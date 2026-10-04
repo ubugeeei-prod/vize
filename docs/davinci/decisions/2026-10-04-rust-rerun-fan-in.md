@@ -127,3 +127,15 @@ length before fresh admission; source-only length is insufficient. Preserve the
 failed candidate and its measurements separately. Corrected exact-head Actions,
 new protected full suites/all 104 measurements and actual signed merge remain
 required; no result from `34b` supplies their acceptance.
+
+Correction source `1b37896dd2cb6b0e76dbdcaef2695341bb52e2f4` then met a
+single adjacent header conflict with literal main
+`83bd582338c7977cd30e80903debd661b36f19ab` (#7780, whose immediate parent
+contains #7751's actual merge `f20e99f2fa9202a612b42a11beab7e26e95a21ca`).
+Merge only that real main history, retain its existing flow-style
+`on: { workflow_call: null }` and the equivalent contents-only permission flow.
+The resolved complete workflow is exactly the original `34b` workflow with
+only that one permission-syntax replacement: 351→350 lines, identical parsed
+YAML and every original hook. The new source still requires fresh Actions and
+fresh healthy-tail preflight; neither a prior source nor failed candidate is
+acceptance for this union.

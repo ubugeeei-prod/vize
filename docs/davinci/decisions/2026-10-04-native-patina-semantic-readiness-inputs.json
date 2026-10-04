@@ -1,0 +1,60 @@
+{
+  "source": "b9be9065b872086726158b67d1b4e7b8dee78a14",
+  "status": "private-design-unimplemented",
+  "wholeProductNativeCredit": 0,
+  "historicalFix": "cba6fd5bbb7519696059416fd77aa1ba3192cba3",
+  "historicalParent": "65ace491eb48d51c20238cc46f6d870660ebf26d",
+  "originals": [
+    {
+      "case": {
+        "id": "ref-string-untyped",
+        "history": "cba6fd5bbb7519696059416fd77aa1ba3192cba3",
+        "source": "<script setup lang=\"ts\">\nconst text = \"ref(null)\"\n</script>\n<template><div ref=\"text\" /></template>\n",
+        "filename": "History.vue",
+        "entry": "sfc",
+        "rule": "script/prefer-use-template-ref",
+        "vue_version": null,
+        "vapor": null,
+        "diagnostics": 0,
+        "fixes": 0
+      },
+      "oracle": "crates/vize_patina/tests/snapshots/lint_history__ref-string-untyped.snap",
+      "oracleSha256": "126d2b99b87ecc8a6005572590733177df45adfeef0a2becd8a425b363ef6b1f",
+      "nativeExpected": "whole-current-negative"
+    },
+    {
+      "case": {
+        "id": "ref-string-typed",
+        "history": "cba6fd5bbb7519696059416fd77aa1ba3192cba3",
+        "source": "<script setup lang=\"ts\">\nconst text = \"ref<HTMLInputElement | null>(null)\"\n</script>\n<template><div ref=\"text\" /></template>\n",
+        "filename": "History.vue",
+        "entry": "sfc",
+        "rule": "script/prefer-use-template-ref",
+        "vue_version": null,
+        "vapor": null,
+        "diagnostics": 0,
+        "fixes": 0
+      },
+      "oracle": "crates/vize_patina/tests/snapshots/lint_history__ref-string-typed.snap",
+      "oracleSha256": "dfa5f1a62c18689ee71a7bac7db56c165ef9bc4736399a7e82118d7a2c00b5f3",
+      "nativeExpected": "whole-current-negative"
+    },
+    {
+      "case": {
+        "id": "ref-call-control",
+        "history": "cba6fd5bbb7519696059416fd77aa1ba3192cba3",
+        "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"\nconst text = ref<HTMLInputElement | null>(null)\n</script>\n<template><div ref=\"text\" /></template>\n",
+        "filename": "History.vue",
+        "entry": "sfc",
+        "rule": "script/prefer-use-template-ref",
+        "vue_version": null,
+        "vapor": null,
+        "diagnostics": 1,
+        "fixes": 0
+      },
+      "oracle": "crates/vize_patina/tests/snapshots/lint_history__ref-call-control.snap",
+      "oracleSha256": "812da01796e6a91b28459f73451ca66d4f6327acb82a5e7e4a22dbd78bb429d8",
+      "nativeExpected": "typed-refusal-unprovided-call-setup"
+    }
+  ]
+}

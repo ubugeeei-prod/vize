@@ -7,26 +7,42 @@ use vize_l1::{
 };
 
 use super::{
-    super::{attribute, header, header_rules},
-    NativeTemplateAttribute, NativeTemplateAttributeProfile, NativeTemplateElement,
-    NativeTemplateLintContext, NativeTemplateLintRefusal as Refusal, NativeTemplateRule,
+    attribute, header, header_rules,
+    template::{
+        NativeTemplateAttribute, NativeTemplateAttributeProfile, NativeTemplateElement,
+        NativeTemplateLintRefusal as Refusal,
+    },
 };
 
-pub(super) fn component(component: &NativeComponent<'_>) -> Result<(), Refusal> {
+pub(in crate::native) fn component(component: &NativeComponent<'_>) -> Result<(), Refusal> {
+    carrier(component, 0)?;
+    let block = component.block();
+    if block.start() != 0 || !core::ptr::eq(block.source(), block.root_source()) {
+        return Err(Refusal::SourceMismatch);
+    }
+    Ok(())
+}
+
+/// Only the authentic selected constructor can supply this origin. The SFC
+/// host additionally owns and validates its exact original Descriptor frames.
+pub(in crate::native) fn selected_component(
+    selected: &vize_l1::markup::NativeTemplateComponent<'_>,
+) -> Result<(), Refusal> {
+    carrier(selected.component(), selected.component().block().start())
+}
+
+fn carrier(component: &NativeComponent<'_>, base: u32) -> Result<(), Refusal> {
     let carrier = component.carrier();
     if let Some(error) = carrier.errors.first() {
-        return Err(Refusal::Recovered {
-            offset: error.offset,
-        });
+        let offset = base
+            .checked_add(error.offset)
+            .ok_or(Refusal::SourceMismatch)?;
+        return Err(Refusal::Recovered { offset });
     }
     if carrier.authored.is_some() || !carrier.unsupported.is_empty() {
         return Err(Refusal::UnsupportedComponent);
     }
-    let block = component.block();
-    if block.start() != 0
-        || !core::ptr::eq(block.source(), block.root_source())
-        || !core::ptr::eq(carrier.tree.source, block.source())
-    {
+    if !core::ptr::eq(carrier.tree.source, component.block().source()) {
         return Err(Refusal::SourceMismatch);
     }
     Ok(())
@@ -45,12 +61,11 @@ fn checked_token(component: &NativeComponent<'_>, token: &Token<'_>) -> Result<S
     Ok(span)
 }
 
-pub(super) fn children<'o, 'a>(
+pub(in crate::native) fn children<'o, 'a>(
     component: &'o NativeComponent<'a>,
     children: NativeChildren<'o, 'a>,
-    context: &mut NativeTemplateLintContext<'_, 'a>,
-    callbacks: &[(&'static str, &dyn NativeTemplateRule)],
     profile: NativeTemplateAttributeProfile,
+    visit_element: &mut impl FnMut(&NativeTemplateElement<'o, 'a>) -> Result<(), Refusal>,
 ) -> Result<(), Refusal> {
     for child in children {
         if !core::ptr::eq(child.component(), component) {
@@ -117,14 +132,11 @@ pub(super) fn children<'o, 'a>(
                     }
                     let children = element.children();
                     let view = NativeTemplateElement::new(element, attributes);
-                    for &(name, callback) in callbacks {
-                        context.current_rule = name;
-                        callback.run_on_element(context, &view)?;
-                    }
+                    visit_element(&view)?;
                     // Retained header storage is bounded by the largest header,
                     // including possible SmallVec spill, not by ancestor depth.
                     drop(view);
-                    self::children(component, children, context, callbacks, profile)
+                    self::children(component, children, profile, visit_element)
                 }
                 SurfaceChild::Text(token) => {
                     let span = checked_token(component, token)?;

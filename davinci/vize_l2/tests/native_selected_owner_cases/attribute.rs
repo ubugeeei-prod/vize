@@ -108,7 +108,6 @@ fn refusal_at_the_last_header_never_mints_that_element_or_body() -> Result<(), &
     let arena = Allocator::default();
     for rejected in [
         "id='a' id='b'",
-        "title='&amp;'",
         "class='a  b'",
         "style='color:red'",
         "key='key'",
@@ -171,6 +170,60 @@ fn refusal_at_the_last_header_never_mints_that_element_or_body() -> Result<(), &
         equal(prefix.content, "prefix")?;
         check(file.template_interruption().is_some())?;
     }
+    Ok(())
+}
+
+#[test]
+fn formerly_refused_entity_header_retains_its_exact_original_slot() -> Result<(), &'static str> {
+    let arena = Allocator::default();
+    let source =
+        "<template>prefix<div data-first='kept' title='&amp;'>unvisited</div>tail</template>";
+    let mut original = owner(&arena, source)?;
+    {
+        let mut walk = original.begin().map_err(|_| "begin")?;
+        let selected = walk.selected();
+        for child in selected.children() {
+            walk.child(child).map_err(|_| "actual original child")?;
+        }
+        walk.complete().map_err(|_| "normal original end")?;
+    }
+    let output = core::hint::black_box(original.finish());
+    let file = output
+        .view()
+        .map_err(|_| "complete original")?
+        .file()
+        .ok_or("same File")?;
+    check(file.is_complete())?;
+    check(core::ptr::eq(file.artifact().source(), source))?;
+    equal(file.artifact().node_count(), 4)?;
+    let [Op::Text(prefix), Op::Element(element), Op::Text(tail)] =
+        file.artifact().root().ops.as_slice()
+    else {
+        return Err("same ordered original siblings");
+    };
+    equal((prefix.content, tail.content), ("prefix", "tail"))?;
+    let [Op::Text(body)] = element.children.ops.as_slice() else {
+        return Err("original body");
+    };
+    equal(body.content, "unvisited")?;
+    equal(file.native_attribute_values().len(), 2)?;
+    let joined = file
+        .native_attribute_value_for(1, element, 1)
+        .ok_or("same Element/slot")?;
+    check(core::ptr::eq(joined.file(), file))?;
+    check(core::ptr::eq(joined.element(), &**element))?;
+    let value = joined.observation().ok_or("whole original preparation")?;
+    equal(value.raw_value(), "&amp;")?;
+    equal(value.value_span().slice(source), "&amp;")?;
+    equal(value.source().text(), "&")?;
+    check(value.source().decode_map().is_some())?;
+    check(core::ptr::eq(value.source().authored_root(), source))?;
+    let slot = joined.attribute().ok_or("actual canonical slot")?;
+    equal((slot.name, slot.value), ("title", Some("&")))?;
+    check(core::ptr::eq(
+        slot.value.ok_or("value")?,
+        value.source().text(),
+    ))?;
     Ok(())
 }
 
