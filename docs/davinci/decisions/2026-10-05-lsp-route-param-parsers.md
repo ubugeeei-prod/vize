@@ -51,3 +51,21 @@ exposes no email. The meaningful source commit and PR supply
 `Co-authored-by: naitokosuke <102337893+naitokosuke@users.noreply.github.com>`.
 Final merge attribution must be checked independently. Queue admission remains
 held until the coordinated v0.433 publication and explicit thaw.
+
+## Initial source execution and gate repair
+
+Source `53a67865` ran Check `37222722727` on actual checkout `f6cd662b`, whose
+tree equals the source tree. The receipted CLI is `vize 0.432.0`, binary SHA-256
+`4a9f55cb39622f6348a1751f2e2abd7df12710421fe7f75f5dee9349b7a366cb`.
+Tooling job `111496265865` passed all seven complete real LSP and CLI controls;
+artifact `11311505035` retains the actual client/server bytes and build receipt.
+Rust source checks also passed, but the whole Check failed two source guards.
+
+The redundant standalone Rust diagnostic test added three `parse_sfc` calls,
+raising the crate's lexical count from its immutable ceiling of 15 to 18. Remove
+that duplicate test while keeping the stronger complete real RPC regression and
+the two modifier/deduplication unit controls. Register the latter's one genuine
+test/dev L0 helper reference in the generated Maestro surface census. No ceiling,
+reference, production repair or RPC input/output changes. The original failed
+campaign remains historical evidence; the corrected head requires fresh Actions
+and protected terminal acceptance before actual merge and release.
