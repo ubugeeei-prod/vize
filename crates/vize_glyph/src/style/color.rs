@@ -166,7 +166,10 @@ fn scan_colors(source: &str, value: std::ops::Range<usize>, spans: &mut Vec<(usi
                 while index < value.end && bytes.get(index).is_some_and(u8::is_ascii_hexdigit) {
                     index += 1;
                 }
-                if is_color(source, start, index) {
+                // The scan has already checked every digit. These are exactly
+                // the CSS hex-color lengths, so a second token parse adds no
+                // validation to this authored span.
+                if matches!(index - start - 1, 3 | 4 | 6 | 8) {
                     spans.push((start, index));
                 }
             }
@@ -257,4 +260,26 @@ fn skip_function(bytes: &[u8], open: usize, limit: usize) -> usize {
         }
     }
     index
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{CssColor, Parse, scan_colors};
+
+    #[test]
+    fn hex_scan_matches_css_parser_at_every_length() {
+        for digits in ["0123456789abcdef", "ABCDEF0123456789"] {
+            for len in 0..=digits.len() {
+                let source = std::format!("#{}", &digits[..len]);
+                let mut spans = Vec::new();
+                scan_colors(&source, 0..source.len(), &mut spans);
+                let expected = if CssColor::parse_string(&source).is_ok() {
+                    vec![(0, source.len())]
+                } else {
+                    Vec::new()
+                };
+                assert_eq!(spans, expected, "{source}");
+            }
+        }
+    }
 }

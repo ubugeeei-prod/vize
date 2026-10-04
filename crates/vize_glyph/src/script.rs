@@ -106,7 +106,7 @@ thread_local! {
     /// wrapper buffer avoids a heap allocation per call. The CLI formats files in
     /// parallel, so per-thread state keeps each worker independent and lock-free.
     static EXPR_SCRATCH: core::cell::RefCell<(OxcAllocator, String)> =
-        core::cell::RefCell::new((OxcAllocator::default(), String::default()));
+        core::cell::RefCell::new((OxcAllocator::default(), String::from("void (")));
 }
 
 /// Format a JS expression (for use in template directive values and interpolations).
@@ -145,8 +145,7 @@ fn format_js_expression_with_quote_style(
         // Wrap the expression in a `void (…)` statement so it parses as a complete
         // statement the formatter can emit cleanly; we extract the inner part
         // below. Build the wrapper in the reused buffer (no per-call allocation).
-        wrapped.clear();
-        wrapped.push_str("void (");
+        wrapped.truncate("void (".len());
         wrapped.push_str(trimmed);
         wrapped.push(')');
         let parsed = parse_for_format(oxc_allocator, wrapped.as_str(), source_type);
@@ -269,6 +268,39 @@ mod tests {
         let result = format_script_content(source, &options, &allocator).unwrap();
 
         assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_format_unicode_whitespace_only() {
+        let options = FormatOptions::default();
+        let allocator = Allocator::default();
+        let result = format_script_content("\u{a0}\u{2003}\u{2028}", &options, &allocator).unwrap();
+        assert_eq!(result.as_str(), "");
+    }
+
+    #[test]
+    fn test_absent_sorting_override_keeps_pinned_none_default() {
+        assert!(
+            oxc_formatter::JsFormatOptions::default()
+                .sort_imports
+                .is_none()
+        );
+        assert!(
+            FormatOptions::default()
+                .to_oxc_format_options()
+                .sort_imports
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn test_expression_scratch_keeps_prefix_after_long_and_rejected_inputs() {
+        let options = FormatOptions::default();
+        let long = format_js_expression("longIdentifier+otherLongIdentifier", &options).unwrap();
+        assert_eq!(long.as_str(), "longIdentifier + otherLongIdentifier");
+        assert_eq!(format_js_expression(")", &options), None);
+        let short = format_js_expression("a+b", &options).unwrap();
+        assert_eq!(short.as_str(), "a + b");
     }
 
     #[test]

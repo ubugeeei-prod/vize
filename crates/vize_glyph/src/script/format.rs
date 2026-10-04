@@ -28,8 +28,7 @@ pub(super) fn format_script_content_with_sort_imports(
     sort_imports: Option<&crate::ImportSortOptions>,
 ) -> Result<String, FormatError> {
     // Fast path for empty content
-    let trimmed = source.trim();
-    if trimmed.is_empty() {
+    if source.chars().all(char::is_whitespace) {
         return Ok(String::default());
     }
 
@@ -55,7 +54,9 @@ pub(super) fn format_script_content_with_sort_imports(
 
     // Convert options and format
     let mut oxc_options = options.to_oxc_format_options();
-    oxc_options.sort_imports = sort_imports.cloned();
+    if let Some(sort_imports) = sort_imports {
+        oxc_options.sort_imports = Some(sort_imports.clone());
+    }
     let formatted = format_program(&oxc_allocator, &parsed.program, oxc_options, None);
     let printed = formatted
         .print()
