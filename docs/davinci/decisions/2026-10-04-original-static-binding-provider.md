@@ -57,7 +57,14 @@ intrinsic grammar profiles, source/shape failures and original lifetime joins.
 These authored laws and all existing conditional/head/Event/For/value controls
 require fresh exact-head hosted execution. The 52 existing conditional/head/Event/For/value
 source laws remain byte-identical to literal caee. Existing rustfmt and two pure
-module-discovery controls pass; private source checks are not Rust runtime proof. No local Cargo build, runtime execution, install or campaign is used.
+module-discovery controls pass. The unchanged storage classifier measures four new
+test-only source rows: geometry, holes and ownership each use one alloc Vec
+path and three bound uses; observations uses one direct path, and ownership
+also uses one L0 String path. These ordered observation/map/comment/diagnostic
+test collections are reviewed in the existing analysis category. Every prior
+inventory row and order is preserved. All six pure storage policy controls and
+the independently regenerated run summary pass; private source checks are not
+Rust runtime proof. No local Cargo build, runtime execution, install or campaign is used.
 
 The immediate consumer is a separate true provider child and must retain
 genuine #7774 conditional implementation ancestry. It observes during the
