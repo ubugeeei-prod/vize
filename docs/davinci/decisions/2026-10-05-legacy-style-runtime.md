@@ -43,6 +43,9 @@ Actions logs retain the full compiler packets and runtime receipts, including
 the SHA-256 of each executed module. The existing tooling planner discovers
 the test for source PRs and the complete merge suite without an optional skip.
 Exact-head Actions execution, protected checks and actual merge remain pending.
+The first head `8747b3db39` failed Check `37222465433` in `check-js` with one
+`no-floating-promises` warning on the Node test registration. Await its result;
+keep the compiler/runtime assertions and all source/corpus bytes intact.
 
 ## Limits and remaining work
 

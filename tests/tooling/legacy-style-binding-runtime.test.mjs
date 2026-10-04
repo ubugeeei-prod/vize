@@ -13,7 +13,7 @@ const source = readFileSync(
   "utf8",
 );
 
-test("source-built retained Vapor #7600 fixture keeps static style through real runtime updates", () => {
+await test("source-built retained Vapor #7600 fixture keeps static style through real runtime updates", () => {
   const compiled = spawnSync(
     "cargo",
     [
