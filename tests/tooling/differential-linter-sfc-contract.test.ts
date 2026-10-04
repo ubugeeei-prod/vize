@@ -46,7 +46,7 @@ void test("all fifteen original current SFC wires have the complete bounded tran
     ),
     "e7f94e48d54af4a5956b9e67e45b1322cb4e0a2f74ae063907fed899fa9f0509",
   );
-  const expected = [
+  const expected: [string, ReturnType<typeof missing> | null][] = [
     ["current-api/ref-string-untyped", null],
     ["current-api/ref-string-typed", null],
     [
@@ -84,7 +84,8 @@ void test("all fifteen original current SFC wires have the complete bounded tran
     ["next-tick/invalid-arrow-block-bare-call-sfc", missing("script/valid-next-tick")],
     ["next-tick/invalid-arrow-expression-void-call-sfc", missing("script/valid-next-tick")],
     ["next-tick/nested-arrow-restores-statement-context-sfc", missing("script/valid-next-tick")],
-  ].sort((a, b) => String(a[0]).localeCompare(String(b[0])));
+  ];
+  expected.sort((a, b) => a[0].localeCompare(b[0]));
   const actual = loaded.cases
     .filter(
       (fixture: any) =>

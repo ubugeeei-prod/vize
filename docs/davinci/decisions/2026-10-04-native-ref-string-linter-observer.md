@@ -135,6 +135,12 @@ rejection checks, not source-built Rust execution or native acceptance. Fifteen
 unchanged focus/current capture controls also pass. Original manifest/
 oracle conservation and whole15-case/refusal/probe mutations remain mandatory.
 
+First published c47 source Check37190449510 rejects two no-base-to-string
+warnings in the authored SFC ledger sort. The test-only successor declares
+string-keyed tuples and sorts their keys directly; all fifteen expected rows,
+four complete mutation controls and production stay exact. Raw failed log is
+retained; four focused pure controls pass, fresh hosted source proof is required.
+
 ## Remaining delivery
 
 Freeze complete production/law/observer/report/contract source for independent
