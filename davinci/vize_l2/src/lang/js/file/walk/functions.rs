@@ -88,7 +88,9 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             if !parameter.decorators.is_empty()
                 || !annotation_supported
                 || parameter.initializer.is_some()
-                || parameter.optional
+                || (parameter.optional
+                    && (parameter.type_annotation.is_none()
+                        || child.span(parameter.span).is_none()))
                 || parameter.accessibility.is_some()
                 || parameter.readonly
                 || parameter.r#override

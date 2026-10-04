@@ -13,7 +13,6 @@ fn unsupported_original_returns_never_reach_a_checker_or_rewrite_source() {
         "function f(value:number):number[]{return value;}f(1);",
         "function f(value:number):any{return value;}f(1);",
         "export function f(value:number):number{return value;}f(1);",
-        "function f(value?:number):number{return value;}f(1);",
         "async function f(value:number):number{return value;}f(1);",
         "function f(value:number):number{return missing;}f(1);",
     ] {

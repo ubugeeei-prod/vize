@@ -1,3 +1,4 @@
+mod optional_parameters;
 mod primitive_returns;
 mod rejection;
 mod semantics;

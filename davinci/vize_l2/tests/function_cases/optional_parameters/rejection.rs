@@ -3,7 +3,7 @@ use vize_l0::cstr;
 use vize_l2::file::{FileIssueKind, ReferenceTarget};
 
 #[test]
-fn unsupported_original_parameter_types_keep_the_complete_original_issue_vector() {
+fn unsupported_optional_types_retain_both_original_issue_sites() {
     let arena = Allocator::default();
     for annotation in [
         "T",
@@ -17,7 +17,7 @@ fn unsupported_original_parameter_types_keep_the_complete_original_issue_vector(
         "never",
         "void",
     ] {
-        let source = cstr!("function f(value: {annotation}) {{ return value; }}");
+        let source = cstr!("function f(value?: {annotation}) {{ return value; }}");
         let observed =
             Parser::new(&arena, &source, SourceType::ts().with_module(true)).parse_observed();
         assert!(
@@ -43,7 +43,7 @@ fn unsupported_original_parameter_types_keep_the_complete_original_issue_vector(
             [
                 (
                     FileIssueKind::UnsupportedSyntax,
-                    cstr!("value: {annotation}").as_str()
+                    cstr!("value?: {annotation}").as_str()
                 ),
                 (FileIssueKind::UnresolvedReference, "value")
             ],
@@ -56,9 +56,9 @@ fn unsupported_original_parameter_types_keep_the_complete_original_issue_vector(
 }
 
 #[test]
-fn direct_typed_exports_refuse_but_existing_untyped_and_later_export_events_survive() {
+fn direct_optional_typed_exports_refuse_and_later_export_events_survive() {
     let arena = Allocator::default();
-    let source = "export function f(value: number) { return value; }";
+    let source = "export function f(value?: number) { return value; }";
     let observed = Parser::new(&arena, source, SourceType::ts().with_module(true)).parse_observed();
     let file = finish(&arena, &observed).unwrap();
     assert!(!file.is_complete());
@@ -73,13 +73,13 @@ fn direct_typed_exports_refuse_but_existing_untyped_and_later_export_events_surv
             .map(|issue| (issue.kind, issue.span.slice(source)))
             .collect::<Vec<_>>(),
         [
-            (FileIssueKind::UnsupportedSyntax, "value: number"),
+            (FileIssueKind::UnsupportedSyntax, "value?: number"),
             (FileIssueKind::UnresolvedReference, "value")
         ]
     );
     for source in [
         "export function f(value) { return value; }",
-        "function f(value: number) { return value; } export { f };",
+        "function f(value?: number) { return value; } export { f };",
     ] {
         let observed =
             Parser::new(&arena, source, SourceType::ts().with_module(true)).parse_observed();
@@ -104,24 +104,24 @@ fn direct_typed_exports_refuse_but_existing_untyped_and_later_export_events_surv
 }
 
 #[test]
-fn keyword_parameter_does_not_complete_unsupported_function_fields_or_body_closures() {
+fn optional_keyword_does_not_complete_other_function_or_body_fields() {
     let arena = Allocator::default();
     for source in [
-        "async function f(value:number){return value;}",
-        "function* f(value:number){yield value;}",
-        "function f<T>(value:number){return value;}",
-        "function f(this:object,value:number){return value;}",
+        "async function f(value?:number){return value;}",
+        "function* f(value?:number){yield value;}",
+        "function f<T>(value?:number){return value;}",
+        "function f(this:object,value?:number){return value;}",
         "function f(value:number=1){return value;}",
         "function f(...value:number[]){return value;}",
         "function f({value}:{value:number}){return value;}",
         "function f([value]:number[]){return value;}",
-        "function f(value:number){'use strict';return value;}",
-        "function f(value:number){function nested(){return value;}return value;}",
-        "function f(value:number){if(value)return value;}",
-        "function f(value:number){{const local=value;}return value;}",
-        "function f(value:number){return missing+value;}",
-        "function f(value:number){var value=1;return value;}",
-        "function f(value:number){return value;}class Unsupported{}",
+        "function f(value?:number){'use strict';return value;}",
+        "function f(value?:number){function nested(){return value;}return value;}",
+        "function f(value?:number){if(value)return value;}",
+        "function f(value?:number){{const local=value;}return value;}",
+        "function f(value?:number){return missing+value;}",
+        "function f(value?:number){var value=1;return value;}",
+        "function f(value?:number){return value;}class Unsupported{}",
     ] {
         let observed =
             Parser::new(&arena, source, SourceType::ts().with_module(true)).parse_observed();
@@ -137,4 +137,31 @@ fn keyword_parameter_does_not_complete_unsupported_function_fields_or_body_closu
         assert!(core::ptr::eq(file.artifact().source(), source));
         assert_eq!(observed.admitted().unwrap().program().body.as_ptr(), body);
     }
+}
+
+#[test]
+fn the_exact_unannotated_optional_negative_remains_a_whole_two_site_refusal() {
+    let arena = Allocator::default();
+    let source = "function f(value?) { return value; }";
+    let observed = Parser::new(&arena, source, SourceType::ts().with_module(true)).parse_observed();
+    let file = finish(&arena, &observed).unwrap();
+    assert!(!file.is_complete());
+    assert_eq!(file.bindings().count(), 1);
+    assert_eq!(
+        file.issues()
+            .iter()
+            .map(|issue| (issue.kind, issue.span.slice(source)))
+            .collect::<Vec<_>>(),
+        [
+            (FileIssueKind::UnsupportedSyntax, "value?"),
+            (FileIssueKind::UnresolvedReference, "value"),
+        ]
+    );
+    assert_eq!(file.references().len(), 1);
+    assert_eq!(file.references()[0].target, ReferenceTarget::Unresolved);
+    assert!(
+        file.lookup(file.scopes()[1].id, "value", Namespace::Value)
+            .is_none()
+    );
+    assert!(core::ptr::eq(file.artifact().source(), source));
 }
