@@ -39,6 +39,9 @@ pub use selected_template::{
     ObservedNativeTemplateFailureParts, ObservedNativeTemplateRefusal, native_template_document,
     observed_native_template_document, observed_native_template_document_with_policy,
 };
+pub use selected_template::{
+    ObservedNativeTemplateBindingFailureParts, ObservedNativeTemplateBindingParts,
+};
 pub use sfc::NativeSfcDirectivePolicy;
 pub use sfc::{
     NativeSfcBlockRole, NativeSfcObservation, NativeSfcOptions, NativeSfcRefusal,
