@@ -9,8 +9,10 @@ actually merged. Neutral #7689 is signed `154136bb` with protected Check
 `37169188504`, full 15,276 Rust tests and unchanged 104-by-three ceilings accepted.
 Independent ownership/source review is clear, including distinct original numeric
 For source refusal and complete Identifier-collection target refusal. The new
-L3 provider and exact hosted native whole-module/map/runtime/protected acceptance
-remain pending. The
+L3 provider #7712 actually merged as signed `fcf8f9e5960e` after protected Check
+`37171699318` and unchanged 104-by-three gates. Its native Stack #7714 keeps the
+provider as merged position 1. The consumer is replayed onto that literal main;
+new exact hosted module/map/runtime/browser/protected acceptance remains pending. The
 scriptless product [#7649](https://github.com/ubugeeei-prod/vize/pull/7649) already
 merged as `f5ff5b11e9be442490b42207de7befd451d26947`; its bounded acceptance and
 the twelve standalone captures remain separate, unchanged obligations.
@@ -139,7 +141,9 @@ Seventeen original SFC fixtures freeze independent complete native modules,
 full v3 maps and every original range/named link: JS const/let/var, TS annotations,
 unused declarations, Unicode/CRLF, import-shaped inert comments, every scalar
 kind, empty/null text, LF, an authored valid surrogate pair and U+FFFD. The
-original fourteen complete code/maps/primary graphs remain unchanged. Recorded/NoLinks equality is unconditional. Hosted
+sixteen other complete source/code/maps/links/primary graphs remain unchanged
+through the explicit safe-comment correction below. Recorded/NoLinks equality
+is unconditional. Hosted
 capture must originate from the real owning L1→L2→sole L3→L4 product; frozen
 expectation fallback cannot supply mandatory Actions capture credit.
 
@@ -191,3 +195,41 @@ paths remaining outside the boundary. The existing first-worker and empty-shard
 fallback still require all eight payloads; the original six remain unchanged.
 This CI closure changes no module/map expectation, runtime or production policy;
 fresh exact-head Actions and protected full/104-by-three proof remain required.
+
+## Actual Chromium comment boundary
+
+Exact consumer `30d34c3d` Check `37171739461` passed; eight actual payloads in
+artifact `11291119364` have authenticated ZIP digest
+`8ab419973686f3310322e176fae24d298ab9938e5a418b55913510dd1a5e39b7`.
+Synthetic checkout `7704a7d9` differs from source only in delivery documents;
+all production/test/fixture/action/manifest/lock bytes match. Read-only artifact
+custody audit passed. The subsequent real Chromium 153 development probe failed
+at the original seventeenth quoted module-comment fixture: native Comment.data
+retains `'vue'`, while actual stock retains `&#39;vue&#39;`. Sixteen completed
+fixture groups and raw failure/process/cleanup frames remain preserved; neither
+that partial browser result nor hosted happy-dom earns whole browser acceptance.
+
+Pinned actual compileScript controls prove stock comment escaping of `&`, `<`,
+`>`, double quotes and apostrophes. The inline setup target now refuses those
+five characters as `CommentNormalization` inside the existing root/part-writing
+loop, retaining the actual original Comment node and whole span with no output.
+The guard is specific to this genuine setup entry; no parser, pipeline stage,
+extra AST walk, reconstructed comment or generic target policy is introduced.
+The exact failed original quoted source remains an unconditional complete
+source/L3-admitted/L4-refused law in both Recorded and NoLinks modes, alongside
+root/nested controls for every proved character.
+
+The seventeenth accepted row is explicitly a safe inert-comment counterpart:
+`from vue` replaces `from 'vue'` inside the comment only. Its new complete code,
+map, links and primary graphs are authored independently; all sixteen other rows
+are exact. This is a changed supported input, not browser credit for the failed
+source or recapture of wrong output. Fresh original Rust capture, full dev/prod
+hosted runtime and real Chromium denominators must accept it before queue entry.
+The original twelve standalone and eleven scriptless modules/maps and all six
+existing capture contracts stay mandatory and unchanged.
+
+TODO on #6840: independently prove and repair broader standalone/scriptless
+comment entity semantics, including physical UTF-8 SSR hydration and cleanup.
+Their historical raw-comment byte contract is not universal stock equivalence;
+this bounded successor does not silently rewrite that earlier acceptance.
+Compiler #6880, default replacement and wider setup semantics remain unfinished.

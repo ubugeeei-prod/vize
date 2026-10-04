@@ -139,7 +139,7 @@ pub fn emit_selected_setup_component<L: LinkSink>(
                 body.push(")");
             }
         } else {
-            roots::static_roots(&mut prelude, &mut body, facts)?;
+            roots::static_roots::<L, true>(&mut prelude, &mut body, facts)?;
         }
     }
     roots::return_roots(&mut body, facts.roots().len());

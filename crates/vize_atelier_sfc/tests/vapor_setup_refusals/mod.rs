@@ -234,3 +234,62 @@ fn original_nested_whitespace_is_a_source_refusal_before_vapor() {
     assert!(!original.template().unwrap().file().unwrap().is_complete());
     assert!(core::ptr::eq(original.descriptor().source(), source));
 }
+
+#[test]
+fn complete_original_normalizing_comments_are_precise_setup_target_refusals() {
+    use vize_l3::decision::vapor::VaporPart;
+    let mut sources = Vec::new();
+    for content in ["a&b", "a<b", "a>b", "a\"b", "a'b"] {
+        for template in [
+            format!("<!--{content}-->"),
+            format!("<div><!--{content}--></div>"),
+        ] {
+            sources.push(format!(
+                "<script setup>const unused=1</script><template>{template}</template>"
+            ));
+        }
+    }
+    // Preserve the exact authentic fixture that failed in real Chromium.
+    sources.push("<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>".into());
+    for source in sources {
+        for source_map in [false, true] {
+            let arena = Allocator::default();
+            let compilation = compile_native_vapor_setup_sfc(
+                &arena,
+                &source,
+                NativeVaporSfcCompileOptions {
+                    source_map,
+                    ..Default::default()
+                },
+            );
+            let observation = compilation.observation();
+            assert!(core::ptr::eq(
+                observation.original().descriptor().source(),
+                source.as_str()
+            ));
+            assert_eq!(observation.original().issues(), [], "{source}");
+            let setup = observation.admitted().unwrap().setup();
+            assert!(setup.file().is_complete());
+            let analysis = build_native_selected_setup_vapor_decisions(setup).unwrap();
+            let facts = analysis.vapor().unwrap();
+            assert!(facts.unsupported().is_empty(), "genuine L3 admission");
+            let (node, span) = facts
+                .roots()
+                .iter()
+                .flat_map(|root| facts.parts(root).unwrap())
+                .find_map(|part| match part {
+                    VaporPart::Comment { node, comment } => Some((*node, comment.span)),
+                    _ => None,
+                })
+                .unwrap();
+            let Err(NativeVaporSetupSfcCompileError::Vapor(error)) = compilation.result() else {
+                panic!("normalizing original comment refuses all output: {source}")
+            };
+            assert_eq!(error.kind, VaporErrorKind::CommentNormalization);
+            assert_eq!(error.node, Some(node));
+            assert_eq!(error.span, span);
+            let original = source.get(span.start as usize..span.end as usize).unwrap();
+            assert!(original.starts_with("<!--") && original.ends_with("-->"));
+        }
+    }
+}

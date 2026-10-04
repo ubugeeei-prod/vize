@@ -93,8 +93,8 @@ const definitions = [
   {
     id: "module-comment",
     script: "const unused='import x';",
-    template: "<!--import { template as _template } from 'vue'-->",
-    html: "<!--import { template as _template } from 'vue'-->",
+    template: "<!--import { template as _template } from vue-->",
+    html: "<!--import { template as _template } from vue-->",
     staticAnchors: [[0, 0]],
   },
 ];
