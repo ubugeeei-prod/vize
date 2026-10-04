@@ -134,7 +134,7 @@ fn retained_reads_match_unicode_escaped_identifiers_and_closed_comments() {
 #[test]
 fn decoded_directive_content_has_matching_retained_bytes_and_reads() {
     with_template_expression(
-        r#"<div :data-x="greeting &amp;&amp; 測定(&quot;x&quot;)" />"#,
+        r#"<div :data-x="greeting &amp;&amp; 測定(&quot;x&quot;)"></div>"#,
         |node, _| {
             assert_eq!(node.content, "greeting && 測定(\"x\")");
             let retained = node.js_ast.as_ref().expect("decoded expression retained");
