@@ -1,12 +1,70 @@
 //! Actual link/mapping custody across persistent workspace edits.
 
-use std::{fs, path::Path};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 use super::{VirtualProject, copy_tree, fixture, load, mapping_rows};
+
+#[path = "pnpm_workspace_alias_filesystem.rs"]
+mod filesystem;
 
 fn begin_warm(project: &mut VirtualProject) {
     project.capture_materialized_package_links();
     project.discard_incremental_materialization();
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct DiskReceipt {
+    files: Vec<(PathBuf, Vec<u8>)>,
+    links: Vec<(PathBuf, PathBuf, PathBuf)>,
+}
+
+fn disk_receipt(project: &VirtualProject) -> DiskReceipt {
+    assert_eq!(
+        project.materialized_package_links,
+        project.desired_package_links()
+    );
+    let mut files = project
+        .expected_materialized_files()
+        .into_iter()
+        .map(|path| {
+            let bytes = fs::read(&path).unwrap();
+            (path, bytes)
+        })
+        .collect::<Vec<_>>();
+    let mut links = project
+        .materialized_package_links
+        .iter()
+        .map(|(path, target)| {
+            let raw = fs::read_link(path).unwrap();
+            let actual = path.canonicalize().unwrap();
+            assert_eq!(
+                actual,
+                target.canonicalize().unwrap(),
+                "actual package target {path:?}"
+            );
+            (path.clone(), raw, actual)
+        })
+        .collect::<Vec<_>>();
+    files.sort();
+    links.sort();
+    DiskReceipt { files, links }
+}
+
+fn assert_warm_matches_cold(project: &mut VirtualProject, root: &Path) {
+    // Capture physical bytes/links BEFORE a full materialize can repair them.
+    let warm = disk_receipt(project);
+    let noop = project.materialize_incremental_delta().unwrap();
+    assert!(noop.delta.is_empty());
+    assert_eq!(noop.considered, 0, "no claim/refcount dirtiness may leak");
+    assert_eq!(disk_receipt(project), warm);
+    let rows = mapping_rows(project);
+    let mut cold = load(root);
+    cold.capture_materialized_package_links();
+    assert_eq!(rows, mapping_rows(&cold));
+    assert_eq!(warm, disk_receipt(&cold));
 }
 
 fn refresh(project: &mut VirtualProject, changed: &Path) {
@@ -60,12 +118,7 @@ fn warm_source_edits_and_new_relative_files_match_full_cold_bytes_maps_and_links
     let patch = project.materialize_incremental_delta().unwrap();
     assert!(!patch.delta.is_empty());
     assert_alias_custody(&project);
-    let cold = load(&root);
-    assert_eq!(mapping_rows(&project), mapping_rows(&cold));
-    assert_eq!(
-        project.desired_package_links(),
-        cold.desired_package_links()
-    );
+    assert_warm_matches_cold(&mut project, &root);
     begin_warm(&mut project);
 
     let util = root.join("packages/c/src/util.ts");
@@ -84,12 +137,7 @@ fn warm_source_edits_and_new_relative_files_match_full_cold_bytes_maps_and_links
     project.finalize_package_routes().unwrap();
     project.materialize_incremental_delta().unwrap();
     assert_alias_custody(&project);
-    let cold = load(&root);
-    assert_eq!(mapping_rows(&project), mapping_rows(&cold));
-    assert_eq!(
-        project.desired_package_links(),
-        cold.desired_package_links()
-    );
+    assert_warm_matches_cold(&mut project, &root);
     assert!(project.registered_original_paths_sorted().contains(&value));
     for link in project.workspace_alias_links() {
         let value = link.virtual_dir.join("src/value.ts");
@@ -177,12 +225,7 @@ fn retargeted_real_link_and_shared_scope_drift_keep_unchanged_parent_owners_curr
             );
         }
     }
-    let cold = load(&root);
-    assert_eq!(mapping_rows(&project), mapping_rows(&cold));
-    assert_eq!(
-        project.desired_package_links(),
-        cold.desired_package_links()
-    );
+    assert_warm_matches_cold(&mut project, &root);
     begin_warm(&mut project);
 
     fs::remove_file(&link).unwrap();
@@ -199,12 +242,7 @@ fn retargeted_real_link_and_shared_scope_drift_keep_unchanged_parent_owners_curr
     project.materialize_incremental_delta().unwrap();
     assert_alias_custody(&project);
     assert_b_routes_to(&project, &root, &root.join("packages/c/package.json"));
-    let cold = load(&root);
-    assert_eq!(mapping_rows(&project), mapping_rows(&cold));
-    assert_eq!(
-        project.desired_package_links(),
-        cold.desired_package_links()
-    );
+    assert_warm_matches_cold(&mut project, &root);
     assert_eq!(fs::read_link(&link).unwrap(), Path::new("../../../c"));
 }
 

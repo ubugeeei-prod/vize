@@ -80,6 +80,7 @@ impl VirtualProject {
     pub(crate) fn materialize_incremental_delta(
         &mut self,
     ) -> CorsaResult<IncrementalMaterialization> {
+        self.validate_workspace_alias_targets()?;
         let mut candidates = std::mem::take(&mut self.incremental_materialized_candidates);
         let full_topology_rebuild = self.incremental_link_topology_dirty;
         let local_link_patch = (!full_topology_rebuild

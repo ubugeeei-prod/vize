@@ -55,7 +55,16 @@ when a source, selected link or shared scope changes. Each owner's pinned known
 physical manifests also retain their dependency bridges; bare dependencies need
 not be nested routes of its top-level binding. Conflicting internal alias targets
 fail explicitly, including editor snapshot unions, rather than selecting a path
-by ordering. This adds bounded existing topology metadata, with no source parse,
+by ordering. Both target and destination ancestry are checked before cold
+prune/runtime writes or incremental link/file mutation, including Windows
+junction detection. Root-first preparation may retire only an exact previously
+committed cache link whose observed target still matches that receipt, using the
+existing symlink-safe removal; unknown or retargeted links and non-directories
+remain declined. A new CLI process has no such prior link receipt, so migration
+of uncertain old cold-cache bridges is not claimed and remains an adoption
+review limitation. Preserved internal union aliases contribute only transient
+link-selection claims; a raw parent/descendant link overlapping an alias is
+rejected before mutation. This adds bounded existing topology metadata, with no source parse,
 resolver policy, pipeline stage or full-project source scan.
 
 The existing `package_routes.rs` remains at its grandfathered 357 lines.
@@ -72,7 +81,9 @@ Vue companions and installation links retain their existing ownership rules.
   shadow bytes, the nearest native package-directory walk and the complete ordered source/code/mapping/semantic-link rows
   across route replacement and reconciliation. Persistent source edits, new
   relative files and shared-to-divergent-to-shared real-link retargets compare
-  complete cold/warm bytes, maps and desired links. A synthetic secondary
+  complete cold/warm bytes, maps and committed links. Warm disk bytes and all
+  actual read-link/canonical targets are captured before any cold materialize
+  can repair them; a second no-op delta must consider zero candidates. A synthetic secondary
   dependency available only under the divergent package proves its physical
   dependency bridge remains present. Negative controls reject stale
   deleted-source and removed-root resurrection.
@@ -105,8 +116,10 @@ No CPU, startup, throughput or 10x result is claimed.
 Base is actual main `61c975f8889a002a1b53265d86d0985447ffab63`. The focused
 configured Vite+ formatter/type-aware lint reports zero warnings, and the
 six manifest controls pass. No local Cargo or native execution has been used.
-The source transport regression and actual CLI/native gates require exact-head
-Actions. PR Rust runs disable native fixtures, so their success alone cannot
+The successor is rebased onto actual main
+`688da7cc620af5a9aec82152b54d8052c64c52bc`, preserving its incoming production
+changes and decision text. The source transport regression and actual CLI/native
+gates require exact-head Actions. PR Rust runs disable native fixtures, so their success alone cannot
 establish the CLI claim; the existing manual full Check's Vue-parity lane is
 required before safety acceptance. The original failing
 baseline and historical successes are recorded below. Exact successor source,
@@ -196,7 +209,9 @@ nested copies. The required successor matrix is 38 actual CLI/native processes:
 all original 26, four shared-class root/pnpm one/two-server checks, four genuine
 divergent-package clean/error/error/repair checks, and four explicit
 `preserveSymlinks` root/pnpm checks. The pure transport suite must also compare
-full bytes/maps/links after persistent updates and reject editor-union alias
-identity conflicts. These controls are prepared, not yet runtime qualification.
+full bytes/maps/committed links after persistent updates, preserve unchanged raw
+sentinels for stale target/root-scope and retargeted links, retire only a known
+committed bridge, and reject editor-union exact/ancestor alias conflicts. A
+separate union retains aliases owned only by a prior snapshot. These controls are prepared, not yet runtime qualification.
 No old native success transfers to this successor; the draft/safety hold,
 unrelated Pinia limit and lack of any performance claim remain in force.

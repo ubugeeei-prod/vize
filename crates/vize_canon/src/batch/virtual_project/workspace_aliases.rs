@@ -114,10 +114,17 @@ impl VirtualProject {
         )]))
     }
 
-    pub(super) fn ensure_workspace_alias_targets(&self) -> CorsaResult<()> {
+    pub(super) fn validate_workspace_alias_targets(&self) -> CorsaResult<()> {
         let mut targets = FxHashMap::default();
         for topology in self.package_shadow_artifacts.values() {
             for (alias, target) in &topology.aliases {
+                if !self.authored_workspace_alias_target(target) {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        "Workspace package alias has no owned target manifest",
+                    )
+                    .into());
+                }
                 if targets
                     .insert(alias, target)
                     .is_some_and(|old| old != target)
@@ -130,6 +137,111 @@ impl VirtualProject {
                 }
             }
         }
+        let links = self
+            .workspace_alias_links()
+            .into_iter()
+            .map(|link| (link.virtual_dir, link.real_dir))
+            .collect();
+        self.validate_workspace_alias_links(&links)
+    }
+
+    pub(super) fn preserved_workspace_alias_claims(
+        &self,
+        links: &FxHashMap<PathBuf, PathBuf>,
+        files: &FxHashSet<PathBuf>,
+    ) -> CorsaResult<FxHashSet<PathBuf>> {
+        let mut claims = FxHashSet::default();
+        for (alias, target) in links {
+            if !target.starts_with(&self.virtual_root) {
+                continue;
+            }
+            if !files.contains(&target.join("package.json")) {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    "Preserved workspace alias has no owned manifest",
+                )
+                .into());
+            }
+            claims.insert(alias.join("package.json"));
+        }
+        Ok(claims)
+    }
+
+    pub(super) fn validate_workspace_alias_links(
+        &self,
+        links: &FxHashMap<PathBuf, PathBuf>,
+    ) -> CorsaResult<()> {
+        let mut checked = FxHashSet::default();
+        for (alias, target) in links {
+            if !target.starts_with(&self.virtual_root) {
+                continue;
+            }
+            if !alias.starts_with(&self.virtual_root)
+                || links.keys().any(|path| {
+                    path != alias
+                        && (alias.starts_with(path)
+                            || path.starts_with(alias)
+                            || target.starts_with(path))
+                })
+            {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    "Workspace package alias overlaps another package link",
+                )
+                .into());
+            }
+            checked.extend(
+                target
+                    .ancestors()
+                    .chain(alias.parent().into_iter().flat_map(Path::ancestors))
+                    .filter(|path| path.starts_with(&self.virtual_root))
+                    .map(Path::to_path_buf),
+            );
+        }
+        let mut directories = checked.into_iter().collect::<Vec<_>>();
+        directories.sort_by(|left, right| {
+            left.components()
+                .count()
+                .cmp(&right.components().count())
+                .then_with(|| left.cmp(right))
+        });
+        for path in directories {
+            match std::fs::symlink_metadata(&path) {
+                Ok(metadata)
+                    if metadata.file_type().is_symlink() || std::fs::read_link(&path).is_ok() =>
+                {
+                    // Retire only an exact previously committed cache link.
+                    // Root-first validation prevents unlinking through a raw parent.
+                    let target = std::fs::read_link(&path)?;
+                    let target = vize_carton::path::normalize_windows_verbatim_path(target);
+                    if path == self.virtual_root
+                        || self.materialized_package_links.get(&path) != Some(&target)
+                    {
+                        return Err(std::io::Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Workspace package alias requires owned directories",
+                        )
+                        .into());
+                    }
+                    crate::batch::materialize_fs::remove_path(&path)?;
+                }
+                Ok(metadata) if !metadata.is_dir() => {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        "Workspace package alias requires owned directories",
+                    )
+                    .into());
+                }
+                Ok(_) => {}
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(error.into()),
+            }
+        }
+        Ok(())
+    }
+
+    pub(super) fn ensure_workspace_alias_targets(&self) -> CorsaResult<()> {
+        self.validate_workspace_alias_targets()?;
         for link in self.workspace_alias_links() {
             // Windows decides symlink_dir/file from target existence. The
             // planned authored root must exist before the first link is made.
