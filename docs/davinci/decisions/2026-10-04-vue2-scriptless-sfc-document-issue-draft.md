@@ -108,3 +108,9 @@ rename and host-only Error branding. Restore runtimeCredit solely in authored
 projection and retain genuine VM name/message/stack via isNativeError; no fixed
 hash/fixture/helper/production/action/law expectation changes or new execution.
 Historical d3 supplies no acceptance; exact successor frozen review is required.
+
+Initial public head1e9 exact Check37196463177 rejects the unused Span import in
+whole build.rs at affected Rust Clippy; that Rust tier skips its tests. The tiny
+successor removes only the unused import. All fixed32/laws/CF/helpers/oracles/
+collector/actions/ceilings remain exact; fresh automatic Actions must qualify
+the new head, with no failed-source or prior partial execution transfer.

@@ -1,4 +1,4 @@
-use vize_l0::{Allocator, SourceFrameError, Span, Vec};
+use vize_l0::{Allocator, SourceFrameError, Vec};
 use vize_l1::container::{
     Vue,
     vue::{Vue2DescriptorObservation, Vue2TemplateView},

@@ -344,7 +344,7 @@ direct-hook workflow law adapts to the exact outer order/always/base/guard350.
 V1/V2 exports and23 canonical additions preserve all parent rows; full review
 confirms equivalent literal-parent replay; protected104/actual merge stay pending.
 
-The d3 source review rejects two Node mistakes: authored projection renamed its
-frozen runtimeCredit key, and host Error branding lost VM name/message/stack.
-The successor restores only that authored key and uses genuine cross-realm
-isNativeError, preserving fixtures/helper/production/wiring and zero execution.
+Historical d3 Node findings were corrected: original authored runtimeCredit key
+and genuine cross-realm isNativeError retain fixed references and real exceptions.
+Initial public1e9 actual Clippy rejects only unused Span in whole build.rs; the
+affected Rust tier skips tests. Remove only that import; fresh exact proof is required.
