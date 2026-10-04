@@ -111,6 +111,12 @@ Historical d3 supplies no acceptance; exact successor frozen review is required.
 
 Initial public head1e9 exact Check37196463177 rejects the unused Span import in
 whole build.rs at affected Rust Clippy; that Rust tier skips its tests. The tiny
-successor removes only the unused import. All fixed32/laws/CF/helpers/oracles/
-collector/actions/ceilings remain exact; fresh automatic Actions must qualify
+successor removes only the unused import. All fixed32/CF/helpers/oracles/
+collector/actions/ceilings and original law assertions remain preserved; fresh automatic Actions must qualify
 the new head, with no failed-source or prior partial execution transfer.
+
+The same initial head's actual tooling-four assertion-lint also rejects the
+lifecycle law's substring-derived refusal expectation. Pair the unchanged two
+authored bodies with literal expected false/true and compare directly. Every
+original custody/unwind/map/owner/full-print assertion remains; no allowlist,
+policy or independent expected-output waiver is introduced.

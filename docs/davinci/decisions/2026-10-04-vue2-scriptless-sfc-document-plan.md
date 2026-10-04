@@ -344,7 +344,7 @@ direct-hook workflow law adapts to the exact outer order/always/base/guard350.
 V1/V2 exports and23 canonical additions preserve all parent rows; full review
 confirms equivalent literal-parent replay; protected104/actual merge stay pending.
 
-Historical d3 Node findings were corrected: original authored runtimeCredit key
-and genuine cross-realm isNativeError retain fixed references and real exceptions.
-Initial public1e9 actual Clippy rejects only unused Span in whole build.rs; the
-affected Rust tier skips tests. Remove only that import; fresh exact proof is required.
+Historical d3 fixes retain authored runtimeCredit and genuine cross-realm errors.
+Initial public1e9 Clippy rejects unused Span; tooling assertion-lint rejects a
+substring-derived refusal expectation. Remove the import and pair unchanged
+bodies with authored false/true; no policy waiver, and fresh exact proof is required.

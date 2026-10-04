@@ -40,12 +40,15 @@ fn complete_whole_owner_drop_keeps_only_original_arena_ast_and_authored_mapping(
 
 #[test]
 fn complete_and_refused_whole_owner_unwind_preserve_real_source_and_next_observation() {
-    for body in ["<div>{{a&#43;1}}</div>", "<div>{{a&#43;1}}{{b+}}</div>"] {
+    for (body, expected_refused) in [
+        ("<div>{{a&#43;1}}</div>", false),
+        ("<div>{{a&#43;1}}{{b+}}</div>", true),
+    ] {
         let source = format!("<!--前--><template>{body}</template><!--尾-->");
         let arena = Allocator::default();
         let owner = observe_native_vue2_sfc_in(&arena, &source, NativeVue2SfcOptions::default());
         let refusal = owner.refusal();
-        assert_eq!(refusal.is_some(), body.contains("b+"));
+        assert_eq!(refusal.is_some(), expected_refused);
         let component = owner.descriptor().component().unwrap();
         let syntax = component.bindings()[0].chain().unwrap().base();
         let root = syntax.expression().unwrap();
