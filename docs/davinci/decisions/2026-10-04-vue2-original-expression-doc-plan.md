@@ -247,8 +247,17 @@ archive/lib-test compilation rejected a test's `.as_str()` call as unstable
 an explicit stable `&str` coercion, retaining its complete comparison and
 actual record-address proof. Production Rust remains unchanged from the
 reviewed source. No API law or new doctest executed on that rejected head;
-fresh corrected-head proof is required. Hosted source/full/protected
-acceptance and actual merge remain pending. Existing old worktrees are preserved. The
+Corrected head `2f5768edc8` actually passed all ten API laws, nine
+compile-fail examples and the positive doctest; all four source Rust shards
+passed 15,312 tests. Its final report failed because the two new test files
+were absent from the reviewed storage inventory. The source-authority law
+now uses two distinct live heap buffers from the approved L0 String owner,
+preserving equal bytes and every foreign-owner/root/pointer assertion.
+The reviewed test rows record custody alloc-Vec 1/4 and L0 String 2/0,
+and historical alloc-Vec 1/3; all other counts are zero. No production
+storage, scanner, policy, parser, map, historical fixture or instruction
+ceiling changes. This correction needs fresh exact-head execution;
+hosted source/full/protected acceptance and actual merge remain pending. Existing old worktrees are preserved. The
 Glyph consumer and shared expression adapter still require separate
 authorization; no such source edits are included. Reuse existing peers
 without new agent threads.

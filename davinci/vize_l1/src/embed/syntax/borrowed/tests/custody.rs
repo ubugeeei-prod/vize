@@ -215,8 +215,11 @@ fn original_owner_moves_before_borrow_and_short_reborrows_preserve_root_and_drop
 #[test]
 fn same_buffer_duplicate_and_equal_foreign_buffers_keep_distinct_original_authority() {
     let arena = Allocator::default();
-    let text = alloc::string::String::from("left + right");
-    let other_text = text.clone();
+    // Keep two distinct live heap buffers through the approved L0 storage owner.
+    let mut text = vize_l0::String::with_capacity(64);
+    text.push_str("left + right");
+    let mut other_text = vize_l0::String::with_capacity(64);
+    other_text.push_str("left + right");
     let first = syntax(&arena, &text, Shape::Expr);
     let duplicate = syntax(&arena, &text, Shape::Expr);
     let other = syntax(&arena, &other_text, Shape::Expr);
