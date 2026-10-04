@@ -188,3 +188,42 @@ relaxed. Independent source review, fresh exact-head Actions including both
 runtime processes, all required contexts, protected full suites/all104 unchanged
 measurements, and actual signed merge remain required. Publication is not yet
 authorized for this private freeze.
+
+## Original constant For DOM successor
+
+[The bounded SetupConst plan](./2026-10-04-original-for-constant-dom-proposal.md)
+starts privately from literal main da894 with signed actual #7744/9cd retained.
+The existing same-File setup binding, original collection/Params/read and current
+Enter/Leave facts suffice for tracking-enabled STABLE_FRAGMENT64 and a child
+vnode without a new owner, walk, table, frame or layout. Mutable Let/Var output
+and maps remain byte-exact at UNKEYED256; callback hygiene covers the newly used
+createElementVNode helper. Full original code/raw maps, real pinned dev/prod cold
+mount/unchanged-Const force-update/unmount and invalid-range controls require
+independent review and hosted exact-source/protected104 acceptance before merge.
+Native direct static vnodes claim no hoist/cache optimization. Attribute Stack
+#7752 shared cursor/SSR source stays separate; SSR/nested/keyed/conditional/array
+consumers, default replacement and compiler history remain unfinished. Private
+implementation is authorized; no new source/runtime/protected acceptance exists.
+
+The private constant successor now authors eight original-owner/mode/refusal/
+interruption laws and eleven complete JS/TS desired module/object/raw-map inputs:
+ten positives include nonempty empty-body carrier inputs and the old
+exact static negative, plus a separate fractional control. The independent model
+has zero native or primary executions. Existing rows/frames and three For files
+encode STABLE64/vnodes, preserving every mutable module/map/control and old6/10/7/5
+fixture/helper byte. The additive hosted recipe requires actual eleven-row Rust
+capture, full pinned primary script/render/module maps, real observed setup1/
+render2, normal force-update/host identity/unmount and exact dev/prod fractional
+warning/error/fallback custody; both raw processes are parked before either is
+judged. Pure routing/module/storage/inventory checks pass; no Rust/native/runtime,
+performance, publication, protected or merge credit follows. Actual source peer
+review and every unchanged full104 acceptance gate remain pending. The optional
+#7744 terminal paired-doc receipt is carried into this genuine source change,
+with its historical accepted scope preserved separately from the new constant work.
+
+[The paired constant-source freeze](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5977826843)
+records authored `e1d4d48e9d`, eight laws/eleven full independent desired modules,
+whole original map geometry and old fixture/helper conservation. Native/primary
+execution is zero; exact source peer/Actions/protected104/literal merge are
+pending and no PR or admission is authorized. This private source does not
+promote active attribute Stack #7752 or supersede its independent receipt.
