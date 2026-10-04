@@ -75,3 +75,14 @@ The mandatory native Node suite passes 8/8 with zero skips on the custom Vue
 createRenderer host. Independent review corroborates the complete artifact.
 This campaign failed only companion Markdown formatting, now corrected; fresh
 exact-head Actions, protected full/all100 and literal merge remain required.
+
+Actual delivery: #7672 merged as signed-valid b2801bd82c3d at
+2026-10-04T00:56:45Z, verified on fresh main. Protected Check 37165718664,
+Musea and Nuxt are SUCCESS; all four full workers passed 15,209 Rust tests,
+including all nine new custody laws, and both privacy docs passed. Current
+protected artifact 11289292004 proves all seven entire source/code/map fields
+match frozen fixtures and every actual native/primary runtime hash/outcome joins.
+All 100+4 complete positive instruction rows are identical across three runs,
+bound to this actual commit/run, with unchanged ceilings and ratchets. The
+original six payloads, precise remaining negative envelopes and smoke
+closure_evidence=false remain exact. This closes this provider delivery only.
