@@ -238,8 +238,8 @@ impl FormatOptions {
         // `oxc_formatter_core`, which `oxc_formatter` takes but does not
         // re-export.
         use oxc_formatter::{
-            ArrowParentheses, BracketSameLine, BracketSpacing, QuoteStyle, Semicolons,
-            TrailingCommas,
+            ArrowParentheses, BracketSameLine, BracketSpacing, QuoteProperties, QuoteStyle,
+            Semicolons, TrailingCommas,
         };
         use oxc_formatter_core::{IndentStyle, IndentWidth, LineEnding, LineWidth};
 
@@ -260,6 +260,11 @@ impl FormatOptions {
                 QuoteStyle::Single
             } else {
                 QuoteStyle::Double
+            },
+            quote_properties: match self.quote_props {
+                QuoteProps::AsNeeded => QuoteProperties::AsNeeded,
+                QuoteProps::Consistent => QuoteProperties::Consistent,
+                QuoteProps::Preserve => QuoteProperties::Preserve,
             },
             semicolons: if self.semi {
                 Semicolons::Always

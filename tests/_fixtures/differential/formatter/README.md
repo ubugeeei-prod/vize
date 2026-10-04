@@ -112,3 +112,13 @@ inputs, references, captures and history plans remain unchanged.
 The actual exported Node API tests Auto against the same mixed-raw input and
 original 170-byte reference above. The CLI config remains explicit CRLF, and
 the shared corpus has nine cases. No duplicate reference is recaptured.
+
+## Configured property quotes (#7753)
+
+A tenth case selects `quoteProps: "preserve"` for a TypeScript setup script.
+The independently authored complete reference retains optional quoted keys and
+unquoted keys exactly as the existing policy requires; surrounding formatting
+reaches a three-pass fixed point. Previous nine references/history captures,
+including the mixed raw separator and actual public Node proof, remain unchanged.
+Actual current-source Rust/CLI execution is required; derived references are not
+old-output observations or native acceptance credit.

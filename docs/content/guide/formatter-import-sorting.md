@@ -45,3 +45,5 @@ or `format_script_with_sort_imports` for the additive Rust API.
 
 [Configure line endings](./formatter-line-endings.md) with the same `endOfLine`
 modes across CLI, editor, Node and WASM formatting.
+
+[Configure property quotes](./formatter-property-quotes.md) for script object keys.

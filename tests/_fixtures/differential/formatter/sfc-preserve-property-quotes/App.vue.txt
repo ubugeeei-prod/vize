@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const value={"name":1,"needs-dash":2}
+const plain={"name":1,plain:2}
+</script>
+<template><p>{{value}}</p></template>

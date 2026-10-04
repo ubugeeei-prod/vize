@@ -1102,6 +1102,141 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/preserve-property-quotes",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-preserve-property-quotes",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "b44aa3d5101d184a168e5c7e3d5293c6076f71192ca1953cf39eb34c8a3f2f23",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "a5577753041195b1ad6569f011f4e8392ae84fd503ab78e2d50019ec0b19c799",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          7753,
+          6098
+        ],
+        "commits": [
+          {
+            "sha": "6987c523ecd2bee6e8489e2973e4b7499ce25018",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/options.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 7753,
+            "path": "crates/vize_glyph/tests/property_quotes.rs",
+            "symbol": "configured_property_quotes_preserve_complete_corpus_output_and_fixed_points"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/property_quotes.rs",
+          "symbol": "configured_property_quotes_preserve_complete_corpus_output_and_fixed_points",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "idempotence",
+            "FormatResult.changed",
+            "options-immutable"
+          ],
+          "limitations": [
+            "Actual current-source public Rust and CLI execution require Actions; no native provider acceptance credit."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "typescript",
+              "script-setup",
+              "html-template",
+              "preserve-property-quotes"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with explicit pinned JSON project config; branch Actions execution remains pending.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-preserve-property-quotes/reference.expected.txt",
+              "sha256": "48675077c80a617a3ba328a9fa1a13b069732c6a3683cba3282c75ec6ae254f8",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 7753,
+                "path": "crates/vize_glyph/tests/property_quotes.rs",
+                "symbol": "configured_property_quotes_preserve_complete_corpus_output_and_fixed_points",
+                "assertion": "independently authored complete SFC output retains optional authored property quotes; exact second/third bytes and changed=false"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-7753-contract-derived-property-quote-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {
