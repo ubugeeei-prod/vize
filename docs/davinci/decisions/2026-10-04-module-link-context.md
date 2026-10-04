@@ -251,6 +251,9 @@ inventory still has exactly the same two relevant assignments, now gated inside
 `apply_type_checker_config` and `set_workspace_root`. Real loader source_path
 reaches the checker helper as a Path, separately from its unchanged display log.
 No root/checker mirror, filesystem operation or source reparse was added.
+Move-only commits extract the unchanged diagnostic-worker constructor and
+ServerState Default implementation; the shutdown handler delegates its exact
+result to a small helper so both existing facades satisfy the source ratchet.
 
 Private `ModuleLinkContext` and its constructors remain crate-internal. The new
 module Session retains opaque identity/generation/phase/load origin. RAII covers
