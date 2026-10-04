@@ -189,7 +189,11 @@ for (const pnpm of [false, true]) {
       );
       fs.writeFileSync(
         path.join(root, "packages/b/src/index.ts"),
-        'import { makeThing } from "./x/make";\nimport { useThing } from "./y/use";\nuseThing(makeThing());\nexport * from "@x/c";\n',
+        'import { makeThing } from "./x/make";\nimport { useThing } from "./y/use";\nuseThing(makeThing());\nexport { makeThing };\nexport * from "@x/c";\n',
+      );
+      fs.writeFileSync(
+        path.join(root, sources[0]!),
+        'import { Thing } from "@x/c";\nimport { makeThing } from "@x/b";\nconst thing: Thing = makeThing();\nvoid thing;\nexport * from "@x/b";\n',
       );
       const expected = [...sources, "packages/b/src/x/make.ts", "packages/b/src/y/use.ts"].sort();
       for (const servers of [1, 2]) {

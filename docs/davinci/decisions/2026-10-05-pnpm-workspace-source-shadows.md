@@ -26,15 +26,19 @@ reconciliation wave and the one-key refresh both use this boundary. There is
 no new source parse, whole-project source scan, resolver policy, generated-byte
 transformation or source-map interpretation.
 
-Workspace package copies also retain every already-registered bare-package
-binding at its exact authored importer-relative directory. A nested real pnpm
+Workspace package copies also retain an already-registered bare-package
+binding at its selected real in-package installation scope. A nested real pnpm
 installation can otherwise outrank a hoisted sibling package shadow and lead
-native resolution out to raw `.vue` files. The new nested shadow uses the
-existing resolver's binding and package name; distinct importing directories
-keep their physical package identities. Non-workspace package copies and
-private `#` routes retain their existing handling. The ancestor manifest guard
-still bounds cycles. This adds materialized package topology, not a new parse
-or resolution stage, and does not change the original symlinks.
+native resolution out to raw `.vue` files. The existing resolver's
+`package_link_root` is rebased only when it lies inside the owner's physical
+root and ends with the selected `node_modules/<package-name>` entry. An
+external/shared root install retains its existing shared shadow scope; no
+deeper per-importer copies are invented. Importers that share one actual
+install therefore keep one module identity inside each package copy.
+Non-workspace package copies and private `#` routes retain their existing
+handling. The ancestor manifest guard still bounds cycles. This adds
+materialized package topology, not a new parse or resolution stage, and does
+not change the original symlinks.
 
 The existing `package_routes.rs` remains at its grandfathered 357 lines.
 New helpers and fixtures remain below 350 lines. Package shadows, manifests,
@@ -134,11 +138,20 @@ head reports have identical input hashes, raw links, program options,
 canonical virtual TS and native binary bytes to the failing baseline. PR
 source Check `37227109000` succeeds; the manual full Rust Test is still active.
 
-Safety acceptance remains held for one additional concrete module-identity
-control. Existing #4153 deliberately shares one physical package across source
-directories. The new importer-relative dependency copies may undo that
-invariant: a private-branded class made in `B/src/x` must remain assignable to
-the same package's class consumed in `B/src/y`. The separate root/pnpm variant
-retains the original Vue barrel and legitimate links and checks full ordered
-native reports with one and two servers. This new test does not claim a
-confirmed regression or broaden the accepted domain before Actions runs.
+Safety review added one concrete module-identity control: a private-branded
+class made in `B/src/x` must remain assignable to the same package's class
+consumed in `B/src/y`. Test-only source
+`a4acf51d81df3e61b3fcbced2b14cd4f0986e1e6`, full Check `37228684283`,
+confirms that the historical `f822` per-importer copies violate #4153. Both
+root/pnpm variants produce three false TS2345 diagnostics at the same authored
+`B/src/index.ts:3:10` because their private `brand` declarations have separate
+materialized module identities. Artifact `11312707356` retains the raw native
+reports. The final narrowed placement described above supersedes `f822`; its
+one/two-server class control and all original 26 executions must pass afresh.
+The class control also compares the instance exported through `B` with a
+direct `@x/c` import in `A`, covering physical identity across packages as well
+as source directories; this extension is pending actual native validation.
+The transport control also requires both importing source directories in each
+materialized package copy to resolve one exact module path. Old native success
+does not establish acceptance of this production successor; draft/safety hold
+and the unrelated Pinia scope limit remain in force.

@@ -166,6 +166,62 @@ fn real_workspace_links_keep_relative_sources_across_route_rebinding() {
 }
 
 #[test]
+fn one_real_install_keeps_one_materialized_module_identity_inside_each_package_copy() {
+    for pnpm in [false, true] {
+        let temp = fixture(pnpm);
+        let root = temp.path().canonicalize().unwrap();
+        for directory in ["x", "y"] {
+            fs::create_dir_all(root.join("packages/b/src").join(directory)).unwrap();
+            fs::write(
+                root.join("packages/b/src").join(directory).join("use.ts"),
+                "export * from '@x/c';\n",
+            )
+            .unwrap();
+        }
+        fs::write(
+            root.join(SOURCES[1]),
+            "export * from './x/use';\nexport * from './y/use';\n",
+        )
+        .unwrap();
+        let project = load(&root);
+        let mut scopes = std::collections::BTreeMap::<
+            _,
+            (std::collections::BTreeSet<_>, std::collections::BTreeSet<_>),
+        >::new();
+        for document in project.materialized_source_documents() {
+            if !["packages/b/src/x/use.ts", "packages/b/src/y/use.ts"]
+                .iter()
+                .any(|relative| document.source_path == root.join(relative))
+            {
+                continue;
+            }
+            let directory = document.materialized_path.parent().unwrap();
+            let target = directory
+                .ancestors()
+                .map(|dir| dir.join("node_modules/@x/c/src/index.ts"))
+                .find(|path| path.is_file())
+                .unwrap()
+                .canonicalize()
+                .unwrap();
+            assert!(target.starts_with(project.virtual_root()));
+            let owner = directory.parent().unwrap().parent().unwrap().to_path_buf();
+            let (sources, identities) = scopes.entry(owner).or_default();
+            sources.insert(document.source_path);
+            identities.insert(target);
+        }
+        assert!(!scopes.is_empty());
+        for (owner, (sources, identities)) in scopes {
+            assert_eq!(sources.len(), 2, "both importers must exist in {owner:?}");
+            assert_eq!(
+                identities.len(),
+                1,
+                "one install was split into multiple modules inside {owner:?}: {identities:?}",
+            );
+        }
+    }
+}
+
+#[test]
 fn rebound_topology_does_not_resurrect_deleted_sources_or_removed_package_roots() {
     let temp = fixture(true);
     let root = temp.path().canonicalize().unwrap();
