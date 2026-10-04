@@ -65,6 +65,10 @@ fn recovered_verbatim_boolean_and_missing_values_keep_exact_origin_failure() {
             NativeAttributeOperandError::RecoveredComponent,
         ),
         (
+            "<template><div title= ></div></template>",
+            NativeAttributeOperandError::RecoveredComponent,
+        ),
+        (
             "<template><div title='a&amp;</template>",
             NativeAttributeOperandError::RecoveredComponent,
         ),
@@ -75,6 +79,60 @@ fn recovered_verbatim_boolean_and_missing_values_keep_exact_origin_failure() {
             .attributes()
             .find(|a| a.surface().name.text == "title")
             .unwrap();
+        match source {
+            "<template><div title= /></template>" => {
+                // Slash is real unquoted data; the original Element is unclosed.
+                assert_eq!(
+                    attribute.surface().value.as_ref().unwrap().content.text,
+                    "/"
+                );
+                assert!(matches!(
+                    element.surface().close,
+                    crate::ElementClose::Missing
+                ));
+            }
+            "<template><div title= ></div></template>" => {
+                assert!(
+                    selected
+                        .component()
+                        .carrier()
+                        .errors
+                        .iter()
+                        .any(|error| { error.code == vize_l0::ErrorCode::MissingAttributeValue })
+                );
+                assert!(
+                    attribute
+                        .surface()
+                        .value
+                        .as_ref()
+                        .unwrap()
+                        .content
+                        .is_missing()
+                );
+                assert!(matches!(
+                    element.surface().close,
+                    crate::ElementClose::Present(_)
+                ));
+            }
+            "<template><div title='a&amp;</template>" => {
+                // The actual Descriptor retains the template; the Component
+                // reaches EOF inside the quote and keeps its original holes.
+                assert_eq!(selected.component().block().source(), "<div title='a&amp;");
+                assert!(element.surface().open.gt.is_missing());
+                assert!(
+                    attribute
+                        .surface()
+                        .value
+                        .as_ref()
+                        .unwrap()
+                        .close_quote
+                        .as_ref()
+                        .unwrap()
+                        .is_missing()
+                );
+            }
+            _ => {}
+        }
         let raw_value = attribute.surface().value.as_ref().map(|v| v.content.text);
         let ordinal = attribute.ordinal();
         let before = arena.allocated_bytes();

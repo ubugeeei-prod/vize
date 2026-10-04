@@ -24,7 +24,7 @@ use frame::Frame;
 /// ```compile_fail
 /// use vize_l1::{embed::EmbedSource, markup::NativeAttributeValue};
 /// fn fabricated(source: EmbedSource<'static>) -> NativeAttributeValue<'static> {
-///     NativeAttributeValue { source }
+///     NativeAttributeValue { origin: panic!(), frame: panic!(), source }
 /// }
 /// ```
 pub struct NativeAttributeValue<'a> {
