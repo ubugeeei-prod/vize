@@ -5,6 +5,9 @@ use crate::{PackageResolutionContext, PackageRoute, PackageRouteBinding};
 
 use super::{VirtualProject, unique_case_dir};
 
+#[path = "pnpm_workspace_routes.rs"]
+mod pnpm_workspace_routes;
+
 #[test]
 fn workspace_build_shadow_mirrors_source_dependency_tree() {
     let project_root = unique_case_dir("workspace-build-shadow-deps");
