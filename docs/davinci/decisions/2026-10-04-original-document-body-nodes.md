@@ -92,3 +92,26 @@ let-chain condition, without a lint exemption or changing original inputs,
 assertions, admission, storage or scalar rules. Its old instruction dispatch
 is superseded after this source edit; fresh exact-head native/browser/100+4
 proof is required before admission, then protected full/actual merge.
+
+## Test-only module correction
+
+Corrected source `f0275f8b90` passes production Clippy/build and actual Chromium
+body-node 16/all 265 browser tests. Its four Rust workers also run all seven
+new native laws once, with seven compile-fail controls and the public example
+in the builder. The same [source Check 37176794466](https://github.com/ubugeeei-prod/vize/actions/runs/37176794466)
+fails its unchanged tooling shard's 350-line source-file gate because the
+new node/tests.rs has 389 lines. The three custody laws move byte-for-byte
+into a private tests/custody.rs module; no production code, whole fixture,
+assertion or gate exemption changes. The unchanged storage scanner records
+only the two test rows: alloc Vec bound uses remain 3 and L0 String bound uses
+remain 19, with one explicit import of each storage type per module.
+Exact-source native/browser and genuine unchanged 100+4 proof must repeat
+after this test source edit; the successful prior measurement is historical.
+The paired [#6835](https://github.com/ubugeeei-prod/vize/issues/6835#issuecomment-5976593342)
+and [#6843](https://github.com/ubugeeei-prod/vize/issues/6843#issuecomment-5976593640)
+comments record the failure and require protected/actual
+delivery after the release hold ends.
+
+Local pure storage/dialect/module checks pass all eleven controls. The local
+source-length suite cannot spawn absent rust-script, so no local length-gate
+acceptance is claimed; the fresh hosted unchanged gate remains required.
