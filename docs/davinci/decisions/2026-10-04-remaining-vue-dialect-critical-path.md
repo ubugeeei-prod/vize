@@ -152,3 +152,39 @@ custody proposal before edits. This record will accompany the genuine successor
 source; no duplicate public PR or parallel implementation is opened from this
 audit. Reservation, frozen source review, publication and protected followthrough
 must be recorded against that real successor and its literal fresh-main base.
+
+## Genuine Vue 2 child/filter-chain source
+
+The authorized independent source is prepared in a new isolated `wt` from
+literal actual main `a6bc6a251852c76ec12a012f0368d22edaa3dac9`. Original495,
+Vue 2 provider c05e and list successor ffb7 are ancestors; the audited Vue 2
+source/laws/oracles remain unchanged across that intervening main advance.
+The prior clean Vue 2 worktrees and unrelated RootText preparation remain
+preserved. This source carries the corrected critical-path companion and
+central decision together; there is no separate public documentation PR.
+
+The same original interpolation callback saves only its authentic raw-content
+borrow in the existing TextBinding. New sealed children borrow the actual
+component/root or direct-parent slice and ordinal, propagating ancestor recovery
+during that same consumer visit. The existing monotonic binding-start vector
+provides an honest O(log n) binary search, followed by exact original physical
+content/open/close framing, complete root/block identity and authored spans.
+The view borrows the same admitted FilterChain/base/argument parser owners,
+keeping every map, diagnostic and local hole. No new lookup allocation,
+parse/decode/header/body/tree pass or modern carrier exists. Global lexical and
+encoded-delimiter boundaries, verbatim scopes, local argument/base holes and
+inherited recovery stay typed. Genuine authored-repair membership is inspectable
+and refused, without contaminating independently clean normal siblings.
+
+Nine native laws cover a complete nonzero-Unicode/source/filter packet, exact
+original CST/AST addresses, duplicate and foreign equal-byte occurrences,
+short reborrows and owner movement, real inherited/interactive recovery,
+modified versus exact v-pre, all UTF-8 prefixes and complete refusals. Six new
+compile-fail laws preserve private construction and owner/source/arena lifetime
+custody; the previous modern-conversion refusal remains. Existing whole pinned
+2.7.16 compiler/development/production closure is retained. These are prepared
+source laws; execution credit requires real current-head hosted Actions.
+Independent frozen source review precedes publication. Protected full suites,
+all applicable instruction/formatter caps and actual signed merge/main proof
+remain mandatory. Registry resolution, L2 meaning, native runtime emission,
+versioned selected SFCs, deferred grammar and full Vue 2 remain unfinished.

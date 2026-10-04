@@ -13,6 +13,9 @@ use crate::markup::{Component, LexOptions, Lexer, Sink};
 use crate::parse::{SurfaceError, construct};
 use crate::surface::SurfaceTree;
 
+mod body;
+pub use body::{TextChild, TextChildren, TextRefusal, TextView};
+
 /// An original Vue 2 owner. Captures and modern carriers cannot construct it.
 ///
 /// ```compile_fail
@@ -49,6 +52,7 @@ impl<'a> ComponentParse<'a> {
     pub fn errors(&self) -> &[SurfaceError] {
         &self.errors
     }
+    /// Original callback syntax; inspection alone confers no CST child custody.
     pub fn bindings(&self) -> &[TextBinding<'a>] {
         &self.bindings
     }

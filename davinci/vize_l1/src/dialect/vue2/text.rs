@@ -86,6 +86,7 @@ impl<'a> FilterChain<'a> {
 #[derive(Debug)]
 pub struct TextBinding<'a> {
     span: Span,
+    raw_content: &'a str,
     source: EmbedSource<'a>,
     chain: Option<FilterChain<'a>>,
     boundaries: Vec<TextBoundary>,
@@ -97,6 +98,20 @@ impl<'a> TextBinding<'a> {
     }
     pub const fn source(&self) -> EmbedSource<'a> {
         self.source
+    }
+    /// The original complete callback window before decoding or trimming.
+    pub const fn raw_content(&self) -> &'a str {
+        self.raw_content
+    }
+    pub(super) fn matches(&self, block: SourceBlock<'a>, raw: &str) -> bool {
+        core::ptr::eq(self.raw_content, raw)
+            && core::ptr::eq(self.source.authored_root(), block.root_source())
+            && block.span_of(raw).map(|content| {
+                Span::new(
+                    content.start.saturating_sub(2),
+                    (content.end + 2).min(block.end()),
+                )
+            }) == Some(self.span)
     }
     /// Retained pieces, including local language holes or a partial chain before
     /// a later typed boundary. Only `admitted()` confers complete-chain syntax.
@@ -129,6 +144,7 @@ pub(super) fn observe<'a>(
     let source = trim(allocator, prepared)?;
     let mut binding = TextBinding {
         span,
+        raw_content: content,
         source,
         chain: None,
         boundaries: Vec::new(),
