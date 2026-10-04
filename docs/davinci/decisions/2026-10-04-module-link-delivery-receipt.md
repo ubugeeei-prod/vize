@@ -11,11 +11,11 @@ Raw [Builder 111403449194](https://github.com/ubugeeei-prod/vize/actions/runs/37
 The four actual default Rust JUnit ZIPs were downloaded, matched to their Actions SHA-256 digests and checked for valid ZIP CRCs:
 
 | Shard | Artifact ID | Cases |
-| --- | --- | --- |
-| 1 | 11298604007 | 3,933 |
-| 2 | 11299456271 | 3,833 |
-| 3 | 11298613882 | 3,781 |
-| 4 | 11299182929 | 3,994 |
+| ----- | ----------- | ----- |
+| 1     | 11298604007 | 3,933 |
+| 2     | 11299456271 | 3,833 |
+| 3     | 11298613882 | 3,781 |
+| 4     | 11299182929 | 3,994 |
 
 Those archives contain 15,541 cases with zero failures, errors or skips. Separate existing Builder doctests include ignored cases; the archive count does not describe every test command. The large compiled-binary archive was not independently downloaded. The [public source audit](https://github.com/ubugeeei-prod/vize/pull/7771#issuecomment-5978243388) retains exact checkout and artifact provenance.
 
@@ -28,11 +28,11 @@ Raw [Builder 111403447455](https://github.com/ubugeeei-prod/vize/actions/runs/37
 The child independently authenticates its own four default Rust JUnit ZIPs by Actions SHA-256 and ZIP CRC, with the same 15,541 aggregate and zero failures, errors or skips:
 
 | Shard | Artifact ID | Cases |
-| --- | --- | --- |
-| 1 | 11298868354 | 3,933 |
-| 2 | 11299580961 | 3,833 |
-| 3 | 11299157895 | 3,781 |
-| 4 | 11298673788 | 3,994 |
+| ----- | ----------- | ----- |
+| 1     | 11298868354 | 3,933 |
+| 2     | 11299580961 | 3,833 |
+| 3     | 11299157895 | 3,781 |
+| 4     | 11298673788 | 3,994 |
 
 These are source archives, not transferred parent/predecessor results or compiled-binary execution proof. Source native CLI phase run [37191134795](https://github.com/ubugeeei-prod/vize/actions/runs/37191134795) has terminal SUCCESS metadata; its full raw campaign artifacts are not independently qualified here.
 
@@ -44,9 +44,9 @@ The [physical decision](./2026-10-04-module-link-target-observation.md) grants a
 
 Both native Stack layers actually merged at `2026-10-04T09:53:06Z`; each actual merge is the exact protected candidate with a valid GitHub signature:
 
-| PR | Actual signed merge / parent | Exact protected Check |
-| --- | --- | --- |
-| #7771 | [`50c944da`](https://github.com/ubugeeei-prod/vize/commit/50c944da9775380afc8c245c02a21765b076788b) / `caee` | [37192659119](https://github.com/ubugeeei-prod/vize/actions/runs/37192659119) SUCCESS |
+| PR    | Actual signed merge / parent                                                                                   | Exact protected Check                                                                 |
+| ----- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| #7771 | [`50c944da`](https://github.com/ubugeeei-prod/vize/commit/50c944da9775380afc8c245c02a21765b076788b) / `caee`   | [37192659119](https://github.com/ubugeeei-prod/vize/actions/runs/37192659119) SUCCESS |
 | #7782 | [`69cab7b3`](https://github.com/ubugeeei-prod/vize/commit/69cab7b3436139c1e4717da0c3aef4844d21141e) / `50c944` | [37192659855](https://github.com/ubugeeei-prod/vize/actions/runs/37192659855) SUCCESS |
 
 Each complete actual merge tree equals its frozen source tree above. Both exact candidate Musea/Nuxt runs also pass. Each Check has 39 terminal jobs: 24 success and 15 alternate-policy skips, with all four actual full Rust shards successful. Eight independently downloaded candidate JUnit ZIPs match their Actions SHA-256 and ZIP CRC: each candidate contains **15,559** cases (shards 3,938 / 3,839 / 3,786 / 3,996), zero failures/errors/skips in those archives. This is distinct from each source's 15,541-case archive receipt. Separate existing doctest ignores and undownloaded compiled binaries remain outside the archive claim.
