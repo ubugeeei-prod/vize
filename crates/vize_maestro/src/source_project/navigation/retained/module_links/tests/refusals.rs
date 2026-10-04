@@ -189,7 +189,7 @@ fn module_link_original_legacy_receipt_refuses_only_links_and_keeps_modern_contr
     ] {
         let source = vize_l0::cstr!("import '{request}';\nconst value={literal};value;");
         let documents = DocumentStore::new();
-        documents.open(uri(), source.to_string(), 1, "javascript".into());
+        documents.open(uri(), source.as_str().into(), 1, "javascript".into());
         let project = NativeNavigationProject::new(SourceQueryProject::new(&documents));
         let worker = worker(&project);
         assert_eq!(
@@ -219,7 +219,7 @@ fn module_link_original_legacy_receipt_refuses_only_links_and_keeps_modern_contr
         let source =
             vize_l0::cstr!("/*\\056 010*/import '\\x2e/child.ts';\nconst value={literal};value;");
         let documents = DocumentStore::new();
-        documents.open(uri(), source.to_string(), 1, "javascript".into());
+        documents.open(uri(), source.as_str().into(), 1, "javascript".into());
         let project = NativeNavigationProject::new(SourceQueryProject::new(&documents));
         let worker = worker(&project);
         let operands = block_on(worker.module_operands()).unwrap();
