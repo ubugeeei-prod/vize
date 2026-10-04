@@ -65,8 +65,6 @@ pub(in crate::source_project::navigation) fn run(
         },
     };
     serve::run(&query, receiver, &control);
-    // All borrowed queries end first, then selected Component, Descriptor, arena,
-    // original snapshot and finally the live-slot guard in the outer worker.
-    drop(selected);
-    drop(descriptor);
+    // Reverse lexical scope ends query/lines, selected Component, Descriptor,
+    // arena and original snapshot before the outer worker releases its live slot.
 }

@@ -87,3 +87,11 @@ formatting trait. The successor preserves the original navigation-only function
 visibility and compares all 32 SHA bytes directly. Native SourceProject/RPC,
 minimal and strict tails were unexecuted for that source; it was never queued.
 Fresh exact-source and protected acceptance is required without a waiver.
+
+Corrected c8be33e executes all123 SourceProject/all31 whole RPC laws with zero
+failures/ignores, including all17+8 new laws, and minimal feature compilation.
+Strict feature Clippy then refuses two explicit drops of non-Drop original
+owners. Reverse lexical scope already ends query/lines, selected Component,
+Descriptor, arena and snapshot before the outer live-slot release. Removing
+those calls preserves that custody and every law; a fresh fully accepted source
+is required, and this failed source remains unqueued.
