@@ -135,3 +135,9 @@ laws and privacy examples remain authored, not compiled or executed locally.
 Paired private decision: [#6839 comment5976393669](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5976393669);
 authored production/harness commit `4296329b3f` retains all remaining Actions
 and protected acceptance obligations. No PR or queue entry has been created.
+
+Read-only peer review corrected one authored-law premise before any Rust run:
+the pinned OXC identifier accessor unwraps original parentheses, while complete
+source `(item)` remains distinct. The unchanged normalization check therefore
+returns ForBody for that exact input. The law now pins that earlier typed reason;
+production, six full fixtures and old packs remain unchanged.

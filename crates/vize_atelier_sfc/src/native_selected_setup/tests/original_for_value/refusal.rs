@@ -13,7 +13,7 @@ fn only_current_value_singleton_admits_while_outer_literal_mixed_and_compound_bo
         ("{{item}}{{item}}", DomUnsupported::ForBody),
         ("{{item + 1}}", DomUnsupported::Expression),
         ("{{item.name}}", DomUnsupported::Expression),
-        ("{{(item)}}", DomUnsupported::Expression),
+        ("{{(item)}}", DomUnsupported::ForBody),
         ("<b>{{item}}</b>", DomUnsupported::ForBody),
     ] {
         let arena = Allocator::default();
