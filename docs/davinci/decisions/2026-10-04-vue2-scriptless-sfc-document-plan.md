@@ -1,6 +1,6 @@
 # Original Vue 2 scriptless SFC document: private source preparation
 
-Independent source preparation for #6842/#6882, initially audited on literal
+Independent source preparation paired with [#6842](https://github.com/ubugeeei-prod/vize/issues/6842#issuecomment-5979139120)/[#6882](https://github.com/ubugeeei-prod/vize/issues/6882#issuecomment-5979139276), initially audited on literal
 `671f2a754e8067d729d3085f9f0bad2be90b2f82` and prepared on actual
 `912d311cc378db3506eb7ce78a6f51b0a37f91ff`. Root and retained peer clear
 complete design ca5 and final genuine-parent source `f3d962a55fd908a7a880c2a323611a35e019d5c1`.

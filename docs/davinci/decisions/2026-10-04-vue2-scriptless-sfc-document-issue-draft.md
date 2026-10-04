@@ -1,6 +1,6 @@
 # Original Vue 2 whole scriptless SFC document: paired private decision
 
-Paired source decision for #6842/#6882. Initial671f audit and actual912d private
+Published paired source decision [#6842](https://github.com/ubugeeei-prod/vize/issues/6842#issuecomment-5979139120)/[#6882](https://github.com/ubugeeei-prod/vize/issues/6882#issuecomment-5979139276). Initial671f audit and actual912d private
 preparation retain their source qualifiers. Root/peer clear ca5 design and final
 f3d9 whole source; genuine #7777 actually merged as signed-valid
 `bcf3e024bde363a4d9e3cc2e7745af771cd5b51f` at 2026-10-04T10:27:55Z.
