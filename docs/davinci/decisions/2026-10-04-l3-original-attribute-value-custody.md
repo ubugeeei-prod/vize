@@ -71,3 +71,13 @@ are unfinished. Publication must use a real native Stack, exact-head Actions and
 protected complete suites plus unchanged 100+4 instruction ceilings and actual
 merge. No local Cargo/build/install, extra parse/decoder/header/AST/Op pass, new
 pipeline stage, serialization, legacy dependency or budget exception is added.
+
+The draft publication replay uses literal c34 main through the genuine current
+L2 parent e2f924b2. All twenty-five reviewed L3 source/law files remain byte-exact
+to frozen4e78, including scoped SSR and independent actual setup contexts. Only
+central-document conflicts were resolved by retaining the actual parent L1/L2
+foundation and the true child L3 decisions. Incoming ModuleFile/borrowed syntax,
+Document, SSR/Vapor/For providers and all old packs remain intact. Ten source
+laws still need actual hosted execution, and the reviewed new-file-only
+original14 qualification child still needs full real modules/maps/fixed mounts.
+No new queue admission is made during the release flight.
