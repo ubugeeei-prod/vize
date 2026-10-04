@@ -1,0 +1,79 @@
+name: Historical SFC Parse Replay
+
+on:
+  workflow_call:
+    inputs:
+      base_sha: { required: true, type: string }
+      head_sha: { required: true, type: string }
+      repetition: { required: true, type: number }
+      conflicting_modes: { required: true, type: boolean }
+
+jobs:
+  replay:
+    name: sfc-parse-replay (${{ inputs.repetition }})
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    permissions:
+      contents: read
+    env:
+      CARGO_TERM_COLOR: never
+      CARGO_INCREMENTAL: "0"
+      RUSTUP_TOOLCHAIN: "1.98.0"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      REPLAY_BASE_SHA: ${{ inputs.base_sha }}
+      REPLAY_HEAD_SHA: ${{ inputs.head_sha }}
+      REPLAY_CONFLICTING_MODES: ${{ inputs.conflicting_modes }}
+    steps:
+      - name: Checkout trusted replay driver
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.sha }}
+          path: harness
+          persist-credentials: false
+      - name: Validate frozen historical pair before checkout
+        working-directory: harness
+        run: |
+          node --input-type=module -e '
+            import { validateRevisionInputs } from "./tools/benchmarks/scripts/sfc-parse-replay-contract.mjs";
+            validateRevisionInputs({ base: process.env.REPLAY_BASE_SHA, head: process.env.REPLAY_HEAD_SHA, conflictingModes: process.env.REPLAY_CONFLICTING_MODES !== "false" });
+          '
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - name: Checkout historical base
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.base_sha }}
+          path: base
+          persist-credentials: false
+      - name: Checkout historical head
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.head_sha }}
+          path: head
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: harness/package.json
+          run-install: false
+      - name: Verify recipe guards
+        working-directory: harness
+        run: node --test tests/tooling/sfc-parse-replay.test.ts
+      - name: Build both binaries then measure adjacent pairs
+        run: |
+          node harness/tools/benchmarks/scripts/sfc-parse-replay.mjs \
+            "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/head" \
+            "$GITHUB_WORKSPACE/sfc-parse-replay" "${{ inputs.repetition }}"
+      - name: Upload every sample and provenance, including failed attempts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sfc-parse-replay-${{ inputs.repetition }}
+          path: sfc-parse-replay/
+          if-no-files-found: warn
+          retention-days: 30
