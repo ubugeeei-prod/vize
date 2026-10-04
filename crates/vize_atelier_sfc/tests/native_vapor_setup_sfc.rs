@@ -173,7 +173,6 @@ fn complete_original_control_and_handler_files_remain_vapor_target_refusals() {
             VaporUnsupported::NestedInterpolation,
         ),
         ("<search/>", VaporUnsupported::ElementSemantics),
-        ("<div>a  b</div>", VaporUnsupported::TextNormalization),
     ] {
         let source = format!("<script setup>let count=1</script><template>{template}</template>");
         let arena = Allocator::default();
@@ -318,4 +317,29 @@ fn real_fragment_lifecycle_collisions_and_runtime_version_refuse_complete_source
         error.kind,
         VaporErrorKind::Assembly(AssemblyError::UnsupportedRuntimeVersion)
     );
+}
+
+#[test]
+fn original_nested_whitespace_is_a_source_refusal_before_vapor() {
+    use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind;
+    use vize_l2::lang::js::NativeTemplateIssueKind;
+    let arena = Allocator::default();
+    let source = "<script setup>let count=1</script><template><div>a  b</div></template>";
+    let compilation = compile_native_vapor_setup_sfc(&arena, source, Default::default());
+    assert!(matches!(
+        compilation.result(),
+        Err(NativeVaporSetupSfcCompileError::Source(_))
+    ));
+    assert!(compilation.observation().admitted().is_none());
+    let original = compilation.observation().original();
+    let [issue] = original.issues() else {
+        panic!("exact original child refusal")
+    };
+    assert!(
+        matches!(issue.kind, NativeSelectedSfcIssueKind::Template(child)
+        if child.kind == NativeTemplateIssueKind::UnsupportedChild)
+    );
+    assert_eq!(issue.span, vize_l0::Span::new(44, 59));
+    assert!(!original.template().unwrap().file().unwrap().is_complete());
+    assert!(core::ptr::eq(original.descriptor().source(), source));
 }

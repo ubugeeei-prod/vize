@@ -171,7 +171,15 @@ Pinned authority:
 [component setup](https://github.com/vuejs/core/blob/v3.6.0-rc.9/packages/runtime-vapor/src/component.ts),
 [renderEffect](https://github.com/vuejs/core/blob/v3.6.0-rc.9/packages/runtime-vapor/src/renderEffect.ts).
 
-Initial child source `17a70c27` / Check `37170729387` failed only the inherited
+Initial child source `17a70c27` / Check `37170729387` first exposed inherited
 Markdown table formatting and the new public export's normal Rust ordering/wrap.
 Both raw jobs are retained; formatting is corrected without changing any native
 module/map expectation or target/runtime semantics. Fresh exact proof is pending.
+
+The first actual Rust capture in failed `17a`/Check `37170729387` matches all
+seventeen independently pinned complete modules/maps (no expectation recapture),
+but a negative law incorrectly treats `<div>a  b</div>` as completed target text.
+The real lower body instead refuses it as `UnsupportedChild`, retaining an
+incomplete File and exact whole-source span. The unchanged original input now has
+its own precise Source law; Identifier For/handler/nested target controls remain.
+Failed partial capture grants no runtime or acceptance credit. Fresh proof is required.
