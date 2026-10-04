@@ -58,3 +58,8 @@ whole component output, runtime acceptance, update/expose/reactivity or stock
 hoisting equality is claimed by this provider. The actual same-Writer inline Block
 L4/product and seventeen complete native output/map/runtime captures belong to
 its genuine dependent consumer. Compiler #6880 and default replacement stay open.
+
+Initial source `7d6deb1b` / Check `37170712785` failed the unchanged JavaScript
+formatting gate solely on the inherited protected-evidence Markdown table. Its
+raw job is retained; normal table alignment is corrected without semantic or
+measurement changes. Fresh exact-head acceptance remains required.

@@ -127,12 +127,12 @@ independent PR entered candidate `db719dc18a09` / Check `37168519585` after
 clean actual-main and healthy-tail unions. Its native 100 measurements and
 ratchets held, but the four formatter ceilings failed:
 
-| Formatter | Actual | Fixed ceiling |
-| --- | ---: | ---: |
-| simple SFC | 293896 | 293575 |
-| reused SFC | 275027 | 274723 |
-| large script | 929114 | 929044 |
-| complex template | 244583 | 244347 |
+| Formatter        | Actual | Fixed ceiling |
+| ---------------- | -----: | ------------: |
+| simple SFC       | 293896 |        293575 |
+| reused SFC       | 275027 |        274723 |
+| large script     | 929114 |        929044 |
+| complex template | 244583 |        244347 |
 
 The owned PR was promptly drafted and dequeued, including the raced fresh
 `b2bb7ed7` admission; its then-current queue and auto-merge were confirmed null. The failed raw job is retained
