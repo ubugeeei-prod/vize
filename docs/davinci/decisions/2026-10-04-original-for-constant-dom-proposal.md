@@ -309,7 +309,7 @@ Rust whole eleven plus preserved button equality/all four source workers pass,
 and development twelve actual native/primary runtimes pass. Production twelve
 real primary results survive, but its full render comparison stops before native:
 the pinned compiler omits development-only TEXT/STABLE_FRAGMENT flag comments.
-[Original 3.5.35 codegen](https://github.com/vuejs/core/blob/v3.5.35/packages/compiler-core/src/codegen.ts#L795-L813)
+[Original 3.5.35 codegen](https://github.com/vuejs/core/blob/v3.5.35/packages/compiler-core/src/codegen.ts#L831-L850)
 guards those comments with `__DEV__`, while its original NODE_ENV entry selects
 production decimal spelling; the official entry equals the installed package.
 Only those two known expected-primary tokens project away in production, with
