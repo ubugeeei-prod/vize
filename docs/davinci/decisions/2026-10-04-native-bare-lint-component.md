@@ -43,3 +43,5 @@ processes and in-process repeats. The other 36 shared coordinates remain
 precisely unsupported. This provider grants no history credit and changes no
 fixture, legacy output, default route, SDK group/ID or instruction ceiling.
 #6848, #6881 and the default product switch remain unfinished.
+
+The [genuine modified-pre assertion repair](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5974813617) retains failed source `dee808be` and Check `37163191179` / Rust2 `111321441296`: one new law incorrectly unwrapped the inherited textarea receipt under the unchanged `v-pre.camel` input. The authentic provider, and the passing existing selected-owner law, refuse every affected kind with `AmbiguousVerbatim`. Correct only that child assertion, preserving the same source, original Text/verbatim/render checks, all eight functions, production/old laws/default/ceilings. Failed source stayed unqueued; fresh exact-head and protected full/100x3/literal merge proof remain required.

@@ -120,8 +120,10 @@ mod native_lint_component {
             Some(NativeLintTagRefusal::AmbiguousVerbatim)
         );
         let child = parent.children().next().unwrap().into_element().unwrap();
-        let receipt = child.lint_tag().unwrap();
-        assert!(receipt.header_is_literal());
+        assert_eq!(
+            child.lint_tag().err(),
+            Some(NativeLintTagRefusal::AmbiguousVerbatim)
+        );
         assert!(child.surface().open.is_verbatim());
         assert!(matches!(
             child.children().next().unwrap().surface(),
