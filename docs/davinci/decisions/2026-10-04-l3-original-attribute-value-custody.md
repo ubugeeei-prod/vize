@@ -97,3 +97,12 @@ ordinary None positive remain. Raw cd6 E0277 logs stay preserved. The true
 L2 successor also retains inherited borrowed authored CR/CRLF and the old nine
 SSR modules, while genuine map-bearing decoded `&#13;` remains refused.
 These precise source/law corrections still need fresh hosted proof.
+
+Actual main b9be retains the separately merged original For value-alias9cd laws.
+Their six private DomBuilder Enter calls still use the previous three-argument
+signature, so current b3fc/30f2 source builds fail E0061 before worker execution.
+The genuine actual-main replay supplies only generic `&mut None` to those
+attribute-free counterfactuals. Original For source/aliases/scopes/callbacks and
+all existing whole-output packs are preserved; no original-value row authority,
+production policy or runtime acceptance is created by this test compatibility
+repair. Failed raw builds remain historical and fresh exact-source proof is required.
