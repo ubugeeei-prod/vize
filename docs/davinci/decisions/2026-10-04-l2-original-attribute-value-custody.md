@@ -47,8 +47,8 @@ alone grants no fresh-mount, maps or pinned target acceptance. The historical
 rc.9 client is wrong in nine fresh mounts despite successful SSR/hydration.
 Whole native module/raw-map and fixed once-decoded fresh mount/clone attributes
 are mandatory, separate from SSR/hydration and wrong primary byte equality.
-Current generic target-name allowlists and class/entity-text/directive/NUL/CR
-boundaries remain. No new target eligibility is inferred from source preparation.
+Current generic target-name allowlists and class/entity-text/directive/NUL/entity-decoded-CR
+boundaries remain; inherited authored raw CR/CRLF values keep their borrowed bytes. No new target eligibility is inferred from source preparation.
 
 The next genuine L3 consumer must use a monotonic cursor over these same normally
 owned rows alongside its existing sole actual Element Enter attribute loop. Each
@@ -58,7 +58,7 @@ None values remain their separate original policy. Only normal sole-walk finish
 with every row consumed can seal analysis. This proposed consumption has no new
 indexed table or second header/Op walk; it is not implemented by this provider.
 
-Twelve new independent source laws cover all fourteen inputs, complete Unicode/entity
+Thirteen new independent source laws cover all fourteen inputs, complete Unicode/entity
 maps, nonzero origin, empty/unknown/bare values, growth and movement, sibling and
 foreign allocation refusals, actual For/handler scope and pointer preservation,
 late policy/header/body refusals, complete preparation failure, duplicate root
@@ -121,3 +121,15 @@ source inventories and the storage policy are checked against this real union.
 The genuine L3 and full-output qualification children remain required, with
 source Actions and actual capture/freeze still pending. New queue admission
 remains held during the verified release flight.
+
+Actual first sourcee2 Actions exposed a mistaken blanket CR refusal: the
+unchanged original nine-SSR line-endings source already admits authored raw
+CR/CRLF. The existing L1 preparation retains those borrowed bytes unchanged.
+The corrected same-event policy still refuses NUL and CR when the genuine
+whole EmbedSource has a decode map, preserving the original `&#13;` negative;
+it accepts inherited raw CR/CRLF without a scanner, decoder or policy factory.
+A thirteenth law retains that exact original root/nested source, borrowed map
+absence and actual File/Element/slot joins. All nine whole modules/maps stay
+byte-identical. The neutral equal-attribute law also uses the actual allocator
+trait's `&&arena` at its three Vec constructors. Raw e2 compile/SSR failures
+remain preserved; source review grants no executed law or capture acceptance.

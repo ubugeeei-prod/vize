@@ -75,7 +75,10 @@ where
                 }
                 if name.is_empty()
                     || matches!(name, "class" | "style" | "key" | "ref" | "is")
-                    || source.text().bytes().any(|byte| matches!(byte, 0 | b'\r'))
+                    || source
+                        .text()
+                        .bytes()
+                        .any(|byte| byte == 0 || (byte == b'\r' && source.decode_map().is_some()))
                 {
                     return Err(Kind::UnsupportedChild);
                 }

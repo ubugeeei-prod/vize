@@ -171,7 +171,7 @@ fn equal_source_files_sibling_slots_and_neutral_elements_cannot_borrow_value_aut
                 .is_none(),
         )?;
     }
-    let mut attributes = vize_l0::Vec::new_in(&arena);
+    let mut attributes = vize_l0::Vec::new_in(&&arena);
     for attribute in &actual.attributes {
         attributes.push(crate::op::Attribute {
             name: attribute.name,
@@ -184,9 +184,9 @@ fn equal_source_files_sibling_slots_and_neutral_elements_cannot_borrow_value_aut
         namespace: actual.namespace,
         span: actual.span,
         attributes,
-        bindings: vize_l0::Vec::new_in(&arena),
+        bindings: vize_l0::Vec::new_in(&&arena),
         children: crate::op::Region {
-            ops: vize_l0::Vec::new_in(&arena),
+            ops: vize_l0::Vec::new_in(&&arena),
         },
     };
     same(neutral.attributes[0].span, actual.attributes[0].span)?;

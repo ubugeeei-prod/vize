@@ -57,7 +57,7 @@ grant no native Rust execution or target output credit. A future genuine target
 consumer requires complete original modules/maps and real fresh mount/clone
 attribute assertions separately from SSR/hydration; it cannot bless wrong rc.9
 compiler code. Existing generic-name allowlists, special class/entity-text and
-NUL/CR refusals remain unchanged. The open compiler fix-history gate stays open.
+NUL and entity-decoded CR refusals remain; inherited authored raw CR/CRLF retains its borrowed bytes, as the unchanged original SSR pack requires. The open compiler fix-history gate stays open.
 
 Independent root source review clears one preparation, private original custody,
 complete frame/source/map retention and neutral semantics. Peer negative/source
