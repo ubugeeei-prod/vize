@@ -84,7 +84,12 @@ test("replay rejects malformed actual callers, metric bodies and wire law before
         /unexpected|retired/u,
       );
   }
-  for (const file of [exportFile, hashes.assembly[0], exportTests, "davinci/vize_l0/src/profiler/snapshot.rs"])
+  for (const file of [
+    exportFile,
+    hashes.assembly[0],
+    exportTests,
+    "davinci/vize_l0/src/profiler/snapshot.rs",
+  ])
     assert.throws(
       () => prepare((path) => read(path) + (path === file ? "\nfn unexpected() {}" : "")),
       /unexpected/u,

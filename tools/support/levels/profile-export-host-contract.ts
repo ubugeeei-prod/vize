@@ -160,7 +160,10 @@ export const hashes = {
       "338ff8f6ddd6fe54ff6610c47c7d97eec0c223642b5dbdedccca8b9f153f4ffb",
     ],
   ],
-  assembly: ["crates/vize_carton/src/profile_export/assemble.rs", "9f9c430af4303fe7fc5dabf12d1a2f7ec9c2794bab3541e64b3d5fe7d8c780ab"],
+  assembly: [
+    "crates/vize_carton/src/profile_export/assemble.rs",
+    "9f9c430af4303fe7fc5dabf12d1a2f7ec9c2794bab3541e64b3d5fe7d8c780ab",
+  ],
   tests: [
     "a9d51cf548f238050ba4c8a59f107b00ffcc088b446152966a5381baa1c2ac25",
     [

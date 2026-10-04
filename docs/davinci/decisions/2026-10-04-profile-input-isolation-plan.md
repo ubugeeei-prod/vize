@@ -9,15 +9,15 @@ This private plan supplies no execution, race-reproduction or new merge proof.
 
 ## Actual remaining platform boundaries
 
-| Boundary | Actual source and caller | Remaining scope |
-| --- | --- | --- |
-| Clock | `profiler/core.rs` stores native `Instant` in `Timer` and nested `ProfileFrame`; native `TimingObserver` uses the same global gate and Timer. | Native timer and guard clock ownership remains host coupled. Accepted `WalkTiming<Mark>` itself reads no clock. |
-| Profiler TLS | `PROFILE_STACK`, allocation suppression depth and monotone thread allocation counters live in L0. | Nested guard bookkeeping and real allocator hooks remain thread local. |
-| Profiler locks/global state | Three arrays of 32 `RwLock<FxHashMap<...>>`, relaxed global enable flags, and the lazy global profiler live in L0. | Host sessions own actual native aggregation and measurement. |
-| Arena TLS | `pool.rs` keeps each worker’s idle arenas and checkout counter. | Preserve reset/drop/generation and thread-teardown fallback; do not replace this pool with a lock or unmeasured mirror. |
-| Recursion/platform | `ensure_sufficient_stack` directly calls the pinned `stacker::maybe_grow`; native and legacy recursive callers depend on it. | Stack growth and deep-recursion acceptance need a separate host policy review. |
-| IO/path | `source_io::decode_utf8` is borrowed validation; native `read_to_string` reads the filesystem; path canonicalization calls the OS and retains Windows normalization. | Pure decoding already exists. Filesystem and canonicalization adapters remain explicit host work. |
-| std/type dependencies | Allocator parking uses owned boxes/vectors; generation/cache use atomics; reports and metrics name std aliases; dependencies still include stacker and serde. | Empty default features are not no_std. Alias changes alone would not establish isolation. |
+| Boundary                    | Actual source and caller                                                                                                                                             | Remaining scope                                                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Clock                       | `profiler/core.rs` stores native `Instant` in `Timer` and nested `ProfileFrame`; native `TimingObserver` uses the same global gate and Timer.                        | Native timer and guard clock ownership remains host coupled. Accepted `WalkTiming<Mark>` itself reads no clock.         |
+| Profiler TLS                | `PROFILE_STACK`, allocation suppression depth and monotone thread allocation counters live in L0.                                                                    | Nested guard bookkeeping and real allocator hooks remain thread local.                                                  |
+| Profiler locks/global state | Three arrays of 32 `RwLock<FxHashMap<...>>`, relaxed global enable flags, and the lazy global profiler live in L0.                                                   | Host sessions own actual native aggregation and measurement.                                                            |
+| Arena TLS                   | `pool.rs` keeps each worker’s idle arenas and checkout counter.                                                                                                      | Preserve reset/drop/generation and thread-teardown fallback; do not replace this pool with a lock or unmeasured mirror. |
+| Recursion/platform          | `ensure_sufficient_stack` directly calls the pinned `stacker::maybe_grow`; native and legacy recursive callers depend on it.                                         | Stack growth and deep-recursion acceptance need a separate host policy review.                                          |
+| IO/path                     | `source_io::decode_utf8` is borrowed validation; native `read_to_string` reads the filesystem; path canonicalization calls the OS and retains Windows normalization. | Pure decoding already exists. Filesystem and canonicalization adapters remain explicit host work.                       |
+| std/type dependencies       | Allocator parking uses owned boxes/vectors; generation/cache use atomics; reports and metrics name std aliases; dependencies still include stacker and serde.        | Empty default features are not no_std. Alias changes alone would not establish isolation.                               |
 
 The browser build is `wasm32-unknown-unknown`. The existing scheduled/manual
 stage-library lane builds `wasm32-wasip2`, including no-default-features.
