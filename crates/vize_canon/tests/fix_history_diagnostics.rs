@@ -167,6 +167,17 @@ fn v_for_source_callbacks_preserve_complete_original_diagnostics() {
     );
 }
 
+#[test]
+fn declared_prop_names_preserve_complete_original_diagnostics() {
+    check_pack(
+        "declared-prop-names-original",
+        "declared_prop_names_preserve_complete_original_diagnostics",
+        "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
+        Some(3863),
+        &["complete-original-declared-prop-names"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -194,7 +205,8 @@ fn check_pack(
             | "options-api-any-instance"
             | "authored-unused-symbols"
             | "split-script-original"
-            | "v-for-source-original" => regression,
+            | "v-for-source-original"
+            | "declared-prop-names-original" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

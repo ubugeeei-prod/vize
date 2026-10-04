@@ -1118,6 +1118,53 @@
           "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
         }
       ]
+    },
+    {
+      "id": "typechecker/declared-prop-names-original/complete-original-declared-prop-names",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "declared-prop-names-original",
+      "case": "complete-original-declared-prop-names",
+      "test": "declared_prop_names_preserve_complete_original_diagnostics",
+      "regressionCommit": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
+      "sourceRevision": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
+      "packReference": {
+        "path": "declared-prop-names-original/cases.json",
+        "sha256": "bf23455900630ea4c68b0ea7f449cc8f8860310b74b094e047b9e1d09ad96c24"
+      },
+      "inputs": [
+        {
+          "file": "src/Child.vue",
+          "path": "declared-prop-names-original/original-project/src/Child.vue.txt",
+          "sha256": "94b461657b2f03827686f0be2f5a45d387405e35b806d0574b9fd4c705630df5"
+        },
+        {
+          "file": "src/SnakeChild.vue",
+          "path": "declared-prop-names-original/original-project/src/SnakeChild.vue.txt",
+          "sha256": "886757b3de64347c19bd3fa69a31b0da1628ebcc52da3e19b0bbd91de6cd19e2"
+        },
+        {
+          "file": "src/KebabChild.vue",
+          "path": "declared-prop-names-original/original-project/src/KebabChild.vue.txt",
+          "sha256": "50cdfe2b4af57df9a807921a07d0fdef88b4a5917ed779b8a3a2a6e83c9d7acb"
+        },
+        {
+          "file": "src/Parent.vue",
+          "path": "declared-prop-names-original/original-project/src/Parent.vue.txt",
+          "sha256": "80c166665faa9ca5f6fb09fa6d81a7270bf27afa3c51a5370fec88512a81f31a"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "declared-prop-names-original/original-project/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        }
+      ]
     }
   ]
 }

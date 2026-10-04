@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ readonly someValue: number }>()
+</script>
+<template><span /></template>

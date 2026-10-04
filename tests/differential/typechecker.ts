@@ -21,6 +21,7 @@ export const TYPECHECKER_TESTS = {
   "authored-unused-symbols": "authored_unused_symbols_preserve_complete_original_diagnostics",
   "split-script-original": "split_script_setup_preserves_complete_original_diagnostics",
   "v-for-source-original": "v_for_source_callbacks_preserve_complete_original_diagnostics",
+  "declared-prop-names-original": "declared_prop_names_preserve_complete_original_diagnostics",
 } as const;
 
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
@@ -37,6 +38,7 @@ const sourceRevisions = {
   "authored-unused-symbols": "cd7156d28386e072953476fdbc354a963758dc89",
   "split-script-original": "b3c2933be5afbdb5f2df07da093f40bc7ce72187",
   "v-for-source-original": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+  "declared-prop-names-original": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
 } satisfies Record<keyof typeof TYPECHECKER_TESTS, string>;
 
 export type Artifact = { path: string; sha256: string };

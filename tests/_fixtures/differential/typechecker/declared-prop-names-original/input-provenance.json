@@ -1,0 +1,95 @@
+{
+  "schema": "vize.typechecker.originalProjectProvenance",
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
+  "parent": "a78ed49185df9ec28df5f80b24699348c653d69d",
+  "historicalIssue": 3863,
+  "historicalPullRequest": 3869,
+  "reporter": {
+    "login": "AndreyYolkin",
+    "id": 11289484,
+    "name": "Andrei Elkin",
+    "publicEmail": "andrey@yolkin.co",
+    "identitySource": "https://api.github.com/users/AndreyYolkin"
+  },
+  "originalTest": "pascal_case_and_snake_case_props_are_not_reported_missing",
+  "originalTestSource": {
+    "path": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/pascal_case_prop_names.rs",
+    "blob": "cb438bd2c3cda580bfa6d16126b40c2ec2534ec8",
+    "sha256": "22228119bf5a52cedd48be2506eae9821d76968a18b633e5843fae321d08760d",
+    "revision": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
+    "carrier": "original-test.rs.txt"
+  },
+  "selectedFunction": {
+    "utf8Start": 594,
+    "utf8End": 2194,
+    "sha256": "8967c9a4faf87896a1008346f4e1f4a8bd535c79056e1a089da3a7695f7a2ebd"
+  },
+  "projectHelperSource": {
+    "path": "crates/vize_canon/src/batch/type_checker/tests.rs",
+    "blob": "a7c74b9593646b124c753b35fa395f5bc215b9b6",
+    "sha256": "45997a074c644c38d72b013d6d2cad889a3a21d2a189669ff0bb2c2088391489",
+    "revision": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
+    "excerpt": {
+      "referenceRoot": "typechecker",
+      "carrier": "v-for-source-original/original-helper.rs.txt",
+      "utf8Start": 50636,
+      "utf8End": 61048,
+      "sha256": "b3beb7d333a17aa20c66d8be50cb26b1414d5b4fc3810f3250c56e3b1d98baab"
+    }
+  },
+  "originalChange": {
+    "scope": ["crates/vize_canon", "crates/vize_croquis"],
+    "sha256": "6ba819f73104d99054e39cd53d11429b0b685d69196097b92ae32d362dacd2ef",
+    "chunks": [
+      {
+        "carrier": "original-change.patch.txt",
+        "utf8Start": 0,
+        "utf8End": 9512,
+        "sha256": "6ba819f73104d99054e39cd53d11429b0b685d69196097b92ae32d362dacd2ef"
+      }
+    ]
+  },
+  "configLiteralUtf8Start": 52426,
+  "originalCheckerOptions": "default BatchTypeChecker; no extra checker flags",
+  "originalPackagePolicy": "link workspace Vue/Vite/@vue when available, otherwise test support stubs; mandatory fixture uses pinned real runtime and records actual package identities",
+  "expectedContract": "complete original empty diagnostic assertion; original helper sorts the entire vector without filtering, so empty output has no ordering ambiguity",
+  "originalRuntimePolicy": "optional runtime and snapshot guards in the original test; the registered T1 observer fails absent runtime or checker errors",
+  "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+  "missingHistoricalState": ["actual historical loader/SDK snapshot"],
+  "execution": "pending fresh required T1 source-built Actions",
+  "native": "unsupported",
+  "inputs": [
+    {
+      "file": "src/Child.vue",
+      "source": "original-project/src/Child.vue.txt",
+      "sha256": "94b461657b2f03827686f0be2f5a45d387405e35b806d0574b9fd4c705630df5",
+      "originalLiteralUtf8Start": 882
+    },
+    {
+      "file": "src/SnakeChild.vue",
+      "source": "original-project/src/SnakeChild.vue.txt",
+      "sha256": "886757b3de64347c19bd3fa69a31b0da1628ebcc52da3e19b0bbd91de6cd19e2",
+      "originalLiteralUtf8Start": 1106
+    },
+    {
+      "file": "src/KebabChild.vue",
+      "source": "original-project/src/KebabChild.vue.txt",
+      "sha256": "50cdfe2b4af57df9a807921a07d0fdef88b4a5917ed779b8a3a2a6e83c9d7acb",
+      "originalLiteralUtf8Start": 1305
+    },
+    {
+      "file": "src/Parent.vue",
+      "source": "original-project/src/Parent.vue.txt",
+      "sha256": "80c166665faa9ca5f6fb09fa6d81a7270bf27afa3c51a5370fec88512a81f31a",
+      "originalLiteralUtf8Start": 1502
+    },
+    {
+      "file": "tsconfig.json",
+      "source": "original-project/tsconfig.json.txt",
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047",
+      "originalLiteralUtf8Start": null
+    }
+  ]
+}
