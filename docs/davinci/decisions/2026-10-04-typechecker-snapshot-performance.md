@@ -41,14 +41,32 @@ fanout, deep barrels and Vue/TSX dependencies. Every timing pair must have the
 same hash of all canonical module facts and the same host/module counts.
 Two untimed process warmups precede nine alternating pairs. Raw samples,
 source fixtures, exact SHAs and complete fact signatures are archived.
-Quantified speedup remains unverified until that run completes.
+
+[Paired run 37170041452](https://github.com/ubugeeei-prod/vize/actions/runs/37170041452)
+passed at base `da66dc241c` and head `bf09fd2838`; all 12 workload fact
+signatures matched. Warmed 128-host medians were:
+
+| Workload     | Threads |      Base |      Head | Speedup |
+| ------------ | ------: | --------: | --------: | ------: |
+| Fanout       |       1 | 177.05 ms |  79.12 ms |   2.24x |
+| Deep barrels |       1 | 148.99 ms |  41.54 ms |   3.59x |
+| Vue/TSX      |       1 | 255.74 ms | 132.74 ms |   1.93x |
+| Fanout       |       4 |  63.66 ms |  44.34 ms |   1.44x |
+| Deep barrels |       4 |  39.30 ms |  21.43 ms |   1.83x |
+| Vue/TSX      |       4 | 109.03 ms | 108.31 ms |   1.01x |
+
+Cold one-host dependency cases cost 0.26–1.07 ms more because the first
+publication retains and clones dependency facts (fanout 1.61→1.87 ms,
+barrels 1.69→2.76 ms, Vue/TSX 2.22→3.12 ms). Local-only timing differences
+were under 0.04 ms. This is a measured tradeoff for snapshot reuse; real batch
+adoption must demonstrate its full-command benefit. No 10x claim follows.
 
 ## Remaining work
 
-- Adopt shared snapshots in full batch checking only after preserving the
-  disk compatibility collector's unbounded traversal. The snapshot collector
-  currently has a separate 512-module cap; silently switching APIs can change
-  props and diagnostics.
+- Adopt shared snapshots in full batch checking with both public compatibility
+  collectors and their bounds unchanged. Since `389fd87223`, the private merge
+  always selects scoped-world props; its flat-map fallback is unreachable.
+  Removing that dead collection avoids any change to public collector caps.
 - Measure first-use lock contention and unique-module workloads before
   broadening shared snapshot lifetime.
 - Capture full-command paired before/after phases for the pinned generated
