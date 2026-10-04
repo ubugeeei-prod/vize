@@ -52,6 +52,7 @@ impl Builder<'_, '_> {
                 Kind::OpenTagName => {
                     let name = event.span;
                     index += 1;
+                    let attributes_start = index;
                     let mut end = None;
                     while let Some(part) = self.owner.events.get(index) {
                         index += 1;
@@ -74,7 +75,7 @@ impl Builder<'_, '_> {
                         }
                     }
                     let (gt, slash) = end.ok_or(Refusal::InvalidFrame(name))?;
-                    self.open(name, gt, slash)?;
+                    self.open(name, gt, slash, attributes_start..index - 1)?;
                     continue;
                 }
                 Kind::CloseTagName => self.close(event.span)?,
@@ -118,7 +119,13 @@ impl Builder<'_, '_> {
             .ok_or(Refusal::InvalidFrame(span))
     }
 
-    fn open(&mut self, name_span: Span, gt: u32, slash: bool) -> Result<(), Refusal> {
+    fn open(
+        &mut self,
+        name_span: Span,
+        gt: u32,
+        slash: bool,
+        attributes: core::ops::Range<usize>,
+    ) -> Result<(), Refusal> {
         let raw = self.source(name_span)?;
         let name = name(raw).ok_or_else(|| unsupported(raw, name_span))?;
         let start = name_span
@@ -156,6 +163,7 @@ impl Builder<'_, '_> {
             last_child: None,
             next_sibling: None,
             ignored_slash: slash && !void,
+            attributes,
         });
         if let Some(parent) = parent {
             let previous = self

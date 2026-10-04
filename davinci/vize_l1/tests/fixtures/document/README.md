@@ -18,9 +18,16 @@ Each row records actual HTML local names and parent start-tag order. Native Rust
 structure laws and the existing Chromium browser suite consume the same bytes
 and census. The admitted provider proves only element ancestry, case folding,
 true void insertion and ignored nonvoid slashes for its documented subset.
-Text/attribute DOM values, general tree policies and petite-vue stay unfinished;
+Text DOM values, general tree policies and petite-vue stay unfinished;
 the complete pinned SVG document deliberately refuses structural admission.
 
 Four additional sources retain actual once-decoded character-reference payloads,
 including numeric/named HTML whitespace before and between envelope members.
 Their element ancestry and no-quirks mode are checked by the same browser suite.
+
+`html-attributes.json` keeps ten complete original sources and effective static
+attribute name/value arrays in start-tag order. Native owner-bound receipts and
+actual Chromium DOMParser consume the same bytes, including escaped authored
+CRLF/CR/NUL and reference boundaries. ASCII folding, normalized-name first
+duplicates, empty/Boolean/unquoted values and complete once-decoded references
+are covered. This gives no URL/property, Vue directive or petite-vue meaning.

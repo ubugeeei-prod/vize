@@ -5,7 +5,10 @@ use vize_l0::{Span, Vec};
 
 use super::{DocumentLexicalRefusal, DocumentTreePolicy, NativeDocument};
 
+mod attribute;
 mod build;
+
+pub use attribute::{DocumentHtmlAttribute, DocumentHtmlAttributes};
 
 #[derive(Debug)]
 struct Element {
@@ -18,6 +21,7 @@ struct Element {
     first_child: Option<usize>,
     last_child: Option<usize>,
     ignored_slash: bool,
+    attributes: core::ops::Range<usize>,
 }
 
 /// Why no bounded native element structure was produced for the original run.
@@ -40,13 +44,13 @@ pub enum DocumentHtmlRefusal {
 /// with explicit matching ends. Head children are `base`, `link` and `meta`;
 /// body elements are `div`, `span`, `br`, `hr`, `img` and `input`. HTML names
 /// match without ASCII case, and a slash never closes a nonvoid HTML element.
-/// Static attributes retain original opening bytes but get no DOM meaning.
+/// Static attributes borrow their original callback ranges, with HTML ASCII
+/// name folding, first duplicate retention and once-decoded scalar values.
 ///
 /// Implied ends, tables, foreign content, raw-text elements, formatting,
 /// templates, Vue directive/interpolation syntax and implicit envelopes refuse
-/// this provider. Only element ancestry is certified; text, comments, decoded
-/// attributes, petite-vue semantics and all general profile policies remain
-/// unfinished. This view borrows the actual original lexer owner and arena.
+/// this provider. Text, comments, petite-vue semantics and general tree policies
+/// remain unfinished. This view borrows the actual original lexer owner and arena.
 ///
 /// ```compile_fail
 /// use vize_l1::markup::document::DocumentHtmlStructure;
@@ -142,6 +146,14 @@ impl<'s, 'o, 'a> DocumentHtmlElement<'s, 'o, 'a> {
     #[must_use]
     pub fn ignored_self_closing_slash(&self) -> bool {
         self.element().ignored_slash
+    }
+
+    /// Effective static HTML attributes, in original first-occurrence order.
+    /// Duplicate-name comparisons borrow the earlier original events without
+    /// allocating a name set; duplicate filtering is quadratic in tag size.
+    #[must_use]
+    pub fn attributes(&self) -> DocumentHtmlAttributes<'s, 'o, 'a> {
+        attribute::attributes(self.tree, self.element)
     }
 
     #[must_use]

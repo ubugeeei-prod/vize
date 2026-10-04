@@ -1,0 +1,164 @@
+[
+  {
+    "name": "envelope-and-metadata",
+    "source": "<!DOCTYPE html><HTML LANG=JA><HEAD data-label='original'><meta CHARSET=utf-8><link HREF='/a?x=&amp;y=2'></HEAD><BODY CLASS='a b'><DIV ID=日本語><SPAN TITLE='inner'></SPAN></DIV></BODY></HTML>",
+    "attributes": [
+      [["lang", "JA"]],
+      [["data-label", "original"]],
+      [["charset", "utf-8"]],
+      [["href", "/a?x=&y=2"]],
+      [["class", "a b"]],
+      [["id", "日本語"]],
+      [["title", "inner"]]
+    ]
+  },
+  {
+    "name": "boolean-empty-and-unquoted-slash",
+    "source": "<!DOCTYPE html><html><head></head><body><input DISABLED checked='' value=\"\" data-path=http://example.test/><div inert   data-empty = ''   ><span hidden/></span></div></body></html>",
+    "attributes": [
+      [],
+      [],
+      [],
+      [
+        ["disabled", ""],
+        ["checked", ""],
+        ["value", ""],
+        ["data-path", "http://example.test/"]
+      ],
+      [
+        ["inert", ""],
+        ["data-empty", ""]
+      ],
+      [["hidden", ""]]
+    ]
+  },
+  {
+    "name": "complete-named-and-numeric-values",
+    "source": "<!DOCTYPE html><html><head></head><body><div data-multi='a&NotEqualTilde;b' data-pair='&ThickSpace;' data-corrected='&#0;&#xD800;&#x110000;&#x80;&#x1f600;' data-control='&#13;&#10;&Tab;'></div></body></html>",
+    "attributes": [
+      [],
+      [],
+      [],
+      [
+        ["data-multi", "a≂̸b"],
+        ["data-pair", "  "],
+        ["data-corrected", "���€😀"],
+        ["data-control", "\r\n\t"]
+      ]
+    ]
+  },
+  {
+    "name": "attribute-ampersand-context",
+    "source": "<!DOCTYPE html><html><head></head><body><div data-ambiguous='&copy= &copycat &notin;' data-recognized='&copy; &copy &amp;='></div></body></html>",
+    "attributes": [
+      [],
+      [],
+      [],
+      [
+        ["data-ambiguous", "&copy= &copycat ∉"],
+        ["data-recognized", "© © &="]
+      ]
+    ]
+  },
+  {
+    "name": "once-only-decoding-and-markup",
+    "source": "<!DOCTYPE html><html><head></head><body><DIV DATA-X=\"<span></span>\" data-y='>' data-once='&amp;amp; &amp;lt; &NotEqualTilde;'><SPAN></SPAN></DIV></body></html>",
+    "attributes": [
+      [],
+      [],
+      [],
+      [
+        ["data-x", "<span></span>"],
+        ["data-y", ">"],
+        ["data-once", "&amp; &lt; ≂̸"]
+      ],
+      []
+    ]
+  },
+  {
+    "name": "literal-preprocessing-and-reference-boundaries",
+    "source": "<!DOCTYPE html><html><head></head><body><div data-literal='a\r\nb\rc\nd\u0000e' data-before='\r&#10;' data-after='&#13;\n' data-adjacent='&#13;&#10;' data-tab='a\tb'></div></body></html>",
+    "attributes": [
+      [],
+      [],
+      [],
+      [
+        ["data-literal", "a\nb\nc\nd�e"],
+        ["data-before", "\n\n"],
+        ["data-after", "\r\n"],
+        ["data-adjacent", "\r\n"],
+        ["data-tab", "a\tb"]
+      ]
+    ]
+  },
+  {
+    "name": "first-duplicate-and-ascii-only-name-folding",
+    "source": "<!DOCTYPE html><html><head></head><body><div DATA-X=first data-x=second data-Y=third DATA-y=fourth Ä=upper ä=lower data-İ=capital data-i=small></div><span data-x=other></span></body></html>",
+    "attributes": [
+      [],
+      [],
+      [],
+      [
+        ["data-x", "first"],
+        ["data-y", "third"],
+        ["Ä", "upper"],
+        ["ä", "lower"],
+        ["data-İ", "capital"],
+        ["data-i", "small"]
+      ],
+      [["data-x", "other"]]
+    ]
+  },
+  {
+    "name": "normalized-nul-name-duplicates",
+    "source": "<!DOCTYPE html><html><head></head><body><div DA\u0000TA=first da�ta=second DATA=third></div></body></html>",
+    "attributes": [
+      [],
+      [],
+      [],
+      [
+        ["da�ta", "first"],
+        ["data", "third"]
+      ]
+    ]
+  },
+  {
+    "name": "head-and-void-attributes",
+    "source": "<!DOCTYPE html><html><head><base TARGET=_blank><meta NAME=description content='&quot;native&quot;'><link REL=stylesheet href='/x.css'></head><body><img ALT='日本語 &amp; 😀' src=/x><br CLEAR=all/><hr title='line'/><input value='&apos;&quot;'></body></html>",
+    "attributes": [
+      [],
+      [],
+      [["target", "_blank"]],
+      [
+        ["name", "description"],
+        ["content", "\"native\""]
+      ],
+      [
+        ["rel", "stylesheet"],
+        ["href", "/x.css"]
+      ],
+      [],
+      [
+        ["alt", "日本語 & 😀"],
+        ["src", "/x"]
+      ],
+      [["clear", "all/"]],
+      [["title", "line"]],
+      [["value", "'\""]]
+    ]
+  },
+  {
+    "name": "html-colon-names-have-no-foreign-namespace",
+    "source": "<!DOCTYPE html><html XMLNS='literal'><head></head><body><div xlink:href='&lt;x&gt;' aria-label='A &amp; B' data-text='{{ literal }}'></div></body></html>",
+    "attributes": [
+      [["xmlns", "literal"]],
+      [],
+      [],
+      [
+        ["xlink:href", "<x>"],
+        ["aria-label", "A & B"],
+        ["data-text", "{{ literal }}"]
+      ]
+    ]
+  }
+]

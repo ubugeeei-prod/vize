@@ -13,7 +13,10 @@ use crate::markup::entity::DecodedEntity;
 mod sink;
 mod structure;
 
-pub use structure::{DocumentHtmlElement, DocumentHtmlRefusal, DocumentHtmlStructure};
+pub use structure::{
+    DocumentHtmlAttribute, DocumentHtmlAttributes, DocumentHtmlElement, DocumentHtmlRefusal,
+    DocumentHtmlStructure,
+};
 
 /// The callbacks actually emitted by the Document-profile lexer.
 /// End-of-tag callbacks carry a zero-width coordinate, including recovered
@@ -193,7 +196,7 @@ impl<'a> NativeDocument<'a> {
 
     /// Construct only the admitted explicit HTML envelope's element ancestry.
     /// The original retained events are consumed directly, without lexing again.
-    /// This does not certify general HTML tree, text or attribute semantics.
+    /// This does not certify general HTML tree, text or petite-vue semantics.
     pub fn html_structure(&self) -> Result<DocumentHtmlStructure<'_, 'a>, DocumentHtmlRefusal> {
         structure::construct(self)
     }

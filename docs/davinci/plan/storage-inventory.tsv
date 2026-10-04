@@ -53,6 +53,7 @@ l1	-	davinci/vize_l1/src/markup/document.rs	0	0	0	0	1	4	0	0
 l1	-	davinci/vize_l1/src/markup/document/sink.rs	0	0	0	0	1	2	0	0
 l1	-	davinci/vize_l1/src/markup/document/structure.rs	0	0	0	0	1	1	0	0
 l1	-	davinci/vize_l1/src/markup/document/structure/build.rs	0	0	0	0	1	4	0	0
+l1	analysis	davinci/vize_l1/src/markup/document/structure/attribute/tests.rs	1	4	1	8	0	0	0	0
 l1	analysis	davinci/vize_l1/src/markup/document/structure/tests.rs	1	6	1	2	0	0	0	0
 l1	analysis	davinci/vize_l1/src/markup/document/tests.rs	1	10	0	0	0	0	0	0
 l1	-	davinci/vize_l1/src/markup/lex/compat/facade_tests.rs	0	0	1	3	0	0	0	0
