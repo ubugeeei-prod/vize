@@ -78,7 +78,6 @@ fn lower_children_guarded<'a>(
                         i = lower_if_group(
                             cx,
                             children,
-                            &plan,
                             i,
                             (element, analyzed, attr),
                             ns,
@@ -134,7 +133,6 @@ fn is_branch_gap(child: &SurfaceChild<'_>) -> bool {
 fn lower_if_group<'a, 't>(
     cx: &mut Cx<'a>,
     children: &'t [SurfaceChild<'a>],
-    plan: &[text::TextAction<'a>],
     start: usize,
     (first, first_analyzed, first_attr): (&'t Element<'a>, Analyzed<'a>, &'t Attribute<'a>),
     ns: Namespace,
@@ -190,18 +188,9 @@ fn lower_if_group<'a, 't>(
     let mut branch_keys: StdVec<Option<if_keys::BranchKey>> = StdVec::new();
     let mut from_template: StdVec<bool> = StdVec::new();
     let mut once = false;
-    let mut preserved_gaps: StdVec<usize> = StdVec::new();
     for (element, analyzed, attr, gaps) in branches {
         for gap in gaps {
-            if matches!(
-                (children.get(gap), plan.get(gap)),
-                (
-                    Some(SurfaceChild::Text(_)),
-                    Some(text::TextAction::Keep | text::TextAction::Content(_))
-                )
-            ) {
-                preserved_gaps.push(gap);
-            } else if let Some(SurfaceChild::Text(token) | SurfaceChild::Comment(token)) =
+            if let Some(SurfaceChild::Text(token) | SurfaceChild::Comment(token)) =
                 children.get(gap)
             {
                 let gap_span = cx.token_span(token);
@@ -277,13 +266,6 @@ fn lower_if_group<'a, 't>(
         },
         &cx.allocator,
     )));
-    let mut next_preserved_gap = 0usize;
-    for gap in preserved_gaps {
-        if gap < next_preserved_gap {
-            continue;
-        }
-        next_preserved_gap = text::lower_text_run(cx, children, plan, gap, out);
-    }
     consumed_until
 }
 

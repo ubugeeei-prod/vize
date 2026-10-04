@@ -15,7 +15,8 @@ use std::{
     process::{Command, Stdio},
 };
 use vize_atelier_core::{
-    CodegenMode, ErrorCode, TemplateChildNode, WhitespaceStrategy, parser::with_whitespace_strategy,
+    CodegenMode, CompilerError, ErrorCode, TemplateChildNode, WhitespaceStrategy,
+    parser::with_whitespace_strategy,
 };
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
@@ -43,6 +44,40 @@ fn dom_options() -> DomCompilerOptions {
     }
 }
 
+fn assert_diagnostics(template: &str, errors: &[CompilerError]) {
+    // Keep the reporter's original <div />. The ordinary compiler recovers it
+    // with this existing diagnostic, also seen in the real Nuxt build.
+    let self_closing = if template == NUXT_ROOT {
+        Some("<div v-if=\"abortRender\" />")
+    } else if template == MINIMAL {
+        Some("<div v-if=\"a\" />")
+    } else {
+        None
+    };
+    assert_eq!(
+        errors.len(),
+        usize::from(self_closing.is_some()),
+        "{errors:?}"
+    );
+    if let Some(source) = self_closing {
+        let error = errors.first().expect("unchanged recoverable diagnostic");
+        assert_eq!(error.code, ErrorCode::ExtendPoint);
+        assert_eq!(
+            error.message,
+            "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag."
+        );
+        assert_eq!(
+            error
+                .loc
+                .as_ref()
+                .expect("diagnostic source span")
+                .span
+                .slice(template),
+            source
+        );
+    }
+}
+
 #[test]
 fn successful_chains_remove_only_their_whitespace_gaps() {
     for whitespace in [WhitespaceStrategy::Preserve, WhitespaceStrategy::Condense] {
@@ -50,7 +85,7 @@ fn successful_chains_remove_only_their_whitespace_gaps() {
         let (root, errors, output) = with_whitespace_strategy(whitespace, || {
             compile_template_with_options(&allocator, NUXT_ROOT, dom_options())
         });
-        assert!(errors.is_empty(), "{errors:?}");
+        assert_diagnostics(NUXT_ROOT, &errors);
         let Some(TemplateChildNode::Element(suspense)) = root.children.first() else {
             panic!("the reporter Suspense root must survive compilation");
         };
@@ -128,12 +163,12 @@ fn reporter_and_controls_mount_and_ssr_like_vue_in_production() {
             let (_, errors, dom) = with_whitespace_strategy(whitespace, || {
                 compile_template_with_options(&allocator, template, dom_options())
             });
-            assert!(errors.is_empty(), "{}: {errors:?}", fixture["name"]);
+            assert_diagnostics(template, &errors);
             let allocator = Allocator::new();
             let (_, errors, ssr) = with_whitespace_strategy(whitespace, || {
                 compile_ssr_with_options(&allocator, template, SsrCompilerOptions::default())
             });
-            assert!(errors.is_empty(), "{}: {errors:?}", fixture["name"]);
+            assert_diagnostics(template, &errors);
             cases.push(json!({
                 "name": fixture["name"], "whitespace": mode, "template": template,
                 "states": fixture["states"],

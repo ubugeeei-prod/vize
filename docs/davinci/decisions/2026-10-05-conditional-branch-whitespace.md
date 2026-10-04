@@ -16,6 +16,14 @@ expression processing and non-adjacency diagnostic. This correction belongs to
 the existing compiler; it adds no stage, serialization or native readiness
 credit. Instruction ceilings remain unchanged.
 
+The existing native L1-to-L2 lowerer also saved and re-emitted the same branch
+gaps to match the old compiler. Remove that preservation and its per-chain
+vector, while keeping `drop.branch-gap` provenance and outside whitespace. The
+existing native Vapor parity law retains its branch and comment controls and
+adds the original inline reporter plus an outside-space control. Native DOM,
+Vapor and SSR consumers must agree with the corrected compiler; this repair is
+not a feature-stage completion claim.
+
 ## Preserved evidence
 
 The dedicated
@@ -33,6 +41,8 @@ generated modules to the real Vue production runtime and server renderer. Both
 whitespace strategies exercise 18 states, for 36 DOM and 36 complete SSR
 comparisons. AST assertions separately cover the single Suspense child, comments,
 outside space and the existing invalid-adjacency error.
+The original self-closing `<div />` is retained with its existing recoverable
+diagnostic code, complete message and authored span pinned in both compilers.
 
 The pinned Nuxt 3.19.3 module-build fixture now requests `whitespace: "preserve"`
 and keeps its existing production SSR, hydration, click and route assertions.

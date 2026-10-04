@@ -1,5 +1,7 @@
 //! AST traversal functions for template transformation.
 
+mod removal;
+
 use crate::steps::v_slot::{get_slot_name, get_slot_prop_names, get_slot_props_string};
 use crate::{
     ElementNode, ElementType, ExpressionNode, ForNode, PropNode, RuntimeHelper, TemplateChildNode,
@@ -70,17 +72,7 @@ pub fn traverse_children<'a>(ctx: &mut TransformContext<'a>, parent: ParentNode<
                 && i < children.len()
             {
                 children.remove(i);
-                // Only a successfully joined branch requests earlier removal.
-                // Keep comments and every sibling outside that branch gap.
-                let mut gap = i;
-                while gap > from {
-                    gap -= 1;
-                    if matches!(children.get(gap), Some(TemplateChildNode::Text(t)) if t.content.trim().is_empty())
-                    {
-                        children.remove(gap);
-                        i -= 1;
-                    }
-                }
+                removal::remove_branch_whitespace(children, &mut i, from);
             }
         } else {
             i += 1;
