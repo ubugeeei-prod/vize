@@ -35,9 +35,9 @@ pub use expression::{
 pub use printer::{LineEnding, PrintOptions, print};
 pub use selected_template::{
     NativeTemplateDocument, NativeTemplateRefusal, NativeTemplateValuePolicy,
-    ObservedNativeTemplateDocument, ObservedNativeTemplateFailure, ObservedNativeTemplateRefusal,
-    native_template_document, observed_native_template_document,
-    observed_native_template_document_with_policy,
+    ObservedNativeTemplateDocument, ObservedNativeTemplateFailure,
+    ObservedNativeTemplateFailureParts, ObservedNativeTemplateRefusal, native_template_document,
+    observed_native_template_document, observed_native_template_document_with_policy,
 };
 pub use sfc::NativeSfcDirectivePolicy;
 pub use sfc::{

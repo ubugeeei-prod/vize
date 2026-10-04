@@ -4,8 +4,17 @@ This source slice depends on the genuine L1 head provider accepted in
 [#7768](https://github.com/ubugeeei-prod/vize/pull/7768), signed
 `9702c014e06a268d2651202b7fcb951db7e729df`. Its source was replayed onto that
 literal main without changing the independently reviewed owned production or
-law bytes. This consumer is private and has no Actions, protected validation or
-actual merge credit yet.
+law bytes. It was published as independent draft
+[#7774](https://github.com/ubugeeei-prod/vize/pull/7774) at `0973798c`; its first
+hosted source build failed on three Clippy lints before Rust law execution.
+The exact failed source/log is retained and confers no runtime or acceptance
+credit. A narrow successor gives the unchanged six-part full-transfer tuple a
+named type alias and boxes only the optional actual attribute-failure payload
+in the lower failure owner, reducing its `Err` size without allocating for
+`None`. Accessors and transfers borrow/move that same normally owned payload.
+No parser, pass, Doc, refusal order, law, golden or instruction cap changes.
+Fresh exact-source Actions, protected validation and actual merge remain
+required.
 
 ## Same original header event
 

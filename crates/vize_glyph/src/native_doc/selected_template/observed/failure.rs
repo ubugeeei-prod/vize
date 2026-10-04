@@ -1,7 +1,7 @@
 //! A rejected document keeps all original observations made before the exit.
 
 use super::super::input::Observed;
-use std::vec::Vec;
+use std::{boxed::Box, vec::Vec};
 use vize_l0::Span;
 use vize_l1::markup::{
     NativeAttributeExpression, NativeAttributeExpressionFailure, NativeAttributeOperandError,
@@ -35,6 +35,16 @@ pub enum ObservedNativeTemplateRefusal {
     },
 }
 
+/// Exact full transfer schema; all observations/failures keep normal ownership.
+pub type ObservedNativeTemplateFailureParts<'p, 'a> = (
+    &'p NativeTemplateComponent<'a>,
+    Vec<NativeInterpolationOperand<'a>>,
+    Vec<NativeAttributeExpression<'a>>,
+    ObservedNativeTemplateRefusal,
+    Option<NativeInterpolationFailure<'a>>,
+    Option<NativeAttributeExpressionFailure<'a>>,
+);
+
 /// No partial Doc is exposed. Successfully minted rejected operands remain in
 /// this owned prefix; an actual observer failure is retained separately.
 pub struct ObservedNativeTemplateFailure<'p, 'a> {
@@ -43,7 +53,7 @@ pub struct ObservedNativeTemplateFailure<'p, 'a> {
     refusal: ObservedNativeTemplateRefusal,
     interpolation_failure: Option<NativeInterpolationFailure<'a>>,
     attributes: Vec<NativeAttributeExpression<'a>>,
-    attribute_failure: Option<(Span, usize, NativeAttributeExpressionFailure<'a>)>,
+    attribute_failure: Option<Box<(Span, usize, NativeAttributeExpressionFailure<'a>)>>,
 }
 
 impl core::fmt::Debug for ObservedNativeTemplateFailure<'_, '_> {
@@ -72,7 +82,7 @@ impl<'p, 'a> ObservedNativeTemplateFailure<'p, 'a> {
             refusal,
             interpolation_failure: observations.failure,
             attributes: observations.attributes,
-            attribute_failure: observations.attribute_failure,
+            attribute_failure: observations.attribute_failure.map(Box::new),
         }
     }
     pub fn original(&self) -> &'p NativeTemplateComponent<'a> {
@@ -86,7 +96,7 @@ impl<'p, 'a> ObservedNativeTemplateFailure<'p, 'a> {
     }
     pub fn attribute_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
         self.attribute_failure
-            .as_ref()
+            .as_deref()
             .map(|(_, _, failure)| failure)
     }
     pub(in crate::native_doc) fn into_observations(
@@ -97,7 +107,7 @@ impl<'p, 'a> ObservedNativeTemplateFailure<'p, 'a> {
                 operands: self.operands,
                 failure: self.interpolation_failure,
                 attributes: self.attributes,
-                attribute_failure: self.attribute_failure,
+                attribute_failure: self.attribute_failure.map(|failure| *failure),
             },
             self.refusal,
         )
@@ -110,23 +120,14 @@ impl<'p, 'a> ObservedNativeTemplateFailure<'p, 'a> {
     }
     /// Transfer every genuine observed prefix and both actual failure owners.
     /// This grants no completed template or SFC admission.
-    pub fn into_full_parts(
-        self,
-    ) -> (
-        &'p NativeTemplateComponent<'a>,
-        Vec<NativeInterpolationOperand<'a>>,
-        Vec<NativeAttributeExpression<'a>>,
-        ObservedNativeTemplateRefusal,
-        Option<NativeInterpolationFailure<'a>>,
-        Option<NativeAttributeExpressionFailure<'a>>,
-    ) {
+    pub fn into_full_parts(self) -> ObservedNativeTemplateFailureParts<'p, 'a> {
         (
             self.original,
             self.operands,
             self.attributes,
             self.refusal,
             self.interpolation_failure,
-            self.attribute_failure.map(|(_, _, failure)| failure),
+            self.attribute_failure.map(|failure| (*failure).2),
         )
     }
     /// Preserve the original interpolation-only transfer contract.

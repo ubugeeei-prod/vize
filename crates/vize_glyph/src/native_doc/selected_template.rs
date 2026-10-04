@@ -26,7 +26,8 @@ pub use value::NativeTemplateValuePolicy;
 use value::ValuePolicy;
 
 pub use observed::{
-    ObservedNativeTemplateDocument, ObservedNativeTemplateFailure, ObservedNativeTemplateRefusal,
+    ObservedNativeTemplateDocument, ObservedNativeTemplateFailure,
+    ObservedNativeTemplateFailureParts, ObservedNativeTemplateRefusal,
     observed_native_template_document, observed_native_template_document_with_policy,
 };
 

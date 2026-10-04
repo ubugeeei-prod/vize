@@ -14,7 +14,10 @@ use super::{
 
 #[path = "observed/failure.rs"]
 mod failure;
-pub use failure::{ObservedNativeTemplateFailure, ObservedNativeTemplateRefusal};
+pub use failure::{
+    ObservedNativeTemplateFailure, ObservedNativeTemplateFailureParts,
+    ObservedNativeTemplateRefusal,
+};
 
 /// Borrowed original selection, owned once-observed operands and complete block Doc.
 /// This covers only the selected template body, not the enclosing SFC.
