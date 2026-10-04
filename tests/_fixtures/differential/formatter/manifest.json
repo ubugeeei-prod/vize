@@ -1371,6 +1371,139 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/three-space-indent",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-three-space-indent",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "7cf9fb3e5c096468525857e4a4bb2d91b0ebbe6dc40ed2ccc425b14b9cf262f5",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "d575fe2c51073be8455b0bff1d8f42d83ce6a76d1252fb225690e8c958dd428d",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          7793,
+          6098
+        ],
+        "commits": [
+          {
+            "sha": "caee1656927e1232f4aaabff2328246decb8bc58",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/options.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 7793,
+            "path": "crates/vize_glyph/tests/indent_width.rs",
+            "symbol": "configured_three_space_corpus_keeps_original_input_and_complete_reference"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/indent_width.rs",
+          "symbol": "configured_three_space_corpus_keeps_original_input_and_complete_reference",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "idempotence",
+            "FormatResult.changed",
+            "options-immutable"
+          ],
+          "limitations": [
+            "Actual current-source public Rust and CLI execution require Actions; no native provider acceptance credit."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "configured-indent-width"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with explicit pinned JSON project config; branch Actions execution remains pending.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-three-space-indent/reference.expected.txt",
+              "sha256": "6c97fc04fc71ca319f2ab0ff6d44612c693e0245d92c5a143b57b50dac11439c",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 7793,
+                "path": "crates/vize_glyph/tests/indent_width.rs",
+                "symbol": "configured_three_space_corpus_keeps_original_input_and_complete_reference",
+                "assertion": "independently authored complete 39-byte SFC retains three configured spaces; full second/third bytes and changed=false"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-7793-contract-derived-indent-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {
