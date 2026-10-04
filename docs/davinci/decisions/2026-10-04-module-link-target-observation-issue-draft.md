@@ -76,3 +76,7 @@ continues asynchronously; stronger watcher protocol and true links remain TODO.
 ## Publication decision for both issues
 
 Publish the root/peer-cleared immutable physical973 source through genuine context parent ec68 and accepted76f93/912d harness ancestry. The separate child worktree preserves every reviewed23 blob and incoming parent decision/version; existing Markdown/canonical checks precede one true Draft Stack child and exact-source Actions. Queue waits for verified concrete7778 public release and still needs fresh source/current protected104/literal prefix-child merges. Normal Linux29/minimal12 case execution remains pending, with overlap explicit and non-Unix unexecuted; no31-runtime, watcher/native-links/default/history completion is inferred. Original private973/814 refs/worktrees, parent failed campaigns and green-but-held ee22 receipts remain preserved.
+
+## Bounded published-source correction for both issues
+
+F03 native laws actually pass164/43/50 normal/23 minimal plus minimal compilation and genuine CLI phase37189485537. Its final strict gate fails35 total test-helper-context/import diagnostics, so no whole-source acceptance is claimed. Equivalent stacked cfg(test)/cfg(unix) and removal of the unused Value import preserve every body/input/expected/API/policy/cap without a lint waiver. Retain original source/logs and require peer custody, fresh exact-head/phase/protected/actual acceptance; Linux evidence cannot qualify non-Unix or release-held merge.

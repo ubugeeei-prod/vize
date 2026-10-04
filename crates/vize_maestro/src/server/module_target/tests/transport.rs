@@ -14,7 +14,7 @@ use crate::{
 };
 use futures::{FutureExt, channel::oneshot, future::BoxFuture, task::noop_waker_ref};
 use parking_lot::Mutex;
-use serde_json::{Value, json};
+use serde_json::json;
 use std::{
     sync::Arc,
     task::{Context, Poll},

@@ -104,7 +104,8 @@ fn candidate(value: &str) -> Result<&str, ModuleTargetError> {
     Ok(relative)
 }
 
-#[cfg(all(test, unix))]
+#[cfg(test)]
+#[cfg(unix)]
 mod tests;
 
 #[cfg(all(test, not(unix)))]
