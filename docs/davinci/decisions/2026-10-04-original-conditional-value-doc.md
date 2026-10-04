@@ -23,7 +23,12 @@ lifetime-bearing raw pointer return types. The same four pointer addresses
 are cast to `*const ()` solely for equality in that test; every source/span,
 options, vector/root identity assertion and whole golden remains unchanged.
 This test-source typing repair changes no production API or ownership. The
-failed compile also has zero law execution credit.
+failed compile also has zero law execution credit. At `c18a0ca4`, affected Clippy, archive compilation and all four Rust shards
+passed, but tooling correctly rejected the stale owned formatter migration
+surface shard. The unchanged canonical scanner regenerates only
+`formatter/vize_glyph.tsv` (288 to 313 lines) from this source; it is
+observational inventory, not runtime or protected acceptance. Fresh complete
+source Actions remain required for its successor.
 
 ## Same original header event
 
