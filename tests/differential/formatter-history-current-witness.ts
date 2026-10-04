@@ -33,10 +33,8 @@ const OWNERS: Record<
         "2789c0f1a1ee365e550be6ef1743142c02939a4a40d932a6a014da1883363556",
       test_format_nested_css_at_rule:
         "8e0bf6f220ae5a4835ee7f70023c216a1a4f1dea16990f1cda52af29e9b998e8",
-      test_format_simple_css:
-        "85da41d455cec5e0ef4256603b9846a0cc583b4cee9eafd3f773b1c8d7436089",
-      test_format_empty_css:
-        "9e1b0a77d8008bcfa0475213d4776c295055865d2f0d306c43f2ecee757bf1cb",
+      test_format_simple_css: "85da41d455cec5e0ef4256603b9846a0cc583b4cee9eafd3f773b1c8d7436089",
+      test_format_empty_css: "9e1b0a77d8008bcfa0475213d4776c295055865d2f0d306c43f2ecee757bf1cb",
       test_format_css_whitespace_only:
         "af60fef48d17c6a45c60399972414080f9b18faec296752525242dd4026866b2",
       style_block_keeps_box_values_and_implicit_nested_selectors:
