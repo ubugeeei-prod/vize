@@ -4,7 +4,7 @@ use crate::{
     HelpLevel, Linter, Severity,
     native::{NativeLintRefusal, template::NativeTemplateLintRefusal as Template},
 };
-use vize_l0::{Allocator, Span};
+use vize_l0::Allocator;
 use vize_l1::embed::syntax::EmbedHole;
 use vize_l2::file::vue::ExposureIssueKind;
 use vize_l2::lang::js::{SetupIssue, SetupIssueKind};

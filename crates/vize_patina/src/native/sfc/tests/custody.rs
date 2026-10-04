@@ -136,7 +136,9 @@ fn actual_declaration_interruption_cannot_become_a_whole_primitive_setup_receipt
     );
     assert_eq!(file.issues(), []);
     assert_eq!(
-        VueSetup::checked(&file, script, program).err().unwrap(),
+        VueSetup::checked(&file, script, original.syntax().admitted_program().unwrap())
+            .err()
+            .unwrap(),
         SetupIssue {
             span: script_span(SOURCE),
             kind: SetupIssueKind::Exposure(ExposureIssueKind::IncompleteFile)

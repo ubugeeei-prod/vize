@@ -345,3 +345,5 @@ byte-exact; repaired46 laws are uncompiled/unexecuted. Original HOLD receipt
 `df28101db8c3346a6cb2bbcaa445fec4d1afbbe5a5961147405c4e6962a94915`, stays
 source review only. Fresh exact repaired-source peer/coordinating review is
 required before publication; normal Actions/protected acceptance stays pending.
+
+First hosted3dd compilation rejected the interruption law with E0382 (job111394609027); the same retained NativeSyntax now supplies a fresh short Program view after the interruption, without a new parse/walk or changed whole expected vectors. An unused test import is removed. All46/eight CF remain unexecuted, pending fresh peer/source Actions; paired [#6848](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5978026791) / [#6881](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-5978026995).
