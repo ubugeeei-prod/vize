@@ -122,3 +122,15 @@ This establishes the fixture-gate scope and preserves the pending printer arm. N
 The whole-SFC native formatter, complete native equivalence, default path replacement and legacy deletion remain separate product gates. The recorded original differential and public histories keep native handled/equivalent/paired counts at zero. Issue closure must not be represented as native formatter completion or default admission.
 
 The source-bound fixture assessment finds no missing original historical fixture or execution envelope. Final closure requires review and delivery of this assessment and its paired issue decision, while recording the printer TODO under #6847. Until that administrative record is accepted, #6882 remains open.
+
+## Historical paired central wording
+
+The following original child wording is retained verbatim as history; main
+already records the separately delivered original fixture scope and closure.
+
+- **Formatter:** L1 only. A rewrite whose safety depends on L2 facts (for example component-dependent self-closing) is a linter autofix instead. [Import sorting](./2026-10-01-formatter-import-sorting.md) records #7258 native/Vite+ controls and byte contracts. [Public Vite+ configuration and npm CLI custody](./2026-10-04-formatter-vite-cli-history.md) adds nine supplemental source-owned plans through the real configuration functions, temporary JSON and unchanged Node launcher. It consumes genuine emitted-addon/live-owner proof, retains whole objects/process/files, the actual local load and noninvoked core-qualified public HMR descriptors with unchanged callable identity; source-scoped `458e517f` hosted capture matches all 9/27 calls, while its warning-red gate requires exact-head repair. Protected full/27-call/all100 acceptance actually merged as signed `d013629e`; native counts remain zero and whole-history/default gates stay open. [Original formatter instruction metrics](./2026-10-04-formatter-instruction-metrics.md) preserves the original benchmark inputs/routines and all 100 existing caps; authenticated a41/c225 calibration freezes four exact stage-return ceilings without headroom; final c079 Actions and actual signed 3e67e057 protected Check 37164617448 accept all 104 rows × three executions with every old cap unchanged. Allocation/wall/RSS and genuine OXC printer-error engineering coverage remain separate unfinished work.
+
+Paired [original fixture assessment](https://github.com/ubugeeei-prod/vize/issues/6882#issuecomment-5975313632)
+and [separate printer engineering TODO](https://github.com/ubugeeei-prod/vize/issues/6847#issuecomment-5975313832)
+are carried with the genuine [whole scriptless source owner](./2026-10-04-native-scriptless-sfc-formatting.md).
+The issue remains open until actual delivery and acceptance.

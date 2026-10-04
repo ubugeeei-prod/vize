@@ -77,3 +77,12 @@ from native product parity/default migration; its issue remains open until the
 reviewed assessment is actually delivered and accepted. No native300 equivalence,
 legacy fallback/default switch, public FormatOptions parity, oracle or budget
 change is claimed.
+
+The same source delivery carries the reviewed [original fixture-gate assessment](./2026-10-04-formatter-fixture-gate-assessment.md)
+and its paired issue decision, preserving the complete accepted3e evidence and
+historical pending semantics. Its proposed original fixture closure does not
+prove native300/public-option parity or switch a default route. Independent
+prepublication custody review strengthens two suffix-only retained-source
+checks to ENTIRE independently authored blocks and uses exact source-case
+classification; original inputs, outputs, refusals and all29 laws stay intact.
+Only source/pure checks qualify before fresh hosted execution.
