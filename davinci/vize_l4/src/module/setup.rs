@@ -5,6 +5,8 @@ use vize_l0::{SourceBlock, Span};
 use vize_l2::file::{BindingRef, DeclarationKind};
 use vize_l2::lang::js::{NativeSelectedSetup, SetupAnnotation, VueSetup};
 
+mod segments;
+
 pub const COMPONENT_BINDING: &str = "_sfc_main";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -37,6 +39,36 @@ pub fn emit_selected_setup<L: LinkSink>(
     setup: &NativeSelectedSetup<'_, '_>,
 ) -> Result<Writer<L>, SetupEmitError> {
     emit_body(setup)
+}
+
+/// Append only the original runtime segments into the caller's existing writer.
+/// The sealed owner supplies the actual source and sole-walk annotation rows.
+/// Every annotation boundary is checked before any append; copied bytes keep
+/// their full-file links. No component wrapper, binding access or target policy
+/// is supplied by this API. The target owns its generated-name collision checks.
+///
+/// Arbitrary source cannot replace the genuine selected setup:
+/// ```compile_fail
+/// use vize_l0::SourceBlock;
+/// use vize_l4::{module::setup::write_selected_setup_runtime_segments, write::{NoLinks, Writer}};
+/// fn substitute(source: SourceBlock<'_>, writer: &mut Writer<NoLinks>) {
+///     let _ = write_selected_setup_runtime_segments(source, writer);
+/// }
+/// ```
+/// Borrowed generic setup cannot be promoted into normally owned setup:
+/// ```compile_fail
+/// use vize_l2::lang::js::VueSetup;
+/// use vize_l4::{module::setup::write_selected_setup_runtime_segments, write::{NoLinks, Writer}};
+/// fn substitute(setup: &VueSetup<'_, '_, '_, '_>, writer: &mut Writer<NoLinks>) {
+///     let _ = write_selected_setup_runtime_segments(setup, writer);
+/// }
+/// ```
+pub fn write_selected_setup_runtime_segments<L: LinkSink>(
+    setup: &NativeSelectedSetup<'_, '_>,
+    writer: &mut Writer<L>,
+) -> Result<(), SetupEmitError> {
+    segments::validate(setup)?;
+    segments::append(setup, writer)
 }
 
 // Only genuine sealed setup owners implement this private segment projection.
@@ -84,33 +116,10 @@ fn emit_body<'owner, 'arena: 'owner, L: LinkSink>(
         }
     }
     let source = setup.source();
-    let mut previous = source.start();
-    for annotation in setup.type_annotations() {
-        let span = annotation.span();
-        if span.start < previous || span.start == span.end || !source.contains_block_span(span) {
-            return Err(fail(span, SetupEmitErrorKind::InvalidTypeAnnotation));
-        }
-        previous = span.end;
-    }
+    segments::validate(setup)?;
     let mut writer = Writer::default();
     writer.push("const _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\n");
-    let mut cursor = source.start();
-    for annotation in setup.type_annotations() {
-        let span = annotation.span();
-        if cursor != span.start {
-            let text = source
-                .source()
-                .get((cursor - source.start()) as usize..(span.start - source.start()) as usize)
-                .ok_or_else(|| fail(span, SetupEmitErrorKind::InvalidTypeAnnotation))?;
-            writer.push_linked(text, Span::new(cursor, span.start));
-        }
-        cursor = span.end;
-    }
-    let tail = source
-        .source()
-        .get((cursor - source.start()) as usize..)
-        .ok_or_else(|| fail(source.span(), SetupEmitErrorKind::InvalidTypeAnnotation))?;
-    writer.push_linked(tail, Span::new(cursor, source.end()));
+    segments::append(setup, &mut writer)?;
     // The copied source may end in a line comment or omit its last semicolon.
     // Generated code always starts a separate statement on its own line.
     writer.push("\n;\n    const __returned__ = {\n");
