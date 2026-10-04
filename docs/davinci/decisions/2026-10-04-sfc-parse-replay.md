@@ -70,6 +70,13 @@ A/B runs, discard inconvenient observations, or call the range a confidence inte
 
 ## Remaining work
 
+Initial source `1bc535ddd748d196733e3d5b4bf38fe9314d45cc` started replay
+`37183563214` and full Check `37183565314`. The online security audit rejected
+the copied generated stable installer pin as unreachable. The replay wrapper
+now uses verified upstream master `7e38f4b43b4db5c8dd498af069a4f6196df1d067`
+with the same explicit 1.98.0 input. The initial attempts were superseded;
+partial artifacts and failed audit remain historical, with no performance credit.
+
 Run the exact source lane and inspect all three runner packets and order effects.
 If a smaller signal persists, inspect emitted parser code and layout before
 choosing a bounded control or real fix. If results differ by runner/order,
