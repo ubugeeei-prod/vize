@@ -12,6 +12,9 @@ await test("original native Vapor source qualifies a fresh affected-PR capture w
     "davinci/vize_l3/src/decision/vapor/build.rs",
     "davinci/vize_l4/src/targets/vapor/component.rs",
     "davinci/vize_l4/src/module.rs",
+    "davinci/vize_l4/src/expr.rs",
+    "davinci/vize_l4/src/expr/resolved.rs",
+    "davinci/vize_l4/src/expr/vue.rs",
     "davinci/vize_l4/src/write/source_map.rs",
     "davinci/vize_l4/tests/native_vapor.rs",
     "crates/vize_atelier_sfc/src/lib.rs",
@@ -37,6 +40,8 @@ await test("original native Vapor source qualifies a fresh affected-PR capture w
     "crates/vize_atelier_sfc/src/native_ssr.rs",
     "npm/ui/src/main.ts",
     "davinci/vize_l4/src/targets/ts.rs",
+    "davinci/vize_l4/src/expr.rs.unrelated",
+    "davinci/vize_l4/src/expr_unrelated/resolved.rs",
   ])
     assert.equal(nativeVaporCaptureRequired([path]), false, path);
   assert.equal(nativeVaporCaptureRequired([]), false);

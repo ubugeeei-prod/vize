@@ -183,3 +183,11 @@ The real lower body instead refuses it as `UnsupportedChild`, retaining an
 incomplete File and exact whole-source span. The unchanged original input now has
 its own precise Source law; Identifier For/handler/nested target controls remain.
 Failed partial capture grants no runtime or acceptance credit. Fresh proof is required.
+
+Independent capture review found the actual shared L4 expression writer absent
+from affected-PR capture selection. Its exact `expr.rs` root and `expr/` subtree
+now qualify fresh whole-module/map/runtime capture, with adjacent unrelated
+paths remaining outside the boundary. The existing first-worker and empty-shard
+fallback still require all eight payloads; the original six remain unchanged.
+This CI closure changes no module/map expectation, runtime or production policy;
+fresh exact-head Actions and protected full/104-by-three proof remain required.
