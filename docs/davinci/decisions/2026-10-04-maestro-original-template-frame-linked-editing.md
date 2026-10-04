@@ -7,6 +7,13 @@ the sole splitter's real depth-zero closing-name event. Exact-source Actions,
 native Stack registration, protected full/all104 measurements and actual merges
 are required independently for both layers; source presence is not acceptance.
 
+The parent then requires a lossless replay after an actual main central-record
+conflict. Its corrected source `0e8c1d31cc21442fa755fcf7d286840e4d4e6b73`
+retains all ten reviewed source/companion blobs and every incoming main row. This
+child replays onto that exact parent with all ten production/law blobs unchanged.
+The previous 87b source's actual 17 runtime/six compile-fail/positive successes
+remain historical; fresh exact-head checks are required without transferred proof.
+
 ## Standard result and original owner
 
 The explicit native `textDocument/linkedEditingRange` route previously returned
