@@ -67,36 +67,98 @@ fn owned_snapshots_preserve_every_supplied_telemetry_field() {
             ..options()
         },
     );
-    assert_eq!(
-        serde_json::to_value(&export).unwrap(),
-        serde_json::json!({
-            "schema_version": 1,
-            "tool": "vize",
-            "tool_version": env!("CARGO_PKG_VERSION"),
-            "command": "analyze-sfc",
-            "budget": { "max_spans": 512, "max_counters": 256 },
-            "truncation": { "dropped_spans": 0, "dropped_counters": 0 },
-            "spans": [{
-                "key": "profile.snapshot.span", "count": 2,
-                "wall_ns": {
-                    "total": 40, "self": 40, "min": 10, "max": 30,
-                    "p50": 1000, "p95": 1000, "p99": 1000,
-                },
-                "alloc": { "calls": 7, "bytes": 99, "self_calls": 5, "self_bytes": 75 },
-                "attribution": {
-                    "stage": "s2", "pass": "fold", "file_id": 7,
-                    "block": "template", "span": { "start": 5, "end": 9 },
-                },
-            }],
-            "counters": [{
-                "key": "io.read.bytes", "samples": 2, "total": 16, "min": 7, "max": 9,
-            }],
-            "allocation": {
-                "calls": 10, "requested_bytes": 81, "released_bytes": 24, "failures": 6,
+    let expected = serde_json::json!({
+        "schema_version": 1,
+        "tool": "vize",
+        "tool_version": env!("CARGO_PKG_VERSION"),
+        "command": "analyze-sfc",
+        "budget": { "max_spans": 512, "max_counters": 256 },
+        "truncation": { "dropped_spans": 0, "dropped_counters": 0 },
+        "spans": [{
+            "key": "profile.snapshot.span", "count": 2,
+            "wall_ns": {
+                "total": 40, "self": 40, "min": 10, "max": 30,
+                "p50": 1000, "p95": 1000, "p99": 1000,
             },
-        })
-    );
-    assert!(export.to_json().ends_with("\n"));
+            "alloc": { "calls": 7, "bytes": 99, "self_calls": 5, "self_bytes": 75 },
+            "attribution": {
+                "stage": "s2", "pass": "fold", "file_id": 7,
+                "block": "template", "span": { "start": 5, "end": 9 },
+            },
+        }],
+        "counters": [{
+            "key": "io.read.bytes", "samples": 2, "total": 16, "min": 7, "max": 9,
+        }],
+        "allocation": {
+            "calls": 10, "requested_bytes": 81, "released_bytes": 24, "failures": 6,
+        },
+    });
+    assert_eq!(serde_json::to_value(&export).unwrap(), expected);
+    let expected_wire = concat!(
+        r#"{
+  "schema_version": 1,
+  "tool": "vize",
+  "tool_version": "$TOOL_VERSION",
+  "command": "analyze-sfc",
+  "budget": {
+    "max_spans": 512,
+    "max_counters": 256
+  },
+  "truncation": {
+    "dropped_spans": 0,
+    "dropped_counters": 0
+  },
+  "spans": [
+    {
+      "key": "profile.snapshot.span",
+      "count": 2,
+      "wall_ns": {
+        "total": 40,
+        "self": 40,
+        "min": 10,
+        "max": 30,
+        "p50": 1000,
+        "p95": 1000,
+        "p99": 1000
+      },
+      "alloc": {
+        "calls": 7,
+        "bytes": 99,
+        "self_calls": 5,
+        "self_bytes": 75
+      },
+      "attribution": {
+        "stage": "s2",
+        "pass": "fold",
+        "file_id": 7,
+        "block": "template",
+        "span": {
+          "start": 5,
+          "end": 9
+        }
+      }
+    }
+  ],
+  "counters": [
+    {
+      "key": "io.read.bytes",
+      "samples": 2,
+      "total": 16,
+      "min": 7,
+      "max": 9
+    }
+  ],
+  "allocation": {
+    "calls": 10,
+    "requested_bytes": 81,
+    "released_bytes": 24,
+    "failures": 6
+  }
+}"#,
+        "\n"
+    )
+    .replace("$TOOL_VERSION", env!("CARGO_PKG_VERSION"));
+    assert_eq!(export.to_json(), expected_wire);
 }
 
 #[test]

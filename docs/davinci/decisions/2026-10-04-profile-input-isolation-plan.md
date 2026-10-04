@@ -126,3 +126,25 @@ old malformed caller, dependency, golden-literal and gate rejection. The new
 assembly mutation control refuses changed bytes before any replay writes.
 The Curator child is not implemented in this provider; its real allocator
 noninterference and whole output proof remain separate pending work.
+
+## First source Actions and exact replay correction
+
+Draft native Stack #7814 registers provider #7812 (`d337cdcd`) and genuine
+child #7813 (`ddcfcc24`) at positions 1/2. The first child's Check
+`37200592437` built and passed all four Rust workers, including all four
+provider laws and the actual standalone allocator-session law once each.
+Those results qualify that historical source only; overall source acceptance
+failed in tooling and neither layer entered the queue.
+
+The retained failures identify a suffix-only newline assertion and stale
+historic move witnesses: the owned facade has an additional CounterMetrics
+import/API link, and its exact contract is a later allocator-replay state.
+The correction requires the complete manually ordered wire document plus
+newline, checks the already qualified whole facade/assembly instead of old
+import/doc transformations, and normalizes only two exact later contract
+hashes to the unchanged original allocator-replay bytes. Current checks return
+no writes; historical replay retains its own bytes. Unknown/partial contracts
+and all original malformed caller/dependency/lock/golden controls still fail.
+Production exporter/assembly/Curator/native state, schemas, clocks and all104
+caps remain exact. Fresh exact-source Actions are required; the coordinated
+v0.433 admission hold, protected proof and actual merge remain pending.

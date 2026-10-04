@@ -168,8 +168,12 @@ export function prepare(read: Reader): Map<string, string> {
   }
   const oldImports = `use crate::String;\n\nuse super::allocation::AllocationSnapshot;\nuse super::attribution::SpanAttribution;\nuse super::core::Profiler;\nuse super::metrics::Metrics;`;
   const newImports = `use vize_l0::String;\nuse vize_l0::profiler::{AllocationSnapshot, Metrics, Profiler, SpanAttribution};`;
-  change(exportFile, oldImports, newImports);
-  change(exportFile, "[`Profiler::export_report`]", "[`export_report`]");
+  // The complete reviewed owned-input facade and assembly were qualified above.
+  // Its additional CounterMetrics import and API link are not old move inputs.
+  if (!read(exportFile).includes("mod assemble;")) {
+    change(exportFile, oldImports, newImports);
+    change(exportFile, "[`Profiler::export_report`]", "[`export_report`]");
+  }
   const exporter = get(exportFile);
   if (old) {
     const start = exporter.indexOf("impl Profiler {\n"),
