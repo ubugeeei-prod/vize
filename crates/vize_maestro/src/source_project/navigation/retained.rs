@@ -18,6 +18,7 @@ use vize_l2::{
 };
 
 mod highlights;
+pub(super) mod linked;
 pub(super) mod selected;
 pub(super) mod vue;
 
@@ -110,6 +111,7 @@ fn serve(query: &RetainedNavigation<'_, '_>, receiver: Receiver<Command>, contro
             break;
         }
         match command {
+            Command::LinkedEditing(request) => request.refuse(NavigationRefusal::Language),
             Command::Highlights(request) => {
                 if !request.reply.is_canceled() {
                     #[cfg(test)]

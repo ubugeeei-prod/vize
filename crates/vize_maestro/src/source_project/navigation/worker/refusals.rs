@@ -8,6 +8,7 @@ pub(super) fn refused(receiver: Receiver<Command>, control: &Control, refusal: N
             break;
         }
         match command {
+            Command::LinkedEditing(request) => request.refuse(refusal.clone()),
             Command::Highlights(request) => {
                 if !request.reply.is_canceled() {
                     let _ = request.reply.send(Err(refusal.clone()));

@@ -524,6 +524,11 @@ impl LanguageServer for MaestroServer {
             return Ok(None);
         }
 
+        #[cfg(feature = "experimental-source-navigation")]
+        if self.state.native_linked_editing_enabled() {
+            return self.native_linked_editing(params).await;
+        }
+
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
         let Some(content) = self.state.documents.text(uri) else {

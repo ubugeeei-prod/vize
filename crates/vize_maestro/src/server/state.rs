@@ -63,6 +63,8 @@ pub use batch_cache::BatchTypeCheckCache;
 pub struct ServerState {
     /// Document store for managing open documents
     pub documents: DocumentStore,
+    #[cfg(feature = "experimental-source-navigation")]
+    native_linked_editing: AtomicBool,
     /// Memoized SFC descriptors, one parse per buffer revision (P5-6a).
     pub(crate) resident: resident::ResidentCache,
     /// Virtual code generator (reusable)
@@ -211,6 +213,8 @@ impl ServerState {
             // JSX/TSX stays off so React sources remain untouched (#1498).
             type_checker_jsx_typecheck: RwLock::new(false),
             experimental_patterned_template: AtomicBool::new(false),
+            #[cfg(feature = "experimental-source-navigation")]
+            native_linked_editing: AtomicBool::new(false),
             linter_config: RwLock::new(LinterConfig::default()),
             linter_rule_options: RwLock::new(vize_l0::config::ConfigLintRuleOptions::default()),
             dialect_config: RwLock::new(None),

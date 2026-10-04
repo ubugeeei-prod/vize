@@ -9,6 +9,7 @@ pub(super) enum Profile {
     Program(ProgramOptions),
     Vue(VueConfiguration),
     SelectedVue(VueConfiguration),
+    TemplateNamesVue(VueConfiguration),
 }
 
 /// Coarse actual server settings; these confer no SFC or File admission.
@@ -34,4 +35,11 @@ impl VueConfiguration {
             template: SurfaceParseOptions::default(),
         }
     }
+}
+
+#[derive(Clone, Copy)]
+pub(super) enum QueryFamily {
+    Program,
+    Selected,
+    Names,
 }

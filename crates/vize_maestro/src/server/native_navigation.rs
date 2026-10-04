@@ -1,11 +1,11 @@
-//! Explicit preview endpoints; standard LSP routes retain their existing path.
+//! Explicit native endpoints and the opt-in standard linked-editing route.
 use super::MaestroServer;
 use crate::source_project::{SnapshotRefusal, navigation::NavigationRefusal};
 use tower_lsp::{
     jsonrpc::{Error, ErrorCode, Result},
     lsp_types::{
-        DocumentHighlight, DocumentHighlightParams, GotoDefinitionParams, Location,
-        ReferenceParams, Url,
+        DocumentHighlight, DocumentHighlightParams, GotoDefinitionParams, LinkedEditingRangeParams,
+        LinkedEditingRanges, Location, ReferenceParams, Url,
     },
 };
 
@@ -17,6 +17,26 @@ pub(super) const HIGHLIGHTS_METHOD: &str = "vize/nativeDocumentHighlight";
 pub(super) const TEMPLATE_HIGHLIGHTS_METHOD: &str = "vize/nativeTemplateDocumentHighlight";
 
 impl MaestroServer {
+    pub(super) async fn native_linked_editing(
+        &self,
+        params: LinkedEditingRangeParams,
+    ) -> Result<Option<LinkedEditingRanges>> {
+        let request = params.text_document_position_params;
+        let result = self
+            .navigation
+            .as_ref()
+            .ok_or_else(Error::internal_error)?
+            .linked_editing(&request.text_document.uri, request.position)
+            .await;
+        if !self.state.native_linked_editing_enabled() || !self.state.lsp_features().rename {
+            if let Some(project) = &self.navigation {
+                project.retire_linked_editing();
+            }
+            return Err(Error::new(ErrorCode::ContentModified));
+        }
+        result.map_err(query_error)
+    }
+
     pub(super) async fn native_highlights(
         &self,
         params: DocumentHighlightParams,
@@ -161,6 +181,10 @@ fn query_error(refusal: NavigationRefusal) -> Error {
         NavigationRefusal::SelectedSfcProducer(_) => (
             ErrorCode::ServerError(-32011),
             "Native original selected SFC observation refused",
+        ),
+        NavigationRefusal::TemplateNamesProducer | NavigationRefusal::ElementNames(_) => (
+            ErrorCode::ServerError(-32012),
+            "Native original template names refused",
         ),
         NavigationRefusal::WorkerUnavailable => (
             ErrorCode::ServerError(-32008),

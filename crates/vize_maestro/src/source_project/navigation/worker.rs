@@ -18,6 +18,7 @@ use super::{NavigationRefusal, SourceSnapshot, profile::Profile, retained};
 mod refusals;
 pub(super) use refusals::refused;
 pub(super) mod highlights;
+pub(super) mod linked;
 pub(super) mod selected;
 
 pub(super) const WORKER_LIMIT: usize = 16;
@@ -25,6 +26,7 @@ const REQUEST_LIMIT: usize = 16;
 
 pub(super) enum Command {
     Highlights(highlights::Request),
+    LinkedEditing(linked::Request),
     TemplateDefinition(
         Position,
         oneshot::Sender<Result<Vec<Location>, NavigationRefusal>>,
@@ -166,6 +168,9 @@ impl NavigationWorker {
                     }
                     Profile::SelectedVue(configuration) => {
                         retained::selected::run(owner, configuration, receiver, stop);
+                    }
+                    Profile::TemplateNamesVue(configuration) => {
+                        retained::linked::run(owner, configuration, receiver, stop);
                     }
                 }
             })
