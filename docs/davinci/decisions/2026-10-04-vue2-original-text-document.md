@@ -269,3 +269,17 @@ new assertions extend the existing private law rather than inventing an invalid
 sealed view. The initial 48-row raw packet stays immutable. Full root/peer
 review of this production correction and fresh exact hosted acceptance remain
 required; failed `ef95` supplies no whole-source or queue acceptance.
+
+Root and the reused peer reviewed the complete corrected `b545d6199c` source
+proof and genuine identity-slice/Retained-policy law: CLEAR, including the
+637e structural-only workflow correction. Root authorized the combined source
+for publication and automatic Actions. The clean replay onto literal actual
+main `da894691ff` preserves every reviewed production/law/oracle/capture byte,
+plus incoming property-quote behavior, source-history requirements and central
+records. The complete initial four JUnit artifacts independently reconcile
+15,478 executed/15,476 passed with exactly two new identity-slice failures;
+all old seven Vue2/five Vue1 whole oracle names pass. This corrects earlier
+session-only inferred counts and retains sourceAcceptance=false for `ef95`.
+No prior partial native/Doc execution qualifies the successor. Fresh full
+source proof, all real eleven laws/eight compile-fail/positive/48 capture rows,
+protected full suites/all 104 original caps and actual merge remain required.
