@@ -1,9 +1,14 @@
 use super::{EndOfLine, FormatOptions};
 
 impl FormatOptions {
-    /// Only the Auto path calls this; explicit/default options never scan or clone.
+    /// Keep source scanning and owned options outside every explicit/default frame.
     #[cold]
-    pub(crate) fn with_resolved_line_ending(&self, source: &str) -> Self {
+    #[inline(never)]
+    pub(crate) fn format_with_source_line_ending<T>(
+        &self,
+        source: &str,
+        format: impl FnOnce(&Self) -> T,
+    ) -> T {
         let bytes = source.as_bytes();
         let mut options = self.clone();
         options.end_of_line = match memchr::memchr2(b'\r', b'\n', bytes) {
@@ -16,6 +21,6 @@ impl FormatOptions {
             }
             _ => EndOfLine::Lf,
         };
-        options
+        format(&options)
     }
 }

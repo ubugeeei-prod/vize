@@ -12,7 +12,9 @@ or dispatch, so mixed embedded languages use the document's style. Standalone
 script (including source-type/import-sort variants), version-aware template,
 style and JSON/JSONC surfaces resolve their own complete input first.
 
-Only Auto enters the cold resolution helper and clones options. The default
+Only Auto enters the cold resolution helper and clones options. Its source
+scan, owned option storage and recursive formatting live in a non-inlined cold
+function, so explicit/default callers reserve no cloned-option stack frame. The default
 and explicit paths keep their existing parse/stabilization stages; no second
 parse, serialization, dependency or relaxed instruction budget is introduced.
 CSS's existing indentation pass also applies explicit CR/CRLF layout. SFC
@@ -37,3 +39,9 @@ acceptance or paired-comparison credit.
 This completes the newline TODO identified in #7697, subject to its exact-head
 Actions and queue gates. #6098 remains open for its broader configuration and
 profiles acceptance; this scoped defect does not finish that roadmap.
+
+The first hosted three-run preflight (37170912313, head `7777a3ef`) preserved
+all 100 stage ceilings but exceeded the four original formatter caps by
+149/149/6/28 instructions. The cold-frame extraction above addresses that
+verified default-path cost; all unchanged ceilings must be measured again.
+No failed Auto candidate was enqueued.

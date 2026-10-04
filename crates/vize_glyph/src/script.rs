@@ -43,14 +43,9 @@ pub(crate) fn format_script_content_stable(
     sort_imports: Option<&crate::ImportSortOptions>,
 ) -> Result<String, FormatError> {
     if options.end_of_line == crate::EndOfLine::Auto {
-        let options = options.with_resolved_line_ending(source);
-        return format_script_content_stable(
-            source,
-            &options,
-            allocator,
-            source_type,
-            sort_imports,
-        );
+        return options.format_with_source_line_ending(source, |options| {
+            format_script_content_stable(source, options, allocator, source_type, sort_imports)
+        });
     }
     let mut current = format::format_script_content_with_sort_imports(
         source,

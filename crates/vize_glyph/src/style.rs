@@ -27,8 +27,9 @@ use vize_l0::{String, ToCompactString};
 /// of risking silent data loss.
 pub fn format_style_content(source: &str, options: &FormatOptions) -> Result<String, FormatError> {
     if options.end_of_line == crate::EndOfLine::Auto {
-        let options = options.with_resolved_line_ending(source);
-        return format_style_content(source, &options);
+        return options.format_with_source_line_ending(source, |options| {
+            format_style_content(source, options)
+        });
     }
     let trimmed = source.trim();
     if trimmed.is_empty() {
