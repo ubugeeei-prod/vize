@@ -18,7 +18,7 @@ fn descriptor() -> DescriptorOptions {
 }
 
 #[test]
-fn original_setup_reads_retain_actual_occurrences_bindings_and_distinct_scopes() {
+fn original_setup_reads_retain_actual_occurrences_bindings_and_scope_roles() {
     for (source, expected) in [
         (
             "<script setup>const value=42</script><template>{{value}}</template>",
@@ -71,7 +71,7 @@ fn original_setup_reads_retain_actual_occurrences_bindings_and_distinct_scopes()
         let expression = analysis.expression(*node).unwrap();
         let resolution = expression.resolution();
         assert!(core::ptr::eq(resolution.file(), file));
-        assert_ne!(resolution.scope(), Some(setup.scope()));
+        assert_eq!(resolution.scope(), Some(setup.scope()));
         let table = resolution.table().unwrap();
         let [occurrence] = table.occurrences() else {
             panic!("actual identifier occurrence")

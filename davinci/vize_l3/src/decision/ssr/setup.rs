@@ -117,7 +117,7 @@ impl<'view, 'owner, 'arena> NativeSelectedSetupSsrAnalysis<'view, 'owner, 'arena
 }
 
 /// Join original immutable reads in the existing sole canonical Enter stream.
-/// Template resolution scope and setup declaration scope remain distinct.
+/// Scope roles retain their actual IDs, which share the current setup root.
 pub fn build_native_selected_setup_ssr_decisions<'view, 'owner, 'arena>(
     setup: &'view NativeSelectedSetup<'owner, 'arena>,
 ) -> Result<NativeSelectedSetupSsrAnalysis<'view, 'owner, 'arena>, NativeSsrBuildError> {
