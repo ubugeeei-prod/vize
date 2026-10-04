@@ -78,7 +78,12 @@ RELATIVE = (
     "witness_verify/facts.rs",
     "witness_verify/main.rs",
 )
-MOVES = {OLD / 'tests' / name: NEW / 'tests' / name for name in RELATIVE}
+DESTINATION_NAMES = {
+    "folio_derive_laws.rs": "dump_derive_laws.rs",
+    "folio_dump.rs": "dump_hash_gate.rs",
+}
+MOVES = {OLD / 'tests' / name: NEW / 'tests' / DESTINATION_NAMES.get(name, name)
+         for name in RELATIVE}
 
 
 def main():
@@ -108,7 +113,7 @@ def main():
         updates[p] = transform(before)
     for name in RELATIVE:
         if name.endswith('.rs') and not name.startswith('fixtures/'):
-            update(NEW / 'tests' / name, lambda s: re.sub(r'\bvize_davinci::', 'vize_l0::', s)
+            update(MOVES[OLD / 'tests' / name], lambda s: re.sub(r'\bvize_davinci::', 'vize_l0::', s)
                    .replace('vize_l0::diagnostic', 'vize_l0::diag')
                    .replace('vize_l0::witness', 'vize_l0::diag::verify'))
     def manifest(s):
