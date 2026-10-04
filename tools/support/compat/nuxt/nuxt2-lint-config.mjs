@@ -15,7 +15,7 @@ function distHashes(directory) {
   return Object.fromEntries(
     fs
       .readdirSync(directory, { recursive: true })
-      .sort()
+      .sort((left, right) => left.localeCompare(right))
       .flatMap((file) => {
         const entry = path.join(directory, file);
         return fs.statSync(entry).isFile()
@@ -25,7 +25,19 @@ function distHashes(directory) {
   );
 }
 
-export async function verifyNuxt2LintConfig(fixture, artifacts) {
+export function verifyNuxt2LintConfig(fixture, artifacts) {
+  // The module resolves itself from cwd, as in the original Nuxt CLI build.
+  const run = spawnSync(process.execPath, [fileURLToPath(import.meta.url), fixture, artifacts], {
+    cwd: fixture,
+    stdio: "inherit",
+    timeout: 60_000,
+  });
+  assert.equal(run.error, undefined);
+  assert.equal(run.signal, null);
+  assert.equal(run.status, 0);
+}
+
+async function runProbe(fixture, artifacts) {
   const requireFixture = createRequire(path.join(fixture, "package.json"));
   const { loadNuxt } = requireFixture("nuxt");
   const packages = {};
@@ -141,4 +153,8 @@ export async function verifyNuxt2LintConfig(fixture, artifacts) {
   } finally {
     await nuxt.close();
   }
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  await runProbe(path.resolve(process.argv[2]), path.resolve(process.argv[3]));
 }
