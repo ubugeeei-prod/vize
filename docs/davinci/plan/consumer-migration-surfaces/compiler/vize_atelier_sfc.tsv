@@ -426,6 +426,18 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/imported_prop_defaults.
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/imported_type_cache.rs	13	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/module_mode_setup_bindings.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/module_mode_setup_bindings.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502.rs	2	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502/capture.rs	8	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502/capture.rs	8	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502/custody.rs	4	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502/custody.rs	4	l1	L1	stage	vize_l1	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502/custody.rs	4	l2	L2	stage	vize_l2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502/custody.rs	4	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502/envelopes.rs	9	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502/envelopes.rs	9	l1	L1	stage	vize_l1	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502/envelopes.rs	9	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502/inputs.rs	4	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502/refusals.rs	4	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_scoped_ssr.rs	6	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_scoped_ssr.rs	6	l2	L2	stage	vize_l2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_scoped_ssr.rs	6	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1

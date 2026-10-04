@@ -1,8 +1,10 @@
 # Original #7502 attribute-value qualification
 
-This is a private capture-harness decision, pending the parent source review and
-paired issue/central-record publication. It changes no production route, writer,
-assembly, old corpus, or accepted evidence. The original private helper parent is
+This capture-harness decision has full root and independent SSR source review,
+paired with #6880/#7502 and the central record upon genuine child adoption.
+Hosted compilation/capture and output review remain unfinished. It changes no
+production route, writer, assembly, old corpus, or accepted evidence. The original
+private helper parent is
 `35900eb43e8b82a8e4c0e7452f48e634fd106fed`; only its new-file delta may be adopted on
 the actual current provider/consumer ancestry.
 
