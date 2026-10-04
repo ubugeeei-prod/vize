@@ -155,3 +155,19 @@ records. The same original native runtime/29law blobs and complete restored
 suppression94b source remain exact. The full300 history/mutation checks and
 owned19 inventories pass after replay. Fresh exact-source/104/protected/native
 Stack acceptance remains required; release coordination still holds admission.
+
+The combined Auto-main source `e83f1db4f2` passes complete source Check37175084200
+and all104 manual37175081818. Formatter artifact11293011049 contains three
+identical292299/273455/928935/244006 runs; original100 artifact11292837054
+independently passes the unchanged source/window/methodology and cap checks.
+These measured receipts remain historical after the next main advance.
+
+Following actual release merge/tag `v0.431.0` at literal
+`6987c523ecd2bee6e8489e2973e4b7499ce25018`, replay onto that released main
+while publication is pending. Preserve complete incoming workspace versions,
+L1 borrowed-expression/parser providers, script37c/current witness registry,
+canonical assessment and unrelated decisions. Native root exports/runtime and
+all29 laws match original3a byte for byte; original suppression94b stays exact.
+Original300 history/mutation checks and owned19 inventories pass after replay.
+Fresh exact-source/104 and protected literal acceptance remain mandatory;
+queue admission awaits the coordinator's explicit thaw after publication.
