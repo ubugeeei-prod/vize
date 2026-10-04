@@ -58,7 +58,7 @@ fn original_element_ancestry_matches_the_real_browser_census() {
         assert_eq!(owner.unfinished_tree_policies().len(), 4);
         count += 1;
     }
-    assert_eq!(count, 8);
+    assert_eq!(count, 12);
 }
 
 #[test]
@@ -121,8 +121,8 @@ fn implicit_envelopes_and_text_insertion_modes_refuse_completion() {
     for source in [
         "<DIV/><SPAN></SPAN></DIV>",
         "<!DOCTYPE html><html><body></body></html>",
-        "&#32;<!DOCTYPE html><html><head></head><body></body></html>",
-        "<!DOCTYPE html><html><head>&#32;</head><body></body></html>",
+        "&nbsp;<!DOCTYPE html><html><head></head><body></body></html>",
+        "<!DOCTYPE html><html><head>&ThickSpace;</head><body></body></html>",
         "<!DOCTYPE html><html><head>nonspace</head><body></body></html>",
         "<!DOCTYPE html><html><head></head><body></body>tail</html>",
         "<!DOCTYPE html><html><head></head><body></body></html>\u{a0}",
@@ -134,6 +134,30 @@ fn implicit_envelopes_and_text_insertion_modes_refuse_completion() {
             Refusal::ExplicitEnvelope,
             "{source}"
         );
+    }
+}
+
+#[test]
+fn decoded_nonspace_entities_cannot_hide_implicit_envelope_changes() {
+    for source in [
+        "&nbsp;<!DOCTYPE html><html><head></head><body></body></html>",
+        "<!DOCTYPE html>&ThickSpace;<html><head></head><body></body></html>",
+        "<!DOCTYPE html><html>&#x2003;<head></head><body></body></html>",
+        "<!DOCTYPE html><html><head>&NotEqualTilde;</head><body></body></html>",
+        "<!DOCTYPE html><html><head></head>&amp;lt;<body></body></html>",
+        "<!DOCTYPE html><html><head></head><body></body>&lt;div&gt;</html>",
+        "<!DOCTYPE html><html><head></head><body></body></html>&#x80;",
+        "&Tab;x<!DOCTYPE html><html><head></head><body></body></html>",
+    ] {
+        let allocator = Allocator::default();
+        let owner = NativeDocument::lex_in(&allocator, root(source));
+        assert!(owner.normal_completion().is_ok(), "{source}");
+        assert_eq!(
+            owner.html_structure().unwrap_err(),
+            Refusal::ExplicitEnvelope,
+            "{source}"
+        );
+        assert_eq!(owner.source(), source);
     }
 }
 

@@ -13,10 +13,14 @@ The native law observes the complete original Document lexer run, authored
 tag/interpolation spans and unchanged raw script/style bytes. It proves no
 petite-vue runtime, `v-scope` meaning, DOM tree policy or L2/product completion.
 
-`html-structure.tsv` contains eight original explicit-envelope HTML law sources.
+`html-structure.tsv` contains twelve original explicit-envelope HTML law sources.
 Each row records actual HTML local names and parent start-tag order. Native Rust
 structure laws and the existing Chromium browser suite consume the same bytes
 and census. The admitted provider proves only element ancestry, case folding,
 true void insertion and ignored nonvoid slashes for its documented subset.
 Text/attribute DOM values, general tree policies and petite-vue stay unfinished;
 the complete pinned SVG document deliberately refuses structural admission.
+
+Four additional sources retain actual once-decoded character-reference payloads,
+including numeric/named HTML whitespace before and between envelope members.
+Their element ancestry and no-quirks mode are checked by the same browser suite.

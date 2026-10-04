@@ -8,6 +8,7 @@
 use vize_l0::{Allocator, SourceRoot, Span, Vec};
 
 use super::{Document, LexErrorCode, LexOptions, Lexer, ProfileKind, QuoteType};
+use crate::markup::entity::DecodedEntity;
 
 mod sink;
 mod structure;
@@ -48,8 +49,32 @@ pub enum DocumentTokenKind {
 
 #[derive(Debug)]
 struct Event {
-    kind: DocumentTokenKind,
+    kind: RecordedKind,
     span: Span,
+}
+
+#[derive(Debug)]
+enum RecordedKind {
+    Token(DocumentTokenKind),
+    TextEntity(DecodedEntity),
+    AttributeEntity(DecodedEntity),
+}
+
+impl Event {
+    fn kind(&self) -> DocumentTokenKind {
+        match self.kind {
+            RecordedKind::Token(kind) => kind,
+            RecordedKind::TextEntity(_) => DocumentTokenKind::TextEntity,
+            RecordedKind::AttributeEntity(_) => DocumentTokenKind::AttributeEntity,
+        }
+    }
+
+    fn decoded_entity(&self) -> Option<DecodedEntity> {
+        match self.kind {
+            RecordedKind::TextEntity(value) | RecordedKind::AttributeEntity(value) => Some(value),
+            RecordedKind::Token(_) => None,
+        }
+    }
 }
 
 /// A retained lexical diagnostic. Its byte coordinate is not a tree span.
@@ -248,7 +273,15 @@ impl<'o, 'a> DocumentToken<'o, 'a> {
 
     #[must_use]
     pub fn kind(&self) -> DocumentTokenKind {
-        self.event.kind
+        self.event.kind()
+    }
+
+    /// The actual scalar expansion retained from this original lexer callback.
+    /// Named references may contain two scalars; their authored source span
+    /// remains one event. This performs no second decode or DOM normalization.
+    #[must_use]
+    pub fn decoded_entity(&self) -> Option<DecodedEntity> {
+        self.event.decoded_entity()
     }
 
     /// Raw callback coordinates; a recovered zero-width EOF coordinate can
@@ -270,3 +303,6 @@ impl<'o, 'a> DocumentToken<'o, 'a> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod entity_tests;

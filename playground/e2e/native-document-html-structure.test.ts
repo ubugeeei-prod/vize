@@ -5,8 +5,8 @@ import corpus from "../../davinci/vize_l1/tests/fixtures/document/html-structure
 // DOMParser supplies independent, actual browser HTML tree construction.
 describe("native Document explicit HTML element ancestry", () => {
   const rows = corpus.split("\n").filter((row) => row.length > 0 && !row.startsWith("#"));
-  it("keeps all eight native law sources", () => {
-    expect(rows).toHaveLength(8);
+  it("keeps all twelve native law sources", () => {
+    expect(rows).toHaveLength(12);
   });
   for (const row of rows) {
     const [name, source, expected] = row.split("\t");
@@ -14,6 +14,7 @@ describe("native Document explicit HTML element ancestry", () => {
       expect(source).toBeDefined();
       expect(expected).toBeDefined();
       const document = new DOMParser().parseFromString(source ?? "", "text/html");
+      expect(document.compatMode).toBe("CSS1Compat");
       const elements = Array.from(document.querySelectorAll("*"));
       const actual = elements.map((element) => {
         const parent = element.parentElement;

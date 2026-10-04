@@ -2,7 +2,9 @@
 
 use vize_l0::{Span, Vec};
 
-use super::{DocumentLexicalError, DocumentLexicalRefusal, DocumentTokenKind as Kind, Event};
+use super::{
+    DocumentLexicalError, DocumentLexicalRefusal, DocumentTokenKind as Kind, Event, RecordedKind,
+};
 use crate::markup::{LexErrorCode, QuoteType, Sink, entity::DecodedEntity};
 
 pub(super) struct Recorder<'a, 'o> {
@@ -14,6 +16,13 @@ pub(super) struct Recorder<'a, 'o> {
 
 impl Recorder<'_, '_> {
     fn push(&mut self, kind: Kind, start: usize, end: usize) {
+        self.events.push(Event {
+            kind: RecordedKind::Token(kind),
+            span: Span::new(start as u32, end as u32),
+        });
+    }
+
+    fn entity(&mut self, kind: RecordedKind, start: usize, end: usize) {
         self.events.push(Event {
             kind,
             span: Span::new(start as u32, end as u32),
@@ -58,20 +67,20 @@ impl Sink for Recorder<'_, '_> {
         on_attrib_name_end => AttributeNameEnd,
     }
 
-    fn on_text_entity(&mut self, _ch: char, start: usize, end: usize) {
-        self.push(Kind::TextEntity, start, end);
+    fn on_text_entity(&mut self, ch: char, start: usize, end: usize) {
+        self.on_text_entity_value(DecodedEntity::Numeric(ch), start, end);
     }
 
-    fn on_text_entity_value(&mut self, _value: DecodedEntity, start: usize, end: usize) {
-        self.push(Kind::TextEntity, start, end);
+    fn on_text_entity_value(&mut self, value: DecodedEntity, start: usize, end: usize) {
+        self.entity(RecordedKind::TextEntity(value), start, end);
     }
 
-    fn on_attrib_entity(&mut self, _ch: char, start: usize, end: usize) {
-        self.push(Kind::AttributeEntity, start, end);
+    fn on_attrib_entity(&mut self, ch: char, start: usize, end: usize) {
+        self.on_attrib_entity_value(DecodedEntity::Numeric(ch), start, end);
     }
 
-    fn on_attrib_entity_value(&mut self, _value: DecodedEntity, start: usize, end: usize) {
-        self.push(Kind::AttributeEntity, start, end);
+    fn on_attrib_entity_value(&mut self, value: DecodedEntity, start: usize, end: usize) {
+        self.entity(RecordedKind::AttributeEntity(value), start, end);
     }
 
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {

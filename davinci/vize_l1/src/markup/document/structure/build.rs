@@ -48,16 +48,16 @@ impl Builder<'_, '_> {
     fn run(&mut self) -> Result<(), Refusal> {
         let mut index = 0;
         while let Some(event) = self.owner.events.get(index) {
-            match event.kind {
+            match event.kind() {
                 Kind::OpenTagName => {
                     let name = event.span;
                     index += 1;
                     let mut end = None;
                     while let Some(part) = self.owner.events.get(index) {
                         index += 1;
-                        match part.kind {
+                        match part.kind() {
                             Kind::OpenTagEnd | Kind::SelfClosingTag => {
-                                end = Some((part.span.start, part.kind == Kind::SelfClosingTag));
+                                end = Some((part.span.start, part.kind() == Kind::SelfClosingTag));
                                 break;
                             }
                             Kind::AttributeName
@@ -91,7 +91,14 @@ impl Builder<'_, '_> {
                     }
                 }
                 Kind::TextEntity if self.mode == Mode::InBody => {}
-                Kind::TextEntity => return Err(Refusal::ExplicitEnvelope),
+                Kind::TextEntity => {
+                    let value = event.decoded_entity().ok_or(Refusal::ExplicitEnvelope)?;
+                    let mut space = true;
+                    value.for_each(|ch| space &= matches!(ch, '\t' | '\n' | '\x0c' | '\r' | ' '));
+                    if !space {
+                        return Err(Refusal::ExplicitEnvelope);
+                    }
+                }
                 Kind::Comment => self.comment(event.span)?,
                 Kind::Interpolation
                 | Kind::DirectiveName
