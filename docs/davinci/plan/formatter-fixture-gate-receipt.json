@@ -158,10 +158,10 @@
       "unreachableOrWaiverClaim": false,
       "todo": "Genuine original source input through pinned OXC provider, or separately reviewed source-bound engineering disposition."
     },
-    "nativeWholeSFCFormatting": false,
-    "nativeEquivalence": false,
-    "defaultReplacement": false,
-    "legacyDeletion": false,
+    "nativeWholeSFCFormatting": "unfinished",
+    "nativeEquivalence": "unfinished",
+    "defaultReplacement": "unfinished",
+    "legacyDeletion": "unfinished",
     "originalDifferentialCounts": {
       "nativeHandled": 0,
       "nativeEquivalent": 0,
