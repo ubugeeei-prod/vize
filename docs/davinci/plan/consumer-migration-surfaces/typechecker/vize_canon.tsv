@@ -217,8 +217,8 @@ typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/proje
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/script_build.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/setup_props.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/setup_props.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/setup_props/cache.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/setup_props/cache.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/setup_props/cache.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/setup_props/cache.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/setup_props/default_props.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/setup_props/default_props.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/setup_props/default_props.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
