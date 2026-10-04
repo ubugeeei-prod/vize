@@ -23,6 +23,8 @@ mod array_annotations;
 mod optional_parameters;
 #[path = "original_program_check/primitive_returns.rs"]
 mod primitive_returns;
+#[path = "original_program_check/required_named_exports_neutral.rs"]
+mod required_named_exports_neutral;
 #[path = "original_program_check/typed_parameters.rs"]
 mod typed_parameters;
 #[path = "original_program_check/unused_history.rs"]

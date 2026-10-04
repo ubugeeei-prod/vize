@@ -2,8 +2,10 @@
 
 Issues: [#6849](https://github.com/ubugeeei-prod/vize/issues/6849) and
 [#6879](https://github.com/ubugeeei-prod/vize/issues/6879).
-Private design only: no source implementation, original checker observation,
-Rust execution, publication or queue admission. The isolated `wt` starts from
+At the original design freeze: no source implementation, original checker
+observation, Rust execution, publication or queue admission. Subsequent
+private implementation and independent observations are recorded in the
+[provider companion](./2026-10-04-original-required-named-exports.md). The isolated `wt` starts from
 published fifth Stack #7759 head `d1fe8f12e96be2f6d3bbc259ee80197987bb082d`.
 Current first-five source/phase acceptance does not qualify this new slice and
 must proceed independently after the fixed release hold. Native typecheck owns
@@ -138,7 +140,7 @@ each once as TS and once with the same explicit original TSX fragment:
 - Declared exported result member error, retaining its function/read joins.
 - Missing required argument with complete related parameter declaration.
 - Unicode/CRLF ordered return/argument/member errors.
-- All seven directly exported keyword parameters/returns with valid values.
+- All seven directly exported keyword parameter/return declarations with no diagnostics.
 
 The final exact strings and filenames are still unobserved design inputs;
 do not claim a frozen twelve-vector packet yet. Reuse the unchanged original
@@ -170,9 +172,10 @@ existing parameter/return/optional fixtures and dev-oracle helper bytes.
 
 ## Ownership, execution and delivery
 
-Only this private design is authorized. Root and an independent source peer
-must clear exact admission/optional-partial behavior and the frozen source/laws
-before implementation/publication. Coordinate the optional sixth consumer's
+Root and the independent source peer cleared this design; root then
+authorized the bounded private provider and immediate original consumer.
+The frozen production/laws still require independent and root source review
+before publication. Coordinate the optional sixth consumer's
 stable inputs/head first. If earlier dependencies are open, branch from the
 real current published top, create proper parent bases and register actual
 ordered native Stack membership. If they have actually merged, start from
