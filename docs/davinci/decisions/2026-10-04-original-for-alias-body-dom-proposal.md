@@ -1,10 +1,9 @@
 # Original For value alias body DOM proposal
 
-Status: authorized private implementation on literal main `8ae25a1`.
-Production and acceptance harness are authored; Rust/source-built capture and
-protected acceptance have not run. Publication and new queue admission remain
-held by the release cutoff. The accepted static-body slice and its failed-prefix/terminal
-receipts stay in the [primitive For record](./2026-10-04-original-for-primitive-dom-proposal.md).
+Status: independently reviewed source replayed on literal main `c34b3d7`.
+A DRAFT source PR and automatic exact-head Actions are authorized; protected
+queue admission stays held until official 0.431 publication is verified.
+New Rust/source-built captures and protected acceptance are pending.
 
 ## Concrete bounded input
 
@@ -155,3 +154,22 @@ ten/seven/five fixture Git bytes and accepted2df/current-helper runtime files ar
 byte-identical, and all six named UTF-16 map joins are authentic. No new Rust,
 native output/runtime, performance or actual delivery acceptance is transferred
 from this read-only result. Publication/new queue admission stays held.
+
+## Authorized draft source acceptance
+
+The [paired replay decision](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5976555359)
+records root review CLEAR and the conflict-free replay of all five owned commits
+onto literal `c34b3d7a9881c10d8ceedff25f7f850df5a6698d`, yielding `84092b714e`.
+Range-diff is unchanged; every reviewed non-document production/law/harness/full
+six-fixture file is byte-identical to reviewed `cc800528fd`. Old ten/seven/five
+fixture files equal literal fresh main. Focused desired-model/selector controls
+pass 10/10 and the compiler census passes, with no local Rust or broad campaign.
+
+The absent owned branch is published only with an explicit empty expected lease;
+#7695 is literally merged, so the DRAFT source PR is independent. Automatic
+exact-head Actions must establish all six genuine native complete modules/raw
+maps/runtime/current-source hash joins and every mandatory old capture, strict
+compilation/privacy and nine owning laws. Source green grants no terminal merge
+credit. Queue admission waits for official 0.431 publication verification; full
+protected suites, all 104 immutable rows/ratchets and actual signed merge remain
+required. Earlier private/failure/terminal receipts retain their historical scope.
