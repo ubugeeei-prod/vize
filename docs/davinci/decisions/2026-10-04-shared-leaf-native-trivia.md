@@ -65,12 +65,16 @@ reports in every case hash to
 `fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8`;
 each failing two-server report hashes to
 `5386de331f523a6e2d996c144da6f0f18aba9dda80db977c58a4b33d6cea75df`.
-[The preserved data receipt](./results/typechecker-shared-leaf-native-trivia-old-probes.json)
-contains all five complete authored input sets and all 20 ordered reports,
+[The preserved data index](./results/typechecker-shared-leaf-native-trivia-old-probes.json)
+links bounded JSON parts containing all five complete authored input sets and all 20 ordered reports,
 the original row digest `bdd2e2350da59e21ba74c1ab2d9db6f500adff217b891fa98e1842a106c28073`,
 controller digest and executable/native hashes, commands and profile manifest.
 This local correctness reproduction establishes these failures only. It is
 untimed and supplies no performance claim or execution credit for a successor.
+The initial single-file archive at `ae1a8b44d0` exceeded the 350-line bound
+and failed exact source Check. Storage now uses a 79-line digest index and
+nine readable JSON parts, each below 350 lines. Reassembly preserves every
+parsed source, report, command, profile and provenance object; no budget changes.
 
 ## Historical exact-source qualification
 
