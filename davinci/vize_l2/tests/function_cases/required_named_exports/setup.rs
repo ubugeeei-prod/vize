@@ -15,7 +15,7 @@ use vize_l1::{
     markup::NativeTemplateComponent,
 };
 use vize_l2::{
-    file::{DeclarationKind, Namespace},
+    file::{DeclarationKind, Namespace, vue::ExposureIssueKind},
     lang::js::{
         FileProducer, NativeSetupIssueKind, NativeTemplateIssueKind, NativeTemplateOwner,
         ProgramInput, ProgramScope, SetupIssueKind, VueSetup,
@@ -68,7 +68,8 @@ fn a_complete_original_named_export_never_grants_setup_or_ordinary_eligibility()
     assert_eq!(parameter.declaration().unwrap().span.slice(source), "value");
     assert!(
         matches!(VueSetup::checked(&file, script, syntax.admitted_program().unwrap()),
-        Err(issue) if issue.kind == SetupIssueKind::UnsupportedSyntax)
+        Err(issue) if issue.span == script.block().span()
+            && issue.kind == SetupIssueKind::Exposure(ExposureIssueKind::ScriptExport))
     );
     assert!(file.ordinary_empty_script().is_none());
     let function = file

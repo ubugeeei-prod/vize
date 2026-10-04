@@ -179,9 +179,6 @@ fn named_function_exports_keep_recursion_forward_calls_alias_and_sibling_scope_o
     );
 }
 
-#[path = "required_named_exports/custody.rs"]
 mod custody;
-#[path = "required_named_exports/rejection.rs"]
 mod rejection;
-#[path = "required_named_exports/setup.rs"]
 mod setup;

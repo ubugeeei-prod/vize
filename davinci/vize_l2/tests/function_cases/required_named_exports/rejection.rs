@@ -4,10 +4,22 @@ use vize_l2::file::{FileIssueKind, PositionQueryError};
 #[test]
 fn optional_named_exports_keep_full_genuine_refusals_with_and_without_keyword_return() {
     let arena = Allocator::default();
-    for source in [
-        "export function f(value?: number) { return value; }",
-        "export function f(value?:number){return value;}f(1);",
-        "export function f(value?: number):number { return value; }",
+    for (source, parameter, references) in [
+        (
+            "export function f(value?: number) { return value; }",
+            "value?: number",
+            1,
+        ),
+        (
+            "export function f(value?:number){return value;}f(1);",
+            "value?:number",
+            2,
+        ),
+        (
+            "export function f(value?: number):number { return value; }",
+            "value?: number",
+            1,
+        ),
     ] {
         let parsed =
             Parser::new(&arena, source, SourceType::ts().with_module(true)).parse_observed();
@@ -23,11 +35,6 @@ fn optional_named_exports_keep_full_genuine_refusals_with_and_without_keyword_re
             file.lookup(file.scopes()[1].id, "value", Namespace::Value)
                 .is_none()
         );
-        let parameter = if source.contains("?: ") {
-            "value?: number"
-        } else {
-            "value?:number"
-        };
         assert_eq!(
             file.issues()
                 .iter()
@@ -43,10 +50,7 @@ fn optional_named_exports_keep_full_genuine_refusals_with_and_without_keyword_re
             file.binding_at_offset(file.exports()[0].span.start),
             Err(PositionQueryError::IncompleteFile)
         ));
-        assert_eq!(
-            file.references().len(),
-            if source.ends_with("f(1);") { 2 } else { 1 }
-        );
+        assert_eq!(file.references().len(), references);
     }
 }
 

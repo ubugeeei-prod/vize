@@ -43,3 +43,11 @@ fresh automatic source/minimal/strict/native-phase and protected complete
 unchanged104 × 3 measurements/ceilings/ratchets plus signed merge remain
 required. No legacy transform, fake records, new stage, individual auto or
 historical/default/full-type completion is authorized.
+
+After adopting the genuine incoming `8e3071bcf` / `0d3e2de1` source,
+replace only its two forbidden `std::format!` uses with the existing
+`vize_l0::cstr!`, preserving both complete strings and all SourceChanged
+assertions. The Canon shard records actual L0/L2 usage. The boundary-repair
+companion retains the source-only finding; production, original inputs,
+independent checker vectors and incoming integration history stay unchanged.
+Fresh automatic source/native-phase and protected delivery are still required.
