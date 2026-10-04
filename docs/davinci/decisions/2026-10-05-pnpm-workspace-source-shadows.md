@@ -26,6 +26,16 @@ reconciliation wave and the one-key refresh both use this boundary. There is
 no new source parse, whole-project source scan, resolver policy, generated-byte
 transformation or source-map interpretation.
 
+Workspace package copies also retain every already-registered bare-package
+binding at its exact authored importer-relative directory. A nested real pnpm
+installation can otherwise outrank a hoisted sibling package shadow and lead
+native resolution out to raw `.vue` files. The new nested shadow uses the
+existing resolver's binding and package name; distinct importing directories
+keep their physical package identities. Non-workspace package copies and
+private `#` routes retain their existing handling. The ancestor manifest guard
+still bounds cycles. This adds materialized package topology, not a new parse
+or resolution stage, and does not change the original symlinks.
+
 The existing `package_routes.rs` remains at its grandfathered 357 lines.
 New helpers and fixtures remain below 350 lines. Package shadows, manifests,
 Vue companions and installation links retain their existing ownership rules.
@@ -37,7 +47,7 @@ Vue companions and installation links retain their existing ownership rules.
   exact root links and pnpm `../../../b`/`../../../c` links. Tests create those
   links and do not flatten them or substitute tsconfig aliases.
 - The transport regression checks complete registered membership, materialized
-  shadow bytes and the complete ordered source/code/mapping/semantic-link rows
+  shadow bytes, the nearest native package-directory walk and the complete ordered source/code/mapping/semantic-link rows
   across route replacement and reconciliation. Negative controls reject stale
   deleted-source and removed-root resurrection.
 - The registered full Vue-parity CLI oracle checks root and pnpm layouts with
@@ -45,7 +55,7 @@ Vue companions and installation links retain their existing ownership rules.
   collection. A separate typed Vue/event consumer rejects `any`, plants one
   mapped TS2322, and checks the complete ordered diagnostic vector and repaired
   virtual TS/report, original bytes and raw symlink targets. Raw command
-  streams/status, input hashes and full reports are retained under
+  streams/status, source/CLI/native identities, input hashes and full reports are retained under
   `target/vize-tests/metrics/pnpm-workspace-routes` in the existing parity lane.
 
 The literal package manifest retains the reporter's Vue 3.5.38 and TypeScript
@@ -65,6 +75,15 @@ establish the CLI claim; the existing manual full Check's Vue-parity lane is
 required before safety acceptance. Exact hosted results, the original failing
 baseline and protected queue/actual merge receipts remain TODO. The root's
 safety hold forbids entering the queue until that evidence is reviewed.
+
+Provisional source `e9643d724a067cb33158dd9d8e61a9283352e627` started full
+Check `37225449810` and PR Check `37225424550`. The first transport source
+compiles, but its source-inventory shard needed regeneration and the new
+assertion oracle needed the explicit snapshot declaration. The parity lane
+failed before executing the native command because its cached Vite+ wrapper
+does not forward `VIZE_TEST_BIN`; the successor binds the lane's actual
+`target/ci/vize` build directly. These are retained failed receipts, not
+evidence of original-backend failure or a completed repair.
 
 Both #7834 and #6982 currently identify `ubugeeei` (GitHub numeric id 71201308)
 as their author. The commit includes that verified issue-author Co-author

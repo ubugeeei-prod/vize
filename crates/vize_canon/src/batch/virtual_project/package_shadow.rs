@@ -1,5 +1,7 @@
 //! Importer-scoped package topology inside Canon's virtual project.
 
+mod workspace_dependencies;
+
 use std::path::{Path, PathBuf};
 
 use sha2::{Digest, Sha256};
@@ -183,6 +185,7 @@ impl VirtualProject {
                 topology,
             );
         }
+        self.collect_workspace_dependency_shadows(route, shadow_root, ancestors, topology);
         ancestors.remove(&route.manifest_path);
     }
 

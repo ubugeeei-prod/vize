@@ -7,11 +7,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { repoRoot } from "../../_helpers/realworld-patch.ts";
-import {
-  resolveTsgoBinary,
-  resolveVizeCommand,
-  symlinkVueTypes,
-} from "../../_helpers/realworld-typecheck.ts";
+import { resolveTsgoBinary, symlinkVueTypes } from "../../_helpers/realworld-typecheck.ts";
 import type { VizeCheckJson } from "../../_helpers/vize-check.ts";
 
 const corpus = path.join(repoRoot, "tests/fixtures/typechecker/pnpm-workspace-routes");
@@ -43,6 +39,9 @@ void componentMustBeTyped
 
 type Receipt = {
   args: string[];
+  cliSha256: string;
+  nativeSha256: string;
+  sourceSha: string;
   input: Array<{ path: string; sha256: string }>;
   links: Array<{ path: string; target: string }>;
   report: VizeCheckJson;
@@ -70,11 +69,13 @@ function workspace(pnpm: boolean): string {
 
 function check(root: string, patterns: string[], servers: number): Receipt {
   assert.equal(process.env.VIZE_TEST_REQUIRE_TSGO, "1", "native runtime is mandatory");
-  assert.ok(process.env.VIZE_TEST_BIN, "the Actions source-built CLI must be explicit");
-  const [command, ...prefix] = resolveVizeCommand();
-  assert.ok(command !== "cargo", "the oracle must not fall back to a new Cargo build");
+  // The registered lane builds this exact path before the supervisor runs.
+  // Cached Vite+ scripts do not forward VIZE_TEST_BIN; bind the build path
+  // directly rather than accepting a PATH binary or invoking another build.
+  const command = path.join(repoRoot, "target/ci/vize");
+  assert.ok(fs.statSync(command).isFile(), "the Actions source-built CLI is required");
+  const native = resolveTsgoBinary();
   const args = [
-    ...prefix,
     "check",
     ...patterns,
     "--tsconfig",
@@ -86,7 +87,7 @@ function check(root: string, patterns: string[], servers: number): Receipt {
     "--servers",
     String(servers),
     "--corsa-path",
-    resolveTsgoBinary(),
+    native,
   ];
   const result = spawnSync(command, args, {
     cwd: root,
@@ -107,6 +108,12 @@ function check(root: string, patterns: string[], servers: number): Receipt {
     .sort((a, b) => a.path.localeCompare(b.path));
   const receipt: Receipt = {
     args,
+    cliSha256: sha256(fs.readFileSync(command)),
+    nativeSha256: sha256(fs.readFileSync(native)),
+    sourceSha: spawnSync("git", ["rev-parse", "HEAD"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    }).stdout.trim(),
     input,
     links: Object.entries({
       ...links.root,

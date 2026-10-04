@@ -89,6 +89,31 @@ fn assert_complete(project: &VirtualProject, root: &Path) {
             "materialized shadow bytes differ: {shadow:?}",
         );
     }
+    // Follow the actual nearest-directory walk, including the real pnpm links.
+    // Merely finding a sibling shadow does not prove the importer can see it.
+    for (source, name) in [(SOURCES[0], "@x/b"), (SOURCES[1], "@x/c")] {
+        for document in project.materialized_source_documents() {
+            if document.source_path != root.join(source) {
+                continue;
+            }
+            let target = document
+                .materialized_path
+                .parent()
+                .unwrap()
+                .ancestors()
+                .map(|dir| dir.join("node_modules").join(name).join("src/index.ts"))
+                .find(|path| path.is_file())
+                .expect("nearest native package entry");
+            assert!(
+                target
+                    .canonicalize()
+                    .unwrap()
+                    .starts_with(project.virtual_root()),
+                "native package walk escapes the mirror: {:?} -> {target:?}",
+                document.materialized_path,
+            );
+        }
+    }
 }
 
 fn mapping_rows(project: &VirtualProject) -> Vec<String> {
