@@ -1,17 +1,23 @@
-# Private original focus-attribute capture proposal
+# Original focus-attribute exploratory capture
 
 Issue: [#6881](https://github.com/ubugeeei-prod/vize/issues/6881), still OPEN.
-This source draft is private and requires root review before any PR, Actions
-trigger or public capture. It changes no production rule, default route,
+Paired [scope decision](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-5975616077).
+Independent reviews of the frozen source and protocol found no concrete blocker.
+This change carries out the authorized exploratory hosted capture on 2026-10-04.
+It changes no production rule, default route,
 existing shared observer, registered manifest, oracle index or frozen output.
-Its first hosted packet would remain exploratory and **unaccepted**. A later
+Its first hosted packet remains exploratory and **unaccepted**. A later
 complete-output review, adoption decision and paired issue/central record are
-separate work; this draft grants no historical or native acceptance.
+separate work; this capture grants no historical or native acceptance.
 
-Base: actual `origin/main` `db31cc119f4a00c48ca67e95c84f4e6790c0c301`, fetched
+Created from actual `origin/main` `db31cc119f4a00c48ca67e95c84f4e6790c0c301`, fetched
 before creating branch `feat/patina-focus-history-capture` with `wt`. The dirty
 earlier audit worktree remains untouched. The new independent example and input
 pack do not modify the #7688 observer lane or the existing 44 registered cases.
+Frozen private source `1937a6bad23089e38009f3acbb84f462b0841373` passed independent
+source/protocol review. Publication replays it onto literal main
+`1d91f0aed0ac7496e5f334801f49afb598215332` without changing the producer, original
+input pack or protocol bytes; only this qualification and paired records change.
 
 ## Original source custody
 
@@ -22,12 +28,12 @@ Every row records full fix/parent/witness revision/blob identities, original
 rule path/test name, exact source bytes and UTF8 SHA-256. The complete JSON
 wire input, input hash and original source hash remain in the capture packet.
 
-| Family | Exact fix | Exact parent | Witness blobs |
-| --- | --- | --- | --- |
-| Bound attributes (#1247) | `c3f6780cb9f7642503137ccf78797b3faf215725` | `c0402a3b3d16c13fa94ff8eeb16b7bb7c2693085` | Autofocus fix `101fccd9272e0174d4f88bf02662f0033e16435d`; accesskey fix `206d5e56818bd4be09f0aa55fce8f5477fd2bdf8` |
-| Dynamic accesskey (#2415) | `af1c53419871cfbba89a2e7a8b979dabf0994aa1` | `a12211715ea770ecaa14322844608186a2deca36` | `5cf11b1ffbe282c261f035b9b4bc45ca9ba87158` |
-| Dynamic autofocus (#2419) | `2a3b4771b244e6bf51fdf4012b2faa9588594cdf` | `af1c53419871cfbba89a2e7a8b979dabf0994aa1` | `33b5723f5439246fd41070f5170346ee3391770b` |
-| Inherited #1247 controls | Same bound-attribute fix and parent | Witness revision is the exact parent | Autofocus `678b4d696a042f28d94d245a8af3d963847a11e0`; accesskey `17c2cdd179248b8df6baa05ba7a831e999b7efeb` |
+| Family                    | Exact fix                                  | Exact parent                               | Witness blobs                                                                                                      |
+| ------------------------- | ------------------------------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Bound attributes (#1247)  | `c3f6780cb9f7642503137ccf78797b3faf215725` | `c0402a3b3d16c13fa94ff8eeb16b7bb7c2693085` | Autofocus fix `101fccd9272e0174d4f88bf02662f0033e16435d`; accesskey fix `206d5e56818bd4be09f0aa55fce8f5477fd2bdf8` |
+| Dynamic accesskey (#2415) | `af1c53419871cfbba89a2e7a8b979dabf0994aa1` | `a12211715ea770ecaa14322844608186a2deca36` | `5cf11b1ffbe282c261f035b9b4bc45ca9ba87158`                                                                         |
+| Dynamic autofocus (#2419) | `2a3b4771b244e6bf51fdf4012b2faa9588594cdf` | `af1c53419871cfbba89a2e7a8b979dabf0994aa1` | `33b5723f5439246fd41070f5170346ee3391770b`                                                                         |
+| Inherited #1247 controls  | Same bound-attribute fix and parent        | Witness revision is the exact parent       | Autofocus `678b4d696a042f28d94d245a8af3d963847a11e0`; accesskey `17c2cdd179248b8df6baa05ba7a831e999b7efeb`         |
 
 The two files are `crates/vize_patina/src/rules/a11y/no_autofocus.rs` and
 `no_access_key.rs`. The original helper creates `RuleRegistry::new`, registers
@@ -38,16 +44,16 @@ enabled/disabled override, Vue/Vapor request, locale/help setter or severity
 override. The new example reproduces that concrete constructor, rather than
 registering a rule name or using an Incremental/default preset.
 
-| Input ID | Original test | Original warning-count authority |
-| --- | --- | ---: |
-| `autofocus-bind` | `test_invalid_has_bound_autofocus` | 1 |
-| `accesskey-bind` | `test_invalid_has_bound_accesskey` | 1 |
-| `accesskey-dynamic` | `test_valid_dynamic_accesskey_argument` | 0 |
-| `autofocus-dynamic` | `test_valid_dynamic_autofocus_argument` | 0 |
-| `autofocus-absent` | `test_valid_no_autofocus` | 0 |
-| `autofocus-static` | `test_invalid_has_autofocus` | 1 |
-| `accesskey-absent` | `test_valid_no_accesskey` | 0 |
-| `accesskey-static` | `test_invalid_has_accesskey` | 1 |
+| Input ID            | Original test                           | Original warning-count authority |
+| ------------------- | --------------------------------------- | -------------------------------: |
+| `autofocus-bind`    | `test_invalid_has_bound_autofocus`      |                                1 |
+| `accesskey-bind`    | `test_invalid_has_bound_accesskey`      |                                1 |
+| `accesskey-dynamic` | `test_valid_dynamic_accesskey_argument` |                                0 |
+| `autofocus-dynamic` | `test_valid_dynamic_autofocus_argument` |                                0 |
+| `autofocus-absent`  | `test_valid_no_autofocus`               |                                0 |
+| `autofocus-static`  | `test_invalid_has_autofocus`            |                                1 |
+| `accesskey-absent`  | `test_valid_no_accesskey`               |                                0 |
+| `accesskey-static`  | `test_invalid_has_accesskey`            |                                1 |
 
 These count-only original assertions remain unchanged. They cannot establish
 complete diagnostic/error/help/label/fix output or prove an empty result.
@@ -79,7 +85,11 @@ New example: `crates/vize_patina/examples/focus_history_observer/` with normal
 `capture-only` acceptance and `fallback: false`. The adapter validates the
 exact bytes/hash and semantic content; a successful probe alone is insufficient.
 
-Both capture APIs strictly deserialize the complete original input schema.
+Both capture APIs reject unknown input fields. Rust optional fields accept
+missing keys as `None`; general CLI deserialization therefore does not prove
+explicit nullable-key completeness. For these eight original wire inputs, the
+immutable full pack hash and adapter's explicit-null checks establish that
+complete authored shape. Altered or missing-key inputs cannot enter this packet.
 Each executable invocation independently constructs and captures the entire
 outcome twice, requiring exact whole-byte equality before emitting stdout.
 Legacy output is complete pretty Debug `Case`, then actual `RuleIdentity`,
@@ -148,19 +158,20 @@ Every comparison remains `not-compared/no-reviewed-complete-oracle`.
 The report is saved as `target/differential/focus-history/unaccepted-capture.json`;
 it never writes snapshots, recaptures old outputs or changes shared registration.
 
-## Proposed Actions scope and remaining gate
+## Actions scope and remaining gate
 
-Private proposal adds one explicit `mergeOnlyToolingTests` row for
+This change adds one explicit `mergeOnlyToolingTests` row for
 `tests/tooling/focus-history-capture-execution.test.ts`. The independent pure
 input/scope and protocol contract files stay in T0. The source-built exploratory
 execution remains in every full T1
 suite, with no case skips or instruction-budget change. The pure truth table
 checks the new fixture, observer source and companion document inputs: T0
 excludes the real execution and full T1 includes it; direct pure-test changes
-retain the pure contracts. This scope/source/schema must be reviewed by root
-before publication or a hosted capture is triggered.
+retain the pure contracts. Frozen source, schema, failure preservation and this
+scope passed the required independent and coordinating source review before
+publication. Seven focused pure contracts and twelve source gates pass.
 
-After root approves publication, the first exact-head hosted packet must be
+The first exact-head hosted packet must be
 retained as a source-qualified artifact and reviewed in full, including default
 metadata, all diagnostics/edits and repeat evidence. Only a separate reviewed
 adoption may freeze authoritative complete outputs or register these cases.
@@ -172,12 +183,12 @@ and oracle-index hashes. Historical issue counts remain 499 touches / 255 fixes;
 the existing inventory pin `b4f25fb6511075aa531be80d645bb0db8cc151e0` remains
 503 nonmerge rows / 258 title-fix candidates / 245 other titles / 48 merge
 supplements. No title-only credit, denominator reduction, merge-resolution
-coverage, #6881 closure or default replacement follows from this proposal.
+coverage, #6881 closure or default replacement follows from this capture.
 
 Local validation: all eight exact fix parents/witness blobs/original test bodies,
 sources, filenames, concrete helpers, counts and source hashes were verified
 against original Git objects without running products. Seven pure contracts pass;
 Rustfmt, Oxfmt and whitespace checks pass. Every new source module is below 350
 lines. The existing 44-case manifest/oracle-index hashes are unchanged. Rust compilation,
-product capture, hosted execution, golden adoption, PR and queue proof remain
-unexecuted in this private draft.
+product capture, hosted execution, golden adoption and protected merge proof
+remain pending until genuine Actions and literal terminal delivery.
