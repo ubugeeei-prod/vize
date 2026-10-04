@@ -242,3 +242,36 @@ queue gates and actual signed merge before proposing another actual-main campaig
 No automatic redispatch, production/API/provider/cache/scheduler/flag/corpus/map
 normalizer or instruction-ceiling change follows from this failure. CPU/allocation
 profiles, semantic attribution, startup/Program ownership and 10x remain unmeasured.
+
+## Reviewed temporary semantic decoder
+
+The offline proposal uses pinned official `google/pprof` commit
+`4902fdda35c867f2c3e11bc3881d7d2f7d4f2bfa`, copied byte-exact from an existing
+cached tool: no package install, native probe, external symbols or repository Go
+adoption. The concrete review manifest is SHA-256
+`a709333c0d17a57e823a4748d7443ecf3b5fcc41e282151e06f57d7523d5978a`;
+official source/copy manifest `fc5d9b57344c84697dea0ee64000cd950f5364cc92c0890c000448d26a535f7a`,
+decoder binary `2b10e1b83f9786bd0677802306c8088dfe13d9a90e5f7a22eaeee4c3c517f348`,
+and final controls `6ba2f5e52a936f1c4d6eeafe3ffe1618a347bbbde70d9f3e657e53f67de6974b`.
+Root review independently verifies all 41 leaf controls / 45 Go PASS records,
+zero failures/skips, source hashes and terminal package PASS; rejected initial
+controls remain separate. This approves temporary offline processing only.
+
+Bound one gzip member and verify CRC/trailing bytes before exported
+`ParseUncompressed` plus `CheckValid`; preserve raw path/hash and failed receipts.
+Paired controls show the official parser accepts an unknown nonzero mapping ID
+after converting it to nil and supplies an empty PeriodType when absent.
+Supplementary bounded wire-reference checks and observed field presence refuse
+the former and preserve absence in the latter. Literal mapping filenames, raw
+string/label/table/inline stack order, 64-bit values and separate sample dimensions
+remain authoritative; flat plus unresolved totals reconcile independently, while
+cumulative overlapping functions are never added. Phase, startup, Program,
+sample adequacy and speed remain unknown; weights are not wall time or peak RSS.
+
+No actual profile has been processed. Before interpretation, require the repaired
+helper's actual protected merge, a separately approved fresh source=driver campaign,
+and reviewed original raw profile, executable, runtime and source joins. Local
+producer metadata cannot establish the CI producer's source correspondence. The
+[paired #7698 decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5979648443)
+retains this review; no profile/container or cold whole-CLI gain follows from
+synthetic decoder controls. The unchanged generated500 425.5→42.55 ms goal remains open.
