@@ -22,7 +22,7 @@ export async function withMountedRuntimeDevtools<T>(
     failed = true;
     failure = error;
   }
-  for (const cleanup of [close, () => observer.dispose()]) {
+  for (const cleanup of [close, async () => observer.dispose()]) {
     try {
       await cleanup();
     } catch (error) {
