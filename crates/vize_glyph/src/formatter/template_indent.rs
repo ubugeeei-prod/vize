@@ -101,20 +101,45 @@ pub(super) fn write_indented_template(
     indent: &[u8],
     newline: &[u8],
 ) {
-    // LF layout keeps its existing hot loop. CRLF needs to consume the CR
-    // left by splitting on LF before writing the configured terminator.
+    // Specialize the common LF copy to a single known byte. Keep non-LF
+    // normalization and owned line/mask storage on the cold path.
+    if newline != b"\n" {
+        write_indented_non_lf_template(output, source, indent, newline);
+        return;
+    }
+
+    if !needs_raw_line_mask(source.as_bytes()) {
+        for line in source.as_bytes().split(|byte| *byte == b'\n') {
+            write_line(output, line, indent, b"\n", false);
+        }
+        return;
+    }
+
+    let lines: Vec<_> = source.as_bytes().split(|byte| *byte == b'\n').collect();
+    let raw_mask = compute_raw_line_mask(&lines);
+    for (line, raw) in lines.into_iter().zip(raw_mask) {
+        write_line(output, line, indent, b"\n", raw);
+    }
+}
+
+#[cold]
+#[inline(never)]
+fn write_indented_non_lf_template(
+    output: &mut Vec<u8>,
+    source: &str,
+    indent: &[u8],
+    newline: &[u8],
+) {
     if newline == b"\r\n" {
         write_indented_crlf_template(output, source, indent);
         return;
     }
-
     if !needs_raw_line_mask(source.as_bytes()) {
         for line in source.as_bytes().split(|byte| *byte == b'\n') {
             write_line(output, line, indent, newline, false);
         }
         return;
     }
-
     let lines: Vec<_> = source.as_bytes().split(|byte| *byte == b'\n').collect();
     let raw_mask = compute_raw_line_mask(&lines);
     for (line, raw) in lines.into_iter().zip(raw_mask) {

@@ -36,3 +36,9 @@ only the original SFC/reuse ceilings by 74 instructions (293649/274797).
 Remove the candidate immediately. Keep the CRLF helper cold and non-inlined
 so its owned mask/line storage cannot enlarge the ordinary LF call frame;
 rerun exact-head Actions and all unchanged ceilings before requeueing.
+
+Cold storage alone saved 20 instructions but still exceeded the two SFC caps
+by 54 (`91bb1323`, preflight 37171322672). Specialize ordinary LF line writes
+to the known one-byte LF slice; non-LF dispatch stays cold. This removes
+dynamic newline copy work on each LF output line while keeping the raw lexer
+and every retained law unchanged. Remeasure the same immutable budgets.
