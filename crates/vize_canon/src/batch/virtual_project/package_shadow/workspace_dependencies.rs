@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::{FxHashMap, FxHashSet};
+use vize_carton::{FxHashMap, FxHashSet, String};
 
 use super::{PackageShadowTopology, VirtualProject};
 
@@ -10,6 +10,7 @@ type PackageIdentity = (PathBuf, PathBuf);
 
 pub(super) struct WorkspaceShadowPlan {
     incoming: FxHashMap<PathBuf, FxHashSet<PackageIdentity>>,
+    divergent: FxHashSet<String>,
 }
 
 fn identity(route: &crate::PackageRoute) -> PackageIdentity {
@@ -20,6 +21,38 @@ fn identity(route: &crate::PackageRoute) -> PackageIdentity {
 }
 
 impl WorkspaceShadowPlan {
+    pub(super) fn selected_install_shadow(
+        &self,
+        project: &VirtualProject,
+        binding: &crate::PackageRouteBinding,
+    ) -> Option<PathBuf> {
+        let route = binding.route.as_ref()?;
+        let name = route.package_name.as_deref()?;
+        if binding.specifier.starts_with('#')
+            || !route.workspace_source
+            || !self.divergent.contains(name)
+        {
+            return None;
+        }
+        let owner = binding
+            .importer_path
+            .ancestors()
+            .find(|path| project.package_route_roots.contains_key(*path))?;
+        let relative = route.package_link_root.strip_prefix(owner).ok()?;
+        if !relative.ends_with(Path::new("node_modules").join(name)) {
+            return None;
+        }
+        // Rebase the actual selected installation, not each importing source
+        // directory. Divergent packages keep their own physical identity.
+        super::super::build::mirrored_virtual_path(
+            &project.project_root,
+            &project.virtual_root,
+            owner,
+        )
+        .ok()
+        .map(|root| root.join(relative))
+    }
+
     fn target(
         &self,
         importer: &Path,
@@ -50,7 +83,25 @@ impl WorkspaceShadowPlan {
 
 impl VirtualProject {
     pub(super) fn workspace_shadow_plan(&self) -> WorkspaceShadowPlan {
-        let mut incoming = FxHashMap::<_, FxHashSet<_>>::default();
+        let mut identities = FxHashMap::<String, FxHashSet<_>>::default();
+        for binding in self.package_routes.values() {
+            if !binding.specifier.starts_with('#')
+                && let Some(route) = binding.route.as_ref()
+                && let Some(name) = route.package_name.as_ref()
+            {
+                identities
+                    .entry(name.clone())
+                    .or_default()
+                    .insert(identity(route));
+            }
+        }
+        let mut plan = WorkspaceShadowPlan {
+            incoming: FxHashMap::default(),
+            divergent: identities
+                .into_iter()
+                .filter_map(|(name, roots)| (roots.len() > 1).then_some(name))
+                .collect(),
+        };
         for binding in self.package_routes.values() {
             if binding.specifier.starts_with('#') {
                 continue;
@@ -67,14 +118,23 @@ impl VirtualProject {
             else {
                 continue;
             };
-            for scope in self.package_shadow_scope_dirs(name, directory) {
-                incoming
-                    .entry(scope.join("node_modules").join(name))
+            let roots = plan.selected_install_shadow(self, binding).map_or_else(
+                || {
+                    self.package_shadow_scope_dirs(name, directory)
+                        .into_iter()
+                        .map(|scope| scope.join("node_modules").join(name))
+                        .collect()
+                },
+                |root| vec![root],
+            );
+            for root in roots {
+                plan.incoming
+                    .entry(root)
                     .or_default()
                     .insert(identity(route));
             }
         }
-        WorkspaceShadowPlan { incoming }
+        plan
     }
 
     pub(super) fn private_dependencies_for(&self, manifest: &Path) -> Vec<crate::PackageRoute> {
@@ -154,17 +214,16 @@ impl VirtualProject {
             (left, &left_route.manifest_path).cmp(&(right, &right_route.manifest_path))
         });
         dependencies.dedup();
-        let mut start = 0;
-        while start < dependencies.len() {
-            let (shadow, dependency, target) = &dependencies[start];
-            let end = start + dependencies[start..].partition_point(|entry| entry.0 == *shadow);
+        let mut remaining = dependencies.as_slice();
+        while let Some((shadow, dependency, target)) = remaining.first() {
+            let count = remaining.partition_point(|entry| entry.0 == *shadow);
+            let Some((group, tail)) = remaining.split_at_checked(count) else {
+                break;
+            };
             let shared_target = target.as_ref().filter(|target| {
-                dependencies[start..end]
-                    .iter()
-                    .all(|(_, route, candidate)| {
-                        identity(route) == identity(dependency)
-                            && candidate.as_ref() == Some(*target)
-                    })
+                group.iter().all(|(_, route, candidate)| {
+                    identity(route) == identity(dependency) && candidate.as_ref() == Some(*target)
+                })
             });
             if let Some(target) = shared_target {
                 topology.aliases.insert(shadow.clone(), target.clone());
@@ -174,11 +233,22 @@ impl VirtualProject {
             } else {
                 // An uncertain or divergent incoming scope retains the bound
                 // installation's own topology rather than aliasing by name.
-                for (_, route, _) in &dependencies[start..end] {
+                for (_, route, _) in group {
                     self.collect_route_shadow_topology(route, shadow, ancestors, topology, plan);
                 }
+                if dependency.workspace_source
+                    && topology.manifests.get(&shadow.join("package.json"))
+                        == Some(&dependency.manifest_path)
+                    && group
+                        .iter()
+                        .all(|(_, route, _)| identity(route) == identity(dependency))
+                {
+                    topology
+                        .install_roots
+                        .insert(shadow.clone(), dependency.manifest_path.clone());
+                }
             }
-            start = end;
+            remaining = tail;
         }
     }
 }

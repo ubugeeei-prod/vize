@@ -54,9 +54,10 @@ impl VirtualProject {
         preserved_package_links: &vize_carton::FxHashMap<PathBuf, PathBuf>,
         query_paths: Option<&[PathBuf]>,
     ) -> CorsaResult<vize_carton::FxHashMap<PathBuf, PathBuf>> {
-        self.validate_workspace_alias_targets()?;
         let mut expected_files = self.expected_materialized_files();
         expected_files.extend(preserved_files.iter().cloned());
+        let owned_files = self.workspace_cold_owned_files(&expected_files);
+        self.validate_workspace_alias_targets(&owned_files)?;
         let mut link_claims = expected_files.clone();
         link_claims.extend(
             self.preserved_workspace_alias_claims(preserved_package_links, &expected_files)?,
@@ -83,7 +84,8 @@ impl VirtualProject {
                 })
                 .or_insert_with(|| target.clone());
         }
-        self.validate_workspace_alias_links(&desired_package_links)?;
+        let retire = self.validate_workspace_alias_links(&desired_package_links, &owned_files)?;
+        self.retire_workspace_cache_links(retire)?;
         let package_links = desired_package_links
             .iter()
             .map(

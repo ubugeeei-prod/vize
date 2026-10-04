@@ -34,6 +34,14 @@ when it lies inside the owner's physical package and ends with the selected
 `node_modules/<package-name>` entry. External/shared installs keep their old
 scope; non-workspace copies and private `#` routes keep their existing handling.
 
+When a name has genuinely divergent physical package/manifest identities, a
+canonical workspace importer uses the actual selected install inside its known
+physical owner as an ordinary shadow root. Thus `B/src/x` and `B/src/y` both
+reach B's selected `B/node_modules/C2`; no per-source directory copy or symlink
+is introduced. This does not globally hoist C1 and C2 or change the shared-name
+scope policy. Every such root is pinned with its raw manifest under its current
+owner. A nearer divergent incoming shadow still blocks aliasing through it.
+
 For workspace targets, that rebased entry links to the nearest planned authored
 incoming shadow visible from this exact package copy. The physical package root
 and raw manifest must both match. A nearer conflicting identity, ambiguous
@@ -66,6 +74,33 @@ review limitation. Preserved internal union aliases contribute only transient
 link-selection claims; a raw parent/descendant link overlapping an alias is
 rejected before mutation. This adds bounded existing topology metadata, with no source parse,
 resolver policy, pipeline stage or full-project source scan.
+
+An explicitly selected, owner-pinned ordinary install may retire its own final
+cache-leaf link after physical ancestor validation, using symlink/junction-safe
+removal of that leaf only. This is distinct from retiring an ancestor or raw
+whole-parent bridge: those still require the exact prior committed receipt.
+No disappeared or canonicalized disk endpoint grants ownership. The rule
+allows a fresh CLI process to move its exact selected leaf from an internal
+C1 alias to an ordinary C2 directory and back without touching authored installs.
+The incremental file pass treats that current install root as a directory,
+not a deleted prior link/file candidate. Shadow membership changes also dirty
+the existing generated config, whose `include` names the materialized copies.
+
+Warm writes use the cold path's final authority when paths overlap: raw package
+manifests, then authored package-shadow content, then passthrough modules, then
+ordinary virtual files. Canonical `util.ts` can belong to both the virtual and
+shadow maps; selecting its rewritten virtual bytes first would change the
+authored `./Btn.vue` edge that cold materialization deliberately retains. When
+the last shadow owner disappears, a surviving registered diagnostic root falls
+back to its virtual bytes. The source fixture retains complete physical bytes,
+maps/links and a zero-candidate no-op before comparing that transition to cold.
+
+Ordinary install-root claims are recorded only after the collector actually
+pins the exact raw manifest under that owner. The existing manifest-ancestor
+cycle cut must not manufacture a root claim for skipped recursion. A distinct
+synthetic source fixture uses real links in `B2 → C → B1 → C`, with divergent
+B identities and unchanged raw manifests/Vue/link sentinels. It checks source
+materialization/lifecycle only, not a new cyclic native-diagnostic qualification.
 
 The existing `package_routes.rs` remains at its grandfathered 357 lines.
 New helpers and fixtures remain below 350 lines. Package shadows, manifests,
@@ -215,3 +250,67 @@ committed bridge, and reject editor-union exact/ancestor alias conflicts. A
 separate union retains aliases owned only by a prior snapshot. These controls are prepared, not yet runtime qualification.
 No old native success transfers to this successor; the draft/safety hold,
 unrelated Pinia limit and lack of any performance claim remain in force.
+
+Full Check `37235057014` at `10ce1fd9843d29d306fc2cf5ac85f8035c1be9fb`
+is terminal red. The native lane executes 36 processes: all original 26,
+shared-class four and explicit `preserveSymlinks` four pass. The divergent
+pnpm run correctly reports A's genuine C1/C2 TS2322 but also incorrectly reports
+B's TS2345 at `3:10`: its `src/x` and `src/y` reached separate C2 copies. The
+strict one-error vector is retained. Topology artifact `11315158064`, ZIP SHA-256
+`93461f17146a6a11ae13a2fd6a8f641ae02bd7b15d576871094c0ad603fa1012`,
+retains that raw failure as `4274acccc637a660ee32d42e291352df2cd547817fa1a244fdf41d7ec4bcaff2.json`.
+Source CLI SHA-256 is
+`6b4b6e333317e0d03c2b7ea29311f0ed730fd5b73835e9aba82149a88d534675`;
+native bytes retain the baseline `4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4`.
+
+The same source fails six strict Clippy unwrap/slicing laws, now corrected using
+Option and checked groups without lint changes. Actual source-coverage tests
+also expose a warm retarget `IsADirectory` and a warm/cold physical-receipt
+mismatch; these remain unqualified until fresh Actions. The exact editor-union
+conflict control originally supplied an unowned target and hit the earlier
+manifest guard; the successor supplies a genuinely owned alternate manifest.
+Unknown raw targets/root scopes, retargeted committed parents, prior-snapshot
+alias claims and known committed-parent migration controls pass at `10ce`.
+The successor adds independent physical pre-cold/no-op comparison for separate
+project objects' alias/directory/alias transition, with unchanged raw C1/C2
+sentinels and unknown ancestor rejection. Each of the four actual native fork
+processes retains the selected cache leaf's raw readlink, canonical target,
+emitted file bytes and raw authored C1/C2 bytes alongside its full ordered report.
+Repair must restore all those receipts. No root adoption, Ready or queue approval
+is inferred from source preparation, old green lanes or these historical results.
+
+Read-only review of immutable tree `a35f63f95e2443c5cec6b3c32c35084e8c0d2090`
+identified the warm final-writer asymmetry and unpinned cyclic root claim above.
+The successor addresses both with the retained strict physical laws; runtime
+success is still pending fresh exact-head Actions. Cache-capture failure is also
+saved alongside the original native stdout/status before its assertion, so an
+unexpected missing cache path cannot erase the actual product's raw result.
+
+Review of staged tree `59dca13bd8cd5add4be43fc4b4cc07ca613c70a2` found two
+remaining filesystem guards: the last alias owner's retired destination parents
+and owned shadow `src` directories were absent from the current-root proof.
+The successor retains actual removed owners' file/manifest paths until a safe
+delta succeeds or the caller explicitly discards that delta. Current artifacts,
+retired artifacts and editor-union owned files contribute their full parent
+chains; prior committed internal alias destinations contribute parents even
+after their last manifest owner disappears. Retired aliases do not participate
+in current-target ownership or overlap selection. Fake alias claims and raw
+external dependency paths never become owned file candidates.
+
+Cold validation includes retired paths before GC, except descendants of current
+planned aliases which GC preserves without visiting; actual expected/preserved
+files are always checked. All independent root-first observations complete
+before proved cache links are retired, and cold union overlap/conflict checks
+also precede retirement. Unknown links or junctions decline before file writes,
+stale deletion or GC. New source controls retain all eight raw source/manifest
+files and all five raw pnpm links across current `src`, retired `src`, preserved
+union `src` and last-owner destination-parent failures; local and full link
+patches both preserve their pending metadata on refusal, with no generated Vue
+companions appearing in authored directories. These are source preparations,
+not passing runtime evidence or Windows junction execution. The strict 38
+native-process matrix and adoption/Ready/queue holds remain unchanged.
+
+Independent read-only source review of tree
+`0e1808bf9a25856b6f960d981d0d2d69ea4426d3` is clear for draft source
+publication and fresh qualification. It supplies no compile, runtime, Windows,
+native-matrix or adoption acceptance; the reviewed source/test bytes are retained.

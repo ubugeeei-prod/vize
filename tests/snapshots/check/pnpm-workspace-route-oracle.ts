@@ -8,12 +8,14 @@ import { test } from "node:test";
 
 import { repoRoot } from "../../_helpers/realworld-patch.ts";
 import { resolveTsgoBinary, symlinkVueTypes } from "../../_helpers/realworld-typecheck.ts";
-import type { VizeCheckJson } from "../../_helpers/vize-check.ts";
 import {
   assertWorkspaceClassConflict,
+  assertWorkspaceInstall,
+  captureWorkspaceInstall,
   prepareWorkspaceClass,
   prepareWorkspaceVariantProvider,
   workspaceProviderFiles,
+  type WorkspaceReceipt as Receipt,
 } from "../../_helpers/workspace-package-class.ts";
 
 const corpus = path.join(repoRoot, "tests/fixtures/typechecker/pnpm-workspace-routes");
@@ -42,22 +44,6 @@ void componentMustBeTyped
 </script>
 <template><Btn @pick="value => value.toFixed()" /></template>
 `;
-
-type Receipt = {
-  args: string[];
-  execution: number;
-  cwd: string;
-  cliPid: number;
-  cliSha256: string;
-  nativeSha256: string;
-  sourceSha: string;
-  input: Array<{ path: string; sha256: string }>;
-  links: Array<{ path: string; target: string }>;
-  report: VizeCheckJson;
-  status: number | null;
-  stderr: string;
-  stdout: string;
-};
 
 let executions = 0;
 
@@ -141,10 +127,13 @@ function check(root: string, patterns: string[], servers: number): Receipt {
       path: relative,
       target: fs.readlinkSync(path.join(root, relative)),
     })),
-    report: JSON.parse(result.stdout) as VizeCheckJson,
+    report: JSON.parse(result.stdout) as Receipt["report"],
     status: result.status,
     stderr: result.stderr,
     stdout: result.stdout,
+    cache: fs.existsSync(path.join(root, "packages/c-variant"))
+      ? captureWorkspaceInstall(root)
+      : undefined,
   };
   const output = path.join(
     repoRoot,
@@ -153,6 +142,7 @@ function check(root: string, patterns: string[], servers: number): Receipt {
   fs.mkdirSync(output, { recursive: true });
   const bytes = `${JSON.stringify(receipt, null, 2)}\n`;
   fs.writeFileSync(path.join(output, `${sha256(bytes)}.json`), bytes);
+  assertWorkspaceInstall(receipt);
   return receipt;
 }
 
@@ -211,6 +201,7 @@ for (const pnpm of [false, true]) {
         assert.deepEqual(repaired.report, clean.report);
         assert.deepEqual(repaired.input, clean.input);
         assert.deepEqual(repaired.links, clean.links);
+        assert.deepEqual(repaired.cache, clean.cache);
       } finally {
         fs.rmSync(root, { recursive: true, force: true });
       }

@@ -1,5 +1,7 @@
 //! Owned links to existing authored workspace shadows, never fresh type copies.
 
+mod install_roots;
+
 use std::path::{Path, PathBuf};
 
 use vize_carton::{FxHashMap, FxHashSet};
@@ -43,10 +45,16 @@ impl VirtualProject {
             .into_iter()
             .filter_map(|(alias, targets)| {
                 // Conflicting owners must not select a native identity by ordering.
-                (targets.len() == 1).then(|| PackageNodeModulesLink {
-                    virtual_dir: alias,
-                    real_dir: targets.into_iter().next().unwrap(),
-                })
+                if targets.len() != 1 {
+                    return None;
+                }
+                targets
+                    .into_iter()
+                    .next()
+                    .map(|real_dir| PackageNodeModulesLink {
+                        virtual_dir: alias,
+                        real_dir,
+                    })
             })
             .collect()
     }
@@ -107,14 +115,17 @@ impl VirtualProject {
         if targets.len() != 1 {
             return Some(FxHashMap::default());
         }
-        let target = targets.keys().next().unwrap();
+        let target = targets.keys().next()?;
         Some(FxHashMap::from_iter([(
             scope.to_path_buf(),
             target.clone(),
         )]))
     }
 
-    pub(super) fn validate_workspace_alias_targets(&self) -> CorsaResult<()> {
+    pub(super) fn validate_workspace_alias_targets(
+        &self,
+        extra_owned_files: &FxHashSet<PathBuf>,
+    ) -> CorsaResult<Vec<PathBuf>> {
         let mut targets = FxHashMap::default();
         for topology in self.package_shadow_artifacts.values() {
             for (alias, target) in &topology.aliases {
@@ -142,7 +153,7 @@ impl VirtualProject {
             .into_iter()
             .map(|link| (link.virtual_dir, link.real_dir))
             .collect();
-        self.validate_workspace_alias_links(&links)
+        self.validate_workspace_alias_links(&links, extra_owned_files)
     }
 
     pub(super) fn preserved_workspace_alias_claims(
@@ -170,8 +181,24 @@ impl VirtualProject {
     pub(super) fn validate_workspace_alias_links(
         &self,
         links: &FxHashMap<PathBuf, PathBuf>,
-    ) -> CorsaResult<()> {
-        let mut checked = FxHashSet::default();
+        extra_owned_files: &FxHashSet<PathBuf>,
+    ) -> CorsaResult<Vec<PathBuf>> {
+        let mut checked = self.workspace_owned_parent_dirs(extra_owned_files);
+        let install_roots = self.workspace_install_roots()?;
+        for root in &install_roots {
+            if links.keys().any(|path| root.starts_with(path)) {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    "Owned workspace installation overlaps a package link",
+                )
+                .into());
+            }
+            checked.extend(
+                root.ancestors()
+                    .filter(|path| path.starts_with(&self.virtual_root))
+                    .map(Path::to_path_buf),
+            );
+        }
         for (alias, target) in links {
             if !target.starts_with(&self.virtual_root) {
                 continue;
@@ -205,17 +232,26 @@ impl VirtualProject {
                 .cmp(&right.components().count())
                 .then_with(|| left.cmp(right))
         });
+        let mut retire = Vec::<PathBuf>::new();
         for path in directories {
+            // Descendants of a proved cache link disappear with that link;
+            // never inspect their metadata through its external endpoint.
+            if retire.iter().any(|parent| path.starts_with(parent)) {
+                continue;
+            }
             match std::fs::symlink_metadata(&path) {
                 Ok(metadata)
                     if metadata.file_type().is_symlink() || std::fs::read_link(&path).is_ok() =>
                 {
-                    // Retire only an exact previously committed cache link.
-                    // Root-first validation prevents unlinking through a raw parent.
+                    // A selected, owner-pinned ordinary install may replace its
+                    // FINAL cache link. Other ancestors/whole-parent links still
+                    // require the exact previously committed target receipt.
+                    // Root-first validation never unlinks through a raw parent.
                     let target = std::fs::read_link(&path)?;
                     let target = vize_carton::path::normalize_windows_verbatim_path(target);
                     if path == self.virtual_root
-                        || self.materialized_package_links.get(&path) != Some(&target)
+                        || (!install_roots.contains(&path)
+                            && self.materialized_package_links.get(&path) != Some(&target))
                     {
                         return Err(std::io::Error::new(
                             std::io::ErrorKind::InvalidData,
@@ -223,7 +259,7 @@ impl VirtualProject {
                         )
                         .into());
                     }
-                    crate::batch::materialize_fs::remove_path(&path)?;
+                    retire.push(path);
                 }
                 Ok(metadata) if !metadata.is_dir() => {
                     return Err(std::io::Error::new(
@@ -237,11 +273,20 @@ impl VirtualProject {
                 Err(error) => return Err(error.into()),
             }
         }
+        Ok(retire)
+    }
+
+    pub(super) fn retire_workspace_cache_links(&self, paths: Vec<PathBuf>) -> CorsaResult<()> {
+        // All identity, overlap and independent ancestry proofs precede this.
+        for path in paths {
+            crate::batch::materialize_fs::remove_path(&path)?;
+        }
         Ok(())
     }
 
     pub(super) fn ensure_workspace_alias_targets(&self) -> CorsaResult<()> {
-        self.validate_workspace_alias_targets()?;
+        let retire = self.validate_workspace_alias_targets(&FxHashSet::default())?;
+        self.retire_workspace_cache_links(retire)?;
         for link in self.workspace_alias_links() {
             // Windows decides symlink_dir/file from target existence. The
             // planned authored root must exist before the first link is made.

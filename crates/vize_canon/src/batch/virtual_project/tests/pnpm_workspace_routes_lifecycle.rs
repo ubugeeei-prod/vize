@@ -10,7 +10,10 @@ use super::{VirtualProject, copy_tree, fixture, load, mapping_rows};
 #[path = "pnpm_workspace_alias_filesystem.rs"]
 mod filesystem;
 
-fn begin_warm(project: &mut VirtualProject) {
+#[path = "pnpm_workspace_shadow_cleanup.rs"]
+mod cleanup;
+
+pub(super) fn begin_warm(project: &mut VirtualProject) {
     project.capture_materialized_package_links();
     project.discard_incremental_materialization();
 }
@@ -53,7 +56,7 @@ fn disk_receipt(project: &VirtualProject) -> DiskReceipt {
     DiskReceipt { files, links }
 }
 
-fn assert_warm_matches_cold(project: &mut VirtualProject, root: &Path) {
+pub(super) fn assert_warm_matches_cold(project: &mut VirtualProject, root: &Path) {
     // Capture physical bytes/links BEFORE a full materialize can repair them.
     let warm = disk_receipt(project);
     let noop = project.materialize_incremental_delta().unwrap();
@@ -64,7 +67,13 @@ fn assert_warm_matches_cold(project: &mut VirtualProject, root: &Path) {
     let mut cold = load(root);
     cold.capture_materialized_package_links();
     assert_eq!(rows, mapping_rows(&cold));
-    assert_eq!(warm, disk_receipt(&cold));
+    let cold_disk = disk_receipt(&cold);
+    assert_eq!(warm.links, cold_disk.links);
+    assert_eq!(warm.files.len(), cold_disk.files.len());
+    for ((path, bytes), (cold_path, cold_bytes)) in warm.files.iter().zip(&cold_disk.files) {
+        assert_eq!(path, cold_path);
+        assert_eq!(bytes, cold_bytes, "physical bytes differ at {path:?}");
+    }
 }
 
 fn refresh(project: &mut VirtualProject, changed: &Path) {
@@ -256,7 +265,7 @@ fn editor_union_rejects_conflicting_internal_alias_identity_without_touching_tar
     let bytes = fs::read(&manifest).unwrap();
     let preserved = vize_carton::FxHashMap::from_iter([(
         link.virtual_dir.clone(),
-        project.virtual_root().join("different-owned-shadow"),
+        project.virtual_root().join("packages/c"),
     )]);
     let result =
         project.materialize_editor_union(&vize_carton::FxHashSet::default(), &preserved, &[]);

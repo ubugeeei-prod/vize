@@ -182,7 +182,7 @@ fn real_workspace_links_keep_relative_sources_across_route_rebinding() {
 
 #[test]
 fn one_real_install_keeps_one_materialized_module_identity_inside_each_package_copy() {
-    for pnpm in [false, true] {
+    for (pnpm, divergent) in [(false, false), (true, false), (true, true)] {
         let temp = fixture(pnpm);
         let root = temp.path().canonicalize().unwrap();
         for directory in ["x", "y"] {
@@ -198,6 +198,17 @@ fn one_real_install_keeps_one_materialized_module_identity_inside_each_package_c
             "export * from './x/use';\nexport * from './y/use';\n",
         )
         .unwrap();
+        if divergent {
+            copy_tree(&root.join("packages/c"), &root.join("packages/c-variant"));
+            let link = root.join("packages/b/node_modules/@x/c");
+            fs::remove_file(&link).unwrap();
+            std::os::unix::fs::symlink("../../../c-variant", link).unwrap();
+            fs::write(
+                root.join(SOURCES[0]),
+                "export * from '@x/b';\nexport { Btn as DirectBtn } from '@x/c';\n",
+            )
+            .unwrap();
+        }
         let project = load(&root);
         let mut scopes = std::collections::BTreeMap::<
             _,
@@ -275,5 +286,61 @@ fn rebound_topology_does_not_resurrect_deleted_sources_or_removed_package_roots(
         !project
             .package_source_index
             .contains_key(&root.join("packages/c"))
+    );
+}
+
+#[test]
+fn divergent_package_cycle_keeps_raw_installs_and_does_not_claim_skipped_roots() {
+    let temp = fixture(true);
+    let root = temp.path().canonicalize().unwrap();
+    let variant = root.join("packages/b-variant");
+    copy_tree(&root.join("packages/b/src"), &variant.join("src"));
+    fs::copy(
+        root.join("packages/b/package.json"),
+        variant.join("package.json"),
+    )
+    .unwrap();
+    for (relative, target) in [
+        ("packages/b-variant/node_modules/@x/c", "../../../c"),
+        ("packages/c/node_modules/@x/b", "../../../b"),
+    ] {
+        let path = root.join(relative);
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::os::unix::fs::symlink(target, path).unwrap();
+    }
+    let link = root.join("packages/a/node_modules/@x/b");
+    fs::remove_file(&link).unwrap();
+    std::os::unix::fs::symlink("../../../b-variant", &link).unwrap();
+    let source = root.join("packages/c/src/index.ts");
+    fs::write(&source, "export * from './util';\nexport * from '@x/b';\n").unwrap();
+    let paths = [
+        root.join("packages/b/package.json"),
+        variant.join("package.json"),
+        source,
+        root.join("packages/c/src/Btn.vue"),
+    ];
+    let before = paths
+        .iter()
+        .map(|path| fs::read(path).unwrap())
+        .collect::<Vec<_>>();
+    // Actual bindings reach B2 -> C -> B1 -> C; the existing ancestor cut must
+    // not introduce an ordinary-leaf claim without that owner's raw manifest.
+    let mut project = load(&root);
+    lifecycle::begin_warm(&mut project);
+    lifecycle::assert_warm_matches_cold(&mut project, &root);
+    assert_eq!(
+        paths
+            .iter()
+            .map(|path| fs::read(path).unwrap())
+            .collect::<Vec<_>>(),
+        before
+    );
+    assert_eq!(
+        fs::read_link(link).unwrap(),
+        Path::new("../../../b-variant")
+    );
+    assert_eq!(
+        fs::read_link(root.join("packages/c/node_modules/@x/b")).unwrap(),
+        Path::new("../../../b")
     );
 }

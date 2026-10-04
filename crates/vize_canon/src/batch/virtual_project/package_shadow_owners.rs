@@ -7,6 +7,9 @@ use crate::package_route::PackageRouteKey;
 use super::package_shadow::PackageShadowTopology;
 use super::{PackageShadowOwners, VirtualProject};
 
+pub(super) type PackageShadowArtifacts =
+    vize_carton::FxHashMap<PackageRouteKey, PackageShadowTopology>;
+
 /// Insert one owner and report whether the deterministic winner changed.
 fn insert_shadow_owner(
     owners: &mut PackageShadowOwners,
@@ -92,6 +95,15 @@ impl VirtualProject {
         let Some(topology) = self.package_shadow_artifacts.remove(key) else {
             return;
         };
+        // Preserve actual owner artifacts until their physical cleanup succeeds.
+        // Alias package.json claims are never owned files or cleanup authority.
+        self.retired_package_shadow_paths.extend(
+            topology
+                .files
+                .keys()
+                .chain(topology.manifests.keys())
+                .cloned(),
+        );
         self.remove_package_shadow_link_scopes(key, &topology.aliases);
         self.incremental_materialized_candidates.extend(
             topology
@@ -143,6 +155,7 @@ impl VirtualProject {
     }
 
     fn refresh_shadow_file(&mut self, path: &PathBuf) {
+        let was_present = self.package_shadow_files.contains_key(path);
         if let Some(previous) = self.package_shadow_files.get(path) {
             let remove = self
                 .package_shadow_source_paths
@@ -171,6 +184,11 @@ impl VirtualProject {
             None => {
                 self.package_shadow_files.remove(path);
             }
+        }
+        if was_present != self.package_shadow_files.contains_key(path) {
+            // The materialized package copies participate in tsconfig include.
+            // A topology change must refresh that membership on the warm path.
+            self.mark_incremental_config_file();
         }
     }
 

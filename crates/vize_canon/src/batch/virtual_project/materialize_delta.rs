@@ -68,6 +68,7 @@ impl VirtualProject {
 
     pub(crate) fn discard_incremental_materialization(&mut self) {
         self.incremental_materialized_candidates.clear();
+        self.retired_package_shadow_paths.clear();
         self.incremental_source_nodes_rebuilt = 0;
         self.incremental_dependency_nodes_reconciled = 0;
         self.incremental_shadow_bindings_rebuilt = 0;
@@ -80,7 +81,9 @@ impl VirtualProject {
     pub(crate) fn materialize_incremental_delta(
         &mut self,
     ) -> CorsaResult<IncrementalMaterialization> {
-        self.validate_workspace_alias_targets()?;
+        let retire = self.validate_workspace_alias_targets(&self.retired_package_shadow_paths)?;
+        let install_roots = self.workspace_install_roots()?;
+        self.retire_workspace_cache_links(retire)?;
         let mut candidates = std::mem::take(&mut self.incremental_materialized_candidates);
         let full_topology_rebuild = self.incremental_link_topology_dirty;
         let local_link_patch = (!full_topology_rebuild
@@ -147,21 +150,24 @@ impl VirtualProject {
                 || local_link_patch
                     .as_ref()
                     .is_some_and(|patch| patch.desired.contains_key(path))
+                || install_roots.contains(path)
             {
                 continue;
             }
             if let Some(parent) = path.parent() {
                 ensure_dir(parent)?;
             }
-            if let Some(file) = self.virtual_files.get(path) {
-                write_if_changed(path, file.content.as_bytes())?;
-            } else if let Some(original) = self.passthrough_files.get(path) {
+            // Match the cold path's final writer when canonical paths overlap
+            // authored package shadows, passthrough modules or virtual files.
+            if let Some(original) = self.package_shadow_manifests.get(path) {
                 write_if_changed(path, &std::fs::read(original)?)?;
             } else if let Some(canonical) = self.package_shadow_files.get(path) {
                 let content = self.package_shadow_content(path, canonical)?;
                 write_if_changed(path, content.as_bytes())?;
-            } else if let Some(original) = self.package_shadow_manifests.get(path) {
+            } else if let Some(original) = self.passthrough_files.get(path) {
                 write_if_changed(path, &std::fs::read(original)?)?;
+            } else if let Some(file) = self.virtual_files.get(path) {
+                write_if_changed(path, file.content.as_bytes())?;
             } else if !self.is_current_generated_path(path) {
                 remove_file_if_present(path)?;
             }
@@ -195,6 +201,7 @@ impl VirtualProject {
         delta.changed.sort();
         delta.created.sort();
         delta.deleted.sort();
+        self.retired_package_shadow_paths.clear();
         Ok(IncrementalMaterialization {
             delta,
             considered,

@@ -187,3 +187,145 @@ fn editor_union_preserves_alias_claims_when_only_the_previous_snapshot_owns_them
         );
     }
 }
+
+#[test]
+fn separate_projects_replace_only_the_selected_leaf_across_alias_directory_alias() {
+    let temp = fixture(true);
+    let root = temp.path().canonicalize().unwrap();
+    fs::write(
+        root.join("packages/a/src/index.ts"),
+        "export * from '@x/b';\nexport { Btn as DirectBtn } from '@x/c';\n",
+    )
+    .unwrap();
+    let shared = load(&root);
+    let selected = shared.virtual_root().join("packages/b/node_modules/@x/c");
+    let shared_target = fs::read_link(&selected).unwrap();
+    assert!(shared_target.starts_with(shared.virtual_root()));
+    let variant = root.join("packages/c-variant");
+    super::copy_tree(&root.join("packages/c"), &variant);
+    fs::write(
+        variant.join("src/Btn.vue"),
+        "<template><button data-variant=\"second\" /></template>\n",
+    )
+    .unwrap();
+    let sentinels = ["packages/c", "packages/c-variant"]
+        .into_iter()
+        .flat_map(|directory| {
+            ["package.json", "src/index.ts", "src/util.ts", "src/Btn.vue"]
+                .map(|relative| root.join(directory).join(relative))
+        })
+        .map(|path| {
+            let bytes = fs::read(&path).unwrap();
+            (path, bytes)
+        })
+        .collect::<Vec<_>>();
+    let raw_link = root.join("packages/b/node_modules/@x/c");
+    fs::remove_file(&raw_link).unwrap();
+    std::os::unix::fs::symlink("../../../c-variant", &raw_link).unwrap();
+    let mut divergent = load(&root);
+    assert!(divergent.materialized_package_links.is_empty());
+    assert!(fs::symlink_metadata(&selected).unwrap().is_dir());
+    assert!(fs::read_link(&selected).is_err());
+    assert_eq!(
+        fs::read(selected.join("package.json")).unwrap(),
+        fs::read(variant.join("package.json")).unwrap()
+    );
+    assert_eq!(
+        divergent
+            .package_shadow_manifests
+            .get(&selected.join("package.json")),
+        Some(&variant.join("package.json"))
+    );
+    for (path, bytes) in &sentinels {
+        assert_eq!(&fs::read(path).unwrap(), bytes);
+    }
+    super::begin_warm(&mut divergent);
+    super::assert_warm_matches_cold(&mut divergent, &root);
+
+    // A raw, unknown ancestor remains ineligible even for a current owned leaf.
+    let parent = selected.parent().unwrap();
+    fs::remove_dir_all(parent).unwrap();
+    let raw_parent = root.join("packages/b/node_modules/@x");
+    std::os::unix::fs::symlink(&raw_parent, parent).unwrap();
+    divergent.materialized_package_links.clear();
+    assert!(
+        divergent
+            .materialize()
+            .unwrap_err()
+            .to_string()
+            .contains("requires owned directories")
+    );
+    assert_eq!(fs::read_link(parent).unwrap(), raw_parent);
+    assert_eq!(
+        fs::read_link(&raw_link).unwrap(),
+        std::path::Path::new("../../../c-variant")
+    );
+    for (path, bytes) in &sentinels {
+        assert_eq!(&fs::read(path).unwrap(), bytes);
+    }
+    fs::remove_file(parent).unwrap();
+
+    fs::remove_file(&raw_link).unwrap();
+    std::os::unix::fs::symlink("../../../c", &raw_link).unwrap();
+    let mut repaired = load(&root);
+    assert_eq!(fs::read_link(&selected).unwrap(), shared_target);
+    for (path, bytes) in &sentinels {
+        assert_eq!(&fs::read(path).unwrap(), bytes);
+    }
+    super::begin_warm(&mut repaired);
+    super::assert_warm_matches_cold(&mut repaired, &root);
+}
+
+#[test]
+fn removing_route_owners_restores_surviving_root_bytes_without_stale_shadow_authority() {
+    let temp = fixture(true);
+    let root = temp.path().canonicalize().unwrap();
+    let mut project = load(&root);
+    let util = root.join("packages/c/src/util.ts");
+    let raw = fs::read(&util).unwrap();
+    let path = project
+        .find_by_original(&util)
+        .unwrap()
+        .virtual_path
+        .clone();
+    assert!(project.package_shadow_files.contains_key(&path));
+    assert_ne!(
+        raw,
+        project.virtual_files.get(&path).unwrap().content.as_bytes()
+    );
+    assert_eq!(fs::read(&path).unwrap(), raw);
+    super::begin_warm(&mut project);
+    let roots = [
+        root.join("packages/a/src/index.ts"),
+        root.join("packages/b/src/index.ts"),
+    ];
+    for source in &roots {
+        fs::write(source, "export {};\n").unwrap();
+        project.register_path(source).unwrap();
+    }
+    project.reconcile_package_routes_for_importers(&roots);
+    project.finalize_package_routes().unwrap();
+    assert!(!project.package_shadow_files.contains_key(&path));
+    project.materialize_incremental_delta().unwrap();
+    assert_eq!(
+        fs::read(&path).unwrap(),
+        project.virtual_files.get(&path).unwrap().content.as_bytes()
+    );
+    assert_eq!(fs::read(&util).unwrap(), raw);
+    let warm = super::disk_receipt(&project);
+    let noop = project.materialize_incremental_delta().unwrap();
+    assert!(noop.delta.is_empty());
+    assert_eq!(noop.considered, 0);
+    assert_eq!(super::disk_receipt(&project), warm);
+    // The caller retains these registered diagnostic roots after route removal.
+    let registered = project.registered_original_paths_sorted();
+    let mut cold = VirtualProject::new(&root).unwrap();
+    cold.register_paths(&registered).unwrap();
+    cold.reconcile_package_routes_for_importers(&registered);
+    cold.register_package_route_targets().unwrap();
+    cold.finalize_package_routes().unwrap();
+    cold.materialize().unwrap();
+    cold.capture_materialized_package_links();
+    assert_eq!(super::mapping_rows(&project), super::mapping_rows(&cold));
+    assert_eq!(super::disk_receipt(&cold), warm);
+}

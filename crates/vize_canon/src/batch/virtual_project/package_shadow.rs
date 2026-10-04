@@ -19,6 +19,7 @@ pub(super) struct PackageShadowTopology {
     pub(super) files: FxHashMap<PathBuf, PathBuf>,
     pub(super) manifests: FxHashMap<PathBuf, PathBuf>,
     pub(super) aliases: FxHashMap<PathBuf, PathBuf>,
+    pub(super) install_roots: FxHashMap<PathBuf, PathBuf>,
 }
 
 impl VirtualProject {
@@ -95,6 +96,11 @@ impl VirtualProject {
                     &self.virtual_root,
                     &route.manifest_path,
                 )]
+            } else if let Some(root) = plan.selected_install_shadow(self, &binding) {
+                topology
+                    .install_roots
+                    .insert(root.clone(), route.manifest_path.clone());
+                vec![root]
             } else if let (Some(package_name), Some(importer_dir)) = (
                 route.package_name.as_deref(),
                 importer_virtual_path.parent(),
