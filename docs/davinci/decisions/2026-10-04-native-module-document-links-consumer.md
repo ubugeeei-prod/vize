@@ -345,6 +345,6 @@ Root and independent whole-source peer clear corrected `0ac280ba3e`, with all
 `feat/native-module-document-links-main-20261004` starts on literal actual main
 `d71d8398187dfbee63c26f1e4f2946fbe9fe38f9`. It applies only the consumer delta
 relative to genuine2d3; actual signed50c/69c parent source and all incoming
-decisions remain. Narrow incoming-union review precedes independent Draft
-publication and automatic normal/minimal/strict/source Actions. No runtime or
-protected acceptance is transferred from either parent or the private freeze.
+decisions remain. Narrow incoming-union and equivalent two-line successor3060
+reviews are CLEAR. Independent Draft and automatic normal/minimal/strict/source
+Actions require actual acceptance; no runtime/protected credit transfers. Paired published decisions: [#6871](https://github.com/ubugeeei-prod/vize/issues/6871#issuecomment-5979248254), [#6872](https://github.com/ubugeeei-prod/vize/issues/6872#issuecomment-5979248418) and [#6883](https://github.com/ubugeeei-prod/vize/issues/6883#issuecomment-5979248589).

@@ -1,6 +1,6 @@
-# Unposted original module DocumentLinks consumer decision
+# Original module DocumentLinks consumer decision history
 
-Draft for #6871/#6872 and separately #6883; PRIVATE DESIGN only.
+Initial unposted draft for #6871/#6872 and separately #6883: historical PRIVATE DESIGN only.
 
 The consumer plan is bound to genuine physical2d3/context90fc source with literal
 caee release-main ancestry. The actual #7711 L2 receipt is ready; private #7771 /
@@ -67,3 +67,5 @@ Two additional complete worker/RPC laws freeze raw octal import plus original se
 ## Authorized source publication record
 
 Root and independent whole-source peer clear corrected0ac without execution credit. A fresh isolated actual-main d71d replay applies only consumer delta relative2d3, preserves actual signed50c/69c parents and every incoming source/decision, and requires narrow incoming-union source review before one independent Draft. All60 authored laws remain unexecuted; automatic normal/minimal/strict source Actions and current full104/protected/signed actual merge remain required. No standard-route, stronger watcher, whole resolution/history/default grant follows.
+
+Narrow genuine-main replay and equivalent successor3060 are independently CLEAR without execution. Paired published decisions: [#6871](https://github.com/ubugeeei-prod/vize/issues/6871#issuecomment-5979248254), [#6872](https://github.com/ubugeeei-prod/vize/issues/6872#issuecomment-5979248418) and [#6883](https://github.com/ubugeeei-prod/vize/issues/6883#issuecomment-5979248589).
