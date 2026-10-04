@@ -217,3 +217,14 @@ complete ordered runtime assertions as an assertion-based oracle, then regenerat
 only the Canon TSV with the exact existing inventory generator. Existing
 snapshot tests and inventory checks pass locally; no gate, cap, source assertion
 or provider recipe is loosened, and fresh hosted qualification remains required.
+
+Source `0508d3cb` passes all four affected Rust workers and native-phase checks,
+but [tooling shard1](https://github.com/ubugeeei-prod/vize/actions/runs/37232410574/job/111525067728)
+rejects the existing workflow length ratchet: `check.yml` grew 690 to 692 lines.
+Remove two existing blank section separators; the complete parsed YAML is equal,
+all provider/default-build/runtime steps and assertions are retained, and the
+workflow remains 690 lines. No limit or allowlist changes. Earlier source
+`59a55279` genuinely passed all 37 new Router Rust fixture bodies; that result
+remains source-scoped, and this successor still requires fresh full Actions.
+Local configured formatting accepts the YAML; its lint half has zero eligible
+YAML files, so it supplies no lint credit. Hosted source gates remain required.
