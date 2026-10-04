@@ -161,3 +161,21 @@ arguments/results/exceptions, and rejection of ambient global overrides or
 stale selected bytes. These synthetic controls are not runtime credit.
 Retain the original failure and require fresh exact-source Nuxt/SSR/browser
 execution; successful quality and protected delivery are still pending.
+
+Source `e2b59f21194f11b5caf5d7e1e535d261a232d428` passed genuine Nuxt run 37227242892. Artifact 11312995256 (181,890,926 bytes), ZIP SHA-256
+`746f9a0420b70bdf6fb4d5b0570c70183f1914de983b3913040bfa923bd0b033`,
+authenticates checkout `07f5981245629080aa5b3d9d3b859f742e2e1b77` and actual
+binary `8d5d02e10b6a9faa767c586a2dace12a4ead425a41458a9d737c1a41ce350965`.
+Its one compiler process made eighteen calls. All original four SFCs reached
+both backends with exact complete bytes, empty native errors and nonempty
+generated code; the original SSR/CSS/Chromium assertions passed. Only the
+index SSR result supplies a map, so this does not claim all-map coverage.
+
+Close a future acceptance hole found while auditing those actual results:
+require one matching original native result, empty errors and nonempty code
+for each original fixture compilation. An adapter fallback cannot turn a
+returned native error into source-compiler quality credit. Preserve other
+generated Nuxt inputs' existing adapter policy. Extend rejection controls
+for errors, missing results, empty code and wrong result paths. This changes
+the acceptance law, so the earlier pass stays source-qualified and fresh
+exact-head Actions remain required before readiness or protected delivery.

@@ -118,6 +118,21 @@ export function verifyNuxtSourceBindingEvents(custody, events) {
             original.source,
             "compiler input differs from original fixture bytes",
           );
+          const results =
+            event.entrypoint === "compileSfc"
+              ? [event.result]
+              : event.result.results?.filter((result) => result.path === original.filename);
+          assert.ok(
+            Array.isArray(results) && results.length === 1,
+            "missing original native result",
+          );
+          assert.deepEqual(
+            results[0].errors,
+            [],
+            "original fixture returned native compiler errors",
+          );
+          assert.equal(typeof results[0].code, "string");
+          assert.ok(results[0].code.trim(), "original fixture returned no native generated code");
           compiled.add(`${backend}:${original.filename}`);
         }
       }

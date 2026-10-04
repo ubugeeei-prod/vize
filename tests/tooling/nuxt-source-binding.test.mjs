@@ -28,6 +28,7 @@ const inputs = [{ path: custody.fixtures[0].filename, source: custody.fixtures[0
 const returned = {
   code: "original complete code",
   map: { sourcesContent: [custody.fixtures[0].source] },
+  errors: [],
 };
 const calls = [
   event("load"),
@@ -36,7 +37,7 @@ const calls = [
       entrypoint: "compileSfcBatchWithResults",
       args: [inputs, { ssr }],
       outcome: "return",
-      result: returned,
+      result: { results: [{ path: inputs[0].path, ...returned }] },
     }),
   ),
 ];
@@ -53,6 +54,16 @@ await test("native fixture custody requires original inputs, actual load, and bo
     calls.map((row) => ({ ...row, sha256: "c".repeat(64) })),
     calls.map((row) => ({ ...row, binary: "/published/native.node" })),
     [calls[0], { ...calls[1], outcome: "throw" }, calls[2]],
+    [calls[0], { ...calls[1], result: { results: [] } }, calls[2]],
+    ...[
+      { errors: ["native compilation failed; adapter fallback must not count"] },
+      { code: "" },
+      { path: "/other/App.vue" },
+    ].map((override) => [
+      calls[0],
+      { ...calls[1], result: { results: [{ path: inputs[0].path, ...returned, ...override }] } },
+      calls[2],
+    ]),
     [
       calls[0],
       { ...calls[1], args: [[{ ...inputs[0], source: "altered" }], { ssr: false }] },
