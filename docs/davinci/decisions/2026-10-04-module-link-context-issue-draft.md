@@ -129,3 +129,7 @@ only when no native test consumer exists; the inner already-consumed import
 needs no allowance. No lint level is weakened and every body/API/input/oracle/cap
 is unchanged. Full raw cd5 logs and all historical campaigns remain retained;
 fresh strict/whole source/protected/actual merge proof is still mandatory.
+
+## Genuine harness ancestry and release hold
+
+Exact ad670 source Check37187035108 and preserved ee22 protected Check37187705938 are terminal SUCCESS, including39 full jobs, real normal152/43/21 plus11 no-default laws, minimal/strict and independently qualified unchanged104×3 ceilings. The green entry was manually removed for concrete7778 public-release verification, not a source failure. Fresh actual76f93 ancestry now preserves original912d phase harness for the dependent Cargo.lock change; no copied helper, skipped gate or transferred old-candidate acceptance. Keep source/ref/worktrees and all incoming decisions/versions intact; exact-source Actions and true Stack after release still require actual merge.

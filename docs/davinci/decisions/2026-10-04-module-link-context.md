@@ -10,17 +10,17 @@ changing that commit or its worktree. Frozen design `8074694ee89a3c8c6f36928a645
 received root and independent peer clearance after the original EOF correction.
 Root then authorized private source/law preparation on fresh main. Full root
 and independent peer source review cleared `2a4ccc626e398f305771b20da9b9cc6d330ffa93`;
-source publication and hosted execution are authorized. Actual Actions,
-protected acceptance and merge evidence remain pending.
+source publication and hosted execution are authorized. Exact ad670 source and
+preserved ee22 protected acceptance pass; actual merge remains release-held.
 
 ## Current source and boundary
 
 Historical design worktree baseline: literal main
-`b9be9065b872086726158b67d1b4e7b8dee78a14`. The current implementation
+`b9be9065b872086726158b67d1b4e7b8dee78a14`. The original source
 reviewed implementation used literal main `da894691fff4da81b4acbe71a935c7c67fb0539a`.
-The current isolated replay uses literal main
-`9702c014e06a268d2651202b7fcb951db7e729df`; the original design and implementation
-worktrees remain preserved.
+The historical replay used literal main
+`9702c014e06a268d2651202b7fcb951db7e729df`; the current isolated genuine union uses
+actual main `76f93fe1e3c46ac8c86157a520302e26c50ac871`. All old worktrees remain preserved.
 Actual #7737's Names configuration tickets and move-only `navigation/cache.rs`
 are present. Preserve those exact owners, routes, locks and lifecycle. Their
 parser/linked identities are not module context or project-resolution proof.
@@ -324,7 +324,7 @@ Draft [#7771](https://github.com/ubugeeei-prod/vize/pull/7771) first published o
 actual da894 with paired issue decisions. Main then advanced through #7762,
 #7761, #7767 and #7768. A new `wt` replays all genuine commits, retaining the
 separate behavior-preserving extraction commits and the old source/worktree.
-The current base is literal `9702c014e06a268d2651202b7fcb951db7e729df`. The old b7 Actions
+That historical base was `9702c014e06a268d2651202b7fcb951db7e729df`. The old b7 Actions
 reported Rust-builder and tooling failures; their full logs are retained.
 Rust E0282 is repaired by an explicit `Vec<Value>` annotation in the unchanged
 whole-frame decoder. The tooling boundary now recognizes only the exact
@@ -346,3 +346,5 @@ source acceptance. Two definition laws and one virtual-TS law gain their real
 inputs, expectations and default execution remain. Only unused feature-owned
 imports are gated; no production body changes. Fresh normal/minimal/strict
 source and protected full104/actual merge remain mandatory. Source cd5 then actually passes all152/43/21 normal and11 genuine no-default laws plus minimal check, but final strict Clippy rejects two introduced item-level allow attributes on private error reexports. Replace the genuinely unused outer import allowance with a precise conditional expectation, and remove the unnecessary inner allowance; its import is already used by that outer reexport. Every API/body/input/oracle/cap stays exact. Original cd5 logs remain retained, granting no whole source acceptance; fresh strict/current source/protected proof stays required.
+
+Exact ad670 Check37187035108 and preserved ee22 full Check37187705938 pass all39 protected jobs, normal152/43/21 and genuine no-default11 laws, minimal check, strict Clippy and all104 unchanged ceilings measured×3 with independent raw qualification. The concrete7778 release owner manually removes the green ee22 entry at2026-10-04 08:16:37UTC pending verified public0.432.0 artifacts; no actual merge is claimed. The genuine actual-main76f93 union preserves every parent product/law blob and all incoming source/docs/versions, including912d original typechecker-phase harness required by the future child Cargo.lock path. No helper copying or old candidate proof substitutes for fresh source/current protected acceptance. New true native Stack membership and post-release fresh-main/actual merge remain mandatory.
