@@ -161,3 +161,26 @@ Then decode profiles semantically before reporting sample counts or attribution.
 Only concrete evidence can justify a new production program/cache experiment;
 that requires another paired #7698/docs decision and whole-command cold target,
 complete ordered diagnostics, revision/context safety and unchanged budget gates.
+
+## First source Actions warning correction
+
+Source `9e07bfe280` failed the zero-warning JS gate in
+[Check 37192239846, job 111406695262](https://github.com/ubugeeei-prod/vize/actions/runs/37192239846/job/111406695262).
+Formatting all 7,477 files passed; lint over 6,088 files found 13
+`typescript/no-floating-promises` warnings in the new custody test's top-level
+registrations. The earlier focused absolute-path check ran from a different,
+dependency-equipped checkout and missed contextual Node test return types;
+its zero warnings did not establish whole-workspace CI warning parity.
+
+Await the 13 top-level registrations without changing any of the 40 laws,
+assertions, source/allowlist/production guards or the zero-warning budget.
+Verify the affected 40 controls and configured lint inside this exact isolated
+checkout, then require fresh exact-successor source Actions. Every collector,
+profile, production, lock and neutral input blob remains unchanged. This is a
+test/documentation correction, not a runtime or policy change.
+
+[Native phase run 37192239409](https://github.com/ubugeeei-prod/vize/actions/runs/37192239409)
+passed at `9e07bfe280`; its first post-Stack raw observations belong to that source.
+A test-only successor can prove unchanged collector/production blobs, but cannot
+transfer that run's head qualification. Final source checks remain required;
+manual profiling, semantic decoding, Ready and queue admission stay unqualified.

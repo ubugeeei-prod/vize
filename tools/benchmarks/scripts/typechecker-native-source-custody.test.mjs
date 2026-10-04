@@ -103,7 +103,7 @@ function manual(f, { source = f.base, main = git(f.root, "rev-parse", "HEAD"), e
   };
 }
 
-test("manual identical main uses separate source and records the complete custody", () => {
+await test("manual identical main uses separate source and records the complete custody", () => {
   fixture((f) => {
     const options = manual(f);
     const receipt = captureSourceCustody(options);
@@ -131,7 +131,7 @@ test("manual identical main uses separate source and records the complete custod
   });
 });
 
-test("manual permits precisely reviewed infrastructure while preserving neutral bridges", () => {
+await test("manual permits precisely reviewed infrastructure while preserving neutral bridges", () => {
   fixture((f) => {
     const paths = [...INFRASTRUCTURE_PATHS].filter((path) => !BRIDGES.includes(path));
     assert.equal(paths.length, 20);
@@ -159,7 +159,7 @@ for (const path of [
   PREFIX + "typechecker-native-source-custody.mjs\nCargo.lock",
   ...BRIDGES,
 ]) {
-  test(`manual rejects production, dependency or neutral-input change: ${JSON.stringify(path)}`, () => {
+  await test(`manual rejects production, dependency or neutral-input change: ${JSON.stringify(path)}`, () => {
     fixture((f) => {
       put(f.root, path);
       commit(f.root, "hostile input change");
@@ -171,7 +171,7 @@ for (const path of [
   });
 }
 
-test("manual rejects a symlink even at an explicitly allowed infrastructure path", () => {
+await test("manual rejects a symlink even at an explicitly allowed infrastructure path", () => {
   fixture((f) => {
     const path = PREFIX + "typechecker-native-phase-capture.mjs";
     rmSync(join(f.root, path));
@@ -197,14 +197,14 @@ const invalidContexts = [
   ["MAIN_SOURCE_SHA", "0".repeat(40), /source baseline mismatch/u],
 ];
 for (const [field, value, reason] of invalidContexts) {
-  test(`manual rejects invalid context ${field}=${JSON.stringify(value)}`, () => {
+  await test(`manual rejects invalid context ${field}=${JSON.stringify(value)}`, () => {
     fixture((f) =>
       assert.throws(() => captureSourceCustody(manual(f, { env: { [field]: value } })), reason),
     );
   });
 }
 
-test("manual rejects source/driver HEAD and workflow/driver mismatches independently", () => {
+await test("manual rejects source/driver HEAD and workflow/driver mismatches independently", () => {
   fixture((f) => {
     put(f.root, PREFIX + "typechecker-native-phase-report.mjs");
     const driver = commit(f.root, "reviewed driver revision");
@@ -226,7 +226,7 @@ test("manual rejects source/driver HEAD and workflow/driver mismatches independe
   });
 });
 
-test("manual declines a shared checkout even when its source SHA is correct", () => {
+await test("manual declines a shared checkout even when its source SHA is correct", () => {
   fixture((f) => {
     const options = manual(f);
     assert.throws(
@@ -238,7 +238,7 @@ test("manual declines a shared checkout even when its source SHA is correct", ()
 
 for (const side of ["sourceRoot", "driverRoot"]) {
   for (const state of ["tracked", "staged", "untracked"]) {
-    test(`manual rejects ${state} build inputs in ${side}`, () => {
+    await test(`manual rejects ${state} build inputs in ${side}`, () => {
       fixture((f) => {
         const options = manual(f);
         const path = state === "untracked" ? "crates/vize/build.rs" : PRODUCTION;
@@ -253,7 +253,7 @@ for (const side of ["sourceRoot", "driverRoot"]) {
   }
 }
 
-test("manual preserves ignored build and dependency output directories", () => {
+await test("manual preserves ignored build and dependency output directories", () => {
   fixture((f) => {
     const options = manual(f);
     for (const root of [options.sourceRoot, options.driverRoot])
@@ -263,7 +263,7 @@ test("manual preserves ignored build and dependency output directories", () => {
 });
 
 for (const mode of ["stale-env", "forged-main", "missing-ref"]) {
-  test(`manual binds recorded main to the actual fetched origin/main: ${mode}`, () => {
+  await test(`manual binds recorded main to the actual fetched origin/main: ${mode}`, () => {
     fixture((f) => {
       put(f.root, PREFIX + "typechecker-native-phase-report.mjs");
       commit(f.root, "reviewed main driver");
@@ -279,7 +279,7 @@ for (const mode of ["stale-env", "forged-main", "missing-ref"]) {
   });
 }
 
-test("manual rejects a driver outside the recorded main history", () => {
+await test("manual rejects a driver outside the recorded main history", () => {
   fixture((f) => {
     git(f.root, "checkout", "-b", "unmerged-driver");
     put(f.root, PREFIX + "typechecker-native-phase-report.mjs");
@@ -288,7 +288,7 @@ test("manual rejects a driver outside the recorded main history", () => {
   });
 });
 
-test("manual rejects an arbitrary source branch even with a protected-main driver", () => {
+await test("manual rejects an arbitrary source branch even with a protected-main driver", () => {
   fixture((f) => {
     git(f.root, "checkout", "-b", "unmerged-source");
     put(f.root, PRODUCTION);
@@ -298,7 +298,7 @@ test("manual rejects an arbitrary source branch even with a protected-main drive
   });
 });
 
-test("PR keeps origin-main merge-base rather than the immediate stacked PR base", () => {
+await test("PR keeps origin-main merge-base rather than the immediate stacked PR base", () => {
   fixture((f) => {
     git(f.root, "checkout", "-b", "stack-parent");
     put(f.root, PRODUCTION, "parent production revision\n");
