@@ -3,8 +3,14 @@
 This genuine child branches from #7668 source
 `7a4efbb4f7926b9eb8b26e1c7ea7107862847843`; no synthetic integration
 branch or caller-selected source pairing establishes its dependency.
-The parent exact source Check37163621588 is successful. The child requires
-independent exact-source and protected acceptance before actual delivery.
+The parent source Check37163621588 and protected Check37164682812 are
+successful. It actually merged as signed a5853a88be at00:37:11Z with actual
+all100 x3/pinned ratchet and null queue. GitHub native Stack7678 retains the
+provider at position1 and this genuine child at position2. The authenticated
+backend replay c3c2458 preserves every owned production/wire/17+8 law blob and
+retargets this child onto that literal parent; no synthetic integration or
+redundant source rewrite is needed. The child requires independent exact-source
+and protected acceptance before actual delivery.
 
 ## Product route and owner
 
@@ -95,3 +101,12 @@ owners. Reverse lexical scope already ends query/lines, selected Component,
 Descriptor, arena and snapshot before the outer live-slot release. Removing
 those calls preserves that custody and every law; a fresh fully accepted source
 is required, and this failed source remains unqueued.
+
+Authenticated c3c2458 passes all123 SourceProject/all31 RPC laws, minimal
+feature compilation and strict Clippy. Its source tooling gate refuses growth
+of the inherited over-limit server/handlers.rs from568 to573 lines. A separate
+move-only commit extracts the same linked-editing body into its focused handler
+module, retaining the rename/native guards and unchanged default result. No
+wire fixture, expectation, source owner or query guard changes. The failed
+source remains unqueued; fresh whole-head Actions and protected acceptance are
+required.
