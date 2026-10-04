@@ -1237,6 +1237,140 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/single-jsx-quotes",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-single-jsx-quotes",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "f73ad31fe985659a13b60f3f6dc81ff6116a43cc912fbc821cff40dc0dd9bdd3",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "d2ed68e457fb5432735ad7c8876a215391f479d667a5bfc1b407445f76c85876",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          7763,
+          6098
+        ],
+        "commits": [
+          {
+            "sha": "da8638a8acb087fd0ffb6ccd3de4b1034a833d9a",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/options.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 7763,
+            "path": "crates/vize_glyph/tests/jsx_quotes.rs",
+            "symbol": "configured_jsx_quotes_preserve_complete_sfc_corpus_and_fixed_points"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/jsx_quotes.rs",
+          "symbol": "configured_jsx_quotes_preserve_complete_sfc_corpus_and_fixed_points",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "idempotence",
+            "FormatResult.changed",
+            "options-immutable"
+          ],
+          "limitations": [
+            "Actual current-source public Rust and CLI execution require Actions; no native provider acceptance credit."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "tsx",
+              "html-template",
+              "jsx-single-quotes"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with explicit pinned JSON project config; branch Actions execution remains pending.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-single-jsx-quotes/reference.expected.txt",
+              "sha256": "5b84ea1a2cbd182272e6066ae0509fda97cd1ddea1403365054941a3c27eb4e7",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 7763,
+                "path": "crates/vize_glyph/tests/jsx_quotes.rs",
+                "symbol": "configured_jsx_quotes_preserve_complete_sfc_corpus_and_fixed_points",
+                "assertion": "independently authored complete SFC keeps JS-string policy and HTML attributes while preferring single JSX quotes only when escaping permits; exact second/third bytes and changed=false"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-7763-contract-derived-jsx-quote-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {

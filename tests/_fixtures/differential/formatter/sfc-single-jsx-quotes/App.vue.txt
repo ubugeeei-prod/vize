@@ -1,0 +1,7 @@
+<script lang="tsx">
+const label="hello"
+const plain=<div title="world"/>
+const apostrophe=<div title="it's"/>
+const entities=<div title="' &quot;"/>
+</script>
+<template><p title="world">hello</p></template>

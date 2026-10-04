@@ -233,10 +233,8 @@ impl FormatOptions {
 
     /// Convert to `oxc_formatter::JsFormatOptions`
     pub fn to_oxc_format_options(&self) -> oxc_formatter::JsFormatOptions {
-        // OXC 0.142 renamed `FormatOptions` to `JsFormatOptions` and moved the
-        // language-agnostic width/indent/line-ending types into
-        // `oxc_formatter_core`, which `oxc_formatter` takes but does not
-        // re-export.
+        // Oxc 0.142 renamed FormatOptions to JsFormatOptions; shared layout types
+        // live in oxc_formatter_core and are not re-exported by oxc_formatter.
         use oxc_formatter::{
             ArrowParentheses, BracketSameLine, BracketSpacing, QuoteProperties, QuoteStyle,
             Semicolons, TrailingCommas,
@@ -257,6 +255,11 @@ impl FormatOptions {
                 EndOfLine::Cr => LineEnding::Cr,
             },
             quote_style: if self.single_quote {
+                QuoteStyle::Single
+            } else {
+                QuoteStyle::Double
+            },
+            jsx_quote_style: if self.jsx_single_quote {
                 QuoteStyle::Single
             } else {
                 QuoteStyle::Double

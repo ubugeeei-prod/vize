@@ -1,6 +1,6 @@
 # Formatter differential fixtures
 
-`sfc-public-node-line-endings` (#7736) is an additive configured case shared by
+`sfc-mixed-raw-line-endings` (#7736/#7745) is an additive configured case shared by
 the source-built CLI and actual exported Node `formatSfc` regressions. Its complete
 authored reference uses CRLF layout across script/template/style while retaining
 the raw `<pre>` body's LF bytes. All three passes must match without modifying
@@ -122,3 +122,12 @@ reaches a three-pass fixed point. Previous nine references/history captures,
 including the mixed raw separator and actual public Node proof, remain unchanged.
 Actual current-source Rust/CLI execution is required; derived references are not
 old-output observations or native acceptance credit.
+
+## Independent JSX quote preference (#7763)
+
+The eleventh configured case uses the existing `jsxSingleQuote: true` option.
+Its independently authored 227-byte reference separates JS strings, ordinary
+JSX attributes, apostrophe fallback and equal-count entity escaping, while
+ordinary template HTML retains its existing bytes. Actual source-built CLI must
+match all eleven references over three passes. All previous ten cases, historical
+captures/plans and native-provider credit boundaries remain unchanged.
