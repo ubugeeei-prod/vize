@@ -1,8 +1,12 @@
 """Validator adversarial laws only; these synthetic data grant no cause credit."""
 
 import copy
+import json
+import tempfile
 import unittest
+from pathlib import Path
 from common import CASE, FIXTURES
+from run import prepare_output
 from verify import budget_trace, printed_rows
 
 
@@ -27,6 +31,28 @@ def synthetic():
 
 
 class EvidenceValidator(unittest.TestCase):
+    def test_fresh_preparation_admitted_and_prior_matrix_or_wrong_identity_refused(self):
+        env = {"GITHUB_SHA": "frozen-head", "GITHUB_RUN_ID": "run-id", "GITHUB_RUN_ATTEMPT": "1"}
+        value = {"status": "preparation-only", "matrix_execution_credit": False,
+                 "matrix_attempts": 0, "head_sha": "frozen-head", "run_id": "run-id", "run_attempt": "1"}
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            receipt = output / "preparation.json"
+            receipt.write_text(json.dumps(value))
+            prepare_output(output, env)
+            self.assertEqual(json.loads(receipt.read_text()), value)
+            (output / "identity.json").write_text("{}")
+            with self.assertRaises(RuntimeError):
+                prepare_output(output, env)
+            (output / "identity.json").unlink()
+            for key, wrong in (("head_sha", "other"), ("run_id", "other"),
+                               ("run_attempt", "2"), ("matrix_attempts", 1),
+                               ("matrix_execution_credit", True), ("matrix_execution_credit", 0),
+                               ("matrix_attempts", False)):
+                receipt.write_text(json.dumps({**value, key: wrong}))
+                with self.assertRaises(RuntimeError):
+                    prepare_output(output, env)
+
     def test_exact_main_identity_join_and_original_cap_failure(self):
         rows, trace = synthetic()
         joined = budget_trace(trace, rows)

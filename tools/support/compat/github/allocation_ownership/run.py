@@ -14,6 +14,19 @@ from common import (ATTEMPTS, BRANCH, CASE, FEATURE, ORIGINAL_BLOBS, OVERLAY,
 from verify import budget_trace, positive_trace, printed_rows
 
 
+def prepare_output(output, env):
+    output.mkdir(parents=True, exist_ok=True)
+    require({path.name for path in output.iterdir()} == {"preparation.json"},
+            "only fresh preparation evidence admitted; no previous matrix reuse")
+    value = json.loads((output / "preparation.json").read_text())
+    expected = {"status": "preparation-only", "matrix_execution_credit": False,
+                "matrix_attempts": 0, "head_sha": env["GITHUB_SHA"],
+                "run_id": env["GITHUB_RUN_ID"], "run_attempt": env["GITHUB_RUN_ATTEMPT"]}
+    require(type(value.get("matrix_attempts")) is int and value.get("matrix_execution_credit") is False,
+            "literal integer zero and boolean false required")
+    require(value == expected, "exact fresh preparation head/run/attempt and zero-credit identity")
+
+
 def launch(binary, cwd, directory, threads, case, traced):
     directory.mkdir(parents=True)
     trace = directory / "trace.json"
@@ -196,11 +209,14 @@ def experiment(root, output):
 if __name__ == "__main__":
     root = Path(command(["git", "rev-parse", "--show-toplevel"]))
     output = Path(sys.argv[1]).resolve()
-    output.mkdir(parents=True)
     try:
+        prepare_output(output, os.environ)
         result = experiment(root, output)
         print(json.dumps({key: result[key] for key in ("complete", "conclusion", "original_cap_failures")}))
     except Exception as error:
-        write_json(output / "fatal.json", {"complete": False, "cause": "still-unknown",
-                                           "error": str(error), "original_failure_preserved": True})
+        fatal = {"complete": False, "cause": "still-unknown", "error": str(error),
+                 "original_failure_preserved": True}
+        # Existing evidence is never overwritten if this invocation is refused.
+        with (output / f"fatal-{time.time_ns()}.json").open("x") as stream:
+            stream.write(json.dumps(fatal, indent=2) + "\n")
         raise

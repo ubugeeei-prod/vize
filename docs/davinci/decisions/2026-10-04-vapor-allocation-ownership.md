@@ -128,3 +128,15 @@ TID assertion now carries that platform contract without a redundant constant
 assertion. A preparation-only identity receipt is written before source checks
 so setup failures remain uploadable. This repair preserves all ordinal/identity
 guards and measurement semantics; it grants no cause or acceptance credit.
+
+The successor `7727cf948b` passed explicit-feature Clippy, then stopped at
+matrix launcher initialization (Check 37185278742, job 111385802809): the new
+preparation step had already created the directory. Artifact 11296996677,
+complete ZIP SHA-256 `8b02e561d76dd7f7664acee03c8c7a819d2095aabc9bf911606b58e87b82b5db`,
+authenticates only a preparation receipt with zero attempts and false credit.
+No archive or measured process was consumed. Initialization now admits only
+that exact fresh head/run/attempt preparation, refuses any previous matrix
+evidence, and preserves initialization errors without overwriting existing
+records. A direct initialization law checks the actual preparation-to-runner
+integration plus wrong identities and reused-output rejection. Matrix inputs,
+allocation hooks, windows and caps remain unchanged; cause remains unknown.
