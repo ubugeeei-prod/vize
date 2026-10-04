@@ -185,6 +185,7 @@ fn disabled_language_server_clears_logged_legacy_vue2_feature() {
     assert!(logged_payload.contains("options_api: false"));
 }
 
+#[cfg(feature = "native")]
 #[test]
 fn both_config_loaders_preserve_exact_template_globals() {
     let dir = tempfile::tempdir().unwrap();

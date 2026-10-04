@@ -163,6 +163,11 @@ impl VirtualProject {
             .map(|content| content.as_str())
     }
 
+    #[cfg(test)]
+    pub(crate) fn remove_original_content_for_test(&mut self, virtual_path: &Path) {
+        self.original_contents.remove(virtual_path);
+    }
+
     /// Map a virtual position to the original position.
     pub fn map_to_original(
         &self,

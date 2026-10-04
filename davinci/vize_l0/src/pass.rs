@@ -63,7 +63,7 @@ pub use kind::{Fusability, PassKind};
 pub use observer::{
     AnalysisEvent, BudgetObserver, FailEvent, NoObserver, NoRemarks, Pair, PassEvent, PassFailure,
     PassObserver, PassRemarks, Remark, RemarkArg, RemarkCollector, RemarkCounter, RemarkKind,
-    RemarkSink, RemarkValue, TimingObserver, run_pipeline, run_pipeline_remarked,
+    RemarkSink, RemarkValue, TimingObserver, WalkTiming, run_pipeline, run_pipeline_remarked,
 };
 pub use pipeline::{PipelineSyntaxError, parse_pipelines, print_pipelines};
 pub use preserved::{AnalysisId, MAX_ANALYSES, Preserved};

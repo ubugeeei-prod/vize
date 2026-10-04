@@ -3,6 +3,7 @@ use std::fs;
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Url};
 
 use crate::ide::IdeContext;
+#[cfg(feature = "native")]
 use crate::ide::definition::DefinitionService;
 use crate::server::ServerState;
 
@@ -173,6 +174,7 @@ import AccountSearchResult from '~/components/AccountSearchResult.vue'
     );
 }
 
+#[cfg(feature = "native")]
 #[test]
 fn definition_service_follows_an_alias_barrel_to_the_component_source() {
     let workspace = tempfile::tempdir().expect("temporary workspace");
@@ -265,6 +267,7 @@ import descriptionItem from "./descriptionItem/index.vue";
     );
 }
 
+#[cfg(feature = "native")]
 #[test]
 #[cfg(unix)]
 fn definition_service_follows_a_workspace_package_vue_export() {

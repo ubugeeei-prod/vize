@@ -25,6 +25,8 @@ mod for_head;
 pub use for_head::{
     NativeAttributeForHead, NativeAttributeForHeadFailure, NativeAttributeForHeadView,
 };
+mod head;
+pub use head::NativeAttributeHead;
 mod origin;
 use origin::Origin;
 mod value;
@@ -99,38 +101,48 @@ impl<'a> NativeTemplateComponent<'a> {
         )
         .map_err(NativeAttributeOperandError::Directive)?
         .ok_or(NativeAttributeOperandError::UnsupportedDirective)?;
-        let origin = Origin::from_attribute(self, &attribute)?;
-        let source = prepare_attribute_value(
-            self.component().allocator(),
-            origin.block.root_source(),
-            origin.value_span,
-        )
-        .map_err(NativeAttributeOperandError::Source)?;
-        let lang = match self.grammar() {
-            NativeTemplateGrammar::JavaScriptModule => Lang::Js,
-            NativeTemplateGrammar::TypeScriptModule => Lang::Ts,
-        };
-        let syntax = parse_once(
-            self.component().allocator(),
-            Embed {
-                grammar: Grammar {
-                    shape: Shape::Expr,
-                    lang,
-                },
-                source,
-            },
-        )
-        .into_expression()
-        .map_err(|syntax| NativeAttributeExpressionFailure {
-            kind: NativeAttributeOperandError::UnexpectedShape,
-            syntax: Some(syntax),
-        })?;
-        Ok(NativeAttributeExpression {
-            origin,
-            kind,
-            syntax,
-        })
+        observe_conditional(self, attribute, kind)
     }
+}
+
+// Both routes have checked the actual original header and dialect selection.
+// Only this shared tail prepares and parses the complete original value.
+fn observe_conditional<'a>(
+    selected: &NativeTemplateComponent<'a>,
+    attribute: NativeAttribute<'_, 'a>,
+    kind: NativeConditionKind,
+) -> Result<NativeAttributeExpression<'a>, NativeAttributeExpressionFailure<'a>> {
+    let origin = Origin::from_attribute(selected, &attribute)?;
+    let source = prepare_attribute_value(
+        selected.component().allocator(),
+        origin.block.root_source(),
+        origin.value_span,
+    )
+    .map_err(NativeAttributeOperandError::Source)?;
+    let lang = match selected.grammar() {
+        NativeTemplateGrammar::JavaScriptModule => Lang::Js,
+        NativeTemplateGrammar::TypeScriptModule => Lang::Ts,
+    };
+    let syntax = parse_once(
+        selected.component().allocator(),
+        Embed {
+            grammar: Grammar {
+                shape: Shape::Expr,
+                lang,
+            },
+            source,
+        },
+    )
+    .into_expression()
+    .map_err(|syntax| NativeAttributeExpressionFailure {
+        kind: NativeAttributeOperandError::UnexpectedShape,
+        syntax: Some(syntax),
+    })?;
+    Ok(NativeAttributeExpression {
+        origin,
+        kind,
+        syntax,
+    })
 }
 
 impl<'a> NativeAttributeExpression<'a> {

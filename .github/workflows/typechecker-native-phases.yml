@@ -1,0 +1,164 @@
+name: Type checker native backend phases
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: "Immutable main ancestor; production/dependency/corpus bytes must equal this main driver"
+        required: true
+        type: string
+  pull_request:
+    paths:
+      - ".github/workflows/typechecker-native-phases.yml"
+      - "tools/benchmarks/scripts/typechecker-native-*.mjs"
+      - "tools/benchmarks/scripts/type-snapshot-cli-corpus.mjs"
+      - "tools/benchmarks/scripts/type-snapshot-cli-leaf-corpus.mjs"
+      - "tools/benchmarks/scripts/type-snapshot-cli-protocol.mjs"
+      - "crates/vize_canon/examples/native_phase_projection.rs"
+      - "docs/davinci/decisions/2026-10-04-typechecker-native-phases.md"
+      - "docs/davinci/decisions/2026-10-04-typechecker-cold-native-profiles.md"
+      - "tools/benchmarks/scripts/generate.mjs"
+      - "tools/benchmarks/scripts/check-gate-*.mjs"
+      - "tools/benchmarks/scripts/typecheck-command.mjs"
+      - "tools/benchmarks/scripts/benchmark-binary.mjs"
+      - "crates/vize_canon/**"
+      - "crates/vize/src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "pnpm-lock.yaml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: typechecker-native-phases-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.source_sha || github.event.pull_request.head.sha }}
+  DRIVER_SHA: ${{ github.event_name == 'workflow_dispatch' && github.workflow_sha || github.event.pull_request.head.sha }}
+  CARGO_TARGET_DIR: ${{ github.workspace }}/target
+
+jobs:
+  native-phases:
+    name: Actual CLI shard native phase evidence
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.DRIVER_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Pin immutable driver, source and freshly fetched main baseline
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$DRIVER_SHA" =~ ^[0-9a-f]{40}$ && "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$DRIVER_SHA" ]]
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          main_head_sha="$(git rev-parse refs/remotes/origin/main)"
+          [[ "$(git rev-parse --verify "$SOURCE_SHA^{commit}")" == "$SOURCE_SHA" ]]
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize && "$GITHUB_REF" == refs/heads/main ]]
+            [[ "$DRIVER_SHA" == "$GITHUB_WORKFLOW_SHA" ]]
+            git merge-base --is-ancestor "$DRIVER_SHA" "$main_head_sha"
+            git merge-base --is-ancestor "$SOURCE_SHA" "$main_head_sha"
+            source_base_sha="$SOURCE_SHA"
+          else
+            [[ "$GITHUB_EVENT_NAME" == pull_request && "$DRIVER_SHA" == "$SOURCE_SHA" ]]
+            [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+            source_base_sha="$(git merge-base "$main_head_sha" "$SOURCE_SHA")"
+            echo "PR_BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"
+          fi
+          echo "MAIN_SOURCE_SHA=$source_base_sha" >> "$GITHUB_ENV"
+          echo "MAIN_HEAD_SHA=$main_head_sha" >> "$GITHUB_ENV"
+          echo "NATIVE_PHASE_SOURCE_ROOT=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          echo "NATIVE_PHASE_OUTPUT=$RUNNER_TEMP/typechecker-native-phases.json" >> "$GITHUB_ENV"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          path: .native-phase-source
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Isolate the manual production checkout from driver outputs
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          set -euo pipefail
+          [[ ! -e "$RUNNER_TEMP/native-phase-source" ]]
+          mv "$GITHUB_WORKSPACE/.native-phase-source" "$RUNNER_TEMP/native-phase-source"
+          echo "NATIVE_PHASE_SOURCE_ROOT=$RUNNER_TEMP/native-phase-source" >> "$GITHUB_ENV"
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: typechecker-native-phases
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          target-path: target
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: package.json
+          run-install: false
+      - name: Reject source, lock, corpus, workflow and baseline drift before installation
+        run: node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"
+      - name: Install pinned native runtime and shared Vue dependencies
+        run: |
+          set -euo pipefail
+          vp install --frozen-lockfile --prefer-offline
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            [[ ! -e "$NATIVE_PHASE_SOURCE_ROOT/node_modules" ]]
+            ln -s "$GITHUB_WORKSPACE/node_modules" "$NATIVE_PHASE_SOURCE_ROOT/node_modules"
+          fi
+      - name: Check exact neutral inputs, strict phase parser and projection probe
+        run: |
+          node tools/benchmarks/scripts/typechecker-native-phases.mjs --self-test
+          node --test tools/benchmarks/scripts/typechecker-native-*.test.mjs
+          node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"
+          cd "$NATIVE_PHASE_SOURCE_ROOT"
+          cargo clippy --locked -p vize_canon --example native_phase_projection -- -D warnings
+      - name: Build the actual production CLI and standalone projection example
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"
+          cd "$NATIVE_PHASE_SOURCE_ROOT"
+          cargo build --locked --profile ci-opt -p vize \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16' \
+            --config 'profile.ci-opt.package.vize.strip="symbols"'
+          cargo build --locked --profile ci-opt -p vize_canon --example native_phase_projection \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16'
+      - name: Capture every actual shard with byte, map, diagnostic and freshness gates
+        env:
+          RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
+        run: |
+          node tools/benchmarks/scripts/typechecker-native-phases.mjs \
+            "$GITHUB_WORKSPACE/target/ci-opt/vize" \
+            "$GITHUB_WORKSPACE/target/ci-opt/examples/native_phase_projection" \
+            "$NATIVE_PHASE_OUTPUT"
+      - name: Upload raw native phases, memberships, full reports and generated sources
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: typechecker-native-phases
+          path: |
+            ${{ runner.temp }}/typechecker-native-source-custody.json
+            ${{ runner.temp }}/typechecker-native-phases.json
+            ${{ runner.temp }}/typechecker-native-phases.json.samples/provenance.json
+            ${{ runner.temp }}/typechecker-native-phases.json.samples/failure.json
+            ${{ runner.temp }}/typechecker-native-phases.json.samples/inputs/
+            ${{ runner.temp }}/typechecker-native-phases.json.samples/raw/
+            ${{ runner.temp }}/typechecker-native-phases.json.samples/native/
+            ${{ runner.temp }}/typechecker-native-phases.json.samples/projections/
+            ${{ runner.temp }}/typechecker-native-phases.json.samples/virtual-ts/
+          if-no-files-found: error
+          retention-days: 30

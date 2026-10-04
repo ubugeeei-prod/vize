@@ -11,8 +11,10 @@ use crate::{embed::Lang, parse::SurfaceParseOptions};
 
 mod policy;
 mod template;
+pub(super) mod vue2;
 pub use template::{NativeTemplateFrameNameRefusal, NativeTemplateFrameNames, TemplateView};
 use template::{TemplateNamePair, TemplateSelection};
+pub use vue2::{Vue2DescriptorObservation, Vue2DescriptorRefusal, Vue2TemplateView};
 #[cfg(test)]
 mod style_tests;
 #[cfg(test)]
@@ -46,6 +48,8 @@ pub enum DescriptorIssueCode {
     UnsupportedBoundary,
     InvalidSourceFrame,
     MissingComponentBlock,
+    UnsupportedScript,
+    UnsupportedStyle,
 }
 
 /// Original block index and authored evidence for a descriptor refusal.

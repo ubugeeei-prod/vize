@@ -209,7 +209,8 @@ not replay the full historical driver or rule out its scheduling effects.
 The original failure, both zero-attempt setup failures and every finite outcome
 remain retained. Cause remains unknown; no production fix, ceiling increase or
 ratchet, protected acceptance, additional trial or #7757 readmission follows.
-The diagnostic PR remains draft and outside the release batch and queue.
+The diagnostic was held as a draft outside the v0.432.0 release batch.
+Publication completed before its scoped delivery authorization; #7757 stays held.
 
 A separate code-scanning check on producer `fdfe97336b` failed at the
 Rust-toolchain action pin, although the source Check workflow succeeded.
@@ -224,3 +225,27 @@ while retaining explicit Rust 1.98.0. Fresh source checks must validate that
 successor; producer `fdfe97336b`, its action bytes and campaign provenance stay
 historical. Counter, fixtures, ceilings and matrix scripts remain unchanged.
 No new 64-process campaign is authorized by this pin correction.
+
+## Current-main source integration
+
+After delivery authorization, #7770 entered the queue at unchanged source
+`f2f22d1293d556e8e9da001213a911c1a0c89017`; the queue bot removed it before
+creating a protected candidate because main's dispatch registration conflicted.
+This integration preserves the complete actual-main pipeline at
+`4158645a8858bbd2428fae08e651479758243bee` and adds the exact previously reviewed
+optional diagnostic input and branch/manual/input-gated job. Adding them literally
+would grow the workflow from 690 to 713 lines and violate the unchanged source
+length ratchet. Twenty-three empty lines are therefore folded only where the
+complete parsed YAML value remains equal, including every script scalar. Removing
+the two diagnostic additions restores main's complete parsed pipeline. Every
+existing job, condition and step is retained; whitespace bytes are not identical.
+
+All 12 historical observer, counter, fixture and matrix blobs remain byte-identical
+to producer `fdfe97336b238d6078e207f5fe54ec64f054d7c0` and source `f2f22d1293`.
+The combined Check workflow is a new integration blob, not a thirteenth unchanged
+producer blob. This source reconciliation grants no experiment or causal credit.
+Fresh source Actions and a new protected candidate must qualify this composition
+before an actual signed merge; policy-skipped source lanes are not full-suite
+acceptance. The qualified 64-attempt outcome remains historical, cause remains
+UNKNOWN, #7764 stays open and #7757 remains on HOLD. No extra campaign or matched
+full-shard execution is authorized by delivery.

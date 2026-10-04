@@ -8,6 +8,7 @@ mod error;
 mod walk;
 pub use error::DecisionBuildError;
 mod levels;
+use super::attribute_value::OriginalAttributeCursor;
 use super::dom::vue::policy::{FileReads, NoReads};
 use super::dom::{DomExpressionFacts, LiteralExpressions, build::DomBuilder};
 use super::ssr::build::SsrBuilder;
@@ -49,7 +50,34 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
     file: Option<&'owner FileArtifact<'arena>>,
     reads: &impl FileReads<'owner, 'arena>,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
-    build_with_context(artifact, policy, expressions, file, reads, None, None)
+    build_with_context(
+        artifact,
+        policy,
+        expressions,
+        file,
+        reads,
+        BuildContext::default(),
+    )
+}
+
+pub(in crate::decision) fn build_with_original<'owner, 'arena>(
+    file: &'owner FileArtifact<'arena>,
+    policy: TargetPolicy,
+    expressions: &impl DomExpressionFacts,
+    reads: &impl FileReads<'owner, 'arena>,
+) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
+    build_with_context(
+        file.artifact(),
+        policy,
+        expressions,
+        Some(file),
+        reads,
+        BuildContext {
+            ssr_setup: None,
+            vapor_setup: None,
+            original_file: Some(file),
+        },
+    )
 }
 
 pub(in crate::decision) fn build_with_ssr_setup<'owner, 'arena>(
@@ -65,8 +93,11 @@ pub(in crate::decision) fn build_with_ssr_setup<'owner, 'arena>(
         &LiteralExpressions,
         Some(file),
         &NoReads,
-        Some(setup),
-        None,
+        BuildContext {
+            ssr_setup: Some(setup),
+            vapor_setup: None,
+            original_file: Some(file),
+        },
     )
 }
 
@@ -80,8 +111,11 @@ pub(in crate::decision) fn build_with_vapor_setup<'owner, 'arena>(
         &LiteralExpressions,
         Some(file),
         &NoReads,
-        None,
-        Some(setup),
+        BuildContext {
+            ssr_setup: None,
+            vapor_setup: Some(setup),
+            original_file: Some(file),
+        },
     )
 }
 
@@ -91,20 +125,23 @@ fn build_with_context<'owner, 'arena>(
     expressions: &impl DomExpressionFacts,
     file: Option<&'owner FileArtifact<'arena>>,
     reads: &impl FileReads<'owner, 'arena>,
-    ssr_setup: Option<&NativeSelectedSetup<'owner, 'arena>>,
-    vapor_setup: Option<&NativeSelectedSetup<'owner, 'arena>>,
+    context: BuildContext<'_, 'owner, 'arena>,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
     let mut builder = Builder {
         policy,
+        original_attributes: context
+            .original_file
+            .map(|file| OriginalAttributeCursor::new(file, artifact))
+            .transpose()?,
         node_count: artifact.node_count(),
         frames: Vec::new(),
         nodes: SideTable::new(),
         controls: SideTable::new(),
-        ssr: (policy == TargetPolicy::Ssr).then(|| match ssr_setup {
+        ssr: (policy == TargetPolicy::Ssr).then(|| match context.ssr_setup {
             Some(setup) => SsrBuilder::new_setup(setup),
             None => SsrBuilder::new(),
         }),
-        vapor: (policy == TargetPolicy::Vapor).then(|| VaporBuilder::new(vapor_setup)),
+        vapor: (policy == TargetPolicy::Vapor).then(|| VaporBuilder::new(context.vapor_setup)),
         dom: (policy == TargetPolicy::Dom)
             .then(|| DomBuilder::new(expressions, artifact.root().ops.len(), file, reads)),
     };
@@ -119,20 +156,34 @@ fn build_with_context<'owner, 'arena>(
     if let Some(error) = failure {
         return Err(error);
     }
+    let original_attributes = builder
+        .original_attributes
+        .take()
+        .map(OriginalAttributeCursor::finish)
+        .transpose()?;
     let dom = builder.dom.take().map(DomBuilder::finish);
     let ssr = builder.ssr.take().map(SsrBuilder::finish);
     let vapor = builder.vapor.take().map(VaporBuilder::finish);
     Ok(NativeAnalysis {
         artifact,
         tables: builder.finish()?,
+        original_attributes,
         dom,
         ssr,
         vapor,
     })
 }
 
+#[derive(Default)]
+struct BuildContext<'facts, 'owner, 'arena> {
+    ssr_setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>,
+    vapor_setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>,
+    original_file: Option<&'owner FileArtifact<'arena>>,
+}
+
 struct Builder<'facts, 'owner, 'arena, F, R> {
     policy: TargetPolicy,
+    original_attributes: Option<OriginalAttributeCursor<'owner, 'arena>>,
     node_count: u32,
     frames: Vec<Frame>,
     nodes: SideTable<NodeDecision>,

@@ -61,6 +61,12 @@ impl<'view, 'owner, 'arena> NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena
         self.template.owner()
     }
     #[must_use]
+    pub fn original_attributes(
+        &self,
+    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+        self.analysis.original_attributes()
+    }
+    #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
         self.file().artifact()
     }
@@ -122,11 +128,10 @@ pub fn build_native_selected_setup_dom_decisions<'view, 'owner, 'arena>(
     if !core::ptr::eq(file, setup.file()) {
         return Err(DecisionBuildError::IncompleteFile);
     }
-    let analysis = build::build_with(
-        file.artifact(),
+    let analysis = build::build_with_original(
+        file,
         TargetPolicy::Dom,
         &LiteralExpressions,
-        Some(file),
         &SelectedReads(setup),
     )?;
     Ok(NativeSelectedSetupDomAnalysis {

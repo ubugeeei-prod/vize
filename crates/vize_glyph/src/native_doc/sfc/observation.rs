@@ -2,7 +2,8 @@
 
 use vize_l1::container::vue::DescriptorObservation;
 use vize_l1::markup::{
-    NativeInterpolationFailure, NativeInterpolationOperand, NativeTemplateComponent,
+    NativeAttributeExpression, NativeAttributeExpressionFailure, NativeInterpolationFailure,
+    NativeInterpolationOperand, NativeTemplateComponent,
 };
 
 use super::super::{Doc, print};
@@ -29,6 +30,8 @@ pub struct NativeSfcObservation<'a> {
     pub(super) selected: Option<NativeTemplateComponent<'a>>,
     pub(super) operands: std::vec::Vec<NativeInterpolationOperand<'a>>,
     pub(super) interpolation_failure: Option<NativeInterpolationFailure<'a>>,
+    pub(super) attributes: std::vec::Vec<NativeAttributeExpression<'a>>,
+    pub(super) attribute_failure: Option<NativeAttributeExpressionFailure<'a>>,
     pub(super) options: NativeSfcOptions,
     pub(super) outcome: Outcome<'a>,
 }
@@ -41,6 +44,8 @@ impl core::fmt::Debug for NativeSfcObservation<'_> {
             .field("options", &self.options)
             .field("has_selected", &self.selected.is_some())
             .field("operand_count", &self.operands.len())
+            .field("attribute_count", &self.attributes.len())
+            .field("has_attribute_failure", &self.attribute_failure.is_some())
             .field("refusal", &self.refusal())
             .field(
                 "has_interpolation_failure",
@@ -65,6 +70,12 @@ impl<'a> NativeSfcObservation<'a> {
     }
     pub fn operands(&self) -> &[NativeInterpolationOperand<'a>] {
         &self.operands
+    }
+    pub fn attribute_operands(&self) -> &[NativeAttributeExpression<'a>] {
+        &self.attributes
+    }
+    pub fn attribute_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
+        self.attribute_failure.as_ref()
     }
     pub fn interpolation_failure(&self) -> Option<&NativeInterpolationFailure<'a>> {
         self.interpolation_failure.as_ref()

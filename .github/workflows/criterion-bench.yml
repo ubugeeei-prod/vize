@@ -16,6 +16,11 @@ on:
         required: false
         default: false
         type: boolean
+      historical_sfc_parse:
+        description: Replay only the frozen issue 6189 SFC parse pair
+        required: false
+        default: false
+        type: boolean
       production_only:
         description: Measure whole-SFC shipping shapes on three independent reference runners
         required: false
@@ -23,35 +28,20 @@ on:
         type: boolean
 
 concurrency:
-  group: criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.production_only || false }}
+  group: criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.production_only || false }}-${{ inputs.historical_sfc_parse || false }}
   cancel-in-progress: true
 
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  # Relative Criterion comparisons remain report-only because shared-runner
-  # jitter makes one global percentage threshold unreliable. Individual suites
-  # may additionally declare conservative absolute median budgets; those are
-  # hard gates on the reference runner. The dialect guard below is also a hard
-  # gate because byte-identical codegen is deterministic.
-  #
-  # The A/B sweep covers the four JSX cost dimensions #1501 requires — parser/
-  # lowering (jsx_lower), Croquis analysis (jsx_croquis_analyze), Patina rule
-  # traversal (jsx_lint, from vize_patina/markup_ir_bench), and VDOM/Vapor
-  # codegen — so a regression in any of them shows up in the critcmp table. The
-  # documented JSX regression threshold is 10% (see tools/benchmarks/scripts/criterion-ab.mjs):
-  # setting CRITERION_AB_THRESHOLD: 10 here flips this lane from report-only into
-  # a hard gate that fails on a +10% median regression, no code change needed.
+  # Relative comparisons stay report-only; existing absolute and dialect gates remain strict.
   CRITERION_AB_THRESHOLD: ""
-  # The dialect-guard corpus is small so the legacy OFF/ON binaries compile it
-  # quickly; identity is exact, and the A/B timing tolerates a 2% delta once the
-  # paired median delta is large enough to exceed CI millisecond-scale jitter.
   DIALECT_GUARD_FILE_COUNT: 400
   DIALECT_GUARD_THRESHOLD_PERCENT: 2
 
 jobs:
   criterion-ab:
-    if: ${{ !inputs.production_only }}
+    if: ${{ !inputs.production_only && !inputs.historical_sfc_parse }}
     name: criterion-ab
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
@@ -187,7 +177,7 @@ jobs:
           retention-days: 14
 
   dialect-guard:
-    if: ${{ !inputs.production_only }}
+    if: ${{ !inputs.production_only && !inputs.historical_sfc_parse }}
     name: dialect-guard
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
@@ -239,7 +229,7 @@ jobs:
             --threshold "$DIALECT_GUARD_THRESHOLD_PERCENT"
 
   production-pairs:
-    if: ${{ inputs.production_only }}
+    if: ${{ inputs.production_only && !inputs.historical_sfc_parse }}
     name: production-pairs (${{ matrix.repetition }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
@@ -318,7 +308,7 @@ jobs:
           retention-days: 30
 
   production-summary:
-    if: ${{ inputs.production_only }}
+    if: ${{ inputs.production_only && !inputs.historical_sfc_parse }}
     needs: production-pairs
     runs-on: ubuntu-latest
     permissions:
@@ -344,3 +334,15 @@ jobs:
           path: production-perf/summary.md
           if-no-files-found: error
           retention-days: 30
+
+  sfc-parse-replay:
+    if: ${{ inputs.historical_sfc_parse }}
+    strategy:
+      fail-fast: false
+      matrix: { repetition: [1, 2, 3] }
+    uses: ./.github/workflows/sfc-parse-replay.yml
+    with:
+      base_sha: ${{ inputs.base_sha }}
+      head_sha: ${{ inputs.head_sha }}
+      repetition: ${{ matrix.repetition }}
+      conflicting_modes: ${{ inputs.production_only || inputs.vapor_only }}

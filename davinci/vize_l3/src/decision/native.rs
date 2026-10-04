@@ -4,7 +4,7 @@ mod setup;
 pub use setup::{NativeSelectedSetupDomAnalysis, build_native_selected_setup_dom_decisions};
 
 use super::{
-    DecisionBuildError, DecisionTables, NativeFileAnalysis, build_dom_file_decisions,
+    DecisionBuildError, DecisionTables, NativeFileAnalysis,
     dom::{DomFacts, DomFileExpression, DomFileForHead, DomFileHandler},
     policy::TargetPolicy,
 };
@@ -75,6 +75,11 @@ impl<'owner, 'arena> NativeTemplateDomAnalysis<'owner, 'arena> {
     }
 
     #[must_use]
+    pub fn original_attributes(&self) -> Option<&super::OriginalAttributeFacts<'owner, 'arena>> {
+        self.analysis.original_attributes()
+    }
+
+    #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
         self.analysis.artifact()
     }
@@ -129,6 +134,6 @@ pub fn build_native_dom_file_decisions<'owner, 'arena>(
     view: NativeTemplateView<'owner, 'arena>,
 ) -> Result<NativeTemplateDomAnalysis<'owner, 'arena>, DecisionBuildError> {
     let file = view.file().ok_or(DecisionBuildError::IncompleteFile)?;
-    let analysis = build_dom_file_decisions(file)?;
+    let analysis = super::dom::file::build_original_file_decisions(file)?;
     Ok(NativeTemplateDomAnalysis { view, analysis })
 }

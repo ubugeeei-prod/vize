@@ -120,3 +120,29 @@ is imported. Actual305 proof remains historical; fresh exact-source/protected
 full/all104 and actual merge are required. Paired replay decisions:
 [#6838](https://github.com/ubugeeei-prod/vize/issues/6838#issuecomment-5975966171)
 and [#6871](https://github.com/ubugeeei-prod/vize/issues/6871#issuecomment-5975966316).
+
+## Actual delivery
+
+Independent #7711 actually merged at 2026-10-04T03:28:37Z as signed-valid
+f0bbb07649364fedb89bbc765c091341b9b05b82. Protected Check 37173413754,
+Musea 37173413547 and Nuxt 37173413545 are terminal SUCCESS; the queue entry
+is null. Fresh literal main 8ae25a16 contains the exact merge by ancestry.
+Source e6 Check 37172708049 also succeeded without a retry.
+
+Current protected artifacts 11292542487/11292303046/11292158633/11292119119
+match their live service digests and prove 15,375 Rust tests executed with
+zero failures/skips, all 18 behavior laws and the production layout law each
+once PASS. Actual Import 48 / Export 96 and unchanged ScriptUnit 48 preserve the
+explicit reviewed inline-growth boundary. Builder 111351069440 proves all
+seven privacy docs and configured full Clippy/differential execution.
+
+Exact candidate measurement artifacts 11292347099/11292172758 match live
+digests and contain 100+4 instruction rows across three identical complete
+runs. Pinned ceilings and immutable base ratchets PASS; complexity 5774x3.
+This does not invent constructor benchmark coverage or erase the larger
+existing vector backing bytes. Earlier failed sources/recovery remain above.
+
+Paired terminal receipts: [#6838](https://github.com/ubugeeei-prod/vize/issues/6838#issuecomment-5976190556)
+and [#6871](https://github.com/ubugeeei-prod/vize/issues/6871#issuecomment-5976190711).
+DocumentLinks/UTF16/URI/project/snapshot/dependency/ABA/default migration and
+Vue setup imports remain unfinished; no consumer or default completion follows.

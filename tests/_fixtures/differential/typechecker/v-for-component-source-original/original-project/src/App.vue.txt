@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const items: any = []
+</script>
+
+<template>
+  <Child v-for="item in items.filter(value => value)" :key="item" :value="item" />
+</template>

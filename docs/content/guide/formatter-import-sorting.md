@@ -47,3 +47,5 @@ or `format_script_with_sort_imports` for the additive Rust API.
 modes across CLI, editor, Node and WASM formatting.
 
 [Configure property quotes](./formatter-property-quotes.md) for script object keys.
+
+[Configure JSX attribute quotes](./formatter-jsx-quotes.md) independently of JavaScript strings.

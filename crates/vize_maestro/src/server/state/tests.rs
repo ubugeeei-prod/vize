@@ -17,6 +17,7 @@ fn corsa_init_failure_is_recorded() {
     );
 }
 
+#[cfg(feature = "glyph")]
 #[test]
 fn default_format_options() {
     let state = ServerState::new();
@@ -30,6 +31,7 @@ fn default_format_options() {
     assert!(opts.normalize_directive_shorthands);
 }
 
+#[cfg(feature = "glyph")]
 #[test]
 fn load_format_config_no_file() {
     let dir = tempfile::tempdir().unwrap();
@@ -40,6 +42,7 @@ fn load_format_config_no_file() {
     assert_eq!(opts.print_width, 100);
 }
 
+#[cfg(feature = "glyph")]
 #[test]
 fn load_format_config_from_file() {
     let dir = tempfile::tempdir().unwrap();
@@ -67,6 +70,7 @@ fn load_format_config_from_file() {
     assert!(opts.single_quote);
 }
 
+#[cfg(feature = "glyph")]
 #[test]
 fn load_format_config_partial() {
     let dir = tempfile::tempdir().unwrap();
@@ -85,6 +89,7 @@ fn load_format_config_partial() {
     assert!(opts.semi);
 }
 
+#[cfg(feature = "glyph")]
 #[test]
 fn load_format_config_no_fmt_section() {
     let dir = tempfile::tempdir().unwrap();
@@ -101,6 +106,7 @@ fn load_format_config_no_fmt_section() {
     assert_eq!(opts.print_width, 100);
 }
 
+#[cfg(feature = "glyph")]
 #[test]
 fn load_format_config_invalid_json() {
     let dir = tempfile::tempdir().unwrap();

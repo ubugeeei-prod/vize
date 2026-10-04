@@ -1,0 +1,213 @@
+diff --git a/crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_ref_slot_vnode_handlers.rs b/crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_ref_slot_vnode_handlers.rs
+index 7ae603c4f4..dbbb3a87f4 100644
+--- a/crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_ref_slot_vnode_handlers.rs
++++ b/crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_ref_slot_vnode_handlers.rs
+@@ -187,6 +187,45 @@ function acceptElement(element: Element) {
+     );
+ }
+ 
++#[test]
++fn template_expressions_preserve_authored_ts_suppression_comments() {
++    if resolve_test_tsgo_binary().is_none() {
++        return;
++    }
++    let project_root = create_project_case(
++        "template-expression-ts-suppression-comments",
++        &[(
++            "src/App.vue",
++            r#"<script setup lang="ts">
++const items: { id: number }[] = [{ id: 1 }]
++</script>
++
++<template>
++  <div>
++    {{
++      // @ts-ignore
++      items[0].missingProperty
++    }}
++    {{
++      // @ts-expect-error
++      items[0].alsoMissing
++    }}
++  </div>
++</template>
++"#,
++        )],
++    );
++
++    let snapshot = snapshot_project_diagnostics(&project_root);
++    let _ = std::fs::remove_dir_all(&project_root);
++
++    assert_eq!(
++        snapshot,
++        Some(Vec::new()),
++        "template expression generation should preserve authored TypeScript suppression comments"
++    );
++}
++
+ #[test]
+ fn unresolved_global_component_ref_callbacks_do_not_emit_standalone_any() {
+     if resolve_test_tsgo_binary().is_none() {
+diff --git a/crates/vize_canon/src/virtual_ts/expressions.rs b/crates/vize_canon/src/virtual_ts/expressions.rs
+index dda7379419..5165ac4ea8 100644
+--- a/crates/vize_canon/src/virtual_ts/expressions.rs
++++ b/crates/vize_canon/src/virtual_ts/expressions.rs
+@@ -28,6 +28,7 @@ mod reserved_props;
+ mod sequence_prop_tests;
+ mod spread_reserved_props;
+ mod statements;
++mod ts_suppression_comments;
+ mod value_checks;
+ mod vif_chain;
+ 
+diff --git a/crates/vize_canon/src/virtual_ts/expressions/statements.rs b/crates/vize_canon/src/virtual_ts/expressions/statements.rs
+index 33b5720140..067c024bf5 100644
+--- a/crates/vize_canon/src/virtual_ts/expressions/statements.rs
++++ b/crates/vize_canon/src/virtual_ts/expressions/statements.rs
+@@ -10,6 +10,7 @@ use super::component_ref_callbacks::generate_component_ref_callback_statement;
+ use super::directive_values::generate_directive_value_statement;
+ use super::native_props::generate_native_prop_statement;
+ use super::reserved_props::rewrite_reserved_template_prop;
++use super::ts_suppression_comments::expression_source_for_typecheck;
+ use super::value_checks::TemplateValueChecks;
+ use super::vif_chain::{VifControlFlowChain, emit_vif_control_flow_chain};
+ use crate::virtual_ts::scope::{append_ignored_vif_guard_open, remove_enclosing_vif_guard_prefix};
+@@ -21,7 +22,6 @@ use vize_carton::append;
+ use vize_carton::cstr;
+ use vize_carton::profile;
+ use vize_croquis::croquis::{TemplateExpression, TemplateExpressionKind};
+-use vize_croquis::drawer::strip_js_comments;
+ 
+ /// Generate template expressions, compacting recognized v-if chains into
+ /// TypeScript control-flow blocks.
+@@ -202,7 +202,7 @@ fn generate_vif_guard_expression(
+     let src_end = (template_offset + expr.end) as usize;
+     let expression = profile!(
+         "canon.virtual_ts.expression.strip_comments",
+-        strip_js_comments(expr.content.as_str())
++        expression_source_for_typecheck(expr.content.as_str())
+     );
+     let trimmed_expression = expression.as_ref().trim();
+     let rewritten_expression =
+@@ -259,7 +259,7 @@ pub(super) fn generate_expression_statement(
+     } else {
+         profile!(
+             "canon.virtual_ts.expression.strip_comments",
+-            strip_js_comments(expr.content.as_str())
++            expression_source_for_typecheck(expr.content.as_str())
+         )
+     };
+     let trimmed_expression = expression.as_ref().trim();
+diff --git a/crates/vize_canon/src/virtual_ts/expressions/ts_suppression_comments.rs b/crates/vize_canon/src/virtual_ts/expressions/ts_suppression_comments.rs
+new file mode 100644
+index 0000000000..feda0c7bda
+--- /dev/null
++++ b/crates/vize_canon/src/virtual_ts/expressions/ts_suppression_comments.rs
+@@ -0,0 +1,107 @@
++use std::borrow::Cow;
++use vize_croquis::drawer::strip_js_comments;
++
++pub(super) fn expression_source_for_typecheck(expr: &str) -> Cow<'_, str> {
++    if contains_typescript_suppression_comment(expr) {
++        Cow::Borrowed(expr)
++    } else {
++        strip_js_comments(expr)
++    }
++}
++
++fn contains_typescript_suppression_comment(expr: &str) -> bool {
++    let bytes = expr.as_bytes();
++    let len = bytes.len();
++    let mut index = 0;
++
++    while index < len {
++        while index < len && bytes[index].is_ascii_whitespace() {
++            index += 1;
++        }
++        if index + 1 >= len || bytes[index] != b'/' {
++            return false;
++        }
++        {
++            let next = bytes[index + 1];
++            if next == b'/' {
++                let start = index + 2;
++                let mut end = start;
++                while end < len && bytes[end] != b'\n' {
++                    end += 1;
++                }
++                if is_typescript_suppression_directive(&expr[start..end]) {
++                    return true;
++                }
++                index = end;
++                if index < len {
++                    index += 1;
++                }
++                continue;
++            }
++
++            if next == b'*' {
++                let start = index + 2;
++                index += 2;
++                while index + 1 < len && !(bytes[index] == b'*' && bytes[index + 1] == b'/') {
++                    index += 1;
++                }
++                let end = index.min(len);
++                if is_typescript_suppression_directive(&expr[start..end]) {
++                    return true;
++                }
++                index = (index + 2).min(len);
++                continue;
++            }
++        }
++
++        return false;
++    }
++
++    false
++}
++
++fn is_typescript_suppression_directive(comment: &str) -> bool {
++    let trimmed = comment.trim_start();
++    trimmed.starts_with("@ts-ignore") || trimmed.starts_with("@ts-expect-error")
++}
++
++#[cfg(test)]
++mod tests {
++    use super::{contains_typescript_suppression_comment, expression_source_for_typecheck};
++
++    #[test]
++    fn preserves_only_typescript_suppression_comments() {
++        assert_eq!(
++            expression_source_for_typecheck("// note\nvalue").as_ref(),
++            "\nvalue"
++        );
++        assert_eq!(
++            expression_source_for_typecheck("// @ts-ignore\nvalue").as_ref(),
++            "// @ts-ignore\nvalue"
++        );
++        assert_eq!(
++            expression_source_for_typecheck("/* @ts-expect-error */\nvalue").as_ref(),
++            "/* @ts-expect-error */\nvalue"
++        );
++    }
++
++    #[test]
++    fn ignores_suppression_text_inside_literals() {
++        assert!(!contains_typescript_suppression_comment(
++            r#""// @ts-ignore" + value"#
++        ));
++        assert!(!contains_typescript_suppression_comment(
++            r#"`/* @ts-expect-error */` + value"#
++        ));
++    }
++
++    #[test]
++    fn strips_non_leading_suppression_comments() {
++        let object_literal = "{ name: 'route',\n// @ts-expect-error upstream note\nparams }";
++        assert!(!contains_typescript_suppression_comment(object_literal));
++        assert_eq!(
++            expression_source_for_typecheck(object_literal).as_ref(),
++            "{ name: 'route',\n\nparams }"
++        );
++    }
++}

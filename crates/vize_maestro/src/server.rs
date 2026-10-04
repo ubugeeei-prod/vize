@@ -25,6 +25,10 @@ mod importers;
 #[cfg(feature = "native")]
 mod initial_diagnostics;
 #[cfg(feature = "experimental-source-navigation")]
+mod module_input;
+#[cfg(feature = "experimental-source-navigation")]
+mod module_target;
+#[cfg(feature = "experimental-source-navigation")]
 mod native_navigation;
 mod open_document;
 mod semantic_tokens;
@@ -34,9 +38,21 @@ mod workspace_folder_events;
 mod workspace_symbols;
 
 pub use capabilities::server_capabilities;
+#[cfg(feature = "experimental-source-navigation")]
+pub(crate) use module_input::ModuleLinkInput;
+#[cfg(feature = "experimental-source-navigation")]
+pub(crate) use module_target::{
+    ModuleTargetError, PhysicalTargets, TargetPolicy, WatcherCoverageError,
+};
 #[cfg(feature = "native")]
 pub use state::BatchTypeCheckCache;
 pub use state::{LspFeatureConfig, ServerState};
+#[cfg(feature = "experimental-source-navigation")]
+pub(crate) use state::{
+    ModuleLinkContext, ModuleLinkContextError, ModuleLinkRetirement, ModuleLinkTerminationLease,
+};
+#[cfg(feature = "experimental-source-navigation")]
+pub(crate) use state::{ModuleTargetGateError, ModuleTargetStamp};
 #[cfg(feature = "experimental-source-navigation")]
 pub(crate) use state::{
     NativeLinkedNamesRoute, NativeLinkedNamesTicket, NativeNamesConfigurationError,
@@ -59,6 +75,9 @@ pub struct MaestroServer {
     state: std::sync::Arc<ServerState>,
     #[cfg(feature = "experimental-source-navigation")]
     navigation: Option<crate::source_project::navigation::NativeNavigationProject<'static>>,
+    // Only the foreground owns termination. Diagnostic Self instances have None.
+    #[cfg(feature = "experimental-source-navigation")]
+    module_link_termination: Option<ModuleLinkTerminationLease>,
     /// Single background lane for the type-diagnostic work scheduled by
     /// `didOpen`. Keeping the sender on the foreground server lets the worker
     /// own the same client and state without spawning one thread per document.
@@ -79,13 +98,7 @@ impl MaestroServer {
         let initial_diagnostics = {
             // The worker must not retain another sender, otherwise dropping the
             // foreground server could never close its queue.
-            let worker = Self {
-                client: client.clone(),
-                state: state.clone(),
-                initial_diagnostics: None,
-                #[cfg(feature = "experimental-source-navigation")]
-                navigation: None,
-            };
+            let worker = Self::diagnostic_worker(client.clone(), state.clone());
             Some(initial_diagnostics::InitialDiagnosticsScheduler::new(
                 worker,
             ))
@@ -98,6 +111,12 @@ impl MaestroServer {
             ),
         );
 
+        #[cfg(feature = "experimental-source-navigation")]
+        let module_link_termination = Some(ModuleLinkTerminationLease::new(
+            &state,
+            ModuleLinkRetirement::ForegroundDropped,
+        ));
+
         Self {
             client,
             state,
@@ -105,12 +124,45 @@ impl MaestroServer {
             initial_diagnostics,
             #[cfg(feature = "experimental-source-navigation")]
             navigation,
+            #[cfg(feature = "experimental-source-navigation")]
+            module_link_termination,
         }
     }
 
     /// Get the document store.
     pub fn documents(&self) -> &DocumentStore {
         &self.state.documents
+    }
+
+    fn finish_shutdown(&self) -> tower_lsp::jsonrpc::Result<()> {
+        #[cfg(feature = "experimental-source-navigation")]
+        self.state
+            .retire_module_links(ModuleLinkRetirement::Shutdown);
+        Ok(())
+    }
+
+    #[cfg(feature = "native")]
+    #[expect(
+        clippy::disallowed_types,
+        reason = "the actual diagnostics worker retains the foreground state"
+    )]
+    fn diagnostic_worker(client: Client, state: std::sync::Arc<ServerState>) -> Self {
+        Self {
+            client,
+            state,
+            initial_diagnostics: None,
+            #[cfg(feature = "experimental-source-navigation")]
+            navigation: None,
+            #[cfg(feature = "experimental-source-navigation")]
+            module_link_termination: None,
+        }
+    }
+
+    #[cfg(feature = "experimental-source-navigation")]
+    pub(crate) fn module_link_transport_lease(&self) -> Option<ModuleLinkTerminationLease> {
+        self.module_link_termination
+            .as_ref()
+            .map(|lease| lease.for_transport())
     }
 }
 

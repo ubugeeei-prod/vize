@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { Script } from "node:vm";
+import { nativeAttributeValues7502CaptureRequired } from "../../tools/support/compat/github/native-attribute-values-7502-capture.mjs";
 import { nativeScopedCaptureRequired } from "../../tools/support/compat/github/native-scoped-capture.mjs";
 import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/native-ssr-capture.mjs";
 import {
@@ -27,6 +28,7 @@ function output(name, paths) {
     nativeVaporCaptureRequired,
     nativeScopedCaptureRequired,
     nativeSetupCaptureRequired,
+    nativeAttributeValues7502CaptureRequired,
   });
 }
 

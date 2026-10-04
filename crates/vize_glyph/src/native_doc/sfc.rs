@@ -11,5 +11,5 @@ mod refusal;
 
 pub use build::observe_native_sfc_in;
 pub use observation::NativeSfcObservation;
-pub use options::NativeSfcOptions;
+pub use options::{NativeSfcDirectivePolicy, NativeSfcOptions};
 pub use refusal::{NativeSfcBlockRole, NativeSfcRefusal};

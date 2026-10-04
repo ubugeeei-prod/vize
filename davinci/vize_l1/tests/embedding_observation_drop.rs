@@ -9,6 +9,16 @@ use vize_l0::Allocator;
 static GLOBAL: CountingAllocator<std::alloc::System> = CountingAllocator::system();
 
 const CASE: &str = "original_embedding_diagnostics_drop_before_their_arena";
+const DESCRIPTOR_CASE: &str =
+    "original_vue2_descriptor_diagnostics_drop_before_arena_and_on_unwind";
+type Case = (&'static str, fn() -> Result<(), &'static str>);
+const CASES: [Case; 2] = [
+    (CASE, original_embedding_diagnostics_drop_before_their_arena),
+    (
+        DESCRIPTOR_CASE,
+        original_vue2_descriptor_diagnostics_drop_before_arena_and_on_unwind,
+    ),
+];
 
 fn main() -> Result<(), &'static str> {
     let mut args = std::env::args().skip(1);
@@ -25,22 +35,27 @@ fn main() -> Result<(), &'static str> {
             _ => return Err("unsupported harness argument"),
         }
     }
-    let selected = filter.as_ref().is_none_or(|filter| {
-        if exact {
-            filter == CASE
-        } else {
-            CASE.contains(filter)
+    if ignored {
+        return Ok(());
+    }
+    for (case, run) in CASES {
+        let selected = filter.as_ref().is_none_or(|filter| {
+            if exact {
+                filter == case
+            } else {
+                case.contains(filter)
+            }
+        });
+        if !selected {
+            continue;
         }
-    });
-    if ignored || !selected {
-        return Ok(());
+        if list {
+            println!("{case}: test");
+        } else {
+            run()?;
+            println!("{case}: ok");
+        }
     }
-    if list {
-        println!("{CASE}: test");
-        return Ok(());
-    }
-    original_embedding_diagnostics_drop_before_their_arena()?;
-    println!("{CASE}: ok");
     Ok(())
 }
 
@@ -97,6 +112,86 @@ fn original_embedding_diagnostics_drop_before_their_arena() -> Result<(), &'stat
         if stats().live_bytes != baseline {
             return Err("no parser observation heap survives original owners");
         }
+    }
+    Ok(())
+}
+
+fn original_vue2_descriptor_diagnostics_drop_before_arena_and_on_unwind() -> Result<(), &'static str>
+{
+    use std::panic::{AssertUnwindSafe, catch_unwind};
+    use vize_l0::config::{VueDialect, VueVersion};
+    use vize_l1::{
+        SurfaceParseOptions,
+        container::{Vue, vue::DescriptorOptions},
+    };
+    mark_installed();
+    // Warm only the standard unwind machinery before the isolated heap window.
+    drop(catch_unwind(|| {
+        panic!("initialize isolated unwind observation")
+    }));
+    let baseline = stats().live_bytes;
+    let arena = Allocator::default();
+    let source = "<template>{{ value + }}</template>";
+    let options = DescriptorOptions {
+        version: VueVersion::V2,
+        dialect: VueDialect::Vue,
+        template: SurfaceParseOptions::default(),
+    };
+    let owner = Vue.observe_vue2_descriptor(&arena, source, options);
+    let selected = owner
+        .selected()
+        .map_err(|_| "supported original envelope")?;
+    let binding = selected
+        .component()
+        .bindings()
+        .first()
+        .ok_or("original binding")?;
+    if binding
+        .chain()
+        .ok_or("started original chain")?
+        .base()
+        .diagnostics()
+        .count()
+        == 0
+    {
+        return Err("original body diagnostics must remain normally owned");
+    }
+    let with_owner = stats().live_bytes;
+    drop(owner);
+    if stats().live_bytes >= with_owner {
+        return Err("descriptor must release Component/NativeSyntax heap before arena Drop");
+    }
+    let mut with_unwind_owner = 0;
+    let interrupted = catch_unwind(AssertUnwindSafe(|| {
+        let owner = Vue.observe_vue2_descriptor(&arena, source, options);
+        assert!(owner.selected().is_ok());
+        assert!(
+            owner
+                .component()
+                .unwrap()
+                .bindings()
+                .first()
+                .unwrap()
+                .chain()
+                .unwrap()
+                .base()
+                .diagnostics()
+                .count()
+                > 0
+        );
+        with_unwind_owner = stats().live_bytes;
+        panic!("unwind after genuine complete Component custody");
+    }));
+    if interrupted.is_ok() {
+        return Err("original owner must actually unwind");
+    }
+    drop(interrupted);
+    if stats().live_bytes >= with_unwind_owner {
+        return Err("unwind must release the normal retained syntax diagnostics");
+    }
+    drop(arena);
+    if stats().live_bytes != baseline {
+        return Err("no original descriptor heap survives arena Drop");
     }
     Ok(())
 }

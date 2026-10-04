@@ -4,7 +4,7 @@ use oxc_ast::ast::CommentKind;
 use vize_l0::{Allocator, SourceBlock, Span, Vec};
 use vize_l1::embed::{SourceError, syntax::RetainedExpression};
 
-use super::{Doc, ExpressionRefusal};
+use super::{Doc, ExpressionRefusal, origin::Origin};
 use crate::native_doc::Line;
 
 #[derive(Clone, Copy)]
@@ -15,7 +15,7 @@ pub(super) enum Gap {
 }
 
 pub(super) struct Context<'p, 'a> {
-    pub original: &'p RetainedExpression<'a>,
+    pub original: Origin<'p, 'a>,
     pub allocator: &'a Allocator,
     block: SourceBlock<'a>,
     comments: Vec<'a, Span>,
@@ -25,6 +25,14 @@ pub(super) struct Context<'p, 'a> {
 impl<'p, 'a> Context<'p, 'a> {
     pub fn new(
         original: &'p RetainedExpression<'a>,
+        block: SourceBlock<'a>,
+        allocator: &'a Allocator,
+    ) -> Result<Self, ExpressionRefusal> {
+        Self::from_origin(Origin::Retained(original), block, allocator)
+    }
+
+    pub fn from_origin(
+        original: Origin<'p, 'a>,
         block: SourceBlock<'a>,
         allocator: &'a Allocator,
     ) -> Result<Self, ExpressionRefusal> {
@@ -51,7 +59,11 @@ impl<'p, 'a> Context<'p, 'a> {
                 span: source.span(),
             });
         }
-        if source.decode_map().is_none()
+        // Keep the retained API's exact raw-slice policy. An authentic borrowed
+        // EmbedSource can be an identity-only slice of its once-decoded parent;
+        // its private validated source proof survives without a resident map.
+        if matches!(original, Origin::Retained(_))
+            && source.decode_map().is_none()
             && context.authored(entire)?.as_ptr() != source.text().as_ptr()
         {
             return Err(ExpressionRefusal::SourceMismatch {
@@ -59,7 +71,7 @@ impl<'p, 'a> Context<'p, 'a> {
             });
         }
         let mut end = 0;
-        for comment in original.comments() {
+        original.comments(|comment| {
             let span = comment
                 .decoded_span()
                 .map_err(|error| context.projection(error))?;
@@ -86,7 +98,8 @@ impl<'p, 'a> Context<'p, 'a> {
             context.authored(span)?;
             context.comments.push(span);
             end = span.end;
-        }
+            Ok(())
+        })?;
         Ok(context)
     }
 
