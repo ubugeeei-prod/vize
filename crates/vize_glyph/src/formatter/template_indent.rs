@@ -101,8 +101,7 @@ pub(super) fn write_indented_template(
     indent: &[u8],
     newline: &[u8],
 ) {
-    // Specialize the common LF copy to a single known byte. Keep non-LF
-    // normalization and owned line/mask storage on the cold path.
+    // LF uses a known one-byte copy; non-LF storage and normalization stay cold.
     if newline != b"\n" {
         write_indented_non_lf_template(output, source, indent, newline);
         return;
