@@ -1088,6 +1088,9 @@ typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check.
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/array_annotations.rs	6	l0	L0	stage	vize_l0	preferred	3
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/array_annotations.rs	6	l2	L2	stage	vize_l2	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/array_annotations.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/optional_parameters.rs	7	l0	L0	stage	vize_l0	preferred	3
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/optional_parameters.rs	7	l2	L2	stage	vize_l2	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/optional_parameters.rs	7	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/primitive_returns.rs	7	l0	L0	stage	vize_l0	preferred	3
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/primitive_returns.rs	7	l2	L2	stage	vize_l2	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/primitive_returns.rs	7	raw_oxc	raw OXC	raw	oxc_parser	raw	1
