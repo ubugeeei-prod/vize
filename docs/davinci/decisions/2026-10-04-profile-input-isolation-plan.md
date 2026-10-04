@@ -107,3 +107,22 @@ Root must review this frozen plan before material implementation. Pair the
 same bounded decision with #6834 and the central L0 record. Native Timer,
 profiler TLS/locks, arena pool, recursion, IO and full std/platform isolation
 remain unfinished; #6834 stays OPEN. Default products and 10x remain separate.
+
+## Private provider source (implementation pending hosted proof)
+
+The provider keeps the exact native exporter signature and its original
+span-read/assemble then counter-read/assemble order. A bounded `assemble.rs`
+contains the original rank/map/truncate/field construction and duration helper;
+both public inputs call it. The new owned-input API consumes the same tuple
+vectors and `ProfileExportOptions`, with no global-profiler side effect.
+Four authored laws cover full nonzero supplied allocation/counter telemetry,
+whole native/owned JSON equality after source disposal, complete attribution
+tiebreaks/truncation, and unavailable/empty/duration-saturation contracts.
+Controlled metadata is a caller fixture, not actual allocator measurement.
+All original Carton wire/nested-allocation/schema, native timing and Curator
+complete JSON/page/profile laws are unchanged and still required on Actions.
+The exact source replay witness covers the new assembly body and keeps every
+old malformed caller, dependency, golden-literal and gate rejection. The new
+assembly mutation control refuses changed bytes before any replay writes.
+The Curator child is not implemented in this provider; its real allocator
+noninterference and whole output proof remain separate pending work.

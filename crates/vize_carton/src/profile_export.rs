@@ -8,12 +8,12 @@
 //! deterministic order, with every omission accounted for in an explicit
 //! truncation record — never silently.
 
-use std::time::Duration;
+mod assemble;
 
 use serde::Serialize;
 
 use vize_l0::String;
-use vize_l0::profiler::{AllocationSnapshot, Metrics, Profiler, SpanAttribution};
+use vize_l0::profiler::{AllocationSnapshot, CounterMetrics, Metrics, Profiler, SpanAttribution};
 
 /// Current `schema_version` stamped into every export.
 pub const PROFILE_EXPORT_SCHEMA_VERSION: u64 = 1;
@@ -234,94 +234,28 @@ impl ProfileExport {
 /// time descending with full tiebreaks, counters by key, and the budget
 /// drops only the tail of each ranking, recording how much was dropped.
 pub fn export_report(profiler: &Profiler, options: &ProfileExportOptions) -> ProfileExport {
-    let mut ranked_spans = profiler.span_snapshot();
-    ranked_spans.sort_by(
-        |(left_name, left_attribution, left), (right_name, right_attribution, right)| {
-            right
-                .total_duration
-                .cmp(&left.total_duration)
-                .then_with(|| left_name.cmp(right_name))
-                .then_with(|| left_attribution.cmp(right_attribution))
-        },
-    );
-    let span_limit = usize::try_from(options.budget.max_spans).unwrap_or(usize::MAX);
-    let dropped_spans = ranked_spans.len().saturating_sub(span_limit) as u64;
-    ranked_spans.truncate(span_limit);
-    let spans = ranked_spans
-        .into_iter()
-        .map(|(name, attribution, metrics)| {
-            span_entry(name, attribution, &metrics, options.allocation.is_some())
-        })
-        .collect();
-
-    let mut ranked_counters = profiler.counter_snapshot();
-    ranked_counters.sort_by_key(|(key, _)| *key);
-    let counter_limit = usize::try_from(options.budget.max_counters).unwrap_or(usize::MAX);
-    let dropped_counters = ranked_counters.len().saturating_sub(counter_limit) as u64;
-    ranked_counters.truncate(counter_limit);
-    let counters = ranked_counters
-        .into_iter()
-        .map(|(key, counter)| ProfileExportCounter {
-            key,
-            samples: counter.samples,
-            total: counter.total,
-            min: if counter.samples == 0 { 0 } else { counter.min },
-            max: counter.max,
-        })
-        .collect();
-
-    ProfileExport {
-        schema_version: PROFILE_EXPORT_SCHEMA_VERSION,
-        tool: "vize",
-        tool_version: env!("CARGO_PKG_VERSION"),
-        command: options.command,
-        budget: options.budget,
-        truncation: ProfileExportTruncation {
-            dropped_spans,
-            dropped_counters,
-        },
-        spans,
-        counters,
-        allocation: options.allocation.map(|snapshot| ProfileExportAllocation {
-            calls: snapshot.allocation_calls(),
-            requested_bytes: snapshot.requested_bytes(),
-            released_bytes: snapshot.released_bytes(),
-            failures: snapshot.allocation_failures(),
-        }),
-    }
+    let spans = assemble::spans(profiler.span_snapshot(), options);
+    let counters = assemble::counters(profiler.counter_snapshot(), options);
+    assemble::report(spans, counters, options)
 }
 
-fn span_entry(
-    key: &'static str,
-    attribution: SpanAttribution,
-    metrics: &Metrics,
-    allocation_tracked: bool,
-) -> ProfileExportSpan {
-    ProfileExportSpan {
-        key,
-        count: metrics.count,
-        wall_ns: ProfileExportWallNs {
-            total: duration_ns(metrics.total_duration),
-            self_ns: duration_ns(metrics.self_duration),
-            min: duration_ns(metrics.min_duration),
-            max: duration_ns(metrics.max_duration),
-            p50: duration_ns(metrics.percentile(0.50)),
-            p95: duration_ns(metrics.percentile(0.95)),
-            p99: duration_ns(metrics.percentile(0.99)),
-        },
-        alloc: allocation_tracked.then_some(ProfileExportAllocCounts {
-            calls: metrics.alloc_calls,
-            bytes: metrics.alloc_bytes,
-            self_calls: metrics.self_alloc_calls,
-            self_bytes: metrics.self_alloc_bytes,
-        }),
-        attribution: ProfileExportAttribution::from_attribution(attribution),
-    }
-}
-
-#[inline]
-fn duration_ns(duration: Duration) -> u64 {
-    duration.as_nanos().try_into().unwrap_or(u64::MAX)
+/// Build the same wire report from the caller's already collected owned metrics.
+///
+/// Inputs are the existing span and counter readback shapes. This function
+/// consumes them without reading a clock, enabling a profiler, taking a lock,
+/// resetting allocation tracking or creating another collector. The caller
+/// retains authority over measured metadata: `options.allocation == None`
+/// continues to mean unavailable allocation observations, serialized as null.
+/// Ranking, full tiebreaks, entry limits and truncation are shared with
+/// [`export_report`]; use aggregated metrics for each input identity.
+pub fn export_report_from_snapshots(
+    spans: Vec<(&'static str, SpanAttribution, Metrics)>,
+    counters: Vec<(&'static str, CounterMetrics)>,
+    options: &ProfileExportOptions,
+) -> ProfileExport {
+    let spans = assemble::spans(spans, options);
+    let counters = assemble::counters(counters, options);
+    assemble::report(spans, counters, options)
 }
 
 #[cfg(test)]

@@ -11,6 +11,7 @@ import {
   exportFile,
   exportTests,
   gateChanges,
+  hashes,
 } from "../../tools/support/levels/profile-export-host-contract.ts";
 import {
   prepare,
@@ -83,7 +84,7 @@ test("replay rejects malformed actual callers, metric bodies and wire law before
         /unexpected|retired/u,
       );
   }
-  for (const file of [exportFile, exportTests, "davinci/vize_l0/src/profiler/snapshot.rs"])
+  for (const file of [exportFile, hashes.assembly[0], exportTests, "davinci/vize_l0/src/profiler/snapshot.rs"])
     assert.throws(
       () => prepare((path) => read(path) + (path === file ? "\nfn unexpected() {}" : "")),
       /unexpected/u,
@@ -135,13 +136,13 @@ test("fresh manifest insertion rejects valid quoted or spaced old dependency key
 
 test("wire identity preserves literal and golden indentation bytes", () => {
   for (const [file, before, after] of [
-    [exportFile, 'tool: "vize"', 'tool: "vi ze"'],
+    [hashes.assembly[0], 'tool: "vize"', 'tool: "vi ze"'],
     [exportTests, '"  \\"schema_version\\": 1,\\n"', '"   \\"schema_version\\": 1,\\n"'],
   ]) {
     assert.ok(read(file).includes(before), "actual reviewed wire witness");
     assert.throws(
       () => prepare((path) => (path === file ? read(path).replace(before, after) : read(path))),
-      /wire law/u,
+      /wire law|assembly/u,
     );
   }
 });

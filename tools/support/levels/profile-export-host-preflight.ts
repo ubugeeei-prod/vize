@@ -98,6 +98,11 @@ export function prepare(read: Reader): Map<string, string> {
         : hashes.tests[1].includes(digest(read(exportTests)))),
     "unexpected moved profile exporter or wire law",
   );
+  if (read(exportFile).includes("mod assemble;"))
+    requireState(
+      digest(read(hashes.assembly[0])) === hashes.assembly[1],
+      "unexpected exact profile assembly body",
+    );
   requireState(
     read("davinci/vize_l0/src/profiler/snapshot.rs").includes("pub fn span_snapshot(&self)") &&
       read("davinci/vize_l0/src/profiler/snapshot.rs").includes("pub fn counter_snapshot(&self)"),
