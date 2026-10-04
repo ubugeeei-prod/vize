@@ -3,9 +3,9 @@
 Issue: [#6834](https://github.com/ubugeeei-prod/vize/issues/6834).
 Planning baseline: signed actual main
 [`76f93fe1e3c46ac8c86157a520302e26c50ac871`](https://github.com/ubugeeei-prod/vize/tree/76f93fe1e3c46ac8c86157a520302e26c50ac871),
-read on 2026-10-04 08:18 UTC. The reviewed plan is now a private provider implementation. Its genuine Curator
-child is separate. No Rust execution, publication, queue or actual merge credit
-has been established for either source.
+read on 2026-10-04 08:18 UTC. The reviewed plan is now a private provider and its genuine Curator child.
+No Rust execution, publication, queue or actual merge credit has been
+established for either source.
 
 ## Readiness and concrete gap
 
@@ -91,11 +91,21 @@ mark. These laws have not been executed locally or on Actions yet. The original
 native timing/export test is byte-exact; the concrete Instant Timer, global gate,
 profiler/schema/budget and existing corpus files are unchanged.
 
+The dependent Curator source consumes `WalkTiming<u64>` through its existing
+Cell, replacing the separate walk-start mirror. Native helper bytes are exact
+to the provider. It passes already sampled marks without a clock trait, another
+timestamp, allocation or lock. Existing step/walk/page/export laws are retained;
+the six-sample unit law additionally asserts its complete read count. Two new
+real-callback laws retain complete original failure, discard on failure/restart
+and the next actual fused window with exactly four new samples. Curator's
+public full-ladder, page and profile/schema law files remain byte-exact.
+
 Configured affected-Rust planning owns the provider files under vize_l0 and
 selects reverse dependencies; the genuine child owns vize_curator. Existing
 full protected Rust/tooling/native hooks and all104 instructions/both ratchets
 stay mandatory. There is no workflow/selector/dependency change or new campaign.
-Formatting and diff integrity are local source checks only. Publication and
+Formatting, diff integrity, whole-file strict assertion scans, exact storage
+identity and unchanged19-file consumer inventory are local source checks only. Publication and
 native Stack membership await whole source review; root's finite release
 sequencing currently holds queue admission.
 
