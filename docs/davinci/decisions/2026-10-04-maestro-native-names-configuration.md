@@ -107,6 +107,17 @@ deterministic coverage of every interleaving. All inherited17+8+10+6 laws remain
 The original #3471 input, source digest, complete request/options and the shared
 seven-session denominator remain unchanged.
 
+The pending RPC controls rely on the actual SourceQuery::run boundary:
+query.rs awaits yield_to_cancellation before compute; its first poll always
+returns Pending. The pinned runtime-agnostic tower-lsp0.20.0 service/router/
+normal-cancellation layers await/map the same future without spawning or a
+re-poll loop; futures-util0.3.32 Abortable polls its inner future once. The test's
+noop waker cannot synchronously re-poll it. Even a warmed Names worker therefore
+cannot receive this request before the next poll. RPC A→B→A exercises the old
+captured ticket before Names admission; the separate paused-original-worker and
+ready.publish SourceProject laws exercise actual completed-response publication.
+No scheduling sleep, production timing hook or mock worker is introduced.
+
 These laws are authored, not yet hosted acceptance. Existing affected native
 navigation Actions must execute them, all inherited controls, minimal/strict
 and required source aggregation. Fresh protected full/all104 gates and actual
