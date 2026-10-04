@@ -182,7 +182,9 @@ fn query_error(refusal: NavigationRefusal) -> Error {
             ErrorCode::ServerError(-32011),
             "Native original selected SFC observation refused",
         ),
-        NavigationRefusal::TemplateNamesProducer | NavigationRefusal::ElementNames(_) => (
+        NavigationRefusal::TemplateNamesProducer
+        | NavigationRefusal::TemplateFrameNames(_)
+        | NavigationRefusal::ElementNames(_) => (
             ErrorCode::ServerError(-32012),
             "Native original template names refused",
         ),

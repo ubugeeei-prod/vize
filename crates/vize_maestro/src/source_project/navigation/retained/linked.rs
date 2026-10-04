@@ -35,6 +35,21 @@ pub(in crate::source_project::navigation) fn run(
     let Ok(admitted) = descriptor.admitted() else {
         return refused(receiver, &control, NavigationRefusal::TemplateNamesProducer);
     };
+    let Some(template) = admitted.template() else {
+        return refused(receiver, &control, NavigationRefusal::TemplateNamesProducer);
+    };
+    let frame = match template.frame_names() {
+        Ok(frame) => frame,
+        Err(error) => {
+            return refused(
+                receiver,
+                &control,
+                NavigationRefusal::TemplateFrameNames(error),
+            );
+        }
+    };
+    // Both original owners are obtained from this same admitted Descriptor.
+    // No receiver accepts caller-paired Descriptor/Component observations.
     let selected = match NativeTemplateComponent::parse_in(&arena, admitted) {
         Ok(Some(selected)) => selected,
         // This lexical profile requires an original selected template.
@@ -53,6 +68,7 @@ pub(in crate::source_project::navigation) fn run(
     let query = query::TemplateNames {
         snapshot: &snapshot,
         selected: &selected,
+        frame,
         lines: &lines,
         #[cfg(test)]
         original: super::super::worker::linked::Inspection {

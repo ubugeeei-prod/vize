@@ -6,6 +6,7 @@ use std::{future::Future, task::Context};
 use tower_lsp::LspService;
 const URI: &str = "file:///App.vue";
 const SOURCE: &str = include_str!("../../../../tests/fixtures/native-linked-history-3471.vue");
+mod frame;
 fn service(native: bool, rename: bool) -> LspService<MaestroServer> {
     let (mut service, socket) = build_lsp_service();
     drop(socket);
@@ -74,12 +75,12 @@ fn original_3471_standard_inner_pair_responses_are_complete_and_dev_oracle_equal
     );
 }
 #[test]
-fn explicit_opt_in_keeps_outer_frame_unsupported_and_default_route_unchanged() {
+fn explicit_opt_in_matches_original_outer_frame_and_keeps_default_route_unchanged() {
     let mut native = service(true, true);
     open(&mut native, SOURCE, 1);
     assert_eq!(
         send(&mut native, linked(2, 4, 3)),
-        Some(json!({"jsonrpc":"2.0","id":2,"result":null}))
+        Some(pair(2, (4, 1, 9), (9, 2, 10)))
     );
     let mut legacy = service(false, true);
     open(&mut legacy, SOURCE, 1);

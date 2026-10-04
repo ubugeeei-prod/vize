@@ -1,5 +1,6 @@
 //! Genuine lexical owners and original history coordinates, independent of File.
 mod capacity;
+mod frame;
 mod lifecycle;
 use super::{
     Arc, NativeNavigationProject, NavigationRefusal, Position, SourceQueryProject, block_on,
@@ -73,7 +74,7 @@ fn original_3471_inner_pair_and_outer_body_pair_have_complete_ordered_ranges() {
     assert!(project.selected_workers.lock().is_empty());
 }
 #[test]
-fn original_non_name_script_attribute_interpolation_single_and_frame_positions_are_empty() {
+fn original_non_name_script_attribute_interpolation_and_single_positions_are_empty() {
     let (_, project) = project(SOURCE);
     for position in [
         Position::new(6, 4),
@@ -83,10 +84,13 @@ fn original_non_name_script_attribute_interpolation_single_and_frame_positions_a
         Position::new(1, 8),
         Position::new(0, 4),
         Position::new(8, 4),
-        Position::new(4, 3),
     ] {
         assert_eq!(block_on(project.linked_editing(&uri(), position)), Ok(None));
     }
+    assert_eq!(
+        block_on(project.linked_editing(&uri(), Position::new(4, 3))),
+        Ok(ranges((4, 1, 9), (9, 2, 10)))
+    );
 }
 #[test]
 fn original_utf8_crlf_non_bmp_and_authored_case_keep_exact_utf16_names() {

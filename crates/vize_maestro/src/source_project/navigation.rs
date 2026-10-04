@@ -46,6 +46,7 @@ pub enum NavigationRefusal {
     ConfigurationChanged,
     SfcProducer(Vec<vize_l1_to_l2::native_file::NativeSfcIssue>),
     TemplateNamesProducer,
+    TemplateFrameNames(vize_l1::container::vue::NativeTemplateFrameNameRefusal),
     ElementNames(vize_l1::markup::NativeElementNameRefusal),
 }
 
