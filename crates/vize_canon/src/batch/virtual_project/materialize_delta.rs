@@ -81,15 +81,18 @@ impl VirtualProject {
     pub(crate) fn materialize_incremental_delta(
         &mut self,
     ) -> CorsaResult<IncrementalMaterialization> {
-        let retire = self.validate_workspace_alias_targets(&self.retired_package_shadow_paths)?;
         let install_roots = self.workspace_install_roots()?;
-        self.retire_workspace_cache_links(retire)?;
-        let mut candidates = std::mem::take(&mut self.incremental_materialized_candidates);
         let full_topology_rebuild = self.incremental_link_topology_dirty;
         let local_link_patch = (!full_topology_rebuild
             && !self.incremental_package_link_scopes.is_empty())
         .then(|| self.prepare_incremental_package_link_patch());
         let desired_links = full_topology_rebuild.then(|| self.desired_package_links());
+        let retire = self.validate_incremental_workspace_links(
+            desired_links.as_ref(),
+            local_link_patch.as_ref(),
+        )?;
+        self.retire_workspace_cache_links(retire)?;
+        let mut candidates = std::mem::take(&mut self.incremental_materialized_candidates);
         let package_links_changed = desired_links.as_ref().map_or_else(
             || {
                 local_link_patch

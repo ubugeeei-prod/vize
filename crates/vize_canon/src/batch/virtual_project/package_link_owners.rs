@@ -1,5 +1,7 @@
 //! Affected-scope ownership for materialized package dependency links.
 
+mod path_owners;
+
 use std::path::{Path, PathBuf};
 
 use vize_carton::{FxHashMap, FxHashSet};
@@ -21,12 +23,12 @@ impl VirtualProject {
     pub(super) fn track_materialized_link_path(&mut self, path: &Path) {
         let (scopes, targets) = self.package_link_scopes_for_path(path);
         for scope in scopes {
-            if self
-                .package_link_scope_files
-                .entry(scope.clone())
-                .or_default()
-                .insert(path.to_path_buf())
-            {
+            if path_owners::retain_scope_path(
+                self.package_link_scope_files
+                    .entry(scope.clone())
+                    .or_default(),
+                path,
+            ) {
                 self.incremental_package_link_scopes.insert(scope);
             }
         }
@@ -47,10 +49,7 @@ impl VirtualProject {
             let remove = self
                 .package_link_scope_files
                 .get_mut(&scope)
-                .is_some_and(|files| {
-                    files.remove(path);
-                    files.is_empty()
-                });
+                .is_some_and(|files| path_owners::release_scope_path(files, path));
             if remove {
                 self.package_link_scope_files.remove(&scope);
             }
@@ -259,7 +258,10 @@ impl VirtualProject {
         merge_aware_node_modules_links(
             &real_dir,
             scope,
-            files.into_iter().flatten().map(PathBuf::as_path),
+            files
+                .into_iter()
+                .flat_map(|files| files.keys())
+                .map(PathBuf::as_path),
         )
         .into_iter()
         .map(|link| (link.virtual_dir, canonical_link_target(&link.real_dir)))

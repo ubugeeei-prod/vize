@@ -183,6 +183,15 @@ impl VirtualProject {
         links: &FxHashMap<PathBuf, PathBuf>,
         extra_owned_files: &FxHashSet<PathBuf>,
     ) -> CorsaResult<Vec<PathBuf>> {
+        for alias in self.workspace_alias_links() {
+            if links.get(&alias.virtual_dir) != Some(&alias.real_dir) {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    "Workspace package link plan omits an owned alias",
+                )
+                .into());
+            }
+        }
         let mut checked = self.workspace_owned_parent_dirs(extra_owned_files);
         let install_roots = self.workspace_install_roots()?;
         for root in &install_roots {

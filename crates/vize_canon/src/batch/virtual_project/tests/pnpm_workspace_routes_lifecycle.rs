@@ -219,6 +219,10 @@ fn retargeted_real_link_and_shared_scope_drift_keep_unchanged_parent_owners_curr
     project.register_reachable_dependencies().unwrap();
     project.finalize_package_routes().unwrap();
     project.materialize_incremental_delta().unwrap();
+    assert_eq!(
+        fs::read_link(&link).unwrap(),
+        Path::new("../../../c-variant")
+    );
     assert_b_routes_to(&project, &root, &variant.join("package.json"));
     for (shadow, original) in &project.package_shadow_manifests {
         if original == &variant.join("package.json") {
@@ -249,6 +253,7 @@ fn retargeted_real_link_and_shared_scope_drift_keep_unchanged_parent_owners_curr
     }
     project.finalize_package_routes().unwrap();
     project.materialize_incremental_delta().unwrap();
+    assert_eq!(fs::read_link(&link).unwrap(), Path::new("../../../c"));
     assert_alias_custody(&project);
     assert_b_routes_to(&project, &root, &root.join("packages/c/package.json"));
     assert_warm_matches_cold(&mut project, &root);

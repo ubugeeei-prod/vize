@@ -314,3 +314,36 @@ Independent read-only source review of tree
 `0e1808bf9a25856b6f960d981d0d2d69ea4426d3` is clear for draft source
 publication and fresh qualification. It supplies no compile, runtime, Windows,
 native-matrix or adoption acceptance; the reviewed source/test bytes are retained.
+
+Source `b739339818846c8d9a471e649e2fe02fe7482bb1`, full Check `37241271232`,
+passes all 38 native processes in Vue-parity job `111550314965`. Artifact
+`11317014483` ZIP SHA-256
+`e301f34af6e697718e8e99ade2f02bb9becadfa9d361f2348d2dc737ceb7d752`
+retains every ordinal/argv/input/raw link/full report and all four fork cache
+receipts. CLI SHA-256 is `f010404d7b13dbd35389195c23f77fe5811a09358d625851038c642c2bd3e40f`;
+native bytes remain the original baseline. Seventeen full one/two-server report,
+input and link pairs plus three full repairs match, retaining genuine errors.
+
+Its PR Rust worker `111551249328` nevertheless fails the strict warm retarget
+law: the committed map retains an external `packages/b/node_modules` parent
+overlapping the restored internal `@x/c` alias, while the cold desired plan omits
+that parent. The ordinary selected manifest and restored alias claim share one
+scope path; a set loses their distinct ownership roles. The successor uses a
+private per-scope path role count with balanced existing target counts, preserving
+membership until the last source/shadow/alias role releases. Before retirement
+or consuming candidates, warm validation checks the complete effective plan:
+full desired links, or all committed links overlaid with every local patch
+candidate's replacement/removal. Unchanged parents participate, and every active
+alias must exist with its exact target. New refusal controls preserve the known
+bridge, raw sources and pending state for an overlapping unchanged parent or
+missing alias; real retarget/repair also checks raw selected links before cold.
+All strict native and physical laws remain; fresh successor qualification and
+maintainer adoption are still required.
+
+The same source's full Rust and coverage jobs fail physical alias custody:
+the alias resolves to raw authored C1 instead of its planned owned shadow.
+This order-dependent manifestation is retained separately from the PR worker's
+map mismatch. Both require the complete effective plan to pass before mutation.
+Read-only source review of tree `78d60e4f151f432cdb1d26835430a0de4caf7f21`
+is clear for draft publication and fresh qualification only; it grants no
+runtime, Windows, adoption, Ready or queue acceptance.

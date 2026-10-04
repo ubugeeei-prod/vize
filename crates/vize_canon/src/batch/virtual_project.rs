@@ -262,7 +262,7 @@ pub struct VirtualProject {
     materialized_package_links: FxHashMap<PathBuf, PathBuf>,
     materialized_package_link_scopes: FxHashMap<PathBuf, FxHashMap<PathBuf, PathBuf>>,
     materialized_package_link_owners: FxHashMap<PathBuf, FxHashMap<PathBuf, PathBuf>>,
-    package_link_scope_files: FxHashMap<PathBuf, FxHashSet<PathBuf>>,
+    package_link_scope_files: FxHashMap<PathBuf, FxHashMap<PathBuf, usize>>,
     package_link_scope_targets: FxHashMap<PathBuf, FxHashMap<PathBuf, usize>>,
     package_shadow_link_scopes:
         FxHashMap<crate::package_route::PackageRouteKey, Vec<(PathBuf, PathBuf)>>,

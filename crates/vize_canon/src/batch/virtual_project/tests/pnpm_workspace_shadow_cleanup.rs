@@ -225,3 +225,61 @@ fn retired_shadow_src_declines_before_file_removal_and_cold_gc() {
     assert_eq!(fs::read_link(&src).unwrap(), raw);
     fs::remove_file(src).unwrap();
 }
+
+#[test]
+fn effective_plan_checks_unchanged_parent_overlap_before_known_bridge_retirement() {
+    for local in [false, true] {
+        let temp = fixture(true);
+        let root = temp.path().canonicalize().unwrap();
+        let mut project = load(&root);
+        begin_warm(&mut project);
+        let parent = project.virtual_root().join("packages/b/node_modules");
+        let selected = parent.join("@x/c");
+        assert!(project.materialized_package_links.contains_key(&selected));
+        let raw = root.join("packages/b/node_modules");
+        let before = raw_receipt(&root);
+        fs::remove_dir_all(&parent).unwrap();
+        std::os::unix::fs::symlink(&raw, &parent).unwrap();
+        // Reproduce the failed committed plan: an unchanged external parent
+        // and the active internal child coexist. Previous bridge custody alone
+        // cannot authorize retirement before the actual effective plan passes.
+        project
+            .materialized_package_links
+            .insert(parent.clone(), raw.clone());
+        if local {
+            project
+                .track_materialized_link_path(&project.virtual_root().join("unrelated/input.ts"));
+            let patch = project.prepare_incremental_package_link_patch();
+            assert!(!patch.candidates.contains(&parent));
+        }
+        let previous = project.materialized_package_links.clone();
+        let scopes = project.incremental_package_link_scopes.clone();
+        let candidates = project.incremental_materialized_candidates.clone();
+        let error = project.materialize_incremental_delta().unwrap_err();
+        assert!(error.to_string().contains("overlaps another package link"));
+        assert_eq!(project.materialized_package_links, previous);
+        assert_eq!(project.incremental_package_link_scopes, scopes);
+        assert_eq!(project.incremental_materialized_candidates, candidates);
+        assert_eq!(fs::read_link(&parent).unwrap(), raw);
+        assert_raw_unchanged(&root, &before);
+        fs::remove_file(parent).unwrap();
+    }
+}
+
+#[test]
+fn effective_plan_cannot_mask_a_missing_current_alias_with_validation_only_claims() {
+    let temp = fixture(true);
+    let root = temp.path().canonicalize().unwrap();
+    let mut project = load(&root);
+    begin_warm(&mut project);
+    let alias = project.virtual_root().join("packages/b/node_modules/@x/c");
+    let target = fs::read_link(&alias).unwrap();
+    assert!(project.materialized_package_links.remove(&alias).is_some());
+    let before = raw_receipt(&root);
+    let previous = project.materialized_package_links.clone();
+    let error = project.materialize_incremental_delta().unwrap_err();
+    assert!(error.to_string().contains("plan omits an owned alias"));
+    assert_eq!(project.materialized_package_links, previous);
+    assert_eq!(fs::read_link(&alias).unwrap(), target);
+    assert_raw_unchanged(&root, &before);
+}
