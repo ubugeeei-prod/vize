@@ -58,12 +58,48 @@ const renderer = runtime.createRenderer({
   },
 });
 
+// Failure receipts preserve non-JSON scalars and graph identity explicitly.
+// This representation is diagnostic only and grants no output eligibility.
+export function diagnosticValue(value: any, seen = new Map<object, number>()): any {
+  if (value === undefined) return { kind: "undefined" };
+  if (typeof value === "bigint") return { kind: "bigint", decimal: String(value) };
+  if (typeof value === "number" && (!Number.isFinite(value) || Object.is(value, -0)))
+    return { kind: "number", spelling: Object.is(value, -0) ? "-0" : String(value) };
+  if (typeof value === "symbol") return { kind: "symbol", description: value.description };
+  if (typeof value === "function") return { kind: "function", source: value.toString() };
+  if (value === null || typeof value !== "object") return value;
+  const existing = seen.get(value);
+  if (existing !== undefined) return { kind: "reference", id: existing };
+  const id = seen.size;
+  seen.set(value, id);
+  return {
+    kind: Array.isArray(value) ? "array" : "object",
+    id,
+    entries: Object.entries(value).map(([key, item]) => [key, diagnosticValue(item, seen)]),
+  };
+}
+
+export function runtimeErrorDetails(error: any) {
+  return {
+    name: error?.name ?? typeof error,
+    message: error?.message ?? String(error),
+    stack: error?.stack ?? null,
+    code: error?.code ?? null,
+    operator: error?.operator ?? null,
+    actualPresent: Object.hasOwn(error ?? {}, "actual"),
+    actual: diagnosticValue(error?.actual),
+    expectedPresent: Object.hasOwn(error ?? {}, "expected"),
+    expected: diagnosticValue(error?.expected),
+  };
+}
+
 export async function executeConstantComponent(
   code: string,
   fixture: any,
   native: boolean,
   mode: string,
   range = false,
+  observe?: (record: any) => void,
 ) {
   const loaded = await import(dataUrl(runtimeModuleSource(code)));
   const component = loaded.default,
@@ -77,137 +113,230 @@ export async function executeConstantComponent(
   assert.equal(typeof originalRender, "function");
   component.setup = (props: unknown, context: unknown) => {
     calls += 1;
+    record("setup-call-before-comparisons");
     assert.equal(instance, undefined);
     instance = runtime.getCurrentInstance();
+    record("setup-instance-before-comparisons");
     assert(instance && instance.type.setup === component.setup);
     assert.equal(instance.type.render, component.render);
     state = originalSetup(props, context);
+    record("original-setup-result");
     return state;
   };
   component.render = function (this: unknown, ...args: unknown[]) {
     renders += 1;
-    return originalRender.apply(this, args);
+    record("render-call");
+    const rendered = originalRender.apply(this, args);
+    record("original-render-result", observedShape(rendered));
+    return rendered;
   };
   const warnings: string[] = [],
-    errors: any[] = [];
+    errors: any[] = [],
+    observedErrors: any[] = [];
   const app = renderer.createApp(component),
     host = hostNode("root");
   app.config.warnHandler = (warning: string) => warnings.push(warning);
   app.config.errorHandler = (error: any, _instance: unknown, info: unknown) => {
     errors.push({ name: error.name, message: error.message, info });
+    observedErrors.push({ info, error: runtimeErrorDetails(error) });
   };
-  app.mount(host);
-  assert.equal(calls, 1);
-  assert.equal(renders, 1);
-  assert.equal(instance.appContext.app, app);
-  assert.equal(instance.type, app._component);
-  assert.deepEqual(Object.keys(state), fixture.bindings);
-  assert.deepEqual(Object.getOwnPropertyDescriptor(state, "__isScriptSetup"), {
-    value: true,
-    writable: false,
-    enumerable: false,
-    configurable: false,
-  });
-  for (const name of fixture.bindings) {
-    const descriptor = Object.getOwnPropertyDescriptor(state, name);
-    assert.equal(typeof descriptor?.set, "undefined");
-    if (native) {
-      assert.equal(typeof descriptor?.get, "function");
-      const original = state[name];
-      assert.equal(Reflect.set(state, name, Symbol("forbidden mutation")), false);
-      assert.equal(state[name], original);
-    }
-  }
-  const initialNodes = host.children.filter((node: any) => node.type === fixture.tag);
-  function snapshot() {
-    const root = instance.subTree;
+  function hostSnapshot(node: any): any {
     return {
-      tree: shape(root),
-      trackedDynamicChildren: root.dynamicChildren?.length ?? null,
-      callbackBlocks: Array.isArray(root.children)
-        ? root.children.map((node: any) => Array.isArray(node.dynamicChildren))
-        : [],
-      hostValues: host.children
-        .filter((node: any) => node.type === fixture.tag)
-        .map((node: any) => node.text),
+      type: node.type,
+      text: node.text,
+      props: { ...node.props },
+      children: node.children.map(hostSnapshot),
     };
   }
-  const initial = snapshot();
-  instance.proxy.$forceUpdate();
-  await runtime.nextTick();
-  const updated = snapshot();
-  assert.equal(calls, 1);
-  assert.equal(renders, 2);
-  const updatedNodes = host.children.filter((node: any) => node.type === fixture.tag);
-  const retained = initialNodes.map((node: any, index: number) => updatedNodes[index] === node);
-  assert(retained.every(Boolean), "actual stable-list host identities survive normal force-update");
-  if (!range) {
-    assert.deepEqual(initial, updated);
-    assert.equal(initial.tree.type, "fragment");
-    assert.equal(initial.tree.patchFlag, 64);
-    assert.equal(initial.trackedDynamicChildren, fixture.dynamic ? fixture.values.length : 0);
-    assert.deepEqual(
-      initial.callbackBlocks,
-      fixture.values.map(() => false),
-    );
-    assert.deepEqual(initial.hostValues, fixture.values);
-    assert.deepEqual(
-      initial.tree.children,
-      fixture.values.map((value: string) => ({
-        type: fixture.tag,
-        props: {},
-        children: fixture.dynamic ? value : fixture.text,
-        patchFlag: fixture.dynamic ? 1 : 0,
-      })),
-    );
-    assert.deepEqual(warnings, []);
-    assert.deepEqual(errors, []);
-    assert.equal(host.children.length, fixture.values.length + 2);
-  } else if (mode === "development") {
-    assert.deepEqual(errors, []);
-    assert.deepEqual(
-      warnings,
-      Array(2).fill("The v-for range expects a positive integer value but got 2.5."),
-    );
-    assert.equal(initial.tree.patchFlag, 64);
-    assert.deepEqual(initial.tree.children, []);
-    assert.equal(initial.trackedDynamicChildren, 0);
-    assert.deepEqual(initial.callbackBlocks, []);
-    assert.deepEqual(initial.hostValues, []);
-    assert.equal(host.children.length, 2);
-    assert.deepEqual(initial, updated);
-  } else {
-    assert.deepEqual(warnings, []);
-    assert.equal(errors.length, 2);
-    for (const error of errors) {
-      assert.equal(error.name, "RangeError");
-      assert.equal(error.message, "Invalid array length");
-      assert.equal(error.info, "https://vuejs.org/error-reference/#runtime-1");
-    }
-    assert.deepEqual(initial.tree, {
-      type: "comment",
-      props: {},
-      children: null,
-      patchFlag: 0,
-    });
-    assert.equal(initial.trackedDynamicChildren, null);
-    assert.deepEqual(initial.callbackBlocks, []);
-    assert.deepEqual(initial.hostValues, []);
-    assert.equal(host.children.length, 1);
-    assert.deepEqual(initial, updated);
+  function observedShape(node: any): any {
+    if (node === null || typeof node !== "object") return { isVNode: false, value: node };
+    return {
+      isVNode: runtime.isVNode(node),
+      type:
+        node.type === runtime.Fragment
+          ? "fragment"
+          : node.type === runtime.Text
+            ? "text"
+            : node.type === runtime.Comment
+              ? "comment"
+              : node.type,
+      props: node.props,
+      patchFlag: node.patchFlag,
+      shapeFlag: node.shapeFlag,
+      children: Array.isArray(node.children) ? node.children.map(observedShape) : node.children,
+      trackedDynamicChildren: node.dynamicChildren?.length ?? null,
+      callbackBlocks: Array.isArray(node.children)
+        ? node.children.map((child: any) => Array.isArray(child?.dynamicChildren))
+        : [],
+    };
   }
-  app.unmount();
-  await runtime.nextTick();
-  assert.deepEqual(host.children, []);
-  assert.equal(instance.isUnmounted, true);
-  return {
-    initial,
-    updated,
-    retained,
-    warnings,
-    errors,
-    setupInvocations: calls,
-    renders,
-    unmounted: instance.isUnmounted,
-  };
+  function record(phase: string, snapshot: any = undefined) {
+    if (!observe) return;
+    observe(
+      diagnosticValue({
+        phase,
+        setupInvocations: calls,
+        renders,
+        warnings: [...warnings],
+        errors: [...errors],
+        observedErrors: [...observedErrors],
+        host: hostSnapshot(host),
+        vnode: observedShape(instance?.subTree),
+        snapshot,
+        isUnmounted: instance?.isUnmounted,
+        stateKind: typeof state,
+        bindings:
+          state &&
+          Object.keys(state).map((name) => ({
+            name,
+            descriptor: Object.getOwnPropertyDescriptor(state, name),
+          })),
+        scriptSetupDescriptor: state && Object.getOwnPropertyDescriptor(state, "__isScriptSetup"),
+        sameApp: instance?.appContext.app === app,
+        sameComponent: instance?.type === app._component,
+      }),
+    );
+  }
+  try {
+    app.mount(host);
+    record("mounted-before-comparisons");
+    assert.equal(calls, 1);
+    assert.equal(renders, 1);
+    assert.equal(instance.appContext.app, app);
+    assert.equal(instance.type, app._component);
+    assert.deepEqual(Object.keys(state), fixture.bindings);
+    assert.deepEqual(Object.getOwnPropertyDescriptor(state, "__isScriptSetup"), {
+      value: true,
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    });
+    for (const name of fixture.bindings) {
+      const descriptor = Object.getOwnPropertyDescriptor(state, name);
+      record("binding-descriptor-before-comparison", { name, descriptor });
+      assert.equal(typeof descriptor?.set, "undefined");
+      if (native) {
+        assert.equal(typeof descriptor?.get, "function");
+        const original = state[name];
+        record("binding-value-before-write", { name, value: original });
+        const written = Reflect.set(state, name, Symbol("forbidden mutation"));
+        record("binding-write-before-comparison", { name, written });
+        assert.equal(written, false);
+        const afterWrite = state[name];
+        record("binding-value-after-write", { name, value: afterWrite });
+        assert.equal(afterWrite, original);
+      }
+    }
+    const initialNodes = host.children.filter((node: any) => node.type === fixture.tag);
+    function snapshot() {
+      const root = instance.subTree;
+      return {
+        tree: shape(root),
+        trackedDynamicChildren: root.dynamicChildren?.length ?? null,
+        callbackBlocks: Array.isArray(root.children)
+          ? root.children.map((node: any) => Array.isArray(node.dynamicChildren))
+          : [],
+        hostValues: host.children
+          .filter((node: any) => node.type === fixture.tag)
+          .map((node: any) => node.text),
+      };
+    }
+    const initial = snapshot();
+    record("initial-before-force-update", initial);
+    instance.proxy.$forceUpdate();
+    await runtime.nextTick();
+    record("force-updated-before-snapshot-comparisons");
+    const updated = snapshot();
+    record("updated-before-comparisons", updated);
+    assert.equal(calls, 1);
+    assert.equal(renders, 2);
+    const updatedNodes = host.children.filter((node: any) => node.type === fixture.tag);
+    const retained = initialNodes.map((node: any, index: number) => updatedNodes[index] === node);
+    record("updated-host-identities-before-comparison", { retained });
+    assert(
+      retained.every(Boolean),
+      "actual stable-list host identities survive normal force-update",
+    );
+    if (!range) {
+      assert.deepEqual(initial, updated);
+      assert.equal(initial.tree.type, "fragment");
+      assert.equal(initial.tree.patchFlag, 64);
+      assert.equal(initial.trackedDynamicChildren, fixture.dynamic ? fixture.values.length : 0);
+      assert.deepEqual(
+        initial.callbackBlocks,
+        fixture.values.map(() => false),
+      );
+      assert.deepEqual(initial.hostValues, fixture.values);
+      assert.deepEqual(
+        initial.tree.children,
+        fixture.values.map((value: string) => ({
+          type: fixture.tag,
+          props: {},
+          children: fixture.dynamic ? value : fixture.text,
+          patchFlag: fixture.dynamic ? 1 : 0,
+        })),
+      );
+      assert.deepEqual(warnings, []);
+      assert.deepEqual(errors, []);
+      assert.equal(host.children.length, fixture.values.length + 2);
+    } else if (mode === "development") {
+      assert.deepEqual(errors, []);
+      assert.deepEqual(
+        warnings,
+        Array(2).fill("The v-for range expects a positive integer value but got 2.5."),
+      );
+      assert.equal(initial.tree.patchFlag, 64);
+      assert.deepEqual(initial.tree.children, []);
+      assert.equal(initial.trackedDynamicChildren, 0);
+      assert.deepEqual(initial.callbackBlocks, []);
+      assert.deepEqual(initial.hostValues, []);
+      assert.equal(host.children.length, 2);
+      assert.deepEqual(initial, updated);
+    } else {
+      assert.deepEqual(warnings, []);
+      assert.equal(errors.length, 2);
+      for (const error of errors) {
+        assert.equal(error.name, "RangeError");
+        assert.equal(error.message, "Invalid array length");
+        assert.equal(error.info, "https://vuejs.org/error-reference/#runtime-1");
+      }
+      assert.deepEqual(initial.tree, {
+        type: "comment",
+        props: {},
+        children: null,
+        patchFlag: 0,
+      });
+      assert.equal(initial.trackedDynamicChildren, null);
+      assert.deepEqual(initial.callbackBlocks, []);
+      assert.deepEqual(initial.hostValues, []);
+      assert.equal(host.children.length, 1);
+      assert.deepEqual(initial, updated);
+    }
+    app.unmount();
+    await runtime.nextTick();
+    record("unmounted-before-comparisons", updated);
+    assert.deepEqual(host.children, []);
+    assert.equal(instance.isUnmounted, true);
+    return {
+      initial,
+      updated,
+      retained,
+      warnings,
+      errors,
+      setupInvocations: calls,
+      renders,
+      unmounted: instance.isUnmounted,
+    };
+  } catch (error) {
+    record("failed-before-cleanup");
+    throw error;
+  } finally {
+    // The existing genuine app is cleaned up even when an assertion interrupts.
+    // Never retry its setup/render or replace an observed failed result.
+    if (instance && !instance.isUnmounted) {
+      app.unmount();
+      await runtime.nextTick();
+      record("failed-after-normal-cleanup");
+    }
+  }
 }

@@ -3,7 +3,10 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import { after, test } from "node:test";
 import { compiler, runtime, hash } from "./support/native-selected-sfc-dom-runtime.ts";
-import { executeConstantComponent } from "./support/native-original-for-constant-sfc-dom-runtime.ts";
+import {
+  executeConstantComponent,
+  runtimeErrorDetails,
+} from "./support/native-original-for-constant-sfc-dom-runtime.ts";
 
 const ts = createRequire(new URL("../package.json", import.meta.url))("typescript");
 const pack = JSON.parse(
@@ -164,6 +167,8 @@ for (const fixture of fixtures) {
       nativeCapture: null,
       primary: null,
       native: null,
+      primaryObservations: [],
+      nativeObservations: [],
       error: null,
     };
     try {
@@ -178,6 +183,7 @@ for (const fixture of fixtures) {
         false,
         mode,
         range,
+        (observation) => attempt.primaryObservations.push(observation),
       );
       attempt.primary = original;
       assertPrimary(fixture, reference);
@@ -193,7 +199,14 @@ for (const fixture of fixtures) {
       assert.equal(row.source, fixture.source);
       assert.equal(typeof row.code, "string");
       const code = row.code;
-      const native = await executeConstantComponent(code, fixture, true, mode, range);
+      const native = await executeConstantComponent(
+        code,
+        fixture,
+        true,
+        mode,
+        range,
+        (observation) => attempt.nativeObservations.push(observation),
+      );
       attempt.native = native;
       assert.equal(code, fixture.expectedCode);
       assert.deepEqual(row.nativeMap, fixture.nativeMap);
@@ -214,7 +227,7 @@ for (const fixture of fixtures) {
         primary: original,
       });
     } catch (error: any) {
-      attempt.error = { name: error.name, message: error.message, stack: error.stack };
+      attempt.error = runtimeErrorDetails(error);
       throw error;
     } finally {
       attempts.push(attempt);

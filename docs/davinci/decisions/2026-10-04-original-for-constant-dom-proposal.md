@@ -267,3 +267,17 @@ whole equality, owner checks and runtime qualification remain mandatory. Pure
 source routing/module/storage checks pass. Bounded independent review and fresh
 exact Actions remain required; Draft/publication queue hold, immutable104 caps,
 old6/10/7/5 capture obligations and unfinished broad/default/history scope remain.
+
+## Failed-runtime observational custody
+
+[The paired retained-peer correction](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5978330032)
+holds unpublished02bb: its raw process/error text missed observations when the
+existing helper asserted before returning. The optional callback now parks actual
+original setup/render results, vnode/host/patch/tracking facts, counts, descriptors,
+error-handler details and assertion actual/expected before comparisons. Explicit
+scalar/graph-reference diagnostics preserve non-JSON observed values. Assertion
+failures rethrow and normal same-app cleanup runs without retry or desired-output
+substitution; successful return values, operations and comparisons stay exact.
+All production/original eleven/inherited oracle bytes remain. Whole bounded peer
+review and fresh exact Actions are mandatory; no local/native/runtime or queue
+credit follows, and Draft/publication hold/protected104 obligations remain.

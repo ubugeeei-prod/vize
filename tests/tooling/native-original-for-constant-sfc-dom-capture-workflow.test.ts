@@ -81,5 +81,25 @@ test("actual constant action source builds all eleven whole modules before manda
   );
   assert(reference.includes("attempts.push(attempt)"));
   assert(reference.indexOf("if (rawPath)") < reference.indexOf("assert.equal(executions.length"));
+  assert(reference.includes("attempt.primaryObservations.push(observation)"));
+  assert(reference.includes("attempt.nativeObservations.push(observation)"));
+  assert(reference.includes("attempt.error = runtimeErrorDetails(error)"));
+  const runtimeHelper = fs.readFileSync(
+    new URL("./support/native-original-for-constant-sfc-dom-runtime.ts", import.meta.url),
+    "utf8",
+  );
+  assert(
+    runtimeHelper.indexOf('record("mounted-before-comparisons")') <
+      runtimeHelper.indexOf("assert.equal(calls, 1)"),
+  );
+  assert(
+    runtimeHelper.indexOf('record("updated-before-comparisons"') <
+      runtimeHelper.indexOf("assert.deepEqual(initial, updated)"),
+  );
+  assert(runtimeHelper.includes("vnode: observedShape(instance?.subTree)"));
+  assert(runtimeHelper.includes("actual: diagnosticValue(error?.actual)"));
+  assert(runtimeHelper.includes("expected: diagnosticValue(error?.expected)"));
+  assert(runtimeHelper.includes('record("failed-after-normal-cleanup")'));
+  assert(runtimeHelper.includes("throw error"));
   assert(action.includes("if: ${{ always() }}"));
 });
