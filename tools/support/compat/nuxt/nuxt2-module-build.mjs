@@ -7,10 +7,11 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { verifyNuxt2LintConfig } from "./nuxt2-lint-config.mjs";
+
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const fixture = path.join(root, "tools/support/compat/nuxt/fixtures/nuxt2-module-build");
 const packageRoot = path.join(fixture, "node_modules/@vizejs/nuxt");
-const installedDist = path.join(packageRoot, "dist");
 const candidateDist = path.join(root, "npm/framework/nuxt/dist");
 const artifacts = path.resolve(process.argv[2] ?? path.join(os.tmpdir(), "vize-nuxt2-build"));
 fs.mkdirSync(artifacts, { recursive: true });
@@ -25,10 +26,20 @@ assert.equal(
 );
 assert.ok(fs.existsSync(path.join(candidateDist, "nuxt2-entry.cjs")));
 
-const originalDist = path.join(artifacts, "published-nuxt-dist");
-fs.cpSync(installedDist, originalDist, { recursive: true });
-fs.rmSync(installedDist, { recursive: true });
-fs.cpSync(candidateDist, installedDist, { recursive: true });
+const swapped = [
+  ["nuxt", candidateDist],
+  ["nuxt-lint-config", path.join(root, "npm/framework/nuxt-lint-config/dist")],
+].map(([name, candidate]) => ({
+  candidate,
+  installed: path.join(fixture, "node_modules/@vizejs", name, "dist"),
+  backup: path.join(artifacts, `published-${name}-dist`),
+}));
+for (const item of swapped) {
+  assert.ok(fs.existsSync(item.candidate), "candidate package must be built");
+  fs.cpSync(item.installed, item.backup, { recursive: true });
+  fs.rmSync(item.installed, { recursive: true });
+  fs.cpSync(item.candidate, item.installed, { recursive: true });
+}
 
 let server;
 try {
@@ -93,6 +104,7 @@ try {
     await serverExited;
     fs.closeSync(serverLog);
   }
+  await verifyNuxt2LintConfig(fixture, artifacts);
   fs.writeFileSync(
     path.join(artifacts, "proof.json"),
     JSON.stringify(
@@ -110,6 +122,8 @@ try {
   console.log("Candidate Nuxt 2 webpack build and SSR routes passed");
 } finally {
   if (server && server.exitCode === null) server.kill("SIGTERM");
-  fs.rmSync(installedDist, { recursive: true, force: true });
-  fs.cpSync(originalDist, installedDist, { recursive: true });
+  for (const item of swapped) {
+    fs.rmSync(item.installed, { recursive: true, force: true });
+    fs.cpSync(item.backup, item.installed, { recursive: true });
+  }
 }

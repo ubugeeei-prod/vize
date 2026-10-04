@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "issue": 7828,
+  "source": "process-flags.ts",
+  "cases": [
+    {
+      "id": "nuxt2-process-flags",
+      "nuxtVersion": 2,
+      "expectedRules": {},
+      "expectedDiagnosticCodes": []
+    },
+    {
+      "id": "nuxt3-process-flags",
+      "nuxtVersion": 3,
+      "expectedRules": {
+        "nuxt/prefer-import-meta": "error",
+        "nuxt/no-page-meta-runtime-values": "error"
+      },
+      "expectedDiagnosticCodes": ["vize(nuxt/prefer-import-meta)", "vize(nuxt/prefer-import-meta)"]
+    },
+    {
+      "id": "nuxt4-process-flags",
+      "nuxtVersion": 4,
+      "expectedRules": {
+        "nuxt/prefer-import-meta": "error",
+        "nuxt/no-page-meta-runtime-values": "error"
+      },
+      "expectedDiagnosticCodes": ["vize(nuxt/prefer-import-meta)", "vize(nuxt/prefer-import-meta)"]
+    }
+  ]
+}

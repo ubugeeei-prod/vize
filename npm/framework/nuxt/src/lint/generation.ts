@@ -213,7 +213,11 @@ export async function setupNuxtLintConfigGeneration(
     const project = toNuxtLintProjectState(nuxt.options as NuxtLintSourceOptions, {
       rootDir: planRoot,
     });
-    const plan = buildNuxtLintPlan(features, collectNuxtLintDirs(project));
+    const plan = buildNuxtLintPlan(
+      features,
+      collectNuxtLintDirs(project),
+      getDetectedNuxtMajor(nuxt) ?? 3,
+    );
     const addons = (await resolveAddons?.()) ?? [];
     const projectRules = await resolveProjectRules(planRoot);
     const projectItems =
