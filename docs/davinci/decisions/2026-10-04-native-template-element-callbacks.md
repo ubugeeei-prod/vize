@@ -2,9 +2,15 @@
 
 Issues: [#6848](https://github.com/ubugeeei-prod/vize/issues/6848) and
 [#6881](https://github.com/ubugeeei-prod/vize/issues/6881), both unfinished.
-This is a private source freeze for coordinating and independent review.
-Publication and queue admission remain held during the release cutoff.
-The paired issue comments below must travel with this genuine provider change;
+Coordinating and independent full source/control review at private
+`c541a5aed9e76d46516f6bf082d87dac54bd2c15` is CLEAR. The three commits,
+including the separate move-only extraction, replay identically onto actual
+`c34b3d7a9881c10d8ceedff25f7f850df5a6698d`; all 21 non-central owned blobs
+stay byte-identical, with no production composition delta. An independent Draft
+source PR is authorized for exact-head Actions. Queue admission remains held
+until official 0.431 publication is verified. This genuine provider change is
+paired with [#6848](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5976601392)
+and [#6881](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-5976601527);
 there is no separate record-only PR.
 
 ## Actual owner and callback boundary
@@ -122,10 +128,11 @@ unchanged. Rustfmt, file caps and whitespace checks pass; fifteen pure canonical
 input/report laws pass. No local Rust build/install, product execution or manual
 Actions campaign was performed. Hosted exact-source/protected proof is pending.
 
-Paired issue decision for this source: keep this generic provider private until
-full exact-source coordinating/peer review, then publish only within the release
-window's admission policy and obtain fresh Actions/protected/full104/literal
-proof. The next genuine two-rule child requires a reviewed whole-output report
+Paired issue decision for this source: publish only a Draft source PR after
+complete coordinating/independent review and actual-main replay conservation.
+Obtain fresh exact-head Actions for the strict/new laws and canonical old
+capture/control protocol. Protected full104/literal acceptance remains pending;
+queue admission is held until verified official 0.431 publication. The next genuine two-rule child requires a reviewed whole-output report
 transition and authentic unprovided-instance controls preserving immutable
 historical refusals. No builtin/default/L1/SDK/capture admission is widened here.
 Broader #6881, historical locale/options/fix authority, 255/503/258/245/48
