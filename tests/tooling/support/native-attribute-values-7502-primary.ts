@@ -9,12 +9,16 @@ export async function primary7502(source: string) {
   const compiler = vue("@vue/compiler-sfc");
   const vapor = createRequire(ui.resolve("vue-vapor-runtime/package.json"));
   const originalVaporCompiler = vapor("vue/compiler-sfc");
+  const wrapperRequire = createRequire(vapor.resolve("vue/compiler-sfc"));
+  const compilerRequire = createRequire(wrapperRequire.resolve("@vue/compiler-sfc"));
+  assert.equal(wrapperRequire("@vue/compiler-sfc"), originalVaporCompiler);
+  assert.equal(wrapperRequire("@vue/compiler-sfc/package.json").version, "3.6.0-rc.9");
   assert.equal(compiler.version, "3.5.35");
   for (const name of ["@vue/compiler-dom", "@vue/compiler-ssr", "@vue/compiler-core"])
     assert.equal(vue(`${name}/package.json`).version, "3.5.35");
   assert.equal(originalVaporCompiler.version, "3.6.0-rc.9");
   for (const name of ["@vue/compiler-dom", "@vue/compiler-ssr", "@vue/compiler-core"])
-    assert.equal(vapor(`${name}/package.json`).version, "3.6.0-rc.9");
+    assert.equal(compilerRequire(`${name}/package.json`).version, "3.6.0-rc.9");
   assert.equal(ui("@vitejs/plugin-vue/package.json").version, "6.0.7");
   const factory = (await import(pathToFileURL(ui.resolve("@vitejs/plugin-vue")).href)).default;
   const helperId = "\0plugin-vue:export-helper";

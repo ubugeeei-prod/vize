@@ -113,3 +113,16 @@ For admission is added. This establishes only the absence of dangling heads,
 not general original For custody. Raw5d failure remains preserved; the mandatory
 unfrozen gate keeps rejecting until fresh whole capture, independent output
 review and unconditional frozen equality actually pass.
+
+The first authentic f4 source-built packet contains all84 complete outcomes and
+336 envelopes in both Rust streams, preserving their deliberate initial
+unfrozen rejection. All four saved fresh development/production runtime processes
+instead fail on ambient compiler-package metadata: the real rc.9 compiler and
+runtime assertions pass, but runtime-alias siblings resolve a 3.5.35 package.
+The corrected primary pin follows the actual vue/compiler-sfc wrapper's own
+require to its real @vue/compiler-sfc entry, checks that exact cached compiler
+identity and package version, then pins its own dom/ssr/core dependencies. Every
+exact rc.9 assertion, runtime schema, whole source/options and old output pack
+remains unchanged. The failing raw processes/build packet are historical evidence,
+not runtime or reviewed output acceptance; fresh corrected dev/prod qualification
+and independent whole-output review are still mandatory before freeze or queue.
