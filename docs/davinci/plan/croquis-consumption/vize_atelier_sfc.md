@@ -39,7 +39,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ModelDefinition`                         |     1 |     1 |
 | `PadOption`                               |     1 |     1 |
 | `PropDefinition`                          |     3 |     5 |
-| `ResolvedTypeWorld`                       |     2 |     5 |
+| `ResolvedTypeWorld`                       |     3 |     6 |
 | `ScriptParseResult`                       |     1 |     1 |
 | `ScriptParserOptions`                     |     1 |     1 |
 | `SfcCustomBlock`                          |     2 |     2 |
@@ -51,10 +51,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `SfcTemplateBlock`                        |     7 |     9 |
 | `TypeDeclaration`                         |     1 |     3 |
 | `TypeDeclarationKind`                     |     1 |     2 |
-| `TypeExportBinding`                       |     2 |     8 |
+| `TypeExportBinding`                       |     3 |     9 |
 | `TypeImport`                              |     1 |     1 |
-| `TypeLookup`                              |     3 |    18 |
-| `TypeModule`                              |     2 |     7 |
+| `TypeLookup`                              |     4 |    23 |
+| `TypeModule`                              |     2 |     8 |
 | `TypeModuleReference`                     |     2 |     3 |
 | `UnknownTypeReason`                       |     1 |     1 |
 | `WITH_DEFAULTS`                           |     1 |     1 |
