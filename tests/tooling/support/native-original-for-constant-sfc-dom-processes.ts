@@ -23,6 +23,7 @@ for (const mode of ["development", "production"]) {
       ...process.env,
       NODE_ENV: mode,
       VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_RUNTIME_CAPTURE: `${prefix}-runtime.json`,
+      VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_RAW_RUNTIME_CAPTURE: `${prefix}-unqualified-runtime.json`,
     },
   });
   const stdout = child.stdout ?? Buffer.alloc(0),
@@ -37,7 +38,7 @@ for (const mode of ["development", "production"]) {
     stderrBase64: stderr.toString("base64"),
     stdoutSha256: hash(stdout),
     stderrSha256: hash(stderr),
-    sourceCaptureHash: hash(fs.readFileSync(capture)),
+    sourceCaptureHash: fs.existsSync(capture) ? hash(fs.readFileSync(capture)) : null,
   };
   fs.writeFileSync(`${prefix}.stdout`, stdout);
   fs.writeFileSync(`${prefix}.stderr`, stderr);

@@ -10,6 +10,7 @@ test("every constant source, emitter-only or full capture input requires a real 
     "davinci/vize_l4/src/targets/dom/vue/for_head.rs",
     "crates/vize_atelier_sfc/src/native_selected_setup/tests/original_for_constant.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_original_for_constant_sfc_vue_3_5_35.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_for_constant_inherited_sfc_vue_3_5_35.json",
     "tests/tooling/native-original-for-constant-sfc-dom-reference.test.ts",
     "tests/tooling/native-original-for-constant-sfc-dom-capture-workflow.test.ts",
     "tests/tooling/support/native-original-for-constant-sfc-dom-runtime.ts",
@@ -64,5 +65,21 @@ test("actual constant action source builds all eleven whole modules before manda
   ])
     assert(processes.includes(field));
   assert(!processes.includes("retry" + "("));
+  assert(action.includes("|| rust_status=$?"));
+  assert(action.includes("|| node_status=$?"));
+  assert(action.indexOf("rustStatus: Number") < action.indexOf('test "$rust_status" -eq 0'));
+  for (const path of ["unqualified-attempts.json", "-*-unqualified-runtime.json"])
+    assert(action.includes(path));
+  const reference = fs.readFileSync(
+    new URL("./native-original-for-constant-sfc-dom-reference.test.ts", import.meta.url),
+    "utf8",
+  );
+  assert(!reference.includes("row?.code ?? fixture.expectedCode"));
+  assert(
+    reference.indexOf("const original = await executeConstantComponent") <
+      reference.indexOf("if (!captured)"),
+  );
+  assert(reference.includes("attempts.push(attempt)"));
+  assert(reference.indexOf("if (rawPath)") < reference.indexOf("assert.equal(executions.length"));
   assert(action.includes("if: ${{ always() }}"));
 });

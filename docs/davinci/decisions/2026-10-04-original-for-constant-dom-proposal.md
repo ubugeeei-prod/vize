@@ -244,3 +244,26 @@ native/object/raw-map captures, both pinned dev/prod processes and old6/10/7/5
 packs. Source-green squash auto-merge, protected full suites/all104 unchanged
 gates, actual candidate and signed merge remain required; broader compiler
 families and product fix-history completion remain unfinished.
+
+## First source correction and complete failure custody
+
+[The paired first-source record](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5978225295)
+retains failed `6f6f9ce223` / Check `37188856658`. Clippy/archive/docs pass, but
+module ordering, two UTF16 fixture readers and the inherited constant-button
+Operation expectation fail. All eight old packet files remain exact accepted9cd;
+there is no new constant capture/runtime or protected credit. The test-only typed
+projection leaves JS runtime values IgnoredAny rather than decoding lone
+surrogates into Rust UTF8. Entire eleven-fixture and production bytes remain.
+The exact inherited `const items=1` self-closing button source is preserved with
+a separate complete independent code/object/raw-map model and actual original
+owner/current read closure; both pinned runtime modes must qualify it freshly.
+
+All eleven plus inherited Rust attempts park complete actual output or typed
+errors in a separate unqualified packet before mandatory aggregate equality.
+Both actual Rust/Node statuses, dev/prod stdout/stderr and unqualified original
+primary/runtime attempts are retained before judging exits. Missing native
+capture never executes the desired native module as a fallback; successful
+whole equality, owner checks and runtime qualification remain mandatory. Pure
+source routing/module/storage checks pass. Bounded independent review and fresh
+exact Actions remain required; Draft/publication queue hold, immutable104 caps,
+old6/10/7/5 capture obligations and unfinished broad/default/history scope remain.

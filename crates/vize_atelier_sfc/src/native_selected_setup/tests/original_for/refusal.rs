@@ -140,16 +140,10 @@ fn constant_full_capture_generic_and_zero_occurrence_literal_preserve_distinct_p
         source,
         NativeSelectedSfcDomOptions::default(),
     );
-    let pack: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../tests/fixtures/native_original_for_constant_sfc_vue_3_5_35.json"
-    ))
-    .unwrap();
-    let positive = &pack["fixtures"][0];
-    assert_eq!(positive["source"].as_str(), Some(source));
-    assert_eq!(
-        compiled.result().unwrap().code(),
-        positive["expectedCode"].as_str().unwrap()
-    );
+    let pack = super::super::original_for_constant::fixture::pack().unwrap();
+    let positive = &pack.fixtures[0];
+    assert_eq!(positive.source, source);
+    assert_eq!(compiled.result().unwrap().code(), positive.expected_code);
     let view = compiled.observation().admitted().unwrap();
     let file = view.setup().file();
     let generic = vize_l3::decision::build_dom_file_decisions(file).unwrap();

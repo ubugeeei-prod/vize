@@ -15,13 +15,26 @@ const pack = JSON.parse(
     "utf8",
   ),
 );
+const inherited = JSON.parse(
+  fs.readFileSync(
+    new URL(
+      "../../crates/vize_atelier_sfc/tests/fixtures/native_original_for_constant_inherited_sfc_vue_3_5_35.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+);
 const mode = process.env.NODE_ENV === "production" ? "production" : "development";
 const capturePath = process.env.VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_CAPTURE;
 const requireCapture =
   process.env.VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_REQUIRE_CAPTURE === "1";
-const captured = capturePath ? JSON.parse(fs.readFileSync(capturePath, "utf8")) : null;
-const fixtures = [...pack.fixtures, ...pack.rangeControls];
+const captured =
+  capturePath && fs.existsSync(capturePath)
+    ? JSON.parse(fs.readFileSync(capturePath, "utf8"))
+    : null;
+const fixtures = [...pack.fixtures, ...pack.rangeControls, ...inherited.fixtures];
 const executions: unknown[] = [];
+const attempts: unknown[] = [];
 
 function primary(fixture: any) {
   const parsed = compiler.parse(fixture.source, { filename: pack.filename });
@@ -33,8 +46,6 @@ function primary(fixture: any) {
     id: fixture.id,
     genDefaultAs: "_sfc_main",
   });
-  assert.deepEqual(Object.keys(script.bindings), fixture.bindings);
-  assert.equal(script.bindings[fixture.collection], "literal-const");
   const render = compiler.compileTemplate({
     source: fixture.template,
     filename: pack.filename,
@@ -50,18 +61,6 @@ function primary(fixture: any) {
     },
   });
   assert.deepEqual(render.errors, []);
-  const expectedRender = fixture.expectedCode
-    .slice(
-      fixture.expectedCode.indexOf("function render"),
-      fixture.expectedCode.indexOf("_sfc_main.render"),
-    )
-    .trimEnd();
-  assert.equal(
-    render.code
-      .slice(render.code.indexOf("export function render"))
-      .replace("export function render", "function render"),
-    expectedRender,
-  );
   assert.deepEqual(render.map.sourcesContent, [fixture.template]);
   const original =
     script.content +
@@ -83,6 +82,7 @@ function primary(fixture: any) {
     code = transformed.outputText;
   }
   return {
+    bindings: script.bindings,
     script: script.content,
     scriptMap: JSON.parse(JSON.stringify(script.map)),
     render: render.code,
@@ -92,6 +92,23 @@ function primary(fixture: any) {
   };
 }
 
+function assertPrimary(fixture: any, reference: any) {
+  assert.deepEqual(Object.keys(reference.bindings), fixture.bindings);
+  assert.equal(reference.bindings[fixture.collection], "literal-const");
+  const expectedRender = fixture.expectedCode
+    .slice(
+      fixture.expectedCode.indexOf("function render"),
+      fixture.expectedCode.indexOf("_sfc_main.render"),
+    )
+    .trimEnd();
+  assert.equal(
+    reference.render
+      .slice(reference.render.indexOf("export function render"))
+      .replace("export function render", "function render"),
+    expectedRender,
+  );
+}
+
 test("constant whole code/object/raw maps require the current source-built capture", () => {
   assert.equal(compiler.version, "3.5.35");
   assert.equal(runtime.version, "3.5.35");
@@ -99,14 +116,28 @@ test("constant whole code/object/raw maps require the current source-built captu
   assert.equal(pack.nativeExecutions, 0, "desired fixture model never executes native code");
   assert.equal(pack.fixtures.length, 10);
   assert.equal(pack.rangeControls.length, 1);
-  assert.equal(new Set(fixtures.map((f: any) => f.id)).size, 11);
+  assert.equal(inherited.nativeExecutions, 0);
+  assert.equal(inherited.fixtures.length, 1);
+  assert.equal(inherited.rangeControls.length, 0);
+  assert.equal(inherited.filename, pack.filename);
+  assert.equal(new Set(fixtures.map((f: any) => f.id)).size, 12);
   if (requireCapture) assert(captured, "mandatory actual source-built Rust modules");
   if (captured) {
     assert.equal(captured.schema, "vize.native-sfc.original-for-constant-capture");
     assert.equal(captured.adapter, "vize_atelier_sfc::compile_native_selected_setup_sfc_dom");
     assert.deepEqual(
       captured.fixtures,
-      fixtures.map((f: any) => ({
+      [...pack.fixtures, ...pack.rangeControls].map((f: any) => ({
+        id: f.id,
+        source: f.source,
+        code: f.expectedCode,
+        nativeMap: f.nativeMap,
+        nativeMapRaw: f.nativeMapRaw,
+      })),
+    );
+    assert.deepEqual(
+      captured.inheritedControls,
+      inherited.fixtures.map((f: any) => ({
         id: f.id,
         source: f.source,
         code: f.expectedCode,
@@ -125,39 +156,90 @@ test("constant whole code/object/raw maps require the current source-built captu
 
 for (const fixture of fixtures) {
   test(`${fixture.id}: ${mode} original constant list cold mount, force-update and unmount`, async () => {
-    if (requireCapture) assert(captured);
-    const row = captured?.fixtures.find((r: any) => r.id === fixture.id);
-    if (captured) assert(row);
-    const code = row?.code ?? fixture.expectedCode;
-    assert.equal(code, fixture.expectedCode);
-    const reference = primary(fixture);
-    const range = pack.rangeControls.includes(fixture);
-    const native = await executeConstantComponent(code, fixture, true, mode, range);
-    const original = await executeConstantComponent(
-      reference.runtimeModule,
-      fixture,
-      false,
-      mode,
-      range,
-    );
-    assert.deepEqual(native, original);
-    executions.push({
+    const attempt: any = {
       id: fixture.id,
+      source: fixture.source,
       sourceHash: hash(fixture.source),
-      nativeCodeHash: hash(code),
-      nativeMapHash: hash(JSON.stringify(row?.nativeMap ?? fixture.nativeMap)),
-      nativeMapRawHash: hash(row?.nativeMapRaw ?? fixture.nativeMapRaw),
-      referenceModuleHash: hash(reference.originalModule),
-      referenceRuntimeHash: hash(reference.runtimeModule),
-      origin: captured ? "current-source-rust-capture" : "independent-desired-module",
-      reference,
-      native,
-      primary: original,
-    });
+      qualified: false,
+      nativeCapture: null,
+      primary: null,
+      native: null,
+      error: null,
+    };
+    try {
+      // The actual pinned primary still runs when native capture failed.
+      // Missing capture never executes the desired native module as a substitute.
+      const reference = primary(fixture);
+      attempt.reference = reference;
+      const range = pack.rangeControls.includes(fixture);
+      const original = await executeConstantComponent(
+        reference.runtimeModule,
+        fixture,
+        false,
+        mode,
+        range,
+      );
+      attempt.primary = original;
+      assertPrimary(fixture, reference);
+      if (!captured) {
+        assert(!requireCapture, "mandatory actual source-built native capture is absent");
+        return;
+      }
+      const row = [...captured.fixtures, ...captured.inheritedControls].find(
+        (r: any) => r.id === fixture.id,
+      );
+      attempt.nativeCapture = row ?? null;
+      assert(row, "actual native row is absent");
+      assert.equal(row.source, fixture.source);
+      assert.equal(typeof row.code, "string");
+      const code = row.code;
+      const native = await executeConstantComponent(code, fixture, true, mode, range);
+      attempt.native = native;
+      assert.equal(code, fixture.expectedCode);
+      assert.deepEqual(row.nativeMap, fixture.nativeMap);
+      assert.equal(row.nativeMapRaw, fixture.nativeMapRaw);
+      assert.deepEqual(native, original);
+      attempt.qualified = true;
+      executions.push({
+        id: fixture.id,
+        sourceHash: hash(fixture.source),
+        nativeCodeHash: hash(code),
+        nativeMapHash: hash(JSON.stringify(row.nativeMap)),
+        nativeMapRawHash: hash(row.nativeMapRaw),
+        referenceModuleHash: hash(reference.originalModule),
+        referenceRuntimeHash: hash(reference.runtimeModule),
+        origin: "current-source-rust-capture",
+        reference,
+        native,
+        primary: original,
+      });
+    } catch (error: any) {
+      attempt.error = { name: error.name, message: error.message, stack: error.stack };
+      throw error;
+    } finally {
+      attempts.push(attempt);
+    }
   });
 }
 
 after(() => {
+  const rawPath = process.env.VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_RAW_RUNTIME_CAPTURE;
+  if (rawPath) {
+    fs.writeFileSync(
+      rawPath,
+      JSON.stringify(
+        {
+          schema: "vize.native-sfc.original-for-constant-unqualified-runtime-attempts",
+          qualified: false,
+          mode,
+          sourceCaptureHash: captured ? hash(fs.readFileSync(capturePath!, "utf8")) : null,
+          attempts,
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+  }
   const path = process.env.VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_RUNTIME_CAPTURE;
   if (!path) return;
   assert(requireCapture && captured);
