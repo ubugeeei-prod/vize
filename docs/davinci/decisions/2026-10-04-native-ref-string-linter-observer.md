@@ -90,13 +90,14 @@ The fifteen original current-api SFC coordinates have this prospective boundary:
 | Two ref-string witnesses       | Complete equivalent output |     2 |
 | Typed ref-call control         | Complete FileIssues64..98  |     1 |
 | Explicit Vue2 slot/shorthand   | UnsupportedVueVersion V2   |     2 |
-| Other SFC configured instances | Actual UnprovidedRule      |    10 |
+| Other active SFC instances     | Actual UnprovidedRule      |     9 |
+| Explicitly disabled Vapor wire | Complete Descriptor14..19  |     1 |
 
 Together with eight original filename successes, five standalone script entry
 refusals, separate SFC repair refusal, four report refusals and eleven bare
 configured-rule refusals, prospective accounting is44 legacy matches /10 native
-equivalent /34 refused:6 EntryUnavailable +4 ApiUnavailable +21 UnprovidedRule
-+2 UnsupportedVueVersion +1 FileIssues. These are authored expectations only.
+equivalent /34 refused:6 EntryUnavailable +4 ApiUnavailable +20 UnprovidedRule
++2 UnsupportedVueVersion +1 FileIssues +1 Descriptor. These are authored expectations only.
 Actual accepted accounting remains8/36 until fresh whole hosted packets,
 protected acceptance and literal signed merge qualify this child.
 
@@ -140,6 +141,36 @@ warnings in the authored SFC ledger sort. The test-only successor declares
 string-keyed tuples and sorts their keys directly; all fifteen expected rows,
 four complete mutation controls and production stay exact. Raw failed log is
 retained; four focused pure controls pass, fresh hosted source proof is required.
+
+## Rejected protected whole-packet expectation
+
+The first protected child candidate ac6c124de7a558120c015cd80edad344afdd21ac
+Check37192688088/tooling1 job111408117283 failed the whole44 comparison.
+All44 complete legacy outputs matched; ten complete native outputs matched,
+33 refusals classified and one real refusal failed the authored expected kind.
+The raw failed two-attempt packet was persisted before the aggregate assertion.
+Neither this partial packet nor the green ordinary source366 grants terminal
+whole-product/native credit. The known-red child was made Draft and its queue
+entry disappeared; the healthy parent-only prefix was re-admitted separately.
+
+The unchanged original next-tick-disabled wire requests vapor Some(false).
+The actual with_vapor_mode configuration disables script/no-next-tick before
+native callback lookup, leaving no active instance. Descriptor admission is
+still obligatory: its exact original `<script setup vapor>` frame refuses the
+retained Vapor attribute at container0/14..19, with no parser errors. The earlier
+expected UnprovidedRule was incorrect for this disabled coordinate. The original
+unspecified-Vapor wire still returns the full UnprovidedRule; production, source,
+options, all44 complete legacy oracles and both semantic successes stay exact.
+
+The corrected immutable-wire contract requires the entire real Descriptor vector,
+never zero findings or an old-rule refusal. An independent whole-wire/refusal law
+rejects handled output, the old UnprovidedRule, changed container/ranges/kind,
+empty issues and altered requested Vapor options. Only the fixture validator,
+its authored expectations and this paired record change. Five focused pure
+controls pass; no Rust runtime/build or expected recapture was performed. Fresh
+exact-source Actions, protected whole44/focus32/52/eight-CF/full104 measurements
+and literal signed merge remain mandatory. Accounting remains prospective10/34,
+now including one Descriptor and twenty UnprovidedRule refusals.
 
 ## Remaining delivery
 

@@ -74,7 +74,16 @@ void test("all fifteen original current SFC wires have the complete bounded tran
     ["current-api/slot-compat-vue3", missing("vue/no-deprecated-slot-attribute")],
     ["current-api/shorthand-compat-vue3", missing("vue/prefer-props-shorthand")],
     ["current-api/next-tick-unspecified", missing("script/no-next-tick")],
-    ["current-api/next-tick-disabled", missing("script/no-next-tick")],
+    [
+      "current-api/next-tick-disabled",
+      {
+        api: "--native-current-api",
+        entry: "sfc",
+        kind: "Descriptor",
+        detail:
+          "Descriptor { issues: [DescriptorIssue { code: UnsupportedAttribute, container_index: Some(0), span: Span { start: 14, end: 19 } }], errors: [] }",
+      },
+    ],
     ["current-api/static-class-utf8-fix-corrected", missing("vapor/prefer-static-class")],
     ["next-tick/valid-arrow-expression-return-sfc", missing("script/valid-next-tick")],
     [
@@ -278,4 +287,56 @@ void test("recomputed probe hashes cannot hide old versions, wrong original owne
     probe.sha256 = sha256(bytes);
     assert.throws(() => validateNativeContract(receipt));
   }
+});
+
+void test("disabled original Vapor wire retains its complete Descriptor refusal before any clean credit", () => {
+  const fixture = row("current-api/next-tick-disabled");
+  assert.deepEqual(JSON.parse(fixture.input), {
+    id: "next-tick-disabled",
+    history: "f9fa82f7867e3a9373a8d0ee30162c6947c7c113",
+    source:
+      '<script setup vapor>\nimport { nextTick } from "vue"\nawait nextTick()\n</script>\n<template><div /></template>\n',
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "script/no-next-tick",
+    vue_version: null,
+    vapor: false,
+    diagnostics: 0,
+    fixes: 0,
+  });
+  const reason = {
+    api: "--native-current-api",
+    entry: "sfc",
+    kind: "Descriptor",
+    detail:
+      "Descriptor { issues: [DescriptorIssue { code: UnsupportedAttribute, container_index: Some(0), span: Span { start: 14, end: 19 } }], errors: [] }",
+  };
+  assert.deepEqual(decodeNativeOutcome(packet({ state: "unsupported", reason }), fixture), {
+    state: "unsupported",
+    reason,
+  });
+  assert.throws(() =>
+    decodeNativeOutcome(
+      packet({ state: "handled", observation: fixture.expected.toString() }),
+      fixture,
+    ),
+  );
+  for (const changed of [
+    missing("script/no-next-tick"),
+    { ...reason, detail: reason.detail.replace("Some(0)", "Some(1)") },
+    { ...reason, detail: reason.detail.replace("start: 14", "start: 13") },
+    { ...reason, detail: reason.detail.replace("end: 19", "end: 20") },
+    { ...reason, detail: reason.detail.replace("UnsupportedAttribute", "UnsupportedRole") },
+    { ...reason, detail: "Descriptor { issues: [], errors: [] }" },
+  ])
+    assert.throws(() =>
+      decodeNativeOutcome(packet({ state: "unsupported", reason: changed }), fixture),
+    );
+  for (const vapor of [null, true])
+    assert.throws(() =>
+      decodeNativeOutcome(packet({ state: "unsupported", reason }), {
+        ...fixture,
+        input: packet({ ...JSON.parse(fixture.input), vapor }),
+      }),
+    );
 });
