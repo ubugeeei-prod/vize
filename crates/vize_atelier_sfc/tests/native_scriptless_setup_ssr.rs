@@ -2,10 +2,8 @@ use vize_atelier_sfc::{NativeSsrSfcCompileOptions, compile_native_setup_ssr_sfc}
 use vize_l0::Allocator;
 use vize_l3::decision::ssr::build_native_selected_setup_ssr_decisions;
 
-#[path = "native_setup_ssr/refusals.rs"]
-mod refusals;
-#[path = "native_setup_ssr/rows.rs"]
-mod rows;
+mod native_setup_ssr;
+use native_setup_ssr::{refusals, rows};
 
 #[test]
 fn whole_original_setup_program_and_ssr_reads_keep_full_modules_and_maps() {
