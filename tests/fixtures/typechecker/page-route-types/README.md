@@ -122,5 +122,7 @@ must produce the full reference TS2353 diagnostic and authored range. Setup
 code generation indents body lines, so filename-only macro specialization
 validates its exact mapped callee/header and preserves the generated body.
 Real registered-project controls retain whole body bytes and diagnostic map
-endpoints. Indented multiline call headers remain unsupported. Fresh hosted
+endpoints. Matching original-length multiline header prefixes preserve all
+argument bytes; mismatching prefixes decline without editing. This does not
+prove equality through the actual generated argument start. Fresh hosted
 native replay is required; partial earlier cycles are not complete parity.

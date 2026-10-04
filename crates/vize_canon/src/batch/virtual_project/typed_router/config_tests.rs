@@ -203,8 +203,28 @@ fn multiline_page_macro_keeps_generated_body_and_exact_diagnostic_anchors() {
         .register_vue_file(&enabled_path, header_source)
         .unwrap();
     assert_eq!(
+        enabled
+            .find_by_original(&enabled_path)
+            .unwrap()
+            .content
+            .as_str(),
+        disabled
+            .find_by_original(&disabled_path)
+            .unwrap()
+            .content
+            .replacen("definePage(", header.as_str(), 1),
+        "matching multiline header prefixes preserve every generated argument byte",
+    );
+    let mismatched_header = header_source.replace("\n  {", "\n\t{");
+    disabled
+        .register_vue_file(&disabled_path, &mismatched_header)
+        .unwrap();
+    enabled
+        .register_vue_file(&enabled_path, &mismatched_header)
+        .unwrap();
+    assert_eq!(
         enabled.find_by_original(&enabled_path).unwrap().content,
         disabled.find_by_original(&disabled_path).unwrap().content,
-        "generated indentation inside a multiline call header remains unsupported",
+        "mismatching authored and generated header prefixes remain unsupported",
     );
 }
