@@ -118,7 +118,7 @@ fn module_link_input_preserves_original_terminal_error_and_nonterminal_reader_co
             panic!("original error lost");
         };
         assert_eq!(error.kind(), kind);
-        assert_eq!(error.to_string(), "original read failure");
+        assert_eq!(vize_l0::cstr!("{error}").as_str(), "original read failure");
         if matches!(kind, io::ErrorKind::Interrupted | io::ErrorKind::WouldBlock) {
             live(&state);
         } else {

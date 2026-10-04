@@ -27,9 +27,15 @@ fn module_link_actual_context_change_preserves_original_program_worker_and_unrel
     let original = cached(&project);
     let before = block_on(original.inspect(Position::new(0, 15))).unwrap();
     let context = project.source.capture_module_link_context().unwrap();
-    let (_, cancel) = project.source.begin_query(&uri()).unwrap();
+    let (unrelated, cancel) = project.source.begin_query(&uri()).unwrap();
     state.set_workspace_root("/new-root".into());
     assert!(!cancel.is_aborted());
+    let ready =
+        block_on(unrelated.run(|snapshot| async move { snapshot.source().to_owned() })).unwrap();
+    assert_eq!(
+        ready.publish(|source| source),
+        Ok("const value=1;value;".to_owned())
+    );
     assert_eq!(
         state.with_current_module_link_context(&context, || ()),
         Err(crate::server::ModuleLinkContextError::Superseded)
