@@ -102,6 +102,13 @@ full suites, unchanged 100+4 instruction ceilings, both actual parent ratchets
 and literal signed merge remain mandatory. Private source checks and prior
 provider/conditional acceptance transfer no runtime or new product credit.
 
+The first published source 0db0bdc2 failed strict Clippy before Rust test
+execution: the original missing-value branch had a nested collapsible if.
+The successor uses the same value-is-none check first and short-circuits the
+same binding.take operation in an if-let chain. Preparation, current-failure
+parking, drop/refusal order and every authored law/golden are unchanged. The
+failed source/logs remain historical; fresh hosted execution is still required.
+
 Original #6882 is closed only for its historical fixture scope. Native shared
 300 equivalence, default replacement, script/style/other whole-SFC dialect
 providers, L2 File/semantic/target binding legalization, legacy deletion and the

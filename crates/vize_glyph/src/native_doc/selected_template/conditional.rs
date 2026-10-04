@@ -130,16 +130,15 @@ pub(super) fn open_element<'p, 'a, I: Input<'p, 'a>>(
             )?;
             // No value callback ran. Preserve original name/eq checks first,
             // then park the genuine IncompleteValue failure at this event.
-            if head.attribute().surface().value.is_none() {
-                if let Some(candidate) = binding.take() {
-                    let candidate =
-                        candidate.map_err(|kind| NativeTemplateRefusal::BindingHead {
-                            span: head.name_block().span(),
-                            kind,
-                        })?;
-                    if let Some(binding) = candidate {
-                        input.binding(binding, offset)?;
-                    }
+            if head.attribute().surface().value.is_none()
+                && let Some(candidate) = binding.take()
+            {
+                let candidate = candidate.map_err(|kind| NativeTemplateRefusal::BindingHead {
+                    span: head.name_block().span(),
+                    kind,
+                })?;
+                if let Some(binding) = candidate {
+                    input.binding(binding, offset)?;
                 }
             }
             Ok(())
