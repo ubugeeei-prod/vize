@@ -22,6 +22,10 @@ pub use attribute_value::{
 mod for_head;
 mod handler;
 mod interpolation;
+mod text_value;
+pub use text_value::{
+    FileTextValue, NativeFileTextValue, NativeFileTextValueState, NativeTextValuePolicyError,
+};
 mod module_source;
 pub use for_head::{FileForHead, FileTemplateDeclaration, RejectedFileFor, TemplateDeclaration};
 pub(crate) use module_source::{DYNAMIC_IMPORT, EMPTY_SOURCE_EXPORT, SourceSite};

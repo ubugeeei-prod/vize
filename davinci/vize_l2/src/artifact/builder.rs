@@ -41,6 +41,7 @@ mod region;
 mod text;
 pub use factory::{ComponentBody, ComponentFactory};
 pub use region::RegionBuilder;
+pub(crate) use text::TextAllocation;
 
 /// A restricted canonical producer, with no arbitrary region or table insertion.
 ///

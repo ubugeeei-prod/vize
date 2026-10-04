@@ -18,6 +18,7 @@ mod for_head;
 mod for_tests;
 mod handler;
 mod interpolation;
+mod text_value;
 mod visibility;
 pub(crate) use visibility::NativeVisibility;
 pub struct NativeTemplateWalk<'s, 'a> {
@@ -166,6 +167,39 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
         }
     }
 
+    /// Prepare at this actual original event and retain the complete result
+    /// before any source-policy projection or canonical mint. This root-only
+    /// source profile confers no native target output eligibility.
+    pub fn root_text_value(
+        &mut self,
+        child: NativeChild<'_, 'a>,
+    ) -> Result<NodeId, NativeTemplateIssue> {
+        if !matches!(self.state, NativeRouteState::Walking)
+            || self.root.facts.template_walk.interruption().is_some()
+        {
+            return self.reject(NativeTemplateIssueKind::Interrupted);
+        }
+        // The bounded row is already normally owned: a repeated observation
+        // must not prepare the same original child or replace it a second time.
+        if !self.root.facts.native_text_values.is_empty() {
+            return self.reject(NativeTemplateIssueKind::InvalidEvent);
+        }
+        let selected = self.selected;
+        let span = selected.component().block().span();
+        let cursor = self.cursor;
+        let expected = self.expected;
+        let result = self.root.with_walk(span, |root| {
+            text_value::construct(selected, child, root, cursor, expected)
+        });
+        match result {
+            Ok(node) => {
+                self.cursor += 1;
+                Ok(node)
+            }
+            Err(kind) => self.reject(kind),
+        }
+    }
+
     fn reject<T>(&mut self, kind: NativeTemplateIssueKind) -> Result<T, NativeTemplateIssue> {
         if let NativeRouteState::Refused(issue) = *self.state {
             return Err(issue);
@@ -173,6 +207,7 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
         let span = match kind {
             NativeTemplateIssueKind::Handler { span, .. }
             | NativeTemplateIssueKind::For { span, .. }
+            | NativeTemplateIssueKind::TextValuePreparation { span, .. }
             | NativeTemplateIssueKind::InterpolationPreparation { span, .. } => span,
             _ => self.selected.component().block().span(),
         };

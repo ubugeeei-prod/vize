@@ -12,6 +12,14 @@ pub struct RegionBuilder<'s, 'a> {
 }
 
 impl<'a> RegionBuilder<'_, 'a> {
+    pub(crate) fn native_text(
+        &mut self,
+        content: &'a str,
+        span: Span,
+    ) -> Result<(NodeId, super::TextAllocation<'a>), ArtifactError> {
+        self.builder.native_text(content, span)
+    }
+
     pub(crate) fn native_element(
         &mut self,
         tag: &'a str,

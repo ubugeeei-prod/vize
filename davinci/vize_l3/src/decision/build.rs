@@ -127,6 +127,12 @@ fn build_with_context<'owner, 'arena>(
     reads: &impl FileReads<'owner, 'arena>,
     context: BuildContext<'_, 'owner, 'arena>,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
+    if context
+        .original_file
+        .is_some_and(|file| !file.native_text_values().is_empty())
+    {
+        return Err(DecisionBuildError::PreparedTextProfile);
+    }
     let mut builder = Builder {
         policy,
         original_attributes: context

@@ -35,6 +35,7 @@ pub(crate) struct Facts<'a> {
     pub native_interpolations: Vec<super::NativeFileInterpolation<'a>>,
     pub native_interpolation_failures: Vec<super::NativeFileInterpolationFailure<'a>>,
     pub native_interpolation_nodes: SideTable<usize>,
+    pub native_text_values: Vec<super::NativeFileTextValue<'a>>,
     names: Vec<Names>,
 }
 
@@ -129,6 +130,7 @@ impl<'a> Facts<'a> {
             native_interpolations: Vec::new(),
             native_interpolation_failures: Vec::new(),
             native_interpolation_nodes: SideTable::new(),
+            native_text_values: Vec::new(),
             names: alloc::vec![Names::default()],
         }
     }

@@ -87,3 +87,5 @@ fn control_insertion_rejects_out_of_owner_keys_and_repeated_owners() {
         Err(DecisionBuildError::DuplicateControl { node: id(0) })
     );
 }
+
+mod prepared_text;

@@ -26,6 +26,11 @@ pub enum NativeTemplateIssueKind {
         span: Span,
         kind: vize_l1::markup::NativeAttributeOperandError,
     },
+    TextValuePreparation {
+        span: Span,
+        kind: vize_l1::markup::NativeTextValueError,
+    },
+    TextValuePolicy(crate::file::NativeTextValuePolicyError),
     Artifact(ArtifactError),
     Program(FileIssueKind),
     SetupSyntax(vize_l1::embed::syntax::EmbedHole),

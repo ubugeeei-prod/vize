@@ -6,6 +6,9 @@ use vize_l0::id::NodeId;
 pub enum DecisionBuildError {
     /// Script/template failure or interrupted admission is retained by the file.
     IncompleteFile,
+    /// Source custody is complete, but no explicit prepared-text output profile
+    /// has been established for this original File.
+    PreparedTextProfile,
     /// The actual native attribute event did not consume its own whole value row.
     OriginalAttributeValue { node: Option<NodeId>, slot: usize },
     /// The shared L2 walk exhausted its stage-local id space.
