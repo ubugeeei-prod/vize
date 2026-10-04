@@ -286,7 +286,6 @@ fn unsupported_original_function_fields_refuse_without_backend_or_source_rewriti
     for source in [
         "function f(value:number[]){return value;}f([]);",
         "function f(value:any){return value;}f(1);",
-        "function f(value:number):number{return value;}f(1);",
         "export function f(value:number){return value;}f(1);",
         "function f(value?:number){return value;}f(1);",
     ] {

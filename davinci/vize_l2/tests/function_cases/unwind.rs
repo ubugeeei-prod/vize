@@ -64,6 +64,10 @@ fn caught_observer_unwind_keeps_original_program_and_refuses_every_interrupted_u
             "é<script>/* original */ function show(value: number) { return show(value); } const after = 1;</script>",
             SourceType::ts().with_module(true),
         ),
+        (
+            "é<script>/* original */ function show(value: number): number { return show(value); } const after = 1;</script>",
+            SourceType::ts().with_module(true),
+        ),
     ] {
         let start = source.find("/*").unwrap();
         let end = source.find("</script>").unwrap();
