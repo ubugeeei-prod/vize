@@ -126,3 +126,21 @@ exact rc.9 assertion, runtime schema, whole source/options and old output pack
 remains unchanged. The failing raw processes/build packet are historical evidence,
 not runtime or reviewed output acceptance; fresh corrected dev/prod qualification
 and independent whole-output review are still mandatory before freeze or queue.
+
+Corrected30f2 source Check37181839031 preserves all84 actual outcomes and
+336 envelopes with the exact original fourteen inputs. Its four real dev/prod
+first/repeat runtime streams now exit0 and match byte-for-byte within each mode,
+including fresh native mount/clone, SSR, retained-node hydration and cleanup.
+The independent full review4dc6 checks all whole code/raw/object maps, actual
+source-built Cargo binary joins and all288 native runtime outcome joins; the
+original nine wrong rc.9 mounts and twelve class/entity-text lower outcomes remain
+explicit. The mandatory judge still failed only at the deliberate unfrozen gate.
+Root authorizes the exact complete ac6f proposal to become reviewed, without
+changing any helper, schema, protocol, field, original input or oracle. The entire
+84-row packet is now frozen; both Rust comparisons and the hosted judge remain
+unconditional. The genuine replay follows actual da894 with incoming Glyph/Canon history
+preserved; reviewed b9be production and all incoming For source/old output packs
+remain exact, with only the six generic callback repairs.
+Fresh exact-head Actions must regenerate the complete packet and all runtime
+streams against this frozen output before any native Stack prefix admission.
+Historical failed captures grant no fresh source, protected or literal merge credit.
