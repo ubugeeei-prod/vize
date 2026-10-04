@@ -91,12 +91,11 @@ function primary() {
 
 void test("fifteen official whole setup SFC graphs preserve source, TS query maps and both SSR modes", async () => {
   const actual = await primary();
-  if (fs.existsSync(primaryFile))
-    assert.equal(
-      JSON.stringify(actual),
-      JSON.stringify(JSON.parse(fs.readFileSync(primaryFile, "utf8"))),
-    );
-  else assert(!requireNative, "mandatory SSR needs the genuine pinned primary packet");
+  assert(fs.existsSync(primaryFile), "SSR needs the genuine pinned primary packet");
+  assert.equal(
+    JSON.stringify(actual),
+    JSON.stringify(JSON.parse(fs.readFileSync(primaryFile, "utf8"))),
+  );
   if (process.env.VIZE_NATIVE_SETUP_SSR_PRIMARY_CAPTURE)
     fs.writeFileSync(
       process.env.VIZE_NATIVE_SETUP_SSR_PRIMARY_CAPTURE,

@@ -110,15 +110,8 @@ fn whole_original_setup_program_and_ssr_reads_keep_full_modules_and_maps() {
     if let Some(path) = capture_path {
         write(&path, &capture);
     }
-    let frozen_path = concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/tests/fixtures/native-setup-ssr-output.json"
-    );
-    let frozen: serde_json::Value = serde_json::from_str(
-        &std::fs::read_to_string(frozen_path)
-            .expect("genuine hosted complete setup SSR output has not been frozen"),
-    )
-    .unwrap();
+    let frozen: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/native-setup-ssr-output.json")).unwrap();
     assert_eq!(capture, frozen["capture"]);
 }
 
