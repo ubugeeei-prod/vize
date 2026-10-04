@@ -493,6 +493,9 @@ export interface DynamicImportAliasRuleNapi {
   toPrefix: string;
 }
 
+/** Existing formatter line-ending modes, validated at the Node boundary. */
+export type EndOfLineNapi = "lf" | "crlf" | "cr" | "auto";
+
 export declare function extractSfcCustomBlocks(
   source: string,
   filename?: string | undefined | null,
@@ -543,6 +546,8 @@ export interface FormatOptionsNapi {
   useTabs?: boolean;
   semi?: boolean;
   singleQuote?: boolean;
+  /** Layout line endings; auto follows the first source terminator. */
+  endOfLine?: EndOfLineNapi;
   sortAttributes?: boolean;
   singleAttributePerLine?: boolean;
   maxAttributesPerLine?: number;

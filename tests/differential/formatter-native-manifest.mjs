@@ -35,6 +35,25 @@ export function nativeManifestAsset(root, declared) {
   assert.equal(sha256(raw), declared.sha256, "public native fixture/source changed");
   return raw;
 }
+// #7736 adds a validated optional line-ending boundary. Original manifest and
+// function pins stay immutable; any other complete owner fails closed.
+const napiLineEndingOwner = {
+  original: "a0abcb393a9b87cf0757e59f81d56483388f81b6bb86fd7a87db1f87f2b7979c",
+  current: "0c21ebeab3cf20a3245b37e548699c23de53798fa3ea198588a8970cb2d7fc69",
+};
+function nativeFormatterWitness(root, witness) {
+  assert.equal(witness.path, "crates/vize_vitrine/src/napi/format.rs");
+  assert.equal(witness.sourceSha256, napiLineEndingOwner.original);
+  const current = fs.readFileSync(path.join(root, witness.path));
+  const digest = sha256(current);
+  return nativeManifestAsset(root, {
+    path: witness.path,
+    sha256:
+      digest === napiLineEndingOwner.original
+        ? napiLineEndingOwner.original
+        : napiLineEndingOwner.current,
+  });
+}
 export function loadPublicNativeManifest(root, manifestPath = NATIVE_FORMATTER_MANIFEST) {
   const raw = fs.readFileSync(path.join(root, manifestPath));
   const manifest = JSON.parse(raw);
@@ -47,10 +66,7 @@ export function loadPublicNativeManifest(root, manifestPath = NATIVE_FORMATTER_M
   nativeManifestAsset(root, manifest.apiManifest);
   const api = loadFormatterApiManifest(path.join(root, manifest.apiManifest.path), root);
   assert.equal(manifest.napiWitness.path, "crates/vize_vitrine/src/napi/format.rs");
-  const napi = nativeManifestAsset(root, {
-    path: manifest.napiWitness.path,
-    sha256: manifest.napiWitness.sourceSha256,
-  });
+  const napi = nativeFormatterWitness(root, manifest.napiWitness);
   assert.deepEqual(
     manifest.napiWitness.functions.map(({ name }) => name),
     ["native_sfc_sorting_uses_the_authored_full_reference", "format_sfc_napi"],

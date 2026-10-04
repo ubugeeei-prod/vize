@@ -28,6 +28,7 @@ module.exports.createViteBareImportCandidates = nativeBinding.createViteBareImpo
 module.exports.createViteVirtualId = nativeBinding.createViteVirtualId;
 module.exports.detectViteHmrUpdateType = nativeBinding.detectViteHmrUpdateType;
 module.exports.diffVitePrecompileFiles = nativeBinding.diffVitePrecompileFiles;
+module.exports.EndOfLineNapi = nativeBinding.EndOfLineNapi;
 module.exports.extractSfcCustomBlocks = nativeBinding.extractSfcCustomBlocks;
 module.exports.extractSfcSrcInfo = nativeBinding.extractSfcSrcInfo;
 module.exports.extractSfcStyleBlocks = nativeBinding.extractSfcStyleBlocks;

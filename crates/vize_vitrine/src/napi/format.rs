@@ -9,6 +9,15 @@ use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use vize_glyph::{Allocator, FormatOptions, GlyphFormatter, VueVersion, resolve_sort_imports};
 
+/// Existing formatter line-ending modes, validated at the Node boundary.
+#[napi(string_enum = "lowercase")]
+pub enum EndOfLineNapi {
+    Lf,
+    Crlf,
+    Cr,
+    Auto,
+}
+
 /// Format options for NAPI.
 #[napi(object)]
 #[derive(Default)]
@@ -25,6 +34,8 @@ pub struct FormatOptionsNapi {
     pub use_tabs: Option<bool>,
     pub semi: Option<bool>,
     pub single_quote: Option<bool>,
+    /// Layout line endings; auto follows the first source terminator.
+    pub end_of_line: Option<EndOfLineNapi>,
     pub sort_attributes: Option<bool>,
     pub single_attribute_per_line: Option<bool>,
     pub max_attributes_per_line: Option<u32>,
@@ -55,6 +66,14 @@ fn apply_options(opts: FormatOptionsNapi) -> FormatOptions {
     }
     if let Some(value) = opts.single_quote {
         options.single_quote = value;
+    }
+    if let Some(value) = opts.end_of_line {
+        options.end_of_line = match value {
+            EndOfLineNapi::Lf => vize_glyph::EndOfLine::Lf,
+            EndOfLineNapi::Crlf => vize_glyph::EndOfLine::Crlf,
+            EndOfLineNapi::Cr => vize_glyph::EndOfLine::Cr,
+            EndOfLineNapi::Auto => vize_glyph::EndOfLine::Auto,
+        };
     }
     if let Some(value) = opts.sort_attributes {
         options.sort_attributes = value;

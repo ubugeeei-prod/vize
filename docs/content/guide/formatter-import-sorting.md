@@ -42,3 +42,6 @@ Native `formatSfc` and WASM `formatSfc` / `formatScript` also accept
 `sortImports` in their options. The existing Rust `FormatOptions` remains source
 compatible; use `resolve_sort_imports` with `GlyphFormatter::with_sort_imports`
 or `format_script_with_sort_imports` for the additive Rust API.
+
+[Configure line endings](./formatter-line-endings.md) with the same `endOfLine`
+modes across CLI, editor, Node and WASM formatting.

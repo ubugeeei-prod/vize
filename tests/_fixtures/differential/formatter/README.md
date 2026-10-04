@@ -1,5 +1,11 @@
 # Formatter differential fixtures
 
+`sfc-public-node-line-endings` (#7736) is an additive configured case shared by
+the source-built CLI and actual exported Node `formatSfc` regressions. Its complete
+authored reference uses CRLF layout across script/template/style while retaining
+the raw `<pre>` body's LF bytes. All three passes must match without modifying
+original corpus/history captures or granting native provider acceptance credit.
+
 Two repository-authored SFC regressions from #6882 execute through the minimal
 shared #6891 helper. `App.vue` files are authored inputs; `.expected.txt` files
 preserve the exact existing Rust assertion references, LF and final newline.
@@ -100,3 +106,9 @@ contract. It is the independently authored reference exposed by #7740, with a
 separate explicit config that reproduces the core defect without the Node bridge.
 The source-built CLI checks all nine cases over three passes; original eight
 inputs, references, captures and history plans remain unchanged.
+
+## Public Node option bridge (#7736)
+
+The actual exported Node API tests Auto against the same mixed-raw input and
+original 170-byte reference above. The CLI config remains explicit CRLF, and
+the shared corpus has nine cases. No duplicate reference is recaptured.

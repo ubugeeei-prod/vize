@@ -158,6 +158,15 @@ void test("native source admission rejects omitted authority and coherent siblin
     ({ manifest }) => {
       delete manifest.napiWitness.functions;
     },
+    ({ manifest, directory }) => {
+      const file = path.join(directory, manifest.napiWitness.path);
+      fs.appendFileSync(file, "\n// unregistered current owner\n");
+    },
+    ({ manifest, directory }) => {
+      manifest.napiWitness.sourceSha256 = hash(
+        fs.readFileSync(path.join(directory, manifest.napiWitness.path)),
+      );
+    },
     ({ manifest }) => {
       manifest.cases[3] = { ...manifest.cases[4], id: manifest.cases[3].id };
     },
