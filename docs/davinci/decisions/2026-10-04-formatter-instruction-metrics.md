@@ -138,3 +138,33 @@ Resolver settings also use ScriptFormatError, so their errors do not qualify
 this arm. Synthetic malformed IR, injected failures or unrelated native Doc
 errors cannot substitute. No genuine authored-input printer failure or global
 unreachability proof has been established; that obligation and #6882 stay open.
+
+## Terminal source and protected acceptance
+
+PR [#7673](https://github.com/ubugeeei-prod/vize/pull/7673) actually merged at
+2026-10-04T00:36:00Z as signed valid
+`3e67e057348c154aab294c7178510ea6cc5c4d6d`, with a null queue entry.
+Final authored source `c079afef` passed Check 37164018765 and actual instruction
+run 37164018406. Its independently qualified formatter artifact 11288906238
+and original artifact 11288214913 retain all 104 rows across three executions.
+
+[Protected Check 37164617448](https://github.com/ubugeeei-prod/vize/actions/runs/37164617448)
+passed all 39 jobs; Musea 37164617160 and Nuxt 37164617167 also passed. Actual
+instruction job 111324892287 emitted formatter artifact 11289310675 and original
+artifact 11289491015. Independent complete raw-dump/identity/input/window
+qualification verifies all 104 rows × three executions, zero termination leakage,
+the exact four ceilings above and every unchanged old ceiling. Original registry
+and cap bytes equal immutable base `495cdcb9`; the new cap file retains its exact
+authenticated first-introduction checksum. The actual Cargo fresh=false binary
+has SHA256 `5d5ebddc2d84ec18b799fad1218f715bb712aacf8f64407842e49a88345a1c2f`.
+Calibration, final-source and protected receipts remain separate. The terminal
+decision is paired on [#6882](https://github.com/ubugeeei-prod/vize/issues/6882#issuecomment-5975058999)
+and [#6830](https://github.com/ubugeeei-prod/vize/issues/6830#issuecomment-5975059128).
+
+This supplies actual original formatter instruction acceptance. Historical
+failed attempts and at-freeze pending statements above retain their source/time
+qualification; no allocation/wall/RSS, blanket original-control, printer-error,
+native equivalence or default-path credit is added. The separate
+[fixture-gate assessment](./2026-10-04-formatter-fixture-gate-assessment.md)
+accounts for the original requirements while preserving the printer TODO on
+#6847 and keeping #6882 open until its concrete decision record is accepted.

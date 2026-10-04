@@ -202,3 +202,34 @@ acceptance/actual merge are still required. Allocation/wall/RSS coverage and
 genuine original OXC printer-error execution remain unqualified. No injected
 error, settings-error alias or native Doc refusal substitutes for the printer
 arm, and #6882 stays open.
+
+## Accepted instruction source and fixture-gate assessment
+
+The later original instruction PR #7673 actually merged on 2026-10-04 at
+00:36:00Z as signed `3e67e057348c154aab294c7178510ea6cc5c4d6d`. Final
+source Check 37164018765 and protected Check 37164617448, Musea 37164617160
+and Nuxt 37164617167 are terminal SUCCESS. Actual protected instruction job
+111324892287/artifacts 11289310675 and 11289491015 independently qualify all
+104 raw identities/dumps across three executions: the four exact original
+formatter ceilings pass and every old 100-row ceiling remains unchanged.
+The [metric record](./2026-10-04-formatter-instruction-metrics.md) retains the
+separate calibration/final-source/protected qualifications.
+
+The [fixture-gate assessment](./2026-10-04-formatter-fixture-gate-assessment.md)
+accounts for 54 semantic fixes, one reference-maintenance fix and one engineering
+fix, all 150 original requirements and immutable input/expected assets. The
+current accepted source independently passes one complete 300-plan API batch,
+852 formatter calls/300 option probes, historical five-CLI/20 calls, ordinary
+five-CLI/15 calls, all 118 law references/110 functions and eight separate
+preserved-content tests. Supplemental sorting/configuration/malformed/NAPI/
+Vite histories keep their own denominators. Prior two-run and 24-control
+campaigns, source pins, failures and pending overall-control semantics stay
+unchanged; no current repeat or frozen-target evidence is inferred for them.
+
+No missing original fixture/required arm is identified. The genuine OXC
+printer-error arm remains an explicit separate engineering TODO on #6847,
+without an injected witness, error alias, unreachable claim or waiver.
+Allocation/wall/RSS and whole-SFC native formatting/equivalence/default/deletion
+remain separate. #6882 stays open until the concrete assessment/paired decision
+is reviewed and accepted; recorded native handled/equivalent/paired counts
+remain zero.
