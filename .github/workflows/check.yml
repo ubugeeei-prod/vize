@@ -11,33 +11,49 @@ on:
     # Daily 03:11 UTC, staggered from native smoke and e2e.
     - cron: "11 3 * * *"
   workflow_dispatch:
-
+    inputs:
+      allocation-ownership-diagnostic:
+        description: Run the finite allocation ownership experiment on its owned branch
+        type: boolean
+        default: false
 concurrency:
   # A push to main must not cancel an exact-SHA full validation used by release.
   group: check-v3-${{ github.workflow }}-${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && format('full-{0}', github.sha) || (github.event.pull_request.number || github.ref) }}
   cancel-in-progress: true
-
 permissions:
   contents: read
-
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
+  allocation-ownership-diagnostic:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/ci/vapor-allocation-ownership-20261004' && inputs.allocation-ownership-diagnostic }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    permissions: { contents: read, actions: read }
+    env:
+      {
+        CARGO_BUILD_JOBS: "12",
+        CARGO_INCREMENTAL: "0",
+        RUST_TEST_THREADS: "4",
+        VIZE_NUXT_CONFIG_ITERATIONS: "100",
+        VIZE_TEST_REQUIRE_TSGO: "1",
+      }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0 }
+      - uses: ./.github/actions/diagnose-allocation-ownership
+        env: { GH_TOKEN: "${{ github.token }}" }
   pr-source-checks:
     name: PR source checks
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     uses: ./.github/workflows/pr-source-checks.yml
-
   instruction-counts:
     name: Instruction ceilings
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     uses: ./.github/workflows/level-instruction-counts.yml
-
   level-dependency-direction:
     uses: ./.github/workflows/level-dependencies.yml
-
   nix-flake:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
@@ -195,7 +211,6 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check package engine matrix
         run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts
-
   check-vize-apps:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
@@ -232,7 +247,6 @@ jobs:
         run: vp exec tsx --test gallery/components/MarkdownContent.test.ts
       - name: Check Vize app fixtures
         run: vp run --workspace-root check:ci:vize-apps
-
   vue-parity:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -353,7 +367,6 @@ jobs:
           path: .artifacts/shared-js-build/
           if-no-files-found: error
           retention-days: 7
-
   test-js-packages:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -380,7 +393,6 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - name: Test JS packages
         run: vp run --workspace-root test:js
-
   clippy-and-test:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -469,21 +481,16 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
-
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
-
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: cargo-llvm-cov
-
       - name: Source coverage report
         run: vp run --workspace-root coverage:source
-
       - name: Verify source coverage summary
         run: test -s target/llvm-cov/source-summary.json
-
       - name: Upload source coverage summary
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -492,7 +499,6 @@ jobs:
           path: target/llvm-cov/source-summary.json
           if-no-files-found: error
           retention-days: 14
-
   branch-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -524,18 +530,14 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
-
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: cargo-llvm-cov
-
       - name: Branch coverage report
         run: vp run --workspace-root coverage:source:branch
-
       - name: Verify branch coverage summary
         run: test -s target/llvm-cov/source-branch-summary.json
-
       - name: Upload branch coverage summary
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -544,7 +546,6 @@ jobs:
           path: target/llvm-cov/source-branch-summary.json
           if-no-files-found: error
           retention-days: 14
-
   playground-test:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -590,7 +591,6 @@ jobs:
         with:
           name: shared-js-build
           path: .
-
       - name: Cache Playwright browsers
         id: cache-playwright
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5

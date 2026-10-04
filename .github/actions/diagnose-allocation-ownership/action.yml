@@ -1,0 +1,41 @@
+name: Diagnose allocation-window ownership
+description: Authorized finite original-archive and instrumented full-workspace experiment for issue 7764
+runs:
+  using: composite
+  steps:
+    - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      with:
+        toolchain: "1.98.0"
+    - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      with:
+        wild-version: "0.9.0"
+    - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+      with:
+        node-version-file: "package.json"
+        cache: true
+        run-install: true
+    - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+      with:
+        tool: cargo-nextest@0.9.146
+    - uses: ./.github/actions/setup-rust-script
+    - name: Install original Pkl runtime
+      shell: bash
+      run: npm install --global @pkl-community/pkl@0.27.2
+    - name: Check diagnostic evidence validator
+      shell: bash
+      run: python3 tools/support/compat/github/allocation_ownership/test_verify.py
+    - name: Check the explicit observer feature
+      shell: bash
+      run: cargo clippy -p davinci_harness --all-targets --features allocation-window-diagnostics -- -D warnings
+    - name: Execute the finite allocation ownership matrix
+      shell: bash
+      run: python3 tools/support/compat/github/allocation_ownership/run.py "$RUNNER_TEMP/allocation-ownership-evidence"
+    - name: Preserve every diagnostic attempt and identity receipt
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: allocation-ownership-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+        path: ${{ runner.temp }}/allocation-ownership-evidence/
+        if-no-files-found: error
+        compression-level: 0
+        retention-days: 14

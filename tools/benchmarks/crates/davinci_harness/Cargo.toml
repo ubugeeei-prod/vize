@@ -11,6 +11,8 @@ autobenches = false
 metadata.vize.stability = "experimental"
 
 [features]
+# Diagnostic-only ownership ledger; never narrows process-global totals.
+allocation-window-diagnostics = []
 # Benchmark-only instrumentation; no production crate enables this feature.
 instruction-counts = ["dep:valgrind-requests", "dep:stacker"]
 
