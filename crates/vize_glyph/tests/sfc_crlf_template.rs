@@ -19,7 +19,6 @@ fn assert_fixed_point(source: &str, expected: &str) {
     let options = crlf_options();
     let first = format_sfc(source, &options).unwrap();
     assert_eq!(first.code.as_str(), expected, "complete first-pass output");
-    assert!(!first.code.contains("\r\r\n"), "redundant CR terminator");
     let second = format_sfc(&first.code, &options).unwrap();
     let third = format_sfc(&second.code, &options).unwrap();
     assert_eq!(
@@ -58,13 +57,15 @@ fn raw_template_lines_keep_their_content_without_carriage_return_drift() {
 #[test]
 fn multiline_literal_attributes_keep_their_authored_lines() {
     let source = "<template>\r\n  <div title=\"first\r\nsecond\">text</div>\r\n</template>\r\n";
-    assert_fixed_point(source, source);
+    let expected =
+        "<template>\r\n  <div\r\n    title=\"first\r\nsecond\"\r\n  >text</div>\r\n</template>\r\n";
+    assert_fixed_point(source, expected);
 }
 
 #[test]
 fn multiline_template_literals_keep_their_authored_lines() {
     let source = "<template>\r\n  <div>{{ `first\r\nsecond` }}</div>\r\n</template>\r\n";
-    let first = format_sfc(source, &crlf_options()).unwrap();
-    assert!(first.code.contains("`first\r\nsecond`"));
-    assert_fixed_point(source, first.code.as_str());
+    let expected =
+        "<template>\r\n  <div>{{\r\n      `first\r\nsecond`\r\n    }}</div>\r\n</template>\r\n";
+    assert_fixed_point(source, expected);
 }

@@ -18,6 +18,22 @@ const OWNERS: Record<
   string,
   { originalSha256: string; actualMainSha256: string; functions: Record<string, string> }
 > = {
+  // #7697 changes CRLF production emission; all four original LF/raw laws
+  // remain byte-identical to their complete cc87 source bodies.
+  "crates/vize_glyph/src/formatter/template_indent.rs": {
+    originalSha256: "4e610e8497708dc137ae90209526526875cc70154c376a4ee6e8098f7caccef6",
+    actualMainSha256: "12f9b0be8e60d58ce2277adb0a65998e21211fb4027bf7c8c655c09d20d68c8e",
+    functions: {
+      ordinary_templates_bypass_the_raw_line_mask:
+        "252d13f191f01a540b78024c0d9e21603dc9a1a14b4c92cc56594ac3fb4cc115",
+      every_raw_continuation_shape_keeps_the_full_lexer:
+        "0588d2d49af44e13ec3c98ed1c9fa38bd68b1cee068f1b22be09a67ec63dffa5",
+      opaque_templates_rebase_only_the_shared_prefix:
+        "1e351dc6ca35052214415b656b0718d1d276a027136cc3a87f62f1dfe6c2bcb1",
+      empty_opaque_templates_emit_no_phantom_body_line:
+        "4996ca42deefa69e5fbc9dc5061e720a204ecfad2bd96a5714c57ba5c9d7c883",
+    },
+  },
   "crates/vize_glyph/src/script/block_identity.rs": {
     originalSha256: "e0cf30415eb6585ecd6688da72effc7b560868a0e31acf042507810d468c8eff",
     actualMainSha256: "70b4c8e7db28eece8dc4f22a4e34cdfeea5da293f57fe5a2a53533d6a6f1c926",

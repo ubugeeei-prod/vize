@@ -22,8 +22,9 @@
         "sha256": "d27f1f42906aa1f0b932869033439def190603ca03ee95f542de8c158b94d024"
       },
       "expected": {
-        "path": "tests/_fixtures/differential/formatter-history/vue-version-inputs/sfc/filter-chain-crlf-v2/expected.txt",
-        "sha256": "efcf8db57763299b6b43f3403606dab1a3895ee837064ef4307a4f5e6c57908b"
+        "path": "tests/_fixtures/differential/formatter/sfc-vue2-filter-chain-crlf/reference.expected.txt",
+        "sha256": "b140c1362b12ca62e5b6c05d9cc0c3b6d090fc011b1432ff5ddb5988bf942180",
+        "behaviorRepairIssue": 7697
       },
       "witness": {
         "path": "crates/vize_glyph/tests/vue2_filters.rs",
@@ -80,7 +81,8 @@
             "gitBlobSha256": "d27f1f42906aa1f0b932869033439def190603ca03ee95f542de8c158b94d024"
           },
           "includedExpected": {
-            "path": "tests/_fixtures/differential/formatter/sfc-vue2-filter-chain-crlf/reference.expected.txt",
+            "path": "tests/_fixtures/differential/formatter-history/vue-version-inputs/sfc/filter-chain-crlf-v2/expected.txt",
+            "originalPath": "tests/_fixtures/differential/formatter/sfc-vue2-filter-chain-crlf/reference.expected.txt",
             "sha256": "efcf8db57763299b6b43f3403606dab1a3895ee837064ef4307a4f5e6c57908b",
             "gitBlobSha256": "efcf8db57763299b6b43f3403606dab1a3895ee837064ef4307a4f5e6c57908b"
           },
@@ -92,7 +94,7 @@
         "sha256": "d27f1f42906aa1f0b932869033439def190603ca03ee95f542de8c158b94d024"
       },
       "sourceExpected": {
-        "path": "tests/_fixtures/differential/formatter/sfc-vue2-filter-chain-crlf/reference.expected.txt",
+        "path": "tests/_fixtures/differential/formatter-history/vue-version-inputs/sfc/filter-chain-crlf-v2/expected.txt",
         "sha256": "efcf8db57763299b6b43f3403606dab1a3895ee837064ef4307a4f5e6c57908b"
       },
       "sourceCall": "format_sfc_with_vue_version(source, &options, version)",

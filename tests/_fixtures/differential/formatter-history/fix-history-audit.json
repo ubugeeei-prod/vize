@@ -22,7 +22,7 @@
     {"path":"tests/_fixtures/differential/formatter-history/capture-manifest.json","sha256":"b62aa19f161a8945e20acb839e76af55506a1eb6d09b43fba17ff49d3ddada1b","cases":51,"execution":"historically executed; fresh Actions pending"},
     {"path":"tests/_fixtures/differential/formatter-history/capture-extra-manifest.json","sha256":"e4a7fa7bd5fe5cdf926a14be7a138da12be14678c0698018b4377f5fcb3a3f3a","cases":25,"execution":"historically executed; fresh Actions pending"},
     {"path":"tests/_fixtures/differential/formatter-history/capture-final-manifest.json","sha256":"4ae987c9fdb16b3c976dcc8fff2777e7446a4ea1f1f24acac939384e045cbeb2","cases":4,"execution":"historically executed; fresh Actions pending"},
-    {"path":"tests/_fixtures/differential/formatter-history/vue-version-manifest.json","sha256":"cc6e14c09d9357e919b6193a066c8f26ccf60407699eaea8b1bf1a8191a78390","cases":14,"execution":"Actions pending"}
+    {"path":"tests/_fixtures/differential/formatter-history/vue-version-manifest.json","sha256":"e18b9c2595b7a5dbbe655930d83692e2ecdb04e1a60e0e7a2ec490577e0c88fc","cases":14,"execution":"Actions pending"}
   ],
   "cliManifestPin": {"path":"tests/_fixtures/differential/formatter/manifest.json","sha256":"3fce8c8dc863786648bcdf0c17e06f463152233be1ef279563c279af44e6412d","cases":5,"execution":"Existing CLI corpus; exact-head Actions pending; separate from the 300 API plans and five new check verdict plans"},
   "evidence": {
