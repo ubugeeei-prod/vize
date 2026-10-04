@@ -75,6 +75,7 @@ jobs:
       - name: Check exact neutral inputs, strict phase parser and projection probe
         run: |
           node tools/benchmarks/scripts/typechecker-native-phases.mjs --self-test
+          node --test tools/benchmarks/scripts/typechecker-native-phase-forwarding.test.mjs
           cargo clippy --locked -p vize_canon --example native_phase_projection -- -D warnings
       - name: Build the unchanged production CLI and standalone projection example
         run: |

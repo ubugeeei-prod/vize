@@ -19,6 +19,9 @@ they cannot attribute startup, program construction, binding or checking.
 The current lane first collects the pinned native runtime's actual
 `--extendedDiagnostics` for every CLI shard in generated500,
 shared-leaf501-default and shared-barrel500, in max and 1T modes.
+The 1T mode selects one front-end server and one Rayon thread; it does not
+override the native scheduler. Each receipt retains the actual native arguments,
+including the checker count.
 
 Hosted evidence from the unchanged main production source is **unmeasured**
 until the exact-head Actions probe completes. A local protocol-only discovery
@@ -100,3 +103,32 @@ observation proves a default speedup, universal gain or 10x feasibility.
 No queue entry is authorized during the release freeze. Record exact Actions
 source, artifacts, unsupported fields and limitations before proposing any
 production change or merging this infrastructure lane.
+
+## Rejected first hosted receipt
+
+[Same-slice correction decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5976715965).
+
+Infrastructure head `a3a856b7d67110c9b25a4da6918d6a2685c0aa44`, with unchanged
+production base `ac1675fef35c5637c38b1e366a91d6bdfe419885`, failed the final
+generated500/1T full-corpus plant comparison in
+[run 37177005703](https://github.com/ubugeeei-prod/vize/actions/runs/37177005703).
+The native receipt retained both planted errors, status 1 and unchanged
+config/member bytes, but the CLI received a truncated output stream and missed
+the planted errors. The wrapper called `process.exit` immediately after buffered
+stdout/stderr writes. The correction uses `process.exitCode` and lets both
+streams drain. A transport regression checks exact hashes for more than 1 MiB
+of Unicode stdout and stderr, with nonzero status, through pipes in both normal
+and version forwarding. Every ordered diagnostic comparison remains strict.
+The control fails with the original wrapper (65,536 received stdout bytes versus
+1,600,000 expected) and passes with the corrected wrapper.
+This failed observation establishes no complete phase or performance result.
+
+The rejected raw artifact is
+[11293752943](https://github.com/ubugeeei-prod/vize/actions/runs/37177005703/artifacts/11293752943),
+SHA-256 `82425ed4d03716094c58622c5b39e60f891a76bb57fd811e3163d3283ac1c52a`.
+The same head's Tooling 2/4 check rejected the new 489-line coordinator because
+new source files are limited to 350 lines. The correction extracts the CLI
+acceptance gates into a separate runner; no limit or instruction ceiling rises.
+The restored-mtime gate now starts with an exactly representable integer-second
+timestamp and asserts nanosecond equality after the equal-length repair.
+Corrected exact-head hosted evidence remains pending.
