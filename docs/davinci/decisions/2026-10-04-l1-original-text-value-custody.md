@@ -38,8 +38,15 @@ whole parse. Preparation still performs the decoder's existing byte work; no
 hidden constant-time claim, extra stage, scan, parse or legacy dependency is added.
 
 Reported recovery/unsupported observations, missing/empty text tokens and actual
-missing parent frames refuse before preparation. Actual case-insensitive
-script/style parents refuse as RawTextParent; title/textarea refuse as RcDataParent.
+missing parent frames refuse before preparation. Conservative ASCII-insensitive
+authored script/style names refuse as RawTextParent; title/textarea refuse as RcDataParent.
+The lexer enters its special family through lowercase first and second name
+bytes; later sequence bytes are case-insensitive. Uppercase-first/second original
+controls remain conservative name refusals, not proof of an actual RAWTEXT/RCDATA
+lexer mode. Lowercase-first-two mixed-case controls are retained separately.
+The retained peer premise correction is paired on
+[#6836](https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5979151833)
+and [#6838](https://github.com/ubugeeei-prod/vize/issues/6838#issuecomment-5979151992).
 The original inherited opening-tag verbatim fact refuses v-pre descendants.
 No ancestry traversal or new lexer context metadata is introduced.
 Pre, namespace and table examples can retain source-only preparation without

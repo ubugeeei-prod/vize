@@ -53,8 +53,9 @@ impl<'a> Origin<'a> {
             if parent.open.is_verbatim() {
                 return Err(Kind::Verbatim);
             }
-            // These roles use the lexer's actual case-insensitive special
-            // parent family. No source search or ancestry traversal occurs.
+            // Conservatively exclude ASCII-insensitive authored special-parent
+            // names. This does not certify the lexer's actual text mode.
+            // No source search or ancestry traversal occurs.
             let tag = parent.tag();
             if tag.eq_ignore_ascii_case("script") || tag.eq_ignore_ascii_case("style") {
                 return Err(Kind::RawTextParent);

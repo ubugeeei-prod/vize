@@ -1,11 +1,21 @@
 use super::*;
 
 #[test]
-fn original_raw_rcdata_and_inherited_verbatim_roles_refuse_before_preparation() {
+fn original_special_parent_names_and_inherited_verbatim_refuse_before_preparation() {
     let arena = Allocator::default();
     for (source, expected) in [
         (
             "<template><script>&amp;</script></template>",
+            NativeTextValueError::RawTextParent,
+        ),
+        (
+            "<template><stYle>&amp;</stYle></template>",
+            NativeTextValueError::RawTextParent,
+        ),
+        // Uppercase first/second letters are conservative authored-name
+        // exclusions, not a claim of the actual lexer's special-mode entry.
+        (
+            "<template><sTyLe>&amp;</sTyLe></template>",
             NativeTextValueError::RawTextParent,
         ),
         (
@@ -14,6 +24,14 @@ fn original_raw_rcdata_and_inherited_verbatim_roles_refuse_before_preparation() 
         ),
         (
             "<template><title>&amp;</title></template>",
+            NativeTextValueError::RcDataParent,
+        ),
+        (
+            "<template><teXtArEa>&amp;</teXtArEa></template>",
+            NativeTextValueError::RcDataParent,
+        ),
+        (
+            "<template><tExTaReA>&amp;</tExTaReA></template>",
             NativeTextValueError::RcDataParent,
         ),
         (
