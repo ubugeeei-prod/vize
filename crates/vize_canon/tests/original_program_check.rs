@@ -19,6 +19,8 @@ use vize_l4::targets::ts::ProjectionError;
 
 #[path = "original_program_check/array_annotations.rs"]
 mod array_annotations;
+#[path = "original_program_check/typed_parameters.rs"]
+mod typed_parameters;
 #[path = "original_program_check/unused_history.rs"]
 mod unused_history;
 
