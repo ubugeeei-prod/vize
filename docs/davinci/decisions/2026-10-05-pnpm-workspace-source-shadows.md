@@ -122,3 +122,23 @@ no native run, main/PR/queue mutation or baseline claim resulted from it.
 Both #7834 and #6982 currently identify `ubugeeei` (GitHub numeric id 71201308)
 as their author. The commit includes that verified issue-author Co-author
 trailer, without inventing a separate external reporter identity.
+
+Baseline `800ccf6` full Check `37226838354` now establishes the original
+native failure: root links produce the `./util` TS2307, pnpm links also produce
+the `./Btn.vue` TS2307, and the typed consumer has the related missing-export
+or implicit-any diagnostics. Artifact `11312004122` retains four raw native
+reports. Source `079375f1eed8adf0e02865db24dd8a73d11fa526` full Check
+`37227103854` passes all 26 literal/typed native executions; artifact
+`11312313688` retains every process separately. The four corresponding clean
+head reports have identical input hashes, raw links, program options,
+canonical virtual TS and native binary bytes to the failing baseline. PR
+source Check `37227109000` succeeds; the manual full Rust Test is still active.
+
+Safety acceptance remains held for one additional concrete module-identity
+control. Existing #4153 deliberately shares one physical package across source
+directories. The new importer-relative dependency copies may undo that
+invariant: a private-branded class made in `B/src/x` must remain assignable to
+the same package's class consumed in `B/src/y`. The separate root/pnpm variant
+retains the original Vue barrel and legitimate links and checks full ordered
+native reports with one and two servers. This new test does not claim a
+confirmed regression or broaden the accepted domain before Actions runs.

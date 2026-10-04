@@ -169,6 +169,39 @@ function assertClean(receipt: Receipt, expected: string[], roots = expected): vo
 }
 
 for (const pnpm of [false, true]) {
+  test(`one physical package keeps its class identity across source directories (${pnpm ? "pnpm" : "root"})`, () => {
+    const root = workspace(pnpm);
+    try {
+      fs.appendFileSync(
+        path.join(root, "packages/c/src/index.ts"),
+        "export class Thing { private readonly brand!: void; }\n",
+      );
+      for (const directory of ["x", "y"]) {
+        fs.mkdirSync(path.join(root, "packages/b/src", directory));
+      }
+      fs.writeFileSync(
+        path.join(root, "packages/b/src/x/make.ts"),
+        'import { Thing } from "@x/c";\nexport const makeThing = () => new Thing();\n',
+      );
+      fs.writeFileSync(
+        path.join(root, "packages/b/src/y/use.ts"),
+        'import { Thing } from "@x/c";\nexport const useThing = (value: Thing) => { void value; };\n',
+      );
+      fs.writeFileSync(
+        path.join(root, "packages/b/src/index.ts"),
+        'import { makeThing } from "./x/make";\nimport { useThing } from "./y/use";\nuseThing(makeThing());\nexport * from "@x/c";\n',
+      );
+      const expected = [...sources, "packages/b/src/x/make.ts", "packages/b/src/y/use.ts"].sort();
+      for (const servers of [1, 2]) {
+        // Private members reject two separately materialized module identities,
+        // even when their declarations and physical package are identical.
+        assertClean(check(root, [sources[0]!], servers), expected, [sources[0]!]);
+      }
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   test(`original #6982/#7834 workspace links resolve (${pnpm ? "pnpm" : "root"})`, () => {
     const root = workspace(pnpm);
     try {
