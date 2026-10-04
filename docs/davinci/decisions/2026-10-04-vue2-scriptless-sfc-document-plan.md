@@ -344,7 +344,7 @@ direct-hook workflow law adapts to the exact outer order/always/base/guard350.
 V1/V2 exports and23 canonical additions preserve all parent rows; full review
 confirms equivalent literal-parent replay; protected104/actual merge stay pending.
 
-Initial public1e9 rejects unused Span, substring-derived refusal and two invalid
-post-owner AST borrows. Remove import, author literal false/true, keep AST checks
-inside live owner and retain only real Copy source/maps/spans afterward; add a
-root-after-drop CF (ten total). Fixed32/API lifetimes stay exact; fresh proof is required.
+Initial1e9 rejects unused Span, derived refusal and post-owner AST loans: keep
+AST owner-live, Copy maps/spans and ten CF. Fresh8073 build rejects two unit
+Vec::new_in arguments: use &&arena for actual &Allocator GetAllocator; retain
+both foreign Doc assertions/all production/32 goldens/actions/caps; fresh proof required.
