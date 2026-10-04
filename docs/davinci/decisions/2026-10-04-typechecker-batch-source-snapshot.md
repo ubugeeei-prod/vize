@@ -151,3 +151,20 @@ The binary hashes were
 `b052a9ed3fb5ff62d1e119a7a3f5a31154318add939aa5b6c287b869e4ac7385` (base)
 and `a80ea53c9bff3f3582828a8d960cb33d0d388c1ee18e91f27308a9455ffb649d`
 (candidate). The rejected cache code is not part of this batch slice.
+
+## Neutral helper staging on current main
+
+The qualified whole-five queue projection exposed add/add conflicts at this
+earlier child: independent #7743 adds the final three-corpus helpers while this
+child still added their older two-corpus versions. Final top `0a5b836f90` and
+#7743 `596183affa` already have identical corpus, protocol and leaf-corpus blobs.
+The five dependent entries were removed together; independent entries were
+preserved. [The paired issue receipt](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5977489560) retains the exact candidates and conflicts.
+
+The replay preserves those neutral helper bytes at this earliest consumer,
+hashes the leaf corpus, and honors its existing `--no-config` collection args.
+It introduces no leaf admission or production behavior before the later child.
+Leaf-parity fixtures and their provenance remain owned by that later child.
+Previously measured sources remain historical; all five fresh source heads and
+the final whole-command ordered parity and controlled pairs must pass again
+before protected Stack admission. No individual prefix merge is allowed.

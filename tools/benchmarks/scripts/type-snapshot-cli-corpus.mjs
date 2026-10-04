@@ -17,6 +17,7 @@ import { dirname, join, sep } from "node:path";
 import { CORPUS_TSCONFIG, prepareCorpus } from "./check-gate-env.mjs";
 import { generateCorpus } from "./generate.mjs";
 import { diagnosticFingerprint } from "./typecheck-command.mjs";
+import { prepareSharedLeafCorpus } from "./type-snapshot-cli-leaf-corpus.mjs";
 import { FILE_COUNT, compareStrings, writeJson } from "./type-snapshot-cli-protocol.mjs";
 
 function sourceFiles(dir, prefix = "") {
@@ -118,11 +119,12 @@ export function prepareCliCorpora(directory, vuePackageDir) {
   );
   const corpora = [
     sharedBarrelCorpus(workRoot, vuePackageDir),
+    prepareSharedLeafCorpus(workRoot, vuePackageDir),
     { id: "generated500", dir: generated.dir, tsconfig: CORPUS_TSCONFIG },
   ];
   for (const corpus of corpora) {
     const manifest = corpusManifest(corpus.dir);
-    assert.equal(manifest.fileCount, FILE_COUNT);
+    assert.equal(manifest.fileCount, corpus.expectedVueFiles ?? FILE_COUNT);
     const inputDir = join(directory, "inputs", corpus.id);
     mkdirSync(inputDir);
     for (const file of manifest.files) {
@@ -148,10 +150,10 @@ export function selfTestCorpus() {
         mkdirSync(join(directory, subdir), { recursive: true });
       preparations.push(prepareCliCorpora(directory, vue));
     }
-    assert.equal(preparations[0].length, 2);
-    for (let index = 0; index < 2; index++) {
+    assert.equal(preparations[0].length, 3);
+    for (let index = 0; index < 3; index++) {
       const corpus = preparations[0][index];
-      assert.equal(corpus.manifest.fileCount, FILE_COUNT);
+      assert.equal(corpus.manifest.fileCount, corpus.expectedVueFiles ?? FILE_COUNT);
       assert.equal(
         corpus.manifest.sha256,
         preparations[1][index].manifest.sha256,
@@ -164,7 +166,13 @@ export function selfTestCorpus() {
       );
       writeFileSync(join(corpus.dir, "node_modules", "ignored-cache"), "not a source input");
       assert.equal(corpusManifest(corpus.dir).sha256, corpus.manifest.sha256);
-      writeFileSync(join(corpus.dir, "Component0000.vue"), "<template>changed</template>\n");
+      writeFileSync(
+        join(
+          corpus.dir,
+          corpus.id === "shared-leaf501-default" ? "Comp0.vue" : "Component0000.vue",
+        ),
+        "<template>changed</template>\n",
+      );
       assert.notEqual(corpusManifest(corpus.dir).sha256, corpus.manifest.sha256);
     }
     console.log("type-snapshot CLI corpus checks passed");

@@ -64,6 +64,7 @@ export function prepareRun(baseInput, headInput, directory, root) {
           "type-snapshot-cli-paired.mjs",
           "type-snapshot-cli-protocol.mjs",
           "type-snapshot-cli-corpus.mjs",
+          "type-snapshot-cli-leaf-corpus.mjs",
           "type-snapshot-cli-runner.mjs",
           "generate.mjs",
           "check-gate-env.mjs",
@@ -124,7 +125,7 @@ export function createRunner(directory, binaries, runtimePath) {
     const id = `${String(sequence++).padStart(3, "0")}-${corpus.id}-${mode.id}-${phase}-${side}`;
     const args = [
       "check",
-      ".",
+      ...(corpus.args ?? ["."]),
       "--quiet",
       "--format",
       "json",

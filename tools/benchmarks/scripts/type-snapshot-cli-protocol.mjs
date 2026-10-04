@@ -26,6 +26,7 @@ export const BUILD = {
 };
 export const PROTOCOL = {
   fileCount: FILE_COUNT,
+  additionalDefaultCorpusVueFiles: 501,
   warmups: WARMUPS,
   pairs: PAIRS,
   cold: "first vize check process per side/mode/corpus; filesystem caches are not evicted",
