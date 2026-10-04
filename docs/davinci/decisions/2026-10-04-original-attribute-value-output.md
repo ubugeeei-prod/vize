@@ -144,3 +144,16 @@ remain exact, with only the six generic callback repairs.
 Fresh exact-head Actions must regenerate the complete packet and all runtime
 streams against this frozen output before any native Stack prefix admission.
 Historical failed captures grant no fresh source, protected or literal merge credit.
+
+Frozen a47 source Check37184037783 actually matches every field of all84
+reviewed outcomes and336 envelopes in both fresh Rust processes, and all four
+dev/prod runtime processes exit0. The mandatory build/judge succeed; all four
+Rust workers pass. Overall source CI still fails the independent module-layout
+law because this new integration root uses five path-attributed modules.
+The correction groups only those existing private helpers in an inline module
+with ordinary discovery, retaining their exact files and existing super joins.
+Both top-level test functions, their complete bodies, Cargo artifact identity,
+all capture/runtime protocol bytes and frozen payloads stay unchanged. No layout
+exemption, extra integration binary or acceptance fallback is added. The failed
+raw source log remains preserved; this top-only successor needs fresh complete
+source Actions before any Stack prefix can enter the protected queue.

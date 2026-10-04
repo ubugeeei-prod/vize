@@ -1,15 +1,15 @@
 //! Private complete-output capture; an unfrozen artifact is always a failure.
 use vize_l0::{String, ToCompactString};
-#[path = "native_attribute_values_7502/capture.rs"]
-mod capture;
-#[path = "native_attribute_values_7502/custody.rs"]
-mod custody;
-#[path = "native_attribute_values_7502/envelopes.rs"]
-mod envelopes;
-#[path = "native_attribute_values_7502/inputs.rs"]
-mod inputs;
-#[path = "native_attribute_values_7502/refusals.rs"]
-mod refusals;
+mod native_attribute_values_7502 {
+    use super::{Test, check};
+
+    pub(super) mod capture;
+    pub(super) mod custody;
+    pub(super) mod envelopes;
+    pub(super) mod inputs;
+    pub(super) mod refusals;
+}
+use native_attribute_values_7502::{capture, envelopes, inputs, refusals};
 
 type Test<T = ()> = Result<T, String>;
 
