@@ -151,6 +151,11 @@ export const hashes = {
     ],
   ],
   companion: "fbe7a328369e33946c0393c9e017551b33abbd84112d8ffe38950ecfae292e09",
+  snapshotCompanion: "109d5bce0860c6d2007e00593d8eba756ee5d1b4bd7cb4e251cf89a4635d425d",
+  snapshotCaller: [
+    "crates/vize_curator/src/inspector/stages/profile.rs",
+    "7e1ad6a552d23ff11d409b32c135047857bbff88b35bfe058345af34aa5cd533",
+  ],
   provider: "0c8f8755bf717dee0f3dbfd1ca61d40d64b14857ea62304bb9217bbfa69933d8",
   exporter: [
     "628bf5dac6d579a99e4ff76a14b04147df0028fdf921fd358a6660023115416a",

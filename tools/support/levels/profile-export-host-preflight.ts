@@ -109,8 +109,12 @@ export function prepare(read: Reader): Map<string, string> {
     "public metric readback provider is required",
   );
   validateEdges(read, old);
+  const ownedCaller = !old && digest(get(hashes.snapshotCaller[0])) === hashes.snapshotCaller[1];
+  const companion = digest(read("tests/tooling/support/davinci-profile-host-imports.ts"));
   requireState(
-    digest(read("tests/tooling/support/davinci-profile-host-imports.ts")) === hashes.companion,
+    ownedCaller
+      ? companion === hashes.snapshotCompanion
+      : companion === hashes.companion || (!old && companion === hashes.snapshotCompanion),
     "the reviewed profile host-import companion must accompany replay",
   );
   function change(file: string, before: string, after: string, count = 1) {
@@ -215,14 +219,16 @@ export function prepare(read: Reader): Map<string, string> {
     "use crate::profiler::AllocationSnapshot;",
     "use vize_l0::profiler::AllocationSnapshot;",
   );
-  for (const [file, before, after] of callerChanges) change(file, before, after);
+  for (const [file, before, after] of callerChanges)
+    if (!ownedCaller || file !== hashes.snapshotCaller[0]) change(file, before, after);
   for (const [file, before, after] of calls) {
     requireState(
       (get(file).match(/\.export_report\s*\(/gu) ?? []).length ===
         (old ? (file === exportTests ? 6 : 1) : 0),
       "unexpected extra profiler export call: " + file,
     );
-    change(file, before, after, file === exportTests ? 6 : 1);
+    if (!ownedCaller || file !== hashes.snapshotCaller[0])
+      change(file, before, after, file === exportTests ? 6 : 1);
     requireState(
       !/vize_l0\s*::\s*profiler\s*::\s*(?:ProfileExport|PROFILE_EXPORT_SCHEMA_VERSION|\{[^}]*\bProfileExport)/u.test(
         get(file),

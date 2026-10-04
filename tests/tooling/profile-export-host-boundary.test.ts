@@ -3,7 +3,10 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import { test } from "node:test";
 import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
-import { profileHostImports } from "./support/davinci-profile-host-imports.ts";
+import {
+  profileHostImports,
+  previousCuratorProfileImport,
+} from "./support/davinci-profile-host-imports.ts";
 import {
   edges,
   callerChanges,
@@ -59,17 +62,50 @@ test("every tracked Rust caller retires the L0 wire API and inherent export meth
   assert.equal(prepare(read).size, 0);
 });
 
+test("both exact Curator input APIs remain limited to the original host path", () => {
+  const file = hashes.snapshotCaller[0];
+  for (const declaration of [profileHostImports[file], previousCuratorProfileImport]) {
+    assert.doesNotMatch(withoutHostRuntimeReferences(declaration, file), forbidden);
+    for (const other of ["davinci/vize_l0/src/lib.rs", "crates/vize_curator/src/other.rs"])
+      assert.match(withoutHostRuntimeReferences(declaration, other), forbidden);
+    for (const changed of [
+      declaration.replace("export_report", "unreviewed_report"),
+      declaration.replace("ProfileExportOptions", "String"),
+      declaration.replace("ProfileExportBudget", "*"),
+    ])
+      assert.match(withoutHostRuntimeReferences(changed, file), forbidden);
+  }
+});
+
+test("owned Curator replay requires the entire caller and its exact companion", () => {
+  const file = hashes.snapshotCaller[0];
+  for (const changed of [
+    read(file).replace("allocation: None", "allocation: Some(unreviewed_allocation())"),
+    read(file).replace("Vec::new()", "unreviewed_counters()"),
+    read(file).replace(".or_insert_with(Metrics::new)", ".or_insert_with(unreviewed_metrics)"),
+    read(file) + "\nfn extra_caller() {}\n",
+  ]) {
+    assert.notEqual(changed, read(file));
+    assert.throws(() => prepare((path) => (path === file ? changed : read(path))), /unexpected/u);
+  }
+});
+
 test("replay rejects malformed actual callers, metric bodies and wire law before returning writes", () => {
   for (const [file, , after] of callerChanges) {
     const parts = after.split(/(?<=;)\s*(?=use )/u);
     const changed = read(file).replace(
-      parts[0],
-      parts[0].replace("export_report", "unexpected_exporter"),
+      profileHostImports[file] ?? parts[0],
+      (profileHostImports[file] ?? parts[0]).replace("export_report", "unexpected_exporter"),
     );
+    assert.notEqual(changed, read(file));
     assert.throws(() => prepare((path) => (path === file ? changed : read(path))), /unexpected/u);
   }
   for (const [file, , after] of calls) {
-    const changed = read(file).replace(/export_report\(/u, "unexpected_report(");
+    const changed = read(file).replace(
+      /export_report(?:_from_snapshots)?\(/u,
+      "unexpected_report(",
+    );
+    assert.notEqual(changed, read(file));
     assert.throws(
       () => prepare((path) => (path === file ? changed : read(path))),
       /unexpected/u,

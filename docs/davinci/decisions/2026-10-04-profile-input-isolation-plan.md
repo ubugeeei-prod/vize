@@ -127,6 +127,42 @@ assembly mutation control refuses changed bytes before any replay writes.
 The Curator child is not implemented in this provider; its real allocator
 noninterference and whole output proof remain separate pending work.
 
+## Private genuine Curator consumer (hosted proof pending)
+
+The direct child consumes that provider from its real `ladder_profile` caller.
+It coalesces the original step/walk identities in one local `FxHashMap` with
+the existing `Metrics::record` and consumes the map once into owned inputs.
+No native collector is created, enabled, reset or disabled. The existing
+caller-supplied durations, key/attribution joins, unavailable allocation fields
+and empty counters remain exact. Report storage and JSON work can allocate;
+this source change does not claim allocation-free export or full L0 isolation.
+
+An authored standalone `profile_allocation_isolation` executable wraps the
+host-selected real System allocator with the existing generic L0 allocator.
+It opens a genuine native session and keeps a 65,536-byte allocation alive,
+then calls the real Curator report. Monotone measured allocation counters and
+the next exact 127-byte allocation must survive; the native span's complete
+public metrics and a continued real counter sample must also survive. Its
+complete three-span expected JSON covers repeated identities and walk/step
+tiebreaks. The original whole ten-span JSON fixture and every accepted timing,
+page, native nested-allocation and schema law remain byte-identical.
+
+The existing host-import and replay guards retain the previous exact Curator
+declaration and admit only the complete reviewed owned-input caller at the
+same physical path, coupled to its exact import companion. Wrong paths,
+unknown APIs, partial aggregation, fabricated allocation/counters and extra
+source remain rejected. No global profiler or clock internals, schema,
+instruction caps, dependencies, workflow or additional pipeline stage change.
+
+The initial frozen slices were unbuilt and unexecuted before publication.
+Source formatting and byte custody alone supplied no allocator/runtime proof;
+the later exact-source results and retained failures are recorded below. Root and retained-peer
+full source review precede publication; exact-source Actions must execute the
+four provider laws, actual isolated consumer law and preserved references.
+Only a passing genuine native Stack prefix may enter the protected queue;
+each current candidate's full suites, all104 probes × three and both actual
+parent ratchets must pass before literal signed merge. #6834 remains OPEN.
+
 ## First source Actions and exact replay correction
 
 Draft native Stack #7814 registers provider #7812 (`d337cdcd`) and genuine
