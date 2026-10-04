@@ -71,3 +71,11 @@ Actions, protected full suites and unchanged instruction ceilings, native Stack
 topology for the dependent consumer, and actual merge remain required. Full
 type syntax, configured graph snapshots, whole native SFC typing, #6879 history
 closure and default replacement remain unfinished.
+
+The next exact source executed the selected-owner law and rejected its
+single-issue expectation. The real existing path records both the expression's
+authored UnresolvedReference and the selected cursor's whole-template
+UnsupportedSyntax refusal. The law now checks that complete ordered vector,
+both authentic spans and absent minted nodes. This corrects only the
+independent oracle, preserving every production source/visibility gate and
+retaining the failed hosted result; it grants no acceptance to that head.

@@ -48,6 +48,7 @@ mod cases {
                 NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
                     .unwrap()
                     .unwrap();
+            let template_span = selected.component().block().span();
             let mut original = NativeTemplateOwner::new(selected)
                 .unwrap_or_else(|_| panic!("the genuine selected owner"));
             original.parse_setup_program().unwrap();
@@ -86,11 +87,18 @@ mod cases {
             assert!(file.issues().is_empty());
             assert_eq!(file.interrupted_programs().count(), 0);
             assert!(!file.is_complete());
-            let [issue] = file.template_issues() else {
-                panic!("the actual whole-unit visibility refusal");
+            let [expression, selection] = file.template_issues() else {
+                panic!(
+                    "the complete original resolver and selected-cursor refusals: {:?}",
+                    file.template_issues()
+                );
             };
-            assert_eq!(issue.kind, FileIssueKind::UnresolvedReference);
-            assert_eq!(issue.span.slice(&source), "primitive");
+            assert_eq!(expression.kind, FileIssueKind::UnresolvedReference);
+            assert_eq!(expression.span.slice(&source), "primitive");
+            assert!(expression.node.is_none());
+            assert_eq!(selection.kind, FileIssueKind::UnsupportedSyntax);
+            assert_eq!(selection.span, template_span);
+            assert!(selection.node.is_none());
             let [interpolation] = file.native_interpolations() else {
                 panic!("the retained original interpolation owner");
             };
