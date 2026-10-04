@@ -4,7 +4,10 @@ use crate::{LintResult, Linter};
 use vize_l0::{Allocator, SourceRoot, String, config::VueVersion};
 use vize_l1::markup::NativeLintComponent;
 
-use super::{NativeTemplateLintContext, NativeTemplateLintRefusal, NativeTemplateRule, admission};
+use super::{
+    NativeTemplateAttributeProfile, NativeTemplateLintContext, NativeTemplateLintRefusal,
+    NativeTemplateRule, admission,
+};
 
 impl Linter {
     /// Lint the exact original bare template through genuine native callbacks.
@@ -27,6 +30,13 @@ impl Linter {
         filename: &str,
     ) -> Result<LintResult, NativeTemplateLintRefusal> {
         let callbacks = self.native_template_callbacks()?;
+        // Freeze each actual enabled instance's capability once. Later root
+        // callbacks cannot widen this intersection, including the empty set.
+        let profile = callbacks
+            .iter()
+            .map(|(_, callback)| callback.attribute_profile())
+            .reduce(NativeTemplateAttributeProfile::intersect)
+            .unwrap_or_default();
         let block = SourceRoot::new(source)
             .map_err(NativeTemplateLintRefusal::Source)?
             .whole_block();
@@ -34,13 +44,19 @@ impl Linter {
             .map_err(NativeTemplateLintRefusal::Parse)?;
         admission::component(root.component())?;
         let mut context = NativeTemplateLintContext::new(self, &root, filename);
-        for (name, callback) in callbacks {
+        for &(name, callback) in &callbacks {
             context.current_rule = name;
             callback.run_on_template(&mut context, &root)?;
         }
         // Root findings are pending. A late refusal discards them wholesale.
         // There is no suppression pre-scan, second tree/header walk or reparse.
-        admission::children(root.component(), root.children())?;
+        admission::children(
+            root.component(),
+            root.children(),
+            &mut context,
+            &callbacks,
+            profile,
+        )?;
         Ok(context.finish())
     }
 

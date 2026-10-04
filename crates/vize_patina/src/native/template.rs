@@ -11,8 +11,32 @@ mod admission;
 mod component_name;
 mod context;
 mod driver;
+mod element;
 
 pub use context::NativeTemplateLintContext;
+pub use element::{NativeTemplateAttribute, NativeTemplateAttributeKind, NativeTemplateElement};
+
+/// Authentic enabled callbacks must all admit the wider source profile.
+/// Empty callback sets and callbacks that do not opt in retain StaticOnly.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum NativeTemplateAttributeProfile {
+    #[default]
+    StaticOnly,
+    /// Fixed and nonempty lexically completed Bind/Prop/Full bind arguments.
+    /// Original component lexer errors still refuse before any callback;
+    /// this says nothing about JavaScript validity or runtime argument names.
+    Bindings,
+}
+
+impl NativeTemplateAttributeProfile {
+    pub(super) fn intersect(self, other: Self) -> Self {
+        if self == Self::Bindings && other == Self::Bindings {
+            Self::Bindings
+        } else {
+            Self::StaticOnly
+        }
+    }
+}
 
 /// No partial findings or silent omission can turn an unsupported input clean.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -45,9 +69,21 @@ impl From<NativeLintRefusal> for NativeTemplateLintRefusal {
 /// Descriptor-selected wrapper. Results remain private until the driver's
 /// single original traversal admits the entire supported input profile.
 pub trait NativeTemplateRule: Send + Sync {
+    fn attribute_profile(&self) -> NativeTemplateAttributeProfile {
+        NativeTemplateAttributeProfile::StaticOnly
+    }
+
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
         root: &NativeLintComponent<'a>,
     ) -> Result<(), NativeTemplateLintRefusal>;
+
+    fn run_on_element<'a>(
+        &self,
+        _context: &mut NativeTemplateLintContext<'_, 'a>,
+        _element: &NativeTemplateElement<'_, 'a>,
+    ) -> Result<(), NativeTemplateLintRefusal> {
+        Ok(())
+    }
 }

@@ -10,6 +10,7 @@ use super::{NativeLintRefusal, attribute};
 
 mod checked;
 use checked::binding_with_modifiers;
+pub(super) use checked::{AttributeBinding, CheckedAttribute};
 
 pub(super) fn opening_range(element: &NativeElement<'_, '_>) -> Result<Span, NativeLintRefusal> {
     let block = element.component().block();
@@ -63,9 +64,20 @@ pub(super) fn binding<'a>(
 
 /// New full-result consumers refuse parser errors from empty modifier segments.
 /// Prior syntax rule admission keeps its original const-false behavior.
-pub(super) fn strict_binding<'a>(
+pub(super) fn strict_binding<'o, 'a>(
     element: &NativeElement<'_, 'a>,
-    original: &NativeAttribute<'_, 'a>,
-) -> Result<Binding<'a>, NativeLintRefusal> {
-    binding_with_modifiers::<true>(element, original)
+    original: NativeAttribute<'o, 'a>,
+) -> Result<(CheckedAttribute<'o, 'a>, AttributeBinding<'a>), NativeLintRefusal> {
+    let checked = CheckedAttribute::check::<true>(element, original)?;
+    let binding = checked.binding::<false>()?;
+    Ok((checked, binding))
+}
+
+pub(super) fn wide_binding<'o, 'a>(
+    element: &NativeElement<'_, 'a>,
+    original: NativeAttribute<'o, 'a>,
+) -> Result<(CheckedAttribute<'o, 'a>, AttributeBinding<'a>), NativeLintRefusal> {
+    let checked = CheckedAttribute::check::<true>(element, original)?;
+    let binding = checked.binding::<true>()?;
+    Ok((checked, binding))
 }

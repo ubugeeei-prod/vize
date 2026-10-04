@@ -1,8 +1,9 @@
 //! Original configured product output at the native callback host boundary.
 
+use super::{NativeTemplateAttribute, NativeTemplateLintRefusal};
 use crate::{HelpLevel, LintDiagnostic, LintResult, Linter, Severity};
 use vize_carton::i18n::{Locale, t, t_fmt};
-use vize_l0::{String, config::VueVersion};
+use vize_l0::{Span, String, config::VueVersion};
 use vize_l1::markup::NativeLintComponent;
 
 /// Normal configured output from the genuine original bare component.
@@ -71,11 +72,45 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
         help_key: &str,
     ) {
         let point = self.root.component().block().start();
+        self.warn_with_help(Span::new(point, point), message_key, variables, help_key);
+    }
+
+    /// Report only from a sealed checked attribute of this actual bare owner.
+    /// Equal source buffers/spans cannot substitute for component identity.
+    ///
+    /// ```compile_fail
+    /// use vize_l0::Span;
+    /// use vize_patina::native::template::NativeTemplateLintContext;
+    /// fn raw(context: &mut NativeTemplateLintContext<'_, '_>) {
+    ///     context.warn_attribute_with_help(Span::new(0, 1), "message", &[], "help");
+    /// }
+    /// ```
+    pub fn warn_attribute_with_help(
+        &mut self,
+        attribute: &NativeTemplateAttribute<'_, 'a>,
+        message_key: &str,
+        variables: &[(&str, &str)],
+        help_key: &str,
+    ) -> Result<(), NativeTemplateLintRefusal> {
+        if !core::ptr::eq(attribute.original().component(), self.root.component()) {
+            return Err(NativeTemplateLintRefusal::SourceMismatch);
+        }
+        self.warn_with_help(attribute.range(), message_key, variables, help_key);
+        Ok(())
+    }
+
+    fn warn_with_help(
+        &mut self,
+        range: Span,
+        message_key: &str,
+        variables: &[(&str, &str)],
+        help_key: &str,
+    ) {
         let mut diagnostic = LintDiagnostic::warn(
             self.current_rule,
             t_fmt(self.linter.locale, message_key, variables),
-            point,
-            point,
+            range.start,
+            range.end,
         );
         diagnostic.help = self
             .linter
@@ -106,3 +141,6 @@ impl<'o, 'a> NativeTemplateLintContext<'o, 'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;
