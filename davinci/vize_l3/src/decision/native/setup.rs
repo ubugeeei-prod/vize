@@ -109,7 +109,8 @@ impl<'owner, 'arena> FileReads<'owner, 'arena> for SelectedReads<'_, 'owner, 'ar
 /// No external File/template, script role, completeness flag or runtime policy.
 /// The existing Enter visit joins each original operand and immutable occurrence;
 /// no AST walk, lookup or new resolution occurs. Only the bounded mutable
-/// original-root For/static-body family receives separate runtime eligibility.
+/// original-root For/static-or-current-value-singleton family receives separate
+/// runtime eligibility; other callback body families retain typed refusals.
 pub fn build_native_selected_setup_dom_decisions<'view, 'owner, 'arena>(
     setup: &'view NativeSelectedSetup<'owner, 'arena>,
 ) -> Result<NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena>, DecisionBuildError> {

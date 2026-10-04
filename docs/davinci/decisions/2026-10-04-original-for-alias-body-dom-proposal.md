@@ -141,3 +141,7 @@ the pinned OXC identifier accessor unwraps original parentheses, while complete
 source `(item)` remains distinct. The unchanged normalization check therefore
 returns ForBody for that exact input. The law now pins that earlier typed reason;
 production, six full fixtures and old packs remain unchanged.
+
+The [paired read-only correction](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5976464897)
+also qualifies setup decision rustdoc to the bounded static-or-current-value
+singleton family; no setup authority or production semantics change.
