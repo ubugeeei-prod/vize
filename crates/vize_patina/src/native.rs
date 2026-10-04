@@ -23,6 +23,7 @@ mod img_alt;
 mod inline_style;
 mod no_v_html;
 mod tabindex_no_positive;
+pub mod template;
 mod textarea_mustache;
 
 /// The existing rule code; the native entry is separately opt-in.

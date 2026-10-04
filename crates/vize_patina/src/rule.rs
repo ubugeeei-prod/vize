@@ -68,6 +68,13 @@ pub trait Rule: Send + Sync {
         None
     }
 
+    /// This actual registered instance's native bare-template callback.
+    /// A metadata name does not confer this capability. Unprovided enabled
+    /// instances refuse the opt-in native route, including custom namesakes.
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
+        None
+    }
+
     /// Whether this (markup-capable) rule's JSX/TSX equivalent only materializes
     /// after lowering, so it must run over the **lowered** markup IR rather than
     /// the OXC projection.

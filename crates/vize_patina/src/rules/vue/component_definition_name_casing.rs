@@ -52,6 +52,10 @@ impl Rule for ComponentDefinitionNameCasing {
         &META
     }
 
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
+        Some(self)
+    }
+
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         let filename = ctx.filename;
         if !filename.ends_with(".vue") {
