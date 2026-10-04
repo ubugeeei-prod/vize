@@ -166,6 +166,24 @@ pub enum InitializerKind {
     PrimitiveLiteral,
     Function,
     Unknown,
+    /// The original decoded StringLiteral contains NUL or carriage return.
+    /// This is a source value fact; each target owns its admission policy.
+    PrimitiveStringWithNulOrCr,
+    /// The original StringLiteral's OXC flag records unpaired UTF-16 units.
+    PrimitiveStringWithLoneSurrogates,
+}
+
+impl InitializerKind {
+    /// Preserve the common primitive family across source value refinements.
+    #[must_use]
+    pub const fn is_primitive(self) -> bool {
+        matches!(
+            self,
+            Self::PrimitiveLiteral
+                | Self::PrimitiveStringWithNulOrCr
+                | Self::PrimitiveStringWithLoneSurrogates
+        )
+    }
 }
 
 #[derive(Debug)]

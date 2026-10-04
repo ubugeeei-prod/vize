@@ -12,6 +12,7 @@ use vize_l1::{
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
 mod accepted;
+mod primitive_strings;
 mod refusal;
 
 fn descriptor<'a>(arena: &'a Allocator, source: &'a str) -> DescriptorObservation<'a> {

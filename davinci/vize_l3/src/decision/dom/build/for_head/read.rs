@@ -8,7 +8,7 @@ use crate::decision::dom::{
     vue::{VueReadKind, VueRenderRead},
 };
 use vize_l2::{
-    file::{DeclarationKind, InitializerKind, Namespace},
+    file::{DeclarationKind, Namespace},
     resolution::Usage,
 };
 
@@ -30,9 +30,7 @@ pub(super) fn classify<'owner, 'arena>(
         return None;
     }
     let kind = match declaration.kind {
-        DeclarationKind::Const if declaration.initializer == InitializerKind::PrimitiveLiteral => {
-            VueReadKind::SetupConst
-        }
+        DeclarationKind::Const if declaration.initializer.is_primitive() => VueReadKind::SetupConst,
         DeclarationKind::Let | DeclarationKind::Var => VueReadKind::SetupLet,
         _ => return None,
     };

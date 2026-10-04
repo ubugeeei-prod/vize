@@ -2,7 +2,7 @@
 
 use super::VueReadKind;
 use vize_l2::{
-    file::{BindingRef, DeclarationKind, InitializerKind, vue::VueExposure},
+    file::{BindingRef, DeclarationKind, vue::VueExposure},
     resolution::{Occurrence, Usage},
 };
 
@@ -45,9 +45,7 @@ impl<'owner, 'arena> FileReads<'owner, 'arena> for ExposureReads<'_, 'owner, '_,
         }
         let declaration = binding.declaration()?;
         match declaration.kind {
-            DeclarationKind::Const
-                if declaration.initializer == InitializerKind::PrimitiveLiteral =>
-            {
+            DeclarationKind::Const if declaration.initializer.is_primitive() => {
                 Some(VueReadKind::SetupConst)
             }
             DeclarationKind::Let | DeclarationKind::Var => Some(VueReadKind::SetupLet),

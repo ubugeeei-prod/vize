@@ -197,16 +197,14 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
                 continue;
             };
             let initializer = match &declaration.init {
-                Some(value) if primitive(value) => InitializerKind::PrimitiveLiteral,
+                Some(value) => initializer_kind(value),
                 _ => InitializerKind::Unknown,
             };
             let type_supported = self.type_annotation(
                 declaration,
-                self.context == Context::Unit
-                    && !exported
-                    && initializer == InitializerKind::PrimitiveLiteral,
+                self.context == Context::Unit && !exported && initializer.is_primitive(),
             );
-            if initializer != InitializerKind::PrimitiveLiteral
+            if !initializer.is_primitive()
                 || !type_supported
                 || declaration.definite
                 || matches!(
@@ -273,13 +271,25 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
     }
 }
 
-fn primitive(expression: &Expression<'_>) -> bool {
-    matches!(
-        expression,
+fn initializer_kind(expression: &Expression<'_>) -> InitializerKind {
+    match expression {
+        Expression::StringLiteral(value) if value.lone_surrogates => {
+            InitializerKind::PrimitiveStringWithLoneSurrogates
+        }
+        Expression::StringLiteral(value)
+            if value
+                .value
+                .as_bytes()
+                .iter()
+                .any(|byte| matches!(*byte, b'\0' | b'\r')) =>
+        {
+            InitializerKind::PrimitiveStringWithNulOrCr
+        }
         Expression::BooleanLiteral(_)
-            | Expression::NullLiteral(_)
-            | Expression::NumericLiteral(_)
-            | Expression::BigIntLiteral(_)
-            | Expression::StringLiteral(_)
-    )
+        | Expression::NullLiteral(_)
+        | Expression::NumericLiteral(_)
+        | Expression::BigIntLiteral(_)
+        | Expression::StringLiteral(_) => InitializerKind::PrimitiveLiteral,
+        _ => InitializerKind::Unknown,
+    }
 }

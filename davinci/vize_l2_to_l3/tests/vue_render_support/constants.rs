@@ -15,7 +15,23 @@ use vize_l3::decision::dom::{
 #[test]
 fn primitive_const_leaf_reads_keep_real_class_owner_and_constant_value() {
     let arena = Allocator::default();
-    for initializer in ["1", "true", "null", "2n", "'雪'"] {
+    for (initializer, initializer_kind) in [
+        ("1", InitializerKind::PrimitiveLiteral),
+        ("true", InitializerKind::PrimitiveLiteral),
+        ("null", InitializerKind::PrimitiveLiteral),
+        ("2n", InitializerKind::PrimitiveLiteral),
+        ("'雪'", InitializerKind::PrimitiveLiteral),
+        (r#"'a\0b'"#, InitializerKind::PrimitiveStringWithNulOrCr),
+        (r#"'a\rb'"#, InitializerKind::PrimitiveStringWithNulOrCr),
+        (
+            r#"'a\ud800b'"#,
+            InitializerKind::PrimitiveStringWithLoneSurrogates,
+        ),
+        (
+            r#"'a\udc00b'"#,
+            InitializerKind::PrimitiveStringWithLoneSurrogates,
+        ),
+    ] {
         let source = arena.alloc_str(&vize_l0::cstr!(
             "<script setup>const value={initializer};</script><template>{{{{value}}}}</template>"
         ));
@@ -37,7 +53,8 @@ fn primitive_const_leaf_reads_keep_real_class_owner_and_constant_value() {
         assert!(core::ptr::eq(read.binding().file(), &file));
         let declaration = read.binding().declaration().unwrap();
         assert_eq!(declaration.kind, DeclarationKind::Const);
-        assert_eq!(declaration.initializer, InitializerKind::PrimitiveLiteral);
+        assert_eq!(declaration.initializer, initializer_kind);
+        assert!(declaration.initializer.is_primitive());
         assert_eq!(declaration.script_unit(), Some(exposure.unit()));
         assert_eq!(declaration.scope, exposure.scope());
         let resolution = row.resolution();

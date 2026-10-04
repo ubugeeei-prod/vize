@@ -11,7 +11,7 @@ use crate::decision::{
 use vize_l0::id::NodeId;
 use vize_l2::{
     artifact::Artifact,
-    file::{BindingRef, DeclarationKind, FileArtifact, InitializerKind},
+    file::{BindingRef, DeclarationKind, FileArtifact},
     lang::js::{NativeSelectedSetup, NativeTemplateView},
     resolution::{Occurrence, Usage},
 };
@@ -96,9 +96,7 @@ impl<'owner, 'arena> FileReads<'owner, 'arena> for SelectedReads<'_, 'owner, 'ar
         }
         let declaration = self.0.binding(binding).ok()?.declaration()?;
         match declaration.kind {
-            DeclarationKind::Const
-                if declaration.initializer == InitializerKind::PrimitiveLiteral =>
-            {
+            DeclarationKind::Const if declaration.initializer.is_primitive() => {
                 Some(VueReadKind::SetupConst)
             }
             DeclarationKind::Let | DeclarationKind::Var => Some(VueReadKind::SetupLet),

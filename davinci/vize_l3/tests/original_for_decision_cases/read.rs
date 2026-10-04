@@ -3,6 +3,35 @@ use vize_l2::resolution::Usage;
 use vize_l3::decision::dom::vue::VueReadKind;
 
 #[test]
+fn original_primitive_string_refinements_preserve_const_collection_read_classification() {
+    let arena = Allocator::default();
+    for initializer in [r#"'a\0b'"#, r#"'a\rb'"#, r#"'a\ud800b'"#, r#"'a\nb'"#] {
+        let source = format!(
+            "<script setup>const items={initializer};</script><template><div v-for='item in items'/></template>"
+        );
+        let owner = completed(&arena, &source);
+        let original = first(&owner);
+        let analysis = build_native_dom_file_decisions(owner.view().unwrap()).unwrap();
+        let row = analysis.for_head(original.id().node()).unwrap();
+        let read = row.collection_read().unwrap();
+        assert_eq!(read.kind(), VueReadKind::SetupConst);
+        assert!(
+            read.binding()
+                .declaration()
+                .unwrap()
+                .initializer
+                .is_primitive()
+        );
+        assert!(core::ptr::eq(read.binding().file(), analysis.file()));
+        assert!(read.binding().same_owner(row.collection()));
+        assert_eq!(
+            analysis.dom().unwrap().unsupported()[0].reason,
+            DomUnsupported::Operation
+        );
+    }
+}
+
+#[test]
 fn js_ts_const_let_and_var_classify_the_actual_retained_setup_collection_read() {
     let arena = Allocator::default();
     for lang in ["", " lang='ts'"] {
