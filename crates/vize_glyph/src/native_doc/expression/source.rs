@@ -59,7 +59,11 @@ impl<'p, 'a> Context<'p, 'a> {
                 span: source.span(),
             });
         }
-        if source.decode_map().is_none()
+        // Keep the retained API's exact raw-slice policy. An authentic borrowed
+        // EmbedSource can be an identity-only slice of its once-decoded parent;
+        // its private validated source proof survives without a resident map.
+        if matches!(original, Origin::Retained(_))
+            && source.decode_map().is_none()
             && context.authored(entire)?.as_ptr() != source.text().as_ptr()
         {
             return Err(ExpressionRefusal::SourceMismatch {

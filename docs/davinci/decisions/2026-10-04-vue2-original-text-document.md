@@ -250,3 +250,22 @@ step order, action, shell statement and script body unchanged. Existing length
 laws, policy and all instruction caps are retained. This whole failed source
 still grants no queue acceptance; fresh exact Actions/captures/full protected
 proof remain required, without changing any native expectation or input.
+
+The same complete `ef95` Rust execution retains two rejected new laws: valid
+plain operands inside a once-decoded original callback hit SourceMismatch.
+Actual `EmbedSource::slice_in` deliberately omits a resident map for an
+identity-only piece while retaining its decoded parent buffer; no-map does
+not imply authored/text pointer equality. The bounded correction keeps the
+existing Retained-origin raw-pointer policy exactly, while Borrowed-origin
+uses its authentic stock-owner/validated private EmbedSource proof after the
+unchanged physical-root, block-coverage and full-span projection checks.
+It adds no byte scan, parse, decode, allocation, source reconstruction or AST
+walk. All original failing whole sources, expected outputs and custody
+assertions remain unchanged. A genuine independently prepared stock identity
+slice additionally proves its exact authored span, absent map/different text
+pointer, original AST identity, complete output and foreign-root refusal;
+the existing public Retained API still refuses that same real source. These
+new assertions extend the existing private law rather than inventing an invalid
+sealed view. The initial 48-row raw packet stays immutable. Full root/peer
+review of this production correction and fresh exact hosted acceptance remain
+required; failed `ef95` supplies no whole-source or queue acceptance.
