@@ -87,7 +87,7 @@ Node stubs to check binary/nonzero/ENOENT output, inert error descriptors, faile
 capture, malformed JSON and reference restoration. These controls do not run
 Vize, the native provider or the official Router plugin.
 
-Runtime execution and exact hosted source qualification remain pending.
+Complete primary runtime qualification remains pending.
 The existing global release/Fuzz admission hold applies. No speed gain or
 complete arbitrary-plugin contract is claimed by this fix.
 
@@ -106,3 +106,13 @@ Only the original page and generated map are copied from the pinned playground.
 The selected builtin-int entry declares `userId: number` literally. The map
 retains references to unselected custom-parser sources that are not assembled
 here; these observations do not prove the complete upstream project graph.
+
+The typechecker editor oracle explicitly disables the separate ecosystem group
+(route/i18n heuristics and optional completions) in its saved config and
+initialization options, alongside lint.
+It keeps native typecheck, complete unfiltered diagnostic vectors, authored
+UTF-16 ranges and hover assertions enabled. The original page's query keys
+produce two route-heuristic warnings under the editor bundle; those genuine
+raw warnings are retained as failed evidence, not discarded from an accepted
+payload. Production defaults and heuristic behavior remain unchanged. This qualifies
+the explicit typechecker profile, not default-editor parity.

@@ -103,7 +103,14 @@ export function configure(
   fixture.write(
     "vize.config.json",
     json({
-      lsp: { completion: true, editor: true, hover: true, lint: false, typecheck: true },
+      lsp: {
+        completion: true,
+        editor: true,
+        ecosystem: false,
+        hover: true,
+        lint: false,
+        typecheck: true,
+      },
       typeChecker: { corsaPath },
     }),
   );

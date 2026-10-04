@@ -255,3 +255,31 @@ The pinned primary workspace copies only the original page/map; the selected
 builtin-int entry directly declares `userId: number`. Its unchanged map also
 references unassembled custom-parser sources for other routes, so this narrow
 fixture does not claim complete upstream graph coverage.
+
+The corrected `ca0078bb` source Check37235830444 and native phase37235829986
+pass. Real full [Check37236593746](https://github.com/ubugeeei-prod/vize/actions/runs/37236593746/job/111536815712)
+retains 22 paired CLI reports and 44 original process results, all 18 secondary
+partition cases, nine passing primary subtests and three complete native-editor
+break/repair cycles. Its first primary editor case still fails: the unchanged
+upstream page has two severity-2 `ecosystem/vue-router-route-param` warnings for
+`anyParam` and `page`, while the clean native CLI has no type errors. The first
+editor's invalid/repair/hover phases do not execute; full primary parity is
+still unqualified. All 303 original ZIP members and raw LSP frames are retained;
+ZIP SHA256 is `b6d98d51e43b696372f7be987b2a7b1d770beb5aa8840156226580d8198c6bcf`.
+
+Explicitly disable the separate optional ecosystem group in this typechecker
+fixture's saved LSP config and initialization options, as lint already is. This
+group includes route/i18n heuristics and their optional completions. The editor
+bundle otherwise enables it; saving the explicit override
+also preserves it across configuration reload. Native `typecheck`, complete
+ordered diagnostic comparisons, authored UTF-16 ranges, hover expectations and
+all original provider/source inputs stay enabled and unchanged. Do not filter
+warning payloads or alter production/default editor behavior. The genuine old
+warning vectors remain a failed receipt; this fixture does not qualify the
+heuristic's handling of query keys or default-editor parity. Require fresh source
+Actions and full CLI/editor replay under this explicit typechecker profile
+before claiming complete primary parity or adopting the feature.
+The two edited TypeScript fixture files pass configured format/lint with zero
+warnings after the multiline config formatting correction; no assertion or
+production file changes. The failed-review receipt SHA256 is
+`15b355833f84e0265c1f675a2e1eee49249402dec6caecd2d03327366f40c9e5`.

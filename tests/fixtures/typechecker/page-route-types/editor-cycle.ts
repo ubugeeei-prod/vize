@@ -44,6 +44,7 @@ export function editorCycleFor(fixture: PinnedFixtureWorkspace, observe: Observe
       await session.initialize(fixture.workspaceDir, {
         completion: true,
         editor: true,
+        ecosystem: false,
         hover: true,
         lint: false,
         typecheck: true,
