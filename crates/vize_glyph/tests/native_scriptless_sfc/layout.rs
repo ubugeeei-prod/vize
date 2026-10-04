@@ -43,7 +43,7 @@ fn root_and_nested_full_output_pin_width_endings_and_all_indent_options() {
             true,
         ),
     ] {
-        for width in [0, 1, 7, 80, 200] {
+        for width in [0, 1, 6, 7, 10, 11, 14, 15, 28, 29, 40, 41, 80, 200] {
             for indent in [0, 2, 4] {
                 for ending in [LineEnding::Lf, LineEnding::CrLf] {
                     let options = options(width, indent, ending);
@@ -54,8 +54,15 @@ fn root_and_nested_full_output_pin_width_endings_and_all_indent_options() {
                     let pad = " ".repeat((depth + 1) * indent);
                     let inner = " ".repeat((depth + 2) * indent);
                     let close = " ".repeat(depth * indent);
-                    let expected = if width >= 80 {
+                    // Authored flat references measure Unicode scalars. After the
+                    // outer frame breaks, the seven-scalar infix fits exactly at
+                    // its original indented column, until the pending broken line.
+                    assert_eq!(flat.chars().count(), if binary { 41 } else { 29 });
+                    assert_eq!("1n + 2n".chars().count(), 7);
+                    let expected = if width >= flat.chars().count() {
                         flat.to_owned()
+                    } else if binary && width >= pad.chars().count() + 7 {
+                        format!("<template><p>{{{{{nl}{pad}1n + 2n{nl}{close}}}}}</p></template>")
                     } else if binary {
                         format!(
                             "<template><p>{{{{{nl}{pad}1n +{nl}{inner}2n{nl}{close}}}}}</p></template>"

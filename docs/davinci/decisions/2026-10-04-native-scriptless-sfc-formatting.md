@@ -86,3 +86,17 @@ prepublication custody review strengthens two suffix-only retained-source
 checks to ENTIRE independently authored blocks and uses exact source-case
 classification; original inputs, outputs, refusals and all29 laws stay intact.
 Only source/pure checks qualify before fresh hosted execution.
+
+The [independent fit-reference repair](https://github.com/ubugeeei-prod/vize/issues/6847#issuecomment-5975461449)
+preserves failed source622dd844 and all six original raw logs:237 native laws,
+28 whole laws,four projections and three owner controls pass, while one whole
+layout reference fails at width7/indent0. Authored infix width7 and full root/
+nested widths29/41 independently establish its expected classification through
+the unchanged printer's pending broken-line contract. Add exact adjacent inner
+6/7,10/11,14/15 and whole28/29,40/41 controls; keep every original source,
+option, full reference and fixed-point/typed-AST/authored-comment assertion.
+Independent source review clears this test-only repair without production/Doc/
+L1/admission/output/oracle/budget changes or runtime acceptance. The healthy
+provider's genuine Stack prefix is queued separately; source238/four/three and
+the child's final replay/protected full/applicable ceilings/literal acceptance
+remain required.
