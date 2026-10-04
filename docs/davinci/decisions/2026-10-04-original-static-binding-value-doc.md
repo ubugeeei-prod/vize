@@ -1,11 +1,13 @@
 # Original quoted static bindings in the whole native SFC Doc
 
-This genuine Glyph consumer depends on the distinct original binding provider
-[#7797](https://github.com/ubugeeei-prod/vize/pull/7797). Its private source
-retains that actual provider head as an ancestor, genuinely merges the original
-#7774 implementation and incorporates actual signed conditional delivery
-77a8c401fa1ca72464de7769dffc41862d05c089. No helper is copied from a pending
-PR. The [reviewed plan](./2026-10-04-original-static-binding-doc-plan.md) and
+This genuine Glyph consumer uses the distinct original binding provider
+[#7797](https://github.com/ubugeeei-prod/vize/pull/7797), actually delivered as
+signed 8166b853d863bec23e7dc82768fe2f6db52e2dd1. Only the two owned consumer
+commits are replayed onto literal accepted main d71d8398187dfbee63c26f1e4f2946fbe9fe38f9.
+The original private freeze 1984940d genuinely contains provider source 51f75ed6,
+the original #7774 implementation and signed conditional delivery 77a8c401.
+The delivered ancestry retains both literal accepted providers. No pending helper
+is copied. The [reviewed plan](./2026-10-04-original-static-binding-doc-plan.md) and
 [complete seven failure vectors](../plan/original-static-binding-doc-vectors.json)
 remain independently authored expectations, rather than captured formatter output.
 
@@ -89,12 +91,13 @@ whole boundaries. Separate Doc-depth and wrapped-unit controls preserve the
 existing original guards. These are authored source laws; hosted execution is
 still pending at this private freeze.
 
-Full root and retained peer source/law review precede publication. A dependent
-public child must use the real provider base and verified GitHub native Stack,
-with no individual-layer auto merge. If the independently qualified provider
-actually merges first, replay onto its literal main and qualify the independent
-remaining child. Fresh exact-head Actions must execute every new law and all
-existing conditional/scriptless/interpolation/head/provider controls. Protected
+Full root and retained peer source/law review cleared the complete private
+1984940d source and all 29 laws. The provider actually merged first, so this
+consumer is independently replayed onto its literal accepted main. The original
+private source, full reviewed blobs and authored vectors remain preserved;
+prior source/runtime proof does not transfer. Fresh exact-head Actions must
+execute all 29 new laws, 295 existing Glyph controls and 66 current L1 controls,
+together with original ownership compile-fail and strict Clippy gates. Protected
 full suites, unchanged 100+4 instruction ceilings, both actual parent ratchets
 and literal signed merge remain mandatory. Private source checks and prior
 provider/conditional acceptance transfer no runtime or new product credit.
