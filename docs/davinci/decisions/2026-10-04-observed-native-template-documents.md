@@ -12,10 +12,12 @@ native GitHub Stack. Verify exact ordered membership, source gates, protected
 prefix/child candidates and literal signed merges. No private/prior runtime,
 parent-base prose or inferred Stack establishes acceptance.
 
-Mechanical `6f454e6dcf3f760e7cb150dde0d802824a4a96d4` moves only the existing
+Mechanical `6e0cf9d582dea2b18c52217b9d00078ea6068bf2` moves only the existing
 Builder and closing-edge helper into their own module. Their source compares
 byte-identically after visibility normalization; behavior follows in a separate
 feature change. Existing preobserved template API outputs/refusals remain exact.
+The original private move/source and failing root-module path observation stay
+preserved; this corrected move also resolves its own explicit Builder path.
 
 The same original-child Builder visit now offers observe-at-child mode.
 Existing sealed NativeChild::reborrow preserves actual component/parent/ordinal/
@@ -48,9 +50,10 @@ Only the existing contiguous Cursor reaching exact selected block length
 establishes complete template Doc construction. This provider still covers one
 template block. Original order/spans/storage/comment kinds+authored bytes/maps/
 grammar, literal/entity spelling and trimmed physical-LF tails remain genuine.
-Frozen independently authored complete template outputs, repeated printing,
+Seventeen frozen laws cover independently authored complete template outputs, repeated printing,
 v-pre, zero/multiple/nested operands, late failures, carrier moves/transfers,
-foreign-source/owner and real 16/17,31/32,4096/4097 boundary controls require
+foreign-source/owner, genuine normal success/failure unwind, deliberate owned
+remainder forget and real 16/17,31/32,4096/4097 boundary controls require
 independent review and own fresh hosted runtime. Structural checks do not prove
 parse-count performance, language early errors or JavaScript execution.
 
