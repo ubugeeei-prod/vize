@@ -142,6 +142,48 @@ void test("original typed positive cannot become handled or alter any complete i
     );
 });
 
+void test("handled string packets cannot rewrite any original source/options/history wire", () => {
+  const fixture = row("current-api/ref-string-untyped");
+  const value = JSON.parse(fixture.input);
+  const handled = packet({ state: "handled", observation: fixture.expected.toString() });
+  for (const change of [
+    (v: any) => {
+      v.source += "<!-- unprovided -->";
+    },
+    (v: any) => {
+      v.filename = "Other.vue";
+    },
+    (v: any) => {
+      v.history = "0".repeat(40);
+    },
+    (v: any) => {
+      v.id = "invented-string";
+    },
+    (v: any) => {
+      v.diagnostics = 1;
+    },
+    (v: any) => {
+      v.fixes = 1;
+    },
+    (v: any) => {
+      v.vue_version = "3";
+    },
+    (v: any) => {
+      v.vapor = false;
+    },
+    (v: any) => {
+      v.rule = "script/no-next-tick";
+    },
+    (v: any) => {
+      v.entry = "script";
+    },
+  ]) {
+    const changed = structuredClone(value);
+    change(changed);
+    assert.throws(() => decodeNativeOutcome(handled, { ...fixture, input: packet(changed) }));
+  }
+});
+
 function probes() {
   const values = [
     {

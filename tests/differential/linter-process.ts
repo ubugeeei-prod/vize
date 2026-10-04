@@ -11,8 +11,8 @@ export function collectLinterAttempts(
 ) {
   const attempts = [];
   for (let pass = 0; pass < 2; pass++) {
-    let stdout = Buffer.alloc(0);
-    let stderr = Buffer.alloc(0);
+    let stdout: Buffer = Buffer.alloc(0);
+    let stderr: Buffer = Buffer.alloc(0);
     let exitStatus: number | null = null;
     let signal: string | null = null;
     let processError: string | null = null;

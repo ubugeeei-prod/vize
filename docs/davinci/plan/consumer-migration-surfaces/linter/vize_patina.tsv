@@ -405,6 +405,8 @@ linter	Linter	source	crates/vize_patina/src/native/sfc/envelope.rs	4	l1	L1	stage
 linter	Linter	source	crates/vize_patina/src/native/sfc/owner.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/sfc/owner.rs	3	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/sfc/owner.rs	3	l2	L2	stage	vize_l2	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/builtin.rs	4	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/builtin.rs	4	l2	L2	stage	vize_l2	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/configuration.rs	5	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/custody.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/custody.rs	4	l2	L2	stage	vize_l2	preferred	4

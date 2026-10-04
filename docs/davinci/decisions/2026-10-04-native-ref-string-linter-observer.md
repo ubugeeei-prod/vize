@@ -1,6 +1,6 @@
 # Genuine primitive setup ref-string lint and whole SFC observer
 
-Private implementation under [#6848](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5978118337) and [#6881](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-5978118626), from the actual sealed provider [#7780](https://github.com/ubugeeei-prod/vize/pull/7780). The independently reviewed parent/child transition design is the prerequisite; this record grants no Rust, native fixture, publication, merge or default-route acceptance. Parent delivery proceeds independently.
+Private implementation under [#6848](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5978118337) and [#6881](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-5978118626), from the actual sealed provider [#7780](https://github.com/ubugeeei-prod/vize/pull/7780). The independently reviewed parent/child transition design is the prerequisite; this record grants no Rust, native fixture, publication, merge or default-route acceptance. Parent delivery proceeds independently. Exact parent e28 source Check37188798579 and all four required checks passed; four raw hosted workers authenticate all46 laws PASS, with the checked PR-merge144f tree identical to e28. Eight CF/full protected suites/actual merge remain pending; paired [#6848](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5978156230) / [#6881](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-5978156404). First3dd raw compile rejection remains preserved.
 
 ## Actual builtin capability
 
@@ -130,9 +130,9 @@ with a successful repeat; aggregate assertions still run after the full report
 is persisted. Full returned-failure and thrown-first controls preserve both
 complete attempts/call options and zero fabricated native credit.
 
-Twelve pure shared protocol/transition controls pass; they are synthetic contract
+Thirteen pure shared protocol/transition controls pass; they are synthetic contract
 rejection checks, not source-built Rust execution or native acceptance. Fifteen
-unchanged focus/current capture controls still must pass. Original manifest/
+unchanged focus/current capture controls also pass. Original manifest/
 oracle conservation and whole15-case/refusal/probe mutations remain mandatory.
 
 ## Remaining delivery
