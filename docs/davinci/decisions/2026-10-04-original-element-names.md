@@ -78,3 +78,9 @@ Vite pending row remains dated to that snapshot: #7656 subsequently actually
 merged as this branch's signed d013 base at 2026-10-03T23:25:41Z. The formatter
 history owner separately audits remaining #6882 fixture/measurement/printer
 obligations. That delivery grants no native formatter/default migration credit.
+
+The source-policy successor records one test-only `alloc::vec::Vec` path and two
+`vize_l0::String` paths in the reviewed storage inventory. These own independent
+fixture buffers and a collected assertion result; the production receipt remains
+allocation-free. The exact previous source Check found the missing test row, so
+this successor requires fresh hosted source checks before queue admission.

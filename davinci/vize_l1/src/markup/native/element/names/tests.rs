@@ -115,8 +115,8 @@ fn equal_original_buffer_parses_cannot_rejoin_foreign_element_names() {
 #[test]
 fn equal_text_from_distinct_source_allocations_never_grants_original_membership() {
     let arena = Allocator::default();
-    let source = alloc::string::String::from("<p></p>");
-    let other_source = alloc::string::String::from("<p></p>");
+    let source = vize_l0::String::from("<p></p>");
+    let other_source = vize_l0::String::from("<p></p>");
     let owner =
         NativeComponent::parse_in(&arena, SourceRoot::new(&source).unwrap().whole_block()).unwrap();
     let foreign = NativeComponent::parse_in(
