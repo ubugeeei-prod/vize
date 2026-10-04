@@ -1,10 +1,12 @@
 # Original optional primitive formal parameters
 
-This private provider is a genuine child of the reviewed published return
-consumer #7772 at `9dd920101ca31dfa856bd3ca27c4a9e5f625b8bf`, created with
-`wt`. Root approved its source plan before implementation. The four lower
-provider/consumer layers retain their actual native Stack; this private source
-has no publication, hosted execution, queue or merge acceptance yet.
+This provider is a genuine child of the reviewed return consumer #7772 at
+`a26a72a5604b4aa38f7c7e17b3f26e171a583294`, losslessly replayed from its
+original `wt` parent `9dd920101ca31dfa856bd3ca27c4a9e5f625b8bf`. Root and
+the independent peer fully reviewed the frozen source before authorizing Draft
+publication as the fifth layer of native Stack #7759. Every original source/law
+blob and incoming central clause survives the replay; fresh exact-head hosted
+execution, protected qualification and literal merge remain pending.
 
 ## Same original event
 
