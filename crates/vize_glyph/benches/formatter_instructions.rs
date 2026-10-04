@@ -70,7 +70,9 @@ fn original_template(c: &mut Criterion) {
         "formatter_template_complex",
         "crates/vize_glyph/benches/fixtures/formatter/complex-template.txt",
         |window| {
-            window.measure(|| format_template(black_box(COMPLEX_TEMPLATE), black_box(&options)).unwrap())
+            window.measure(|| {
+                format_template(black_box(COMPLEX_TEMPLATE), black_box(&options)).unwrap()
+            })
         },
     );
 }

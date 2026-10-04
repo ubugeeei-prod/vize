@@ -62,14 +62,50 @@ collection, fixed guest directory and both old budget files remain unchanged.
 The formatter process uses its own fixed guest directory so the two actual
 collections cannot reuse each other's executable links. The existing hosted
 instruction workflow retains all old measurement/enforcement steps and adds a
-separate three-run draft calibration plus always-uploaded full raw packet.
-After authenticated equality, a source update freezes the four exact measured
-ceilings and adds unconditional registry/ratchet verification and mandatory
-measurement enforcement before readiness. Missing new evidence cannot grant
-admission. This draft must not enter the protected queue.
+separate three-run collection plus always-uploaded full raw packet. The cap
+freeze adds unconditional registry/ratchet verification and mandatory formatter
+measurement enforcement through the same required aggregate. First introduction
+requires the exact reviewed initial cap-file checksum; later immutable bases
+must preserve every row and may only lower its ceiling. Missing new evidence
+cannot grant admission. This draft must not enter the protected queue until
+fresh final-source acceptance.
 
-At this private source stage no new counts, allocation metrics, formatter
-performance improvement, native support or gate closure are claimed.
+## Authenticated calibration and exact cap freeze
+
+Draft source a41c842b was measured by run [37163400887](https://github.com/ubugeeei-prod/vize/actions/runs/37163400887),
+job 111321340463, at genuine PR checkout c225f117: accepted main 09b03523 plus
+the authored a41 head. The complete CRC-qualified artifact 11287839981 and its
+authenticated digest retain actual source, binary, environment, three raw
+Callgrind sets and complete input/window identities. Independent review joins
+each source fixture to the original literal and each named dump to its receipt,
+with zero process-termination leakage and actual allocator preinitialization.
+The cap-freeze decision is paired on [#6882](https://github.com/ubugeeei-prod/vize/issues/6882#issuecomment-5974853181) and [#6830](https://github.com/ubugeeei-prod/vize/issues/6830#issuecomment-5974853351).
+All four positive counts are identical across three fresh executions:
+
+| Probe                      | Exact initial ceiling |
+| -------------------------- | --------------------: |
+| formatter_sfc_simple       |                293575 |
+| formatter_sfc_reuse        |                274723 |
+| formatter_script_large     |                929044 |
+| formatter_template_complex |                244347 |
+
+Every window is stage-return. The actual formatter benchmark binary was built
+with Cargo fresh=false and SHA256
+`cff4ab490e5d9a0bff96d96a3df28a18d8c79dbb398fa0f11d3134d4fab7e240`.
+The frozen formatter-instruction-budgets.toml is byte-identical to the actual
+measured-budgets.toml, SHA256
+`e49d7c38a43fcdfa3bf7114c50ef91734f355d943269d42bc1d18821d444de99`.
+No arbitrary allowance or raised existing cap is introduced. The separate old
+100-row artifact 11288403585 also passes all three actual executions and the
+unchanged ceilings/ratchet in the same job.
+
+Initial source Check 37163401137 retains one genuine formatting failure: the
+new template-call closure needs multiline layout. That whitespace-only repair
+is included with the cap freeze. The successful calibration does not admit the
+repaired final source or protected candidate. Fresh final-source Actions,
+protected full/104-row execution and actual merge remain pending. Applicable
+allocation/wall/RSS metric coverage, performance improvements, native support
+and original printer-error execution are not inferred from these counts.
 
 ## Accepted public configuration/CLI prerequisite
 
