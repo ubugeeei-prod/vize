@@ -50,6 +50,13 @@ formatter	Formatter	source	crates/vize_glyph/src/native_doc/selected_template/ob
 formatter	Formatter	source	crates/vize_glyph/src/native_doc/selected_template/observed/failure.rs	4	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/native_doc/selected_template/value.rs	3	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/native_doc/selected_template/value.rs	3	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	source	crates/vize_glyph/src/native_doc/sfc/build.rs	3	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	source	crates/vize_glyph/src/native_doc/sfc/build.rs	3	l1	L1	stage	vize_l1	preferred	3
+formatter	Formatter	source	crates/vize_glyph/src/native_doc/sfc/observation.rs	3	l1	L1	stage	vize_l1	preferred	2
+formatter	Formatter	source	crates/vize_glyph/src/native_doc/sfc/options.rs	3	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	source	crates/vize_glyph/src/native_doc/sfc/options.rs	3	l1	L1	stage	vize_l1	preferred	2
+formatter	Formatter	source	crates/vize_glyph/src/native_doc/sfc/refusal.rs	3	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	source	crates/vize_glyph/src/native_doc/sfc/refusal.rs	3	l1	L1	stage	vize_l1	preferred	2
 formatter	Formatter	source	crates/vize_glyph/src/native_doc/template.rs	3	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/native_doc/template.rs	3	l1	L1	stage	vize_l1	preferred	2
 formatter	Formatter	source	crates/vize_glyph/src/native_doc/template/cursor.rs	3	l0	L0	stage	vize_l0	preferred	1
@@ -180,6 +187,26 @@ formatter	Formatter	test/dev	crates/vize_glyph/tests/native_observed_template/li
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_observed_template/refusals.rs	3	l0	L0	stage	vize_l0	preferred	3
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_observed_template/refusals.rs	3	l1	L1	stage	vize_l1	preferred	2
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_observed_template/refusals.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc.rs	6	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc.rs	6	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/budgets.rs	3	l0	L0	stage	vize_l0	preferred	17
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/budgets.rs	3	l1	L1	stage	vize_l1	preferred	5
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/budgets.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/custody.rs	3	l0	L0	stage	vize_l0	preferred	2
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/custody.rs	3	l1	L1	stage	vize_l1	preferred	4
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/custody.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/directive_values.rs	8	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/directive_values.rs	8	l1	L1	stage	vize_l1	preferred	2
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/fingerprint.rs	3	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/fingerprint.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/layout.rs	5	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/lifecycle.rs	9	l0	L0	stage	vize_l0	preferred	2
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/preservation.rs	4	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/preservation.rs	4	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/preservation.rs	4	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/refusals.rs	3	l0	L0	stage	vize_l0	preferred	2
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/refusals.rs	3	l1	L1	stage	vize_l1	preferred	5
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_scriptless_sfc/refusals.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_bindings.rs	6	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_bindings.rs	6	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_doc.rs	6	l0	L0	stage	vize_l0	preferred	1

@@ -23,6 +23,8 @@ mod expression;
 mod printer;
 #[path = "native_doc/selected_template.rs"]
 mod selected_template;
+#[path = "native_doc/sfc.rs"]
+mod sfc;
 #[path = "native_doc/template.rs"]
 mod template;
 
@@ -36,5 +38,9 @@ pub use selected_template::{
     ObservedNativeTemplateDocument, ObservedNativeTemplateFailure, ObservedNativeTemplateRefusal,
     native_template_document, observed_native_template_document,
     observed_native_template_document_with_policy,
+};
+pub use sfc::{
+    NativeSfcBlockRole, NativeSfcObservation, NativeSfcOptions, NativeSfcRefusal,
+    observe_native_sfc_in,
 };
 pub use template::{TemplateDocument, TemplateRefusal, UnsupportedSyntax, template_document};
