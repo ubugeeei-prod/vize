@@ -80,7 +80,22 @@ impl ServerState {
     /// Set the Vue dialect override (`None` re-enables structural detection).
     #[inline]
     pub fn set_dialect_config(&self, dialect: Option<vize_l0::dialect::VueDialect>) {
+        self.update_names_configuration(|| self.set_dialect_config_locked(dialect));
+    }
+
+    fn set_dialect_config_locked(&self, dialect: Option<vize_l0::dialect::VueDialect>) {
         *self.dialect_config.write() = dialect;
+    }
+
+    fn update_names_configuration<T>(&self, apply: impl FnOnce() -> T) -> T {
+        #[cfg(feature = "experimental-source-navigation")]
+        {
+            self.update_native_names_configuration(apply)
+        }
+        #[cfg(not(feature = "experimental-source-navigation"))]
+        {
+            apply()
+        }
     }
 
     fn apply_type_checker_config(&self, config: TypeCheckerConfig, timeout_ms: u64, source: &str) {
@@ -155,12 +170,12 @@ impl ServerState {
         tracing::info!("Loaded linter config from {}", source);
     }
 
-    #[cfg(feature = "experimental-source-navigation")]
-    pub(crate) fn native_linked_editing_enabled(&self) -> bool {
-        self.native_linked_editing.load(Ordering::SeqCst)
+    fn apply_lsp_config(&self, config: LspConfigSection, source: &str) {
+        let features = self.update_names_configuration(|| self.apply_lsp_config_locked(config));
+        tracing::info!("Loaded LSP config from {}: {:?}", source, features);
     }
 
-    fn apply_lsp_config(&self, config: LspConfigSection, source: &str) {
+    fn apply_lsp_config_locked(&self, config: LspConfigSection) -> super::LspFeatureConfig {
         #[cfg(feature = "experimental-source-navigation")]
         if let Some(enabled) = config.native_linked_editing {
             self.native_linked_editing.store(enabled, Ordering::SeqCst);
@@ -170,7 +185,23 @@ impl ServerState {
         features.apply_effective_compatibility();
         self.lsp_typecheck_enabled
             .store(features.typecheck, Ordering::SeqCst);
-        tracing::info!("Loaded LSP config from {}: {:?}", source, *features);
+        *features
+    }
+
+    fn apply_names_configuration(
+        &self,
+        features: vize_l0::config::ConfigFeatureFlags,
+        lsp: LspConfigSection,
+        dialect: Option<vize_l0::dialect::VueDialect>,
+        source: &str,
+    ) {
+        let features = self.update_names_configuration(|| {
+            self.apply_config_features(features);
+            let lsp = self.apply_lsp_config_locked(lsp);
+            self.set_dialect_config_locked(dialect);
+            lsp
+        });
+        tracing::info!("Loaded LSP config from {}: {:?}", source, features);
     }
 
     /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.
@@ -188,15 +219,15 @@ impl ServerState {
             *self.linter_rule_options.write() = loaded.lint_rule_options;
             self.apply_global_types_config(config.global_types, &source);
             self.apply_type_checker_config(config.type_checker, loaded.request_timeout_ms, &source);
-            self.apply_config_features(loaded.features);
-            self.apply_lsp_config(
+            self.apply_names_configuration(
+                loaded.features,
                 Self::lsp_config_section_from_file(
                     config.language_server,
                     loaded.language_server_unstable_flags,
                 ),
+                config.dialect,
                 &source,
             );
-            self.set_dialect_config(config.dialect);
         }
     }
 
@@ -210,15 +241,15 @@ impl ServerState {
             *self.linter_rule_options.write() = loaded.lint_rule_options;
             self.apply_global_types_config(config.global_types, &source);
             self.apply_type_checker_config(config.type_checker, loaded.request_timeout_ms, &source);
-            self.apply_config_features(loaded.features);
-            self.apply_lsp_config(
+            self.apply_names_configuration(
+                loaded.features,
                 Self::lsp_config_section_from_file(
                     config.language_server,
                     loaded.language_server_unstable_flags,
                 ),
+                config.dialect,
                 &source,
             );
-            self.set_dialect_config(config.dialect);
         }
     }
 

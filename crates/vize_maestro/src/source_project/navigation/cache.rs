@@ -1,7 +1,7 @@
 //! Existing snapshot worker admission and configuration cleanup.
 use super::{
-    Arc, CachedNavigation, Lang, NativeNavigationProject, NavigationRefusal,
-    NavigationWorker, Profile, ProgramOptions, QueryFamily, SnapshotRefusal, SourceSnapshot,
+    Arc, CachedNavigation, Lang, NativeNavigationProject, NavigationRefusal, NavigationWorker,
+    Profile, ProgramOptions, QueryFamily, SnapshotRefusal, SourceSnapshot,
 };
 
 impl NativeNavigationProject<'_> {
@@ -32,6 +32,10 @@ impl NativeNavigationProject<'_> {
         snapshot: Arc<SourceSnapshot>,
         family: QueryFamily,
     ) -> Result<Arc<NavigationWorker>, NavigationRefusal> {
+        if matches!(family, QueryFamily::Names) {
+            let ticket = self.source.capture_names_parser()?;
+            return self.names_worker(snapshot, &ticket);
+        }
         let cache = match family {
             QueryFamily::Program => &self.workers,
             QueryFamily::Selected => &self.selected_workers,
@@ -137,14 +141,17 @@ impl NativeNavigationProject<'_> {
         for cache in [&self.workers, &self.selected_workers, &self.names_workers] {
             let retired = {
                 let mut workers = cache.lock();
-                let current = self.source.native_vue_configuration();
-                if workers.get(uri).is_some_and(|cached| {
-                matches!(cached.profile, Profile::Vue(configuration) | Profile::SelectedVue(configuration) | Profile::TemplateNamesVue(configuration) if Some(configuration) != current)
-            }) {
-                workers.remove(uri)
-            } else {
-                None
-            }
+                self.source.with_native_vue_configuration(|current| {
+                    let obsolete = workers.get(uri).is_some_and(|cached| match cached.profile {
+                        Profile::Vue(configuration)
+                        | Profile::SelectedVue(configuration)
+                        | Profile::TemplateNamesVue(configuration) => {
+                            Some(configuration) != current
+                        }
+                        _ => false,
+                    });
+                    if obsolete { workers.remove(uri) } else { None }
+                })
             };
             if let Some(CachedNavigation {
                 result: Ok(worker), ..

@@ -37,6 +37,11 @@ pub use capabilities::server_capabilities;
 #[cfg(feature = "native")]
 pub use state::BatchTypeCheckCache;
 pub use state::{LspFeatureConfig, ServerState};
+#[cfg(feature = "experimental-source-navigation")]
+pub(crate) use state::{
+    NativeLinkedNamesRoute, NativeLinkedNamesTicket, NativeNamesConfigurationError,
+    NativeNamesParserTicket, NativeNamesSettings,
+};
 
 use tower_lsp::{Client, ClientSocket, LspService};
 

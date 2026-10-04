@@ -8,6 +8,7 @@ mod cache;
 mod coordinates;
 mod highlights;
 mod linked;
+pub(in crate::source_project) mod names;
 pub(in crate::source_project) mod profile;
 mod retained;
 mod selected;
@@ -45,6 +46,7 @@ pub enum NavigationRefusal {
     WorkerUnavailable,
     Configuration,
     ConfigurationChanged,
+    NamesRouteChanged,
     SfcProducer(Vec<vize_l1_to_l2::native_file::NativeSfcIssue>),
     TemplateNamesProducer,
     TemplateFrameNames(vize_l1::container::vue::NativeTemplateFrameNameRefusal),
