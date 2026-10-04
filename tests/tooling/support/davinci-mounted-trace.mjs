@@ -206,7 +206,6 @@ export async function traceMountedBackend({
         if (host.childNodes.length) app.unmount();
         host.remove();
         scope.dispose();
-        await window.happyDOM.close();
       }
     },
   );

@@ -175,7 +175,6 @@ await withMountedRuntimeDevtools(
     } finally {
       if (mounted) app.unmount();
       host.remove();
-      await window.happyDOM.close();
     }
   },
 );

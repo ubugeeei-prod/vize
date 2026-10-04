@@ -7,6 +7,70 @@ import {
 
 const key = "__VUE_DEVTOOLS_GLOBAL_HOOK__";
 
+test("successful completed traces close once before releasing the observer", async () => {
+  const target = {};
+  const order: string[] = [];
+  const result = await withMountedRuntimeDevtools(
+    false,
+    async () => {
+      assert(Object.hasOwn(target, key));
+      order.push("close");
+    },
+    async () => {
+      order.push("trace");
+      return 42;
+    },
+    { target, enabled: true },
+  );
+  assert.equal(result, 42);
+  assert.deepEqual(order, ["trace", "close"]);
+  assert.equal(Object.hasOwn(target, key), false);
+});
+
+test("completed trace failures close once and preserve even an undefined rejection", async () => {
+  const target = {};
+  let closed = 0;
+  let rejected = false;
+  await withMountedRuntimeDevtools(
+    false,
+    async () => {
+      closed++;
+      throw new Error("cleanup must not replace the trace failure");
+    },
+    async () => {
+      await Promise.resolve();
+      await Promise.reject(undefined);
+    },
+    { target, enabled: true },
+  ).catch((error) => {
+    rejected = true;
+    assert.equal(error, undefined);
+  });
+  assert.equal(rejected, true);
+  assert.equal(closed, 1);
+  assert.equal(Object.hasOwn(target, key), false);
+});
+
+test("cleanup failures after a successful trace still fail and restore the hook", async () => {
+  const target = {};
+  const failure = new Error("DOM close failed");
+  let closed = 0;
+  await assert.rejects(
+    withMountedRuntimeDevtools(
+      false,
+      async () => {
+        closed++;
+        throw failure;
+      },
+      async () => "completed",
+      { target, enabled: true },
+    ),
+    (error) => error === failure,
+  );
+  assert.equal(closed, 1);
+  assert.equal(Object.hasOwn(target, key), false);
+});
+
 test("repeated traces reattach each fresh observer to an already-created renderer", () => {
   const target = {};
   let attached: ReturnType<typeof mountedRuntimeDevtools>["hook"] | undefined;

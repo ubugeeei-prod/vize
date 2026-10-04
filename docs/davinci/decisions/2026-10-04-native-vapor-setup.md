@@ -288,7 +288,7 @@ Coordinated approval and an independent peer clear private source
 The independent final comparison review is SHA256
 `95e451517b79a032e7a87eb36b9b635813353388d17d9f866e2203aa1a5fd20a`;
 all seven current recipe hashes match its frozen manifest. The owned successor
-composes actual main `ac1675fef35c5637c38b1e366a91d6bdfe419885`, preserving
+composes actual main `c34b3d7a9881c10d8ceedff25f7f850df5a6698d`, preserving
 all original30d production/fixture/generator bytes and incoming split tests,
 retained selected-view lifetime and exact dependency capture closure.
 
@@ -307,3 +307,9 @@ for both builds are required before admission. The release freeze still holds
 queue admission; a fresh protected candidate and actual signed Stack merge must
 then complete independently. No expectation recapture, primary-output patch,
 normalization, extra stage/parser/walk or instruction-budget change is added.
+
+The initial guarded051 current-main composition is superseded before acceptance
+by the actual accepted mounted-runtime cleanup main c34b3d7a. Its complete
+cleanup/error-preservation laws stay intact; no restored native Vapor fixture,
+emitter, generator, runtime or frozen qualified comparator changes. Exact-source
+Checks and all measured/capture/browser obligations restart at this successor.

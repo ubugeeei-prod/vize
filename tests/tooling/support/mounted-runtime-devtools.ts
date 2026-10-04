@@ -5,7 +5,7 @@ import { appendFileSync } from "node:fs";
 
 const hookKey = "__VUE_DEVTOOLS_GLOBAL_HOOK__";
 
-/** Own setup failures as well as the completed trace without masking their error. */
+/** Close each trace once and restore its observer without masking its error. */
 export async function withMountedRuntimeDevtools<T>(
   production: boolean,
   close: () => Promise<unknown>,
@@ -13,20 +13,27 @@ export async function withMountedRuntimeDevtools<T>(
   options: Parameters<typeof mountedRuntimeDevtools>[1] = {},
 ) {
   const observer = mountedRuntimeDevtools(production, options);
+  let result!: T;
+  let failed = false;
+  let failure: unknown;
   try {
-    const result = await run(observer);
-    observer.dispose();
-    return result;
+    result = await run(observer);
   } catch (error) {
-    // A failed setup still owns its DOM/hook; cleanup cannot replace that failure.
-    try {
-      await close();
-    } catch {}
-    try {
-      observer.dispose();
-    } catch {}
-    throw error;
+    failed = true;
+    failure = error;
   }
+  for (const cleanup of [close, async () => observer.dispose()]) {
+    try {
+      await cleanup();
+    } catch (error) {
+      if (!failed) {
+        failed = true;
+        failure = error;
+      }
+    }
+  }
+  if (failed) throw failure;
+  return result;
 }
 
 /** Observe each fresh development runtime through Vue's existing devtools hook. */
