@@ -100,7 +100,7 @@ fn prepare(root: &Path, shape: &str) -> String {
 
 fn measure(root: &Path, source: &str, workers: usize, warmed: bool) -> (u128, String, usize) {
     let sources = TypeSourceSnapshot::default();
-    let hosts = if warmed { 128 } else { 1 };
+    let hosts: usize = if warmed { 128 } else { 1 };
     if warmed {
         let path = root.join("warmup.vue");
         black_box(
@@ -164,7 +164,12 @@ fn measure(root: &Path, source: &str, workers: usize, warmed: bool) -> (u128, St
         modules += world.modules.len();
         digest.update(contract(world));
     }
-    (elapsed, format!("{:x}", digest.finalize()), modules)
+    let signature = digest
+        .finalize()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    (elapsed, signature, modules)
 }
 
 fn main() {
