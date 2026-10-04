@@ -24,11 +24,13 @@ pub use interpolation::{
 pub use lint::NativeLintComponent;
 pub use lint_tag::{NativeLintTag, NativeLintTagKind, NativeLintTagRefusal};
 pub use operand::{
+    NativeAttributeBindingExpression, NativeAttributeBindingExpressionView,
     NativeAttributeExpression, NativeAttributeExpressionFailure, NativeAttributeExpressionView,
     NativeAttributeForHead, NativeAttributeForHeadFailure, NativeAttributeForHeadView,
     NativeAttributeHandler, NativeAttributeHandlerFailure, NativeAttributeHandlerView,
     NativeAttributeHead, NativeAttributeOperandError, NativeAttributeValue,
     NativeAttributeValueFailure, NativeAttributeValueView, NativeConditionKind,
+    NativeStaticBindingHead,
 };
 pub use selected::{NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar};
 pub use text::{NativeRootText, NativeRootTextError, NativeRootTextProfile, NativeRootTextView};
