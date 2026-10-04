@@ -1,9 +1,10 @@
-# Original historical Vue expression documents: private successor plan
+# Original historical Vue expression documents: borrowed provider and successor plan
 
 This records the read-only readiness plan for #6842 and #6882 after actual
-Vue 2 custody merge #7690, followed by the root-authorized private borrowed
-provider implementation. It is not a public PR, executed source acceptance,
-native formatter delivery, or historical runtime completion.
+Vue 2 custody merge #7690, followed by the reviewed original borrowed
+provider. Root authorized this bounded provider for independent publication
+after complete source/law review. Hosted execution and protected acceptance
+remain pending; native formatter and historical runtime are unfinished.
 
 ## Literal source and delivered lower custody
 
@@ -50,11 +51,11 @@ base parse but never starts argument parses before the whole list validates.
 The proposed borrow and Doc add zero parser or decoder calls; this is a
 source-flow requirement, not an executed successor-count receipt.
 
-`NativeSyntax::expression()` currently returns `Option<&Expression<'a>>`
+The pre-provider `NativeSyntax::expression()` returns `Option<&Expression<'a>>`
 with the lifetime of the owner borrow. Its original `EmbeddingObservation`
 selects the existing wrapped root through `shapes::expression`, checking the
 single stored statement and outer parenthesized expression. It does not
-issue a public sealed borrowed admission witness.
+issue a public sealed borrowed admission witness on the audited original main.
 
 `NativeSyntax::into_expression(self)` consumes the original syntax owner.
 The stock parser handoff pops its stored statement and allocates the moved
@@ -67,8 +68,8 @@ carrier, or replace parser admission with `.expression()` plus a hole flag.
 
 ## Lowest ready provider: borrowed parser authority
 
-The following original proposal is now implemented privately; hosted and
-protected acceptance have not been executed for this provider:
+The following original proposal is implemented and source-reviewed for
+publication; hosted and protected execution remain pending:
 
 ```rust
 EmbeddingObservation::admitted_expression(&self)
@@ -96,14 +97,14 @@ parse, decode, wrapper, callback index or resident pipeline stage.
 
 Root authorized only the additive stock parser `embedding/borrowed.rs`
 witness and re-exports, L1 `embed::syntax/borrowed.rs` facade and re-export,
-and focused independent laws. They are privately implemented in the new
+and focused independent laws. They were privately implemented in the new
 `feat/l1-borrowed-expression-authority-20261004` worktree from literal main
 `c13900eff34eccab876f449f69216d385d23835c`. No Vue 1/2 callback storage,
 scanner, CST, selected-SFC, body, registry or Glyph projector code changes.
 The stock proof preserves the shorter root borrow, and L1 also requires
 exact content fat-pointer, original source type and wrapper-prefix joins.
 
-Ten concrete private API laws cover exact root/content/grammar/profile/options,
+Ten concrete API laws cover exact root/content/grammar/profile/options,
 full Unicode/nonzero-root decode maps, typed comment/diagnostic addresses,
 and original normal Drop custody. Real compile-fail examples cover
 witness forgery, raw-AST substitution, owner/source/arena escape and moving
@@ -229,16 +230,22 @@ Module syntax admission is not classic runtime early-error validation.
 
 The initial audit performed no implementation. After root authorization,
 only the bounded stock-parser/L1 provider and its ten API/nine compile-fail
-laws were written privately; focused rustfmt and source/doc checks do not
-grant execution acceptance. No Rust build/tests, npm install, push or public
-PR has occurred. Existing old worktrees are preserved. Freeze production
-and laws for root and the existing dialect peer before publication. The
+laws were written privately. Root and the reused dialect peer independently
+reviewed exact frozen `6969cf2645c76a91a51cfd74621faffb02e533c0` and found no
+production/API/lifetime/custody/fixture blocker. Root then authorized
+independent publication. The reviewed Rust blobs are unchanged by the
+publication-status update. Focused rustfmt, oxfmt, two pure-Node module-layout
+controls and the complete source-qualified canonical Croquis check passed;
+none executes the new Rust API laws or doctests. No local Rust build/tests
+or npm install was performed. Hosted source/full/protected acceptance and
+actual merge remain pending. Existing old worktrees are preserved. The
 Glyph consumer and shared expression adapter still require separate
-authorization after the actual frozen provider review. Reuse existing peers
+authorization; no such source edits are included. Reuse existing peers
 without new agent threads.
 
 The initial private design is paired on #6842 comment 5975679409 and #6882
-comment 5975680336. Record the bounded private provider on both issues and
+comment 5975680336; frozen private provider records are #6842 comment
+5975873462 and #6882 comment 5975874089. Record publication on both issues and
 carry this companion and central link in its genuine source change; refresh literal
 main and peer ownership first. Exact-head Actions and all applicable
 protected suites/caps must pass and the real merge must be verified.
