@@ -55,6 +55,7 @@ async function runProbe(fixture, artifacts) {
       vize: { compiler: false, lint: { autoInit: false }, musea: false },
     },
   });
+  const temporaryFiles = [];
   try {
     assert.equal(nuxt.constructor.version, "v2.17.3");
     const generated = path.join(nuxt.options.buildDir, "oxlint.config.json");
@@ -69,29 +70,44 @@ async function runProbe(fixture, artifacts) {
 
     const lintEntry = path.join(fixture, "node_modules/@vizejs/nuxt/dist/lint/index.mjs");
     const api = await import(pathToFileURL(lintEntry).href);
+    // Preserve the default module artifact, then use the public root-config
+    // option for CLI execution: oxlint 1.78 rejects parent-relative ignores.
+    const rootConfig = path.join(fixture, "issue-7828-oxlint.config.json");
+    assert.equal(fs.existsSync(rootConfig), false);
+    temporaryFiles.push(rootConfig);
+    const generation = await api.setupNuxtLintConfigGeneration(
+      { autoInit: false, configFile: rootConfig },
+      nuxt,
+    );
+    assert.equal(generation.configFile, rootConfig);
+    const lintArtifact = JSON.parse(fs.readFileSync(rootConfig, "utf8"));
+    fs.copyFileSync(rootConfig, path.join(artifacts, "nuxt2-root-oxlint.config.json"));
     const dirs = api.collectNuxtLintDirs(api.toNuxtLintProjectState(nuxt.options));
     const features = api.resolveNuxtLintFeatures(undefined, () => false);
     const source = fs.readFileSync(path.join(corpusDir, corpus.source));
-    const input = path.join(artifacts, corpus.source);
-    fs.writeFileSync(input, source);
+    const input = path.join(fixture, "issue-7828-process-flags.ts");
+    fs.writeFileSync(input, source, { flag: "wx" });
+    temporaryFiles.push(input);
+    fs.writeFileSync(path.join(artifacts, corpus.source), source);
     const requireRoot = createRequire(path.join(root, "package.json"));
     const oxlintRoot = path.dirname(requireRoot.resolve("oxlint/package.json"));
     const rows = [];
     for (const entry of corpus.cases) {
       const configFile =
-        entry.nuxtVersion === 2
-          ? generated
-          : path.join(path.dirname(generated), `${entry.id}.json`);
+        entry.nuxtVersion === 2 ? rootConfig : path.join(fixture, `${entry.id}.json`);
       if (entry.nuxtVersion !== 2) {
+        assert.equal(fs.existsSync(configFile), false);
+        temporaryFiles.push(configFile);
         fs.writeFileSync(
           configFile,
           api.renderNuxtOxlintConfig(
             api.buildNuxtLintPlan(features, dirs, entry.nuxtVersion),
-            artifact.jsPlugins[0].specifier,
+            lintArtifact.jsPlugins[0].specifier,
             { rootDir: fixture, configDir: path.dirname(configFile) },
           ),
         );
       }
+      fs.copyFileSync(configFile, path.join(artifacts, `${entry.id}-config.json`));
       const run = spawnSync(
         process.execPath,
         [path.join(oxlintRoot, "bin/oxlint"), "-c", configFile, "-f", "json", input],
@@ -106,7 +122,7 @@ async function runProbe(fixture, artifacts) {
       fs.writeFileSync(path.join(artifacts, `${entry.id}-stderr.log`), run.stderr ?? "");
       assert.equal(run.error, undefined);
       assert.equal(run.signal, null);
-      assert.equal(run.status, entry.nuxtVersion === 2 ? 0 : 1, run.stderr);
+      assert.equal(run.status, entry.nuxtVersion === 2 ? 0 : 1, run.stderr || run.stdout);
       const report = JSON.parse(run.stdout);
       assert.deepEqual(
         report.diagnostics.map(({ code }) => code),
@@ -151,7 +167,11 @@ async function runProbe(fixture, artifacts) {
     assert.deepEqual(fs.readFileSync(path.join(fixture, "nuxt.config.js")), configBytes);
     console.log("Genuine Nuxt 2 lint generation and authored Nuxt 3/4 plan controls passed");
   } finally {
-    await nuxt.close();
+    try {
+      await nuxt.close();
+    } finally {
+      for (const file of temporaryFiles) fs.rmSync(file, { force: true });
+    }
   }
 }
 

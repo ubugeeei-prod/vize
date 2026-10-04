@@ -37,6 +37,11 @@ using the official `loadNuxt` config override seam. Original fixture/config
 bytes are retained. Candidate installed dist inventories must equal the
 freshly packed module and shared preset before the probe runs. Generated
 configuration and whole oxlint JSON reports are uploaded with hashes.
+The default module artifact remains captured. Actual CLI execution uses the
+public `lint.configFile` option at the fixture root: the repository's oxlint
+1.78 rejects the existing emitter's parent-relative ignore patterns before
+lint runs. This separate compatibility limitation remains unresolved; the
+probe does not rewrite generated configuration or suppress its failure.
 The lint-rule oracle uses the fixture's pinned published plugin/native
 `0.429.1`; this receipt qualifies JavaScript configuration, not a current
 native compiler build. Nuxt 3/4 controls exercise authored plans on the same
