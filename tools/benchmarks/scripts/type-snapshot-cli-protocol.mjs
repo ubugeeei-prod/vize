@@ -67,22 +67,20 @@ function portablePath(path, cwd) {
   return relative(cwd, resolve(cwd, path)).split(sep).join("/") || ".";
 }
 
-/** Include clean files and effective program membership as well as diagnostics. */
+/** Preserve authored file/diagnostic order; normalize paths and source membership. */
 export function normalizeCliReport(result, cwd, expectedVueFiles = []) {
   const checked = normalizeTypecheckResult(result, cwd, "json");
   const report = JSON.parse(result.stdout);
   assert(Array.isArray(report.programs), "check report has no effective program evidence");
   assert(Number.isSafeInteger(report.fileCount) && report.fileCount >= 0, "invalid fileCount");
-  const files = report.files
-    .map((entry) => {
-      assert.equal(typeof entry.file, "string");
-      assert(Array.isArray(entry.diagnostics));
-      return {
-        file: portablePath(entry.file, cwd),
-        diagnostics: [...entry.diagnostics].sort(compareStrings),
-      };
-    })
-    .sort((a, b) => a.file.localeCompare(b.file, "en"));
+  const files = report.files.map((entry) => {
+    assert.equal(typeof entry.file, "string");
+    assert(Array.isArray(entry.diagnostics));
+    return {
+      file: portablePath(entry.file, cwd),
+      diagnostics: [...entry.diagnostics],
+    };
+  });
   assert.equal(
     new Set(files.map((entry) => entry.file)).size,
     files.length,
@@ -156,7 +154,10 @@ export function selfTest() {
         { file: "B.vue", diagnostics: [] },
         {
           file: "A.vue",
-          diagnostics: ["error:2:7 [TS2322] Type 'string' is not assignable to type 'number'."],
+          diagnostics: [
+            "error:2:7 [TS2322] Type 'string' is not assignable to type 'number'.",
+            "error:4:3 [TS2345] Argument of type 'string' is not assignable to type 'number'.",
+          ],
         },
       ],
       programs: [
@@ -167,19 +168,32 @@ export function selfTest() {
           files: ["B.vue", "A.vue"],
         },
       ],
-      errorCount: 1,
+      errorCount: 2,
       warningCount: 0,
       fileCount: 2,
     };
     const result = (data, status = 1) => ({ stdout: JSON.stringify(data), stderr: "", status });
     const normalized = normalizeCliReport(result(report), cwd, ["A.vue", "B.vue"]);
     const shuffled = structuredClone(report);
-    shuffled.files.reverse();
     shuffled.programs[0].files.reverse();
-    shuffled.files[0].file = join(cwd, "A.vue");
+    shuffled.files[1].file = join(cwd, "A.vue");
     assert.equal(
       diagnosticFingerprint(normalized),
       diagnosticFingerprint(normalizeCliReport(result(shuffled), cwd, ["A.vue", "B.vue"])),
+    );
+    const reordered = structuredClone(report);
+    reordered.files[1].diagnostics.reverse();
+    assert.notEqual(
+      diagnosticFingerprint(normalized),
+      diagnosticFingerprint(normalizeCliReport(result(reordered), cwd, ["A.vue", "B.vue"])),
+      "authored diagnostic ordering must affect parity",
+    );
+    reordered.files[1].diagnostics.reverse();
+    reordered.files.reverse();
+    assert.notEqual(
+      diagnosticFingerprint(normalized),
+      diagnosticFingerprint(normalizeCliReport(result(reordered), cwd, ["A.vue", "B.vue"])),
+      "authored file ordering must affect parity",
     );
     const changed = structuredClone(report);
     changed.files[1].diagnostics[0] = changed.files[1].diagnostics[0].replace("string", "boolean");

@@ -65,6 +65,7 @@ export function main(argv = process.argv.slice(2)) {
           `${corpus.id}/${mode.id}: cold diagnostics/programs differ`,
         );
         const readiness = {};
+        const gateFingerprints = new Map();
         const plants = prepareMinimalPlants(
           join(workRoot, `${corpus.id}-${mode.id}`),
           vuePackageDir,
@@ -73,14 +74,20 @@ export function main(argv = process.argv.slice(2)) {
         try {
           for (const side of SIDES)
             readiness[side] = gateVize(
-              (cwd) =>
-                run(
-                  side,
-                  mode,
-                  corpus,
-                  cwd,
-                  cwd === corpusPlant.dir ? "gate-corpus" : `gate-${relative(plants.root, cwd)}`,
-                ),
+              (cwd) => {
+                const phase =
+                  cwd === corpusPlant.dir ? "gate-corpus" : `gate-${relative(plants.root, cwd)}`;
+                const result = run(side, mode, corpus, cwd, phase);
+                const previous = gateFingerprints.get(phase);
+                if (previous != null)
+                  assert.equal(
+                    result.fingerprint,
+                    previous,
+                    `${corpus.id}/${mode.id}/${phase}: planted diagnostics/programs differ`,
+                  );
+                gateFingerprints.set(phase, result.fingerprint);
+                return result;
+              },
               plants.dirs,
               corpusPlant.dir,
               cold[side].report,
