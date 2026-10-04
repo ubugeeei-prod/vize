@@ -1,5 +1,7 @@
 //! Workspace/LSP config loading and feature application.
 
+mod read;
+
 use std::path::Path;
 use std::sync::atomic::Ordering;
 
