@@ -1,0 +1,2239 @@
+{
+  "purpose": "Local complete-report reproduction of admission holes; not performance or exact-head acceptance. Corrected exact Actions remain required.",
+  "baseSourceSha": "da66dc241cb7e6ad25fc52fbb4a1b2c1effec9e5",
+  "baseBinarySha256": "b052a9ed3fb5ff62d1e119a7a3f5a31154318add939aa5b6c287b869e4ac7385",
+  "unfixedLocalBuildSourceSha": null,
+  "unfixedLocalBuildNote": "Prior local shared-leaf implementation binary; superseded by final admission repair. Its source scheduling predates5099; module visibility rules reproduce the same three holes retained in5099/bf8. No exact-head speed claim derives from this build.",
+  "unfixedBinarySha256": "c391e9dc671989b04d8896c0173f457b1b842a8c6e0b66f0a9abe04bde1a9317",
+  "typescriptRuntime": "7.0.2 darwin-arm64",
+  "servers": 2,
+  "rayonThreads": 1,
+  "rows": [
+    {
+      "id": "template-package-global",
+      "trigger": "void import(`leaf-global`);",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": false
+    },
+    {
+      "id": "parenthesized-template",
+      "trigger": "void import((`leaf-global`));",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": true
+    },
+    {
+      "id": "parenthesized-string",
+      "trigger": "void import((\"leaf-global\"));",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": true
+    },
+    {
+      "id": "typeof-template",
+      "trigger": "type P = typeof import(`leaf-global`);",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": ["error:1:82 [TS1141] String literal expected."]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 2,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": ["error:1:82 [TS1141] String literal expected."]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 2,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": true
+    },
+    {
+      "id": "import-equals-trivia",
+      "trigger": "import pkg = require /* trivia */ (\"leaf-global\"); void pkg;",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": [
+              "error:1:59 [TS1232] An import declaration can only be used at the top level of a namespace or module.",
+              "error:1:94 [TS2307] Cannot find module 'leaf-global' or its corresponding type declarations."
+            ]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 3,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": [
+              "error:1:59 [TS1232] An import declaration can only be used at the top level of a namespace or module.",
+              "error:1:94 [TS2307] Cannot find module 'leaf-global' or its corresponding type declarations."
+            ]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 3,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": true
+    },
+    {
+      "id": "interpolated-template",
+      "trigger": "const name = \"global\"; void import(`leaf-${name}`);",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": true
+    },
+    {
+      "id": "parenthesized-trivia",
+      "trigger": "void import(/*a*/ (/*b*/ \"leaf-global\"));",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": true
+    },
+    {
+      "id": "nested-vue-package",
+      "trigger": "sub/Comp0.vue imports its nearest sub/node_modules/vue global augmentation",
+      "base": {
+        "files": [
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": []
+          },
+          {
+            "file": "sub/Comp0.vue",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts", "sub/Comp0.vue"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          },
+          {
+            "file": "sub/Comp0.vue",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts", "sub/Comp0.vue"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": false
+    },
+    {
+      "id": "declaration-trivia-script-setup",
+      "trigger": "declare /* gap */ global { type LeafGlobal = number; }",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": false
+    },
+    {
+      "id": "declaration-trivia-normal-script",
+      "trigger": "declare /* gap */ global { type LeafGlobal = number; }",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": false
+    },
+    {
+      "id": "invalid-import-caret",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": [
+              "error:1:59 [TS1128] Declaration or statement expected.",
+              "error:1:66 [TS1109] Expression expected."
+            ]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 2,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": [
+              "error:1:59 [TS1128] Declaration or statement expected.",
+              "error:1:66 [TS1109] Expression expected."
+            ]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 3,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": false
+    },
+    {
+      "id": "invalid-import-no-from",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": ["error:1:68 [TS1005] '=' expected."]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": ["error:1:68 [TS1005] '=' expected."]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 2,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": false
+    },
+    {
+      "id": "invalid-import-optional",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": [
+              "error:1:64 [TS1109] Expression expected.",
+              "error:1:70 [TS1128] Declaration or statement expected."
+            ]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 2,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": [
+              "error:1:64 [TS1109] Expression expected.",
+              "error:1:70 [TS1128] Declaration or statement expected."
+            ]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 3,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": false
+    },
+    {
+      "id": "export-caret",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": [
+              "error:1:59 [TS1128] Declaration or statement expected.",
+              "error:1:66 [TS1109] Expression expected."
+            ]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 2,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": [
+              "error:1:59 [TS1128] Declaration or statement expected.",
+              "error:1:66 [TS1109] Expression expected."
+            ]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 3,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": false
+    },
+    {
+      "id": "export-star-missing-from",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": ["error:1:68 [TS1005] 'from' expected."]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": ["error:1:68 [TS1005] 'from' expected."]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 2,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": false
+    },
+    {
+      "id": "export-star-caret-from",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": ["error:1:73 [TS1109] Expression expected."]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": ["error:1:73 [TS1109] Expression expected."]
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+          }
+        ],
+        "errorCount": 2,
+        "warningCount": 0,
+        "fileCount": 5
+      },
+      "completeOrderedReportsEqual": false
+    },
+    {
+      "id": "js-optional-require",
+      "trigger": "export const loaded = require?.('leaf-types');",
+      "base": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "globals.d.ts",
+            "diagnostics": []
+          },
+          {
+            "file": "loader.js",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "allowJs": true,
+              "checkJs": true,
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": [
+              "Comp0.vue",
+              "Comp1.vue",
+              "Comp2.vue",
+              "Comp3.vue",
+              "globals.d.ts",
+              "loader.js",
+              "shared.ts"
+            ]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 7
+      },
+      "unfixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "globals.d.ts",
+            "diagnostics": []
+          },
+          {
+            "file": "loader.js",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "allowJs": true,
+              "checkJs": true,
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": [
+              "Comp0.vue",
+              "Comp1.vue",
+              "Comp2.vue",
+              "Comp3.vue",
+              "globals.d.ts",
+              "loader.js",
+              "shared.ts"
+            ]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 7
+      },
+      "fixedLocalBuild": {
+        "files": [
+          {
+            "file": "Comp0.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp1.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp2.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Comp3.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "globals.d.ts",
+            "diagnostics": []
+          },
+          {
+            "file": "loader.js",
+            "diagnostics": []
+          },
+          {
+            "file": "shared.ts",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "allowJs": true,
+              "checkJs": true,
+              "lib": ["ESNext", "DOM"],
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ESNext"
+            },
+            "files": [
+              "Comp0.vue",
+              "Comp1.vue",
+              "Comp2.vue",
+              "Comp3.vue",
+              "globals.d.ts",
+              "loader.js",
+              "shared.ts"
+            ]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 7
+      },
+      "fixedCompleteOrderedReportsEqual": true
+    }
+  ],
+  "fixedBinarySha256": "798d5775728fac8c84eca26774b40652e7862e80bce59ac2dc9ccb3a739f1fab",
+  "correctedLocalMatrix": {
+    "caseCount": 21,
+    "completeOrderedChecks": 84,
+    "profileProbes": 21,
+    "source": {
+      "crates/vize_canon/src/batch/executor/cli/partition/dependency_visibility.rs": "47dba372833c1755d223dabe6c2892aeec6272b49905060b530a2fdea4258c67"
+    },
+    "rows": [
+      {
+        "case": "leaf-error",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "000-leaf-parity-leaf-error-1-server-parity-base",
+        "fingerprint": "fa92e0a3c0ab8e878675aafdf24f1ec22c45b5ec84dd835f3f8d225eb5cdd2e0"
+      },
+      {
+        "case": "leaf-error",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "001-leaf-parity-leaf-error-1-server-parity-head",
+        "fingerprint": "fa92e0a3c0ab8e878675aafdf24f1ec22c45b5ec84dd835f3f8d225eb5cdd2e0"
+      },
+      {
+        "case": "leaf-error",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "002-leaf-parity-leaf-error-2-server-parity-base",
+        "fingerprint": "fa92e0a3c0ab8e878675aafdf24f1ec22c45b5ec84dd835f3f8d225eb5cdd2e0"
+      },
+      {
+        "case": "leaf-error",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "003-leaf-parity-leaf-error-2-server-parity-head",
+        "fingerprint": "fa92e0a3c0ab8e878675aafdf24f1ec22c45b5ec84dd835f3f8d225eb5cdd2e0"
+      },
+      {
+        "case": "global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "005-leaf-parity-global-augmentation-1-server-parity-base",
+        "fingerprint": "5ff47805b6dfd1980d3b994407c8487ef230af297194be2aed23034bb9efb015"
+      },
+      {
+        "case": "global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "006-leaf-parity-global-augmentation-1-server-parity-head",
+        "fingerprint": "5ff47805b6dfd1980d3b994407c8487ef230af297194be2aed23034bb9efb015"
+      },
+      {
+        "case": "global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "007-leaf-parity-global-augmentation-2-server-parity-base",
+        "fingerprint": "5ff47805b6dfd1980d3b994407c8487ef230af297194be2aed23034bb9efb015"
+      },
+      {
+        "case": "global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "008-leaf-parity-global-augmentation-2-server-parity-head",
+        "fingerprint": "5ff47805b6dfd1980d3b994407c8487ef230af297194be2aed23034bb9efb015"
+      },
+      {
+        "case": "global-namespace",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "010-leaf-parity-global-namespace-1-server-parity-base",
+        "fingerprint": "b906a05f81f3e294473f289b35e592f0f9e9243e45b0d9a92b4568431f83eff1"
+      },
+      {
+        "case": "global-namespace",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "011-leaf-parity-global-namespace-1-server-parity-head",
+        "fingerprint": "b906a05f81f3e294473f289b35e592f0f9e9243e45b0d9a92b4568431f83eff1"
+      },
+      {
+        "case": "global-namespace",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "012-leaf-parity-global-namespace-2-server-parity-base",
+        "fingerprint": "b906a05f81f3e294473f289b35e592f0f9e9243e45b0d9a92b4568431f83eff1"
+      },
+      {
+        "case": "global-namespace",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "013-leaf-parity-global-namespace-2-server-parity-head",
+        "fingerprint": "b906a05f81f3e294473f289b35e592f0f9e9243e45b0d9a92b4568431f83eff1"
+      },
+      {
+        "case": "forced-module-namespace",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "015-leaf-parity-forced-module-namespace-1-server-parity-base",
+        "fingerprint": "9528b1d15dc2b2dc5510893d954edd6c65a2f71c202c6053e23bb84e5795e693"
+      },
+      {
+        "case": "forced-module-namespace",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "016-leaf-parity-forced-module-namespace-1-server-parity-head",
+        "fingerprint": "9528b1d15dc2b2dc5510893d954edd6c65a2f71c202c6053e23bb84e5795e693"
+      },
+      {
+        "case": "forced-module-namespace",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "017-leaf-parity-forced-module-namespace-2-server-parity-base",
+        "fingerprint": "9528b1d15dc2b2dc5510893d954edd6c65a2f71c202c6053e23bb84e5795e693"
+      },
+      {
+        "case": "forced-module-namespace",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "018-leaf-parity-forced-module-namespace-2-server-parity-head",
+        "fingerprint": "9528b1d15dc2b2dc5510893d954edd6c65a2f71c202c6053e23bb84e5795e693"
+      },
+      {
+        "case": "exported-namespace",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "020-leaf-parity-exported-namespace-1-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "exported-namespace",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "021-leaf-parity-exported-namespace-1-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "exported-namespace",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "022-leaf-parity-exported-namespace-2-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "exported-namespace",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "023-leaf-parity-exported-namespace-2-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "check-js-enabled",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "025-leaf-parity-check-js-enabled-1-server-parity-base",
+        "fingerprint": "4cc6f13493b8e39d75e6bb6f0448b991cb4ebc98401e6e09269688ab3d92e355"
+      },
+      {
+        "case": "check-js-enabled",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "026-leaf-parity-check-js-enabled-1-server-parity-head",
+        "fingerprint": "4cc6f13493b8e39d75e6bb6f0448b991cb4ebc98401e6e09269688ab3d92e355"
+      },
+      {
+        "case": "check-js-enabled",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "027-leaf-parity-check-js-enabled-2-server-parity-base",
+        "fingerprint": "4cc6f13493b8e39d75e6bb6f0448b991cb4ebc98401e6e09269688ab3d92e355"
+      },
+      {
+        "case": "check-js-enabled",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "028-leaf-parity-check-js-enabled-2-server-parity-head",
+        "fingerprint": "4cc6f13493b8e39d75e6bb6f0448b991cb4ebc98401e6e09269688ab3d92e355"
+      },
+      {
+        "case": "check-js-disabled",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "030-leaf-parity-check-js-disabled-1-server-parity-base",
+        "fingerprint": "db0d1cfb8c78b745c47345585ea656a1e41b7ce9923633577921ad1a562a57cb"
+      },
+      {
+        "case": "check-js-disabled",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "031-leaf-parity-check-js-disabled-1-server-parity-head",
+        "fingerprint": "db0d1cfb8c78b745c47345585ea656a1e41b7ce9923633577921ad1a562a57cb"
+      },
+      {
+        "case": "check-js-disabled",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "032-leaf-parity-check-js-disabled-2-server-parity-base",
+        "fingerprint": "db0d1cfb8c78b745c47345585ea656a1e41b7ce9923633577921ad1a562a57cb"
+      },
+      {
+        "case": "check-js-disabled",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "033-leaf-parity-check-js-disabled-2-server-parity-head",
+        "fingerprint": "db0d1cfb8c78b745c47345585ea656a1e41b7ce9923633577921ad1a562a57cb"
+      },
+      {
+        "case": "package-global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "035-leaf-parity-package-global-augmentation-1-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "package-global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "036-leaf-parity-package-global-augmentation-1-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "package-global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "037-leaf-parity-package-global-augmentation-2-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "package-global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "038-leaf-parity-package-global-augmentation-2-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "template-package-global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "040-leaf-parity-template-package-global-augmentation-1-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "template-package-global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "041-leaf-parity-template-package-global-augmentation-1-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "template-package-global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "042-leaf-parity-template-package-global-augmentation-2-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "template-package-global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "043-leaf-parity-template-package-global-augmentation-2-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "nested-vue-global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "045-leaf-parity-nested-vue-global-augmentation-1-server-parity-base",
+        "fingerprint": "6ebfb8558eb99096aabd6c88f556d7e217968a6d4876e88029d282ddf1e95f4f"
+      },
+      {
+        "case": "nested-vue-global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "046-leaf-parity-nested-vue-global-augmentation-1-server-parity-head",
+        "fingerprint": "6ebfb8558eb99096aabd6c88f556d7e217968a6d4876e88029d282ddf1e95f4f"
+      },
+      {
+        "case": "nested-vue-global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "047-leaf-parity-nested-vue-global-augmentation-2-server-parity-base",
+        "fingerprint": "6ebfb8558eb99096aabd6c88f556d7e217968a6d4876e88029d282ddf1e95f4f"
+      },
+      {
+        "case": "nested-vue-global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "048-leaf-parity-nested-vue-global-augmentation-2-server-parity-head",
+        "fingerprint": "6ebfb8558eb99096aabd6c88f556d7e217968a6d4876e88029d282ddf1e95f4f"
+      },
+      {
+        "case": "nested-vue-paths-override",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "050-leaf-parity-nested-vue-paths-override-1-server-parity-base",
+        "fingerprint": "ebd1c49d6e0b67345040f616e783179b52e5e61de40498bcf072400bfc968b99"
+      },
+      {
+        "case": "nested-vue-paths-override",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "051-leaf-parity-nested-vue-paths-override-1-server-parity-head",
+        "fingerprint": "ebd1c49d6e0b67345040f616e783179b52e5e61de40498bcf072400bfc968b99"
+      },
+      {
+        "case": "nested-vue-paths-override",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "052-leaf-parity-nested-vue-paths-override-2-server-parity-base",
+        "fingerprint": "ebd1c49d6e0b67345040f616e783179b52e5e61de40498bcf072400bfc968b99"
+      },
+      {
+        "case": "nested-vue-paths-override",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "053-leaf-parity-nested-vue-paths-override-2-server-parity-head",
+        "fingerprint": "ebd1c49d6e0b67345040f616e783179b52e5e61de40498bcf072400bfc968b99"
+      },
+      {
+        "case": "declaration-trivia-global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "055-leaf-parity-declaration-trivia-global-augmentation-1-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "declaration-trivia-global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "056-leaf-parity-declaration-trivia-global-augmentation-1-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "declaration-trivia-global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "057-leaf-parity-declaration-trivia-global-augmentation-2-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "declaration-trivia-global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "058-leaf-parity-declaration-trivia-global-augmentation-2-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "optional-require-js-global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "060-leaf-parity-optional-require-js-global-augmentation-1-server-parity-base",
+        "fingerprint": "34f8c116f1ced25989ee0e6cec2ef3f255253c7a9f653c08f84690507a04a9b5"
+      },
+      {
+        "case": "optional-require-js-global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "061-leaf-parity-optional-require-js-global-augmentation-1-server-parity-head",
+        "fingerprint": "34f8c116f1ced25989ee0e6cec2ef3f255253c7a9f653c08f84690507a04a9b5"
+      },
+      {
+        "case": "optional-require-js-global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "062-leaf-parity-optional-require-js-global-augmentation-2-server-parity-base",
+        "fingerprint": "34f8c116f1ced25989ee0e6cec2ef3f255253c7a9f653c08f84690507a04a9b5"
+      },
+      {
+        "case": "optional-require-js-global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "063-leaf-parity-optional-require-js-global-augmentation-2-server-parity-head",
+        "fingerprint": "34f8c116f1ced25989ee0e6cec2ef3f255253c7a9f653c08f84690507a04a9b5"
+      },
+      {
+        "case": "malformed-import-caret",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "065-leaf-parity-malformed-import-caret-1-server-parity-base",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-import-caret",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "066-leaf-parity-malformed-import-caret-1-server-parity-head",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-import-caret",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "067-leaf-parity-malformed-import-caret-2-server-parity-base",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-import-caret",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "068-leaf-parity-malformed-import-caret-2-server-parity-head",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-import-missing-from",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "070-leaf-parity-malformed-import-missing-from-1-server-parity-base",
+        "fingerprint": "d9bbc374d0e18425832cdb90ca6429ad7a65134cfbe877e7c870f7733412bf3e"
+      },
+      {
+        "case": "malformed-import-missing-from",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "071-leaf-parity-malformed-import-missing-from-1-server-parity-head",
+        "fingerprint": "d9bbc374d0e18425832cdb90ca6429ad7a65134cfbe877e7c870f7733412bf3e"
+      },
+      {
+        "case": "malformed-import-missing-from",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "072-leaf-parity-malformed-import-missing-from-2-server-parity-base",
+        "fingerprint": "d9bbc374d0e18425832cdb90ca6429ad7a65134cfbe877e7c870f7733412bf3e"
+      },
+      {
+        "case": "malformed-import-missing-from",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "073-leaf-parity-malformed-import-missing-from-2-server-parity-head",
+        "fingerprint": "d9bbc374d0e18425832cdb90ca6429ad7a65134cfbe877e7c870f7733412bf3e"
+      },
+      {
+        "case": "malformed-import-optional",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "075-leaf-parity-malformed-import-optional-1-server-parity-base",
+        "fingerprint": "43b3dc9d77d05d7667ad7daf4cb55b31a8537fdda0599d665b636c96a4d37a0a"
+      },
+      {
+        "case": "malformed-import-optional",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "076-leaf-parity-malformed-import-optional-1-server-parity-head",
+        "fingerprint": "43b3dc9d77d05d7667ad7daf4cb55b31a8537fdda0599d665b636c96a4d37a0a"
+      },
+      {
+        "case": "malformed-import-optional",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "077-leaf-parity-malformed-import-optional-2-server-parity-base",
+        "fingerprint": "43b3dc9d77d05d7667ad7daf4cb55b31a8537fdda0599d665b636c96a4d37a0a"
+      },
+      {
+        "case": "malformed-import-optional",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "078-leaf-parity-malformed-import-optional-2-server-parity-head",
+        "fingerprint": "43b3dc9d77d05d7667ad7daf4cb55b31a8537fdda0599d665b636c96a4d37a0a"
+      },
+      {
+        "case": "malformed-export-caret",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "080-leaf-parity-malformed-export-caret-1-server-parity-base",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-export-caret",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "081-leaf-parity-malformed-export-caret-1-server-parity-head",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-export-caret",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "082-leaf-parity-malformed-export-caret-2-server-parity-base",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-export-caret",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "083-leaf-parity-malformed-export-caret-2-server-parity-head",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-export-missing-from",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "085-leaf-parity-malformed-export-missing-from-1-server-parity-base",
+        "fingerprint": "cdba686b33254cbdf2de443aeef50ccb225d400f03869b0b17fab47caf6a1457"
+      },
+      {
+        "case": "malformed-export-missing-from",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "086-leaf-parity-malformed-export-missing-from-1-server-parity-head",
+        "fingerprint": "cdba686b33254cbdf2de443aeef50ccb225d400f03869b0b17fab47caf6a1457"
+      },
+      {
+        "case": "malformed-export-missing-from",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "087-leaf-parity-malformed-export-missing-from-2-server-parity-base",
+        "fingerprint": "cdba686b33254cbdf2de443aeef50ccb225d400f03869b0b17fab47caf6a1457"
+      },
+      {
+        "case": "malformed-export-missing-from",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "088-leaf-parity-malformed-export-missing-from-2-server-parity-head",
+        "fingerprint": "cdba686b33254cbdf2de443aeef50ccb225d400f03869b0b17fab47caf6a1457"
+      },
+      {
+        "case": "malformed-export-from-caret",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "090-leaf-parity-malformed-export-from-caret-1-server-parity-base",
+        "fingerprint": "57e4b568e5c232f791c487c48799377fe2d20674385dd88e7b456cfaa7c9d58e"
+      },
+      {
+        "case": "malformed-export-from-caret",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "091-leaf-parity-malformed-export-from-caret-1-server-parity-head",
+        "fingerprint": "57e4b568e5c232f791c487c48799377fe2d20674385dd88e7b456cfaa7c9d58e"
+      },
+      {
+        "case": "malformed-export-from-caret",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "092-leaf-parity-malformed-export-from-caret-2-server-parity-base",
+        "fingerprint": "57e4b568e5c232f791c487c48799377fe2d20674385dd88e7b456cfaa7c9d58e"
+      },
+      {
+        "case": "malformed-export-from-caret",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "093-leaf-parity-malformed-export-from-caret-2-server-parity-head",
+        "fingerprint": "57e4b568e5c232f791c487c48799377fe2d20674385dd88e7b456cfaa7c9d58e"
+      },
+      {
+        "case": "relative-ambient-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "095-leaf-parity-relative-ambient-augmentation-1-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "relative-ambient-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "096-leaf-parity-relative-ambient-augmentation-1-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "relative-ambient-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "097-leaf-parity-relative-ambient-augmentation-2-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "relative-ambient-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "098-leaf-parity-relative-ambient-augmentation-2-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "transitive-vue",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "100-leaf-parity-transitive-vue-1-server-parity-base",
+        "fingerprint": "f4625bb97da116fc7f68240bb25ccb11990f1f9507d9bb4fc92857a9320b37a2"
+      },
+      {
+        "case": "transitive-vue",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "101-leaf-parity-transitive-vue-1-server-parity-head",
+        "fingerprint": "f4625bb97da116fc7f68240bb25ccb11990f1f9507d9bb4fc92857a9320b37a2"
+      },
+      {
+        "case": "transitive-vue",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "102-leaf-parity-transitive-vue-2-server-parity-base",
+        "fingerprint": "f4625bb97da116fc7f68240bb25ccb11990f1f9507d9bb4fc92857a9320b37a2"
+      },
+      {
+        "case": "transitive-vue",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "103-leaf-parity-transitive-vue-2-server-parity-head",
+        "fingerprint": "f4625bb97da116fc7f68240bb25ccb11990f1f9507d9bb4fc92857a9320b37a2"
+      }
+    ]
+  }
+}

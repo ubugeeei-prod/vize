@@ -78,6 +78,7 @@ fn global_namespace_and_implicit_script_roots_disable_new_leaf_sharing() {
     for source in [
         "namespace GlobalModel { export type Value = number; }",
         "/* export const marker = 1; */ const globalValue = 1;",
+        "export {}; void import(`missing);",
     ] {
         let dir = tempfile::tempdir().unwrap();
         let project = project(
@@ -148,5 +149,65 @@ fn single_imports_stay_owned_and_vue_edges_stay_connected() {
     assert_eq!(
         plan.owners.get(&dir.path().join("Comp0.vue")),
         plan.owners.get(&dir.path().join("Comp1.vue"))
+    );
+}
+
+#[test]
+fn template_and_uncertain_module_operands_keep_the_original_component_plan() {
+    for load in [
+        "void import(`leaf-types`);",
+        "void import((`leaf-types`));",
+        "void import(('leaf-types'));",
+        "const name = 'types'; void import(`leaf-${name}`);",
+        "const name = 'vue'; void import(name);",
+        "type P = typeof import(`leaf-types`);",
+        "const pkg = require('vue'); void pkg;",
+        "const pkg = require?.('leaf-types'); void pkg;",
+        "const pkg = require<string>('leaf-types'); void pkg;",
+        "void import.source('leaf-types');",
+        "import ^ 'leaf-types';",
+        "import x 'leaf-types';",
+        "void import?.('leaf-types');",
+        "export ^ 'leaf-types';",
+        "export * 'leaf-types';",
+        "export * from ^ 'leaf-types';",
+        "void import('vue');",
+        "type P = typeof import('vue');",
+        "void import(/* trivia */ 'leaf-types', { with: { type: 'json' } });",
+        "import pkg = require /* trivia */ ('leaf-types'); void pkg;",
+        "declare /* gap */ global { type LeafGlobal = number; }",
+        "namespace Local { export const n = 1; }",
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let source = format!(
+            "<script setup lang=\"ts\">import {{ value }} from './shared'; {load} const n = value;</script><template>{{{{ n }}}}</template>"
+        );
+        let project = project(
+            dir.path(),
+            "export const value = 1;",
+            &[("Comp0.vue", &source)],
+        );
+        assert!(
+            partition_virtual_files(&project, 2).shards.is_empty(),
+            "an unproved module operand cannot hide dependencies in sibling programs: {load}"
+        );
+    }
+}
+
+#[test]
+fn nested_vue_loads_cannot_reuse_the_root_helpers_package_context() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut project = project(dir.path(), "export const value = 1;", &[]);
+    let nested = dir.path().join("sub/Comp.vue");
+    fs::create_dir(nested.parent().unwrap()).unwrap();
+    fs::write(
+        &nested,
+        "<script setup lang=\"ts\">import { value } from '../shared'; import 'vue'; const n = value;</script><template>{{ n }}</template>",
+    )
+    .unwrap();
+    project.register_path(&nested).unwrap();
+    assert!(
+        partition_virtual_files(&project, 2).shards.is_empty(),
+        "a nearest nested Vue package can provide globals absent from the root helper"
     );
 }

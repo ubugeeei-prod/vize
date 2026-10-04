@@ -170,7 +170,8 @@ export function createRunner(directory, binaries, runtimePath) {
     writeFileSync(join(directory, "raw", `${id}.stderr.txt`), result.stderr ?? "");
     writeJson(join(directory, "raw", `${id}.json`), record);
     assert.equal(result.error, undefined, `${id}: ${result.error?.message}`);
-    const expected = readdirSync(cwd).filter((file) => file.endsWith(".vue"));
+    const expected =
+      corpus.expectedVuePaths ?? readdirSync(cwd).filter((file) => file.endsWith(".vue"));
     const normalized = normalizeCliReport(result, cwd, expected);
     record.fingerprint = diagnosticFingerprint(normalized);
     record.normalized = normalized;

@@ -3,6 +3,22 @@ import assert from "node:assert/strict";
 import { copyFileSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
+const PACKAGE_GLOBAL_SOURCES = {
+  "node_modules/leaf-global/package.json":
+    '{"name":"leaf-global","version":"1.0.0","types":"index.d.ts"}',
+  "node_modules/leaf-global/index.d.ts": "export {}; declare global { type LeafGlobal = number; }",
+};
+const TEMPLATE_PACKAGE_SOURCES = {
+  "node_modules/leaf-types/package.json":
+    '{"name":"leaf-types","version":"1.0.0","types":"index.d.ts"}',
+  "node_modules/leaf-types/index.d.ts":
+    PACKAGE_GLOBAL_SOURCES["node_modules/leaf-global/index.d.ts"],
+};
+const NESTED_VUE_SOURCES = {
+  "sub/node_modules/vue/package.json": '{"name":"vue","version":"0.0.0","types":"index.d.ts"}',
+  "sub/node_modules/vue/index.d.ts": "export {}; declare global { type LeafGlobal = number; }",
+};
+
 const CASES = [
   {
     id: "leaf-error",
@@ -34,7 +50,7 @@ const CASES = [
   {
     id: "exported-namespace",
     leaf: "export namespace Local { export type Value = number; } export const value: Local.Value = 1;",
-    split: true,
+    split: false,
   },
   {
     id: "check-js-enabled",
@@ -54,15 +70,67 @@ const CASES = [
   {
     id: "package-global-augmentation",
     leaf: "export const value: LeafGlobal = 1;",
-    extra: {
-      "node_modules/leaf-global/package.json":
-        '{"name":"leaf-global","version":"1.0.0","types":"index.d.ts"}',
-      "node_modules/leaf-global/index.d.ts":
-        "export {}; declare global { type LeafGlobal = number; }",
-    },
+    extra: PACKAGE_GLOBAL_SOURCES,
     vueImport: "import /* trivia */ 'leaf-global';",
     split: false,
   },
+  {
+    id: "template-package-global-augmentation",
+    leaf: "export const value: LeafGlobal = 1;",
+    extra: TEMPLATE_PACKAGE_SOURCES,
+    vueImport: "void import(/* trivia */ `leaf-types`);",
+    split: false,
+  },
+  {
+    id: "nested-vue-global-augmentation",
+    leaf: "export const value: LeafGlobal = 1;",
+    extra: NESTED_VUE_SOURCES,
+    vueImport: "import 'vue';",
+    nestedVue: true,
+    split: false,
+  },
+  {
+    id: "nested-vue-paths-override",
+    leaf: "export const value: LeafGlobal = 1;",
+    extra: NESTED_VUE_SOURCES,
+    vueImport: "import 'vue';",
+    nestedVue: true,
+    options: { paths: { vue: ["./sub/node_modules/vue/index.d.ts"] } },
+    split: false,
+  },
+  {
+    id: "declaration-trivia-global-augmentation",
+    leaf: "export const value: LeafGlobal = 1;",
+    vueImport: "declare /* gap */\tglobal { type LeafGlobal = number; }",
+    split: false,
+  },
+  {
+    id: "optional-require-js-global-augmentation",
+    leaf: "export const value: LeafGlobal = 1;",
+    extra: {
+      ...TEMPLATE_PACKAGE_SOURCES,
+      "loader.js":
+        "import { value } from './shared'; export const loaded = require?.('leaf-types'); void value;",
+      "globals.d.ts": "declare function require(name: string): any;",
+    },
+    options: { allowJs: true, checkJs: true },
+    split: false,
+  },
+  ...[
+    ["malformed-import-caret", 'import ^ "leaf-types";'],
+    ["malformed-import-missing-from", 'import x "leaf-types";'],
+    ["malformed-import-optional", 'void import?.("leaf-types");'],
+    ["malformed-export-caret", 'export ^ "leaf-types";'],
+    ["malformed-export-missing-from", 'export * "leaf-types";'],
+    ["malformed-export-from-caret", 'export * from ^ "leaf-types";'],
+  ].map(([id, vueImport]) => ({
+    id,
+    leaf: "export const value: LeafGlobal = 1;",
+    extra: TEMPLATE_PACKAGE_SOURCES,
+    vueImport,
+    expectedError: true,
+    split: false,
+  })),
   {
     id: "relative-ambient-augmentation",
     leaf: "export const value: LeafGlobal = 1;",
@@ -87,9 +155,11 @@ export function checkLeafParity(directory, vuePackageDir, run) {
     mkdirSync(dir);
     mkdirSync(input);
     const sources = { [fixture.file ?? "shared.ts"]: fixture.leaf, ...fixture.extra };
-    for (let index = 0; index < 4; index++)
-      sources[`Comp${index}.vue`] =
-        `<script setup lang="ts">import { value } from '${fixture.file === "shared.js" ? "./shared.js" : "./shared"}'; ${index === 0 ? (fixture.vueImport ?? "") : ""} const n = value;</script><template><div>{{ n }}</div></template>`;
+    for (let index = 0; index < 4; index++) {
+      const nested = fixture.nestedVue && index === 0;
+      sources[`${nested ? "sub/" : ""}Comp${index}.vue`] =
+        `<script setup lang="ts">import { value } from '${nested ? "../shared" : fixture.file === "shared.js" ? "./shared.js" : "./shared"}'; ${index === 0 ? (fixture.vueImport ?? "") : ""} const n = value;</script><template><div>{{ n }}</div></template>`;
+    }
     sources["tsconfig.json"] = JSON.stringify({
       compilerOptions: {
         strict: true,
@@ -100,7 +170,7 @@ export function checkLeafParity(directory, vuePackageDir, run) {
         skipLibCheck: true,
         ...fixture.options,
       },
-      include: ["*.vue", "*.ts", "*.js"],
+      include: [fixture.nestedVue ? "**/*.vue" : "*.vue", "*.ts", "*.js"],
     });
     for (const [file, content] of Object.entries(sources)) {
       mkdirSync(dirname(join(dir, file)), { recursive: true });
@@ -110,7 +180,11 @@ export function checkLeafParity(directory, vuePackageDir, run) {
     }
     mkdirSync(join(dir, "node_modules"), { recursive: true });
     symlinkSync(vuePackageDir, join(dir, "node_modules/vue"), "dir");
-    const corpus = { id: `leaf-parity-${fixture.id}`, args: ["--no-config"] };
+    const corpus = {
+      id: `leaf-parity-${fixture.id}`,
+      args: ["--no-config"],
+      expectedVuePaths: Object.keys(sources).filter((file) => file.endsWith(".vue")),
+    };
     let reference;
     for (const servers of [1, 2]) {
       const mode = { id: `${servers}-server`, args: ["--servers", String(servers)], rayon: 1 };

@@ -14,7 +14,31 @@ pub(super) fn permits_sharing(
         let source = project
             .original_content_for_virtual(&file.virtual_path)
             .unwrap_or(&file.content);
-        if source.contains("<reference") || source.contains('\\') {
+        if source.contains("<reference")
+            || source.contains('\\')
+            || ["declare", "global", "namespace", "require"]
+                .iter()
+                .any(|syntax| source.contains(syntax))
+        {
+            return false;
+        }
+        if file
+            .original_path
+            .extension()
+            .is_some_and(|extension| extension == "vue")
+            && source.match_indices("export").any(|(at, _)| {
+                !skip_trivia(source.get(at + "export".len()..).unwrap_or_default())
+                    .strip_prefix("default")
+                    .and_then(|rest| rest.chars().next())
+                    .is_some_and(|next| {
+                        next.is_ascii_whitespace()
+                            || matches!(next, '(' | '{' | '[' | '\'' | '"' | '`')
+                    })
+            })
+        {
+            // Vue wrappers are modules, but parser recovery can retain a
+            // malformed export's module load. Only normal default component
+            // exports qualify; other exports retain the original cost plan.
             return false;
         }
         // Unlike the generated-code cost scan, accept trivia after keywords
@@ -23,27 +47,69 @@ pub(super) fn permits_sharing(
         for token in ["from", "import", "require"] {
             for (at, _) in source.match_indices(token) {
                 let rest = skip_trivia(source.get(at + token.len()..).unwrap_or_default());
+                if rest.starts_with(['.', '?', '<']) {
+                    return false;
+                }
+                if token == "import" && (rest.starts_with("defer") || rest.starts_with("source")) {
+                    return false;
+                }
+                let call = rest.starts_with('(');
                 let rest = rest.strip_prefix('(').map_or(rest, skip_trivia);
                 let Some(quote) = rest
                     .chars()
                     .next()
-                    .filter(|quote| matches!(quote, '\'' | '"'))
+                    .filter(|quote| matches!(quote, '\'' | '"' | '`'))
                 else {
+                    if call {
+                        // Computed, parenthesized or malformed operands are
+                        // outside the statically proved module-load grammar.
+                        return false;
+                    }
+                    if token == "import" {
+                        // Native parser recovery can still load a module from
+                        // malformed imports lacking `from`. Require the first
+                        // quoted operand to follow the supported static form.
+                        let Some(at) = rest.find(['\'', '"', '`']) else {
+                            return false;
+                        };
+                        if !rest
+                            .get(..at)
+                            .unwrap_or_default()
+                            .trim_end()
+                            .ends_with("from")
+                        {
+                            return false;
+                        }
+                    }
                     continue;
                 };
                 let Some((specifier, _)) = rest.get(1..).unwrap_or_default().split_once(quote)
                 else {
                     return false;
                 };
-                if specifier.contains('\\') {
+                if specifier.contains('\\') || (quote == '`' && specifier.contains("${")) {
                     return false;
                 }
-                // The shared helper loaded by every checker program already
-                // imports Vue. Any other bare/absolute dependency may augment
-                // globals only in its importer's program, so decline splitting.
+                // The shared helper imports Vue from the virtual root. Prove
+                // the same backend directory and module mode before sharing
+                // that exemption: nested package/alias contexts can differ.
                 if specifier == "vue" {
+                    if file.virtual_path.parent() != Some(project.virtual_root())
+                        || !file
+                            .virtual_path
+                            .extension()
+                            .and_then(|extension| extension.to_str())
+                            .is_some_and(|extension| matches!(extension, "ts" | "js"))
+                        || call
+                        || token == "require"
+                        || source.contains("resolution-mode")
+                    {
+                        return false;
+                    }
                     continue;
                 }
+                // Other bare/absolute dependencies may augment globals only
+                // in their importer's program, so decline new splitting.
                 if !specifier.starts_with("./") && !specifier.starts_with("../") {
                     return false;
                 }

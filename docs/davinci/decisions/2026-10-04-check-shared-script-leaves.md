@@ -50,7 +50,36 @@ coupling. Profile probes run separately from timings. No throughput claim or
 queue adoption follows merely from a green parity job; all whole-command
 ratios require review. The full 10x criterion remains unfinished.
 
-The [measured hold decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5976127642)
+The [superseding correctness decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5976471845)
+rejects the earlier `bf8c8b92bf` candidate before queue adoption. Actual backend
+probes found additional shared-leaf errors from template literal module loads,
+nearest nested Vue packages, trivia in global declarations, JS optional require,
+and native recovery of malformed imports/exports. The [local unfixed probe receipt](../../../tools/benchmarks/results/typechecker-shared-script-leaves-guard-probes.json)
+preserves complete reports and binary hashes; it is not exact-head acceptance or
+a timing receipt.
+
+Admission now accepts only direct string/no-substitution-template module operands.
+Computed, interpolated, parenthesized, malformed, optional/generic/phase calls,
+all require occurrences, and original declare/global/namespace syntax decline
+new sharing. Static binding imports require the first quoted operand to follow
+the supported from form. Non-Vue roots require clean parsed module metadata;
+Vue exports admit only normal default component expressions. Vue's exemption
+requires the actual virtual importer directory to equal the shared helper's
+virtual-root directory, a compatible TS/JS extension, and no call or
+resolution-mode override. This proves the backend context without filesystem
+lookups; nested/external contexts retain the prior plan. Comments/strings may
+conservatively decline an optimization. The legacy classifier is unchanged.
+
+The corrected local build passed 21 real-runtime cases: 84 complete ordered
+checks across before/after and one/two servers plus 21 untimed profile probes.
+Seven partition tests and the separate duplicate-budget test passed. Scanner
+fixtures use leaf-types so the global keyword guard cannot mask operand branches.
+The three timed corpora, max/1T protocol, plants and all 104 ceilings remain
+unchanged. Corrected exact-head Actions and the renewed four-layer whole-CLI
+measurement must pass before ready/queue adoption, after the release owner lifts
+the publication queue freeze. Production source is frozen after this matrix.
+
+The historical [measured hold decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5976127642)
 preserves the [full paired receipt](../../../tools/benchmarks/results/typechecker-shared-script-leaves-cli-paired.json).
 Exact source/protocol head `5099e67572d50fd4ccae4951bee88d062d9cfb5d`
 and full Stack baseline `da66dc241cb7e6ad25fc52fbb4a1b2c1effec9e5`
