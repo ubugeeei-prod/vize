@@ -1,7 +1,7 @@
 # Original optional primitive formal parameters
 
 This provider is a genuine child of the reviewed return consumer #7772 at
-`a26a72a5604b4aa38f7c7e17b3f26e171a583294`, losslessly replayed from its
+`565f116155d94546d6bc0ad57894f1c71123b28b`, losslessly replayed from its
 original `wt` parent `9dd920101ca31dfa856bd3ca27c4a9e5f625b8bf`. Root and
 the independent peer fully reviewed the frozen source before authorizing Draft
 publication as the fifth layer of native Stack #7759. Every original source/law
@@ -92,3 +92,13 @@ closure, default migration and reproducible same-diagnostic 10x remain unfinishe
 
 Paired decisions on #6879 and #6849 belong to publication of this genuine source
 change; this private record does not claim those comments have already been sent.
+
+
+The necessary actual `912d311c` ancestor supplies the newly merged native-phase
+workflow/scripts/example across all five true parents. Earlier automatic phase
+preflight on the `9702c014`-based second/third/fourth heads failed before build with
+the real helper missing; their full logs and failure records remain in the owned
+consumer/return companions. This fifth-layer replay preserves all eleven reviewed
+source/law blobs and the complete incoming central union; only the real parent
+identity and this factual prerequisite record change here. Fresh Actions and
+protected/literal delivery remain mandatory, with no helper copy or failure waiver.
