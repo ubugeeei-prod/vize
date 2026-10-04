@@ -152,7 +152,15 @@ export function validateFormatterHistoryAudit(audit: any, repoRoot: string) {
     ).cases.map((fixture: any) => fixture.id),
   );
   assert.equal(cliCases.size, cliPin.cases);
-  assert.equal(cliCases.size, 5);
+  // Later correctness regressions extend the corpus without retiring any of
+  // the original five source-bound CLI obligations.
+  assert.deepEqual([...cliCases].slice(0, 5), [
+    "formatter/sfc/split-v-pre-indentation",
+    "formatter/sfc/plain-style-nested-comments",
+    "formatter/sfc/vue2-filter-chain-crlf",
+    "formatter/sfc/vue2-7-filter-chain",
+    "formatter/sfc/vue3-bitwise-or",
+  ]);
   for (const [index, fix] of [...audit.fixes, ...audit.supplementalFixes].entries()) {
     assert.match(fix.commit, /^[a-f0-9]{40}$/);
     assert.match(fix.subject, /^fix(?:\([^)]+\))?: /);
