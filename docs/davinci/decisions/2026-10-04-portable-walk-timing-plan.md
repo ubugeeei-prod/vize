@@ -1,10 +1,11 @@
-# Caller-owned fused-walk timing — private source plan
+# Caller-owned fused-walk timing — private provider and consumer
 
 Issue: [#6834](https://github.com/ubugeeei-prod/vize/issues/6834).
 Planning baseline: signed actual main
 [`76f93fe1e3c46ac8c86157a520302e26c50ac871`](https://github.com/ubugeeei-prod/vize/tree/76f93fe1e3c46ac8c86157a520302e26c50ac871),
-read on 2026-10-04 08:18 UTC. This is a review proposal, with no implemented,
-executed, published, queued or merged source credit.
+read on 2026-10-04 08:18 UTC. The reviewed plan is now a private provider implementation. Its genuine Curator
+child is separate. No Rust execution, publication, queue or actual merge credit
+has been established for either source.
 
 ## Readiness and concrete gap
 
@@ -25,15 +26,15 @@ the existing three-pass/two-walk law uses six samples and expects the fused
 walk 0..30 and barrier walk 40..50. Adding a second clock source or a separate
 observer that reads more timestamps would change the observation.
 
-## Smallest implementation proposal
+## Bounded implementation decision
 
-Extract the existing open-walk state and lifecycle rules into one L0 helper,
-provisionally `WalkTiming<Mark>`, under `pass/observer/timing/`. It owns only the
+The provider extracts the existing open-walk state and lifecycle rules into
+`WalkTiming<Mark>` at `pass/observer/timing/walk.rs`. It owns only the
 existing optional open mark and its `SpanAttribution`. `Mark` is supplied by the
 caller; the helper never reads a clock, reaches the global profiler, allocates,
 serializes or traverses nodes.
 
-Proposed operations are restart/discard, group-entry with a lazy
+Its operations are restart/discard, group-entry with a lazy
 `FnOnce() -> Option<Mark>` factory, and group-exit returning the owned mark plus
 its existing attribution. Non-entry passes must not invoke the factory;
 non-exit passes must not consume the open mark. Attribution remains the stage
@@ -79,11 +80,28 @@ has no no_std feature or `#![no_std]`. This proposal supplies clock-free walk
 state and uses the real browser clock consumer. Bare-metal targets and complete
 std/TLS/clock/global-profiler isolation remain unimplemented.
 
-## Paired record and scope
+## Current private proof and paired record
 
-After source-plan review, pair the implementation decision with #6834 and the
-central L0 paragraph in the same genuine source change. Do not publish this
-planning record as a receipt-only PR. Preserve allocator, export/schema,
-fixtures, all instruction ceilings and other owners' source reservations.
-Actual product defaults, all remaining history gates, broader 10x/performance,
-full #6834 portability and whole Davinci completion remain unfinished.
+Root read the full source plan and both existing consumer laws before authorizing
+private implementation. The provider integrates the real native TimingObserver
+and authors six controlled laws: actual fused/barrier callbacks, intermediate
+laziness and single exit ownership, declined starts, actual-runner failure and
+restart, interrupted pipeline restart, and exact drop of an abandoned non-Copy
+mark. These laws have not been executed locally or on Actions yet. The original
+native timing/export test is byte-exact; the concrete Instant Timer, global gate,
+profiler/schema/budget and existing corpus files are unchanged.
+
+Configured affected-Rust planning owns the provider files under vize_l0 and
+selects reverse dependencies; the genuine child owns vize_curator. Existing
+full protected Rust/tooling/native hooks and all104 instructions/both ratchets
+stay mandatory. There is no workflow/selector/dependency change or new campaign.
+Formatting and diff integrity are local source checks only. Publication and
+native Stack membership await whole source review; root's finite release
+sequencing currently holds queue admission.
+
+Pair this same decision with #6834 and the existing central L0 paragraph in the
+genuine source change. An issue-comment draft is prepared privately until
+source review authorizes publication. No receipt-only PR is proposed. Preserve
+allocator/export/schema/fixtures/ceilings and other owners' source reservations.
+Actual product defaults, remaining history gates, broader10x/performance, full
+#6834 portability and whole Davinci completion remain unfinished.
