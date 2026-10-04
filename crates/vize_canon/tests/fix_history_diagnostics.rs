@@ -3,15 +3,17 @@
 #![expect(clippy::expect_used, reason = "fixture assertions fail by panicking")]
 #![expect(clippy::disallowed_types, reason = "JSON fixtures use std strings")]
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait};
 
 mod support {
     pub(crate) mod fix_history_observation;
+    pub(crate) mod fix_history_paths;
 }
 use support::fix_history_observation as observation;
+use support::fix_history_paths::{link_vue, safe_relative};
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -329,19 +331,3 @@ fn check_pack(
     }
 }
 
-fn safe_relative(input: &str) -> PathBuf {
-    let path = PathBuf::from(input);
-    assert!(
-        path.components()
-            .all(|part| matches!(part, std::path::Component::Normal(_)))
-    );
-    assert!(!path.as_os_str().is_empty());
-    path
-}
-
-fn link_vue(source: &Path, destination: &Path) {
-    #[cfg(unix)]
-    std::os::unix::fs::symlink(source, destination).expect("the real Vue package must link");
-    #[cfg(windows)]
-    std::os::windows::fs::symlink_dir(source, destination).expect("the real Vue package must link");
-}
