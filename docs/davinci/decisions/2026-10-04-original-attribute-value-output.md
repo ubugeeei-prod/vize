@@ -176,3 +176,16 @@ publication. Keeping every job, output, guard and action, the workflow now uses
 the equivalent flow spelling of the null workflow_call mapping and omits three
 job-separator blank lines. Parsed complete YAML objects remain identical; the
 unchanged350-line law passes, with no hook, selection or policy exemption.
+
+The published e978/4f1/dfb replay incorrectly retained three storage-ledger
+conflict markers. The Croquis20 check covers a different inventory; it cannot
+validate this per-file storage ledger. The necessary correction removes only
+those markers and preserves every original11-field measurement plus the actual
+incoming Vue2/attribute-head rows. Each layer passes the real TypeScript storage
+scanner/parser, aggregate and source run-bundle laws (8/8), while the complete
+source inventories20/19/22 and capture/layout laws13/13 remain intact. Literal
+912d ancestry also retains its actual native-backend phase harness instead of
+copying a missing helper. Every owned executable, fixed input and frozen whole84
+output is byte-identical to the reviewed source. Invalid heads/raw failed logs
+remain historical; fresh Actions, complete native capture/runtime equality and
+protected gates are still required before any Stack prefix admission.
