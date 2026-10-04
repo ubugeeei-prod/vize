@@ -5,7 +5,7 @@
 //! ordered roots; L4 writes complete JavaScript and linked literals once.
 
 use vize_l0::{Span, ToCompactString, id::NodeId};
-use vize_l3::decision::vapor::{NativeTemplateVaporAnalysis, VaporPart, VaporUnsupported};
+use vize_l3::decision::vapor::{NativeTemplateVaporAnalysis, VaporUnsupported};
 
 use crate::module::{AssemblyError, assemble_template_with_prelude};
 use crate::runtime::{Runtime, vocabulary};
@@ -13,6 +13,7 @@ use crate::write::{Emitted, LinkSink, Writer};
 
 mod component;
 mod literal;
+mod roots;
 pub use component::emit_component;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -74,63 +75,12 @@ fn fragments<L: LinkSink>(
             kind: VaporErrorKind::Unsupported(rejection.reason),
         });
     }
-    let runtime = vocabulary(Runtime::VueVapor);
     let mut prelude = Writer::default();
     let mut render = Writer::default();
     render.push("function render(_ctx) {");
     render.indent();
-    for (index, root) in facts.roots().iter().enumerate() {
-        let parts = facts
-            .parts(root)
-            .ok_or_else(|| error(VaporErrorKind::ForeignRoot))?;
-        render.newline();
-        render.push("const n");
-        number(&mut render, index);
-        render.push(" = ");
-        let helper = runtime
-            .helper("template")
-            .ok_or_else(|| error(VaporErrorKind::RuntimeHelper))?;
-        prelude.use_helper(helper);
-        prelude.push("const t");
-        number(&mut prelude, index);
-        prelude.push(" = _template(\"");
-        if let [VaporPart::Text { text, .. }] = parts {
-            prelude.anchor(text.span.start);
-            // Actual template() uses a raw Text branch when the first byte
-            // is not '<'. L3 refuses that markup-shaped root spelling.
-            literal::raw(&mut prelude, text.content);
-        } else {
-            for part in parts {
-                literal::html_part(&mut prelude, part);
-            }
-        }
-        // Actual rc.9 TemplateFlags.STATIC=2 and ROOT=1. L3 decides
-        // root fallthrough; the encoder owns the pinned numeric spelling.
-        prelude.push(if facts.inherit_attrs() == Some(root.node()) {
-            "\", 3)\n"
-        } else {
-            "\", 2)\n"
-        });
-        render.push("t");
-        number(&mut render, index);
-        render.push("()");
-    }
-    render.newline();
-    render.push("return ");
-    let count = facts.roots().len();
-    if count != 1 {
-        render.push("[");
-    }
-    for index in 0..count {
-        if index != 0 {
-            render.push(", ");
-        }
-        render.push("n");
-        number(&mut render, index);
-    }
-    if count != 1 {
-        render.push("]");
-    }
+    roots::static_roots(&mut prelude, &mut render, facts)?;
+    roots::return_roots(&mut render, facts.roots().len());
     render.deindent();
     render.newline();
     render.push("}");
