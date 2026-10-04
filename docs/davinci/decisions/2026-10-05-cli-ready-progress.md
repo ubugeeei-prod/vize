@@ -31,6 +31,9 @@ but the tooling worker correctly rejected fifteen partial integration
 assertions. The replacement compares complete stderr transcripts and exact
 stdout/source bytes, normalizing only validated numeric elapsed-time fields.
 No assertion allowlist or gate exception is added; fresh Actions are required.
+Source `aaac7435e8` then exposed a missing existing `Built: App.vue ->
+./dist/App.js` line in both success expectations. The complete oracle retains
+that original output line; production source and all refusal laws stay exact.
 
 Exact-head Actions and the protected merge queue remain required before actual
 merge. Publication is coordinated with the current release; authored source or

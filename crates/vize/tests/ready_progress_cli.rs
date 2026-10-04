@@ -38,6 +38,7 @@ const FMT: &str =
     "Found 1 file(s)\nReformatted: App.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n";
 const LINT: &str = "[vize] Skipping lint because linter.enabled is false in vize.config.\n";
 const CHECK: &str = "[vize] Skipping check because typeChecker.enabled is false in vize.config.\n";
+const BUILT: &str = "Built: App.vue -> ./dist/App.js\n";
 const BUILD: &str = "\x1b[32m✓ 1 file compiled in <elapsed>s\x1b[0m\n";
 const MISSING: &str = "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found matching the patterns\n";
 
@@ -54,7 +55,7 @@ fn redirected_ready_keeps_stage_logs_and_creates_the_real_build_output() {
     assert_eq!(
         normalize_times(&stderr),
         format!(
-            "vize ready: fmt\n{FMT}vize ready: lint\n{LINT}vize ready: check\n{CHECK}vize ready: build\n{BUILD}"
+            "vize ready: fmt\n{FMT}vize ready: lint\n{LINT}vize ready: check\n{CHECK}vize ready: build\n{BUILT}{BUILD}"
         )
     );
     assert!(project.path().join("dist/App.js").is_file());
@@ -87,7 +88,7 @@ fn terminal_ready_numbers_real_stages_and_keeps_stdout_separate() {
     assert_eq!(
         normalize_times(&stderr),
         format!(
-            "\n  vize ready\n\n  [1/4] Format\n{FMT}  ✓ Format  <elapsed>\n\n  [2/4] Lint\n{LINT}  ✓ Lint  <elapsed>\n\n  [3/4] Type check\n{CHECK}  ✓ Type check  <elapsed>\n\n  [4/4] Build\n{BUILD}  ✓ Build  <elapsed>\n\n  ✓ Ready  4 stages completed in <elapsed>\n\n"
+            "\n  vize ready\n\n  [1/4] Format\n{FMT}  ✓ Format  <elapsed>\n\n  [2/4] Lint\n{LINT}  ✓ Lint  <elapsed>\n\n  [3/4] Type check\n{CHECK}  ✓ Type check  <elapsed>\n\n  [4/4] Build\n{BUILT}{BUILD}  ✓ Build  <elapsed>\n\n  ✓ Ready  4 stages completed in <elapsed>\n\n"
         )
     );
     assert!(project.path().join("dist/App.js").is_file());
