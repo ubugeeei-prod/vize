@@ -3,8 +3,10 @@
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, SourceRoot, Span, Vec};
 
+use super::super::scan::MatchedClose;
 use super::{
     DescriptorIssue, DescriptorIssueCode as Code, DescriptorOptions, Selection, StyleSelection,
+    TemplateNamePair, TemplateSelection,
 };
 use crate::{container::Block, embed::Lang};
 
@@ -13,7 +15,7 @@ pub(super) struct Policy<'a> {
     pub(super) issues: Vec<'a, DescriptorIssue>,
     pub(super) ordinary: Option<Selection<'a>>,
     pub(super) setup: Option<Selection<'a>>,
-    pub(super) template: Option<Selection<'a>>,
+    pub(super) template: Option<TemplateSelection<'a>>,
     pub(super) styles: Vec<'a, StyleSelection<'a>>,
 }
 
@@ -66,6 +68,7 @@ impl<'a> Policy<'a> {
         block: &Block<'a>,
         uncertain: bool,
         self_closing: bool,
+        closing: Option<MatchedClose>,
     ) {
         let script = block.name.eq_ignore_ascii_case("script");
         let template = block.name.eq_ignore_ascii_case("template");
@@ -171,9 +174,26 @@ impl<'a> Policy<'a> {
             block: content,
             lang,
         };
-        let slot = if template {
-            &mut self.template
-        } else if setup {
+        if template {
+            if self.template.is_some() {
+                self.issue(Code::DuplicateRole, Some(index), block.open_tag);
+            } else {
+                let names = self.root.zip(closing).and_then(|(root, close)| {
+                    root.whole_block()
+                        .span_of(block.name)
+                        .map(|opening| TemplateNamePair {
+                            opening,
+                            closing: close.name(),
+                        })
+                });
+                self.template = Some(TemplateSelection {
+                    selection: selected,
+                    names,
+                });
+            }
+            return;
+        }
+        let slot = if setup {
             &mut self.setup
         } else {
             &mut self.ordinary

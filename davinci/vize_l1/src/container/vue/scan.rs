@@ -14,6 +14,26 @@ pub(super) struct Open<'a> {
     pub(super) self_closing: bool,
 }
 
+/// Geometry retained only at the original successful closing-name match.
+#[derive(Debug, Clone, Copy)]
+pub(super) struct MatchedClose {
+    start: usize,
+    end: usize,
+    name: Span,
+}
+
+impl MatchedClose {
+    pub(super) fn start(self) -> usize {
+        self.start
+    }
+    pub(super) fn end(self) -> usize {
+        self.end
+    }
+    pub(super) fn name(self) -> Span {
+        self.name
+    }
+}
+
 pub(super) fn read_open<'a>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -118,7 +138,7 @@ pub(super) fn find_template_close<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     from: usize,
-) -> (usize, Option<usize>, bool) {
+) -> (usize, Option<MatchedClose>, bool) {
     let bytes = source.as_bytes();
     let (mut pos, mut depth) = (from, 1usize);
     let mut uncertain = false;
@@ -145,12 +165,12 @@ pub(super) fn find_template_close<'a>(
             pos += 1;
             continue;
         }
-        if let Some(end) = close_at(bytes, pos, "template") {
+        if let Some(close) = close_at(bytes, pos, "template") {
             depth -= 1;
             if depth == 0 {
-                return (pos, Some(end), uncertain);
+                return (pos, Some(close), uncertain);
             }
-            pos = end;
+            pos = close.end();
             continue;
         }
         if let Ok(Some(open)) = read_open(allocator, source, pos) {
@@ -161,9 +181,9 @@ pub(super) fn find_template_close<'a>(
                 .iter()
                 .any(|name| open.name.eq_ignore_ascii_case(name))
                 && !open.self_closing
-                && let Some((_, end)) = find_close(bytes, open.end, open.name)
+                && let Some(close) = find_close(bytes, open.end, open.name)
             {
-                pos = end;
+                pos = close.end();
                 continue;
             }
             pos = open.end;
@@ -174,20 +194,20 @@ pub(super) fn find_template_close<'a>(
     (bytes.len(), None, uncertain)
 }
 
-pub(super) fn find_close(bytes: &[u8], from: usize, name: &str) -> Option<(usize, usize)> {
+pub(super) fn find_close(bytes: &[u8], from: usize, name: &str) -> Option<MatchedClose> {
     let mut pos = from;
     while pos < bytes.len() {
         if bytes.get(pos) == Some(&b'<')
-            && let Some(end) = close_at(bytes, pos, name)
+            && let Some(close) = close_at(bytes, pos, name)
         {
-            return Some((pos, end));
+            return Some(close);
         }
         pos += 1;
     }
     None
 }
 
-fn close_at(bytes: &[u8], at: usize, name: &str) -> Option<usize> {
+fn close_at(bytes: &[u8], at: usize, name: &str) -> Option<MatchedClose> {
     if bytes.get(at..at + 2) != Some(b"</") {
         return None;
     }
@@ -205,7 +225,14 @@ fn close_at(bytes: &[u8], at: usize, name: &str) -> Option<usize> {
     {
         pos += 1;
     }
-    (bytes.get(pos) == Some(&b'>')).then_some(pos + 1)
+    if bytes.get(pos) != Some(&b'>') {
+        return None;
+    }
+    Some(MatchedClose {
+        start: at,
+        end: pos + 1,
+        name: Span::new(u32::try_from(at + 2).ok()?, u32::try_from(end_name).ok()?),
+    })
 }
 
 pub(super) fn find_bytes(bytes: &[u8], from: usize, needle: &[u8]) -> Option<usize> {

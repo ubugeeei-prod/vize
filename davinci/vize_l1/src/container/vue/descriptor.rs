@@ -11,7 +11,8 @@ use crate::{embed::Lang, parse::SurfaceParseOptions};
 
 mod policy;
 mod template;
-pub use template::TemplateView;
+pub use template::{NativeTemplateFrameNameRefusal, NativeTemplateFrameNames, TemplateView};
+use template::{TemplateNamePair, TemplateSelection};
 #[cfg(test)]
 mod style_tests;
 #[cfg(test)]
@@ -124,7 +125,7 @@ pub struct DescriptorObservation<'a> {
     issues: Vec<'a, DescriptorIssue>,
     ordinary: Option<Selection<'a>>,
     setup: Option<Selection<'a>>,
-    template: Option<Selection<'a>>,
+    template: Option<TemplateSelection<'a>>,
     styles: Vec<'a, StyleSelection<'a>>,
 }
 
@@ -206,7 +207,7 @@ impl<'o, 'a> AdmittedDescriptor<'o, 'a> {
         })
     }
     pub fn template(self) -> Option<TemplateView<'o, 'a>> {
-        self.owner.template.map(|selected| TemplateView {
+        self.owner.template.as_ref().map(|selected| TemplateView {
             owner: self.owner,
             selected,
         })
@@ -304,8 +305,8 @@ pub(super) fn observe<'a>(
     let container = super::split_with(
         allocator,
         source,
-        |index, block, uncertain, self_closing| {
-            state.record(index, block, uncertain, self_closing);
+        |index, block, uncertain, self_closing, closing| {
+            state.record(index, block, uncertain, self_closing, closing);
         },
     );
     state.finish();

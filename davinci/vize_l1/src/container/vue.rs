@@ -13,14 +13,15 @@ mod scan;
 
 pub use descriptor::{
     AdmittedDescriptor, DescriptorIssue, DescriptorIssueCode, DescriptorObservation,
-    DescriptorOptions, DescriptorRefusal, ScriptRole, ScriptView, StyleView, TemplateView,
+    DescriptorOptions, DescriptorRefusal, NativeTemplateFrameNameRefusal, NativeTemplateFrameNames,
+    ScriptRole, ScriptView, StyleView, TemplateView,
 };
 
-use scan::{find_bytes, find_close, find_template_close, read_open};
+use scan::{MatchedClose, find_bytes, find_close, find_template_close, read_open};
 
 impl ContainerFormat for Vue {
     fn split<'a>(&self, allocator: &'a Allocator, source: &'a str) -> Container<'a> {
-        split_with(allocator, source, |_, _, _, _| {})
+        split_with(allocator, source, |_, _, _, _, _| {})
     }
 }
 
@@ -40,7 +41,7 @@ impl Vue {
 fn split_with<'a>(
     allocator: &'a Allocator,
     source: &'a str,
-    mut observe: impl FnMut(usize, &Block<'a>, bool, bool),
+    mut observe: impl FnMut(usize, &Block<'a>, bool, bool, Option<MatchedClose>),
 ) -> Container<'a> {
     let mut result = Container {
         source,
@@ -105,15 +106,19 @@ fn split_with<'a>(
                 offset: at as u32,
             });
         }
-        let (content_end, close_end, uncertain) = if open.self_closing {
-            (open.end, Some(open.end), false)
+        let (content_end, closing, uncertain) = if open.self_closing {
+            (open.end, None, false)
         } else if open.name.eq_ignore_ascii_case("template") {
             find_template_close(allocator, source, open.end)
         } else {
-            find_close(bytes, open.end, open.name)
-                .map_or((bytes.len(), None, false), |(start, end)| {
-                    (start, Some(end), false)
-                })
+            find_close(bytes, open.end, open.name).map_or((bytes.len(), None, false), |close| {
+                (close.start(), Some(close), false)
+            })
+        };
+        let close_end = if open.self_closing {
+            Some(open.end)
+        } else {
+            closing.map(MatchedClose::end)
         };
         if uncertain {
             result.errors.push(ContainerError {
@@ -134,7 +139,13 @@ fn split_with<'a>(
             content: Span::new(open.end as u32, content_end as u32),
             close_tag: close_end.map(|end| Span::new(content_end as u32, end as u32)),
         };
-        observe(result.blocks.len(), &block, uncertain, open.self_closing);
+        observe(
+            result.blocks.len(),
+            &block,
+            uncertain,
+            open.self_closing,
+            closing,
+        );
         result.blocks.push(block);
         at = close_end.unwrap_or(bytes.len());
     }
