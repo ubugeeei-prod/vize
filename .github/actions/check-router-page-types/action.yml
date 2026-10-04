@@ -1,0 +1,19 @@
+name: Configured Router page types
+description: Compare source-built CLI/editor against the original generated router map
+runs:
+  using: composite
+  steps:
+    - name: Hydrate the unchanged pinned Router page corpus
+      shell: bash
+      run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/vue-router
+    - name: Verify closed provider transport controls
+      shell: bash
+      run: python3 -B tests/fixtures/typechecker/page-route-types/provider_controls.py -v
+    - name: Check complete configured page CLI and editor diagnostics
+      shell: bash
+      env:
+        VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
+        VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+        VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+        VIZE_TEST_REQUIRE_TSGO: "1"
+      run: vp node --test --test-concurrency=1 tests/snapshots/check/vue-router-page-route-oracle.ts

@@ -98,6 +98,7 @@ pub(in crate::batch) use paths::script_virtual_path;
 mod project;
 mod setup_props;
 mod topology;
+mod typed_router;
 pub use topology::BatchTopologyMetrics;
 mod included_sources;
 mod tsconfig_gen;
@@ -200,6 +201,7 @@ pub struct VirtualProject {
 
     /// Internal check generation settings applied to every Vue file.
     virtual_ts_check_options: VirtualTsCheckOptions,
+    typed_router: typed_router::Context,
 
     /// Importer-local package identities retained until native package
     /// topology is materialized. This must never collapse to a specifier map.
