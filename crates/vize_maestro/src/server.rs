@@ -79,13 +79,7 @@ impl MaestroServer {
         let initial_diagnostics = {
             // The worker must not retain another sender, otherwise dropping the
             // foreground server could never close its queue.
-            let worker = Self {
-                client: client.clone(),
-                state: state.clone(),
-                initial_diagnostics: None,
-                #[cfg(feature = "experimental-source-navigation")]
-                navigation: None,
-            };
+            let worker = Self::diagnostic_worker(client.clone(), state.clone());
             Some(initial_diagnostics::InitialDiagnosticsScheduler::new(
                 worker,
             ))
@@ -111,6 +105,21 @@ impl MaestroServer {
     /// Get the document store.
     pub fn documents(&self) -> &DocumentStore {
         &self.state.documents
+    }
+
+    #[cfg(feature = "native")]
+    #[expect(
+        clippy::disallowed_types,
+        reason = "the actual diagnostics worker retains the foreground state"
+    )]
+    fn diagnostic_worker(client: Client, state: std::sync::Arc<ServerState>) -> Self {
+        Self {
+            client,
+            state,
+            initial_diagnostics: None,
+            #[cfg(feature = "experimental-source-navigation")]
+            navigation: None,
+        }
     }
 }
 
