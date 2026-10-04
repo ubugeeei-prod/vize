@@ -272,20 +272,15 @@ fn content_span(line: &[u8]) -> Option<(usize, usize)> {
 
 /// Scan both marker starts once without constructing two substring searchers.
 /// Exact marker spelling still decides whether the original line scan runs.
-fn contains_pragma_marker(mut source: &[u8]) -> bool {
-    while let Some(index) = memchr::memchr2(b'-', b'@', source) {
-        let candidate = &source[index..];
-        if candidate.starts_with(PRAGMA_MARKERS[0]) || candidate.starts_with(PRAGMA_MARKERS[1]) {
-            return true;
-        }
-        source = &candidate[1..];
-    }
-    false
+fn contains_pragma_marker(source: &[u8]) -> bool {
+    memchr::memchr2_iter(b'-', b'@', source).any(|index| {
+        source.get(index..).is_some_and(|candidate| {
+            candidate.starts_with(PRAGMA_MARKERS[0]) || candidate.starts_with(PRAGMA_MARKERS[1])
+        })
+    })
 }
 
-/// `memmem` rather than a naive window scan: the marker check in
-/// [`locked_line_ranges`] runs over every template the formatter sees, including
-/// the overwhelming majority that carry no suppression at all.
+/// Match exact per-line suppression directives without a naive window scan.
 fn contains_any(haystack: &[u8], needles: &[&[u8]]) -> bool {
     needles
         .iter()

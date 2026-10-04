@@ -76,3 +76,12 @@ The central record keeps all prose within 350 physical lines. Original native
 provider and whole-child runtime/law blobs stay identical. Failed ac98 and older
 source receipts do not accept this successor; fresh exact-source Actions,
 three-run counts and protected Stack candidate/actual merges remain required.
+
+The second exact source `c884cc57512a5afdb38d3e64523ffe0ff73209b8`, measured
+run `37170436092`/artifact `11291605952`, lowers the complex template from
+244617 to 244410 but remains above 244347; all three other formatter probes
+and original 100 rows pass. It stays outside the queue. Source checks also
+reject the new direct slices under the existing indexing/slicing lint. The
+successor retains one `memchr2_iter`, obtains each candidate with checked
+`get`, and keeps the same exact marker oracle. Its original failed receipts
+remain immutable; fresh source and instruction acceptance are still required.
