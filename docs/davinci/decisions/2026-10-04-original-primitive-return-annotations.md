@@ -5,6 +5,7 @@ Tracking: [#6849](https://github.com/ubugeeei-prod/vize/issues/6849) and
 The [paired issue draft](./2026-10-04-original-primitive-return-annotations-issue-draft.md)
 is unposted. This is a private design, with no Rust implementation, compilation,
 runtime evidence, publication, queue admission or default migration.
+The approved plan now underlies the separate [private provider source](./2026-10-04-original-primitive-return-provider.md); this design itself grants no executed provider or consumer evidence.
 
 ## Genuine source and prerequisite
 

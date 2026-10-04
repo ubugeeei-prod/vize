@@ -39,3 +39,15 @@ signed merge. No local build/install or redundant manual campaign.
 No history/default/type-system completion is claimed. #6879/#6849, full Vue
 setup functions/runtime erasure, unsaved snapshot/import graph/coherent ABA
 publication and the measured same-diagnostic 10x target remain unfinished.
+
+## Prepared genuine source decision (unposted)
+
+Root and peer accepted the bounded plan and its actual Module-goal correction.
+A separate private `wt` now contains the same-event return guard and thirteen
+independent authored laws on genuine top `1a7e44a6` -> provider `1ee6e1d3`.
+The [source companion](./2026-10-04-original-primitive-return-provider.md)
+records exact three old-input neutral-positive transitions, untouched old
+negative controls and five genuine interruption points. No compilation,
+Actions, publication, protected proof, actual merge, independent return
+diagnostics or history/default credit is claimed. Freeze/root/peer source
+review must precede publication; the issue comments remain unposted.
