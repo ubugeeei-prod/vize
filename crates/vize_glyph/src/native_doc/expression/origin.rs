@@ -75,4 +75,5 @@ impl<'p, 'a> Origin<'p, 'a> {
 }
 
 #[cfg(test)]
+#[path = "origin/tests.rs"]
 mod tests;

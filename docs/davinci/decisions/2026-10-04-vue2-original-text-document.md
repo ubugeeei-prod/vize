@@ -213,3 +213,18 @@ requires fresh exact-head source proof; protected full suites/all 104 original
 caps and actual merge remain required before delivery. The formatter history
 issue #6882 is now closed; historical dialect formatting/runtime/default
 completion remains independent and unfinished.
+
+## Initial hosted source rejection and narrow correction
+
+Draft #7761 first published `418d746e42`; automatic Check `37181475857`
+rejects two real source details. `fmt-rust` resolves the new explicit-path
+Origin module's plain test declaration to a nonexistent sibling `tests.rs`;
+the declaration now names the existing `origin/tests.rs` explicitly. Hosted
+Clippy also rejects the private append helper's needless explicit owner
+lifetime; elision preserves the same short input borrow and public API.
+Both complete original failure logs are retained. These two narrow source
+corrections preserve all public signatures, runtime statements, laws, expected
+bytes, original custody, action/oracle behavior and ceilings. Recursive direct
+rustfmt source checking now resolves the real modules; no local Rust build
+or test is run. This failed source supplies no native acceptance. Fresh exact
+source Actions and all actual captures/laws/protected proof remain required.

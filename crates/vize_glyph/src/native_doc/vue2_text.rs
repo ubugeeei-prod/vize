@@ -172,8 +172,8 @@ fn authored<'a>(block: SourceBlock<'a>, span: Span) -> Result<&'a str, Vue2TextD
         .ok_or(Vue2TextDocumentRefusal::SourceMismatch { span })
 }
 
-fn append_operand<'o, 'a>(
-    original: &'o NativeSyntax<'a>,
+fn append_operand<'a>(
+    original: &NativeSyntax<'a>,
     block: SourceBlock<'a>,
     binding: Span,
     allocator: &'a Allocator,
