@@ -71,6 +71,7 @@ export async function executeConstantComponent(
   mode: string,
   range = false,
   observe?: (record: any) => void,
+  failureEvents?: { phase: string; error: unknown }[],
 ) {
   const loaded = await import(dataUrl(runtimeModuleSource(code)));
   const component = loaded.default,
@@ -167,6 +168,23 @@ export async function executeConstantComponent(
         sameComponent: instance?.type === app._component,
       }),
     );
+  }
+  let failed = false,
+    firstFailure: unknown,
+    unmountAttempted = false,
+    result: any;
+  function retainFailure(error: unknown, phase: string) {
+    if (!failed) {
+      failed = true;
+      firstFailure = error;
+    }
+    // Park the original error itself before any cleanup or diagnostic callback.
+    failureEvents?.push({ phase, error });
+    try {
+      observe?.(diagnosticValue({ phase, error: runtimeErrorDetails(error) }));
+    } catch (observationError) {
+      failureEvents?.push({ phase: "failure-observation-error", error: observationError });
+    }
   }
   try {
     app.mount(host);
@@ -283,12 +301,13 @@ export async function executeConstantComponent(
       assert.equal(host.children.length, 1);
       assert.deepEqual(initial, updated);
     }
+    unmountAttempted = true;
     app.unmount();
     await runtime.nextTick();
     record("unmounted-before-comparisons", updated);
     assert.deepEqual(host.children, []);
     assert.equal(instance.isUnmounted, true);
-    return {
+    result = {
       initial,
       updated,
       retained,
@@ -299,15 +318,24 @@ export async function executeConstantComponent(
       unmounted: instance.isUnmounted,
     };
   } catch (error) {
-    record("failed-before-cleanup");
-    throw error;
-  } finally {
-    // The existing genuine app is cleaned up even when an assertion interrupts.
-    // Never retry its setup/render or replace an observed failed result.
-    if (instance && !instance.isUnmounted) {
+    retainFailure(error, "original-runtime-failure");
+    try {
+      record("failed-before-cleanup");
+    } catch (observationError) {
+      retainFailure(observationError, "failed-snapshot-observation");
+    }
+  }
+  // One normal cleanup attempt; never retry an interrupted original unmount.
+  if (instance && !instance.isUnmounted && !unmountAttempted) {
+    unmountAttempted = true;
+    try {
       app.unmount();
       await runtime.nextTick();
       record("failed-after-normal-cleanup");
+    } catch (cleanupError) {
+      retainFailure(cleanupError, "cleanup-failure");
     }
   }
+  if (failed) throw firstFailure;
+  return result;
 }

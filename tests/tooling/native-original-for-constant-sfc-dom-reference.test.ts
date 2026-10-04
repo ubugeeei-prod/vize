@@ -169,6 +169,8 @@ for (const fixture of fixtures) {
       native: null,
       primaryObservations: [],
       nativeObservations: [],
+      primaryFailureEvents: [],
+      nativeFailureEvents: [],
       error: null,
     };
     try {
@@ -184,6 +186,7 @@ for (const fixture of fixtures) {
         mode,
         range,
         (observation) => attempt.primaryObservations.push(observation),
+        attempt.primaryFailureEvents,
       );
       attempt.primary = original;
       assertPrimary(fixture, reference);
@@ -206,6 +209,7 @@ for (const fixture of fixtures) {
         mode,
         range,
         (observation) => attempt.nativeObservations.push(observation),
+        attempt.nativeFailureEvents,
       );
       attempt.native = native;
       assert.equal(code, fixture.expectedCode);
@@ -230,6 +234,12 @@ for (const fixture of fixtures) {
       attempt.error = runtimeErrorDetails(error);
       throw error;
     } finally {
+      for (const key of ["primaryFailureEvents", "nativeFailureEvents"]) {
+        attempt[key] = attempt[key].map((event: any) => ({
+          phase: event.phase,
+          error: runtimeErrorDetails(event.error),
+        }));
+      }
       attempts.push(attempt);
     }
   });

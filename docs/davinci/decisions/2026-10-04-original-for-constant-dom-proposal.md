@@ -281,3 +281,16 @@ substitution; successful return values, operations and comparisons stay exact.
 All production/original eleven/inherited oracle bytes remain. Whole bounded peer
 review and fresh exact Actions are mandatory; no local/native/runtime or queue
 credit follows, and Draft/publication hold/protected104 obligations remain.
+
+## First failure priority
+
+[The paired failure-priority correction](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5978405134)
+holds unpublished643d: direct finally cleanup could replace its original assertion.
+A caller-owned carrier now parks the actual first Error before callbacks/cleanup,
+retains cleanup/observation failures separately and serializes actual/expected
+afterward. Original success result/comparisons stay exact; normal cleanup is at
+most once and an interrupted original unmount is never retried. The first error
+rethrows after cleanup; a cleanup-only error still fails the process. The unchanged
+diagnostic serializer moves to an ordinary sibling in a move-only commit with
+explicit capture routing. Production/original eleven/inherited oracles stay exact.
+Full bounded review/fresh Actions/publication hold/protected104 remain required.

@@ -15,6 +15,7 @@ test("every constant source, emitter-only or full capture input requires a real 
     "tests/tooling/native-original-for-constant-sfc-dom-capture-workflow.test.ts",
     "tests/tooling/support/native-original-for-constant-sfc-dom-runtime.ts",
     "tests/tooling/support/native-original-for-constant-sfc-dom-processes.ts",
+    "tests/tooling/support/native-original-for-constant-sfc-dom-observation.ts",
   ])
     assert(nativeSetupCaptureRequired([path]), path);
   for (const path of [
@@ -97,9 +98,22 @@ test("actual constant action source builds all eleven whole modules before manda
       runtimeHelper.indexOf("assert.deepEqual(initial, updated)"),
   );
   assert(runtimeHelper.includes("vnode: observedShape(instance?.subTree)"));
-  assert(runtimeHelper.includes("actual: diagnosticValue(error?.actual)"));
-  assert(runtimeHelper.includes("expected: diagnosticValue(error?.expected)"));
+  const observationHelper = fs.readFileSync(
+    new URL("./support/native-original-for-constant-sfc-dom-observation.ts", import.meta.url),
+    "utf8",
+  );
+  assert(observationHelper.includes("actual: diagnosticValue(error?.actual)"));
+  assert(observationHelper.includes("expected: diagnosticValue(error?.expected)"));
   assert(runtimeHelper.includes('record("failed-after-normal-cleanup")'));
-  assert(runtimeHelper.includes("throw error"));
+  assert(runtimeHelper.includes("throw firstFailure"));
+  assert(
+    runtimeHelper.indexOf("failureEvents?.push({ phase, error })") <
+      runtimeHelper.indexOf(
+        "observe?.(diagnosticValue({ phase, error: runtimeErrorDetails(error) }))",
+      ),
+  );
+  assert(runtimeHelper.includes('retainFailure(cleanupError, "cleanup-failure")'));
+  assert(runtimeHelper.includes("!unmountAttempted"));
+  assert(!runtimeHelper.includes("finally {"));
   assert(action.includes("if: ${{ always() }}"));
 });
