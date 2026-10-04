@@ -159,6 +159,9 @@ The authorized independent source is prepared in a new isolated `wt` from
 literal actual main `a6bc6a251852c76ec12a012f0368d22edaa3dac9`. Original495,
 Vue 2 provider c05e and list successor ffb7 are ancestors; the audited Vue 2
 source/laws/oracles remain unchanged across that intervening main advance.
+The reviewed source then replays cleanly onto literal actual main
+`c40b55bee6560bfc842f1f132115c72059549f70`; its five owned Rust files and
+companion source remain byte-identical, preserving all incoming central links.
 The prior clean Vue 2 worktrees and unrelated RootText preparation remain
 preserved. This source carries the corrected critical-path companion and
 central decision together; there is no separate public documentation PR.
@@ -184,7 +187,8 @@ compile-fail laws preserve private construction and owner/source/arena lifetime
 custody; the previous modern-conversion refusal remains. Existing whole pinned
 2.7.16 compiler/development/production closure is retained. These are prepared
 source laws; execution credit requires real current-head hosted Actions.
-Independent frozen source review precedes publication. Protected full suites,
+Independent frozen source/law review is clear; that is source readiness only.
+Protected full suites,
 all applicable instruction/formatter caps and actual signed merge/main proof
 remain mandatory. Registry resolution, L2 meaning, native runtime emission,
 versioned selected SFCs, deferred grammar and full Vue 2 remain unfinished.
