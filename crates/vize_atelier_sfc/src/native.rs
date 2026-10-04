@@ -309,7 +309,7 @@ mod tests;
 mod class_list_tests;
 #[cfg(test)]
 mod css_tests;
-mod scope;
+pub(crate) mod scope;
 mod scoped;
 #[cfg(test)]
 mod scoped_empty_tests;
@@ -317,4 +317,4 @@ mod scoped_empty_tests;
 mod scoped_tests;
 #[cfg(test)]
 mod style_tests;
-mod styles;
+pub(crate) mod styles;

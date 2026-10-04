@@ -6,10 +6,12 @@
 
 use vize_l0::{Span, id::NodeId};
 use vize_l3::decision::ssr::{
-    NativeSsrFileAnalysis, NativeTemplateSsrAnalysis, SsrFacts, SsrPart, SsrUnsupported,
+    NativeSsrFileAnalysis, NativeTemplateScopedSsrAnalysis, NativeTemplateSsrAnalysis, SsrFacts,
+    SsrPart, SsrUnsupported,
 };
 use vize_l3::decision::{NativeAnalysis, policy::TargetPolicy};
 
+use crate::module::ScopeId;
 use crate::runtime::{Runtime, vocabulary};
 use crate::write::{LinkSink, Writer};
 
@@ -41,7 +43,7 @@ pub fn emit<L: LinkSink>(analysis: &NativeAnalysis<'_, '_>) -> Result<Writer<L>,
             kind: SsrErrorKind::WrongPolicy,
         });
     }
-    encode(analysis.artifact().source(), analysis.ssr())
+    encode(analysis.artifact().source(), analysis.ssr(), None)
 }
 
 /// Consume only a complete SSR file view and retain its diagnostic owner.
@@ -49,7 +51,7 @@ pub fn emit<L: LinkSink>(analysis: &NativeAnalysis<'_, '_>) -> Result<Writer<L>,
 pub fn emit_file<L: LinkSink>(
     analysis: &NativeSsrFileAnalysis<'_, '_>,
 ) -> Result<Writer<L>, SsrError> {
-    encode(analysis.artifact().source(), analysis.ssr())
+    encode(analysis.artifact().source(), analysis.ssr(), None)
 }
 
 /// Emit only from a genuine original-template completion receipt.
@@ -67,12 +69,31 @@ pub fn emit_file<L: LinkSink>(
 pub fn emit_template<L: LinkSink>(
     receipt: &NativeTemplateSsrAnalysis<'_, '_>,
 ) -> Result<Writer<L>, SsrError> {
-    encode(receipt.artifact().source(), receipt.ssr())
+    encode(receipt.artifact().source(), receipt.ssr(), None)
+}
+
+/// Scope every existing HTML opening from a genuine lower style receipt.
+/// The validated compilation-option identity stays above L2; no source scan
+/// or second op walk occurs. Generated scope bytes have no authored links.
+///
+/// ```compile_fail
+/// use vize_l3::decision::ssr::NativeTemplateSsrAnalysis;
+/// use vize_l4::{module::ScopeId, targets::ssr::emit_scoped_template, write::NoLinks};
+/// fn promote(receipt: &NativeTemplateSsrAnalysis<'_, '_>, scope: ScopeId<'_>) {
+///     let _ = emit_scoped_template::<NoLinks>(receipt, scope);
+/// }
+/// ```
+pub fn emit_scoped_template<L: LinkSink>(
+    receipt: &NativeTemplateScopedSsrAnalysis<'_, '_>,
+    scope: ScopeId<'_>,
+) -> Result<Writer<L>, SsrError> {
+    encode(receipt.artifact().source(), receipt.ssr(), Some(scope))
 }
 
 fn encode<L: LinkSink>(
     source: &str,
     facts: Option<&SsrFacts<'_, '_>>,
+    scope: Option<ScopeId<'_>>,
 ) -> Result<Writer<L>, SsrError> {
     let error = |kind| SsrError {
         node: None,
@@ -163,6 +184,10 @@ fn encode<L: LinkSink>(
                                 writer.push("\"");
                             }
                         }
+                    }
+                    if let Some(scope) = scope {
+                        writer.push(" ");
+                        writer.push(scope.as_str());
                     }
                     writer.push(">");
                 }

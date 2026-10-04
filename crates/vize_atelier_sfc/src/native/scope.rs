@@ -5,7 +5,7 @@ use std::hash::{Hash, Hasher};
 use vize_l0::String;
 use vize_l1::container::vue::AdmittedDescriptor;
 
-pub(super) fn for_styles(
+pub(crate) fn for_styles(
     descriptor: AdmittedDescriptor<'_, '_>,
     explicit: Option<&str>,
     filename: &str,

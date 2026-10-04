@@ -89,7 +89,11 @@ void test("the existing first-shard action remains mandatory for merge groups an
       "toolingChecksRequired(plan, paths) || nativeSsrCaptureRequired(capturePaths)",
     ),
   );
-  assert(planner.includes("native-ssr-capture=${nativeSsrCaptureRequired(capturePaths)}"));
+  assert(
+    planner.includes(
+      "native-ssr-capture=${nativeSsrCaptureRequired(capturePaths) || nativeScopedCaptureRequired(capturePaths)}",
+    ),
+  );
   assert(
     planner.includes(
       'const capturePaths = /^0+$/.test(base) ? [".github/workflows/check.yml"] : paths;',

@@ -11,11 +11,13 @@ use vize_l2::op::{CommentOp, ElementOp, InterpolationOp, TextOp};
 pub(super) mod build;
 mod file;
 mod native;
+mod scoped;
 mod setup;
 #[cfg(test)]
 mod tests;
 pub use file::{NativeSsrFileAnalysis, build_ssr_file_decisions};
 pub use native::{NativeSsrBuildError, NativeTemplateSsrAnalysis, build_native_ssr_file_decisions};
+pub use scoped::{NativeTemplateScopedSsrAnalysis, build_native_scoped_ssr_file_decisions};
 pub use setup::{
     NativeSelectedSetupSsrAnalysis, SsrSetupExpression, SsrSetupRead, SsrSetupReadKind,
     build_native_selected_setup_ssr_decisions,

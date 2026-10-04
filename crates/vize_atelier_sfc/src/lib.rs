@@ -46,6 +46,7 @@ pub use native_vapor::{
     NativeVaporSfcOutput, compile_native_vapor_sfc,
 };
 pub mod native;
+pub mod native_scoped_ssr;
 pub mod native_ssr;
 pub mod rewrite_default;
 pub mod script;
@@ -98,6 +99,10 @@ pub use native::{
 };
 mod native_selected;
 mod native_selected_setup;
+pub use native_scoped_ssr::{
+    NativeScopedSsrSfcCompilation, NativeScopedSsrSfcCompileError,
+    NativeScopedSsrSfcCompileOptions, NativeScopedSsrSfcOutput, compile_native_scoped_ssr_sfc,
+};
 pub use native_selected::{
     NativeSelectedSfcDomCompilation, NativeSelectedSfcDomError, NativeSelectedSfcDomOptions,
     NativeSelectedSfcDomOutput, compile_native_selected_sfc_dom,

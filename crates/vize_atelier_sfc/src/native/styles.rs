@@ -57,7 +57,7 @@ impl<'o, 'a> PlainStyle<'o, 'a> {
     }
 }
 
-pub(super) fn emit<L: LinkSink>(
+pub(crate) fn emit<L: LinkSink>(
     descriptor: AdmittedDescriptor<'_, '_>,
     syntax: &[StyleSyntax<'_>],
     scope_id: Option<ScopeId<'_>>,
