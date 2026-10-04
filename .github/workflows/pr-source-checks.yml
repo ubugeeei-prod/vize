@@ -1,7 +1,6 @@
 name: PR source checks
 on:
   workflow_call:
-
 permissions:
   contents: read
 env:
@@ -12,7 +11,6 @@ jobs:
     name: Guest contracts
     if: ${{ github.event_name == 'merge_group' }}
     uses: ./.github/workflows/davinci-contracts.yml
-
   pr-source-plan:
     name: Plan PR source checks
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -68,14 +66,12 @@ jobs:
         env:
           BASE_SHA: ${{ steps.comparison.outputs.base }}
         run: node tools/support/compat/github/plan-affected-rust.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" "$RUNNER_TEMP/rust-plan.json"
-
       - name: Plan tooling test inputs
         id: tooling-plan
         env:
           BASE_SHA: ${{ steps.comparison.outputs.base }}
           TOOLING_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
         run: node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier "$TOOLING_TIER" --output "$RUNNER_TEMP/tooling-plan.json" --github-output
-
   pr-rust-source:
     name: PR Rust Clippy, tests, and fixtures
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -84,7 +80,6 @@ jobs:
     with:
       run-rust: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
       rust-plan: ${{ needs.pr-source-plan.outputs.rust-plan }}
-
   pr-js-packages:
     name: PR JS package build and tests
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}

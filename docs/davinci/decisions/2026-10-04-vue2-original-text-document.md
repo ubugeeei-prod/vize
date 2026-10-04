@@ -237,3 +237,16 @@ parent assertion rather than comparing a carrier. Every production/API,
 input, expected output, other assertion, oracle/action and cap stays unchanged.
 The complete rejected build log is retained; failed `33fb` carries no test or
 native-capture acceptance. A fresh exact source remains mandatory.
+
+Exact `ef9570aab1` executes all eight new compile-fail examples and the positive
+Doc example, and its first tooling worker successfully captures all 48 genuine
+native rows and joins complete compiler/dev/prod runtime expectations. The
+initial raw packet binds source `ef95`, execution `8fa7a82ae6` and workflow
+`37182189177`; it stays immutable and separate from independent authored goldens.
+The same source's fourth worker rejects the shared workflow at 355 lines
+against its unchanged 350-line limit. Removing only five structural empty
+separator lines restores the bound with every nonempty YAML line, event guard,
+step order, action, shell statement and script body unchanged. Existing length
+laws, policy and all instruction caps are retained. This whole failed source
+still grants no queue acceptance; fresh exact Actions/captures/full protected
+proof remain required, without changing any native expectation or input.
