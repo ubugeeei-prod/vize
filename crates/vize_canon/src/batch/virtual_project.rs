@@ -70,6 +70,7 @@ pub(crate) use mapping::MaterializedSourceMappingKind;
 mod materialize;
 mod materialize_delta;
 mod materialize_links;
+mod workspace_aliases;
 pub(crate) use materialize_delta::{
     IncrementalMaterialization, MaterializedFileDelta, MaterializedFileSnapshot,
 };

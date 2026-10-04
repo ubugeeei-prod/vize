@@ -5,6 +5,9 @@ use std::{fs, path::Path};
 
 use super::VirtualProject;
 
+#[path = "pnpm_workspace_routes_lifecycle.rs"]
+mod lifecycle;
+
 const SOURCES: [&str; 5] = [
     "packages/a/src/index.ts",
     "packages/b/src/index.ts",
@@ -53,7 +56,19 @@ fn load(root: &Path) -> VirtualProject {
     project.register_path(&entry).unwrap();
     project.reconcile_package_routes_for_importers(&[entry]);
     project.register_package_route_targets().unwrap();
-    project.register_reachable_dependencies().unwrap();
+    // The bare local walk has no package provider. Reconcile newly reached
+    // importers too, matching the CLI's complete local/package preparation.
+    for round in 0..16 {
+        let before = project.registered_original_paths_sorted();
+        project.register_reachable_dependencies().unwrap();
+        let importers = project.registered_original_paths_sorted();
+        project.reconcile_package_routes_for_importers(&importers);
+        project.register_package_route_targets().unwrap();
+        if project.registered_original_paths_sorted() == before {
+            break;
+        }
+        assert!(round < 15, "bounded fixture preparation must converge");
+    }
     project.finalize_package_routes().unwrap();
     project.materialize().unwrap();
     project
@@ -203,7 +218,11 @@ fn one_real_install_keeps_one_materialized_module_identity_inside_each_package_c
                 .unwrap()
                 .canonicalize()
                 .unwrap();
-            assert!(target.starts_with(project.virtual_root()));
+            assert!(
+                target.starts_with(project.virtual_root()),
+                "native package walk escapes: {:?} -> {target:?}",
+                document.materialized_path,
+            );
             let owner = directory.parent().unwrap().parent().unwrap().to_path_buf();
             let (sources, identities) = scopes.entry(owner).or_default();
             sources.insert(document.source_path);

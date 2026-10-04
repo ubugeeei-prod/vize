@@ -82,26 +82,26 @@ impl VirtualProject {
         key: &PackageRouteKey,
         topology: &PackageShadowTopology,
     ) {
-        let Some(route) = self
-            .package_routes
-            .get(key)
-            .and_then(|binding| binding.route.as_ref())
-        else {
-            return;
-        };
         let mut scopes = Vec::new();
-        for nested in route.all_routes() {
-            let real_dir = nested.package_root.join("node_modules");
-            for (manifest, original) in &topology.manifests {
-                if original != &nested.manifest_path {
-                    continue;
-                }
-                let Some(shadow_root) = manifest.parent() else {
-                    continue;
-                };
-                scopes.push((shadow_root.join("node_modules"), real_dir.clone()));
-            }
+        // Bare dependencies pinned by this owner are not necessarily nested
+        // routes of its top-level package. Their known physical manifests
+        // carry the same dependency scopes that the cold materializer sees.
+        for (manifest, original) in &topology.manifests {
+            let Some(real_root) = original
+                .parent()
+                .filter(|root| self.package_route_roots.contains_key(*root))
+            else {
+                continue;
+            };
+            let Some(shadow_root) = manifest.parent() else {
+                continue;
+            };
+            scopes.push((
+                shadow_root.join("node_modules"),
+                real_root.join("node_modules"),
+            ));
         }
+        self.install_workspace_alias_scopes(topology, &mut scopes);
         scopes.sort();
         scopes.dedup();
         for (scope, target) in &scopes {
@@ -110,13 +110,18 @@ impl VirtualProject {
         self.package_shadow_link_scopes.insert(key.clone(), scopes);
     }
 
-    pub(super) fn remove_package_shadow_link_scopes(&mut self, key: &PackageRouteKey) {
+    pub(super) fn remove_package_shadow_link_scopes(
+        &mut self,
+        key: &PackageRouteKey,
+        aliases: &FxHashMap<PathBuf, PathBuf>,
+    ) {
         let Some(scopes) = self.package_shadow_link_scopes.remove(key) else {
             return;
         };
         for (scope, target) in scopes {
             self.remove_package_link_target(&scope, &target);
         }
+        self.remove_workspace_alias_claims(aliases);
     }
 
     pub(super) fn prepare_incremental_package_link_patch(&self) -> PackageLinkPatch {
@@ -236,6 +241,9 @@ impl VirtualProject {
     }
 
     fn package_links_for_scope(&self, scope: &Path) -> FxHashMap<PathBuf, PathBuf> {
+        if let Some(aliases) = self.direct_workspace_alias_for_scope(scope) {
+            return aliases;
+        }
         let Some(targets) = self.package_link_scope_targets.get(scope) else {
             return FxHashMap::default();
         };

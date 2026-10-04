@@ -92,7 +92,7 @@ impl VirtualProject {
         let Some(topology) = self.package_shadow_artifacts.remove(key) else {
             return;
         };
-        self.remove_package_shadow_link_scopes(key);
+        self.remove_package_shadow_link_scopes(key, &topology.aliases);
         self.incremental_materialized_candidates.extend(
             topology
                 .files

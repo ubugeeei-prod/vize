@@ -1,4 +1,4 @@
-# Preserve discovered workspace package sources across route refresh
+# Preserve workspace sources and native package identity across route refresh
 
 Issue: [#7834](https://github.com/ubugeeei-prod/vize/issues/7834), reopening
 the practical regression reported in [#6982](https://github.com/ubugeeei-prod/vize/issues/6982).
@@ -26,19 +26,37 @@ reconciliation wave and the one-key refresh both use this boundary. There is
 no new source parse, whole-project source scan, resolver policy, generated-byte
 transformation or source-map interpretation.
 
-Workspace package copies also retain an already-registered bare-package
-binding at its selected real in-package installation scope. A nested real pnpm
-installation can otherwise outrank a hoisted sibling package shadow and lead
-native resolution out to raw `.vue` files. The existing resolver's
-`package_link_root` is rebased only when it lies inside the owner's physical
-root and ends with the selected `node_modules/<package-name>` entry. An
-external/shared root install retains its existing shared shadow scope; no
-deeper per-importer copies are invented. Importers that share one actual
-install therefore keep one module identity inside each package copy.
-Non-workspace package copies and private `#` routes retain their existing
-handling. The ancestor manifest guard still bounds cycles. This adds
-materialized package topology, not a new parse or resolution stage, and does
-not change the original symlinks.
+Workspace package copies retain already-registered bare-package bindings only
+at their selected real in-package installation scopes. A real pnpm install can
+outrank a hoisted sibling shadow and otherwise lead native resolution to raw
+`.vue` sources. The resolver's selected `package_link_root` is rebased only
+when it lies inside the owner's physical package and ends with the selected
+`node_modules/<package-name>` entry. External/shared installs keep their old
+scope; non-workspace copies and private `#` routes keep their existing handling.
+
+For workspace targets, that rebased entry links to the nearest planned authored
+incoming shadow visible from this exact package copy. The physical package root
+and raw manifest must both match. A nearer conflicting identity, ambiguous
+ownership or self/ancestor cycle declines reuse and retains the bound install's
+own source topology. A same-name package or a globally smallest path is not an
+identity proof. The alias owner pins the target's existing authored source/Vue
+companions and raw manifest, independently of another owner's refresh order.
+The authored symlinks and generated source bytes remain unchanged; native
+`preserveSymlinks` still controls whether separate visible links have separate
+module identity.
+
+Aliases reuse the existing `PackageNodeModulesLink` lifecycle. An alias's
+`package.json` claim participates only in link selection and is never an
+expected file, file revision or incremental file candidate. Cold and affected
+warm paths retain the planned internal target without canonicalizing through a
+stale on-disk alias. Target directories exist before link creation, including on
+Windows. Existing package-root/importer owner indexes dirty reverse dependents
+when a source, selected link or shared scope changes. Each owner's pinned known
+physical manifests also retain their dependency bridges; bare dependencies need
+not be nested routes of its top-level binding. Conflicting internal alias targets
+fail explicitly, including editor snapshot unions, rather than selecting a path
+by ordering. This adds bounded existing topology metadata, with no source parse,
+resolver policy, pipeline stage or full-project source scan.
 
 The existing `package_routes.rs` remains at its grandfathered 357 lines.
 New helpers and fixtures remain below 350 lines. Package shadows, manifests,
@@ -52,7 +70,11 @@ Vue companions and installation links retain their existing ownership rules.
   links and do not flatten them or substitute tsconfig aliases.
 - The transport regression checks complete registered membership, materialized
   shadow bytes, the nearest native package-directory walk and the complete ordered source/code/mapping/semantic-link rows
-  across route replacement and reconciliation. Negative controls reject stale
+  across route replacement and reconciliation. Persistent source edits, new
+  relative files and shared-to-divergent-to-shared real-link retargets compare
+  complete cold/warm bytes, maps and desired links. A synthetic secondary
+  dependency available only under the divergent package proves its physical
+  dependency bridge remains present. Negative controls reject stale
   deleted-source and removed-root resurrection.
 - The registered full Vue-parity CLI oracle checks root and pnpm layouts with
   one and two native servers, explicit chained entry, direct leaf and default
@@ -64,6 +86,13 @@ Vue companions and installation links retain their existing ownership rules.
   the existing uploaded topology artifact. The event control changes the
   emitted number payload to string and requires the authored callback's
   `toFixed` access to fail, rejecting a silent `any` fallback.
+- Independent private-branded class controls require one physical package to
+  retain identity across source directories and A's direct/B's transitive
+  imports. A genuinely different package must still produce exactly one mapped
+  private-brand TS2322, then repair restores full reports, inputs and raw links.
+  Explicit `preserveSymlinks: true` controls check the native distinction for a
+  pnpm in-package link versus a root shared install. These synthetic secondary
+  controls are not additional reporter input or provider-package attribution.
 
 The literal package manifest retains the reporter's Vue 3.5.38 and TypeScript
 5.9.3 requests. The Actions oracle uses the repository-installed Vue types and
@@ -79,8 +108,10 @@ six manifest controls pass. No local Cargo or native execution has been used.
 The source transport regression and actual CLI/native gates require exact-head
 Actions. PR Rust runs disable native fixtures, so their success alone cannot
 establish the CLI claim; the existing manual full Check's Vue-parity lane is
-required before safety acceptance. Exact hosted results, the original failing
-baseline and protected queue/actual merge receipts remain TODO. The root's
+required before safety acceptance. The original failing
+baseline and historical successes are recorded below. Exact successor source,
+native identity, persistent ownership, full-suite and protected queue/actual
+merge receipts remain TODO. The root's
 safety hold forbids entering the queue until that evidence is reviewed.
 
 Provisional source `e9643d724a067cb33158dd9d8e61a9283352e627` started full
@@ -136,7 +167,7 @@ reports. Source `079375f1eed8adf0e02865db24dd8a73d11fa526` full Check
 `11312313688` retains every process separately. The four corresponding clean
 head reports have identical input hashes, raw links, program options,
 canonical virtual TS and native binary bytes to the failing baseline. PR
-source Check `37227109000` succeeds; the manual full Rust Test is still active.
+source Check `37227109000` and the manual full Rust suite succeed.
 
 Safety review added one concrete module-identity control: a private-branded
 class made in `B/src/x` must remain assignable to the same package's class
@@ -146,12 +177,26 @@ confirms that the historical `f822` per-importer copies violate #4153. Both
 root/pnpm variants produce three false TS2345 diagnostics at the same authored
 `B/src/index.ts:3:10` because their private `brand` declarations have separate
 materialized module identities. Artifact `11312707356` retains the raw native
-reports. The final narrowed placement described above supersedes `f822`; its
-one/two-server class control and all original 26 executions must pass afresh.
-The class control also compares the instance exported through `B` with a
-direct `@x/c` import in `A`, covering physical identity across packages as well
-as source directories; this extension is pending actual native validation.
-The transport control also requires both importing source directories in each
-materialized package copy to resolve one exact module path. Old native success
-does not establish acceptance of this production successor; draft/safety hold
-and the unrelated Pinia scope limit remain in force.
+reports. The narrowed real-install successor
+`885aab2c5bb11f47ff3b11778d059acebc4daf76` retains the original 26 clean/error/
+repair executions and passes the root-layout private-class checks. Its full
+Check `37229352503` nevertheless exposes one false pnpm TS2322 at
+`packages/a/src/index.ts:3:7`: A's direct C shadow and B's nested C copy still
+create different private `brand` identities for the same physical package.
+Artifact `11313303163` retains all 29 executed raw reports. Its PR source Check
+`37229354947` and full Rust/source coverage also fail the new transport control:
+that test used the bare local dependency walker without reconciling newly
+reached bare-import bindings. The successor follows complete existing provider
+orchestration and keeps the assertion that the native target stays inside the
+virtual project; it does not weaken the target assertion or attribute this test
+setup omission to production.
+
+The owned workspace aliases and lifetime rules above supersede `885`'s duplicate
+nested copies. The required successor matrix is 38 actual CLI/native processes:
+all original 26, four shared-class root/pnpm one/two-server checks, four genuine
+divergent-package clean/error/error/repair checks, and four explicit
+`preserveSymlinks` root/pnpm checks. The pure transport suite must also compare
+full bytes/maps/links after persistent updates and reject editor-union alias
+identity conflicts. These controls are prepared, not yet runtime qualification.
+No old native success transfers to this successor; the draft/safety hold,
+unrelated Pinia limit and lack of any performance claim remain in force.

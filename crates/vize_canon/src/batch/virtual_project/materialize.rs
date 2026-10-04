@@ -58,6 +58,17 @@ impl VirtualProject {
         expected_files.extend(preserved_files.iter().cloned());
         let mut desired_package_links = self.desired_package_links_for_files(&expected_files);
         for (path, target) in preserved_package_links {
+            if desired_package_links.get(path).is_some_and(|current| {
+                current != target
+                    && (current.starts_with(&self.virtual_root)
+                        || target.starts_with(&self.virtual_root))
+            }) {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    "Conflicting workspace package alias targets in editor union",
+                )
+                .into());
+            }
             desired_package_links
                 .entry(path.clone())
                 .and_modify(|current| {
@@ -99,6 +110,7 @@ impl VirtualProject {
             )
         )?;
 
+        self.ensure_workspace_alias_targets()?;
         profile!(
             "canon.project.package_deps",
             materialize_package_node_modules(&package_links)

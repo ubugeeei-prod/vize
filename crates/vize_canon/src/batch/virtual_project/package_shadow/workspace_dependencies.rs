@@ -2,11 +2,81 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_carton::FxHashSet;
+use vize_carton::{FxHashMap, FxHashSet};
 
 use super::{PackageShadowTopology, VirtualProject};
 
+type PackageIdentity = (PathBuf, PathBuf);
+
+pub(super) struct WorkspaceShadowPlan {
+    incoming: FxHashMap<PathBuf, FxHashSet<PackageIdentity>>,
+}
+
+fn identity(route: &crate::PackageRoute) -> PackageIdentity {
+    (
+        vize_carton::path::canonicalize_non_verbatim(&route.package_root),
+        vize_carton::path::canonicalize_non_verbatim(&route.manifest_path),
+    )
+}
+
+impl WorkspaceShadowPlan {
+    fn target(
+        &self,
+        importer: &Path,
+        name: &str,
+        route: &crate::PackageRoute,
+        alias: &Path,
+    ) -> Option<PathBuf> {
+        let expected = identity(route);
+        for directory in importer.parent()?.ancestors() {
+            let candidate = directory.join("node_modules").join(name);
+            let Some(identities) = self.incoming.get(&candidate) else {
+                continue;
+            };
+            // The nearest visible root is authoritative, including a conflict.
+            // A farther same-name package must not hide a divergent install.
+            if identities.len() != 1
+                || !identities.contains(&expected)
+                || candidate.starts_with(alias)
+                || alias.starts_with(&candidate)
+            {
+                return None;
+            }
+            return Some(candidate);
+        }
+        None
+    }
+}
+
 impl VirtualProject {
+    pub(super) fn workspace_shadow_plan(&self) -> WorkspaceShadowPlan {
+        let mut incoming = FxHashMap::<_, FxHashSet<_>>::default();
+        for binding in self.package_routes.values() {
+            if binding.specifier.starts_with('#') {
+                continue;
+            }
+            let Some(route) = binding.route.as_ref() else {
+                continue;
+            };
+            let Some(name) = route.package_name.as_deref() else {
+                continue;
+            };
+            let Some(directory) = self
+                .find_by_original(&binding.importer_path)
+                .and_then(|file| file.virtual_path.parent())
+            else {
+                continue;
+            };
+            for scope in self.package_shadow_scope_dirs(name, directory) {
+                incoming
+                    .entry(scope.join("node_modules").join(name))
+                    .or_default()
+                    .insert(identity(route));
+            }
+        }
+        WorkspaceShadowPlan { incoming }
+    }
+
     pub(super) fn private_dependencies_for(&self, manifest: &Path) -> Vec<crate::PackageRoute> {
         let mut routes = self
             .package_route_manifests
@@ -29,6 +99,7 @@ impl VirtualProject {
         shadow_root: &Path,
         ancestors: &mut FxHashSet<PathBuf>,
         topology: &mut PackageShadowTopology,
+        plan: &WorkspaceShadowPlan,
     ) {
         if !route.workspace_source {
             return;
@@ -38,7 +109,7 @@ impl VirtualProject {
             return;
         };
         let mut dependencies = Vec::new();
-        for source in sources.keys() {
+        for (source, (source_relative, _)) in sources {
             let Some(keys) = self.package_route_importers.get(source) else {
                 continue;
             };
@@ -64,19 +135,50 @@ impl VirtualProject {
                 if !relative.ends_with(Path::new("node_modules").join(name)) {
                     continue;
                 }
-                dependencies.push((shadow_root.join(relative), dependency));
+                let shadow = shadow_root.join(relative);
+                let target = dependency
+                    .workspace_source
+                    .then(|| {
+                        plan.target(
+                            &shadow_root.join(source_relative),
+                            name,
+                            dependency,
+                            &shadow,
+                        )
+                    })
+                    .flatten();
+                dependencies.push((shadow, dependency, target));
             }
         }
-        dependencies.sort_by(|(left, left_route), (right, right_route)| {
+        dependencies.sort_by(|(left, left_route, _), (right, right_route, _)| {
             (left, &left_route.manifest_path).cmp(&(right, &right_route.manifest_path))
         });
         dependencies.dedup();
-        for (shadow, dependency) in dependencies {
-            // A real per-package node_modules link must not outrank the bound
-            // materialized dependency and lead native probing to raw Vue files.
-            // Rebase the resolver's selected real link, preserving one shared
-            // namespace for importers that use the same installation scope.
-            self.collect_route_shadow_topology(dependency, &shadow, ancestors, topology);
+        let mut start = 0;
+        while start < dependencies.len() {
+            let (shadow, dependency, target) = &dependencies[start];
+            let end = start + dependencies[start..].partition_point(|entry| entry.0 == *shadow);
+            let shared_target = target.as_ref().filter(|target| {
+                dependencies[start..end]
+                    .iter()
+                    .all(|(_, route, candidate)| {
+                        identity(route) == identity(dependency)
+                            && candidate.as_ref() == Some(*target)
+                    })
+            });
+            if let Some(target) = shared_target {
+                topology.aliases.insert(shadow.clone(), target.clone());
+                // Pin the target's authored files and raw manifest under this
+                // owner too; another binding's refresh/removal cannot dangle it.
+                self.collect_route_shadow_topology(dependency, target, ancestors, topology, plan);
+            } else {
+                // An uncertain or divergent incoming scope retains the bound
+                // installation's own topology rather than aliasing by name.
+                for (_, route, _) in &dependencies[start..end] {
+                    self.collect_route_shadow_topology(route, shadow, ancestors, topology, plan);
+                }
+            }
+            start = end;
         }
     }
 }

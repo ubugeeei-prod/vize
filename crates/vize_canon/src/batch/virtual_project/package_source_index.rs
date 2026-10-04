@@ -12,9 +12,19 @@ type PackageSources = FxHashMap<PathBuf, (PathBuf, PathBuf)>;
 
 impl VirtualProject {
     pub(crate) fn insert_package_route_binding(&mut self, binding: crate::PackageRouteBinding) {
+        let key = binding.key();
         let retained = self.take_rebound_package_sources(&FxHashSet::from_iter([binding.key()]));
         self.insert_route_binding_inner(binding);
         self.restore_rebound_package_sources(retained);
+        self.mark_package_shadow_dependents([key]);
+    }
+
+    pub(crate) fn remove_package_route_binding(
+        &mut self,
+        key: &PackageRouteKey,
+    ) -> Option<crate::PackageRouteBinding> {
+        self.mark_package_shadow_dependents([key.clone()]);
+        self.remove_route_binding_inner(key)
     }
 
     pub(crate) fn reconcile_package_routes_for_importers(&mut self, changed: &[PathBuf]) {
@@ -85,8 +95,8 @@ impl VirtualProject {
                 .entry(root)
                 .or_default()
                 .extend(live_sources);
-            self.package_shadow_dirty_keys
-                .extend(owners.iter().cloned());
+            let owners = owners.iter().cloned().collect::<Vec<_>>();
+            self.mark_package_shadow_dependents(owners);
         }
     }
 
@@ -113,7 +123,8 @@ impl VirtualProject {
                 && self.package_shadows_initialized
                 && let Some(keys) = self.package_route_roots.get(&root)
             {
-                self.package_shadow_dirty_keys.extend(keys.iter().cloned());
+                let keys = keys.iter().cloned().collect::<Vec<_>>();
+                self.mark_package_shadow_dependents(keys);
             }
         }
     }
@@ -128,7 +139,8 @@ impl VirtualProject {
                 && self.package_shadows_initialized
                 && let Some(keys) = self.package_route_roots.get(ancestor)
             {
-                self.package_shadow_dirty_keys.extend(keys.iter().cloned());
+                let keys = keys.iter().cloned().collect::<Vec<_>>();
+                self.mark_package_shadow_dependents(keys);
             }
         }
     }

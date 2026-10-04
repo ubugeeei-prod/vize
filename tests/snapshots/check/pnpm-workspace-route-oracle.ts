@@ -9,6 +9,12 @@ import { test } from "node:test";
 import { repoRoot } from "../../_helpers/realworld-patch.ts";
 import { resolveTsgoBinary, symlinkVueTypes } from "../../_helpers/realworld-typecheck.ts";
 import type { VizeCheckJson } from "../../_helpers/vize-check.ts";
+import {
+  assertWorkspaceClassConflict,
+  prepareWorkspaceClass,
+  prepareWorkspaceVariantProvider,
+  workspaceProviderFiles,
+} from "../../_helpers/workspace-package-class.ts";
 
 const corpus = path.join(repoRoot, "tests/fixtures/typechecker/pnpm-workspace-routes");
 const sources = [
@@ -111,6 +117,11 @@ function check(root: string, patterns: string[], servers: number): Receipt {
       return { path: path.relative(root, absolute), sha256: sha256(fs.readFileSync(absolute)) };
     })
     .sort((a, b) => a.path.localeCompare(b.path));
+  for (const relative of workspaceProviderFiles) {
+    const file = path.join(root, relative);
+    if (fs.existsSync(file)) input.push({ path: relative, sha256: sha256(fs.readFileSync(file)) });
+  }
+  input.sort((a, b) => a.path.localeCompare(b.path));
   const receipt: Receipt = {
     args,
     execution: ++executions,
@@ -169,37 +180,72 @@ function assertClean(receipt: Receipt, expected: string[], roots = expected): vo
 }
 
 for (const pnpm of [false, true]) {
+  if (pnpm)
+    test("divergent pnpm package identity stays distinct across repair", () => {
+      const root = workspace(true);
+      try {
+        prepareWorkspaceClass(root);
+        fs.cpSync(path.join(root, "packages/c"), path.join(root, "packages/c-variant"), {
+          recursive: true,
+        });
+        prepareWorkspaceVariantProvider(root);
+        const expected = [...sources, "packages/b/src/x/make.ts", "packages/b/src/y/use.ts"].sort();
+        const clean = check(root, [sources[0]!], 1);
+        assertClean(clean, expected, [sources[0]!]);
+        const dependency = path.join(root, "packages/b/node_modules/@x/c");
+        fs.unlinkSync(dependency);
+        fs.symlinkSync("../../../c-variant", dependency, "dir");
+        const forked = [
+          ...expected,
+          "packages/c-variant/src/Btn.vue",
+          "packages/c-variant/src/index.ts",
+          "packages/c-variant/src/util.ts",
+        ].sort();
+        const broken = check(root, [sources[0]!], 1);
+        assertWorkspaceClassConflict(broken, forked);
+        assert.deepEqual(diagnosticVector(check(root, [sources[0]!], 2)), diagnosticVector(broken));
+        fs.unlinkSync(dependency);
+        fs.symlinkSync(links.pnpm["packages/b/node_modules/@x/c"]!, dependency, "dir");
+        const repaired = check(root, [sources[0]!], 2);
+        assertClean(repaired, expected, [sources[0]!]);
+        assert.deepEqual(repaired.report, clean.report);
+        assert.deepEqual(repaired.input, clean.input);
+        assert.deepEqual(repaired.links, clean.links);
+      } finally {
+        fs.rmSync(root, { recursive: true, force: true });
+      }
+    });
+
   test(`one physical package keeps its class identity across source directories (${pnpm ? "pnpm" : "root"})`, () => {
     const root = workspace(pnpm);
     try {
-      fs.appendFileSync(
-        path.join(root, "packages/c/src/index.ts"),
-        "export class Thing { private readonly brand!: void; }\n",
-      );
-      for (const directory of ["x", "y"]) {
-        fs.mkdirSync(path.join(root, "packages/b/src", directory));
-      }
-      fs.writeFileSync(
-        path.join(root, "packages/b/src/x/make.ts"),
-        'import { Thing } from "@x/c";\nexport const makeThing = () => new Thing();\n',
-      );
-      fs.writeFileSync(
-        path.join(root, "packages/b/src/y/use.ts"),
-        'import { Thing } from "@x/c";\nexport const useThing = (value: Thing) => { void value; };\n',
-      );
-      fs.writeFileSync(
-        path.join(root, "packages/b/src/index.ts"),
-        'import { makeThing } from "./x/make";\nimport { useThing } from "./y/use";\nuseThing(makeThing());\nexport { makeThing };\nexport * from "@x/c";\n',
-      );
-      fs.writeFileSync(
-        path.join(root, sources[0]!),
-        'import { Thing } from "@x/c";\nimport { makeThing } from "@x/b";\nconst thing: Thing = makeThing();\nvoid thing;\nexport * from "@x/b";\n',
-      );
+      prepareWorkspaceClass(root);
       const expected = [...sources, "packages/b/src/x/make.ts", "packages/b/src/y/use.ts"].sort();
       for (const servers of [1, 2]) {
         // Private members reject two separately materialized module identities,
         // even when their declarations and physical package are identical.
         assertClean(check(root, [sources[0]!], servers), expected, [sources[0]!]);
+      }
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test(`preserveSymlinks retains native package identity (${pnpm ? "pnpm" : "root"})`, () => {
+    const root = workspace(pnpm);
+    try {
+      prepareWorkspaceClass(root);
+      const configFile = path.join(root, "tsconfig.json");
+      const config = JSON.parse(fs.readFileSync(configFile, "utf8"));
+      config.compilerOptions.preserveSymlinks = true;
+      fs.writeFileSync(configFile, `${JSON.stringify(config)}\n`);
+      const expected = [...sources, "packages/b/src/x/make.ts", "packages/b/src/y/use.ts"].sort();
+      for (const servers of [1, 2]) {
+        const receipt = check(root, [sources[0]!], servers);
+        // Native preserveSymlinks intentionally distinguishes the real pnpm
+        // in-package path from A's sibling @x/c route, even for one target.
+        if (pnpm) assertWorkspaceClassConflict(receipt, expected);
+        else assertClean(receipt, expected, [sources[0]!]);
       }
     } finally {
       fs.rmSync(root, { recursive: true, force: true });

@@ -166,6 +166,7 @@ impl VirtualProject {
             }
         }
 
+        self.ensure_workspace_alias_targets()?;
         if let Some(desired) = desired_links.as_ref() {
             materialize_package_links(desired)?;
             self.materialized_package_links = desired.clone();

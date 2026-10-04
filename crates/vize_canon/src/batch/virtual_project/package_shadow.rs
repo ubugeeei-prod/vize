@@ -1,6 +1,7 @@
 //! Importer-scoped package topology inside Canon's virtual project.
 
 mod workspace_dependencies;
+use workspace_dependencies::WorkspaceShadowPlan;
 
 use std::path::{Path, PathBuf};
 
@@ -17,6 +18,7 @@ use super::build::mirrored_virtual_path;
 pub(super) struct PackageShadowTopology {
     pub(super) files: FxHashMap<PathBuf, PathBuf>,
     pub(super) manifests: FxHashMap<PathBuf, PathBuf>,
+    pub(super) aliases: FxHashMap<PathBuf, PathBuf>,
 }
 
 impl VirtualProject {
@@ -34,18 +36,23 @@ impl VirtualProject {
         }
 
         self.refresh_package_shadow_scopes();
+        let plan = self.workspace_shadow_plan();
         let mut dirty = std::mem::take(&mut self.package_shadow_dirty_keys)
             .into_iter()
             .collect::<Vec<_>>();
         dirty.sort();
         self.incremental_shadow_bindings_rebuilt += dirty.len();
         for key in dirty {
-            self.refresh_package_shadow(&key)?;
+            self.refresh_package_shadow(&key, &plan)?;
         }
         Ok(())
     }
 
-    fn refresh_package_shadow(&mut self, key: &PackageRouteKey) -> CorsaResult<()> {
+    fn refresh_package_shadow(
+        &mut self,
+        key: &PackageRouteKey,
+        plan: &WorkspaceShadowPlan,
+    ) -> CorsaResult<()> {
         self.remove_package_shadow_owner(key);
         let Some(binding) = self.package_routes.get(key).cloned() else {
             return Ok(());
@@ -75,6 +82,7 @@ impl VirtualProject {
                 &canonical_root,
                 &mut FxHashSet::default(),
                 &mut topology,
+                plan,
             );
         }
 
@@ -105,6 +113,7 @@ impl VirtualProject {
                     &shadow_root,
                     &mut FxHashSet::default(),
                     &mut topology,
+                    plan,
                 );
             }
         }
@@ -134,7 +143,7 @@ impl VirtualProject {
             })
             .map(|(key, _)| key.clone())
             .collect::<Vec<_>>();
-        self.package_shadow_dirty_keys.extend(keys);
+        self.mark_package_shadow_dependents(keys);
     }
 
     fn collect_route_shadow_topology(
@@ -143,6 +152,7 @@ impl VirtualProject {
         shadow_root: &Path,
         ancestors: &mut FxHashSet<PathBuf>,
         topology: &mut PackageShadowTopology,
+        plan: &WorkspaceShadowPlan,
     ) {
         if !ancestors.insert(route.manifest_path.clone()) {
             return;
@@ -167,9 +177,10 @@ impl VirtualProject {
                 &shadow_root.join("node_modules").join(package_name),
                 ancestors,
                 topology,
+                plan,
             );
         }
-        self.collect_workspace_dependency_shadows(route, shadow_root, ancestors, topology);
+        self.collect_workspace_dependency_shadows(route, shadow_root, ancestors, topology, plan);
         ancestors.remove(&route.manifest_path);
     }
 

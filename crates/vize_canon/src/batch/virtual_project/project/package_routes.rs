@@ -110,7 +110,7 @@ impl VirtualProject {
         self.package_routes.insert(key, binding);
     }
 
-    pub(crate) fn remove_package_route_binding(
+    pub(crate) fn remove_route_binding_inner(
         &mut self,
         key: &crate::package_route::PackageRouteKey,
     ) -> Option<crate::PackageRouteBinding> {
