@@ -2,12 +2,17 @@
 
 Private design for [#6837](https://github.com/ubugeeei-prod/vize/issues/6837)
 and [#6842](https://github.com/ubugeeei-prod/vize/issues/6842), frozen against
-literal main `6987c523ecd2bee6e8489e2973e4b7499ce25018`. The paired issue
-text is [prepared locally](./2026-10-04-vue2-selected-descriptor-issue-draft.md)
-for root review; it has not been posted. Root authorized the private
-implementation after both retained design peers cleared `e68357a2c8`.
-The source and laws below are authored privately; no Rust build, Actions,
-publication, campaign or queue admission has occurred.
+literal main `6987c523ecd2bee6e8489e2973e4b7499ce25018`. The paired decision
+is now posted on [#6837](https://github.com/ubugeeei-prod/vize/issues/6837#issuecomment-5977206731)
+and [#6842](https://github.com/ubugeeei-prod/vize/issues/6842#issuecomment-5977206861),
+with [the exact body retained locally](./2026-10-04-vue2-selected-descriptor-issue-draft.md).
+Root authorized implementation after both retained design peers cleared
+`e68357a2c8`. Root, native dialect and Vue 2 peers then cleared exact
+`ea86d5ff37`; all 13 Rust production/law files replay byte-identically onto
+literal main `b9be9065b872086726158b67d1b4e7b8dee78a14`. Independent draft
+source publication and automatic Actions are authorized; hosted compilation,
+laws, full protected 104 gates and actual merge are still pending. No local
+Rust build or manual campaign has run.
 
 ## Current original providers and gap
 
@@ -82,7 +87,8 @@ impl<'o, 'a> Vue2TemplateView<'o, 'a> {
 }
 ```
 
-These APIs are implemented in private source, not published providers. The observation has
+These APIs are implemented in reviewed source; draft publication alone
+does not establish a merged provider. The observation has
 private fields owning the one original `Container`, checked `SourceRoot`,
 options, original policy issues, selected `TemplateSelection` and optional
 normally owned `ComponentParse`. The view borrows that whole observation;
@@ -259,3 +265,11 @@ protected suites, all unchanged 104 benchmarks and actual merge remain
 required later. Root and retained peer review of this source freeze precede
 Actions/publication. Historical File/compiler/runtime/product/default and
 wider dialect completion remain unfinished.
+
+All pure Rustfmt and six storage-policy controls pass; canonical census20/
+migration19 checks pass without a generated shard change. Reviewed source
+files remain below350 lines and the central decision record remains350.
+The previous original module-literal provider's accepted terminal packet is
+carried in this next genuine source change, without a separate docs PR or
+new campaign. Its actual #7711 proof is separate from this pending Vue 2
+provider acceptance.
