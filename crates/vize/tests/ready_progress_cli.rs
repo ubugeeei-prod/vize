@@ -34,6 +34,13 @@ fn ready(root: &Path, pattern: &str) -> Command {
     command
 }
 
+const FMT: &str =
+    "Found 1 file(s)\nReformatted: App.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n";
+const LINT: &str = "[vize] Skipping lint because linter.enabled is false in vize.config.\n";
+const CHECK: &str = "[vize] Skipping check because typeChecker.enabled is false in vize.config.\n";
+const BUILD: &str = "\x1b[32m✓ 1 file compiled in <elapsed>s\x1b[0m\n";
+const MISSING: &str = "No .vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown files found matching the patterns\n";
+
 #[test]
 fn redirected_ready_keeps_stage_logs_and_creates_the_real_build_output() {
     let project = project();
@@ -44,23 +51,18 @@ fn redirected_ready_keeps_stage_logs_and_creates_the_real_build_output() {
         String::from_utf8_lossy(&output.stderr)
     );
     let stderr = String::from_utf8(output.stderr).unwrap();
-    let stages: Vec<_> = stderr
-        .lines()
-        .filter(|line| line.starts_with("vize ready:"))
-        .collect();
     assert_eq!(
-        stages,
-        [
-            "vize ready: fmt",
-            "vize ready: lint",
-            "vize ready: check",
-            "vize ready: build"
-        ]
+        normalize_times(&stderr),
+        format!(
+            "vize ready: fmt\n{FMT}vize ready: lint\n{LINT}vize ready: check\n{CHECK}vize ready: build\n{BUILD}"
+        )
     );
-    assert!(!stderr.contains("stages completed"));
-    assert!(!stderr.contains("[1/4]"));
     assert!(project.path().join("dist/App.js").is_file());
-    assert!(!String::from_utf8_lossy(&output.stdout).contains("vize ready"));
+    assert_eq!(output.stdout, b"");
+    assert_eq!(
+        fs::read_to_string(project.path().join("App.vue")).unwrap(),
+        "<template>\n  <div>Hello</div>\n</template>\n"
+    );
 }
 
 #[test]
@@ -68,11 +70,11 @@ fn redirected_ready_stops_at_the_actual_failing_stage() {
     let project = project();
     let output = ready(project.path(), "Missing.vue").output().unwrap();
     assert_eq!(output.status.code(), Some(1));
-    assert!(output.stdout.is_empty());
-    let stderr = String::from_utf8(output.stderr).unwrap();
-    assert!(stderr.starts_with("vize ready: fmt\n"));
-    assert!(!stderr.contains("vize ready: lint"));
-    assert!(!stderr.contains("stages completed"));
+    assert_eq!(output.stdout, b"");
+    assert_eq!(
+        String::from_utf8(output.stderr).unwrap(),
+        format!("vize ready: fmt\n{MISSING}")
+    );
     assert!(!project.path().join("dist").exists());
 }
 
@@ -82,19 +84,14 @@ fn terminal_ready_numbers_real_stages_and_keeps_stdout_separate() {
     let project = project();
     let (output, stderr) = terminal_ready(ready(project.path(), "App.vue"));
     assert!(output.status.success(), "{stderr}");
-    for expected in [
-        "[1/4] Format",
-        "[2/4] Lint",
-        "[3/4] Type check",
-        "[4/4] Build",
-        "✓ Ready  4 stages completed in",
-    ] {
-        assert!(stderr.contains(expected), "missing {expected} in {stderr}");
-    }
-    assert!(stderr.contains("✓ Format"));
-    assert!(stderr.contains("✓ Build"));
+    assert_eq!(
+        normalize_times(&stderr),
+        format!(
+            "\n  vize ready\n\n  [1/4] Format\n{FMT}  ✓ Format  <elapsed>\n\n  [2/4] Lint\n{LINT}  ✓ Lint  <elapsed>\n\n  [3/4] Type check\n{CHECK}  ✓ Type check  <elapsed>\n\n  [4/4] Build\n{BUILD}  ✓ Build  <elapsed>\n\n  ✓ Ready  4 stages completed in <elapsed>\n\n"
+        )
+    );
     assert!(project.path().join("dist/App.js").is_file());
-    assert!(!String::from_utf8_lossy(&output.stdout).contains("vize ready"));
+    assert_eq!(output.stdout, b"");
 }
 
 #[cfg(unix)]
@@ -103,12 +100,57 @@ fn terminal_ready_does_not_claim_success_for_an_early_exit() {
     let project = project();
     let (output, stderr) = terminal_ready(ready(project.path(), "Missing.vue"));
     assert_eq!(output.status.code(), Some(1));
-    assert!(output.stdout.is_empty());
-    assert!(stderr.contains("[1/4] Format"));
-    assert!(!stderr.contains("✓ Format"));
-    assert!(!stderr.contains("[2/4]"));
-    assert!(!stderr.contains("stages completed"));
-    assert!(!stderr.contains('\x1b'));
+    assert_eq!(output.stdout, b"");
+    assert_eq!(
+        stderr,
+        format!("\n  vize ready\n\n  [1/4] Format\n{MISSING}")
+    );
+}
+
+// Retain every output byte except validated numeric elapsed-time fields. Exact
+// full transcripts reject missing, extra, reordered, styled or premature lines.
+fn normalize_times(stderr: &str) -> String {
+    let mut normalized = String::new();
+    for line in stderr.lines() {
+        let mut rewritten = false;
+        for prefix in [
+            "  ✓ Format  ",
+            "  ✓ Lint  ",
+            "  ✓ Type check  ",
+            "  ✓ Build  ",
+            "  ✓ Ready  4 stages completed in ",
+        ] {
+            if let Some(elapsed) = line.strip_prefix(prefix) {
+                let (value, unit) = elapsed.split_once(' ').unwrap();
+                assert!(matches!(unit, "ms" | "s"));
+                validate_duration(value);
+                normalized.push_str(prefix);
+                normalized.push_str("<elapsed>");
+                rewritten = true;
+                break;
+            }
+        }
+        if !rewritten {
+            if let Some(elapsed) = line.strip_prefix("\x1b[32m✓ 1 file compiled in ") {
+                validate_duration(elapsed.strip_suffix("s\x1b[0m").unwrap());
+                normalized.push_str(BUILD.trim_end_matches('\n'));
+            } else {
+                normalized.push_str(line);
+            }
+        }
+        normalized.push('\n');
+    }
+    normalized
+}
+
+fn validate_duration(value: &str) {
+    assert!(
+        value
+            .chars()
+            .all(|character| character.is_ascii_digit() || character == '.')
+    );
+    let value = value.parse::<f64>().unwrap();
+    assert!(value.is_finite() && value >= 0.0);
 }
 
 #[cfg(unix)]

@@ -26,6 +26,12 @@ output, including a missing-input failure before the second stage. Pure profile
 laws cover monochrome, ASCII, styled terminal, CI, dumb and forced-color
 redirected presentations, and interrupted-stage completion refusal.
 
+First source `3d6961e856` passed all ten new Rust laws on Check `37244855543`,
+but the tooling worker correctly rejected fifteen partial integration
+assertions. The replacement compares complete stderr transcripts and exact
+stdout/source bytes, normalizing only validated numeric elapsed-time fields.
+No assertion allowlist or gate exception is added; fresh Actions are required.
+
 Exact-head Actions and the protected merge queue remain required before actual
 merge. Publication is coordinated with the current release; authored source or
 passing PR checks alone do not establish publication or native-stage completion.
