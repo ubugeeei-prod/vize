@@ -9,7 +9,7 @@ Proposed comment body for both issues:
 > Vue 2 Component/TextView and borrowed expression providers, but the shared
 > Descriptor entry correctly refuses every non-V3 profile.
 >
-> Propose a separate sealed `Vue2DescriptorObservation` and borrowed
+> Privately implement a separate sealed `Vue2DescriptorObservation` and borrowed
 > `Vue2TemplateView`: explicit V2/Vue/default options, one normal template,
 > scriptless/styleless, default delimiters, retaining the same original
 > splitter root/block/index/opening/closing spans and normally owned
@@ -33,9 +33,15 @@ Proposed comment body for both issues:
 > later actual merge. Whole-SFC File, legalization, registry/classic runtime,
 > code/maps, product history/default routes and wider dialects remain open.
 >
-> This is a private design only. No production implementation, local build,
-> publication, manual campaign or queue admission has occurred. Root and
-> retained peer review of the frozen plan are required before edits.
+> Root authorized private implementation after corrected design e683 and
+> both retained source-only peer clearances. Twelve unit laws, one existing
+> isolated heap-drop harness case, ten correctly typed compile-fail controls
+> and one positive doctest are authored, with real per-thread splitter/parser
+> entry and after-parking fault hooks only under cfg(test). Component and
+> NativeSyntax diagnostics remain normally owned. This is unexecuted source:
+> no Rust build, Actions, publication, manual campaign or queue admission has
+> occurred. Root and retained peer review of the frozen source is required
+> before those later acceptance steps.
 >
 > Companion: `docs/davinci/decisions/2026-10-04-vue2-selected-descriptor-plan.md`;
 > the central level-restructure record carries the same bounded plan.

@@ -25,6 +25,23 @@ impl<'a> Policy<'a> {
         source: &'a str,
         options: DescriptorOptions,
     ) -> Self {
+        Self::at_version(allocator, source, options, VueVersion::V3)
+    }
+
+    pub(super) fn new_vue2(
+        allocator: &'a Allocator,
+        source: &'a str,
+        options: DescriptorOptions,
+    ) -> Self {
+        Self::at_version(allocator, source, options, VueVersion::V2)
+    }
+
+    fn at_version(
+        allocator: &'a Allocator,
+        source: &'a str,
+        options: DescriptorOptions,
+        required: VueVersion,
+    ) -> Self {
         let mut state = Self {
             root: SourceRoot::new(source).ok(),
             issues: Vec::new_in(&allocator),
@@ -34,7 +51,7 @@ impl<'a> Policy<'a> {
             styles: Vec::new_in(&allocator),
         };
         for (unsupported, code) in [
-            (options.version != VueVersion::V3, Code::UnsupportedVersion),
+            (options.version != required, Code::UnsupportedVersion),
             (options.dialect != VueDialect::Vue, Code::UnsupportedDialect),
             (
                 options.template.experimental_in_tag_comments,
@@ -48,7 +65,7 @@ impl<'a> Policy<'a> {
         state
     }
 
-    fn issue(&mut self, code: Code, container_index: Option<usize>, span: Span) {
+    pub(super) fn issue(&mut self, code: Code, container_index: Option<usize>, span: Span) {
         self.issues.push(DescriptorIssue {
             code,
             container_index,

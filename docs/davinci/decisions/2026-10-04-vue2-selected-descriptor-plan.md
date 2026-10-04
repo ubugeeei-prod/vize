@@ -1,11 +1,13 @@
-# Original Vue 2 selected descriptor: bounded ownership plan
+# Original Vue 2 selected descriptor: bounded ownership
 
 Private design for [#6837](https://github.com/ubugeeei-prod/vize/issues/6837)
 and [#6842](https://github.com/ubugeeei-prod/vize/issues/6842), frozen against
 literal main `6987c523ecd2bee6e8489e2973e4b7499ce25018`. The paired issue
 text is [prepared locally](./2026-10-04-vue2-selected-descriptor-issue-draft.md)
-for root review; it has not been posted. No production implementation,
-build, publication, campaign or queue admission accompanies this plan.
+for root review; it has not been posted. Root authorized the private
+implementation after both retained design peers cleared `e68357a2c8`.
+The source and laws below are authored privately; no Rust build, Actions,
+publication, campaign or queue admission has occurred.
 
 ## Current original providers and gap
 
@@ -31,7 +33,7 @@ This design joins those actual providers. It never constructs a modern
 
 ## First explicit family
 
-The proposed entry accepts `DescriptorOptions` but admits only
+The private entry accepts `DescriptorOptions` but admits only
 `version: V2`, `dialect: Vue` and `SurfaceParseOptions::default()`.
 The existing Component entry intrinsically selects the default `{{`/`}}`
 delimiter and JS expression/filter profile; no caller grammar is substituted.
@@ -80,7 +82,7 @@ impl<'o, 'a> Vue2TemplateView<'o, 'a> {
 }
 ```
 
-Names above are proposed APIs, not available methods. The observation has
+These APIs are implemented in private source, not published providers. The observation has
 private fields owning the one original `Container`, checked `SourceRoot`,
 options, original policy issues, selected `TemplateSelection` and optional
 normally owned `ComponentParse`. The view borrows that whole observation;
@@ -118,7 +120,7 @@ version: existing `Policy::new` continues to require V3, while a separately
 named Vue 2 constructor requires V2. It must not make V2 accepted by the
 existing public `observe_descriptor` entry. A new private Vue 2 callback
 rejects script/style/custom roles before invoking the existing template
-record method. Proposed precise script/style issue codes are additive and
+record method. Precise script/style issue codes are appended to the existing enum and
 unused by the V3 route; no new policy mode field is required.
 
 Run the existing `split_with` exactly once and finish all envelope checks.
@@ -192,9 +194,9 @@ and publication decisions; retain existing worktrees and cutoff constraints.
 Historical File/whole-chain legalization, JS lifetime attachment, ordered
 child completion, bindings/filter registry, classic runtime, full code/maps,
 product/history/default replacement and V2_7/other dialects remain unfinished.
-No roadmap or fix-history issue closes from this structural owner. This
-plan and the local paired issue draft are frozen for root and retained peer
-review before any production edits.
+No roadmap or fix-history issue closes from this structural owner. The
+private source and local paired issue draft require root and retained peer
+review before any publication or Actions validation.
 
 ## Retained peer clarification
 
@@ -208,3 +210,52 @@ records on admitted chains, and original expression-comment refusals. This
 also distinguishes zero-parse splitter refusals from scanner-complete body
 refusals with actual reachable child custody. These are law-premise
 corrections only, with no implementation or execution credit.
+
+## Private implementation freeze
+
+The separate `Vue2DescriptorObservation` normally owns the original
+Container, root, options, policy issues, selected frame and optional original
+ComponentParse. Its sealed non-Clone view borrows that owner and Component
+with checked index/opening/closing metadata. Frame checks join the actual
+original block slot, complete physical source extent, selected content and
+matched name spans. The view never certifies clean body grammar.
+
+The V3 constructor delegates its original checks to a private expected-version
+initializer that still requires V3. The separate V2 constructor requires V2;
+its existing callback refuses every script/style/custom role, and whole
+envelope completion precedes the existing Component entry. The added issue
+codes are appended, preserving the existing variants' ordering. Neither
+entry's ordinary setup/style admission is expanded. Existing parser/CST/body
+provider code and every upstream fixture are preserved.
+
+Actual `split_with` and `parse_component_block` entry hooks are entirely
+`cfg(test)`. A thread-local guard observes real entry calls, isolates unrelated
+threads and injects faults at the actual Component entry or after normal
+Component parking. A test-only Drop observer proves the wrapper unwinds; it
+does not substitute for diagnostic destructor proof. The existing isolated
+CountingAllocator harness adds a second case measuring normal Component/
+NativeSyntax heap release before arena Drop and after caught unwind. The
+original harness law body is preserved byte for byte. No production counter,
+fault field, extra parser or walker is added.
+
+Twelve unit laws cover exact Unicode/nonzero full-source frame and original
+filter/argument AST/profile/entity maps, empty/static/HTML-comment/`lang=html`
+CST fidelity, same-buffer and equal foreign allocation/arena children,
+parent/ordinal/sibling membership, movement, all version/options/block/late
+sibling refusals, reachable base/argument holes and comment/recovery/verbatim/
+encoded-delimiter boundaries, actual entry counts and thread-isolated caught
+unwind. Ten correctly typed privacy/lifetime/non-Clone/conversion compile-fail
+controls and one positive original TextView doctest are authored. These
+counts describe source, not executed tests.
+
+The reviewed storage scan adds one arena-Vec import/field for policy issues
+and one test-only L0 String import. ComponentParse stays an optional normal
+field, so its existing ordinary binding/filter/NativeSyntax diagnostic
+allocations retain normal destructors. The Container/CST/issues storage and
+wrapper metadata are real ownership costs; this is neither a zero-allocation
+nor a zero-byte claim. No existing row layout or budget cap is edited. Pure
+source inventory/format checks may run here; exact-head Rust/docs/laws, full
+protected suites, all unchanged 104 benchmarks and actual merge remain
+required later. Root and retained peer review of this source freeze precede
+Actions/publication. Historical File/compiler/runtime/product/default and
+wider dialect completion remain unfinished.
