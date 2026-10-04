@@ -14,12 +14,21 @@ mnemonics. `Program` stores compact ops, owned regions, explicit state edges,
 effect scopes, value operands and placement records. The validator checks
 artifact phases, references, containment, operands and effects.
 
-The separate `decision::DecisionTables` records L2-node static levels,
-dynamic bindings, placement and control containment for DOM/SSR/Vapor target
-policies. Its native producer in `vize_l2_to_l3::decision` remains a #6839
-skeleton. Empty tables are not completed analysis. Existing flat-program
-support does not establish that this shared producer or every product is
-native.
+The separate `decision::DecisionTables` records L2-node static/output levels,
+dynamic bindings, placement and control containment. The implemented sole
+producer is `vize_l3::decision::build_decisions`; `vize_l2_to_l3::decision`
+re-exports it. One canonical enter/leave walk produces conservative complete
+node/control facts and the selected bounded DOM, SSR or Vapor facts.
+`NativeAnalysis` privately retains the exact sealed L2 owner and read-only
+tables; arbitrary complete tables or equal node indices cannot forge it.
+
+The policy already excludes compile-time cloak markers and SSR native-element
+events from output dynamism. Hoist/cache eligibility, slot grouping and
+whole-product selection remain incomplete. Bounded original File/native
+selected-template and setup consumers also exist; this census does not
+measure their full product acceptance or imply that every route is native.
+Empty scratch tables and existing flat-program support alone remain no
+completion evidence.
 
 `lattice` already separates a reactivity class from its proof verdict and
 uses compact effect/escape summaries. Its `SourceKind` explicitly describes
@@ -32,9 +41,11 @@ Preserve #6839's demand split:
 
 - Every requesting backend gets L2 plus neutral decision tables, keyed by
   ids from that same L2 artifact. DOM and SSR consume those tables directly.
-- A flat program is constructed only when the selected target needs it,
-  currently Vapor. Neutral reactive nodes and typed dialect nodes share
-  that requested program; no second universal graph is built first.
+- A flat program is constructed only when the selected target needs it.
+  Vapor's existing bounded static facts do not automatically require it;
+  dynamic reactive execution is the motivating demanded-program consumer.
+  Neutral reactive nodes and typed dialect nodes share that requested
+  program; no second universal graph is built first.
 
 L3 owns static/dynamic decisions, legal placement, dependency order and
 update grouping. L4 owns runtime helpers, code emission, DOM patch flags,
@@ -163,9 +174,11 @@ Internal level wires may break; legacy products keep their output/API policy.
 The old L3-to-legacy Vapor adapter remains a dev-only differential oracle,
 never a native production path or source of shared facts.
 
-#6839 owns shared decision production and on-demand program construction;
-#6844 owns native script facts, #6841 framework feature adapters, #6840 direct
-L4 target encoding, and #6859 JSX execution semantics. Future frameworks
+#6839 owns completion of shared decision/placement analysis and on-demand
+program integration, preserving its implemented original-owner producer;
+#6844 owns completion of native script facts, #6841 framework feature
+composition, #6840 direct L4 target coverage, and #6859 JSX execution
+semantics. Future frameworks
 remain design-only for Vue Fes. This page closes only #6857 after review and
 merge, not any provider, target, product or performance completion issue.
 
