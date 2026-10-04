@@ -8,6 +8,13 @@ on:
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.mjs
+      - tools/support/compat/nuxt/source-binding*
+      - npm/native/**
+      - crates/**
+      - davinci/**
+      - Cargo.toml
+      - Cargo.lock
+      - .cargo/**
   push:
     branches: [main]
     paths:
@@ -16,6 +23,16 @@ on:
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.mjs
+      - tools/support/compat/nuxt/source-binding*
+      - npm/native/**
+      - crates/**
+      - davinci/**
+      - Cargo.toml
+      - Cargo.lock
+      - .cargo/**
+  merge_group:
+    types: [checks_requested]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -42,6 +59,20 @@ jobs:
           run-install: false
       - name: Install workspace tooling
         run: vp install --frozen-lockfile --prefer-offline
+      - uses: ./.github/actions/setup-moonbit
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: nuxt3-source-native
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Build and capture the actual source native compiler
+        run: vp run --no-cache --filter './npm/native' build:debug
       - name: Build the candidate Vite adapter
         working-directory: npm/builder/vite
         run: vp pack

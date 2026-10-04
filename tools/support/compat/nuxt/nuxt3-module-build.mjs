@@ -7,12 +7,14 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { prepareNuxtSourceBinding } from "./source-binding.mjs";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const fixture = path.join(root, "tools/support/compat/nuxt/fixtures/nuxt3-module-build");
 const artifacts = path.resolve(process.argv[2] ?? path.join(os.tmpdir(), "vize-nuxt3-build"));
 const requireTests = createRequire(path.join(root, "tests/package.json"));
 fs.mkdirSync(artifacts, { recursive: true });
+const sourceBinding = prepareNuxtSourceBinding(root, artifacts);
 
 for (const [name, version] of [
   ["nuxt", "3.19.3"],
@@ -52,7 +54,7 @@ try {
   try {
     build = spawnSync(process.execPath, ["node_modules/nuxt/bin/nuxt.mjs", "build"], {
       cwd: fixture,
-      env: { ...process.env, NO_COLOR: "1" },
+      env: { ...sourceBinding.environment, NO_COLOR: "1" },
       stdio: ["ignore", buildFd, buildFd],
       timeout: 300_000,
     });
@@ -155,6 +157,7 @@ try {
         buildExit: build.status,
         routes: ["/", "/about"],
         hydratedInteraction: true,
+        sourceBinding: sourceBinding.verify(),
       },
       null,
       2,
