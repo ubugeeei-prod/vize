@@ -58,7 +58,40 @@ fn sibling_importers_share_only_the_same_directory_and_exact_specifier() {
         sources.resolve_import(&root.join("node_modules"), "@scope/api"),
         None
     );
-    assert_eq!(sources.resolutions.lock().unwrap().len(), 4);
+    assert_eq!(sources.resolutions.lock().unwrap().len(), 5);
+    let unusual = root.join("node_modules");
+    assert_eq!(sources.resolve_import(&unusual, "./later"), None);
+    let later = root.join("later.ts");
+    fs::write(&later, "export type Later = string").unwrap();
+    assert_eq!(sources.resolve_import(&unusual, "./later"), None);
+    assert_eq!(
+        sources.resolve_import(&root.join("App.vue"), "./later"),
+        Some(later.clone())
+    );
+    assert_eq!(
+        TypeSourceSnapshot::default().resolve_import(&unusual, "./later"),
+        Some(later)
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn parentless_importers_retain_absolute_misses_separate_from_root_siblings() {
+    let dir = tempfile::tempdir().unwrap();
+    let source = dir.path().join("later.ts");
+    let specifier = source.to_str().unwrap();
+    let sources = TypeSourceSnapshot::default();
+    assert_eq!(sources.resolve_import(Path::new("/"), specifier), None);
+    fs::write(&source, "export type Later = string").unwrap();
+    assert_eq!(sources.resolve_import(Path::new("/"), specifier), None);
+    assert_eq!(
+        sources.resolve_import(Path::new("/SnapshotHost.vue"), specifier),
+        Some(source.canonicalize().unwrap())
+    );
+    assert_eq!(
+        TypeSourceSnapshot::default().resolve_import(Path::new("/"), specifier),
+        Some(source.canonicalize().unwrap())
+    );
 }
 
 #[test]

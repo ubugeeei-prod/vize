@@ -8,6 +8,8 @@
 mod resolution;
 #[cfg(test)]
 mod resolution_tests;
+#[cfg(all(test, unix))]
+mod symlink_package_tests;
 #[cfg(test)]
 mod tests;
 
@@ -21,11 +23,17 @@ use super::type_world::ParsedTypeModule;
 type ModuleCell = Arc<OnceLock<Option<ParsedTypeModule>>>;
 type ResolutionCell = Arc<OnceLock<Option<PathBuf>>>;
 
+#[derive(Debug, Hash, PartialEq, Eq)]
+enum ResolutionScope {
+    Directory(PathBuf),
+    File(PathBuf),
+}
+
 #[derive(Debug, Default)]
 pub struct TypeSourceSnapshot {
     overlays: FxHashMap<PathBuf, Arc<str>>,
     disk: Mutex<FxHashMap<PathBuf, Option<Arc<str>>>>,
-    resolutions: Mutex<FxHashMap<(PathBuf, String), ResolutionCell>>,
+    resolutions: Mutex<FxHashMap<(ResolutionScope, String), ResolutionCell>>,
     pub(super) summaries: Mutex<FxHashMap<PathBuf, FileTypeSummary>>,
     /// Unresolved dependency facts; each world resolves targets on its own clone.
     pub(super) modules: Mutex<FxHashMap<PathBuf, ModuleCell>>,

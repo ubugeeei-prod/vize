@@ -318,8 +318,9 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/script/context/parse.rs	6	r
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/context/parse.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/context/props.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/context/props.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/context/source_snapshot.rs	16	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/context/source_snapshot.rs	18	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/context/source_snapshot/resolution.rs	2	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/context/source_snapshot/symlink_package_tests.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/context/type_world.rs	23	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/context/type_world.rs	23	croquis	Croquis analysis	old	vize_croquis	legacy	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/context/type_world/overlay_tests.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
