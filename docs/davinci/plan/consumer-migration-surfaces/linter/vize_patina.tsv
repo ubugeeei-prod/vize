@@ -431,6 +431,7 @@ linter	Linter	source	crates/vize_patina/src/native/template/context.rs	5	carton	
 linter	Linter	source	crates/vize_patina/src/native/template/context.rs	5	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/native/template/context/tests.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/native/template/context/tests.rs	3	l1	L1	stage	vize_l1	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/template/context/tests/focus.rs	6	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/template/driver.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/template/driver.rs	4	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/template/element.rs	3	l0	L0	stage	vize_l0	preferred	1
@@ -471,8 +472,10 @@ linter	Linter	source	crates/vize_patina/src/rules/a11y/label_has_for.rs	25	old_a
 linter	Linter	source	crates/vize_patina/src/rules/a11y/media_has_caption.rs	28	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/mouse_events_have_key_events.rs	25	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/no_access_key.rs	15	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/a11y/no_access_key/native.rs	9	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs	15	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/no_autofocus.rs	15	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/a11y/no_autofocus/native.rs	9	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/no_distracting_elements.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/no_i_for_icon.rs	33	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/a11y/no_redundant_roles.rs	14	l0	L0	stage	vize_l0	preferred	1
@@ -1045,6 +1048,13 @@ linter	Linter	test/dev	crates/vize_patina/tests/native_deprecated_element/suppor
 linter	Linter	test/dev	crates/vize_patina/tests/native_deprecated_element/support.rs	2	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_deprecated_element/verbatim.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_deprecated_element/verbatim.rs	4	l1	L1	stage	vize_l1	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/native_focus_callbacks/configuration.rs	10	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	test/dev	crates/vize_patina/tests/native_focus_callbacks/output.rs	55	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/native_focus_callbacks/recovery.rs	2	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/native_focus_callbacks/refusal.rs	2	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/native_focus_callbacks/refusal.rs	2	l1	L1	stage	vize_l1	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/native_focus_callbacks/support.rs	1	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/native_focus_callbacks/suppression.rs	2	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_header_facts/custody.rs	2	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_header_facts/custody.rs	2	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/native_header_facts/observations.rs	2	l0	L0	stage	vize_l0	preferred	2
