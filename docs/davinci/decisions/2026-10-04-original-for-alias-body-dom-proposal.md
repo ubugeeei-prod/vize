@@ -181,3 +181,26 @@ DomUnsupported is owned. Mandatory native capture stops at the same compile
 error. Removing only the dereference preserves all ten body inputs/reasons,
 nine authored laws, full six models, production and old packs. No new native
 runtime or law acceptance is inferred; fresh automatic Actions remain required.
+
+The [e6 capture and law correction](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5976675056)
+retains terminal failed Check 37177407454: 15,392 source executions, 15,391 pass,
+one new Syntax-hole custody law fails, zero skipped. Strict workspace
+Clippy/archive/privacy and all four tooling workers pass; all nine new laws run
+once. Artifact11293518888 is the first genuine six-case native full-module/map
+object/raw-map-string/runtime packet, joined to actual c34+e6 checkout37156d1.
+All six complete independent fixtures and current-source hashes agree with real
+pinned Vue initialization/update/unmount (setup1/renders2, TEXT1/UNKEYED256).
+Every inherited ten/seven/five capture/runtime file is byte-identical to accepted
+2df, independently corroborated by the existing peer. This is e6 source-only,
+with no full protected104 or merge acceptance.
+
+The root-approved test/doc successor keeps the exact Syntax-hole input and
+Interpolation(Hole(Syntax)) reason, using the actual normally retained
+RejectedFile for interruption/source/For/Params/body/setup custody. The Let/Var
+generic-policy law now escapes format braces to produce Vue {{item}}, with a
+genuine singleton ForValue/current scope/occurrence/AST assertion before generic
+and neutral Operation refusals. Public rustdoc qualifies only that bounded value
+singleton. Executable production, six complete fixtures, old packs and capture
+policy remain exact. Fresh Actions must independently prove corrected laws and
+all new/old native packets; no e6 proof transfers to the successor. DRAFT and
+official0.431 publication queue hold remain.

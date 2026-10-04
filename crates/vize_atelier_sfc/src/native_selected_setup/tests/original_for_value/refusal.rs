@@ -48,7 +48,7 @@ fn generic_and_neutral_same_mutable_owner_keep_operation_refusal() {
     let arena = Allocator::default();
     for declaration in ["let count=2", "var count=2"] {
         let source = format!(
-            "<script setup>{declaration}</script><template><i v-for='item in count'>{{item}}</i></template>"
+            "<script setup>{declaration}</script><template><i v-for='item in count'>{{{{item}}}}</i></template>"
         );
         let compiled = compile_native_selected_setup_sfc_dom(
             &arena,
@@ -58,6 +58,38 @@ fn generic_and_neutral_same_mutable_owner_keep_operation_refusal() {
         assert!(compiled.result().is_ok());
         let view = compiled.observation().admitted().unwrap();
         let file = view.setup().file();
+        let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
+            panic!("actual original For");
+        };
+        let head = file.for_head_for(original).unwrap();
+        let [interpolation] = file.native_interpolations() else {
+            panic!("one original Vue interpolation, never literal braces");
+        };
+        let vize_l2::file::NativeFileInterpolationState::Admitted(node) = interpolation.state()
+        else {
+            panic!("normally attached original interpolation");
+        };
+        let selected = build_native_selected_setup_dom_decisions(view.setup()).unwrap();
+        assert!(selected.dom().unwrap().unsupported().is_empty());
+        let row = selected.expression(node).unwrap();
+        let table = row.resolution().table().unwrap();
+        let [read] = row.reads() else {
+            panic!("exact current callback value singleton");
+        };
+        assert_eq!(table.occurrences().len(), 1);
+        assert!(core::ptr::eq(read.occurrence(), &table.occurrences()[0]));
+        assert_eq!(read.kind(), VueReadKind::ForValue);
+        assert_eq!(read.binding().id(), head.value().unwrap().id());
+        assert_eq!(row.resolution().scope(), head.scope());
+        assert!(core::ptr::eq(
+            table.expression().ast,
+            interpolation
+                .input()
+                .operand()
+                .syntax()
+                .expression()
+                .unwrap()
+        ));
         let generic = vize_l3::decision::build_dom_file_decisions(file).unwrap();
         assert_eq!(
             generic.dom().unwrap().unsupported()[0].reason,
@@ -137,9 +169,13 @@ fn syntax_hole_keeps_whole_for_setup_and_original_body_without_read_admission() 
             )
         )
     );
-    let file = owner.file().unwrap();
-    assert!(!file.is_complete());
-    let input = file.unattached_for_heads().next().unwrap();
+    assert!(owner.file().is_none());
+    let file = owner.rejected_file().unwrap();
+    assert!(file.template_interruption().is_some());
+    assert!(core::ptr::eq(file.source(), source));
+    let mut inputs = file.original_for_inputs();
+    let input = inputs.next().unwrap();
+    assert!(inputs.next().is_none());
     assert_eq!(input.operand().raw_value(), "item in count");
     assert_eq!(input.aliases().len(), 1);
     assert!(input.collection().is_identifier_reference());
