@@ -1,10 +1,13 @@
 # Original static binding expression provider
 
-This genuine L1 source slice starts from literal main
-caee1656927e1232f4aaabff2328246decb8bc58. It implements the provider half of
+The original reviewed source freeze 9486ba94 starts from literal main
+caee1656927e1232f4aaabff2328246decb8bc58. Independent delivery is replayed
+onto actual signed main 77a8c401fa1ca72464de7769dffc41862d05c089 after
+#7774 actually merges. All seven production blobs and six new law files
+remain byte-identical; incoming central records and storage rows are preserved. It implements the provider half of
 the [reviewed binding plan](./2026-10-04-original-static-binding-doc-plan.md)
-for #6836 and the immediate whole-SFC consumer in #6847. At this private
-freeze, source execution, publication and protected acceptance are pending.
+for #6836 and the immediate whole-SFC consumer in #6847. Draft publication is authorized after full root and retained peer
+source review; fresh hosted source execution and protected acceptance are pending.
 
 ## One original selection and distinct owner
 
@@ -77,7 +80,8 @@ keeps authored prefix/current-failure expectations separate from execution.
 Do not copy conditional helpers or admit an individually queued dependency
 by prose alone. Register and verify the real native Stack, then qualify each
 exact source/prefix and protected candidate through literal signed merge.
-Existing #7774 delivery remains separate from this private implementation.
+Existing #7774 is separately accepted at signed 77a8c401; that proof does not
+transfer to this new provider or its private consumer.
 
 All L0/L1/Doc guards, immutable formatter history, original 100 ratchets and
 four formatter ceilings remain unchanged. No new stage, serialized bridge,
