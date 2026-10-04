@@ -130,10 +130,43 @@ attributes/children already expose that same owner. Only type annotations change
 with no unsafe/clone/fabricated owner, additional walk, policy or expected-vector
 change. All 29 laws and four compile-fail controls require fresh Actions proof.
 
+## Complete callback evidence after hosted failures
+
+[Check 37177772788](https://github.com/ubugeeei-prod/vize/actions/runs/37177772788)
+for exact source `7a8a11339e1cdeb134ac2406e2a84f35ec6f60b5` completed FAILURE.
+Job 111363984929 passed affected Clippy, build and doctests, including all four
+new compile-fail controls. Four actual Rust workers passed 28 of the 29 new laws;
+the sole new runtime failure was the authored positive `<span lang=en/>`.
+Its slash belongs to the original unquoted value, so the genuine native header
+refuses Hole. Tooling also rejected fourteen partial supplemental assertions
+and the stale owned Patina migration inventory. These are rejected-source
+receipts; they grant neither whole source acceptance nor protected proof.
+
+The [paired correction](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5976821594)
+keeps that exact compact input as an all-locale complete original parser/callback
+and native-refusal control. A separate spaced `<span lang=en />` is the valid
+unquoted positive. Complete typed callback traces now compare Root, Element,
+actual ordinal/parent and every authored attribute's opaque value, full range,
+directive head, kind and argument. Complete messages accompany the existing
+whole configured diagnostics/Debug comparisons; no filtered/count-only trace
+or partial substring probe supplies order credit. The fourteen weak probes are
+removed without changing the assertion policy or allowlist. The test-only event
+record retains all original observations; production admission is unchanged.
+
+The existing Rust artifact wrapper delegates directly to the authenticated
+source Node generator. Running that generator regenerates only the owned
+`linter/vize_patina.tsv`; all foreign shards remain unchanged, including the
+compiler SFC shard. The canonical check and unchanged assertion policy pass.
+No local Rust build/install or capture was run. This substantive test correction
+requires frozen independent/coordinating review before publication and fresh
+exact-source Actions afterward; original failures and vectors remain retained.
+
 ## Validation and paired TODO
 
-Twenty-six new integration laws, three private owner/reporter laws and four
-compile-fail examples are authored, not executed. Complete independent original
+Twenty-six new integration laws and three private owner/reporter laws remain
+required, alongside four compile-fail examples. The published lifetime repair
+has partial hosted proof above; the complete trace correction is unexecuted.
+Complete independent original
 visitor diagnostics/Debug/repeat observations check locale/help/severity/order,
 opaque syntax/ranges and valid inputs. Refusals preserve authored whole original
 vectors, including parser warnings/errors, suppressions, late failure and

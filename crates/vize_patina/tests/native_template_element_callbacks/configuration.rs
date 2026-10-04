@@ -107,9 +107,12 @@ fn every_actual_enabled_instance_must_admit_bindings_in_either_registry_order() 
         assert_eq!(wide_calls.load(Ordering::SeqCst), 1);
         assert_eq!(narrow_calls.load(Ordering::SeqCst), 1);
         assert_eq!(
-            log.lock().unwrap().len(),
-            2,
-            "only original root callbacks ran"
+            *log.lock().unwrap(),
+            if reverse {
+                vec![Event::Root("narrow"), Event::Root("wide")]
+            } else {
+                vec![Event::Root("wide"), Event::Root("narrow")]
+            }
         );
     }
 }
@@ -124,19 +127,28 @@ fn disabled_instance_does_not_narrow_or_receive_callbacks_but_enabled_order_is_e
     let configured = linter(vec![narrow, wide], Locale::En, HelpLevel::Full)
         .with_enabled_rules(Some(vec![FIRST.name.into(), SECOND.name.into()]))
         .with_disabled_rules(vec![SECOND.name.into()]);
-    pair(&configured, "<div :[name]='opaque'></div>", "exact.vue");
+    let source = "<div :[name]='opaque'></div>";
+    pair(&configured, source, "exact.vue");
     assert_eq!(
         wide_calls.load(Ordering::SeqCst),
         2,
         "one profile call per native invocation"
     );
     assert_eq!(narrow_calls.load(Ordering::SeqCst), 0);
-    assert!(
-        log.lock()
-            .unwrap()
-            .iter()
-            .all(|event| event.starts_with("wide/"))
-    );
+    let once = vec![
+        Event::Root("wide"),
+        element_event("wide", "div", 0, None),
+        binding_event(
+            "wide",
+            source,
+            0,
+            ":[name]",
+            ":[name]='opaque'",
+            "opaque",
+            vize_l1::markup::ArgSyntax::Dynamic(span(source, "name")),
+        ),
+    ];
+    assert_eq!(*log.lock().unwrap(), [once.clone(), once].concat());
 }
 
 #[test]
@@ -158,7 +170,7 @@ fn root_side_effect_cannot_widen_the_already_frozen_actual_profile() {
     );
     assert!(widened.load(Ordering::SeqCst));
     assert_eq!(calls.load(Ordering::SeqCst), 1);
-    assert_eq!(*log.lock().unwrap(), ["changing/root"]);
+    assert_eq!(*log.lock().unwrap(), [Event::Root("changing")]);
 }
 
 #[test]

@@ -32,9 +32,11 @@ pub static SECOND: RuleMeta = RuleMeta {
     fixable: false,
     default_severity: Severity::Warning,
 };
-pub type Events = Arc<Mutex<Vec<String>>>;
+mod trace;
+pub use trace::{Event, binding_event, element_event, static_event};
+pub type Events = Arc<Mutex<Vec<Event>>>;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AttributeObservation {
     pub ordinal: usize,
     pub name: String,
@@ -131,10 +133,7 @@ impl NativeTemplateRule for Audit {
         root: &NativeLintComponent<'a>,
     ) -> Result<(), Refusal> {
         assert!(core::ptr::eq(context.owner(), root));
-        self.events
-            .lock()
-            .unwrap()
-            .push(cstr!("{}/root", self.marker));
+        self.events.lock().unwrap().push(Event::Root(self.marker));
         if let Some(flag) = &self.widen {
             flag.store(true, Ordering::SeqCst);
         }
@@ -151,10 +150,14 @@ impl NativeTemplateRule for Audit {
             element.original().component(),
             context.owner().component()
         ));
-        self.events.lock().unwrap().push(cstr!(
-            "{}/element:{}",
+        self.events.lock().unwrap().push(element_event(
             self.marker,
-            element.original().surface().tag()
+            element.original().surface().tag(),
+            element.original().ordinal(),
+            element
+                .original()
+                .parent_element()
+                .map(|parent| parent.tag()),
         ));
         let mut observed = Vec::new();
         for attribute in element.attributes() {
@@ -196,7 +199,7 @@ impl NativeTemplateRule for Audit {
                 }
                 Kind::DynamicBind { argument_range } => ("dynamic-bind", Some(argument_range)),
             };
-            observed.push(AttributeObservation {
+            let observation = AttributeObservation {
                 ordinal: original.ordinal(),
                 name: original.surface().name.text.into(),
                 value: attribute.value().map(ToCompactString::to_compact_string),
@@ -204,18 +207,12 @@ impl NativeTemplateRule for Audit {
                 head: attribute.directive(),
                 binding,
                 argument,
+            };
+            self.events.lock().unwrap().push(Event::Attribute {
+                marker: self.marker,
+                observation: observation.clone(),
             });
-            self.events.lock().unwrap().push(cstr!(
-                "{}/attribute:{}:{}-{}:{}:{:?}:{:?}:{:?}",
-                self.marker,
-                original.ordinal(),
-                span.start,
-                span.end,
-                original.surface().name.text,
-                attribute.value(),
-                attribute.kind(),
-                attribute.directive()
-            ));
+            observed.push(observation);
             context.warn_attribute_with_help(attribute, MESSAGE, &[("name", self.marker)], HELP)?;
             if self.fail {
                 return Err(Refusal::UnsupportedAttribute { span });

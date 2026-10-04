@@ -29,12 +29,12 @@ fn clean_closed_dynamic_suffix_prefix_and_multiple_argument_overwrites_are_refus
                 })
             );
             assert_eq!(
-                log.lock()
-                    .unwrap()
-                    .iter()
-                    .filter(|e| e.contains("/element:"))
-                    .count(),
-                1
+                *log.lock().unwrap(),
+                [
+                    Event::Root("actual"),
+                    element_event("actual", "div", 0, None),
+                    static_event("actual", &source, 0, "id", "id='first'", Some("first"))
+                ]
             );
             original_single(
                 &configured,
@@ -65,7 +65,7 @@ fn empty_dynamic_shorthand_prop_and_full_arguments_remain_unresolved_with_full_o
                     span: span(&source, head)
                 })
             );
-            assert_eq!(*log.lock().unwrap(), ["actual/root"]);
+            assert_eq!(*log.lock().unwrap(), [Event::Root("actual")]);
             original_single(
                 &configured,
                 &source,

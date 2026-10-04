@@ -24,12 +24,12 @@ fn late_missing_close_discards_pending_findings_and_preserves_complete_original_
             Refusal::Header(NativeLintRefusal::Hole)
         );
         assert_eq!(
-            log.lock()
-                .unwrap()
-                .iter()
-                .filter(|e| e.contains("/element:"))
-                .count(),
-            1
+            *log.lock().unwrap(),
+            [
+                Event::Root("actual"),
+                element_event("actual", "div", 0, None),
+                static_event("actual", source, 0, "id", "id='first'", Some("first"))
+            ]
         );
         let mut expected = single_expected(
             &configured,
@@ -71,7 +71,7 @@ fn duplicate_header_refuses_before_element_callbacks_and_keeps_original_full_war
                 span: span(source, "ID")
             })
         );
-        assert_eq!(*log.lock().unwrap(), ["actual/root"]);
+        assert_eq!(*log.lock().unwrap(), [Event::Root("actual")]);
         let mut expected = single_expected(
             &configured,
             source,

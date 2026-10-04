@@ -6,13 +6,18 @@ use vize_patina::{HelpLevel, Locale, native::template::NativeTemplateAttributePr
 
 #[test]
 fn actual_static_attribute_tokens_ordinals_opaque_values_and_unicode_ranges_are_preserved() {
-    let source =
+    let refused =
         "前\r\n<div disabled title = \"&amp; 界\" data-id='{{ opaque }}'><span lang=en/></div>";
+    let source =
+        "前\r\n<div disabled title = \"&amp; 界\" data-id='{{ opaque }}'><span lang=en /></div>";
     for locale in LOCALES {
         let log = events();
-        let rule = Audit::new(&FIRST, "actual", Profile::StaticOnly, log);
+        let rule = Audit::new(&FIRST, "actual", Profile::StaticOnly, log.clone());
         let observations = rule.observations.clone();
         let configured = linter(vec![rule], locale, HelpLevel::Full);
+        unquoted::refused_original(&configured, refused, &log);
+        log.lock().unwrap().clear();
+        observations.lock().unwrap().clear();
         let result = pair(&configured, source, "/元/exact.vue");
         assert_eq!(result.diagnostics.len(), 5);
         let observed = observations.lock().unwrap();
@@ -51,6 +56,8 @@ fn actual_static_attribute_tokens_ordinals_opaque_values_and_unicode_ranges_are_
         assert_eq!(child.attributes[0].value.as_deref(), Some("en"));
     }
 }
+
+mod unquoted;
 
 #[test]
 fn fixed_bind_prop_full_names_modifiers_and_non_ascii_arguments_retain_original_head_geometry() {
@@ -229,10 +236,21 @@ fn duplicate_registered_names_preserve_actual_instance_order_and_each_profile_co
         "exact.vue",
     );
     assert_eq!(result.diagnostics.len(), 6);
-    assert!(result.diagnostics[0].message.contains("one/root"));
-    assert!(result.diagnostics[1].message.contains("two/root"));
-    assert!(result.diagnostics[2].message.contains("one"));
-    assert!(result.diagnostics[4].message.contains("two"));
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.message.as_str())
+            .collect::<Vec<_>>(),
+        [
+            "Component file name 'one/root' should be PascalCase or kebab-case",
+            "Component file name 'two/root' should be PascalCase or kebab-case",
+            "Component file name 'one' should be PascalCase or kebab-case",
+            "Component file name 'one' should be PascalCase or kebab-case",
+            "Component file name 'two' should be PascalCase or kebab-case",
+            "Component file name 'two' should be PascalCase or kebab-case",
+        ]
+    );
     for counter in calls {
         assert_eq!(counter.load(Ordering::SeqCst), 2);
     }

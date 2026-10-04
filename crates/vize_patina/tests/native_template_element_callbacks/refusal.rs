@@ -113,12 +113,12 @@ fn unsupported_event_and_structural_headers_cannot_publish_previously_pending_el
                 }
             );
             assert_eq!(
-                log.lock()
-                    .unwrap()
-                    .iter()
-                    .filter(|e| e.contains("/element:"))
-                    .count(),
-                1
+                *log.lock().unwrap(),
+                [
+                    Event::Root("actual"),
+                    element_event("actual", "div", 0, None),
+                    static_event("actual", &source, 0, "id", "id='first'", Some("first"))
+                ]
             );
             original_single(&configured, &source, "exact.vue", &["id='first'", full]);
         }
@@ -145,12 +145,22 @@ fn late_ordinary_comment_discards_root_and_attribute_results_without_rollback_of
             }
         );
         assert_eq!(
-            log.lock()
-                .unwrap()
-                .iter()
-                .filter(|e| e.contains("/element:"))
-                .count(),
-            3
+            *log.lock().unwrap(),
+            [
+                Event::Root("actual"),
+                element_event("actual", "div", 0, None),
+                static_event("actual", source, 0, "id", "id='first'", Some("first")),
+                element_event("actual", "section", 1, None),
+                element_event("actual", "span", 0, Some("section")),
+                static_event(
+                    "actual",
+                    source,
+                    0,
+                    "title",
+                    "title='second'",
+                    Some("second")
+                )
+            ]
         );
         original_single(
             &configured,
@@ -185,12 +195,13 @@ fn true_late_global_suppression_keeps_full_original_empty_and_native_typed_refus
                 span: span(source, "<!-- eslint-disable -->")
             }
         );
-        assert!(
-            log.lock()
-                .unwrap()
-                .iter()
-                .any(|e| e.contains("/attribute:")),
-            "pending output is not a clean result"
+        assert_eq!(
+            *log.lock().unwrap(),
+            [
+                Event::Root("actual"),
+                element_event("actual", "div", 0, None),
+                static_event("actual", source, 0, "id", "id='first'", Some("first"))
+            ]
         );
     }
 }
@@ -214,12 +225,22 @@ fn late_original_interpolation_refuses_after_authentic_parent_attributes() {
             }
         );
         assert_eq!(
-            log.lock()
-                .unwrap()
-                .iter()
-                .filter(|e| e.contains("/attribute:"))
-                .count(),
-            2
+            *log.lock().unwrap(),
+            [
+                Event::Root("actual"),
+                element_event("actual", "div", 0, None),
+                binding_event(
+                    "actual",
+                    source,
+                    0,
+                    ":title",
+                    ":title='opaque'",
+                    "opaque",
+                    vize_l1::markup::ArgSyntax::Static(span(source, "title"))
+                ),
+                element_event("actual", "span", 0, Some("div")),
+                static_event("actual", source, 0, "id", "id='literal'", Some("literal"))
+            ]
         );
         original_single(
             &configured,
@@ -257,12 +278,12 @@ fn late_foreign_or_component_owner_is_not_dispatched_despite_a_checked_literal_h
             }
         );
         assert_eq!(
-            log.lock()
-                .unwrap()
-                .iter()
-                .filter(|e| e.contains("/element:"))
-                .count(),
-            1
+            *log.lock().unwrap(),
+            [
+                Event::Root("actual"),
+                element_event("actual", "div", 0, None),
+                static_event("actual", source, 0, "id", "id='first'", Some("first"))
+            ]
         );
         original_single(
             &configured,
@@ -295,14 +316,15 @@ fn callback_error_discards_its_own_pending_warning_and_stops_later_actual_instan
             span: span(source, "id='literal'")
         }
     );
-    let observed = log.lock().unwrap();
     assert_eq!(
-        &observed[..3],
-        ["first/root", "second/root", "first/element:div"]
+        *log.lock().unwrap(),
+        [
+            Event::Root("first"),
+            Event::Root("second"),
+            element_event("first", "div", 0, None),
+            static_event("first", source, 0, "id", "id='literal'", Some("literal"))
+        ]
     );
-    assert_eq!(observed.len(), 4);
-    assert!(!observed.iter().any(|e| e.starts_with("second/element:")));
-    assert!(!observed.iter().any(|e| e.contains("element:span")));
 }
 
 mod geometry;
