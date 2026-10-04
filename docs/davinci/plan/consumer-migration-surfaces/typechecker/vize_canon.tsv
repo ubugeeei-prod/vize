@@ -1099,6 +1099,9 @@ typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/reference_paths.rs	9	l1	L1	stage	vize_l1	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/reference_paths.rs	9	l2	L2	stage	vize_l2	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/required_named_exports_neutral.rs	3	l2	L2	stage	vize_l2	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/required_named_exports.rs	7	l0	L0	stage	vize_l0	preferred	3
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/required_named_exports.rs	7	l2	L2	stage	vize_l2	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/required_named_exports.rs	7	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/typed_parameters.rs	7	l0	L0	stage	vize_l0	preferred	3
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/typed_parameters.rs	7	l2	L2	stage	vize_l2	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/typed_parameters.rs	7	raw_oxc	raw OXC	raw	oxc_parser	raw	1

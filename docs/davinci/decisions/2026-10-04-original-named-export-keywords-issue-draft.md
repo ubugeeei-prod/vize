@@ -44,6 +44,18 @@ unchanged104 × 3 measurements/ceilings/ratchets plus signed merge remain
 required. No legacy transform, fake records, new stage, individual auto or
 historical/default/full-type completion is authorized.
 
+## Private immediate consumer follow-up
+
+The genuine child of frozen affe provider now authors five complete L4/Canon
+laws and freezes all twelve original-only TS6 vectors before any native run.
+The [consumer companion](./2026-10-04-original-required-named-export-consumer.md)
+records complete raw/fixture provenance, same original Function/Export/local
+and Parameter/source custody, whole configured TS7 report/maps plan, actual
+Auto Module-goal positive and unchanged refusal boundaries. Production, prior
+oracle/helper and optional sixth source remain untouched. Source/peer/root
+review, fresh execution/Stack/protected104/literal proof are still pending;
+no historical/default/ABA/coherent-graph credit is granted.
+
 After adopting the genuine incoming `8e3071bcf` / `0d3e2de1` source,
 replace only its two forbidden `std::format!` uses with the existing
 `vize_l0::cstr!`, preserving both complete strings and all SourceChanged
