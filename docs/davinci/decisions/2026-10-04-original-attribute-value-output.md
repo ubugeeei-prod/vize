@@ -93,3 +93,11 @@ attribute tuple ordering through a comparator. No lint suppression, output
 oracle, source loader range, pin or strict unfrozen gate changes. Raw initial
 logs remain preserved; fresh exact-source Actions must actually capture before
 any native/runtime acceptance is possible. Pure contracts still pass8/8.
+
+Actual f386 tooling2 also exposed the existing scoped-proof VM test's omitted
+context binding for the real newly registered original-value selector. The
+correction imports that actual selector into the VM; all old scoped/SSR
+positive, negative and action truth tables remain unchanged. Combined pure
+contracts pass11/11 without skips, distinct from hosted native capture.
+The true child retains the corrected borrowed raw-CR parent and private neutral
+ComponentBody law; original nine SSR and all existing output packs stay exact.
