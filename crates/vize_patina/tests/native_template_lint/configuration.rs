@@ -1,8 +1,8 @@
 use super::support::*;
 use vize_l0::config::VueVersion;
 use vize_patina::{
-    HelpLevel, LintPreset, Linter, Locale, Rule, RuleCategory, RuleMeta, RuleRegistry, Severity,
-    context::LintContext, native::template::NativeTemplateLintRefusal as Refusal,
+    HelpLevel, LintContext, LintPreset, Linter, Locale, Rule, RuleCategory, RuleMeta, RuleRegistry,
+    Severity, native::template::NativeTemplateLintRefusal as Refusal,
 };
 use vize_relief::RootNode;
 

@@ -6,8 +6,7 @@ use std::sync::{
 use vize_l0::config::VueVersion;
 use vize_l1::markup::NativeLintComponent;
 use vize_patina::{
-    LintPreset, Linter, Rule, RuleCategory, RuleMeta, RuleRegistry, Severity,
-    context::LintContext,
+    LintContext, LintPreset, Linter, Rule, RuleCategory, RuleMeta, RuleRegistry, Severity,
     native::template::{
         NativeTemplateLintContext, NativeTemplateLintRefusal as Refusal, NativeTemplateRule,
     },
@@ -172,6 +171,12 @@ fn actual_duplicate_registry_instances_preserve_callback_and_diagnostic_order() 
     let original = linter.lint_template(SOURCE, "order.vue");
     assert_eq!(complete(&native), complete(&original));
     assert_eq!(called.load(Ordering::SeqCst), 2);
-    assert!(native.diagnostics[0].message.contains("first"));
-    assert!(native.diagnostics[1].message.contains("second"));
+    assert_eq!(
+        native.diagnostics[0].message.as_str(),
+        "Component file name 'first' should be PascalCase or kebab-case"
+    );
+    assert_eq!(
+        native.diagnostics[1].message.as_str(),
+        "Component file name 'second' should be PascalCase or kebab-case"
+    );
 }

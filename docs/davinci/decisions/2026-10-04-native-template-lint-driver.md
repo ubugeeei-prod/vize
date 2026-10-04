@@ -67,3 +67,5 @@ gates, genuine native Stack admission and literal signed merge/main proof remain
 required. Existing fixtures/laws, SDK groups/IDs, default route and instruction
 ceilings stay unchanged. #6848, #6881, the default switch and all unprovided
 rules/products remain unfinished.
+
+The [first driver source repair](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5975013916) retains failed 4f4d5b9d/Check37164785811: two new test imports used the private context module, two order controls used substring assertions, and rule.rs grew429→436. Use the existing public LintContext export and exact full messages while retaining complete original/native equality and all39 functions/inputs. Move the unchanged happy-path registry constructor separately into ordinary332/110-line modules with identical order. No allowlist, fixture recapture, admission/provider/default/SDK or ceiling changes; failed driver was never queued and fresh exact-head proof remains required.
