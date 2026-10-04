@@ -204,3 +204,22 @@ singleton. Executable production, six complete fixtures, old packs and capture
 policy remain exact. Fresh Actions must independently prove corrected laws and
 all new/old native packets; no e6 proof transfers to the successor. DRAFT and
 official0.431 publication queue hold remain.
+
+The [fresh 30c source receipt](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5976755702)
+establishes all four full Rust workers at Check37178160667: 15,392 executions,
+all pass, zero failed/skipped; all nine new laws run once, including corrected
+genuine interpolation contrast and Syntax-hole RejectedFile custody. Strict
+builder/privacy and mandatory native capture pass. Actualartifact11294520125 at
+officialmain6987+30c checkout1bb33a8 independently requalifies all six complete
+native code/object/raw-string maps and real Vue initialization/update/unmount
+with current-source hashes; every inherited ten/seven/five packet file remains
+byte-identical to accepted2df.
+
+The overall source gate still fails: adding the genuine test assertions omitted
+canonical regeneration of two compiler census rows. Pure regeneration changes
+only SFC.tsv's actual first observation line 100 to 68 and L2 count 7 to 8;
+all current inventories then pass. An inventory/doc-only successor preserves
+every executable production/law/model/old-pack/runtime/action/selector byte.
+Prior successful subsets remain exact30c-only; fresh automatic source acceptance,
+official publication queue hold, protected104 and actual signed merge are still
+required. No local Rust or broad manual campaign is run.
