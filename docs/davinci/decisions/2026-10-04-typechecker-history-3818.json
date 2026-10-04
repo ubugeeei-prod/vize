@@ -1,0 +1,219 @@
+{
+  "fix": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+  "parent": "b77e0a21485b9c9fb23506ee9b30fc857e4345a1",
+  "historicalIssue": 3818,
+  "ledgerClassification": "classification-pending",
+  "fixtureState": "not-admitted",
+  "sourceFile": {
+    "path": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/v_for_source_callbacks.rs",
+    "blob": "64432e2a79f44519b47f4466cf8a5bd0818a6bed",
+    "sha256": "3d33956b4de2a0af20d1274dd2093f959600df6fefea9f81650158650d3e3e1d"
+  },
+  "helperFile": {
+    "path": "crates/vize_canon/src/batch/type_checker/tests.rs",
+    "blob": "a7c74b9593646b124c753b35fa395f5bc215b9b6",
+    "sha256": "45997a074c644c38d72b013d6d2cad889a3a21d2a189669ff0bb2c2088391489"
+  },
+  "originalConfiguration": {
+    "source": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}",
+    "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047",
+    "value": {
+      "compilerOptions": {
+        "strict": true,
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "noEmit": true
+      },
+      "include": ["src/**/*"]
+    }
+  },
+  "originalHelpers": [
+    {
+      "function": "create_project_case",
+      "utf8Start": 51136,
+      "utf8End": 51736,
+      "sha256": "8b8f52ee03ef723e2ff8b74b4e4e1f773a15a191b2b5c7f9d21c69e22411723b",
+      "source": "fn create_project_case(name: &str, files: &[(&str, &str)]) -> PathBuf {\n    let project_root = unique_case_dir(name);\n    let _ = std::fs::remove_dir_all(&project_root);\n    std::fs::create_dir_all(&project_root).unwrap();\n    link_workspace_node_modules(&project_root).unwrap();\n    write_project_tsconfig(&project_root);\n\n    for (path, source) in files {\n        let file_path = project_root.join(path);\n        if let Some(parent) = file_path.parent() {\n            std::fs::create_dir_all(parent).unwrap();\n        }\n        std::fs::write(file_path, source).unwrap();\n    }\n\n    project_root\n}\n"
+    },
+    {
+      "function": "write_project_tsconfig",
+      "utf8Start": 52302,
+      "utf8End": 52632,
+      "sha256": "98dc869e6a991e5719d5a3724f9c9291b18a9b3fca34f49e96d780bfc5f2cec9",
+      "source": "fn write_project_tsconfig(project_root: &Path) {\n    std::fs::write(\n        project_root.join(\"tsconfig.json\"),\n        r#\"{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"include\": [\"src/**/*\"]\n}\"#,\n    )\n    .unwrap();\n}\n"
+    },
+    {
+      "function": "snapshot_project_diagnostics",
+      "utf8Start": 52633,
+      "utf8End": 53610,
+      "sha256": "8ee259502eecde81531f865289f47896e386f4fcba40093397a9b5b641beed4e",
+      "source": "fn snapshot_project_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>, String)>> {\n    let mut checker = BatchTypeChecker::new(project_root).ok()?;\n    checker.scan_project().ok()?;\n    let result = checker.check_project().ok()?;\n\n    let mut snapshot: Vec<_> = result\n        .diagnostics\n        .into_iter()\n        .map(|diagnostic| {\n            (\n                relative_path(project_root, &diagnostic.file),\n                diagnostic.code,\n                cstr!(\n                    \"{}:{}:{} {}\",\n                    diagnostic.line + 1,\n                    diagnostic.column + 1,\n                    match diagnostic.severity {\n                        1 => \"error\",\n                        2 => \"warning\",\n                        3 => \"info\",\n                        _ => \"hint\",\n                    },\n                    diagnostic.message\n                ),\n            )\n        })\n        .collect();\n    snapshot.sort();\n    Some(snapshot)\n}\n"
+    },
+    {
+      "function": "link_workspace_node_modules",
+      "utf8Start": 57345,
+      "utf8End": 59286,
+      "sha256": "00e1193e849febc79add5c598d4153a9bdace145cea7125c41d719505afc60bd",
+      "source": "fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {\n    let Some(workspace_root) = Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n        .parent()\n        .and_then(Path::parent)\n    else {\n        return Err(std::io::Error::other(\"workspace root not found\"));\n    };\n    let workspace_node_modules = resolve_workspace_node_modules(workspace_root);\n\n    let target = project_root.join(\"node_modules\");\n    if target.is_symlink() || target.is_file() {\n        std::fs::remove_file(&target)?;\n    } else if target.exists() {\n        std::fs::remove_dir_all(&target)?;\n    }\n    std::fs::create_dir_all(&target)?;\n\n    if let Some(ref workspace_node_modules) = workspace_node_modules {\n        link_or_stub_package(workspace_node_modules, &target, \"vue\", write_test_vue_stub)?;\n        link_or_stub_package(\n            workspace_node_modules,\n            &target,\n            \"vite\",\n            write_test_vite_stub,\n        )?;\n\n        if let Some(vue_namespace) = resolve_test_vue_runtime_namespace(workspace_node_modules) {\n            symlink_path(&vue_namespace, &target.join(\"@vue\"))?;\n        } else {\n            write_test_vue_runtime_dom_stub(&target)?;\n        }\n    } else {\n        write_test_vue_stub(&target)?;\n        write_test_vite_stub(&target)?;\n    }\n\n    if let Some(source) = vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)\n        && source.exists()\n    {\n        let file_name = source.file_name().ok_or_else(|| {\n            std::io::Error::new(\n                std::io::ErrorKind::InvalidInput,\n                \"invalid corsa binary path\",\n            )\n        })?;\n        symlink_path(\n            &source,\n            &target\n                .join(\"@typescript\")\n                .join(\"native-preview\")\n                .join(\"lib\")\n                .join(file_name),\n        )?;\n        symlink_path(&source, &target.join(\".bin\").join(file_name))?;\n    }\n\n    Ok(())\n}\n"
+    }
+  ],
+  "originalCheckerOptions": "default BatchTypeChecker; no extra checker flags",
+  "originalPackagePolicy": "link workspace Vue/Vite/@vue when available, otherwise test support stubs; proposed mandatory fixture must use pinned real runtime and record actual package identities",
+  "historicalObservation": "optional runtime guard; public diagnostics sorted by snapshot helper; each selected original project expects zero or one row",
+  "missingHistoricalFields": [
+    "end",
+    "relatedInformation",
+    "raw backend diagnostics",
+    "returned-order identity for multi-row outputs",
+    "actual historical loader snapshot"
+  ],
+  "canonAndCroquisChangedPatchSha256": "892e5418ad74c6d99c4006ace43c2ef1f457bd01904977a8f8e25d9ebed0922c",
+  "allChangedFiles": [
+    {
+      "path": "crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs",
+      "parent": {
+        "blob": "9a6c55cc2b2f96fffbb37bd99fdbef8033d49d76",
+        "sha256": "a1f46ba70a419249c781d13acaa333f5cec133419fba90eacf9afc6ab4673f93"
+      },
+      "fix": {
+        "blob": "fdf95757659f03ce359ce75ba1f17cdeaddd8df8",
+        "sha256": "27fff720f04b0a72cfeb7f7f36a514c5a7bec3f153ee25fb2e6be8b358faf8ed"
+      }
+    },
+    {
+      "path": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/v_for_source_callbacks.rs",
+      "parent": null,
+      "fix": {
+        "blob": "64432e2a79f44519b47f4466cf8a5bd0818a6bed",
+        "sha256": "3d33956b4de2a0af20d1274dd2093f959600df6fefea9f81650158650d3e3e1d"
+      }
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/props.rs",
+      "parent": {
+        "blob": "f32d1a189355d2b45a30d14ec6593bbc092b92d0",
+        "sha256": "fbc45f659d2bb11b178ca9339868ca09a367d83f1904ab774abbcd819c22cfa6"
+      },
+      "fix": {
+        "blob": "9725f36ed50d9e2d1248dd1a2d1eed90b7cf3e02",
+        "sha256": "be3a45937a96931f2cd3258cabd5ebc57896a908b05994787b875b08303da5c3"
+      }
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/props/keyed_template_names.rs",
+      "parent": null,
+      "fix": {
+        "blob": "86c8eff344740d2df12d7055c521f9bd0f1811f7",
+        "sha256": "72a243036f66ef90a0e437e87d11042401bde1e5ba265e3f3d49750b9123bd58"
+      }
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/closures.rs",
+      "parent": {
+        "blob": "ad449d03d79fb99e4830f7d7bf2bc07d7fc0298f",
+        "sha256": "b6b523a1a409dfd1235bb87a833ed6e7a53b3f5f0fca53b2840af4d4c9cc5a16"
+      },
+      "fix": {
+        "blob": "e6972e573cbf0796f88ffcccfb23dff47f2bd6d3",
+        "sha256": "689ab3b493e1df51049f2a27fa4f8a879e5cef5a1f65f7746af90d69cecc17c9"
+      }
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_props.rs",
+      "parent": {
+        "blob": "1798c29bb99751613d0a581ea20f17e5ad3c1e01",
+        "sha256": "0c3883b3658dc95449d40485061c116bd4198a0bd40ce61bfe111f499e1e9704"
+      },
+      "fix": {
+        "blob": "a061cc81b5cdcb9ee2ad7ee3285606fad081ffb5",
+        "sha256": "62b40309841b5ce60dc7ce881a73da25411c19fb514e7770c7459e6d6be15baf"
+      }
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/emit.rs",
+      "parent": {
+        "blob": "34da093bfb9264596b1b93a59201477f42e34554",
+        "sha256": "e6f3a871c13482c339135fc9a1f205faa250ebbc65621dbfc5dd435b8f05e733"
+      },
+      "fix": {
+        "blob": "7305c5b8a70825812eb261ebbc51e105b0154609",
+        "sha256": "ec24c839bacbea69c1d112fced2e6712a1e06f269a43cbbb2c096397b5a76215"
+      }
+    },
+    {
+      "path": "crates/vize_croquis/src/drawer/template/directives/control_flow.rs",
+      "parent": {
+        "blob": "e7e43d125a9bf8f16bf647bf6037c2344d3efc73",
+        "sha256": "737ae3d5a5670dd2dcf9cff02a2d107af6c23524b8d7ffb61b76648605cd357b"
+      },
+      "fix": {
+        "blob": "92dcff5df9b61646de14397c21b30fea8a47960a",
+        "sha256": "0cf4ff29adf200f84a960166d36a1a050dafa0f6c64620d390925bd5a0c627a1"
+      }
+    },
+    {
+      "path": "crates/vize_croquis/src/drawer/template/visit_element/first_pass.rs",
+      "parent": {
+        "blob": "b2e449b52cb9d4a294cb8c9368e980afec74852b",
+        "sha256": "49ebb4905adb354752b1ed068ce8dde020f678797423148bfe9257adf227db70"
+      },
+      "fix": {
+        "blob": "e6425f49cff4e91f7fa7919d815bfd9239cee0cd",
+        "sha256": "b7862c25baf1d4997c3bad692bc9690d159be59e60b7a49cf81989551baebd6a"
+      }
+    },
+    {
+      "path": "crates/vize_croquis/src/drawer/template/visit_element/scopes.rs",
+      "parent": {
+        "blob": "57791b4f0e6d79e49c08f401c0b06c67e5a2cfd2",
+        "sha256": "a1fa7b3a128813bc865696f2e9d6ae7fb303b4752ac312cf5e661fb518b1b3c7"
+      },
+      "fix": {
+        "blob": "7a071eaaa8a1c88d083140d6a17d6480df563216",
+        "sha256": "f8e70dce1e3906c023fc312dbabfc53290b13d85b589a0f6020a5f5e1e66d968"
+      }
+    },
+    {
+      "path": "crates/vize_croquis/src/drawer/template/visit_element/v_for_scope.rs",
+      "parent": {
+        "blob": "37b7e0f67a4ede0c36848dc863199dfa6a89d6b0",
+        "sha256": "6b512aada90e8fb80354acfb43ef7db2e3cccfb37dd3f47514c446aec5694d22"
+      },
+      "fix": {
+        "blob": "6a7bf4689c17b3ada12f5e001cce2d1a8339575d",
+        "sha256": "bb0d0f7f1ec85538f7b1518bb399eca2bf8c54c640a4f6f966822b6a48bb1af6"
+      }
+    },
+    {
+      "path": "crates/vize_croquis/src/scope/chain.rs",
+      "parent": {
+        "blob": "5eefe428ef24c4a79a36c445954e76dbaa0ed487",
+        "sha256": "4a501729b692a47e4e0078b4e408de5d93663f289d4d36710404724905fccb75"
+      },
+      "fix": {
+        "blob": "6705672fef6b28465d7b2a32c5b96282a5ecf432",
+        "sha256": "8221bcbf95080083840c7d9ef7a36a9572f764b933879e3b92c3eece815d8ebf"
+      }
+    },
+    {
+      "path": "crates/vize_croquis/src/scope/chain/v_for_offsets.rs",
+      "parent": null,
+      "fix": {
+        "blob": "adcb0c3afa50f40137918e506296e69443bb71c9",
+        "sha256": "0dcec63bdbd134b895a6ca5ace41078e0a01b099bc52f99c71c3475aece13002"
+      }
+    },
+    {
+      "path": "tests/snapshots/check/__snapshots__/vue2-elm-check.snap",
+      "parent": {
+        "blob": "ad8e08a050727b9da6134c3f84dce2c09ce613cd",
+        "sha256": "0214ba035ec4bb494426e36152f6d770f7b2bea993a72d3ad2a66c40f02a60bc"
+      },
+      "fix": {
+        "blob": "3e2c1edf17351490f0219282ad1df255c18d8689",
+        "sha256": "7c969fe2cc646864b0d25a9f6ecd846b10339e9cae9912606d2a3ba137b94a7f"
+      }
+    }
+  ]
+}

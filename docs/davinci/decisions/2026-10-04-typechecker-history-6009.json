@@ -1,0 +1,151 @@
+{
+  "fix": "e199979dfb32dfd8eb9ad32a2928fb010768f239",
+  "parent": "dcb5bae88876fdaf5015d6499b0eb288447b9371",
+  "historicalIssue": 6009,
+  "ledgerClassification": "classification-pending",
+  "fixtureState": "not-admitted",
+  "sourceFile": {
+    "path": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_ref_slot_vnode_handlers.rs",
+    "blob": "dbbb3a87f4d634413272312ccbf6bf44640d4e55",
+    "sha256": "698994f61ca3f5e523807fedeb5e12401169325dcdd84f4f124eba1f0e888a39"
+  },
+  "helperFile": {
+    "path": "crates/vize_canon/src/batch/type_checker/tests.rs",
+    "blob": "179e050bbc67907b6a20ef67ae362ba1022c4388",
+    "sha256": "0f29bfe01013d06a34178218cf8a60796995f797b40ff602b30a1fa5200d80fd"
+  },
+  "originalConfiguration": {
+    "source": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}",
+    "sha256": "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b",
+    "value": {
+      "compilerOptions": {
+        "strict": true,
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "noEmit": true
+      },
+      "vueCompilerOptions": {
+        "strictTemplates": true
+      },
+      "include": ["src/**/*"]
+    }
+  },
+  "originalHelpers": [
+    {
+      "function": "create_project_case",
+      "utf8Start": 51534,
+      "utf8End": 52134,
+      "sha256": "8b8f52ee03ef723e2ff8b74b4e4e1f773a15a191b2b5c7f9d21c69e22411723b",
+      "source": "fn create_project_case(name: &str, files: &[(&str, &str)]) -> PathBuf {\n    let project_root = unique_case_dir(name);\n    let _ = std::fs::remove_dir_all(&project_root);\n    std::fs::create_dir_all(&project_root).unwrap();\n    link_workspace_node_modules(&project_root).unwrap();\n    write_project_tsconfig(&project_root);\n\n    for (path, source) in files {\n        let file_path = project_root.join(path);\n        if let Some(parent) = file_path.parent() {\n            std::fs::create_dir_all(parent).unwrap();\n        }\n        std::fs::write(file_path, source).unwrap();\n    }\n\n    project_root\n}\n"
+    },
+    {
+      "function": "write_project_tsconfig",
+      "utf8Start": 52700,
+      "utf8End": 53081,
+      "sha256": "059bc3674eacba545b4c714cd0c9339add42457b1cbffcdc002318e1cdbeae22",
+      "source": "fn write_project_tsconfig(project_root: &Path) {\n    std::fs::write(\n        project_root.join(\"tsconfig.json\"),\n        r#\"{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true\n  },\n  \"vueCompilerOptions\": { \"strictTemplates\": true }, \"include\": [\"src/**/*\"]\n}\"#,\n    )\n    .unwrap();\n}\n"
+    },
+    {
+      "function": "snapshot_project_diagnostics",
+      "utf8Start": 53082,
+      "utf8End": 54059,
+      "sha256": "8ee259502eecde81531f865289f47896e386f4fcba40093397a9b5b641beed4e",
+      "source": "fn snapshot_project_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>, String)>> {\n    let mut checker = BatchTypeChecker::new(project_root).ok()?;\n    checker.scan_project().ok()?;\n    let result = checker.check_project().ok()?;\n\n    let mut snapshot: Vec<_> = result\n        .diagnostics\n        .into_iter()\n        .map(|diagnostic| {\n            (\n                relative_path(project_root, &diagnostic.file),\n                diagnostic.code,\n                cstr!(\n                    \"{}:{}:{} {}\",\n                    diagnostic.line + 1,\n                    diagnostic.column + 1,\n                    match diagnostic.severity {\n                        1 => \"error\",\n                        2 => \"warning\",\n                        3 => \"info\",\n                        _ => \"hint\",\n                    },\n                    diagnostic.message\n                ),\n            )\n        })\n        .collect();\n    snapshot.sort();\n    Some(snapshot)\n}\n"
+    },
+    {
+      "function": "link_workspace_node_modules",
+      "utf8Start": 54060,
+      "utf8End": 56059,
+      "sha256": "4f7440acd9c62dcd7e1f8346caea993eea02295494dac52fb72e88dd214e55af",
+      "source": "fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {\n    let Some(workspace_root) = Path::new(env!(\"CARGO_MANIFEST_DIR\"))\n        .parent()\n        .and_then(Path::parent)\n    else {\n        return Err(std::io::Error::other(\"workspace root not found\"));\n    };\n    let workspace_node_modules = resolve_workspace_node_modules(workspace_root);\n\n    let target = project_root.join(\"node_modules\");\n    if target.is_symlink() || target.is_file() {\n        std::fs::remove_file(&target)?;\n    } else if target.exists() {\n        std::fs::remove_dir_all(&target)?;\n    }\n    std::fs::create_dir_all(&target)?;\n\n    if let Some(ref workspace_node_modules) = workspace_node_modules {\n        link_or_stub_package(workspace_node_modules, &target, \"vue\", write_test_vue_stub)?;\n        link_or_stub_package(\n            workspace_node_modules,\n            &target,\n            \"vite\",\n            write_test_vite_stub,\n        )?;\n\n        if let Some(vue_namespace) = resolve_test_vue_runtime_namespace(workspace_node_modules) {\n            symlink_path(&vue_namespace, &target.join(\"@vue\"))?;\n        } else {\n            write_vue_runtime_dom_stub(&target)?;\n        }\n    } else {\n        write_test_vue_stub(&target)?;\n        write_test_vite_stub(&target)?;\n    }\n\n    if let Some(source) = vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)\n        && source.exists()\n    {\n        let file_name = source.file_name().ok_or_else(|| {\n            std::io::Error::new(\n                std::io::ErrorKind::InvalidInput,\n                \"invalid corsa binary path\",\n            )\n        })?;\n        symlink_path(\n            &source,\n            &target\n                .join(\"@typescript\")\n                .join(&*cstr!(\"typescript-{}\", platform_suffix()))\n                .join(\"lib\")\n                .join(if cfg!(windows) { \"tsc.exe\" } else { \"tsc\" }),\n        )?;\n        symlink_path(&source, &target.join(\".bin\").join(file_name))?;\n    }\n\n    Ok(())\n}\n"
+    }
+  ],
+  "originalCheckerOptions": "default BatchTypeChecker; no extra checker flags",
+  "originalPackagePolicy": "link workspace Vue/Vite/@vue when available, otherwise test support stubs; proposed mandatory fixture must use pinned real runtime and record actual package identities",
+  "historicalObservation": "optional runtime guard; public diagnostics sorted by snapshot helper; each selected original project expects zero or one row",
+  "missingHistoricalFields": [
+    "end",
+    "relatedInformation",
+    "raw backend diagnostics",
+    "returned-order identity for multi-row outputs",
+    "actual historical loader snapshot"
+  ],
+  "canonAndCroquisChangedPatchSha256": "2ace1bc53de00b56ad8a89421367cf21d42e91fdd9c4951c2e0eb899c90c8bec",
+  "allChangedFiles": [
+    {
+      "path": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/template_ref_slot_vnode_handlers.rs",
+      "parent": {
+        "blob": "7ae603c4f462d9640cb6357a1293748d2956d3a8",
+        "sha256": "d0151d0c86f1558a9936f4fe914881e9b0b05652abe91fc0c063f98db41e87a8"
+      },
+      "fix": {
+        "blob": "dbbb3a87f4d634413272312ccbf6bf44640d4e55",
+        "sha256": "698994f61ca3f5e523807fedeb5e12401169325dcdd84f4f124eba1f0e888a39"
+      }
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/expressions.rs",
+      "parent": {
+        "blob": "dda73794197628b4029fa30aa7192ee086488fac",
+        "sha256": "9f0d30b2df66a546026f324593c9f809ef45b07a0e7b07c1ff63908fb1d8f86d"
+      },
+      "fix": {
+        "blob": "5165ac4ea8211c946fb13b8cfe4d0ef23eae692e",
+        "sha256": "1a05cfbddd5bfaba59379cba1f40f91e1eb3cbe49d67138cde693ebf3bcdf5bc"
+      }
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/expressions/statements.rs",
+      "parent": {
+        "blob": "33b572014030fa9529c69a8d8ae9fc584d950954",
+        "sha256": "c0bea151b63068d94c16810b454ba3b07848ce91a4571562642aff15a727a90a"
+      },
+      "fix": {
+        "blob": "067c024bf55d7dfae203b290840c64bfd32b195e",
+        "sha256": "880e194709c6cecf9be2e7b4e7413b66753bd6164d6f8e2c03d56e82a63cd088"
+      }
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/expressions/ts_suppression_comments.rs",
+      "parent": null,
+      "fix": {
+        "blob": "feda0c7bda9b14e6dd0f0e5ae21bd9c387c59a06",
+        "sha256": "14b3ef8e4a6db2a3559eb097badf26586b82fed94a1e5238ab6f5bfee88d907b"
+      }
+    },
+    {
+      "path": "davinci-road/plan/consumer-migration-surfaces.md",
+      "parent": {
+        "blob": "ba61c16297b6190f50c777f34d836ad6f7565466",
+        "sha256": "a54f993d9186a91099e77f6d6b1c0b6924c8a3807f685b077e251b3b07ae84ef"
+      },
+      "fix": {
+        "blob": "9f4cfab87eda03b4c6ab78970c7596f87a5ba489",
+        "sha256": "e93d5763929d862f487c6e8a304cd70f4daa8ea067fae4449cbd18f7ca8e2aa8"
+      }
+    },
+    {
+      "path": "davinci-road/plan/consumer-migration-surfaces.tsv",
+      "parent": {
+        "blob": "b345503d7dcacdbdcc02d792e0106d09907207be",
+        "sha256": "90132862bb6875277eb8eac164a63d7d01fabb61c653cfb852aad3ceec64bcf2"
+      },
+      "fix": {
+        "blob": "0447c63b988d4eee642b83e741e74f3e115369ad",
+        "sha256": "e739daf87192fa49ef54b7d7910d78235cbadd03d5d195f533180969803fc85a"
+      }
+    },
+    {
+      "path": "davinci-road/plan/croquis-consumption.md",
+      "parent": {
+        "blob": "91b809b105c9905a8049782f8ef3b51d8db1c6aa",
+        "sha256": "dc22b2eb56d758850ef02b4bc75c3e1230721f4f7af1ae64907290085d80e237"
+      },
+      "fix": {
+        "blob": "55f14e35d5aba8dff7a40bf3d9d6363876ef2c92",
+        "sha256": "cca1bef03df558758804224df3d1ccdeca5877a3680e3c222de42743537cbf65"
+      }
+    }
+  ]
+}

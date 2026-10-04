@@ -10,7 +10,9 @@ The current shared manifest has 27 projects in ten registered packs, all with
 null native adapters. These three original fixes have no registered project in
 that manifest. Existing vectors, classifications and denominators are unchanged.
 
-The [source receipt](./2026-10-04-typechecker-coordinate-history-audit.json)
+The [source receipt index](./2026-10-04-typechecker-coordinate-history-audit.json)
+links separately formatted per-fix metadata and case carriers, each below 350
+lines. Reassembling them exactly reproduces the complete reviewed receipt. It
 retains exact fix/parent identities, all changed-file blob identities/hashes,
 the Canon/Croquis patch hash, six complete original test functions, original
 project/configuration/observation/package helpers, nine full source inputs,
@@ -18,11 +20,11 @@ and exact original configuration literals. All 27 original function/helper/input
 windows were independently compared with the pinned Git blobs. No execution,
 expected-value recapture or title-only coverage is inferred from this audit.
 
-| Requirement | Exact fix and parent | Complete historical public list |
-| --- | --- | --- |
-| Leading template TypeScript suppressions | `e199979dfb32dfd8eb9ad32a2928fb010768f239` / `dcb5bae88876fdaf5015d6499b0eb288447b9371` (#6009) | One original structural-array SFC: empty list. Both authored `@ts-ignore` and `@ts-expect-error` comments survive. |
-| v-for source callback mapping | `04aedfb8e8b41dfae89fe65256e2703fc3718cf3` / `b77e0a21485b9c9fb23506ee9b30fc857e4345a1` (#3818) | Native case: exactly TS7006 `value` at 6:36; component case: exactly TS7006 `value` at 7:38; generic-slot and imported-template-prop projects: empty lists. |
-| Split classic/setup script mapping | `b3c2933be5afbdb5f2df07da093f40bc7ce72187` / `8f1953c0637060efe9d1103f9426000a39238054` (#3783) | Full original `refreshGridItems()` SFC: exactly TS7006 `it` at 10:43, rather than the previous 10:9. |
+| Requirement                              | Exact fix and parent                                                                            | Complete historical public list                                                                                                                             |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Leading template TypeScript suppressions | `e199979dfb32dfd8eb9ad32a2928fb010768f239` / `dcb5bae88876fdaf5015d6499b0eb288447b9371` (#6009) | One original structural-array SFC: empty list. Both authored `@ts-ignore` and `@ts-expect-error` comments survive.                                          |
+| v-for source callback mapping            | `04aedfb8e8b41dfae89fe65256e2703fc3718cf3` / `b77e0a21485b9c9fb23506ee9b30fc857e4345a1` (#3818) | Native case: exactly TS7006 `value` at 6:36; component case: exactly TS7006 `value` at 7:38; generic-slot and imported-template-prop projects: empty lists. |
+| Split classic/setup script mapping       | `b3c2933be5afbdb5f2df07da093f40bc7ce72187` / `8f1953c0637060efe9d1103f9426000a39238054` (#3783) | Full original `refreshGridItems()` SFC: exactly TS7006 `it` at 10:43, rather than the previous 10:9.                                                        |
 
 All three nonempty lists have severity 1 and the exact message
 `Parameter 'value' implicitly has an 'any' type.` or the original `it` variant.

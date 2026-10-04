@@ -1,0 +1,36 @@
+[
+  {
+    "test": "split_script_setup_diagnostic_matches_vue_tsc_position",
+    "originalFunction": {
+      "utf8Start": 876,
+      "utf8End": 1848,
+      "sha256": "ffc7f45a2162406c3d1f11cf97b0813ec6e8dc2b147e885af89e348f9b954f01",
+      "source": "fn split_script_setup_diagnostic_matches_vue_tsc_position() {\n    if resolve_test_tsgo_binary().is_none() {\n        return;\n    }\n    let project_root = create_project_case(\n        \"split-script-setup-diagnostic-anchor\",\n        &[(\n            \"src/App.vue\",\n            r#\"<script lang=\"ts\">\nexport type SearchQuery = { value: string };\n</script>\n\n<script setup lang=\"ts\">\nconst customEmojis: any = {};\nconst gridItems: any = {};\n\nfunction refreshGridItems() {\n\tgridItems.value = customEmojis.value.map(it => ({\n\t\tid: it.id,\n\t}));\n}\n</script>\n\"#,\n        )],\n    );\n\n    let snapshot = snapshot_project_diagnostics(&project_root);\n    let _ = std::fs::remove_dir_all(&project_root);\n    let Some(snapshot) = snapshot else {\n        return;\n    };\n\n    assert_eq!(\n        snapshot,\n        vec![(\n            String::from(\"src/App.vue\"),\n            Some(7006),\n            String::from(\"10:43:error Parameter 'it' implicitly has an 'any' type.\"),\n        )],\n    );\n}\n"
+    },
+    "inputs": [
+      {
+        "file": "src/App.vue",
+        "source": "<script lang=\"ts\">\nexport type SearchQuery = { value: string };\n</script>\n\n<script setup lang=\"ts\">\nconst customEmojis: any = {};\nconst gridItems: any = {};\n\nfunction refreshGridItems() {\n\tgridItems.value = customEmojis.value.map(it => ({\n\t\tid: it.id,\n\t}));\n}\n</script>\n",
+        "sha256": "c9514c22ceb683fd15e1699f604482a893588e56b3df0ab552c333bf0ae4f521",
+        "originalLiteralUtf8Start": 1152
+      }
+    ],
+    "historicalDiagnosticList": [
+      {
+        "file": "src/App.vue",
+        "line": 10,
+        "column": 43,
+        "severity": 1,
+        "code": 7006,
+        "message": "Parameter 'it' implicitly has an 'any' type."
+      }
+    ],
+    "independentAuthoredPoint": {
+      "utf8Start": 230,
+      "authoredIdentifier": "it",
+      "positionContract": "one-based authored UTF16 start; end not historically observed"
+    },
+    "native": "not-admitted",
+    "registeredManifestCases": 0
+  }
+]

@@ -61,3 +61,9 @@ Only the new assertion scope and prose are corrected before source qualification
 The new original text carriers disable Git line-ending conversion; their exact
 patch context retains its required single-space blank lines through a scoped
 whitespace attribute. Every carrier remains independently source-hashed.
+
+The first published source Check 37167749381 failed only on formatting of the
+carried audit Markdown/JSON. Format the Markdown and split its documentary JSON
+receipt into an index and per-fix carriers, each below 350 lines. Reconstruction
+deep-equals the whole reviewed receipt; every fixture, input, expected diagnostic
+and callable byte stays unchanged. Fresh source Actions remain required.
