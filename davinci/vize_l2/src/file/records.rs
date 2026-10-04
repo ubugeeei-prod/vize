@@ -58,6 +58,7 @@ pub(crate) struct ProgramOrigin {
     pub(crate) reserved_binding: bool,
     pub(crate) setup_eligible: bool,
     pub(crate) ordinary_empty_eligible: bool,
+    pub(crate) module_source_gaps: u8,
 }
 
 impl ProgramOrigin {
@@ -73,6 +74,7 @@ impl ProgramOrigin {
             setup_eligible: crate::lang::js::file::setup::initial(program)
                 && !admitted.has_legacy_literals(),
             ordinary_empty_eligible: crate::lang::js::file::ordinary::initial(admitted),
+            module_source_gaps: 0,
         }
     }
 }
@@ -242,6 +244,7 @@ pub struct Export {
     pub namespace: Namespace,
     pub span: Span,
     pub(crate) local_reference: Option<usize>,
+    pub(crate) source_site: Option<super::SourceSite>,
 }
 
 #[derive(Debug)]
@@ -250,6 +253,7 @@ pub struct Import {
     pub source: String,
     pub namespace: Namespace,
     pub span: Span,
+    pub(crate) source_site: Option<super::SourceSite>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

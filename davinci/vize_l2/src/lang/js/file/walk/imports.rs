@@ -13,11 +13,13 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             return;
         };
         let declaration_namespace = namespace(import.import_kind);
+        let source_site = self.source_site(&import.source);
         self.facts.imports.push(Import {
             unit: self.unit,
             source: String::from(import.source.value.as_str()),
             namespace: declaration_namespace,
             span,
+            source_site,
         });
         if import.phase.is_some() || import.with_clause.is_some() {
             self.unsupported(import.span);

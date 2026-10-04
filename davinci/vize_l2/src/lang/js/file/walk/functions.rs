@@ -52,6 +52,7 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             scope,
             observer: self.observer,
             context: Context::Function,
+            root_statement: None,
         };
         // Original parameter enumeration creates declarations, never a name list.
         for parameter in &function.params.items {

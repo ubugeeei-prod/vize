@@ -83,6 +83,9 @@ impl<'a, O: FileObserver<'a>> ReferenceSink<'a> for Pending<'_, '_, 'a, O> {
             .find(|unit| unit.id == self.unit)
         {
             unit.origin.has_call = true;
+            if matches!(expression, Expression::ImportExpression(_)) {
+                unit.origin.module_source_gaps |= crate::file::DYNAMIC_IMPORT;
+            }
         }
         self.observer.invocation(InvocationEvent {
             unit: self.unit,

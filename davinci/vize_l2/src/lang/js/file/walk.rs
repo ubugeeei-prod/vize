@@ -6,6 +6,7 @@ use crate::file::build::{DeclarationSite, Facts};
 use crate::file::{
     DeclarationKind, FileIssueKind, InitializerKind, Namespace, ScopeId, ScriptUnitId,
 };
+use core::num::NonZeroU32;
 use oxc_ast::ast::{
     BindingIdentifier, BindingPattern, Declaration, Expression, Statement, VariableDeclaration,
     VariableDeclarationKind,
@@ -35,8 +36,18 @@ pub(super) fn program<'a, O: FileObserver<'a>>(
         scope,
         observer,
         context: Context::Unit,
+        root_statement: None,
     };
-    for statement in &input.references.program().body {
+    for (index, statement) in input.references.program().body.iter().enumerate() {
+        walk.root_statement = u32::try_from(index)
+            .ok()
+            .and_then(|index| index.checked_add(1))
+            .and_then(NonZeroU32::new);
+        if walk.root_statement.is_none() {
+            walk.facts
+                .issue(unit, input.block.span(), FileIssueKind::BindingLimit);
+            break;
+        }
         walk.statement(statement);
     }
     walk.facts.resolve_references(first_reference, first_export);
@@ -49,6 +60,7 @@ struct Walk<'f, 'p, 'a, O> {
     scope: ScopeId,
     observer: &'f mut O,
     context: Context,
+    root_statement: Option<NonZeroU32>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -58,6 +70,20 @@ enum Context {
 }
 
 impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
+    fn source_site(
+        &mut self,
+        literal: &oxc_ast::ast::StringLiteral<'a>,
+    ) -> Option<crate::file::SourceSite> {
+        self.span(literal.span)?;
+        if self.context != Context::Unit {
+            self.unsupported(literal.span);
+            return None;
+        }
+        Some(crate::file::SourceSite {
+            statement: self.root_statement?,
+        })
+    }
+
     fn span(&mut self, span: oxc_span::Span) -> Option<Span> {
         let Some(authored) = self
             .input

@@ -17,6 +17,10 @@ pub use file::observer::{
 pub use file::ordinary::{OrdinaryEmptyScript, OrdinaryIssue, OrdinaryIssueKind, VueOrdinaryEmpty};
 pub use file::setup::{SetupAnnotation, SetupIssue, SetupIssueKind, SetupPrimitiveType, VueSetup};
 pub use file::{FileProducer, ProgramInput, ProgramInputError, ProgramScope};
+pub use file::{
+    ModuleSourceError, ModuleSourceErrorKind, ModuleSourceKind, OriginalModuleSource,
+    OriginalModuleSources,
+};
 pub use for_head::{ForHeadInput, NativeForInput, RejectedForHeadInput, RejectedNativeForInput};
 pub use interpolation::{
     NativeInterpolationInput, NativeInterpolationInputError, NativeInterpolationInputView,

@@ -28,11 +28,26 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             namespace,
             span,
             local_reference: None,
+            source_site: None,
         });
         index
     }
 
     pub(super) fn export_named(&mut self, export: &ExportNamedDeclaration<'a>) {
+        let source_site = export
+            .source
+            .as_ref()
+            .and_then(|source| self.source_site(source));
+        if export.source.is_some()
+            && export.specifiers.is_empty()
+            && let Some(unit) = self
+                .facts
+                .units
+                .iter_mut()
+                .find(|unit| unit.id == self.unit)
+        {
+            unit.origin.module_source_gaps |= crate::file::EMPTY_SOURCE_EXPORT;
+        }
         if let Some(declaration) = &export.declaration {
             self.declaration(declaration, true);
         }
@@ -58,6 +73,9 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
                 namespace,
                 span,
             );
+            if let Some(row) = self.facts.exports.get_mut(index) {
+                row.source_site = source_site;
+            }
             if export.source.is_none() {
                 let reference = self.export_reference(&specifier.local, namespace);
                 if let Some(export) = self.facts.exports.get_mut(index) {
@@ -119,7 +137,8 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
         let Some(span) = self.span(export.span) else {
             return;
         };
-        self.push_export(
+        let source_site = self.source_site(&export.source);
+        let index = self.push_export(
             export
                 .exported
                 .as_ref()
@@ -129,6 +148,9 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             namespace(export.export_kind),
             span,
         );
+        if let Some(row) = self.facts.exports.get_mut(index) {
+            row.source_site = source_site;
+        }
         if export.with_clause.is_some() {
             self.unsupported(export.span);
         }
