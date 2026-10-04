@@ -47,6 +47,7 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
   assert.equal(Object.hasOwn(check.jobs, "wit-contracts"), false);
   assert.deepEqual(check.jobs["pr-source-checks"], {
     name: "PR source checks",
+    permissions: { contents: "read", actions: "read" },
     if: "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
     uses: "./.github/workflows/pr-source-checks.yml",
   });
