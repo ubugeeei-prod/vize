@@ -51,3 +51,11 @@ measurements, then literal signed merge remain required. No local Cargo/build/
 install or duplicated manual full campaign is permitted. Standard target output
 must still pass its genuine L3/L4 admission, complete-module/map/runtime laws;
 broader nested text/entities, controls, setup products and #6880 remain separate.
+
+Acceptance TODO: #7672 stays unqueued until the actual #7663 setup product
+merges and its exact original <p>{{count}}</p> refusal is requalified as a
+complete positive source/module/raw-map/pinned-runtime law. The setup product
+owner supplies independent evidence; this provider owner integrates only on
+literal main. Compound/escaped/outer-handler/For negatives remain separate.
+No future candidate graft, duplicate producer, artificial dependency or gate
+weakening is allowed. Current source-law acceptance does not satisfy this TODO.
