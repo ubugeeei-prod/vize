@@ -4,7 +4,7 @@ Paired source decision for #6842/#6882. Initial671f audit and actual912d private
 preparation retain their source qualifiers. Root/peer clear ca5 design and final
 f3d9 whole source; genuine #7777 actually merged as signed-valid
 `bcf3e024bde363a4d9e3cc2e7745af771cd5b51f` at 2026-10-04T10:27:55Z.
-Equivalent literal-main replay and independent Draft/automatic Actions are authorized;
+Equivalent fresh-main replay containing bcf3 and independent Draft/automatic Actions are authorized;
 fresh native/CF/runtime/protected104 and actual signed delivery remain pending.
 
 The [complete plan](./2026-10-04-vue2-scriptless-sfc-document-plan.md) uses the

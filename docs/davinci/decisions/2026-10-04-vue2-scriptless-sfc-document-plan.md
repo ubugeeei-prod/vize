@@ -6,7 +6,7 @@ Independent source preparation for #6842/#6882, initially audited on literal
 complete design ca5 and final genuine-parent source `f3d962a55fd908a7a880c2a323611a35e019d5c1`.
 Original #7777 parent actually merged at 2026-10-04T10:27:55Z as signed-valid
 `bcf3e024bde363a4d9e3cc2e7745af771cd5b51f`; the equivalent child now replays
-onto that literal main. Original whole source/goldens and actual parent APIs/
+onto fresh actual main containing that merge. Original whole source/goldens and parent APIs/
 actions stay conserved, with lossless incoming exports/docs/canonical/wiring.
 Root authorizes independent Draft publication and automatic exact-source Actions
 after retained incoming-union review. Fresh native/CF/runtime/protected104 and
@@ -258,7 +258,7 @@ receives dependency or execution credit.
 
 Both syntax/text providers and the genuine #7777 orchestration parent merged.
 The historical native-Stack plan was superseded by independent parent admission.
-Signed bcf3 is now the actual source base, retaining every real parent API/action
+Signed bcf3 now belongs to the actual-main source base, retaining every parent API/action
 and incoming clause. Root/peer final source CLEAR authorizes equivalent replay;
 qualify the independent Draft through fresh automatic Actions and actual queue.
 Full protected suites, all104 immutable caps/actual three-run evidence and both
