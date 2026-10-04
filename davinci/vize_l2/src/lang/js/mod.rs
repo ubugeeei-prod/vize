@@ -6,6 +6,7 @@ mod handler;
 pub mod interpolation;
 pub use crate::file::region::native::NativeTemplateWalk;
 pub use file::native::{
+    NativeScopedTemplateIssue, NativeScopedTemplateIssueKind, NativeScopedTemplateView,
     NativeSelectedSetup, NativeSetupIssue, NativeSetupIssueKind, NativeTemplateFile,
     NativeTemplateIssue, NativeTemplateIssueKind, NativeTemplateOwner, NativeTemplateView,
     RejectedNativeTemplateOwner,

@@ -5,16 +5,21 @@
 //! string escaping, helper names and JavaScript spelling belong to L4.
 
 use alloc::vec::Vec;
-use vize_l0::{Span, id::NodeId};
-use vize_l2::op::{CommentOp, ElementOp, TextOp};
+use vize_l0::{Span, id::NodeId, side_table::SideTable};
+use vize_l2::op::{CommentOp, ElementOp, InterpolationOp, TextOp};
 
 pub(super) mod build;
 mod file;
 mod native;
+mod setup;
 #[cfg(test)]
 mod tests;
 pub use file::{NativeSsrFileAnalysis, build_ssr_file_decisions};
 pub use native::{NativeSsrBuildError, NativeTemplateSsrAnalysis, build_native_ssr_file_decisions};
+pub use setup::{
+    NativeSelectedSetupSsrAnalysis, SsrSetupExpression, SsrSetupRead, SsrSetupReadKind,
+    build_native_selected_setup_ssr_decisions,
+};
 
 /// A whole SSR view retains unsupported locations instead of partial output.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -29,6 +34,12 @@ pub enum SsrUnsupported {
     DuplicateAttribute,
     Binding,
     UnsafeComment,
+    FileExpression,
+    FileScope,
+    FileBinding,
+    SetupReadAccess,
+    Expression,
+    RootTextGrouping,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -58,6 +69,10 @@ pub enum SsrPart<'owner, 'arena> {
         node: NodeId,
         comment: &'owner CommentOp<'arena>,
     },
+    Interpolation {
+        node: NodeId,
+        interpolation: &'owner InterpolationOp<'arena>,
+    },
 }
 
 /// Immutable SSR facts beside their exact sealed native analysis.
@@ -67,6 +82,7 @@ pub struct SsrFacts<'owner, 'arena> {
     unsupported: Vec<SsrRejection>,
     inherit_attrs: Option<NodeId>,
     fragment: bool,
+    expressions: SideTable<SsrSetupExpression<'owner, 'arena>>,
 }
 
 impl<'owner, 'arena> SsrFacts<'owner, 'arena> {
@@ -90,5 +106,11 @@ impl<'owner, 'arena> SsrFacts<'owner, 'arena> {
     #[must_use]
     pub const fn fragment(&self) -> bool {
         self.fragment
+    }
+
+    /// A row exists only after the original input and all setup reads join.
+    #[must_use]
+    pub fn expression(&self, node: NodeId) -> Option<&SsrSetupExpression<'owner, 'arena>> {
+        self.expressions.get(node)
     }
 }

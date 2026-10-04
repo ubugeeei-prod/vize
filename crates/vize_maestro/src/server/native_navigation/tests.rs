@@ -3,6 +3,7 @@ mod capacity;
 mod highlights;
 mod jsx;
 mod lifecycle;
+mod linked;
 mod selected;
 mod vue;
 

@@ -5,6 +5,7 @@ impl Linter {
     /// Apply project-wide Vue dialect compatibility to lint rules.
     #[inline]
     pub fn with_vue_version(mut self, version: Option<VueVersion>) -> Self {
+        self.requested_vue_version = version;
         if version.is_some_and(VueVersion::is_legacy) {
             self.disabled_rules
                 .insert(String::from("vue/no-v-for-template-key-on-child"));
@@ -19,6 +20,7 @@ impl Linter {
     /// Apply project-wide SFC Vapor mode to lint rules.
     #[inline]
     pub fn with_vapor_mode(mut self, enabled: Option<bool>) -> Self {
+        self.requested_vapor_mode = enabled;
         self.vapor_mode = enabled == Some(true);
         if enabled == Some(false) {
             self.disabled_rules

@@ -109,15 +109,15 @@ fn legal_original_numeric_and_string_literals_keep_exact_owners_and_setup_admiss
         ("let", DeclarationKind::Let),
         ("var", DeclarationKind::Var),
     ] {
-        for literal in [
-            "0",
-            "0o10",
-            "0x10",
-            "0b10",
-            r"'\0'",
-            r"'\x01'",
-            r"'\u0001'",
-            r"'\\1'",
+        for (literal, expected) in [
+            ("0", InitializerKind::PrimitiveLiteral),
+            ("0o10", InitializerKind::PrimitiveLiteral),
+            ("0x10", InitializerKind::PrimitiveLiteral),
+            ("0b10", InitializerKind::PrimitiveLiteral),
+            (r"'\0'", InitializerKind::PrimitiveStringWithNulOrCr),
+            (r"'\x01'", InitializerKind::PrimitiveLiteral),
+            (r"'\u0001'", InitializerKind::PrimitiveLiteral),
+            (r"'\\1'", InitializerKind::PrimitiveLiteral),
         ] {
             let source = cstr!("<script setup>/* kept */{keyword} value={literal};</script>");
             let original = Observed::new(&arena, &source)?;
@@ -138,7 +138,7 @@ fn legal_original_numeric_and_string_literals_keep_exact_owners_and_setup_admiss
             require!(core::ptr::eq(binding.file(), &file));
             let declaration = binding.declaration().ok_or("genuine strict declaration")?;
             equal!(declaration.kind, kind);
-            equal!(declaration.initializer, InitializerKind::PrimitiveLiteral);
+            equal!(declaration.initializer, expected);
             equal!(declaration.scope, setup.exposure().scope());
             equal!(declaration.script_unit(), Some(setup.exposure().unit()));
             equal!(original.syntax.comments().count(), 1);

@@ -3,21 +3,27 @@
 use super::{SsrFacts, SsrPart, SsrRejection, SsrUnsupported};
 use crate::decision::policy::BindingOwner;
 use alloc::vec::Vec;
-use vize_l0::{Span, id::NodeId};
+use vize_l0::{Span, id::NodeId, side_table::SideTable};
 use vize_l2::{
+    expr::ExprRef,
+    lang::js::NativeSelectedSetup,
     op::{BindingOp, ElementOp, Namespace, Op},
     walk::NodeRef,
 };
+mod read;
 
-pub(in crate::decision) struct SsrBuilder<'owner, 'arena> {
+pub(in crate::decision) struct SsrBuilder<'facts, 'owner, 'arena> {
     facts: SsrFacts<'owner, 'arena>,
     frames: Vec<(NodeId, Option<&'owner ElementOp<'arena>>, bool)>,
     roots: usize,
     non_comments: usize,
     root_element: Option<NodeId>,
+    setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>,
+    previous_root_text: Option<bool>,
+    root_interpolation_seen: bool,
 }
 
-impl<'owner, 'arena> SsrBuilder<'owner, 'arena> {
+impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
     pub fn new() -> Self {
         Self {
             facts: SsrFacts {
@@ -25,16 +31,50 @@ impl<'owner, 'arena> SsrBuilder<'owner, 'arena> {
                 unsupported: Vec::new(),
                 inherit_attrs: None,
                 fragment: false,
+                expressions: SideTable::new(),
             },
             frames: Vec::new(),
             roots: 0,
             non_comments: 0,
             root_element: None,
+            setup: None,
+            previous_root_text: None,
+            root_interpolation_seen: false,
+        }
+    }
+
+    pub fn new_setup(setup: &'facts NativeSelectedSetup<'owner, 'arena>) -> Self {
+        Self {
+            setup: Some(setup),
+            ..Self::new()
         }
     }
 
     pub fn enter(&mut self, node: NodeId, op: &'owner Op<'arena>, root: bool) {
         if root {
+            if self.setup.is_some() {
+                let current = match op {
+                    Op::Text(_) => Some(false),
+                    Op::Interpolation(_) => Some(true),
+                    _ => None,
+                };
+                if matches!((self.previous_root_text, current), (Some(previous), Some(current))
+                    if previous || current)
+                {
+                    self.reject(
+                        node,
+                        NodeRef::Op(op).span(),
+                        SsrUnsupported::RootTextGrouping,
+                    );
+                }
+                self.previous_root_text = current;
+                if matches!(op, Op::Interpolation(_)) {
+                    if self.root_interpolation_seen {
+                        self.reject(node, NodeRef::Op(op).span(), SsrUnsupported::Operation);
+                    }
+                    self.root_interpolation_seen = true;
+                }
+            }
             self.roots += 1;
             if !matches!(op, Op::Comment(_)) {
                 self.non_comments += 1;
@@ -71,6 +111,25 @@ impl<'owner, 'arena> SsrBuilder<'owner, 'arena> {
                     self.reject(node, span, SsrUnsupported::UnsafeComment);
                 }
                 self.facts.parts.push(SsrPart::Comment { node, comment });
+                (None, false)
+            }
+            Op::Interpolation(interpolation) if root && self.setup.is_some() => {
+                let expression = match (self.setup, interpolation.expression) {
+                    (Some(setup), ExprRef::Js(expression)) => {
+                        read::classify(setup, node, expression)
+                    }
+                    _ => Err(SsrUnsupported::Expression),
+                };
+                match expression {
+                    Ok(expression) => {
+                        self.facts.expressions.insert(node, expression);
+                        self.facts.parts.push(SsrPart::Interpolation {
+                            node,
+                            interpolation,
+                        });
+                    }
+                    Err(reason) => self.reject(node, span, reason),
+                }
                 (None, false)
             }
             _ => {

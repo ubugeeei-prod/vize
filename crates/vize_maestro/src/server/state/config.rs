@@ -153,7 +153,16 @@ impl ServerState {
         tracing::info!("Loaded linter config from {}", source);
     }
 
+    #[cfg(feature = "experimental-source-navigation")]
+    pub(crate) fn native_linked_editing_enabled(&self) -> bool {
+        self.native_linked_editing.load(Ordering::SeqCst)
+    }
+
     fn apply_lsp_config(&self, config: LspConfigSection, source: &str) {
+        #[cfg(feature = "experimental-source-navigation")]
+        if let Some(enabled) = config.native_linked_editing {
+            self.native_linked_editing.store(enabled, Ordering::SeqCst);
+        }
         let mut features = self.lsp_features.write();
         config.apply_to(&mut features);
         features.apply_effective_compatibility();

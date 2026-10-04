@@ -8,10 +8,11 @@ use vize_l2::file::{DeclarationKind, InitializerKind};
 use vize_l3::decision::{
     dom::{ValueKind, vue::VueReadKind},
     native::build_native_selected_setup_dom_decisions,
+    ssr::{SsrPart, SsrSetupReadKind, build_native_selected_setup_ssr_decisions},
 };
 
 #[test]
-fn genuine_selected_dom_reads_preserve_all_original_primitive_classes() {
+fn genuine_selected_dom_and_ssr_reads_preserve_all_original_primitive_classes() {
     for (literal, expected) in [
         (r#"'a\0b'"#, InitializerKind::PrimitiveStringWithNulOrCr),
         (r#"'a\rb'"#, InitializerKind::PrimitiveStringWithNulOrCr),
@@ -70,6 +71,31 @@ fn genuine_selected_dom_reads_preserve_all_original_primitive_classes() {
             assert_eq!(row.scope, setup.scope());
             assert!(setup.binding(read.binding()).is_ok());
             assert!(core::ptr::eq(read.binding().file(), setup.file()));
+
+            let ssr = build_native_selected_setup_ssr_decisions(setup).unwrap();
+            let facts = ssr.ssr().unwrap();
+            assert!(facts.unsupported().is_empty(), "{source}");
+            let [SsrPart::Interpolation { node, .. }] = facts.parts() else {
+                panic!("one genuine SSR interpolation")
+            };
+            let [ssr_read] = ssr.expression(*node).unwrap().reads() else {
+                panic!("one original SSR read")
+            };
+            assert_eq!(
+                ssr_read.kind(),
+                if kind == DeclarationKind::Const {
+                    SsrSetupReadKind::SetupConst
+                } else {
+                    SsrSetupReadKind::SetupLet
+                }
+            );
+            assert_eq!(ssr_read.binding().id(), read.binding().id());
+            assert!(core::ptr::eq(ssr_read.binding().file(), setup.file()));
+            assert!(setup.binding(ssr_read.binding()).is_ok());
+            assert_eq!(
+                ssr_read.binding().declaration().unwrap().initializer,
+                expected
+            );
         }
     }
 }

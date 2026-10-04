@@ -179,6 +179,18 @@ fn encode<L: LinkSink>(
                     write::template(&mut writer, comment.content, comment.span, false);
                     writer.push("-->");
                 }
+                SsrPart::Interpolation {
+                    node,
+                    interpolation,
+                } => {
+                    return Err(SsrError {
+                        node: Some(node),
+                        span: interpolation.span,
+                        kind: SsrErrorKind::Unsupported(
+                            vize_l3::decision::ssr::SsrUnsupported::Operation,
+                        ),
+                    });
+                }
             }
         }
         if facts.fragment() {

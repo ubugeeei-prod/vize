@@ -1,4 +1,4 @@
-use super::StaticLevel;
+use crate::decision::StaticLevel;
 
 #[derive(Clone, Copy)]
 pub(super) struct Levels {

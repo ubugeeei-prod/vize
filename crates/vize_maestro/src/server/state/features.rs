@@ -7,6 +7,8 @@ use vize_l0::config::LanguageServerConfig;
 #[serde(default, rename_all = "camelCase")]
 pub(super) struct LspConfigSection {
     enabled: Option<bool>,
+    #[cfg(feature = "experimental-source-navigation")]
+    pub(super) native_linked_editing: Option<bool>,
     /// Legacy diagnostics switch. Kept as a lint diagnostics alias for older configs.
     diagnostics: Option<bool>,
     lint: Option<bool>,
@@ -147,6 +149,8 @@ impl From<LanguageServerConfig> for LspConfigSection {
     fn from(config: LanguageServerConfig) -> Self {
         Self {
             enabled: config.enabled,
+            #[cfg(feature = "experimental-source-navigation")]
+            native_linked_editing: None,
             diagnostics: config.diagnostics,
             lint: config.lint,
             typecheck: config.typecheck,

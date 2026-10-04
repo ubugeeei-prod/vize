@@ -13,6 +13,7 @@ mod observe;
 mod query;
 mod script;
 mod selected;
+mod selected_scoped;
 mod selected_setup;
 mod template;
 pub use observe::{NativeScriptObservation, NativeSfc, NativeSfcObservation};
@@ -20,6 +21,9 @@ pub use query::{NativePositionQueryError, NativeReferenceRef};
 pub use selected::{
     NativeSelectedSfc, NativeSelectedSfcIssue, NativeSelectedSfcIssueKind,
     NativeSelectedSfcObservation, lower_selected_sfc_native,
+};
+pub use selected_scoped::{
+    NativeSelectedScopedSfc, NativeSelectedScopedSfcObservation, lower_selected_scoped_sfc_native,
 };
 pub use selected_setup::{
     NativeSelectedSetupSfc, NativeSelectedSetupSfcObservation, lower_selected_setup_sfc_native,

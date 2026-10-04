@@ -15,7 +15,10 @@ use tower_lsp::lsp_types::{Location, Position};
 
 use super::{NavigationRefusal, SourceSnapshot, profile::Profile, retained};
 
+mod refusals;
+pub(super) use refusals::refused;
 pub(super) mod highlights;
+pub(super) mod linked;
 pub(super) mod selected;
 
 pub(super) const WORKER_LIMIT: usize = 16;
@@ -23,6 +26,7 @@ const REQUEST_LIMIT: usize = 16;
 
 pub(super) enum Command {
     Highlights(highlights::Request),
+    LinkedEditing(linked::Request),
     TemplateDefinition(
         Position,
         oneshot::Sender<Result<Vec<Location>, NavigationRefusal>>,
@@ -165,6 +169,9 @@ impl NavigationWorker {
                     Profile::SelectedVue(configuration) => {
                         retained::selected::run(owner, configuration, receiver, stop);
                     }
+                    Profile::TemplateNamesVue(configuration) => {
+                        retained::linked::run(owner, configuration, receiver, stop);
+                    }
                 }
             })
             .map_err(|_| NavigationRefusal::WorkerUnavailable)?;
@@ -295,52 +302,5 @@ impl NavigationWorker {
 impl Drop for NavigationWorker {
     fn drop(&mut self) {
         self.retire();
-    }
-}
-
-pub(super) fn refused(receiver: Receiver<Command>, control: &Control, refusal: NavigationRefusal) {
-    while !control.retired() {
-        let Ok(command) = receiver.recv() else { break };
-        if control.retired() {
-            break;
-        }
-        match command {
-            Command::Highlights(request) => {
-                if !request.reply.is_canceled() {
-                    let _ = request.reply.send(Err(refusal.clone()));
-                }
-            }
-            Command::TemplateDefinition(_, reply) => {
-                if !reply.is_canceled() {
-                    let _ = reply.send(Err(refusal.clone()));
-                }
-            }
-            #[cfg(test)]
-            Command::SelectedInspect(_, reply) => {
-                let _ = reply.send(Err(refusal.clone()));
-            }
-            Command::Definition(_, reply) => {
-                if !reply.is_canceled() {
-                    let _ = reply.send(Err(refusal.clone()));
-                }
-            }
-            Command::References(_, _, reply) => {
-                if !reply.is_canceled() {
-                    let _ = reply.send(Err(refusal.clone()));
-                }
-            }
-            Command::Stop => break,
-            #[cfg(test)]
-            Command::Inspect(_, reply) => {
-                let _ = reply.send(Err(refusal.clone()));
-            }
-            #[cfg(test)]
-            Command::Pause(entered, resumed) => {
-                let _ = entered.send(());
-                let _ = resumed.recv();
-            }
-            #[cfg(test)]
-            Command::Panic => panic!("actual native worker unwind"),
-        }
     }
 }

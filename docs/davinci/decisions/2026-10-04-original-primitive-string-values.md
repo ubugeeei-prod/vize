@@ -25,8 +25,9 @@ same File, BindingId, ScriptUnit and current scope as before.
 
 `InitializerKind::is_primitive()` includes all three original primitive classes.
 The common setup eligibility and TypeScript annotation guard, existing Vue
-exposure read classifier, genuine native selected setup classifier and native
-For collection classifier use that predicate. Existing const/let/var behavior,
+exposure read classifier, genuine native selected setup classifier, native
+For collection classifier and the actually merged original setup SSR const
+classifier use that predicate. Existing const/let/var behavior,
 DOM output and annotations remain accepted. Common classifications do not prove
 an initializer is numeric, a collection, or safe for a particular target.
 
@@ -84,15 +85,35 @@ Receipt SHA256 values:
 Genuine normally owned NativeSelectedSetup laws cover JS/TS const/let/var,
 multiple authored escape spellings, harmless escaped backslashes, LF, a valid
 surrogate pair, U+FFFD, original unit/scope/binding membership and annotation
-custody. Existing Vue exposure, genuine selected DOM and original For classifiers
+custody. Existing Vue exposure, genuine selected DOM/SSR and original For classifiers
 retain their primitive const/mutable semantics. An independent original enum and
 Declaration field-layout law compares size/alignment without loosening budgets.
 Existing whole DOM captures remain unconditional and unchanged.
 
 Source and full protected instruction/allocation/complexity/corpus gates must
 accept exact source and actual queue candidates. No budget or gate is relaxed.
-The new Vapor target still needs its genuine same-Writer runtime-segment provider,
-typed hazardous-string refusals, complete native modules/maps and exact hosted
+The genuine same-Writer runtime-segment provider #7687 actually merged as
+`c40b55bee6560bfc842f1f132115c72059549f70`; it is an independent prerequisite.
+The new Vapor target still needs typed hazardous-string refusals, complete native
+modules/maps and exact hosted
 mount/hydration/update-or-refusal/zero-cleanup captures. Compiler fix history
 [#6880](https://github.com/ubugeeei-prod/vize/issues/6880), general strings/setup,
 events/control/nested semantics and default replacement remain unfinished.
+
+## First source failure and actual common replay
+
+Exact `ddba36b4a2` Check `37166832677` built successfully, then Rust shard 1
+ran 3,817 tests with one failure in the existing legal strict-literal law. Its
+actual `\0` input still correctly gains setup admission, but the law fixed every
+initializer to the old `PrimitiveLiteral` tag. The same original per-literal table
+now asserts `PrimitiveStringWithNulOrCr` for that one input and exact ordinary
+primitive tags for its other seven inputs; all original owner/admission assertions
+remain. The failed raw log is retained at
+`/tmp/vize-primitive-string-ddba-rust1.log`; that source was never queued.
+
+Original setup SSR provider #7684 actually merged as `6a3f6e779a65` after that
+source was authored. The real-main replay preserves its original Const read
+classification with `is_primitive()` and adds genuine same-owner DOM/SSR
+BindingId, declaration class and const/mutable read equality laws. No unmerged
+SSR target source or artificial target dependency is imported. Fresh exact source
+and full protected acceptance remain required.

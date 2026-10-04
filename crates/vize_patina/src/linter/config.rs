@@ -72,6 +72,9 @@ pub struct Linter {
     pub(crate) script_rules: &'static [&'static str],
     /// Project-wide Vapor mode, when selected by the host.
     pub(crate) vapor_mode: bool,
+    /// Original host requests retained for native constructor/profile admission.
+    pub(crate) requested_vue_version: Option<vize_l0::config::VueVersion>,
+    pub(crate) requested_vapor_mode: Option<bool>,
     /// Whether the host selected the Vapor-only instance rule by name.
     pub(crate) explicit_no_get_current_instance: bool,
     /// Project-configured replacements for configurable built-in script rules,

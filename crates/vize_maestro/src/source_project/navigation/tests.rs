@@ -6,6 +6,7 @@ mod capacity;
 mod highlights;
 mod jsx;
 mod lifecycle;
+mod linked;
 mod refusals;
 mod retention;
 mod selected;
