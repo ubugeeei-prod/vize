@@ -9,6 +9,7 @@ test("original local-handler source qualifies the existing source-bound tooling 
   for (const path of [
     "davinci/vize_l3/src/decision/dom/build/handler.rs",
     "davinci/vize_l3/src/decision/dom/build/handler/access.rs",
+    "davinci/vize_l3/src/decision/dom/build/handler_unrelated.rs",
     "crates/vize_atelier_sfc/src/native_selected/tests/local.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_handler_local_sfc_click_vue_3_5_35.json",
     "tests/tooling/native-handler-local-sfc-dom-reference.test.ts",
@@ -20,7 +21,7 @@ test("original local-handler source qualifies the existing source-bound tooling 
   for (const path of [
     "docs/davinci/decisions/2026-10-04-native-handler-block-local-reads.md",
     "tests/tooling/native-handler-local-unrelated.test.ts",
-    "davinci/vize_l3/src/decision/dom/build/handler_unrelated.rs",
+    "davinci/vize_l3/src/decision/dom_unrelated/build/handler.rs",
   ])
     assert.equal(nativeSetupCaptureRequired([path]), false, path);
 });

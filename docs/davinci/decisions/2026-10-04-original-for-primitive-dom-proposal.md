@@ -247,3 +247,12 @@ unconditional. Golden/refusal semantics, the old seven/five packs and immutable
 budgets are preserved from external sourceab9f. Refreshed exact-source Actions,
 current native packets, independent review and all protected caps remain required
 before readiness or queue; this bounded slice closes no larger compiler issue.
+
+Source dcf9128a passes all four Rust shards and produces independently reviewed
+whole ten-case For code/map/raw-map/runtime packets, but tooling shard four finds
+one inherited handler-only selector negative within the actual shared DOM tree.
+`dom/build/handler_unrelated.rs` must qualify under the complete dependency
+contract, so it becomes an explicit positive and the negative moves to the
+adjacent `dom_unrelated` root. This preserves the selector policy and all native
+goldens/refusals; fresh exact-head Actions and protected acceptance remain
+required, with the failed draft never queued.
