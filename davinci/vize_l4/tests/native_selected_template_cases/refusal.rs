@@ -12,7 +12,6 @@ use vize_l3::decision::native::build_native_dom_file_decisions;
 fn late_original_header_refusals_never_reach_template_emission() -> Result<(), &'static str> {
     let arena = Allocator::default();
     for rejected in [
-        "title='&amp;'",
         "id='a' id='b'",
         "class='a  b'",
         "style='color:red'",
@@ -91,6 +90,52 @@ fn late_original_header_refusals_never_reach_template_emission() -> Result<(), &
             ))?;
         }
     }
+    Ok(())
+}
+
+#[test]
+fn formerly_refused_entity_header_retains_original_input_for_target_qualification()
+-> Result<(), &'static str> {
+    let arena = Allocator::default();
+    let source =
+        "<template>prefix<div data-first='kept' title='&amp;'>unvisited</div>tail</template>";
+    let output = completed(&arena, source)?;
+    let file = output
+        .view()
+        .map_err(|_| "normal original completion")?
+        .file()
+        .ok_or("same File")?;
+    check(file.is_complete())?;
+    check(core::ptr::eq(file.artifact().source(), source))?;
+    let [Op::Text(prefix), Op::Element(element), Op::Text(tail)] =
+        file.artifact().root().ops.as_slice()
+    else {
+        return Err("original complete siblings");
+    };
+    equal((prefix.content, tail.content), ("prefix", "tail"))?;
+    let [Op::Text(body)] = element.children.ops.as_slice() else {
+        return Err("actual body");
+    };
+    equal(body.content, "unvisited")?;
+    equal(file.native_attribute_values().len(), 2)?;
+    let joined = file
+        .native_attribute_value_for(1, element, 1)
+        .ok_or("actual File/Element/slot")?;
+    check(core::ptr::eq(joined.file(), file))?;
+    check(core::ptr::eq(joined.element(), element))?;
+    let value = joined.observation().ok_or("whole original value")?;
+    equal(value.raw_value(), "&amp;")?;
+    equal(value.value_span().slice(source), "&amp;")?;
+    equal(value.source().text(), "&")?;
+    check(value.source().decode_map().is_some())?;
+    check(core::ptr::eq(value.source().authored_root(), source))?;
+    let slot = joined.attribute().ok_or("real canonical slot")?;
+    equal((slot.name, slot.value), ("title", Some("&")))?;
+    check(core::ptr::eq(
+        slot.value.ok_or("decoded value")?,
+        value.source().text(),
+    ))?;
+    // This proves original lower custody. Whole native modules/maps/runtime stay separately gated.
     Ok(())
 }
 

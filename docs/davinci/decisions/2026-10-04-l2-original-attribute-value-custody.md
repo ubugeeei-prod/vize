@@ -133,3 +133,15 @@ absence and actual File/Element/slot joins. All nine whole modules/maps stay
 byte-identical. The neutral equal-attribute law also uses the actual allocator
 trait's `&&arena` at its three Vec constructors. Raw e2 compile/SSR failures
 remain preserved; source review grants no executed law or capture acceptance.
+
+Fresh f141 and middle8e compile, and every new custody law passes, but worker3
+finds two inherited late-header tests still expecting `title='&amp;'` to refuse.
+Their exact original prefix/data-first/title/body/tail source is now retained in
+separate authentic positive laws at L2 and the L4 boundary: normal whole File,
+ordered siblings/body, actual Element/slot pointers, original raw span/source,
+and the unchanged once-decoded value/map all join. Every other unsupported
+header row and its sticky no-mint/no-emission assertions stay unchanged. No
+production change, source substitution or runtime credit follows; whole native
+module/map/fixed fresh-mount qualification is still required before any layer
+queues. The release publication hold has lifted, while this output hold remains.
+Raw failed f141/8e logs are preserved and exact successor Actions must pass.
