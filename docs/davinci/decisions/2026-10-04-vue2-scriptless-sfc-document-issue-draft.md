@@ -55,7 +55,7 @@ default completion remain unfinished.
 
 Private authored coverage is three full Doc/crossed-owner units, 17 whole
 integration laws, one isolated normally owned diagnostic heap drop/unwind,
-nine new CF and positive example; Rust execution is pending. Independent32
+ten real CF (original nine plus short-root drop) and positive; execution is pending. Independent32
 whole print/meaning rows are fixed before capture and hash-joined separately.
 Pure pinned primary Node verification passes29 complete dev/prod recursive
 VNode/event references; three full warning/fallback controls have no runtime
@@ -120,3 +120,13 @@ lifecycle law's substring-derived refusal expectation. Pair the unchanged two
 authored bodies with literal expected false/true and compare directly. Every
 original custody/unwind/map/owner/full-print assertion remains; no allowlist,
 policy or independent expected-output waiver is introduced.
+
+Initial tooling-one compiling the whole capture target also reports genuine
+E0597/E0505: lifecycle laws incorrectly retain a short NativeSyntax AST borrow
+after owner drop/move. Keep original AST inspection within the live owner,
+retain only authentic Copy EmbedSource/maps/scalar spans, then inspect the real
+next owner's root under its own live borrow. Same original inputs/parse count/
+source/maps/ownership/unwind/full-print assertions remain; add a root-after-drop
+compile-fail control alongside all original nine (ten total), with no API
+lifetime promotion, AST clone/unsafe or synthetic authority. Whole capture was
+absent and the oracle explicitly unexecuted/null; no partial32 credit exists.

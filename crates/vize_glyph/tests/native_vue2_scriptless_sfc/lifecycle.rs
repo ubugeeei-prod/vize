@@ -5,19 +5,20 @@ use oxc_span::GetSpan;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
 #[test]
-fn complete_whole_owner_drop_keeps_only_original_arena_ast_and_authored_mapping() {
+fn complete_whole_owner_drop_preserves_source_mapping_without_extending_ast_borrow() {
     assert!(core::mem::needs_drop::<NativeVue2SfcObservation<'_>>());
     let source = "<!--前--><template><div>{{a&#43;1}}</div></template><!--尾-->";
     let arena = Allocator::default();
-    let (root, source_view, span, printed) = {
+    let (root_span, source_view, span, printed) = {
         let owner = observe_native_vue2_sfc_in(&arena, source, options(200, 2, LineEnding::Lf));
         let syntax = owner.descriptor().component().unwrap().bindings()[0]
             .admitted()
             .unwrap()
             .base();
         let root = syntax.expression().unwrap();
+        assert_eq!(root.span().size(), 3);
         (
-            root,
+            root.span(),
             syntax.source(),
             syntax.decoded_span(root.span()).unwrap(),
             owner.format().unwrap().code,
@@ -29,13 +30,20 @@ fn complete_whole_owner_drop_keeps_only_original_arena_ast_and_authored_mapping(
         "a&#43;1"
     );
     assert!(core::ptr::eq(source_view.authored_root(), source));
-    assert_eq!(root.span().size(), 3);
+    assert_eq!(root_span.size(), 3);
     assert_eq!(
         printed,
         "<!--前--><template><div>{{a &#43; 1}}</div></template><!--尾-->"
     );
     let next = observe_native_vue2_sfc_in(&arena, source, options(200, 2, LineEnding::Lf));
     assert_eq!(next.format().unwrap().code, printed);
+    let next_root = next.descriptor().component().unwrap().bindings()[0]
+        .admitted()
+        .unwrap()
+        .base()
+        .expression()
+        .unwrap();
+    assert_eq!(next_root.span(), root_span);
 }
 
 #[test]
@@ -61,7 +69,7 @@ fn complete_and_refused_whole_owner_unwind_preserve_real_source_and_next_observa
             panic!("unwind real full Vue2 owner");
         }));
         assert!(caught.is_err());
-        assert_eq!(root.span(), span);
+        assert_eq!(span.size(), 3);
         assert_eq!(view.text(), "a+1");
         assert_eq!(
             view.decode_map().unwrap().segments().as_ptr(),
@@ -71,6 +79,13 @@ fn complete_and_refused_whole_owner_unwind_preserve_real_source_and_next_observa
         assert!(core::ptr::eq(view.authored_root(), source.as_str()));
         let next = observe_native_vue2_sfc_in(&arena, &source, NativeVue2SfcOptions::default());
         assert_eq!(next.refusal(), refusal);
+        let next_root = next.descriptor().component().unwrap().bindings()[0]
+            .chain()
+            .unwrap()
+            .base()
+            .expression()
+            .unwrap();
+        assert_eq!(next_root.span(), span);
         assert_eq!(
             next.descriptor().component().unwrap().bindings().len(),
             if refusal.is_some() { 2 } else { 1 }

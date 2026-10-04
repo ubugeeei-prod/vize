@@ -87,6 +87,19 @@ pub(super) enum Outcome<'a> {
 ///     *owner.document().unwrap()
 /// }
 /// ```
+/// Original AST access keeps the stock parser owner's short borrow.
+/// ```compile_fail,E0505
+/// use vize_glyph::native_doc::{NativeVue2SfcOptions, observe_native_vue2_sfc_in};
+/// use vize_l0::Allocator;
+/// use oxc_span::GetSpan;
+/// let arena = Allocator::default();
+/// let owner = observe_native_vue2_sfc_in(&arena, "<template><div>{{a}}</div></template>", NativeVue2SfcOptions::default());
+/// let root = owner.descriptor().component().unwrap().bindings()[0]
+///     .admitted().unwrap().base().expression().unwrap();
+/// drop(owner);
+/// assert_eq!(root.span().size(), 1);
+/// ```
+///
 /// ```compile_fail
 /// use vize_glyph::native_doc::{NativeVue2SfcOptions, observe_native_vue2_sfc_in};
 /// use vize_l0::Allocator;

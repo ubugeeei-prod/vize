@@ -278,8 +278,8 @@ observation are added. The existing allocator harness supports one isolated
 normally owned diagnostic drop/unwind target; its Cargo entry merely selects
 harness=false, with no allocator/counter provider or destructor instrument.
 Authored laws comprise three complete Doc/private crossed-owner unit laws,
-17 whole-source integration laws, that one isolated heap case, nine new real
-compile-fail controls and a positive example. None has executed in Rust yet.
+17 whole-source integration laws, that one isolated heap case, ten real
+compile-fail controls (original nine plus short-root drop) and positive; execution is pending.
 
 The 32-row whole print/meaning packet is independently authored and fixed
 before any native capture (`4a32485f52077b8b31297f8a277561a9fd024766e594d4d94e1685f498af71f6`).
@@ -344,7 +344,7 @@ direct-hook workflow law adapts to the exact outer order/always/base/guard350.
 V1/V2 exports and23 canonical additions preserve all parent rows; full review
 confirms equivalent literal-parent replay; protected104/actual merge stay pending.
 
-Historical d3 fixes retain authored runtimeCredit and genuine cross-realm errors.
-Initial public1e9 Clippy rejects unused Span; tooling assertion-lint rejects a
-substring-derived refusal expectation. Remove the import and pair unchanged
-bodies with authored false/true; no policy waiver, and fresh exact proof is required.
+Initial public1e9 rejects unused Span, substring-derived refusal and two invalid
+post-owner AST borrows. Remove import, author literal false/true, keep AST checks
+inside live owner and retain only real Copy source/maps/spans afterward; add a
+root-after-drop CF (ten total). Fixed32/API lifetimes stay exact; fresh proof is required.
