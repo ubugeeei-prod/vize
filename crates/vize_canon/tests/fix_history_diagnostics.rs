@@ -204,6 +204,17 @@ fn authored_unused_symbols_preserve_complete_original_diagnostics() {
     );
 }
 
+#[test]
+fn split_script_setup_preserves_complete_original_diagnostics() {
+    check_pack(
+        "split-script-original",
+        "split_script_setup_preserves_complete_original_diagnostics",
+        "b3c2933be5afbdb5f2df07da093f40bc7ce72187",
+        Some(3783),
+        &["complete-original-split-script"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -229,7 +240,8 @@ fn check_pack(
             "typed-import-meta"
             | "slot-outlet-key"
             | "options-api-any-instance"
-            | "authored-unused-symbols" => regression,
+            | "authored-unused-symbols"
+            | "split-script-original" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );
@@ -330,4 +342,3 @@ fn check_pack(
         capture.finish(name, test, &fixture_pack);
     }
 }
-

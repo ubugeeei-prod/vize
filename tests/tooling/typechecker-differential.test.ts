@@ -63,10 +63,10 @@ function capture(pack: keyof typeof TYPECHECKER_TESTS): Capture {
 }
 
 test("the shared registry retains all existing production projects and exact input bytes", () => {
-  assert.equal(loaded.cases.length, 27);
+  assert.equal(loaded.cases.length, 28);
   assert.equal(
     loaded.cases.reduce((count, fixture) => count + fixture.inputs.length, 0),
-    98,
+    100,
   );
   assert.deepEqual(
     [...new Set(loaded.cases.map((fixture) => fixture.pack))],
@@ -194,17 +194,17 @@ test("complete legacy-only observations stay in the denominator with zero native
     capture,
   );
   const report = typecheckerReport(loaded, captures, sourceRevision);
-  assert.equal(report.summary.legacyMatches, 27);
+  assert.equal(report.summary.legacyMatches, 28);
   const acceptance = summarizeNativeAcceptance(loaded, report, {
     sourceRevision,
     buildReceiptSha256: sha256(receipt),
     requiredStages: ["parse", "facts", "emit", "check"],
   });
   assert.deepEqual(acceptance.total, {
-    planned: 27,
+    planned: 28,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 27,
+    unsupported: 28,
     legacyBacked: 0,
     unverified: 0,
   });
@@ -266,7 +266,7 @@ test("four-worker reconciliation rejects missing workers, stale sources and dupl
   write(3, []);
   assert.throws(run, /four complete worker artifacts/);
   write(4, []);
-  assert.equal(run().report.summary.legacyMatches, 27);
+  assert.equal(run().report.summary.legacyMatches, 28);
   write(4, [assignment[0]]);
   assert.throws(run, /duplicate captured test body/);
   write(4, []);

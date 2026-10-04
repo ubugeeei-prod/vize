@@ -29,8 +29,9 @@ All three nonempty lists have severity 1 and the exact message
 Coordinates are one-based authored UTF-16 starts; the receipt independently
 checks each start against its original identifier. It does not invent an end.
 All original configurations use strict checking, ES2022, ESNext modules,
-Bundler resolution, noEmit, strictTemplates and `src/**/*`. The original
-checker uses default BatchTypeChecker options without extra flags.
+Bundler resolution, noEmit and `src/**/*`. Only #6009 explicitly configures
+strictTemplates; #3818/#3783 have no vueCompilerOptions. The original checker
+uses default BatchTypeChecker options without extra flags.
 
 The original tests return early when their runtime is absent. Their project
 helper links workspace Vue/Vite/@vue when available, otherwise uses test stubs.

@@ -1054,6 +1054,38 @@
             "sha256": "8c9da8c30357f2768081854c49192f0078ba011a4f198f437a5f5a9388ffcf27"
           }
         ]
-      }
+      },
+    {
+      "id": "typechecker/split-script-original/complete-original-split-script",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "split-script-original",
+      "case": "complete-original-split-script",
+      "test": "split_script_setup_preserves_complete_original_diagnostics",
+      "regressionCommit": "b3c2933be5afbdb5f2df07da093f40bc7ce72187",
+      "sourceRevision": "b3c2933be5afbdb5f2df07da093f40bc7ce72187",
+      "packReference": {
+        "path": "split-script-original/cases.json",
+        "sha256": "b9ed27f47338f4a12a2b17ff553e3b334dbb4b6327b1b3311f301b64c9f42d92"
+      },
+      "inputs": [
+        {
+          "file": "src/App.vue",
+          "path": "split-script-original/original-project/src/App.vue.txt",
+          "sha256": "c9514c22ceb683fd15e1699f604482a893588e56b3df0ab552c333bf0ae4f521"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "split-script-original/original-project/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        }
+      ]
+    }
   ]
 }

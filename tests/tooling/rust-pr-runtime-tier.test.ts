@@ -39,6 +39,10 @@ const canonDeferred = [
     name: "authored_unused_symbols_preserve_complete_original_diagnostics",
     pack: "authored-unused-symbols",
   },
+  {
+    name: "split_script_setup_preserves_complete_original_diagnostics",
+    pack: "split-script-original",
+  },
 ];
 type Step = { name?: string; run?: string };
 const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {

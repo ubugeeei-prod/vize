@@ -1,0 +1,54 @@
+{
+  "schema": "vize.typechecker.originalProjectProvenance",
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "b3c2933be5afbdb5f2df07da093f40bc7ce72187",
+  "parent": "8f1953c0637060efe9d1103f9426000a39238054",
+  "historicalIssue": 3783,
+  "originalTest": "split_script_setup_diagnostic_matches_vue_tsc_position",
+  "originalTestSource": {
+    "path": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/split_script_diagnostic_anchors.rs",
+    "blob": "64bf9eea7845fb712c01234b463210d0b267992f",
+    "sha256": "c26b12f607fa918d6c2944214d7dd6d10504ae88e347d3f537ae34030dc28790",
+    "revision": "b3c2933be5afbdb5f2df07da093f40bc7ce72187",
+    "carrier": "original-test.rs.txt"
+  },
+  "projectHelperSource": {
+    "path": "crates/vize_canon/src/batch/type_checker/tests.rs",
+    "blob": "a7c74b9593646b124c753b35fa395f5bc215b9b6",
+    "sha256": "45997a074c644c38d72b013d6d2cad889a3a21d2a189669ff0bb2c2088391489",
+    "revision": "b3c2933be5afbdb5f2df07da093f40bc7ce72187",
+    "excerpt": {
+      "carrier": "original-helper.rs.txt",
+      "utf8Start": 50636,
+      "utf8End": 61048,
+      "sha256": "b3beb7d333a17aa20c66d8be50cb26b1414d5b4fc3810f3250c56e3b1d98baab"
+    }
+  },
+  "originalChange": {
+    "carrier": "original-change.patch.txt",
+    "sha256": "5073b6dcc20b35596337dc455138efd842f1c9ca8dc25bebf4fb64aa29e53215"
+  },
+  "configLiteralUtf8Start": 52426,
+  "originalCheckerOptions": "default BatchTypeChecker; no extra checker flags",
+  "originalPackagePolicy": "link workspace Vue/Vite/@vue when available, otherwise test support stubs; proposed mandatory fixture must use pinned real runtime and record actual package identities",
+  "expectedContract": "complete original authored tuple assertion; original helper sorts the entire vector, which has one row here",
+  "originalRuntimePolicy": "optional runtime guard; public diagnostics sorted by snapshot helper; each selected original project expects zero or one row",
+  "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+  "execution": "pending fresh required T1 source-built Actions",
+  "native": "unsupported",
+  "inputs": [
+    {
+      "file": "src/App.vue",
+      "source": "original-project/src/App.vue.txt",
+      "sha256": "c9514c22ceb683fd15e1699f604482a893588e56b3df0ab552c333bf0ae4f521",
+      "originalLiteralUtf8Start": 1152
+    },
+    {
+      "file": "tsconfig.json",
+      "source": "original-project/tsconfig.json.txt",
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047",
+      "originalLiteralUtf8Start": null
+    }
+  ]
+}
