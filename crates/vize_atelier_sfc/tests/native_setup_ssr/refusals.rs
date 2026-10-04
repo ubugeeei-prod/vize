@@ -6,7 +6,8 @@ use vize_l0::{Allocator, config::VueVersion};
 use vize_l1::container::vue::ScriptRole;
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind as Lower;
 use vize_l2::{
-    file::{FileIssueKind, RejectedFileHandler},
+    expr::ExprRef,
+    file::{FileIssueKind, NativeFileInterpolationState, RejectedFileHandler},
     lang::js::{NativeSetupIssueKind, NativeTemplateIssueKind as Template},
     op::Op,
 };
@@ -111,7 +112,7 @@ pub fn capture() -> Vec<serde_json::Value> {
         (
             "nested",
             "<script setup>const value=1</script><template><i>{{value}}</i></template>",
-            Expected::Template(Template::UnsupportedChild),
+            Expected::Ssr(SsrUnsupported::Operation),
         ),
         (
             "for",
@@ -168,7 +169,7 @@ pub fn capture() -> Vec<serde_json::Value> {
                 assert!(original.view().is_err());
                 assert!(original.rejected_file().is_none());
                 let file = original.file().unwrap();
-                assert_eq!(file.is_complete(), expected != Template::UnsupportedChild);
+                assert!(file.is_complete());
                 serde_json::json!([])
             }
             Expected::Ssr(expected) => {
@@ -180,6 +181,58 @@ pub fn capture() -> Vec<serde_json::Value> {
                 let setup = admitted.setup();
                 let file = setup.file();
                 assert!(file.is_complete());
+                if name == "nested" {
+                    let [Op::Element(element)] = file.artifact().root().ops.as_slice() else {
+                        panic!("{name}: original root element missing")
+                    };
+                    let [Op::Interpolation(interpolation)] = element.children.ops.as_slice() else {
+                        panic!("{name}: original nested interpolation missing")
+                    };
+                    let ExprRef::Js(expression) = interpolation.expression else {
+                        panic!("{name}: original JS expression missing")
+                    };
+                    let [record] = file.native_interpolations() else {
+                        panic!("{name}: exact original input missing")
+                    };
+                    let NativeFileInterpolationState::Admitted(node) = record.state() else {
+                        panic!("{name}: genuine interpolation admission missing")
+                    };
+                    assert!(core::ptr::eq(
+                        file.native_interpolation(node).unwrap(),
+                        record
+                    ));
+                    let operand = record.input().operand();
+                    let syntax = operand.syntax();
+                    assert_eq!(operand.full_span(), interpolation.span);
+                    assert_eq!(operand.content_span().slice(source), "value");
+                    assert_eq!(operand.raw_content(), "value");
+                    assert_eq!(syntax.diagnostics().count(), 0);
+                    assert!(core::ptr::eq(syntax.source().authored_root(), source));
+                    assert!(core::ptr::eq(syntax.source().text(), expression.source));
+                    assert_eq!(syntax.source().span(), expression.span);
+                    assert!(core::ptr::eq(
+                        syntax.admitted_expression().unwrap().expression(),
+                        expression.ast
+                    ));
+                    let resolution = file.expression(node).unwrap();
+                    assert!(core::ptr::eq(resolution.file(), file));
+                    assert_eq!(resolution.scope(), Some(setup.scope()));
+                    let table = resolution.table().unwrap();
+                    assert!(core::ptr::eq(table.expression().ast, expression.ast));
+                    assert!(core::ptr::eq(
+                        table.expression().coordinates.unwrap(),
+                        expression.coordinates.unwrap()
+                    ));
+                    let [occurrence] = table.occurrences() else {
+                        panic!("{name}: actual original reference missing")
+                    };
+                    let binding = resolution.binding(occurrence.binding).unwrap();
+                    assert!(resolution.accepts(binding));
+                    assert_eq!(
+                        setup.binding(binding).unwrap().declaration().unwrap().unit,
+                        setup.unit()
+                    );
+                }
                 if name == "for" {
                     let [Op::OriginalFor(original)] = file.artifact().root().ops.as_slice() else {
                         panic!("{name}: exact original For missing")
