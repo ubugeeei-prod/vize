@@ -48,3 +48,9 @@ pub use template::{TemplateDocument, TemplateRefusal, UnsupportedSyntax, templat
 #[path = "native_doc/vue2_text.rs"]
 mod vue2_text;
 pub use vue2_text::{Vue2TextDocument, Vue2TextDocumentRefusal, vue2_text_document};
+
+#[path = "native_doc/vue1_text.rs"]
+mod vue1_text;
+pub use vue1_text::{
+    Vue1TextDocument, Vue1TextDocumentRefusal, Vue1TextPrintRefusal, vue1_text_document,
+};

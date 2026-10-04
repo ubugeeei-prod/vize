@@ -69,6 +69,10 @@ formatter	Formatter	source	crates/vize_glyph/src/native_doc/template/cursor.rs	3
 formatter	Formatter	source	crates/vize_glyph/src/native_doc/template/layout.rs	3	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/native_doc/template/layout.rs	3	l1	L1	stage	vize_l1	preferred	3
 formatter	Formatter	source	crates/vize_glyph/src/native_doc/template/value.rs	3	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	source	crates/vize_glyph/src/native_doc/vue1_text.rs	3	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	source	crates/vize_glyph/src/native_doc/vue1_text.rs	3	l1	L1	stage	vize_l1	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/src/native_doc/vue1_text/tests.rs	5	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/src/native_doc/vue1_text/tests.rs	5	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/native_doc/vue2_text.rs	3	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/native_doc/vue2_text.rs	3	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/src/native_doc/vue2_text/tests.rs	5	l1	L1	stage	vize_l1	preferred	1
@@ -277,6 +281,12 @@ formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolati
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/sequence/refusals.rs	8	l0	L0	stage	vize_l0	preferred	11
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/sequence/refusals.rs	8	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_template_interpolations/unary.rs	8	l0	L0	stage	vize_l0	preferred	8
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_vue1_text_document.rs	6	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_vue1_text_document.rs	6	l1	L1	stage	vize_l1	preferred	2
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_vue1_text_document/custody.rs	4	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_vue1_text_document/custody.rs	4	l1	L1	stage	vize_l1	preferred	3
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_vue1_text_document/refusals.rs	7	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/native_vue1_text_document/refusals.rs	7	l1	L1	stage	vize_l1	preferred	3
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_vue2_text_document.rs	5	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_vue2_text_document.rs	5	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/native_vue2_text_document/custody.rs	4	l0	L0	stage	vize_l0	preferred	1
