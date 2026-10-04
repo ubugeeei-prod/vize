@@ -7,7 +7,7 @@
       "id": "nuxt2-process-flags",
       "nuxtVersion": 2,
       "expectedRules": {},
-      "expectedDiagnosticCodes": []
+      "expectedDiagnostics": []
     },
     {
       "id": "nuxt3-process-flags",
@@ -16,7 +16,40 @@
         "nuxt/prefer-import-meta": "error",
         "nuxt/no-page-meta-runtime-values": "error"
       },
-      "expectedDiagnosticCodes": ["vize(nuxt/prefer-import-meta)", "vize(nuxt/prefer-import-meta)"]
+      "expectedDiagnostics": [
+        {
+          "message": "Replace `process.client` with `import.meta.client`.\n    Help:\n      Use import.meta.client instead.",
+          "code": "vize(nuxt/prefer-import-meta)",
+          "severity": "error",
+          "filename": "issue-7828-process-flags.ts",
+          "labels": [
+            {
+              "span": {
+                "offset": 28,
+                "length": 14,
+                "line": 2,
+                "column": 7
+              }
+            }
+          ]
+        },
+        {
+          "message": "Replace `process.server` with `import.meta.server`.\n    Help:\n      Use import.meta.server instead.",
+          "code": "vize(nuxt/prefer-import-meta)",
+          "severity": "error",
+          "filename": "issue-7828-process-flags.ts",
+          "labels": [
+            {
+              "span": {
+                "offset": 89,
+                "length": 14,
+                "line": 5,
+                "column": 10
+              }
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "nuxt4-process-flags",
@@ -25,7 +58,40 @@
         "nuxt/prefer-import-meta": "error",
         "nuxt/no-page-meta-runtime-values": "error"
       },
-      "expectedDiagnosticCodes": ["vize(nuxt/prefer-import-meta)", "vize(nuxt/prefer-import-meta)"]
+      "expectedDiagnostics": [
+        {
+          "message": "Replace `process.client` with `import.meta.client`.\n    Help:\n      Use import.meta.client instead.",
+          "code": "vize(nuxt/prefer-import-meta)",
+          "severity": "error",
+          "filename": "issue-7828-process-flags.ts",
+          "labels": [
+            {
+              "span": {
+                "offset": 28,
+                "length": 14,
+                "line": 2,
+                "column": 7
+              }
+            }
+          ]
+        },
+        {
+          "message": "Replace `process.server` with `import.meta.server`.\n    Help:\n      Use import.meta.server instead.",
+          "code": "vize(nuxt/prefer-import-meta)",
+          "severity": "error",
+          "filename": "issue-7828-process-flags.ts",
+          "labels": [
+            {
+              "span": {
+                "offset": 89,
+                "length": 14,
+                "line": 5,
+                "column": 10
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

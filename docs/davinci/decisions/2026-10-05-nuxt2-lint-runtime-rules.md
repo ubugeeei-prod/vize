@@ -24,7 +24,8 @@ back to the existing modern plan at the generation boundary.
 The new `test/nuxt-version-compat` corpus retains the issue's seven-line
 `process.client` / `process.server` function. Its exact 115-byte source has
 SHA-256 `2dcfa5bf523c99a7a669a453ddeca8085f5673fb80f01ac398cdf1db191c3ed6`. Nuxt 2 expects no diagnostics;
-Nuxt 3 and 4 each retain both migration diagnostics, in original source order.
+Nuxt 3 and 4 each retain both migration diagnostics, in original source order,
+including full messages/help, severity, filename and exact byte/line labels.
 The plan tests independently fix every remaining block, glob and severity.
 The prior `@nuxt/eslint@1.16.0` whole-plan and byte-artifact recordings remain
 unchanged. Existing Nuxt 2 build-directory regeneration also checks omission

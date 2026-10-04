@@ -124,19 +124,8 @@ async function runProbe(fixture, artifacts) {
       assert.equal(run.signal, null);
       assert.equal(run.status, entry.nuxtVersion === 2 ? 0 : 1, run.stderr || run.stdout);
       const report = JSON.parse(run.stdout);
-      assert.deepEqual(
-        report.diagnostics.map(({ code }) => code),
-        entry.expectedDiagnosticCodes,
-      );
-      if (entry.nuxtVersion !== 2) {
-        assert.deepEqual(
-          report.diagnostics.map(({ message }) => message),
-          [
-            "Replace `process.client` with `import.meta.client`.",
-            "Replace `process.server` with `import.meta.server`.",
-          ],
-        );
-      }
+      assert.equal(report.number_of_files, 1);
+      assert.deepEqual(report.diagnostics, entry.expectedDiagnostics);
       rows.push({ id: entry.id, configFile, exit: run.status, diagnostics: report.diagnostics });
     }
     fs.writeFileSync(
