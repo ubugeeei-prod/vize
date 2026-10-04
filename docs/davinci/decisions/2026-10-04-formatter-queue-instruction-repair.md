@@ -85,3 +85,23 @@ reject the new direct slices under the existing indexing/slicing lint. The
 successor retains one `memchr2_iter`, obtains each candidate with checked
 `get`, and keeps the same exact marker oracle. Its original failed receipts
 remain immutable; fresh source and instruction acceptance are still required.
+
+The source tooling campaign on `4ee88f868` preserves one failure: the original
+formatter-history current-witness validator rejects changed complete owners.
+Independently compare the complete original `cc87bb5` source and current source
+before registering these exact transitions. The ten script law bodies keep
+all previously registered hashes byte for byte; its complete current owner
+changes from accepted `5a291359526ce1643078eab4d54e968303a56fef210a66b2cfeb090b248621f8`
+to `553ea84d9f4a87c842735b0c4399b2ea6a4fcddd5c37201395c1176371b63a69`.
+The suppression-placement law body remains
+`8120d76a61ca7b815e73c633c93431ba5399f1227d8274a699d09c7d2a5a5400`;
+its original owner remains
+`94b99ca1dcf0833d5706b73f95e41c9cdf280160e1dccdb751340ad86607b675`
+and its exact current owner becomes
+`6ed649ce147cb3979b3ee76bbc9eb90d4e5848eb252a487d4660b2ff8c5dc10e`.
+Original audit/source/revision pins, 300 cases, 150 obligations, public-output
+credit, and native-equivalence status remain immutable. The source gates
+continue rejecting missing laws, original-pin drift and unregistered owners;
+a mutation campaign also covers the newly registered suppression owner.
+This evidence-only successor changes no production Rust or frozen law body.
+Fresh exact-head source and protected acceptance remain required.

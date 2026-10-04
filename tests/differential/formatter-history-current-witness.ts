@@ -9,6 +9,8 @@ import {
 export { retainedFormatterFunction } from "./formatter-history-source-artifact.ts";
 
 // Main #7382 moved script formatting and retained these eleven test bodies.
+// #7681 production setup changes retain all ten script bodies and the original
+// suppression-placement law. Only complete current-owner hashes change here.
 // The original audit and captured source pins remain unchanged. These exact
 // owner transitions admit retained laws, never fresh output/execution credit.
 // Each function hash was verified against both complete original/current Git
@@ -28,7 +30,7 @@ const OWNERS: Record<
   },
   "crates/vize_glyph/src/script.rs": {
     originalSha256: "a205174795bb6d993e84b0cc29dfc5d10c36602dfb6216f1db2278a982b2e0ab",
-    actualMainSha256: "5a291359526ce1643078eab4d54e968303a56fef210a66b2cfeb090b248621f8",
+    actualMainSha256: "553ea84d9f4a87c842735b0c4399b2ea6a4fcddd5c37201395c1176371b63a69",
     functions: {
       test_format_tsx_component_script:
         "d108e897e74d4289b8fdf44555eed4b7ad551aff2ac7673b5a80ca8601220d9b",
@@ -46,6 +48,14 @@ const OWNERS: Record<
       test_format_empty_source: "517a6c6ae4e6449b6c4464e959aeb76f401ccb389c304472b76cf24cf2c5c3f1",
       test_format_whitespace_only:
         "958b802bade6ac87002b32dff6a6d36a24a9ace640147c100898a7665c6a9a1a",
+    },
+  },
+  "crates/vize_glyph/src/template/formatter/suppression.rs": {
+    originalSha256: "94b99ca1dcf0833d5706b73f95e41c9cdf280160e1dccdb751340ad86607b675",
+    actualMainSha256: "6ed649ce147cb3979b3ee76bbc9eb90d4e5848eb252a487d4660b2ff8c5dc10e",
+    functions: {
+      ranges_track_pragma_placement:
+        "8120d76a61ca7b815e73c633c93431ba5399f1227d8274a699d09c7d2a5a5400",
     },
   },
 };

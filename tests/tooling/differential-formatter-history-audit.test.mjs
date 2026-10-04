@@ -190,3 +190,33 @@ void test("full formatter denominator rejects missing original fixes, source arm
   // Registration alone cannot stand in for the real source-built API reports.
   assert.throws(() => validateFormatterHistoryExecution(root, []));
 });
+
+void test("optimized suppression owner preserves the original placement law and rejects owner drift", (t) => {
+  const { audit } = loadFormatterHistoryAudit(root);
+  const entry = audit.sourceCatalog.S095;
+  const name = "ranges_track_pragma_placement";
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "formatter-suppression-law-"));
+  t.after(() => fs.rmSync(scratch, { recursive: true, force: true }));
+  const file = path.join(scratch, entry.path);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const current = fs.readFileSync(path.join(root, entry.path));
+  fs.writeFileSync(file, current);
+  assert.doesNotThrow(() => validateCurrentFormatterWitness(scratch, entry, name));
+  assert.throws(
+    () => validateCurrentFormatterWitness(scratch, { ...entry, sha256: "0".repeat(64) }, name),
+    /original Rust law pin changed/,
+  );
+  assert.throws(
+    () => validateCurrentFormatterWitness(scratch, { ...entry, revisions: [] }, name),
+    /original Rust law revision changed/,
+  );
+  assert.throws(
+    () => validateCurrentFormatterWitness(scratch, entry, "unregistered_retained_function"),
+    /unregistered retained Rust law transition/,
+  );
+  fs.writeFileSync(file, Buffer.concat([current, Buffer.from("\n// drifted owner\n")]));
+  assert.throws(
+    () => validateCurrentFormatterWitness(scratch, entry, name),
+    /current witness source changed/,
+  );
+});
