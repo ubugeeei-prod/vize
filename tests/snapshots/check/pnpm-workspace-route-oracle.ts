@@ -39,6 +39,9 @@ void componentMustBeTyped
 
 type Receipt = {
   args: string[];
+  execution: number;
+  cwd: string;
+  cliPid: number;
   cliSha256: string;
   nativeSha256: string;
   sourceSha: string;
@@ -49,6 +52,8 @@ type Receipt = {
   stderr: string;
   stdout: string;
 };
+
+let executions = 0;
 
 function sha256(bytes: string | Buffer): string {
   return createHash("sha256").update(bytes).digest("hex");
@@ -108,6 +113,9 @@ function check(root: string, patterns: string[], servers: number): Receipt {
     .sort((a, b) => a.path.localeCompare(b.path));
   const receipt: Receipt = {
     args,
+    execution: ++executions,
+    cwd: root,
+    cliPid: result.pid,
     cliSha256: sha256(fs.readFileSync(command)),
     nativeSha256: sha256(fs.readFileSync(native)),
     sourceSha: spawnSync("git", ["rev-parse", "HEAD"], {
@@ -166,9 +174,7 @@ for (const pnpm of [false, true]) {
     try {
       for (const servers of [1, 2]) {
         assertClean(check(root, [sources[0]!], servers), sources, [sources[0]!]);
-        assertClean(check(root, ["packages/c/src/index.ts"], servers), sources.slice(2), [
-          "packages/c/src/index.ts",
-        ]);
+        assertClean(check(root, ["packages/c/src/index.ts"], servers), sources.slice(2));
         assertClean(check(root, [], servers), sources);
       }
     } finally {

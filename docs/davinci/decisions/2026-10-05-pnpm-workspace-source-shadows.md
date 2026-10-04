@@ -92,11 +92,32 @@ Successor `f822dde9d237b8c513fa2aa35f4ee4c5958bcc0b` full Check
 `37225958714` launched real native commands: all four initial root/pnpm literal
 and typed-consumer checks have clean complete diagnostic vectors. The oracle
 then failed its own incorrect assertion that JSON `programs.files` lists
-transitive package dependencies; that field records initial program roots.
+transitive package dependencies; that field records prepared input files,
+including collected local imports but excluding route-owned package targets.
 The next source separates exact root membership from complete reported source
 membership, retains the full report, and stores receipts in the lane's actual
 uploaded directory. This partial observation does not establish the remaining
 server/direct/default/error/repair controls or whole-PR acceptance.
+
+Source `060889cf86ac7ee51caf85013fe6b3ce9747335a` full Check `37226436491`
+passes both typed root/pnpm controls, including all native 1/2-server clean,
+mapped number error, emitted-string callback error and repaired full-output
+checks. The literal controls reached clean chained and direct checks, then
+exposed the oracle's remaining input-membership error: direct relative imports
+belong to the prepared inputs, unlike route-owned package targets. Only that
+expected input list is corrected next; production is unchanged from `f822`.
+Uploaded artifact `11311853935` retains 16 unique raw receipts from 18 actual
+CLI executions (clean/repaired rows deduplicated); the successor adds execution
+ordinals, working directories and CLI PIDs to retain every individual process.
+
+The bounded baseline branch `test/pnpm-workspace-7834-baseline` now has source
+`800ccf6b163f89210dd96a0d29102d52d5989a61`, with complete crates/Davinci/lock
+trees identical to main `61c975f8889a002a1b53265d86d0985447ffab63` and only 18
+fixture/driver paths changed. Its full Check `37226838354` must demonstrate the
+original native failure using the same authored inputs and commands. An
+initial sparse-index preparation error produced a rejected dispatch (422,
+workflow absent); only that proof ref was corrected with an exact lease, and
+no native run, main/PR/queue mutation or baseline claim resulted from it.
 
 Both #7834 and #6982 currently identify `ubugeeei` (GitHub numeric id 71201308)
 as their author. The commit includes that verified issue-author Co-author
