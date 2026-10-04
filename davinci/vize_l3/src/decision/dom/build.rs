@@ -111,6 +111,9 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
                 if element.tag == "search" {
                     self.reject(id, span, DomUnsupported::ElementRole);
                 }
+                // Complete original entries already refuse these names in
+                // L2. Generic routes retain their old short-circuit policy;
+                // a later name admission must consume suffix slots here.
                 if element
                     .attributes
                     .iter()

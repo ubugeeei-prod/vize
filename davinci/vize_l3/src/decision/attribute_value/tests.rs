@@ -16,6 +16,7 @@ use vize_l2::{
 
 mod refusal;
 mod scope;
+mod scoped;
 
 type Test = Result<(), &'static str>;
 fn check(value: bool) -> Test {

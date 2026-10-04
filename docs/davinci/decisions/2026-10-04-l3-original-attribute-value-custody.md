@@ -5,7 +5,8 @@ corrected original File value provider, whose L1 prerequisite #7691 actually
 merged signed788. Source review and full output acceptance remain distinct.
 There is no legacy/default replacement or compiler history closure.
 
-Actual NativeTemplateView and same-owner NativeSelectedSetup entries derive their
+Actual NativeTemplateView, NativeScopedTemplateView and same-owner
+NativeSelectedSetup entries derive their
 own complete File internally. They enable one private allocation-free monotonic
 OriginalAttributeCursor in the existing common canonical Enter/Binding/Leave
 walk. The old generic/ordinary build_with signature and constructors retain None.
@@ -36,15 +37,20 @@ receipt cannot lift class/style/key/ref/is, directives, NUL/CR or entity-text
 boundaries. Source-borrowing facts grant no attribute-bearing For runtime family;
 actual collection outer/alias scope/handler phases and For pointer stay intact,
 and the bounded For target remains attribute-free. Generic analyses still carry
-no original value authority. Writers and module assembly are unchanged in this
+no original value authority. DOM retains its existing short-circuit refusal;
+current complete original L2 admission already excludes class/style/key/ref/is.
+Future admission of those names must consume suffix rows in that same loop.
+The existing styled native SSR entry also derives the original cursor through
+its genuine checked style view; the scriptless fourteen-source pack still
+refuses styles and grants no styled output qualification. Writers and module assembly are unchanged in this
 source slice; their now-reachable output requires the mandatory qualification.
 
-Eight authored laws cover the twelve original title positives in each actual
+Nine authored laws cover the twelve original title positives in each actual
 native target walk and the two unchanged class/entity-text boundaries; empty,
 unknown, bare and nested Unicode slots; real JS/TS setup/For/HandlerBody identity
 and scopes; generic None compatibility; neutral missing rows; foreign/sibling/
-slot/node/order/duplicate refusals; and attached diagnostic prefixes on incomplete
-Files. A complete-field privacy doc denies constructing sealed final facts. Tests
+slot/node/order/duplicate refusals; the genuine styled SSR owner/source/slot
+join; and attached diagnostic prefixes on incomplete Files. A complete-field privacy doc denies constructing sealed final facts. Tests
 are source-authored, not locally compiled or accepted. Existing sticky lower
 parse/park/close/attach/drop/forget interruption laws remain unchanged.
 
