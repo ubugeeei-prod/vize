@@ -3,8 +3,12 @@
 This records the read-only readiness plan for #6842 and #6882 after actual
 Vue 2 custody merge #7690, followed by the reviewed original borrowed
 provider. Root authorized this bounded provider for independent publication
-after complete source/law review. Hosted execution and protected acceptance
-remain pending; native formatter and historical runtime are unfinished.
+after complete source/law review. The provider actually merged signed
+`264c7d0740` as #7726 after source/full/all-104 protected acceptance. Terminal
+#6842 comment 5976281003 and #6882 comment 5976281152 supersede the historical
+publication-stage pending status below. Native formatter and historical
+runtime are unfinished; the [private original TextView Doc consumer plan](./2026-10-04-vue2-original-text-document.md)
+now records a separately authorized design, requiring root review before implementation.
 
 ## Literal source and delivered lower custody
 
@@ -77,8 +81,8 @@ carrier, or replace parser admission with `.expression()` plus a hole flag.
 
 ## Lowest ready provider: borrowed parser authority
 
-The following original proposal is implemented and source-reviewed for
-publication; hosted and protected execution remain pending:
+The following original proposal was implemented and source-reviewed for
+publication, then actually merged as #7726 after hosted/protected execution:
 
 ```rust
 EmbeddingObservation::admitted_expression(&self)
