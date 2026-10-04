@@ -22,7 +22,12 @@ use vize_l3::decision::ssr::{NativeSelectedSetupSsrAnalysis, SsrSetupExpression}
 pub fn emit_selected_setup_template<L: LinkSink>(
     analysis: &NativeSelectedSetupSsrAnalysis<'_, '_, '_>,
 ) -> Result<Writer<L>, SsrError> {
-    encode(analysis.artifact().source(), analysis.ssr(), None, Some(analysis))
+    encode(
+        analysis.artifact().source(),
+        analysis.ssr(),
+        None,
+        Some(analysis),
+    )
 }
 
 pub(super) fn write<L: LinkSink>(

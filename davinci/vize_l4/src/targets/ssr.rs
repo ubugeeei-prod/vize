@@ -7,8 +7,7 @@
 use vize_l0::{Span, id::NodeId};
 use vize_l3::decision::ssr::{
     NativeSelectedSetupSsrAnalysis, NativeSsrFileAnalysis, NativeTemplateScopedSsrAnalysis,
-    NativeTemplateSsrAnalysis, SsrFacts,
-    SsrPart, SsrUnsupported,
+    NativeTemplateSsrAnalysis, SsrFacts, SsrPart, SsrUnsupported,
 };
 use vize_l3::decision::{NativeAnalysis, policy::TargetPolicy};
 
@@ -91,7 +90,12 @@ pub fn emit_scoped_template<L: LinkSink>(
     receipt: &NativeTemplateScopedSsrAnalysis<'_, '_>,
     scope: ScopeId<'_>,
 ) -> Result<Writer<L>, SsrError> {
-    encode(receipt.artifact().source(), receipt.ssr(), Some(scope), None)
+    encode(
+        receipt.artifact().source(),
+        receipt.ssr(),
+        Some(scope),
+        None,
+    )
 }
 
 fn encode<L: LinkSink>(
