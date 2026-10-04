@@ -138,7 +138,11 @@ test("the judge accepts the ideal transcript and rejects every corrupted expecta
 test("initialize requires the declared disabled JSX routing hint without weakening exactness", () => {
   const expected = byId("initialize").expect as any;
   assert.deepEqual(expected.capabilities.experimental, { vize: { jsxTypecheck: false } });
-  for (const hint of [undefined, { vize: { jsxTypecheck: true } }, { vize: { jsxTypecheck: "false" } }]) {
+  for (const hint of [
+    undefined,
+    { vize: { jsxTypecheck: true } },
+    { vize: { jsxTypecheck: "false" } },
+  ]) {
     const entries = idealTranscript();
     const initialize = entries.find((entry) => entry.msg?.result?.serverInfo != null)!;
     if (hint === undefined) delete initialize.msg!.result.capabilities.experimental;

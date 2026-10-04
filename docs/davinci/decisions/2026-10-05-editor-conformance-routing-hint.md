@@ -46,6 +46,11 @@ and grants zero native credit; it does not stand in for the editor workflow.
 
 ## Remaining delivery
 
+First source `d2f8691a` Check `37223757877` passed all four tooling jobs and
+the source report but failed `check-js` on the new loop's formatting. Its
+aggregate remains failed. The repair only formats that loop and preserves all
+expectation values; fresh source Actions are required.
+
 Source Actions, the new-source editor workflow, the protected full suite and
 104 probes, actual merge and release are still required. Queue admission stays
 held through coordinated v0.433 publication and explicit thaw. Full LSP fix
