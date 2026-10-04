@@ -138,3 +138,20 @@ that exact original file is present, keeping source/pin/revision drift fatal.
 No original source/history asset, law, native runtime or original29 whole-law
 blob changes. Fresh hosted104/source/full acceptance remains required; the
 release window holds new queue admissions until the coordinator reopens it.
+
+The complete original suppression restoration source `8c601e0833` passes exact
+manual `37174663105`, job `111354686616`: all three runs are
+292257/273411/928928/244029 against unchanged
+293575/274723/929044/244347. Formatter artifact11292772966 and original100
+artifact11293335066 independently satisfy source/window/methodology equality
+and all104 ceilings; template work decreases638 with318 remaining margin.
+That old-base success supplies no acceptance for a fresh combined source.
+
+After actual Auto-line-ending merge `4ae5b8ba8aa4b4014d7fbf0472f2321f9e0961ed`,
+replay this child onto that literal fresh main. Preserve the complete incoming
+script owner37c77bdd and its ten original law bodies/current-owner registration,
+all Auto production paths, #7703's canonical assessment and unrelated lane
+records. The same original native runtime/29law blobs and complete restored
+suppression94b source remain exact. The full300 history/mutation checks and
+owned19 inventories pass after replay. Fresh exact-source/104/protected/native
+Stack acceptance remains required; release coordination still holds admission.
