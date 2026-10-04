@@ -25,8 +25,7 @@ pub(super) fn write_indented_block(
     let trimmed = content.trim_end_matches('\n').trim_end_matches('\r');
     let mut inside_template_literal = false;
 
-    let separator = if newline == b"\r" { '\r' } else { '\n' };
-    for raw_line in trimmed.split(separator) {
+    for raw_line in trimmed.split('\n') {
         // Split on '\n' leaves the '\r' of a CRLF pair attached to the line.
         // Strip it so the configured newline is the only terminator emitted:
         // otherwise CRLF content plus a CRLF `newline` yields "\r\r\n".

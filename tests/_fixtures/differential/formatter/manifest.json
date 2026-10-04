@@ -701,6 +701,270 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/auto-crlf",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-auto-crlf",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "e49c4b1e494f0ae9144687ca786e1aa0415382ba55c438e4b762c9262c00a747",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "bad94ad6b25acbb78eb090cf94aa441e50c0bc79fbee55b1c996c4b77d0c19bd",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          7704,
+          6098
+        ],
+        "commits": [
+          {
+            "sha": "0fb70c5868db50221aa8c39f192e82c05559ce7a",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/options.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 7704,
+            "path": "crates/vize_glyph/tests/auto_line_endings.rs",
+            "symbol": "sfc_resolves_whole_document_before_each_embedded_language"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/auto_line_endings.rs",
+          "symbol": "sfc_resolves_whole_document_before_each_embedded_language",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "idempotence",
+            "FormatResult.changed"
+          ],
+          "limitations": [
+            "Actual public API and source-built CLI require current-source Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "auto-crlf"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with explicit pinned JSON project config; branch Actions execution remains pending.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-auto-crlf/reference.expected.txt",
+              "sha256": "1f9fd6023fe41aac95d4d169b993132d785292b9fcbe87861d285a923aaf6ceb",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 7704,
+                "path": "crates/vize_glyph/tests/auto_line_endings.rs",
+                "symbol": "sfc_resolves_whole_document_before_each_embedded_language",
+                "assertion": "independently authored full output resolves original first newline and stays stable"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-7704-authored-Auto-EOL-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
+      "id": "formatter/sfc/auto-cr",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-auto-cr",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "bec6a079fd35ea7bf0c9845fc9f4d40bce2786db8b2df8364936c2dc1ae4c978",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "bad94ad6b25acbb78eb090cf94aa441e50c0bc79fbee55b1c996c4b77d0c19bd",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          7704,
+          6098
+        ],
+        "commits": [
+          {
+            "sha": "0fb70c5868db50221aa8c39f192e82c05559ce7a",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/options.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 7704,
+            "path": "crates/vize_glyph/tests/auto_line_endings.rs",
+            "symbol": "sfc_resolves_whole_document_before_each_embedded_language"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/auto_line_endings.rs",
+          "symbol": "sfc_resolves_whole_document_before_each_embedded_language",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "idempotence",
+            "FormatResult.changed"
+          ],
+          "limitations": [
+            "Actual public API and source-built CLI require current-source Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "auto-cr"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with explicit pinned JSON project config; branch Actions execution remains pending.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-auto-cr/reference.expected.txt",
+              "sha256": "d8ce388d0f992626cf0df9151970922f41b9c5468cdaaf4ac6f1e62482cc0d11",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 7704,
+                "path": "crates/vize_glyph/tests/auto_line_endings.rs",
+                "symbol": "sfc_resolves_whole_document_before_each_embedded_language",
+                "assertion": "independently authored full output resolves original first newline and stays stable"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-7704-authored-Auto-EOL-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {

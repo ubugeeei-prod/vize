@@ -82,3 +82,12 @@ and report unchanged, while its LF counterpart converges to the same bytes.
 The shared CLI runner verifies all six references over three passes. Physical
 inputs remain `.vue.txt`, so the two existing `.vue` corpus members and generated
 ledgers stay unchanged. Native support and paired-comparison credit remain zero.
+
+## Automatic line endings (#7704)
+
+Two additive configured cases select `endOfLine: "auto"`. Their first authored
+terminator selects CRLF or lone CR while remaining input layout uses LF;
+complete independent references specify the resulting document style.
+The source-built CLI checks all eight cases on three passes and does not
+rewrite source inputs, config, historical captures or original obligations.
+Physical inputs remain `.vue.txt`; native acceptance credit remains zero.

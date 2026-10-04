@@ -93,12 +93,12 @@ function referenceReport() {
 }
 
 void test("formatter differential manifest preserves captured baselines and versioned regression inputs", () => {
-  assert.equal(loaded.cases.length, 6);
+  assert.equal(loaded.cases.length, 8);
   for (const fixture of loaded.cases) {
     assert.equal(fixture.expectations.legacy.state, fixture.config.length ? "pending" : "captured");
     assert.equal(fixture.adapters.native, null);
     assert.equal(fixture.input.at(-1), 10);
-    assert.equal(fixture.expected.at(-1), 10);
+    assert.equal(fixture.expected.at(-1), fixture.id === "formatter/sfc/auto-cr" ? 13 : 10);
   }
   assert.equal(
     fs.readdirSync(pack, { recursive: true }).filter((name) => name.endsWith(".vue")).length,

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { sha256 } from "./manifest.mjs";
+import { resolvePreservedLayoutSource } from "./formatter-history-layout-artifact.ts";
 import { stripRust } from "../../tools/support/compat/davinci/lib/rust-source.mjs";
 
 // This is an assertion-only source witness, never a formatter output oracle.
@@ -131,6 +132,8 @@ export function resolvePreservedFormatterSource(
   root: string,
   artifact: { path: string; sha256: string },
 ) {
+  const layout = resolvePreservedLayoutSource(root, artifact);
+  if (layout) return layout;
   if (artifact.path !== PRESERVED_FORMATTER_SOURCE.owner) return null;
   return preservedSource(root, artifact.sha256);
 }

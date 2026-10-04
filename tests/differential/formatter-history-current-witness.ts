@@ -20,11 +20,55 @@ const OWNERS: Record<
   string,
   { originalSha256: string; actualMainSha256: string; functions: Record<string, string> }
 > = {
+  // #7704 changes production line endings; complete original law bodies are retained.
+  "crates/vize_glyph/src/style.rs": {
+    originalSha256: "8e13635eab09e08a32282d372ef5379c22210cc4117fbccf05d164df76233a61",
+    actualMainSha256: "796c4db3604f3244064eacc9092252be52f8f15a11e6d7a8516f99499cb3a29f",
+    functions: {
+      test_style_numbers_match_standalone_css_leading_zeroes:
+        "768c1b2fee61409a7034b99c2a7a277d7ac19699302a94b36d58dd54912937cb",
+      test_format_preserves_nested_block_comments_by_leaving_block_raw:
+        "d75832be3024ed959e9f8449a327f9c378acceefde338e6d20755d7e9aae5237",
+      test_background_position_shorthand_stays_authored_and_stable:
+        "2789c0f1a1ee365e550be6ef1743142c02939a4a40d932a6a014da1883363556",
+      test_format_nested_css_at_rule:
+        "8e0bf6f220ae5a4835ee7f70023c216a1a4f1dea16990f1cda52af29e9b998e8",
+      test_format_simple_css:
+        "85da41d455cec5e0ef4256603b9846a0cc583b4cee9eafd3f773b1c8d7436089",
+      test_format_empty_css:
+        "9e1b0a77d8008bcfa0475213d4776c295055865d2f0d306c43f2ecee757bf1cb",
+      test_format_css_whitespace_only:
+        "af60fef48d17c6a45c60399972414080f9b18faec296752525242dd4026866b2",
+      style_block_keeps_box_values_and_implicit_nested_selectors:
+        "e3653ec69d33d2b1063140d14b8fc065e339a6d258c23052f2f986847227fa3e",
+    },
+  },
+  // #7704 changes production line endings; complete original law bodies are retained.
+  "crates/vize_glyph/src/formatter/block_indent.rs": {
+    originalSha256: "3fb14d8c80972c6222de66e01196e7b0072039688a75722c3ea76bf0addec023",
+    actualMainSha256: "6fd2362a08932f4ecbe3ce9607787f960a48111cf4106260f854bc0242a8ffaf",
+    functions: {
+      ordinary_lines_are_indented:
+        "2db24947771836ab456fd330963996617b6ef559d76d3c6014b34941c9859979",
+      template_literal_continuation_lines_stay_verbatim:
+        "51748688a59c07b5545a56b1fca1c88d6d306fb4305a60f0588eebba2946b405",
+      indentation_resumes_after_the_literal_closes:
+        "f5ca6057e2fdbc1dbdd7c2645dd0988747d92e53dc46d5824e36323739a172cd",
+      escaped_backticks_do_not_toggle_the_literal:
+        "2a81f12c65e4d68cb5f31cd4e6425d4bd10fc303bf8d00bd22e9b1e3558c9060",
+      nested_literals_close_correctly:
+        "d19b0bda1e6c2a69f688d2705ec93e38f4a16d7ed966723352203f116ae8081c",
+      blank_lines_are_never_indented:
+        "a8d287daa40a7bc176830e013de3bcdda567d1883b32b1f4c5dbba67a01a1660",
+      crlf_content_emits_the_configured_newline_once:
+        "027a642da3fbafafc2060c882ea6c86824a71ec964fe901acb2494a6e382f2f4",
+    },
+  },
   // #7697 changes CRLF production emission; all four original LF/raw laws
   // remain byte-identical to their complete cc87 source bodies.
   "crates/vize_glyph/src/formatter/template_indent.rs": {
     originalSha256: "4e610e8497708dc137ae90209526526875cc70154c376a4ee6e8098f7caccef6",
-    actualMainSha256: "50c67ed573736a3fe66fd35e5c5f6825d2715a3a74671bab7c1a81fc486ac663",
+    actualMainSha256: "38d95eb0bdc24f2716022c4280bd2c9125d66187a2f39aafdf7a819f6873259a",
     functions: {
       ordinary_templates_bypass_the_raw_line_mask:
         "252d13f191f01a540b78024c0d9e21603dc9a1a14b4c92cc56594ac3fb4cc115",
@@ -46,7 +90,7 @@ const OWNERS: Record<
   },
   "crates/vize_glyph/src/script.rs": {
     originalSha256: "a205174795bb6d993e84b0cc29dfc5d10c36602dfb6216f1db2278a982b2e0ab",
-    actualMainSha256: "553ea84d9f4a87c842735b0c4399b2ea6a4fcddd5c37201395c1176371b63a69",
+    actualMainSha256: "af37572e08f2795c173887221b668398df4d923547c5133e6e772b7d1efc6642",
     functions: {
       test_format_tsx_component_script:
         "d108e897e74d4289b8fdf44555eed4b7ad551aff2ac7673b5a80ca8601220d9b",

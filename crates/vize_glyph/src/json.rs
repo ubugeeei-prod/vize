@@ -52,6 +52,10 @@ fn format_document(
     options: &FormatOptions,
     jsonc: bool,
 ) -> Result<String, FormatError> {
+    if options.end_of_line == crate::EndOfLine::Auto {
+        let options = options.with_resolved_line_ending(source);
+        return format_document(source, &options, jsonc);
+    }
     if source.trim().is_empty() {
         return Ok(String::default());
     }
