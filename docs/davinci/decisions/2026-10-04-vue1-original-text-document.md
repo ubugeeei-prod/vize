@@ -112,3 +112,15 @@ full protected 104 instruction gates, complete new/old captures and actual
 merge remain required. The old five whole pinned Vue 1 oracles are preserved;
 they do not establish mounted updates, hydration or a classic runtime factory.
 Actual #6882 closure provides no whole historical product/default completion.
+
+## First hosted source and exact assertion correction
+
+Draft #7777 source571 runs automatic Check37186749019. The affected Rust
+builder, all four Rust workers and tooling shards1/2/3 pass; shard4 rejects
+only two unlisted negative `contains` assertions checking CR absence. Both
+checks become exact zero CR-character counts, preserving their semantics and
+the complete 64 printed/idempotent byte goldens. Production, original inputs,
+expected outputs, getter controls, capture hooks and all gates remain exact.
+The complete first source's raw packets are retained; its failed aggregate
+does not grant whole-source acceptance. A corrected exact source requires
+fresh complete Actions and protected proof before queue admission.

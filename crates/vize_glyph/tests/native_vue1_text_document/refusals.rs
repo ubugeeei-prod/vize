@@ -166,7 +166,15 @@ fn checked_printer_refuses_every_crlf_option_even_for_flat_atoms() {
                     line_ending: LineEnding::Lf,
                     ..options
                 };
-                assert!(!document.print(&lf).unwrap().contains('\r'));
+                assert_eq!(
+                    document
+                        .print(&lf)
+                        .unwrap()
+                        .chars()
+                        .filter(|ch| *ch == '\r')
+                        .count(),
+                    0
+                );
                 assert_eq!(std::format!("{syntax:?}"), before);
             }
         }

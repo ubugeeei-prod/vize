@@ -176,6 +176,16 @@ fn whole_lf_goldens_idempotence_and_capture_use_only_original_callback_documents
         assert_eq!(case.line_ending, "Lf");
         assert_eq!(actual["printed"], case.expected, "{}", case.id);
         assert_eq!(actual["idempotent"], case.expected, "{}", case.id);
-        assert!(!actual["printed"].as_str().unwrap().contains('\r'));
+        assert_eq!(
+            actual["printed"]
+                .as_str()
+                .unwrap()
+                .chars()
+                .filter(|ch| *ch == '\r')
+                .count(),
+            0,
+            "{}",
+            case.id
+        );
     }
 }
