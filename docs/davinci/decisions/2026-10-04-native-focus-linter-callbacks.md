@@ -141,3 +141,10 @@ that formatting, preserving all21 law names, full expectations and production.
 The raw rejected worker remains retained; fresh source acceptance is required.
 The bounded repair is paired with [#6848](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5979034213)
 and [#6881](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-5979034365).
+
+The b8 successor then rejects one stale owned canonical import row after the
+full tuple expansion (output.rs55→71). The actual scanner/render regenerates
+only the Patina shard; all18 foreign shards remain exact. Raw failure is retained
+and fresh Actions remains required, with no source or expectation widening.
+The canonical repair is paired with [#6848](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5979103390)
+and [#6881](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-5979103567).
