@@ -89,6 +89,12 @@ pub struct ProjectQueryResult<'host, T> {
 }
 
 impl<T> ProjectQueryResult<'_, T> {
+    /// Read the same owned prepared value without publishing or detaching it.
+    #[cfg(feature = "experimental-source-navigation")]
+    pub(in crate::source_project) fn prepared(&self) -> &T {
+        self.result.prepared()
+    }
+
     /// Publish only ready response/cache data. The callback must never re-enter
     /// this project or DocumentStore, including reads and edit application.
     /// The underlying actual read guard enforces snapshot freshness; asynchronous

@@ -15,6 +15,8 @@ pub(super) const TEMPLATE_DEFINITION_METHOD: &str = "vize/nativeTemplateDefiniti
 pub(super) const TEMPLATE_REFERENCES_METHOD: &str = "vize/nativeTemplateReferences";
 pub(super) const HIGHLIGHTS_METHOD: &str = "vize/nativeDocumentHighlight";
 pub(super) const TEMPLATE_HIGHLIGHTS_METHOD: &str = "vize/nativeTemplateDocumentHighlight";
+pub(super) const MODULE_LINKS_METHOD: &str = "vize/nativeModuleDocumentLinks";
+mod module_links;
 
 impl MaestroServer {
     pub(super) async fn native_linked_editing(
