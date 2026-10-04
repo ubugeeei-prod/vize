@@ -236,7 +236,7 @@ Tracked in [#6829](https://github.com/ubugeeei-prod/vize/issues/6829) and [#6855
 
 - This supersedes charter row #1. Other frameworks are in-tree and include the compiler, with parity against each reference compiler.
 - The order is **TSRX → Solid → others** (Svelte, Angular/Analog).
-- Five independent axes: container, markup, profile, lang, framework.
+- Five independent axes: container, markup, profile, lang, framework. [The #6855 L1 design](./2026-10-04-l1-neutral-axes.md) assigns module ownership, explicit compositions and syntax-only hooks; registry/provider implementation and native product acceptance remain separate.
 - L2 keeps neutral core ops plus framework dialect ops.
 - L3 gets a neutral reactivity vocabulary (signal, derived, effect, ordering).
 - L4 gets one target per framework runtime.
