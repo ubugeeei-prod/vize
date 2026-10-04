@@ -101,3 +101,15 @@ positive, negative and action truth tables remain unchanged. Combined pure
 contracts pass11/11 without skips, distinct from hosted native capture.
 The true child retains the corrected borrowed raw-CR parent and private neutral
 ComponentBody law; original nine SSR and all existing output packs stay exact.
+
+Fresh5d now passes the unchanged original nine SSR modules/maps, but capture
+compilation found an invalid complete-File original_for_inputs call. That
+method belongs to the rejected File type. The capture now reports the real
+complete-File unattached_for_heads under the honest unattachedForHeads field;
+all three strict empty-array checks retain their strength. The fixed original
+fourteen sources contain no For. Entire artifact/root/provenance/normal rejected
+For records remain captured; no iterator, missing evidence fallback or native
+For admission is added. This establishes only the absence of dangling heads,
+not general original For custody. Raw5d failure remains preserved; the mandatory
+unfrozen gate keeps rejecting until fresh whole capture, independent output
+review and unconditional frozen equality actually pass.

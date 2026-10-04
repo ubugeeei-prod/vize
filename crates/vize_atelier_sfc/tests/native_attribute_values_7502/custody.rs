@@ -116,7 +116,7 @@ fn file_observation(file: &FileArtifact<'_>, source: &str) -> Value {
         "interruptedPrograms":file.interrupted_programs().map(|issue|cstr!("{issue:#?}")).collect::<Vec<_>>(),
         "rejectedHandlers":debug_rows(file.rejected_handlers()),
         "unattachedHandlers":file.unattached_handlers().map(|input|cstr!("{input:#?}")).collect::<Vec<_>>(),
-        "originalForHeads":file.original_for_inputs().map(|input|cstr!("{input:#?}")).collect::<Vec<_>>(),
+        "unattachedForHeads":file.unattached_for_heads().map(|input|cstr!("{input:#?}")).collect::<Vec<_>>(),
         "rejectedForHeads":debug_rows(file.rejected_for_heads()),"interpolations":interpolations,
         "interpolationFailures":interpolation_failures,"attributeValues":attributes
     })

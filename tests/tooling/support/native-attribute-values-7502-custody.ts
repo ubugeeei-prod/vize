@@ -156,7 +156,7 @@ export function custody7502(row: any) {
       "interruptedPrograms",
       "rejectedHandlers",
       "unattachedHandlers",
-      "originalForHeads",
+      "unattachedForHeads",
       "rejectedForHeads",
       "interpolations",
       "interpolationFailures",
@@ -191,7 +191,7 @@ export function custody7502(row: any) {
       "interruptedPrograms",
       "rejectedHandlers",
       "unattachedHandlers",
-      "originalForHeads",
+      "unattachedForHeads",
       "rejectedForHeads",
     ])
       strings(file[field]);
@@ -290,7 +290,7 @@ export function custody7502(row: any) {
       "interpolations",
       "rejectedHandlers",
       "unattachedHandlers",
-      "originalForHeads",
+      "unattachedForHeads",
       "rejectedForHeads",
     ])
       assert.deepEqual(file[field], []);
