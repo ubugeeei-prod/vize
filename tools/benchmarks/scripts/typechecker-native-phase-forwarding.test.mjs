@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
-test("native forwarding drains stdout/stderr pipes and preserves nonzero status", () => {
+await test("native forwarding drains stdout/stderr pipes and preserves nonzero status", () => {
   const dir = mkdtempSync(join(os.tmpdir(), "native-phase-forwarding-"));
   try {
     const runtime = join(dir, "mock-native.mjs");

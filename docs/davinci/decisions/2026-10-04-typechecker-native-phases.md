@@ -23,8 +23,10 @@ The 1T mode selects one front-end server and one Rayon thread; it does not
 override the native scheduler. Each receipt retains the actual native arguments,
 including the checker count.
 
-Hosted evidence from the unchanged main production source is **unmeasured**
-until the exact-head Actions probe completes. A local protocol-only discovery
+The corrected unchanged-main phase lane completed at infrastructure head
+`b364bbfbd767aa0189fc85651a3b22b22a390b81`; its receipt and limits are below.
+Final shipping-main phase evidence remains pending the later rebase and rerun.
+A local protocol-only discovery
 used an explicitly identified development binary, without a main or speed
 claim: all 15 original/replayed native diagnostic streams, statuses and
 program-file counts matched across the three full corpora. Runtime 7.0.2
@@ -131,4 +133,104 @@ new source files are limited to 350 lines. The correction extracts the CLI
 acceptance gates into a separate runner; no limit or instruction ceiling rises.
 The restored-mtime gate now starts with an exactly representable integer-second
 timestamp and asserts nanosecond equality after the equal-length repair.
-Corrected exact-head hosted evidence remains pending.
+The corrected native phase lane completed below; regular source CI at that head
+separately found one unawaited `node:test` registration. The successor awaits
+that test and exports the original/repaired mtime nanosecond values as strings,
+retaining the exact assertions. All successor Actions must pass.
+
+## Corrected unchanged-main phase receipt
+
+Infrastructure head `b364bbfbd767aa0189fc85651a3b22b22a390b81`, unchanged
+production base `ac1675fef35c5637c38b1e366a91d6bdfe419885`, completed
+[native run 37178324256](https://github.com/ubugeeei-prod/vize/actions/runs/37178324256)
+on the 32-vCPU Linux/x64 runner with Node 24.14.0, Vue 3.6.0-beta.10 and native
+runtime 7.0.2. [Artifact 11294525037](https://github.com/ubugeeei-prod/vize/actions/runs/37178324256/artifacts/11294525037)
+has digest `sha256:7a2e4bb7c0c12f6e6b933afabb91e3a0eee8060a2bf1d4e31117991f2cc893bf`;
+the complete top-level JSON has SHA-256
+`d48366bb14d4945d7503cab70e83175d599471e5178885490145a5f6aac3220d`.
+Native binary SHA-256 is
+`4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4`.
+
+Each cell below is a single instrumented native replay observation in ms,
+or the range across that row's shards. These are not CLI medians or speedups.
+
+| Corpus/mode                | Shards | Config | Parse |  Bind |   Check |   Total |
+| -------------------------- | -----: | -----: | ----: | ----: | ------: | ------: |
+| shared-barrel500/max       |      1 |      9 |    45 |    10 |     161 |     226 |
+| shared-barrel500/1T        |      1 |      9 |    40 |    12 |     148 |     213 |
+| shared-leaf501-default/max |      1 |      8 |    53 |    12 |     268 |     342 |
+| shared-leaf501-default/1T  |      1 |      8 |    55 |    12 |     265 |     342 |
+| generated500/max           |      7 |    2–7 | 63–91 | 15–31 | 207–234 | 302–343 |
+| generated500/1T            |      1 |     10 |    60 |    13 |   1,065 |   1,161 |
+
+Original instrumented child walls for those rows were respectively 227.2,
+227.0, 340.7, 354.9, 308.5–332.5 and 1,171.2 ms. Replay child walls were
+260.7, 244.7, 383.7, 383.2, 337.1–411.1 and 1,235.7 ms. Both sets follow
+the deliberate graph preread and experience the changed contention described
+above; child walls include spawn/wait overhead and cannot be subtracted from normal Vize wall medians. Generated/max sums Check
+to 1,536 ms and Total to 2,279 ms across concurrent shards: these are sums of
+reported work, not critical-path wall time. Emit is 0 ms except barrel/1T at
+1 ms. Startup and program-construction fields are absent in every shard and
+remain `null / unknown`; no residual is assigned to either.
+
+All actual native arguments use `--checkers 1`. Both mode environments clear
+`GOMAXPROCS`; 1T only selects one Vize server and one Rayon thread. Generated/max
+has 1,256 summed native memberships versus a 608-member union, including 108
+identical members in every shard (648 duplicate memberships). This establishes
+repeated graph membership, not an available wall-time reduction. The existing
+one-checker pin preserves diagnostic fidelity under [#3905](https://github.com/ubugeeei-prod/vize/issues/3905).
+A wider checker default is outside this experiment.
+
+The hosted lane passed all 45 direct/wrapped full ordered report pairs, all
+minimal and full-corpus plants in both modes, every original/replay native
+diagnostic/status/config/member identity, six complete public projections,
+6,016 actual saved Vue/helper files, and three create/equal-length repair/delete
+cycles. Nanosecond mtime equality at this head is exact hosted source/assertion
+evidence; the raw freshness objects contain a boolean rather than numeric ns.
+The successor retains the assertions and adds numeric ns strings. This receipt
+does not establish release/queue acceptance, a cache gain or the 42.55 ms target.
+
+[Same-slice phase receipt and next-experiment decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5976813997).
+
+The independent raw audit also completed with exit 0: 90 CLI receipts/45
+ordered pairs, 75 native configs/600 raw stdout and stderr files, 18,929 member
+rows, 6,016 actual saved virtual files, 252 authored TS/native byte comparisons,
+all 60 plant checks, and all three full archives/45 delta input snapshots.
+Six complete public projection outputs contain 3,002 file views, 280,004
+document rows, 47,100 subspans, 8,100 links, 319,804 mapper rows and 8,100 mapper
+links; full before/after bytes and UTF-8 coordinate bounds agree. Auxiliary
+changed mapping revisions remain hosted assertion/anchor evidence rather than
+independently archived complete changed documents. External library/executable
+bytes are pinned/hashed but not physically archived in this artifact.
+The sorted 8,901-file `{file, bytes, sha256}` archive vector has SHA-256
+`bf5194384873ffdc04c2e2210dd69d3f875f107deb99c1a438a6e4106f007d68`.
+Independent audit script SHA-256 is
+`1cb65eb8bd0f4e5591438d86f96d6be2382cd84ff45d5402835142fadc32e677`;
+its compact JSON receipt SHA-256 is
+`1c4684a84e486fa3690614258fec305a6878e1f00d08fe9745e81d7bb13caa44`.
+
+## Phase-driven next experiment
+
+Check is the largest reported phase in every observed row. The next proposed
+slice is benchmark-only native semantic/program reuse at unchanged checker
+width and actual shard membership. First verify the pinned runtime supports a
+build-info replay; keep one independent build-info path per exact shard outside
+virtual-tree pruning. Compare empty-semantic first use, filesystem-warm fresh
+process without semantic state, and filesystem-warm fresh process with retained
+state. A live session is a separate later population. Archive complete ordered
+native and Vize diagnostics, generated bytes/maps, effective config/member
+vectors, runtime/helper identities and starts/reuses/refreshes/fallbacks; reject
+unsupported flags, changed vectors or fallback instead of reporting a gain.
+
+Begin with no-op and one local/shared/barrel edit at a fixed path, including an
+equal-length restored-mtime edit, create/delete and missing-to-present imports.
+Before production admission extend the unchanged-fresh-checker comparison to
+config/extends/alias, package/declaration, augmentation/global and helper/runtime
+identity changes. Only a separate direct unwrapped paired CLI benchmark can
+establish end-to-end gain. First rerun this phase lane on the actually merged
+corrected Stack/main; these main-base observations cannot substitute for it.
+The rebase requires all five layers of native Stack 7720 actually merged:
+#7702 → #7719 → #7725 → #7728 → #7754. Shard counts and phase observations may
+change after those source changes. Retained disk/session results cannot be used
+as the original fresh-CLI 10x result; semantic state is a different contract.
+No incremental or persistent production implementation is authorized here.

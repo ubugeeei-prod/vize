@@ -245,11 +245,8 @@ export function main(argv = process.argv.slice(2)) {
       const errorText = readFileSync(file, "utf8");
       writeFileSync(file, errorText.replace('"bad"', "12345"));
       utimesSync(file, original.atime, original.mtime);
-      assert.equal(
-        statSync(file, { bigint: true }).mtimeNs,
-        originalMtimeNs,
-        "mtime was not restored exactly",
-      );
+      const repairedMtimeNs = statSync(file, { bigint: true }).mtimeNs;
+      assert.equal(repairedMtimeNs, originalMtimeNs, "mtime was not restored exactly");
       assert.equal(
         statSync(file).size,
         Buffer.byteLength(errorText),
@@ -276,6 +273,8 @@ export function main(argv = process.argv.slice(2)) {
         create: errorPair.direct.id,
         repair: repaired.direct.id,
         delete: deleted.direct.id,
+        mtimeNs: { before: String(originalMtimeNs), repaired: String(repairedMtimeNs) },
+        sourceBytes: Buffer.byteLength(errorText),
         sameLengthRestoredMtime: true,
         allDirectWrappedReportsEqual: true,
       });
