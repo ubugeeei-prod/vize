@@ -166,7 +166,6 @@ closure, source/diagnostic snapshots, SDK/ABA coherence, contextual Vue typing,
 history closure and default migration remain unfinished. Reproducible
 same-diagnostic 10x remains an unmeasured target; no new benchmark dispatch.
 
-
 ## Actual native-phase harness prerequisite
 
 The new actual main `912d311c` adds the source-bound native-phase workflow and
@@ -186,3 +185,14 @@ incoming central clauses. This imports the actual merged workflow/helper source
 rather than copying a substitute or waiving its failure. Fresh exact-source
 Actions, real native-phase packets, full protected suites/104 ratchets and signed
 Stack delivery remain required. No unchanged retry or local build is performed.
+
+Inherited child check-js rejects only whitespace formatting in this appended
+companion: #7769 Check 37187347220/job 111392006551, complete log SHA256
+`985c86ce6a5f3574795ade1adeaacaf3b86c5d145ac2a42438d2c9fbe4f24683`;
+#7772 Check 37187354562/job 111392029790, complete log SHA256
+`381cbe05948ad56f048eeb0ee1e35a36026c8a32bba08ac0695310b64d386abf`.
+The existing formatter repairs this owned document alone, preserving its complete
+nonwhitespace tokens and all code/oracles/laws/census rows. Real native-phase
+self-tests and CLI/projection builds passed before those failures, with captures
+still running; no final phase acceptance or unchanged retry is claimed. The source
+successor and genuine descendants require fresh automatic Actions.
