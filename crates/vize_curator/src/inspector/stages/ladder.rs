@@ -39,7 +39,9 @@ use core::cell::Cell;
 use vize_l0::dump::collector::Collector;
 use vize_l0::dump::plan::Page as PlanPage;
 use vize_l0::dump::{Dump, Mode as DumpMode};
-use vize_l0::pass::{Pair, PassEvent, PassObserver, Pipeline, RemarkCollector};
+use vize_l0::pass::{
+    FailEvent, Pair, PassEvent, PassObserver, Pipeline, RemarkCollector, WalkTiming,
+};
 use vize_l0::{Allocator, String};
 use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_pass_hook};
 use vize_l2::dump::Page as L2Page;
@@ -105,25 +107,28 @@ fn step(stage: &'static str, pass: &'static str, started: u64, now: u64) -> Ladd
 #[derive(Debug, Default)]
 struct PassWindows {
     pass: Cell<u64>,
-    walk: Cell<u64>,
+    walk: Cell<WalkTiming<u64>>,
 }
 
 impl PassWindows {
     fn open(&self, event: &PassEvent<'_>, now: u64) {
         self.pass.set(now);
-        if event.is_group_entry() {
-            self.walk.set(now);
-        }
+        let mut walk = self.walk.take();
+        walk.begin(event, || Some(now));
+        self.walk.set(walk);
     }
 
     /// The pass's step, and its walk's when the pass ends one.
     fn close(&self, event: &PassEvent<'_>, now: u64) -> (LadderStep, Option<LadderStep>) {
         let stage = event.pipeline.stage;
-        let lead = event.pipeline.passes.get(event.group.start);
+        let mut walk = self.walk.take();
+        let completed = walk.end(event);
+        self.walk.set(walk);
         (
             step(stage, event.desc().name, self.pass.get(), now),
-            lead.filter(|_| event.is_group_exit())
-                .map(|lead| step(stage, lead.name, self.walk.get(), now)),
+            completed.and_then(|(started, attribution)| {
+                Some(step(attribution.stage?, attribution.pass?, started, now))
+            }),
         )
     }
 }
@@ -138,10 +143,15 @@ struct PassStart<'a> {
 impl PassObserver for PassStart<'_> {
     fn before_pipeline(&mut self, pipeline: &Pipeline) {
         self.pipeline = Some(*pipeline);
+        self.windows.walk.take().discard();
     }
 
     fn before_pass(&mut self, event: &PassEvent<'_>) {
         self.windows.open(event, (self.clock)());
+    }
+
+    fn on_fail(&mut self, _event: &FailEvent<'_>) {
+        self.windows.walk.take().discard();
     }
 }
 
@@ -309,5 +319,13 @@ mod tests {
         // them included: one walk, not two passes' worth.
         assert_eq!(walks, vec![step("s2", "a", 0, 30), step("s2", "c", 40, 50)]);
         assert_eq!(observer.pipeline, Some(PLAN));
+        assert_eq!(
+            reads.get(),
+            6,
+            "shared walk state takes no extra clock sample"
+        );
     }
 }
+
+#[cfg(test)]
+mod timing_tests;

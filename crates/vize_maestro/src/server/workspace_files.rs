@@ -93,6 +93,10 @@ pub(super) async fn did_change_watched_files(
     server: &MaestroServer,
     params: &DidChangeWatchedFilesParams,
 ) {
+    #[cfg(feature = "experimental-source-navigation")]
+    server
+        .state
+        .observe_module_target_file_events(!params.changes.is_empty());
     #[cfg(feature = "native")]
     {
         let changes = user_watched_file_events(&params.changes);
@@ -182,6 +186,10 @@ pub(super) async fn invalidate_changed_document_disk_project_state(
 }
 
 pub(super) async fn did_create_files(server: &MaestroServer, params: &CreateFilesParams) {
+    #[cfg(feature = "experimental-source-navigation")]
+    server
+        .state
+        .observe_module_target_file_events(!params.files.is_empty());
     #[cfg(feature = "native")]
     {
         let dependents = versioned_open_typecheck_dependents(
@@ -213,6 +221,10 @@ fn record_created_files(state: &ServerState, params: &CreateFilesParams) {
 }
 
 pub(super) async fn did_delete_files(server: &MaestroServer, params: &DeleteFilesParams) {
+    #[cfg(feature = "experimental-source-navigation")]
+    server
+        .state
+        .observe_module_target_file_events(!params.files.is_empty());
     #[cfg(feature = "native")]
     {
         let mut dependents = versioned_open_typecheck_dependents(
@@ -269,6 +281,10 @@ pub(super) async fn will_rename_files(
 }
 
 pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFilesParams) {
+    #[cfg(feature = "experimental-source-navigation")]
+    server
+        .state
+        .observe_module_target_file_events(!params.files.is_empty());
     #[cfg(feature = "native")]
     {
         let dependents = versioned_open_typecheck_dependents(

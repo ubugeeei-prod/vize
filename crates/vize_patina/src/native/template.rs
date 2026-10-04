@@ -1,14 +1,13 @@
 //! Opt-in configured native bare-template callbacks with whole-input refusal.
 //! Generic checked element dispatch requires an actual registered capability.
-//! The filename root callback remains the only provided builtin here. Existing
-//! selected header/child APIs and the default product route are unchanged.
+//! The filename root and two focus-attribute builtins offer actual capabilities.
+//! Existing selected header/child APIs and the default product route are unchanged.
 
 use vize_l0::{SourceFrameError, Span, String, config::VueVersion};
 use vize_l1::markup::{ComponentSourceError, NativeLintComponent};
 
 use super::NativeLintRefusal;
 
-mod admission;
 mod component_name;
 mod context;
 mod driver;

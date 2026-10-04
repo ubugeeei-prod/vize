@@ -34,7 +34,6 @@ fn merge_resolved(
     filename: &str,
     sources: Option<&TypeSourceSnapshot>,
 ) {
-    use crate::compile::is_ts_lang;
     use crate::types::BindingType;
     let disk_sources = TypeSourceSnapshot::default();
     let world_sources = sources.unwrap_or(&disk_sources);
@@ -54,30 +53,9 @@ fn merge_resolved(
         return;
     };
 
-    let mut ctx = ScriptCompileContext::new(&script_setup.content);
-    if let Some(ref script) = descriptor.script {
-        ctx.collect_types_from(&script.content);
-    }
-    if !filename.is_empty() {
-        collect_types(
-            &mut ctx,
-            &script_setup.content,
-            filename,
-            is_ts_lang(script_setup.lang.as_deref()),
-            sources,
-        );
-        if let Some(ref script) = descriptor.script {
-            collect_types(
-                &mut ctx,
-                &script.content,
-                filename,
-                is_ts_lang(script.lang.as_deref()),
-                sources,
-            );
-        }
-    }
-    ctx.analyze();
-
+    // The scoped world reads the current setup/normal text directly. The
+    // compatibility collector and context analysis do not contribute to it.
+    let ctx = ScriptCompileContext::new(&script_setup.content);
     croquis.types.set_resolved_world(
         ctx.resolve_type_world_with_sources(
             filename,
@@ -111,48 +89,28 @@ fn merge_resolved(
         .iter()
         .map(|prop| prop.name.clone())
         .collect();
-    let resolved = croquis
+    let Some(resolved) = croquis
         .types
         .resolved_world()
-        .map(|world| world.resolve_properties(type_args));
-    let properties = match resolved {
-        Some(resolved) => {
-            croquis.types.record_resolved_properties(&resolved);
-            resolved
-                .properties
-                .into_iter()
-                .map(|prop| vize_croquis::macros::PropDefinition {
-                    name: prop.name,
-                    prop_type: prop.prop_type,
-                    required: !prop.optional,
-                    default_value: None,
-                })
-                .collect()
-        }
-        None => ctx.resolve_type_props(type_args),
+        .map(|world| world.resolve_properties(type_args))
+    else {
+        return;
     };
-    for prop in properties {
+    croquis.types.record_resolved_properties(&resolved);
+    for prop in resolved.properties {
         if !known.insert(prop.name.clone()) {
             continue;
         }
         if !croquis.bindings.contains(prop.name.as_str()) {
             croquis.bindings.add(prop.name.as_str(), BindingType::Props);
         }
-        croquis.macros.add_prop(prop);
-    }
-}
-
-fn collect_types(
-    ctx: &mut ScriptCompileContext,
-    source: &str,
-    filename: &str,
-    is_ts: bool,
-    sources: Option<&TypeSourceSnapshot>,
-) {
-    match sources {
-        Some(sources) => {
-            ctx.collect_imported_types_from_path_with_sources(source, filename, is_ts, sources)
-        }
-        None => ctx.collect_imported_types_from_path(source, filename, is_ts),
+        croquis
+            .macros
+            .add_prop(vize_croquis::macros::PropDefinition {
+                name: prop.name,
+                prop_type: prop.prop_type,
+                required: !prop.optional,
+                default_value: None,
+            });
     }
 }

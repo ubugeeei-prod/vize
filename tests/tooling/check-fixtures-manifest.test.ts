@@ -54,6 +54,7 @@ const PHASE_FILES_BEFORE_SUPERVISION = [
   "snapshots/check/vue-router-formatter-oracle.ts",
   "snapshots/check/pinia-generic-store-oracle.ts",
   "snapshots/check/typescript-project-references-oracle.ts",
+  "snapshots/check/pnpm-workspace-route-oracle.ts",
   "snapshots/check/vue-router-dmts-oracle.ts",
   "snapshots/check/element-plus-slot-oracle.ts",
   "snapshots/check/nuxt-ui-ambient-oracle.ts",
@@ -112,7 +113,7 @@ test("the phase manifest carries every fixture the shell string ran, in order", 
     checkFixturePhases.map((phase) => phase.file),
     PHASE_FILES_BEFORE_SUPERVISION,
   );
-  assert.equal(checkFixturePhases.length, 38);
+  assert.equal(checkFixturePhases.length, 39);
 });
 
 test("every phase has a unique id and a file that exists", () => {

@@ -1,5 +1,8 @@
 //! Importer-scoped package topology inside Canon's virtual project.
 
+mod workspace_dependencies;
+use workspace_dependencies::WorkspaceShadowPlan;
+
 use std::path::{Path, PathBuf};
 
 use sha2::{Digest, Sha256};
@@ -15,6 +18,8 @@ use super::build::mirrored_virtual_path;
 pub(super) struct PackageShadowTopology {
     pub(super) files: FxHashMap<PathBuf, PathBuf>,
     pub(super) manifests: FxHashMap<PathBuf, PathBuf>,
+    pub(super) aliases: FxHashMap<PathBuf, PathBuf>,
+    pub(super) install_roots: FxHashMap<PathBuf, PathBuf>,
 }
 
 impl VirtualProject {
@@ -32,18 +37,23 @@ impl VirtualProject {
         }
 
         self.refresh_package_shadow_scopes();
+        let plan = self.workspace_shadow_plan();
         let mut dirty = std::mem::take(&mut self.package_shadow_dirty_keys)
             .into_iter()
             .collect::<Vec<_>>();
         dirty.sort();
         self.incremental_shadow_bindings_rebuilt += dirty.len();
         for key in dirty {
-            self.refresh_package_shadow(&key)?;
+            self.refresh_package_shadow(&key, &plan)?;
         }
         Ok(())
     }
 
-    fn refresh_package_shadow(&mut self, key: &PackageRouteKey) -> CorsaResult<()> {
+    fn refresh_package_shadow(
+        &mut self,
+        key: &PackageRouteKey,
+        plan: &WorkspaceShadowPlan,
+    ) -> CorsaResult<()> {
         self.remove_package_shadow_owner(key);
         let Some(binding) = self.package_routes.get(key).cloned() else {
             return Ok(());
@@ -73,6 +83,7 @@ impl VirtualProject {
                 &canonical_root,
                 &mut FxHashSet::default(),
                 &mut topology,
+                plan,
             );
         }
 
@@ -85,6 +96,11 @@ impl VirtualProject {
                     &self.virtual_root,
                     &route.manifest_path,
                 )]
+            } else if let Some(root) = plan.selected_install_shadow(self, &binding) {
+                topology
+                    .install_roots
+                    .insert(root.clone(), route.manifest_path.clone());
+                vec![root]
             } else if let (Some(package_name), Some(importer_dir)) = (
                 route.package_name.as_deref(),
                 importer_virtual_path.parent(),
@@ -103,6 +119,7 @@ impl VirtualProject {
                     &shadow_root,
                     &mut FxHashSet::default(),
                     &mut topology,
+                    plan,
                 );
             }
         }
@@ -132,23 +149,7 @@ impl VirtualProject {
             })
             .map(|(key, _)| key.clone())
             .collect::<Vec<_>>();
-        self.package_shadow_dirty_keys.extend(keys);
-    }
-
-    fn private_dependencies_for(&self, manifest: &Path) -> Vec<crate::PackageRoute> {
-        let mut routes = self
-            .package_route_manifests
-            .get(manifest)
-            .into_iter()
-            .flatten()
-            .filter_map(|key| self.package_routes.get(key))
-            .filter(|binding| binding.specifier.starts_with('#'))
-            .filter_map(|binding| binding.route.as_ref())
-            .flat_map(|route| route.nested_routes.iter().cloned())
-            .collect::<Vec<_>>();
-        routes.sort_by(|left, right| left.manifest_path.cmp(&right.manifest_path));
-        routes.dedup();
-        routes
+        self.mark_package_shadow_dependents(keys);
     }
 
     fn collect_route_shadow_topology(
@@ -157,6 +158,7 @@ impl VirtualProject {
         shadow_root: &Path,
         ancestors: &mut FxHashSet<PathBuf>,
         topology: &mut PackageShadowTopology,
+        plan: &WorkspaceShadowPlan,
     ) {
         if !ancestors.insert(route.manifest_path.clone()) {
             return;
@@ -181,8 +183,10 @@ impl VirtualProject {
                 &shadow_root.join("node_modules").join(package_name),
                 ancestors,
                 topology,
+                plan,
             );
         }
+        self.collect_workspace_dependency_shadows(route, shadow_root, ancestors, topology, plan);
         ancestors.remove(&route.manifest_path);
     }
 

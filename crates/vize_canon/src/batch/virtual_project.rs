@@ -70,6 +70,7 @@ pub(crate) use mapping::MaterializedSourceMappingKind;
 mod materialize;
 mod materialize_delta;
 mod materialize_links;
+mod workspace_aliases;
 pub(crate) use materialize_delta::{
     IncrementalMaterialization, MaterializedFileDelta, MaterializedFileSnapshot,
 };
@@ -234,8 +235,8 @@ pub struct VirtualProject {
 
     /// Shadow package.json -> original package.json. Manifests are copied raw.
     package_shadow_manifests: FxHashMap<PathBuf, PathBuf>,
-    package_shadow_artifacts:
-        FxHashMap<crate::package_route::PackageRouteKey, package_shadow::PackageShadowTopology>,
+    package_shadow_artifacts: package_shadow_owners::PackageShadowArtifacts,
+    retired_package_shadow_paths: FxHashSet<PathBuf>,
     package_shadow_file_owners: FxHashMap<PathBuf, PackageShadowOwners>,
     package_shadow_manifest_owners: FxHashMap<PathBuf, PackageShadowOwners>,
     package_shadow_source_paths: FxHashMap<PathBuf, FxHashSet<PathBuf>>,
@@ -261,7 +262,7 @@ pub struct VirtualProject {
     materialized_package_links: FxHashMap<PathBuf, PathBuf>,
     materialized_package_link_scopes: FxHashMap<PathBuf, FxHashMap<PathBuf, PathBuf>>,
     materialized_package_link_owners: FxHashMap<PathBuf, FxHashMap<PathBuf, PathBuf>>,
-    package_link_scope_files: FxHashMap<PathBuf, FxHashSet<PathBuf>>,
+    package_link_scope_files: FxHashMap<PathBuf, FxHashMap<PathBuf, usize>>,
     package_link_scope_targets: FxHashMap<PathBuf, FxHashMap<PathBuf, usize>>,
     package_shadow_link_scopes:
         FxHashMap<crate::package_route::PackageRouteKey, Vec<(PathBuf, PathBuf)>>,

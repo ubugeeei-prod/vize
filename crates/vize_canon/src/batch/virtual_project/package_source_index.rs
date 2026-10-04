@@ -1,10 +1,105 @@
 //! Physical package-root -> generated source topology index.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
+
+use vize_carton::{FxHashMap, FxHashSet};
+
+use crate::package_route::PackageRouteKey;
 
 use super::VirtualProject;
 
+type PackageSources = FxHashMap<PathBuf, (PathBuf, PathBuf)>;
+
 impl VirtualProject {
+    pub(crate) fn insert_package_route_binding(&mut self, binding: crate::PackageRouteBinding) {
+        let key = binding.key();
+        let retained = self.take_rebound_package_sources(&FxHashSet::from_iter([binding.key()]));
+        self.insert_route_binding_inner(binding);
+        self.restore_rebound_package_sources(retained);
+        self.mark_package_shadow_dependents([key]);
+    }
+
+    pub(crate) fn remove_package_route_binding(
+        &mut self,
+        key: &PackageRouteKey,
+    ) -> Option<crate::PackageRouteBinding> {
+        self.mark_package_shadow_dependents([key.clone()]);
+        self.remove_route_binding_inner(key)
+    }
+
+    pub(crate) fn reconcile_package_routes_for_importers(&mut self, changed: &[PathBuf]) {
+        let changed = changed
+            .iter()
+            .map(|path| {
+                let absolute = if path.is_absolute() {
+                    path.clone()
+                } else {
+                    self.project_root.join(path)
+                };
+                vize_carton::path::canonicalize_non_verbatim(&absolute)
+            })
+            .collect::<FxHashSet<_>>();
+        let keys = changed
+            .iter()
+            .flat_map(|importer| {
+                self.package_route_importers
+                    .get(importer)
+                    .into_iter()
+                    .flatten()
+            })
+            .cloned()
+            .collect();
+        let retained = self.take_rebound_package_sources(&keys);
+        self.reconcile_package_routes_for_importers_inner(&changed);
+        self.restore_rebound_package_sources(retained);
+    }
+
+    // Route-owned entry points are only a subset of a package's registered
+    // relative sources. Keep that bounded topology across an atomic rebind
+    // when removing its final owner would otherwise discard the whole index.
+    fn take_rebound_package_sources(
+        &mut self,
+        keys: &FxHashSet<PackageRouteKey>,
+    ) -> FxHashMap<PathBuf, PackageSources> {
+        let roots = keys
+            .iter()
+            .filter_map(|key| self.package_routes.get(key)?.route.as_ref())
+            .flat_map(crate::PackageRoute::all_routes)
+            .map(|route| vize_carton::path::canonicalize_non_verbatim(&route.package_root))
+            .filter(|root| {
+                self.package_route_roots
+                    .get(root)
+                    .is_some_and(|owners| owners.iter().all(|owner| keys.contains(owner)))
+            })
+            .collect::<FxHashSet<_>>();
+        roots
+            .into_iter()
+            .filter_map(|root| {
+                self.package_source_index
+                    .remove(&root)
+                    .map(|sources| (root, sources))
+            })
+            .collect()
+    }
+
+    fn restore_rebound_package_sources(&mut self, retained: FxHashMap<PathBuf, PackageSources>) {
+        for (root, sources) in retained {
+            let Some(owners) = self.package_route_roots.get(&root) else {
+                continue;
+            };
+            let live_sources = sources.into_iter().filter(|(source, (_, virtual_path))| {
+                self.original_index.get(source) == Some(virtual_path)
+                    && self.virtual_files.contains_key(virtual_path)
+            });
+            self.package_source_index
+                .entry(root)
+                .or_default()
+                .extend(live_sources);
+            let owners = owners.iter().cloned().collect::<Vec<_>>();
+            self.mark_package_shadow_dependents(owners);
+        }
+    }
+
     pub(super) fn index_package_source(&mut self, source: &Path, virtual_path: &Path) {
         let source = vize_carton::path::canonicalize_non_verbatim(source);
         let roots = source
@@ -28,7 +123,8 @@ impl VirtualProject {
                 && self.package_shadows_initialized
                 && let Some(keys) = self.package_route_roots.get(&root)
             {
-                self.package_shadow_dirty_keys.extend(keys.iter().cloned());
+                let keys = keys.iter().cloned().collect::<Vec<_>>();
+                self.mark_package_shadow_dependents(keys);
             }
         }
     }
@@ -43,7 +139,8 @@ impl VirtualProject {
                 && self.package_shadows_initialized
                 && let Some(keys) = self.package_route_roots.get(ancestor)
             {
-                self.package_shadow_dirty_keys.extend(keys.iter().cloned());
+                let keys = keys.iter().cloned().collect::<Vec<_>>();
+                self.mark_package_shadow_dependents(keys);
             }
         }
     }

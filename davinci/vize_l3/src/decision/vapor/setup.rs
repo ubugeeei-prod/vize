@@ -47,6 +47,12 @@ impl<'view, 'owner, 'arena> NativeSelectedSetupVaporAnalysis<'view, 'owner, 'are
         self.setup.file()
     }
     #[must_use]
+    pub fn original_attributes(
+        &self,
+    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+        self.analysis.original_attributes()
+    }
+    #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
         self.file().artifact()
     }

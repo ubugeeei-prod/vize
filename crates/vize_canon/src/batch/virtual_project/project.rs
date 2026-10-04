@@ -57,6 +57,7 @@ impl VirtualProject {
             package_shadow_files: FxHashMap::default(),
             package_shadow_manifests: FxHashMap::default(),
             package_shadow_artifacts: FxHashMap::default(),
+            retired_package_shadow_paths: FxHashSet::default(),
             package_shadow_file_owners: FxHashMap::default(),
             package_shadow_manifest_owners: FxHashMap::default(),
             package_shadow_source_paths: FxHashMap::default(),

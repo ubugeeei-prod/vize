@@ -75,6 +75,13 @@ impl<'owner, 'arena> NativeFileAnalysis<'owner, 'arena> {
     }
 
     #[must_use]
+    pub fn original_attributes(
+        &self,
+    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+        self.analysis.original_attributes()
+    }
+
+    #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
         self.file.artifact()
     }
@@ -136,4 +143,17 @@ pub(super) fn matches_expression(
                 _ => false,
             }
     })
+}
+
+// Called only after the real selected template entry derives its own File.
+pub(in crate::decision) fn build_original_file_decisions<'owner, 'arena>(
+    file: &'owner FileArtifact<'arena>,
+) -> Result<NativeFileAnalysis<'owner, 'arena>, DecisionBuildError> {
+    let analysis = crate::decision::build::build_with_original(
+        file,
+        TargetPolicy::Dom,
+        &crate::decision::dom::LiteralExpressions,
+        &crate::decision::dom::vue::policy::NoReads,
+    )?;
+    Ok(NativeFileAnalysis { file, analysis })
 }

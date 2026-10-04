@@ -1,0 +1,1 @@
+<p>x<i v-if="a">1</i> <b v-else-if="b">2</b> <u v-else>3</u>y</p>

@@ -11,6 +11,8 @@ mod parse;
 #[cfg(test)]
 mod scoped_props_tests;
 #[cfg(test)]
+mod snapshot_cache_tests;
+#[cfg(test)]
 mod tests;
 #[cfg(test)]
 mod with_defaults_tests;
@@ -29,6 +31,7 @@ use super::{ScriptCompileContext, TypeSourceSnapshot};
 const MAX_MODULES: usize = 512;
 type ModuleSource = (Arc<str>, bool);
 type PendingModule = (PathBuf, Option<ModuleSource>);
+pub(super) type ParsedTypeModule = (TypeModule, FxHashSet<vize_carton::CompactString>);
 
 impl ScriptCompileContext {
     /// Retain real module/export identities separately from the compatibility
@@ -83,17 +86,17 @@ impl ScriptCompileContext {
                 world.modules.insert(identity, TypeModule::default());
                 continue;
             }
-            let source = source.or_else(|| read_module_source(&path, sources));
-            let Some((source, is_tsx)) = source else {
+            // Root text belongs to this caller, including unsaved buffers and
+            // combined normal/setup scripts. Never reuse it by path. Only
+            // immutable snapshot dependencies share their unresolved parse.
+            let parsed = source.map_or_else(
+                || read_dependency_module(&path, sources),
+                |(source, is_tsx)| Some(parse_source(&source, is_tsx)),
+            );
+            let Some((mut module, needed_imports)) = parsed else {
                 world.modules.insert(identity, TypeModule::default());
                 continue;
             };
-            let source_type = if is_tsx {
-                SourceType::tsx()
-            } else {
-                SourceType::ts()
-            };
-            let (mut module, needed_imports) = parse::parse_module(&source, source_type);
             for (local, import) in &mut module.imports {
                 resolve_target(
                     &mut import.target,
@@ -128,6 +131,32 @@ impl ScriptCompileContext {
         }
         world
     }
+}
+
+fn parse_source(source: &str, is_tsx: bool) -> ParsedTypeModule {
+    let source_type = if is_tsx {
+        SourceType::tsx()
+    } else {
+        SourceType::ts()
+    };
+    parse::parse_module(source, source_type)
+}
+
+fn read_dependency_module(path: &Path, sources: &TypeSourceSnapshot) -> Option<ParsedTypeModule> {
+    // Single-flight per dependency, without holding the map lock while an
+    // unrelated dependency is read or parsed by another publication.
+    let entry = sources
+        .modules
+        .lock()
+        .ok()?
+        .entry(path.to_path_buf())
+        .or_default()
+        .clone();
+    entry
+        .get_or_init(|| {
+            read_module_source(path, sources).map(|(source, is_tsx)| parse_source(&source, is_tsx))
+        })
+        .clone()
 }
 
 fn resolve_target(

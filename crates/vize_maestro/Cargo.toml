@@ -79,6 +79,10 @@ vize_l2.workspace = true
 vize_incremental.workspace = true
 vize_musea.workspace = true
 
+[target.'cfg(unix)'.dependencies]
+# Anchored no-follow descriptor observations; no new dependency version.
+libc.workspace = true
+
 [dev-dependencies]
 insta.workspace = true
 sha2.workspace = true

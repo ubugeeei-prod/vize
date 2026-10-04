@@ -9,6 +9,8 @@ pub(crate) mod void;
 #[cfg(test)]
 mod router_extension_tests;
 #[cfg(test)]
+mod router_param_parser_tests;
+#[cfg(test)]
 mod router_project_tests;
 
 use tower_lsp::lsp_types::{

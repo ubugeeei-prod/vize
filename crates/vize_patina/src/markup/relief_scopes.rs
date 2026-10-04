@@ -5,7 +5,7 @@
 //! flow is scopes, not attributes. This module groups a raw sibling list the
 //! way the L1→L2 lowering does (`vize_l1_to_l2::lower::structural`) — the
 //! same chain scan, the same gap rule (whitespace-only text and comments
-//! between branches are consumed; kept whitespace re-enters *after* the
+//! between branches are consumed; the facade visits kept text *after* the
 //! scope), the same `v-for` admission (a blank value builds no list) — so a
 //! rule observes one document whichever backend projected it.
 
@@ -119,7 +119,7 @@ impl<'a> ReliefChain<'a> {
     }
 
     /// Whitespace the chain consumed as gaps but whitespace condensing kept;
-    /// the lowering re-emits it after the scope.
+    /// the authored facade visits it after the scope.
     pub(super) fn walk_kept_gaps(&self, visitor: &mut impl FnMut(MarkupText<'a>)) {
         for child in self.children.get(self.start..self.end).unwrap_or_default() {
             if let TemplateChildNode::Text(text) = child {

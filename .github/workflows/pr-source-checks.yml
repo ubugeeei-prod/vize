@@ -1,8 +1,6 @@
 name: PR source checks
-on:
-  workflow_call:
-permissions:
-  contents: read
+on: { workflow_call: null }
+permissions: { contents: read }
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -26,6 +24,7 @@ jobs:
       native-vapor-capture: ${{ steps.tooling-plan.outputs.native-vapor-capture }}
       native-setup-capture: ${{ steps.tooling-plan.outputs.native-setup-capture }}
       native-ssr-capture: ${{ steps.tooling-plan.outputs.native-ssr-capture }}
+      native-attribute-values-7502-capture: ${{ steps.tooling-plan.outputs.native-attribute-values-7502-capture }}
       playground: ${{ steps.plan.outputs.playground }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -74,6 +73,7 @@ jobs:
         run: node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier "$TOOLING_TIER" --output "$RUNNER_TEMP/tooling-plan.json" --github-output
   pr-rust-source:
     name: PR Rust Clippy, tests, and fixtures
+    permissions: { contents: read, actions: read }
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     needs: pr-source-plan
     uses: ./.github/workflows/pr-rust-checks.yml
@@ -127,7 +127,6 @@ jobs:
       - name: Check UI package conformance in merge queue
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.js == 'true' }}
         run: vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check
-
   pr-tooling-scripts:
     name: PR tooling scripts (${{ matrix.index }}/${{ matrix.total }})
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -204,6 +203,9 @@ jobs:
       - name: Capture original native Vapor modules and runtime
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-vapor-capture == 'true')) }}
         uses: ./.github/actions/test-native-vapor
+      - name: Capture original attribute values across native targets
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-attribute-values-7502-capture == 'true')) }}
+        uses: ./.github/actions/test-native-attribute-values-7502
       - name: Test selected PR tooling scripts
         if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
         env:
@@ -215,9 +217,9 @@ jobs:
       - name: Execute original selected-template DOM modules
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
         uses: ./.github/actions/test-native-selected-template
-      - name: Join original Vue2 interpolation Docs to pinned whole goldens
+      - name: Join original historical Vue interpolation Docs to pinned whole goldens
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
-        uses: ./.github/actions/test-native-vue2-text-document
+        uses: ./.github/actions/test-native-historical-sfc-documents
         with:
           comparison-base: ${{ needs.pr-source-plan.outputs.comparison-base }}
       - name: Test tooling scripts
@@ -233,7 +235,6 @@ jobs:
         if: ${{ always() && needs.pr-source-plan.outputs.tooling == 'true' }}
         with:
           shard: ${{ matrix.index }}
-
   pr-playground-test:
     name: PR playground browser tests
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -330,7 +331,6 @@ jobs:
       - name: Fail if VRT failed
         if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
         run: exit 1
-
   source-report:
     name: PR source report
     if: ${{ always() }}

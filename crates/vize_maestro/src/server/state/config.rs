@@ -98,15 +98,22 @@ impl ServerState {
         }
     }
 
-    fn apply_type_checker_config(&self, config: TypeCheckerConfig, timeout_ms: u64, source: &str) {
-        *self.type_checker_config.write() = (config, timeout_ms);
+    fn apply_type_checker_config(&self, config: TypeCheckerConfig, timeout_ms: u64, source: &Path) {
+        #[cfg(feature = "experimental-source-navigation")]
+        self.update_module_link_context(Some(source.to_path_buf()), || {
+            *self.type_checker_config.write() = (config, timeout_ms);
+        });
+        #[cfg(not(feature = "experimental-source-navigation"))]
+        {
+            *self.type_checker_config.write() = (config, timeout_ms);
+        }
         self.invalidate_component_interfaces();
         // The tsconfig and runtime this selects decide which project the
         // overlays are layered onto, so a reload retargets them even though no
         // document changed (#3442).
         #[cfg(feature = "native")]
         self.invalidate_corsa_overlays();
-        tracing::info!("Loaded type checker config from {}", source);
+        tracing::info!("Loaded type checker config from {}", source.display());
     }
 
     fn apply_global_types_config(&self, config: GlobalTypesConfig, source: &str) {
@@ -218,7 +225,11 @@ impl ServerState {
             self.apply_linter_config(loaded.linter, &source);
             *self.linter_rule_options.write() = loaded.lint_rule_options;
             self.apply_global_types_config(config.global_types, &source);
-            self.apply_type_checker_config(config.type_checker, loaded.request_timeout_ms, &source);
+            self.apply_type_checker_config(
+                config.type_checker,
+                loaded.request_timeout_ms,
+                &source_path,
+            );
             self.apply_names_configuration(
                 loaded.features,
                 Self::lsp_config_section_from_file(
@@ -240,7 +251,11 @@ impl ServerState {
             self.apply_linter_config(loaded.linter, &source);
             *self.linter_rule_options.write() = loaded.lint_rule_options;
             self.apply_global_types_config(config.global_types, &source);
-            self.apply_type_checker_config(config.type_checker, loaded.request_timeout_ms, &source);
+            self.apply_type_checker_config(
+                config.type_checker,
+                loaded.request_timeout_ms,
+                &source_path,
+            );
             self.apply_names_configuration(
                 loaded.features,
                 Self::lsp_config_section_from_file(

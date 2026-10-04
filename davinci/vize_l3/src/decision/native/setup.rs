@@ -61,6 +61,12 @@ impl<'view, 'owner, 'arena> NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena
         self.template.owner()
     }
     #[must_use]
+    pub fn original_attributes(
+        &self,
+    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+        self.analysis.original_attributes()
+    }
+    #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
         self.file().artifact()
     }
@@ -108,7 +114,7 @@ impl<'owner, 'arena> FileReads<'owner, 'arena> for SelectedReads<'_, 'owner, 'ar
 
 /// No external File/template, script role, completeness flag or runtime policy.
 /// The existing Enter visit joins each original operand and immutable occurrence;
-/// no AST walk, lookup or new resolution occurs. Only the bounded mutable
+/// no AST walk, lookup or new resolution occurs. Only the bounded primitive
 /// original-root For/static-or-current-value-singleton family receives separate
 /// runtime eligibility; other callback body families retain typed refusals.
 pub fn build_native_selected_setup_dom_decisions<'view, 'owner, 'arena>(
@@ -122,11 +128,10 @@ pub fn build_native_selected_setup_dom_decisions<'view, 'owner, 'arena>(
     if !core::ptr::eq(file, setup.file()) {
         return Err(DecisionBuildError::IncompleteFile);
     }
-    let analysis = build::build_with(
-        file.artifact(),
+    let analysis = build::build_with_original(
+        file,
         TargetPolicy::Dom,
         &LiteralExpressions,
-        Some(file),
         &SelectedReads(setup),
     )?;
     Ok(NativeSelectedSetupDomAnalysis {

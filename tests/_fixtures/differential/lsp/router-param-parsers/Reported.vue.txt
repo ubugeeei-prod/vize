@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import { useRoute } from "vue-router";
+
+const route = useRoute("/users/[id=int]");
+console.log(route.params.id);
+</script>

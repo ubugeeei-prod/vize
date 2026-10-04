@@ -50,7 +50,15 @@ impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
         }
     }
 
-    pub fn enter(&mut self, node: NodeId, op: &'owner Op<'arena>, root: bool) {
+    pub fn enter(
+        &mut self,
+        node: NodeId,
+        op: &'owner Op<'arena>,
+        root: bool,
+        original_values: &mut Option<
+            crate::decision::attribute_value::OriginalAttributeCursor<'owner, 'arena>,
+        >,
+    ) {
         if root {
             if self.setup.is_some() {
                 let current = match op {
@@ -87,7 +95,7 @@ impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
         let (element, void) = match op {
             Op::Element(element) => {
                 let void = is_void(element.tag);
-                self.element(node, element, void);
+                self.element(node, element, void, original_values);
                 self.facts.parts.push(SsrPart::Open {
                     node,
                     element,
@@ -140,7 +148,15 @@ impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
         self.frames.push((node, element, void));
     }
 
-    fn element(&mut self, node: NodeId, element: &ElementOp<'arena>, void: bool) {
+    fn element(
+        &mut self,
+        node: NodeId,
+        element: &'owner ElementOp<'arena>,
+        void: bool,
+        original_values: &mut Option<
+            crate::decision::attribute_value::OriginalAttributeCursor<'owner, 'arena>,
+        >,
+    ) {
         if element.namespace != Namespace::Html {
             self.reject(node, element.span, SsrUnsupported::Namespace);
         }
@@ -160,7 +176,8 @@ impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
             self.reject(node, element.span, SsrUnsupported::VoidChildren);
         }
         let mut names = Vec::new();
-        for attribute in &element.attributes {
+        for (slot, attribute) in element.attributes.iter().enumerate() {
+            crate::decision::attribute_value::observe(original_values, node, element, slot);
             let name = attribute.name;
             if name.is_empty()
                 || !name.bytes().all(|byte| {

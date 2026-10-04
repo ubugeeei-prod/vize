@@ -356,9 +356,9 @@ pub(crate) fn transform_v_if_with_directive<'a>(
             ctx.parent = saved_parent;
             ctx.grandparent = saved_grandparent;
             ctx.child_index = saved_child_index;
-
-            // Remove the placeholder we left
+            // Defer removing the placeholder and skipped branch whitespace.
             ctx.remove_node();
+            ctx.node_removed_from = Some(if_idx + 1);
         } else {
             ctx.on_error(ErrorCode::VElseNoAdjacentIf, None);
         }

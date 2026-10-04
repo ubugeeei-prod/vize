@@ -54,6 +54,7 @@ impl<'a> Builder<'a> {
             .pop()
             .ok_or(ArtifactError::UnfinishedOwner { node })?;
         self.close(frame)
+            .original_for
             .ok_or(ArtifactError::UnfinishedOwner { node })
     }
 }

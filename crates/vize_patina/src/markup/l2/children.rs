@@ -9,7 +9,7 @@
 //! `ui.if` / `ui.for` stays one [`MarkupNode::If`] / [`MarkupNode::For`]. A
 //! merged text/interpolation run is split back into its recorded parts.
 
-use super::surface::{child_start, siblings_at, token_range};
+use super::surface::{child_start, siblings_with_pre, token_range};
 use super::walk::{L2Step, scope_region};
 use super::{L2ElementOp, L2Markup};
 use crate::ir::ByteRange;
@@ -41,8 +41,7 @@ pub(in crate::markup) fn walk_nodes<'a>(
             Op::Interpolation(interpolation) => walk_interpolation(doc, interpolation, visitor),
             Op::Comment(comment) => visitor(MarkupNode::Comment(l2_range(comment.span))),
             Op::If(if_op) if doc.is_template() => {
-                index = walk_chain(doc, ops, index, if_op, visitor);
-                continue;
+                walk_chain(doc, if_op, visitor);
             }
             Op::For(for_op) if doc.is_template() => {
                 match scope_carrier(doc, for_op.span, &for_op.region.ops) {
@@ -87,39 +86,22 @@ pub(in crate::markup) fn scope_carrier<'a>(
     }
 }
 
-/// A template `ui.if` as authored: each branch carrier, with the gap comments
-/// (read off L1) and kept gap whitespace (the text ops the lowering re-emits
-/// right after the scope) back in their authored places. Returns the index
-/// past the consumed gap texts.
+/// A template `ui.if` as authored: branch carriers, comments and parse-time
+/// gap whitespace read off L1. Compiler regions drop gaps; the lint facade
+/// retains its original authored view and the lowering's whitespace policy.
 fn walk_chain<'a>(
     doc: &'a L2Markup<'a>,
-    ops: &'a [Op<'a>],
-    index: usize,
     if_op: &'a IfOp<'a>,
     visitor: &mut dyn FnMut(MarkupNode<'a>),
-) -> usize {
-    let inside = |span: Span| span.start >= if_op.span.start && span.end <= if_op.span.end;
-    let texts_end = index
-        + 1
-        + ops
-            .get(index + 1..)
-            .unwrap_or_default()
-            .iter()
-            .take_while(|op| matches!(op, Op::Text(text) if inside(text.span)))
-            .count();
-    let mut texts = ops
-        .get(index + 1..texts_end)
-        .unwrap_or_default()
-        .iter()
-        .peekable();
-    let siblings = doc
+) {
+    let (siblings, in_pre) = doc
         .surface
-        .and_then(|tree| siblings_at(tree, if_op.span.start))
-        .unwrap_or(&[]);
+        .and_then(|tree| siblings_with_pre(tree, if_op.span.start))
+        .unwrap_or((&[], false));
     let source = doc.source;
-    let mut comments = siblings
+    let mut gaps = siblings
         .iter()
-        .filter(|child| matches!(child, SurfaceChild::Comment(_)))
+        .filter(|child| matches!(child, SurfaceChild::Comment(_) | SurfaceChild::Text(_)))
         .filter(|child| {
             let start = child_start(source, child);
             start > if_op.span.start && start < if_op.span.end
@@ -128,16 +110,8 @@ fn walk_chain<'a>(
     let mut branches = if_op.branches.iter().peekable();
     loop {
         let next_branch = branches.peek().map(|branch| branch.span.start);
-        let next_comment = comments.peek().map(|child| child_start(source, child));
-        let next_text = texts.peek().and_then(|op| match op {
-            Op::Text(text) => Some(text.span.start),
-            _ => None,
-        });
-        let Some(first) = [next_branch, next_comment, next_text]
-            .into_iter()
-            .flatten()
-            .min()
-        else {
+        let next_gap = gaps.peek().map(|child| child_start(source, child));
+        let Some(first) = [next_branch, next_gap].into_iter().flatten().min() else {
             break;
         };
         if next_branch == Some(first) {
@@ -146,15 +120,59 @@ fn walk_chain<'a>(
                 Some(carrier) => visitor(MarkupNode::Element(carrier)),
                 None => walk_nodes(doc, &branch.region.ops, visitor),
             }
-        } else if next_comment == Some(first) {
-            if let Some(SurfaceChild::Comment(token)) = comments.next() {
-                visitor(MarkupNode::Comment(token_range(source, token)));
+        } else {
+            match gaps.next() {
+                Some(SurfaceChild::Comment(token)) => {
+                    visitor(MarkupNode::Comment(token_range(source, token)));
+                }
+                Some(SurfaceChild::Text(token)) => {
+                    if let Some(allocator) = doc.allocator
+                        && let Some(content) =
+                            vize_l1_to_l2::lower::branch_gap_text(allocator, token.text, in_pre)
+                    {
+                        visitor(MarkupNode::Text(MarkupText::from_static(
+                            content,
+                            token_range(source, token),
+                        )));
+                    }
+                }
+                _ => {}
             }
-        } else if let Some(Op::Text(text)) = texts.next() {
-            visitor(MarkupNode::Text(text_node(doc, text)));
         }
     }
-    texts_end
+}
+
+/// Kept authored gap text follows the branch visits, matching the raw facade's
+/// text hook order even though the compiler region contains no gap text ops.
+pub(in crate::markup) fn walk_kept_gaps<'a>(
+    doc: &'a L2Markup<'a>,
+    if_op: &'a IfOp<'a>,
+    visitor: &mut impl FnMut(MarkupText<'a>),
+) {
+    let Some(allocator) = doc.allocator else {
+        return;
+    };
+    let Some((siblings, in_pre)) = doc
+        .surface
+        .and_then(|tree| siblings_with_pre(tree, if_op.span.start))
+    else {
+        return;
+    };
+    for child in siblings {
+        if let SurfaceChild::Text(token) = child {
+            let start = child_start(doc.source, child);
+            if start > if_op.span.start
+                && start < if_op.span.end
+                && let Some(content) =
+                    vize_l1_to_l2::lower::branch_gap_text(allocator, token.text, in_pre)
+            {
+                visitor(MarkupText::from_static(
+                    content,
+                    token_range(doc.source, token),
+                ));
+            }
+        }
+    }
 }
 
 /// Split a merged run back into the text and interpolation parts the

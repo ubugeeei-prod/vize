@@ -47,6 +47,8 @@ const assertionOnlyCheckTests = {
     'module-augmentation oracle asserts exact vue-tsc agreement on generated, project, and package `declare module "vue"` globals',
   "pinia-generic-store-oracle":
     "library patch oracle asserts generic store inference and dependency refresh behavior",
+  "pnpm-workspace-route-oracle":
+    "real workspace links assert complete ordered CLI vectors, typed events, source identities and repaired virtual TS",
   "template-ref-unwrap-oracle":
     "ref-unwrap oracle builds throwaway workspaces and asserts exact vue-tsc parity plus identical diagnostics for imported and auto-imported composables",
   "typescript-go-module-resolution-determinism":

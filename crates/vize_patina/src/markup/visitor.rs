@@ -146,6 +146,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                     for branch in if_op.branches.iter() {
                         self.visit_l2_step(doc, scope_region(doc, branch.span, &branch.region.ops));
                     }
+                    children::walk_kept_gaps(doc, if_op, &mut |text| self.text(text));
                 }
                 Op::For(for_op) => {
                     self.list(MarkupList::from_l2(for_op, doc));

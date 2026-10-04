@@ -73,23 +73,33 @@ fn compound_escaped_and_outer_handler_reads_never_gain_setup_target_authority() 
 }
 
 #[test]
-fn genuine_original_for_custody_is_retained_while_loop_emission_refuses() {
+fn genuine_original_constant_empty_for_retains_custody_and_emits_stable_module() {
     let arena = Allocator::default();
     let source =
         "<script setup>const items=1</script><template><button v-for='item in items'/></template>";
     let compiled = compile_native_selected_setup_sfc_dom(
         &arena,
         source,
-        NativeSelectedSfcDomOptions::default(),
+        NativeSelectedSfcDomOptions {
+            source_map: true,
+            filename: "OriginalForConstant雪🌸.vue",
+            ..NativeSelectedSfcDomOptions::default()
+        },
     );
     assert!(compiled.observation().admitted().is_some());
-    assert!(matches!(
-        compiled.result().err(),
-        Some(NativeSelectedSetupSfcDomError::Dom(DomError {
-            kind: DomErrorKind::Unsupported(DomUnsupported::Operation),
-            ..
-        }))
-    ));
+    let pack = super::original_for_constant::fixture::inherited_pack().unwrap();
+    let [expected] = pack.fixtures.as_slice() else {
+        panic!("exact original inherited control")
+    };
+    assert_eq!(expected.source, source);
+    let output = compiled.result().unwrap();
+    assert_eq!(output.code(), expected.expected_code);
+    let raw = output.source_map().unwrap();
+    assert_eq!(raw, expected.native_map_raw);
+    assert_eq!(
+        serde_json::from_str::<serde_json::Value>(raw).unwrap(),
+        expected.native_map
+    );
     let admitted = compiled.observation().admitted().unwrap();
     let file = admitted.setup().file();
     let vize_l2::op::Op::OriginalFor(original) = &file.artifact().root().ops[0] else {

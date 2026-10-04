@@ -137,22 +137,22 @@ void test("linter result contract rejects omitted rows, incomplete retries and i
   const contract = Buffer.from(
     JSON.stringify({
       schema: "vize.linter-history-observer",
-      version: 2,
+      version: 3,
       apis: ["--current-api", "--report", "--static-class"],
       preset: "Incremental",
       locale: "En",
       help: "Full",
-      native: "configured-bare-template",
+      native: "configured-template-and-sfc",
       nativeApis: NATIVE_APIS,
     }) + "\n",
   );
   const nativeContract = Buffer.from(
     JSON.stringify({
       schema: "vize.linter-native-observer",
-      version: 1,
+      version: 2,
       apis: NATIVE_APIS,
-      owner: "NativeLintComponent",
-      entry: "template",
+      owners: { template: "NativeLintComponent", sfc: "NativeSfcLintOwner" },
+      entries: ["template", "sfc"],
       wholeOutput: "Case+Observation",
       fallback: false,
     }) + "\n",
@@ -262,7 +262,7 @@ void test("native linter probe rejects old or invented whole-product capability"
     const bytes = Buffer.from(
       JSON.stringify({
         schema: "vize.linter-history-observer",
-        version: 2,
+        version: 3,
         apis: ["--current-api", "--report", "--static-class"],
         preset: "Incremental",
         locale: "En",

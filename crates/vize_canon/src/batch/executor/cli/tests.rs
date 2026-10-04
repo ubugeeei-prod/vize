@@ -1,5 +1,6 @@
 mod checkers_support;
 mod keyof_scope;
+mod shared_leaves;
 use super::{is_cli_diagnostic_line, is_global_diagnostic_line, parse_cli_diagnostics};
 use crate::batch::VirtualProject;
 use crate::batch::executor::diagnostics::DiagnosticMapper;
@@ -11,7 +12,6 @@ use std::{
 use vize_carton::cstr;
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
-
     let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("target")

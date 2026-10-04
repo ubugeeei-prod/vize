@@ -38,16 +38,18 @@ pub use directive::{
 pub use grammar::{MarkupGrammar, Vue};
 pub use lex::{Delimiters, LexOptions, Lexer};
 pub use native::{
-    NativeAttribute, NativeAttributeExpression, NativeAttributeExpressionFailure,
-    NativeAttributeExpressionView, NativeAttributeForHead, NativeAttributeForHeadFailure,
-    NativeAttributeForHeadView, NativeAttributeHandler, NativeAttributeHandlerFailure,
-    NativeAttributeHandlerView, NativeAttributeHead, NativeAttributeOperandError,
-    NativeAttributeValue, NativeAttributeValueFailure, NativeAttributeValueView, NativeAttributes,
-    NativeChild, NativeChildren, NativeComponent, NativeConditionKind, NativeElement,
-    NativeElementClosingName, NativeElementNameRefusal, NativeElementNames,
-    NativeInterpolationError, NativeInterpolationFailure, NativeInterpolationOperand,
-    NativeInterpolationView, NativeRootText, NativeRootTextError, NativeRootTextProfile,
-    NativeRootTextView, NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar,
+    NativeAttribute, NativeAttributeBindingExpression, NativeAttributeBindingExpressionView,
+    NativeAttributeExpression, NativeAttributeExpressionFailure, NativeAttributeExpressionView,
+    NativeAttributeForHead, NativeAttributeForHeadFailure, NativeAttributeForHeadView,
+    NativeAttributeHandler, NativeAttributeHandlerFailure, NativeAttributeHandlerView,
+    NativeAttributeHead, NativeAttributeOperandError, NativeAttributeValue,
+    NativeAttributeValueFailure, NativeAttributeValueView, NativeAttributes, NativeChild,
+    NativeChildren, NativeComponent, NativeConditionKind, NativeElement, NativeElementClosingName,
+    NativeElementNameRefusal, NativeElementNames, NativeInterpolationError,
+    NativeInterpolationFailure, NativeInterpolationOperand, NativeInterpolationView,
+    NativeRootText, NativeRootTextError, NativeRootTextProfile, NativeRootTextView,
+    NativeScriptSelection, NativeStaticBindingHead, NativeTemplateComponent, NativeTemplateGrammar,
+    NativeTextValue, NativeTextValueError, NativeTextValueFailure, NativeTextValueView,
 };
 pub use parse::{
     ComponentParse, ComponentSourceError, DirectiveAdmission, parse_component,

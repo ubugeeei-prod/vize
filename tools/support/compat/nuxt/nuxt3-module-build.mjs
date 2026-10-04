@@ -7,12 +7,14 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { prepareNuxtSourceBinding } from "./source-binding.mjs";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const fixture = path.join(root, "tools/support/compat/nuxt/fixtures/nuxt3-module-build");
 const artifacts = path.resolve(process.argv[2] ?? path.join(os.tmpdir(), "vize-nuxt3-build"));
 const requireTests = createRequire(path.join(root, "tests/package.json"));
 fs.mkdirSync(artifacts, { recursive: true });
+const sourceBinding = prepareNuxtSourceBinding(root, artifacts);
 
 for (const [name, version] of [
   ["nuxt", "3.19.3"],
@@ -46,13 +48,34 @@ let server;
 try {
   for (const name of [".nuxt", ".output"])
     fs.rmSync(path.join(fixture, name), { recursive: true, force: true });
+  // Nuxt replaces module-import exceptions with a generic installation error.
+  // Keep the original exception under the exact same source-binding environment.
+  const importLog = path.join(artifacts, "module-import.log");
+  const importFd = fs.openSync(importLog, "w");
+  let imported;
+  try {
+    imported = spawnSync(
+      process.execPath,
+      ["--input-type=module", "--eval", 'await import("@vizejs/nuxt")'],
+      {
+        cwd: fixture,
+        env: { ...sourceBinding.environment, NO_COLOR: "1" },
+        stdio: ["ignore", importFd, importFd],
+        timeout: 30_000,
+      },
+    );
+  } finally {
+    fs.closeSync(importFd);
+  }
+  assert.equal(imported.error, undefined);
+  assert.equal(imported.status, 0, `Source-bound Nuxt module import failed; see ${importLog}`);
   const buildLog = path.join(artifacts, "build.log");
   const buildFd = fs.openSync(buildLog, "w");
   let build;
   try {
     build = spawnSync(process.execPath, ["node_modules/nuxt/bin/nuxt.mjs", "build"], {
       cwd: fixture,
-      env: { ...process.env, NO_COLOR: "1" },
+      env: { ...sourceBinding.environment, NO_COLOR: "1" },
       stdio: ["ignore", buildFd, buildFd],
       timeout: 300_000,
     });
@@ -155,6 +178,7 @@ try {
         buildExit: build.status,
         routes: ["/", "/about"],
         hydratedInteraction: true,
+        sourceBinding: sourceBinding.verify(),
       },
       null,
       2,
