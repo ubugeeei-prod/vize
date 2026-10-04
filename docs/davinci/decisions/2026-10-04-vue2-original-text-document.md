@@ -147,7 +147,7 @@ source readiness only; the explicit law refinements above grant no execution
 credit. Root subsequently authorized private source only, after plan review.
 The frozen plan review grants only the explicitly authorized private source scope.
 Future source/full Actions, immutable all-104 caps, protected queue and actual
-merge remain required; release-flight restrictions remain in force. Historical
+merge remain required; the private source-review hold remains in force. Historical
 File/receiver, complete dialect grammar/registry, classic 2.7.16 ABI/runtime,
 versioned SFC, other dialects and default replacement remain explicit TODOs.
 
@@ -184,3 +184,16 @@ No native historical compiler, File, ABI, SFC/default or full grammar is added.
 Complete source/law review, then authorized exact Actions, all-104 protected
 acceptance and actual merge are still pending; release hold lift does not
 authorize publication of this privately held source.
+
+## Private source review and inventory correction
+
+The reused peer's complete read-only review of frozen `0c80ef034b` found no
+production, lifetime, law, independent-golden or capture-provenance blocker;
+it held that freeze only for the omitted owned Glyph consumer inventory.
+The unchanged canonical direct Node generator now adds fourteen genuine rows
+only to `formatter/vize_glyph.tsv`; its complete nineteen-file check passes,
+with every foreign shard, policy, AST visitor and pinned historical oracle
+unchanged. This is pure source preparation, not Rust or native-output execution.
+The corrected exact freeze still requires root and final peer source review
+before any build, dispatch, publication or queue. The original `0c80` omission
+and unexecuted laws remain explicit; no acceptance transfers from that freeze.
