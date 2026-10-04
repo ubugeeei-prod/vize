@@ -16,10 +16,13 @@ pub(super) fn permits_sharing(
             .unwrap_or(&file.content);
         if source.contains("<reference")
             || source.contains('\\')
+            || source.contains('&')
             || ["declare", "global", "namespace", "require"]
                 .iter()
                 .any(|syntax| source.contains(syntax))
         {
+            // Template entities can decode into module loads or declarations
+            // that an original-source lexical screen cannot prove harmless.
             return false;
         }
         if file

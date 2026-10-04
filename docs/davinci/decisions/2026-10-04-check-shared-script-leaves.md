@@ -70,14 +70,30 @@ resolution-mode override. This proves the backend context without filesystem
 lookups; nested/external contexts retain the prior plan. Comments/strings may
 conservatively decline an optimization. The legacy classifier is unchanged.
 
-The corrected local build passed 21 real-runtime cases: 84 complete ordered
+The earlier `e027dacb36` local build passed 21 real-runtime cases: 84 complete ordered
 checks across before/after and one/two servers plus 21 untimed profile probes.
-Seven partition tests and the separate duplicate-budget test passed. Scanner
+Seven partition tests and the separate duplicate-budget test passed at `e027dacb36`
+(the superseded matrix below). Scanner
 fixtures use leaf-types so the global keyword guard cannot mask operand branches.
 The three timed corpora, max/1T protocol, plants and all 104 ceilings remain
 unchanged. Corrected exact-head Actions and the renewed four-layer whole-CLI
 measurement must pass before ready/queue adoption, after the release owner lifts
-the publication queue freeze. Production source is frozen after this matrix.
+the publication queue freeze. Production source is frozen except for a concrete
+complete-report failure, as the entity case below demonstrates.
+
+The [entity-opacity successor decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5976594180)
+records a valid Vue template `{{ &#105;mport('leaf-types') }}` exposing another
+visibility hole in `e027dacb36`: numeric entity decoding creates a dynamic import
+in generated TS although the original-source screen sees no import keyword.
+The exact baseline report is clean; the superseded local build adds TS2304 for
+LeafGlobal in shared.ts. Admission now conservatively declines any original
+source containing an ampersand, including numeric/named entity syntax and safe
+false declines. The original default leaf fixture contains no ampersands.
+The new complete-report regression and independent partition test prove that
+the former connected plan preserves package globals. The successor local matrix
+passed 22 cases, 88 ordered checks and 22 untimed profile probes, plus nine
+partition/budget tests. The three timed corpora and all 104 ceilings are exact.
+Fresh final Actions and whole-Stack measurement supersede e027's proof.
 
 The historical [measured hold decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5976127642)
 preserves the [full paired receipt](../../../tools/benchmarks/results/typechecker-shared-script-leaves-cli-paired.json).

@@ -82,6 +82,13 @@ const CASES = [
     split: false,
   },
   {
+    id: "entity-template-package-global-augmentation",
+    leaf: "export const value: LeafGlobal = 1;",
+    extra: TEMPLATE_PACKAGE_SOURCES,
+    template: "<div>{{ n }} {{ &#105;mport('leaf-types') }}</div>",
+    split: false,
+  },
+  {
     id: "nested-vue-global-augmentation",
     leaf: "export const value: LeafGlobal = 1;",
     extra: NESTED_VUE_SOURCES,
@@ -157,8 +164,10 @@ export function checkLeafParity(directory, vuePackageDir, run) {
     const sources = { [fixture.file ?? "shared.ts"]: fixture.leaf, ...fixture.extra };
     for (let index = 0; index < 4; index++) {
       const nested = fixture.nestedVue && index === 0;
+      const template =
+        index === 0 ? (fixture.template ?? "<div>{{ n }}</div>") : "<div>{{ n }}</div>";
       sources[`${nested ? "sub/" : ""}Comp${index}.vue`] =
-        `<script setup lang="ts">import { value } from '${nested ? "../shared" : fixture.file === "shared.js" ? "./shared.js" : "./shared"}'; ${index === 0 ? (fixture.vueImport ?? "") : ""} const n = value;</script><template><div>{{ n }}</div></template>`;
+        `<script setup lang="ts">import { value } from '${nested ? "../shared" : fixture.file === "shared.js" ? "./shared.js" : "./shared"}'; ${index === 0 ? (fixture.vueImport ?? "") : ""} const n = value;</script><template>${template}</template>`;
     }
     sources["tsconfig.json"] = JSON.stringify({
       compilerOptions: {

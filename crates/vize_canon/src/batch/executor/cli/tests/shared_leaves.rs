@@ -195,6 +195,23 @@ fn template_and_uncertain_module_operands_keep_the_original_component_plan() {
 }
 
 #[test]
+fn encoded_template_loads_keep_the_original_component_plan() {
+    let dir = tempfile::tempdir().unwrap();
+    let project = project(
+        dir.path(),
+        "export const value: LeafGlobal = 1;",
+        &[(
+            "Comp0.vue",
+            "<script setup lang=\"ts\">import { value } from './shared'; const n = value;</script><template>{{ n }} {{ &#105;mport('leaf-types') }}</template>",
+        )],
+    );
+    assert!(
+        partition_virtual_files(&project, 2).shards.is_empty(),
+        "decoded template syntax can load globals missing from sibling programs"
+    );
+}
+
+#[test]
 fn nested_vue_loads_cannot_reuse_the_root_helpers_package_context() {
     let dir = tempfile::tempdir().unwrap();
     let mut project = project(dir.path(), "export const value = 1;", &[]);
