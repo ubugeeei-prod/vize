@@ -90,3 +90,19 @@ Vize, the native provider or the official Router plugin.
 Runtime execution and exact hosted source qualification remain pending.
 The existing global release/Fuzz admission hold applies. No speed gain or
 complete arbitrary-plugin contract is claimed by this fix.
+
+The provider is physically stored in the isolated workspace's
+`node_modules/.router-page-provider/package` and linked as `node_modules/vue-router`.
+Vize classifies physical package stores outside `node_modules` as workspace
+source packages; the first hosted replay of this oracle intentionally exposed
+all seven runtime JS families as checked workspace sources. Keep the original
+archive/export/declaration bytes and `checkJs`, rather than filter those results.
+The complete report root vector also includes the original configured
+`node_modules/vue-router/vue-router-auto-routes.d.mts` declaration before the
+unchanged authored include vector. This remains configured root metadata,
+not a native/transitive graph-closure claim.
+
+Only the original page and generated map are copied from the pinned playground.
+The selected builtin-int entry declares `userId: number` literally. The map
+retains references to unselected custom-parser sources that are not assembled
+here; these observations do not prove the complete upstream project graph.

@@ -42,7 +42,10 @@ export function preparePublishedProvider(fixture: PinnedFixtureWorkspace) {
     path.join(repoRoot, "target/ci/vize.differential-build.json"),
     path.join(capture, "vize.differential-build.json"),
   );
-  const destination = fixture.resolve("router-provider");
+  // Match an installed package's physical classification. A store outside
+  // node_modules is intentionally treated as an authored workspace package.
+  const destination = fixture.resolve("node_modules/.router-page-provider");
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
   const result = execFileSync("python3", [path.join(here, "provider.py"), destination], {
     encoding: "utf8",
     timeout: 60_000,

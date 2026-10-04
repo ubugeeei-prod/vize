@@ -228,3 +228,30 @@ workflow remains 690 lines. No limit or allowlist changes. Earlier source
 remains source-scoped, and this successor still requires fresh full Actions.
 Local configured formatting accepts the YAML; its lint half has zero eligible
 YAML files, so it supplies no lint credit. Hosted source gates remain required.
+
+The first actual default-source full [Check37233946799](https://github.com/ubugeeei-prod/vize/actions/runs/37233946799/job/111529250617)
+on `0903114d` passes all 18 secondary native partition controls but fails all
+10 primary provider cases before any editor cycle. The complete original first
+product report has zero page diagnostics plus 1,400 diagnostics from seven
+physical provider runtime files. Its source-built binary and whole official
+archive are authentic; this is a failed primary runtime receipt, not parity.
+The original ZIP is 3,977,716 bytes with SHA256
+`91782e4437917288e1a5b304f02f9ff5897d35e761864daa2f30e19c9bea5af8`.
+
+The existing package resolver canonicalizes the logical package link and
+classifies physical stores outside `node_modules` as authored workspace
+sources, whose runtime families are intentionally checked. Stage the unchanged
+whole official provider under isolated `node_modules/.router-page-provider`
+and preserve the logical `node_modules/vue-router` link. This is a fixture
+supply correction; no production resolver or diagnostic filter changes.
+Also retain the legitimate original configured auto-routes type declaration in
+the full ordered program-root expectation. Do not remove `types`, weaken
+`checkJs`, discard diagnostics, or equate authored/configured root metadata
+with native graph closure. The existing literal-path check handles the page's
+brackets, so no glob substitution is needed. Fresh source Actions and another
+existing full Check must prove this corrected supply; primary CLI/editor
+parity, opt-in cost, protected gates, actual merge/release and10x remain pending.
+The pinned primary workspace copies only the original page/map; the selected
+builtin-int entry directly declares `userId: number`. Its unchanged map also
+references unassembled custom-parser sources for other routes, so this narrow
+fixture does not claim complete upstream graph coverage.

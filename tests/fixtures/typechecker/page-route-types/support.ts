@@ -16,6 +16,7 @@ export const PLAYGROUND = "packages/playground-file-based";
 export const PAGE_PATH = `${PLAYGROUND}/src/pages/users/[userId=int].vue`;
 export const ROUTES_PATH = `${PLAYGROUND}/src/routes.d.ts`;
 export const PLUGIN = "vue-router/volar/sfc-typed-router";
+export const CONFIGURED_ROUTE_TYPES_ROOT = "node_modules/vue-router/vue-router-auto-routes.d.mts";
 export const PAGE_NAME_TYPE =
   "import('vue-router/auto-routes')._RouteNamesForFilePath<'src/pages/users/[userId=int].vue'>";
 
@@ -184,7 +185,11 @@ export function assertCli(
   const [program] = vize.report.programs;
   assert.equal(program.root, ".");
   assert.equal(program.tsconfig, "tsconfig.json");
-  assert.deepEqual(program.files, expectedMembers, "complete ordered authored root membership");
+  assert.deepEqual(
+    program.files,
+    [CONFIGURED_ROUTE_TYPES_ROOT, ...expectedMembers],
+    "complete ordered authored and configured type-root membership",
+  );
   expected.forEach((row, index) => {
     const error = errors[index];
     const range = sourceRange(source, error);
