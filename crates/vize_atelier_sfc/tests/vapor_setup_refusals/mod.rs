@@ -244,14 +244,15 @@ fn complete_original_normalizing_comments_are_precise_setup_target_refusals() {
             format!("<!--{content}-->"),
             format!("<div><!--{content}--></div>"),
         ] {
-            sources.push(format!(
-                "<script setup>const unused=1</script><template>{template}</template>"
+            sources.push((
+                format!("<script setup>const unused=1</script><template>{template}</template>"),
+                format!("<!--{content}-->"),
             ));
         }
     }
     // Preserve the exact authentic fixture that failed in real Chromium.
-    sources.push("<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>".into());
-    for source in sources {
+    sources.push(("<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>".into(), "<!--import { template as _template } from 'vue'-->".into()));
+    for (source, expected_comment) in sources {
         for source_map in [false, true] {
             let arena = Allocator::default();
             let compilation = compile_native_vapor_setup_sfc(
@@ -290,7 +291,7 @@ fn complete_original_normalizing_comments_are_precise_setup_target_refusals() {
             assert_eq!(error.node, Some(node));
             assert_eq!(error.span, span);
             let original = source.get(span.start as usize..span.end as usize).unwrap();
-            assert!(original.starts_with("<!--") && original.ends_with("-->"));
+            assert_eq!(original, expected_comment);
         }
     }
 }

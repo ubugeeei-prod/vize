@@ -241,3 +241,9 @@ all seventeen positive expectations are unchanged; no native/browser capture was
 granted by that failed build. Fresh exact-head source and protected proof remain
 required. Source-only measured 104-by-three run `37173111736` passed unchanged
 ceilings independently; it cannot substitute for the new head's required checks.
+
+The same failed source7c tooling worker also rejects the new weak prefix/suffix
+comment assertion. The law now compares the entire original comment against
+its independent exact expected spelling for every root/nested/quoted control;
+no assertion allowlist or production policy changes. This stronger oracle and
+the original view-lifetime repair require fresh source capture before acceptance.
