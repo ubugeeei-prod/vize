@@ -18,6 +18,9 @@ item, feature, command or export and does not waive the support policy's
 deprecation window. Davinci remains experimental, and this release does not
 claim the native products or their fix-history gates are complete.
 
+The public release notes include the struct-literal and exhaustive-match
+migration steps, alongside the existing community reporter acknowledgements.
+
 The supported release command binds a candidate to its `release/vVERSION`
 branch and tag. Supersede #7584 with the command-generated minor candidate and
 link both PRs rather than editing its immutable version identity. Wait for the
