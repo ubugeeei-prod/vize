@@ -237,14 +237,20 @@ fn within_supported_source_domain(file: &VirtualFile, source: &str) -> bool {
 
 fn skip_trivia(mut source: &str) -> &str {
     loop {
-        source = source.trim_start();
+        // The pinned native scanner also treats BOM and zero-width space as
+        // single-line trivia; Rust's Unicode White_Space excludes both.
+        source = source.trim_start_matches(|ch: char| {
+            ch.is_whitespace() || matches!(ch, '\u{feff}' | '\u{200b}')
+        });
         if let Some(rest) = source.strip_prefix("/*") {
             let Some((_, rest)) = rest.split_once("*/") else {
                 return "";
             };
             source = rest;
         } else if let Some(rest) = source.strip_prefix("//") {
-            let Some((_, rest)) = rest.split_once('\n') else {
+            // Only these four native line endings terminate a line comment.
+            // BOM, zero-width space and NEL remain inside the comment.
+            let Some((_, rest)) = rest.split_once(['\n', '\r', '\u{2028}', '\u{2029}']) else {
                 return "";
             };
             source = rest;

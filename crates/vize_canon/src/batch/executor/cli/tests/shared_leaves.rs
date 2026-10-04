@@ -303,6 +303,35 @@ fn missing_authored_provenance_restores_the_original_plan() {
 }
 
 #[test]
+fn external_reexports_after_native_trivia_keep_the_original_component_plan() {
+    for trivia in [
+        "// gap\r",
+        "// gap\u{2028}",
+        "// gap\u{2029}",
+        "\u{feff}",
+        "\u{200b}",
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let loader = format!("export * from{trivia}\"leaf-types\";");
+        let project = project(
+            dir.path(),
+            "export const value: LeafGlobal = 1;",
+            &[
+                ("loader.ts", &loader),
+                (
+                    "Comp0.vue",
+                    "<script setup lang=\"ts\">import { value } from './shared'; import './loader'; const n = value;</script><template>{{ n }}</template>",
+                ),
+            ],
+        );
+        assert!(
+            partition_virtual_files(&project, 2).shards.is_empty(),
+            "a non-Vue reexport can load package globals after native trivia: {trivia:?}"
+        );
+    }
+}
+
+#[test]
 fn nested_vue_loads_cannot_reuse_the_root_helpers_package_context() {
     let dir = tempfile::tempdir().unwrap();
     let mut project = project(dir.path(), "export const value = 1;", &[]);

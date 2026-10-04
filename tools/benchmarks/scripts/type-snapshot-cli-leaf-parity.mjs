@@ -214,6 +214,24 @@ const CASES = [
     expectedError: true,
     split: false,
   })),
+  ...[
+    ["reexport-cr-package-augmentation", "// gap\r"],
+    ["reexport-ls-package-augmentation", "// gap\u2028"],
+    ["reexport-ps-package-augmentation", "// gap\u2029"],
+    ["reexport-bom-package-augmentation", "\ufeff"],
+    ["reexport-zwsp-package-augmentation", "\u200b"],
+  ].map(([id, trivia]) => ({
+    id,
+    leaf: "export const value: LeafGlobal = 1;",
+    extra: {
+      ...TEMPLATE_PACKAGE_SOURCES,
+      "loader.ts": `export * from${trivia}"leaf-types";`,
+    },
+    // Only Comp0 loads the augmenting package through this non-Vue module.
+    // The original connected plan must keep its globals visible to all roots.
+    vueImport: "import './loader';",
+    split: false,
+  })),
   {
     id: "relative-ambient-augmentation",
     leaf: "export const value: LeafGlobal = 1;",
