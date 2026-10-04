@@ -18,6 +18,11 @@ before production/law review. After the first hosted test-compilation failure,
 the stable message-borrow correction was replayed onto literal actual main
 `fcf8f9e5960efaca1c4626cd6748b38f8db28abd`; the reviewed production blobs
 remain identical, and incoming central decision clauses are preserved.
+The focused storage correction was independently reviewed on private
+`cf45d7b3ba4cfcacf1e2e1a522ab592f094efd60`, then replayed cleanly onto
+literal actual main `a0b0ddb5b951490387d282d39cae32fe4ba8acca` before its
+fresh publication. Exact test storage rows and all original authority
+assertions remain intact; no execution credit transfers to the new head.
 The provider/parser/historical sources remain
 unchanged across this refresh; incoming original attribute-value, Document
 entity and delivery-control changes are preserved without being consumed.
