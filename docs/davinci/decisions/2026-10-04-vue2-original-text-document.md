@@ -1,7 +1,9 @@
 # Original Vue 2 interpolation document: private consumer plan
 
 Private design for #6842/#6882, pinned to literal actual main
-`c34b3d7a9881c10d8ceedff25f7f850df5a6698d`. Root authorized design only;
+`6987c523ecd2bee6e8489e2973e4b7499ce25018`. The first private freeze used
+literal `c34b3d7a98`; audited expression/provider/dialect blobs are unchanged.
+Root authorized design only;
 implementation requires root review. No source implementation, build/install,
 public PR, queue entry or manual campaign is included during the 0.431 release.
 
@@ -94,11 +96,21 @@ leave its normal Drop-owned observations intact. Real same-buffer duplicate
 and equal-byte foreign heap roots, different occurrences, repaired/inherited
 recovery, verbatim, syntax/depth/unsupported-node and entity controls retain
 their precise L1 or Doc refusal; no substring or partial-output assertions.
+L1-hole/comment/recovery/encoded-framing controls assert the actual `text_for`
+refusal and retained observations; they cannot produce a malformed TextView.
+Use only reachable entity-map controls, retaining L1 SourcePreparation when
+that is the real seam. Genuine stock borrowed-comment laws exercise the
+private shared origin separately, without granting Vue 2 comment admission.
 
 Expected full Doc trees (including every source slice, line, group and indent)
 and complete printed byte goldens cover wide/narrow widths, LF/CRLF, encoded
 operators/literals/whitespace, Unicode, NBSP trim, CRLF tails, exact filter
 names, argument order, zero/blank/trailing lists and multiple filter stages.
+Require whole-output idempotence; only the test reparses its actual output
+through the original native entry. LF/CRLF narrow nested-division cases must
+preserve the pinned scanner's SPACE-only slash look-behind. Existing infix
+Docs break after the operator and keep its preceding separator as Space;
+comments/regex retain their actual refusal rather than scanner replacement.
 Existing retained-expression full Doc/output cases stay unchanged. Actual
 compile-fail laws cover forged raw input/wrapper, owner/source/original-arena/
 Doc-arena escape and owner move/drop while a returned Doc is live, with a
@@ -109,7 +121,9 @@ Future hosted Rust capture must provide actual complete rendered output,
 joined to independent complete goldens before Node checks. The unchanged
 seven Vue 2/five Vue 1 packets remain byte-exact. Additional pinned official
 2.7.16 compiler and dev/prod VNode/ordered-filter-call checks compare original
-and actually formatted complete source; lookup/evaluation order is separate
+and actually formatted complete source against their own complete compiler
+goldens; generated render strings need not be byte-equal after intentional
+formatting. Lookup/evaluation order is separate
 from inner-before-outer invocation order. This proves formatter semantic
 preservation only. Physical original slice/map custody is checked, but no new
 source-map API or native compiler/runtime credit is claimed. Zero additional
@@ -118,12 +132,17 @@ counts/read-only inspection must stay distinct from executed fixtures.
 
 ## Coordination and held TODO
 
-Formatter peer confirms no active Expr Context/source edits. Frozen #7693
-`e83f1db4` changes only SFC exports/provider/laws and legacy memmem restoration;
-its expression provider blobs equal this actual main. It is not an imported
+Formatter peer confirms no active Expr Context/source edits. Incoming #7693
+`5eebcb1b` replays the frozen `e83f1db4` SFC exports/provider/laws and legacy
+memmem restoration onto actual `6987c523`, plus a qualification-doc commit;
+its expression provider blobs equal this actual main. It remains open and is
+not an imported
 baseline or dependency: this consumer needs only already-merged #7726 and
 the existing Glyph Doc provider. Preserve its SFC/header/handler/conditional
 targets; recheck literal main and leases before any later implementation.
+The reused peer's exact first-freeze `60719f0d` review is clear for bounded
+source readiness only; the explicit law refinements above grant no execution
+credit. Root implementation review and authorization remain pending.
 After frozen-plan peer/root review, implementation still needs authorization.
 Future source/full Actions, immutable all-104 caps, protected queue and actual
 merge remain required; release-flight restrictions remain in force. Historical
