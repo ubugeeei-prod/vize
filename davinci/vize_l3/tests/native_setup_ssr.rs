@@ -1,10 +1,21 @@
-use vize_l0::Allocator;
-use vize_l1::container::vue::DescriptorOptions;
+use vize_l0::{
+    Allocator,
+    config::{VueDialect, VueVersion},
+};
+use vize_l1::{SurfaceParseOptions, container::vue::DescriptorOptions};
 use vize_l1_to_l2::native_file::lower_selected_setup_sfc_native;
 use vize_l2::{file::DeclarationKind, resolution::Usage};
 use vize_l3::decision::ssr::{
     SsrPart, SsrSetupReadKind, SsrUnsupported, build_native_selected_setup_ssr_decisions,
 };
+
+fn descriptor() -> DescriptorOptions {
+    DescriptorOptions {
+        version: VueVersion::V3,
+        dialect: VueDialect::Vue,
+        template: SurfaceParseOptions::default(),
+    }
+}
 
 #[test]
 fn original_setup_reads_retain_actual_occurrences_bindings_and_distinct_scopes() {
@@ -23,8 +34,7 @@ fn original_setup_reads_retain_actual_occurrences_bindings_and_distinct_scopes()
         ),
     ] {
         let arena = Allocator::default();
-        let observation =
-            lower_selected_setup_sfc_native(&arena, source, DescriptorOptions::default());
+        let observation = lower_selected_setup_sfc_native(&arena, source, descriptor());
         let admitted = observation.admitted().unwrap();
         let setup = admitted.setup();
         let file = setup.file();
@@ -99,8 +109,7 @@ fn original_primitive_literals_have_complete_same_file_resolution_without_reads(
         let arena = Allocator::default();
         let source =
             format!("<script setup>const unused=0</script><template>{{{{{value}}}}}</template>");
-        let observation =
-            lower_selected_setup_sfc_native(&arena, &source, DescriptorOptions::default());
+        let observation = lower_selected_setup_sfc_native(&arena, &source, descriptor());
         let admitted = observation.admitted().unwrap();
         let analysis = build_native_selected_setup_ssr_decisions(admitted.setup()).unwrap();
         let facts = analysis.ssr().unwrap();
@@ -137,8 +146,7 @@ fn complete_original_expressions_keep_the_exact_bounded_target_refusal() {
         let arena = Allocator::default();
         let source =
             format!("<script setup>const value='ab'</script><template>{template}</template>");
-        let observation =
-            lower_selected_setup_sfc_native(&arena, &source, DescriptorOptions::default());
+        let observation = lower_selected_setup_sfc_native(&arena, &source, descriptor());
         let admitted = observation.admitted().unwrap();
         assert!(admitted.setup().file().is_complete());
         let analysis = build_native_selected_setup_ssr_decisions(admitted.setup()).unwrap();

@@ -65,7 +65,10 @@ pub(super) fn classify<'owner, 'arena>(
             | Expression::BigIntLiteral(_)
             | Expression::StringLiteral(_)
     );
-    let identifier = original.expression().get_identifier_reference();
+    let identifier = match original.expression() {
+        Expression::Identifier(identifier) => Some(identifier),
+        _ => None,
+    };
     let normalized = identifier.is_some_and(|identifier| {
         matches!(table.occurrences(), [occurrence]
             if occurrence.name == identifier.name.as_str()
