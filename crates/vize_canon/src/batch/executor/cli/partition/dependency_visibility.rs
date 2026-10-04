@@ -10,10 +10,20 @@ pub(super) fn permits_sharing(
     files: &[&VirtualFile],
     index_by_virtual: &FxHashMap<&Path, usize>,
 ) -> bool {
+    if !permits_compiler_options(project)
+        || project.virtual_files_sorted().iter().any(|file| {
+            let Some(source) = project.original_content_for_virtual(&file.virtual_path) else {
+                return true;
+            };
+            !within_supported_source_domain(file, source)
+        })
+    {
+        return false;
+    }
     files.iter().all(|file| {
-        let source = project
-            .original_content_for_virtual(&file.virtual_path)
-            .unwrap_or(&file.content);
+        let Some(source) = project.original_content_for_virtual(&file.virtual_path) else {
+            return false;
+        };
         if source.contains("<reference")
             || source.contains('\\')
             || source.contains('&')
@@ -129,6 +139,100 @@ pub(super) fn permits_sharing(
         }
         true
     })
+}
+
+fn permits_compiler_options(project: &VirtualProject) -> bool {
+    // The executor materializes this authoritative flattened config before
+    // partitioning, while retaining the existing MaterializeLock.
+    let Ok(source) = std::fs::read_to_string(project.virtual_root().join("tsconfig.json")) else {
+        return false;
+    };
+    let Ok(config) = serde_json::from_str::<serde_json::Value>(&source) else {
+        return false;
+    };
+    let Some(options) = config
+        .get("compilerOptions")
+        .and_then(serde_json::Value::as_object)
+    else {
+        return false;
+    };
+    ![
+        "jsx",
+        "jsxImportSource",
+        "jsxFactory",
+        "jsxFragmentFactory",
+        "reactNamespace",
+    ]
+    .iter()
+    .any(|option| options.contains_key(*option))
+}
+
+fn within_supported_source_domain(file: &VirtualFile, source: &str) -> bool {
+    if file
+        .original_path
+        .to_str()
+        .is_some_and(|path| path.ends_with(".d.ts"))
+    {
+        // Existing fixed ambient registration includes these in every shard.
+        return true;
+    }
+    match file
+        .original_path
+        .extension()
+        .and_then(|extension| extension.to_str())
+    {
+        Some("ts" | "js") => return !source.contains('<'),
+        Some("vue") => {}
+        _ => return false,
+    }
+    let folded = source.to_ascii_lowercase();
+    if folded.contains("src") || folded.contains("jsx") {
+        // Script src becomes a synthetic module load; JSX may load an
+        // implicit runtime. Neither is proved by the original import scan.
+        return false;
+    }
+    for (at, _) in folded.match_indices("lang") {
+        let Some(start) = source.get(..at).and_then(|prefix| prefix.rfind('<')) else {
+            return false;
+        };
+        let prefix = source.get(start..at).unwrap_or_default();
+        let languages: &[&str] = if prefix.starts_with("<script ") {
+            &["ts", "js"]
+        } else if prefix.starts_with("<template ") {
+            &["html"]
+        } else {
+            return false;
+        };
+        let rest = source.get(at + "lang".len()..).unwrap_or_default();
+        if prefix.contains('>')
+            || source.get(at..at + "lang".len()) != Some("lang")
+            || !languages.iter().any(|language| {
+                rest.strip_prefix("=\"")
+                    .and_then(|rest| rest.strip_prefix(language))
+                    .is_some_and(|rest| rest.starts_with('"'))
+                    || rest
+                        .strip_prefix("='")
+                        .and_then(|rest| rest.strip_prefix(language))
+                        .is_some_and(|rest| rest.starts_with('\''))
+            })
+        {
+            return false;
+        }
+    }
+    for (at, _) in source.match_indices("<script") {
+        let Some((_, rest)) = source.get(at..).unwrap_or_default().split_once('>') else {
+            return false;
+        };
+        let Some((body, _)) = rest.split_once("</script>") else {
+            return false;
+        };
+        if body.contains('<') {
+            // Also decline JSX recovery in a nominally plain TS/JS block.
+            // Harmless type parameters/comparisons can keep the former plan.
+            return false;
+        }
+    }
+    true
 }
 
 fn skip_trivia(mut source: &str) -> &str {

@@ -18,6 +18,8 @@ const NESTED_VUE_SOURCES = {
   "sub/node_modules/vue/package.json": '{"name":"vue","version":"0.0.0","types":"index.d.ts"}',
   "sub/node_modules/vue/index.d.ts": "export {}; declare global { type LeafGlobal = number; }",
 };
+const JSX_RUNTIME_SOURCE =
+  "export namespace JSX { interface IntrinsicElements { div: {} } } export declare const jsx: any; export declare const jsxs: any; export declare const Fragment: any; declare global { type LeafGlobal = number; }";
 
 const CASES = [
   {
@@ -86,6 +88,75 @@ const CASES = [
     leaf: "export const value: LeafGlobal = 1;",
     extra: TEMPLATE_PACKAGE_SOURCES,
     template: "<div>{{ n }} {{ &#105;mport('leaf-types') }}</div>",
+    split: false,
+  },
+  {
+    id: "external-script-package-global-augmentation",
+    leaf: "export const value: LeafGlobal = 1;",
+    extra: {
+      ...TEMPLATE_PACKAGE_SOURCES,
+      "node_modules/leaf-types/index.d.ts":
+        "declare const component: {}; export default component; declare global { type LeafGlobal = number; }",
+    },
+    prelude: '<script lang="ts" src="leaf-types"></script>',
+    split: false,
+  },
+  ...[
+    ["escaped-import-keyword", String.raw`i\u006dport 'leaf-types';`],
+    ["escaped-export-keyword", String.raw`ex\u0070ort * from 'leaf-types';`],
+  ].map(([id, vueImport]) => ({
+    id,
+    leaf: "export const value: LeafGlobal = 1;",
+    extra: TEMPLATE_PACKAGE_SOURCES,
+    vueImport,
+    expectedError: true,
+    split: false,
+  })),
+  ...[
+    ["tsx-pragma-runtime", "loader.tsx", { jsx: "react-jsx" }],
+    [
+      "js-jsx-option-runtime",
+      "loader.js",
+      { jsx: "react-jsx", jsxImportSource: "leaf-types", allowJs: true, checkJs: true },
+    ],
+    ["sfc-tsx-option-runtime", null, { jsx: "react-jsx", jsxImportSource: "leaf-types" }],
+  ].map(([id, file, options]) => ({
+    id,
+    leaf: "export const value: LeafGlobal = 1;",
+    extra: {
+      ...TEMPLATE_PACKAGE_SOURCES,
+      "node_modules/leaf-types/jsx-runtime.d.ts": JSX_RUNTIME_SOURCE,
+      ...(file
+        ? {
+            [file]:
+              "/** @jsxImportSource leaf-types */ import { value } from './shared'; export const view = <div/>; void value;",
+          }
+        : {}),
+    },
+    ...(!file ? { scriptLang: "tsx", vueImport: "const view = <div/>; void view;" } : {}),
+    include: ["*.vue", "*.ts", "*.js", "*.tsx"],
+    options,
+    expectedError: file === "loader.js",
+    split: false,
+  })),
+  ...[
+    ["inherited-jsx-runtime-option", "./jsx-base.json"],
+    ["array-extends-jsx-runtime-option", ["./jsx-base.json", "./strict-base.json"]],
+  ].map(([id, inherited]) => ({
+    id,
+    leaf: "export const value = 1;",
+    extra: {
+      "jsx-base.json": '{"compilerOptions":{"jsx":"react-jsx","jsxImportSource":"leaf-types"}}',
+      "strict-base.json": '{"compilerOptions":{"strict":true}}',
+    },
+    inherited,
+    split: false,
+  })),
+  {
+    id: "opaque-shared-global-root",
+    leaf: "export const value: LeafGlobal = 1;",
+    extra: { "augment.tsx": "export {}; declare global { type LeafGlobal = number; }" },
+    include: ["*.vue", "*.ts", "*.tsx"],
     split: false,
   },
   {
@@ -166,10 +237,13 @@ export function checkLeafParity(directory, vuePackageDir, run) {
       const nested = fixture.nestedVue && index === 0;
       const template =
         index === 0 ? (fixture.template ?? "<div>{{ n }}</div>") : "<div>{{ n }}</div>";
+      const prelude = index === 0 ? (fixture.prelude ?? "") : "";
+      const scriptLang = index === 0 ? (fixture.scriptLang ?? "ts") : "ts";
       sources[`${nested ? "sub/" : ""}Comp${index}.vue`] =
-        `<script setup lang="ts">import { value } from '${nested ? "../shared" : fixture.file === "shared.js" ? "./shared.js" : "./shared"}'; ${index === 0 ? (fixture.vueImport ?? "") : ""} const n = value;</script><template>${template}</template>`;
+        `${prelude}<script setup lang="${scriptLang}">import { value } from '${nested ? "../shared" : fixture.file === "shared.js" ? "./shared.js" : "./shared"}'; ${index === 0 ? (fixture.vueImport ?? "") : ""} const n = value;</script><template>${template}</template>`;
     }
     sources["tsconfig.json"] = JSON.stringify({
+      ...(fixture.inherited ? { extends: fixture.inherited } : {}),
       compilerOptions: {
         strict: true,
         module: "ESNext",
@@ -179,7 +253,7 @@ export function checkLeafParity(directory, vuePackageDir, run) {
         skipLibCheck: true,
         ...fixture.options,
       },
-      include: [fixture.nestedVue ? "**/*.vue" : "*.vue", "*.ts", "*.js"],
+      include: fixture.include ?? [fixture.nestedVue ? "**/*.vue" : "*.vue", "*.ts", "*.js"],
     });
     for (const [file, content] of Object.entries(sources)) {
       mkdirSync(dirname(join(dir, file)), { recursive: true });

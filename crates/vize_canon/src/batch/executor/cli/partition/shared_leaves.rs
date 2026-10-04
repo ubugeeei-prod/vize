@@ -95,7 +95,9 @@ fn is_explicit_module(file: &VirtualFile) -> bool {
         return false;
     };
     let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, &file.content, source_type).parse();
+    // Plain JS may contain JSX regardless of its extension. Implicit JSX
+    // runtimes are outside the module-load grammar admitted by this plan.
+    let parsed = Parser::new(&allocator, &file.content, source_type.with_jsx(false)).parse();
     !parsed.panicked
         && parsed.diagnostics.is_empty()
         && parsed.program.body.iter().any(|statement| {

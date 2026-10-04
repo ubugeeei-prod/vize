@@ -23,6 +23,7 @@ fn project(root: &Path, shared: &str, additional: &[(&str, &str)]) -> VirtualPro
         .collect();
     paths.sort();
     project.register_paths(&paths).unwrap();
+    project.materialize().unwrap();
     project
 }
 
@@ -208,6 +209,96 @@ fn encoded_template_loads_keep_the_original_component_plan() {
     assert!(
         partition_virtual_files(&project, 2).shards.is_empty(),
         "decoded template syntax can load globals missing from sibling programs"
+    );
+}
+
+#[test]
+fn opaque_vue_blocks_keep_the_original_component_plan() {
+    for source in [
+        "<script lang=\"ts\" src=\"leaf-types\"></script><script setup lang=\"ts\">import { value } from './shared';</script><template>{{ value }}</template>",
+        "<script setup lang=\"tsx\">import { value } from './shared'; const view = <div/>;</script><template>{{ value }}</template>",
+        "<script setup lang=\"ts\">import { value } from './shared';</script><template lang=\"pug\">div {{ value }}</template>",
+        "<script setup lang=\"coffee\">import { value } from './shared';</script><template>{{ value }}</template>",
+        "<script setup lang=\"ts\">import { value } from './shared'; const view = <div/>;</script><template>{{ value }}</template>",
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let project = project(
+            dir.path(),
+            "export const value = 1;",
+            &[("Comp0.vue", source)],
+        );
+        assert!(partition_virtual_files(&project, 2).shards.is_empty());
+    }
+}
+
+#[test]
+fn jsx_runtime_roots_keep_the_original_component_plan() {
+    for file in ["loader.tsx", "loader.jsx", "loader.js"] {
+        let dir = tempfile::tempdir().unwrap();
+        let project = project(
+            dir.path(),
+            "export const value = 1;",
+            &[(
+                file,
+                "/** @jsxImportSource leaf-types */ import { value } from './shared'; export const view = <div/>; void value;",
+            )],
+        );
+        assert!(partition_virtual_files(&project, 2).shards.is_empty());
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let project = project(
+        dir.path(),
+        "export const value = 1;",
+        &[(
+            "augment.tsx",
+            "export {}; declare global { type LeafGlobal = number; }",
+        )],
+    );
+    fs::write(
+        project.virtual_root().join("tsconfig.json"),
+        r#"{"compilerOptions":{}}"#,
+    )
+    .unwrap();
+    assert!(
+        partition_virtual_files(&project, 2).shards.is_empty(),
+        "an opaque already-shared root must decline the whole new plan"
+    );
+}
+
+#[test]
+fn implicit_jsx_settings_and_unreadable_config_restore_the_original_plan() {
+    let dir = tempfile::tempdir().unwrap();
+    let project = project(dir.path(), "export const value = 1;", &[]);
+    let config = project.virtual_root().join("tsconfig.json");
+    for source in [
+        r#"{"compilerOptions":{"jsx":"preserve"}}"#,
+        r#"{"compilerOptions":{"jsxImportSource":"leaf-types"}}"#,
+        r#"{"compilerOptions":{"jsxFactory":"factory"}}"#,
+        r#"{"compilerOptions":{"jsxFragmentFactory":"fragment"}}"#,
+        r#"{"compilerOptions":{"reactNamespace":"Custom"}}"#,
+        "{}",
+        "malformed",
+    ] {
+        fs::write(&config, source).unwrap();
+        assert!(partition_virtual_files(&project, 2).shards.is_empty());
+    }
+    fs::remove_file(config).unwrap();
+    assert!(partition_virtual_files(&project, 2).shards.is_empty());
+}
+
+#[test]
+fn missing_authored_provenance_restores_the_original_plan() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut project = project(dir.path(), "export const value = 1;", &[]);
+    let path = project
+        .find_by_original(&dir.path().join("Comp0.vue"))
+        .unwrap()
+        .virtual_path
+        .clone();
+    project.remove_original_content_for_test(&path);
+    assert!(
+        partition_virtual_files(&project, 2).shards.is_empty(),
+        "generated text cannot prove an unknown root's authored domain"
     );
 }
 

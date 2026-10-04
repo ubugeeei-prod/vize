@@ -1637,15 +1637,17 @@
       "fixedCompleteOrderedReportsEqual": true
     }
   ],
-  "fixedBinarySha256": "1f810201555089f794ae05c7c3130f9157fcd0e2b8f21df9610c84e25d033f78",
+  "fixedBinarySha256": "7f6622f6950e56423a2609a5b2347922bb6fa16b323ce9024cf34c1376d73386",
   "correctedLocalMatrix": {
-    "caseCount": 22,
-    "completeOrderedChecks": 88,
-    "profileProbes": 22,
+    "caseCount": 31,
+    "completeOrderedChecks": 124,
+    "profileProbes": 31,
     "source": {
-      "crates/vize_canon/src/batch/executor/cli/partition/dependency_visibility.rs": "077a1c3964557bfba7a7c887528dbe4e6dd3b7822a24dc95ac3deffd7caa7224"
+      "crates/vize_canon/src/batch/executor/cli/partition/dependency_visibility.rs": "d54eb01b647ce2ef3d72be28e2d4cd48d1b76152ec07561a60cb1cd955cd2a7e",
+      "crates/vize_canon/src/batch/executor/cli/partition/shared_leaves.rs": "cc99ac973ed0d99f0f40e559367c2bfd8de5ff6d02171f67fc6a6f3bb0270b0f"
     },
-    "buildNote": "Local ci-opt build of e027 plus the committed entity-opacity repair; exact hosted source and performance acceptance remain required.",
+    "buildNote": "Local ci-opt f574 successor closed-domain source; exact hosted performance acceptance remains required. Root-owned fifth native-trivia layer adds five cases for final whole-Stack36 acceptance, which this isolated source does not claim.",
+    "partitionBudgetTestCount": 13,
     "rows": [
       {
         "case": "leaf-error",
@@ -1928,339 +1930,591 @@
         "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
       },
       {
+        "case": "external-script-package-global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "050-leaf-parity-external-script-package-global-augmentation-1-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "external-script-package-global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "051-leaf-parity-external-script-package-global-augmentation-1-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "external-script-package-global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "052-leaf-parity-external-script-package-global-augmentation-2-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "external-script-package-global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "053-leaf-parity-external-script-package-global-augmentation-2-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "escaped-import-keyword",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "055-leaf-parity-escaped-import-keyword-1-server-parity-base",
+        "fingerprint": "670c7a947ed3f1bc2b4da2629b9c743a9cb2f2691434f665f6a0d47fb5c0490e"
+      },
+      {
+        "case": "escaped-import-keyword",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "056-leaf-parity-escaped-import-keyword-1-server-parity-head",
+        "fingerprint": "670c7a947ed3f1bc2b4da2629b9c743a9cb2f2691434f665f6a0d47fb5c0490e"
+      },
+      {
+        "case": "escaped-import-keyword",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "057-leaf-parity-escaped-import-keyword-2-server-parity-base",
+        "fingerprint": "670c7a947ed3f1bc2b4da2629b9c743a9cb2f2691434f665f6a0d47fb5c0490e"
+      },
+      {
+        "case": "escaped-import-keyword",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "058-leaf-parity-escaped-import-keyword-2-server-parity-head",
+        "fingerprint": "670c7a947ed3f1bc2b4da2629b9c743a9cb2f2691434f665f6a0d47fb5c0490e"
+      },
+      {
+        "case": "escaped-export-keyword",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "060-leaf-parity-escaped-export-keyword-1-server-parity-base",
+        "fingerprint": "670c7a947ed3f1bc2b4da2629b9c743a9cb2f2691434f665f6a0d47fb5c0490e"
+      },
+      {
+        "case": "escaped-export-keyword",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "061-leaf-parity-escaped-export-keyword-1-server-parity-head",
+        "fingerprint": "670c7a947ed3f1bc2b4da2629b9c743a9cb2f2691434f665f6a0d47fb5c0490e"
+      },
+      {
+        "case": "escaped-export-keyword",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "062-leaf-parity-escaped-export-keyword-2-server-parity-base",
+        "fingerprint": "670c7a947ed3f1bc2b4da2629b9c743a9cb2f2691434f665f6a0d47fb5c0490e"
+      },
+      {
+        "case": "escaped-export-keyword",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "063-leaf-parity-escaped-export-keyword-2-server-parity-head",
+        "fingerprint": "670c7a947ed3f1bc2b4da2629b9c743a9cb2f2691434f665f6a0d47fb5c0490e"
+      },
+      {
+        "case": "tsx-pragma-runtime",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "065-leaf-parity-tsx-pragma-runtime-1-server-parity-base",
+        "fingerprint": "c992150b22796c98cdbb71d0fe652dfb47ac2618eeeb872bf9fbbb8404ec899a"
+      },
+      {
+        "case": "tsx-pragma-runtime",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "066-leaf-parity-tsx-pragma-runtime-1-server-parity-head",
+        "fingerprint": "c992150b22796c98cdbb71d0fe652dfb47ac2618eeeb872bf9fbbb8404ec899a"
+      },
+      {
+        "case": "tsx-pragma-runtime",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "067-leaf-parity-tsx-pragma-runtime-2-server-parity-base",
+        "fingerprint": "c992150b22796c98cdbb71d0fe652dfb47ac2618eeeb872bf9fbbb8404ec899a"
+      },
+      {
+        "case": "tsx-pragma-runtime",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "068-leaf-parity-tsx-pragma-runtime-2-server-parity-head",
+        "fingerprint": "c992150b22796c98cdbb71d0fe652dfb47ac2618eeeb872bf9fbbb8404ec899a"
+      },
+      {
+        "case": "js-jsx-option-runtime",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "070-leaf-parity-js-jsx-option-runtime-1-server-parity-base",
+        "fingerprint": "12412e726275a118f7ad3198bc87f3d983f312e62cb74253b09b647e2ee5097f"
+      },
+      {
+        "case": "js-jsx-option-runtime",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "071-leaf-parity-js-jsx-option-runtime-1-server-parity-head",
+        "fingerprint": "12412e726275a118f7ad3198bc87f3d983f312e62cb74253b09b647e2ee5097f"
+      },
+      {
+        "case": "js-jsx-option-runtime",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "072-leaf-parity-js-jsx-option-runtime-2-server-parity-base",
+        "fingerprint": "12412e726275a118f7ad3198bc87f3d983f312e62cb74253b09b647e2ee5097f"
+      },
+      {
+        "case": "js-jsx-option-runtime",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "073-leaf-parity-js-jsx-option-runtime-2-server-parity-head",
+        "fingerprint": "12412e726275a118f7ad3198bc87f3d983f312e62cb74253b09b647e2ee5097f"
+      },
+      {
+        "case": "sfc-tsx-option-runtime",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "075-leaf-parity-sfc-tsx-option-runtime-1-server-parity-base",
+        "fingerprint": "f0bc3dac83d7f93e453fec6d0cd4dec4dcafa5f0fa8041b066c6a97de2a93697"
+      },
+      {
+        "case": "sfc-tsx-option-runtime",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "076-leaf-parity-sfc-tsx-option-runtime-1-server-parity-head",
+        "fingerprint": "f0bc3dac83d7f93e453fec6d0cd4dec4dcafa5f0fa8041b066c6a97de2a93697"
+      },
+      {
+        "case": "sfc-tsx-option-runtime",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "077-leaf-parity-sfc-tsx-option-runtime-2-server-parity-base",
+        "fingerprint": "f0bc3dac83d7f93e453fec6d0cd4dec4dcafa5f0fa8041b066c6a97de2a93697"
+      },
+      {
+        "case": "sfc-tsx-option-runtime",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "078-leaf-parity-sfc-tsx-option-runtime-2-server-parity-head",
+        "fingerprint": "f0bc3dac83d7f93e453fec6d0cd4dec4dcafa5f0fa8041b066c6a97de2a93697"
+      },
+      {
+        "case": "inherited-jsx-runtime-option",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "080-leaf-parity-inherited-jsx-runtime-option-1-server-parity-base",
+        "fingerprint": "f0bc3dac83d7f93e453fec6d0cd4dec4dcafa5f0fa8041b066c6a97de2a93697"
+      },
+      {
+        "case": "inherited-jsx-runtime-option",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "081-leaf-parity-inherited-jsx-runtime-option-1-server-parity-head",
+        "fingerprint": "f0bc3dac83d7f93e453fec6d0cd4dec4dcafa5f0fa8041b066c6a97de2a93697"
+      },
+      {
+        "case": "inherited-jsx-runtime-option",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "082-leaf-parity-inherited-jsx-runtime-option-2-server-parity-base",
+        "fingerprint": "f0bc3dac83d7f93e453fec6d0cd4dec4dcafa5f0fa8041b066c6a97de2a93697"
+      },
+      {
+        "case": "inherited-jsx-runtime-option",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "083-leaf-parity-inherited-jsx-runtime-option-2-server-parity-head",
+        "fingerprint": "f0bc3dac83d7f93e453fec6d0cd4dec4dcafa5f0fa8041b066c6a97de2a93697"
+      },
+      {
+        "case": "array-extends-jsx-runtime-option",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "085-leaf-parity-array-extends-jsx-runtime-option-1-server-parity-base",
+        "fingerprint": "f0bc3dac83d7f93e453fec6d0cd4dec4dcafa5f0fa8041b066c6a97de2a93697"
+      },
+      {
+        "case": "array-extends-jsx-runtime-option",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "086-leaf-parity-array-extends-jsx-runtime-option-1-server-parity-head",
+        "fingerprint": "f0bc3dac83d7f93e453fec6d0cd4dec4dcafa5f0fa8041b066c6a97de2a93697"
+      },
+      {
+        "case": "array-extends-jsx-runtime-option",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "087-leaf-parity-array-extends-jsx-runtime-option-2-server-parity-base",
+        "fingerprint": "f0bc3dac83d7f93e453fec6d0cd4dec4dcafa5f0fa8041b066c6a97de2a93697"
+      },
+      {
+        "case": "array-extends-jsx-runtime-option",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "088-leaf-parity-array-extends-jsx-runtime-option-2-server-parity-head",
+        "fingerprint": "f0bc3dac83d7f93e453fec6d0cd4dec4dcafa5f0fa8041b066c6a97de2a93697"
+      },
+      {
+        "case": "opaque-shared-global-root",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "090-leaf-parity-opaque-shared-global-root-1-server-parity-base",
+        "fingerprint": "34f58ca0de41694512aead0030d1bf173f9e0d189e68d144ba00f42500f77ae1"
+      },
+      {
+        "case": "opaque-shared-global-root",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "091-leaf-parity-opaque-shared-global-root-1-server-parity-head",
+        "fingerprint": "34f58ca0de41694512aead0030d1bf173f9e0d189e68d144ba00f42500f77ae1"
+      },
+      {
+        "case": "opaque-shared-global-root",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "092-leaf-parity-opaque-shared-global-root-2-server-parity-base",
+        "fingerprint": "34f58ca0de41694512aead0030d1bf173f9e0d189e68d144ba00f42500f77ae1"
+      },
+      {
+        "case": "opaque-shared-global-root",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "093-leaf-parity-opaque-shared-global-root-2-server-parity-head",
+        "fingerprint": "34f58ca0de41694512aead0030d1bf173f9e0d189e68d144ba00f42500f77ae1"
+      },
+      {
         "case": "nested-vue-global-augmentation",
         "side": "base",
         "servers": 1,
-        "sampleId": "050-leaf-parity-nested-vue-global-augmentation-1-server-parity-base",
+        "sampleId": "095-leaf-parity-nested-vue-global-augmentation-1-server-parity-base",
         "fingerprint": "6ebfb8558eb99096aabd6c88f556d7e217968a6d4876e88029d282ddf1e95f4f"
       },
       {
         "case": "nested-vue-global-augmentation",
         "side": "head",
         "servers": 1,
-        "sampleId": "051-leaf-parity-nested-vue-global-augmentation-1-server-parity-head",
+        "sampleId": "096-leaf-parity-nested-vue-global-augmentation-1-server-parity-head",
         "fingerprint": "6ebfb8558eb99096aabd6c88f556d7e217968a6d4876e88029d282ddf1e95f4f"
       },
       {
         "case": "nested-vue-global-augmentation",
         "side": "base",
         "servers": 2,
-        "sampleId": "052-leaf-parity-nested-vue-global-augmentation-2-server-parity-base",
+        "sampleId": "097-leaf-parity-nested-vue-global-augmentation-2-server-parity-base",
         "fingerprint": "6ebfb8558eb99096aabd6c88f556d7e217968a6d4876e88029d282ddf1e95f4f"
       },
       {
         "case": "nested-vue-global-augmentation",
         "side": "head",
         "servers": 2,
-        "sampleId": "053-leaf-parity-nested-vue-global-augmentation-2-server-parity-head",
+        "sampleId": "098-leaf-parity-nested-vue-global-augmentation-2-server-parity-head",
         "fingerprint": "6ebfb8558eb99096aabd6c88f556d7e217968a6d4876e88029d282ddf1e95f4f"
       },
       {
         "case": "nested-vue-paths-override",
         "side": "base",
         "servers": 1,
-        "sampleId": "055-leaf-parity-nested-vue-paths-override-1-server-parity-base",
-        "fingerprint": "5cb6fa42aa7ef8712fba0f36d48c44d6d6aeba0d97d3c7415e3d70246292499b"
+        "sampleId": "100-leaf-parity-nested-vue-paths-override-1-server-parity-base",
+        "fingerprint": "260e96694ad77c4c840bb616e3000aae26d5dd4e24158b6178be35f24d034a19"
       },
       {
         "case": "nested-vue-paths-override",
         "side": "head",
         "servers": 1,
-        "sampleId": "056-leaf-parity-nested-vue-paths-override-1-server-parity-head",
-        "fingerprint": "5cb6fa42aa7ef8712fba0f36d48c44d6d6aeba0d97d3c7415e3d70246292499b"
+        "sampleId": "101-leaf-parity-nested-vue-paths-override-1-server-parity-head",
+        "fingerprint": "260e96694ad77c4c840bb616e3000aae26d5dd4e24158b6178be35f24d034a19"
       },
       {
         "case": "nested-vue-paths-override",
         "side": "base",
         "servers": 2,
-        "sampleId": "057-leaf-parity-nested-vue-paths-override-2-server-parity-base",
-        "fingerprint": "5cb6fa42aa7ef8712fba0f36d48c44d6d6aeba0d97d3c7415e3d70246292499b"
+        "sampleId": "102-leaf-parity-nested-vue-paths-override-2-server-parity-base",
+        "fingerprint": "260e96694ad77c4c840bb616e3000aae26d5dd4e24158b6178be35f24d034a19"
       },
       {
         "case": "nested-vue-paths-override",
         "side": "head",
         "servers": 2,
-        "sampleId": "058-leaf-parity-nested-vue-paths-override-2-server-parity-head",
-        "fingerprint": "5cb6fa42aa7ef8712fba0f36d48c44d6d6aeba0d97d3c7415e3d70246292499b"
+        "sampleId": "103-leaf-parity-nested-vue-paths-override-2-server-parity-head",
+        "fingerprint": "260e96694ad77c4c840bb616e3000aae26d5dd4e24158b6178be35f24d034a19"
       },
       {
         "case": "declaration-trivia-global-augmentation",
         "side": "base",
         "servers": 1,
-        "sampleId": "060-leaf-parity-declaration-trivia-global-augmentation-1-server-parity-base",
+        "sampleId": "105-leaf-parity-declaration-trivia-global-augmentation-1-server-parity-base",
         "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
       },
       {
         "case": "declaration-trivia-global-augmentation",
         "side": "head",
         "servers": 1,
-        "sampleId": "061-leaf-parity-declaration-trivia-global-augmentation-1-server-parity-head",
+        "sampleId": "106-leaf-parity-declaration-trivia-global-augmentation-1-server-parity-head",
         "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
       },
       {
         "case": "declaration-trivia-global-augmentation",
         "side": "base",
         "servers": 2,
-        "sampleId": "062-leaf-parity-declaration-trivia-global-augmentation-2-server-parity-base",
+        "sampleId": "107-leaf-parity-declaration-trivia-global-augmentation-2-server-parity-base",
         "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
       },
       {
         "case": "declaration-trivia-global-augmentation",
         "side": "head",
         "servers": 2,
-        "sampleId": "063-leaf-parity-declaration-trivia-global-augmentation-2-server-parity-head",
+        "sampleId": "108-leaf-parity-declaration-trivia-global-augmentation-2-server-parity-head",
         "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
       },
       {
         "case": "optional-require-js-global-augmentation",
         "side": "base",
         "servers": 1,
-        "sampleId": "065-leaf-parity-optional-require-js-global-augmentation-1-server-parity-base",
+        "sampleId": "110-leaf-parity-optional-require-js-global-augmentation-1-server-parity-base",
         "fingerprint": "34f8c116f1ced25989ee0e6cec2ef3f255253c7a9f653c08f84690507a04a9b5"
       },
       {
         "case": "optional-require-js-global-augmentation",
         "side": "head",
         "servers": 1,
-        "sampleId": "066-leaf-parity-optional-require-js-global-augmentation-1-server-parity-head",
+        "sampleId": "111-leaf-parity-optional-require-js-global-augmentation-1-server-parity-head",
         "fingerprint": "34f8c116f1ced25989ee0e6cec2ef3f255253c7a9f653c08f84690507a04a9b5"
       },
       {
         "case": "optional-require-js-global-augmentation",
         "side": "base",
         "servers": 2,
-        "sampleId": "067-leaf-parity-optional-require-js-global-augmentation-2-server-parity-base",
+        "sampleId": "112-leaf-parity-optional-require-js-global-augmentation-2-server-parity-base",
         "fingerprint": "34f8c116f1ced25989ee0e6cec2ef3f255253c7a9f653c08f84690507a04a9b5"
       },
       {
         "case": "optional-require-js-global-augmentation",
         "side": "head",
         "servers": 2,
-        "sampleId": "068-leaf-parity-optional-require-js-global-augmentation-2-server-parity-head",
+        "sampleId": "113-leaf-parity-optional-require-js-global-augmentation-2-server-parity-head",
         "fingerprint": "34f8c116f1ced25989ee0e6cec2ef3f255253c7a9f653c08f84690507a04a9b5"
       },
       {
         "case": "malformed-import-caret",
         "side": "base",
         "servers": 1,
-        "sampleId": "070-leaf-parity-malformed-import-caret-1-server-parity-base",
+        "sampleId": "115-leaf-parity-malformed-import-caret-1-server-parity-base",
         "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
       },
       {
         "case": "malformed-import-caret",
         "side": "head",
         "servers": 1,
-        "sampleId": "071-leaf-parity-malformed-import-caret-1-server-parity-head",
+        "sampleId": "116-leaf-parity-malformed-import-caret-1-server-parity-head",
         "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
       },
       {
         "case": "malformed-import-caret",
         "side": "base",
         "servers": 2,
-        "sampleId": "072-leaf-parity-malformed-import-caret-2-server-parity-base",
+        "sampleId": "117-leaf-parity-malformed-import-caret-2-server-parity-base",
         "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
       },
       {
         "case": "malformed-import-caret",
         "side": "head",
         "servers": 2,
-        "sampleId": "073-leaf-parity-malformed-import-caret-2-server-parity-head",
+        "sampleId": "118-leaf-parity-malformed-import-caret-2-server-parity-head",
         "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
       },
       {
         "case": "malformed-import-missing-from",
         "side": "base",
         "servers": 1,
-        "sampleId": "075-leaf-parity-malformed-import-missing-from-1-server-parity-base",
+        "sampleId": "120-leaf-parity-malformed-import-missing-from-1-server-parity-base",
         "fingerprint": "d9bbc374d0e18425832cdb90ca6429ad7a65134cfbe877e7c870f7733412bf3e"
       },
       {
         "case": "malformed-import-missing-from",
         "side": "head",
         "servers": 1,
-        "sampleId": "076-leaf-parity-malformed-import-missing-from-1-server-parity-head",
+        "sampleId": "121-leaf-parity-malformed-import-missing-from-1-server-parity-head",
         "fingerprint": "d9bbc374d0e18425832cdb90ca6429ad7a65134cfbe877e7c870f7733412bf3e"
       },
       {
         "case": "malformed-import-missing-from",
         "side": "base",
         "servers": 2,
-        "sampleId": "077-leaf-parity-malformed-import-missing-from-2-server-parity-base",
+        "sampleId": "122-leaf-parity-malformed-import-missing-from-2-server-parity-base",
         "fingerprint": "d9bbc374d0e18425832cdb90ca6429ad7a65134cfbe877e7c870f7733412bf3e"
       },
       {
         "case": "malformed-import-missing-from",
         "side": "head",
         "servers": 2,
-        "sampleId": "078-leaf-parity-malformed-import-missing-from-2-server-parity-head",
+        "sampleId": "123-leaf-parity-malformed-import-missing-from-2-server-parity-head",
         "fingerprint": "d9bbc374d0e18425832cdb90ca6429ad7a65134cfbe877e7c870f7733412bf3e"
       },
       {
         "case": "malformed-import-optional",
         "side": "base",
         "servers": 1,
-        "sampleId": "080-leaf-parity-malformed-import-optional-1-server-parity-base",
+        "sampleId": "125-leaf-parity-malformed-import-optional-1-server-parity-base",
         "fingerprint": "43b3dc9d77d05d7667ad7daf4cb55b31a8537fdda0599d665b636c96a4d37a0a"
       },
       {
         "case": "malformed-import-optional",
         "side": "head",
         "servers": 1,
-        "sampleId": "081-leaf-parity-malformed-import-optional-1-server-parity-head",
+        "sampleId": "126-leaf-parity-malformed-import-optional-1-server-parity-head",
         "fingerprint": "43b3dc9d77d05d7667ad7daf4cb55b31a8537fdda0599d665b636c96a4d37a0a"
       },
       {
         "case": "malformed-import-optional",
         "side": "base",
         "servers": 2,
-        "sampleId": "082-leaf-parity-malformed-import-optional-2-server-parity-base",
+        "sampleId": "127-leaf-parity-malformed-import-optional-2-server-parity-base",
         "fingerprint": "43b3dc9d77d05d7667ad7daf4cb55b31a8537fdda0599d665b636c96a4d37a0a"
       },
       {
         "case": "malformed-import-optional",
         "side": "head",
         "servers": 2,
-        "sampleId": "083-leaf-parity-malformed-import-optional-2-server-parity-head",
+        "sampleId": "128-leaf-parity-malformed-import-optional-2-server-parity-head",
         "fingerprint": "43b3dc9d77d05d7667ad7daf4cb55b31a8537fdda0599d665b636c96a4d37a0a"
       },
       {
         "case": "malformed-export-caret",
         "side": "base",
         "servers": 1,
-        "sampleId": "085-leaf-parity-malformed-export-caret-1-server-parity-base",
+        "sampleId": "130-leaf-parity-malformed-export-caret-1-server-parity-base",
         "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
       },
       {
         "case": "malformed-export-caret",
         "side": "head",
         "servers": 1,
-        "sampleId": "086-leaf-parity-malformed-export-caret-1-server-parity-head",
+        "sampleId": "131-leaf-parity-malformed-export-caret-1-server-parity-head",
         "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
       },
       {
         "case": "malformed-export-caret",
         "side": "base",
         "servers": 2,
-        "sampleId": "087-leaf-parity-malformed-export-caret-2-server-parity-base",
+        "sampleId": "132-leaf-parity-malformed-export-caret-2-server-parity-base",
         "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
       },
       {
         "case": "malformed-export-caret",
         "side": "head",
         "servers": 2,
-        "sampleId": "088-leaf-parity-malformed-export-caret-2-server-parity-head",
+        "sampleId": "133-leaf-parity-malformed-export-caret-2-server-parity-head",
         "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
       },
       {
         "case": "malformed-export-missing-from",
         "side": "base",
         "servers": 1,
-        "sampleId": "090-leaf-parity-malformed-export-missing-from-1-server-parity-base",
+        "sampleId": "135-leaf-parity-malformed-export-missing-from-1-server-parity-base",
         "fingerprint": "cdba686b33254cbdf2de443aeef50ccb225d400f03869b0b17fab47caf6a1457"
       },
       {
         "case": "malformed-export-missing-from",
         "side": "head",
         "servers": 1,
-        "sampleId": "091-leaf-parity-malformed-export-missing-from-1-server-parity-head",
+        "sampleId": "136-leaf-parity-malformed-export-missing-from-1-server-parity-head",
         "fingerprint": "cdba686b33254cbdf2de443aeef50ccb225d400f03869b0b17fab47caf6a1457"
       },
       {
         "case": "malformed-export-missing-from",
         "side": "base",
         "servers": 2,
-        "sampleId": "092-leaf-parity-malformed-export-missing-from-2-server-parity-base",
+        "sampleId": "137-leaf-parity-malformed-export-missing-from-2-server-parity-base",
         "fingerprint": "cdba686b33254cbdf2de443aeef50ccb225d400f03869b0b17fab47caf6a1457"
       },
       {
         "case": "malformed-export-missing-from",
         "side": "head",
         "servers": 2,
-        "sampleId": "093-leaf-parity-malformed-export-missing-from-2-server-parity-head",
+        "sampleId": "138-leaf-parity-malformed-export-missing-from-2-server-parity-head",
         "fingerprint": "cdba686b33254cbdf2de443aeef50ccb225d400f03869b0b17fab47caf6a1457"
       },
       {
         "case": "malformed-export-from-caret",
         "side": "base",
         "servers": 1,
-        "sampleId": "095-leaf-parity-malformed-export-from-caret-1-server-parity-base",
+        "sampleId": "140-leaf-parity-malformed-export-from-caret-1-server-parity-base",
         "fingerprint": "57e4b568e5c232f791c487c48799377fe2d20674385dd88e7b456cfaa7c9d58e"
       },
       {
         "case": "malformed-export-from-caret",
         "side": "head",
         "servers": 1,
-        "sampleId": "096-leaf-parity-malformed-export-from-caret-1-server-parity-head",
+        "sampleId": "141-leaf-parity-malformed-export-from-caret-1-server-parity-head",
         "fingerprint": "57e4b568e5c232f791c487c48799377fe2d20674385dd88e7b456cfaa7c9d58e"
       },
       {
         "case": "malformed-export-from-caret",
         "side": "base",
         "servers": 2,
-        "sampleId": "097-leaf-parity-malformed-export-from-caret-2-server-parity-base",
+        "sampleId": "142-leaf-parity-malformed-export-from-caret-2-server-parity-base",
         "fingerprint": "57e4b568e5c232f791c487c48799377fe2d20674385dd88e7b456cfaa7c9d58e"
       },
       {
         "case": "malformed-export-from-caret",
         "side": "head",
         "servers": 2,
-        "sampleId": "098-leaf-parity-malformed-export-from-caret-2-server-parity-head",
+        "sampleId": "143-leaf-parity-malformed-export-from-caret-2-server-parity-head",
         "fingerprint": "57e4b568e5c232f791c487c48799377fe2d20674385dd88e7b456cfaa7c9d58e"
       },
       {
         "case": "relative-ambient-augmentation",
         "side": "base",
         "servers": 1,
-        "sampleId": "100-leaf-parity-relative-ambient-augmentation-1-server-parity-base",
+        "sampleId": "145-leaf-parity-relative-ambient-augmentation-1-server-parity-base",
         "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
       },
       {
         "case": "relative-ambient-augmentation",
         "side": "head",
         "servers": 1,
-        "sampleId": "101-leaf-parity-relative-ambient-augmentation-1-server-parity-head",
+        "sampleId": "146-leaf-parity-relative-ambient-augmentation-1-server-parity-head",
         "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
       },
       {
         "case": "relative-ambient-augmentation",
         "side": "base",
         "servers": 2,
-        "sampleId": "102-leaf-parity-relative-ambient-augmentation-2-server-parity-base",
+        "sampleId": "147-leaf-parity-relative-ambient-augmentation-2-server-parity-base",
         "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
       },
       {
         "case": "relative-ambient-augmentation",
         "side": "head",
         "servers": 2,
-        "sampleId": "103-leaf-parity-relative-ambient-augmentation-2-server-parity-head",
+        "sampleId": "148-leaf-parity-relative-ambient-augmentation-2-server-parity-head",
         "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
       },
       {
         "case": "transitive-vue",
         "side": "base",
         "servers": 1,
-        "sampleId": "105-leaf-parity-transitive-vue-1-server-parity-base",
+        "sampleId": "150-leaf-parity-transitive-vue-1-server-parity-base",
         "fingerprint": "f4625bb97da116fc7f68240bb25ccb11990f1f9507d9bb4fc92857a9320b37a2"
       },
       {
         "case": "transitive-vue",
         "side": "head",
         "servers": 1,
-        "sampleId": "106-leaf-parity-transitive-vue-1-server-parity-head",
+        "sampleId": "151-leaf-parity-transitive-vue-1-server-parity-head",
         "fingerprint": "f4625bb97da116fc7f68240bb25ccb11990f1f9507d9bb4fc92857a9320b37a2"
       },
       {
         "case": "transitive-vue",
         "side": "base",
         "servers": 2,
-        "sampleId": "107-leaf-parity-transitive-vue-2-server-parity-base",
+        "sampleId": "152-leaf-parity-transitive-vue-2-server-parity-base",
         "fingerprint": "f4625bb97da116fc7f68240bb25ccb11990f1f9507d9bb4fc92857a9320b37a2"
       },
       {
         "case": "transitive-vue",
         "side": "head",
         "servers": 2,
-        "sampleId": "108-leaf-parity-transitive-vue-2-server-parity-head",
+        "sampleId": "153-leaf-parity-transitive-vue-2-server-parity-head",
         "fingerprint": "f4625bb97da116fc7f68240bb25ccb11990f1f9507d9bb4fc92857a9320b37a2"
       }
     ]
@@ -2996,5 +3250,1591 @@
       "fileCount": 5
     },
     "decision": "Decline new sharing for original-source ampersands because template entity decoding can introduce module loads absent from the lexical source screen."
+  },
+  "supersededF574LocalMatrix": {
+    "caseCount": 22,
+    "completeOrderedChecks": 88,
+    "profileProbes": 22,
+    "source": {
+      "crates/vize_canon/src/batch/executor/cli/partition/dependency_visibility.rs": "077a1c3964557bfba7a7c887528dbe4e6dd3b7822a24dc95ac3deffd7caa7224"
+    },
+    "buildNote": "Local ci-opt build of e027 plus the committed entity-opacity repair; exact hosted source and performance acceptance remain required.",
+    "rows": [
+      {
+        "case": "leaf-error",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "000-leaf-parity-leaf-error-1-server-parity-base",
+        "fingerprint": "fa92e0a3c0ab8e878675aafdf24f1ec22c45b5ec84dd835f3f8d225eb5cdd2e0"
+      },
+      {
+        "case": "leaf-error",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "001-leaf-parity-leaf-error-1-server-parity-head",
+        "fingerprint": "fa92e0a3c0ab8e878675aafdf24f1ec22c45b5ec84dd835f3f8d225eb5cdd2e0"
+      },
+      {
+        "case": "leaf-error",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "002-leaf-parity-leaf-error-2-server-parity-base",
+        "fingerprint": "fa92e0a3c0ab8e878675aafdf24f1ec22c45b5ec84dd835f3f8d225eb5cdd2e0"
+      },
+      {
+        "case": "leaf-error",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "003-leaf-parity-leaf-error-2-server-parity-head",
+        "fingerprint": "fa92e0a3c0ab8e878675aafdf24f1ec22c45b5ec84dd835f3f8d225eb5cdd2e0"
+      },
+      {
+        "case": "global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "005-leaf-parity-global-augmentation-1-server-parity-base",
+        "fingerprint": "5ff47805b6dfd1980d3b994407c8487ef230af297194be2aed23034bb9efb015"
+      },
+      {
+        "case": "global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "006-leaf-parity-global-augmentation-1-server-parity-head",
+        "fingerprint": "5ff47805b6dfd1980d3b994407c8487ef230af297194be2aed23034bb9efb015"
+      },
+      {
+        "case": "global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "007-leaf-parity-global-augmentation-2-server-parity-base",
+        "fingerprint": "5ff47805b6dfd1980d3b994407c8487ef230af297194be2aed23034bb9efb015"
+      },
+      {
+        "case": "global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "008-leaf-parity-global-augmentation-2-server-parity-head",
+        "fingerprint": "5ff47805b6dfd1980d3b994407c8487ef230af297194be2aed23034bb9efb015"
+      },
+      {
+        "case": "global-namespace",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "010-leaf-parity-global-namespace-1-server-parity-base",
+        "fingerprint": "b906a05f81f3e294473f289b35e592f0f9e9243e45b0d9a92b4568431f83eff1"
+      },
+      {
+        "case": "global-namespace",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "011-leaf-parity-global-namespace-1-server-parity-head",
+        "fingerprint": "b906a05f81f3e294473f289b35e592f0f9e9243e45b0d9a92b4568431f83eff1"
+      },
+      {
+        "case": "global-namespace",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "012-leaf-parity-global-namespace-2-server-parity-base",
+        "fingerprint": "b906a05f81f3e294473f289b35e592f0f9e9243e45b0d9a92b4568431f83eff1"
+      },
+      {
+        "case": "global-namespace",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "013-leaf-parity-global-namespace-2-server-parity-head",
+        "fingerprint": "b906a05f81f3e294473f289b35e592f0f9e9243e45b0d9a92b4568431f83eff1"
+      },
+      {
+        "case": "forced-module-namespace",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "015-leaf-parity-forced-module-namespace-1-server-parity-base",
+        "fingerprint": "9528b1d15dc2b2dc5510893d954edd6c65a2f71c202c6053e23bb84e5795e693"
+      },
+      {
+        "case": "forced-module-namespace",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "016-leaf-parity-forced-module-namespace-1-server-parity-head",
+        "fingerprint": "9528b1d15dc2b2dc5510893d954edd6c65a2f71c202c6053e23bb84e5795e693"
+      },
+      {
+        "case": "forced-module-namespace",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "017-leaf-parity-forced-module-namespace-2-server-parity-base",
+        "fingerprint": "9528b1d15dc2b2dc5510893d954edd6c65a2f71c202c6053e23bb84e5795e693"
+      },
+      {
+        "case": "forced-module-namespace",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "018-leaf-parity-forced-module-namespace-2-server-parity-head",
+        "fingerprint": "9528b1d15dc2b2dc5510893d954edd6c65a2f71c202c6053e23bb84e5795e693"
+      },
+      {
+        "case": "exported-namespace",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "020-leaf-parity-exported-namespace-1-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "exported-namespace",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "021-leaf-parity-exported-namespace-1-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "exported-namespace",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "022-leaf-parity-exported-namespace-2-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "exported-namespace",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "023-leaf-parity-exported-namespace-2-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "check-js-enabled",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "025-leaf-parity-check-js-enabled-1-server-parity-base",
+        "fingerprint": "4cc6f13493b8e39d75e6bb6f0448b991cb4ebc98401e6e09269688ab3d92e355"
+      },
+      {
+        "case": "check-js-enabled",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "026-leaf-parity-check-js-enabled-1-server-parity-head",
+        "fingerprint": "4cc6f13493b8e39d75e6bb6f0448b991cb4ebc98401e6e09269688ab3d92e355"
+      },
+      {
+        "case": "check-js-enabled",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "027-leaf-parity-check-js-enabled-2-server-parity-base",
+        "fingerprint": "4cc6f13493b8e39d75e6bb6f0448b991cb4ebc98401e6e09269688ab3d92e355"
+      },
+      {
+        "case": "check-js-enabled",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "028-leaf-parity-check-js-enabled-2-server-parity-head",
+        "fingerprint": "4cc6f13493b8e39d75e6bb6f0448b991cb4ebc98401e6e09269688ab3d92e355"
+      },
+      {
+        "case": "check-js-disabled",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "030-leaf-parity-check-js-disabled-1-server-parity-base",
+        "fingerprint": "db0d1cfb8c78b745c47345585ea656a1e41b7ce9923633577921ad1a562a57cb"
+      },
+      {
+        "case": "check-js-disabled",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "031-leaf-parity-check-js-disabled-1-server-parity-head",
+        "fingerprint": "db0d1cfb8c78b745c47345585ea656a1e41b7ce9923633577921ad1a562a57cb"
+      },
+      {
+        "case": "check-js-disabled",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "032-leaf-parity-check-js-disabled-2-server-parity-base",
+        "fingerprint": "db0d1cfb8c78b745c47345585ea656a1e41b7ce9923633577921ad1a562a57cb"
+      },
+      {
+        "case": "check-js-disabled",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "033-leaf-parity-check-js-disabled-2-server-parity-head",
+        "fingerprint": "db0d1cfb8c78b745c47345585ea656a1e41b7ce9923633577921ad1a562a57cb"
+      },
+      {
+        "case": "package-global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "035-leaf-parity-package-global-augmentation-1-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "package-global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "036-leaf-parity-package-global-augmentation-1-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "package-global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "037-leaf-parity-package-global-augmentation-2-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "package-global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "038-leaf-parity-package-global-augmentation-2-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "template-package-global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "040-leaf-parity-template-package-global-augmentation-1-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "template-package-global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "041-leaf-parity-template-package-global-augmentation-1-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "template-package-global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "042-leaf-parity-template-package-global-augmentation-2-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "template-package-global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "043-leaf-parity-template-package-global-augmentation-2-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "entity-template-package-global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "045-leaf-parity-entity-template-package-global-augmentation-1-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "entity-template-package-global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "046-leaf-parity-entity-template-package-global-augmentation-1-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "entity-template-package-global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "047-leaf-parity-entity-template-package-global-augmentation-2-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "entity-template-package-global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "048-leaf-parity-entity-template-package-global-augmentation-2-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "nested-vue-global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "050-leaf-parity-nested-vue-global-augmentation-1-server-parity-base",
+        "fingerprint": "6ebfb8558eb99096aabd6c88f556d7e217968a6d4876e88029d282ddf1e95f4f"
+      },
+      {
+        "case": "nested-vue-global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "051-leaf-parity-nested-vue-global-augmentation-1-server-parity-head",
+        "fingerprint": "6ebfb8558eb99096aabd6c88f556d7e217968a6d4876e88029d282ddf1e95f4f"
+      },
+      {
+        "case": "nested-vue-global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "052-leaf-parity-nested-vue-global-augmentation-2-server-parity-base",
+        "fingerprint": "6ebfb8558eb99096aabd6c88f556d7e217968a6d4876e88029d282ddf1e95f4f"
+      },
+      {
+        "case": "nested-vue-global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "053-leaf-parity-nested-vue-global-augmentation-2-server-parity-head",
+        "fingerprint": "6ebfb8558eb99096aabd6c88f556d7e217968a6d4876e88029d282ddf1e95f4f"
+      },
+      {
+        "case": "nested-vue-paths-override",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "055-leaf-parity-nested-vue-paths-override-1-server-parity-base",
+        "fingerprint": "5cb6fa42aa7ef8712fba0f36d48c44d6d6aeba0d97d3c7415e3d70246292499b"
+      },
+      {
+        "case": "nested-vue-paths-override",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "056-leaf-parity-nested-vue-paths-override-1-server-parity-head",
+        "fingerprint": "5cb6fa42aa7ef8712fba0f36d48c44d6d6aeba0d97d3c7415e3d70246292499b"
+      },
+      {
+        "case": "nested-vue-paths-override",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "057-leaf-parity-nested-vue-paths-override-2-server-parity-base",
+        "fingerprint": "5cb6fa42aa7ef8712fba0f36d48c44d6d6aeba0d97d3c7415e3d70246292499b"
+      },
+      {
+        "case": "nested-vue-paths-override",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "058-leaf-parity-nested-vue-paths-override-2-server-parity-head",
+        "fingerprint": "5cb6fa42aa7ef8712fba0f36d48c44d6d6aeba0d97d3c7415e3d70246292499b"
+      },
+      {
+        "case": "declaration-trivia-global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "060-leaf-parity-declaration-trivia-global-augmentation-1-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "declaration-trivia-global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "061-leaf-parity-declaration-trivia-global-augmentation-1-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "declaration-trivia-global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "062-leaf-parity-declaration-trivia-global-augmentation-2-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "declaration-trivia-global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "063-leaf-parity-declaration-trivia-global-augmentation-2-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "optional-require-js-global-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "065-leaf-parity-optional-require-js-global-augmentation-1-server-parity-base",
+        "fingerprint": "34f8c116f1ced25989ee0e6cec2ef3f255253c7a9f653c08f84690507a04a9b5"
+      },
+      {
+        "case": "optional-require-js-global-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "066-leaf-parity-optional-require-js-global-augmentation-1-server-parity-head",
+        "fingerprint": "34f8c116f1ced25989ee0e6cec2ef3f255253c7a9f653c08f84690507a04a9b5"
+      },
+      {
+        "case": "optional-require-js-global-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "067-leaf-parity-optional-require-js-global-augmentation-2-server-parity-base",
+        "fingerprint": "34f8c116f1ced25989ee0e6cec2ef3f255253c7a9f653c08f84690507a04a9b5"
+      },
+      {
+        "case": "optional-require-js-global-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "068-leaf-parity-optional-require-js-global-augmentation-2-server-parity-head",
+        "fingerprint": "34f8c116f1ced25989ee0e6cec2ef3f255253c7a9f653c08f84690507a04a9b5"
+      },
+      {
+        "case": "malformed-import-caret",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "070-leaf-parity-malformed-import-caret-1-server-parity-base",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-import-caret",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "071-leaf-parity-malformed-import-caret-1-server-parity-head",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-import-caret",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "072-leaf-parity-malformed-import-caret-2-server-parity-base",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-import-caret",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "073-leaf-parity-malformed-import-caret-2-server-parity-head",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-import-missing-from",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "075-leaf-parity-malformed-import-missing-from-1-server-parity-base",
+        "fingerprint": "d9bbc374d0e18425832cdb90ca6429ad7a65134cfbe877e7c870f7733412bf3e"
+      },
+      {
+        "case": "malformed-import-missing-from",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "076-leaf-parity-malformed-import-missing-from-1-server-parity-head",
+        "fingerprint": "d9bbc374d0e18425832cdb90ca6429ad7a65134cfbe877e7c870f7733412bf3e"
+      },
+      {
+        "case": "malformed-import-missing-from",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "077-leaf-parity-malformed-import-missing-from-2-server-parity-base",
+        "fingerprint": "d9bbc374d0e18425832cdb90ca6429ad7a65134cfbe877e7c870f7733412bf3e"
+      },
+      {
+        "case": "malformed-import-missing-from",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "078-leaf-parity-malformed-import-missing-from-2-server-parity-head",
+        "fingerprint": "d9bbc374d0e18425832cdb90ca6429ad7a65134cfbe877e7c870f7733412bf3e"
+      },
+      {
+        "case": "malformed-import-optional",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "080-leaf-parity-malformed-import-optional-1-server-parity-base",
+        "fingerprint": "43b3dc9d77d05d7667ad7daf4cb55b31a8537fdda0599d665b636c96a4d37a0a"
+      },
+      {
+        "case": "malformed-import-optional",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "081-leaf-parity-malformed-import-optional-1-server-parity-head",
+        "fingerprint": "43b3dc9d77d05d7667ad7daf4cb55b31a8537fdda0599d665b636c96a4d37a0a"
+      },
+      {
+        "case": "malformed-import-optional",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "082-leaf-parity-malformed-import-optional-2-server-parity-base",
+        "fingerprint": "43b3dc9d77d05d7667ad7daf4cb55b31a8537fdda0599d665b636c96a4d37a0a"
+      },
+      {
+        "case": "malformed-import-optional",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "083-leaf-parity-malformed-import-optional-2-server-parity-head",
+        "fingerprint": "43b3dc9d77d05d7667ad7daf4cb55b31a8537fdda0599d665b636c96a4d37a0a"
+      },
+      {
+        "case": "malformed-export-caret",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "085-leaf-parity-malformed-export-caret-1-server-parity-base",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-export-caret",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "086-leaf-parity-malformed-export-caret-1-server-parity-head",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-export-caret",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "087-leaf-parity-malformed-export-caret-2-server-parity-base",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-export-caret",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "088-leaf-parity-malformed-export-caret-2-server-parity-head",
+        "fingerprint": "007cf57b9e78f4cf9b36fab8055fe1af758be1ea8f81b77b496d87816b958493"
+      },
+      {
+        "case": "malformed-export-missing-from",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "090-leaf-parity-malformed-export-missing-from-1-server-parity-base",
+        "fingerprint": "cdba686b33254cbdf2de443aeef50ccb225d400f03869b0b17fab47caf6a1457"
+      },
+      {
+        "case": "malformed-export-missing-from",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "091-leaf-parity-malformed-export-missing-from-1-server-parity-head",
+        "fingerprint": "cdba686b33254cbdf2de443aeef50ccb225d400f03869b0b17fab47caf6a1457"
+      },
+      {
+        "case": "malformed-export-missing-from",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "092-leaf-parity-malformed-export-missing-from-2-server-parity-base",
+        "fingerprint": "cdba686b33254cbdf2de443aeef50ccb225d400f03869b0b17fab47caf6a1457"
+      },
+      {
+        "case": "malformed-export-missing-from",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "093-leaf-parity-malformed-export-missing-from-2-server-parity-head",
+        "fingerprint": "cdba686b33254cbdf2de443aeef50ccb225d400f03869b0b17fab47caf6a1457"
+      },
+      {
+        "case": "malformed-export-from-caret",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "095-leaf-parity-malformed-export-from-caret-1-server-parity-base",
+        "fingerprint": "57e4b568e5c232f791c487c48799377fe2d20674385dd88e7b456cfaa7c9d58e"
+      },
+      {
+        "case": "malformed-export-from-caret",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "096-leaf-parity-malformed-export-from-caret-1-server-parity-head",
+        "fingerprint": "57e4b568e5c232f791c487c48799377fe2d20674385dd88e7b456cfaa7c9d58e"
+      },
+      {
+        "case": "malformed-export-from-caret",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "097-leaf-parity-malformed-export-from-caret-2-server-parity-base",
+        "fingerprint": "57e4b568e5c232f791c487c48799377fe2d20674385dd88e7b456cfaa7c9d58e"
+      },
+      {
+        "case": "malformed-export-from-caret",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "098-leaf-parity-malformed-export-from-caret-2-server-parity-head",
+        "fingerprint": "57e4b568e5c232f791c487c48799377fe2d20674385dd88e7b456cfaa7c9d58e"
+      },
+      {
+        "case": "relative-ambient-augmentation",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "100-leaf-parity-relative-ambient-augmentation-1-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "relative-ambient-augmentation",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "101-leaf-parity-relative-ambient-augmentation-1-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "relative-ambient-augmentation",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "102-leaf-parity-relative-ambient-augmentation-2-server-parity-base",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "relative-ambient-augmentation",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "103-leaf-parity-relative-ambient-augmentation-2-server-parity-head",
+        "fingerprint": "6f31e61267089146ba8cc13cc690170a4cb12990386a8b5666c9638e833f71c6"
+      },
+      {
+        "case": "transitive-vue",
+        "side": "base",
+        "servers": 1,
+        "sampleId": "105-leaf-parity-transitive-vue-1-server-parity-base",
+        "fingerprint": "f4625bb97da116fc7f68240bb25ccb11990f1f9507d9bb4fc92857a9320b37a2"
+      },
+      {
+        "case": "transitive-vue",
+        "side": "head",
+        "servers": 1,
+        "sampleId": "106-leaf-parity-transitive-vue-1-server-parity-head",
+        "fingerprint": "f4625bb97da116fc7f68240bb25ccb11990f1f9507d9bb4fc92857a9320b37a2"
+      },
+      {
+        "case": "transitive-vue",
+        "side": "base",
+        "servers": 2,
+        "sampleId": "107-leaf-parity-transitive-vue-2-server-parity-base",
+        "fingerprint": "f4625bb97da116fc7f68240bb25ccb11990f1f9507d9bb4fc92857a9320b37a2"
+      },
+      {
+        "case": "transitive-vue",
+        "side": "head",
+        "servers": 2,
+        "sampleId": "108-leaf-parity-transitive-vue-2-server-parity-head",
+        "fingerprint": "f4625bb97da116fc7f68240bb25ccb11990f1f9507d9bb4fc92857a9320b37a2"
+      }
+    ],
+    "sourceSha": "f574ba5da9f0660dd8d53dd2c019befd42a8f35c",
+    "binarySha256": "1f810201555089f794ae05c7c3130f9157fcd0e2b8f21df9610c84e25d033f78"
+  },
+  "closedDomainSuccessor": {
+    "supersededSourceSha": "f574ba5da9f0660dd8d53dd2c019befd42a8f35c",
+    "supersededBinarySha256": "1f810201555089f794ae05c7c3130f9157fcd0e2b8f21df9610c84e25d033f78",
+    "rows": [
+      {
+        "id": "script-src",
+        "sources": {
+          "shared.ts": "export const value: LeafGlobal = 1;",
+          "Comp0.vue": "<script lang=\"ts\" src=\"leaf-types\"></script><script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp1.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp3.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp2.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "tsconfig.json": "{\"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"Bundler\", \"target\": \"ESNext\", \"lib\": [\"ESNext\", \"DOM\"], \"skipLibCheck\": true}, \"include\": [\"*.vue\", \"*.ts\", \"*.js\", \"*.tsx\"]}"
+        },
+        "base": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": []
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 0,
+          "fileCount": 5
+        },
+        "current": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0,
+          "fileCount": 5
+        },
+        "equal": false,
+        "fixed": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": []
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 0,
+          "fileCount": 5
+        },
+        "packageSources": {
+          "node_modules/leaf-types/package.json": "{\"name\":\"leaf-types\",\"version\":\"1.0.0\",\"types\":\"index.d.ts\"}",
+          "node_modules/leaf-types/index.d.ts": "declare const component: {}; export default component; declare global { type LeafGlobal = number; }"
+        }
+      },
+      {
+        "id": "escaped-import",
+        "sources": {
+          "shared.ts": "export const value: LeafGlobal = 1;",
+          "Comp0.vue": "<script setup lang=\"ts\">import { value } from './shared';  i\\u006dport 'leaf-types'; const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp1.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp3.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp2.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "tsconfig.json": "{\"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"Bundler\", \"target\": \"ESNext\", \"lib\": [\"ESNext\", \"DOM\"], \"skipLibCheck\": true}, \"include\": [\"*.vue\", \"*.ts\", \"*.js\", \"*.tsx\"]}"
+        },
+        "base": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": ["error:1:60 [TS1260] Keywords cannot contain escape characters."]
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": []
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0,
+          "fileCount": 5
+        },
+        "current": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": ["error:1:60 [TS1260] Keywords cannot contain escape characters."]
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": []
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0,
+          "fileCount": 5
+        },
+        "equal": true,
+        "fixed": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": ["error:1:60 [TS1260] Keywords cannot contain escape characters."]
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": []
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0,
+          "fileCount": 5
+        },
+        "packageSources": {
+          "node_modules/leaf-types/package.json": "{\"name\":\"leaf-types\",\"version\":\"1.0.0\",\"types\":\"index.d.ts\"}",
+          "node_modules/leaf-types/index.d.ts": "export {}; declare global { type LeafGlobal = number; }"
+        }
+      },
+      {
+        "id": "escaped-export",
+        "sources": {
+          "shared.ts": "export const value: LeafGlobal = 1;",
+          "Comp0.vue": "<script setup lang=\"ts\">import { value } from './shared';  ex\\u0070ort * from 'leaf-types'; const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp1.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp3.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp2.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "tsconfig.json": "{\"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"Bundler\", \"target\": \"ESNext\", \"lib\": [\"ESNext\", \"DOM\"], \"skipLibCheck\": true}, \"include\": [\"*.vue\", \"*.ts\", \"*.js\", \"*.tsx\"]}"
+        },
+        "base": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": ["error:1:60 [TS1260] Keywords cannot contain escape characters."]
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": []
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0,
+          "fileCount": 5
+        },
+        "current": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": ["error:1:60 [TS1260] Keywords cannot contain escape characters."]
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": []
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0,
+          "fileCount": 5
+        },
+        "equal": true,
+        "fixed": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": ["error:1:60 [TS1260] Keywords cannot contain escape characters."]
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": []
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0,
+          "fileCount": 5
+        },
+        "packageSources": {
+          "node_modules/leaf-types/package.json": "{\"name\":\"leaf-types\",\"version\":\"1.0.0\",\"types\":\"index.d.ts\"}",
+          "node_modules/leaf-types/index.d.ts": "export {}; declare global { type LeafGlobal = number; }"
+        }
+      },
+      {
+        "id": "jsx-pragma",
+        "sources": {
+          "loader.tsx": "/** @jsxImportSource leaf-types */ import { value } from './shared'; export const view = <div/>; void value;",
+          "shared.ts": "export const value: LeafGlobal = 1;",
+          "Comp0.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp1.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp3.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp2.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "tsconfig.json": "{\"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"Bundler\", \"target\": \"ESNext\", \"lib\": [\"ESNext\", \"DOM\"], \"skipLibCheck\": true, \"jsx\": \"react-jsx\"}, \"include\": [\"*.vue\", \"*.ts\", \"*.js\", \"*.tsx\"]}"
+        },
+        "base": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "loader.tsx",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": []
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "jsx": "react-jsx",
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": [
+                "Comp0.vue",
+                "Comp1.vue",
+                "Comp2.vue",
+                "Comp3.vue",
+                "loader.tsx",
+                "shared.ts"
+              ]
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 0,
+          "fileCount": 6
+        },
+        "current": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "loader.tsx",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "jsx": "react-jsx",
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": [
+                "Comp0.vue",
+                "Comp1.vue",
+                "Comp2.vue",
+                "Comp3.vue",
+                "loader.tsx",
+                "shared.ts"
+              ]
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0,
+          "fileCount": 6
+        },
+        "equal": false,
+        "fixed": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "loader.tsx",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": []
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "jsx": "react-jsx",
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": [
+                "Comp0.vue",
+                "Comp1.vue",
+                "Comp2.vue",
+                "Comp3.vue",
+                "loader.tsx",
+                "shared.ts"
+              ]
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 0,
+          "fileCount": 6
+        },
+        "packageSources": {
+          "node_modules/leaf-types/jsx-runtime.d.ts": "export namespace JSX { interface IntrinsicElements { div: {} } } export declare const jsx: any; export declare const jsxs: any; export declare const Fragment: any; declare global { type LeafGlobal = number; }",
+          "node_modules/leaf-types/package.json": "{\"name\":\"leaf-types\",\"version\":\"1.0.0\",\"types\":\"index.d.ts\"}",
+          "node_modules/leaf-types/index.d.ts": "export {}; declare global { type LeafGlobal = number; }"
+        }
+      },
+      {
+        "id": "jsx-options-js",
+        "sources": {
+          "shared.ts": "export const value: LeafGlobal = 1;",
+          "Comp0.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp1.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp3.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp2.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "tsconfig.json": "{\"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"Bundler\", \"target\": \"ESNext\", \"lib\": [\"ESNext\", \"DOM\"], \"skipLibCheck\": true, \"jsx\": \"react-jsx\", \"jsxImportSource\": \"leaf-types\", \"allowJs\": true, \"checkJs\": true}, \"include\": [\"*.vue\", \"*.ts\", \"*.js\", \"*.tsx\"]}",
+          "loader.js": "import { value } from './shared'; export const view = <div/>; void value;"
+        },
+        "base": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "loader.js",
+              "diagnostics": [
+                "error:1:55 [TS7026] JSX element implicitly has type 'any' because no interface 'JSX.IntrinsicElements' exists."
+              ]
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "allowJs": true,
+                "checkJs": true,
+                "jsx": "react-jsx",
+                "jsxImportSource": "leaf-types",
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": [
+                "Comp0.vue",
+                "Comp1.vue",
+                "Comp2.vue",
+                "Comp3.vue",
+                "loader.js",
+                "shared.ts"
+              ]
+            }
+          ],
+          "errorCount": 2,
+          "warningCount": 0,
+          "fileCount": 6
+        },
+        "current": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "loader.js",
+              "diagnostics": [
+                "error:1:55 [TS7026] JSX element implicitly has type 'any' because no interface 'JSX.IntrinsicElements' exists."
+              ]
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "allowJs": true,
+                "checkJs": true,
+                "jsx": "react-jsx",
+                "jsxImportSource": "leaf-types",
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": [
+                "Comp0.vue",
+                "Comp1.vue",
+                "Comp2.vue",
+                "Comp3.vue",
+                "loader.js",
+                "shared.ts"
+              ]
+            }
+          ],
+          "errorCount": 2,
+          "warningCount": 0,
+          "fileCount": 6
+        },
+        "equal": true,
+        "fixed": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "loader.js",
+              "diagnostics": [
+                "error:1:55 [TS7026] JSX element implicitly has type 'any' because no interface 'JSX.IntrinsicElements' exists."
+              ]
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "allowJs": true,
+                "checkJs": true,
+                "jsx": "react-jsx",
+                "jsxImportSource": "leaf-types",
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": [
+                "Comp0.vue",
+                "Comp1.vue",
+                "Comp2.vue",
+                "Comp3.vue",
+                "loader.js",
+                "shared.ts"
+              ]
+            }
+          ],
+          "errorCount": 2,
+          "warningCount": 0,
+          "fileCount": 6
+        },
+        "packageSources": {
+          "node_modules/leaf-types/jsx-runtime.d.ts": "export namespace JSX { interface IntrinsicElements { div: {} } } export declare const jsx: any; export declare const jsxs: any; export declare const Fragment: any; declare global { type LeafGlobal = number; }",
+          "node_modules/leaf-types/package.json": "{\"name\":\"leaf-types\",\"version\":\"1.0.0\",\"types\":\"index.d.ts\"}",
+          "node_modules/leaf-types/index.d.ts": "export {}; declare global { type LeafGlobal = number; }"
+        }
+      },
+      {
+        "id": "sfc-tsx-pragma",
+        "sources": {
+          "shared.ts": "export const value: LeafGlobal = 1;",
+          "Comp0.vue": "<script setup lang=\"tsx\">import { value } from './shared';  /** @jsxImportSource leaf-types */ const view = <div/>; void view; const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp1.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp3.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "Comp2.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+          "tsconfig.json": "{\"compilerOptions\": {\"strict\": true, \"module\": \"ESNext\", \"moduleResolution\": \"Bundler\", \"target\": \"ESNext\", \"lib\": [\"ESNext\", \"DOM\"], \"skipLibCheck\": true, \"jsx\": \"react-jsx\", \"jsxImportSource\": \"leaf-types\"}, \"include\": [\"*.vue\", \"*.ts\", \"*.js\", \"*.tsx\"]}"
+        },
+        "base": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": []
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "jsx": "react-jsx",
+                "jsxImportSource": "leaf-types",
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 0,
+          "fileCount": 5
+        },
+        "current": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "jsx": "react-jsx",
+                "jsxImportSource": "leaf-types",
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0,
+          "fileCount": 5
+        },
+        "equal": false,
+        "fixed": {
+          "files": [
+            {
+              "file": "Comp0.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp1.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp2.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "Comp3.vue",
+              "diagnostics": []
+            },
+            {
+              "file": "shared.ts",
+              "diagnostics": []
+            }
+          ],
+          "programs": [
+            {
+              "root": ".",
+              "tsconfig": "tsconfig.json",
+              "compilerOptions": {
+                "jsx": "react-jsx",
+                "jsxImportSource": "leaf-types",
+                "lib": ["ESNext", "DOM"],
+                "module": "ESNext",
+                "moduleResolution": "Bundler",
+                "skipLibCheck": true,
+                "strict": true,
+                "target": "ESNext"
+              },
+              "files": ["Comp0.vue", "Comp1.vue", "Comp2.vue", "Comp3.vue", "shared.ts"]
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 0,
+          "fileCount": 5
+        },
+        "packageSources": {
+          "node_modules/leaf-types/jsx-runtime.d.ts": "export namespace JSX { interface IntrinsicElements { div: {} } } export declare const jsx: any; export declare const jsxs: any; export declare const Fragment: any; declare global { type LeafGlobal = number; }",
+          "node_modules/leaf-types/package.json": "{\"name\":\"leaf-types\",\"version\":\"1.0.0\",\"types\":\"index.d.ts\"}",
+          "node_modules/leaf-types/index.d.ts": "export {}; declare global { type LeafGlobal = number; }"
+        }
+      }
+    ],
+    "decision": "Restrict all registered roots to authored angle-free ordinary TS/JS, bounded canonical Vue TS/JS+HTML, fixed ambient d.ts; decline unknown provenance/source domains and authoritative materialized JSX settings for the whole original plan."
   }
 }
