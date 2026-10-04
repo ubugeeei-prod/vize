@@ -1,12 +1,16 @@
-# Unposted module-link context decisions (2026-10-04)
+# Paired module-link context decisions (2026-10-04)
 
 Private paired comments for the
 [same-server context design](./2026-10-04-module-link-context.md).
-Neither comment is posted. Root and peer cleared frozen design 8074694; private
+The initial preparation was unposted; both decisions are now posted for draft
+[#7771](https://github.com/ubugeeei-prod/vize/pull/7771):
+[#6871](https://github.com/ubugeeei-prod/vize/issues/6871#issuecomment-5977606744) and
+[#6883](https://github.com/ubugeeei-prod/vize/issues/6883#issuecomment-5977606918). Root and peer cleared frozen design 8074694; private
 source/law preparation on actual da894 is authorized. No runtime execution,
 publication or queue admission accompanied the frozen source review. Root and
 peer cleared final2a4 and now authorize source publication and automatic Actions;
-the prepared comments below still await posting, with execution/merge pending.
+the preserved preparation below is paired with those actual comments, with
+execution/merge pending.
 
 ## Draft comment for #6871
 

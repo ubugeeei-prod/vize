@@ -3,8 +3,8 @@
 Tracking: [#6871](https://github.com/ubugeeei-prod/vize/issues/6871),
 [#6872](https://github.com/ubugeeei-prod/vize/issues/6872) and
 [#6883](https://github.com/ubugeeei-prod/vize/issues/6883).
-The [paired issue comments](./2026-10-04-module-link-context-issue-draft.md)
-are unposted. This private prerequisite design refines the reviewed private
+The [paired decisions](./2026-10-04-module-link-context-issue-draft.md) retain
+the original preparation text and actual publication links. This private prerequisite design refines the reviewed private
 DocumentLinks proposal `c5044a081a4f65d0b2db0709e08f136d16abb4f5` without
 changing that commit or its worktree. Frozen design `8074694ee89a3c8c6f36928a64509aa3a7266de5`
 received root and independent peer clearance after the original EOF correction.
