@@ -237,7 +237,7 @@ impl TextRun {
 /// covers, in ascending order and at most one per line.
 fn locked_line_ranges(source: &[u8]) -> Vec<(usize, usize)> {
     let mut locked = Vec::new();
-    if !contains_any(source, &PRAGMA_MARKERS) {
+    if !contains_pragma_marker(source) {
         return locked;
     }
 
@@ -270,6 +270,19 @@ fn content_span(line: &[u8]) -> Option<(usize, usize)> {
     Some((start, end))
 }
 
+/// Scan both marker starts once without constructing two substring searchers.
+/// Exact marker spelling still decides whether the original line scan runs.
+fn contains_pragma_marker(mut source: &[u8]) -> bool {
+    while let Some(index) = memchr::memchr2(b'-', b'@', source) {
+        let candidate = &source[index..];
+        if candidate.starts_with(PRAGMA_MARKERS[0]) || candidate.starts_with(PRAGMA_MARKERS[1]) {
+            return true;
+        }
+        source = &candidate[1..];
+    }
+    false
+}
+
 /// `memmem` rather than a naive window scan: the marker check in
 /// [`locked_line_ranges`] runs over every template the formatter sees, including
 /// the overwhelming majority that carry no suppression at all.
@@ -281,7 +294,31 @@ fn contains_any(haystack: &[u8], needles: &[&[u8]]) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::locked_line_ranges;
+    use super::{PRAGMA_MARKERS, contains_any, contains_pragma_marker, locked_line_ranges};
+
+    #[test]
+    fn candidate_scan_keeps_exact_marker_semantics() {
+        let cases: &[&[u8]] = &[
+            b"",
+            b"<p/>",
+            b"-",
+            b"@",
+            b"@vize",
+            b"-disable",
+            b"---@@@",
+            b"--disable-",
+            b"@vize:",
+            b"@vizeX",
+            b"@ -disable-",
+            b"\xff@vize:\x00",
+        ];
+        for source in cases {
+            assert_eq!(
+                contains_pragma_marker(source),
+                contains_any(source, &PRAGMA_MARKERS)
+            );
+        }
+    }
 
     #[test]
     fn ranges_track_pragma_placement() {

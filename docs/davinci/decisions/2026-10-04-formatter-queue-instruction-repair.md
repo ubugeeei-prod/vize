@@ -8,12 +8,12 @@ The original provider candidate `f60de62eb632cbbca1b73e89244209adb31a0346`,
 failed all four fixed formatter ceilings. It was removed from the queue.
 Its complete original failure and receipts remain historical.
 
-| Probe | Candidate instructions | Unchanged ceiling |
-| --- | ---: | ---: |
-| SFC | 293896 | 293575 |
-| Reused SFC allocator | 275027 | 274723 |
-| Large script | 929114 | 929044 |
-| Complex template | 244583 | 244347 |
+| Probe                | Candidate instructions | Unchanged ceiling |
+| -------------------- | ---------------------: | ----------------: |
+| SFC                  |                 293896 |            293575 |
+| Reused SFC allocator |                 275027 |            274723 |
+| Large script         |                 929114 |            929044 |
+| Complex template     |                 244583 |            244347 |
 
 Read-only raw comparisons with accepted #7673 formatter artifact `11289310675`
 find identical per-function exclusive counts in all three repetitions of each
@@ -51,3 +51,28 @@ Each protected candidate and literal signed merge remains a separate gate.
 Historical passes do not accept this source; no gate waiver, profile or cap
 change, extra pipeline stage, individual auto-merge, native default replacement
 or #6882 closure is claimed.
+
+## First measured repair and bounded successor
+
+[Level run 37169652948](https://github.com/ubugeeei-prod/vize/actions/runs/37169652948)
+measures `ac98ee77c5c3e8b7ca1bbc4082455d0e932461ea` in artifact `11290759612`.
+All original 100 cases and three formatter ceilings pass: SFC 292172, reused
+SFC 273330 and large script 928902. Complex template remains rejected at 244617
+against fixed 244347. This source never re-entered the queue. Prefix reuse
+removes thirteen actual append calls, while ThinLTO body partitioning offsets
+those savings; its actual sorting-context cleanup is now eliminated.
+
+The [paired successor decision](https://github.com/ubugeeei-prod/vize/issues/6847#issuecomment-5975657448)
+also skips duplicate-name checks and sorting on empty/singleton static segments,
+whose order is already unique. Initial suppression detection scans `-` / `@`
+candidates once and checks exact original marker prefixes, avoiding two substring
+searcher constructions and whole-source scans. The actual per-line SAME/NEXT
+pragma recognition, complete source ranges and whole-output behavior remain
+unchanged. A byte-level comparison with the original marker predicate covers
+empty, truncated, mixed and invalid-UTF8 candidates. A separate test asserts
+the real pinned OXC and public-mapped sorting defaults are both `None`.
+
+The central record keeps all prose within 350 physical lines. Original native
+provider and whole-child runtime/law blobs stay identical. Failed ac98 and older
+source receipts do not accept this successor; fresh exact-source Actions,
+three-run counts and protected Stack candidate/actual merges remain required.

@@ -29,6 +29,10 @@ pub(crate) fn sort_attributes(attrs: &mut [ParsedAttribute], options: &FormatOpt
     // those barriers. This also subsumes the no-argument v-bind/v-on spread
     // boundary: no dynamic attribute may cross another one.
     for segment in attrs.split_mut(is_order_sensitive_attribute) {
+        // Empty and singleton groups already have their only possible order.
+        if segment.len() < 2 {
+            continue;
+        }
         if has_duplicate_static_names(segment) {
             continue;
         }
