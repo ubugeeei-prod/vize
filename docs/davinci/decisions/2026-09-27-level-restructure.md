@@ -334,7 +334,7 @@ with the formatter's always-upload corpus evidence without changing build setup;
 
 ## Order of work
 
-See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work) in the companion record. [Fresh lexical import scan reuse](./2026-10-04-check-import-occurrence-cache.md) records #7698's independent default CLI preparation slice, exact source-byte freshness, per-occurrence resolution modes and the still-open 10x goal.
+See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work) in the companion record. [Rejected lexical scan retention](./2026-10-04-check-import-occurrence-cache.md) records #7698's paired default CLI evidence, unchanged diagnostics, no demonstrated whole-command gain and the still-open 10x goal.
 
 [Nuxt critical CSS module identity](./2026-09-27-nuxt-critical-css.md) records [#6897](https://github.com/ubugeeei-prod/vize/issues/6897); compiler migration and SSR slot scope remain separate.
 
