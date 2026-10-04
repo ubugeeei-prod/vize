@@ -100,10 +100,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn shutdown(&self) -> Result<()> {
-        #[cfg(feature = "experimental-source-navigation")]
-        self.state
-            .retire_module_links(super::ModuleLinkRetirement::Shutdown);
-        Ok(())
+        self.finish_shutdown()
     }
 
     async fn did_open(&self, params: DidOpenTextDocumentParams) {

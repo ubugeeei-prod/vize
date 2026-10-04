@@ -126,6 +126,13 @@ impl MaestroServer {
         &self.state.documents
     }
 
+    fn finish_shutdown(&self) -> tower_lsp::jsonrpc::Result<()> {
+        #[cfg(feature = "experimental-source-navigation")]
+        self.state
+            .retire_module_links(ModuleLinkRetirement::Shutdown);
+        Ok(())
+    }
+
     #[cfg(feature = "native")]
     #[expect(
         clippy::disallowed_types,
