@@ -76,12 +76,14 @@ export async function environment7502(mode: "development" | "production") {
     (globalThis as any)[serverName] = renderer;
     const owners = new Map<string, string>();
     for (const owner of ["vue", "vue/server-renderer", "@vue/server-renderer"]) {
-      const names = imports
+      const names: string[] = imports
         .filter((entry: any) => entry.source.value === owner)
         .flatMap((entry: any) =>
           entry.specifiers.map((specifier: any) => {
             assert.equal(specifier.type, "ImportSpecifier");
-            return specifier.imported.name ?? specifier.imported.value;
+            const name = specifier.imported.name ?? specifier.imported.value;
+            assert.equal(typeof name, "string");
+            return name;
           }),
         );
       const object = owner === "vue" ? runtime : renderer;
@@ -125,7 +127,13 @@ export async function environment7502(mode: "development" | "production") {
           1,
           node.localName,
           node.namespaceURI,
-          [...node.attributes].map((attribute: any) => [attribute.name, attribute.value]).sort(),
+          [...node.attributes]
+            .map((attribute: any) => [attribute.name, attribute.value])
+            .sort((left, right) => {
+              const a = String(left);
+              const b = String(right);
+              return a < b ? -1 : a > b ? 1 : 0;
+            }),
           [...node.childNodes].map(tree),
         ];
   const hostTree = (host: any) => [...host.childNodes].map(tree);

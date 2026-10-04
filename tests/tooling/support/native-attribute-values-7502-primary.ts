@@ -44,7 +44,7 @@ export async function primary7502(source: string) {
       isProduction: true,
       build: { sourcemap: true },
       define: {},
-      logger: { warn: context.warn },
+      logger: { warn: (value: any) => context.warn(value) },
     });
     plugin.buildStart.call(context);
     const output = await plugin.transform.handler.call(

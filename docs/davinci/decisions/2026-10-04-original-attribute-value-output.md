@@ -84,3 +84,12 @@ for this genuine Rust capture caller; those generated rows are intentionally
 recorded, without a classifier exemption.
 PR source workflow stays350 lines and the full workflow stays690. These checks
 grant no Rust/native/runtime execution credit.
+
+Initial source8da failed before capture on the parent's E0599 accessor calls
+and three owned JS/TS warnings. The parent correction keeps the original
+File artifact source; this child retains the plugin logger receiver, explicitly
+checks imported helper names as strings and supplies the same UTF-16 lexical
+attribute tuple ordering through a comparator. No lint suppression, output
+oracle, source loader range, pin or strict unfrozen gate changes. Raw initial
+logs remain preserved; fresh exact-source Actions must actually capture before
+any native/runtime acceptance is possible. Pure contracts still pass8/8.
