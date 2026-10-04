@@ -22,10 +22,6 @@ use crate::document::DocumentStore;
 use super::{SnapshotRefusal, SourceSnapshotCache};
 use host::DocumentHost;
 #[cfg(feature = "experimental-source-navigation")]
-#[allow(
-    unused_imports,
-    reason = "private module context prerequisite for a later target/consumer"
-)]
 pub(crate) use tracked::ModuleLinkPublicationError;
 pub use tracked::{ProjectQuery, ProjectQueryResult};
 

@@ -345,4 +345,4 @@ source acceptance. Two definition laws and one virtual-TS law gain their real
 `native` cfg; six formatter laws gain their real `glyph` cfg. Whole old bodies,
 inputs, expectations and default execution remain. Only unused feature-owned
 imports are gated; no production body changes. Fresh normal/minimal/strict
-source and protected full104/actual merge remain mandatory.
+source and protected full104/actual merge remain mandatory. Source cd5 then actually passes all152/43/21 normal and11 genuine no-default laws plus minimal check, but final strict Clippy rejects two introduced item-level allow attributes on private error reexports. Replace the genuinely unused outer import allowance with a precise conditional expectation, and remove the unnecessary inner allowance; its import is already used by that outer reexport. Every API/body/input/oracle/cap stays exact. Original cd5 logs remain retained, granting no whole source acceptance; fresh strict/current source/protected proof stays required.

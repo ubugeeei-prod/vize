@@ -118,3 +118,14 @@ input/output and normal execution stays exact; unused feature-owned imports
 follow their consumers. The genuine11 minimal laws still require execution
 without either feature. Preserved raw failure is not acceptance; fresh source,
 strict/full104 and actual signed delivery remain required.
+
+## Final strict warning qualification
+
+Source cd5 actually executes all152 SourceProject,43 RPC,21 normal and11 genuine
+no-default module-link laws successfully, then minimal cargo check. Strict
+Clippy rejects only two introduced item-level allow attributes on private error
+reexports. The outer unused import receives a precise conditional expectation
+only when no native test consumer exists; the inner already-consumed import
+needs no allowance. No lint level is weakened and every body/API/input/oracle/cap
+is unchanged. Full raw cd5 logs and all historical campaigns remain retained;
+fresh strict/whole source/protected/actual merge proof is still mandatory.

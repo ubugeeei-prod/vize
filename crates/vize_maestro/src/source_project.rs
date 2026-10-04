@@ -10,9 +10,12 @@ mod query;
 mod snapshot;
 
 #[cfg(feature = "experimental-source-navigation")]
-#[allow(
-    unused_imports,
-    reason = "private applied-context provider for a later target/consumer"
+#[cfg_attr(
+    not(all(test, feature = "native")),
+    expect(
+        unused_imports,
+        reason = "private applied-context provider is only consumed by native laws until the target/consumer exists"
+    )
 )]
 pub(crate) use project::ModuleLinkPublicationError;
 pub use project::{ProjectQuery, ProjectQueryResult, SourceQueryProject};
