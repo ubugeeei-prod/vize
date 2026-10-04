@@ -145,3 +145,11 @@ production change, source substitution or runtime credit follows; whole native
 module/map/fixed fresh-mount qualification is still required before any layer
 queues. The release publication hold has lifted, while this output hold remains.
 Raw failed f141/8e logs are preserved and exact successor Actions must pass.
+
+Fresh d9/fa9/f4 builders reject the new positive-law pointer assertion with
+E0308: the actual Op::Element pattern borrows an arena Box, while ptr::eq expects
+the original ElementOp allocation. Both assertions now explicitly borrow
+`&**element`, retaining the exact same allocation comparison and every source,
+slot, span/map and completion check. Production and old fixtures are unchanged.
+Raw rejected build logs remain historical; new laws and captures still require
+fresh corrected Actions, with no runtime credit or queue admission.

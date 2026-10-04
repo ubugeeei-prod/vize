@@ -211,7 +211,7 @@ fn formerly_refused_entity_header_retains_its_exact_original_slot() -> Result<()
         .native_attribute_value_for(1, element, 1)
         .ok_or("same Element/slot")?;
     check(core::ptr::eq(joined.file(), file))?;
-    check(core::ptr::eq(joined.element(), element))?;
+    check(core::ptr::eq(joined.element(), &**element))?;
     let value = joined.observation().ok_or("whole original preparation")?;
     equal(value.raw_value(), "&amp;")?;
     equal(value.value_span().slice(source), "&amp;")?;

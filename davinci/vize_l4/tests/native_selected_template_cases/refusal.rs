@@ -122,7 +122,7 @@ fn formerly_refused_entity_header_retains_original_input_for_target_qualificatio
         .native_attribute_value_for(1, element, 1)
         .ok_or("actual File/Element/slot")?;
     check(core::ptr::eq(joined.file(), file))?;
-    check(core::ptr::eq(joined.element(), element))?;
+    check(core::ptr::eq(joined.element(), &**element))?;
     let value = joined.observation().ok_or("whole original value")?;
     equal(value.raw_value(), "&amp;")?;
     equal(value.value_span().slice(source), "&amp;")?;
