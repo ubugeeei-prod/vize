@@ -65,6 +65,7 @@ export function prepareRun(baseInput, headInput, directory, root) {
           "type-snapshot-cli-protocol.mjs",
           "type-snapshot-cli-corpus.mjs",
           "type-snapshot-cli-leaf-corpus.mjs",
+          "type-snapshot-cli-leaf-parity.mjs",
           "type-snapshot-cli-runner.mjs",
           "generate.mjs",
           "check-gate-env.mjs",

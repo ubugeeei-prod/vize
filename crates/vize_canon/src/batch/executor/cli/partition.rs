@@ -8,6 +8,8 @@ use super::{ShardPlan, declares_program_wide_types, is_ambient_declaration};
 use crate::batch::{VirtualFile, VirtualProject};
 use vize_carton::{FxHashMap, String, cstr};
 
+mod shared_leaves;
+
 /// Partition the project's source files into shard programs along the
 /// connected components of their import graph. Files in different components
 /// never load each other, so component-aligned shards check disjoint code and
@@ -15,7 +17,8 @@ use vize_carton::{FxHashMap, String, cstr};
 /// and degrade to a single, unsharded run instead of paying N near-full
 /// programs. Only ambient `.d.ts` files and sources carrying module/global
 /// declarations stay visible to every shard, since they affect the whole
-/// program without being imported.
+/// program without being imported. Bounded cheap shared script leaves also
+/// remain visible everywhere, rather than coupling all their importers.
 pub(super) fn partition_virtual_files(project: &VirtualProject, servers: usize) -> ShardPlan<'_> {
     let files = project.virtual_files_sorted();
     let mut partitioned: Vec<&VirtualFile> = Vec::new();
@@ -57,18 +60,32 @@ pub(super) fn partition_virtual_files(project: &VirtualProject, servers: usize) 
         .enumerate()
         .map(|(index, file)| (file.virtual_path.as_path(), index))
         .collect();
+    let imports: Vec<_> = partitioned
+        .iter()
+        .map(|file| import_specifiers(&file.content))
+        .collect();
+    let leaves = shared_leaves::select(&partitioned, &imports, &index_by_virtual, servers);
+    for (index, file) in partitioned.iter().enumerate() {
+        if leaves.contains(&index) {
+            shared.push(file.virtual_path.as_path());
+        }
+    }
     let alias_prefixes = project.path_alias_prefixes();
     let mut components = UnionFind::new(partitioned.len());
     let mut coupling_keys: FxHashMap<String, usize> = FxHashMap::default();
-    for (index, file) in partitioned.iter().enumerate() {
-        for specifier in import_specifiers(&file.content) {
+    for (index, (file, specifiers)) in partitioned.iter().zip(&imports).enumerate() {
+        for &specifier in specifiers {
             if specifier.starts_with("./") || specifier.starts_with("../") {
                 let Some(base) = file.virtual_path.parent() else {
                     continue;
                 };
                 let target = normalize_join(base, specifier);
                 if let Some(target_index) = resolve_virtual_import(&target, &index_by_virtual) {
-                    components.union(index, target_index);
+                    // Cheap script leaves stay present in every program but
+                    // do not join otherwise independent source components.
+                    if !leaves.contains(&target_index) {
+                        components.union(index, target_index);
+                    }
                 } else {
                     // An unresolved local module: couple its importers.
                     let key = String::from(target.to_string_lossy());
@@ -109,7 +126,7 @@ pub(super) fn partition_virtual_files(project: &VirtualProject, servers: usize) 
     // means each extra program would mostly re-check the same files. Weights
     // are generated-content bytes, a usable proxy for parse+check cost.
     let mut component_files: FxHashMap<usize, Vec<usize>> = FxHashMap::default();
-    for index in 0..partitioned.len() {
+    for index in (0..partitioned.len()).filter(|index| !leaves.contains(index)) {
         component_files
             .entry(components.find(index))
             .or_default()
@@ -163,6 +180,9 @@ pub(super) fn partition_virtual_files(project: &VirtualProject, servers: usize) 
         shards.push(include);
     }
 
+    shared_leaves::record_selection(&partitioned, &leaves, shards.len());
+    vize_carton::profiler::global_profiler()
+        .record_counter("canon.corsa.cli.shards", shards.len() as u64);
     ShardPlan { shards, owners }
 }
 

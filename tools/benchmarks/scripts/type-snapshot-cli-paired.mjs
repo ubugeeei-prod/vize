@@ -22,6 +22,7 @@ import {
   summarizePairs,
   writeJson,
 } from "./type-snapshot-cli-protocol.mjs";
+import { checkLeafParity } from "./type-snapshot-cli-leaf-parity.mjs";
 import { commandOutput, createRunner, prepareRun } from "./type-snapshot-cli-runner.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -141,7 +142,7 @@ export function main(argv = process.argv.slice(2)) {
           );
       }
     }
-    // Profile only after all four rows finish: profiling must not warm later timing rows.
+    // Profile only after all timing rows finish: profiling must not warm later timing rows.
     for (const corpus of corpora)
       for (const mode of modes)
         for (const side of SIDES) {
@@ -159,6 +160,7 @@ export function main(argv = process.argv.slice(2)) {
             sha256: profile.profileSha256,
           };
         }
+    const leafParity = checkLeafParity(directory, vuePackageDir, run);
     assertBinariesUnchanged(binaries);
     for (const corpus of corpora)
       assert.equal(
@@ -178,6 +180,7 @@ export function main(argv = process.argv.slice(2)) {
       ...metadata,
       corpora: corpora.map((corpus) => ({ id: corpus.id, ...corpus.manifest })),
       rows,
+      leafParity,
     });
     const markdown = [
       "| Corpus / mode | Cold base / head (ms) | Steady base / head median (ms) | Head/base median | Median paired head/base |",
