@@ -139,6 +139,12 @@ angle-free TS reexports. Final adoption therefore requires the complete five-lay
 Stack and all 36 cases; no standalone leaf or earlier prefix is accepted. Fresh
 final Actions must renew correctness/performance acceptance before readiness. These
 cases define the tested closed range; they do not prove broad language support.
+A typing-only successor adds precise tuple metadata for JSX/extends fixture rows.
+Production Rust and all 31 cases' 239 input files remain byte-identical; the
+124 ordered checks and 31 profiles were replayed. Focused type-aware vp check
+has zero warnings/errors. Full local vp check reports warnings outside this
+helper; the fresh hosted zero-warning budget remains required. The release owner
+has lifted the global publication freeze; the complete five-layer hold remains.
 
 The historical [measured hold decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5976127642)
 preserves the [full paired receipt](../../../tools/benchmarks/results/typechecker-shared-script-leaves-cli-paired.json).

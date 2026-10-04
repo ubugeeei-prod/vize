@@ -21,6 +21,22 @@ const NESTED_VUE_SOURCES = {
 const JSX_RUNTIME_SOURCE =
   "export namespace JSX { interface IntrinsicElements { div: {} } } export declare const jsx: any; export declare const jsxs: any; export declare const Fragment: any; declare global { type LeafGlobal = number; }";
 
+/** @type {Array<[string, string | null, {jsx: string, jsxImportSource?: string, allowJs?: boolean, checkJs?: boolean}]>} */
+const JSX_RUNTIME_CASES = [
+  ["tsx-pragma-runtime", "loader.tsx", { jsx: "react-jsx" }],
+  [
+    "js-jsx-option-runtime",
+    "loader.js",
+    { jsx: "react-jsx", jsxImportSource: "leaf-types", allowJs: true, checkJs: true },
+  ],
+  ["sfc-tsx-option-runtime", null, { jsx: "react-jsx", jsxImportSource: "leaf-types" }],
+];
+/** @type {Array<[string, string | string[]]>} */
+const INHERITED_JSX_CASES = [
+  ["inherited-jsx-runtime-option", "./jsx-base.json"],
+  ["array-extends-jsx-runtime-option", ["./jsx-base.json", "./strict-base.json"]],
+];
+
 const CASES = [
   {
     id: "leaf-error",
@@ -112,15 +128,7 @@ const CASES = [
     expectedError: true,
     split: false,
   })),
-  ...[
-    ["tsx-pragma-runtime", "loader.tsx", { jsx: "react-jsx" }],
-    [
-      "js-jsx-option-runtime",
-      "loader.js",
-      { jsx: "react-jsx", jsxImportSource: "leaf-types", allowJs: true, checkJs: true },
-    ],
-    ["sfc-tsx-option-runtime", null, { jsx: "react-jsx", jsxImportSource: "leaf-types" }],
-  ].map(([id, file, options]) => ({
+  ...JSX_RUNTIME_CASES.map(([id, file, options]) => ({
     id,
     leaf: "export const value: LeafGlobal = 1;",
     extra: {
@@ -139,10 +147,7 @@ const CASES = [
     expectedError: file === "loader.js",
     split: false,
   })),
-  ...[
-    ["inherited-jsx-runtime-option", "./jsx-base.json"],
-    ["array-extends-jsx-runtime-option", ["./jsx-base.json", "./strict-base.json"]],
-  ].map(([id, inherited]) => ({
+  ...INHERITED_JSX_CASES.map(([id, inherited]) => ({
     id,
     leaf: "export const value = 1;",
     extra: {
