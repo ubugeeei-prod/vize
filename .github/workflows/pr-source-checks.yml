@@ -1,8 +1,7 @@
 name: PR source checks
 on:
   workflow_call:
-permissions:
-  contents: read
+permissions: { contents: read }
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

@@ -105,3 +105,25 @@ all actual selected worker IDs/attempts, source/build receipts, named full count
 and required contexts. A genuine failed-only hosted execution of this new
 workflow remains pending and must be reported separately from synthetic laws.
 Never deliberately fail or retry a healthy queue candidate to manufacture proof.
+
+The corrected source `4468f0d1b69a7d2c66043a6415ad7f73aa065fab` passed exact
+Check `37188259141`. Its first protected candidate
+`34b93f444b0ff515738c5f7658fa85241598e323`, based on the actual preceding queue
+candidate `83bd582338c7977cd30e80903debd661b36f19ab`, failed tooling worker 4
+(`111410937616`): four existing length laws rejected the composed
+`.github/workflows/pr-source-checks.yml` at 351 physical lines. The incoming
+native capture hook union and this repair's narrow Actions permission were each
+retained; their composition crossed the unchanged 350-line limit. The immediate
+fresh removal lease already found the PR absent from the queue, with auto-merge
+disabled. No foreign queue or CI run was changed, and no failed-only retry was
+triggered. The complete original log is retained with SHA-256
+`9e71efb1f5812599b3ea1310c283d7ee28b95601afd332170fedb333eda30e0e`.
+
+Compact the existing top-level contents-only permission mapping to equivalent
+YAML flow syntax, reclaiming exactly one line. The Rust caller's separate
+contents/Actions read permissions and every sibling capture hook stay exact.
+Verify parsed YAML equality and the complete prospective healthy-tail workflow
+length before fresh admission; source-only length is insufficient. Preserve the
+failed candidate and its measurements separately. Corrected exact-head Actions,
+new protected full suites/all 104 measurements and actual signed merge remain
+required; no result from `34b` supplies their acceptance.
