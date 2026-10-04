@@ -22,7 +22,7 @@ const OWNERS: Record<
   // remain byte-identical to their complete cc87 source bodies.
   "crates/vize_glyph/src/formatter/template_indent.rs": {
     originalSha256: "4e610e8497708dc137ae90209526526875cc70154c376a4ee6e8098f7caccef6",
-    actualMainSha256: "12f9b0be8e60d58ce2277adb0a65998e21211fb4027bf7c8c655c09d20d68c8e",
+    actualMainSha256: "d265a145979a89a22fdf3c90cbdd915b7930a872a4669e5b7cb8c08eb6f7fb25",
     functions: {
       ordinary_templates_bypass_the_raw_line_mask:
         "252d13f191f01a540b78024c0d9e21603dc9a1a14b4c92cc56594ac3fb4cc115",

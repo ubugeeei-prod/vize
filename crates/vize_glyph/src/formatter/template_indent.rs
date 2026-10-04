@@ -122,6 +122,8 @@ pub(super) fn write_indented_template(
     }
 }
 
+#[cold]
+#[inline(never)]
 fn write_indented_crlf_template(output: &mut Vec<u8>, source: &str, indent: &[u8]) {
     if !needs_raw_line_mask(source.as_bytes()) {
         for line in source.as_bytes().split(|byte| *byte == b'\n') {

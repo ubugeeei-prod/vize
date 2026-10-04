@@ -30,3 +30,9 @@ TODO #6098: `EndOfLine::Auto` currently resolves to LF in the newline helpers an
 OXC conversion. Detecting the source's line-ending style and consistently applying
 it to every public formatter surface needs its own exact corpus/config coverage.
 The broader profiles/configuration issue remains open.
+
+The first protected queue candidate (`b50cafb2`, Check 37171010927) exceeded
+only the original SFC/reuse ceilings by 74 instructions (293649/274797).
+Remove the candidate immediately. Keep the CRLF helper cold and non-inlined
+so its owned mask/line storage cannot enlarge the ordinary LF call frame;
+rerun exact-head Actions and all unchanged ceilings before requeueing.
