@@ -140,3 +140,87 @@ evidence, and preserves initialization errors without overwriting existing
 records. A direct initialization law checks the actual preparation-to-runner
 integration plus wrong identities and reused-output rejection. Matrix inputs,
 allocation hooks, windows and caps remain unchanged; cause remains unknown.
+
+## Completed bounded campaign: cause unknown
+
+Paired [actual outcome and pin decision](https://github.com/ubugeeei-prod/vize/issues/7764#issuecomment-5977908002).
+
+Producer `fdfe97336b238d6078e207f5fe54ec64f054d7c0` passed source
+[Check 37185712103](https://github.com/ubugeeei-prod/vize/actions/runs/37185712103).
+The authorized finite campaign's
+[diagnostic job 111387387331](https://github.com/ubugeeei-prod/vize/actions/runs/37185823768/job/111387387331)
+succeeded. The overall manual workflow also succeeded; ordinary manual full
+validation is separate from campaign completeness and establishes neither
+protected merge-group acceptance nor the historical allocation cause.
+Official artifact `11296109680`, named
+`allocation-ownership-37185823768-1-fdfe97336b238d6078e207f5fe54ec64f054d7c0`,
+has complete ZIP SHA-256
+`53118497a544521d102da77b2fad34ddf9861e17930fa1085c562b5087e40e13`.
+Independent audits authenticated official metadata, every retained file hash,
+all 64 unique source/mode/thread/attempt keys, all seven printed rows and
+original exits. There are 32 original archived ELF attempts and 32 distinct
+instrumented ELF attempts; every attempt exited zero without timeout.
+
+All 64 native/retained vectors were identical:
+
+| Fixture      | Native | Retained |
+| ------------ | -----: | -------: |
+| text_runs    |     74 |       76 |
+| events       |     72 |       72 |
+| expressions  |    106 |      133 |
+| components   |     91 |      117 |
+| templates    |    132 |      143 |
+| spreads      |    104 |      122 |
+| control_flow |    155 |      174 |
+
+The 32 instrumented attempts contain 448 exact measured windows and 50,272
+joined global allocation ordinals. Every measured call belongs to its measuring
+worker; no libtest-main or other-worker call occurred inside these windows.
+Both genuine positive controls retain one actual spawned worker allocation
+alongside the measuring allocation in the global total. Each source's 1,536
+compiler-unit feature tuples match its original envelope apart from the
+explicit observer feature; rustc identity, linker/config, ELF dependencies,
+source inputs and overlay hashes are authenticated.
+
+| Source     | Original budget ELF SHA-256                                        | Instrumented budget ELF SHA-256                                    |
+| ---------- | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `b9be9065` | `41b80ec59763a5dc4e2bb8d1973e782adaf237500e2ccb4e848811e47b793f00` | `2b1ff951a8c8f5e99e21530c41df7b516b6b77bb50ef2de0cd1661bd3881edcc` |
+| `e1c0c860` | `9d6b0cad11a699c1b59d9e89a4cca8e7dc24e53c1e2434691d50098b38a9c956` | `43c5590eeeb100139f8be272602fe83745d335013d2ec2e9de50b97917a71bb5` |
+
+The original archives share selected-suite metadata and executable paths, but
+their actual budget ELF bytes differ. Fresh native 74 does not attribute either
+three calls above ceiling 75 or the difference from the historical 78. There
+was no over-cap reproduction. Instrumentation may change scheduling, direct
+launch is a diagnostic control, and thread-count 1 remains diagnostic contrast.
+The campaign launched its processes serially and directly. The historical
+full nextest shard ran 3,826 cases across 916 binaries; its profile permits
+16 concurrent test processes with inherited `RUST_TEST_THREADS=4`, while the
+actual simultaneous count at failure was not recorded. Protocol reconstruction
+from pinned official nextest 0.9.146 source
+[`8af696ddcce8fff2962d6a5168b6d138b8616a35`](https://github.com/nextest-rs/nextest/tree/8af696ddcce8fff2962d6a5168b6d138b8616a35)
+uses pipe capture, null stdin, the default Unix double-spawn stub/process group
+and additional Cargo/NEXTEST runtime environment. The diagnostic instead uses
+regular output files, inherited stdin, direct spawning, forced backtrace 1 and
+source-specific relocated ELF/worktree paths. The old actual execve, complete
+child environment, descriptors and stub use were not captured; reconstructed
+protocol is not a historical runtime trace. The quiet campaign therefore does
+not replay the full historical driver or rule out its scheduling effects.
+
+The original failure, both zero-attempt setup failures and every finite outcome
+remain retained. Cause remains unknown; no production fix, ceiling increase or
+ratchet, protected acceptance, additional trial or #7757 readmission follows.
+The diagnostic PR remains draft and outside the release batch and queue.
+
+A separate code-scanning check on producer `fdfe97336b` failed at the
+Rust-toolchain action pin, although the source Check workflow succeeded.
+The inherited `6bed0761` is an official generated stable-branch commit outside
+master's history. The upstream
+[full-SHA pin policy](https://github.com/dtolnay/rust-toolchain/blob/7e38f4b43b4db5c8dd498af069a4f6196df1d067/README.md#choice-of-full-length-commit-sha)
+requires master history, and its
+[branch generator](https://github.com/dtolnay/rust-toolchain/blob/7e38f4b43b4db5c8dd498af069a4f6196df1d067/scripts/update-revs.sh)
+replaces generated toolchain branches. A narrow successor pins only this new
+action to verified official master `7e38f4b43b4db5c8dd498af069a4f6196df1d067`
+while retaining explicit Rust 1.98.0. Fresh source checks must validate that
+successor; producer `fdfe97336b`, its action bytes and campaign provenance stay
+historical. Counter, fixtures, ceilings and matrix scripts remain unchanged.
+No new 64-process campaign is authorized by this pin correction.
