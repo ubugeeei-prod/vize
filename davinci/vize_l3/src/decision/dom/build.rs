@@ -88,7 +88,8 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
         } else {
             false
         };
-        let block_eligible = branch_root
+        let mut block_eligible = branch_root
+            || self.prepare_for_body(id, op)
             || (self.frames.is_empty() && self.root_count == 1 && matches!(op, Op::Element(_)));
         let conditional = self.prepare_conditional(id, op);
         let text =
@@ -118,8 +119,10 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
                 Op::Comment(_) => None,
                 Op::If(_) => None,
                 Op::OriginalFor(original) => {
-                    self.record_for_head(id, original);
-                    self.reject(id, span, DomUnsupported::Operation);
+                    block_eligible = self.record_for_head(id, original);
+                    if !block_eligible {
+                        self.reject(id, span, DomUnsupported::Operation);
+                    }
                     None
                 }
                 Op::Component(_) | Op::For(_) | Op::Slot(_) => {
@@ -190,6 +193,7 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
         if let Some(conditional) = frame.conditional.take() {
             self.complete_conditional(id, NodeRef::Op(frame.node.op).span(), conditional)?;
         }
+        self.complete_for_body(id, &mut frame);
         frame.node.children = if frame.children.is_empty() {
             DomChildren::Empty
         } else if frame.children.len() == 1
@@ -228,7 +232,8 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
             [] => DomRootKind::Empty,
             [DomChild::Node(id)] => {
                 if let Some(node) = self.facts.nodes.get_mut(*id) {
-                    node.block_eligible = matches!(node.op, Op::Element(_));
+                    node.block_eligible = matches!(node.op, Op::Element(_))
+                        || (matches!(node.op, Op::OriginalFor(_)) && node.block_eligible);
                 }
                 DomRootKind::Direct
             }

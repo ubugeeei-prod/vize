@@ -1,7 +1,10 @@
 //! Statically selected expression writers; the caller cannot supply a file policy.
 
 use vize_l0::id::NodeId;
-use vize_l2::{expr::ExprRef, op::OnOp};
+use vize_l2::{
+    expr::ExprRef,
+    op::{OnOp, OriginalForOp},
+};
 use vize_l3::decision::NativeAnalysis;
 
 use super::{DomError, DomErrorKind};
@@ -9,6 +12,18 @@ use crate::expr::{AccessProvider, ResolvedExpressions};
 use crate::write::{LinkSink, Writer};
 
 pub(super) trait ExpressionWriter {
+    fn write_for_collection<L: LinkSink>(
+        &self,
+        _: &mut Writer<L>,
+        node: NodeId,
+        original: &OriginalForOp<'_>,
+    ) -> Result<(), DomError> {
+        Err(DomError {
+            node: Some(node),
+            span: original.span,
+            kind: DomErrorKind::RuntimeAccessUnavailable,
+        })
+    }
     fn write_handler<L: LinkSink>(
         &self,
         _: &mut Writer<L>,

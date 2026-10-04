@@ -13,6 +13,9 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
 {
     pub(in crate::decision) fn binding(&mut self, id: NodeId, binding: &'owner BindingOp<'arena>) {
         let span = NodeRef::Binding(binding).span();
+        if self.in_original_for_body() {
+            self.reject(id, span, DomUnsupported::ForBody);
+        }
         if let BindingOp::On(on) = binding {
             self.handler_binding(id, binding, on);
             return;

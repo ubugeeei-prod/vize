@@ -22,6 +22,7 @@ mod conditional;
 mod element;
 mod expression;
 mod file;
+mod for_head;
 mod handler;
 mod output;
 #[cfg(test)]
@@ -62,6 +63,7 @@ pub enum DomErrorKind {
     MissingFileScope,
     RuntimeAccessUnavailable,
     UncertifiedExpressionSpelling,
+    GeneratedForBindingCollision,
     OutputTooLarge,
 }
 
@@ -126,9 +128,11 @@ fn encode<'owner, 'arena, L: LinkSink>(
         });
     }
     for &dependency in facts.dependencies() {
-        emitter
-            .writer
-            .use_helper(emitter.helpers.dependency(dependency));
+        let helper = emitter
+            .helpers
+            .dependency(dependency, vocabulary)
+            .ok_or_else(|| failure(DomErrorKind::MissingRuntimeHelper))?;
+        emitter.writer.use_helper(helper);
     }
     emitter
         .writer
@@ -200,6 +204,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
             match fact.op() {
                 Op::Element(element) => self.element(id, element, fact, None),
                 Op::If(owner) => self.conditional(id, owner),
+                Op::OriginalFor(original) => self.original_for(id, original, fact),
                 Op::Comment(comment) => {
                     helper(&mut self.writer, self.vocabulary, self.helpers.comment);
                     self.writer.push("(");

@@ -86,6 +86,7 @@ struct SelectedReads<'view, 'owner, 'arena>(&'view NativeSelectedSetup<'owner, '
 impl<'owner, 'arena> FileReads<'owner, 'arena> for SelectedReads<'_, 'owner, 'arena> {
     const RECORD: bool = true;
     const NATIVE_SETUP: bool = true;
+    const ORIGINAL_FOR: bool = true;
     fn classify(
         &self,
         occurrence: &Occurrence<'arena>,
@@ -109,7 +110,8 @@ impl<'owner, 'arena> FileReads<'owner, 'arena> for SelectedReads<'_, 'owner, 'ar
 
 /// No external File/template, script role, completeness flag or runtime policy.
 /// The existing Enter visit joins each original operand and immutable occurrence;
-/// no AST walk, lookup or new resolution occurs. For remains an Operation hole.
+/// no AST walk, lookup or new resolution occurs. Only the bounded mutable
+/// original-root For/static-body family receives separate runtime eligibility.
 pub fn build_native_selected_setup_dom_decisions<'view, 'owner, 'arena>(
     setup: &'view NativeSelectedSetup<'owner, 'arena>,
 ) -> Result<NativeSelectedSetupDomAnalysis<'view, 'owner, 'arena>, DecisionBuildError> {

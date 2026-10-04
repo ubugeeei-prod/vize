@@ -35,8 +35,8 @@ impl Helpers {
     }
 
     /// Encode the producer's ordered semantic demand with checked runtime ids.
-    pub fn dependency(&self, dependency: DomDependency) -> Helper {
-        match dependency {
+    pub fn dependency(&self, dependency: DomDependency, vocabulary: &Vocabulary) -> Option<Helper> {
+        Some(match dependency {
             DomDependency::DisplayValue => self.display,
             DomDependency::BlockBoundary => self.open_block,
             DomDependency::NativeElementBlock => self.element_block,
@@ -46,7 +46,8 @@ impl Helpers {
             DomDependency::FragmentValue => self.fragment,
             DomDependency::ClassNormalization => self.class,
             DomDependency::StyleNormalization => self.style,
-        }
+            DomDependency::CollectionIteration => return vocabulary.helper("renderList"),
+        })
     }
 }
 

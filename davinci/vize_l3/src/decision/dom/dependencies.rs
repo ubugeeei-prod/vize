@@ -15,4 +15,5 @@ pub enum DomDependency {
     ClassNormalization,
     StyleNormalization,
     ConditionalPlaceholder,
+    CollectionIteration,
 }

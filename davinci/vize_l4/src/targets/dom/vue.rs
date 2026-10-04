@@ -20,6 +20,8 @@ use crate::expr::{
 };
 use crate::write::{LinkSink, Writer};
 
+mod for_head;
+
 /// Encode the external-function read decisions of one authenticated Vue owner.
 ///
 /// The first spelling slice admits retained literals and normalized direct
@@ -104,6 +106,14 @@ struct VueExpressions<'read, 'view, 'owner, 'descriptor, 'program, 'arena> {
     analysis: VueRows<'read, 'view, 'owner, 'descriptor, 'program, 'arena>,
 }
 impl ExpressionWriter for VueExpressions<'_, '_, '_, '_, '_, '_> {
+    fn write_for_collection<L: LinkSink>(
+        &self,
+        writer: &mut Writer<L>,
+        node: NodeId,
+        original: &vize_l2::op::OriginalForOp<'_>,
+    ) -> Result<(), DomError> {
+        for_head::write(&self.analysis, writer, node, original)
+    }
     fn write_handler<L: LinkSink>(
         &self,
         writer: &mut Writer<L>,
