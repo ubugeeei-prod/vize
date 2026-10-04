@@ -172,3 +172,69 @@ SHA-scoped evidence. Sequential projections with independent infrastructure
 changes must be clean before native Stack admission; unchanged 100+4 ceilings
 still require actual protected measurements. No prefix-only merge, actual
 delivery or demonstrated 10x is claimed by this replay.
+
+## Fresh actual-main full CLI receipt
+
+Measured complete replay `ce229a230eea67533e45c39790ce5d4adcd53293` versus
+actual main `da894691fff4da81b4acbe71a935c7c67fb0539a` passes the [paired
+API/CLI run](https://github.com/ubugeeei-prod/vize/actions/runs/37184743027).
+Both CLI binaries are v0.431.0; native TypeScript stays 7.0.2. The protocol
+retains two warmups and nine alternating fresh-process pairs per row, identical
+ci-opt settings and dependencies on one Blacksmith 32-vCPU Ubuntu host. Warm
+filesystem state is not a retained checker; cold is the first process sample
+without eviction. Profiles are separate untimed runs.
+
+| Corpus/mode                | Cold base/head ms | Warm medians base/head ms | Paired mean head-minus-base ms, conditional 95% interval | Faster pairs |
+| -------------------------- | ----------------: | ------------------------: | -------------------------------------------------------: | -----------: |
+| shared-barrel500-max       |   397.824/332.370 |           345.434/325.685 |                               -20.510 [-28.967, -12.054] |          8/9 |
+| shared-barrel500-1t        |   826.631/437.770 |           817.971/441.936 |                            -372.104 [-384.764, -359.445] |          9/9 |
+| shared-leaf501-default-max |   449.911/284.141 |           459.501/274.883 |                            -185.048 [-191.043, -179.052] |          9/9 |
+| shared-leaf501-default-1t  |   575.743/569.831 |           576.392/571.356 |                                  -3.594 [-15.443, 8.254] |          4/9 |
+| generated500-max           |   439.736/429.556 |           434.150/435.258 |                                   -0.235 [-7.770, 7.301] |          4/9 |
+| generated500-1t            | 1313.518/1333.309 |         1325.057/1332.448 |                                   8.294 [-3.224, 19.813] |          2/9 |
+
+Intervals use the paired mean with t(8), conditional on this single run; they
+are not cross-run bounds. Imported default max and bounded-leaf default max
+improve, and imported 1T improves. Leaf 1T and both generated500 rows remain
+unresolved; generated500 default max does not establish a gain or 10x. Startup
+and native Program remain unknown; concurrent profile sums are not wall time.
+
+Independent raw audits retain all 396 process records, 168 corpus memberships,
+36 cases/144 ordered runtime reports/36 positive profiles, 108 timed samples,
+12 timed profile references, all 48 profile hashes, 60 plant gates, 284 authored
+fixture files, eleven script hashes and three lock hashes. Regenerating the
+current source fixtures reproduces every input byte. All five native-trivia
+controls are clean in all four vectors and retain the original one-command
+two-server fallback; counts alone provide no broader admission proof.
+
+CLI report SHA-256:
+`01b6e68f5c0e5550d0769508948141140a932ea8fea01413cc2d15ebe53cd920`.
+CLI artifact `11296901461` digest:
+`7e724a994f71f09cd99db7ed236b2d4bb50957865fb17b63ce65f52de5819267`.
+The companion public API artifact `11296990998` compares immediate parent
+`522eef86c5f55556bcb1b366f71cafa2ad9a1082`; all twelve complete signatures
+match nine pairs, but its stage intervals cross zero and supply no whole-Stack
+API speed claim. Parent API run `37184743244` separately binds actual main to
+`26256f1500d01916ca7cfef38d34fd77463d2e79`; first-world import costs remain
++0.119 to +0.267 ms, and warm 4T mixed 1.023x is not an established gain.
+
+All 108 raw paired milliseconds are preserved below; their order is the
+alternating-pair index, not sorted samples. Twelve first-process cold values
+remain in the table above. Full report/input/profile artifacts retain exact
+source hashes and vectors.
+
+```json
+{"row":"shared-barrel500-max","baseMs":[345.9228900000003,353.8161170000003,342.01519499999995,336.69159599999966,345.4339200000004,335.0740769999993,346.24501599999985,345.2127049999999,352.3926219999994],"headMs":[321.67212299999983,327.3698429999995,315.52056900000025,326.49806499999977,330.1329370000003,336.7146899999998,325.68512700000065,316.6962089999997,317.9207810000007]}
+{"row":"shared-barrel500-1t","baseMs":[801.0222009999998,792.7398219999995,821.5405419999988,832.6908230000008,821.168493000001,817.9706179999994,821.7291819999991,809.5001190000003,800.6833909999987],"headMs":[447.92888200000016,443.3970730000001,441.9362269999983,435.66921699999875,435.9303269999982,438.3355279999996,439.8766050000013,442.12216999999873,444.91141499999867]}
+{"row":"shared-leaf501-default-max","baseMs":[460.9945890000017,458.7786410000008,451.92595000000074,462.0531269999992,467.1445420000018,459.50100699999894,461.80900799999654,456.26077500000247,456.5564200000008],"headMs":[273.95044300000154,276.5428589999974,271.8053980000004,282.0646719999968,271.97355199999583,280.64902599999914,261.1467429999975,276.5797789999997,274.88345399999525]}
+{"row":"shared-leaf501-default-1t","baseMs":[576.3922989999992,569.7466970000023,565.239026999996,577.0604540000058,567.9838090000048,581.0487989999965,584.6202720000001,584.3847200000018,559.6554580000011],"headMs":[585.265492999999,571.3822269999946,581.8498630000031,568.1296830000065,573.7383890000056,550.7903200000001,571.355736999998,564.3271759999989,566.942805000006]}
+{"row":"generated500-max","baseMs":[439.8112540000002,444.79216100000485,428.35349799999676,427.3507360000003,431.18879000000015,434.1496780000016,429.379313999998,446.58218099999795,434.1800629999998],"headMs":[432.89520300000004,426.89458100000047,437.0534069999994,442.14262900000176,430.2231079999983,439.8103709999996,431.1507199999978,438.2481190000035,435.25791700000264]}
+{"row":"generated500-1t","baseMs":[1321.8494619999983,1327.8591719999968,1313.7730340000126,1325.0571219999983,1302.144690000001,1337.879936000012,1311.1179960000009,1345.0021750000014,1335.0390239999979],"headMs":[1332.4477740000002,1353.697153999994,1325.517015000005,1342.3601070000004,1326.0586570000014,1316.7169739999954,1317.7221900000004,1336.6923970000062,1343.1606570000004]}
+```
+
+These measurements qualify only the recorded source/base. The meaningful
+documentation successor must preserve every non-doc tree entry of this measured
+replay, pass exact-source Actions, verify the final actual-main and sequential
+projections, then enter the whole-five protected queue with unchanged 100+4
+instruction ceilings. Every actual merge remains required; 10x, real-project
+and persistent-session edit acceptance remain unfinished.
