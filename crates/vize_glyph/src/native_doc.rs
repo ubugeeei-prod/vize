@@ -32,6 +32,8 @@ pub use expression::{
 };
 pub use printer::{LineEnding, PrintOptions, print};
 pub use selected_template::{
-    NativeTemplateDocument, NativeTemplateRefusal, native_template_document,
+    NativeTemplateDocument, NativeTemplateRefusal, ObservedNativeTemplateDocument,
+    ObservedNativeTemplateFailure, ObservedNativeTemplateRefusal, native_template_document,
+    observed_native_template_document,
 };
 pub use template::{TemplateDocument, TemplateRefusal, UnsupportedSyntax, template_document};

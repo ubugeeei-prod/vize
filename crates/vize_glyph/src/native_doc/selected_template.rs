@@ -11,7 +11,17 @@ use super::{
 
 #[path = "selected_template/builder.rs"]
 mod builder;
+#[path = "selected_template/input.rs"]
+mod input;
+#[path = "selected_template/observed.rs"]
+mod observed;
 use builder::Builder;
+use input::Borrowed;
+
+pub use observed::{
+    ObservedNativeTemplateDocument, ObservedNativeTemplateFailure, ObservedNativeTemplateRefusal,
+    observed_native_template_document,
+};
 
 /// Offsets are relative to the selected template block. Wrapped expression
 /// refusals keep their provider's authored-file or decoded-relative coordinates.
@@ -101,19 +111,10 @@ pub fn native_template_document<'p, 'a>(
     operands: &'p [&'p NativeInterpolationOperand<'a>],
     allocator: &'a Allocator,
 ) -> Result<NativeTemplateDocument<'p, 'a>, NativeTemplateRefusal> {
-    let carrier = original.component().carrier();
-    if let Some(error) = carrier.errors.first() {
-        return Err(TemplateRefusal::Recovered {
-            offset: error.offset as usize,
-        }
-        .into());
-    }
-    if carrier.authored.is_some() || !carrier.unsupported.is_empty() {
-        return Err(TemplateRefusal::Recovered { offset: 0 }.into());
-    }
+    check_selected(original)?;
     let mut builder = Builder {
         selected: original,
-        operands,
+        input: Borrowed(operands),
         next: 0,
         cursor: Cursor {
             source: original.component().block().source(),
@@ -139,4 +140,18 @@ pub fn native_template_document<'p, 'a>(
         operands,
         document: Doc::concat(parts),
     })
+}
+
+fn check_selected(original: &NativeTemplateComponent<'_>) -> Result<(), NativeTemplateRefusal> {
+    let carrier = original.component().carrier();
+    if let Some(error) = carrier.errors.first() {
+        return Err(TemplateRefusal::Recovered {
+            offset: error.offset as usize,
+        }
+        .into());
+    }
+    if carrier.authored.is_some() || !carrier.unsupported.is_empty() {
+        return Err(TemplateRefusal::Recovered { offset: 0 }.into());
+    }
+    Ok(())
 }

@@ -7,19 +7,20 @@ use vize_l1::markup::{
 };
 
 use super::super::template::{Cursor, close_element, open_element, verbatim};
+use super::input::Input;
 use super::{
     Doc, Line, NativeTemplateRefusal, TemplateRefusal, UnsupportedSyntax, expression_document,
 };
 
-pub(super) struct Builder<'p, 'a> {
+pub(super) struct Builder<'p, 'a, I> {
     pub(super) selected: &'p NativeTemplateComponent<'a>,
-    pub(super) operands: &'p [&'p NativeInterpolationOperand<'a>],
+    pub(super) input: I,
     pub(super) next: usize,
     pub(super) cursor: Cursor<'a>,
     pub(super) allocator: &'a Allocator,
 }
 
-impl<'p, 'a> Builder<'p, 'a> {
+impl<'p, 'a, I: Input<'p, 'a>> Builder<'p, 'a, I> {
     pub(super) fn children(
         &mut self,
         children: NativeChildren<'p, 'a>,
@@ -77,12 +78,9 @@ impl<'p, 'a> Builder<'p, 'a> {
         depth: usize,
     ) -> Result<(), NativeTemplateRefusal> {
         let offset = self.cursor.offset;
-        let Some(&operand) = self.operands.get(self.next) else {
-            return Err(NativeTemplateRefusal::MissingOperand {
-                offset,
-                index: self.next,
-            });
-        };
+        let operand = self
+            .input
+            .operand(self.selected, &child, self.next, offset)?;
         let view = operand.admitted_for(self.selected, child).ok_or(
             NativeTemplateRefusal::OperandRejected {
                 offset,
