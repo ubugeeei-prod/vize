@@ -1,6 +1,7 @@
 //! LSP protocol handler implementations.
 
 mod formatting;
+mod linked_editing;
 
 use tower_lsp::{
     LanguageServer,
@@ -520,29 +521,7 @@ impl LanguageServer for MaestroServer {
         &self,
         params: LinkedEditingRangeParams,
     ) -> Result<Option<LinkedEditingRanges>> {
-        if !self.state.lsp_features().rename {
-            return Ok(None);
-        }
-
-        #[cfg(feature = "experimental-source-navigation")]
-        if self.state.native_linked_editing_enabled() {
-            return self.native_linked_editing(params).await;
-        }
-
-        let uri = &params.text_document_position_params.text_document.uri;
-        let position = params.text_document_position_params.position;
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
-            return Ok(None);
-        };
-
-        Ok(crate::ide::linked_editing::LinkedEditingService::ranges(
-            &content,
-            uri.path(),
-            offset,
-        ))
+        linked_editing::linked_editing_range(self, params).await
     }
 
     async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
