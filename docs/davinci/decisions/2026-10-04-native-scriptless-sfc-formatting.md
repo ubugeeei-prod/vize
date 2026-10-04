@@ -100,3 +100,10 @@ L1/admission/output/oracle/budget changes or runtime acceptance. The healthy
 provider's genuine Stack prefix is queued separately; source238/four/three and
 the child's final replay/protected full/applicable ceilings/literal acceptance
 remain required.
+
+The [bounded formatter instruction repair](./2026-10-04-formatter-queue-instruction-repair.md)
+keeps the failed provider candidate separate from the accepted original history.
+The corrected whole owner replays from `3a7043ebc5b5f626ed0da0d7d576cdc193182e97`
+onto the final repaired provider based on fresh main. Every whole runtime and
+law blob remains byte-exact; current native Stack membership, fresh exact-head
+Actions, unchanged measured ceilings and protected actual merge remain required.
