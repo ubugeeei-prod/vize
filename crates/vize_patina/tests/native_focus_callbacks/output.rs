@@ -1,5 +1,5 @@
 use super::support::*;
-use vize_patina::{HelpLevel, Locale, Rule, RuleCategory, RuleMeta, Severity};
+use vize_patina::{HelpLevel, Rule, RuleCategory, RuleMeta, Severity};
 
 #[test]
 fn actual_concrete_metadata_and_original_eight_complete_outputs_are_preserved() {
@@ -22,7 +22,23 @@ fn actual_concrete_metadata_and_original_eight_complete_outputs_are_preserved() 
             fixable: false,
             default_severity: Severity::Warning,
         };
-        assert_eq!(format!("{:#?}", rule.meta()), format!("{expected:#?}"));
+        let actual = rule.meta();
+        assert_eq!(
+            (
+                actual.name,
+                actual.description,
+                actual.category,
+                actual.fixable,
+                actual.default_severity,
+            ),
+            (
+                expected.name,
+                expected.description,
+                expected.category,
+                expected.fixable,
+                expected.default_severity,
+            ),
+        );
     }
     for locale in LOCALES {
         for help in [HelpLevel::None, HelpLevel::Short, HelpLevel::Full] {

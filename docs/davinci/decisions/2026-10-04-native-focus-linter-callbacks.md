@@ -134,3 +134,10 @@ full104 instruction cases measured three times, both unchanged parent ratchets,
 protected suites and valid signed literal mergedAt/main containment. No local
 Rust/runtime/build/install or duplicate broad manual campaign is run. Default
 routing, complete native rule families/dialects/JSX and #6881 remain unfinished.
+
+First hosted5cc rejects the test-only RuleMeta Debug assumption (E0277) and one
+unused Locale import. Complete authored five-field metadata tuples replace only
+that formatting, preserving all21 law names, full expectations and production.
+The raw rejected worker remains retained; fresh source acceptance is required.
+The bounded repair is paired with [#6848](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5979034213)
+and [#6881](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-5979034365).
