@@ -332,3 +332,10 @@ SHA256 `cea6e541cf63969ee1524b8910aea7491acbc7ebee1a7c70c1319c9bfce9ae2b`;
 native audit SHA256 `7d06dcb99e85d9fb82fc65b7af0d54cf65e5cd7e1e547ebf9e00df2556bae558`.
 The test/documentation successor requires fresh source39 and complete official
 CLI/editor replay; previous results are historical, with all holds retained.
+
+The next authentic cf full replay emits the correct16:7 /TS2353 but fails only
+native-versus-JS parser-union message presentation. Preserve every raw result;
+[the closed rendering companion](./2026-10-05-typed-router-diagnostic-rendering.md)
+prepares separate full engine vectors for this exact source/provider context,
+with all common fields and unchanged full native LSP comparison still required.
+Fresh source/full runtime proof remains pending; no generic parity waiver.

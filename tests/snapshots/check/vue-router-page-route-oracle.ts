@@ -78,6 +78,7 @@ await test("page-scoped Vue Router types preserve complete CLI/editor diagnostic
         vueTscPath,
         upstreamSource,
         upstreamRoutes,
+        providerEvidence.archive.archiveSha256,
       );
 
       const editorCycle = editorCycleFor(fixture, observe);
@@ -135,6 +136,7 @@ await test("page-scoped Vue Router types preserve complete CLI/editor diagnostic
                     needle: "unknownId: 'int'",
                     token: "unknownId",
                     message: /'unknownId' does not exist/,
+                    renderCase: "define-page-unknown-id",
                   },
                 ],
               },

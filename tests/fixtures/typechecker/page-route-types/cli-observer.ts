@@ -76,8 +76,10 @@ export function pageRouteObserver(
   vueTscPath: string,
   originalPage: string,
   originalGeneratedRoutes: string,
+  providerArchiveSha256?: string,
 ) {
   const authority = {
+    providerArchiveSha256,
     originalPage: { path: PAGE_PATH, source: originalPage, sha256: sha256(originalPage) },
     originalGeneratedRoutes: {
       path: ROUTES_PATH,
@@ -96,6 +98,9 @@ export function pageRouteObserver(
     fixture.write(sourcePath, source);
     const productTsconfig = fixture.read("tsconfig.json");
     const productInputs = readInputs(fixture, sourcePath);
+    const routeBytes = productInputs.get(ROUTES_PATH);
+    assert.ok(routeBytes, "retain actual generated route-map input bytes");
+    const generatedRoutesSha256 = createHash("sha256").update(routeBytes).digest("hex");
     const context = {
       sourcePath,
       source,
@@ -103,6 +108,8 @@ export function pageRouteObserver(
       productConfig,
       referenceConfig,
       authority,
+      renderCase: errors[0]?.renderCase,
+      generatedRoutesSha256,
     };
     record({ ...context, stage: "product-input", inputs: inputPacket(productInputs) });
     let vize: VizeCheckResult;
@@ -140,6 +147,19 @@ export function pageRouteObserver(
       oracleSource = fixture.read(sourcePath);
       oracleTsconfig = fixture.read("tsconfig.json");
       const referenceInputs = readInputs(fixture, sourcePath);
+      if (errors[0]?.renderCase !== undefined) {
+        assert.equal(oracleSource, source, "closed rendering case preserves the reference source");
+        assert.equal(
+          oracleTsconfig,
+          productTsconfig,
+          "closed rendering case preserves all options",
+        );
+        assert.deepEqual(
+          referenceInputs.get(ROUTES_PATH),
+          routeBytes,
+          "closed rendering case preserves every generated route-map byte",
+        );
+      }
       const referenceContext = { ...context, oracleSource, oracleTsconfig };
       record({
         ...referenceContext,
@@ -168,7 +188,10 @@ export function pageRouteObserver(
     t.diagnostic(JSON.stringify({ sourcePath, sourceSha256: sha256(source), vize, oracle }));
     const include = (JSON.parse(productTsconfig) as { include?: unknown }).include;
     assert.ok(Array.isArray(include) && include.every((file) => typeof file === "string"));
-    const rows = assertCli(vize, oracle, source, errors, sourcePath, include);
+    const rows = assertCli(vize, oracle, source, errors, sourcePath, include, {
+      providerArchiveSha256,
+      generatedRoutesSha256,
+    });
     return { rows, report: vize.report };
   };
 }

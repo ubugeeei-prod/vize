@@ -126,3 +126,11 @@ endpoints. Matching original-length multiline header prefixes preserve all
 argument bytes; mismatching prefixes decline without editing. This does not
 prove equality through the actual generated argument start. Fresh hosted
 native replay is required; partial earlier cycles are not complete parity.
+
+The one `define-page-unknown-id` rendering fixture records independently reviewed
+full native and full official-JS TS2353 messages for the exact pinned source,
+original map and provider archive. Both complete vectors and common ordered
+fields remain strict; every other message comparison is unchanged. This is
+not a general message equivalence rule. The full LSP vector must equal the
+native vector; originals remain captured before comparison. See the
+[rendering decision](../../../../docs/davinci/decisions/2026-10-05-typed-router-diagnostic-rendering.md).
